@@ -42,3 +42,24 @@
 19. Setze die Paddles in die Platinenstecker ein (linkes und rechtes Paddel sind gleich, daher kann man hier keinen Fehler machen).
 20. Schraube die Antenne an den Antennenanschluss. (**Natürlich benötigt man die Antenne nur, wenn man mit LoRa sendet. Beachte jedoch, dass das Senden ohne Antenne den LoRa-Transceiver auf dem Heltec-Modul letztendlich zerstört!** Sicher ist sicher!)
 21. Schiebe nun den Batterieschalter auf "ON" und starte den Morserino-32! Wenn du noch keinen Akku hast, kannst du das USB-Kabel verwenden, um ihn so an eine 5-V-Quelle anzuschließen, entweder an deinem Computer oder einem Telefonladegerät. Da das Modul bereits programmiert ist, kann der Morserino-32 sofort verwendet werden. **Lese im Benutzerhandbuch** nach, wie man das Gerät verwendet, und seine zahlreichen Funktionen benutzt. Die Software kann auch aktualisiert werden, wenn eine neuere Version verfügbar ist - dies wird auch ausführlich im Benutzerhandbuch beschrieben.
+
+###Auswahl eines geeigneten LiPo Akkus für den Morserino-32
+
+Für meine Prototypen benutze ich einen kleinen 600 mAh einzelligen LiPo Akku wie er häufig in kleinen fengesteuerten Modellen wie zB. Quadcoptern verwendet wird. Die Marke, die ich nutzte ist "Tattu" und har folgenden Spezifikationen
+(siehe [https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html]() oder [https://www.genstattu.com/tattu-25c-1s-3-7-v-600mah-lipo-battery-pack-with-molex-plug-6pcs.html]()): 
+
+**Tattu** 600mAh 3.7V 30C 1S1P Lipo Akku mit Molex Stecker
+
+* Kapazität: 600mAh
+* Spannung: 3.7V
+* Max Dauerentladestrom: 30C (18A)
+* Gewicht: 15.7g
+* Abmessungen: 60 x 19 x 7mm
+
+Natürlich kann man ähnliche Akkus auch anderer Hersteller benutzen; damit der Akku unter dem Mikrocontroller Platz hat, darf er **nicht größer** sein als **65 x 20 x 8 mm**. 
+
+Der Akku darf nur eine Zelle haben (Nominalspannung 3,7 V), und sollte mit einem Molex-Stecker versehen sein (ein Kabel mit passendem Gegenstück ist im Bausatz enthalten. Willst du einen Akku mit anderem Anschluss benutzen, musst du dir selber ein passendes Kabel mit Stecker besorgen. 
+
+Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf der Bodenplatte des Gehäuses montiert werden. Damit man da etwas Flexibilität hat, liegen dem Bausatz Distanzstücke von 6mm und 12mm Länge bei, mit denen man die Bodenplatte befestigen kann. Mit den 12mm Distanzstücken dürfen die größeren Akkus bis zu 10 mm dick sein. Man köntne auch die 6mm und 12mm Abstandsbolzen in Kombination verwenden, da darf der Akku sogar bis zu 16 mm dick sein. Man muss in jeedm Fall dafür sorgen, dass der Akku nicht durch vorstehende Spitzen auf der Paltinenunterseite beschädigt werden kann - dies könnte zu Feuer und Explosion des Akkus führen!
+
+Eine mögliche Option für einen größeren Akku wäre dies: [https://www.amazon.de/gp/product/B01JJ6DA7A/]() oder sogar so etwas Ähnliches wie dieser: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (dieser hat allerdings keinen Molexstecker, man müsste also ein dazu passendes Anschlusskabel besorgen).

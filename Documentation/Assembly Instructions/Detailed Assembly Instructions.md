@@ -41,3 +41,23 @@
 19. Put the paddles into the PCB connectors (left and right paddle are the same, so you cannot make a mistake here).
 20. Screw the antenna to the antenna connector. (**Of course, you only need the antenna when you are transmitting with LoRa; but be aware, that transmitting without an antenna will eventually destroy the LoRa transceiver on the Heltec module!** Better safe than sorry!)
 21. Slide the battery switch to "ON" and start using the Morserino-32! If you do not have a battery yet, you can use the USB cable to connect to a 5V source, either from your computer or a phone charger or similar. As the module has been programmed already, you can use the Morserino-32 immediately. **See the User Manual** on how to use it and learn about its many functions. You can also update the software, should there be a newer version available - this is also described in detail in the User Manual.
+
+###Choice of LiPo battery for the Morserino-32
+
+For my prototypes I used a small 600 mAh single-cell LiPo battery that is commonly used in RC devices like quadcopters etc. The brand I use is „Tattu“ and has the following specs (see [https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html]() or [https://www.genstattu.com/tattu-25c-1s-3-7-v-600mah-lipo-battery-pack-with-molex-plug-6pcs.html]()): 
+
+**Tattu** 600mAh 3.7V 30C 1S1P Lipo Battery Pack with Molex Plug
+
+* Capacity: 600mAh
+* Voltage: 3.7V
+* Max Continuous Discharge:30C (18A)
+* Weight: 15.7g
+* Dimensions: 60 x 19 x 7mm
+
+Of course you can use similar batteries from other manufacturers; in order to fit under the micro controller the **maximum dimensions** are: **65 x 20 x 8 mm**. 
+
+It must be a single cell LiPo (nominally 3.7 V), and should have a Molex plug (because a cable with such a connector is part of the kit - if you use a battery with a different type of connector, you need to supply your own cable for connecting it to the Morserino-32!).
+
+You can use larger batteries if you mount them under the PCB, on the bottom plate of the case. To give you more flexibility, the kit will contain 6mm and 12mm distance bolts for mounting to the bottom plate. This means you can use pretty large LiPos, as long as they are < 10 mm thick. If you use the 6mm and 12 mm stand-offs in combination, you could even use batteries that are up to 16 mm thick! You have to make sure that you mount the battery in such a way that it is impossible for any sharp metal spikes to scratch the surface of the battery - this could lead to fire or explosion!
+
+One option would be this type: [https://www.amazon.de/gp/product/B01JJ6DA7A/]() or even that one, for even more capacity: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (but be aware that this one does not use a Molex plug - you would need to find a cable with a suitable plug to connect this to your Morserino-32).
