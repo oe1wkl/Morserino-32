@@ -2,15 +2,15 @@
 
 ### Bevor du beginnst:
 
-* ** Obwohl der Bausatz recht einfach zu montieren ist, solltest du einige Erfahrungen mit dem Zusammenbau von elektronischen Bausätzen haben. ** Wenn nicht, empfehle ich dringend, jemanden um Hilfe zu bitten, der diese Erfahrung hat. Selbst einfach zu bauende Kits können leicht ruiniert werden (natürlich kann ich dir Ersatzteile zur Verfügung stellen, falls etwas Schlimmes passiert ist - aber du wirst verstehen, dass ich das nicht kostenlos tun kann - ich muss die Teile ja selbst auch kaufen.)
+* **Obwohl der Bausatz recht einfach zu montieren ist, solltest du einige Erfahrungen mit dem Zusammenbau von elektronischen Bausätzen haben.** Wenn nicht, empfehle ich dringend, jemanden um Hilfe zu bitten, der diese Erfahrung hat. Selbst einfach zu bauende Kits können leicht ruiniert werden (natürlich kann ich dir Ersatzteile zur Verfügung stellen, falls etwas Schlimmes passiert ist - aber du wirst verstehen, dass ich das nicht kostenlos tun kann - ich muss die Teile ja selbst auch kaufen.)
 
 * Stelle sicher, dass du weißt, welchen Typ von LiPo-Akku du verwendest und wo du ihn anbringen möchtest:
 	* Wenn er klein genug ist, sollte er unter das ESP32-Modul passen.
 	* Andernfalls solltest du ihn an der Bodenplatte des Gehäuses befestigen und sicherstellen, dass zwischen Batterie und Leiterplatte genügend Abstand besteht (**Achtung! Stelle sicher, dass keine scharfen Drahtenden oder dergleichen den Akku beschädigen** - Dies kann zur Explosion des Akkus führen!). Zwei verschiedene Größen von Abstandsbolzen sind im Lieferumfang enthalten - verwende die 12-mm-Bolzen, wenn der Akku auf der Bodenplatte sitzt. Wenn er SEHR dick ist, kannst du  sogar die 6 mm und 12 mm Abstandhalter kombinieren, um einen Abstand von 18 mm zu erhalten! Wenn du keinen zusätzlichen Platz unter der Leiterplatte benötigst, verwende die 6-mm-Abstandhalter.
 * Ich gehe davon aus, dass du einen Akku mit einem Molex-Stecker verwendest. Wenn du einen Akku mit einem anderen Stecker bevorzugest, musst du dir ein eigenes Kabel mit einem passenden Stecker für den Akku besorgen.
-* Lege alle nötigen Werkzeuge bereit: einen Lötkolben mit feiner Spitze, einen dünnen Lötdraht (verwende kein bleifreies Lot, wenn du dir nicht das Leben schwer machen willst), gute Beleuchtung, möglicherweise eine Lupe, einen kleinen Drahtschneider und (zur Montage des Gehäuses) einen kleinen Inbusschlüssel (2 mm; wenn nicht verfügbar, funktioniert ein T6X20 Torx zur Not auch recht gut).
-* ** Hinweise zum Löten: ** KEIN bleifreies Lot verwenden (ich habe es schon erwähnt, nicht wahr?). Verwende einen hochwertigen Lötkolben, der auf eine vernünftige Temperatur eingestellt ist (ich bevorzuge es, ein wenig auf der hohen Seite zu sein - das ermöglicht es, die Verbindungen schnell herzustellen, und einige der Teile sind etwas groß, und wenn Sie mit Masse verbunden sind, benötigen Sie viel Hitze, um eine einwandfreie Lötstelle herzustellen. Dort viele Sekunden mit dem Lötkolben zu warten, bis das Lot endlich schnilzt, ist eine gute Möglichkeit, die Leiterplatte zu ruinieren.
-* Überprüfe, ob alle Komponenten bereit sind - identifiziere sie anhand der Packliste und ermittele anhand der Zeichnung, wohin sie gehören. 
+* Lege alle nötigen Werkzeuge bereit: einen Lötkolben mit feiner Spitze, einen dünnen Lötdraht (verwende kein bleifreies Lot, wenn du dir nicht das Leben schwer machen willst), gute Beleuchtung, möglicherweise eine Lupe, einen kleinen Drahtschneider und (zur Montage des Gehäuses) einen kleinen Inbusschlüssel (2 mm; wenn nicht verfügbar, funktioniert ein T6X20 Torx zur Not auch).
+* **Hinweise zum Löten:** KEIN bleifreies Lot verwenden (ich habe es schon erwähnt, nicht wahr?). Verwende einen hochwertigen Lötkolben, der auf eine vernünftige Temperatur eingestellt ist (ich bevorzuge es, ein wenig auf der hohen Seite zu sein - das ermöglicht es, die Verbindungen schnell herzustellen, und einige der Teile sind etwas groß, und wenn sie mit Masse verbunden sind, benötigen sie viel Hitze, um eine einwandfreie Lötstelle herzustellen. Dort viele Sekunden mit dem Lötkolben zu warten, bis das Lot endlich schmilzt, ist eine gute Möglichkeit, die Leiterplatte zu ruinieren.
+* Überprüfe, ob alle Komponenten bereit sind - identifiziere sie anhand der Packliste und ermittele anhand der Zeichnung, wohin sie gehören. Bitte informiere [mailto:info@morserino.info]() falls Bauteile fehlen oder defelt sein sollten, damit dir Ersatz geschickt werden kann!
 ![Platzierungszeichnung][Ass01]
 [Ass01]: Images/3_placement.jpg "Position der Komponenten"
 
@@ -42,6 +42,12 @@
 19. Setze die Paddles in die Platinenstecker ein (linkes und rechtes Paddel sind gleich, daher kann man hier keinen Fehler machen).
 20. Schraube die Antenne an den Antennenanschluss. (**Natürlich benötigt man die Antenne nur, wenn man mit LoRa sendet. Beachte jedoch, dass das Senden ohne Antenne den LoRa-Transceiver auf dem Heltec-Modul letztendlich zerstört!** Sicher ist sicher!)
 21. Schiebe nun den Batterieschalter auf "ON" und starte den Morserino-32! Wenn du noch keinen Akku hast, kannst du das USB-Kabel verwenden, um ihn so an eine 5-V-Quelle anzuschließen, entweder an deinem Computer oder einem Telefonladegerät. Da das Modul bereits programmiert ist, kann der Morserino-32 sofort verwendet werden. **Lese im Benutzerhandbuch** nach, wie man das Gerät verwendet, und seine zahlreichen Funktionen benutzt. Die Software kann auch aktualisiert werden, wenn eine neuere Version verfügbar ist - dies wird auch ausführlich im Benutzerhandbuch beschrieben.
+22. Die Schachtel, in der der Bausatz geliefert wurde, eigent sich auch dafür, das fertig aufgebaute Gerät aufzubewahren (eventuell empfiehlt es sich, auf den Boden und auf den Deckel ein Stück Schaumstoff aufzukleben).
+    
+     ![Aufbewahrung][Ass02] 
+     
+     Wer nach einer etwas dauerhafteren Aufbewahrungsmöglichkeit sucht, ist mit einer Lunchbox aus Kunststoff sehr gut aufgehoben  (siehe Foto; auch hier wären Einlagen aus Schaumstoff empfehlenswert).
+[Ass02]: Images/lunchbox.jpg "Aufbewahrung in der Lunchbox"
 
 ###Auswahl eines geeigneten LiPo Akkus für den Morserino-32
 
@@ -56,10 +62,13 @@ Für meine Prototypen benutze ich einen kleinen 600 mAh einzelligen LiPo Akku wi
 * Gewicht: 15.7g
 * Abmessungen: 60 x 19 x 7mm
 
+Siehe das Bild unten, Tattu ist der obere Akku.
+
 Natürlich kann man ähnliche Akkus auch anderer Hersteller benutzen; damit der Akku unter dem Mikrocontroller Platz hat, darf er **nicht größer** sein als **65 x 20 x 8 mm**. 
 
 Der Akku darf nur eine Zelle haben (Nominalspannung 3,7 V), und sollte mit einem Molex-Stecker versehen sein (ein Kabel mit passendem Gegenstück ist im Bausatz enthalten. Willst du einen Akku mit anderem Anschluss benutzen, musst du dir selber ein passendes Kabel mit Stecker besorgen. 
 
 Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf der Bodenplatte des Gehäuses montiert werden. Damit man da etwas Flexibilität hat, liegen dem Bausatz Distanzstücke von 6mm und 12mm Länge bei, mit denen man die Bodenplatte befestigen kann. Mit den 12mm Distanzstücken dürfen die größeren Akkus bis zu 10 mm dick sein. Man köntne auch die 6mm und 12mm Abstandsbolzen in Kombination verwenden, da darf der Akku sogar bis zu 16 mm dick sein. Man muss in jeedm Fall dafür sorgen, dass der Akku nicht durch vorstehende Spitzen auf der Paltinenunterseite beschädigt werden kann - dies könnte zu Feuer und Explosion des Akkus führen!
 
-Eine mögliche Option für einen größeren Akku wäre dies: [https://www.amazon.de/gp/product/B01JJ6DA7A/]() oder sogar so etwas Ähnliches wie dieser: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (dieser hat allerdings keinen Molexstecker, man müsste also ein dazu passendes Anschlusskabel besorgen).
+Eine mögliche Option für einen größeren Akku wäre dieser (der untere Akku am Bild): ![Akkus][Ass03] [https://www.amazon.de/gp/product/B01JJ6DA7A/]() oder sogar so etwas Ähnliches wie dieser: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (dieser hat allerdings keinen Molexstecker, man müsste also ein dazu passendes Anschlusskabel besorgen). 
+[Ass03]: Images/batteries.jpg "Empfohlene Akkus"

@@ -10,7 +10,7 @@
 	* I am assuming that you are going to use a battery with a Molex connector - should you prefer a battery with a different connector, you need to supply our own cable with a fitting connctor for the battery.
 * Get all the tools necessary: a fine-tipped soldering iron, thin solder wire (do not use lead-free solder unless you want to make your life hard), good lighting, possibly a magnifying glass, a small wire cutter and (for assembling the case) a small hex key (2 mm; if not available a T6X20 Torx will work reasonably well).
 * **Soldering advice:** Do NOT use lead-free solder (I mentioned it before, didn't I). Use a high quality soldering iron, set to a reasonable temperature (I prefer them to be a bit on the high side - allows you to make the joints quickly, and some of the parts are biggish; if connected to ground, you need a lot of heat to make the joint, and staying there with the iron for many, many seconds waiting for the warm-up is a good way to ruin your PCB).
-* Check that all components are ready - identify them with the help of the packing list, and identify where they will go, with the help of the placement drawing. ![placement drawing][Ass01]
+* Check that all components are ready - identify them with the help of the packing list, and identify where they will go, with the help of the placement drawing. Please notify [mailto:info@morserino.info]() if any components are missing or defective, so that some replacement can be sent to you!![placement drawing][Ass01]
 [Ass01]: Images/3_placement.jpg "Location of Components"
 
 ###Step-by-step instructions (at least read them, even if you decide to do it differently)
@@ -41,6 +41,11 @@
 19. Put the paddles into the PCB connectors (left and right paddle are the same, so you cannot make a mistake here).
 20. Screw the antenna to the antenna connector. (**Of course, you only need the antenna when you are transmitting with LoRa; but be aware, that transmitting without an antenna will eventually destroy the LoRa transceiver on the Heltec module!** Better safe than sorry!)
 21. Slide the battery switch to "ON" and start using the Morserino-32! If you do not have a battery yet, you can use the USB cable to connect to a 5V source, either from your computer or a phone charger or similar. As the module has been programmed already, you can use the Morserino-32 immediately. **See the User Manual** on how to use it and learn about its many functions. You can also update the software, should there be a newer version available - this is also described in detail in the User Manual.
+22. The cardboard box the kit came in is also suitable for storing the assembled Morserino-32 while not in use (Eventually it is advisable to glue a piece of plastic foam to the bottom and to the top of the box).  
+   
+    ![Storag][Ass02]  Should you be looking for something a bit more durable, I would recommend you a plastic lunch box (see the photo; I would recommend some foam inserts here as well). 
+[Ass02]: Images/lunchbox.jpg "Storage in a lunchbox"
+ 
 
 ###Choice of LiPo battery for the Morserino-32
 
@@ -54,10 +59,16 @@ For my prototypes I used a small 600 mAh single-cell LiPo battery that is common
 * Weight: 15.7g
 * Dimensions: 60 x 19 x 7mm
 
+See the picture below; Tattu is the battery at the top).
+
 Of course you can use similar batteries from other manufacturers; in order to fit under the micro controller the **maximum dimensions** are: **65 x 20 x 8 mm**. 
 
 It must be a single cell LiPo (nominally 3.7 V), and should have a Molex plug (because a cable with such a connector is part of the kit - if you use a battery with a different type of connector, you need to supply your own cable for connecting it to the Morserino-32!).
 
 You can use larger batteries if you mount them under the PCB, on the bottom plate of the case. To give you more flexibility, the kit will contain 6mm and 12mm distance bolts for mounting to the bottom plate. This means you can use pretty large LiPos, as long as they are < 10 mm thick. If you use the 6mm and 12 mm stand-offs in combination, you could even use batteries that are up to 16 mm thick! You have to make sure that you mount the battery in such a way that it is impossible for any sharp metal spikes to scratch the surface of the battery - this could lead to fire or explosion!
 
-One option would be this type: [https://www.amazon.de/gp/product/B01JJ6DA7A/]() or even that one, for even more capacity: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (but be aware that this one does not use a Molex plug - you would need to find a cable with a suitable plug to connect this to your Morserino-32).
+One option would be this type (in the picture the battery at the bottom): ![Akuss][Ass03]
+[Ass03]: Images/batteries.jpg "Position der Komponenten"
+[https://www.amazon.de/gp/product/B01JJ6DA7A/]() or even that one, for even more capacity: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (but be aware that this one does not use a Molex plug - you would need to find a cable with a suitable plug to connect this to your Morserino-32). 
+[Ass03]: Images/batteries.jpg "Recommended batteries"
+
