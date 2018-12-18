@@ -6,7 +6,7 @@
 |:-:|-------|	
 |1	|PCB (with SMD parts prepopulated)|
 |1	|Bag with components (pink) (see below)|
-|1	|Heltec ESP32 Wifi LoRa module (preprogrammed)|
+|1	|Heltec ESP32 Wifi LoRa module (preprogrammed that's why the bliste package is cut open; the firmware version (not the hardware version!) is hand-written on the package)|
 	
 ###Bag with components (pink; contains 18 items)
 
