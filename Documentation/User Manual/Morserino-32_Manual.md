@@ -1,8 +1,9 @@
 
-#![](Images/M32c.png) Morserino-32   
+#![](Images/M32c.png)
+#Morserino-32 User Manual
 
 
-###A multi-functional Morse device, perfect for learning and training##
+###A multi-functional Morse Code Device, perfect for Learning and Training
 
 
 ![](Images/Morserino.jpg)
@@ -17,11 +18,11 @@
 | 1| 3.5mm Phone Jack (2 poles): to TX | Connect this to your transmitter or transceiver if you would like to key them with this device. |
 |2 | 3.5mm Phone Jack (4 poles): Audio In / Line Out | **Audio input** for the CW decoder; connect the audio output of a receiver for decoding CW signals. **Audio output** (pretty close to a pure sine wave) that is not influenced by setting the loudspeaker volume. The assignments to the jack are as follows: Tip and 1st ring - audio in; 2nd ring: ground; sleeve: audio out.|
 | 3 | Audio Input level | Adjust audio input level with the help of this potentiometer; there is a special function to help with level adjustment, see section "Start Menu" (towards the end of the section). |
-| 4| 3.5 mm Phone Jack (3 poles): Headphones | Connect your headphones (any stereo headphones from mobile phones should do) here to listen through headphones and switch off the speaker. You cannot attach a loudspeaker directly to this jack without providing some interface (headphone out needs a DC connection to ground through 50 - 300 Ohms.)|
+| 4| 3.5 mm Phone Jack (3 poles): Headphones | Connect your headphones (any stereo headphones with standard phone jacks from mobile phones should work) here to listen through headphones and switch off the speaker. You cannot attach a loudspeaker directly to this jack without providing some interface (headphone out needs a DC connection to ground through 50 - 300 Ohms.)|
 |5| Power Switch | Connect / disconnect the LiPo battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. If you will not use the device for several days, disconnect the battery as otherwise it will be slowly discharged. |
 |6| SMA female Antenna Connector | Connect a 430 MHz antenna for LoRa operation. Do not transmit LoRa without an antenna! |
 |7| RED (Power/Vol/Scroll) Button | When the device is shut off (but with the battery connected, i.e. in deep sleep), this wakes up and restarts your device. When the device is up and running, a short press of this button swaps the rotary encoder between adjusting the keyer speed and volume control. A long press of the button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control. While in the menu, a long press starts the mode to adjust audio input level, and a quick triple click brings up the Wifi functions. See below for further details.|
-|8| BLACK Rotary Encoder| Used to make your selection within menus, to adjust speed, volume, or scroll the display, and to set various parameters and options. CAn be rotated and pressed (clicked).|
+|8| BLACK Rotary Encoder| Used to make your selection within menus, to adjust speed, volume, or scroll the display, and to set various parameters and options. Can be rotated and is also a push-button switch.|
 |9| Connectors for touch paddles| These PCB connectors accept the capacitive touch paddles. if you are only using an external paddle (or for transport), you may remove the touch paddles. |
 |10| 3.5 mm Phone Jack (3 poles): External Paddle | Use this to connect either an external (mechanical) paddle (tip is left paddle, ring is right paddle, sleeve is ground), or a straight key (tip is the key). With a straight key you can use the CW decoder to monitor the quality of you fist!
 |11| Serial Interface | You can connect a cable (directly or through a 4-pole pinhead connector) to an external serial device, e.g. a GPS receiver module (this is currently not supported by software, but not very difficult to do). The 4 poles are T (Transmit), R (Receive), + and - (3.3V power from the Heltec module). |
@@ -32,11 +33,11 @@
 <div style="page-break-after: always;"></div>
 
 ##Powering On and Off / Charging the Battery
-When the device is off but with the battery connected (sliding power switch is on), it is in deep sleep in reality: almost all functions of the microcontroller are turned off, and power consumption is minimal (less than 5% of normal oepration).
+When the device is off but with the battery connected (sliding power switch is on), it is in deep sleep in reality: almost all functions of the microcontroller are turned off, and power consumption is minimal (less than 5% of normal operation).
 
 To turn the device on from deep sleep, just press the RED (Power/Vol/Scroll) button momentarily. You will see a start screen for a couple of seconds. The only interesting bit of the start screen is at its very bottom: you will see an indication of how much battery power is still left. If this goes way towards empty, you should connect your device to a USB power source. (The battery will be drained even if you never turn the device on - although this is rather minimal in its deep sleep status, a full battery will be empty after a couple of days. Therrefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the slider switch at the back...)
 
-If the battery voltage is dangerously low, an empty battery symbol will show on the scren and the device will refuse to boot up. if you see this symbol, you should begin charging your battery as soon as possible.
+If the battery voltage is dangerously low when you attempt to turn it on, an empty battery symbol will show on the scren and the device will refuse to boot up. if you see this symbol, you should begin charging your battery as soon as possible.
 
 To turn the device off (i.e. sending it into deep sleep), you have two options:
 
@@ -87,11 +88,11 @@ Although only three lines of scrolling text are shown, there is internally a buf
 
 While you are presented a menu (either the start menu, or a menu to select preferences), the status line tells you what to do (**Select Modus** or **Set Preferences:**).
 
-When in Keyer Modus, CW Trainer Modus or Echo Trainer Modus, the status line shows the following, from left to right:
+When in Keyer Modus, CW Generator Modus or Echo Trainer Modus, the status line shows the following, from left to right:
 
 * A **T** or an **X**, meaning the device uses the **T**ouch paddles or E**X**ternal paddles (selectable by entering the preferences menu).
 * **A**,**B** or **U**, indicating the automatic keyer mode: Iambic **A**, Iambic **B**, or **U**ltimatic (for details on these modi see below).
-* The currently set speed in words per minute. In CW Keyer modus as **nn**WpM, in CW Trainer or Echo Trainer modus as (nn)**nn**WpM. The value in brackets shows the effective speed, which differs when inter-word spacing or inter-character spacing are set to other values than those defined by the norm (length of 3 dits for inter-character spacing, and length of 7 dits for inter-word spacing). See the notes below regarding the parameters you can set in CW Trainer modus. 
+* The currently set speed in words per minute. In CW Keyer modus as **nn**WpM, in CW Generator or Echo Trainer modus as (nn)**nn**WpM. The value in brackets shows the effective speed, which differs when inter-word spacing or inter-character spacing are set to other values than those defined by the norm (length of 3 dits for inter-character spacing, and length of 7 dits for inter-word spacing). See the notes below regarding the parameters you can set in CW Generator modus. 
 
   When in a transceiver modus, you also see two values for speed - the one in brackets is the speed of the signal received, the other one the speed of your keyer.
 
@@ -107,7 +108,7 @@ The Start Menu gives you a selection of the modi you can use; it is a multi-leve
 Here are the various selections you can choose from the Start Menu (more detailed information can be found further down):
 
 1. **CW Keyer**. This is an automatic keyer that supports Iambic A, Iambic B, and Ultimatic mode.
-2. **CW Generator**. This either generates randomized characters and words for CW training purposes, or plays the contents of a text file in Morse code. You can set a number of options by choosing appropriate parameters (see the section on Parameters below). An interesting option for training puposes is the word double option, which plays any word (or group of charcaters, all signs etc) twice. You can choose between the following at level 2:
+2. **CW Generator**. This either generates randomized characters and words for CW training purposes, or plays the contents of a text file in Morse code. You can set a number of options by choosing appropriate parameters (see the section on Parameters below). An interesting option for training purposes is the word double option, which plays any word (or group of charcaters, all signs etc) twice. You can choose between the following at level 2:
 
   * **Random**: Generates groups of random characters. The length of the groups as well as the choice of characters can be selected in the parameters, by double clicking the black rotary knob (see the description of parameters for details).
   * **CW Abbrevs**: Random abbreviations that are very common in CW transmissions (through a parameter setting you can choose the maximum length of the abbreviations you want to train).
@@ -118,7 +119,7 @@ Here are the various selections you can choose from the Start Menu (more detaile
 
   You can start and stop the CW generator by quickly pressing a paddle, or by pushing the BLACK knob.
 
-3. **Echo Trainer**. Here the Morserino-32 generates a word (which is a basically a series of characters), and then waits for you to repeat these characters using the paddle. If you wait too long, or if you response is not identical to what has been generated, an error is indicated (on display and acoustically), and the prompt word is being repeated. If you keyed the correct characters, this is also indicated acoustically and on screen, and you are prompted for the next word. 
+3. **Echo Trainer**. Here the Morserino-32 generates a word (which is a basically a series of characters, with teh possibilities as in the CW generator), and then waits for you to repeat these characters using the paddle. If you wait too long, or if you response is not identical to what has been generated, an error is indicated (on display and acoustically), and the prompt word is being repeated. If you keyed the correct characters, this is also indicated acoustically and on screen, and you are prompted for the next word. 
     
     The sub-menus are the same as for the CW Generator: **Random, CW Abbrevs, English Words, Call Signs, Mixed** and **File Player**.
 
@@ -141,7 +142,7 @@ Here are the various selections you can choose from the Start Menu (more detaile
  
 5. **Transceiver**. Here you have two items in the corresponding sub-menu:
 
-   * **LoRa Trx**: This is a Morse code transceiver, using LoRa in the 70cm ISM band. In addition to the functionality of the CW keyer, this sends out whatever you key through the LoRa transceiver (using a special data format that encodes the dots and dashes you keyed, regardless if these are legal Morse code characters or not), and it listens on the band when you are not keying; therefore you can really have an interactive conversation in Morse code betweem tow or more Morserino-32 devices! Please be aware that charcaters are being transmitted word by word, therefore there is a little delay on the receiving end - QSK is therefore not possible. It encourages you to use proper hand-over procedures!
+   * **LoRa Trx**: This is a Morse code transceiver, using LoRa in the 70cm ISM band. In addition to the functionality of the CW keyer, this sends out whatever you key through the LoRa transceiver (using a special data format that encodes the dots and dashes you keyed, regardless if these are legal Morse code characters or not), and it listens on the band when you are not keying; therefore you can really have an interactive conversation in Morse code betweem tow or more Morserino-32 devices! Please be aware that characters are being transmitted word by word, therefore there is a little delay on the receiving end - QSK is therefore not possible. It encourages you to use proper hand-over procedures!
    * **iCW/Ext Trx**: In this (still somewhat experimental) modus a transceiver connected to the Morserino-32 is being keyed, or you can use the line-out audio to either key for example an FM transceiver, or use CW over the Internet (iCW - this uses Mumble as an audio exchange protocol). Any CW signals coming in as audio through the audio in port are being decoded and displayed on the screen.
 
 6. **CW Decoder**. In this modus, Morse code characters are being decoded and shown on the screen. The Morse code can either be entered via a Morse key ("straight key" - connected to the jack where you would normally connect an external paddle; you can also use one of the touch paddles to manually key the decoder). Using the decode in this way, you can control and improve your keying with a straight key, by checking, if the decode decodes correctly what you tried to send.
@@ -155,18 +156,18 @@ You can also reach some **other functions** while you are positioned within the 
 
 * **Long press of the RED button**: This starts a function to adjust the audio input level: make sure a tone signal is on input, and a bar graph will indicate the voltage of the input signal. Adjust it with the blue trimmer potentiometer, so that the left and right ends of the solid bar are within the two outer rectangles. At the same time, a sinus signal is output on line-out, and the transceiver output is shortened (keying a transmitter, should you have it connected to one).
 
-  A simple test or demo for the audio-in adjustment is to connect line-out with audio in, feeding the output sine wave into the audio input. You can see the solid bar graph changing when you turn the potentiometer, leaving just a tinysolid bar in the middle and exposing the two rectangles on both ends of the graph at one end of the potentiomenter range (essentially you are just measuring the noise on the operation amplifiers input), and with the solid bar graph extending beyind the rectangles on both ends on the other end of the potentiometer sweep. Now you can set the potentiometer so that the solid bar is almost touching the outer bounds of the rectangles. This is the optimal setting for the audio in level. Obviously you have to perform this for the audio source you are planning to use, e.g. for your radio receiver.
+  A simple test or demo for the audio-in adjustment is to connect line-out with audio in, feeding the output sine wave into the audio input. You can see the solid bar graph changing when you turn the potentiometer, leaving just a tiny solid bar in the middle and exposing the two rectangles on both ends of the graph at one end of the potentiomenter range (essentially you are just measuring the noise on the operation amplifiers input), and with the solid bar graph extending beyond the rectangles on both ends on the other end of the potentiometer sweep. Now you can set the potentiometer so that the solid bar is almost touching the outer bounds of the rectangles. This is the optimal setting for the audio in level. Obviously you have to perform this for the audio source you are planning to use, e.g. for your radio receiver.
 
 * **Triple click of the RED button**:  This brings up the menu for the WiFi functions (see further down for a more detailed description). WiFi is not always on, as it used only for two specific purposes:
 
   * To **upload** a text file for the Morse code player (currently only one text file can be uploaded, uploading a new file overwrites any file that has been uploaded previously). In this mode the Morserino-32 connects to your local WiFi network and starts a simple web server. 
   * To **update** the firmware of the Morserino-32 to the latest and greatest version. This is similar to the file upload, but instead you point it to the compiled binary file containing the firmware (you can get the firmware through the Morserino-32 github repository).
-  * **WiFi configuration**: A third function allows you to tell the Morserino the SSID and password four your WiFi network (otherwise it would not be able to connect to your network). For this the Morserino-32 starts as an access point, providing its own network (with SSID "morserino"). You need to connect your computer to that network (no password is required) and again point a browser to m32.local. A simple form will appear that allows you to enter the SSID and the password for you WiFi network.
+  * **WiFi configuration**: A third function allows you to tell the Morserino the SSID and password four your WiFi network (otherwise it would not be able to connect to your network). For this the Morserino-32 starts as an access point, providing its own network (with SSID "morserino"). You need to connect your computer to that network (no password is required) and point a browser to *m32.local*. A simple form will appear that allows you to enter the SSID and the password for you WiFi network.
 
 All WiFi functions end with the Morserino32 re-booting after these functions have been performed. 
 
 
-### Using the Modi "CW Keyer", "CW Trainer" and "Echo Trainer"
+### Using the Modi "CW Keyer", "CW Generator" and "Echo Trainer"
 When you use one of these modi, the *top line* (status line) gives the following information (from left to right):
 
 - **E** or **T**: The paddle that is currently in use, either an **E**xternal (mechanical) paddle, or the built-in **T**ouch paddle.
@@ -187,14 +188,14 @@ Other parameters can be set by **double click** of the encoder button, which pro
 Some specifics for each of these modi:
 
 - In **CW Keyer** modus, you just use the built-in capacitive touch paddles or the external paddles to generate morse code.
-- In **CW Trainer** modus, the device will generate random groups of morse characters for you to decode. Once you selected this mode, you can **start** and **stop** the generation of morse code **by pressing the paddle** (you can press just one side or squeeze both). 
+- In **CW Generator** modus, the device will generate random groups of morse characters for you to decode. Once you selected this mode, you can **start** and **stop** the generation of morse code **by pressing the paddle** (you can press just one side or squeeze both). 
 
-  When it starts the first time after selection from the top menu, it will first alert you by generating "`vvv<ka>`" (..._  ..._  ..._  _._._) in Morse code, before it actually begins generating the random groups.
+  When it starts the first time after selection from the top menu, it will first alert you by generating "`vvv<ka>`" (`..._   ..._   ..._    _._._`) in Morse code, before it actually begins generating the random groups.
 - In **Echo Trainer** modus, the device will generate a group of characters (in other words, a word) and then wait for you to key in the same word. If you wait too long, or if the response is not correct, the word will be repeated, until you get it right. 
 
-  In this modus, it will not be shown on the display, what the generated prompt word is -- only your response is shown (and that depends on a parameter that you can set).
+  In this modus, it will not be shown on the display, what the generated prompt word is -- only your response is shown.
 
-  Like in CW Trainer modus, you start the generation by pressing a paddle, and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle -- after all, you use the paddle to generate your responses! So the only way to stop this modus is a long press of the encoder button.
+  Like in CW Trainer modus, you start the generation by pressing a paddle, and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle -- after all, you use the paddle to generate your responses! So the only way to stop this modus is a ckick of the BLACK encoder button.
   
   For Echo Trainer modi there is a special parameter that should help you to train for maximum speed, called **Adaptv. Speed** (adaptive speed; see the section on Parameters). Whenever your response was correct, the speed will be increased by 1 word per minute; whenever you make a mistake, it will decrease by 1. Thus you will eventually always train at your limit, which certainly is the best way to push your limits...
 
@@ -203,7 +204,7 @@ Some specifics for each of these modi:
 
 The German psychologist Koch developed a method for learning Morse code (in the 1930s), by which each lesson adds an additional character. The order is neither alphabetical, nor sorted by the length of the Morse codes, but follows a certin rhythmical pattern, so that the individual characters are learned as rhythm, and not as a succession of dits and dahs. 
 
-In order to prevent counting dits and dahs, or thinking of and reconstructing what you heard, the speed should be sufficiently high (min. 18 wpm), pauses between characters and words should not be lengthened enormously (and it is always better to just lengthen the pauses between words, and keep the iner-character spaces to more or less the normal space. With our device you can set interword space independently from intercharacter space, so you can find a setting that perfectly fits your needs.
+In order to prevent counting dits and dahs, or thinking of and reconstructing what you heard, the speed should be sufficiently high (min. 18 wpm), pauses between characters and words should not be lengthened enormously (and it is always better to just lengthen the pauses between words, and keep the inter-character spaces to more or less the normal space). With our device you can set interword space independently from intercharacter space, so you can find a setting that perfectly fits your needs.
 
 The order of the characters learned has not been strictly defined by Koch, and therefore different learning courses use slightly different orders. Here we use the same order of characters as defined by the "SuperMorse" software package (see http://www.qsl.net/kb5wck/super.html), which is also used by the "CW Schule Graz". The order is as follows:
 
@@ -271,21 +272,23 @@ Pressing the RED Pwr/Vol/Scroll Button still enables you to set the audio level.
 Morse characters received by the transceiver 
 are shown in bold in the (scrollable) text area on the display, while everything you are sending is shown in regular characters.
 
-Another feature is worth mentioning here: The frequency of the tone you are hearing when you are receiving the other station is adjusted through the "Pitch" parameter, as in the other modi.  The pitch of the tone when you are sending can be the same, or a half tone higher or lower - this is being set through the Tone Shift parameter, in the same way as in Echo Trainer modus.
+Another feature is worth mentioning here: The frequency of the tone you are hearing when you are receiving the other station is adjusted through the "Pitch" parameter, as in the other modi.  The pitch of the tone when you are sending can be the same, or a half tone higher or lower then the receiving tone - this is being set through the Tone Shift parameter, in the same way as in Echo Trainer modus.
 
 One other thing you might want to know: the LoRa CW Transceiver does not work like a CW transceiver on shortwave, where an unmodulated carrier is being keyed, and the delay between sender and receiver is just defined by the delay in the path of the electromagnetic waves carrying the signals. LoRa uses a spread spectrum technology to send data packets - in a way a bit similar to WiFi that you use on your phone or PC. Therefore all you are keying in is being encoded into data first - esentially the speed and all the dots, dashes and pauses between characters. As soon as the pause is long enough to be recognized as a pause between words (as a blank space, as it were), the whole data packet assembled so far is being transmitted and in due course being played back at the indicated speed by the receiving Morserino-32. 
 
-This means there is a significant delay between sender and receiver, and the delay depends to a large degree on the length of the words being sent, and on the speed that is being used. As most words in a typical CW conversation are rather short (7 characters or more already constitutes a very long word), this is nothing to worry about (unless you are sitting both in the same room using no headphones - then it will be really confusing). But try sending really long words, say 10 or more character long, at really low speed (5 WpM), and you will see what I am talking about!
+When morse code is packed into a LoRa data packet, dots, dashes and pasues are encoded; it is not so that the clear text would be sent as ASCII cgaracters. Therefore it is possible to send "illegal" morse code characters, or characters that might only be used in certain languages. They will be transmitted correctly (but shown on the display as non-decodable)-
+
+Sending the code word by word means there is a significant delay between sender and receiver, and the delay depends to a large degree on the length of the words being sent, and on the speed that is being used. As most words in a typical CW conversation are rather short (7 characters or more already constitutes a very long word), this is nothing to worry about (unless you are sitting both in the same room using no headphones - then it will be really confusing). But try sending really long words, say 10 or more character long, at really low speed (5 WpM), and you will see what I am talking about!
 
 
 ### Using the Modus "Morse Decoder"
-The top line is slightly different from the other modi. First of all, the rotary encoder is always in the volume setting mode - speed is determined from the decoded Morse code and cannot be set manually. Therefore the encoder button has only one function while in this modus: whatever you do with it (press it once or twice, or long), this will end the decoder modus and bring you back to the Start Menu.
+The status line is slightly different from the other modi. First of all, the rotary encoder is always in the volume setting mode - speed is determined from the decoded Morse code and cannot be set manually. Pressing the encoder button  will end the decoder modus and bring you back to the Start Menu.
 
 On the left of the status display at the top, you will see a black rectangle whenever the key is pressed (or a 750 Hz tone detected - this replaces the indicators for external paddles and for the keyer mode.
 
 The current speed as detected by the decoder is displayed as WpM on the status line. Whenever you leave the decoder, this speed setting is preserved - so when you switch over to the CW Keyer, it will be set to the last speed value detected with the decoder. I am not sure if this is a bug or a feature ;-) 
 
-This modus does not have any parameters (therefore double clicking just brings you back to the Start Menu).
+This modus does not have many parameters (see the next section); maybe the most important is the ability to switch the filter bandwidth of the audio decoder between narrow (ca 150 Hz) and wide (ca 600 Hz).
 
  
 ## Parameters
@@ -325,7 +328,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Confrm. Tone  | Here you define if an audible confirmation tone should be sounded in Echo Trainer modus. If you turn it off, the device just repeats the prompt when the response was wrong, or sends a new prompt. The visual indication of "OK" or "ERR" will still be visible when the tone is turned off. | **On** / Off |
 |Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device | Never / CW Keyer only / Keyer&Trainer |
 | Send via LoRa | If set to ON, whatever the CW generator generates will also transmitted via LoRa - so you can have one device generating something, and several others receiving the same sequence (using the LoRa Trx modus). Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!| LoRa Tx ON / **LoRa Tx OFF** |
-| Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Gortzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frquency = ca 700 Hz) | **Wide** / Narrow |
+| Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frquency = ca 700 Hz) | **Wide** / Narrow |
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response, and will be decreased by 1 whenever you made a mistake. | ON / **OFF** |
 
 
@@ -359,7 +362,6 @@ This parameter allows you to set any behavior between Curtis A and original Curt
 
 
 #### Parameters in ***CW Generator*** modus
-Bold values are standard or recommended ones.
 
 | Parameters | | | |
 | ---| ---|---|---|
@@ -375,7 +377,7 @@ Notes:
 
 *Intercharacter Space*. This describes how much space is inserted between characters. The "norm" is 3 a space which has the length of three dits. To make it easier to copy code that is being sent at high speeds, and as a good method to learn Morse code, this space can be extended. The code should be sent at rather high speeds ( > 18 wpm) , to make it impossible to "count" dits and dahs, so that you rather learn the "rhythm" of each character. In general, it is better to rather increase the space between words, and not so much the space between characters; therefore it is recommended to set this value between 3 and max. 6. See below.
 
-*Interword Space*. Normally this is defined as the length of 7 dits. When in CW Keyer modus, we determine a new word after a pause 6 dits long, to avoid that text runs too much into each other on the display. In CW Trainer modus, you can set the interword space to values between 6 and 45 (which is more than 6 times the normal space to make it easier to copy code in your head at high speeds. In analogy to Farnsworth spacing, this is also being called Wordsworth spacing. This is an even better way to learn copying high speed code word by word in your head. Of course you can combine both interword and intercharacter spacing methods. 
+*Interword Space*. Normally this is defined as the length of 7 dits. When in CW Keyer modus, we determine a new word after a pause 6 dits long, to avoid that text runs too much into each other on the display. In CW Trainer modus, you can set the interword space to values between 6 and 45 (which is more than 6 times the normal space) to make it easier to copy code in your head at high speeds. In analogy to Farnsworth spacing, this is also being called Wordsworth spacing. This is an even better way to learn copying high speed code word by word in your head. Of course you can combine both interword and intercharacter spacing methods. 
 
 As character spacing can be set independently, this would mean that you can set character spacing higher than interword spacing, which would be rather confusing. In order to avoid this confusion, interword space will always be at least 4 dit lengths longer than the character spacing, even if a smaller interword space has been set.
 
@@ -385,7 +387,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 #### Parameters in ***CW Generator - File Player*** modus
 
-| Parametes | | | |
+| Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |Paddle        | Interword Spc | 
 | Interchar Spc | Trainer Disp | Each Word 2x | Key ext TX        |
@@ -394,7 +396,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 #### Parameters in ***Echo Trainer*** modus
 
-| Parametes | | | |
+| Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click |  Tone Pitch Hz   | Paddle        | Paddle Polarity | 
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | AutoChar Spce   | 
@@ -405,7 +407,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 #### Parameters in **Echo Trainer - File Player** modus
 
-| Parametes | | | |
+| Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
 | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% | AutoChar Spce   | 
@@ -413,7 +415,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 #### Parameters in **Koch Trainer - CW Generator** modus
 
-| Parametes | | | |
+| Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        | Interword Spc | 
 | Interchar Spc | Length Rnd Gr | Length Abbrev | Length Words | 
@@ -422,7 +424,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 #### Parameters in **Koch Trainer - Echo Trainer** modus
 
-| Parametes | | | |
+| Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity | 
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
@@ -431,7 +433,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 #### Parameters in **Transceiver - LoRa Trx** modus
 
-| Parametes | | | |
+| Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity |
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
@@ -439,14 +441,14 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 #### Parameters in **Transceiver - Ext / iCW Trx** modus
 
-| Parametes | | | |
+| Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity |
 | Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |AutoChar Spce   | 
 | Tone Shift |  Bandwidth | 
 
 #### Parameters in **CW Decoder** modus
-| Parametes | | | 
+| Parameters | | | 
 | -------------- | ---|---|
 | Encoder Click | Tone Pitch Hz   |  Bandwidth | 
 
@@ -462,7 +464,7 @@ You can use the WiFi feature of the Heltec ESP32 Wifi LoRa Module used in the Mo
 
 For both of these functionalities the file to be uploaded (be it a text file or the compiled binary file for the software update)  must be on your computer (even a tablet or smartphone will work, as you only need basic webbrowser functionality on that device), and your Morserino must be connected to the same WiFi network as your computer.
 
-In order to connect your Morerino-32 to your local WiFi network, you usually need to know the SSID (the "name") of the network, and the password to connect to it. And you must enter these two items into your Morserino-32. As it does not have a keyboard for convenient entry of this information, we use another way of doing it, and for this end another WiFi function has been implemented: network configuration, which is the first you have to use before you can use the other functions.
+In order to connect your Morserino-32 to your local WiFi network, you usually need to know the SSID (the "name") of the network, and the password to connect to it. And you must enter these two items into your Morserino-32. As it does not have a keyboard for convenient entry of this information, we use another way of doing it, and for this end another WiFi function has been implemented: network configuration, which is the first you have to use before you can use the other functions.
 
 ####Network Configuration####
 While your Morserino-32 is displaying the Start menu, click the RED button three times quickly, in order to get into the WiFi Menu. The top entry is "WiFi Config", select it to proceed.
@@ -481,9 +483,9 @@ The **file** that you upload should be a plain ASCII text file without any forma
 
 In order to upload the file, press the RED button quickly three times, and select "File Upload" from the menu. After a few seconds (it needs to connect to your Wifi network first) Morserino-32 will indicate that it is waiting for uplaod. You point the browser of your computer to "m32.local" (or the IP address shown on the display).
 
-First you will see a **Login** screen. Use "**m332**" as User ID and "**upload**" as password. On the next screen in your browser you will find a file selection dialog - select the file you want to upload (its name or extension doesn't matter) and click the button labelled "Begin". Once the upload is completed (it will not take long) the Morserino-32 will restart itself, and you can now use the uploaded file in *CW Generator* or *Echo Trainer* modus. 
+First you will see a **Login** screen. Use "**m32**" as User ID and "**upload**" as password. On the next screen in your browser you will find a file selection dialog - select the file you want to upload (its name or extension doesn't matter) and click the button labelled "Begin". Once the upload is completed (it will not take long) the Morserino-32 will restart itself, and you can now use the uploaded file in *CW Generator* or *Echo Trainer* modus. 
 
-If for any reason you need to abort the process, you have to restart the device either by completely disconnecting it from power (battery off and USB disconnect), or pressing the Reset button with the help of a tiny screwdriver or a ball point pen (the rest button can be reached through the hole under the USB connctor).
+If for any reason you need to abort the process, you have to restart the device either by completely disconnecting it from power (battery off and USB disconnect), or pressing the Reset button with the help of a tiny screwdriver or a ball point pen (the rest button can be reached through the hole under the USB connector).
 
 ####Updating the Morserino-32 Firmware####
 
