@@ -29,9 +29,10 @@
 | 13 | USB | Verwende ein normales 5-V-USB-Ladegerät, um das Gerät mit Strom zu versorgen und den LiPo-Akku aufzuladen. Die Mikrocontroller-Firmware kann auch über USB neu programmiert werden (du kannst die Morserino-32-Firmware aber auch über eine WLAN-Verbindung aktualisieren). |
 | 14 | PRG-Taste | Durch ein kleines Loch erreicht man die Programmiertaste des Heltec-Moduls (normalerweise nicht erforderlich). |
 
-<div style = "Seitenumbruch: immer;"> </ div>
 
-## Ein- und Ausschalten / Laden des Akkus
+
+##Ein- und Ausschalten / Laden des Akkus
+
 Wenn das Gerät ausgeschaltet, aber die Batterie angeschlossen ist (der Schiebeschalter ist eingeschaltet), befindet es sich tatsächlich im Tiefschlaf: Fast alle Funktionen des Mikrocontrollers sind deaktiviert, und der Energieverbrauch ist minimal (weniger als 5% des normalen Betriebsstroms). 
 
 Um das Gerät aus dem Tiefschlaf einzuschalten, drücke kurz die ROTE Taste (Power / Vol / Scroll). Es erscheint ein Startbildschirm für einige Sekunden. Der einzig interessante Punkt des Startbildschirms ist ganz unten: Man sieht einen Hinweis darauf, wie viel Akkukapazität noch vorhanden ist. Wenn diese dem Ende entgegen geht, sollte man das Gerät an eine USB-Stromquelle anschließen. (Der Akku wird auch leer, wenn man das Gerät im Tiefschlaf belässt:  nach einigen Tagen wird der Akku leer.) Wenn du also nicht vorhast, den Morserino in den nächsten Tagen wieder zu verwenden, trenne besser mit dem Schiebeschalter auf der Rückseite die Batterie vom Gerät...)
