@@ -471,7 +471,7 @@ While your Morserino-32 is displaying the Start menu, click the RED button three
 
 The device will start WiFi as an access point, thus creating its own WiFi Network (with the SSID "Morserino"). If you check the available networks with your computer or smartphone, you will find it easily; please switch your computer to use this network (you will not need a password to connect).
 
-Once you are connected, enter "m32.local" into your browser on your computer. You will se a little form with just 2 fields: SSID and password. Enter the name of your local WiFi network, and the correspondig password, and click on the "Submit" button. Your Morserino-32 will store these network credentials and then restart itself (so the network "Morserino" will disappear).
+Once you are connected, enter "m32.local" into your browser on your computer. If your computer or smartphone does not support mDNS (Android, for example, is not supporting it), you have to enter the IP address 192.168.4.1 into the browser instead of m32.local. You will then see a little form with just 2 empty fields in your browser: SSID and password. Enter the name of your local WiFi network, and the correspondig password, and click on the "Submit" button. Your Morserino-32 will store these network credentials and then restart itself (so the network "Morserino" will disappear).
 
 NB: You cannot use a WiFi network with a "captive portal", as they  are often used on public networks.  These networks require that a browser is available on the device that wants so connect to the network, and the Morserino-32 does not have a browser...
 
@@ -495,7 +495,7 @@ Updating the firmware is very similar to uploading a text file. You first need t
 
 `morse_3_vx.y.ino.wifi_lora_32.bin` with x.y being the version number.
 
-Now get the WiFi menu again by clicking quickly three times on the RED button, and select the enry "**Update Firmw.**". Similar to file upload, you point your browser to "m32.local", and you will eventually see a Login screen. This tiem you use the user name "**m32**" and the password "**update**".
+Now get the WiFi menu again by clicking quickly three times on the RED button, and select the enry "**Update Firmw.**". Similar to file upload, you point your browser to "m32.local" (or the shown IP address), and you will eventually see a Login screen. This time you use the user name "**m32**" and the password "**update**".
 
 Again you will see a file selection screen next, you select your binary file and click the button labelled "Begin". This time the uplaod will take longer - it can take a few minutes, so be patient. The file is big, needs to be uploaded and written to the Morserino-32 and needs to be verified to make sure it is an executable file. Finally, the device will restart itself and you should notice the new version number on the display during start-up.
 
