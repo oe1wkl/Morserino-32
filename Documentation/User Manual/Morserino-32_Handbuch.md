@@ -2,7 +2,7 @@
 #Morserino-32 Benutzer-Handbuch  
 
 
-###Ein multif-funktionales Morsegerät, perfekt zum Lernen und Trainieren
+###Ein multi-funktionales Morsegerät, perfekt zum Lernen und Trainieren
 
 
 ![](Images/Morserino.jpg)
