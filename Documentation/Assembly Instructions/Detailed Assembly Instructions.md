@@ -10,15 +10,15 @@
 	* I am assuming that you are going to use a battery with a Molex connector - should you prefer a battery with a different connector, you need to supply our own cable with a fitting connctor for the battery.
 * Get all the tools necessary: a fine-tipped soldering iron, thin solder wire (do not use lead-free solder unless you want to make your life hard), good lighting, possibly a magnifying glass, a small wire cutter and (for assembling the case) a small hex key (2 mm; if not available a T6X20 Torx will work reasonably well).
 * **Soldering advice:** Do NOT use lead-free solder (I mentioned it before, didn't I). Use a high quality soldering iron, set to a reasonable temperature (I prefer them to be a bit on the high side - allows you to make the joints quickly, and some of the parts are biggish; if connected to ground, you need a lot of heat to make the joint, and staying there with the iron for many, many seconds waiting for the warm-up is a good way to ruin your PCB).
-* Check that all components are ready - identify them with the help of the packing list, and identify where they will go, with the help of the placement drawing. Please notify [mailto:info@morserino.info]() if any components are missing or defective, so that some replacement can be sent to you!![placement drawing][Ass01]
+* Check that all components are ready - identify them with the help of the packing list, and identify where they will go, with the help of the placement drawing. Please notify [mailto:info@morserino.info]() if any components are missing or defective, so that some replacement can be sent to you! ![placement drawing][Ass01]
 [Ass01]: Images/3_placement.jpg "Location of Components"
 
 ###Step-by-step instructions (at least read them, even if you decide to do it differently)
 
 
-1. First solder the following components to the PCB: The 4 phone jacks (3 different types, but it is easy to see which one fits where); then the trimmer resistor, and the sliding switch (the lever facing outward, of course); then the rotary encoder and the push-button switch (be particularly careful with this one - it has a tendency to end up slightly slanted - it might not nicely fit the hole in the top plate in such a case. Make sure it sits really flush on the PCB. 
+1. First solder the following components to the PCB: The 4 phone jacks (3 different types, but it is easy to see which one fits where); then the trimmer resistor )its orientation does not matter), and the sliding switch (the lever facing outward, of course); then the rotary encoder and the push-button switch (be particularly careful with this one - it has a tendency to end up slightly slanted - it might not nicely fit the hole in the top plate in such a case. Make sure it sits really flush on the PCB). This switch has protruding "noses" on its case - one of them should be facing towards the long edge of the PCB, and the other - obviously - towards the loudspeaker.
 	
-	You will find all these components in the pink plastic bag. Do not yet solder the 2 female pin headers, the cables and the loudspeaker.  Make sure all components are flush on the PCB - especially the rotary encoder, the trimmer and (I mentioned it) the push button switch (otherwise the case might not fit very well). Make sure the sliding switch is in the "OFF" position (towards the phone jack).
+1.	You will find all these components in the pink plastic bag (see also the picture at the end of this document). Do not yet solder the 2 female pin headers, the cables and the loudspeaker.  Make sure all components are flush on the PCB - especially the rotary encoder, the trimmer and (I mentioned it) the push button switch (otherwise the case might not fit very well). Make sure the sliding switch is in the "OFF" position (towards the phone jack).
 2. Connect the cable with the small 1.25 mm JST connector to the connector on the underside of the Heltec module (be careful not to push the socket on the module off the board with brute force - hold it with your finger). The red wire must be on the side of the + sign printed on the module.
 
 	![Power][Ass04]
@@ -41,7 +41,7 @@
 9. If the battery sits under the the module, place it there and fix it with a small strip of double sided adhesive (like cellotape, but sticky on both sides). Do not use thick double sided adhesives, as the battery might then not fit under the module with enough clearance! 
 	![double sided tape][Ass09]
 [Ass09]: Images/tesa_double_sided.jpg "Orientation of Power cable"
-10. I would now check the battery connector with an Ohm meter after setting the sliding switch to the ON position, to see that we did not create a short circuit anywhere. It should show a relatively high resistance (> 6 MOhm). If it shows close to 0 Ohms, check the cabling! Slide the switch into the OFF position again.
+10. I would now check the battery connector with an Ohm meter after setting the sliding switch to the ON position, to see that we did not create a short circuit anywhere. It should show a relatively high resistance (> 1 MOhm). If it shows close to 0 Ohms, check the cabling! Slide the switch into the OFF position again.
 11. Plug the battery cable into the Molex connector.
 19. Put the paddles into the PCB connectors (left and right paddle are the same, so you cannot make a mistake here).
 
@@ -94,4 +94,8 @@ One option would be this type (in the picture the battery at the bottom): ![Akku
 [Ass03]: Images/batteries.jpg "Position der Komponenten"
 [https://www.amazon.de/gp/product/B01JJ6DA7A/]() or even that one, for even more capacity: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (but be aware that this one does not use a Molex plug - you would need to find a cable with a suitable plug to connect this to your Morserino-32). 
 [Ass03]: Images/batteries.jpg "Recommended batteries"
+
+## Appendix: Components
+![components][Ass12]
+[Ass12]: Images/M32_Components.png "Pictures of Components"
 

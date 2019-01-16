@@ -17,10 +17,10 @@
 ### Schritt-für-Schritt-Anleitung (lies sie zumindest durch, auch wenn du dich entscheiden solltest, es anders zu machen)
 
 
-1. Löte zunächst die folgenden Komponenten auf die Leiterplatte: Die 4 Klinkenbuchsen (3 verschiedene Typen, aber es ist leicht zu erkennen, welche an welcher Stelle passt); dann den Trimmerwiderstand und den Schiebeschalter (mit dem Hebel nach außen, natürlich); dann den Drehgeber und den Druckknopfschalter. 
+1. Löte zunächst die folgenden Komponenten auf die Leiterplatte: Die 4 Klinkenbuchsen (3 verschiedene Typen, aber es ist leicht zu erkennen, welche an welcher Stelle passt); dann den blauen Trimmerwiderstand (seine Orientierung ist egal) und den Schiebeschalter (mit dem Hebel nach außen, natürlich); dann den Drehgeber und den Druckknopfschalter. 
 
-	Dieser hat eine besondere Tendenz, nicht exakt vertikal montiert zu werden - was schlecht ist, weil er dann vielleicht nur schlecht durch das Loch der oberen Gehäuseplatte passt. Also achte bitte darauf, das er wirklich sauber auf der Platine sitzt.
-2. Du findest alle diese Bauteile in der rosafarbenen Plastiktüte. Löte noch nicht die 2 Buchsenleisten, die Kabel und den Lautsprecher ein. Stelle sicher, dass alle Komponenten auf der Leiterplatte bündig sind - insbesondere der Drehgeber, der Trimmer und der Drucktastenschalter - ich hab das doch soeben erwähnt, nicht? (sonst passt das Gehäuse dann nicht sehr gut). Stelle sicher, dass sich der Schiebeschalter in der Position "OFF" (in Richtung der Klinkenbuchse) befindet.
+	Dieser hat eine besondere Tendenz, nicht exakt vertikal montiert zu werden - was schlecht ist, weil er dann vielleicht nur schlecht durch das Loch der oberen Gehäuseplatte passt. Also achte bitte darauf, das er wirklich sauber auf der Platine sitzt. Diser Taster hat zwei vorspringende "Nasen" auf seinem Gehäuse - eine sollte zur langen Kante der Platine zeigen, und die andere logischerweise in Richtung Lautsprecher.
+2. Du findest alle diese Bauteile in der rosafarbenen Plastiktüte (siehe auch die Abbildung Am Ende dieser Anleitung). Löte noch nicht die 2 Buchsenleisten, die Kabel und den Lautsprecher ein. Stelle sicher, dass alle Komponenten auf der Leiterplatte bündig sind - insbesondere der Drehgeber, der Trimmer und der Drucktastenschalter - ich hab das doch soeben erwähnt, nicht? (sonst passt das Gehäuse dann nicht sehr gut). Stelle sicher, dass sich der Schiebeschalter in der Position "OFF" (in Richtung der Klinkenbuchse) befindet.
 3. Verbinde das Kabel mit dem kleinen 1,25-mm-JST-Stecker mit der Buchse an der Unterseite des Heltec-Moduls (achte darauf, dass du die Buchse nicht mit brutaler Gewalt von der Platine abreißt - halte sie mit dem Finger fest).
 Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist.
 
@@ -43,7 +43,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 9. Wenn sich der Akku unter dem Heltec-Modul befinden soll, befestige in dort mit einem kleinen Streifen doppelseitigem Klebeband (wie Tixo, aber auf beiden Seiten klebend). Verwende keine dicken doppelseitigen Klebebänder, da die Batterie dann unter Umständen nicht genügend Platz unter dem Modul hat!
 	![double sided tape][Ass09]
 [Ass09]: Images/tesa_double_sided.jpg "Orientation of Power cable"
-10. Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um zu sehen, dass wir nirgendwo einen Kurzschluss verursacht haben. Es sollte einen relativ hohen Widerstand zeigen (> 6 MOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebe den Schalter dann wieder in die OFF-Position.
+10. Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um zu sehen, dass wir nirgendwo einen Kurzschluss verursacht haben. Es sollte einen relativ hohen Widerstand zeigen (> 1 MOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebe den Schalter dann wieder in die OFF-Position.
 11. Stecke den Stecker des Akkus in den Molex-Anschluss.
 19. Setze die Paddles in die Platinenstecker ein (linkes und rechtes Paddel sind gleich, daher kann man hier keinen Fehler machen).
 
@@ -96,3 +96,8 @@ Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf
 
 Eine mögliche Option für einen größeren Akku wäre dieser (der untere Akku am Bild): ![Akkus][Ass03] [https://www.amazon.de/gp/product/B01JJ6DA7A/]() oder sogar so etwas Ähnliches wie dieser: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (dieser hat allerdings keinen Molexstecker, man müsste also ein dazu passendes Anschlusskabel besorgen). 
 [Ass03]: Images/batteries.jpg "Empfohlene Akkus"
+
+## Appendix: Bauteile
+![Bauteile][Ass12]
+[Ass12]: Images/M32_Components.png "Bilder aller Bauteile"
+
