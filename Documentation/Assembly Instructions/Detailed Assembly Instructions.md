@@ -43,7 +43,7 @@
 [Ass09]: Images/tesa_double_sided.jpg "Orientation of Power cable"
 10. I would now check the battery connector with an Ohm meter after setting the sliding switch to the ON position, to see that we did not create a short circuit anywhere. It should show a relatively high resistance (> 1 MOhm). If it shows close to 0 Ohms, check the cabling! Slide the switch into the OFF position again.
 11. Plug the battery cable into the Molex connector.
-19. Put the paddles into the PCB connectors (left and right paddle are the same, so you cannot make a mistake here).
+19. Put the paddles into the PCB connectors (left and right paddle are the same, so you cannot make a mistake here). **Remove the yellow sticky tapes from the connectors before you insert the paddles!** (These have been applied by the manufacturer and are necessary for the pick & place robots.)
 
     **The following steps only apply if you got the kit with the case (and antenna).**
 

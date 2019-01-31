@@ -45,7 +45,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 [Ass09]: Images/tesa_double_sided.jpg "Orientation of Power cable"
 10. Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um zu sehen, dass wir nirgendwo einen Kurzschluss verursacht haben. Es sollte einen relativ hohen Widerstand zeigen (> 1 MOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebe den Schalter dann wieder in die OFF-Position.
 11. Stecke den Stecker des Akkus in den Molex-Anschluss.
-19. Setze die Paddles in die Platinenstecker ein (linkes und rechtes Paddel sind gleich, daher kann man hier keinen Fehler machen).
+19. Setze die Paddles in die Platinenstecker ein (linkes und rechtes Paddel sind gleich, daher kann man hier keinen Fehler machen). **Die gelben Klebestreifen von den Platinensteckern vorher vorsichtig entfernen!** (Diese sind vom Hersteller angebracht und weren für die aotomatische Bestückung der Platine benötigt.)
 
     **Die folgenden Schritte gelten nur, wenn du den Bausatz mit Gehäuse (und Antenne) erworben hast.**
 
