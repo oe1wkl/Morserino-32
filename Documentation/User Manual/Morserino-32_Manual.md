@@ -33,22 +33,36 @@
 <div style="page-break-after: always;"></div>
 
 ##Powering On and Off / Charging the Battery
+
+If you want to use the devie with USB power, just plug a USB cabel in from virtually any USB charger (it consumes a max of 200 mA, so any 5V charger will do).
+
+If you run it from battery power, slide the sliding switch to the ON position.
+
 When the device is off but with the battery connected (sliding power switch is on), it is in deep sleep in reality: almost all functions of the microcontroller are turned off, and power consumption is minimal (less than 5% of normal operation).
 
 To turn the device on from deep sleep, just press the RED (Power/Vol/Scroll) button momentarily. You will see a start screen for a couple of seconds. The only interesting bit of the start screen is at its very bottom: you will see an indication of how much battery power is still left. If this goes way towards empty, you should connect your device to a USB power source. (The battery will be drained even if you never turn the device on - although this is rather minimal in its deep sleep status, a full battery will be empty after a couple of days. Therrefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the slider switch at the back...)
 
 If the battery voltage is dangerously low when you attempt to turn it on, an empty battery symbol will show on the scren and the device will refuse to boot up. if you see this symbol, you should begin charging your battery as soon as possible.
 
-To turn the device off (i.e. sending it into deep sleep), you have two options:
+To disconnect the device from the battery (turning it off, unless you are USB powered), slide the sliding switch to the OFF position.
+
+To put the device into deep sleep, you have two options:
 
 * In the main menu, select the option "Go To Sleep"
 * Do nothing. After 5 minutes of screen inactivity (7.5 minutes when in a transceiver mode) the device will power itself off and go into deep sleep.
 
-To charge the battery, connect it with a USB cable to a reliable USB 5V power source, like your computer, or a USB charger like your phone charger. Make sure the hardware switch of the device is **on** - if you disconnect the battery through the switch, the battery cannot be charged. When charging, the orange LED on the ESP32 module is lit brightly. When the battery is disconnected, this LED will not be lit brightly, but rather be blinking nervously or half lit.
+**To charge the battery**, connect it with a USB cable to a reliable USB 5V power source, like your computer, or a USB charger like your phone charger. 
+
+**Make sure the hardware switch of the device is *ON* while charging - if you disconnect the battery through the switch, the battery cannot be charged.** When charging, the orange LED on the ESP32 module is lit brightly. When the battery is disconnected, this LED will not be lit brightly, but rather be blinking nervously or half lit.
 
 Once the battery has been fully charged, the orange LED will not be lit anymore.
 
 You can of course always use the device when it is powered by USB, if the battery is charging or not.
+
+**To prevent deep discharging of the LiPo battery, always turn the Morserino-32 off via the main slide switch. Do not leave it in 'sleep mode' for long periods of time** (up  to a day or maybe two is ok, if it was well charged; a fully charged 600 mAh battery will be discharged to the level of about 3.2 V within 3 to 4 days during deep sleep).
+
+The Heltec module has electronics on board for charging the battery, and it it prevents overcharging quite well. But it has no prevention of deep discharge! **Deep discharge leads to diminished battery capacity and eventually early death of the battery!**
+
 
 
 ##Using the Rotary Encoder, its BLACK Button, and the RED Power/Vol/Scroll Button
@@ -115,11 +129,21 @@ Here are the various selections you can choose from the Start Menu (more detaile
   * **English Words**: Random words from a list of the 200 most common words in the English language (again you can set a maximum length through a parameter).
   * **Call Signs**: Generates random strings that have the structure and appearance of amateur radio call signs (these are not real call signs, and there will be some generated that could not exits in the real world, as either the prefix is not in use or a country's administration would not hand out certain suffixes). The maximum length can be selected through a parameter.
   * **Mixed**: Selects randomly from the previous possibilities (random character groups, abbreviations, English words and call signs).
-  * **File Player**: Plays the content of file in Morse code, that has been uploaded to the Morserino-32. Currently it can hold just one file, as soon as you upload a new one, the old one weill be overwritten. Upload works through WiFi from your PC (or Mac or tablet or smartphone or whatever). This modus remembers where you stopped, and will continue there the next time you restart the File Player. Once the end of the file is reached, it will commence at the beginning again. 
+  * **File Player**: Plays the content of file in Morse code, that has been uploaded to the Morserino-32. Currently it can hold just one file, as soon as you upload a new one, the old one weill be overwritten. Upload works through WiFi from your PC (or Mac or tablet or smartphone or whatever). This modus remembers where you stopped, and will continue there the next time you restart the File Player. Once the end of the file is reached, it will commence at the beginning again. The file should contain ASCII characters only (upper or lower case does not matter) - characters that cannot be represented in Morse code are just ignored. Pro signs can be in the file, they need to be written as 2 character represenations with either [] oder <>, e.g. `<sk>` or `[ka]`. The following pro signs are recognized:
+     - `<ar>` : will be shown on display as +
+     - `<bt>` : will be shown on display as =
+     - `<as>`
+     - `<ka>`
+     - `<kn>`
+     - `<sk>`
+     - `<ve>`
+
+		There is a new parameter for file player: „Randomize File“. If set to „On“ (default is „Off“), the device will skip n words after each word sent (n = random number between 0 and 255); as file reads wrap around at end-of-file, you will see all the words in the file eventually (but it could take a while). If your file is for example an alphabetical word list, words generated will still be in alphabetical order during one pass of the file; so to get more unpredictable results, it will be best to start with a random list of words. What can this be used for? You could for example take a list of call signs and upload this file to the Morserino-32 (Google for supercheckpartial to get files with calls that actually have been active in HF contests). Now File Player lets you train these call signs in a random fashion.
+
 
   You can start and stop the CW generator by quickly pressing a paddle, or by pushing the BLACK knob.
 
-3. **Echo Trainer**. Here the Morserino-32 generates a word (which is a basically a series of characters, with teh possibilities as in the CW generator), and then waits for you to repeat these characters using the paddle. If you wait too long, or if you response is not identical to what has been generated, an error is indicated (on display and acoustically), and the prompt word is being repeated. If you keyed the correct characters, this is also indicated acoustically and on screen, and you are prompted for the next word. 
+3. **Echo Trainer**. Here the Morserino-32 generates a word (which is a basically a series of characters, with the possibilities as in the CW generator), and then waits for you to repeat these characters using the paddle. If you wait too long, or if you response is not identical to what has been generated, an error is indicated (on display and acoustically), and the prompt word is being repeated. If you keyed the correct characters, this is also indicated acoustically and on screen, and you are prompted for the next word. 
     
     The sub-menus are the same as for the CW Generator: **Random, CW Abbrevs, English Words, Call Signs, Mixed** and **File Player**.
 
@@ -310,6 +334,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Tone Pitch Hz   | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the B flat major scale from b flat to b'' flat (2 octaves) |
 | Paddle        | Allows selection of external paddles, or the built-in touch paddles | Touch Paddle / Ext. Paddle |
 | Paddle Polarity | Defines which paddle is for dits, and which for dahs | ` _. dah-dit` / **`._ di-dah`**  |
+| Latency | Defines, how long after generating the current element (dot or dash) the paddles will be „deaf“. If it is 0, you have to release the paddle while the last element is still „on“. If set to 7, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0 and 7, meaning 0/8 to 7/8 of a dot length (default is **4**, i.e. half a dot length). |
 | Keyer Mode     | Sets the Iambic Mode (A or B), or Ultimatic; see below  | Curtis A / Curtis B / Ultimatic |
 | CurtisB DahT% | Timing in Curtis B mode for dahs; see below     | 0 -- 100, in steps of 5 [**35 - 55**] |
 | CurtisB DitT% | Timing in Curtis B mode for dits; see below     | 0 -- 100, in steps of 5 [**55 - 100**] |
@@ -324,6 +349,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Length Words | Select the maximum length of the randomly generated common English words | Unlimited / max. 2 -- max. 6 |
 | Trainer Disp | Select, how the trainer should display what it generates | Display off / **Char by Char** / Word by word |
 | Each Word 2x | In the CW Trainer modus, each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear. | **Off** / On |
+| Randomize File | If set to „On“, file player will skip n words after each word sent (n = random number between 0 and 255) |  **Off** / On |
 |Echo Repeats    | Here you decide, how often a word is repeated when the response is either too late or erroneous, before a new word is being generated. If the value is 0, then the next word will always be a new one, regardless if you responded correctly or not.                 | 0 -- 6 / Forever |
 | Confrm. Tone  | Here you define if an audible confirmation tone should be sounded in Echo Trainer modus. If you turn it off, the device just repeats the prompt when the response was wrong, or sends a new prompt. The visual indication of "OK" or "ERR" will still be visible when the tone is turned off. | **On** / Off |
 |Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device | Never / CW Keyer only / Keyer&Trainer |
@@ -340,11 +366,13 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
  Parameters |  | | 
  -----      |---  |--- |---
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
-| Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |  AutoChar Spce   |
+| Latency | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |  AutoChar Spce   |
 
 
 
 Note:
+
+**Latency**  defines, how long after generating the current element (dot or dash) the paddles will be „deaf“. This used to be 0, with the effect, that especially at higher speeds you would generate more dots than intended, as you had to release the paddle while the last dot was still „on“. Now you can set this to a value between 0 and 7, meaning 0/8 to 7/8 of a dot length (default is 4, i.e. half a dot length). If you still tend to generate unwanted dits, increase this value.
 
 **Iambic Modes**: When you press both paddles of a iambic keyer, dahs and dits will be generated alternatively, while both paddles are being pressed, starting with the one you have hit first. The difference between modes A and B is the behavior when both paddles are released when the current element is being generated: in Mode A the keyer stops after the current element, in Mode B the keyer will add another element opposite to the one during which you released the paddles.
 
@@ -390,7 +418,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 | Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |Paddle        | Interword Spc | 
-| Interchar Spc | Trainer Disp | Each Word 2x | Key ext TX        |
+| Interchar Spc | Trainer Disp | Randomize File | Each Word 2x | Key ext TX        |
 | Send via LoRa | 
 
 
@@ -398,7 +426,8 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 | Parameters | | | |
 | -------------- | ---|---|---|
-| Encoder Click |  Tone Pitch Hz   | Paddle        | Paddle Polarity | 
+| Encoder Click |  Tone Pitch Hz   | Paddle        | Paddle Polarity |
+ Latency |
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | AutoChar Spce   | 
 | Tone Shift |  Interword Spc |  Interchar Spc |  Random Groups |
 | Length Rnd Gr | Length Calls | Length Abbrev | Length Words |
@@ -410,8 +439,9 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 | Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
+| Latency |
 | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% | AutoChar Spce   | 
-| Tone Shift |  Interword Spc | Interchar Spc | 
+| Tone Shift |  Interword Spc | Interchar Spc | Randomize File | 
 
 #### Parameters in **Koch Trainer - CW Generator** modus
 
@@ -427,6 +457,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 | Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity | 
+|Latency |
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
 | Tone Shift |  Interword Spc | Interchar Spc | Length Rnd Gr | 
 | Length Abbrev |  Length Words | Echo Repeats    |  Confrm. Tone  | 
@@ -436,6 +467,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 | Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity |
+| Latency |
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
 | Tone Shift | 
 
@@ -444,6 +476,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 | Parameters | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity |
+| Latency |
 | Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |AutoChar Spce   | 
 | Tone Shift |  Bandwidth | 
 

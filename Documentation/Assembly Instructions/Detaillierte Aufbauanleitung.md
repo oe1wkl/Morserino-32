@@ -57,6 +57,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 [Ass10]: Images/sma_connector.jpg "SMA connector"
 14. Drücke den kleinen IPX-Koaxialstecker auf die Koaxbuchse des Heltec-Moduls.
 15. Entferne die Schutzfolie von den beiden Acrylglasplatten (die obere Platte hat nur eine Folie, auf der Seite, die nicht graviert ist). Montiere nun die obere Platte mit ihren Abstandshaltern auf die Leiterplatte. Verwende dazu entweder die 6-mm-Abstandshalter (wenn die Batterie unter dem Heltec-Modul sitzt) oder die 12-mm-Abstandshalter (wenn der Akku unter der Platine sitzt und etwas mehr Platz benötigt) auf der Unterseite der Platine. Stelle sicher, dass das Display in die Öffnung passt, und ebenso die kleine Spule (WLAN-Antenne). Stelle auch sicher, dass die Batteriekabel und das Antennenkabel sinnvoll geführt sind und den Drehgeber oder den Drucktastenschalter nicht behindern.
+**Beschädige nicht die Kupferspirale (= WLAN Antenne), und gib acht dass du die flexible Verbindung zum Display nicht verbiegest oder beschädigst!**
 
 	![Almost done][Ass11]
 [Ass11]: Images/view_from_below.jpg "View from below"

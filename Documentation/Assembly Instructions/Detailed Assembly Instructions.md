@@ -55,6 +55,7 @@
 [Ass10]: Images/sma_connector.jpg "SMA connector"
 14. Press the tiny IPX coax connector onto the coax socket on the HeltecHeltec module.
 15. Now mount the top plate with its stand-off spacers to the PCB, using either the 6 mm male/female stand-offs (if the battery will sit under the Heltec module) or the 12 mm male/female stand-offs (if the battery will sit under the PCB and needs a bit more space) on the underside of the PCB. Carefully make sure the display fits into the opening, as well as the little coil (WLAN antenna). Make sure the battery cables and the antenna cable run smoothly and are not obstructing the encoder or the push-button switch.
+**Be careful not to break the copper coil (WLAN antenna), and do not bend, apply pressure or break the flexible connector to the display!**
 
 	![Almost done][Ass11]
 [Ass11]: Images/view_from_below.jpg "View from below"

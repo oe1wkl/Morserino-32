@@ -33,22 +33,33 @@
 
 ##Ein- und Ausschalten / Laden des Akkus
 
+Falls du das Gerät mitEnergie vom USB Anschluss betreiben willst, verbinde es mit einem USB Kabel mit einem beliebigen 5V USB Ladegerät (es wird nur mit max. 200 mA belastet werden).
+
+Soll es mit Akku betrieben werden, stelle den Schiebeschalter auf di "ON" Position zum Einschalten.
+
 Wenn das Gerät ausgeschaltet, aber die Batterie angeschlossen ist (der Schiebeschalter ist eingeschaltet), befindet es sich tatsächlich im Tiefschlaf: Fast alle Funktionen des Mikrocontrollers sind deaktiviert, und der Energieverbrauch ist minimal (weniger als 5% des normalen Betriebsstroms). 
 
 Um das Gerät aus dem Tiefschlaf einzuschalten, drücke kurz die ROTE Taste (Power / Vol / Scroll). Es erscheint ein Startbildschirm für einige Sekunden. Der einzig interessante Punkt des Startbildschirms ist ganz unten: Man sieht einen Hinweis darauf, wie viel Akkukapazität noch vorhanden ist. Wenn diese dem Ende entgegen geht, sollte man das Gerät an eine USB-Stromquelle anschließen. (Der Akku wird auch leer, wenn man das Gerät im Tiefschlaf belässt:  nach einigen Tagen wird der Akku leer.) Wenn du also nicht vorhast, den Morserino in den nächsten Tagen wieder zu verwenden, trenne besser mit dem Schiebeschalter auf der Rückseite die Batterie vom Gerät...)
 
 Wenn die Batteriespannung gefährlich niedrig ist, wird beim Einschalten ein leeres Batteriesymbol auf dem Bildschirm angezeigt, und das Gerät lässt sich nicht starten. Wenn dieses Symbol gezeigt wird, sollte man so bald wie möglich mit dem Laden des Akkus beginnen.
 
-Um das Gerät auszuschalten (d.h. in diesem Fall in den Tiefschlaf zu versetzen), gibt es zwei Möglichkeiten:
+Um das Geär von der Batterie zu trennen ( = Ausschalten, außer es hängt an einer USB Stromversorgung), stelle den Schiebeschalter auf die "OFF" Position.
+
+Um das Gerät in den Tiefschlaf zu versetzen), gibt es zwei Möglichkeiten:
 
 * Wähle im Hauptmenü die Option "Go to Sleep".
 * Tue nichts. Nach 5 Minuten Bildschirminaktivität (7,5 Minuten im Transceiver-Modus) schaltet sich das Gerät aus und geht in den Tiefschlaf.
 
-Um den Akku aufzuladen, verbinde ihn mit einem USB-Kabel mit einer zuverlässigen USB-5-V-Stromquelle wie z.B. deinem Computer oder einem USB-Ladegerät (z.B. eines Mobiltelefons). Vergewissere dich, dass der Schiebeschalter des Geräts **eingeschaltet ist**. Wenn der Akku vom Gerät getrennt ist, kann er nicht geladen werden. Während des Ladevorgangs leuchtet die orangefarbene LED am ESP32-Modul hell. Wenn der Akku nicht angeschlossen ist, leuchtet diese LED nicht hell, sondern blinkt nervös oder leuchtet gedimmt.
+**Um den Akku aufzuladen**, verbinde ihn mit einem USB-Kabel mit einer zuverlässigen USB-5-V-Stromquelle wie z.B. deinem Computer oder einem USB-Ladegerät (z.B. eines Mobiltelefons). 
+**Vergewissere dich, dass der Schiebeschalter des Geräts zum Laden der Batterie  *eingeschaltet ist***. Wenn der Akku vom Gerät getrennt ist, kann er nicht geladen werden. Während des Ladevorgangs leuchtet die orangefarbene LED am ESP32-Modul hell. Wenn der Akku nicht angeschlossen ist, leuchtet diese LED nicht hell, sondern blinkt nervös oder leuchtet gedimmt.
 
 Wenn der Akku vollständig aufgeladen ist, leuchtet die orangefarbene LED nicht mehr.
 
 Man das Gerät natürlich immer verwenden, wenn es über USB mit Strom versorgt wird, ob der Akku nun gerade aufgeladen wird oder nicht.
+
+**Um eine Tiefentladung des Akkus zu vermeiden, sollte der Morserino-32 für längere Pausen immer mit dem Schiebeschalter abgeschaltet werden, und sollte nicht über sehr lange Zeit im Sleep Modus verbleiben** (1 bis 2 Tage ist ok, wenn die Batterie gut geladen war; ein voll geladener 600 mAh Akku wirdd innerhalb von 3-4 Tagen bis auf eine Spannung von 3,2 V entladen).
+
+Das Heltec Modul hat eine Ladeelektronik an Bord, welche eine Überladung verhindert, aber es hat keine Schutzvorrichtung gegen Tiefentladung! **Tiefentladung führt rasch zu verminderter Akkukapazität und sogar zum vorzeitigen Tod des Akkus!**
 
 
 ## Verwenden des Drehgebers und der ROTEN Power / Vol / Scroll-Taste
@@ -114,10 +125,21 @@ Hier sind die verschiedenen Optionen, die man aus dem Startmenü auswählen kann
 	* **English Words**: Zufällige Wörter aus einer Liste der 200 häufigsten Wörter in der englischen Sprache (wiederum kann man über einen Parameter eine maximale Länge festlegen).
 	* **Call Signs**: Erzeugt zufällige Zeichenfolgen, die die Struktur und das Erscheinungsbild von Amateurfunkrufzeichen haben (dies sind keine echten Rufzeichen, und es werden einige erzeugt, die es in der realen Welt nicht gibt, da entweder das Präfix nicht in Gebrauch ist oder die Verwaltung eines Landes bestimmte Suffixe nicht verteilt). Die maximale Länge kann über einen Parameter ausgewählt werden.
 	* **Mixed**: Wählt zufällig aus den vorherigen Möglichkeiten (zufällige Zeichengruppen, Abkürzungen, englische Wörter und Rufzeichen).
-	* **File Player**: Spielt den Inhalt einer Datei im Morsecode ab, die auf den Morserino-32 hochgeladen wurde. Derzeit kann man nur eine einzige Datei hochladen. Wird eine neue Datei hochgeladen, wird die alte Datei überschrieben. Upload funktioniert über WLAN von Ihrem PC (oder Mac, Tablet oder Smartphone oder was auch immer). Dieser Modus merkt sich, wo man mit dem Abspielen aufgehört hat, und wird dort fortgesetzt, wenn man den File Player das nächste Mal startet. Sobald das Ende der Datei erreicht ist, beginnt das Abspielen wieder am Dateianfang.
+	* **File Player**: Spielt den Inhalt einer Datei im Morsecode ab, die auf den Morserino-32 hochgeladen wurde. Derzeit kann man nur eine einzige Datei hochladen. Wird eine neue Datei hochgeladen, wird die alte Datei überschrieben. Upload funktioniert über WLAN von Ihrem PC (oder Mac, Tablet oder Smartphone oder was auch immer). Dieser Modus merkt sich, wo man mit dem Abspielen aufgehört hat, und wird dort fortgesetzt, wenn man den File Player das nächste Mal startet. Sobald das Ende der Datei erreicht ist, beginnt das Abspielen wieder am Dateianfang.  Die Datei sollte nur ASCII Zeichen enthalten (deutsche Sonderzeichen in UTMF Kodierung sind ok, die werden entsprechend umgewandelt; Groß- oder Kleinschreibung ist in Ordnung.) Zeichen, die nicht in Morsezeichen übersetzt werden können, werden ignoriert. Betriebszeichen (pro signs) dürfen enthalten sein, sie müssen als 2-Buchstabenkombination in eckigen oder spitzen Klammern geschrieben sein, zB. `<sk>` oder `[ka]`.  Die folgenden Betriebszeichen werden erkannt:
+     - `<ar>` : erscheint am Display als +
+     - `<bt>` : erscheint am Display als =
+     - `<as>`
+     - `<ka>`
+     - `<kn>`
+     - `<sk>`
+     - `<ve>`
+
+		Es gibt einen neuen Parameter für den File Player: „Randomize File“. Wenn er auf  „On“ gesetzt ist (Defaultwert ist „Off“), wird der Morserino-32 nach jedem Wort n Wörter überspringen (n = Zufallszahl zwischen 0 und 255); das der Player am Dateiende wieder vorne beginnt, werden im Laufe der zeit alle enthaltenen Wörter abgespielt werden (aber es könnte eine Weile dauern). Ist die Datei zB. eine alphabetische Wörterliste, werden die Wörter innerhalb eines Lesedurchgangs natürlich immer alphabetisch aufsteigend erscheinen; um weniger vorhersagbare Ergebnsise zu erzielen, ist es günstig, schon von zufällig angeordneten Wortlisten auszugehen. Wozu kann man dies benutzen? Man kann etwa eine Liste von Rufzeichen hochladen (eine Google Suche nach "supercheckpartial" bringt Dateien mit Rufzeichen, die tatsächlich in Kontesten verwendet wurden). Mit dem File Player kann man nun gezielt diese Rufzeichen in zufälliger Reihenfolge trainieren.
+
 
 	Du kannst den CW-Generator starten und stoppen, indem du schnell ein Paddel berührst oder den SCHWARZEN Knopf drückst.
 
+ 
 3. **Echo Trainer**. Hier erzeugt der Morserino-32 ein Wort (das ist eine Reihe von Zeichen, mit den Möglichkeiten wie beim CW Generator) und wartet dann darauf, dass du diese Zeichen mit dem Paddel wiederholst. Wenn du zu lange wartest oder die Antwort nicht mit den vorgespielten Zeichen übereinstimmt, wird ein Fehler angezeigt (auf dem Display und akustisch), und das Wort wird wiederholt. Wenn du die richtigen Zeichen eingegeben hast, wird dies auch akustisch und auf dem Bildschirm angezeigt, und du wirst aufgefordert, das nächste Wort einzugeben.
     
     Die Untermenüs sind die gleichen wie beim CW-Generator: **Random, CW-Abbrevs, English Words, Call Signs, Mixed** und **File Player**.
@@ -304,6 +326,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | Tone Pitch Hz   | Die Frequenz des Mithörtons, in Hz | Reihe von Tönen zwischen 233 und 932 Hz, entsprechend der musikalischen Noten der B Dur Tonleiter von b bis b'' (2 Oktaven) |
 | Paddle        | Auswahl zwischen dem Touch Paddle oder einem externen Paddel | Touch Paddle / Ext. Paddle |
 | Paddle Polarity | Legt fest, auf welcher Seite die dits und auf welcher die dahs sind | ` _. dah-dit` / **`._ di-dah`**  |
+| Latency | Bestimmt, wie lange die Paddles nach dem Generieren des aktuellen Elements (Punkt oder Strich) Berührungen ignorieren. Ist der Wert 0, müssen die Paddles noch während des letzten Elements ausgelassen werden. Ist der Wrt 7, reagieren die Paddles erst nach 7/8 einer Punktlänge auf neuerliche Eingaben. | Ein Wert zwischen 0 and 7, das bedeutet 0/8 bis 7/8 einer Punktlänge (Defaultwert ist **4**, dh. eine halbe Puktlänge). |
 | Keyer Mode     | Bestimmt den  Iambic Mode (A oder B), bzw. Ultimatic Modus; mehr dazu weiter unten  | Curtis A / Curtis B / Ultimatic |
 | CurtisB DahT% | Timing für den Curtis B Modus für dahs; mehr dazu weiter unten     | 0 -- 100 %, in Schritten von 5 % [**35 - 55**] |
 | CurtisB DitT% | Timing für den Curtis B Modus für dits; mehr dazu weiter unten    | 0 -- 100 %, in Schritten von 5 % [**55 - 100**] |
@@ -318,7 +341,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | Length Words | Maximale Länge der zufällig erzeugten häufigen englischen Wörter | Unlimited / max. 2 -- max. 6 |
 | Trainer Disp | Wie der CW Generator die ausgegebene zeichen am Display darstellen soll | Display off / **Char by Char** / Word by word |
 | Each Word 2x | Der CW Generator kann hiermit auf "Wortverdoppelung" geschaltet werden, zur Unterstützung des Gehörlesen Lernens | **Off** / On |
-|Echo Repeats    | Angabe, wie oft  im Echo Trainer Modus ein Wort maximal wiederholt werden soll, bevor nach Fehlern oder versäumter Eingabe ein neues Wort gewählt wird. Ist der Wert 0, wird das nächste Wort immer ein neues sein, egal ob die Antwort richtig oder falsch war.              | 0 -- 6 / Forever |
+| Randomize File |Wenn auf„On“ gesetzt, wird der File Player nach jedem Wort n Wörter auslassen (n = Zufallszahl zwischen 0 und 255) |  **Off** / On ||Echo Repeats    | Angabe, wie oft  im Echo Trainer Modus ein Wort maximal wiederholt werden soll, bevor nach Fehlern oder versäumter Eingabe ein neues Wort gewählt wird. Ist der Wert 0, wird das nächste Wort immer ein neues sein, egal ob die Antwort richtig oder falsch war.              | 0 -- 6 / Forever |
 | Confrm. Tone  | Legt fest, ob im Echo Trainer Modus eine akustische Rückmeldung erfolgen soll. Die visuelle Anzeige "OK" oder "ERR" wird in jedem Fall angezeigt. | **On** / Off |
 |Key ext TX        | Legt fest, unter welchen Umständen ein extern angeschlossener Sender getastet werden soll. | Never / CW Keyer only / Keyer&Trainer |
 | Send via LoRa | Ist hier "ON gewählt, wird alles, was der CW generator erzeugt, auch via LoRa gesendet - man kann so zB mit einem gerät etwas erzeugen, und mehrere andere geräte empfangen alle dasselbe (diese müssen dann im LoR Trx Modus betrieben werden). Achtung! Bei loRa betrieb immer darauf achten, dass eine Antenne angeschlossen ist! Bei Sendebetrieb ohne Antenne kann das loRa Modul Schaden erleiden! | LoRa Tx ON / **LoRa Tx OFF** |
@@ -365,6 +388,8 @@ Mit diesem Parameter kann man jedes Verhalten zwischen den Modi Curtis A und dem
 
 Anmerkungen:
 
+**Latency**  bestimmt, wie lange nach dem aktuell generierten Element (Punkt oder Strich) die Paddles auf keine Eingabe reagieren. Dieser Wrt war früher immer 0. mit dem Effekt, dass es die gefahr gab, mehr Punkte als intendiert zu erzeugen, vor allem bei höheren Geschwindigkeiten, da man die Paddles noch während des letzten Punktes aulassen musste. Dies kann nun auf einen Wrt zwischen 0 und 7 gesetzt werden, das sind 0/8 bis 7/8 einer Punktlänge (Defaultwert ist 4). Falls du immer noch dazu tendierst, zuviele Pubkte zu erzeugen, erhöhe diesen Wert!
+
 * *Intercharacter Space*. Das bedeutet, wie viel Platz zwischen Zeichen eingefügt wird. Die "Norm" ist ein Abstand, der die Länge von drei Punkten hat. Um das Kopieren von Code, der mit hoher Geschwindigkeit gesendet wird, zu vereinfachen und um Morsen zu lernen, kann dieser Abstand vergrößert werden. Der Code sollte mit ziemlich hohen Geschwindigkeiten (> 18 Wpm) gesendet werden, um das "Zählen" von Dits und Dahs unmöglich zu machen, so dass man eher den "Rhythmus" jedes Charakters lernt. Im Allgemeinen ist es besser, den Abstand zwischen Wörtern und nicht so sehr den Abstand zwischen den Zeichen zu vergrößern. Daher wird empfohlen, diesen Wert zwischen 3 und max 6 einzustellen. Siehe unten.
 
 * *Interword Space*. Der Abstand zwischen Wörtern, normalerweise wird dies als Länge von 7 Punkten definiert. Im CW-Keyer-Modus bestimmen wir ein neues Wort nach einer Pause von 6 Dits, um zu vermeiden, dass der Text auf dem Display als lange Wurst ohne Spatien verläuft. Im CW-Generator-Modus kann man den Interword-Abstand auf Werte zwischen 6 und 45 einstellen (mehr als das 6-fache des normalen Abstandes, um das Kopieren von Code im Kopf bei hohen Geschwindigkeiten zu erleichtern). In Analogie zum Abstand zwischen Farnsworth wird dies auch als Wordsworth-Abstand bezeichnet. Dies ist ein noch besserer Weg, um das Kopieren im Kopf von High-Speed-CWzu üben. Natürlich kann man Interword- und Intercharacter-Abstände auch kombinieren.
@@ -381,7 +406,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | Parameter | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |Paddle        | Interword Spc | 
-| Interchar Spc | Trainer Disp | Each Word 2x | Key ext TX        |
+| Interchar Spc | Trainer Disp | Randomize File | Each Word 2x | Key ext TX        |
 | Send via LoRa | 
 
 
@@ -390,6 +415,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | Parameter | | | |
 | -------------- | ---|---|---|
 | Encoder Click |  Tone Pitch Hz   | Paddle        | Paddle Polarity | 
+| Latency |
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | AutoChar Spce   | 
 | Tone Shift |  Interword Spc |  Interchar Spc |  Random Groups |
 | Length Rnd Gr | Length Calls | Length Abbrev | Length Words |
@@ -401,8 +427,9 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | Parameter | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
+|Latency |
 | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% | AutoChar Spce   | 
-| Tone Shift |  Interword Spc | Interchar Spc | 
+| Tone Shift |  Interword Spc | Interchar Spc | Randomize File |
 
 #### Parameter im **Koch Trainer - CW Generator** Modus
 
@@ -418,6 +445,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | Parameter | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity | 
+| Latency |
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
 | Tone Shift |  Interword Spc | Interchar Spc | Length Rnd Gr | 
 | Length Abbrev |  Length Words | Echo Repeats    |  Confrm. Tone  | 
@@ -427,6 +455,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | Parameter | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity |
+| Latency |
 | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
 | Tone Shift | 
 
@@ -435,6 +464,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | Parameter | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity |
+| Latency |
 | Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |AutoChar Spce   | 
 | Tone Shift |  Bandwidth | 
 
