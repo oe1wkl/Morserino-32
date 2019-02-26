@@ -517,6 +517,6 @@ Das Aktualisieren der Firmware ist dem Hochladen einer Textdatei sehr ähnlich. 
 
 `morse_3_vx.y.ino.wifi_lora_32.bin`, wobei x.y die Versionsnummer ist.
 
-Rufe nun erneut das WLAN-Menü auf, indem du dreimal schnell auf die ROTE Taste klickst und die Option "**Update Firmw.**" auswählst. Ähnlich wie beim Hochladen von Dateien geh mit dem Browser zu  "m32.local" (oder der am Display gezeigten IP Adresse), und schließlich wird wieder ein Anmeldebildschirm angezeigt. Dazu verwende nunmehr den Benutzernamen "**m32**" und das Passwort "**Update**".
+Rufe nun erneut das WLAN-Menü auf, indem du dreimal schnell auf die ROTE Taste klickst und die Option "**Update Firmw.**" auswählst. Ähnlich wie beim Hochladen von Dateien geh mit dem Browser zu  "m32.local" (oder der am Display gezeigten IP Adresse), und schließlich wird wieder ein Anmeldebildschirm angezeigt. Dazu verwende nunmehr den Benutzernamen "**m32**" und das Passwort "**update**".
 
 Als Nächstes wird wieder ein Dateiauswahldialog angezeigt, man wählt die gespeicherte Binärdatei aus und klickt auf die Schaltfläche "Begin". Diesmal dauert das Laden länger - es kann einige Minuten dauern, man sollte also etwas Geduld haben. Die Datei ist groß, muss hochgeladen und in den Morserino-32 geschrieben werden und dann überprüft werden, um sicherzustellen, dass es sich um eine ausführbare Datei handelt. Schließlich startet das Gerät neu und man sollte während des Startvorgangs die neue Versionsnummer auf dem Display sehen können.
