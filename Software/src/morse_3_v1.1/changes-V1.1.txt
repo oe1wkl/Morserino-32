@@ -6,7 +6,7 @@ Corrected errors:
 - Battery indicator only worked when waking up from deep sleep; when turning battery on, it always showed something unreliable (usually „battery full“): fixed.
 
 New features:
-- New parameter „Latency“ : defines, how long after generating the current element (dot or dash) the paddles will be „deaf“. This always used to be 0, with the effect, that especially at higher speeds you would generate more dots than intended, as you had to release the paddle while the last dot was still „on“. Now you can et this to a value between 0 and 7, meaning 0/8 to 7/8 of a dot length (default is 4, i.e. half a dot length). If you still tend to generate unwanted dits, increase this value.
+- New parameter „Latency“ : defines, how long after generating the current element (dot or dash) the paddles will be „deaf“. This always used to be 0, with the effect, that especially at higher speeds you would generate more dots than intended, as you had to release the paddle while the last dot was still „on“. Now you can set this to a value between 0 and 7, meaning 0/8 to 7/8 of a dot length (default is 4, i.e. half a dot length). If you still tend to generate unwanted dits, increase this value.
 - File player can now also play texts that contain pro signs. Pro signs need to be written as two characters (either upper or lower case) within [] or <>. The following pro signs are recognized:
     - <ar> : will be shown on display as +
     - <bt>:  will be shown on display as =
