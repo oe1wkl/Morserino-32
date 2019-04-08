@@ -3,5 +3,5 @@ The file is randomized (i.e. not in alphabetical order).
 
 To practice call signs with Morserino-32:
 - upload the file to Morserino-32 with WLAN
-- set the Parameter "Radmoniz File to "On"
+- set the Parameter "Randomize File" to "On"
 - play it with CW generator/File Player or Echo Trainer / File Player
