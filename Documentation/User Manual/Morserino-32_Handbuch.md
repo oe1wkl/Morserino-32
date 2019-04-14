@@ -43,12 +43,12 @@ Um das Gerät aus dem Tiefschlaf einzuschalten, drücke kurz die ROTE Taste (Pow
 
 Wenn die Batteriespannung gefährlich niedrig ist, wird beim Einschalten ein leeres Batteriesymbol auf dem Bildschirm angezeigt, und das Gerät lässt sich nicht starten. Wenn dieses Symbol gezeigt wird, sollte man so bald wie möglich mit dem Laden des Akkus beginnen.
 
-Um das Geär von der Batterie zu trennen ( = Ausschalten, außer es hängt an einer USB Stromversorgung), stelle den Schiebeschalter auf die "OFF" Position.
+Um das Gerät von der Batterie zu trennen ( = Ausschalten, außer es hängt an einer USB Stromversorgung), stelle den Schiebeschalter auf die "OFF" Position.
 
 Um das Gerät in den Tiefschlaf zu versetzen), gibt es zwei Möglichkeiten:
 
 * Wähle im Hauptmenü die Option "Go to Sleep".
-* Tue nichts. Nach 5 Minuten Bildschirminaktivität (7,5 Minuten im Transceiver-Modus) schaltet sich das Gerät aus und geht in den Tiefschlaf.
+* Falls in den Parametern ein "Time Out" eingestellt wurde: Tue nichts. Falls es keine Veränderungen am Display gibt, schaltet sich das Gerät nach Ablauf der vorgegebene Time-Out Zeit aus und geht in den Tiefschlaf.
 
 **Um den Akku aufzuladen**, verbinde ihn mit einem USB-Kabel mit einer zuverlässigen USB-5-V-Stromquelle wie z.B. deinem Computer oder einem USB-Ladegerät (z.B. eines Mobiltelefons). 
 **Vergewissere dich, dass der Schiebeschalter des Geräts zum Laden der Batterie  *eingeschaltet ist***. Wenn der Akku vom Gerät getrennt ist, kann er nicht geladen werden. Während des Ladevorgangs leuchtet die orangefarbene LED am ESP32-Modul hell. Wenn der Akku nicht angeschlossen ist, leuchtet diese LED nicht hell, sondern blinkt nervös oder leuchtet gedimmt.
@@ -115,6 +115,8 @@ Im Keyer-Modus, im CW-Generator-Modus oder im Echo-Trainer-Modus zeigt die Statu
 
 Das Startmenü bietet eine Auswahl der Modi, die man mit dem Morserino-32 verwenden kann. Es ist ein mehrstufiges Menü (bis zu drei Ebenen tief). Die oberste Ebene wird immer in der oberen Zeile angezeigt, die zweite Ebene in der zweiten Zeile und die dritte Ebene in der dritten Zeile unterhalb der Statuszeile. Die aktuelle Auswahl in der aktuellen Menüebene wird fett dargestellt. Wenn man sich in der obersten oder zweiten Ebene befinden und ein Untermenü eine Ebene tiefer verfügbar ist, sieht man zwei Punkte (..) in der Zeile unter dem aktuellen Eintrag.
 
+Das Gerät speichert das letze ausgeführte Kommando (= den letzten Betriebsmodus) im nichtflüchtigen Speicher; wenn du den Morerino-32 einschaltest oder aus dem Deep Sleep weckst, zeigt das Menü anfänglich den zuletzt benutzten Modus an.
+
 Hier sind die verschiedenen Optionen, die man aus dem Startmenü auswählen kann (genauere Informationen gibt es weiter unten):
 
 1. **CW Keyer**. Dies ist ein automatischer Keyer, der Iambic A, Iambic B und Ultimatic unterstützt.
@@ -152,7 +154,7 @@ Hier sind die verschiedenen Optionen, die man aus dem Startmenü auswählen kann
 
 	* **Select Lesson**: Wähle eine Koch-Lektion zwischen 1 und 50 aus (Man lernt insgesamt 50 Zeichen nach der Koch-Methode). Die Nummer der Lektion und das dieser Lektion zugeordnete Zeichen werden im Menü angezeigt.
 	* **Learn New Chr**: Wird diese Option gewählt, wird das neue Zeichen eingeführt. Man hört den Ton und sieht kurz die Reihenfolge der Punkte und Striche auf dem Bildschirm, sowie das Zeichen im Klartext. Dies wird wiederholt, bis man durch Drücken des SCHWARZEN Knopfes aufhört. Nach jedem Ereignis hat man die Möglichkeit, mit den Paddles zu wiederholen, was man gehört hat, und das Gerät zeigt dann an, ob dies richtig war oder nicht.
-	* **CW Generator**: Hiermit werden zufällige Zeichen und Wörter für CW-Trainingszwecke generiert. Dabei werden nur die bisher gelernten Zeichen verwendet (durch die ausgewählte Koch-Lektion definiert). Auf der Menüebene 3 kann man zischen den folgenden Optionen wählen:
+	* **CW Generator**: Hiermit werden zufällige Zeichen und Wörter für CW-Trainingszwecke generiert. Dabei werden nur die bisher gelernten Zeichen verwendet (durch die ausgewählte Koch-Lektion definiert). Auf der Menüebene 3 kann man zwischen den folgenden Optionen wählen:
 		* **Random**: Erzeugt Gruppen von zufälligen Zeichen. Die Länge der Gruppen kann in den Parametern durch Doppelklick auf den schwarzen Drehknopf ausgewählt werden (Details siehe Parameterbeschreibung).
 		* **CW Abbrevs**: Zufällig gewählte Abkürzungen, wie sie im CW Betrieb häufig vorkommen (jedoch nur mit den bisher gelernten Buchstaben). Man kann damit ab Lektion 2 oder 3 beginnen, aber die Anzahl der ausgegebenen Abkürzungen wird natürlich sehr begrenzt sein; über eine Parametereinstellung kann man die maximale Länge der Abkürzungen auswählen, die man trainieren möchte.
 		* **English Words**: Zufällige Wörter aus einer Liste der 200 gebräuchlichsten Wörter in der englischen Sprache (wiederum kann man über einen Parameter eine maximale Länge festlegen, und es werden natürlich nur Wörter angezeigt, die ausschließlich bereits gelernte Buchstaben enthalten).
@@ -225,7 +227,7 @@ Der deutsche Psychologe Koch entwickelte eine Methode zum Erlernen des Morsens (
 
 Um zu verhindern, dass Punkte und Hintergründe gezählt oder das Gehörte nachgedacht und rekonstruiert wird, sollte die Geschwindigkeit ausreichend hoch sein (min. 18 WpM). Pausen zwischen Zeichen und Wörtern sollten nicht enorm verlängert werden (und es ist immer besser, nur die Wortabstände zu verlängern, die Abstände zwischen den Zeichen mehr oder weniger bei der Norm zu belassen). Mit unserem Gerät kannst du den Abstand zwischen den Wörtern unabhängig vom Abstand zwischen den Zeichen einstellen, um eine Einstellung zu finden, die perfekt zu deinen Bedürfnissen passt.
 
-Die Reihenfolge der gelernten Zeichen wurde von Koch nicht genau festgelegt. Daher verwenden unterschiedliche Lernkurse etwas unterschiedliche Reihenfolgen. Hier verwenden wir dieselbe Reihenfolge der Zeichen wie im Softwarepaket "SuperMorse" (siehe http://www.qsl.net/kb5wck/super.html), das auch von der "CW Schule Graz" verwendet wird. Die Reihenfolge lautet wie folgt:
+Die Reihenfolge der gelernten Zeichen wurde von Koch nicht genau festgelegt. Daher verwenden unterschiedliche Lernkurse etwas unterschiedliche Reihenfolgen. Hier verwenden wir dieselbe Reihenfolge der Zeichen wie im Softwarepaket "Just Learn Morse Code", die beinahe identisch ist mit der des Softwarepakets "SuperMorse" (siehe http://www.qsl.net/kb5wck/super.html). Die Reihenfolge lautet wie folgt:
 
 * Lektion 1: m
 * Lektion 2: k
@@ -267,16 +269,23 @@ Die Reihenfolge der gelernten Zeichen wurde von Koch nicht genau festgelegt. Dah
 * Lektion 38: d
 * Lektion 39: 6
 * Lektion 40: x
-* Lektion 41: - (Minus)
-* Lektion 42: =
-* Lektion 43: SK (Pro Sign)
-* Lektion 44: KA (Pro Sign)
-* Lektion 45: AR (Pro-Zeichen, entspricht +)
-* Lektion 46: AS (Pro Sign)
-* Lektion 47: KN (Pro Sign)
-* Lektion 48: VE (Pro Sign)
-* Lektion 49: @
-* Lektion 50: : (Doppelpunkt)
+* Lesson 41:  @ 
+* Lesson 42:  =
+* Lesson 43:  SK (Pro Sign)
+* Lesson 44:  AR (Pro Sign, equals +)
+* Lesson 45:  - (minus)
+* Lesson 46: KA (Pro Sign)
+* Lesson 47: AS  (Pro Sign)
+* Lesson 48: KN  (Pro Sign)
+* Lesson 49: VE (Pro Sign)
+* Lesson 50: : (Colon)
+
+Es gibt auch die Möglichkeit, eine geringfügig andere Reihenfolge zu wählen, wie sie bei dem beliebten On-line Lernprogramm "Learn CW On-line" (LCWO) verwendet wird. Dies kann im Parametermenü unter "Koch Sequence" eingestellt werden.
+
+Wird "LCWO" gewählt, ist die Reihenfolge der Zeichen die folgende:
+
+k m u r e s n a p t l w i . j z = f o y , v g 5 / q 9 2 h 3 8 b ? 4 7 c 1 d 6 0 x @ - SK AR(+) KA AS KN VE :
+
 
 Wenn du die Koch-Methode zum Erlernen des Morsens verwenden möchtest, findest du alles dazu Nötige im Menüpunkt **Koch Trainer**. Es gibt ein Untermenü, in dem man die Lektion einstellen kann, eines, um nur diesen einen neuen Buchstaben zu üben (mit dem Echo-Trainer-Modus, damit man das wiederholen kann, was man hört), und die Modi "CW Generator" und "Echo Trainer", jeder der letzten beiden enthält die Untermenüs für "Random" (Gruppen von zufälligen Zeichen aus den bisher gefundenen Zeichen),"CW Abbrevs" (die in CW-QSOs üblicherweise verwendeten Abkürzungen), "English Words" (die häufigsten Englische Wörter) und "Mixed" (zufällige Gruppen, Abkürzungen und Wörter zufällig ausgewählt). Natürlich werden nur die bereits gelernten Zeichen verwendet - was bedeutet, dass man, während man noch mit den ersten Zeichen kämpft, nur eine begrenzte Anzahl von Abkürzungen und Wörtern erhalten wird.
 ### Verwenden des Modus "LoRa Trx"
@@ -298,6 +307,15 @@ Bei der Umsetzung in ein Datenpaket werden tatsächlich Punkte, Striche und Paus
 
 Das Senden Wort für Wort bedeutet, dass zwischen Sender und Empfänger eine nicht unerhebliche Verzögerung auftritt und die Verzögerung in hohem Maße von der Länge der gesendeten Wörter und der verwendeten Geschwindigkeit abhängt. Da die meisten Wörter in einer typischen CW-Konversation eher kurz sind (7 Zeichen oder mehr stellen bereits ein sehr langes Wort dar), muss man sich keine Sorgen machen (es sei denn, beide sitzen im selben Raum ohne Kopfhörer - dann wird es wirklich verwirrend). Aber sende doch einmal ein sehr langes Wort, sagen wir mindestens 10 Zeichen lang, und zwar mit sehr niedriger Geschwindigkeit (5 WpM). Dann wird klar werden, wovon wir hier reden!
 
+##### Technische Daten LoRa Trx
+* Frequenz: 434.150 MHz (im 70cm Amateurfunkband und im Region 1 ISM Band)
+* LoRa Spreading Factor: 7
+* LoRa Bandbreite: 250 kHz
+* LoRa CRC: kein CRC
+* LoRa Sync Word: 0x27 (= dezimal 39)
+* HF Ausgangsleistung: 20 dBm (100 mW)
+
+
 ### Verwendung des Modus "Morse Decoder"
 Die Statuszeile unterscheidet sich geringfügig von den anderen Modi. Zunächst befindet sich der Drehgeber immer im Volumeneinstellmodus - die Geschwindigkeit wird aus dem dekodierten Morsecode bestimmt und kann nicht manuell eingestellt werden. Durch kurzes oder langes Drücken des Encoder Buttons gelangt man zurück zum Startmenü.
 
@@ -306,6 +324,8 @@ Auf der linken Seite der Statusanzeige wird oben ein schwarzes Rechteck angezeig
 Die vom Decoder erkannte aktuelle Geschwindigkeit wird in der Statuszeile als WpM angezeigt. Wird der Decoder Modus verlassen, wird diese Geschwindigkeitseinstellung beibehalten. Wenn man dann auf den CW-Keyer umschaltent wird der zuletzt eingestellte Geschwindigkeitswert des Decoders benutzt. Ich bin mir nicht sicher, ob dies ein Fehler oder ein Feature ist ;-)
 
 Dieser Modus hat nur wenige Parameter (siehe den nächsten Abschnitt); der vielleicht wichtigste davon ist die Möglichkeit, die Filterbandbreite für die Tonerkennung zwischen schmal (ca 150 Hz) und breit (ca 600 Herz) umzuschalten.
+
+<div style="page-break-after: always;"></div>
 
 ## Parameter
 
@@ -347,20 +367,26 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | Send via LoRa | Ist hier "ON gewählt, wird alles, was der CW generator erzeugt, auch via LoRa gesendet - man kann so zB mit einem gerät etwas erzeugen, und mehrere andere geräte empfangen alle dasselbe (diese müssen dann im LoR Trx Modus betrieben werden). Achtung! Bei loRa betrieb immer darauf achten, dass eine Antenne angeschlossen ist! Bei Sendebetrieb ohne Antenne kann das loRa Modul Schaden erleiden! | LoRa Tx ON / **LoRa Tx OFF** |
 | Bandwidth |Bandbreite des Filters für den  CW Decoder (implementiert in Software mit einem sogenannten  Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; Mittenfrequenz = ca 700 Hz) | **Wide** / Narrow |
 | Adaptv. Speed | Ist dieser Wert auf "ON", wird im Echo Trainer Modus die Geschwindigekit nach jeder richtigen Antwort erhöht, und nach jeder falschen vermindert, jeweils um 1 WpM. | ON / **OFF** |
+| Koch Sequence | Bestimmt die Reihenfolge der Zeichen, wenn man die Koch Methode zum lernen und Üben verwendet. | **M32 / JLMC (Just Learn Morse Code)**  /  LCWO |
+| Time Out | Nach Ablauf der eingestellten Zeit ohne jedwedes Update am Display geht das Gerät in den "Deep Sleep" Modus um weniger Strom zu verbrauchen. Es kann durch Drücken der ROTEN Taste wieder eingeschaltet werden. | No timeout / **5 min** / 10 min / 15 min |
+| Quick Start | Umgeht das Startmenü beim Einschalten, d.h. nach dem Einschalten wird sofort der Modus ausgeführt, der beim letzten Abschalten aktiv war.  | ON / **OFF** |
 
-
+<div style="page-break-after: always;"></div>
 
 #### Parameter im ***CW Keyer*** Modus
 
 
-
- Parameters |  | | 
+ |  | | 
  -----      |---  |--- |---
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
-| Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |  AutoChar Spce   |
+| Latency | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |  
+| AutoChar Spce   | Time Out | Quick Start |
 
 
 Hinweis:
+
+**Latency**  bestimmt, wie lange nach dem aktuell generierten Element (Punkt oder Strich) die Paddles auf keine Eingabe reagieren. Dieser Wert war früher immer 0, mit dem Effekt, dass es die Gefahr gab, mehr Punkte als intendiert zu erzeugen, vor allem bei höheren Geschwindigkeiten, da man die Paddles noch während des letzten Punktes auslassen musste. Dies kann nun auf einen Wert zwischen 0 und 7 gesetzt werden, das sind 0/8 bis 7/8 einer Punktlänge (Defaultwert ist 4). Falls du immer noch dazu tendierst, zuviele Punkte zu erzeugen, erhöhe diesen Wert!
+
 
 **Iambic-Modi**: Wenn Sie beide Paddles eines Iambic-Keyers drücken, werden abwechselnd Dahs und Dits erzeugt, während beide Paddles gedrückt werden, beginnend mit dem zuerst berührten. Der Unterschied zwischen den Modi A und B ist das Verhalten, wenn beide Paddles losgelassen werden, während das aktuelle Element erzeugt wird: In Modus A stoppt der Keyer nach dem aktuellen Element, in Modus B fügt der Keyer ein anderes Element hinzu, und zwar das jeweils entgegen gesetzte.
 
@@ -379,16 +405,15 @@ Mit diesem Parameter kann man jedes Verhalten zwischen den Modi Curtis A und dem
 #### Parameter im ***CW Generator*** Modus
 
 
-| Parameters | | | |
+| | | | |
 | ---| ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        | Interword Spc |
 | Interchar Spc | Random Groups | Length Rnd Gr | Length Calls | 
 | Length Abbrev |Length Words | Trainer Disp | Each Word 2x | 
-|Key ext TX        | Send via LoRa | 
+|Key ext TX        | Send via LoRa |  Time Out | Quick Start |
 
 Anmerkungen:
 
-**Latency**  bestimmt, wie lange nach dem aktuell generierten Element (Punkt oder Strich) die Paddles auf keine Eingabe reagieren. Dieser Wrt war früher immer 0. mit dem Effekt, dass es die gefahr gab, mehr Punkte als intendiert zu erzeugen, vor allem bei höheren Geschwindigkeiten, da man die Paddles noch während des letzten Punktes aulassen musste. Dies kann nun auf einen Wrt zwischen 0 und 7 gesetzt werden, das sind 0/8 bis 7/8 einer Punktlänge (Defaultwert ist 4). Falls du immer noch dazu tendierst, zuviele Pubkte zu erzeugen, erhöhe diesen Wert!
 
 * *Intercharacter Space*. Das bedeutet, wie viel Platz zwischen Zeichen eingefügt wird. Die "Norm" ist ein Abstand, der die Länge von drei Punkten hat. Um das Kopieren von Code, der mit hoher Geschwindigkeit gesendet wird, zu vereinfachen und um Morsen zu lernen, kann dieser Abstand vergrößert werden. Der Code sollte mit ziemlich hohen Geschwindigkeiten (> 18 Wpm) gesendet werden, um das "Zählen" von Dits und Dahs unmöglich zu machen, so dass man eher den "Rhythmus" jedes Charakters lernt. Im Allgemeinen ist es besser, den Abstand zwischen Wörtern und nicht so sehr den Abstand zwischen den Zeichen zu vergrößern. Daher wird empfohlen, diesen Wert zwischen 3 und max 6 einzustellen. Siehe unten.
 
@@ -399,79 +424,84 @@ Da der Zeichenabstand unabhängig voneinander eingestellt werden kann, könnte m
 Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnsworth Spacing"* (Farnsworth-Abstand) nennen: Dabei werden die Abstände zwischen Zeichen und zwischen Wörtern proportional um einen bestimmten Faktor verlängert. Man kann den Farnsworth-Abstand emulieren, indem man sowohl den Abstand zwischen den Zeichen als auch den zwischen den Wörtern erhöht, indem man z.B den Zeichenzwischenraum auf 6 und den Wortzwischenraum auf 14 setzt, werden alle Abstände effeltiv verdoppelt. Wenn man dies bei einer Zeichengeschwindigkeit von 20 WpM macht, ergibt sich eine effektive Geschwindigkeit von 14 WpM. Dies wird in der Statuszeile als (14)**20** WpM angezeigt.
 
 
-<div style="page-break-after: always;"></div>
 
-#### Parameter im **CW Generator - File Player** Modus
 
-| Parameter | | | |
+#### Parameter im ***CW Generator - File Player*** Modus
+
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |Paddle        | Interword Spc | 
 | Interchar Spc | Trainer Disp | Randomize File | Each Word 2x | Key ext TX        |
-| Send via LoRa | 
+| Send via LoRa |  Time Out | Quick Start |
 
 
-#### Parameter im **Echo Trainer** Modus
+#### Parameter im ***Echo Trainer*** Modus
 
-| Parameter | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click |  Tone Pitch Hz   | Paddle        | Paddle Polarity | 
-| Latency |
-| Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | AutoChar Spce   | 
-| Tone Shift |  Interword Spc |  Interchar Spc |  Random Groups |
-| Length Rnd Gr | Length Calls | Length Abbrev | Length Words |
-|Echo Repeats    | Confrm. Tone  |
+| Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | 
+| AutoChar Spce   | Tone Shift |  Interword Spc |  Interchar Spc | 
+| Random Groups | Length Rnd Gr | Length Calls | Length Abbrev | 
+|Length Words | Echo Repeats    | Confrm. Tone  | Time Out |
+| Quick Start |
 
 
-#### Parameter im **Echo Trainer - File Player** Modus
+#### Parameter im ***Echo Trainer - File Player*** Modus
 
-| Parameter | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
-|Latency |
-| Keyer Mode     |  CurtisB DahT% | CurtisB DitT% | AutoChar Spce   | 
-| Tone Shift |  Interword Spc | Interchar Spc | Randomize File |
+|Latency | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% | 
+|AutoChar Spce   |  Tone Shift |  Interword Spc | Interchar Spc | 
+|Randomize File | Time Out | Quick Start |
 
-#### Parameter im **Koch Trainer - CW Generator** Modus
+<div style="page-break-after: always;"></div>
 
-| Parameters| | | |
+#### Parameter im ***Koch Trainer - CW Generator*** Modus
+
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        | Interword Spc | 
 | Interchar Spc | Length Rnd Gr | Length Abbrev | Length Words | 
-| Trainer Disp | Each Word 2x | ey ext TX       Send via LoRa | 
-<div style="page-break-after: always;"></div>
+| Trainer Disp | Each Word 2x | Key ext TX |      Send via LoRa | 
+| Koch Sequence | Time Out | Quick Start |
 
-#### Parameter im **Koch Trainer - Echo Trainer** Modus
 
-| Parameter | | | |
+#### Parameter im ***Koch Trainer - Echo Trainer*** Modus
+
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity | 
-| Latency |
-| Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
-| Tone Shift |  Interword Spc | Interchar Spc | Length Rnd Gr | 
-| Length Abbrev |  Length Words | Echo Repeats    |  Confrm. Tone  | 
+| Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |
+| AutoChar Spce   | Tone Shift |  Interword Spc | Interchar Spc | 
+| Length Rnd Gr | Length Abbrev |  Length Words | Echo Repeats    |  
+| Confrm. Tone  | Koch Sequence | Time Out | Quick Start |
 
-#### Parameter im **Transceiver - LoRa Trx** Modus
+#### Parameter im ***Transceiver - LoRa Trx*** Modus
 
-| Parameter | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity |
-| Latency |
-| Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
-| Tone Shift | 
+| Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  
+|AutoChar Spce   | Tone Shift |  Time Out | Quick Start |
 
-#### Parameter im **Transceiver - Ext / iCW Trx** Modus
+#### Parameter im ***Transceiver - Ext / iCW Trx*** Modus
 
-| Parameter | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity |
-| Latency |
-| Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |AutoChar Spce   | 
-| Tone Shift |  Bandwidth | 
+| Latency |Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |
+|AutoChar Spce   | Tone Shift |  Bandwidth |  Time Out |
+| Quick Start |
 
-#### Parametersim **CW Decoder** mMdus
-| Parameter | | | 
-| -------------- | ---|---|
-| Encoder Click | Tone Pitch Hz   |  Bandwidth | 
+<div style="page-break-after: always;"></div>
+
+#### Parametersim ***CW Decoder*** Modus
+| | | | |
+| -------------- | ---|---|---|
+| Encoder Click | Tone Pitch Hz   |  Bandwidth |  Time Out |
+| Quick Start |
 
 
 <div style="page-break-after: always;"></div>

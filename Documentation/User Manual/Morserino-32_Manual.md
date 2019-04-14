@@ -49,7 +49,7 @@ To disconnect the device from the battery (turning it off, unless you are USB po
 To put the device into deep sleep, you have two options:
 
 * In the main menu, select the option "Go To Sleep"
-* Do nothing. After 5 minutes of screen inactivity (7.5 minutes when in a transceiver mode) the device will power itself off and go into deep sleep.
+* If in the parameter menu a "Time Out" value has been set, do nothing. If there is no display update, the device will power itself off and go into deep sleep after the time set there has passed.
 
 **To charge the battery**, connect it with a USB cable to a reliable USB 5V power source, like your computer, or a USB charger like your phone charger. 
 
@@ -118,6 +118,8 @@ When in Keyer Modus, CW Generator Modus or Echo Trainer Modus, the status line s
 ## Start Menu
 
 The Start Menu gives you a selection of the modi you can use; it is a multi-level menu (up to three levels deep). The top level is always displayed on the top line, the second level on the 2nd line and the third level on the 3rd line underneath the status line. The current selection in the current menu level is displayed in bold. When you are in top or second level, and there exists a sub-menu a level down, you will see two dots (..) on the line below the current entry.
+
+The devices stores the last executed command (the last mode that was used) in non-volatile storage, and when you switch on the device (or wake it up from deep sleep), the menu will show the last mode used.
 
 Here are the various selections you can choose from the Start Menu (more detailed information can be found further down):
 
@@ -230,10 +232,10 @@ The German psychologist Koch developed a method for learning Morse code (in the 
 
 In order to prevent counting dits and dahs, or thinking of and reconstructing what you heard, the speed should be sufficiently high (min. 18 wpm), pauses between characters and words should not be lengthened enormously (and it is always better to just lengthen the pauses between words, and keep the inter-character spaces to more or less the normal space). With our device you can set interword space independently from intercharacter space, so you can find a setting that perfectly fits your needs.
 
-The order of the characters learned has not been strictly defined by Koch, and therefore different learning courses use slightly different orders. Here we use the same order of characters as defined by the "SuperMorse" software package (see http://www.qsl.net/kb5wck/super.html), which is also used by the "CW Schule Graz". The order is as follows:
+The order of the characters learned has not been strictly defined by Koch, and therefore different learning courses use slightly different orders. Here we use the same order of characters as defined by the program "Just Lean Morse Code", which again is almost identical to  the order used by the "SuperMorse" software package (see http://www.qsl.net/kb5wck/super.html). The order is as follows:
 
-* Lesson  1:  m
-* Lesson  2:  k
+* Lesson  1:  k
+* Lesson  2:  m
 * Lesson  3:  r
 * Lesson  4:  s
 * Lesson  5:  u
@@ -272,16 +274,22 @@ The order of the characters learned has not been strictly defined by Koch, and t
 * Lesson 38:  d
 * Lesson 39:  6
 * Lesson 40:  x
-* Lesson 41:  - (minus)
+* Lesson 41:  @ 
 * Lesson 42:  =
 * Lesson 43:  SK (Pro Sign)
-* Lesson 44:  KA (Pro Sign)
-* Lesson 45: AR (Pro Sign, equals +)
-* Lesson 46: AS  (Pro Sign)
-* Lesson 47: KN  (Pro Sign)
-* Lesson 48: VE (Pro Sign)
-* Lesson 49: @
+* Lesson 44:  AR (Pro Sign, equals +)
+* Lesson 45:  - (minus)
+* Lesson 46: KA (Pro Sign)
+* Lesson 47: AS  (Pro Sign)
+* Lesson 48: KN  (Pro Sign)
+* Lesson 49: VE (Pro Sign)
 * Lesson 50: : (Colon)
+
+There is also an option to use a slightly different order of characters, as is used by the popular on-line training tool "Learn CW On-line" (LCWO). This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
+
+The sequence of characters when "LCWO" is chosen is as follows:
+
+k m u r e s n a p t l w i . j z = f o y , v g 5 / q 9 2 h 3 8 b ? 4 7 c 1 d 6 0 x @ - SK AR(+) KA AS KN VE :
 
 Should you want to use the Koch method for learning Morse code, **you will find everything you need in the Menu item "Koch Trainer"**. It has a submenu to enter the lesson you want to add, one to practice just this one new letter (using the echo trainer modus, so you are encouraged to repeat what you hear), and the modi "CW Generator" and "Echo Trainer", each of the last two with the submenus for "Random" (groups of random characters out of the so far encountered characters), "CW Abbrevs" (the abbreviations usually used in CW QSOs), "English words" (the most common English words) and "Mixed" (random groups, abbreviations and words mixed randomly). Of course, only the already learned characters will be used - which means, that while you are still struggling with your first characters, the number of abbreviations and words will be quite limited).
 
@@ -304,6 +312,15 @@ When morse code is packed into a LoRa data packet, dots, dashes and pasues are e
 
 Sending the code word by word means there is a significant delay between sender and receiver, and the delay depends to a large degree on the length of the words being sent, and on the speed that is being used. As most words in a typical CW conversation are rather short (7 characters or more already constitutes a very long word), this is nothing to worry about (unless you are sitting both in the same room using no headphones - then it will be really confusing). But try sending really long words, say 10 or more character long, at really low speed (5 WpM), and you will see what I am talking about!
 
+##### Technical Details of LoRa Trx
+* Frequency: 434.150 MHz (within 70cm Amateur band and within region 1 ISM band)
+* LoRa Spreading Factor: 7
+* LoRa Bandwidth: 250 kHz
+* LoRa CRC: no CRC
+* LoRa Sync Word: 0x27 (= decimal 39)
+* HF Output: 20 dBm (100 mW)
+
+<div style="page-break-after: always;"></div>
 
 ### Using the Modus "Morse Decoder"
 The status line is slightly different from the other modi. First of all, the rotary encoder is always in the volume setting mode - speed is determined from the decoded Morse code and cannot be set manually. Pressing the encoder button  will end the decoder modus and bring you back to the Start Menu.
@@ -313,6 +330,8 @@ On the left of the status display at the top, you will see a black rectangle whe
 The current speed as detected by the decoder is displayed as WpM on the status line. Whenever you leave the decoder, this speed setting is preserved - so when you switch over to the CW Keyer, it will be set to the last speed value detected with the decoder. I am not sure if this is a bug or a feature ;-) 
 
 This modus does not have many parameters (see the next section); maybe the most important is the ability to switch the filter bandwidth of the audio decoder between narrow (ca 150 Hz) and wide (ca 600 Hz).
+
+<div style="page-break-after: always;"></div>
 
  
 ## Parameters
@@ -356,6 +375,9 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Send via LoRa | If set to ON, whatever the CW generator generates will also transmitted via LoRa - so you can have one device generating something, and several others receiving the same sequence (using the LoRa Trx modus). Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!| LoRa Tx ON / **LoRa Tx OFF** |
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frquency = ca 700 Hz) | **Wide** / Narrow |
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response, and will be decreased by 1 whenever you made a mistake. | ON / **OFF** |
+| Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. | **M32 / JLMC (Just Learn Morse Code)**  /  LCWO |
+| Time Out | If the time specified there passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min |
+| Quick Start | Allows you to bypass the intial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been selected before last shutdown. | ON / **OFF** |
 
 
 
@@ -363,10 +385,11 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 
 
 
- Parameters |  | | 
- -----      |---  |--- |---
+| | | | |
+| ----- |---  |--- | --- |
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
-| Latency | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |  AutoChar Spce   |
+| Latency | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |  
+| AutoChar Spce   | Time Out | Quick Start |
 
 
 
@@ -391,12 +414,12 @@ This parameter allows you to set any behavior between Curtis A and original Curt
 
 #### Parameters in ***CW Generator*** modus
 
-| Parameters | | | |
+| | | | |
 | ---| ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        | Interword Spc |
 | Interchar Spc | Random Groups | Length Rnd Gr | Length Calls | 
 | Length Abbrev |Length Words | Trainer Disp | Each Word 2x | 
-|Key ext TX        | Send via LoRa | 
+|Key ext TX        | Send via LoRa |  Time Out | Quick Start |
 
 
 
@@ -411,79 +434,82 @@ As character spacing can be set independently, this would mean that you can set 
 
 The ARRL and some Morse code training programs use something they call *"Farnsworth Spacing":* here the spaces between characters and between words are lengthened proportionately by a certain factor. You can emulate Farnsworth Spacing by incrementing both inter-character and inter-word space, e.g. setting inter-character space to 6 and inter-word space to 14, thus effectively doubling all spaces between characters and words. if you do this at a character speed of 20 WpM, the resulting effective speed will be 14 WpM. This will be shown on the status line as (14)**20**WpM. 
 
-<div style="page-break-after: always;"></div>
 
 #### Parameters in ***CW Generator - File Player*** modus
 
-| Parameters | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |Paddle        | Interword Spc | 
 | Interchar Spc | Trainer Disp | Randomize File | Each Word 2x | Key ext TX        |
-| Send via LoRa | 
+| Send via LoRa |  Time Out | Quick Start |
 
 
 #### Parameters in ***Echo Trainer*** modus
 
-| Parameters | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click |  Tone Pitch Hz   | Paddle        | Paddle Polarity |
- Latency |
-| Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | AutoChar Spce   | 
-| Tone Shift |  Interword Spc |  Interchar Spc |  Random Groups |
-| Length Rnd Gr | Length Calls | Length Abbrev | Length Words |
-|Echo Repeats    | Confrm. Tone  |
+| Latency |Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | 
+|AutoChar Spce   | Tone Shift |  Interword Spc |  Interchar Spc | 
+| Random Groups |Length Rnd Gr | Length Calls | Length Abbrev |
+| Length Words | Echo Repeats    | Confrm. Tone  | Time Out |
+| Quick Start |
 
 
-#### Parameters in **Echo Trainer - File Player** modus
+#### Parameters in ***Echo Trainer - File Player*** modus
 
-| Parameters | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
-| Latency |
-| Keyer Mode     |  CurtisB DahT% | CurtisB DitT% | AutoChar Spce   | 
-| Tone Shift |  Interword Spc | Interchar Spc | Randomize File | 
+| Latency |Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |
+| AutoChar Spce   | Tone Shift |  Interword Spc | Interchar Spc |
+| Randomize File |  Time Out |Quick Start |
 
-#### Parameters in **Koch Trainer - CW Generator** modus
+<div style="page-break-after: always;"></div>
 
-| Parameters | | | |
+#### Parameters in ***Koch Trainer - CW Generator*** modus
+
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        | Interword Spc | 
 | Interchar Spc | Length Rnd Gr | Length Abbrev | Length Words | 
-| Trainer Disp | Each Word 2x | ey ext TX       Send via LoRa | 
-<div style="page-break-after: always;"></div>
+| Trainer Disp | Each Word 2x | Key ext TX     |  Send via LoRa | 
+| Koch Sequence | Time Out | Quick Start |
 
-#### Parameters in **Koch Trainer - Echo Trainer** modus
+#### Parameters in ***Koch Trainer - Echo Trainer*** modus
 
-| Parameters | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity | 
-|Latency |
-| Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
-| Tone Shift |  Interword Spc | Interchar Spc | Length Rnd Gr | 
-| Length Abbrev |  Length Words | Echo Repeats    |  Confrm. Tone  | 
+|Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  
+|AutoChar Spce   | Tone Shift |  Interword Spc | Interchar Spc |
+| Length Rnd Gr |  Length Abbrev |  Length Words | Echo Repeats    |  
+|Confrm. Tone  | Koch Sequence |  Time Out | Quick Start |
 
-#### Parameters in **Transceiver - LoRa Trx** modus
+#### Parameters in ***Transceiver - LoRa Trx*** modus
 
-| Parameters | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity |
-| Latency |
-| Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  AutoChar Spce   | 
-| Tone Shift | 
+| Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  
+|AutoChar Spce   | Tone Shift |  Time Out | Quick Start |
 
-#### Parameters in **Transceiver - Ext / iCW Trx** modus
+#### Parameters in ***Transceiver - Ext / iCW Trx*** modus
 
-| Parameters | | | |
+| | | | |
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity |
-| Latency |
-| Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |AutoChar Spce   | 
-| Tone Shift |  Bandwidth | 
+| Latency |Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |
+|AutoChar Spce   |  Tone Shift |  Bandwidth |  Time Out |
+| Quick Start |
 
-#### Parameters in **CW Decoder** modus
-| Parameters | | | 
-| -------------- | ---|---|
-| Encoder Click | Tone Pitch Hz   |  Bandwidth | 
+<div style="page-break-after: always;"></div>
+
+#### Parameters in ***CW Decoder*** modus
+| | | | |
+| -------------- | ---|---|---|
+| Encoder Click | Tone Pitch Hz   |  Bandwidth |  Time Out | 
+|Quick Start |
 
 
 <div style="page-break-after: always;"></div>
@@ -531,6 +557,7 @@ Updating the firmware is very similar to uploading a text file. You first need t
 Now get the WiFi menu again by clicking quickly three times on the RED button, and select the enry "**Update Firmw.**". Similar to file upload, you point your browser to "m32.local" (or the shown IP address), and you will eventually see a Login screen. This time you use the user name "**m32**" and the password "**update**".
 
 Again you will see a file selection screen next, you select your binary file and click the button labelled "Begin". This time the uplaod will take longer - it can take a few minutes, so be patient. The file is big, needs to be uploaded and written to the Morserino-32 and needs to be verified to make sure it is an executable file. Finally, the device will restart itself and you should notice the new version number on the display during start-up.
+
 
 
 
