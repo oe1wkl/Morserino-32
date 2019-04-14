@@ -31,7 +31,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 
 2. Stecke die Buchsenleisten (18 Positionen) auf die Stifte des Heltec-Moduls, und stelle auch hier sicher, dass sie bündig auf dem Modul sitzen. ![Power][Ass06]
 [Ass06]: Images/pin_headers.jpg "Attached pin headers"
-5. Setze das Heltec-Modul mit seinen angebrachten Steckerleisten sorgfältig auf die Leiterplatte, stelle dabei sicher, dass keine Stifte verbogen sind, und löte die Steckerleisten auf die Leiterplatte, und stelle auch hier sicher, dass alles bündig auf der Leiterplatte sitzt.
+5. Setze das Heltec-Modul mit seinen angebrachten Steckerleisten sorgfältig auf die Leiterplatte, so dass der USB Anschluss an den Rand der Leiterplatte positinoiert ist; stelle dabei sicher, dass keine Stifte verbogen sind, und löte die Steckerleisten auf die Leiterplatte, und stelle auch hier sicher, dass alles bündig auf der Leiterplatte sitzt.
 4. Löte die Enden des Kabels das vom Heltec Module kommt an die mit ESP32 + (rot) und ESP32- (schwarz) gekennzeichneten Kontaktstellen auf der Oberseite der Leiterplatte, nachdem du die Drähte durch die Löcher neben den Kontaktstellen (als Zugentlastung) geführt hast und diese von unten durch die Löcher des Kontakts geführt hast. **Mach keinen Fehler mit der Polarität des Kabels - das Heltec-Modul würde dadurch höchstwahrscheinlich zerstört!**
 
  ![Battery cable][Ass08]

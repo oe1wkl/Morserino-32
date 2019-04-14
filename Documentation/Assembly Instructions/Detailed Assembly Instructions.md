@@ -27,7 +27,7 @@
 [Ass05]: Images/attach_cable.jpg "Orientation of Power cable"
 3. Put the female pin headers (18 positions) onto the pins of the Heltec module, again making sure they are sitting flush on the module. ![Power][Ass06]
 [Ass06]: Images/pin_headers.jpg "Attached pin headers"
-5. Put the Heltec module with its attached headers carefully onto the PCB, making sure you are not bending any pins, and solder the header pins to the PCB, again making sure that everything sits very flush on the PCB.
+5. Put the Heltec module with its attached headers carefully onto the PCB, so that the USB connector is positioned on edge of the PCB, and making sure you are not bending any pins; then solder the header pins to the PCB, again making sure that everything sits very flush on the PCB.
 4. Solder the ends of the cable that dangles from the Heltec module to the pads marked ESP32+ (red) and ESP32- (black) on the top of the PCB, after threading the wires through the holes besides the pads (intended as strain relief), and threading them into the pad holes from below.  **Do not make a mistake with the polarity of the cable - doing so will almost certainly destroy the Heltec module!**
 
 6. Shorten the battery cable with the Molex connector  - the length depends on where you will put the battery. If it will sit under the Heltec module, it should be around 3-4 cm (1.2 - 1.5 inches) long. Remove the insulation for about 3 mm (1/8 inch), and tin the ends carefully. ![Battery cable][Ass07]
