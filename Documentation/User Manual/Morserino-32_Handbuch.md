@@ -101,7 +101,7 @@ Wenn ein Menü präsentiert wird (entweder das Startmenü oder ein Menü zur Aus
 Im Keyer-Modus, im CW-Generator-Modus oder im Echo-Trainer-Modus zeigt die Statuszeile von links nach rechts Folgendes an:
 
 * Ein **T** oder **X** bedeutet, dass das Gerät die internen **T**ouch Paddles oder E**X**terne Paddles verwendet (auswählbar durch Aufrufen des Voreinstellungsmenüs).
-* **A**, **B** oder **U**, was den automatischen Keyer-Modus angibt: Iambic **A**, Iambic **B** oder **U**ltimatic (für Einzelheiten zu diesen Modi siehe unten).
+* **A**, **B** , **U** oder **N**, was den automatischen Keyer-Modus angibt: Iambic **A**, Iambic **B**, **U**ltimatic oder **N**on-Squeeze (für Einzelheiten zu diesen Modi siehe unten).
 * Die aktuell eingestellte Geschwindigkeit in Worten pro Minute. Im CW-Keyer-Modus als **nn** WpM, im CW-Generator- oder Echo-Trainer-Modus als (nn)**nn** WpM. Der Wert in Klammern zeigt die effektive Geschwindigkeit, die sich unterscheidet, wenn der Wortabstand oder der Zeichenabstand auf andere als die durch die Norm definierten Werte eingestellt wird (Länge von 3 Punkten für den Abstand zwischen Zeichen und 7 Punkte für den Abstand zwischen den Zeichen) -Wortabstand). Beachten Sie die nachstehenden Hinweise zu den Parametern, die du im CW-Generator-Modus einstellen kannst.
 
   Befindest du dich im Transceiver-Modus, gibt es auch zwei Werte für die Geschwindigkeit - der in Klammern ist die Geschwindigkeit des empfangenen Signals, der andere die Geschwindigkeit deines Keyers.
@@ -194,7 +194,7 @@ Wenn man einen dieser Modi verwendent enthält die *oberste Zeile* (Statuszeile)
 
 - **X** oder **T**: Das derzeit verwendete Paddel, entweder ein e**X**ternes (mechanisches) Paddel oder das eingebaute **T**ouch Paddel.
 
-- **A** oder **B** oder **U**: Der automatische Keyer-Modus, entweder Iambic A (Curtis A Modus), Iambic B (Curtis B Modus) oder Ultimatic-Modus.
+- **A** oder **B**,  **U** oder **N**: Der automatische Keyer-Modus, entweder Iambic A (Curtis A Modus), Iambic B (Curtis B Modus), Ultimatic-Modus oder Non-Squeeze Modus.
 
 - Die **Geschwindigkeit** in Wpm (Wörter pro Minute).
 
@@ -347,7 +347,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | Paddle        | Auswahl zwischen dem Touch Paddle oder einem externen Paddel | Touch Paddle / Ext. Paddle |
 | Paddle Polarity | Legt fest, auf welcher Seite die dits und auf welcher die dahs sind | ` _. dah-dit` / **`._ di-dah`**  |
 | Latency | Bestimmt, wie lange die Paddles nach dem Generieren des aktuellen Elements (Punkt oder Strich) Berührungen ignorieren. Ist der Wert 0, müssen die Paddles noch während des letzten Elements ausgelassen werden. Ist der Wrt 7, reagieren die Paddles erst nach 7/8 einer Punktlänge auf neuerliche Eingaben. | Ein Wert zwischen 0 and 7, das bedeutet 0/8 bis 7/8 einer Punktlänge (Defaultwert ist **4**, dh. eine halbe Puktlänge). |
-| Keyer Mode     | Bestimmt den  Iambic Mode (A oder B), bzw. Ultimatic Modus; mehr dazu weiter unten  | Curtis A / Curtis B / Ultimatic |
+| Keyer Mode     | Bestimmt den  Iambic Mode (A oder B),  Ultimatic oder Non-Squeeze Modus; mehr dazu weiter unten  | Curtis A / Curtis B / Ultimatic / Non-Squeeze |
 | CurtisB DahT% | Timing für den Curtis B Modus für dahs; mehr dazu weiter unten     | 0 -- 100 %, in Schritten von 5 % [**35 - 55**] |
 | CurtisB DitT% | Timing für den Curtis B Modus für dits; mehr dazu weiter unten    | 0 -- 100 %, in Schritten von 5 % [**55 - 100**] |
 | AutoChar Spce   | Minimaler Abstand zwischen zwei Zeichen  | Off / min. 2 / **3** / 4 dots |
@@ -396,7 +396,9 @@ Wenn man den Wert auf 0 setzt, ist der Modus identisch mit dem ursprünglichen C
 
 Mit diesem Parameter kann man jedes Verhalten zwischen den Modi Curtis A und dem ursprünglichen Curtis B auf einer kontinuierlichen Skala einstellen. Man kann die Prozentsätze für Dits und Dahs separat einstellen (dies ist sinnvoll, da das Timing für Dits nur ein Drittel des Werts für Dahs beträgt und da möchte man vielleicht einen höheren Prozentsatz).
 
-**Ultimatic-Modu **: Wenn man im Ultimatic-Modus beide Paddel gedrückt hält, wird zuerst ein Dit oder Dah erzeugt, je nachdem, welches Paddel man zuerst gedrückt hat, und danach wird das gegenteilige Element kontinuierlich erzeugt. Dies ist von Vorteil für Zeichen wie j, b, 1, 2, 6, 7.
+**Ultimatic-Modus**: Wenn man im Ultimatic-Modus beide Paddel gedrückt hält, wird zuerst ein Dit oder Dah erzeugt, je nachdem, welches Paddel man zuerst gedrückt hat, und danach wird das gegenteilige Element kontinuierlich erzeugt. Dies ist von Vorteil für Zeichen wie j, b, 1, 2, 6, 7.
+
+**Non-Squeeze Modus**: Dies „simuliert“ das Verhalten eines Einhebelpaddels bei Verwendung eines Doppelhebelpaddels. CWisten, die an Einhebelpaddel gewöhnt sind, haben Schwierigkeiten, Doppelhebelpaddel zu verwenden, da sie manchmal, besonders bei höheren Geschwindigkeiten, ungewollt beide Paddels drücken. Der Non-Squezze-Modus ignoriert das "Squeezen" einfach, so dass es für diese Leute einfache wird, eine Doppelhebelpaddle zu verwenden.
 
 **NB**: Die Modi Iambic und Ultimatic können nur mit dem eingebauten Touch-Paddle oder einem externen Doppelhebel-Paddles verwendet werden. Die Auswahl dieser Modi ist bei Verwendung eines externen Einhebel-Paddles nicht relevant.
 
@@ -518,6 +520,8 @@ Für beide Funktionen muss sich die hochzuladende Datei (entweder eine Textdatei
 
 Damit sich der Morserino-32 mit einem lokalen WLAN-Netzwerk verbinden kann, muss das Gerät die SSID (den "Namen") des Netzwerks kennen und ebenso das Passwort. Man muss also diese beiden Elemente in den Morserino-32 eingeben. Da es keine Tastatur für die bequeme Eingabe dieser Informationen gibt, verwenden wir eine andere Methode, und dafür wurde eine eigene WLAN-Funktion implementiert: die Netzwerkkonfiguration, die man zuerst anweden muss, bevor man die anderen Funktionen verwenden kann.
 
+Für Heimnetzwerke, die (aus Sicherheitsgründen) eine Liste zulässiger MAC-Adressen verwenden, musst du deinen Router konfigurieren und die MAC-Adresse des M32 eingeben, bevor du den M32 mit dem Netzwerk verbinden kannst. Zu diesem Zweck ist eine Funktion implementiert, mit der die MAC-Adresse auf dem Display angezeigt wird.
+
 ####Netzwerkkonfiguration####
 Während der Morserino-32 das Startmenü anzeigt, klicke ***drei mal*** schnell auf die ROTE Taste, um in das WLAN-Menü zu gelangen. Der oberste Eintrag lautet "WiFi Config". Wähle ihn aus, um fortzufahren.
 
@@ -550,3 +554,23 @@ Das Aktualisieren der Firmware ist dem Hochladen einer Textdatei sehr ähnlich. 
 Rufe nun erneut das WLAN-Menü auf, indem du dreimal schnell auf die ROTE Taste klickst und die Option "**Update Firmw.**" auswählst. Ähnlich wie beim Hochladen von Dateien geh mit dem Browser zu  "m32.local" (oder der am Display gezeigten IP Adresse), und schließlich wird wieder ein Anmeldebildschirm angezeigt. Dazu verwende nunmehr den Benutzernamen "**m32**" und das Passwort "**update**".
 
 Als Nächstes wird wieder ein Dateiauswahldialog angezeigt, man wählt die gespeicherte Binärdatei aus und klickt auf die Schaltfläche "Begin". Diesmal dauert das Laden länger - es kann einige Minuten dauern, man sollte also etwas Geduld haben. Die Datei ist groß, muss hochgeladen und in den Morserino-32 geschrieben werden und dann überprüft werden, um sicherzustellen, dass es sich um eine ausführbare Datei handelt. Schließlich startet das Gerät neu und man sollte während des Startvorgangs die neue Versionsnummer auf dem Display sehen können.
+
+Zusammenfassend hier die Schritte zum Aktualisieren der Firmware:
+
+1. Führe die Netzwerkkonfiguration wie oben beschrieben durch (dazu richtet Morserino ein eigenes WLAN-Netzwerk ein und du gibst über Ihren Browser den Namen und das Kennwort deines WLAN-Netzwerks ein). Das ist nur einmal notwendig, da der Morserino sich diese Anmeldeinformationen zur späteren Verwendung merken wird.
+
+2. Lade die neue Binärdatei auf Ihren Computer herunter.
+
+3. Starte auf dem Morserino „Update Firmware“. Nach einer Weile wird deine IP-Adresse (die sich im Adressbereich deines WLANs befindet!) und eine Nachricht angezeigt, dass auf ein Update gewartet wird.
+
+4.Belasse deinen Computer auf deinem WLAN und geh mit deinem Browser entweder auf die auf dem Morserino angegebene IP-Adresse oder auf „m32.local“ (dies funktioniert auf Macs, normalerweise leider nicht auf Windows-PCs).
+
+5. In deinem Browser erscheitn ein Anledefenster. Gib als Benutzername „m32" und als Passwort „update“ ein.
+
+6. Es erscheint Dateiauswahldialog. Wähle die Binärdatei in deinem Download-Ordner aus und klicken dann auf „Begin“. Es erscheint eine Fortschrittsanzeige, und nach einiger Zeit (dies kann einige Minuten dauern - selbst wenn bereits 100% angezeigt weden), startet der Morserino neu und zeigt die neue Versionsnummer auf dem Startbildschirm an. DAmit ist klar, dass das Update erfolgreich war.
+
+#### Anzeige der MAC-Adresse ####
+
+
+Halte die ROTE Taste beim Einschalten oder Neustart gedrückt bis die MAC-Adresse in der Statuszeile des Displays angezeigt wird.
+Wenn du die ROTE Taste erneut drückst, wird der Morserino-32 ganz normal neu gestartet. Wenn du nichts tust, wird der Morserino wie üblich in den Deep Sleep Modus versetzt, abhängig von den von dir dafür festgelegten Einstellungen.

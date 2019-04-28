@@ -105,7 +105,7 @@ While you are presented a menu (either the start menu, or a menu to select prefe
 When in Keyer Modus, CW Generator Modus or Echo Trainer Modus, the status line shows the following, from left to right:
 
 * A **T** or an **X**, meaning the device uses the **T**ouch paddles or E**X**ternal paddles (selectable by entering the preferences menu).
-* **A**,**B** or **U**, indicating the automatic keyer mode: Iambic **A**, Iambic **B**, or **U**ltimatic (for details on these modi see below).
+* **A**,**B** , **U** or **N** , indicating the automatic keyer mode: Iambic **A**, Iambic **B**,  **U**ltimatic or **N**on-Squeeze (for details on these modi see below).
 * The currently set speed in words per minute. In CW Keyer modus as **nn**WpM, in CW Generator or Echo Trainer modus as (nn)**nn**WpM. The value in brackets shows the effective speed, which differs when inter-word spacing or inter-character spacing are set to other values than those defined by the norm (length of 3 dits for inter-character spacing, and length of 7 dits for inter-word spacing). See the notes below regarding the parameters you can set in CW Generator modus. 
 
   When in a transceiver modus, you also see two values for speed - the one in brackets is the speed of the signal received, the other one the speed of your keyer.
@@ -198,7 +198,7 @@ When you use one of these modi, the *top line* (status line) gives the following
 
 - **E** or **T**: The paddle that is currently in use, either an **E**xternal (mechanical) paddle, or the built-in **T**ouch paddle.
 
-- **A** or **B** or **U**: The automatic keyer mode, either Iambic A (Curtis A) mode, Iambic B (Curtis B mode) or Ultimatic mode.
+- **A** or **B**, **U** or **N**: The automatic keyer mode, either Iambic A (Curtis A) mode, Iambic B (Curtis B) mode,  Ultimatic mode or Non-Squeeze mode.
 
 - The **speed** in wpm (words per minute).
 
@@ -354,7 +354,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Paddle        | Allows selection of external paddles, or the built-in touch paddles | Touch Paddle / Ext. Paddle |
 | Paddle Polarity | Defines which paddle is for dits, and which for dahs | ` _. dah-dit` / **`._ di-dah`**  |
 | Latency | Defines, how long after generating the current element (dot or dash) the paddles will be „deaf“. If it is 0, you have to release the paddle while the last element is still „on“. If set to 7, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0 and 7, meaning 0/8 to 7/8 of a dot length (default is **4**, i.e. half a dot length). |
-| Keyer Mode     | Sets the Iambic Mode (A or B), or Ultimatic; see below  | Curtis A / Curtis B / Ultimatic |
+| Keyer Mode     | Sets the Iambic Mode (A or B),  Ultimatic or Non-Squeeze; see below  | Curtis A / Curtis B / Ultimatic / Non-Squeeze |
 | CurtisB DahT% | Timing in Curtis B mode for dahs; see below     | 0 -- 100, in steps of 5 [**35 - 55**] |
 | CurtisB DitT% | Timing in Curtis B mode for dits; see below     | 0 -- 100, in steps of 5 [**55 - 100**] |
 | AutoChar Spce   | Minimum spacing between characters  | Off / min. 2 / **3** / 4 dots |
@@ -373,7 +373,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Confrm. Tone  | Here you define if an audible confirmation tone should be sounded in Echo Trainer modus. If you turn it off, the device just repeats the prompt when the response was wrong, or sends a new prompt. The visual indication of "OK" or "ERR" will still be visible when the tone is turned off. | **On** / Off |
 |Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device | Never / CW Keyer only / Keyer&Trainer |
 | Send via LoRa | If set to ON, whatever the CW generator generates will also transmitted via LoRa - so you can have one device generating something, and several others receiving the same sequence (using the LoRa Trx modus). Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!| LoRa Tx ON / **LoRa Tx OFF** |
-| Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frquency = ca 700 Hz) | **Wide** / Narrow |
+| Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frequency = ca 700 Hz) | **Wide** / Narrow |
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response, and will be decreased by 1 whenever you made a mistake. | ON / **OFF** |
 | Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. | **M32 / JLMC (Just Learn Morse Code)**  /  LCWO |
 | Time Out | If the time specified there passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min |
@@ -405,7 +405,9 @@ If you set them to 0, the lowest value, the Mode is identical with the original 
 
 This parameter allows you to set any behavior between Curtis A and original Curtis B modes on a continuous scale, and you can set the percentage for dits and dahs separately (this makes sense, as the timing for dits is just a third of that for dahs, and so you might find that you want a higher percentage for dits to feel comfortable).
 
-**Ultimatic Mode**: In Ultimatic Mode, when you keep both paddles pressed, a dit or a dah is generated, depending on which paddle you hit first, and afterwards the opposite element is being generated continuously. This of advantage for characters like j, b, 1, 2, 6, 7.
+**Ultimatic Mode**: In Ultimatic Mode, when you keep both paddles pressed, a dit or a dah is generated, depending on which paddle you hit first, and afterwards the opposite element is being generated continuously. This is of advantage for characters like j, b, 1, 2, 6, 7.
+
+**Non-Squeeze Mode**: This „simulates“ the behavior of a single lever paddle when using a dual lever paddle. Operators used to single lever paddles tend to have difficulties using dual-lever paddles, as they sometimes inadvertently squeeze the paddles, especially at higher speeds. The non-squezze mode just ignores squeezing, making it easier for these operators to use a dual lever paddle.
 
 **NB**: Iambic modes and Ultimatic mode can only be used with the built-in touch paddle or an external dual-lever paddle; the selection of these modes is irrelevant when you use an external single-lever paddle.
 
@@ -525,6 +527,8 @@ For both of these functionalities the file to be uploaded (be it a text file or 
 
 In order to connect your Morserino-32 to your local WiFi network, you usually need to know the SSID (the "name") of the network, and the password to connect to it. And you must enter these two items into your Morserino-32. As it does not have a keyboard for convenient entry of this information, we use another way of doing it, and for this end another WiFi function has been implemented: network configuration, which is the first you have to use before you can use the other functions.
 
+For home networks that use a list of allowed MAC addresses (for security reasons), you have to configure your router and enter the M32's MAC address before you can connect your M32 to teh network. In order to be able to do so, there is also a function implemented to show the MAC address on the display.
+
 ####Network Configuration####
 While your Morserino-32 is displaying the Start menu, click the RED button three times quickly, in order to get into the WiFi Menu. The top entry is "WiFi Config", select it to proceed.
 
@@ -558,9 +562,25 @@ Now get the WiFi menu again by clicking quickly three times on the RED button, a
 
 Again you will see a file selection screen next, you select your binary file and click the button labelled "Begin". This time the uplaod will take longer - it can take a few minutes, so be patient. The file is big, needs to be uploaded and written to the Morserino-32 and needs to be verified to make sure it is an executable file. Finally, the device will restart itself and you should notice the new version number on the display during start-up.
 
+To sum it up, these are the steps for updating the firmware:
+
+1. Do the network configuration as described above (for this the Morserino sets up its own WiFi network, and you use your browser to enter the name and password of your home WiFi network). You do this only once, as the Morserino will remember these credentials for future use.
+
+2. You download the new binary to your computer.
+
+3. You start „Update firmware“ on your Morserino. After a while it will show you and IP address (which is on your home network!)  and a message, that it is waiting for an update.
+
+4. You leave your computer on your home network, and point your browser either to the IP address shown on the Morserino, or to „m32.local“ (this works on Macs, usually, it does not work on Windows PCs).
+
+5. You will get a login screen on your browser. Enter „m32" as username and „update“ as password.
+
+6. You will see a file selection dialogue. You select the binary file in your download folder, and then click „Begin“. You will see a progress bar, and after some time (can take a few minutes - even when the progress bar already shows 100%) the Morserino will restart itself, and show the new version number on the startup screen. Then you know the update was successful.
+
+####Displaying the MAC address####
 
 
-
+Keep the RED button pressed when you switch on or re-start your Morserino-32, until the MAC address appears on the status line of the display.
+If you press the RED button again, the Morserino-32 will restart normally. if you do nothing, the Morserino will go into deep sleep, depending on the settings you defined for that, as usual.
 
 
 
