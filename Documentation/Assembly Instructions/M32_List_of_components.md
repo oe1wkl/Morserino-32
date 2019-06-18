@@ -37,7 +37,7 @@ In the following picture you see these components with the exception of the PCB,
 1	|Bottom plate (acrylic glass)
 1	|Top plate (acrylic glass, engraved)
 1	|Bag with hardware &  antenna (clear -see below)
-1	|Cable USB-A – MicroUSB
+
 	
 ###Bag with hardware / antenna (clear; 25 items)
 | Qty | Item |
@@ -48,4 +48,5 @@ In the following picture you see these components with the exception of the PCB,
 4	|Stand-off Bolts, black nylon, 12mm, male/female M3 *)
 8	|Black anodized Screws (hex socket) 6mm M3
 4	|Self-adhesive plastic feet
+1  |2mm hex wrench
 *) You use either 6 mm or 12 mm stand-offs – see assembly instructions!
