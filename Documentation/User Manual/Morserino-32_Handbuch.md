@@ -360,7 +360,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | Length Calls | Maximale Länge der generierten Rufzeichen | Unlimited / max. 3 -- max. 6 |
 | Length Abbrev | Maximale Länge der zufällig erzeugten CW Abkürzungen und Q Gruppen | Unlimited / max. 2 -- max. 6 |
 | Length Words | Maximale Länge der zufällig erzeugten häufigen englischen Wörter | Unlimited / max. 2 -- max. 6 |
-| Trainer Disp | Wie der CW Generator die ausgegebene zeichen am Display darstellen soll | Display off / **Char by Char** / Word by word |
+| CW Gen Displ | Wie der CW Generator die ausgegebene zeichen am Display darstellen soll | Display off / **Char by Char** / Word by word |
 | Each Word 2x | Der CW Generator kann hiermit auf "Wortverdoppelung" geschaltet werden, zur Unterstützung des Gehörlesen Lernens | **Off** / On |
 | Randomize File |Wenn auf„On“ gesetzt, wird der File Player nach jedem Wort n Wörter auslassen (n = Zufallszahl zwischen 0 und 255) |  **Off** / On |
 |Echo Repeats    | Angabe, wie oft  im Echo Trainer Modus ein Wort maximal wiederholt werden soll, bevor nach Fehlern oder versäumter Eingabe ein neues Wort gewählt wird. Ist der Wert 0, wird das nächste Wort immer ein neues sein, egal ob die Antwort richtig oder falsch war.              | 0 -- 6 / Forever |
@@ -381,7 +381,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 
  |  | | 
  -----      |---  |--- |---
-| Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
+| Encoder Click | Tone Pitch Hz   |  External Pol.        |  Paddle Polarity | 
 | Latency | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |  
 | AutoChar Spce   | Time Out | Quick Start |
 
@@ -412,9 +412,9 @@ Mit diesem Parameter kann man jedes Verhalten zwischen den Modi Curtis A und dem
 
 | | | | |
 | ---| ---|---|---|
-| Encoder Click | Tone Pitch Hz   | Paddle        | Interword Spc |
+| Encoder Click | Tone Pitch Hz   | External Pol.        | Interword Spc |
 | Interchar Spc | Random Groups | Length Rnd Gr | Length Calls | 
-| Length Abbrev |Length Words | Trainer Disp | Each Word 2x | 
+| Length Abbrev |Length Words | CW Gen Displ | Each Word 2x | 
 |Key ext TX        | Send via LoRa |  Time Out | Quick Start |
 
 Anmerkungen:
@@ -435,8 +435,8 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 
 | | | | |
 | -------------- | ---|---|---|
-| Encoder Click | Tone Pitch Hz   |Paddle        | Interword Spc | 
-| Interchar Spc | Trainer Disp | Randomize File | Each Word 2x | Key ext TX        |
+| Encoder Click | Tone Pitch Hz   |External Pol.        | Interword Spc | 
+| Interchar Spc | CW Gen Displ | Randomize File | Each Word 2x | Key ext TX        |
 | Send via LoRa |  Time Out | Quick Start |
 
 
@@ -444,22 +444,23 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 
 | | | | |
 | -------------- | ---|---|---|
-| Encoder Click |  Tone Pitch Hz   | Paddle        | Paddle Polarity | 
-| Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | 
-| AutoChar Spce   | Tone Shift |  Interword Spc |  Interchar Spc | 
-| Random Groups | Length Rnd Gr | Length Calls | Length Abbrev | 
-|Length Words | Echo Repeats    | Confrm. Tone  | Time Out |
-| Quick Start |
+| Encoder Click |  Tone Pitch Hz   | External Pol.        | Paddle Polarity |
+| Latency |Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% | 
+|AutoChar Spce   | Tone Shift |  Interword Spc |  Interchar Spc | 
+| Random Groups |Length Rnd Gr | Length Calls | Length Abbrev |
+| Length Words | Echo Repeats   | Echo Prompt | Confrm. Tone  | 
+|Time Out | Quick Start |
 
 
 #### Parameter im ***Echo Trainer - File Player*** Modus
 
 | | | | |
 | -------------- | ---|---|---|
-| Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity | 
-|Latency | Keyer Mode     |  CurtisB DahT% | CurtisB DitT% | 
-|AutoChar Spce   |  Tone Shift |  Interword Spc | Interchar Spc | 
-|Randomize File | Time Out | Quick Start |
+| Encoder Click | Tone Pitch Hz   |  External Pol.        |  Paddle Polarity | 
+| Latency |Keyer Mode     |  CurtisB DahT% | CurtisB DitT% |
+| AutoChar Spce   | Tone Shift |  Interword Spc | Interchar Spc |
+| Randomize File | Echo Repeats   | Echo Prompt | Confrm. Tone  | 
+|  Time Out |Quick Start |
 
 <div style="page-break-after: always;"></div>
 
@@ -467,9 +468,9 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 
 | | | | |
 | -------------- | ---|---|---|
-| Encoder Click | Tone Pitch Hz   | Paddle        | Interword Spc | 
+| Encoder Click | Tone Pitch Hz   | External Pol.        | Interword Spc | 
 | Interchar Spc | Length Rnd Gr | Length Abbrev | Length Words | 
-| Trainer Disp | Each Word 2x | Key ext TX |      Send via LoRa | 
+| CW Gen Displ | Each Word 2x | Key ext TX |      Send via LoRa | 
 | Koch Sequence | Time Out | Quick Start |
 
 
@@ -477,17 +478,18 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 
 | | | | |
 | -------------- | ---|---|---|
-| Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity | 
-| Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |
-| AutoChar Spce   | Tone Shift |  Interword Spc | Interchar Spc | 
-| Length Rnd Gr | Length Abbrev |  Length Words | Echo Repeats    |  
-| Confrm. Tone  | Koch Sequence | Time Out | Quick Start |
+| Encoder Click | Tone Pitch Hz   | External Pol.        |  Paddle Polarity | 
+|Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  
+|AutoChar Spce   | Tone Shift |  Interword Spc | Interchar Spc |
+| Length Rnd Gr |  Length Abbrev |  Length Words | Echo Repeats    |  
+| Echo Prompt |Confrm. Tone  | Koch Sequence |  Time Out | 
+| Quick Start |
 
 #### Parameter im ***Transceiver - LoRa Trx*** Modus
 
 | | | | |
 | -------------- | ---|---|---|
-| Encoder Click | Tone Pitch Hz   | Paddle        |  Paddle Polarity |
+| Encoder Click | Tone Pitch Hz   | External Pol.        |  Paddle Polarity |
 | Latency | Keyer Mode     |  CurtisB DahT% |  CurtisB DitT% |  
 |AutoChar Spce   | Tone Shift |  Time Out | Quick Start |
 
@@ -495,7 +497,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 
 | | | | |
 | -------------- | ---|---|---|
-| Encoder Click | Tone Pitch Hz   |  Paddle        |  Paddle Polarity |
+| Encoder Click | Tone Pitch Hz   |  External Pol.        |  Paddle Polarity |
 | Latency |Keyer Mode     | CurtisB DahT% |  CurtisB DitT% |
 |AutoChar Spce   | Tone Shift |  Bandwidth |  Time Out |
 | Quick Start |
