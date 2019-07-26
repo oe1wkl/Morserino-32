@@ -4,6 +4,7 @@
 
 ###Ein multi-funktionales Morsegerät, perfekt zum Lernen und Trainieren
 
+Dieses Handbuch beschreibt Firmware Version 1.4
 
 ![](Images/Morserino.jpg)
 <div style="page-break-after: always;"></div>
@@ -344,7 +345,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | -------------- | --------------------------------- | ------ |
 | Encoder Click | Legt fest, ob beim Drehen des Drehgebers bei jedem Schritt ein kurzer Click zu hören sein soll oder nicht   | Off / On |
 | Tone Pitch Hz   | Die Frequenz des Mithörtons, in Hz | Reihe von Tönen zwischen 233 und 932 Hz, entsprechend der musikalischen Noten der B Dur Tonleiter von b bis b'' (2 Oktaven) |
-| Paddle        | Auswahl zwischen dem Touch Paddle oder einem externen Paddel | Touch Paddle / Ext. Paddle |
+| External Pol.        | Erlaubt es, mit der Einstellung "Reversed" die Polarität eines externen Paddles "umzudrehen", wenn das externe Paddle verkehrt herum verdrahtet ist, damit Punkte und Striche von internem und externem Paddle auf der jeweils gleichen Seite liegen. | Normal / Reversed |
 | Paddle Polarity | Legt fest, auf welcher Seite die dits und auf welcher die dahs sind | ` _. dah-dit` / **`._ di-dah`**  |
 | Latency | Bestimmt, wie lange die Paddles nach dem Generieren des aktuellen Elements (Punkt oder Strich) Berührungen ignorieren. Ist der Wert 0, müssen die Paddles noch während des letzten Elements ausgelassen werden. Ist der Wrt 7, reagieren die Paddles erst nach 7/8 einer Punktlänge auf neuerliche Eingaben. | Ein Wert zwischen 0 and 7, das bedeutet 0/8 bis 7/8 einer Punktlänge (Defaultwert ist **4**, dh. eine halbe Puktlänge). |
 | Keyer Mode     | Bestimmt den  Iambic Mode (A oder B),  Ultimatic oder Non-Squeeze Modus; mehr dazu weiter unten  | Curtis A / Curtis B / Ultimatic / Non-Squeeze |
@@ -361,7 +362,9 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | Length Words | Maximale Länge der zufällig erzeugten häufigen englischen Wörter | Unlimited / max. 2 -- max. 6 |
 | Trainer Disp | Wie der CW Generator die ausgegebene zeichen am Display darstellen soll | Display off / **Char by Char** / Word by word |
 | Each Word 2x | Der CW Generator kann hiermit auf "Wortverdoppelung" geschaltet werden, zur Unterstützung des Gehörlesen Lernens | **Off** / On |
-| Randomize File |Wenn auf„On“ gesetzt, wird der File Player nach jedem Wort n Wörter auslassen (n = Zufallszahl zwischen 0 und 255) |  **Off** / On ||Echo Repeats    | Angabe, wie oft  im Echo Trainer Modus ein Wort maximal wiederholt werden soll, bevor nach Fehlern oder versäumter Eingabe ein neues Wort gewählt wird. Ist der Wert 0, wird das nächste Wort immer ein neues sein, egal ob die Antwort richtig oder falsch war.              | 0 -- 6 / Forever |
+| Randomize File |Wenn auf„On“ gesetzt, wird der File Player nach jedem Wort n Wörter auslassen (n = Zufallszahl zwischen 0 und 255) |  **Off** / On |
+|Echo Repeats    | Angabe, wie oft  im Echo Trainer Modus ein Wort maximal wiederholt werden soll, bevor nach Fehlern oder versäumter Eingabe ein neues Wort gewählt wird. Ist der Wert 0, wird das nächste Wort immer ein neues sein, egal ob die Antwort richtig oder falsch war.              | 0 -- 6 / Forever |
+|Echo Prompt    | Legt fest, wie die Aufforderung im Echop Trainer Modus erfolgt: "Sound only" (Nur Töne - Defaulteinstellung und Standard in allen früheren Versionen; am besten um das Mitlesen im Kopf zu trainieren), "Display only" (nur am Display; am Display wird gezeigt, welches Wort von dir erwartet wird, es werden keine hörbaren Morsezeichen ausgegeben; gut um Eingaben mit dem Paddle zu üben), und "Sound&Displ" (Ausgabe sowohl akustisch als auch am Display).              | **Sound only** / Display only / Sound&Displ  |
 | Confrm. Tone  | Legt fest, ob im Echo Trainer Modus eine akustische Rückmeldung erfolgen soll. Die visuelle Anzeige "OK" oder "ERR" wird in jedem Fall angezeigt. | **On** / Off |
 |Key ext TX        | Legt fest, unter welchen Umständen ein extern angeschlossener Sender getastet werden soll. | Never / CW Keyer only / Keyer&Trainer |
 | Send via LoRa | Ist hier "ON gewählt, wird alles, was der CW generator erzeugt, auch via LoRa gesendet - man kann so zB mit einem gerät etwas erzeugen, und mehrere andere geräte empfangen alle dasselbe (diese müssen dann im LoR Trx Modus betrieben werden). Achtung! Bei loRa betrieb immer darauf achten, dass eine Antenne angeschlossen ist! Bei Sendebetrieb ohne Antenne kann das loRa Modul Schaden erleiden! | LoRa Tx ON / **LoRa Tx OFF** |

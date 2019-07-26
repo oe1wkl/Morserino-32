@@ -5,6 +5,8 @@
 
 ###A multi-functional Morse Code Device, perfect for Learning and Training
 
+This manual reflects firmware Version 1.4
+
 
 ![](Images/Morserino.jpg)
 <div style="page-break-after: always;"></div>
@@ -351,7 +353,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | -------------- | --------------------------------- | ------ |
 | Encoder Click | Turning the encoder may generate a short tone burst, or be silent   | Off / On |
 | Tone Pitch Hz   | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the B flat major scale from b flat to b'' flat (2 octaves) |
-| Paddle        | Allows selection of external paddles, or the built-in touch paddles | Touch Paddle / Ext. Paddle |
+| External Pol.        | Allows to reverse the polarity of an external paddle. Use this if your external paddle is wired "the wrong way", so that dots and dashed of ineral and external paddle are all at the same side. | Normal / Reversed|
 | Paddle Polarity | Defines which paddle is for dits, and which for dahs | ` _. dah-dit` / **`._ di-dah`**  |
 | Latency | Defines, how long after generating the current element (dot or dash) the paddles will be „deaf“. If it is 0, you have to release the paddle while the last element is still „on“. If set to 7, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0 and 7, meaning 0/8 to 7/8 of a dot length (default is **4**, i.e. half a dot length). |
 | Keyer Mode     | Sets the Iambic Mode (A or B),  Ultimatic or Non-Squeeze; see below  | Curtis A / Curtis B / Ultimatic / Non-Squeeze |
@@ -370,6 +372,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Each Word 2x | In the CW Trainer modus, each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear. | **Off** / On |
 | Randomize File | If set to „On“, file player will skip n words after each word sent (n = random number between 0 and 255) |  **Off** / On |
 |Echo Repeats    | Here you decide, how often a word is repeated when the response is either too late or erroneous, before a new word is being generated. If the value is 0, then the next word will always be a new one, regardless if you responded correctly or not.                 | 0 -- 6 / Forever |
+|Echo Prompt    | This defines how you are prompted in Echo Trainer mode. The possible settings are: „Sound only“ (default; the standard behavior in previous versions; best for learning to copy in your head), „Display only“ (the word you are supposed to enter is shown on the screen, no audible code is generated; good for training paddle input), and „Sound & Display“, i.e you hear the prompt AND you can see it on the display.               | **Sound only** / Display only / Sound&Displ |
 | Confrm. Tone  | Here you define if an audible confirmation tone should be sounded in Echo Trainer modus. If you turn it off, the device just repeats the prompt when the response was wrong, or sends a new prompt. The visual indication of "OK" or "ERR" will still be visible when the tone is turned off. | **On** / Off |
 |Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device | Never / CW Keyer only / Keyer&Trainer |
 | Send via LoRa | If set to ON, whatever the CW generator generates will also transmitted via LoRa - so you can have one device generating something, and several others receiving the same sequence (using the LoRa Trx modus). Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!| LoRa Tx ON / **LoRa Tx OFF** |
