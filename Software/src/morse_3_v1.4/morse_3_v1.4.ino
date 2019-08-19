@@ -130,7 +130,7 @@ const int PinDT=39;                    // Used for reading DT signal  - needs ex
 const int batteryPin = 13;
 
 // pin to switch ON Vext
-const int Vext = 21;
+//const int Vext = 21;
 
 
 #else
@@ -2230,6 +2230,13 @@ void displayMorse() {
       symbol.replace("<ve>", "V");
       symbol.replace("<ch>", "H");
       echoResponse.concat(symbol);
+  }
+  else if (morseState == morseKeyer) {
+      if (symbol.equals("<err>")) {
+        display.clear(); //MJ
+        displayTopLine();
+        printToScroll(REGULAR,"");      // clear the buffer
+      }
   }
   treeptr = 0;                                    // reset tree pointer
 }   /// end of displayMorse()
