@@ -1359,7 +1359,7 @@ void displayStartUp() {
   display.clear();
   display.display();
  
-  printOnStatusLine(true, 0,  "   Morserino-32   ");
+  printOnStatusLine(true, 0,  " Morserino-32 MJ  ");
   printOnScroll(0, REGULAR, 0, "Ver. " );
   
   sprintf(numBuffer,"%2i", VERSION_MAJOR);
