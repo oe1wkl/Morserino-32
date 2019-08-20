@@ -34,22 +34,22 @@ Dieses Handbuch beschreibt Firmware Version 1.4
 
 ##Ein- und Ausschalten / Laden des Akkus
 
-Falls du das Gerät mitEnergie vom USB Anschluss betreiben willst, verbinde es mit einem USB Kabel mit einem beliebigen 5V USB Ladegerät (es wird nur mit max. 200 mA belastet werden).
+Falls du das Gerät mit Energie vom USB-Anschluss betreiben willst, verbinde es mit einem USB-Kabel mit einem beliebigen 5V-USB-Ladegerät (es wird nur mit max. 200 mA belastet werden).
 
-Soll es mit Akku betrieben werden, stelle den Schiebeschalter auf di "ON" Position zum Einschalten.
+Soll es mit Akku betrieben werden, stelle den Schiebeschalter zum Einschalten auf die Position "ON".
 
 Wenn das Gerät ausgeschaltet, aber die Batterie angeschlossen ist (der Schiebeschalter ist eingeschaltet), befindet es sich tatsächlich im Tiefschlaf: Fast alle Funktionen des Mikrocontrollers sind deaktiviert, und der Energieverbrauch ist minimal (weniger als 5% des normalen Betriebsstroms). 
 
-Um das Gerät aus dem Tiefschlaf einzuschalten, drücke kurz die ROTE Taste (Power / Vol / Scroll). Es erscheint ein Startbildschirm für einige Sekunden. Der einzig interessante Punkt des Startbildschirms ist ganz unten: Man sieht einen Hinweis darauf, wie viel Akkukapazität noch vorhanden ist. Wenn diese dem Ende entgegen geht, sollte man das Gerät an eine USB-Stromquelle anschließen. (Der Akku wird auch leer, wenn man das Gerät im Tiefschlaf belässt:  nach einigen Tagen wird der Akku leer.) Wenn du also nicht vorhast, den Morserino in den nächsten Tagen wieder zu verwenden, trenne besser mit dem Schiebeschalter auf der Rückseite die Batterie vom Gerät...)
+Um das Gerät aus dem Tiefschlaf einzuschalten, drücke kurz die ROTE Taste (Power / Vol / Scroll). Es erscheint ein Startbildschirm für einige Sekunden. Der einzig interessante Punkt des Startbildschirms ist ganz unten: Man sieht einen Hinweis darauf, wie viel Akkukapazität noch vorhanden ist. Wenn diese dem Ende entgegen geht, sollte man das Gerät an eine USB-Stromquelle anschließen. (Der Akku wird auch leer, wenn man das Gerät im Tiefschlaf belässt:  nach einigen Tagen wird der Akku leer.) Wenn du also nicht vorhast, den Morserino in den nächsten Tagen wieder zu verwenden, trenne besser mit dem Schiebeschalter auf der Rückseite die Batterie vom Gerät.
 
 Wenn die Batteriespannung gefährlich niedrig ist, wird beim Einschalten ein leeres Batteriesymbol auf dem Bildschirm angezeigt, und das Gerät lässt sich nicht starten. Wenn dieses Symbol gezeigt wird, sollte man so bald wie möglich mit dem Laden des Akkus beginnen.
 
 Um das Gerät von der Batterie zu trennen ( = Ausschalten, außer es hängt an einer USB Stromversorgung), stelle den Schiebeschalter auf die "OFF" Position.
 
-Um das Gerät in den Tiefschlaf zu versetzen), gibt es zwei Möglichkeiten:
+Um das Gerät in den Tiefschlaf zu versetze), gibt es zwei Möglichkeiten:
 
 * Wähle im Hauptmenü die Option "Go to Sleep".
-* Falls in den Parametern ein "Time Out" eingestellt wurde: Tue nichts. Falls es keine Veränderungen am Display gibt, schaltet sich das Gerät nach Ablauf der vorgegebene Time-Out Zeit aus und geht in den Tiefschlaf.
+* Falls in den Parametern ein "Time Out" eingestellt wurde: Tue nichts. Falls es keine Veränderungen am Display gibt, schaltet sich das Gerät nach Ablauf der vorgegebenen Time-Out Zeit aus und geht in den Tiefschlaf.
 
 **Um den Akku aufzuladen**, verbinde ihn mit einem USB-Kabel mit einer zuverlässigen USB-5-V-Stromquelle wie z.B. deinem Computer oder einem USB-Ladegerät (z.B. eines Mobiltelefons). 
 **Vergewissere dich, dass der Schiebeschalter des Geräts zum Laden der Batterie  *eingeschaltet ist***. Wenn der Akku vom Gerät getrennt ist, kann er nicht geladen werden. Während des Ladevorgangs leuchtet die orangefarbene LED am ESP32-Modul hell. Wenn der Akku nicht angeschlossen ist, leuchtet diese LED nicht hell, sondern blinkt nervös oder leuchtet gedimmt.
@@ -58,13 +58,13 @@ Wenn der Akku vollständig aufgeladen ist, leuchtet die orangefarbene LED nicht 
 
 Man das Gerät natürlich immer verwenden, wenn es über USB mit Strom versorgt wird, ob der Akku nun gerade aufgeladen wird oder nicht.
 
-**Um eine Tiefentladung des Akkus zu vermeiden, sollte der Morserino-32 für längere Pausen immer mit dem Schiebeschalter abgeschaltet werden, und sollte nicht über sehr lange Zeit im Sleep Modus verbleiben** (1 bis 2 Tage ist ok, wenn die Batterie gut geladen war; ein voll geladener 600 mAh Akku wirdd innerhalb von 3-4 Tagen bis auf eine Spannung von 3,2 V entladen).
+**Um eine Tiefentladung des Akkus zu vermeiden, sollte der Morserino-32 für längere Pausen immer mit dem Schiebeschalter abgeschaltet werden, und sollte nicht über sehr lange Zeit im Sleep Modus verbleiben** (1 bis 2 Tage ist ok, wenn die Batterie gut geladen war; ein voll geladener 600 mAh Akku wird innerhalb von 3-4 Tagen bis auf eine Spannung von 3,2 V entladen).
 
 Das Heltec Modul hat eine Ladeelektronik an Bord, welche eine Überladung verhindert, aber es hat keine Schutzvorrichtung gegen Tiefentladung! **Tiefentladung führt rasch zu verminderter Akkukapazität und sogar zum vorzeitigen Tod des Akkus!**
 
 
 ## Verwenden des Drehgebers und der ROTEN Power / Vol / Scroll-Taste
-Die Auswahl der verschiedenen Modi und das Einstellen aller Arten von Parametern erfolgt mit dem Drehknopf bzw. dem **SCHWARZEN Knopf**. *Drehen* des Drehgebers führt durch die Optionen oder Werte, *das Klicken* des Knopfs wählt eine Option oder einen Wert aus oder führt zur nächsten Ebene des Menüs (es gibt bis zu drei Ebenen im Menü) und a *langes Drücken* beendet den aktuellen Status und führt eine Ebene nach oben bzw. zurück.
+Die Auswahl der verschiedenen Modi und das Einstellen aller Arten von Parametern erfolgt mit dem Drehknopf bzw. dem **SCHWARZEN Knopf**. *Drehen* des Drehgebers führt durch die Optionen oder Werte, *das Klicken* des Knopfs wählt eine Option oder einen Wert aus oder führt zur nächsten Ebene des Menüs (es gibt bis zu drei Ebenen im Menü) und *langes Drücken* beendet den aktuellen Status und führt eine Ebene nach oben bzw. zurück.
 
 Ein ***Doppelklick*** des SCHWARZEN Knopfes ruft das Einstellungsmenü für die Parameter auf. Wird das vom Startmenü (bzw. einem Untermenü) aus gemacht, können alle Parameter geändert werden. Ist man gerade in einem aktiven Modus, werden nur die Parameter angezeigt, die für den aktuellen Modus relevant sind.
 
@@ -72,7 +72,7 @@ Ein ***Doppelklick*** des SCHWARZEN Knopfes ruft das Einstellungsmenü für die 
 
 Mit der zusätzlichen Taste **ROT (Power / Vol / Scroll)** kann man schnell zwischen **Geschwindigkeitsregelung** und **Lautstärkeregelung** mit einem einzigen kurzen ***Klick*** umschalten.
 
-Ein ***langes Drücken*** wechselt die Anzeige und den Encoder in den **Scroll-Modus** (die Anzeige verfügt über einen Puffer von 15 Zeilen und normalerweise sind nur die unteren drei Zeilen zu sehen; im Scroll-Modus kann man zurück blättern und so die vorherigen Zeilen ansehen: Befindet man sich im Scroll-Modus  wird ganz rechts im Display eine **Scroll-Leiste** angezeigt, die ungefähr angibt, wo man sich innerhalb der 15 Zeilen des Textpuffers befindet. Durch erneutes* Klicken* im Scroll-Modus verlässt man diesen wieder, und der Drehgeber dient wieder zur Geschwindigkeitssteuerung.
+Ein ***langes Drücken*** wechselt die Anzeige und den Encoder in den **Scroll-Modus** (die Anzeige verfügt über einen Puffer von 15 Zeilen und normalerweise sind nur die unteren drei Zeilen zu sehen; im Scroll-Modus kann man zurück blättern und so die vorherigen Zeilen ansehen: Befindet man sich im Scroll-Modus, wird ganz rechts im Display eine **Scroll-Leiste** angezeigt, die ungefähr angibt, wo man sich innerhalb der 15 Zeilen des Textpuffers befindet. Durch erneutes* Klicken* im Scroll-Modus verlässt man diesen wieder, und der Drehgeber dient wieder zur Geschwindigkeitssteuerung.
 
 Während man sich im Menü befindet (z.B. unmittelbar nach dem Einschalten), verfügt die **ROTE Taste** über einige zusätzliche Funktionen (weitere Informationen dazu im Abschnitt **Startmenü**):
 
