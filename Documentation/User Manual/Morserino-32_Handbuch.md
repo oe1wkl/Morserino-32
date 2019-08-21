@@ -324,7 +324,7 @@ Auf der linken Seite der Statusanzeige wird oben ein schwarzes Rechteck angezeig
 
 Die vom Decoder erkannte aktuelle Geschwindigkeit wird in der Statuszeile als WpM angezeigt. Wird der Decoder Modus verlassen, wird diese Geschwindigkeitseinstellung beibehalten. Wenn man dann auf den CW-Keyer umschaltent wird der zuletzt eingestellte Geschwindigkeitswert des Decoders benutzt. Ich bin mir nicht sicher, ob dies ein Fehler oder ein Feature ist ;-)
 
-Dieser Modus hat nur wenige Parameter (siehe den nächsten Abschnitt); der vielleicht wichtigste davon ist die Möglichkeit, die Filterbandbreite für die Tonerkennung zwischen schmal (ca 150 Hz) und breit (ca 600 Herz) umzuschalten.
+Dieser Modus hat nur wenige Parameter (siehe den nächsten Abschnitt); der vielleicht wichtigste davon ist die Möglichkeit, die Filterbandbreite für die Tonerkennung zwischen schmal (ca 150 Hz) und breit (ca 600 Hertz) umzuschalten.
 
 <div style="page-break-after: always;"></div>
 
