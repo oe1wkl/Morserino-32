@@ -2595,6 +2595,9 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                 //Serial.println("New Word: " + CWword);
                 if (CWword.length() == 0)                             // we really should have something here - unless in trx mode; in this case return
                   return;
+                if (morseState == echoTrainer) {
+                  printToScroll(REGULAR, "\n");
+                }
             }
             c = CWword[0];                                            // retrieve next element from CWword; if 0, we were at end of character
             CWword.remove(0,1); 
@@ -3421,7 +3424,7 @@ void echoTrainerEval() {
     delay(interCharacterSpace / 2);
     if (echoResponse == echoTrainerWord) {
       echoTrainerState = SEND_WORD;
-      printToScroll(BOLD,  " OK ");
+      printToScroll(BOLD,  "OK");
       if (p_echoConf) {
           pwmTone(440,  p_sidetoneVolume, false);
           delay(97);
@@ -3436,7 +3439,7 @@ void echoTrainerEval() {
     } else {
       echoTrainerState = REPEAT_WORD;
       if (generatorMode != KOCH_LEARN || echoResponse != "") {
-          printToScroll(BOLD, " ERR ");
+          printToScroll(BOLD, "ERR");
           if (p_echoConf) {
               pwmTone(311,  p_sidetoneVolume, false);
               delay(193);
@@ -3585,11 +3588,17 @@ static FONT_ATTRIB lastStyle = REGULAR;
       pos = screenPos = 0;                                // reset the position pointers
       return;
   }
+
+  int linebreak = text.equals("\n");
+  int textTooLong = (screenPos + l > NoOfCharsPerLine);
   
-  
-  if (screenPos + l > NoOfCharsPerLine) {                 // we need to scroll up and start a new line
+  if (linebreak || textTooLong) {                 // we need to scroll up and start a new line
     newLine();
     pos = 0;  screenPos = 0; lastStyle = REGULAR;
+    if (linebreak) {
+      text = "";
+      l = text.length();
+    }
   }   
                                    
   /// store text in buffer
