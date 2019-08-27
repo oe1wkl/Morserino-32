@@ -385,7 +385,7 @@ enum prefPos  { posClicks, posPitch, posExtPaddles, posPolarity,
                 posRandomLength, posCallLength, posAbbrevLength, posWordLength, 
                 posTrainerDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf, 
                 posKeyTrainerMode, posLoraTrainerMode, posGoertzelBandwidth, posSpeedAdapt,
-                posKochSeq, posKochFilter, posLatency, posRandomFile, posTimeOut, posQuickStart };
+                posKochSeq, posKochFilter, posLatency, posRandomFile, posTimeOut, posQuickStart, posAutoStop };
 
 const String prefOption[] = { "Encoder Click", "Tone Pitch Hz", "External Pol.", "Paddle Polar.", 
                               "Keyer Mode   ", "CurtisB DahT%", "CurtisB DitT%", "AutoChar Spce", 
@@ -394,11 +394,11 @@ const String prefOption[] = { "Encoder Click", "Tone Pitch Hz", "External Pol.",
                               "CW Gen Displ ", "Each Word 2x ", "Echo Prompt  ", "Echo Repeats ", "Confrm. Tone ", 
                               "Key ext TX   ", "Send via LoRa", "Bandwidth    ", "Adaptv. Speed",  
                               "Koch Sequence", "Koch         ", "Latency      ", "Randomize File",
-                              "Time Out     ", "Quick Start  "};                   
+                              "Time Out     ", "Quick Start  ", "Auto Stop    "};                   
  prefPos keyerOptions[] =      {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posTimeOut, posQuickStart };
  prefPos generatorOptions[] =  {posClicks, posPitch, posExtPaddles, posInterWordSpace, posInterCharSpace, posRandomOption, 
                                     posRandomLength, posCallLength, posAbbrevLength, posWordLength, 
-                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posTimeOut, posQuickStart };
+                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posTimeOut, posQuickStart, posAutoStop };
  prefPos playerOptions[] =     {posClicks, posPitch, posExtPaddles, posInterWordSpace, posInterCharSpace, posTrainerDisplay, 
                                      posRandomFile, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posTimeOut, posQuickStart };
  prefPos echoPlayerOptions[] = {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
@@ -408,7 +408,7 @@ const String prefOption[] = { "Encoder Click", "Tone Pitch Hz", "External Pol.",
                                     posRandomLength, posCallLength, posAbbrevLength, posWordLength, posEchoRepeats,  posEchoDisplay, posEchoConf, posSpeedAdapt, posTimeOut, posQuickStart };
  prefPos kochGenOptions[] =    {posClicks, posPitch, posExtPaddles, posInterWordSpace, posInterCharSpace, 
                                     posRandomLength,  posAbbrevLength, posWordLength, 
-                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posKochSeq, posTimeOut, posQuickStart };
+                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posKochSeq, posTimeOut, posQuickStart, posAutoStop };
  prefPos kochEchoOptions[] =   {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posInterWordSpace, posInterCharSpace, 
                                     posRandomLength, posAbbrevLength, posWordLength, posEchoRepeats, posEchoDisplay, posEchoConf, posSpeedAdapt, posKochSeq, posTimeOut, posQuickStart };
@@ -507,6 +507,7 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t p_promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
   uint8_t p_tLeft = 20;                       // threshold for left paddle
   uint8_t p_tRight = 20;                      // threshold for right paddle
+  boolean p_autoStop = false;                 // If to stop after each word in generator modes
   
   boolean kochActive = false;                 // set to true when in Koch trainer mode
 
@@ -988,7 +989,6 @@ volatile uint8_t  dit_rot = 0;
 volatile unsigned long  dit_collector = 0;
 
 
-
 ////////////////////////////////////////////////////////////////////
 // encoder subroutines
 /// interrupt service routine - needs to be positioned BEFORE all other functions, including setup() and loop()
@@ -1311,6 +1311,8 @@ if (digitalRead(volButtonPin) == LOW) {     // RED eas pressed at start-up
     p_lcwoKochSeq = pref.getBool("lcwoKochSeq");
     p_quickStart = pref.getBool("quickStart");
 
+    p_autoStop  = pref.getBool("autoStop");
+
     pref.end();
 
     if (p_lcwoKochSeq) kochChars = lcwoKochChars;
@@ -1386,13 +1388,15 @@ void displayStartUp() {
   delay(2000);
 }
 
+enum AutoStopModes {off, stop1, stop2}  autoStop = off;
 
 ///////////////////////// THE MAIN LOOP - do this OFTEN! /////////////////////////////////
 
 void loop() {
 // static uint64_t loopC = 0;
    int t;
-   
+
+   boolean activeOld = active;
    checkPaddles();
    switch (morseState) {
       case morseKeyer:    if (doPaddleIambic(leftKey, rightKey)) {
@@ -1413,13 +1417,38 @@ void loop() {
                             displayCWspeed();
                           }
                           break;    
-      case morseGenerator:  if (leftKey  || rightKey)   {                                    // touching a paddle starts and stops the generation of code
+      case morseGenerator:  if ((autoStop == stop1) || leftKey  || rightKey)   {                                    // touching a paddle starts and stops the generation of code
                           // for debouncing:
                           while (checkPaddles() )
                               ;                                                           // wait until paddles are released
-                          active = !active;
+
+                          if (p_autoStop) {
+                            active = (autoStop == off);
+                            switch (autoStop) {
+                              case off : {
+                                  break;
+                                  //
+                                }
+                              case stop1: {
+                                  autoStop = stop2;
+                                  break;
+                                }
+                              case stop2: {
+                                  printToScroll(REGULAR, "\n");
+                                  autoStop = off;
+                                  break;
+                                }
+                            }
+                          }
+                          else {
+                            active = !active;
+                            autoStop = off;
+                          }
+
                           //delay(100);
-                    
+                          } /// end squeeze
+
+                          if (activeOld != active) {
                           if (!active) {
                              //digitalWrite(keyerPin, LOW);           // turn the LED off, unkey transmitter, or whatever
                              //pwmNoTone(); 
@@ -1428,8 +1457,8 @@ void loop() {
                           else {
                              generatorState = KEY_UP; 
                              genTimer = millis()-1;           // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc...          
-                            }
-                          } /// end squeeze
+                          }
+                          }
                           if (active)
                             generateCW();
                           break;
@@ -1583,7 +1612,8 @@ void menu_() {
    uint8_t disp = 0;
    int t, command;
    
-     //// initialize a few things now 
+     //// initialize a few things now
+     Serial.println("THE MENU");
     updateTimings();
     LoRa.idle();
     keyerState = IDLE_STATE;
@@ -1596,7 +1626,8 @@ void menu_() {
     keyerState = IDLE_STATE;
     interWordTimer = 4294967000;                 // almost the biggest possible unsigned long number :-) - do not output a space at the beginning
     genTimer = millis()-1;                       // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc... 
-    printToScroll(REGULAR, "");                  // clear the buffer
+    clearScroll();                  // clear the buffer
+    clearScrollBuffer();
     //pwmNoTone();                               // stop side tone  - just in case
     //digitalWrite(keyerPin, LOW);               // turn the LED off, unkey transmitter, or whatever; just in case....
     keyOut(false, true, 0, 0);
@@ -1759,7 +1790,7 @@ boolean menuExec() {                                          // return true if 
                 delay(1250);
                 display.clear();
                 displayTopLine();
-                printToScroll(REGULAR, "");      // clear the buffer
+                clearScroll();      // clear the buffer
                 keyTx = true;
                 return true;
                 break;
@@ -2595,7 +2626,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                 //Serial.println("New Word: " + CWword);
                 if (CWword.length() == 0)                             // we really should have something here - unless in trx mode; in this case return
                   return;
-                if (morseState == echoTrainer) {
+                if ((morseState == echoTrainer)) {
                   printToScroll(REGULAR, "\n");
                 }
             }
@@ -2639,6 +2670,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
             keyOut(false, (morseState != loraTrx), 0, 0);
             if (! CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode
  //             // display last character - consider echo mode!
+                autoStop = p_autoStop ? stop1 : off;
                 dispGeneratedChar();
                 if (morseState == echoTrainer) {
                     switch (echoTrainerState) {
@@ -2759,8 +2791,11 @@ void fetchNewWord() {
     } // end if loraTrx
     else {
 
-    //if (morseState != echoTrainer)  
+    //if (morseState != echoTrainer)
+    if (!p_autoStop) {
         printToScroll(REGULAR, " ");    /// in any case, add a blank after the word on the display
+    }
+    
     if (generatorMode == KOCH_LEARN) {
         startFirst = false;
         echoTrainerState = SEND_WORD;
@@ -2999,6 +3034,8 @@ void displayKeyerPreferencesMenu(int pos) {
     case posTimeOut:      displayTimeOut();
                           break;
     case posQuickStart:   displayQuickStart();
+                          break;
+    case posAutoStop:     displayAutoStop();
                           break;
   } /// switch (pos)
 
@@ -3262,6 +3299,11 @@ void displayQuickStart() {
                                                   "OFF        " ); 
 }
 
+void displayAutoStop() {
+      printOnScroll(2, REGULAR, 1, p_autoStop ? "ON         " :
+                                                  "OFF        " ); 
+}
+
 boolean adjustKeyerPreference(prefPos pos) {        /// rotating the encoder changes the value, click returns to preferences menu
      //printOnScroll(1, REGULAR, 0, " ");       /// returns true when a long button press ended it, and false when there was a short click
      printOnScroll(2, INVERSE_BOLD, 0, ">");
@@ -3409,6 +3451,9 @@ boolean adjustKeyerPreference(prefPos pos) {        /// rotating the encoder cha
                                 break;
                 case posQuickStart: p_quickStart = !p_quickStart;
                                 displayQuickStart();
+                                break;
+                case posAutoStop: p_autoStop = !p_autoStop;
+                                displayAutoStop();
                                 break;
             }   // end switch(pos)                  
             display.display();                                                          // update the display   
@@ -3570,20 +3615,74 @@ void printOnStatusLine(boolean strong, uint8_t xpos, String string) {    // plac
 }
 
 
+String printToScroll_buffer = "";
+FONT_ATTRIB printToScroll_lastStyle = REGULAR;
 
 
 void printToScroll(FONT_ATTRIB style, String text) {
+    Serial.printf("printToScroll(%s)\n", text.c_str());
+
+String SP = " ";
+String SL = "/";
+  
+  boolean styleChanged = (style != printToScroll_lastStyle);
+  boolean lengthExceeded = printToScroll_buffer.length() + text.length() > 10;
+  if (styleChanged || lengthExceeded) {
+    Serial.print("style/length " + styleChanged + SL + lengthExceeded + SP);
+    flushScroll();
+  }
+  
+  printToScroll_buffer += text;
+  printToScroll_lastStyle = style;
+
+  boolean linebreak = text.endsWith("\n");
+  boolean printToScroll_autoflush = !p_autoStop;
+  if (printToScroll_autoflush || linebreak) {
+    Serial.print("auto/line " + printToScroll_autoflush + SP + linebreak + SP);
+    flushScroll();
+  }
+}
+
+
+void clearScrollBuffer() {
+    Serial.println("clear 1 " + printToScroll_buffer);
+  printToScroll_buffer = "";
+  printToScroll_lastStyle = REGULAR;
+    Serial.println("clear 2 " + printToScroll_buffer);
+}
+
+void flushScroll() {
+  uint8_t len = printToScroll_buffer.length();
+  if (len != 0) {
+  Serial.print("flush: ");
+  for (int i = 0; (i < len); i++) {
+    String t = printToScroll_buffer.substring(i, i+1);
+    Serial.printf(" flushing %d<%s> ", i, t.c_str());
+    printToScroll_internal(printToScroll_lastStyle, t);
+  }
+  clearScrollBuffer();
+  }
+  else {
+  Serial.println("(flush)");
+    }
+}
+
+
+void printToScroll_internal(FONT_ATTRIB style, String text) {
 /// store text in textBuffer, if it fits the screen line; otherwise scroll up, clear bottom buffer, store in new buffer, print on new lien
+    Serial.println("printToScroll_internal: " + text);
 
 static uint8_t pos = 0;
 static uint8_t screenPos = 0;
 //uint8_t printedChars;
 
 static FONT_ATTRIB lastStyle = REGULAR;
-  int l = text.length();
+  uint8_t l = text.length();
   if (l == 0) {                               // an empty string signals we should clear the buffer
-      for (int i = 0; i< NoOfLines; ++i)
+      Serial.println("printToScroll_internal clearing buffer");
+      for (int i = 0; i< NoOfLines; ++i) {
           textBuffer[i][0] = (char) 0;                    /// empty this line 
+      }
       refreshScrollArea((NoOfLines + bottomLine-2) % NoOfLines);
       pos = screenPos = 0;                                // reset the position pointers
       return;
@@ -3735,6 +3834,17 @@ void clearLine(uint8_t line) {                                              /// 
   display.fillRect(0, SCROLL_TOP + line * LINE_HEIGHT , 127, LINE_HEIGHT+1);
   display.setColor(WHITE);
 }
+
+
+void clearScroll() {
+  printToScroll_internal(REGULAR, "");
+  clearScrollBuffer();
+  clearLine(0);
+  clearLine(1);
+  clearLine(2);
+  Serial.println("clearScroll()");
+}
+
 
  
 void drawVolumeCtrl (boolean inverse, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t volume) {
@@ -3954,6 +4064,8 @@ void updatePreferences() {
         pref.putUChar("timeOut", p_timeOut);
     if (p_quickStart != pref.getBool("quickStart"))
         pref.putBool("quickStart", p_quickStart);
+    if (p_autoStop != pref.getBool("autoStop"))
+        pref.putBool("autoStop", p_autoStop);
 
     pref.end();
 }
