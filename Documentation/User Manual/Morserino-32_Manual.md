@@ -381,6 +381,7 @@ Bold values are standard or recommended ones. When called from the Start Menu, a
 | Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. | **M32 / JLMC (Just Learn Morse Code)**  /  LCWO |
 | Time Out | If the time specified there passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min |
 | Quick Start | Allows you to bypass the intial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been selected before last shutdown. | ON / **OFF** |
+| Auto Stop | Stops the generating of morse characters in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the paddle or pressing the rotary encoder.| ON / **OFF** |
 
 
 
@@ -425,6 +426,7 @@ This parameter allows you to set any behavior between Curtis A and original Curt
 | Interchar Spc | Random Groups | Length Rnd Gr | Length Calls | 
 | Length Abbrev |Length Words | CW Gen Displ | Each Word 2x | 
 |Key ext TX        | Send via LoRa |  Time Out | Quick Start |
+| Auto Stop |
 
 
 
@@ -446,7 +448,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |External Pol.        | Interword Spc | 
 | Interchar Spc | CW Gen Displ | Randomize File | Each Word 2x | Key ext TX        |
-| Send via LoRa |  Time Out | Quick Start |
+| Send via LoRa |  Time Out | Quick Start | Auto Stop |
 
 
 #### Parameters in ***Echo Trainer*** modus
@@ -480,7 +482,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 | Encoder Click | Tone Pitch Hz   | External Pol.        | Interword Spc | 
 | Interchar Spc | Length Rnd Gr | Length Abbrev | Length Words | 
 | CW Gen Displ | Each Word 2x | Key ext TX     |  Send via LoRa | 
-| Koch Sequence | Time Out | Quick Start |
+| Koch Sequence | Time Out | Quick Start | Auto Stop |
 
 #### Parameters in ***Koch Trainer - Echo Trainer*** modus
 

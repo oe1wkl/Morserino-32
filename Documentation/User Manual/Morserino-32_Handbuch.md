@@ -373,6 +373,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Bei Aufruf über das S
 | Koch Sequence | Bestimmt die Reihenfolge der Zeichen, wenn man die Koch Methode zum lernen und Üben verwendet. | **M32 / JLMC (Just Learn Morse Code)**  /  LCWO |
 | Time Out | Nach Ablauf der eingestellten Zeit ohne jedwedes Update am Display geht das Gerät in den "Deep Sleep" Modus um weniger Strom zu verbrauchen. Es kann durch Drücken der ROTEN Taste wieder eingeschaltet werden. | No timeout / **5 min** / 10 min / 15 min |
 | Quick Start | Umgeht das Startmenü beim Einschalten, d.h. nach dem Einschalten wird sofort der Modus ausgeführt, der beim letzten Abschalten aktiv war.  | ON / **OFF** |
+| Auto Stop | Stoppt das Generieren von Morsezeichen im Generator- und im Koch-Generator-Modus nach jeder Gruppe, sodass man z.B. mit kleinen Gruppen das Gehörlesen üben kann. Fortfahren durch Berührung eines Paddles oder durch Drücken des Encoders.| ON / **OFF**|
 
 <div style="page-break-after: always;"></div>
 
@@ -416,6 +417,7 @@ Mit diesem Parameter kann man jedes Verhalten zwischen den Modi Curtis A und dem
 | Interchar Spc | Random Groups | Length Rnd Gr | Length Calls | 
 | Length Abbrev |Length Words | CW Gen Displ | Each Word 2x | 
 |Key ext TX        | Send via LoRa |  Time Out | Quick Start |
+| Auto Stop |
 
 Anmerkungen:
 
@@ -437,7 +439,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | -------------- | ---|---|---|
 | Encoder Click | Tone Pitch Hz   |External Pol.        | Interword Spc | 
 | Interchar Spc | CW Gen Displ | Randomize File | Each Word 2x | Key ext TX        |
-| Send via LoRa |  Time Out | Quick Start |
+| Send via LoRa |  Time Out | Quick Start | Auto Stop |
 
 
 #### Parameter im ***Echo Trainer*** Modus
@@ -471,8 +473,7 @@ Die ARRL und einige Morse-Trainingsprogramme verwenden etwas, das sie *"Farnswor
 | Encoder Click | Tone Pitch Hz   | External Pol.        | Interword Spc | 
 | Interchar Spc | Length Rnd Gr | Length Abbrev | Length Words | 
 | CW Gen Displ | Each Word 2x | Key ext TX |      Send via LoRa | 
-| Koch Sequence | Time Out | Quick Start |
-
+| Koch Sequence | Time Out | Quick Start | Auto Stop |
 
 #### Parameter im ***Koch Trainer - Echo Trainer*** Modus
 
