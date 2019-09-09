@@ -36,13 +36,13 @@ This manual reflects firmware Version 1.4
 
 ##Powering On and Off / Charging the Battery
 
-If you want to use the devie with USB power, just plug a USB cabel in from virtually any USB charger (it consumes a max of 200 mA, so any 5V charger will do).
+If you want to use the device with a USB power, just plug a USB cable in from virtually any USB charger (it consumes a max of 200 mA, so any 5V charger will do).
 
 If you run it from battery power, slide the sliding switch to the ON position.
 
 When the device is off but with the battery connected (sliding power switch is on), it is in deep sleep in reality: almost all functions of the microcontroller are turned off, and power consumption is minimal (less than 5% of normal operation).
 
-To turn the device on from deep sleep, just press the RED (Power/Vol/Scroll) button momentarily. You will see a start screen for a couple of seconds. The only interesting bit of the start screen is at its very bottom: you will see an indication of how much battery power is still left. If this goes way towards empty, you should connect your device to a USB power source. (The battery will be drained even if you never turn the device on - although this is rather minimal in its deep sleep status, a full battery will be empty after a couple of days. Therrefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the slider switch at the back...)
+To turn the device on from deep sleep, just press the RED (Power/Vol/Scroll) button momentarily. You will see a start screen for a couple of seconds. The only interesting bit of the start screen is at its very bottom: you will see an indication of how much battery power is still left. If this goes way towards empty, you should connect your device to a USB power source. (The battery will be drained even if you never turn the device on - although this is rather minimal in its deep sleep status, a full battery will be empty after a couple of days. Therefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the slider switch at the back...)
 
 If the battery voltage is dangerously low when you attempt to turn it on, an empty battery symbol will show on the scren and the device will refuse to boot up. if you see this symbol, you should begin charging your battery as soon as possible.
 
@@ -96,7 +96,7 @@ All WiFi functions end with the Morserino32 re-booting after these functions hav
 
 ##The Display
 
-The display is divided into two main sections: on top is the status line, that gives important information according to the current state of the device, and below is an **area of three scrolling lines** where the generated Morse code characters are shown in clear text.  All characerts from Morse code are shown in lower case, for better readability; Pro signs are shown as letters in brackets, like `<ka>` or `<sk>`. In addition, when in Echo Trainer modus (see below), the result of your attempt to enter the correct Morse code is shown as `ERR` or `OK` (together with some audible signals).
+The display is divided into two main sections: on top is the status line, that gives important information according to the current state of the device, and below is an **area of three scrolling lines** where the generated Morse code characters are shown in clear text.  All characters from Morse code are shown in lower case, for better readability; Pro signs are shown as letters in brackets, like `<ka>` or `<sk>`. In addition, when in Echo Trainer modus (see below), the result of your attempt to enter the correct Morse code is shown as `ERR` or `OK` (together with some audible signals).
 
 Although only three lines of scrolling text are shown, there is internally a buffer of 15 lines -- after a long press of  the RED (Vol/Scroll) button you can use the encoder to scroll back and make the previous lines visible again. This also works while you are in any of the modi and screen output is being generated - nothing is lost and the display reverts to its normal behaviour once you leave the scroll mode.
 
