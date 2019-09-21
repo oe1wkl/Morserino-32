@@ -16,7 +16,7 @@ checkpartial_contest_calls_random.txt
 
 RealQSOs.TXT
 ============
-	This File contains a large number of realistic QSO exchanges, and I am grateful 
+	This file contains a large number of realistic QSO exchanges, and I am grateful 
 	to Bill, G0ELZ, for giving permission to use this file, that he and Gordon, 
 	G3DVW (SK), wrote up over a number of years.
 
