@@ -1373,7 +1373,9 @@ void loop() {
                                printOnStatusLine(true, 0, "Continue w/ Paddle");
                             }
                           else {
-                               cleanStartSettings();        
+                               //cleanStartSettings();        
+                               generatorState = KEY_UP; 
+                               genTimer = millis()-1;           // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc...          
                             }
                           }
                           if (active)
