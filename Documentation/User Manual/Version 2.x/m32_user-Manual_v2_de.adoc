@@ -569,7 +569,7 @@ Die Statuszeile unterscheidet sich leicht von den anderen Modi. Zunächst einmal
 
 Links neben der Statusanzeige oben sieht man bei jedem Tastendruck ein schwarzes Rechteck (oder wenn ein 700 Hz-Ton erkannt wurde) - dies ersetzt die Anzeige für den Keyer-Modus.
 
-Die vom Decoder erfasste aktuelle Geschwindigkeit wird als WpM in der Statuszeile angezeigt. Wann immer man den Decoder verlässt, bleibt diese Geschwindigkeitseinstellung erhalten - wenn man also zum CW Keyer wechselt, wird dieser auf den letzten mit dem Decoder erfassten Geschwindigkeitswert gesetzt. Ich bin mir nicht sicher, ob es sich hier um einen Bug oder um ein Feature handelt ;-)
+Die vom Decoder erfasste aktuelle Geschwindigkeit wird als WpM in der Statuszeile angezeigt.
 
 Dieser Modus hat nicht viele Parameter (siehe den Abschnitt <<parameters>>); am wichtigsten ist vielleicht die Möglichkeit, die Filterbandbreite des Audiodecoders zwischen schmal (ca 150 Hz) und breit (ca 600 Hz) umzuschalten. Für die Dekodierung von Signalen von einem Sender-Empfänger (wo sich andere Signale in der Nähe befinden können) ist es in der Regel am besten, die Bandbreite auf "Narrow" einzustellen und das Signal auf genau 700 Hz einzustellen. Für die Dekodierung von Signalen von einem FM-Transceiver, von iCW oder anderen Umgebungen mit geringer Interferenz ist es besser, die Einstellung "Wide" zu verwenden - in diesem Fall muss die Tonfrequenz nicht genau 700 Hz betragen.
 
@@ -736,7 +736,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem St
 | Length Calls | Hier wählt man die maximale Länge der erzeugten Rufzeichen aus. | Unlimited (unbegrenzt) / max. 3 -- max. 6
 | Length Abbrev | Hier wählt man die maximale Länge der zufällig erzeugten allgemein üblichen CW-Kürzel und Q-Gruppen aus. | Unlimited (unbegrenzt) / max. 2 -- max. 6
 | Length Words | Hier wählt man die maximale Länge der zufällig generierten allgemeinen englischen Wörter aus. | Unlimited (unbegrenzt) / max. 2 -- max. 6
-| Max # of Words | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen erzeugt wurde, erzeugt der Morserino-32 ein abschließendes AR ("+"), um anzuzeigen, dass diese Sequenz beendet ist, und pausiert dann und wartet - nach Berühren eines Paddels (oder einem Klick auf den schwarzen Knopf) fährt er fort und erzeugt die nächste Folge von Wörtern. | **Unlimited** (unbegrenzt) / 5 bis 250 in Schritten von  5
+| Max # of Words | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen erzeugt wurde, erzeugt der Morserino-32 ein abschließendes AR ("+"), um anzuzeigen, dass diese Sequenz beendet ist, und pausiert dann und wartet - nach Berühren eines Paddels (oder einem Klick auf den schwarzen Knopf) fährt er fort und erzeugt die nächste Folge von Wörtern. (Falls die Option "Auto Stop" aktiv ist, wird dieser Parameter im CW Generator ignoriert.) | **Unlimited** (unbegrenzt) / 5 bis 250 in Schritten von  5
 | CW Gen Displ | Hier wählt man aus, wie der CW Trainer anzeigen soll, was er erzeugt. | Display off (keine Anzeige)/ **Char by Char** (Zeichen für Zeichen) / Word by word (Wort für Wort)
 | Each Word 2x | Im CW Trainer Modus wird bei Stellung "On" jedes "Wort" (Zeichen zwischen den Leerzeichen) zweimal ausgegeben, um zu lernen, nach Gehör mitzulesen.| **Off** / On
 | Randomize File | Wenn auf "On" gesetzt, überspringt der File Player nach jedem gesendeten Wort n Wörter (n = Zufallszahl zwischen 0 und 255). |  **Off** / On

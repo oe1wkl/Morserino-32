@@ -572,7 +572,7 @@ The status line is slightly different from the other modi. First of all, the rot
 
 On the left of the status display at the top, you will see a black rectangle whenever the key is pressed (or a 700 Hz tone is detected) - this replaces the indicator for the keyer mode.
 
-The current speed as detected by the decoder is displayed as WpM on the status line. Whenever you leave the decoder, this speed setting is preserved - so when you switch over to the CW Keyer, it will be set to the last speed value detected with the decoder. I am not sure if this is a bug or a feature ;-)
+The current speed as detected by the decoder is displayed as WpM on the status line.
 
 This modus does not have many parameters (see the section <<parameters>>); maybe the most important is the ability to switch the filter bandwidth of the audio decoder between narrow (ca 150 Hz) and wide (ca 600 Hz). For decoding signals from a transceiver (where there might be other signals in the vicinity), it is usually best to set the bandwidth to "Narrow" and tune the signal to precisely 700 Hz. For decoding signals from an FM transceiver, or from iCW or other environments with little interference, it is better to use the "Wide" setting - in that case the audio frequency does not need to be exactly 700 Hz.
 
@@ -739,7 +739,7 @@ Bold values are standard or recommended ones. When called from the start menu, a
 | Length Calls | Select the maximum length of generated call signs | Unlimited / max. 3 -- max. 6
 | Length Abbrev | Select the maximum length of the randomly generated common CW abbreviations and Q groups | Unlimited / max. 2 -- max. 6
 | Length Words | Select the maximum length of the randomly generated common English words | Unlimited / max. 2 -- max. 6
-| Max # of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause  and wait - with a touch of a paddle (or clicking the black knob) it will continue and generate the next sequence of  words. | **Unlimited** / 5 to 250 in steps of 5
+| Max # of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause  and wait - with a touch of a paddle (or clicking the black knob) it will continue and generate the next sequence of  words. (When "Auto Stop" is active, this parameter will be ignored in CW Generator modus.) | **Unlimited** / 5 to 250 in steps of 5
 | CW Gen Displ | Select, how the trainer should display what it generates | Display off / **Char by Char** / Word by word
 | Each Word 2x | In the CW Trainer modus, each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear. | **Off** / On
 | Randomize File | If set to „On“, file player will skip n words after each word sent (n = random number between 0 and 255) |  **Off** / On
