@@ -588,6 +588,8 @@ Für Heimnetzwerke, die (aus Sicherheitsgründen) eine Liste der zulässigen MAC
 
 Alle netzwerkbezogenen Funktionen finden sich unter dem Menüpunkt "**WiFi Functions**".
 
+IMPORTANT: In Softwareversionen vor 2.0 waren die WLAN Funktionen nicht im Hauptmenü untergebracht. Für den Fall, dass du ein Update von Version 1.x auf Version 2.x machen möchtest, lies bitte <<appendix3>> am Ende dieses Dokuments.
+
 ==== Anzeige der MAC-Adresse (Displaying the MAC Address)
 "**Disp MAC Addr**" ist der erste Eintrag unter dem Menü "Wifi Functions" und zeigt die MAC-Adresse des Morserino in der Statuszeile an. Jeder Morserino hat eine eindeutige MAC-Adresse.
 
@@ -598,7 +600,7 @@ Wenn man die ROTE Taste drückt, startet der Morserino-32  neu. Wenn man nichts 
 
 ==== Netzwerkkonfiguration
 
-Wähl  das Untermenü "WiFi Config", um die Netzwerkkonfiguration durchzuführen.
+Wähl das Untermenü "WiFi Config", um die Netzwerkkonfiguration durchzuführen.
 
 Das Gerät startet WLAN als **Access Point** und erstellt so ein eigenes WLAN-Netzwerk (mit der SSID "morserino"). Wenn man die verfügbaren Netzwerke mit dem Computer oder Smartphone überprüft, kann man es leicht finden; bitte verwenden dieses Netzwerk auf deinem PC (oder  Tablett oder  Smartphone  -- du benötigst kein Passwort zur Verbindung).
 
@@ -637,6 +639,8 @@ IMPORTANT: Wenn du den Vorgang aus irgendeinem Grund abbrechen musst, musst du d
 ==== Aktualisierung der Morserino-32 Firmware
 
 Das Aktualisieren der Firmware des Morserino-32 über WLAN ist der einfachste Weg, um die Firmware zu aktualisieren. Während man traditionell eine Softwareentwicklungsumgebung auf dem Computer benötigte (in unserem Fall die Arduino IDE plus die notwendigen Dateien zur Unterstützung des Heltec-Moduls),um mit dieser die Software zu kompilieren, nachdem man sichergestellt hatte, dass alle notwendigen Bibliotheken ebenfalls installiert waren, und dann die Software über USB auf den Mikrocontroller zu laden, benötigt man jetzt nur noch einen Computer mit einem Internet-Browser und einem WLAN-Netzwerk.
+
+TIP: Du kannst jede beliebige Version aufspielen, man kann auch Versionen überspringen, ja, man kann auch wieder zu älteren Versionen zurück gehen.
 
 Das Aktualisieren der Firmware ist sehr ähnlich wie das Hochladen einer Textdatei. Zuerst muss  die Binärdatei aus dem Morserino-32-Repository auf GitHub geholt werden (https://github.com/oe1wkl/Morserino-32 - suche nach einem Verzeichnis namens "Binaries" unter "Software" . Hol dir die neueste Version und lade sie auf deinen Computer herunter. Der Dateiname sieht so aus:
 
@@ -790,3 +794,19 @@ Dies startet eine Funktion zur Einstellung des Audioeingangspegels: Stelle siche
 Ein einfacher Test oder eine Demo für die Audio-In-Einstellung besteht darin, den Line-Out mit dem Audio-In-Anschluss zu verbinden (verbinde dazu "Tip" mit "Sleeve") und den Ausgangston in den Audio-Eingang einzuspeisen. Man kann sehen, wie sich der Balken ändert, wenn man das Potentiometer dreht, wobei an einem Ende des Potentiometerbereichs nur ein winziger Balken in der Mitte verbleibt und die beiden Rechtecke an beiden Enden des Diagramms freigelegt werden (im Wesentlichen misst man dann nur nur das Rauschen am Eingang der Operationsverstärkers). Am anderen Ende des Potentiometer-Drehbereichs geht hingegen der Balken über die äußeren Enden der Rechtecke hinaus. Nun kann man den Pegel mit dem Potentiometer so einstellen, dass der helle Balken die Außengrenzen der Rechtecke **fast** berührt. Dies ist die optimale Einstellung für den Audioeingang. Natürlich muss man dies für die Audioquelle tun, die man verwenden möchte, z.B. für einen Radioempfänger.
 
 TIP: Nur wenn Sie sich im Menü befinden, aktiviert  **Langes Drücken der ROTEN Taste**die Pegeleinstellfunktion. Während man einen der Morserino-Modi (Keyer, Generator, Echo-Trainer, Transceiver usw.) ausführt, aktiviert ein langer Druck auf die ROTE Taste den Scroll-Modus der Anzeige, damit man Text lesen kann, der bereits weggescrollt ist!
+
+=== Anhang 3: Firmware Update Prozedur für Versionen < 2.0 [[appendix3]]
+
+Bei den Firmware Versionen 1.x waren die WLAN Funktionen nicht über das Hauptmenü erreichbar, sondern durch dreimaliges schnelles Drücken des ROTEN Knopfes. Damit ist die Update-Prozedur folgendermaßen auszuführen:
+
+Falls noch nicht geschehen, muss zuerst die WLAN Konfiguration durchgeführt werden.
+
+Während der Morserino-32 das Startmenü anzeigt, klicke ***drei mal*** schnell auf die ROTE Taste, um in das WLAN-Menü zu gelangen. Der oberste Eintrag lautet "WiFi Config". Wähle ihn aus, um fortzufahren.
+
+Das Gerät startet WiFi als Zugangspunkt (wie ein WLAN Router) und erstellt so ein eigenes WLAN-Netzwerk (mit der SSID "Morserino"). Wenn man die verfügbaren Netzwerke mit dem Computer oder Smartphone überprüft, wird man es leicht finden. Verbinde nun deinen Computer (oder dein Handy) mit diesem Netzwerk (man braucht kein Passwort, um eine Verbindung herzustellen).
+
+Wenn du verbunden bist, gib "m32.local" in deinen Browser ein. Falls dein Computer oder Smartphone mDNS nicht unterstützt (Android tut das zB. nicht), musst du die IP Adresse 192.168.4.1 in den Browser eingeben. Es erscheint nun ein kleines (leeres) Formular mit nur zwei Feldern im Browser: "SSID" und "Password". Gib den Namen deines lokalen WLAN-Netzwerks und das entsprechende Passwort ein und klicke auf die Schaltfläche "Submit". Der Morserino-32 speichert diese Netzwerk-Anmeldeinformationen und führt einen Neustart durch (das Netzwerk "Morserino" wird verschwinden).
+
+Rufe nun erneut das WLAN-Menü auf, indem du dreimal schnell auf die ROTE Taste klickst und die Option "**Update Firmw.**" auswählst. Ähnlich wie beim Hochladen von Dateien geh mit dem Browser zu  "m32.local" (oder der am Display gezeigten IP Adresse), und schließlich wird wieder ein Anmeldebildschirm angezeigt. Dazu verwende nunmehr den Benutzernamen "**m32**" und das Passwort "**update**".
+
+Als Nächstes wird wieder ein Dateiauswahldialog angezeigt, man wählt die gespeicherte Binärdatei aus und klickt auf die Schaltfläche "Begin". Diesmal dauert das Laden länger - es kann einige Minuten dauern, man sollte also etwas Geduld haben. Die Datei ist groß, muss hochgeladen und in den Morserino-32 geschrieben werden und dann überprüft werden, um sicherzustellen, dass es sich um eine ausführbare Datei handelt. Schließlich startet das Gerät neu und man sollte während des Startvorgangs die neue Versionsnummer auf dem Display sehen können.
