@@ -430,10 +430,11 @@ Wähle  eine "Koch-Lektion" zwischen 1 und 50 (Man lernt insgesamt 50 Zeichen na
 
 Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden, so dass verschiedene Lernkurse leicht unterschiedliche Ordnungen verwenden. Hier verwenden wir die gleiche Zeichenfolge wie beim Programm "Just Lean Morse Code", das wiederum fast identisch ist mit der Reihenfolge des Softwarepakets "SuperMorse" (siehe http://www.qsl.net/kb5wck/super.html). Die Reihenfolge ist wie folgt:
 
-[cols=">.3,3,>.3,3",options=header,width=80%,stripes=odd]
+
+[cols=">.3,3,>.3,3",options=header,stripes=odd]
 |===
 | Lektion Nr | Zeichen | Lektion nr | Zeichen
-| 1 | m | 26 | g
+| 1 | m | 26 | 9
 | 2 | k | 27 | z
 | 3 | r | 28 | h
 | 4 | s | 29 | 3

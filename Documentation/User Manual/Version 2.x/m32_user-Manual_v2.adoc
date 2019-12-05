@@ -432,10 +432,10 @@ Select a "Koch lesson" between 1 and 50 (you will learn 50 characters in total t
 
 The order of the characters learned has not been strictly defined by Koch, and therefore different learning courses use slightly different orders. Here we use the same order of characters as defined by the program "Just Lean Morse Code", which again is almost identical to  the order used by the "SuperMorse" software package (see http://www.qsl.net/kb5wck/super.html). The order is as follows:
 
-[cols=">.3,3,>.3,3",options=header,width=80%,stripes=odd]
+[cols=">.3,3,>.3,3",options=header,width=88%,stripes=odd]
 |===
 | Lesson # | Character | Lesson # | Character
-| 1 | m | 26 | g
+| 1 | m | 26 | 9
 | 2 | k | 27 | z
 | 3 | r | 28 | h
 | 4 | s | 29 | 3
@@ -591,6 +591,8 @@ For home networks that use a list of allowed MAC addresses (for security reasons
 
 All network related functions can be found under the menu entry "**WiFi Functions**"
 
+IMPORTANT: In software version before 2.0 the WiFi functions were not integrated into the main menu. In case you want to update from version 1.x to version 2.x, please read section <<appendix3>> at the end of the document.
+
 ==== Displaying the MAC Address
 This is the first entry under the menu "Wifi Functions", and it displays the Morserino's MAC address in the status line. Each Morserino has a unique MAC address.
 
@@ -641,6 +643,8 @@ IMPORTANT: If for any reason you need to abort the process, you have to restart 
 
 Updating the firmware of the Morserino-32 through WiFi is the easiest way to update your firmware. While traditionally you need a software development environment on your computer (in our case the Arduino IDE plus the necessary files for support of the Heltec module), and use that first to compile the software, making sure you have all necessary libraries also installed,  and then load the software to the microcontroller using USB, all you need now is a computer with a browser and a WiFi network.
 
+TIP: You can update to any version, you can "jump" versions, you can also go back to an older version.
+
 Updating the firmware is very similar to uploading a text file. You first need to get the binary file from the Morserino-32 repository on GitHub (https://github.com/oe1wkl/Morserino-32 - look for a directory under "Software" called "Binaries". Get the latest version and download it to your computer. The file name looks like this:
 
 `morse_3_vx.y.ino.wifi_lora_32.bin` with x.y being the version number.
@@ -648,6 +652,7 @@ Updating the firmware is very similar to uploading a text file. You first need t
 Now get the WiFi Functions menu again and select the item "**Update Firmw**". Similar to file upload, you point the browser of your computer to "http://m32.local" (or, if that does not work, the IP address shown on the display, http://n1.n2.n3.n4 - replace n1.n2.n3.n4 with that IP address), and you will eventually see a Login screen. This time you use the user name "**m32**" and the password "**update**".
 
 Again you will see a file selection screen next, you select your binary file and click the button labelled "Begin". This time the upload will take longer - it can take a few minutes, so be patient. The file is big, needs to be uploaded and written to the Morserino-32 and needs to be verified to make sure it is an executable file. Finally, the device will restart itself and you should notice the new version number on the display during start-up.
+
 
 [TIP]
 ====
@@ -793,3 +798,19 @@ This starts a function to adjust the audio input level: make sure a tone signal 
 A simple test or demo for the audio-in adjustment is to connect line-out with audio in (connect tip with sleeve), feeding the output sine wave into the audio input. You can see the solid bar graph changing when you turn the potentiometer, leaving just a tiny solid bar in the middle and exposing the two rectangles on both ends of the graph at one end of the potentiomenter range (essentially you are just measuring the noise on the operation amplifiers input), and with the solid bar graph extending beyond the rectangles on both ends on the other end of the potentiometer sweep. Now you can set the potentiometer so that the solid bar is almost touching the outer bounds of the rectangles. This is the optimal setting for the audio in level. Obviously you have to perform this for the audio source you are planning to use, e.g. for your radio receiver.
 
 TIP: Only while you are in the menu will the RED button **long press** activate the level adjustment function. While you are executing one of the Morserino modes (Keyer, Generator, Echo Trainer, Transceiver etc.) a long press of the RED button activates the scroll mode of the display to enable you to read text that has already scrolled away...
+
+=== Appendix 3: Updating the Firmware from Versions < 2.0 [[appendix3]]
+
+With firmware versions 1.x the WiFi functions were not accesible directly from the main menu, but ny quickly pressing the RED button three times. Hence the update procedure has to be performed as follows:
+
+If not already done before, you have to do the WiFi configuration first.
+
+While your Morserino-32 is displaying the Start menu, click the RED button three times quickly, in order to get into the WiFi Menu. The top entry is "WiFi Config", select it to proceed.
+
+The device will start WiFi as an access point, thus creating its own WiFi Network (with the SSID "Morserino"). If you check the available networks with your computer or smartphone, you will find it easily; please switch your computer to use this network (you will not need a password to connect).
+
+Once you are connected, enter "m32.local" into your browser on your computer. If your computer or smartphone does not support mDNS (Android, for example, is not supporting it), you have to enter the IP address 192.168.4.1 into the browser instead of m32.local. You will then see a little form with just 2 empty fields in your browser: SSID and password. Enter the name of your local WiFi network, and the correspondig password, and click on the "Submit" button. Your Morserino-32 will store these network credentials and then restart itself (so the network "Morserino" will disappear).
+
+Now get the WiFi menu again by clicking quickly three times on the RED button, and select the enry "**Update Firmw.**". Similar to file upload, you point your browser to "m32.local" (or the shown IP address), and you will eventually see a Login screen. This time you use the user name "**m32**" and the password "**update**".
+
+Again you will see a file selection screen next, you select your binary file and click the button labelled "Begin". This time the uplaod will take longer - it can take a few minutes, so be patient. The file is big, needs to be uploaded and written to the Morserino-32 and needs to be verified to make sure it is an executable file. Finally, the device will restart itself and you should notice the new version number on the display during start-up.
