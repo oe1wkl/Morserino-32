@@ -33,9 +33,9 @@ image::Morserino.jpg[Morserino-32]
 [.lead]
 "`*_Morserino-32 -- Ein multifunktionales Morsegerät, perfekt zum Lernen und Üben_*`"
 
-Dieses Handbuch spiegelt die Funktionen der Firmware Version 2.x des Morserino-32 wider. Es wurde in wesentlichen teilen neu arrangier und teilweise neu geschrieben, um es besser benutzbar zu machen.
+Dieses Handbuch spiegelt die Funktionen der Firmware Version 2.x des Morserino-32 wider. Es wurde in wesentlichen Teilen neu arrangiert und teilweise neu geschrieben, um es besser benutzbar zu machen.
 
-Es wurde mit **asciidoc** (anstelle von Markdown für die früheren Versionen) erstellt, und die PDF-Version wurde
+Es wurde mit **asciidoc** (anstelle von Markdown für die früheren Versionen) erstellt, und die PDF-Version wurde mit
 **asciidoctor-pdf** gerendert, um ein Handbuch zu erstellen, das besser lesbar und für das Auge angenehm ist.
 
 Ich möchte mich bei allen bedanken, die durch Kommentare, Kritik und Anregungen dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen und hervorragenden Produkt zu machen.
@@ -108,7 +108,7 @@ Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eing
 
 |13
 |USB
-|Verwende ein normales 5V USB-Ladegerät, um das Gerät mit Strom zu versorgen und den LiPo-Akku aufzuladen. Die Mikrocontroller-Firmware kann auch über USB neu programmiert werden (über die Programmierumgbung auf einem PC; einfacher ist es, odie Morserino-32-Firmware über eine WLAN-Verbindung zu aktualisieren).
+|Verwende ein normales 5V USB-Ladegerät, um das Gerät mit Strom zu versorgen und den LiPo-Akku aufzuladen. Die Mikrocontroller-Firmware kann auch über USB neu programmiert werden (über die Programmierumgbung auf einem PC; einfacher ist es, die Morserino-32-Firmware über eine WLAN-Verbindung zu aktualisieren).
 
 |14
 |PRG-Taste
@@ -122,7 +122,7 @@ Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eing
 
 Wenn du das Gerät mit einer USB-Stromversorgung betreiben möchtest, schließe es einfach mit einem Micro-USB-Kabel an ein beliebiges USB-Ladegerät an (es verbraucht max. 200 mA, also reicht jedes 5V-Ladegerät).
 
-Wenn du den Morserino im Akkubetrieb betreiben möchtest, schiebe den Schiebeschalter in die Position ON.
+Wenn du den Morserino mit dem Akku als Stromquelle betreiben möchtest, schiebe den Schiebeschalter in die Position ON.
 
 Wenn das Gerät ausgeschaltet ist, aber die Batterie angeschlossen ist (Schiebeschalter ist eingeschaltet), befindet es sich in Wirklichkeit im Tiefschlaf: Fast alle Funktionen des Mikrocontrollers sind ausgeschaltet, und der Stromverbrauch ist minimal (weniger als 5% des normalen Betriebs).
 
@@ -289,23 +289,23 @@ TIP: Iambic-Modi und Ultimatic-Modus können nur mit dem eingebauten Touchpaddel
 
 Der Parameter `Latency` legt fest, wie lange nach dem Erzeugen des aktuellen Elements (Punkt oder Strich) die Paddel "taub" sind.
 In frühen Firmware-Versionen war dies 0, mit dem Effekt, dass man gerade bei höheren Geschwindigkeiten mehr Punkte erzeugte als gewollt,
-da man das Paddel loslassen mussten, während der letzte Punkt noch "an" war. Nun kann man diesen Wert auf einen Wert zwischen 0 und 7 einstellen,
-was 0/8 bis 7/8 einer Punktlänge bedeutet (Defaultwert ist 4, d.h. eine halbe Punktlänge). Wenn man immer noch dazu neigt, unerwünschte Dits zu erzeugen,kann man diesen Wert erhöhen.
+da man das Paddel loslassen musste, während der letzte Punkt noch "an" war. Nun kann man diesen Wert auf einen Wert zwischen 0 und 7 einstellen,
+was 0/8 bis 7/8 einer Punktlänge bedeutet (Defaultwert ist 4, d.h. eine halbe Punktlänge). Wenn man immer noch dazu neigt, unerwünschte Dits zu erzeugen, kann man diesen Wert erhöhen.
 
 Für den Parameter `AutoChar Spce` (Definition einer Mindestlänge für den Abstand zwischen den Zeichen) siehe den Abschnitt <<parameters>> für Details.
 
 
 === CW Generator [[generator]]
 
-Dieser erzeugt entweder zufällige Gruppen von Zeichen und Wörtern für das CW-Training oder spielt den Inhalt einer Textdatei als Morsezeichen ab. Man kann eine Reihe von Optionen einstellen, indem man die entsprechenden Parameter auswählt (siehe den Abschnitt üer <<parameters>> weiter unten).
+Dieser erzeugt entweder zufällige Gruppen von Zeichen und Wörtern für das CW-Training oder spielt den Inhalt einer Textdatei als Morsezeichen ab. Man kann eine Reihe von Optionen einstellen, indem man die entsprechenden Parameter auswählt (siehe den Abschnitt über <<parameters>> weiter unten).
 
 Man **startet** und **stoppt** den CW-Generator, indem man kurz ein Paddel (entweder einseitig oder beidseitig) berührt, oder **durch Klicken auf den SCHWARZEN Knopf**.
 
-Zu Beginn kündigt der CW Generator seine Aktivität durch ""`vvv<ka>``" an (`+..._ ..._ ..._ ..._ _._._._+`), bevor er tatsächlich beginnt, Gruppen oder Wörter zu erzeugen.
+Zu Beginn kündigt der CW Generator seine Aktivität durch ""`vvv<ka>``" an (`+..._ ..._ ..._ ..._ _._._+`), bevor er tatsächlich beginnt, Gruppen oder Wörter zu erzeugen.
 
 Aktiviert man den Parameter `Auto Stop, wird nur ein Wort oder eine Gruppe von Zeichen ausgegeben, und dann stoppt der Morserino, ohne anzuzeigen, was er ausgegeben hat.
 Sobald man ein Paddel berührt, zeigt er an, was es gerade ausgegeben hat, so dass man überprüfen können, ob man es richtig dekodiert hat.
-Wenn du ein Paddel erneut berührst, spielt es das nächste Wort. Dies ist nützlich, um das Dekodieren im Kopf zu lernen.
+Wenn du ein Paddel erneut berührst, spielt er das nächste Wort. Dies ist nützlich, um das Dekodieren im Kopf zu lernen.
 
 Normalerweise erzeugt das Morserino-32 einfach weiter Morsezeichen, bis man ihn manuell anhält,
 aber es kann auch ein Parameter eingestellt werden, der die Ausgabe nach einer bestimmten Anzahl von Wörtern (oder Buchstabengruppen) pausieren lässt.
@@ -358,13 +358,13 @@ Die folgenden Betriebsabkürzungen werden erkannt:
 ====
 ** `<ar>` : wird auf dem Display als + (Pluszeichen) angezeigt.
 ** `<bt>` : wird auf dem Display angezeigt als = (Gleichheitszeichen)
-** `<as>
+** `<as>wert
 ** `<ka>>`
 ** `<kn>`
 ** `<sk>`
 ** `<ve>`
 ====
-Es gibt auch einen Parameter für den File Player namens `Randomize File`. Wenn dieser auf "ON" gesetzt wird w(Standarertd ist "OFF"),
+Es gibt auch einen Parameter für den File Player namens `Randomize File`. Wenn dieser auf "ON" gesetzt wird (Standardwert ist "OFF"),
 überspringt der Morserino nach jedem gesendeten Wort n Wörter  (n = Zufallszahl zwischen 0 und 255);
 Da am Dateiende wieder von vorne begonnen wird, werden irgendwann alle Wörter in der Datei vorgekommen sein (aber es kann eine Weile dauern).
 Wenn es sich zum Beispiel um eine alphabetische Wortliste handelt, werden die erzeugten Wörter in einem Durchgang immer noch in alphabetischer Reihenfolge angezeigt (allerdings mit Lücken);
@@ -414,7 +414,7 @@ Es gibt ein Untermenü, um die Lektion auszuwählen, die man trainieren möchte,
 und die letzten beiden mit den Untermenüs für "Random" (Gruppen von zufälligen Charakteren aus den bisher gefundenen Charakteren),
 "CW Abbrevs" (die Abkürzungen, die normalerweise in CW QSOs verwendet werden), "English Words" (die gebräuchlichsten englischen Wörter) und "Mixed"
 (Gruppen zufälliger Zeichen, Abkürzungen und Wörter, die zufällig gemischt werden).
-Natürlich werden nur die bereits erlernten zeichen verwendet - das heißt, während du noch mit den ersten Buchstaben kämpfst, wird
+Natürlich werden nur die bereits erlernten Zeichen verwendet - das heißt, während du noch mit den ersten Buchstaben kämpfst, wird
 die Anzahl der Abkürzungen und Wörter logischerweise sehr begrenzt sein).
 
 Um zu verhindern, dass man Dits und Dahs zählt oder darüber nachdenkt und rekonstruiert, was man gehört hat, sollte die Geschwindigkeit ausreichend hoch sein (min. 18 wpm), und die
@@ -428,7 +428,7 @@ Mit dem M32 kann man den Wortabstand unabhängig vom Zeichenabstand einstellen, 
 
 Wähle  eine "Koch-Lektion" zwischen 1 und 50 (Man lernt insgesamt 50 Zeichen nach der Koch-Methode). Die Nummer der Lektion und das Zeichen, das mit dieser Lektion verbunden ist, werden im Menü angezeigt.
 
-Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden, so dass verschiedene Lernkurse leicht unterschiedliche Ordnungen verwenden. Hier verwenden wir die gleiche Zeichenfolge wie beim Programm "Just Lean Morse Code", das wiederum fast identisch ist mit der Reihenfolge des Softwarepakets "SuperMorse" (siehe http://www.qsl.net/kb5wck/super.html). Die Reihenfolge ist wie folgt:
+Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden, so dass verschiedene Lernkurse leicht unterschiedliche Ordnungen verwenden. Hier verwenden wir die gleiche Zeichenfolge wie beim Programm "Just Learn Morse Code", das wiederum fast identisch ist mit der Reihenfolge des Softwarepakets "SuperMorse" (siehe http://www.qsl.net/kb5wck/super.html). Die Reihenfolge ist wie folgt:
 
 
 [cols=">.3,3,>.3,3",options=header,stripes=odd]
@@ -566,7 +566,7 @@ In diesem Modus werden Morsezeichen dekodiert und auf dem Display angezeigt. Der
 
 Man kann auch ein Tonsignal (am Audioeingang) dekodieren, das beispielsweise von einem Empfänger stammt. Der Ton sollte bei etwa 700 Hz liegen. Optional gibt es einen ziemlich scharfen Filter (in Software implementiert), der nur Töne in einem sehr engen Bereich um 700 Hz erkennt und alle anderen ignoriert. Dies wird durch Auswahl des Parameters `Narrow` aktiviert (siehe den Abschnitt <<parameters>>).
 
-Die Statuszeile unterscheidet sich leicht von den anderen Modi. Zunächst einmal befindet sich der Drehgeber immer im Lautstärke-Einstellmodus - die Geschwindigket wird aus dem dekodierten Morsecode bestimmt und kann nicht manuell eingestellt werden. Durch Drücken des Drehgeber-Knopfes wird der Decoder-Modus beendet und man gelangt zurück zum Startmenü.
+Die Statuszeile unterscheidet sich leicht von den anderen Modi. Zunächst einmal befindet sich der Drehgeber immer im Lautstärke-Einstellmodus - die Geschwindigkeit wird aus dem dekodierten Morsecode bestimmt und kann nicht manuell eingestellt werden. Durch Drücken des Drehgeber-Knopfes wird der Decoder-Modus beendet und man gelangt zurück zum Startmenü.
 
 Links neben der Statusanzeige oben sieht man bei jedem Tastendruck ein schwarzes Rechteck (oder wenn ein 700 Hz-Ton erkannt wurde) - dies ersetzt die Anzeige für den Keyer-Modus.
 
@@ -625,11 +625,13 @@ Wenn man die ROTE Taste drückt, kehrt diese Funktion zum Menü zurück. Wenn ma
 
 ==== Hochladen einer Textdatei [[upload]]
 
-Sobald du denMorserino-32 mit deinen lokalen WLAN-Anmeldeinformationen konfiguriert hast, kannst du eine Textdatei hochladen, die du zum Üben verwenden kannst. Derzeit kann sich nur eine Datei auf dem Morserino-32 befinden, d.h. wenn man eine neue Datei hochlädt, wird die alte überschrieben.
+Sobald du den Morserino-32 mit deinen lokalen WLAN-Anmeldeinformationen konfiguriert hast, kannst du eine Textdatei hochladen, die du zum Üben verwenden kannst. Derzeit kann sich nur eine Datei auf dem Morserino-32 befinden, d.h. wenn man eine neue Datei hochlädt, wird die alte überschrieben.
 
 Die **Datei**, die man hochlädt, sollte eine reine ASCII-Textdatei ohne Formatierung sein (keine Word-Dateien, PDF-Dokumente usw.). Deutsche Zeichen (ÄÖÜäöüß), die als UTF-8 kodiert sind, sind erlaubt und werden in ae, oe, ue und ss umgewandelt. Die Datei kann Groß- und Kleinbuchstaben sowie alle Zeichen, die Teil der Koch-Methode sind, enthalten (insgesamt 50 Zeichen). Alle anderen Zeichen werden einfach ignoriert, wenn die Datei als Morsezeichen abgespielt wird. Die Datei zum Hochladen kann ziemlich groß sein - man hat etwa 1 MB Speicherplatz dafür (genug, um eine Kopie von Mark Twains "Die Abenteuer des Huckleberry Finn" zu speichern).
 
-Um die Datei hochzuladen, wählen man im Menü "WiFi Functions" "File Upload". Nach ein paar Sekunden (er muss sich ja zuerst mit dem WLAN-Netzwerk verbinden) zeigt der Morserino-32 an, dass er auf den Upload wartet. Nungeht man mit dem Browser des Computers zu "http://m32.local" (oder man ersetzt "m32.local" mit der auf dem Display angezeigten IP-Adresse).
+TIP: Android, Linux , iOS und OSX verwenden UTF-8 als Standardcodierung für Textdateien. Unter Windows ist das nicht so -- man kann aber z.B. Notepad benutzen und dort bei "Speichern unter" die Codierung UTF-8 angeben!
+
+Um die Datei hochzuladen, wählen man im Menü "WiFi Functions" "File Upload". Nach ein paar Sekunden (er muss sich ja zuerst mit dem WLAN-Netzwerk verbinden) zeigt der Morserino-32 an, dass er auf den Upload wartet. Nun geht man mit dem Browser des Computers zu "http://m32.local" (oder man ersetzt "m32.local" mit der auf dem Display angezeigten IP-Adresse).
 
 TIP: Für die Upload-Funktion muss der Morserino-32 (und natürlich der PC oder das Tablett etc.) wieder im lokalen WLAN-Netzwerk sein!
 
@@ -649,17 +651,17 @@ Das Aktualisieren der Firmware ist sehr ähnlich wie das Hochladen einer Textdat
 
 Rufe nun wieder das Menü "**WiFi Functions**" auf und wähle den Punkt "**Update Firmw**". Ähnlich wie beim Datei-Upload gehe mit dem Browser zu "http://m32.local" (bzw. die angezeigte IP-Adresse anstelle von m32.local), um schließlich einen Anmeldebildschirm zu erhalten. Diesmal verwende den Benutzernamen "**m32**" und das Passwort "**update**".
 
-Als nächstes escheint wieder ein Dateiauswahlbildschirm, wähle die heruntergeladene Binärdatei aus und klicke auf die Schaltfläche "Begin". Diesmal dauert das Ganze etwas länger - es kann einige Minuten dauern, also nur Geduld. Die Datei ist groß, muss hochgeladen und in den Speicher des Morserino-32 geschrieben  und auch überprüft werden, um sicherzustellen, dass es sich um eine ausführbare Datei handelt. Schließlich startet sich das Gerät von selbst neu und man sollte die neue Versionsnummer beim Start auf dem Display sehen.
+Als nächstes erscheint wieder ein Dateiauswahlbildschirm, wähle die heruntergeladene Binärdatei aus und klicke auf die Schaltfläche "Begin". Diesmal dauert das Ganze etwas länger - es kann einige Minuten dauern, also nur Geduld. Die Datei ist groß, muss hochgeladen und in den Speicher des Morserino-32 geschrieben  und auch überprüft werden, um sicherzustellen, dass es sich um eine ausführbare Datei handelt. Schließlich startet sich das Gerät von selbst neu und man sollte die neue Versionsnummer beim Start auf dem Display sehen.
 
 [TIP]
 ====
 Im Folgenden sind die Schritte zum Aktualisieren der Firmware zusammengefasst:
 
-1. Führe  die Netzwerkkonfiguration wie oben beschrieben durch (dazu richtet der Morserino ein eigenes WiFi-Netzwerk ein, du verbindest deinen browser mit dem Morserino und gibst im Browser den Namen und das Passwort deines WLAN-Netzwerks ein). Die ist nur einmal zu tun, da sich der Morserino diese Zugangsdaten für die zukünftige Verwendung merkt. Es empfiehkt sich die Funktion "Check WiFi" zu verwenden, um sicherzustellen, dass der Morserino eine Verbindung zu deinem Netzwerk herstellen kann. Denke daran, dass der Morserino ziemlich nah am WiFi-Router sein muss!
+1. Führe  die Netzwerkkonfiguration wie oben beschrieben durch (dazu richtet der Morserino ein eigenes WiFi-Netzwerk ein, du verbindest deinen Browser mit dem Morserino und gibst im Browser den Namen und das Passwort deines WLAN-Netzwerks ein). Die ist nur einmal zu tun, da sich der Morserino diese Zugangsdaten für die zukünftige Verwendung merkt. Es empfiehlt sich die Funktion "Check WiFi" zu verwenden, um sicherzustellen, dass der Morserino eine Verbindung zu deinem Netzwerk herstellen kann. Denke daran, dass der Morserino ziemlich nah am WiFi-Router sein muss!
 
 2. Laden die neue Binärdatei auf deinen Computer herunter.
 
-3. Starte „Update firmware“ auf dem Morserino. Nach einer Weile zeigt er die IP-Adresse (die sich in deinem WLAN befindet!) und eine Meldung, dass er auf ein Update wartet.
+3. Starte „Update Firmware“ auf dem Morserino. Nach einer Weile zeigt er die IP-Adresse (die sich in deinem WLAN befindet!) und eine Meldung, dass er auf ein Update wartet.
 
 4. Lass deinen Computer im Heimnetzwerk und richten den Browser entweder auf die IP-Adresse des Morserino oder auf "http://m32.local" (dies funktioniert auf Macs und iPhones, normalerweise funktioniert es nicht auf Windows-PCs oder Android-Geräten).
 
@@ -674,7 +676,7 @@ Dieser Menüpunkt versetzt den Morserino-32 bei Auswahl in einen Tiefschlafmodus
 
 == Einstellungen [[parameters]]
 
-Man erreicht das Parametermenü (Menü für die Einstellungen) immer durch **Doppelklick** auf den **SCHWARZEN Drehgeberknopf**. Man sieht ein`**>**` Zeichen vor dem aktuellen Parameter, und die Zeile darunter zeigt den aktuellen Wert. Verwende  den Drehgeber, um  durch die verfügbaren Einstellunges zu gehen. Wenn man das Parametermenü verlassen möchte, drückt man einfach den schwarzen Knopf des Drehgebers etwas länger und man befindet sich dann wieder in jenem Betriebsmodus, aus dem man das Parametereinstellungsmenü aufgerufen hat (oder auch wieder im Menü, wenn man mit Doppelklick aus dem Menü eingestiegen ist).
+Man erreicht das Parametermenü (Menü für die Einstellungen) immer durch **Doppelklick** auf den **SCHWARZEN Drehgeberknopf**. Man sieht ein`**>**` Zeichen vor dem aktuellen Parameter, und die Zeile darunter zeigt den aktuellen Wert. Verwende  den Drehgeber, um  durch die verfügbaren Einstellungen zu gehen. Wenn man das Parametermenü verlassen möchte, drückt man einfach den schwarzen Knopf des Drehgebers etwas länger und man befindet sich dann wieder in jenem Betriebsmodus, aus dem man das Parametereinstellungsmenü aufgerufen hat (oder auch wieder im Menü, wenn man mit Doppelklick aus dem Menü eingestiegen ist).
 
 Ist der zu ändernde Parameter erreicht, klickt man einmal. Nun steht das Zeichen `**>**` in der unteren Zeile vor dem Parameterwert und zeigt damit an, dass das Drehen des Drehgebers diesen Wert ändert. Ist man mit dem Wert zufrieden, klickt man wieder ** einmal**, um zur Auswahl der Parameter zurückzukehren, oder **man drückt den Knopf etwas länger**, um das Parametermenü gleich zu verlassen.
 
@@ -698,7 +700,7 @@ Auch hier steigt man mit einem Doppelklick auf den schwarzen Knopf zuerst in das
 
 ==== Löschen eines Snapshots
 
-Man kann Snapshots auch löschen, die nicht mehr benötigt werden oder  versehentlich erstellt wurden. Gehen dabei so vor, als ob du einen Snapshot abrufen möchtest, wähle  den zu löschenden Snapshot mit dem Drehgeber aus, und klicke  dann auf die ROTE Taste zum Löschen. Wie beim Speichern und Abrufen von Snapshots zeigt eine kurze Meldung an, dass die Aktion erfolgreich war.
+Man kann Snapshots auch löschen, die nicht mehr benötigt werden oder  versehentlich erstellt wurden. Gehe dabei so vor, als ob du einen Snapshot abrufen möchtest, wähle  den zu löschenden Snapshot mit dem Drehgeber aus, und klicke  dann auf die ROTE Taste zum Löschen. Wie beim Speichern und Abrufen von Snapshots zeigt eine kurze Meldung an, dass die Aktion erfolgreich war.
 
 
 === Allgemeine Parameter
@@ -706,9 +708,9 @@ Eine Reihe von Parametern sind sehr allgemeiner Natur und gelten daher für alle
 
 Das sind:
 
-`Encoder Click`: Wenn man kein Klicken hören möchten, wenn man den Drehgeber dreht, stelle diesen Parameter auf OFF.
+`Encoder Click`: Wenn man beim Drehen des Drehgebers kein Klicken hören möchte, stelle man diesen Parameter auf OFF.
 
-`Tone Pitch`: Die Frequenz des Mithörtonse.
+`Tone Pitch`: Die Frequenz des Mithörtons.
 
 `Time Out`:  Wenn dieser Wert auf einen anderen Wert als "No timeout" eingestellt ist, geht der M32 nach einer bestimmten Zeit ohne Aktivität auf dem Bildschirm in den Tiefschlafmodus.  Man kann den  M32 durch Drücken der ROTEN Taste neu starten.
 
@@ -756,7 +758,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem St
 | Koch Sequence | Dies bestimmt die Reihenfolge der Zeichen, wenn man die Koch-Methode zum Lernen und Trainieren verwendet. | **M32 / JLMC** (Just Learn Morse Code)  /  LCWO
 | Time Out | Wenn die in diesem Parameter angegebene Zeit ohne Aktualisierung der Anzeige vergeht, geht das Gerät in den Tiefschlafmodus. Man kann es durch Drücken der ROTEN Taste neu starten. | No timeout (kein Timeout)/ **5 min** / 10 min / 15 min
 | Quick Start | Ermöglicht es (gesetzt auf ON), die anfängliche Menüauswahl zu umgehen, d.h. das Gerät beginnt beim Start sofort mit der Ausführung des Modus, der vor dem letzten Ausschalten wirksam war. | ON / **OFF**
-| Auto Stop | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus, um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des Paddels oder Drücken des Drehgebers wird das Wort abgezeigt, und indem man dies erneut tut, wird das nächste Wort  generiert. | ON / **OFF**
+| Auto Stop | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus, um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des Paddels oder Drücken des Drehgebers wird das Wort angezeigt, und indem man dies erneut tut, wird das nächste Wort  generiert. | ON / **OFF**
 |===
 
 == Anhänge
