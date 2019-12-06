@@ -629,7 +629,7 @@ Sobald du den Morserino-32 mit deinen lokalen WLAN-Anmeldeinformationen konfigur
 
 Die **Datei**, die man hochlädt, sollte eine reine ASCII-Textdatei ohne Formatierung sein (keine Word-Dateien, PDF-Dokumente usw.). Deutsche Zeichen (ÄÖÜäöüß), die als UTF-8 kodiert sind, sind erlaubt und werden in ae, oe, ue und ss umgewandelt. Die Datei kann Groß- und Kleinbuchstaben sowie alle Zeichen, die Teil der Koch-Methode sind, enthalten (insgesamt 50 Zeichen). Alle anderen Zeichen werden einfach ignoriert, wenn die Datei als Morsezeichen abgespielt wird. Die Datei zum Hochladen kann ziemlich groß sein - man hat etwa 1 MB Speicherplatz dafür (genug, um eine Kopie von Mark Twains "Die Abenteuer des Huckleberry Finn" zu speichern).
 
-TIP: Android, Linux , iOS und OSX verwenden UTF-8 als Standardcodierung für Textdateien. Unter Windows ist das nicht so -- man kann aber z.B. Notepad benutzen und dort bei "Speichern unter" die Codierung UTF-8 angeben!
+TIP: Android, Linux, iOS und OSX verwenden UTF-8 als Standardcodierung für Textdateien. Unter Windows ist das nicht so -- man kann aber z.B. Notepad benutzen und dort bei "Speichern unter" die Codierung UTF-8 angeben!
 
 Um die Datei hochzuladen, wählen man im Menü "WiFi Functions" "File Upload". Nach ein paar Sekunden (er muss sich ja zuerst mit dem WLAN-Netzwerk verbinden) zeigt der Morserino-32 an, dass er auf den Upload wartet. Nun geht man mit dem Browser des Computers zu "http://m32.local" (oder man ersetzt "m32.local" mit der auf dem Display angezeigten IP-Adresse).
 
