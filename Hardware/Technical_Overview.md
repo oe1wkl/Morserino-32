@@ -1,6 +1,6 @@
 #Morserino-32 Technical Overview
 
-The Morserino-32 is based on the Heltec WiFi LORA 32 V.2 module (see [http://www.heltec.cn/project/wifi-lora-32/?lang=en]()). This module comes with mayn integrated features, that really build the core of Morserino-32's functionality:
+The Morserino-32 is based on the Heltec WiFi LORA 32 V.2 module (see http://www.heltec.cn/project/wifi-lora-32/?lang=en). This module comes with mayn integrated features, that really build the core of Morserino-32's functionality:
 
 * MCU (ESP32, 240 MHz clock speed), RAM (520 KB SRAM) and Flash Memory (64 MB)
 * OLED monochrome graphics display (128x64 pixels)
