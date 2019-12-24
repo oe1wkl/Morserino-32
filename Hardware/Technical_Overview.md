@@ -44,4 +44,4 @@ A LiPo battery is connected to the ESP32's battery charging circuitry through a 
 ####Serial Port
 On the PCB there is a provison for 4 pin headers (to the left of the external paddles connector). Through this connector you can connect external devices through the serial port of the ESP32 (the headers are marked as **R** (Receive), **T** (Transmit), **+** (3.3V) and **-** (ground). R and T are connected to Pins RX and TX of the ESP32, the positive voltage taken from the VEXT pin.
 
-Thsi could be used, for example, to connect a GPS module to the Morserino-32. While this is currently not supported by software, it would be relatively straightforward to create a LoRa APRS beacon.
+This could be used, for example, to connect a GPS module to the Morserino-32. While this is currently not supported by software, it would be relatively straightforward to create a LoRa APRS beacon.
