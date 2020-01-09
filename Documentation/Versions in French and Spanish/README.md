@@ -13,4 +13,6 @@ So please translate and submit a .md file for the assembly instructions, and a .
 
 For historic reasons I accept pdf documents that have been submitted before January 31, 2020. After that date, only .md and .adoc files will be accepted in this GitHub repository!
 
+All translated documents conforming to markdown and asciidoc rules will be incorporated into the main documentation folders, where the English and German documents already reside. This means that this directory will not be maintained anymore after January 2020.
+
 (If not marked otherwise, these documents are copyrighted as Creative Commons, CC BY-NC-SA 3.0 AT)
