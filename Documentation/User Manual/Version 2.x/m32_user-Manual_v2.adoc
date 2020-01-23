@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v2.0 October 2019
+v2.2 January 2020
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -59,7 +59,7 @@ image::M32_layout.jpg[Where are the connectors and controls]
 |3
 |Audio Input level
 |Adjust audio input level with the help of this potentiometer;
-there is a special function to help with level adjustment, see section <<appendix2>> at the end of the document.
+there is a special function to help with level adjustment, see section <<app2>> at the end of the document.
 
 |4
 |3.5 mm Phone Jack (3 poles): Headphones
@@ -110,6 +110,8 @@ With a straight key you can use the CW decoder to monitor the quality of you fis
 |USB
 |Use a normal 5V USB Charger to power the device and charge its LiPo Battery. The microcontroller firmware can also be reprogrammed through USB (through the software development environment on a computer; a simpler method is to update the Morserino-32 firmware  through a WiFi connection).
 
+You can also output keyed or decoded characters on the USB serial device to use this information in a computer program - see the parameter "Serial Output" for further information.
+
 |14
 |PRG Button
 |Through a small hole you can reach the Programming Button of the Heltec module (normally not needed).
@@ -138,6 +140,8 @@ Therefore, if you intend not to use the Morserino for a longer period of time, d
 
 WARNING: If the battery voltage is dangerously low when you attempt to turn it on, an empty battery symbol will show on the screen and the device will refuse to boot up.
 If you see this symbol, you should begin charging your battery as soon as possible.
+
+TIP: If the display shows the empty battery symbol although sufficient power should still be available, it is advisable to perform a battery measurement calibration. See <<appendix1_2>>.
 
 To disconnect the device from the battery (turning it off, unless you are USB powered), slide the sliding switch to the OFF position.
 
@@ -178,7 +182,7 @@ If you currently have a standard M32 and want to use the higher frequency bands,
 **After replacing the Heltec module you have to perform the LoRa setup for the required band before using LoRa!**
 ====
 
-**See <<appendix1>> at the end of this document** to learn how you can configure LoRa for modules that support the 868 and 929 MHz bands, and how to change the LoRa frequency settings.
+**See <<appendix1_1>> at the end of this document** to learn how you can configure LoRa for modules that support the 868 and 929 MHz bands, and how to change the LoRa frequency settings.
 
 
 === Using the BLACK Knob and RED Button [[buttons]]
@@ -194,7 +198,7 @@ A ***long press*** brings you back to the menu from any of the modi, and within 
 
 While you are selecting a menu (e.g. immediately after power-on), a **long press** of the **RED button** starts a function
 to adjust the audio input level (and possibly the output level on a device you connected to the Morserino-32's line-out port).
-See <<appendix2>> towards the end of this document.
+See <<app2>> towards the end of this document.
 
 When you left the menu to execute one of the modi (keyer, generator, echo trainer etc.)
 the **RED (Power/Vol/Scroll) Button** allows you to quickly toggle between **speed control** and **volume control** with a **single click**.
@@ -542,7 +546,7 @@ If for whatever reason you cannot use this frequency (maybe because of band plan
 
 Should you require a LoRa frequency either around 868 MHz or around 920 MHz, the kit can be shipped with Heltec modules that support this higher frequency range (it is also possible to buy such a Heltec module later on). In that case, you MUST configure your Morserino to use the correct band and frequency.
 
-**See <<appendix1>> at the end of this document** to learn how you can configure LoRa for modules that support the 868 and 929 MHz bands, and how to change the LoRa frequency settings.
+**See <<appendix1_1>> at the end of this document** to learn how you can configure LoRa for modules that support the 868 and 929 MHz bands, and how to change the LoRa frequency settings.
 
 
 ===== Technical Details of LoRa Trx
@@ -760,11 +764,20 @@ Bold values are standard or recommended ones. When called from the start menu, a
 | Time Out | If the time specified in this parameter passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min
 | Quick Start | Allows you to bypass the intial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**
 | Auto Stop | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the paddle or pressing the rotary encoder to show the word, and by doing this again to generate the next word. | ON / **OFF**
+| Serial Output | Here you control, if generated characters from the Keyer and/or decoded characters from the Decoder should be output on the USB connector. With the setting "ERRORS only" only certain debugging messages will be output (these only when no other option has been selected).
+
+In CW Generator or Echo Trainer mode no characters will be output on USB.| **Keyer** / Decoder / Keyer+Decoder / ERRORS only
 |===
 
 == Appendices
 
-=== Appendix 1: Configuring LoRa Bands and Frequencies [[appendix1]]
+=== Appendix 1:  Hardware Configuration (LoRa Bands & Frequencies and Calibration of Battery Measurement)
+
+There is a hardware configuration menu that  can be reached by keeping the BLACK encoder knob pressed while switching the M32 on. Once you release the knob when the M32 has started up, you can select the configuration you want to perform by rotating the encoder knob, and pressing it once the right option shows up.
+
+The selectable options are "Calibr. Batt." (calibration of battery measurement), "LoRa Config." and "Cancel" (which just leaves this menu and continues with regular start-up iof the M32).
+
+==== Appendix 1.1: Configuring LoRa Bands and Frequencies [[appendix1_1]]
 
 If you have a standard 433 MHz Heltec module in your Morserino-32, it has been already preconfigured for the right band and a default frequency within that band.
 
@@ -782,14 +795,26 @@ The default Heltec modules supports the 433 MHz band only, and the Morserino-32 
 **In order to configure the Morserino-32 for non-standard frequencies and bands, please proceed as follows:**
 
 
-* Start your Morserino-32 keeping the BLACK encoder knob pressed
-* When you see a message, release the black knob
+* Start your Morserino-32 keeping the BLACK encoder knob pressed.
+* When you see a message, release the black knob.
+* Select the Option "LoRa Config." with the rotary encoder.
 * First you will be asked to select the desired band (select 433 for the default LoRa module, and either 868 or 920 for the upper UHF LoRa module); rotate the encoder to the desired band, and click the black knob once. **The band selection has to fit the Heltec module you are using!**
 * Now your are being asked to select a frequency within your selected band. The first frequency shown is the default for that band - if that is OK, just click the black knob once, otherwise select a frequency by rotating the encoder and clicking the knob once you have found the correct frequency.
 * Immediately after that the Morserino-32 will start normally, with the now selected LoRa settings in effect. On the top line of the Startup Screen you will see the configured QRG for LoRa as a 5-digit number (e.g. 43415 for the default in the 433 MHz band).
 
+==== Appendix 1.2: Calibration of Battery Measurement [[appendix1_2]]
 
-=== Appendix 2: Adjusting Audio Input Level [[appendix2]]
+The built-in capability of Heltec modules to measure battery voltage unfortunately is not very reliable. Various factors apparently contribute to the problem: a measurement error within the ESP32 processor due to a slight variation of the reference voltage for each chip (leading to a relatively small error), and problems with the voltage divider circuit on the Heltec module (leading to pretty big variations among the modules). Although measuring the battery is not very crucial for the operation of the Morserino-32, it is nevertheless a nuisance, and can also lead to the situation that the M32 cannot be switched on, as the firmware thinks that the voltage is too low, when in reality it would still be sufficient.
+
+In order to calibrate the voltage measurement, you have to measure the actual battery voltage of your Morserino-32 with the help of a multimeter. Once you know this value, you perform the following steps:
+
+* Start your M32 while holding the BLACK encoder knob pressed, until you see the message to release the black knob.
+* Select the Option "Calibr. Batt." with the rotary encoder.
+* You will see a voltage value (in Millivolts) on the display. Now rotate the encoder until the displayed value is as close as possible to the measured battery voltage.
+* Press the BLACK encoder knob to store the calibaration value, and to continue with the boot-up of the M32.
+
+
+=== Appendix 2: Adjusting Audio Input Level [[app2]]
 
 You can also reach one **other function** while you are positioned within the Start Menu - not through a menu selection, but through **a long press on the RED button**:
 

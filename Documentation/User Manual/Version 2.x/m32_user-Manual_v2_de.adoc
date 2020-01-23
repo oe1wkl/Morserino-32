@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v2.0 October 2019
+v2.2 Januar 2020
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -108,7 +108,9 @@ Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eing
 
 |13
 |USB
-|Verwende ein normales 5V USB-Ladegerät, um das Gerät mit Strom zu versorgen und den LiPo-Akku aufzuladen. Die Mikrocontroller-Firmware kann auch über USB neu programmiert werden (über die Programmierumgbung auf einem PC; einfacher ist es, die Morserino-32-Firmware über eine WLAN-Verbindung zu aktualisieren).
+|Verwende ein normales 5V USB-Ladegerät, um das Gerät mit Strom zu versorgen und den LiPo-Akku aufzuladen. Die Mikrocontroller-Firmware kann auch über USB neu programmiert werden (über die Programmierumgebung auf einem PC; einfacher ist es, die Morserino-32-Firmware über eine WLAN-Verbindung zu aktualisieren).
+
+Man kann auch die durch den Keyer oder Decoder erzeugten Zeichen auf dem seriellen Anschluss ausgeben lassen, um sie etwa in einem externen Computerprogramm zu verarbeiten; siehe dazu die Beschreibung des Parameters "Serial Output".
 
 |14
 |PRG-Taste
@@ -138,6 +140,8 @@ Wenn de den Morserino also für längere Zeit nicht benutzen willst, trenne mit 
 
 WARNING: Wenn die Batteriespannung beim Einschalten gefährlich niedrig ist, erscheint ein leeres Batteriesymbol auf dem Display und das Gerät weigert sich, hochzufahren.
 In diesem Fall solltest du so schnell wie möglich mit dem Laden des Akkus beginnen.
+
+TIP: Falls leere Batterie angezeigt wird, aber eigentlich noch genügend Spannung vorhanden sein müsste, ist es ratsam, eine Kalibrierung der Batteriemessung durchzuführen. Siehe dazu <<appendix1_2>>.
 
 Um das Gerät von der Batterie zu trennen (auszuschalten), es sei denn, es ist USB-versorgt, schiebe den Schiebeschalter in die Position OFF.
 
@@ -180,7 +184,7 @@ Wenn du derzeit einen Standard M32 hast und die höheren Frequenzbänder verwend
 **Nach dem Austausch des Heltec-Moduls muss vor der Verwendung von LoRa der LoRa-Setup für das gewünschte Band durchgeführt werden!**.
 ====
 
-**Siehe <<<appendix1>> am Ende dieses Dokuments**, um zu erfahren, wie man LoRa für Module konfigurieren kann, die die Bänder 868 und 929 MHz unterstützen, und wie du die LoRa-Frequenzeinstellungen ändern kannst.
+**Siehe <<<appendix1_1>> am Ende dieses Dokuments**, um zu erfahren, wie man LoRa für Module konfigurieren kann, die die Bänder 868 und 929 MHz unterstützen, und wie du die LoRa-Frequenzeinstellungen ändern kannst.
 
 
 === Verwendung des SCHWARZEN Knopfs und der ROTEN Taste [[tasten]]
@@ -196,7 +200,7 @@ Ein **langes Drücken** führt von jedem der Modi zurück zum Menü, und innerha
 
 Wenn man sich im Menü befindet (z.B. sofort nach dem Einschalten), startet ein **langes Drücken** der **ROTEN Taste** eine Funktion
 um den Audioeingangspegel (und eventuell den Ausgangspegel eines Geräts, das  an den Line-Out-Anschluss des Morserino-32 angeschlossen ist) einzustellen.
-Siehe <<<appendix2>>> am Ende dieses Dokuments.
+Siehe <<<appendix2>> am Ende dieses Dokuments.
 
 Hat man das Menü verlassen haben, um einen der Modi (Keyer, Generator, Echo-Trainer usw.) auszuführen,
 kann man mit der **ROTEN (Power/Vol/Scroll) Taste**  schnell zwischen **Geschwindigkeitsregelung** und **Lautstärkeregelung** mit einem **einfachen Klick** umschalten.
@@ -540,7 +544,7 @@ Wenn man diese Frequenz aus irgendeinem Grund nicht nutzen kann (z.B. wegen Band
 
 Sollte man eine LoRa-Frequenz entweder um 868 MHz oder um 920 MHz benötigen, kann der Bausatz mit Heltec-Modulen geliefert werden, die diesen höheren Frequenzbereich unterstützen (man kann auch ein solches Modul nachkaufen). In diesem Fall MUSS der Morserino-32  konfiguriert werden, damit er das richtige Band und die richtige Frequenz verwendet.
 
-**Siehe <<appendix1>> am Ende dieses Dokuments**, um zu erfahren, wie man LoRa für Module konfiguriert, die die Bänder 868 und 929 MHz unterstützen, und wie man die LoRa-Frequenzeinstellungen ändern kann.
+**Siehe <<appendix1_1>> am Ende dieses Dokuments**, um zu erfahren, wie man LoRa für Module konfiguriert, die die Bänder 868 und 929 MHz unterstützen, und wie man die LoRa-Frequenzeinstellungen ändern kann.
 
 
 ===== Technische Details des LoRa Transceivers
@@ -759,11 +763,21 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem St
 | Time Out | Wenn die in diesem Parameter angegebene Zeit ohne Aktualisierung der Anzeige vergeht, geht das Gerät in den Tiefschlafmodus. Man kann es durch Drücken der ROTEN Taste neu starten. | No timeout (kein Timeout)/ **5 min** / 10 min / 15 min
 | Quick Start | Ermöglicht es (gesetzt auf ON), die anfängliche Menüauswahl zu umgehen, d.h. das Gerät beginnt beim Start sofort mit der Ausführung des Modus, der vor dem letzten Ausschalten wirksam war. | ON / **OFF**
 | Auto Stop | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus, um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des Paddels oder Drücken des Drehgebers wird das Wort angezeigt, und indem man dies erneut tut, wird das nächste Wort  generiert. | ON / **OFF**
+| Serial Output | Damit wird eingestellt, ob am USB Anschluss die generierten Zeichen des Keyers bzw. die dekodierten Zeichen des Decoders ausgegeben werden sollen. Bei der Einstellung "ERRORS only" werden nur gewisse Fehlermeldungen dort ausgegeben (diese allerdings nur wenn keine der anderen Optionen gewählt wurde).
+
+In den Modi CW Generator oder Echo Trainer werden keine Zeichen auf USB ausgegeben. | **Keyer** / Decoder / Keyer+Decoder / ERRORS only
 |===
 
 == Anhänge
 
-=== Anhang 1: LoRa-Bänder und Frequenzen konfigurieren [[appendix1]]
+=== Anhang 1: Hardware Konfiguration (LoRa Bänder & Frequenzen und Kalibrierung der Batterie-Messung)
+
+Es gibt ein Hardware-Konfigurationsmenü welches man erreicht, indem man den schwarzen Drehregler-Knopf beim Einschalten des Morserino-32 gedrückt hält. Sobald man dann den Knopf nach dem Starten auslässt, kann man die gewünschte Konfiguration durch Drehen des Drehreglers auswählen, und mit einem Druck auf den schwarzen Knopf aktivieren.
+
+Die Wahlmöglichkeiten sind "Calibr. Batt." (Kalibrierung der Batteriemessung), "LoRa Config." (Einstellen der LoRa Konfiguration entsprechend des benutzten Heltec-Moduls) und "Cancel" (Verlassen des Menüs ohne etwas zu ändern und Fortsetzung des normalen Hochfahrens des M32).
+
+
+==== Anhang 1.1: LoRa-Bänder und Frequenzen konfigurieren [[appendix1_1]]
 
 Hat man ein Standard 433 MHz Heltec Modul im Morserino-32, ist er bereits für das richtige Band und eine Standardfrequenz innerhalb dieses Bandes vorkonfiguriert.
 
@@ -786,6 +800,18 @@ Die Standard Heltec-Module unterstützen nur das 433 MHz-Band, und der Morserino
 * Zuerst wird man aufgefordert, das gewünschte Band auszuwählen (wähle 433 für das Standard-LoRa-Modul und entweder 868 oder 920 für das obere UHF-LoRa-Modul); drehe den Drehgeber auf das gewünschte Band und klicke einmal kurz auf den schwarzen Knopf. **Die Bandauswahl muss für das verwendete Heltec-Modul passen!**
 * Jetzt wird man aufgefordert, eine Frequenz innerhalb des ausgewählten Bandes auszuwählen. Die erste angezeigte Frequenz ist die Standardeinstellung für dieses Band - wenn das in Ordnung ist, klicke einfach einmal auf den schwarzen Knopf, andernfalls wähle eine Frequenz aus, indem du den Drehgeber drehst und auf den Knopf klickst, sobald Sie die richtige Frequenz gefunden wurde.
 * Unmittelbar danach startet der Morserino-32 normal, mit den nun ausgewählten LoRa-Einstellungen. In der oberen Zeile des Startbildschirms sieht man die konfigurierte QRG für LoRa als 5-stellige Zahl (z.B. 43415 für die Voreinstellung im 433 MHz-Band).
+
+
+==== Appendix 1.2: Kalibrierung der Batteriemessung [[appendix1_2]]
+
+Die in den Heltec-Modulen vorgesehene Messung der Batteriespannung ist leider recht unzuverlässig. Anscheinend spielen dabei mehrere Faktoren eine Rolle: ein Messfehler innerhalb des ESP32 Prozessors aufgrund kleiner Variationen der Referenzspannung des Chips (ein hier wohl vernachlässigbar kleiner Messfehler), und Probleme mit dem Spannungsteiler auf dem Heltec Modul, der zur Messung verwendet wird (dies resultiert in einem ziemlich großen Fehler und hoher Variabilität zwischen verschiedenen Modulen). Obwohl das Messen der Batteriespannung kein elementares Problem für den Betrieb des M32 darstellt, ist dies doch ein lästiger Fehler, der auch dazu führen kann, dass cih der M32 nicht mehr einschalten lässt, da die Firmware meint, die Batteriespannung sei zu niedrig, obwohl dies gar nicht der Fall ist.
+
+Um die Messung der Batteriespannung zu kalibrieren, musst du zuerst einmal die Spannung des Akkus mit einem Multimeter feststellen. Sobald dieser Wert bekannt ist, führe folgende Schritte aus:
+
+* Schalte den M32 ein, während du den SCHWARZEN Knopf gedrückt hältst, bis die Nachricht "Release BLACK" sichtbar wird.
+* Wähle die Option "Calibr. Batt." mit dem Drehregler.
+* Man sieht nun eine Spannungsanzeige am Display (in Millivolt). Dreh nun den Drehregler in die eine oder andere Richtung, bis der angezeigte Wert möglichst nahe am gemessenen Wert der Batteriespannung liegt.
+* Drück den Schwarzen Knopf um den Kalibrierungswert zu speichern, und um mit dem Hochfahren des M32 fortzufahren.
 
 
 === Anhang 2: Einstellen des Audioeingangspegels [[appendix2]]
