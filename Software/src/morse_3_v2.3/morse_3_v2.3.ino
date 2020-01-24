@@ -1,6 +1,6 @@
 //////// Program Version
 #define VERSION_MAJOR 2
-#define VERSION_MINOR 2
+#define VERSION_MINOR 3
 #define BETA false
 
 #define IGNORE_SERIALOUT false
