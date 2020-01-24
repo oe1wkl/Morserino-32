@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v2.2 Januar 2020
+v2.3 Januar 2020
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -140,6 +140,8 @@ Wenn de den Morserino also für längere Zeit nicht benutzen willst, trenne mit 
 
 WARNING: Wenn die Batteriespannung beim Einschalten gefährlich niedrig ist, erscheint ein leeres Batteriesymbol auf dem Display und das Gerät weigert sich, hochzufahren.
 In diesem Fall solltest du so schnell wie möglich mit dem Laden des Akkus beginnen.
+
+TIP: Nach dem Benutzen einer WLAN Funktion funktioniert das Messen der Batteriespannung nicht mehr, bis das Gerät komplett ein- und wieder ausgeschaltet wurde, oder ein Reset mit dem Reset-Button durchgeführt wurde. Der Grund ist ein Hardware Designfehler des Heltec Boards. In solchen Fällen zeigt der Morserino nun "Unknown" anstelle der Batteriespannung an, und das Batteriesymbol ist mit einem Fragezeichen überschrieben. Nach dem Ein- und Ausschalten sollte alles wieder normal funktionieren. 
 
 TIP: Falls leere Batterie angezeigt wird, aber eigentlich noch genügend Spannung vorhanden sein müsste, ist es ratsam, eine Kalibrierung der Batteriemessung durchzuführen. Siehe dazu <<appendix1_2>>.
 

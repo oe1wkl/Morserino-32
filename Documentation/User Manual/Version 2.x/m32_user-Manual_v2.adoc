@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v2.2 January 2020
+v2.3 January 2020
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -140,6 +140,8 @@ Therefore, if you intend not to use the Morserino for a longer period of time, d
 
 WARNING: If the battery voltage is dangerously low when you attempt to turn it on, an empty battery symbol will show on the screen and the device will refuse to boot up.
 If you see this symbol, you should begin charging your battery as soon as possible.
+
+TIP: After using any of the WiFi functions, battery measurement does not work correctly until the Morserino-32 is powered down and up again (or a reset with the Reset button has been performed). This is due to a hardware problem on the Heltec board. In such cases the Morserino-32 displays "Unknown" instead of the battery voltage, and the battery symbol is shown with an inscribed question mark. After a power cycle everything should work OK again.
 
 TIP: If the display shows the empty battery symbol although sufficient power should still be available, it is advisable to perform a battery measurement calibration. See <<appendix1_2>>.
 
