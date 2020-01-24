@@ -1139,6 +1139,10 @@ void setup()
   display.flipScreenVertically();  // rotate 180°  when USB is to the left of the module
   display.clear();
   display.display();
+  //pinMode(batteryPin, OUTPUT); ///WORKAROUND
+  //digitalWrite(batteryPin, HIGH);
+  //pinMode(batteryPin, OUTPUT); ///WORKAROUND
+  
   adcAttachPin(batteryPin);
   analogSetPinAttenuation(batteryPin,ADC_11db);  
 
@@ -1296,7 +1300,9 @@ void displayStartUp() {
   display.clear();
   display.display();
   stat += String(p_loraQRG / 10000);
- 
+
+  //WiFi.mode(WIFI_OFF);
+  //WiFi.mode( WIFI_MODE_NULL );
   printOnStatusLine(true, 0, stat);
   
   printOnScroll(0, REGULAR, 0, "Ver. " );
@@ -1313,7 +1319,7 @@ void displayStartUp() {
   printOnScroll(1, REGULAR, 0, "© 2018 ff.");
 
   uint16_t volt = batteryVoltage();
-  // DEBUG(String(volt));
+   DEBUG(String(volt));
   
   if (volt < 2900) {
     display.clear(); display.display();
@@ -4275,6 +4281,9 @@ void displayScrollBar(boolean visible) {
 int16_t batteryVoltage() {      /// measure battery voltage and return result sin milliVolts
 
     #if BOARDVERSION == 3
+      WiFi.mode( WIFI_MODE_NULL );      // make sure WiFi is not running, as it uses the same ADC as battery measurement!
+      analogSetClockDiv(128);           //  this value was found by experimenting - no clue what it really does :-(
+      analogSetPinAttenuation(batteryPin,ADC_11db);
 
       double v= 0; int counts = 10;
       for (int i=0; i<counts   ; ++i) {
@@ -4285,6 +4294,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result si
       // v *= (2314.35 / counts);
       v *= (p_vAdjust * 12.8 / counts);
       //DEBUG(String(v,2));
+      analogSetClockDiv(1); // 5ms
       return (int16_t) v;                                                                                   
     
     #elif BOARDVERSION == 2     // probably buggy - but BOARDVERSION 2 is not supported anymore, was prototype only
@@ -4301,9 +4311,12 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result si
       
 }
 
+
+
 double ReadVoltage(byte pin){
   double reading = analogRead(pin); // Reference voltage is 3v3 so maximum reading is 3v3 = 4095 in range 0 to 4095
-  if(reading < 1 || reading >= 4095)
+  DEBUG(String(reading));
+  if(reading < 1)
     return 0;
   //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
   return -0.000000000000016 * pow(reading,4) + 0.000000000118171 * pow(reading,3)- 0.000000301211691 * pow(reading,2)+ 0.001109019271794 * reading + 0.034143524634089;
