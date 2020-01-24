@@ -4315,7 +4315,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result si
 
 double ReadVoltage(byte pin){
   double reading = analogRead(pin); // Reference voltage is 3v3 so maximum reading is 3v3 = 4095 in range 0 to 4095
-  DEBUG(String(reading));
+  //DEBUG(String(reading));
   if(reading < 1)
     return 0;
   //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
