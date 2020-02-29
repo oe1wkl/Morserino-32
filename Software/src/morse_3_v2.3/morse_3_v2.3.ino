@@ -1346,7 +1346,6 @@ void loop() {
    int t;
 
    //boolean activeOld = active;
-   checkPaddles();
    switch (morseState) {
       case morseKeyer:    if (doPaddleIambic(leftKey, rightKey)) {
                                return;                                                        // we are busy keying and so need a very tight loop !
@@ -1448,6 +1447,7 @@ void loop() {
                         
   } // end switch and code depending on state of metaMorserino
 
+  checkPaddles();
 /// if we have time check for button presses
 
     modeButton.Update();
@@ -2041,7 +2041,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
          } 
          return false;                // we return false if there was no paddle press in IDLE STATE - Arduino can do other tasks for a bit
         }
-        break;
+        return true;
 
     case DIT:
     /// first we check that we have waited as defined by ACS settings
@@ -2062,7 +2062,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                              break;
             }
             keyerState = KEY_START;                          // set next state of state machine
-            break;
+            return true;
             
     case DAH:
             if ( p_ACSlength > 0 && (millis() <= acsTimer))  // if we do automatic character spacing, and haven't waited for 3 dits...
@@ -2082,7 +2082,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                              break;
             }
             keyerState = KEY_START;                          // set next state of state machine
-            break;
+            return true;
      
 
       
@@ -2094,7 +2094,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
            ktimer += millis();                     // set ktimer to interval end time          
            curtistimer += millis();                // set curtistimer to curtis end time
            keyerState = KEYED;                     // next state
-           break;
+           return true;
  
     case KEYED:
                                                    // Wait for timers to expire
@@ -2114,7 +2114,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                     updatePaddleLatch(dit, false);  
                  // updatePaddleLatch(dit, dah);       // but we remain in the same state until element time is off! 
             }
-            break;
+            return true;
  
     case INTER_ELEMENT:
             //if ((p_keyermode != NONSQUEEZE) && (millis() < latencytimer)) {     // or should it be p_keyermode > 2 ? Latency for Ultimatic mode?
@@ -2124,9 +2124,11 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
               else
                     updatePaddleLatch(dit, false);
               // updatePaddleLatch(dit, dah); 
+              return false; 
             }
             else if (millis() < tailMuteTimer) {
               updatePaddleLatch(dit, dah);          // latch paddle state while between elements 
+              return false;
             }
             else {
                 if (millis() >= ktimer) {               // at end of INTER-ELEMENT
@@ -2190,13 +2192,10 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                           break;
                     } // switch keyerControl : evaluation of flags
                 }
+            return true;
             } // end of INTER_ELEMENT
   } // end switch keyerState - end of state machine
 
-  if (keyerControl & 3)                                               // any paddle latch?                            
-    return true;                                                      // we return true - we processed a paddle press
-  else
-    return false;                                                     // when paddle latches are cleared, we return false
 } /////////////////// end function doPaddleIambic()
 
 
