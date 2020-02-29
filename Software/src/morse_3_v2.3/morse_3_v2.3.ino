@@ -1985,7 +1985,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   static long ktimer;                      // timer for current element (dit or dah)
   static long curtistimer;                 // timer for early paddle latch in Curtis mode B+
   static long latencytimer;                // timer for "muting" paddles for some time in state INTER_ELEMENT
-  unsigned int pitch;
+  static unsigned int pitch;
   static long latency;
 
   if (!p_didah)   {              // swap left and right values if necessary!
@@ -2012,6 +2012,10 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
              }
          }
         
+         pitch = notes[p_sidetoneFreq];
+         if ((morseState == echoTrainer || morseState == loraTrx) && p_echoToneShift != 0) {
+           pitch = (p_echoToneShift == 1 ? pitch * 18 / 17 : pitch * 17 / 18);        /// one half tone higher or lower, as set in parameters in echo trainer mode
+         }
          latency = ((p_latency-1) * ditLength / 8);
        // Was there a paddle press?
         if (dit || dah ) {
@@ -2082,10 +2086,6 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
       
     case KEY_START:
           // Assert key down, start timing, state shared for dit or dah
-          pitch = notes[p_sidetoneFreq];
-          if ((morseState == echoTrainer || morseState == loraTrx) && p_echoToneShift != 0) {
-             pitch = (p_echoToneShift == 1 ? pitch * 18 / 17 : pitch * 17 / 18);        /// one half tone higher or lower, as set in parameters in echo trainer mode
-          }
            //pwmTone(pitch, p_sidetoneVolume, true);
            //keyTransmitter();
            keyOut(true, true, pitch, p_sidetoneVolume);
