@@ -1986,6 +1986,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   static long curtistimer;                 // timer for early paddle latch in Curtis mode B+
   static long latencytimer;                // timer for "muting" paddles for some time in state INTER_ELEMENT
   unsigned int pitch;
+  static long latency;
 
   if (!p_didah)   {              // swap left and right values if necessary!
       paddleSwap = dit; dit = dah; dah = paddleSwap; 
@@ -2011,6 +2012,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
              }
          }
         
+         latency = ((p_latency-1) * ditLength / 8);
        // Was there a paddle press?
         if (dit || dah ) {
             updatePaddleLatch(dit, dah);  // trigger the paddle latches
@@ -2099,7 +2101,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                //pwmNoTone();                      // stop side tone
                keyOut(false, true, 0, 0);
                ktimer = millis() + ditLength;    // inter-element time
-               latencytimer = millis() + ((p_latency-1) * ditLength / 8);
+               latencytimer = millis() + latency;
                keyerState = INTER_ELEMENT;       // next state
             }
             else if (millis() > curtistimer ) {     // in Curtis mode we check paddle as soon as Curtis time is off
