@@ -1985,8 +1985,10 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   static long ktimer;                      // timer for current element (dit or dah)
   static long curtistimer;                 // timer for early paddle latch in Curtis mode B+
   static long latencytimer;                // timer for "muting" paddles for some time in state INTER_ELEMENT
+  static long tailMuteTimer;                   //timer for muting padded at end of INTER_ELEMENT
   static unsigned int pitch;
   static long latency;
+  static long tailMuteInMilliseconds = 2;
 
   if (!p_didah)   {              // swap left and right values if necessary!
       paddleSwap = dit; dit = dah; dah = paddleSwap; 
@@ -2102,6 +2104,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                keyOut(false, true, 0, 0);
                ktimer = millis() + ditLength;    // inter-element time
                latencytimer = millis() + latency;
+               tailMuteTimer = millis() + ditLength - tailMuteInMilliseconds;
                keyerState = INTER_ELEMENT;       // next state
             }
             else if (millis() > curtistimer ) {     // in Curtis mode we check paddle as soon as Curtis time is off
@@ -2122,8 +2125,10 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                     updatePaddleLatch(dit, false);
               // updatePaddleLatch(dit, dah); 
             }
+            else if (millis() < tailMuteTimer) {
+              updatePaddleLatch(dit, dah);          // latch paddle state while between elements 
+            }
             else {
-                updatePaddleLatch(dit, dah);          // latch paddle state while between elements       
                 if (millis() >= ktimer) {               // at end of INTER-ELEMENT
                     switch(keyerControl) {
                           case 3:                                         // both paddles are latched
