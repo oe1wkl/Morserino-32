@@ -2094,7 +2094,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
  
     case KEYED:
                                                    // Wait for timers to expire
-           if (millis() > ktimer) {                // are we at end of key down ?
+           if (millis() >= ktimer) {                // are we at end of key down ?
                //digitalWrite(keyerPin, LOW);        // turn the LED off, unkey transmitter, or whatever
                //pwmNoTone();                      // stop side tone
                keyOut(false, true, 0, 0);
@@ -2122,7 +2122,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             }
             else {
                 updatePaddleLatch(dit, dah);          // latch paddle state while between elements       
-                if (millis() > ktimer) {               // at end of INTER-ELEMENT
+                if (millis() >= ktimer) {               // at end of INTER-ELEMENT
                     switch(keyerControl) {
                           case 3:                                         // both paddles are latched
                           case 7: 
