@@ -141,7 +141,7 @@ Wenn de den Morserino also für längere Zeit nicht benutzen willst, trenne mit 
 WARNING: Wenn die Batteriespannung beim Einschalten gefährlich niedrig ist, erscheint ein leeres Batteriesymbol auf dem Display und das Gerät weigert sich, hochzufahren.
 In diesem Fall solltest du so schnell wie möglich mit dem Laden des Akkus beginnen.
 
-TIP: Nach dem Benutzen einer WLAN Funktion funktioniert das Messen der Batteriespannung nicht mehr, bis das Gerät komplett ein- und wieder ausgeschaltet wurde, oder ein Reset mit dem Reset-Button durchgeführt wurde. Der Grund ist ein Hardware Designfehler des Heltec Boards. In solchen Fällen zeigt der Morserino nun "Unknown" anstelle der Batteriespannung an, und das Batteriesymbol ist mit einem Fragezeichen überschrieben. Nach dem Ein- und Ausschalten sollte alles wieder normal funktionieren. 
+TIP: Nach dem Benutzen einer WLAN Funktion funktioniert das Messen der Batteriespannung nicht mehr, bis das Gerät komplett ein- und wieder ausgeschaltet wurde, oder ein Reset mit dem Reset-Button durchgeführt wurde. Der Grund ist ein Hardware Designfehler des Heltec Boards. In solchen Fällen zeigt der Morserino nun "Unknown" anstelle der Batteriespannung an, und das Batteriesymbol ist mit einem Fragezeichen überschrieben. Nach dem Ein- und Ausschalten sollte alles wieder normal funktionieren.
 
 TIP: Falls leere Batterie angezeigt wird, aber eigentlich noch genügend Spannung vorhanden sein müsste, ist es ratsam, eine Kalibrierung der Batteriemessung durchzuführen. Siehe dazu <<appendix1_2>>.
 
@@ -767,7 +767,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem St
 | Auto Stop | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus, um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des Paddels oder Drücken des Drehgebers wird das Wort angezeigt, und indem man dies erneut tut, wird das nächste Wort  generiert. | ON / **OFF**
 | Serial Output | Damit wird eingestellt, ob am USB Anschluss die generierten Zeichen des Keyers bzw. die dekodierten Zeichen des Decoders ausgegeben werden sollen. Bei der Einstellung "ERRORS only" werden nur gewisse Fehlermeldungen dort ausgegeben (diese allerdings nur wenn keine der anderen Optionen gewählt wurde).
 
-In den Modi CW Generator oder Echo Trainer werden keine Zeichen auf USB ausgegeben. | **Keyer** / Decoder / Keyer+Decoder / ERRORS only
+Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. | **Keyer** / Decoder / Keyer+Decoder / ERRORS only
 |===
 
 == Anhänge

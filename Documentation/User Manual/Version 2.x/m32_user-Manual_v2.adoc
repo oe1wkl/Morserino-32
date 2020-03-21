@@ -768,7 +768,7 @@ Bold values are standard or recommended ones. When called from the start menu, a
 | Auto Stop | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the paddle or pressing the rotary encoder to show the word, and by doing this again to generate the next word. | ON / **OFF**
 | Serial Output | Here you control, if generated characters from the Keyer and/or decoded characters from the Decoder should be output on the USB connector. With the setting "ERRORS only" only certain debugging messages will be output (these only when no other option has been selected).
 
-In CW Generator or Echo Trainer mode no characters will be output on USB.| **Keyer** / Decoder / Keyer+Decoder / ERRORS only
+The option "Everything" displays both keyed and decoded characters, and also all output generated in CW Generator or Echo Trainer. | **Keyer** / Decoder / Keyer+Decoder / Everything / ERRORS only
 |===
 
 == Appendices
