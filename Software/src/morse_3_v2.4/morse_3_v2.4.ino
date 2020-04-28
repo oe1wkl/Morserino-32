@@ -814,7 +814,7 @@ boolean keyTx = false;             // when state is set by manual key or touch p
 
 /////////////////// Variables for LoRa: Buffer management etc
 
-char loraTxBuffer[32];
+char loraTxBuffer[128];
 
 uint8_t loRaRxBuffer[256];
 uint16_t byteBuFree = 256;
@@ -4425,19 +4425,17 @@ void shutMeDown() {
 ///  2: dah
 ///  3: end of word -: cwForLora returns a string that is ready for sending to the LoRa transceiver
 
-//  char loraTxBuffer[32];
+//  char loraTxBuffer[128];
 
 void cwForLora (int element) {
-  //static String result;
-  //result.reserve(36);
-  //static char buf[32];
   static int pairCounter = 0;
   uint8_t temp;
   uint8_t header;
 
   if (pairCounter == 0) {   // we start a brand new word for LoRA - clear buffer and set speed first
-      for (int i=0; i<32; ++i)
+      for (int i=0; i<sizeof(loraTxBuffer); ++i) {
           loraTxBuffer[i] = (char) 0;
+      }
           
       /// 1st byte: version + serial number
       header = ++loRaSerial % 64;
@@ -4450,7 +4448,9 @@ void cwForLora (int element) {
       pairCounter = 7;                    /// so far we have used 7 bit pairs: 4 in the first byte (protocol version+serial); 3 in the 2nd byte (wpm)
       //DEBUG(String(temp));
       //DEBUG(String(loraBuffer));
-      }
+  } else if (pairCounter > sizeof(loraTxBuffer)*4-1) {  // Prevent buffer overflow
+      return;
+  }
 
   temp = element & B011;      /// take the two left bits
       //DEBUG("Temp before shift: " + String(temp));
