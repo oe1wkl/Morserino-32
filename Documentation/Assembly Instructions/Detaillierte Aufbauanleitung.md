@@ -17,10 +17,10 @@
 ### Schritt-für-Schritt-Anleitung (lies sie zumindest durch, auch wenn du dich entscheiden solltest, es anders zu machen)
 
 
-1. Löte zunächst die folgenden Komponenten auf die Leiterplatte: Die 4 Klinkenbuchsen (3 verschiedene Typen, aber es ist leicht zu erkennen, welche an welcher Stelle passt); dann den blauen Trimmerwiderstand (**seine Orientierung ist egal** - der Aufdruck auf der Platine und die Kennzeichnung am Trimmer stimmen niocht wirklich überein)) und den Schiebeschalter (mit dem Hebel nach außen, natürlich); dann den Drehgeber und den Druckknopfschalter. 
+1. Löte zunächst die folgenden Komponenten auf die Leiterplatte: Die 4 Klinkenbuchsen (3 verschiedene Typen, aber es ist leicht zu erkennen, welche an welcher Stelle passt); dann den blauen Trimmerwiderstand (**seine Orientierung ist egal** - der Aufdruck auf der Platine und die Kennzeichnung am Trimmer stimmen nicht wirklich überein)) und den Schiebeschalter (mit dem Hebel nach außen, natürlich); dann den Drehgeber und den Druckknopfschalter. 
 
-	Dieser hat eine besondere Tendenz, nicht exakt vertikal montiert zu werden - was schlecht ist, weil er dann vielleicht nur schlecht durch das Loch der oberen Gehäuseplatte passt. Also achte bitte darauf, das er wirklich sauber auf der Platine sitzt. Diser Taster hat zwei vorspringende "Nasen" auf seinem Gehäuse - eine sollte zur langen Kante der Platine zeigen, und die andere logischerweise in Richtung Lautsprecher.
-2. Du findest alle diese Bauteile in der rosafarbenen Plastiktüte (siehe auch die Abbildung Am Ende dieser Anleitung). Löte noch nicht die 2 Buchsenleisten, die Kabel und den Lautsprecher ein. Stelle sicher, dass alle Komponenten auf der Leiterplatte bündig sind - insbesondere der Drehgeber, der Trimmer und der Drucktastenschalter - ich hab das doch soeben erwähnt, nicht? (sonst passt das Gehäuse dann nicht sehr gut). Stelle sicher, dass sich der Schiebeschalter in der Position "OFF" (in Richtung der Klinkenbuchse) befindet.
+	Dieser hat eine besondere Tendenz, nicht exakt vertikal montiert zu werden - was schlecht ist, weil er dann vielleicht nur schlecht durch das Loch der oberen Gehäuseplatte passt. Also achte bitte darauf, das er wirklich sauber auf der Platine sitzt. Dieser Taster hat zwei vorspringende "Nasen" auf seinem Gehäuse - eine sollte zur langen Kante der Platine zeigen, und die andere logischerweise in Richtung Lautsprecher.
+2. Du findest alle diese Bauteile in der rosafarbenen Plastiktüte (siehe auch die Abbildung am Ende dieser Anleitung). Löte noch nicht die 2 Buchsenleisten, die Kabel und den Lautsprecher ein. Stelle sicher, dass alle Komponenten auf der Leiterplatte bündig sind - insbesondere der Drehgeber, der Trimmer und der Drucktastenschalter - ich hab das doch soeben erwähnt, nicht? (sonst passt das Gehäuse dann nicht sehr gut). Stelle sicher, dass sich der Schiebeschalter in der Position "OFF" (in Richtung der Klinkenbuchse) befindet.
 3. Verbinde das Kabel mit dem kleinen 1,25-mm-JST-Stecker mit der Buchse an der Unterseite des Heltec-Moduls (achte darauf, dass du die Buchse nicht mit brutaler Gewalt von der Platine abreißt - halte sie mit dem Finger fest).
 Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist.
 
@@ -33,34 +33,34 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 [Ass06]: Images/pin_headers.jpg "Attached pin headers"
 
 	**Behandle das Heltec Modul sehr vorsichtig!** Übe keinen Druck auf das Display, das Anschlusskabel des Displays, oder die gewendelte Antenne neben dem Display aus! Diese Dinge sind sehr fragil und können leicht brechen. **Halte das Heltec Modul immer nur an seiner Platine fest!**
-5. Setze das Heltec-Modul mit seinen angebrachten Steckerleisten sorgfältig auf die Leiterplatte, so dass der USB Anschluss an den Rand der Leiterplatte positinoiert ist; stelle dabei sicher, dass keine Stifte verbogen sind, und löte die Steckerleisten auf die Leiterplatte, und stelle auch hier sicher, dass alles bündig auf der Leiterplatte sitzt.
-6. Löte die Enden des Kabels das vom Heltec Module kommt an die mit ESP32 + (rot) und ESP32- (schwarz) gekennzeichneten Kontaktstellen auf der Oberseite der Leiterplatte, nachdem du die Drähte durch die Löcher neben den Kontaktstellen (als Zugentlastung) geführt hast und diese von unten durch die Löcher des Kontakts geführt hast. **Mach keinen Fehler mit der Polarität des Kabels - das Heltec-Modul würde dadurch höchstwahrscheinlich zerstört!**
+5. Setze das Heltec-Modul mit seinen angebrachten Steckerleisten sorgfältig auf die Leiterplatte, so dass der USB Anschluss an den Rand der Leiterplatte positioniert ist; stelle dabei sicher, dass keine Stifte verbogen sind, und löte die Steckerleisten auf die Leiterplatte, und stelle auch hier sicher, dass alles bündig auf der Leiterplatte sitzt.
+6. Löte die Enden des Kabels, das vom Heltec Module kommt, an die mit ESP32 + (rot) und ESP32- (schwarz) gekennzeichneten Kontaktstellen auf der Oberseite der Leiterplatte, nachdem du die Drähte durch die Löcher neben den Kontaktstellen (als Zugentlastung) geführt hast und diese von unten durch die Löcher des Kontakts geführt hast. **Mach keinen Fehler mit der Polarität des Kabels - das Heltec-Modul würde dadurch höchstwahrscheinlich zerstört!**
 
  ![Battery cable][Ass08]
 [Ass08]: Images/mounted_battery_cable.jpg "Orientation of Power cable"
 
 7. Kürze das Kabel für den Akkuanschluss mit dem Molex-Stecker - die Länge hängt davon ab, wo du den Akku platzierst. Wenn er unter dem Heltec-Modul sitzt, sollte es etwa 3 bis 4 cm lang sein. Entferne die Isolierung auf eine Länge von etwa 3 mm (1/8 Zoll) und verzinne die Enden sorgfältig.
-8. Wenn sich der Akku unter dem Heltec-Modul befinden soll, führe die Kabel von der Oberseite der Platine durch die Löcher neben den Pads LIPO + und LIPO- und dann in die Löcher der Pads. Verlöte sie auf der Oberseite der Platine. Wenn sich der AKku jedoch unter der Leiterplatte befinden soll, kürze das Kabel auf eine passende Länge, führe es von unten durch die Zugentlastungslöcher und dann von oben durch die Löcher der Pads und verlöte sie an der Unterseite. Ober- und Unterseite der Platine sind so markiert, dass du das richtige Pad leicht finden kannst. **Mach keinen Fehler mit der Polarität des Kabels - das Heltec-Modul würde dadurch höchstwahrscheinlich zerstört!**
+8. Wenn sich der Akku unter dem Heltec-Modul befinden soll, führe die Kabel von der Oberseite der Platine durch die Löcher neben den Pads LIPO + und LIPO- und dann in die Löcher der Pads. Verlöte sie auf der Oberseite der Platine. Wenn sich der Akku jedoch unter der Leiterplatte befinden soll, kürze das Kabel auf eine passende Länge, führe es von unten durch die Zugentlastungslöcher und dann von oben durch die Löcher der Pads und verlöte sie an der Unterseite. Ober- und Unterseite der Platine sind so markiert, dass du das richtige Pad leicht finden kannst. **Mach keinen Fehler mit der Polarität des Kabels - das Heltec-Modul würde dadurch höchstwahrscheinlich zerstört!**
 8. Löte nun den Lautsprecher auf die Platine (dies erst jetzt, da es schwierig wird, die Kabel auf der Oberseite zu löten, sobald der Lautsprecher auf der Platine sitzt).
 9. Setze den schwarzen Knopf auf den Schaft des Drehgebers (im Inneren des Knopfs befinden sich 2 kleine Führungsleisten, die auf die abgeflachte Seite des Schafts auszurichten sind), und die rote Kappe auf den Schaft des Drucktasters.
-9. Wenn sich der Akku unter dem Heltec-Modul befinden soll, befestige in dort mit einem kleinen Streifen doppelseitigem Klebeband (wie Tixo, aber auf beiden Seiten klebend). Verwende keine dicken doppelseitigen Klebebänder, da die Batterie dann unter Umständen nicht genügend Platz unter dem Modul hat!
+9. Wenn sich der Akku unter dem Heltec-Modul befinden soll, befestige ihn dort mit einem kleinen Streifen doppelseitigem Klebeband (wie Tixo, aber auf beiden Seiten klebend). Verwende keine dicken doppelseitigen Klebebänder, da die Batterie dann unter Umständen nicht genügend Platz unter dem Modul hat!
 	![double sided tape][Ass09]
 [Ass09]: Images/tesa_double_sided.jpg "Orientation of Power cable"
 10. Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um zu sehen, dass wir nirgendwo einen Kurzschluss verursacht haben. Es sollte einen relativ hohen Widerstand zeigen (> 1 MOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebe den Schalter dann wieder in die OFF-Position.
 11. Stecke den Stecker des Akkus in den Molex-Anschluss.
-19. Setze die Paddles in die Platinenstecker ein (linkes und rechtes Paddel sind gleich, daher kann man hier keinen Fehler machen). **Die gelben Klebestreifen von den Platinensteckern vorher vorsichtig entfernen!** (Diese sind vom Hersteller angebracht und weren für die aotomatische Bestückung der Platine benötigt.)
+19. Setze die Paddles in die Platinenstecker ein (linkes und rechtes Paddel sind gleich, daher kann man hier keinen Fehler machen). **Die gelben Klebestreifen von den Platinensteckern vorher vorsichtig entfernen!** (Diese sind vom Hersteller angebracht und werden für die automatische Bestückung der Platine benötigt.)
 
     **Die folgenden Schritte gelten nur, wenn du den Bausatz mit Gehäuse (und Antenne) erworben hast.**
 
 12. Entferne die Schutzfolien von den Plexiglasplatten (die gravierte Seite hat keine Schutzfolie).
 12. Montiere zuerst die 15 mm-Abstandsbolzen (weiblich / weiblich) mit den mitgelieferten Metallschrauben an der oberen Platte des Gehäuses. Die Bolzen sollten sich unter der Platte befinden, und die eingravierten Inschriften von oben lesbar sein.
-13. Befestige den Antennenstecker an der oberen Platte. Verwende dazu die gezahnte Unterlegscheibe an der Unterseite und den Federring sowie die Mutter an der Oberseite (sie sollte fest sitzen, aber auf das Acrylglas keinen zu hohen Druck ausüben, da diese sonst springen könnte).
+13. Befestige den Antennenstecker an der oberen Platte. Verwende dazu die gezahnte Unterlegscheibe an der Unterseite und den Federring sowie die Mutter an der Oberseite (sie sollte fest sitzen, aber auf das Acrylglas keinen zu hohen Druck ausüben, da dieses sonst springen könnte).
 
 	![Antenna connector][Ass10]
 [Ass10]: Images/sma_connector.jpg "SMA connector"
 14. Drücke den kleinen IPX-Koaxialstecker auf die Koaxbuchse des Heltec-Moduls.
 15. Entferne die Schutzfolie von den beiden Acrylglasplatten (die obere Platte hat nur eine Folie, auf der Seite, die nicht graviert ist). Montiere nun die obere Platte mit ihren Abstandshaltern auf die Leiterplatte. Verwende dazu entweder die 6-mm-Abstandshalter (wenn die Batterie unter dem Heltec-Modul sitzt) oder die 12-mm-Abstandshalter (wenn der Akku unter der Platine sitzt und etwas mehr Platz benötigt) auf der Unterseite der Platine. Stelle sicher, dass das Display in die Öffnung passt, und ebenso die kleine Spule (WLAN-Antenne). Stelle auch sicher, dass die Batteriekabel und das Antennenkabel sinnvoll geführt sind und den Drehgeber oder den Drucktastenschalter nicht behindern.
-**Beschädige nicht die Kupferspirale (= WLAN Antenne), und gib acht dass du die flexible Verbindung zum Display nicht verbiegest oder beschädigst!**
+**Beschädige nicht die Kupferspirale (= WLAN Antenne), und gib acht dass du die flexible Verbindung zum Display nicht verbiegst oder beschädigst!**
 
 	![Almost done][Ass11]
 [Ass11]: Images/view_from_below.jpg "View from below"
@@ -79,7 +79,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 
 ###Auswahl eines geeigneten LiPo Akkus für den Morserino-32
 
-Für meine Prototypen benutze ich einen kleinen 600 mAh einzelligen LiPo Akku wie er häufig in kleinen fengesteuerten Modellen wie zB. Quadcoptern verwendet wird. Die Marke, die ich nutzte ist "Tattu" und har folgenden Spezifikationen
+Für meine Prototypen benutze ich einen kleinen 600 mAh einzelligen LiPo Akku wie er häufig in kleinen fengesteuerten Modellen wie z.B. Quadrocoptern verwendet wird. Die Marke, die ich nutze ist "Tattu" und hat folgende Spezifikationen
 (siehe [https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html]() oder [https://www.genstattu.com/tattu-25c-1s-3-7-v-600mah-lipo-battery-pack-with-molex-plug-6pcs.html]()): 
 
 **Tattu** 600mAh 3.7V 30C 1S1P Lipo Akku mit Molex Stecker
@@ -96,7 +96,7 @@ Natürlich kann man ähnliche Akkus auch anderer Hersteller benutzen; damit der 
 
 Der Akku darf nur eine Zelle haben (Nominalspannung 3,7 V), und sollte mit einem Molex-Stecker versehen sein (ein Kabel mit passendem Gegenstück ist im Bausatz enthalten. Willst du einen Akku mit anderem Anschluss benutzen, musst du dir selber ein passendes Kabel mit Stecker besorgen. 
 
-Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf der Bodenplatte des Gehäuses montiert werden. Damit man da etwas Flexibilität hat, liegen dem Bausatz Distanzstücke von 6mm und 12mm Länge bei, mit denen man die Bodenplatte befestigen kann. Mit den 12mm Distanzstücken dürfen die größeren Akkus bis zu 10 mm dick sein. Man köntne auch die 6mm und 12mm Abstandsbolzen in Kombination verwenden, da darf der Akku sogar bis zu 16 mm dick sein. Man muss in jedem Fall dafür sorgen, dass der Akku nicht durch vorstehende Spitzen auf der Paltinenunterseite beschädigt werden kann - dies könnte zu Feuer und Explosion des Akkus führen!
+Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf der Bodenplatte des Gehäuses montiert werden. Damit man da etwas Flexibilität hat, liegen dem Bausatz Distanzstücke von 6mm und 12mm Länge bei, mit denen man die Bodenplatte befestigen kann. Mit den 12mm Distanzstücken dürfen die größeren Akkus bis zu 10 mm dick sein. Man könnte auch die 6mm und 12mm Abstandsbolzen in Kombination verwenden, da darf der Akku sogar bis zu 16 mm dick sein. Man muss in jedem Fall dafür sorgen, dass der Akku nicht durch vorstehende Spitzen auf der Platinenunterseite beschädigt werden kann - dies könnte zu Feuer und Explosion des Akkus führen!
 
 Eine mögliche Option für einen größeren Akku wäre dieser (der untere Akku am Bild): ![Akkus][Ass03] [https://www.amazon.de/gp/product/B01JJ6DA7A/]() oder sogar so etwas Ähnliches wie dieser: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (dieser hat allerdings keinen Molexstecker, man müsste also ein dazu passendes Anschlusskabel besorgen). 
 [Ass03]: Images/batteries.jpg "Empfohlene Akkus"
