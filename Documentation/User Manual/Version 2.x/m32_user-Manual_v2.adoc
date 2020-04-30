@@ -53,7 +53,7 @@ image::M32_layout.jpg[Where are the connectors and controls]
 |Connect this to your transmitter or transceiver if you would like to key them with this device.
 
 |2
-|.5mm Phone Jack (4 poles): Audio In / Line Out
+|3.5mm Phone Jack (4 poles): Audio In / Line Out
 |**Audio input** for the CW decoder; connect the audio output of a receiver for decoding CW signals. **Audio output** (pretty close to a pure sine wave) that is not influenced by setting the loudspeaker volume. The assignments to the jack are as follows: Tip and 1st ring - audio in; 2nd ring: ground; sleeve: audio out.
 
 |3
@@ -360,7 +360,7 @@ Once the end of the file is reached, it will commence at the beginning again.
 +
 The file should contain ASCII characters only (upper or lower case does not matter) -
 characters that cannot be represented in Morse code are just ignored.
-Pro signs can be in the file, they need to be written as 2 character representations with either [] oder <> around tehm, e.g. `<sk>` or `[ka]`.
+Pro signs can be in the file, they need to be written as 2 character representations with either [] or <> around them, e.g. `<sk>` or `[ka]`.
 The following pro signs are recognized:
 ====
 ** `<ar>` : will be shown on display as + (plus sign)
@@ -392,7 +392,7 @@ In this modus, the prompt word will not normally be shown on the display -- only
 The sub-menus are the same as for the CW Generator: **Random, CW Abbrevs, English Words, Call Signs, Mixed** and **File Player**.
 
 
-Like in CW Generator modus, you **start the generation by pressing a paddle**, and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle -- after all, you use the paddle to generate your responses! So **the only way to stop this modus is a ckick of the BLACK encoder button**.
+Like in CW Generator modus, you **start the generation by pressing a paddle**, and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle -- after all, you use the paddle to generate your responses! So **the only way to stop this modus is a click of the BLACK encoder button**.
 
 Again, like with the CW Generator, you can set a huge range of parameters to fine tune the generation of things. Of particular interest for the Echo Trainer are:
 
@@ -764,7 +764,7 @@ Bold values are standard or recommended ones. When called from the start menu, a
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response in Echo Trainer modus, and will be decreased by 1 whenever you made a mistake. | ON / **OFF**
 | Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. | **M32 / JLMC** (Just Learn Morse Code)  /  LCWO
 | Time Out | If the time specified in this parameter passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min
-| Quick Start | Allows you to bypass the intial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**
+| Quick Start | Allows you to bypass the initial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**
 | Auto Stop | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the paddle or pressing the rotary encoder to show the word, and by doing this again to generate the next word. | ON / **OFF**
 | Serial Output | Here you control, if generated characters from the Keyer and/or decoded characters from the Decoder should be output on the USB connector. With the setting "ERRORS only" only certain debugging messages will be output (these only when no other option has been selected).
 
@@ -777,7 +777,7 @@ The option "Everything" displays both keyed and decoded characters, and also all
 
 There is a hardware configuration menu that  can be reached by keeping the BLACK encoder knob pressed while switching the M32 on. Once you release the knob when the M32 has started up, you can select the configuration you want to perform by rotating the encoder knob, and pressing it once the right option shows up.
 
-The selectable options are "Calibr. Batt." (calibration of battery measurement), "LoRa Config." and "Cancel" (which just leaves this menu and continues with regular start-up iof the M32).
+The selectable options are "Calibr. Batt." (calibration of battery measurement), "LoRa Config." and "Cancel" (which just leaves this menu and continues with regular start-up of the M32).
 
 ==== Appendix 1.1: Configuring LoRa Bands and Frequencies [[appendix1_1]]
 
@@ -813,7 +813,7 @@ In order to calibrate the voltage measurement, you have to measure the actual ba
 * Start your M32 while holding the BLACK encoder knob pressed, until you see the message to release the black knob.
 * Select the Option "Calibr. Batt." with the rotary encoder.
 * You will see a voltage value (in Millivolts) on the display. Now rotate the encoder until the displayed value is as close as possible to the measured battery voltage.
-* Press the BLACK encoder knob to store the calibaration value, and to continue with the boot-up of the M32.
+* Press the BLACK encoder knob to store the calibration value, and to continue with the boot-up of the M32.
 
 
 === Appendix 2: Adjusting Audio Input Level [[app2]]
@@ -828,7 +828,7 @@ TIP: Only while you are in the menu will the RED button **long press** activate 
 
 === Appendix 3: Updating the Firmware from Versions < 2.0 [[appendix3]]
 
-With firmware versions 1.x the WiFi functions were not accesible directly from the main menu, but ny quickly pressing the RED button three times. Hence the update procedure has to be performed as follows:
+With firmware versions 1.x the WiFi functions were not accesible directly from the main menu, but by quickly pressing the RED button three times. Hence the update procedure has to be performed as follows:
 
 If not already done before, you have to do the WiFi configuration first.
 
