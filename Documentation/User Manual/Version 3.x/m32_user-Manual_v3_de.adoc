@@ -1,0 +1,895 @@
+= Morserino-32: Benutzerhandbuch
+W. Kraml (OE1WKL)
+v3.0 Mai 2020
+:organization: Morserino-32 Benutzerhandbuch
+:doctype: book
+// Settings:
+:experimental:
+:reproducible:
+:icons: font
+:listing-caption: Listing
+//:sectnums:
+:toc: macro
+:toc-title: Inhaltsverzeichnis
+:toclevels: 4
+ifeval::["{asciidoctor-version}" < "1.5.7"]
+:legacy-footnoteref:
+endif::[]
+ifdef::backend-pdf[]
+:pdf-theme: m32
+:pdf-themesdir: {docdir}
+:source-highlighter: rouge
+//:rouge-style: github
+:media: prepress
+endif::[]
+
+toc::[]
+
+[preface]
+== Vorwort
+
+image::Morserino.jpg[Morserino-32]
+
+[.lead]
+"`*_Morserino-32 -- Ein multifunktionales Morsegerät, perfekt zum Lernen und Üben_*`"
+
+Dieses Handbuch spiegelt die Funktionen der Firmware Version 2.x des Morserino-32 wider. Es wurde in wesentlichen Teilen neu arrangiert und teilweise neu geschrieben, um es besser benutzbar zu machen.
+
+Es wurde mit **asciidoc** (anstelle von Markdown für die früheren Versionen) erstellt, und die PDF-Version wurde mit
+**asciidoctor-pdf** gerendert, um ein Handbuch zu erstellen, das besser lesbar und für das Auge angenehm ist.
+
+Ich möchte mich bei allen bedanken, die durch Kommentare, Kritik und Anregungen dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen und hervorragenden Produkt zu machen.
+
+==  Anschlüsse und Bedienelemente [[controls]]
+
+image::M32_layout.jpg[Wo sind die Anschlüsse und Bedienelemente]
+
+[cols="^.1,.<3,.<10",options=header]
+|===
+|#
+|Anschluss / Bedienelement
+|Gebrauch
+
+|1
+|3.5mm Klinkenbuchse (2-polig): zum Sender
+|Verbinde diese mit deinem Sender oder Transceiver, wenn du diesen mit dem Morserino-32 tasten willst.
+
+|2
+|3,5 mm Klinkenbuchse (4 Pole): Audio In / Line Out
+| **Audioeingang** für den CW-Decoder; Schließe  den Audioausgang eines Empfängers an, um CW-Signale zu dekodieren. **Audioausgang** (fast reiner Sinus), der nicht durch die Einstellung der Lautsprecherlautstärke beeinflusst wird. Die Zuordnungen zur Buchse lauten wie folgt: Tip und 1. Ring - Audioeingang; 2. Ring: Masse; Sleeve: Audioausgang.
+
+|3
+| Audio-Eingangspegel
+| Passe den Audio-Eingangspegel mit Hilfe dieses Trimmers an. Für die Pegelanpassung gibt es eine spezielle Funktion, siehe Abschnitt <<appendix2>> am Ende dieses Handbuchs.
+
+|4
+|3,5-mm-Klinkenbuchse (3 Pole): Kopfhörer
+|Schließe hier deine Kopfhörer an (alle Stereokopfhörer von Mobiltelefonen mit Klinkenbuchsen sollten geeignet sein), um über Kopfhörer zu hören und den Lautsprecher auszuschalten. Man kann keinen Lautsprecher direkt an diese Buchse anschließen, ohne zusätzliches Interface (dieser Ausgang benötigt eine Gleichstromverbindung mit Masse über 50 - 300 Ohm.)
+
+|5
+|Ein-/Aus-Schalter
+|Verbindet den LiPo-Akku mit dem Gerät, bzw. trennt ihn davon. Bei häufigem Gebrauch des Morserino-32 kann man den Akku angeschlossen lassen. Wenn man aber das Gerät mehrere Tage nicht benutzt, sollte es mit diesem Schalter vom Akku getrennt werden, da dieser sonst langsam entladen wird.
+
+|6
+|SMA-Antennenbuchse
+|Schließ eine für die Betriebsfrequenz geeignete Antenne für den Funkbetrieb mit LoRa an (Standard ist ca. 433 MHz, aber es sind auch Module für 860-925 MHz erhältlich). Man darf nicht ohne Antenne senden!
+
+|7
+|ROT (Power/Vol/Scroll) Taste
+|Wenn das Gerät in den Tiefschlaf gegangen ist, wacht es auf und startet den Morserino neu.
+Wenn das Gerät in Betrieb ist (d.h. einer der Modi gerade exekutiert wird), wird durch kurzes Drücken dieser Taste die Funktion des Drehgebers zwischen der Einstellung der Geschwindigkeit und dem Lautstärkeregler umgeschaltet.
+Ein langer Druck auf die Taste ermöglicht es, die Anzeige mit dem Drehgeber zu scrollen, ein erneuter Druck auf die Taste schaltet die Funktion wieder auf Geschwindigkeitsregelung um.
+Befindet man sich im Menü, wird durch langes Drücken dieser Taste die Funktion zum Einstellen des Audioeingangspegels aktiviert. Weitere Informationen dazu im Abschnitt <<<buttons>>> unten.
+
+|8
+|SCHWARZER Drehknopf
+|Dient zur Auswahl innerhalb von Menüs, zur Einstellung von Geschwindigkeit oder Lautstärke, oder zum Scrollen der Anzeige, sowie zur Einstellung verschiedener Parameter und Optionen.
+Kann gedreht werden und ist auch ein Drucktastenschalter. Weitere Informationen dazu im Abschnitt <<<buttons>>> unten.
+
+|9
+|Anschlüsse für Touchpaddel
+|Diese Leiterplattensteckverbinder nehmen die kapazitiven Touchpaddel auf.
+Wenn du nur ein externes Paddel verwendest (bzw. auch für den Transport), können  die Touchpaddel entfernt werden.
+
+|10
+|3,5 mm Klinkenstecker (3-polig): Externes Paddel
+|Verwende diesen Anschluss, um entweder ein externes (mechanisches) Paddel anzuschließen (Spitze ist linkes Paddel, Ring ist rechtes Paddel, Hülse ist Masse),
+oder eine einfache Morsetaste (Spitze ist die Taste).
+Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eingabe überwachen!
+**Bitte beachte, dass für andere Funktionen (Echo-Trainer, Transceiver)  einfache Morsetasten derzeit NICHT unterstützt werden!**
+
+|11
+|Serielle Schnittstelle
+|Man ein Kabel (direkt oder über einen 4-poligen Steckverbinder) an ein externes serielles Gerät, z.B. ein GPS-Empfängermodul, anschließen (dies wird derzeit von der Software nicht unterstützt, ist aber nicht sehr schwer zu realisieren). Die 4 Pole sind T (Transmit), R (Receive), + und - (3,3V Stromversorgung vom Heltec-Modul).
+
+|12
+|Reset-Taste
+|Durch ein kleines Loch erreicht man den Reset-Taster des Heltec-Moduls (selten benötigt).
+
+|13
+|USB
+|Verwende ein normales 5V USB-Ladegerät, um das Gerät mit Strom zu versorgen und den LiPo-Akku aufzuladen. Die Mikrocontroller-Firmware kann auch über USB neu programmiert werden (über die Programmierumgebung auf einem PC, oder mithilfe eines speziellen Update-Hilfsprogramms (siehe <<appendix4>>); eine andere Möglichkeit ist es, die Morserino-32-Firmware über eine WLAN-Verbindung zu aktualisieren).
+
+Man kann auch die durch den Keyer oder Decoder erzeugten Zeichen auf dem seriellen Anschluss ausgeben lassen, um sie etwa in einem externen Computerprogramm zu verarbeiten; siehe dazu die Beschreibung des Parameters "Serial Output".
+
+|14
+|PRG-Taste
+|Durch ein kleines Loch erreicht man den Programmiertaster des Heltec-Moduls (normalerweise nicht benötigt).
+|===
+
+== Erste Schritte
+
+=== Ein- und Ausschalten / Aufladen des Akkus [[power]]
+
+
+Wenn du das Gerät mit einer USB-Stromversorgung betreiben möchtest, schließe es einfach mit einem Micro-USB-Kabel an ein beliebiges USB-Ladegerät an (es verbraucht max. 200 mA, also reicht jedes 5V-Ladegerät).
+
+Wenn du den Morserino mit dem Akku als Stromquelle betreiben möchtest, schiebe den Schiebeschalter in die Position ON.
+
+Wenn das Gerät ausgeschaltet ist, aber die Batterie angeschlossen ist (Schiebeschalter ist eingeschaltet), befindet es sich in Wirklichkeit im Tiefschlaf: Fast alle Funktionen des Mikrocontrollers sind ausgeschaltet, und der Stromverbrauch ist minimal (weniger als 5% des normalen Betriebs).
+
+Um das Gerät aus dem Tiefschlaf einzuschalten, drücke  einfach die ROTE Taste (Power/Vol/Scroll) kurz.
+
+Wenn der Morserino-32 hochfährt, siehst du für ein paar Sekunden einen Startbildschirm.
+In der oberen Zeile wird angezeigt, für welche LoRa-Frequenz die M32 konfiguriert ist (als 5-stellige Zahl), und
+unten im Display wird gezeigt, wie viel Akkuladung noch übrig ist.
+bevor der Akku ganz leer ist, solltest du das Gerät an eine USB-Stromversorgung anschließen.
+(Der Akku wird auch dann entladen, wenn du das Gerät nie einschaltest - obwohl dies in seinem Tiefschlafzustand eher minimal ist,
+ist ein voller Akku dennoch nach ein paar Tagen leer.
+Wenn de den Morserino also für längere Zeit nicht benutzen willst, trenne mit dem Schiebeschalter auf der Rückseite den Akku vom Gerät ....)
+
+WARNING: Wenn die Batteriespannung beim Einschalten gefährlich niedrig ist, erscheint ein leeres Batteriesymbol auf dem Display und das Gerät weigert sich, hochzufahren.
+In diesem Fall solltest du so schnell wie möglich mit dem Laden des Akkus beginnen.
+
+TIP: Nach dem Benutzen einer WLAN Funktion funktioniert das Messen der Batteriespannung nicht mehr, bis das Gerät komplett ein- und wieder ausgeschaltet wurde, oder ein Reset mit dem Reset-Button durchgeführt wurde. Der Grund ist ein Hardware Designfehler des Heltec Boards. In solchen Fällen zeigt der Morserino nun "Unknown" anstelle der Batteriespannung an, und das Batteriesymbol ist mit einem Fragezeichen überschrieben. Nach dem Ein- und Ausschalten sollte alles wieder normal funktionieren.
+
+TIP: Falls leere Batterie angezeigt wird, aber eigentlich noch genügend Spannung vorhanden sein müsste, ist es ratsam, eine Kalibrierung der Batteriemessung durchzuführen. Siehe dazu <<appendix1_2>>.
+
+Um das Gerät von der Batterie zu trennen (auszuschalten), es sei denn, es ist USB-versorgt, schiebe den Schiebeschalter in die Position OFF.
+
+Um das Gerät in den Tiefschlaf zu versetzen, gibt es zwei Möglichkeiten:
+
+*Im Hauptmenü die Option "Go To Sleep" zu wählen.
+*Nichts zu tun - wenn im Parametermenü ein "Time Out"-Wert eingestellt wurde. Wenn es keine Aktualisierung der Anzeige gibt, schaltet sich das Gerät selbst aus und geht nach Ablauf der dort eingestellten Zeit in den Tiefschlaf.
+
+**Um den Akku** aufzuladen, verbinde ihn mit einem USB-Kabel mit einer zuverlässigen USB-5V-Stromquelle, wie z.B. einem Computer, oder einem USB-Ladegerät, wie z.B. einem Telefonladegerät.
+
+WARNING: Vergewissere dich, dass der Hardware-Schalter des Geräts während des Ladevorgangs auf *ON* steht - wenn du den Akku über den Schalter trennst,
+kann er nicht geladen werden.
+
+Während des Ladevorgangs leuchtet die orangefarbene LED am ESP32-Modul hell auf.
+Wenn der Akku abgeklemmt ist, leuchtet diese LED nicht hell, sondern blinkt nervös oder mit halber Intensität.
+
+Sobald der Akku vollständig geladen ist, leuchtet die orangefarbene LED nicht mehr.
+
+Man kann das Gerät natürlich immer verwenden, wenn es über USB mit Strom versorgt wird, ob der Akku geladen wird oder nicht.
+
+[WARNING]
+====
+Um eine Tiefentladung des LiPo-Akkus zu vermeiden, schalte den Morserino-32 immer über den Schiebeschalter aus. Lass es nicht über einen längeren Zeitraum im "Schlafmodus" (bis zu einem Tag oder vielleicht zwei Tage sind OK, wenn es gut aufgeladen war; ein voll aufgeladener 600 mAh-Akku wird im Tiefschlaf innerhalb von 3 bis 4 Tagen auf ein Niveau von etwa 3,2 V entladen).
+
+Das Heltec-Modul hat eine Elektronik zum Laden des Akkus an Bord und verhindert eine Überladung sehr gut. Aber es hat keine Verhinderung von Tiefentladung! **Eine Tiefentladung führt zu einer verminderten Akkukapazität und schließlich zum vorzeitigen Tod der Batterie!**
+====
+
+=== Einstellung des LoRa-Bandes und der Frequenz
+
+Die Standardversion des Morserino-32 verfügt über eine vorkonfigurierte Frequenz innerhalb des 433 MHz Amateur- und ISM-Bandes (ISM nur in ITU-Region 1). **Wenn das Ihren Anforderungen entspricht, musst du jetzt nichts weiter tun.**
+
+Wenn die Nutzung dieser Frequenz in deiner Region nicht erlaubt ist, kann man eine Version des M32 kaufen, die die LoRa-Bänder zwischen 860 und 925 MHz unterstützt. In diesem Fall muss man das richtige Band und die richtige Frequenz konfigurieren, bevor man die LoRa-Funktionalität des M32 nutzen kann.
+
+[WARNING]
+====
+Bitte beachte, dass man eine spezielle Version des Heltec Moduls für die Nutzung des 868- oder 920-MHz-Bandes benötigt.
+Die "Standard"-Version unterstützt nur das 433 MHz-Band, und die alternative Version unterstützt nur das 868er und 920er Band!
+
+Wenn du derzeit einen Standard M32 hast und die höheren Frequenzbänder verwenden möchtest, kannst du ein Heltec-Modul (plus Antenne) für diese Bänder bestellen.
+**Nach dem Austausch des Heltec-Moduls muss vor der Verwendung von LoRa der LoRa-Setup für das gewünschte Band durchgeführt werden!**.
+====
+
+**Siehe <<<appendix1_1>> am Ende dieses Dokuments**, um zu erfahren, wie man LoRa für Module konfigurieren kann, die die Bänder 868 und 929 MHz unterstützen, und wie du die LoRa-Frequenzeinstellungen ändern kannst.
+
+
+=== Verwendung des SCHWARZEN Knopfs und der ROTEN Taste [[tasten]]
+Die Auswahl der verschiedenen Modi und die Einstellung aller möglichen Parameter erfolgt mit dem **Drehgeber** und seinem **SCHWARZEN Knopf**.
+
+*Durch Drehen* kann man mit dem Drehgeber durch die Optionen oder Werte, **durch einmaliges Klicken** mit dem Knopf wird eine Option oder ein Wert ausgewählt,
+oder bringt dich zur nächsten Ebene des Menüs (es gibt bis zu drei Ebenen im Menü).
+
+Ein **Doppelklick** auf den SCHWARZEN Knopf führt  zum Menü der Parametereinstellung. Tust du dies innerhalb des  Menüs, können alle Parameter geändert werden;
+innerhalb eines aktiven Modus können nur die Parameter geändert werden, die für den aktuellen Modus relevant sind.
+
+Ein **langes Drücken** führt von jedem der Modi zurück zum Menü, und innerhalb des Menüs um eine Stufe nach oben.
+
+Wenn man sich im Menü befindet (z.B. sofort nach dem Einschalten), startet ein **langes Drücken** der **ROTEN Taste** eine Funktion
+um den Audioeingangspegel (und eventuell den Ausgangspegel eines Geräts, das  an den Line-Out-Anschluss des Morserino-32 angeschlossen ist) einzustellen.
+Siehe <<<appendix2>> am Ende dieses Dokuments.
+
+Hat man das Menü verlassen haben, um einen der Modi (Keyer, Generator, Echo-Trainer usw.) auszuführen,
+kann man mit der **ROTEN (Power/Vol/Scroll) Taste**  schnell zwischen **Geschwindigkeitsregelung** und **Lautstärkeregelung** mit einem **einfachen Klick** umschalten.
+
+Durch einen **langen Druck** der ROTEN Taste während ein Modus aktiv ist (d.h. wenn das Menü nicht angezeigt wird) wechselt die Anzeige und der Drehgeber in den **Scroll-Modus** (die Anzeige hat einen Puffer von 15 Zeilen, und normalerweise sind nur die unteren drei Zeilen sichtbar; im Scroll-Modus kann man zu den vorherigen Zeilen zurückblättern; während man  im Scroll-Modus ist, wird ein **Scrollbalken** ganz rechts auf der Anzeige sichtbar, der ungefähr anzeigt, wo man sich innerhalb der 15 Zeilen des Textpuffers befindet). Mit einem **erneuten Klick** wird der Scroll-Modus verlassen, und der Drehgeber dient wieder der Geschwindigkeitsregelung.
+
+Wenn man sich im Menü zur Parametereinstellung befindet, wird mit einem  kurzen Klick auf die ROTE Taste eine Funktion zum Laden eines Parameter-Snapshots aktiviert, und mit einem langen Druck auf die ROTE Taste kann man  einen Parameter-Snapshot abspeichern.
+Siehe den Abschnitt <<snapshots>> für weitere Details.
+
+=== Das Display
+
+Die Anzeige ist in zwei Hauptabschnitte unterteilt: oben ist die Statuszeile, die wichtige Informationen über den aktuellen Zustand des Gerätes liefert, und unten ist ein **Bereich von drei Scrollzeilen**, in dem die erzeugten Morsecode Zeichen im Klartext angezeigt werden.  Alle Zeichen werden zur besseren Lesbarkeit in Kleinbuchstaben dargestellt; Betriebsabkürzungen (Pro Signs) werden als Buchstaben in Klammern dargestellt, wie `<ka>` oder `<sk>`. Darüber hinaus wird im Echo-Trainer-Modus (siehe unten) das Ergebnis als "ERR" oder "OK" angezeigt (zusammen mit einigen akustischen Signalen).
+
+Obwohl nur drei Zeilen Lauftext angezeigt werden, gibt es intern einen Puffer von 15 Zeilen -- nach langem Drücken der ROTEN (Vol/Scroll) Taste kann man mit dem Drehgeber zurück scrollen und die vorherigen Zeilen wieder sichtbar machen.
+Dies funktioniert, während man sich in einem der Modi befinden und die Ausgabe auf dem Display erfolgt - nichts geht verloren und die Anzeige kehrt zum normalen Verhalten zurück, sobald man den Scrollmodus verlässt.
+
+==== Die Statuszeile
+
+Während  ein Menü (entweder das Startmenü oder ein Menü zur Auswahl von Einstellungen) angezeigt wird, zeigt die  Statuszeile, was zu tun ist (**Select Modus** oder **Set Preferences:**).
+
+Wenn man sich im Keyer Modus, CW Generator Modus oder Echo Trainer Modus befindet, zeigt die Statuszeile folgendes an, von links nach rechts:
+
+
+*  **A**,**B**, **U**, **N** oder **S**, was den (automatischen) **Keyermodus** anzeigt: Iambic **A**, Iambic **B**, **U**ltimatic,  **N**on-Squeeze oder **S**traight Key (Handtaste; für Details zu diesen Modi siehe unten im Abschnitt <<keyer>>).
+
+* Die aktuell eingestellte **Geschwindigkeit** in Worten pro Minute (das Bezugswort ist das Wort PARIS, was auch bedeutet, dass 1 wpm  5 Zeichen pro Minute entspricht),
+im CW Keyer Modus als **nn**WpM, im CW Generator oder Echo Trainer Modus als (nn)**nn**WpM. Der Wert in Klammern zeigt die effektive Geschwindigkeit, die sich unterscheidet, wenn der Zwischenwortabstand oder der Zwischenzeichenabstand auf andere als die durch die Norm definierten Werte eingestellt wird (Länge von 3 dits für den Zwischenzeichenabstand und Länge von 7 dits für den Zwischenwortabstand). Beachte die  Hinweise im Abschnitt <<keyer>> zu den Parametern, die man im CW-Generator-Modus einstellen kann.
++
+Im Transceiver-Modus sieht man auch zwei Werte für die Geschwindigkeit -- der eine in Klammern ist die Geschwindigkeit des empfangenen Signals, der andere die Geschwindigkeit deines Keyers.
++
+Verwendet man die Handtaste, wird die aktuell ermittelte Gegegeschwindigkeit angezeigt.
+
+Wenn die Ziffern, die die Geschwindigkeit anzeigen, als **fett** angezeigt werden, ändert das Drehen des Drehgebers die Geschwindigkeit. Wenn sie in normalen Zeichen dargestellt werden, ändert das Drehen des Drehgebers die Lautstärke.
+* Ein horizontaler Balken, der sich von links nach rechts erstreckt, zeigt die **Lautstärke** des vom Gerät erzeugten Mithörtons an (volle Länge des Balkens bedeutet höchste Lautstärke). Dies zeigt normalerweise einen weißen Rahmen um den schwarzen Fortschrittsbalken (eine Verlängerung der restlichen Statuszeile); wenn dieser umgekehrt ist (weißer Fortschrittsbalken in schwarzer Umgebung -- und die WpM-Ziffern sind nicht fett gedruckt), ändert das Drehen des Drehgebers die Lautstärke und nicht die Geschwindigkeit.
+* Am ganz rechten Ende der Statuszeile befindet sich eine Anzeige (mit konzentrischen Halbkreisen), die die Funkübertragung symbolisiert, wenn der **LoRa**-Modus aktiv ist (wenn sich das Morserino-32 im LoRa-Transceiver-Modus befindet oder du den Parameter zum Übertragen von LoRa in einem der CW-Generatormodi eingestellt hast).
+
+== Das Top-Menü und die Morserino-Modi
+
+Man wählt den Modus des Morserino-32, indem man den schwarzen Drehgeberknopf drehet und diesen kurz drückt ("anklickt"), um die gewählte Funktion auszuwählen (oder um in einigen Fällen ein Untermenü für eine detailliertere Auswahl anzuzeigen).
+
+
+=== CW Keyer [[keyer]]
+
+Dies ist ein automatischer Keyer, der Iambic A, Iambic B (diese werden manchmal auch als Curtis A und Curtis B bezeichnet) und Ultimatic Mode unterstützt,
+sowie den Non-Squeeze-Modus (Nachahmung einer Einhebel-Taste mit einem Zweihebelpaddel).
+Man kann entweder das eingebaute kapazitive Paddel verwenden oder ein externes Paddel (Dual- oder Einhebelpaddel) anschließen.
+Interne und externe Paddel arbeiten parallel, so dass eine Konfiguration nicht erforderlich ist.
+
+Es gibt eine Reihe von **Parametern**, die bestimmen, wie der automatische Keyer funktioniert.
+Siehe Abschnitt <<<parameter>>> für Details. In jedem Fall sollte man sich der folgenden bewusst sein:
+
+
+`External Pol.`: Wenn die externe Taste "verkehrt herum" verdrahtet ist, kann man dies hier korrigieren.
+
+`Paddle-Polarity`: Auf welcher Seite willst du die Dits und auf welcher Seite die Dahs?
+
+`Keyer-Modus`: Wähle  Iambic A oder B, Ultimatic-Modus, Non-Squeeze-Modus und Straight Key-Modus.
+
+Was sind diese **Iambischen Modi**?
+
+Wenn man beide Paddel eines iambischen Keyers drückt, werden alternativ Dahs und Dits erzeugt, solange beide Paddel gedrückt werden,
+beginnend mit dem, welches zuerst berührt wurde (die Bezeichnung "iambisch" kommt übrigens daher, dass es in einem iambischen Vers abwechselnd
+kurze und lange Silben gibt; der Name "Curtis" hingegen stammt vom Entwickler des bahnbrechenden Curtis Morse Keyer Chips,
+John G. "Jack" Curtis, K6KU, ex W3NSJ).
+
+Der Unterschied zwischen den Modi A und B besteht im Verhalten, wenn beide Paddel beim Erzeugen des aktuellen Elements freigegeben werden:
+bei Iambic A stoppt der Keyer nach dem aktuellen Element, bei Iambic B fügt der Keyer ein weiteres Element hinzu,  demjenigen entgegengesetzt, bei dem
+das Paddel losgelassen wurde.
+
+Mit anderen Worten, im Curtis B-Modus wird das gegenüberliegende Paddel überprüft, während das aktuelle Element (dit oder dah) ausgegeben wird,
+und wenn während dieser Zeit ein Paddel gedrückt wird, wird dem aktuellen Element ein weiteres entgegengesetztes Element hinzugefügt.
+Im Modus A ist dies nicht der Fall. Da der Modus B etwas schwierig zu bedienen ist, wurde dies später so geändert,  dass erst nach einem bestimmten Prozentsatz
+der Dauer des Elements die Paddel überprüft werden. Dies ist der Prozentsatz, den man  mit den Parametern `CurtisB DahT%`  und `CurtisB DitT%`  einstellen kann.
+
+Wenn man sie auf 0, den niedrigsten Wert, einstellt, ist der Modus identisch mit dem ursprünglichen Curtis B-Modus;
+Der später entwickelte "verbesserte" Curtis B-Modus verwendet einen Prozentsatz von etwa 35%-40%.
+Stellt man den Prozentsatz auf 100, den höchsten Wert, ein, ist das Verhalten das gleiche wie im Curtis A-Modus.
+
+Mit diesem Parameter kann man daher jedes Verhalten zwischen Curtis A und dem ursprünglichen Curtis B auf einer kontinuierlichen Skala einstellen,
+und man kann den Prozentsatz für Dits und Dahs separat einstellen (das macht Sinn, da das Timing für Dits nur ein Drittel desjenigen für Dahs beträgt,
+und so könnte es sein, dass du bei diesen einen höheren Prozentsatz willst, damit die Eingabe von Dits komfortabel ist).
+
+**Ultimatic Mode**: Wenn man im Ultimatic-Modus beide Paddel gedrückt hält, wird ein dit oder ein dah erzeugt,
+je nachdem, welches Paddel man zuerst berührte, und danach wird das entgegengesetzte Element kontinuierlich erzeugt.
+Dies ist von Vorteil für Zeichen wie j, b, 1, 2, 6, 7.
+
+**Non-Squeeze Mode**: Dies "simuliert" das Verhalten eines Einhebelpaddels bei Verwendung eines Zweihebelpaddels.
+Leute, die mit Einhebelpaddeln vertraut sind, haben in der Regel Schwierigkeiten bei der Verwendung von Zweihebelpaddeln, da sie die Paddel manchmal versehentlich zusammendrücken,
+besonders bei höheren Geschwindigkeiten. Der Non-Squeeze-Modus ignoriert das Zusammendrücken einfach, was es für diese Leute einfacher macht, ein Doppelhebelpaddel zu verwenden.
+
+TIP: Iambic-Modi und Ultimatic-Modus können nur mit dem eingebauten Touchpaddel oder einem externen Doppelhebelpaddel verwendet werden; die Auswahl dieser Modi ist irrelevant, wenn man ein externes Einhebelpaddel verwendet.
+
+
+Der Parameter **`Latency`** legt fest, wie lange nach dem Erzeugen des aktuellen Elements (Punkt oder Strich) die Paddel "taub" sind.
+In frühen Firmware-Versionen war dies 0, mit dem Effekt, dass man gerade bei höheren Geschwindigkeiten mehr Punkte erzeugte als gewollt,
+da man das Paddel loslassen musste, während der letzte Punkt noch "an" war. Nun kann man diesen Wert auf einen Wert zwischen 0 und 7 einstellen,
+was 0/8 bis 7/8 einer Punktlänge bedeutet (Defaultwert ist 4, d.h. eine halbe Punktlänge). Wenn man immer noch dazu neigt, unerwünschte Dits zu erzeugen, kann man diesen Wert erhöhen.
+
+Für den Parameter `AutoChar Spce` (Definition einer Mindestlänge für den Abstand zwischen den Zeichen) siehe den Abschnitt <<parameters>> für Details.
+
+**Straight Key Mode**: Das ist natürlich kein automatischer Modus, sondern man kann damit den Morserino-32 auch mit einer normalen Handtaste ("Klopftaste") verwenden. Der Morserino wird alle Eingaben mit der Handtaste decodieren. Man kann die Handtaste auch für den Ecoh Trainer und für die Transceiver Modi verwenden!
+
+
+=== CW Generator [[generator]]
+
+Dieser erzeugt entweder zufällige Gruppen von Zeichen und Wörtern für das CW-Training oder spielt den Inhalt einer Textdatei als Morsezeichen ab. Man kann eine Reihe von Optionen einstellen, indem man die entsprechenden Parameter auswählt (siehe den Abschnitt über <<parameters>> weiter unten).
+
+Man **startet** und **stoppt** den CW-Generator, indem man kurz ein Paddel (entweder einseitig oder beidseitig) berührt, oder **durch Klicken auf den SCHWARZEN Knopf**.
+
+Zu Beginn kündigt der CW Generator seine Aktivität durch ""`vvv<ka>``" an (`+..._ ..._ ..._ ..._ _._._+`), bevor er tatsächlich beginnt, Gruppen oder Wörter zu erzeugen.
+
+Wenn man den Parameter 'Stop/Next/Rep' aktiviert, wird nur ein Wort oder eine Gruppe von Zeichen abgespielt. Anschließend stoppt der Morserino und wartet auf die Paddeleingabe. Durch Drücken des linken Paddels wird das aktuelle Wort wiederholt, während durch Drücken des rechten Paddels das nächste Wort generiert wird. Dies ist nützlich, um das Gehörlesen zu trainieren: Spiel ein Wort ab (ohne auf den Bildschirm zu schauen) und versuche, es im Kopf zu dekodieren. Bist du nicht sicher, drücken zur Wiederholung das linke Paddle. Glaubst du, es richtig verstanden zu haben, vergewissere dich mit der Anzeige am Display. Jetzt kannst du entweder dieses Wort noch einmal wiederholen (linkes Paddle drücken) oder wegschauen und das rechte Paddel für das nächste Wort drücken. (Man kann sich an die Funktionen des linken und rechten Paddels erinnern, indem man an typische Musik-Player-Tasten denkt - links ist zurück, rechts ist vorwärts.) Bitte beachte, dass die Optionen Word Doubler und Stop/Next/Repeat nicht miteinander kompatibel sind - stellt man das eine auf ON, wird das andere automatisch auf OFF gesetzt.
+
+Normalerweise erzeugt der Morserino-32 einfach weiter Morsezeichen, bis man ihn manuell anhält,
+aber es kann auch ein Parameter eingestellt werden, der die Ausgabe nach einer bestimmten Anzahl von Wörtern (oder Buchstabengruppen) pausieren lässt.
+Siehe `Max # of Words` im Abschnitt <<parameters>>.
+
+**Weitere bemerkenswerte Parameter** für den CW-Generator sind:
+
+`Intercharacter Space` Hier wird beschrieben, wie viel Abstand zwischen den Zeichen eingefügt werden. Die "Norm" ist ein Abstand mit der Länge von drei Dits. Um das Mitlesen bei hoher Geschwindigkeit zu erleichtern und als eine gute Methode, um Morsezeichen zu lernen, kann dieser Abstand erweitert werden. Die Morsezeichen sollten mit ziemlich hoher Geschwindigkeit ( > 18 wpm) gesendet werden, um es unmöglich zu machen, Dits und Dahs zu "zählen", so dass man besser den "Rhythmus" jedes Zeichens lernt. Im Allgemeinen ist es besser, den Abstand zwischen den Wörtern zu vergrößern und nicht so sehr den Abstand zwischen den Zeichen; daher wird empfohlen, diesen Wert zwischen 3 und max. 6 einzustellen. Siehe unten.
+
+`Interword Space`. Normalerweise ist dies definiert als die Länge von 7 dits. Im CW Keyer Modus bestimmen wir nach einer Pause von 6 dits ein neues Wort, um zu vermeiden, dass Text auf dem Display ohne Leerzeichen zwischen den Wörtern erscheint. Im CW Trainer Modus kann man den Abstand zwischen Wörtern auf Werte zwischen 6 und 45 einstellen (was mehr als das 6-fache des normalen Abstands ist), um das Gehörlesen bei hohen Geschwindigkeiten zu erleichtern. In Analogie zu "Farnsworth Spacing" (siehe unten) wird dies auch als "Wordsworth Spacing" bezeichnet. Dies ist die beste Methode, das Gehörlesen bei hohen Geschwindigkeiten zu erlernen. Natürlich kann man die Verlängerung des Zeichenabstands mit der des Wortabstands kombinieren.
+
+Da der Zeichenabstand unabhängig vom Wortabstand eingestellt werden kann, würde dies bedeuten, dass man den Zeichenabstand höher einstellen könnte als den Wortabstand, was ziemlich verwirrend wäre. Um diese Verwirrung zu vermeiden, wird der Wortabstand immer mindestens um 4 dit Längen größer sein als der Zeichenabstand, auch wenn ein kleinerer Wortabstand gesetzt wurde.
+
+Die ARRL und einige Morsetrainingsprogramme verwenden etwas, das sie **"Farnsworth Spacing"** nennen: Hier werden die Abstände zwischen den Zeichen und zwischen den Wörtern um einen bestimmten Faktor proportional verlängert. Man kann Farnsworth Spacing emulieren, indem man sowohl den Buchstaben- als auch den Wort-Abstand erhöht, und z.B. den Abstand zwischen den Zeichen auf 6 und den Wortabstand auf 14 setzt und so alle Abstände zwischen Zeichen und Wörtern effektiv verdoppelt. Tut man dies mit einer Zeichengeschwindigkeit von 20 WpM, beträgt die resultierende effektive Geschwindigkeit 14 WpM. Dies wird in der Statuszeile als (14)**20**WpM angezeigt.
+
+`Random Groups`: Definiert, welche Zeichen in den zufälligen Zeichengruppen enthalten sein sollen. Man kann wählen zwischen Alpha (Buchstaben) / Numerals (Ziffern) / Interpunct. (Satzzeichen)/ Pro Signs (Betriebsabkürzungen)/ Alpha + Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / All Chars (alle Zeichen).
+
+`Length Rnd Gr`: Definiert, wie viele Zeichen es in einer zufälligen Gruppe geben soll. Man kann entweder eine feste Länge (1 bis 6) wählen, oder eine zufällig gewählte Länge zwischen 2 bis 3 und 2 bis 6 (innerhalb dieser Grenzen zufällig gewählte Länge).
+
+`Length Calls`: : Die Länge der Rufzeichen, die generiert werden. Wähle einen Wert zwischen 3 und 6 oder Unlimited (unbegrenzt).
+
+`Length Abbrev` und `Length Words`: Die Länge der gebräuchlichen CW-Abkürzungen bzw. gebräuchlichen englischen Wörter, die generiert werden. Wähle zwischen 2 und 6 oder Unlimited (unbegrenzt).
+
+`Each Word 2x`: Jedes "Wort" (Zeichen zwischen Leerzeichen) wird zweimal ausgegeben, um das Gehörlesen zu unterstützen.
+
+Für die weniger häufig verwendeten Parameter `Key ext TX`, `CW Gen Displ` und `Send via LoRa` siehe den Abschnitt <<parameters>>.
+
+
+==== Was kann generiert werden?
+
+Auf der zweiten Ebene des Menüs kann man zwischen den folgenden Optionen wählen:
+
+* **Random**: Erzeugt Gruppen von zufälligen Zeichen. Die Länge der Gruppen sowie die Wahl der Zeichen kann in den Parametern durch Doppelklick auf den schwarzen Drehknopf ausgewählt werden (siehe den Abschnitt <<parameters>> für nähere Details).
+* **CW Abbrevs**: Zufällige Abkürzungen, die im CW-Funkverkehr sehr häufig vorkommen (durch eine Parametereinstellung kann man die maximale Länge der zu trainierenden Abkürzungen wählen).
+* **English Words**: Zufällige Wörter aus einer Liste der 370 häufigsten Wörter der englischen Sprache (wiederum kann man über einen Parameter eine maximale Länge einstellen).
+* **Call Signs**:  Erzeugt zufällige Zeichenketten, die die Struktur und das Aussehen von Amateurfunk-Rufzeichen haben (dies sind keine echten Rufzeichen, und es werden auch welche erzeugt, die in der realen Welt nicht existieren könnten, da entweder das Präfix nicht verwendet wird oder die Verwaltung eines Landes bestimmte Suffixe nicht zuteilen würde). Die maximale Länge kann über einen Parameter eingestellt werden.
+* **Mixed**: Wählt zufällig aus den bisherigen Möglichkeiten (zufällige Zeichengruppen, Abkürzungen, englische Wörter und Rufzeichen).
+* **File Player**: Spielt den Inhalt einer Datei, die auf den Morserino-32 hochgeladen wurde, im Morse-Code ab.
+Derzeit kann der Morserino nur eine Datei enthalten, sobald man eine neue hochlädt, wird die alte überschrieben.
+Der Upload funktioniert über WLAN von einem PC (oder Mac oder Tablett oder Smartphone oder was auch immer - siehe Abschnitt <<<upload>>> für Anweisungen, wie man das macht).
++
+Der File-Player-Modus merkt sich, wo man angehalten hat (indem man den SCHWARZEN Knopf lange drückt, um diesen Modus zu verlassen; schalte nicht einfach aus - wenn du das tust, hat der Morserino keine Chance, sich zu erinnern, wo du warst),
+und es wird dann dort fortgesetzt, wenn man den File Player das nächste Mal neu startet.
+Sobald das Ende der Datei erreicht ist, beginnt as Abspielen wieder am Anfang.
++
+Die Datei sollte nur ASCII-Zeichen enthalten (Groß- oder Kleinschreibung spielt keine Rolle) -
+Zeichen, die nicht im Morsealphabet dargestellt werden können, werden einfach ignoriert.
+Betriebsabkürzungen (pro signs) dürfen vorhanden sein, sie müssen als 2-Zeichen-Kombinationen, eingeschlossen in  [] oder <>,  geschrieben werden, z.B. `<sk>` oder `[ka]`, oder stelle einen verkehrten Schrägstrich davor, z.B. \kn.
++
+Die folgenden Betriebsabkürzungen werden erkannt:
+====
+** `<ar>` : wird auf dem Display als + (Pluszeichen) angezeigt.
+** `<bt>` : wird auf dem Display angezeigt als = (Gleichheitszeichen)
+** `<as>wert
+** `<ka>>`
+** `<kn>`
+** `<sk>`
+** `<ve>`
+====
+Es gibt auch einen Parameter für den File Player namens `Randomize File`. Wenn dieser auf "ON" gesetzt wird (Standardwert ist "OFF"),
+überspringt der Morserino nach jedem gesendeten Wort n Wörter  (n = Zufallszahl zwischen 0 und 255);
+Da am Dateiende wieder von vorne begonnen wird, werden irgendwann alle Wörter in der Datei vorgekommen sein (aber es kann eine Weile dauern).
+Wenn es sich zum Beispiel um eine alphabetische Wortliste handelt, werden die erzeugten Wörter in einem Durchgang immer noch in alphabetischer Reihenfolge angezeigt (allerdings mit Lücken);
+um zufälligere Ergebnisse zu erzielen, ist es daher am besten, schon mit einer zufälligen Liste von Wörtern zu beginnen.
+
+Wofür kann man das nutzen? Man kann zum Beispiel eine Liste von Rufzeichen nehmen und diese Datei auf den Morserino-32 hochladen.
+(Es gibt im Morserino-32 GitHub-Repository eine Datei mit Rufzeichen, die tatsächlich in HF-Contesten aktiv waren!)
+Mit dem File Player kann man diese Rufzeichen nun nach dem Zufallsprinzip trainieren.
+Du solltest das Morserino-32 GitHub Repository besuchen, um auch andere geeignete Dateien für das Training zu finden!
+
+=== Echo Trainer
+
+Hier erzeugt der Morserino-32 ein Wort (oder eine Gruppe von Zeichen; man hat die gleichen Auswahlmöglichkeiten wie beim CW-Generator) und wartet dann darauf, dass du diese Zeichen mit dem Paddel wiederholst. Wenn du zu lange wartest oder wenn deine Antwort nicht korrekt ist, wird ein Fehler angezeigt ("ERR" auf dem Display und auch akustisch) und das betreffende Wort wird wiederholt. Wenn du die richtigen Zeichen eingegeben hast, wird dies auch akustisch und auf dem Display ("OK") angezeigt und es wird das nächste Wort abgefragt.
+
+In diesem Modus wird das zu wiederholende Wort normalerweise nicht auf dem Display angezeigt - nur deine Antwort wird angezeigt.
+
+
+Die Untermenüs sind die gleichen wie beim CW-Generator: **Random, CW Abbrevs, English Words, Call Signs, Mixed** and **File Player**.
+
+
+Wie im CW-Generator-Modus startet man **die Generierung durch Drücken eines Paddles**, und dann wird die Sequenz "`vvv<ka>`" als Ankündigung generiert, bevor das Echo-Training beginnt. Du kannst diesen Modus nicht stoppen oder unterbrechen, indem du das Paddel drückst - schließlich benutzt du das Paddel, um deine Antworten zu generieren!  **Die einzige Möglichkeit, diesen Modus zu stoppen, ist ein Klick mit dem SCHWARZEN Knopf des Drehgebers**!
+
+Auch hier kann man, wie beim CW-Generator, eine Vielzahl von Parametern einstellen, um zu beeinflussen, was generiert wird. Von besonderem Interesse für den Echo-Trainer sind:
+
+`Echo repeats`: wie oft ein Wort wiederholt wird, wenn die Antwort entweder zu spät oder fehlerhaft ist, bevor ein neues Wort erzeugt wird.
+
+`Echo Prompt`: Hiermit wird festgelegt, wie die Eingabeaufforderung beim Echo Trainer aussieht. Die möglichen Einstellungen sind: "Sound Only" (nur akustisch -- das ist der Standardwert; am besten geeignet, um das Gehörlesen zu lernen), "Display Only" (nur Anzeige auf dem Display -- das Wort, das  eingegeben werden soll, wird auf dem Display angezeigt, es wird aber kein hörbarer Code erzeugt; gut für Lernen der Eingabe mit dem Paddel) und "Sound & Display", d.h. man hört UND sieht die Eingabeaufforderung.
+
+`Confrm. Tone`: Normalerweise ("ON") ertönt im Echo-Trainer-Modus ein akustischer Bestätigungston. Wenn man diesen ausschaltet ("OFF"), wiederholt das Gerät nur die Eingabeaufforderung, wenn die Antwort falsch war, oder sendet eine neue Eingabeaufforderung bei richtiger Antwort. Die optische Anzeige von "OK" oder "ERR" ist auf jeden Fall sichtbar.
+
+`Max # of Words`: Wie beim CW-Generator kann man den M32 nach einer bestimmten Anzahl von Wörtern pausieren lassen.
+
+`Adaptv. Speed`:  Dies sollte dir helfen, auf Höchstgeschwindigkeit zu trainieren. Wann immer deine Antwort richtig war, wird die Geschwindigkeit um 1 wpm (Wort pro Minute) erhöht; hast du einen fehler gemacht, wird sie um 1 wpm reduziert. So wirst du schließlich immer an deinem Limit trainieren, was sicherlich der beste Weg ist, um deine Grenzen weiter hinaus zu schieben ...
+
+
+
+=== Koch Trainer
+
+Der deutsche Psychologe Koch entwickelte eine Methode zum Erlernen des Morsens (in den 1930er Jahren), wobei bei jeder neuen Lektion ein zusätzliches Zeichen hinzugefügt wird.
+Die Reihenfolge ist weder alphabetisch noch nach der Länge der Morsezeichen geordnet, sondern folgt einem bestimmten rhythmischen Muster,
+so dass die einzelnen Zeichen als Rhythmus und nicht als Folge von Dits und Dahs gelernt werden.
+
+Wenn du die Koch-Methode zum Morsen Lernen anwenden willst (Lernen und Trainieren eines Zeichens nach dem anderen),
+**findest du alles, was du dazu brauchst, im Menüpunkt "Koch Trainer"**.
+Es gibt ein Untermenü, um die Lektion auszuwählen, die man trainieren möchte, eine, um nur diesen einen neuen Buchstaben zu lernen
+(wie beim Echotrainer-Modus, so dass man ermutigt wird, das Gehörte zu wiederholen), sowie die Modi "CW-Generator" und "Echo-Trainer",
+und die letzten beiden mit den Untermenüs für "Random" (Gruppen von zufälligen Charakteren aus den bisher gefundenen Charakteren),
+"CW Abbrevs" (die Abkürzungen, die normalerweise in CW QSOs verwendet werden), "English Words" (die gebräuchlichsten englischen Wörter) und "Mixed"
+(Gruppen zufälliger Zeichen, Abkürzungen und Wörter, die zufällig gemischt werden).
+Natürlich werden nur die bereits erlernten Zeichen verwendet - das heißt, während du noch mit den ersten Buchstaben kämpfst, wird
+die Anzahl der Abkürzungen und Wörter logischerweise sehr begrenzt sein).
+
+Um zu verhindern, dass man Dits und Dahs zählt oder darüber nachdenkt und rekonstruiert, was man gehört hat, sollte die Geschwindigkeit ausreichend hoch sein (min. 18 wpm), und die
+Pausen zwischen Zeichen und Wörtern sollten nicht extrem verlängert werden (und es ist immer besser, nur die Pausen zwischen den Wörtern zu verlängern,
+und die Leerzeichen zwischen den Zeichen auf mehr oder weniger dem normalen Zeichenabstand zu halten).
+Mit dem M32 kann man den Wortabstand unabhängig vom Zeichenabstand einstellen, so dass du immer eine Einstellung finden kannst, die perfekt zu deinen Bedürfnissen passt.
+
+
+
+==== Koch: Select Lesson (Auswahl der Lektion) [[koch]]
+
+Wähle  eine "Koch-Lektion" zwischen 1 und 50 (Man lernt insgesamt 50 Zeichen nach der Koch-Methode). Die Nummer der Lektion und das Zeichen, das mit dieser Lektion verbunden ist, werden im Menü angezeigt.
+
+Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden, so dass verschiedene Lernkurse leicht unterschiedliche Ordnungen verwenden. Hier verwenden wir die gleiche Zeichenfolge wie beim Programm "Just Learn Morse Code", das wiederum fast identisch ist mit der Reihenfolge des Softwarepakets "SuperMorse" (siehe http://www.qsl.net/kb5wck/super.html). Die Reihenfolge ist wie folgt:
+
+
+[cols=">.3,3,>.3,3",options=header,stripes=odd]
+|===
+| Lektion Nr | Zeichen | Lektion nr | Zeichen
+| 1 | m | 26 | 9
+| 2 | k | 27 | z
+| 3 | r | 28 | h
+| 4 | s | 29 | 3
+| 5 | u | 30 | 8
+| 6 | a | 31 | b
+| 7 | p | 32 | ?
+| 8 | t | 33 | 4
+| 9 | l | 34 | 2
+| 10 | o | 35 | 7
+| 11 | w | 36 | c
+| 12 | i | 37 | 1
+| 13 | . (Punkt) | 38 | d
+| 14 | n | 39 | 6
+| 15 | j | 40 | x
+| 16 | e | 41 | - (minus)
+| 17 | f | 42 | =
+| 18 | 0 (zero) | 43 | SK (Betriebsabkürzung)
+| 19 | y | 44 | AR (Betriebsabkürzung, auch +)
+| 20 | v | 45 | AS  (Betriebsabkürzung)
+| 21 | , (Comma) | 46 | KN  (Betriebsabkürzung)
+| 22 | g | 47 | KA (Betriebsabkürzung)
+| 23 | 5 | 48 | VE (Betriebsabkürzung)
+| 24 | / | 49 | @
+| 25 | q | 50 | : (Doppelpunkt)
+|===
+
+Es gibt auch die Möglichkeit, eine etwas andere Reihenfolge der Zeichen zu verwenden, wie es das beliebte Online-Trainingstool "Learn CW On-line" (LCWO) verwendet. Dies kann im Parametermenü des Morserino-32 unter "Koch-Sequence" eingestellt werden.
+
+Die Zeichenfolge bei der Auswahl von "LCWO" ist wie folgt:
+
+k m u r e s n a p t l w i . j z = f o y , v g 5 / q 9 2 h 3 8 b ? 4 7 c 1 d 6 0 x - SK AR(+) KA AS KN VE @ :
+
+===== Koch: Üben mit einer maßgeschneiderten Zeichenmenge
+
+Man kann den Koch-Trainer auch verwenden, um einen spezifischen Satz von Zeichen zu trainieren: Lade eine Textdatei für den File Player hoch, der die zu trainierenden Zeichen enthält (als ein „Wort“ oder mehrere, in einer Zeile oder mehr), und setze dann den Parameter 'Koch Sequence' auf die Option 'Custom Chars'. Damit werden die Zeichen aus der Datei eingelesen. Jetzt kann man den Koch-Trainer (CW-Generator oder Echo-Trainer) benutzennun, der genau diese Zeichen für das Training verwendet (die Einstellung der Koch-Lektion hat zu diesem Zeitpunkt keinen Einfluss). Wenn du den Zeichensatz ändern möchtest, lade  eine neue Textdatei hoch und wähle  die Option 'Custom Chars' erneut aus (auch wenn diese zuvor schon ausgewählt war), um den neuen Zeichensatz vorzubereiten (wenn man nur eine neue Textdatei hochlädt wird sich der benutzerdefinierte Zeichensatz nicht ändern - man muss in die Parameter gehen und erneut 'Custom Chars' auswählen. Dies ist ein Feature, kein Fehler: Man kann so zwischen dem Trainieren einmzelner bestimmter Zeichen und der Verwendung des File Players mit einer anderen Textdatei wechseln.). Wenn man 'Koch Sequence' auf M32 oder LCWO einstellt, wird die „normale“ Koch-Trainer-Option wiederhergestellt.
+
+==== Koch: Learn New Chr (Neues Zeichen Lernen)
+
+Wählt man diesen Menüpunkt aus, wird das neue Zeichen (entsprechend der gewählten Koch-Lektion) vorgestellt - Man hören den Klang und sieht die Reihenfolge der Punkte und Striche rasch auf dem Display, und auch das Zeichen wird angezeigt. Dies wird so lange wiederholt, bis man durch Drücken des SCHWARZEN Knopfes stoppt. Nach jedem Wiederholung hat man die Möglichkeit, mit den Paddles einzugeben, was man gehört hat, und man wird darüber informiert, ob dies korrekt war oder nicht.
+
+Sobald du das neue Zeichen gemeistert hast, kannst du entweder zum CW-Generator oder zum Echo-Trainer innerhalb des Koch-Trainers wechseln, um das neu erlernte Zeichen in Verbindung mit allen bisher erlernten Zeichen zu üben.
+
+==== Koch: CW Generator und Echo Trainer
+
+Die Funktionalität ist die gleiche wie oben für diese beiden Funktionen beschrieben, mit den folgenden kleinen Unterschieden:
+
+- Es werden nur die Zeichen bis zur ausgewählten Koch-Lektion generiert (bzw die definierten benutzerspezifischen Zeichen, siehe weiter oben).
+- Der Parameter 'Random Groups' wird ignoriert.
+- Es gibt kein Untermenü "File Player".
+
+
+
+=== Transceiver
+
+Es gibt drei Transceiver-Modi im Morserino-32. Der erste ist ein eigenständiger Sender-Empfänger für die Morse-Kommunikation unter Verwendung der LoRa Spread Spectrum Funktechnologie (in der Standardversion im 433-MHz-Band, aber es sind Versionen für die 868- und 920-MHz-Bänder erhältlich). Der zweite Transceiver Modus benutzt das Internet Protokoll (UDP auf Port 7373) zur Kommunikation über ein IP Netzwerk (über WLAN). Der dritte ist ein Transceiver-Modus, der entweder mit einem externen Transceiver (z.B. einem Kurzwellen-Amateurfunkgerät) oder mit einem Protokoll wie iCW (CW over Internet) verwendet werden kann. In allen drei Fällen sind der CW Keyer und der CW Decoder gleichzeitig aktiv.
+
+
+
+==== LoRa Trx
+
+Wie bereits erwähnt, handelt es sich hierbei um einen Morse-Code-Sender-Empfänger, der LoRa zur Übertragung von Morse-Code an andere Morserino-32s verwendet.
+Zusätzlich zur Funktionalität des CW-Keyers sendet er alles, was über den Keyer eingegeben wird, über den LoRa-Transceiver aus
+(mit einem speziellen Datenformat, das die Punkte, Striche und Pausen kodiert, unabhängig davon, ob es sich um legale Morsezeichen handelt oder nicht),
+und die übrige Zeit auf der Frequenz empfängt; so kann man in der Tat ein interaktives QSO mit Morsezeichen zwischen zwei oder mehr Morserino-32-Geräten führen!
+Bitte beachte, dass die Zeichen Wort für Wort übertragen werden,
+daher gibt es eine kleine Verzögerung auf der Empfangsseite - QSK ist daher nicht möglich. Es wird notwendig sein, eine ordnungsgemäße Tastenübergabe durchzuführen!
+
+===== Mehr Informationen zum Modus "LoRa Trx".
+Im Grunde genommen funktioniert dieser wie der CW Keyer. Aber sobald etwas empfangen wird, zeigt die Statuszeile neben der eigenen Geschwindigkeit auch die Geschwindigkeit der Gegenstation an - Das könnte so aussehen: **18r20sWpM**, was bedeutet, dass man eine Station mit einer Geschwindigkeit von 18 Wpm empfängt und selber mit 20 WpM sendet.
+Darüber hinaus ändert der Lautstärkebalken rechts neben der Statuszeile seine Funktion: Anstatt den aktuellen Lautstärkepegel anzuzeigen, gibt er einen Hinweis auf die Signalstärke - eine Rohform eines S-Meters, sozusagen.
+Der volle Balken zeigt einen RSSI-Pegel von etwa -20dB an, und der Balken beginnt, bei einem Pegel von etwa -150dB anzuzeigen.
+
+Durch Drücken der ROTEN Pwr/Vol/Scroll-Taste kann man aber die Lautstärke weiterhin einstellen.
+
+Vom Sender-Empfänger empfangene Morsezeichen
+werden im (scrollbaren) Textfeld auf dem Display fett gedruckt, während alles, was man selber sendet, in regulären Zeichen dargestellt wird.
+
+Ein weiteres Merkmal ist hier erwähnenswert: Die Frequenz des Tons, den man beim Empfang der Gegenstation hört, wird wie in den anderen Modi auch über den Parameter `Pitch` eingestellt.
+Beim Senden kann die Tonhöhe des Tons gleich sein, oder ein Halbton höher oder niedriger als der Empfangston --
+dies wird über den Parameter `Tone Shift` eingestellt, wie auch im Echo Trainer Modus.
+
+Eine weitere Sache, die Sie vielleicht wissen sollten: Der LoRa Morse-Transceiver funktioniert nicht wie ein CW-Transceiver auf Kurzwelle, bei dem ein unmodulierter Träger getastet wird, und die Verzögerung zwischen Sender und Empfänger nur durch die Verzögerung auf dem Weg der elektromagnetischen Wellen bestimmt wird, die die Signale übertragen. LoRa verwendet eine Spread-Spectrum-Technologie zum Senden von Datenpaketen - ähnlich wie WLAN auf dem Handy oder PC.
+Daher wird alles, was  eingegeben wird, zuerst in Daten kodiert -- im Wesentlichen die Geschwindigkeit und alle Punkte, Striche und Pausen zwischen den Zeichen.
+Sobald die Pause lang genug ist, um als Pause zwischen den Wörtern (sozusagen als Leerzeichen) erkannt zu werden,
+wird das gesamte bisher gesammelte Datenpaket übertragen und schließlich mit der ursprünglichen Geschwindigkeit vom empfangenden Morserino-32 wiedergegeben.
+
+Wenn Morsecode in ein LoRa-Datenpaket gepackt wird, werden Punkte, Striche und Pausen kodiert; es ist nicht so, dass der Klartext als ASCII-Zeichen gesendet würde. Daher ist es möglich, "illegale" Morsezeichen zu senden, oder Zeichen, die nur in bestimmten Sprachen üblich sind. Sie werden korrekt übertragen (aber auf dem Display als nicht dekodierbar angezeigt).
+
+Das wortweise Versenden bedeutet eine nicht unerhebliche Verzögerung zwischen Sender und Empfänger, und die Verzögerung hängt in hohem Maße von der Länge der zu versendenden Worte und der verwendeten Geschwindigkeit ab. Da die meisten Wörter in einem typischen CW-QSO eher kurz sind (7 Zeichen oder mehr sind da bereits ein sehr langes Wort), ist dies kein Grund zur Sorge (es sei denn, beide sitzen im selben Raum ohne Kopfhörer - dann wird es wirklich verwirrend werden). Aber versuche einmal, wirklich lange Wörter zu senden, sagen wir 10 oder mehr Zeichen lang, mit wirklich niedriger Geschwindigkeit (5 WpM), und du wirst sehen, wovon ich rede!
+
+===== Verwendung von zwei verschiedenen LoRa "Kanälen"
+LoRa-Datenpakete werden mit einem so genannten "Sync Word" adressiert - Empfänger verwerfen Pakete, die nicht das erwartete Synchronwort anzeigen.
+
+Morserino-32 ab Version 2.0 kann zwei verschiedene Synchronworte verwenden und so effektiv auf zwei verschiedenen "Kanälen"
+kommunizieren. Dies kann z.B. in einer Klassenraumsituation verwendet werden,
+um zwei unabhängige Gruppen zu erstellen, die sich nicht gegenseitig stören sollen.
+
+Normalerweise arbeitet M32 LoRa mit dem Synchronwort 0x27 (wir nennen es den "Standard"-Kanal), aber durch die Einstellung `LoRa Channel` im Parametermenü
+kann auf 0x66 (genannt "Sekundärkanal") umgeschaltet werden.
+
+===== Verwendung verschiedener LoRa-Frequenzbänder bzw. Frequenzen
+Standardmäßig werden die Morserino-32-Bausätze mit einem LoRa-Modul ausgeliefert, das im 70-cm-Band arbeitet,
+und als Standardfrequenz innerhalb dieses Bandes auf 434,150 MHz (innerhalb des 70cm Amateurbandes und innerhalb des Region 1 ISM-Bandes).
+
+Wenn man diese Frequenz aus irgendeinem Grund nicht nutzen kann (z.B. wegen Bandplänen, aus regulatorischen Gründen usw.), kann man die Frequenz am Standard-LoRa-Modul zwischen 433,65 und 434,55 MHz in Schritten von 100 kHz ändern.
+
+Sollte man eine LoRa-Frequenz entweder um 868 MHz oder um 920 MHz benötigen, kann der Bausatz mit Heltec-Modulen geliefert werden, die diesen höheren Frequenzbereich unterstützen (man kann auch ein solches Modul nachkaufen). In diesem Fall MUSS der Morserino-32  konfiguriert werden, damit er das richtige Band und die richtige Frequenz verwendet.
+
+**Siehe <<appendix1_1>> am Ende dieses Dokuments**, um zu erfahren, wie man LoRa für Module konfiguriert, die die Bänder 868 und 929 MHz unterstützen, und wie man die LoRa-Frequenzeinstellungen ändern kann.
+
+
+===== Technische Details des LoRa Transceivers
+* Frequenz: Der Standardwert ist 434,150 MHz (innerhalb des 70 cm Amateurbandes und innerhalb des Region 1 ISM-Bandes) - aber siehe die Hinweise oben für die Auswahl anderer Frequenzen.
+* LoRa Spreizfaktor: 7
+* LoRa Bandbreite: 250 kHz
+* LoRa CRC: kein CRC
+* LoRa Synchronwort: 0x27 (= dezimal 39) für den Standardkanal und 0x66 (= dezimal 102) für den Sekundärkanal
+* HF-Ausgangsleistung: 20 dBm (100 mW)
+
+==== Wifi Trx
+
+Du kannst diesen Transceiver-Modus verwenden, um mit deinem CW-Freund über das Internetprotokoll zu kommunizieren, entweder in deinem lokalen Netzwerk oder über das Internet. In deinem lokalen Netzwerk ist dies sehr einfach: Wähle  einfach diesen Transceiver-Modus aus dem Menü aus, und ihr könnt kommunizieren (ohne etwas zu konfigurieren, wird alles an die IP-Adresse 255.255.255.255 gesendet, das ist eine Broadcast-Adresse und wird von allen Geräten in diesem Netzwerk empfangen). Der Morserino-32 verwendet den UDP-Port 7373 für die asynchrone Kommunikation.
+
+Wenn du über das Internet mit einem bestimmten Morserino-32 kommunizieren möchtest, musst du die IP-Adresse deines Freundes konfigurieren. Dies erfolgt über den Menüpunkt 'Config WiFi' (WLAN konfigurieren), in dem nun ein drittes Feld neben SSID und Passwort angezeigt wird. In dieses Feld muss man die IP-Adresse deines Partners eingeben. Anschließend sendet der Wifi-Transceiver die Pakete an diese bestimmte IP-Adresse.
+
+Wenn sich diese IP-Adresse nicht in deinem lokalen Netzwerk befindet und du dich hinter einer Firewall oder einem Router befindest, der dein Netzwerk als privates Netzwerk behandelt, kann der Morserino zwar an das Internet senden (es sei denn, bestimmte Firewall-Regeln blockieren die meisten UDP-Ports), aber die von deinem Buddy kommenden Pakete werden am Router blockiert. In diesem Fall musst du "Port Forwarding" konfigurieren und den Router anweisen, alle UDP-Pakete an Port 7373 deiness Morserino zu senden. Gleichzeitig musst du deinem Kumpel deine vom Internet sichtbare IP-Adresse (dh die IP-Adresse deiner Router-Schnittstelle zu deinem Internetprovider) mitteilen, und dein Kumpel muss dasselbe tun (Portweiterleitung konfigurieren und dir seine IP-Adresse, die vom Internet sichtbar ist, mitteilen, die du in deinen Morserino eingeben musst). Klingt zunächst etwas kompliziert, ist aber nicht so schlimm.
+
+Eine andere, vielleicht etwas kompliziertere Option wäre das Einrichten eines VPN (Virtual Private Network), sodass sich beide Morserinos im selben "virtuellen Netzwerk" befinden und daher miteinander kommunizieren können, ohne dass Firewall-Regeln den Datenverkehr blockieren. Wie das geht, geht deutlich über den Rahmen dieses Handbuchs hinaus - frage dazu einen Internet-Guru nach weiteren Details!
+
+==== iCW/Ext Trx
+
+In diesem Modus wird ein mit dem Morserino-32 verbundener Transceiver getastet, oder man kann das Line-Out-Audiosignal  verwenden,
+um z.B. einen FM-Transceiver zu modulieren, oder um es für CW über das Internet (iCW - das verwendet Mumble als Audioaustauschprotokoll) zu betreiben.
+Alle CW-Signale, die als Audio über den Audioeingang eingehen, werden dekodiert und auf dem Display angezeigt.
+Ein externer Sender-Empfänger, der über den Anschluss 1 angeschlossen ist, wird vom Keyer getastet, oder man verwendet das Tonsignal am  Audioausgang
+(Anschluss 2), um es in einen Computer oder in einen FM-Transceiver einzuspeisen.
+
+=== CW Decoder
+
+In diesem Modus werden Morsezeichen dekodiert und auf dem Display angezeigt. Der Morsecode kann entweder über eine manuelle Morsetaste eingegeben werden("straight key" - verbunden mit der Buchse, an der normalerweise ein externes Paddel angeschlossen ist), man kann aber auch eines der beiden Touchpaddel verwenden, um sozusagen eine gewöhnliche Morsetaste zu simulieren. Wenn man die Dekodierung auf diese Weise verwendet, kann man seine Gebeweise verbessern, in dem man überprüft, ob korrekt dekodiert wurde, was man zu senden versucht hat.
+
+Man kann auch ein Tonsignal (am Audioeingang) dekodieren, das beispielsweise von einem Empfänger stammt. Der Ton sollte bei etwa 700 Hz liegen. Optional gibt es einen ziemlich scharfen Filter (in Software implementiert), der nur Töne in einem sehr engen Bereich um 700 Hz erkennt und alle anderen ignoriert. Dies wird durch Auswahl des Parameters `Narrow` aktiviert (siehe den Abschnitt <<parameters>>).
+
+Die Statuszeile unterscheidet sich leicht von den anderen Modi. Zunächst einmal befindet sich der Drehgeber immer im Lautstärke-Einstellmodus - die Geschwindigkeit wird aus dem dekodierten Morsecode bestimmt und kann nicht manuell eingestellt werden. Durch Drücken des Drehgeber-Knopfes wird der Decoder-Modus beendet und man gelangt zurück zum Startmenü.
+
+Links neben der Statusanzeige oben sieht man bei jedem Tastendruck ein schwarzes Rechteck (oder wenn ein 700 Hz-Ton erkannt wurde) - dies ersetzt die Anzeige für den Keyer-Modus.
+
+Die vom Decoder erfasste aktuelle Geschwindigkeit wird als WpM in der Statuszeile angezeigt.
+
+Dieser Modus hat nicht viele Parameter (siehe den Abschnitt <<parameters>>); am wichtigsten ist vielleicht die Möglichkeit, die Filterbandbreite des Audiodecoders zwischen schmal (ca 150 Hz) und breit (ca 600 Hz) umzuschalten. Für die Dekodierung von Signalen von einem Sender-Empfänger (wo sich andere Signale in der Nähe befinden können) ist es in der Regel am besten, die Bandbreite auf "Narrow" einzustellen und das Signal auf genau 700 Hz einzustellen. Für die Dekodierung von Signalen von einem FM-Transceiver, von iCW oder anderen Umgebungen mit geringer Interferenz ist es besser, die Einstellung "Wide" zu verwenden - in diesem Fall muss die Tonfrequenz nicht genau 700 Hz betragen.
+
+=== WLAN-Funktionen
+
+Man kann die WLAN-Möglichkeit des Heltec ESP32 Wifi LoRa Moduls im Morserino-32 für zwei Funktionen des Gerätes nutzen:
+
+* Hochladen einer Textdatei auf den Morserino-32, die dann im CW Generator Modus oder Echo Trainer Modus "abgespielt" werden kann.
+* Hochladen der Binärdatei einer neuen Firmware-Version.
+
+Für beide Funktionalitäten muss sich die hochzuladende Datei (sei es eine Textdatei oder die kompilierte Binärdatei für das Software-Update) auf deinem Computer befinden (sogar ein Tablett oder Smartphone funktioniert, da man auf diesem Gerät nur die grundlegende Webbrowser-Funktionalität benötigt), und der Morserino muss mit dem gleichen WLAN-Netzwerk wie dein Computer (oder Smartphone etc.) verbunden sein.
+
+Um den Morserino-32 mit dem lokalen WLAN-Netzwerk zu verbinden, muss man die SSID (den "Namen") des Netzwerks und das Passwort für die Verbindung mit ihm kennen. Und du musst diese beiden Elemente in deinen Morserino-32 eingeben. Da es keine Tastatur für die bequeme Eingabe dieser Informationen gibt, verwenden wir eine andere Methode, und zu diesem Zweck wurde eine weitere WLAN-Funktion implementiert: die Netzwerkkonfiguration, die man verwenden muss, bevor man die Upload- oder Update-Funktionen nutzen kann.
+
+Für Heimnetzwerke, die (aus Sicherheitsgründen) eine Liste der zulässigen MAC-Adressen verwenden, muss man den Router konfigurieren und die MAC-Adresse des M32 eingeben, bevor man den M32 mit dem Netzwerk verbinden kann. Dazu ist auch eine Funktion zur Anzeige der MAC-Adresse auf dem Display implementiert.
+
+Alle netzwerkbezogenen Funktionen finden sich unter dem Menüpunkt "**WiFi Functions**".
+
+IMPORTANT: In Softwareversionen vor 2.0 waren die WLAN Funktionen nicht im Hauptmenü untergebracht. Für den Fall, dass du ein Update von Version 1.x auf Version 2.x über WLAN machen möchtest, lies bitte <<appendix3>> am Ende dieses Dokuments.
+
+==== Anzeige der MAC-Adresse (Displaying the MAC Address)
+"**Disp MAC Addr**" ist der erste Eintrag unter dem Menü "Wifi Functions" und zeigt die MAC-Adresse des Morserino in der Statuszeile an. Jeder Morserino hat eine eindeutige MAC-Adresse.
+
+Man kann diese Informationen verwenden, um dem Morserino den Zugriff auf das WLAN-Netzwerk zu ermöglichen, wenn der WLAN-Router so konfiguriert ist, dass er nur bestimmte MAC-Adressen ans Netz lässt.
+
+Wenn man die ROTE Taste drückt, startet der Morserino-32  neu. Wenn man nichts tut, geht der Morserino wie gewohnt in den Tiefschlaf, je nachdem, welche Einstellungen man dafür vorgenommen hat.
+
+
+==== Netzwerkkonfiguration
+
+Wähl das Untermenü "WiFi Config", um die Netzwerkkonfiguration durchzuführen.
+
+Das Gerät startet WLAN als **Access Point** und erstellt so ein eigenes WLAN-Netzwerk (mit der SSID "morserino"). Wenn man die verfügbaren Netzwerke mit dem Computer oder Smartphone überprüft, kann man es leicht finden; bitte verwenden dieses Netzwerk auf deinem PC (oder  Tablett oder  Smartphone  -- du benötigst kein Passwort zur Verbindung).
+
+Sobald du mit dem WLAN "morserino" "verbunden bist, gib "http://m32.local" im Browser auf deinem Computer ein. Wenn dein Computer oder Smartphone mDNS nicht unterstützt (Android z.B. unterstützt es nicht, auch Windows nur mangelhaft), musst du die IP-Adresse **192.168.4.1** im Browser anstelle von m32.local eingeben. Es erscheint dann dann ein kleines Formular mit nur 3 leeren Feldern im Browser: "SSID of WiFi network?",  "WiFi Password?" und "WiFi TRX Peer IP?". Gib nun den Namen deines lokalen WLAN-Netzwerks und das entsprechende Passwort ein (das dritte Feld kann leer bleiben) und klicke auf die Schaltfläche "Submit". Der Morserino-32 speichert diese Netzwerk-Anmeldeinformationen und startet sich dann neu (das Netzwerk "morserino" verschwindet dann wieder).
+
+Das dritte Feld  ("WiFi TRX Peer IP?") wird benutzt, um die Wifi Transceiver Funktionalität zu konfigurieren, dh. um mit einem anderen Morserino über das Internet zu kommunizieren. Mann muss dann in diesem Feld die IP aAdresse des Gegenübers eintragen. Falls man nur mit Morserinos im eigenen lokalen Netzwerk kommunizieren möchte, braucht man hier keine IP Adresse einzugeben (es wird dann die Broadcast Adresse benutzt, so dass alle Morserinos empfangen, was einer von ihnen sendet).
+
+IMPORTANT: Morserino kann kein WiFi-Netzwerk mit einem "Captive Portal" nutzen, wie sie oft in öffentlichen Netzwerken verwendet werden.  Diese Netzwerke erfordern, dass auf dem Gerät, das sich mit dem Netzwerk verbinden möchte, ein Browser verfügbar ist, und der Morserino-32 hat keinen solchen ...
+
+IMPORTANT: Der Morserino-32 unterstützt nur 2.4 GHz WLANs, und keine im 5 GHz Bereich. Anscheinend gibt es auch fallweise Probleme mit Apple Airport Routern.
+
+TIP: Wenn man sein WLAN bereits konfiguriert hat und diesen Schritt erneut ausführt, wird der zuvor eingegebene SSID-Name im Formular vorab angezeigt, und man muss ihn nur bei Bedarf ändern. Das Passwortfeld ist leer, aber wenn man kein neues Passwort eingibt, bleibt das alte Passwort weiterhin gespeichert. Das Feld "TRX Peer IP-Address" wird ebenfalls mit einem Wert angezeigt, falls man zuvor einen eingegeben hat. Wenn man die Werte in diesem Feld löscht, wird diese IP-Adresse gelöscht.
+
+TIP: Die Netzwerkkonfiguration wird in Snapshots gespeichert, d.h. man kann mit Snapshots verschiedene Netzwerkeinstellungen aufrufen, wenn man den Morserino-32 häufig in verschiedenen Netzwerkumgebungen verwendet.
+
+==== Überprüfen der Netzwerkkonnektivität
+Verwende  den Untermenüpunkt "Check WiFi" unter "WiFi Functions", um die Netzwerkverbindung zu testen.
+
+
+Dabei wird entweder eine Fehlermeldung ("No WiFi" und die verwendete SSID) angezeigt, oder eine Erfolgsmeldung ("Connected!"), die SSID und die IP-Adresse, die der Morserino vom WLAN-Router erhalten hat.
+
+TIP: Möglicherweise musst du deinen Morserino ziemlich nah an deinen WLAN-Router heranbringen (im selben Raum ist normalerweise OK)! Die WLAN-Antenne des Heltec-Moduls ist sehr klein und hat Probleme, schwache Signale zu empfangen.
+
+
+TIP: Wenn du eine Fehlermeldung erhältst, obwohl du die korrekten Zugangsdaten eingegeben hast und sich der Morserino in unmittelbarer Nähe des WLAN-Routers befindet, solltest du es erneut versuchen - manchmal ist der erste Versuch, aus welchen Gründen auch immer, nicht erfolgreich...
+
+Wenn man die ROTE Taste drückt, kehrt diese Funktion zum Menü zurück. Wenn man nichts tut, geht der Morserino wie gewohnt in den Tiefschlaf, je nachdem, welche Einstellungen man dafür vorgenommen hat.
+
+
+==== Hochladen einer Textdatei [[upload]]
+
+Sobald du den Morserino-32 mit deinen lokalen WLAN-Anmeldeinformationen konfiguriert hast, kannst du eine Textdatei hochladen, die du zum Üben verwenden kannst. Derzeit kann sich nur eine Datei auf dem Morserino-32 befinden, d.h. wenn man eine neue Datei hochlädt, wird die alte überschrieben.
+
+Die **Datei**, die man hochlädt, sollte eine reine ASCII-Textdatei ohne Formatierung sein (keine Word-Dateien, PDF-Dokumente usw.). Deutsche Zeichen (ÄÖÜäöüß), die als UTF-8 kodiert sind, sind erlaubt und werden in ae, oe, ue und ss umgewandelt. Die Datei kann Groß- und Kleinbuchstaben sowie alle Zeichen, die Teil der Koch-Methode sind, enthalten (insgesamt 50 Zeichen). Alle anderen Zeichen werden einfach ignoriert, wenn die Datei als Morsezeichen abgespielt wird. Die Datei zum Hochladen kann ziemlich groß sein - man hat fast 1 MB Speicherplatz dafür (genug, um eine Kopie von Mark Twains "Die Abenteuer des Huckleberry Finn" zu speichern).
+
+TIP: Android, Linux, iOS und OSX verwenden UTF-8 als Standardcodierung für Textdateien. Unter Windows ist das nicht so -- man kann aber z.B. Notepad benutzen und dort bei "Speichern unter" die Codierung UTF-8 angeben!
+
+Um die Datei hochzuladen, wählen man im Menü "WiFi Functions" "File Upload". Nach ein paar Sekunden (er muss sich ja zuerst mit dem WLAN-Netzwerk verbinden) zeigt der Morserino-32 an, dass er auf den Upload wartet. Nun geht man mit dem Browser des Computers zu "http://m32.local" (oder man ersetzt "m32.local" mit der auf dem Display angezeigten IP-Adresse).
+
+TIP: Für die Upload-Funktion muss der Morserino-32 (und natürlich der PC oder das Tablett etc.) wieder im lokalen WLAN-Netzwerk sein!
+
+Zuerst ist ein **Login**-Bildschirm im Browser zu sehen. Verwende "**m32**" als Benutzer-ID und "**upload**" als Passwort. Es erscheint dann im Browser ein Dateiauswahldialog - wähle  die Datei, die du hochladen möchtest (Name oder Erweiterung spielt keine Rolle) und klicke dann auf die Schaltfläche "Begin". Sobald der Upload abgeschlossen ist (es dauert nicht lange), startet sich der Morserino-32 neu, und du kannst die hochgeladene Datei nun im *CW Generator* oder *Echo Trainer* Modus verwenden.
+
+IMPORTANT: Wenn du den Vorgang aus irgendeinem Grund abbrechen musst, musst du das Gerät neu starten, indem du es entweder vollständig von der Stromversorgung trennst (Akku aus und USB ausgesteckt) oder die Reset-Taste mit Hilfe eines kleinen Schraubendrehers oder eines Kugelschreibers drücken (die Reset-Taste ist durch das Loch neben dem USB-Anschluss in Richtung des externen Paddel-Anschlusses erreichbar).
+
+==== Aktualisierung der Morserino-32 Firmware
+
+Das Aktualisieren der Firmware des Morserino-32 über WLAN ist eine Möglichkeit, dies zu bewerkstelligen. Man kann dies auch tun, indem man die Arduino-IDE auf einem Computer verwendet (dazu müssen noch eine Reihe spezifischer Dateien und Bibliotheken installiert werden, um das Heltec-Modul und den ESP32-Prozessor zu unterstützen, dann kann die Binärdatei aus dem Quellcode kompiliert werden), oder indem man ein spezielles Update-Dienstprogramm (siehe <<appendix4>>).
+
+TIP: Du kannst jede beliebige Version aufspielen, man kann auch Versionen überspringen, ja, man kann auch wieder zu älteren Versionen zurück gehen.
+
+Das Aktualisieren der Firmware ist sehr ähnlich wie das Hochladen einer Textdatei. Zuerst muss  die Binärdatei aus dem Morserino-32-Repository auf GitHub geholt werden (https://github.com/oe1wkl/Morserino-32 - suche nach einem Verzeichnis namens "Binaries" unter "Software" . Hol dir die neueste Version und lade sie auf deinen Computer herunter. Der Dateiname sieht so aus:
+
+`morse_3_vx.y.ino.wifi_lora_32.bin` mit x.y als Versionsnummer.
+
+Rufe nun wieder das Menü "**WiFi Functions**" auf und wähle den Punkt "**Update Firmw**". Ähnlich wie beim Datei-Upload gehe mit dem Browser zu "http://m32.local" (bzw. die angezeigte IP-Adresse anstelle von m32.local), um schließlich einen Anmeldebildschirm zu erhalten. Diesmal verwende den Benutzernamen "**m32**" und das Passwort "**update**".
+
+Als nächstes erscheint wieder ein Dateiauswahlbildschirm, wähle die heruntergeladene Binärdatei aus und klicke auf die Schaltfläche "Begin". Diesmal dauert das Ganze etwas länger - es kann einige Minuten dauern, also nur Geduld. Die Datei ist groß, muss hochgeladen und in den Speicher des Morserino-32 geschrieben  und auch überprüft werden, um sicherzustellen, dass es sich um eine ausführbare Datei handelt. Schließlich startet sich das Gerät von selbst neu und man sollte die neue Versionsnummer beim Start auf dem Display sehen.
+
+[TIP]
+====
+Im Folgenden sind die Schritte zum Aktualisieren der Firmware über WLAN zusammengefasst:
+
+1. Führe  die Netzwerkkonfiguration wie oben beschrieben durch (dazu richtet der Morserino ein eigenes WiFi-Netzwerk ein, du verbindest deinen Browser mit dem Morserino und gibst im Browser den Namen und das Passwort deines WLAN-Netzwerks ein). Die ist nur einmal zu tun, da sich der Morserino diese Zugangsdaten für die zukünftige Verwendung merkt. Es empfiehlt sich die Funktion "Check WiFi" zu verwenden, um sicherzustellen, dass der Morserino eine Verbindung zu deinem Netzwerk herstellen kann. Denke daran, dass der Morserino ziemlich nah am WiFi-Router sein muss!
+
+2. Laden die neue Binärdatei auf deinen Computer herunter.
+
+3. Starte „Update Firmware“ auf dem Morserino. Nach einer Weile zeigt er die IP-Adresse (die sich in deinem WLAN befindet!) und eine Meldung, dass er auf ein Update wartet.
+
+4. Lass deinen Computer im Heimnetzwerk und richten den Browser entweder auf die IP-Adresse des Morserino oder auf "http://m32.local" (dies funktioniert auf Macs und iPhones, normalerweise funktioniert es nicht auf Windows-PCs oder Android-Geräten).
+
+5. Du siehst einen Anmeldebildschirm im Browser. Gib als Benutzernamen "m32" und als Passwort "update" ein.
+
+6. Es erscheint ein Dialog zur Dateiauswahl. Wähle die Binärdatei im Download-Ordner aus und klicke dann auf "Beginn". Es gibt einen Fortschrittsbalken, und nach einiger Zeit (kann einige Minuten dauern - auch wenn der Fortschrittsbalken bereits 100% anzeigt) startet sich der Morserino neu und zeigt die neue Versionsnummer auf dem Startbildschirm an. Dann weisst du, dass das Update erfolgreich war.
+====
+
+=== Go To Sleep
+
+Dieser Menüpunkt versetzt den Morserino-32 bei Auswahl in einen Tiefschlafmodus, in dem er deutlich weniger Strom verbraucht als bei normalem Betrieb. Aber es wird die Batterie innerhalb weniger Tage immer noch entladen, so dass dies nur für kürzere Pausen zwischen den Trainingseinheiten gedacht ist. Siehe Abschnitt <<power>> weiter oben in diesem Handbuch.
+
+== Einstellungen [[parameters]]
+
+Man erreicht das Parametermenü (Menü für die Einstellungen) immer durch **Doppelklick** auf den **SCHWARZEN Drehgeberknopf**. Man sieht ein`**>**` Zeichen vor dem aktuellen Parameter, und die Zeile darunter zeigt den aktuellen Wert. Verwende  den Drehgeber, um  durch die verfügbaren Einstellungen zu gehen. Wenn man das Parametermenü verlassen möchte, drückt man einfach den schwarzen Knopf des Drehgebers etwas länger und man befindet sich dann wieder in jenem Betriebsmodus, aus dem man das Parametereinstellungsmenü aufgerufen hat (oder auch wieder im Menü, wenn man mit Doppelklick aus dem Menü eingestiegen ist).
+
+Ist der zu ändernde Parameter erreicht, klickt man einmal. Nun steht das Zeichen `**>**` in der unteren Zeile vor dem Parameterwert und zeigt damit an, dass das Drehen des Drehgebers diesen Wert ändert. Ist man mit dem Wert zufrieden, klickt man wieder ** einmal**, um zur Auswahl der Parameter zurückzukehren, oder **man drückt den Knopf etwas länger**, um das Parametermenü gleich zu verlassen.
+
+Natürlich variieren die einstellbaren Parameter je nach Modus, in dem man sich befindet: Wenn man in einem bestimmten Modus doppelt klickt, gelangt man nur zu den Parametern, die für den aktuellen Modus relevant sind. Hat man den Doppelklick im Startmenü ausgeführt, wird  die gesamte Palette der Parameter angezeigt.
+
+
+=== Snapshots [[snapshots]]
+Für verschiedene Trainingsarten benötigt man in der Regel unterschiedliche Einstellungen der Parameter -- z.B. für Abstände zwischen den Zeichen und für Wortabstände, für die Längen von Zeichengruppen oder Wörtern usw.  Wenn man von einer Trainingsart zur nächsten wechselt, sind jedes Mal verschiedene Einstellungen zu ändern.
+
+Um dies zu erleichtern, kann man "Schnappschüsse" der Einstellungen verwenden: Nachdem  alles für die ersten Trainingsart eingestellt wurde, speichert man alle aktuellen Parameter in einem von acht ""Snapshots"; dann macht man dasselbe mit den anderen Trainingsarten. Man kann die Einstellungen dann schnell abrufen, indem man einen bestimmten Snapshot zurück holt.
+
+TIP: Die eingestellte "Koch-Lektion" wird auch im nichtflüchtigen Speicher abgelegt und steht somit nach einem Neustart zur Verfügung, wird aber nicht in den Snapshots gespeichert oder von einem Snapshot überschrieben.
+
+==== Speichern eines Snapshots
+
+Doppelklicke zunächst, um in das Parametermenü zu gelangen. Nun kannst du nach längerem Drücken der ROTEN Taste mit dem Drehgeber wählen, an welcher Stelle  die aktuellen Einstellungen gespeichert werden sollen, von "Snapshot 1" bis "Snapshot 8"; eine weitere Option lautet "Cancel Store" und ermöglicht  das Aussteigen ohne Speichern eines Snapshots. Snapshot-Speicherorte, die bereits in Gebrauch sind, werden in **fett** angezeigt, aber man kann auch diese überschreiben. Ein Klick auf den schwarzen Knopf speichert den Schnappschuss an der gewünschten Stelle und zeigt kurz an, dass gespeichert wurde.
+
+==== Abrufen eines Snapshots
+
+Auch hier steigt man mit einem Doppelklick auf den schwarzen Knopf zuerst in das Parametermenü ein. Nun kann man nach einem **kurzen** Klick auf die ROTE Taste mit dem Drehgeber auswählen, welche der gespeicherten Schnappschüsse man abrufen möchte, was mit Klicken auf die schwarze Drehgebertaste erfolgt; wenn keine Schnappschüsse gespeichert sind, erhält man eine Meldung "NO SNAPSHOTS" und man steigt mit einem Druck auf eine beliebige Taste wieder aus.
+
+==== Löschen eines Snapshots
+
+Man kann Snapshots auch löschen, die nicht mehr benötigt werden oder  versehentlich erstellt wurden. Gehe dabei so vor, als ob du einen Snapshot abrufen möchtest, wähle  den zu löschenden Snapshot mit dem Drehgeber aus, und klicke  dann auf die ROTE Taste zum Löschen. Wie beim Speichern und Abrufen von Snapshots zeigt eine kurze Meldung an, dass die Aktion erfolgreich war.
+
+
+=== Allgemeine Parameter
+Eine Reihe von Parametern sind sehr allgemeiner Natur und gelten daher für alle Modi des Morserino-32.
+
+Das sind:
+
+`Encoder Click`: Wenn man beim Drehen des Drehgebers kein Klicken hören möchte, stelle man diesen Parameter auf OFF.
+
+`Tone Pitch`: Die Frequenz des Mithörtons.
+
+`Time Out`:  Wenn dieser Wert auf einen anderen Wert als "No timeout" eingestellt ist, geht der M32 nach einer bestimmten Zeit ohne Aktivität auf dem Bildschirm in den Tiefschlafmodus.  Man kann den  M32 durch Drücken der ROTEN Taste neu starten.
+
+`Quick Start`: Wenn diese Einstellung auf ON gesetzt ist, führt der M32 nach dem Start sofort den Modus aus, der zuletzt aktiv war, ohne vorher im Menü stehen zu bleiben.
+
+=== Liste aller Morserino-32 Parameter
+Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem Startmenü stehen alle Parameter zum Ändern zur Verfügung, beim Aufruf aus einem laufenden Modus nur jene, die für diesen Modus relevant sind.
+
+[cols="2,6,3",options=header]
+|===
+|Parameter Name
+|Beschreibung
+|Werte
+
+
+| Encoder Click | Das Drehen des Drehgebers kann einen kurzen Tonimpuls erzeugen oder ohne Ton erfolgen   | Off / On
+| Tone Pitch Hz   | Die Frequenz des Mithörtons, in Hz | Eine Reihe von Tönen zwischen 233 und 932 Hz, die den musikalischen Noten der B-Dur-Skala von b zu b''  entsprechen (2 Oktaven).
+| External Pol.        | Ermöglicht die Umkehrung der Polarität eines externen Paddels. Verwende dies, wenn das externe Paddel "falsch herum" verdrahtet ist, so dass Punkte und Striche des internen und externen Paddels alle auf der gleichen Seite liegen. | Normal / Reversed
+| Paddle Polarity | Legt fest, welche Paddelseite für Dits ist und welche für Dahs. | ` _. dah-dit` / **`._ di-dah`**
+| Latency | Legt fest, wie lange nach dem Erzeugen des aktuellen Elements (Punkt oder Strich) die Paddel "taub" sind. Wenn der Wert 0 ist, muss man das Paddel loslassen, während das letzte Element noch "an" ist. Ist der Wert auf 7 eingestellt, reagieren die Paddel erst nach 7/8 einer Punktlänge auf eine Berührung. | Ein Wert zwischen 0 und 7, also 0/8 bis 7/8 einer Punktlänge (Standardwert ist **4**, d.h. eine halbe Punktlänge).
+| Keyer Mode     | Wählt den Iambic Mode (A oder B),  Ultimatic, Non-Squeeze oder Straight Key; siehe den Abschnitt <<keyer>>  | Curtis A / Curtis B / Ultimatic / Non-Squeeze / Straight Key
+| CurtisB DahT% | Timing im Curtis B Mode für dahs, in Prozent; siehe den Abschnitt <<keyer>>       | 0 -- 100, in Schritten of 5 [**35 -- 55**]
+| CurtisB DitT% | Timing im Curtis B mode für dits, in Prozent; siehe den Abschnitt <<keyer>>     | 0 -- 100, in Schritten von 5 [**55 -- 80**]
+| AutoChar Spce   | Minimaler Abstand zwischen den Zeichen, in Längen eines Dits.  | Off / min. 2 / **3** / 4 dots
+| Tone Shift | Die Tonhöhe des Tons, wenn man im LoRa CW Trx Modus oder im Echo Trainer Modus sendet, kann entweder die gleiche sein wie die, die man von der Gegenstation (bzw. bei der Aufforderung im Echo Trainer Modus) hört, oder kann einen Halbton höher oder einen Halbton tiefer sein. |**No Tone Shift** / Up 1/2 Tone / Down 1/2 Tone
+| Interword Spc | Der zeitliche Abstand (als Anzahl von Dits) der zwischen Wörtern eingefügt wird (siehe den Abschnitt <<generator>>)   | 6 -- 45 [**7**]
+| Interchar Spc | Der zeitliche Abstand (als Anzahl von Dits) der zwischen Zeichen eingefügt wird (siehe den Abschnitt <<generator>>) | 3 -- 15 [**3**]
+| Random Groups | Für die Ausgabe von Gruppen von zufälligen Zeichen legt man hier fest, welche Zeichenuntermengen inkludiert sein sollen. | Alpha (Buchstaben)/ Numerals (Ziffern) / Interpunct. (Satzzeichen) / Pro Signs (Betriebsabk.)/ Alpha + Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / All Chars (Alle)
+| Length Rnd Gr | Hier wählt man aus, wie viele Zeichen  in jeder Gruppe von zufälligen Zeichen enthalten sein sollen; traditionell sind das 5, aber für das Training kann es sinnvoll sein, mit einer kleineren Zahl zu beginnen. | Fixe Längen 1 -- 6, und 2 to 3 -- 2 to 6 (Länge nach dem Zufallsprinzip innerhalb dieser Grenzen gewählt) [**5**]
+| Length Calls | Hier wählt man die maximale Länge der erzeugten Rufzeichen aus. | Unlimited (unbegrenzt) / max. 3 -- max. 6
+| Length Abbrev | Hier wählt man die maximale Länge der zufällig erzeugten allgemein üblichen CW-Kürzel und Q-Gruppen aus. | Unlimited (unbegrenzt) / max. 2 -- max. 6
+| Length Words | Hier wählt man die maximale Länge der zufällig generierten allgemeinen englischen Wörter aus. | Unlimited (unbegrenzt) / max. 2 -- max. 6
+| Max # of Words | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen erzeugt wurde, erzeugt der Morserino-32 ein abschließendes AR ("+"), um anzuzeigen, dass diese Sequenz beendet ist, und pausiert dann und wartet - nach Berühren eines Paddels (oder einem Klick auf den schwarzen Knopf) fährt er fort und erzeugt die nächste Folge von Wörtern. (Falls die Option "Auto Stop" aktiv ist, wird dieser Parameter im CW Generator ignoriert.) | **Unlimited** (unbegrenzt) / 5 bis 250 in Schritten von  5
+| CW Gen Displ | Hier wählt man aus, wie der CW Trainer anzeigen soll, was er erzeugt. | Display off (keine Anzeige)/ **Char by Char** (Zeichen für Zeichen) / Word by word (Wort für Wort)
+| Each Word 2x | Im CW Trainer Modus wird bei Stellung "On" jedes "Wort" (Zeichen zwischen den Leerzeichen) zweimal ausgegeben, um zu lernen, nach Gehör mitzulesen. Diese Option und die Option 'Stop/Next/Rep' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| **Off** / On
+| Randomize File | Wenn auf "On" gesetzt, überspringt der File Player nach jedem gesendeten Wort n Wörter (n = Zufallszahl zwischen 0 und 255). |  **Off** / On
+|Echo Repeats    |Hier stellt man ein, wie oft ein Wort wiederholt wird, wenn die Antwort entweder zu spät oder fehlerhaft ist, bevor der Echo Trainer ein neues Wort generiert. Wenn der Wert 0 ist, dann ist das nächste Wort immer ein neues, unabhängig davon, ob die Reaktion richtig  oder falsch war.        | 0 -- 6 / Forever (unbegrenzte Wiederholung, bis die Antwort richtig ist)
+|Echo Prompt    | Hiermit wird festgelegt, wie man im Echo-Trainer-Modus zur Eingabe aufgefordert wird. Die möglichen Einstellungen sind: "Sound Only" (nur Töne; Standardwert; am besten zum Gehörlesen Lernen), "Display only" (das Wort, das man eingeben soll, wird auf dem Display angezeigt, es wird kein hörbarer Code erzeugt; gut zum Geben Lernen mit dem  Paddel) und "Sound & Display", d.h. man hört die Eingabeaufforderung UND man kann sie auf dem Display sehen.               | **Sound only** / Display only / Sound&Displ
+| Confrm. Tone  | Hiermit wird festgelegt, ob im Echo-Trainer-Modus ein akustischer Bestätigungston ausgegeben werden soll. Wenn man das ausschaltet (Off), wiederholt das Gerät nur die Eingabeaufforderung, wenn die Antwort falsch war, oder sendet eine neue Eingabeaufforderung. Die optische Anzeige von "OK" oder "ERR" ist aber auch nach dem Ausschalten des Tons sichtbar. | **On** / Off
+|Key ext TX        | Hier legt man fest, ob ein angeschlossener Sender bei der Verwendung des Gerätes getastet wird. | Never (niemals) / **CW Keyer only** (nur beim CW Keyer) / Keyer&Genertr (beim Keyer und beim CW Generator)
+| Send via LoRa | Wenn auf ON gesetzt, wird das, was der CW-Generator erzeugt, auch über LoRa übertragen - so kann man erreichen, dass ein Gerät etwas erzeugt und mehrere andere die gleiche Sequenz empfangen (im LoRa Trx-Modus). Beachte bitte, dass bei der Übertragung über LoRa eine Antenne angeschlossen sein muss, da sonst der LoRa-Transceiver zerstört werden könnte! | LoRa Tx ON / **LoRa Tx OFF**
+| LoRa Channel | Wählt aus, welchen virtuellen Kanal LoRa verwendet. | **Standard Ch** / Secondary Ch
+| Bandwidth | Definiert die Bandbreite, die der CW-Decoder verwendet (dies ist in Software mit einem so genannten Goertzel-Filter implementiert).  (Wide (breit) = ca. 600 Hz, Narrow (schmal) = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz) | **Wide** / Narrow
+| Adaptv. Speed | Wenn diese Option auf ON gesetzt ist, wird die Geschwindigkeit um 1 WpM erhöht, wenn man im Echo Trainer-Modus eine korrekte Antwort gegeben hat, und um 1 verringert, wenn die Antwort fehlerhaft war. | ON / **OFF**
+| Koch Sequence | Dies bestimmt die Reihenfolge der Zeichen, wenn man die Koch-Methode zum Lernen und Trainieren verwendet. Man kann hier auch seinen spezifischen zeichensatz zum Üben definieren, mit der Option 'Custom Chars' - siehe das Kapitel <<koch>> (letzter Absatz).| **M32 / JLMC** (Just Learn Morse Code)  /  LCWO / Custom Chars
+| Time Out | Wenn die in diesem Parameter angegebene Zeit ohne Aktualisierung der Anzeige vergeht, geht das Gerät in den Tiefschlafmodus. Man kann es durch Drücken der ROTEN Taste neu starten. | No timeout (kein Timeout)/ **5 min** / 10 min / 15 min
+| Quick Start | Ermöglicht es (gesetzt auf ON), die anfängliche Menüauswahl zu umgehen, d.h. das Gerät beginnt beim Start sofort mit der Ausführung des Modus, der vor dem letzten Ausschalten wirksam war. | ON / **OFF**
+| STop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**
+| Serial Output | Damit wird eingestellt, ob am USB Anschluss die generierten Zeichen des Keyers bzw. die dekodierten Zeichen des Decoders ausgegeben werden sollen. Bei der Einstellung "ERRORS only" werden nur gewisse Fehlermeldungen dort ausgegeben (diese allerdings nur wenn keine der anderen Optionen gewählt wurde).
+
+Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. | **Keyer** / Decoder / Keyer+Decoder  / Everything / ERRORS only
+|===
+
+== Anhänge
+
+=== Anhang 1: Hardware Konfiguration (LoRa Bänder & Frequenzen und Kalibrierung der Batterie-Messung)
+
+Es gibt ein Hardware-Konfigurationsmenü welches man erreicht, indem man den schwarzen Drehregler-Knopf beim Einschalten des Morserino-32 gedrückt hält. Sobald man dann den Knopf nach dem Starten auslässt, kann man die gewünschte Konfiguration durch Drehen des Drehreglers auswählen, und mit einem Druck auf den schwarzen Knopf aktivieren.
+
+Die Wahlmöglichkeiten sind "Calibr. Batt." (Kalibrierung der Batteriemessung), "LoRa Config." (Einstellen der LoRa Konfiguration entsprechend des benutzten Heltec-Moduls) und "Cancel" (Verlassen des Menüs ohne etwas zu ändern und Fortsetzung des normalen Hochfahrens des M32).
+
+
+==== Anhang 1.1: LoRa-Bänder und Frequenzen konfigurieren [[appendix1_1]]
+
+Hat man ein Standard 433 MHz Heltec Modul im Morserino-32, ist er bereits für das richtige Band und eine Standardfrequenz innerhalb dieses Bandes vorkonfiguriert.
+
+IMPORTANT: Wenn man entweder die Frequenz innerhalb des Standardbandes ändern muss, oder ein Heltec-Modul für die Bänder 868 und 920 MHz verwenden will, muss man den Morserino-32 konfigurieren, bevor man die LoRa-Funktionen nutzt.
+
+Die folgenden Bänder und Frequenzbereiche können im Morserino-32 für Heltec Module konfiguriert werden, die die oberen UHF LoRa Frequenzen unterstützen:
+
+* 868 MHz Band:
+		866,25 bis 869,45 MHz in Schritten von 100 kHz (Standard: 869,15 MHz)
+* 920 MHz Band:
+		920,25 bis 923,15 MHz in Schritten von 100 kHz (Standard: 920,55 MHz)
+
+Die Standard Heltec-Module unterstützen nur das 433 MHz-Band, und der Morserino-32 kann so konfiguriert werden, dass er 433,65 bis 434,55 MHz in Schritten von 100 kHz (Standard: 434,15 MHz) verwendet.
+
+**Um den Morserino-32 für nicht standardisierte Frequenzen und Bänder zu konfigurieren, gehe bitte wie folgt vor:**.
+
+
+* Starte den Morserino-32 und halte dabei den SCHWARZEN Drehgeberknopf gedrückt.
+* Sobald eine Nachricht erscheint, lass den schwarzen Knopf los.
+* Zuerst wird man aufgefordert, das gewünschte Band auszuwählen (wähle 433 für das Standard-LoRa-Modul und entweder 868 oder 920 für das obere UHF-LoRa-Modul); drehe den Drehgeber auf das gewünschte Band und klicke einmal kurz auf den schwarzen Knopf. **Die Bandauswahl muss für das verwendete Heltec-Modul passen!**
+* Jetzt wird man aufgefordert, eine Frequenz innerhalb des ausgewählten Bandes auszuwählen. Die erste angezeigte Frequenz ist die Standardeinstellung für dieses Band - wenn das in Ordnung ist, klicke einfach einmal auf den schwarzen Knopf, andernfalls wähle eine Frequenz aus, indem du den Drehgeber drehst und auf den Knopf klickst, sobald Sie die richtige Frequenz gefunden wurde.
+* Unmittelbar danach startet der Morserino-32 normal, mit den nun ausgewählten LoRa-Einstellungen. In der oberen Zeile des Startbildschirms sieht man die konfigurierte QRG für LoRa als 5-stellige Zahl (z.B. 43415 für die Voreinstellung im 433 MHz-Band).
+
+
+==== Appendix 1.2: Kalibrierung der Batteriemessung [[appendix1_2]]
+
+Die in den Heltec-Modulen vorgesehene Messung der Batteriespannung ist leider recht unzuverlässig. Anscheinend spielen dabei mehrere Faktoren eine Rolle: ein Messfehler innerhalb des ESP32 Prozessors aufgrund kleiner Variationen der Referenzspannung des Chips (ein hier wohl vernachlässigbar kleiner Messfehler), und Probleme mit dem Spannungsteiler auf dem Heltec Modul, der zur Messung verwendet wird (dies resultiert in einem ziemlich großen Fehler und hoher Variabilität zwischen verschiedenen Modulen). Obwohl das Messen der Batteriespannung kein elementares Problem für den Betrieb des M32 darstellt, ist dies doch ein lästiger Fehler, der auch dazu führen kann, dass cih der M32 nicht mehr einschalten lässt, da die Firmware meint, die Batteriespannung sei zu niedrig, obwohl dies gar nicht der Fall ist.
+
+Um die Messung der Batteriespannung zu kalibrieren, musst du zuerst einmal die Spannung des Akkus mit einem Multimeter feststellen. Sobald dieser Wert bekannt ist, führe folgende Schritte aus:
+
+* Schalte den M32 ein, während du den SCHWARZEN Knopf gedrückt hältst, bis die Nachricht "Release BLACK" sichtbar wird.
+* Wähle die Option "Calibr. Batt." mit dem Drehregler.
+* Man sieht nun eine Spannungsanzeige am Display (in Millivolt). Dreh nun den Drehregler in die eine oder andere Richtung, bis der angezeigte Wert möglichst nahe am gemessenen Wert der Batteriespannung liegt.
+* Drück den Schwarzen Knopf um den Kalibrierungswert zu speichern, und um mit dem Hochfahren des M32 fortzufahren.
+
+
+=== Anhang 2: Einstellen des Audioeingangspegels [[appendix2]]
+
+Man kann noch eine **andere Funktion** erreichen, während man sich innerhalb des Startmenüs befinden - nicht durch eine Menüauswahl, sondern durch **einen langen Druck auf die rote Taste**:
+
+Dies startet eine Funktion zur Einstellung des Audioeingangspegels: Stelle sicher, dass am Eingang ein Tonsignal anliegt, z.B. von einem Kurzwellenempfänger (siehe <<controls>> am Anfang dieses Dokuments, #2), und ein Balken zeigt die Spannung des Eingangssignals an. Stelle  es mit dem blauen Trimmerpotentiometer so ein, dass sich das linke und rechte Ende des hellen Balkens innerhalb der beiden äußeren Rechtecke befinden. Gleichzeitig wird in dieser Bertiebsart beim Line-Out Ausgang ein Sinussignal ausgegeben und der Transceiverausgang kurzgeschlossen (Tastet einen Senders, falls dieser an Anschluss #1 angeschlossen ist - trenne zuerst deinen Transceiver, wenn dies nicht das ist, was du willst!). Man kann nun z.B. den Pegel des Ausgangssignals an einem angeschlossenen Computer einstellen, oder überprüfen, ob ein Sender getastet wird.
+
+Ein einfacher Test oder eine Demo für die Audio-In-Einstellung besteht darin, den Line-Out mit dem Audio-In-Anschluss zu verbinden (verbinde dazu "Tip" mit "Sleeve") und den Ausgangston in den Audio-Eingang einzuspeisen. Man kann sehen, wie sich der Balken ändert, wenn man das Potentiometer dreht, wobei an einem Ende des Potentiometerbereichs nur ein winziger Balken in der Mitte verbleibt und die beiden Rechtecke an beiden Enden des Diagramms freigelegt werden (im Wesentlichen misst man dann nur nur das Rauschen am Eingang der Operationsverstärkers). Am anderen Ende des Potentiometer-Drehbereichs geht hingegen der Balken über die äußeren Enden der Rechtecke hinaus. Nun kann man den Pegel mit dem Potentiometer so einstellen, dass der helle Balken die Außengrenzen der Rechtecke **fast** berührt. Dies ist die optimale Einstellung für den Audioeingang. Natürlich muss man dies für die Audioquelle tun, die man verwenden möchte, z.B. für einen Radioempfänger.
+
+TIP: Nur wenn Sie sich im Menü befinden, aktiviert  **Langes Drücken der ROTEN Taste**die Pegeleinstellfunktion. Während man einen der Morserino-Modi (Keyer, Generator, Echo-Trainer, Transceiver usw.) ausführt, aktiviert ein langer Druck auf die ROTE Taste den Scroll-Modus der Anzeige, damit man Text lesen kann, der bereits weggescrollt ist!
+
+=== Anhang 3: Firmware Update Prozedur für Versionen < 2.0 [[appendix3]]
+
+Bei den Firmware Versionen 1.x waren die WLAN Funktionen nicht über das Hauptmenü erreichbar, sondern durch dreimaliges schnelles Drücken des ROTEN Knopfes. Damit ist die Update-Prozedur folgendermaßen auszuführen:
+
+Falls noch nicht geschehen, muss zuerst die WLAN Konfiguration durchgeführt werden.
+
+Während der Morserino-32 das Startmenü anzeigt, klicke ***drei mal*** schnell auf die ROTE Taste, um in das WLAN-Menü zu gelangen. Der oberste Eintrag lautet "WiFi Config". Wähle ihn aus, um fortzufahren.
+
+Das Gerät startet WiFi als Zugangspunkt (wie ein WLAN Router) und erstellt so ein eigenes WLAN-Netzwerk (mit der SSID "Morserino"). Wenn man die verfügbaren Netzwerke mit dem Computer oder Smartphone überprüft, wird man es leicht finden. Verbinde nun deinen Computer (oder dein Handy) mit diesem Netzwerk (man braucht kein Passwort, um eine Verbindung herzustellen).
+
+Wenn du verbunden bist, gib "m32.local" in deinen Browser ein. Falls dein Computer oder Smartphone mDNS nicht unterstützt (Android tut das zB. nicht), musst du die IP Adresse 192.168.4.1 in den Browser eingeben. Es erscheint nun ein kleines (leeres) Formular mit nur zwei Feldern im Browser: "SSID" und "Password". Gib den Namen deines lokalen WLAN-Netzwerks und das entsprechende Passwort ein und klicke auf die Schaltfläche "Submit". Der Morserino-32 speichert diese Netzwerk-Anmeldeinformationen und führt einen Neustart durch (das Netzwerk "Morserino" wird verschwinden).
+
+Rufe nun erneut das WLAN-Menü auf, indem du dreimal schnell auf die ROTE Taste klickst und die Option "**Update Firmw.**" auswählst. Ähnlich wie beim Hochladen von Dateien geh mit dem Browser zu  "m32.local" (oder der am Display gezeigten IP Adresse), und schließlich wird wieder ein Anmeldebildschirm angezeigt. Dazu verwende nunmehr den Benutzernamen "**m32**" und das Passwort "**update**".
+
+Als Nächstes wird wieder ein Dateiauswahldialog angezeigt, man wählt die gespeicherte Binärdatei aus und klickt auf die Schaltfläche "Begin". Diesmal dauert das Laden länger - es kann einige Minuten dauern, man sollte also etwas Geduld haben. Die Datei ist groß, muss hochgeladen und in den Morserino-32 geschrieben werden und dann überprüft werden, um sicherzustellen, dass es sich um eine ausführbare Datei handelt. Schließlich startet das Gerät neu und man sollte während des Startvorgangs die neue Versionsnummer auf dem Display sehen können.
+
+Natürlich man die Firmware auch über USB aktualisieren, wenn derzeit noch eine ältere Softwareversion verwendet wird (siehe nächster Anhang).
+
+=== Anhang 4: Aktualisieren der Firmware über USB [[appendix4]]
+
+Dieses einfache Update-Verfahren, das derzeit für das Windows-Betriebssystem verfügbar ist, wurde durch Arbeiten von Matthias Jordan und Joe Wittmer ermöglicht.
+
+Stelle zunächst sicher, dass du einen Treiber für das USB-zu-Seriell CP210x von Silicon Labs installiert hast, der vom Heltec Modul für seine USB-Schnittstelle verwendet wird. Aktuelle Versionen von Windows 10 installieren dies automatisch. Wenn dies bei dir nicht der Fall ist, kannst du den Treiber von hier herunter laden:
+    https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers
+
+Um zu überprüfen, ob du den passenden Treiber installiert hast, und um festzustellen, mit welchem ​​Port er verbunden ist, öffne den Gerätemanager auf deinem Computer (gib im Suchfeld unten links auf dem Bildschirm "Gerätemanager" ein und der Gerätemanager wird zur Auswahl angezeigt).
+
+Verbinden nun den Morserino mithilfe eines USB-Kabels mit dem Computer. Der Gerätemanager sollte seine Anzeige aktualisieren und einen Eintrag "Ports" anzeigen - öffnen diesen, und es sollte Folgendes angezeigt werden: Silicon Labs CP210x ... (COM3). Könnte in deinem Fall natürlich ein anderer COM-Port sein, notiere also den korrekten Portnamen.
+
+TIPP: Stelle sicher, dass du ein ein "richtiges" USB-Kabel verwendest, kein Kabel das nur zum Aufladen geeignet ist!
+
+Lade  jetzt das Update-Dienstprogramm aus Joes GitHub-Repository herunter:
+https://github.com/joewittmer/Morserino-32-Firmware-Updater/tree/master/release
+
+Entpacke diese Datei. Darin ist ein Programm "update_m32.exe" - kopiere es in einen Ordner deiner Wahl (normalerweise verwende ich den Ordner ""Downloads"). Hole nun auch die binäre Morserino-Datei für die Version, die du installieren möchtstn, vom Morserino GitHub.
+
+Öffne nun ein Befehlsfeld auf dem Computer (gib im Suchfeld unten links auf dem Bildschirm "cmd" ein). Gib die folgende Befehlszeile ein:
+
+`update_m32 <COMx> 921600 <binaryfilename>`
+
+Ersetze  <COMx> durch den korrekten COM-Port-Namen und <binaryfilename> durch den korrekten Namen der Morserino-Binärdatei.
+
+Nach kurzer Zeit sollte der Morserino-32 neu starten und die aktualisierte Versionsnummer anzeigen.
