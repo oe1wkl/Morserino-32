@@ -14,10 +14,10 @@
 #define BOARDVERSION  3
 
 ///////////////////////
-/////// protocol version for Lora - for the time being this is B01
-/////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
+/////// protocol version for Lora/Wifi - for the time being this is B01
+/////// the first version of the CW over LoRA/Wifi protocol; future versions will be B02, B03, B00 (reserved for future use)
 
-#define CWLORAVERSION B01
+#define CW_TRX_PROTO_VERSION B01
 
 
 /******************************************************************************************************************************
@@ -57,6 +57,8 @@
 #include <SPI.h>           // library for SPI interface
 #include <LoRa.h>          // library for LoRa transceiver
 #include <WiFi.h>          // basic WiFi functionality
+#include <WiFiUdp.h>       // UDP lib for WiFi TRX
+#include <AsyncUDP.h>      // UDP lib for WiFi TRX
 #include <WebServer.h>     // simple web sever
 #include <ESPmDNS.h>       // DNS functionality
 #include <WiFiClient.h>    //WiFi clinet library
@@ -230,6 +232,11 @@ int8_t relPos = maxPos;
 static unsigned char lora_bits[] = {
    0x0f, 0x18, 0x33, 0x24, 0x29, 0x2b, 0x29, 0x24, 0x33, 0x18, 0x0f };
 
+#define wifi_width 6        /// a simple logo that shows when we operate with WiFi, stored in XBM format
+#define wifi_height 11
+static unsigned char wifi_bits[] = {
+   0x00, 0x08, 0x10, 0x24, 0x29, 0x2b, 0x29, 0x24, 0x10, 0x08, 0x00 };
+
 
 /////////////////////// parameters for LF tone generation and  HF (= vol ctrl) PWM
 int toneFreq = 500 ;
@@ -268,13 +275,13 @@ volatile uint8_t stateRegister = 0;
 
 
 /// the states the morserino can be in - selected intop level menu
-enum morserinoMode {morseKeyer, loraTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid };
+enum morserinoMode {morseKeyer, loraTrx, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid };
 morserinoMode morseState = morseKeyer;
 
 //////// variables and constants for the modus menu
 
 
-const uint8_t menuN = 40;     // no of menu items +1
+const uint8_t menuN = 41;     // no of menu items +1
 
 const String menuText [menuN] = {
   "",
@@ -312,26 +319,27 @@ const String menuText [menuN] = {
   
   "Transceiver",    // 29
     "LoRa Trx",
+    "WiFi Trx",
     "iCW/Ext Trx",
   
-  "CW Decoder",     // 32
+  "CW Decoder",     // 33
 
-  "WiFi Functions", // 33
+  "WiFi Functions", // 34
     "Disp MAC Addr",
     "Config WiFi",
     "Check WiFi",
     "Upload File",
-    "Update Firmw", //38
+    "Update Firmw", //39
   
   
-  "Go To Sleep" } ; // 39
+  "Go To Sleep" } ; // 40
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
 enum menuNo { _dummy, _keyer, _gen, _genRand, _genAbb, _genWords, _genCalls, _genMixed, _genPlayer,
               _echo, _echoRand, _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
               _koch, _kochSel, _kochLearn, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
               _kochGenMixed, _kochEcho, _kochEchoRand, _kochEchoAbb, _kochEchoWords, _kochEchoMixed,
-              _trx, _trxLora, _trxIcw, _decode, _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload, _wifi_update, _goToSleep };
+              _trx, _trxLora, _trxWifi, _trxIcw, _decode, _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload, _wifi_update, _goToSleep };
               
 
 const uint8_t menuNav [menuN] [5] = {                   // { level, left, right, up, down}
@@ -365,16 +373,17 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words
   {2,_kochEchoWords,_kochEchoRand,_kochEcho,0},         // 28 koch echo mixed
   {0,_koch,_decode,_dummy,_trxLora},                    // 29 transceiver
-  {1,_trxIcw,_trxIcw,_trx,0},                           // 30 lora
-  {1,_trxLora,_trxLora,_trx,0},                         // 31 icw
-  {0,_trx,_wifi,_dummy,0},                              // 32 decoder
-  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 33 WiFi
-  {1,_wifi_update,_wifi_config,_wifi,0},                // 34 Disp Mac
-  {1,_wifi_mac,_wifi_check,_wifi,0},                    // 35 Config Wifi
-  {1,_wifi_config,_wifi_upload,_wifi,0},                // 36 Check WiFi
-  {1,_wifi_check,_wifi_update,_wifi,0},                 // 37 Upload File
-  {1,_wifi_upload,_wifi_mac,_wifi,0},                   // 38 Update Firmware 
-  {0,_wifi,_keyer,_dummy,0}                             // 39 goto sleep
+  {1,_trxIcw,_trxWifi,_trx,0},                          // 30 lora
+  {1,_trxLora,_trxIcw,_trx,0},                          // 31 wifi
+  {1,_trxWifi,_trxLora,_trx,0},                         // 32 icw
+  {0,_trx,_wifi,_dummy,0},                              // 33 decoder
+  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 34 WiFi
+  {1,_wifi_update,_wifi_config,_wifi,0},                // 35 Disp Mac
+  {1,_wifi_mac,_wifi_check,_wifi,0},                    // 36 Config Wifi
+  {1,_wifi_config,_wifi_upload,_wifi,0},                // 37 Check WiFi
+  {1,_wifi_check,_wifi_update,_wifi,0},                 // 38 Upload File
+  {1,_wifi_upload,_wifi_mac,_wifi,0},                   // 39 Update Firmware
+  {0,_wifi,_keyer,_dummy,0}                             // 40 goto sleep
 };
 
 boolean quickStart;                                     // should we execute menu item immediately?
@@ -438,6 +447,8 @@ const String prefOption[] = { "Encoder Click", "Tone Pitch Hz", "External Pol.",
                                     posQuickStart, posSerialOut };
  prefPos loraTrxOptions[] =    {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posTimeOut, posQuickStart, posLoraSyncW, posSerialOut };
+ prefPos wifiTrxOptions[] =    {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
+                                    posEchoToneShift, posTimeOut, posQuickStart, posSerialOut };
  prefPos extTrxOptions[] =     {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posGoertzelBandwidth, posTimeOut, posQuickStart, posSerialOut };
  prefPos decoderOptions[] =    {posClicks, posPitch, posGoertzelBandwidth, posTimeOut, posQuickStart, posSerialOut };
@@ -533,6 +544,7 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t p_menuPtr = 1;                      // current position of menu
   String  p_wlanSSID = "";                    // SSID for connecting to the Internet
   String  p_wlanPassword = "";                // password for connecting to WiFi router
+  String  p_wlanTRXPeer = "";                 // peer Morserino for WiFI TRX
   uint32_t p_fileWordPointer = 0;             // remember how far we have read the file in player mode / reset when loading new file         
   uint8_t p_promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
   uint8_t p_tLeft = 20;                       // threshold for left paddle
@@ -814,15 +826,15 @@ boolean keyTx = false;             // when state is set by manual key or touch p
 
 /////////////////// Variables for LoRa: Buffer management etc
 
-char loraTxBuffer[32];
+char cwTxBuffer[128];
 
-uint8_t loRaRxBuffer[256];
-uint16_t byteBuFree = 256;
+uint8_t cwRxBuffer[1024];
+uint16_t byteBuFree = sizeof(cwRxBuffer);
 uint8_t nextBuWrite = 0;
 uint8_t nextBuRead = 0;
 
-uint8_t loRaSerial;                                     /// a 6 bit serial number, start with some random value, will be incremented witch each sent LoRa packet
-                                                        /// the first two bits in teh byte will be the protocol id (CWLORAVERSION)
+uint8_t cwTxSerial;                                     /// a 6 bit serial number, start with some random value, will be incremented witch each sent LoRa/WiFi packet
+                                                        /// the first two bits in teh byte will be the protocol id (CW_TRX_PROTO_VERSION)
 
 
 ////////////////// Variables for file handling and WiFi functions
@@ -830,6 +842,9 @@ uint8_t loRaSerial;                                     /// a 6 bit serial numbe
 File file;
 
 WebServer server(80);    // Create a webserver object that listens for HTTP request on port 80
+
+WiFiUDP udp;             // Create udp socket for wifi tx
+AsyncUDP audp;           // Create async udp socket for wifi rx
 
 File fsUploadFile;              // a File object to temporarily store the received file
 
@@ -851,7 +866,9 @@ const char* myForm = "<html><head><meta charset='utf-8'><title>Get AP Info</titl
                 "<form action='/set' method='get'><div>"
                 "<label for='ssid'>SSID of WiFi network?</label>"
                 "<input name='ssid' id='ssid' ></div> <div>"
-                "<label for='pw'>WiFi Password?</label> <input name='pw' id='pw'>"
+                "<label for='pw'>WiFi Password?</label> <input name='pw' id='pw'></div> <div>"
+                "<label for='trxpeer'>WiFi TRX Peer IP?</label> <input name='trxpeer' id='trxpeer'>"
+                "</div><div>(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
                 "</div><div><button>Submit</button></div></form></body></html>";
 
 
@@ -1242,9 +1259,9 @@ void setup()
   LoRa.setSyncWord(p_loraSyncW);                      /// the default would be 0x34
   
   // register the receive callback
-  LoRa.onReceive(onReceive);
+  LoRa.onReceive(onLoraReceive);
   /// initialise the serial number
-  loRaSerial = random(64);
+  cwTxSerial = random(64);
 
   
   ///////////////////////// mount (or create) SPIFFS file system
@@ -1362,6 +1379,11 @@ void loop() {
                           }
                           break;
       case loraTrx:      if (doPaddleIambic(leftKey, rightKey)) {
+                               return;                                                        // we are busy keying and so need a very tight loop !
+                          }
+                          generateCW();
+                          break;
+      case wifiTrx:       if (doPaddleIambic(leftKey, rightKey)) {
                                return;                                                        // we are busy keying and so need a very tight loop !
                           }
                           generateCW();
@@ -1601,6 +1623,7 @@ void menu_() {
      //DEBUG("THE MENU");
     ///updateTimings(); // now done after reading preferences
     LoRa.idle();
+    WiFi.mode( WIFI_MODE_NULL );    // switch off WiFi
     //keyerState = IDLE_STATE;
     active = false;
     //startFirst = true;
@@ -1895,6 +1918,24 @@ boolean menuExec() {                                          // return true if 
                 LoRa.receive();
                 return true;
                 break;
+      case  _trxWifi: // Wifi Transceiver
+                currentOptions = wifiTrxOptions;                            // list of available options in wifi trx mode
+                currentOptionSize = SizeOfArray(wifiTrxOptions);
+                morseState = wifiTrx;
+                display.clear();
+                printOnScroll(1, REGULAR, 0, "Start Wifi Trx" );
+                wifiConnect();
+                audp.listen(7373); // listen on port 7373
+                audp.onPacket(onWifiReceive);
+                delay(600);
+                display.clear();
+                displayTopLine();
+                clearBuffer();      // clear the buffer
+                clearPaddleLatches();
+                keyTx = false;
+                clearText = "";
+                return true;
+                break;
       case  _trxIcw: /// icw/ext TRX
                 currentOptions = extTrxOptions;                            // list of available options in ext trx mode
                 currentOptionSize = SizeOfArray(extTrxOptions);
@@ -1962,7 +2003,7 @@ boolean menuExec() {                                          // return true if 
                     printOnScroll(0, REGULAR, 0, p_wlanSSID);
                     printOnScroll(1, REGULAR, 0, WiFi.localIP().toString());
                 }
-                WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi                      
+                WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi
                 delay(1000);
                 printOnScroll(2, REGULAR, 0, "RED: return" );
                 while (true) {
@@ -2007,8 +2048,12 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
          // display the interword space, if necessary
          if (millis() > interWordTimer) {
              if (morseState == loraTrx)    {                    // when in Trx mode
-                 cwForLora(3);
+                 cwForTx(3);
                  sendWithLora();                        // finalise the string and send it to LoRA
+             }
+             else if (morseState == wifiTrx)    {                    // when in Trx mode
+                 cwForTx(3);
+                 sendWithWifi();                        // finalise the string and send it to WiFi
              }
              displayMorse(false);
              //printToScroll(REGULAR, " ");                       // output a blank
@@ -2091,7 +2136,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
     case KEY_START:
           // Assert key down, start timing, state shared for dit or dah
           pitch = notes[p_sidetoneFreq];
-          if ((morseState == echoTrainer || morseState == loraTrx) && p_echoToneShift != 0) {
+          if ((morseState == echoTrainer || morseState == loraTrx || morseState == wifiTrx) && p_echoToneShift != 0) {
              pitch = (p_echoToneShift == 1 ? pitch * 18 / 17 : pitch * 17 / 18);        /// one half tone higher or lower, as set in parameters in echo trainer mode
           }
            //pwmTone(pitch, p_sidetoneVolume, true);
@@ -2168,8 +2213,8 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                           case 4:  
                                    keyerState = IDLE_STATE;               // we are at the end of the character and go back into IDLE STATE
                                    displayMorse(false);                        // display the decoded morse character(s)
-                                   if (morseState == loraTrx)
-                                      cwForLora(0);
+                                   if (morseState == loraTrx || morseState == wifiTrx)
+                                      cwForTx(0);
                                    
                                    ++charCounter;                         // count this character
                                    // if we have seen 12 chars since changing speed, we write the config to preferences (speed and left & right thresholds)
@@ -2182,7 +2227,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    }
                                    if (p_ACSlength > 0)
                                         acsTimer = millis() + p_ACSlength * ditLength; // prime the ACS timer
-                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == morseTrx)
+                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx)
                                       interWordTimer = millis() + 5*ditLength;
                                    else
                                        interWordTimer = millis() + interWordSpace;  // prime the timer to detect a space between characters
@@ -2269,15 +2314,15 @@ void clearPaddleLatches ()
 void setDITstate() {
   keyerState = DIT;
   treeptr = CWtree[treeptr].dit;
-  if (morseState == loraTrx)
-      cwForLora(1);                         // build compressed string for LoRA
+  if (morseState == loraTrx || morseState == wifiTrx)
+      cwForTx(1);                         // build compressed string for LoRA
 }
 
 void setDAHstate() {
   keyerState = DAH;
   treeptr = CWtree[treeptr].dah;
-  if (morseState == loraTrx)
-      cwForLora(2);
+  if (morseState == loraTrx || morseState == wifiTrx)
+      cwForTx(2);
 }
 
 
@@ -2395,6 +2440,8 @@ void displayTopLine() {
   displayCWspeed();                                     // update display of CW speed
   if ((morseState == loraTrx ) || (morseState == morseGenerator  && p_loraTrainerMode == true))
       dispLoraLogo();
+  else if (morseState == wifiTrx)
+      dispWifiLogo();
 
   displayVolume();                                     // sidetone volume
   display.display();
@@ -2403,6 +2450,13 @@ void displayTopLine() {
 void dispLoraLogo() {     // display a small logo in the top right corner to indicate we operate with LoRa
   display.setColor(BLACK);
   display.drawXbm(121, 2, lora_width, lora_height, lora_bits);
+  display.setColor(WHITE);
+  display.display();
+}
+
+void dispWifiLogo() {     // display a small logo in the top right corner to indicate we operate with WiFi
+  display.setColor(BLACK);
+  display.drawXbm(121, 2, wifi_width, wifi_height, wifi_bits);
   display.setColor(WHITE);
   display.display();
 }
@@ -2691,7 +2745,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
             if (l==0)  {                                               // fetch a new word if we have an empty word
                 if (clearText.length() > 0) {                          // this should not be reached at all.... except when display word by word
                   //DEBUG("Text left: " + clearText);
-                  if (morseState == loraTrx || (morseState == morseGenerator && p_trainerDisplay == DISPLAY_BY_WORD) ||
+                  if (morseState == loraTrx || morseState == wifiTrx || (morseState == morseGenerator && p_trainerDisplay == DISPLAY_BY_WORD) ||
                         ( morseState == echoTrainer && p_echoDisplay != CODE_ONLY)) {
                       //printToScroll(BOLD,cleanUpProSigns(clearText));
                       printOnDisplay(BOLD,cleanUpProSigns(clearText));
@@ -2714,7 +2768,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                       c = CWword[0];                                  // retrieve next element from CWword;
                       CWword.remove(0,1); 
                       if (morseState == morseGenerator && p_loraTrainerMode == 1)
-                          cwForLora(0);                             // send end of character to lora
+                          cwForTx(0);                             // send end of character to lora
                       }
             }   /// at end of character
 
@@ -2723,12 +2777,12 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
             //// no keyOut()
             if (morseState == echoTrainer && p_echoDisplay == DISP_ONLY)
                 genTimer = millis() + 2;      // very short timing
-            else if (morseState != loraTrx)
+            else if (morseState != loraTrx && morseState != wifiTrx)
                 genTimer = millis() + (c == '1' ? ditLength : dahLength);           // start a dit or a dah, acording to the next element
             else 
                 genTimer = millis() + (c == '1' ? rxDitLength : rxDahLength);
             if (morseState == morseGenerator && p_loraTrainerMode == 1)             // send the element to LoRa
-                c == '1' ? cwForLora(1) : cwForLora(2) ; 
+                c == '1' ? cwForTx(1) : cwForTx(2) ; 
             /// if Koch learn character we show dit or dah
             if (generatorMode == KOCH_LEARN)
                 //printToScroll(REGULAR, c == '1' ? "."  : "-");
@@ -2738,9 +2792,9 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
             if (silentEcho || stopFlag)                                             // we finished maxSequence and so do start output (otherwise we get a short click)
               ;
             else  {
-                keyOut(true, (morseState != loraTrx), notes[p_sidetoneFreq], p_sidetoneVolume);
+                keyOut(true, (morseState != loraTrx && morseState != wifiTrx), notes[p_sidetoneFreq], p_sidetoneVolume);
             }
-            /* // replaced by the lines above, to also take care of maxSequence
+            /* // replaced by the lines above, to also take care of maxSequence and Wifi
             if ( ! (morseState == echoTrainer && p_echoDisplay == DISP_ONLY)) 
                    
                         keyOut(true, (morseState != loraTrx), notes[p_sidetoneFreq], p_sidetoneVolume);
@@ -2753,7 +2807,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                 return;
             //// otherwise we continue here; stop keying,  and determine the length of the following pause: inter Element, interCharacter or InterWord?
 
-           keyOut(false, (morseState != loraTrx), 0, 0);
+           keyOut(false, (morseState != loraTrx && morseState != wifiTrx), 0, 0);
             if (! CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode
  //             // display last character - consider echo mode!
                 if (morseState == morseGenerator) 
@@ -2783,14 +2837,14 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                     }
                 }
                 else { 
-                      genTimer = millis() + (morseState == loraTrx ? rxInterWordSpace : interWordSpace) ;              // we need a pause for interWordSpace
+                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : interWordSpace) ;              // we need a pause for interWordSpace
                       if (morseState == morseGenerator && p_loraTrainerMode == 1) {                                   // in generator mode and we want to send with LoRa
-                          cwForLora(0);
-                          cwForLora(3);                           // as we have just finished a word
-                          //DEBUG("cwForLora(3);");
+                          cwForTx(0);
+                          cwForTx(3);                           // as we have just finished a word
+                          //DEBUG("cwForTx(3);");
                           sendWithLora();                         // finalise the string and send it to LoRA
                           delay(interCharacterSpace+ditLength);             // we need a slightly longer pause otherwise the receiving end might fall too far behind...
-                          } 
+                      } 
                 }
              }
              else if ((c = CWword[0]) == '0') {                                                                        // we are at end of character
@@ -2800,10 +2854,10 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                 if (morseState == echoTrainer && p_echoDisplay == DISP_ONLY)
                     genTimer = millis() +1;
                 else            
-                    genTimer = millis() + (morseState == loraTrx ? rxInterCharacterSpace : interCharacterSpace);          // pause = intercharacter space
+                    genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterCharacterSpace : interCharacterSpace);          // pause = intercharacter space
              }
              else  {                                                                                                   // we are in the middle of a character
-                genTimer = millis() + (morseState == loraTrx ? rxDitLength : ditLength);                              // pause = interelement space
+                genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxDitLength : ditLength);                              // pause = interelement space
              }
              generatorState = KEY_UP;                               // next state = key up = pause
              break;         
@@ -2819,7 +2873,7 @@ void dispGeneratedChar() {
   static String charString;
   charString.reserve(10);
   
-  if (generatorMode == KOCH_LEARN || morseState == loraTrx || (morseState == morseGenerator && p_trainerDisplay == DISPLAY_BY_CHAR) ||
+  if (generatorMode == KOCH_LEARN || morseState == loraTrx || morseState == wifiTrx || (morseState == morseGenerator && p_trainerDisplay == DISPLAY_BY_CHAR) ||
                     ( morseState == echoTrainer && p_echoDisplay != CODE_ONLY ))
                     //&& echoTrainerState != SEND_WORD
                     //&& echoTrainerState != REPEAT_WORD)) 
@@ -2830,7 +2884,7 @@ void dispGeneratedChar() {
         if (generatorMode == KOCH_LEARN)
             clearBuffer();                      // clear the buffer first
         //printToScroll(morseState == loraTrx ? BOLD : REGULAR, cleanUpProSigns(charString));
-        printOnDisplay(morseState == loraTrx ? BOLD : REGULAR, cleanUpProSigns(charString));
+        printOnDisplay((morseState == loraTrx || morseState == wifiTrx) ? BOLD : REGULAR, cleanUpProSigns(charString));
         if (generatorMode == KOCH_LEARN)
             //printToScroll(REGULAR," ");                      // output a space
             printOnDisplay(REGULAR," ");                      // output a space
@@ -2851,12 +2905,12 @@ void fetchNewWord() {
 
 //DEBUG("startFirst: " + String((startFirst ? "true" : "false")));
 //DEBUG("firstTime: " + String((firstTime ? "true" : "false")));
-    if (morseState == loraTrx) {                                // we check the rxBuffer and see if we received something
+    if (morseState == loraTrx || morseState == wifiTrx) {       // we check the rxBuffer and see if we received something
        updateSMeter(0);                                         // at end of word we set S-meter to 0 until we receive something again
        //DEBUG("end of word - S0? ");
        startFirst = false;
        ////// from here: retrieve next CWword from buffer!
-        if (loRaBuReady()) {
+        if (cwBuReady()) {
             //printToScroll(BOLD, " ");
             printOnDisplay(BOLD, " ");
             uint8_t header = decodePacket(&rssi, &rxWpm, &CWword);
@@ -2884,7 +2938,7 @@ void fetchNewWord() {
        }
        else return;                                             // we did not receive anything
                
-    } // end if loraTrx
+    } // end if loraTrx or wifiTrx
     else {
 
     //if (morseState != echoTrainer)
@@ -3003,7 +3057,7 @@ void fetchNewWord() {
 
       CWword = generateCWword(clearText);
       echoTrainerWord = clearText;
-    } /// else (= not in loraTrx mode)
+    } /// else (= not in loraTrx or wifiTrx mode)
 } // end of fetchNewWord()
 
 
@@ -3899,7 +3953,7 @@ void changeSpeed( int t) {
 
 
 void keyTransmitter() {
-  if (p_keyTrainerMode == 0 || morseState == echoTrainer || morseState == loraTrx )
+  if (p_keyTrainerMode == 0 || morseState == echoTrainer || morseState == loraTrx || morseState == wifiTrx)
       return;                              // we never key Tx under these conditions
   if (p_keyTrainerMode == 1 && morseState == morseGenerator)
       return;                              // we key only in keyer mode; in all other case we key TX
@@ -4407,6 +4461,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 void shutMeDown() {
   display.sleep();                //OLED sleep
   LoRa.sleep();                   //LORA sleep
+  WiFi.mode( WIFI_MODE_NULL );    // switch off WiFi
   delay(50);
   #if BOARDVERSION == 3
   digitalWrite(Vext,HIGH);
@@ -4418,47 +4473,47 @@ void shutMeDown() {
 
 
 
-/// cwForLora packs element info (dit, dah, interelement space) into a String that can be sent via LoRA
+/// cwForTx packs element info (dit, dah, interelement space) into a String that can be sent via LoRA
 ///  element can be:
 ///  0: inter-element space
 ///  1: dit
 ///  2: dah
-///  3: end of word -: cwForLora returns a string that is ready for sending to the LoRa transceiver
+///  3: end of word -: cwForTx returns a string that is ready for sending to the LoRa transceiver
 
-//  char loraTxBuffer[32];
+//  char TxBuffer[128];
 
-void cwForLora (int element) {
-  //static String result;
-  //result.reserve(36);
-  //static char buf[32];
+void cwForTx (int element) {
   static int pairCounter = 0;
   uint8_t temp;
   uint8_t header;
 
-  if (pairCounter == 0) {   // we start a brand new word for LoRA - clear buffer and set speed first
-      for (int i=0; i<32; ++i)
-          loraTxBuffer[i] = (char) 0;
+  if (pairCounter == 0) {   // we start a brand new word for LoRA/Wifi - clear buffer and set speed first
+      for (int i=0; i<sizeof(cwTxBuffer); ++i) {
+          cwTxBuffer[i] = (char) 0;
+      }
           
       /// 1st byte: version + serial number
-      header = ++loRaSerial % 64;
-      //DEBUG("loRaSerial: " + String(loRaSerial));
-      header += CWLORAVERSION * 64;        //// shift VERSION left 6 bits and add to the serial number
-      loraTxBuffer[0] = header;
+      header = ++cwTxSerial % 64;
+      //DEBUG("cwTxSerial: " + String(cwTxSerial));
+      header += CW_TRX_PROTO_VERSION * 64;        //// shift VERSION left 6 bits and add to the serial number
+      cwTxBuffer[0] = header;
 
       temp = p_wpm * 4;                   /// shift left 2 bits
-      loraTxBuffer[1] |= temp;
+      cwTxBuffer[1] |= temp;
       pairCounter = 7;                    /// so far we have used 7 bit pairs: 4 in the first byte (protocol version+serial); 3 in the 2nd byte (wpm)
       //DEBUG(String(temp));
       //DEBUG(String(loraBuffer));
-      }
+  } else if (pairCounter > sizeof(cwTxBuffer)*4-1) {  // Prevent buffer overflow
+      return;
+  }
 
-  temp = element & B011;      /// take the two left bits
+  temp = element & B011;      /// take the two right bits
       //DEBUG("Temp before shift: " + String(temp));
   /// now store these two bits in the correct location in loraBuffer
 
   if (temp && (temp != 3)) {                 /// no need to do the operation with 0, nor with B11
       temp = temp << (2*(3-(pairCounter % 4)));
-      loraTxBuffer[pairCounter/4] |= temp;
+      cwTxBuffer[pairCounter/4] |= temp;
   }
 
   /// now increment, unless we got end of word
@@ -4470,7 +4525,7 @@ void cwForLora (int element) {
       --pairCounter; /// we are at end of word and step back to end of character
       if (pairCounter % 4 != 0)      {           // do nothing if we have a zero in the topmost two bits already, as this was end of character
           temp = temp << (2*(3-(pairCounter % 4)));
-          loraTxBuffer[pairCounter/4] |= temp;
+          cwTxBuffer[pairCounter/4] |= temp;
       }
       pairCounter = 0;
   }
@@ -4480,16 +4535,28 @@ void cwForLora (int element) {
 void sendWithLora() {           // hand this string over as payload to the LoRA transceiver
   // send packet
   LoRa.beginPacket();
-  LoRa.print(loraTxBuffer);
+  LoRa.print(cwTxBuffer);
   LoRa.endPacket();
+
   if (morseState == loraTrx)
       LoRa.receive();
 }
 
-void onReceive(int packetSize)
+void sendWithWifi() {           // hand this string over as payload to the WiFi transceiver
+  // send packet
+  const char* peerIp = p_wlanTRXPeer.c_str();
+  if (p_wlanTRXPeer.length() == 0) {
+	peerIp = "255.255.255.255"; // send to local broadcast IP if not set
+  }
+  udp.beginPacket(peerIp, 7373);
+  udp.print(cwTxBuffer);
+  udp.endPacket();
+}
+
+void onLoraReceive(int packetSize)
 {
   String result;
-  result.reserve(64);
+  result.reserve(sizeof(cwTxBuffer));
   result = "";
   
   // received a packet
@@ -4499,10 +4566,10 @@ void onReceive(int packetSize)
     result += (char)LoRa.read();
     //DEBUG(String((char)LoRa.read()));
   }
-  if (packetSize < 49)
+  if (packetSize < sizeof(cwTxBuffer)+1)
       storePacket(LoRa.packetRssi(), result);
   else
-      DEBUG("LoRa Packet longer than 48 bytes! Discarded...");
+      DEBUG("LoRa Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
   // print RSSI of packet
   //DEBUG("' with RSSI ");
   //DEBUG(LoRa.packetRssi());
@@ -4510,6 +4577,18 @@ void onReceive(int packetSize)
   //DEBUG(map(LoRa.packetRssi(), -160, -20, 0, 100));
 }
 
+void onWifiReceive(AsyncUDPPacket packet) {
+  String result;
+  result.reserve(sizeof(cwTxBuffer));
+  result = "";
+  for (int i = 0; i < packet.length(); i++) {
+    result += (char)packet.data()[i];
+  }
+  if (packet.length() < sizeof(cwTxBuffer)+1)
+      storePacket(WiFi.RSSI(), result);
+  else
+      DEBUG("UDP Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
+}
 
 
 String CWwordToClearText(String cwword) {             // decode the Morse code character in cwword to clear text
@@ -4557,12 +4636,12 @@ String encodeProSigns( String &input ) {
 }
 
 
-//// new buffer code: unpack when needed, to save buffer space. We just use 256 bytes of buffer, instead of 32k! 
+//// new buffer code: unpack when needed, to save buffer space. We just use 1024 bytes of buffer, instead of 32k!
 //// in addition to the received packet, we need to store the RSSI as 8 bit positive number 
 //// (it is always between -20 and -150, so an 8bit integer is fine as long as we store it without sign as an unsigned number)
-//// the buffer is a 256 byte ring buffer with two pointers:
+//// the buffer is a 1024 byte ring buffer with two pointers:
 ////   nextBuRead where the next packet starts for reading it out; is incremented by l to get the next buffer read position
-////      you can read a packet as long as the buffer is not empty, so we need to check bytesBuFree before we read! if it is 256, the buffer is empty!
+////      you can read a packet as long as the buffer is not empty, so we need to check bytesBuFree before we read! if it is 1024, the buffer is empty!
 ////      with a read, the bytesBuFree has to be increased by the number of bytes read
 ////   nextBuWrite where the next packet should be written; @write:
 ////       increment nextBuWrite by l to get new pointer; and decrement bytesBuFree by l to get new free space
@@ -4573,22 +4652,22 @@ String encodeProSigns( String &input ) {
 ////    r:  1 uint8_t rssi as a positive number
 ////    d:  (var. length) data packet as received by LoRa
 //// functions:
-////    int loRaBuWrite(int rssi, String packet): returns length of buffer if successful. otherwise 0
-////    uint8_t loRaBuRead(uint8_t* buIndex): returns length of packet, and index where to read in buffer by reference
-////    boolean loRaBuReady():  true if there is something in the buffer, false otherwise
+////    int cwBuWrite(int rssi, String packet): returns length of buffer if successful. otherwise 0
+////    uint8_t cwBuRead(uint8_t* buIndex): returns length of packet, and index where to read in buffer by reference
+////    boolean cwBuReady():  true if there is something in the buffer, false otherwise
 ////      example:
 ////        (somewhere else as global var: ourBuffer[256]
 ////        uint8_t myIndex;
 ////        uint8_t mylength;
 ////        foo() {
-////          myLength = loRaBuRead(&myIndex);
+////          myLength = cwBuRead(&myIndex);
 ////          if (myLength != 0) 
 ////            doSomethingWith(ourBuffer[myIndex], myLength);
 ////        }
 
 
-uint8_t loRaBuWrite(int rssi, String packet) {
-////   int loRaBuWrite(int rssi, String packet): returns length of buffer if successful. otherwise 0
+uint8_t cwBuWrite(int rssi, String packet) {
+////   int cwBuWrite(int rssi, String packet): returns length of buffer if successful. otherwise 0
 ////   nextBuWrite where the next packet should be written; @write:
 ////       increment nextBuWrite by l to get new pointer; and decrement bytesBuFree by l to get new free space
   uint8_t l, posRssi;
@@ -4597,32 +4676,32 @@ uint8_t loRaBuWrite(int rssi, String packet) {
   l = 2 + packet.length();
   if (byteBuFree < l)                               // buffer full - discard packet
       return 0;
-  loRaRxBuffer[nextBuWrite++] = l;
-  loRaRxBuffer[nextBuWrite++] = posRssi;
+  cwRxBuffer[nextBuWrite++] = l;
+  cwRxBuffer[nextBuWrite++] = posRssi;
   for (int i = 0; i < packet.length(); ++i) {       // do this for all chars in the packet
-    loRaRxBuffer [nextBuWrite++] = packet[i];       // at end nextBuWrite is alread where it should be
+    cwRxBuffer [nextBuWrite++] = packet[i];       // at end nextBuWrite is alread where it should be
   }
   byteBuFree -= l;
   //DEBUG(String(byteBuFree));
-  //DEBUG((String)loRaRxBuffer[0]);
+  //DEBUG((String)cwRxBuffer[0]);
   return l;
 }
 
-boolean loRaBuReady() {
-  if (byteBuFree == 256)
+boolean cwBuReady() {
+  if (byteBuFree == sizeof(cwRxBuffer))
     return (false);
   else
     return true;
 }
 
 
-uint8_t loRaBuRead(uint8_t* buIndex) {
-////    uint8_t loRaBuRead(uint8_t* buIndex): returns length of packet, and index where to read in buffer by reference
+uint8_t cwBuRead(uint8_t* buIndex) {
+////    uint8_t cwBuRead(uint8_t* buIndex): returns length of packet, and index where to read in buffer by reference
   uint8_t l;  
-  if (byteBuFree == 256)
+  if (byteBuFree == sizeof(cwRxBuffer))
     return 0;
   else {
-    l = loRaRxBuffer[nextBuRead++];
+    l = cwRxBuffer[nextBuRead++];
     *buIndex = nextBuRead;
     byteBuFree += l;
     --l;
@@ -4635,7 +4714,7 @@ uint8_t loRaBuRead(uint8_t* buIndex) {
 
 
 void storePacket(int rssi, String packet) {             // whenever we receive something, we just store it in our buffer
-  if (loRaBuWrite(rssi, packet) == 0)
+  if (cwBuWrite(rssi, packet) == 0)
     DEBUG("LoRa Buffer full");
 }
 
@@ -4651,10 +4730,10 @@ uint8_t decodePacket(int* rssi, int* wpm, String* cwword) {
   uint8_t l, c, header=0;
   uint8_t index = 0;
 
-  l = loRaBuRead(&index);           // where are we in  the buffer, and how long is the total packet inkl. rssi byte?
+  l = cwBuRead(&index);           // where are we in  the buffer, and how long is the total packet inkl. rssi byte?
 
   for (int i = 0; i < l; ++i) {     // decoding loop
-    c = loRaRxBuffer[index+i];
+    c = cwRxBuffer[index+i];
 
     switch (i) {
       case  0:  * rssi = (int) (-1 * c);    // the rssi byte
@@ -5077,10 +5156,12 @@ void startAP() {
     server.send(200, "text/html", "Wifi Info updated - now restarting Morserino-32...");
     p_wlanSSID = server.arg("ssid");
     p_wlanPassword = server.arg("pw");
+    p_wlanTRXPeer = server.arg("trxpeer");
     //DEBUG("SSID: " + String(p_wlanSSID) + " Password: " + String(p_wlanPassword));
     pref.begin("morserino", false);             // open the namespace as read/write
     pref.putString("wlanSSID", p_wlanSSID);
     pref.putString("wlanPassword", p_wlanPassword);
+    pref.putString("wlanTRXPeer", p_wlanTRXPeer);
     pref.end();
     
     ESP.restart();
@@ -5539,6 +5620,7 @@ void readPreferences(String repository) {
 
     p_wlanSSID = pref.getString("wlanSSID");
     p_wlanPassword = pref.getString("wlanPassword");
+    p_wlanTRXPeer = pref.getString("wlanTRXPeer");
     p_lcwoKochSeq = pref.getBool("lcwoKochSeq");
     p_quickStart = pref.getBool("quickStart");
 
