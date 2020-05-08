@@ -888,10 +888,17 @@ https://github.com/joewittmer/Morserino-32-Firmware-Updater/tree/master/release
 
 Unzip that file. You will find a program "update_m32.exe" - copy that to a folder of your choice (I usually prefer the folder Downloads). Now get the binary Morserino file for the version you want to install from the Morserino GitHub, ideally into teh same directory.
 
-Now open a command box on your computer (in the search field in the lower left of the screen start typing "cmd" and it will come up for selection). Enter the following command line:
+Now open a command box on your computer (in the search field in the lower left of the screen start typing "cmd" and it will come up for selection). First "cd" (change directory) to the directory where the utility and the binary file are located; e.g., if you used the Downloads directory:
+
+`cd Downloads`
+
+Then enter the following command line:
 
 `update_m32 <COMx> 921600 <binaryfilename>`
 
 replacing <COMx> with your COM port name, and <binaryfilename> with the correct name of the Morserino binary file.
+In my case that was:
+
+`update_m32 COM3 921600 morse_3_v3.0.ino.wifi_lora_32_V2.bin`
 
 After a short while your Morserino should restart, showing the updated version number.
