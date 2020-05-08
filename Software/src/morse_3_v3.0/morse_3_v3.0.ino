@@ -34,7 +34,7 @@
 #include "english_words.h"    // common English words
 #include "MorseOutput.h"      // display and sound functions
 #include "MorsePreferences.h" // preferences and persistent storage, snapshots
-#include "morseMenu.h"        // main menu
+#include "MorseMenu.h"        // main menu
 #include "MorseWiFi.h"        // WiFi functions
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
