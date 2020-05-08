@@ -22,8 +22,7 @@
 // File file;
 
 WebServer MorseWiFi::server(80);    // Create a webserver object that listens for HTTP request on port 80
-WiFiUDP MorseWiFi::udp;             // Create udp socket for wifi tx
-AsyncUDP MorseWiFi::audp;           // Create async udp socket for wifi rx
+AsyncUDP MorseWiFi::audp;           // Create async udp socket for wifi trx
 
 File MorseWiFi::fsUploadFile;              // a File object to temporarily store the received file
 

@@ -12,7 +12,6 @@ namespace MorseWiFi
     ////////////////// Variables for file handling and WiFi functions
 
     extern WebServer server;    
-    extern WiFiUDP udp;             
     extern AsyncUDP audp;         
     
     extern File fsUploadFile;              // a File object to temporarily store the received file

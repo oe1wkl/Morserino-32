@@ -1870,9 +1870,7 @@ void sendWithWifi() {           // hand this string over as payload to the WiFi 
       WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
   }
   //DEBUG("Send with WiFi! " + String(cwTxBuffer));
-  MorseWiFi::udp.beginPacket(peerIP, MORSERINOPORT);
-  MorseWiFi::udp.print(cwTxBuffer);
-  MorseWiFi::udp.endPacket();
+  MorseWiFi::audp.writeTo((uint8_t*)cwTxBuffer, strlen(cwTxBuffer), peerIP, MORSERINOPORT);
 }
 
 void onLoraReceive(int packetSize){
