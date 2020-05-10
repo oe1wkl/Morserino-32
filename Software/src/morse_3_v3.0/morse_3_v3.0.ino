@@ -480,7 +480,12 @@ void displayStartUp() {
   MorseOutput::clearDisplay();
   s += String(MorsePreferences::loraQRG / 10000);
   MorseOutput::printOnStatusLine( true, 0, s);
-  s = "Ver. " + String(VERSION_MAJOR) + "." + String(VERSION_MINOR) + (BETA ? " beta" : "");
+  //s = "Ver. " + String(VERSION_MAJOR) + "." + String(VERSION_MINOR) + (BETA ? " beta" : "");
+  s = "Ver. " + String(VERSION_MAJOR) + "." + String(VERSION_MINOR) 
+  if (VERSION_PATCH != 0)
+    s = s + "." + String(VERSION_PATCH);
+  if (BETA)
+    s += " beta";
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
   MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2020");
 
@@ -1092,7 +1097,7 @@ void initSensors() {
 
 
 String getRandomWord( int maxLength) {        //// give me a random English word, max maxLength chars long (1-5) - 0 returns any length
-  if (maxLength > 5)
+  if (maxLength > 6)
     maxLength = 0;
     if (kochActive)
         return koch.getRandomWord(); 
@@ -1101,7 +1106,7 @@ String getRandomWord( int maxLength) {        //// give me a random English word
 }
 
 String getRandomAbbrev( int maxLength) {        //// give me a random CW abbreviation , max maxLength chars long (1-5) - 0 returns any length
-  if (maxLength > 5)
+  if (maxLength > 6)
     maxLength = 0;
     if (kochActive)
         return koch.getRandomAbbrev();
