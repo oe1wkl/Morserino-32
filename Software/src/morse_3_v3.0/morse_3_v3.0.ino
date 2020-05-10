@@ -34,7 +34,7 @@
 #include "english_words.h"    // common English words
 #include "MorseOutput.h"      // display and sound functions
 #include "MorsePreferences.h" // preferences and persistent storage, snapshots
-#include "morseMenu.h"        // main menu
+#include "MorseMenu.h"        // main menu
 #include "MorseWiFi.h"        // WiFi functions
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
@@ -1866,14 +1866,16 @@ void sendWithLora() {           // hand this string over as payload to the LoRA 
 
 void sendWithWifi() {           // hand this string over as payload to the WiFi transceiver
   // send packet
-  const char* peerIp = MorsePreferences::wlanTRXPeer.c_str();
+  const char* peerHost = MorsePreferences::wlanTRXPeer.c_str();
+  IPAddress peerIP;
   if (MorsePreferences::wlanTRXPeer.length() == 0) {
-  peerIp = "255.255.255.255"; // send to local broadcast IP if not set
+      peerHost = "255.255.255.255"; // send to local broadcast IP if not set
+  }
+  if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
+      WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
   }
   //DEBUG("Send with WiFi! " + String(cwTxBuffer));
-  MorseWiFi::udp.beginPacket(peerIp, MORSERINOPORT);
-  MorseWiFi::udp.print(cwTxBuffer);
-  MorseWiFi::udp.endPacket();
+  MorseWiFi::audp.writeTo((uint8_t*)cwTxBuffer, strlen(cwTxBuffer), peerIP, MORSERINOPORT);
 }
 
 void onLoraReceive(int packetSize){

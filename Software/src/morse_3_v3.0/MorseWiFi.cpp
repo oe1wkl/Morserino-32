@@ -22,8 +22,7 @@
 // File file;
 
 WebServer MorseWiFi::server(80);    // Create a webserver object that listens for HTTP request on port 80
-WiFiUDP MorseWiFi::udp;             // Create udp socket for wifi tx
-AsyncUDP MorseWiFi::audp;           // Create async udp socket for wifi rx
+AsyncUDP MorseWiFi::audp;           // Create async udp socket for wifi trx
 
 File MorseWiFi::fsUploadFile;              // a File object to temporarily store the received file
 
@@ -44,7 +43,7 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
                 "<input name='ssid' id='ssid' value='SSIDV'></div> <div>"
                 "<label for='pw'>WiFi Password?</label>"
                 "<input name='pw' id='pw'></div> <div>"
-                "<label for='trxpeer'>WiFi TRX Peer IP?</label>" 
+                "<label for='trxpeer'>WiFi TRX Peer IP/Host?</label>" 
                 "<input name='trxpeer' id='trxpeer' value='PEERIPV'>"
                 "</div><div>(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
                 "</div><div><button>Submit</button></div></form></body></html>";
