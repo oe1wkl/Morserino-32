@@ -272,6 +272,11 @@ uint8_t nextBuRead = 0;
 uint8_t cwTxSerial;                                     /// a 6 bit serial number, start with some random value, will be incremented witch each sent LoRa/WiFi packet
                                                         /// the first two bits in the byte will be the protocol id (CW_TRX_PROTO_VERSION)
 
+
+///////////// Variable for WiFiTrx
+
+IPAddress peerIP;
+
 ////////////////////////////////////////////////////////////////////
 // encoder subroutines
 /// interrupt service routine - needs to be positioned BEFORE all other functions, including setup() and loop()
@@ -441,7 +446,9 @@ void setup()
   LoRa.onReceive(onLoraReceive);
   /// initialise the serial number
   cwTxSerial = random(64);
-  
+
+
+
   ///////////////////////// mount (or create) SPIFFS file system
     #define FORMAT_SPIFFS_IF_FAILED true
 
@@ -481,7 +488,7 @@ void displayStartUp() {
   s += String(MorsePreferences::loraQRG / 10000);
   MorseOutput::printOnStatusLine( true, 0, s);
   //s = "Ver. " + String(VERSION_MAJOR) + "." + String(VERSION_MINOR) + (BETA ? " beta" : "");
-  s = "Ver. " + String(VERSION_MAJOR) + "." + String(VERSION_MINOR) 
+  s = "V." + String(VERSION_MAJOR) + "." + String(VERSION_MINOR) ;
   if (VERSION_PATCH != 0)
     s = s + "." + String(VERSION_PATCH);
   if (BETA)
@@ -1866,16 +1873,19 @@ void sendWithLora() {           // hand this string over as payload to the LoRA 
 
 void sendWithWifi() {           // hand this string over as payload to the WiFi transceiver
   // send packet
-  const char* peerHost = MorsePreferences::wlanTRXPeer.c_str();
-  IPAddress peerIP;
-  if (MorsePreferences::wlanTRXPeer.length() == 0) {
-      peerHost = "255.255.255.255"; // send to local broadcast IP if not set
-  }
-  if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
-      WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
-  }
+//      const char* peerHost = MorsePreferences::wlanTRXPeer.c_str();
+//      IPAddress peerIP;
+//      if (MorsePreferences::wlanTRXPeer.length() == 0) {
+//          peerHost = "255.255.255.255"; // send to local broadcast IP if not set
+//      }
+//      if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
+//          WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
+//      }
   //DEBUG("Send with WiFi! " + String(cwTxBuffer));
   MorseWiFi::audp.writeTo((uint8_t*)cwTxBuffer, strlen(cwTxBuffer), peerIP, MORSERINOPORT);
+  //MorseWiFi::udp.beginPacket(peerIP, MORSERINOPORT);
+  //MorseWiFi::udp.print(cwTxBuffer);
+  //MorseWiFi::udp.endPacket();
 }
 
 void onLoraReceive(int packetSize){

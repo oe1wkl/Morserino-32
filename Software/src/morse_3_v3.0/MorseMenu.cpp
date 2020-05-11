@@ -243,8 +243,10 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
 boolean MorseMenu::menuExec() {                                          // return true if we should  leave menu after execution, true if we should stay in menu
 
   uint32_t wcount = 0;
-  //uint8_t old;
-  //int charSetLength = MorsePreferences::morserinoKochChars.length();
+  String peer;
+  const char* peerHost;
+  String s;
+
   kochActive = false;
   keyerState = IDLE_STATE;
   
@@ -370,8 +372,26 @@ boolean MorseMenu::menuExec() {                                          // retu
       case  _trxWifi: // Wifi Transceiver
                 MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions, MorsePreferences::wifiTrxOptionsSize);
                 morseState = wifiTrx;
-                showStartDisplay("", "Start Wifi Trx", "", 500);
+                MorseOutput::clearDisplay();
+                MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
                 MorseWiFi::wifiConnect();
+              
+                if (MorsePreferences::wlanTRXPeer.length() == 0) 
+                    peer = "255.255.255.255";     // send to local broadcast IP if not set
+                else
+                    peer = MorsePreferences::wlanTRXPeer;
+                peerHost = peer.c_str();
+                if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
+                  //DEBUG("hostname: " + String(peerHost));
+                    int err = WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
+                  //DEBUG("errcode: " + String(err));
+                    if (err != 1)                       // if that fails too, use broadcast
+                      peerIP.fromString("255.255.255.255");
+                }
+                //DEBUG("Peer IP: " + peerIP.toString());
+                s = peerIP.toString();
+                showStartDisplay("", "Start Wifi Trx", s  == "255.255.255.255" ?"IP Broadcast" : s, 1500);
+
                 MorseWiFi::audp.listen(MORSERINOPORT); // listen on port 7373
                 MorseWiFi::audp.onPacket(onWifiReceive);
                 clearPaddleLatches();

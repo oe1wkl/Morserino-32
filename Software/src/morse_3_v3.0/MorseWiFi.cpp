@@ -22,7 +22,8 @@
 // File file;
 
 WebServer MorseWiFi::server(80);    // Create a webserver object that listens for HTTP request on port 80
-AsyncUDP MorseWiFi::audp;           // Create async udp socket for wifi trx
+//WiFiUDP   MorseWiFi::udp;           // Create udp socket for wifi tx
+AsyncUDP MorseWiFi::audp;           // Create async udp socket for wifi rx
 
 File MorseWiFi::fsUploadFile;              // a File object to temporarily store the received file
 
@@ -234,8 +235,10 @@ void MorseWiFi::menuExec(uint8_t command) {
                   MorseOutput::printOnScroll(2, REGULAR, 0, "RED: return" );
                   while (true) {
                         checkShutDown(false);  // possibly time-out: go to sleep
-                        if (digitalRead(volButtonPin) == LOW)
+                        if (digitalRead(volButtonPin) == LOW) {
+                          WiFi.disconnect(true,false);
                           return;
+                        }
                   }
                   break;
         case _wifi_upload:
@@ -356,8 +359,8 @@ boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Wait for connection
   long unsigned int wait = millis();
   while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    if ((millis() - wait) > 20000)
+    delay(250);
+    if ((millis() - wait) > 10000)
       return internal::errorConnect(String("No WiFi:"));
   }
   //DEBUG("Connected to " + String(p_wlanSSID));
