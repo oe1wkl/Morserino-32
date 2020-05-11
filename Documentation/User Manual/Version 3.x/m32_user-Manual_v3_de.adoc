@@ -791,7 +791,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem St
 | STop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**
 | Serial Output | Damit wird eingestellt, ob am USB Anschluss die generierten Zeichen des Keyers bzw. die dekodierten Zeichen des Decoders ausgegeben werden sollen. Bei der Einstellung "ERRORS only" werden nur gewisse Fehlermeldungen dort ausgegeben (diese allerdings nur wenn keine der anderen Optionen gewählt wurde).
 
-Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. | **Keyer** / Decoder / Keyer+Decoder  / Everything / ERRORS only
+Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. Siehe auch <<appendix5>>. | **Keyer** / Decoder / Keyer+Decoder  / Everything / ERRORS only
 |===
 
 == Anhänge
@@ -900,6 +900,21 @@ Ersetze  <COMx> durch den korrekten COM-Port-Namen und <binaryfilename> durch de
 
 `update_m32 COM3 921600 morse_3_v3.0.ino.wifi_lora_32_V2.bin`
 
-
-
 Nach kurzer Zeit sollte der Morserino-32 neu starten und die aktualisierte Versionsnummer anzeigen.
+
+
+=== Anhang 5: Verwenden des seriellen Ausgangs des Morserino-32 [[appendix5]]
+
+Der Morserino-32 kann Daten über die serielle USB-Schnittstelle ausgeben. Hiermit kann man beispielsweise die Zeichen anzeigen, die auf dem Display gezeigt werden, auch in einem Terminalfenster eines Computers anzeigen. Auf diese Weise kann man die Morserino-Ausgabe mit einem großen Bildschirm oder einem Projektor sichtbar machen. Dies kann für Ausstellungen oder auch bei Schulungen nützlich sein.
+
+Man muss eine Baudrate von 115200 für das Terminal einstellen.
+
+Man kann diese Funktion auch in Verbindung mit Computersoftware verwenden, die speziell für den Morserino-32 entwickelt wurde, um dessen Trainingsfunktionen zu verbessern.
+
+Derzeit sind zwei Softwareprodukte für diesen Zweck verfügbar:
+
+* CW Trainer für Morserino von Enzo, IW7DMH (siehe https://iw7dmh.jimdofree.com/other-projects/cw-trainer-for-morserino-32/) und
+
+* Morserino Phrases Trainer von Tommy, OZ1THC (siehe https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer).
+
+Siehe auch die Hinweise zum Parameter "Serial Output" im Kapitel <<parameters>>.

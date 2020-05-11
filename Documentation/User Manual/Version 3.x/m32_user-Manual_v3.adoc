@@ -797,7 +797,7 @@ Bold values are standard or recommended ones. When called from the start menu, a
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically. | ON / **OFF**
 | Serial Output | Here you control, if generated characters from the Keyer and/or decoded characters from the Decoder should be output on the USB connector. With the setting "ERRORS only" only certain debugging messages will be output (these only when no other option has been selected).
 
-The option "Everything" displays both keyed and decoded characters, and also all output generated in CW Generator or Echo Trainer. | **Keyer** / Decoder / Keyer+Decoder / Everything / ERRORS only
+The option "Everything" displays both keyed and decoded characters, and also all output generated in CW Generator or Echo Trainer.  See also <<appendix5>>.| **Keyer** / Decoder / Keyer+Decoder / Everything / ERRORS only
 |===
 
 == Appendices
@@ -888,7 +888,7 @@ TIP: Make sure you have a cable that is a "proper" USB cable, not just a cable f
 Now download the update utility from Joe's GitHub repository:
 https://github.com/joewittmer/Morserino-32-Firmware-Updater/tree/master/release
 
-Unzip that file. You will find a program "update_m32.exe" - copy that to a folder of your choice (I usually prefer the folder Downloads). Now get the binary Morserino file for the version you want to install from the Morserino GitHub, ideally into teh same directory.
+Unzip that file. You will find a program "update_m32.exe" - copy that to a folder of your choice (I usually prefer the folder Downloads). Now get the binary Morserino file for the version you want to install from the Morserino GitHub, ideally into the same directory.
 
 Now open a command box on your computer (in the search field in the lower left of the screen start typing "cmd" and it will come up for selection). First "cd" (change directory) to the directory where the utility and the binary file are located; e.g., if you used the Downloads directory:
 
@@ -904,3 +904,17 @@ In my case that was:
 `update_m32 COM3 921600 morse_3_v3.0.ino.wifi_lora_32_V2.bin`
 
 After a short while your Morserino should restart, showing the updated version number.
+
+=== Appendix 5: Using the Serial Output of the Morserino-32 [[appendix5]]
+
+The Morserino-32 is able to output data on the serial USB interface. You can use this to display the characters that are shown on the display in a terminal window of a computer, for example. In this way you can show the Morserino output on a big screen or a projector; this might be useful for exhibitions or for classroom use.
+
+You have to select a Baud rate of 115200 for the terminal.
+
+You can also use this in conjunction with computer software that has been written especially for the Morserino-32, to enhance its training capabilities. Currently there are two software products available for this purpose:
+
+* CW Trainer for Morserino by Enzo, IW7DMH (see https://iw7dmh.jimdofree.com/other-projects/cw-trainer-for-morserino-32/), and
+
+* Morserino Phrases Trainer by Tommy, OZ1THC (see https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer).
+
+See also the description of the Parameter "Serial Output" in section <<parameters>>.
