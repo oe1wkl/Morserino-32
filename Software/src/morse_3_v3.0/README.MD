@@ -16,6 +16,18 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V3.0.1 (Bug fix release)
+
+#### Bug fixes:
+* After doing a "Check WiFi" a subsequent File Upload or Firmware Update showed IP address "0.0.0.0" and failed. Fixed.
+* If you selected a maximum word length or abbreviation length of 6 for CW Generator modes, it actually responded as if the length was set to Unlimited. This bug has been around for a long time, has only been detected recently. Fixed.
+
+#### Feature Changes:
+* Wifi Trx uses now port 7373 also for outgoing packets. This should make crossing NAT firewall a bit easier in some cases.
+* You can now also set a DNS host name instead of an IP address for your WiFi Trx peer. Unresolvable host names, as well as illegal IP addresses, are replaced by the broadcast address.
+* When starting Wifi Trx, you will see the actual peer IP address (or "IP Broadcast") on the display for a moment.
+
+
 ### Changes V3.0
 
 #### General:
