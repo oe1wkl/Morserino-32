@@ -15,6 +15,7 @@ extern boolean quickStart;
 extern unsigned long ditAvg, dahAvg;
 extern String clearText;
 extern File file;
+extern IPAddress peerIP;
 extern morserinoMode morseState;
 extern encoderMode encoderState;
 extern DECODER_STATES decoderState;
