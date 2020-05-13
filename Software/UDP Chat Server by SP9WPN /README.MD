@@ -1,6 +1,6 @@
-# UDP Chat Server by Wojtek, SP9WPN
+# Morserino Chat Server by Wojtek, SP9WPN
 
-Wojtek has created a Python script that you can put on an Internet facing server. up to ten Morserinos can connect to it through WiFi Trx, and so can have Morse Code conversations across the Internet.
+Wojtek has created a Python script that you can put on an Internet facing server. Up to ten Morserinos can connect to it through WiFi Trx, and so can have Morse Code conversations across the Internet.
 
 From Wojtek's description:
 
