@@ -84,6 +84,6 @@ As an ASCII string this would read as:
 ```
 [A¤a`Ep
 ```
-We see that the encoding is quite efficient - for a word of 5  characters we need 7 bytes in this example, including the speed information and the packet header overhead (and the fact that we give away four bits at teh end of the word).
+We see that the encoding is quite efficient - for a word of 5  characters we need 7 bytes in this example, including the speed information and the packet header overhead (and the fact that we give away four bits at the end of the word).
 
 Obviously, as Morse code uses variable character lengths, this cannot be  a rule that is always valid; numbers (always 5 elements long for each figure) need more space than common words (because the most frequent characters, at least in English, use an encoding that is only 1, 2 or 3 elements long).
