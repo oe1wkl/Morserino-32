@@ -23,7 +23,7 @@ This document describes version 1 of a protocol that has the following design go
 * As a compromise between overhead and latency each word (which for our purpose is defined as a succession of characters followed by a pause that is longer than the pause between individual characters) is being transmitted as a single data packet.
 
 * In order to encode Morse faithfully, we recognize that Morse code uses a total of four (4) different information entities or "states":
-  * a short element (usually called a dot or a "dit") followed by a short pause, of the same length as the "dit",
+  * a short element (usually called a dot or a "dit") followed by a short pause, of the same length as the "dit" (a "dit" is called a "di" when it is not the last element of a character),
   * a long element (usually called a dash or a "dah") also followed by a short pause,
   * a longer pause (in total with the length of the preceding pause it has the length of a "dah") that signifies the end of character (EOC),
   * and even longer pause (which adds another 4 "dit"-lengths to the EOC  pause, giving a total of 7 dit lengths, which signals the end of a word (EOW).
