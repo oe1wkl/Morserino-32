@@ -38,7 +38,7 @@ This document describes version 1 of a protocol that has the following design go
 
   Note 1: At the end of a word, we immediately use EOW, and do not encode EOC first.
 
-  Note 2: To encode EOW seems not to be necessary, as we send each word as its separate packet, and so this could be seen as redundant. But we include it nevertheless: while our encoding could end a word at any 2-byte boundary but data packets need to have the length of an integer number of 8-bit bytes, we need a method to indicate the end of the word, unless it coincides with the end of a byte. If it does not, it might have used up 2, 4 or 6 bits of a byte already, and we use 11b to encode EOW, and disregard the remaining 4 or 2 bits.
+  Note 2: To encode EOW seems not to be necessary, as we send each word as its separate packet, and so this could be seen as redundant. But we include it nevertheless: while our encoding could end a word at any 2-bit boundary but data packets need to have the length of an integer number of 8-bit bytes, we need a method to indicate the end of the word, unless it coincides with the end of a byte. If it does not, it might have used up 2, 4 or 6 bits of a byte already, and we use 11b to encode EOW, and disregard the remaining 4 or 2 bits.
 
 * We encode the speed at origin as an integer number between 5 and 60, using words per minute as the measure here. Obviously we need 6 bits to encode this range of numbers.
 
