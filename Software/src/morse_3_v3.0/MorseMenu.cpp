@@ -374,7 +374,11 @@ boolean MorseMenu::menuExec() {                                          // retu
                 morseState = wifiTrx;
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
-                MorseWiFi::wifiConnect();
+                //// if not true WiFi has not been configured or is not available, hence return false!
+                if (! MorseWiFi::wifiConnect()) {
+                  delay(1000);    // wait a bit
+                  return(false);
+                }
               
                 if (MorsePreferences::wlanTRXPeer.length() == 0) 
                     peer = "255.255.255.255";     // send to local broadcast IP if not set

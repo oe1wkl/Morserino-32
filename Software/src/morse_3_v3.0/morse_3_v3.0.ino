@@ -983,8 +983,8 @@ boolean checkPaddles() {
   
   /* internal and external paddles are now working in parallel - the parameter p_useExtPaddle is used to indicate reverse polarity of external paddle
   */
-  left = MorsePreferences::reveresePolarity ? rightPin : leftPin;
-  right = MorsePreferences::reveresePolarity ? leftPin : rightPin;
+  left = MorsePreferences::reversePolarity ? rightPin : leftPin;
+  right = MorsePreferences::reversePolarity ? leftPin : rightPin;
   sensor = readSensors(LEFT, RIGHT);
   newL = (sensor >> 1);
   newR = (sensor & 0x01);
@@ -1412,8 +1412,14 @@ void dispGeneratedChar() {
                     ( morseState == echoTrainer && MorsePreferences::echoDisplay != CODE_ONLY ))
     
       {       /// we need to output the character on the display now  
-        charString = clearText.charAt(0);                   /// store first char of clearText in charString
-        clearText.remove(0,1);                              /// and remove it from clearText
+        if (clearText.charAt(0) == 0xC3) {            //UTF-8!
+          charString = String(clearText.charAt(0)) + String(clearText.charAt(1));                   /// store first 2 chars of clearText in charString
+          clearText.remove(0,2);                                                    /// and remove them from clearText
+        }
+        else {
+          charString = clearText.charAt(0);
+          clearText.remove(0,1);
+        }
         if (generatorMode == KOCH_LEARN)
             MorseOutput::clearBuffer();                      // clear the buffer first
         printOnDisplay((morseState == loraTrx || morseState == wifiTrx) ? BOLD : REGULAR, cleanUpProSigns(charString));
@@ -1908,12 +1914,14 @@ void onLoraReceive(int packetSize){
 
 void onWifiReceive(AsyncUDPPacket packet) {
   String result;
-  result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet lomnger than the sender is allowed to send!
+  result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
   result = "";
   for (int i = 0; i < packet.length(); i++) {
     result += (char)packet.data()[i];
   }
   //DEBUG("WifiReceive! " + String(result));
+  if (packet.length() == 0)             // empty (= keepalive) packet
+    return;
   if (packet.length() < sizeof(cwTxBuffer)+1)
       storePacket(WiFi.RSSI(), result);
   else

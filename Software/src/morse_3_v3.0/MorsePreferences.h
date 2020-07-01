@@ -39,7 +39,7 @@ namespace MorsePreferences
   extern boolean didah;
   extern uint8_t keyermode;
   extern uint8_t interCharSpace;
-  extern boolean reveresePolarity;
+  extern boolean reversePolarity;
   extern uint8_t ACSlength;
 
   extern boolean encoderClicks;

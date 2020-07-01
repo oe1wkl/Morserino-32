@@ -16,6 +16,15 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.3.0.2 (Bug Fix release)
+
+#### Bug fixes:
+
+* Umlaut characters (ö, ä, ü) received in LoRa or WiFi Trx were not shown correctly on the bottom line of the display (but correctly once the display scrolled up; has to do with a problem the Arduino String object has with UTF8 characters). Fixed.
+* Empty WiFi Trx packets (keep alive packets as sent by chat servers) were not ignored but displayed as a space. Fixed.
+* If you started WiFiTrx without configuring WiFi, and had set the „Quick Start“ option before that, the Morserino-32 would cycle through re-boots without a possibility to intercept it (you had to re-flash through USB with an erase option to completely erase all stored parameters). This has hopefully been fixed now: when you start WiFi Trx, and WiFi is not configured or not found, you will be returned to the main menu.
+
+
 ### Changes V3.0.1 (Bug fix release)
 
 #### Bug fixes:

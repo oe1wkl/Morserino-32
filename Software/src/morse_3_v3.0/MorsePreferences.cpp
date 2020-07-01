@@ -33,7 +33,7 @@ Preferences pref;               // use the Preferences library for storing and r
   boolean MorsePreferences::didah = false;                    // paddle polarity                                  bool
   uint8_t MorsePreferences::keyermode = 2;                    // Iambic keyer mode: see the #defines in morsedefs.h
   uint8_t MorsePreferences::interCharSpace = 3;               // trainer: in dit lengths                          3 - 24
-  boolean MorsePreferences::reveresePolarity = false;             // has now a different meaning: true when we need to reverse the polarity of the ext paddle
+  boolean MorsePreferences::reversePolarity = false;             // has now a different meaning: true when we need to reverse the polarity of the ext paddle
   uint8_t MorsePreferences::ACSlength = 0;                    // in ACS: we extend the pause between charcaters to the equal length of how many dots 
                                               // (2, 3 or 4 are meaningful, 0 means off) 0, 2-4
   boolean MorsePreferences::encoderClicks = true;             // all: should rotating the encoder generate a click?
@@ -419,7 +419,7 @@ void internal::displayClicks() {
 }
 
 void internal::displayExtPaddles() {
-     MorseOutput::printOnScroll(2, REGULAR, 1,  MorsePreferences::reveresePolarity ? "Reversed    " :
+     MorseOutput::printOnScroll(2, REGULAR, 1,  MorsePreferences::reversePolarity ? "Reversed    " :
                                                     "Normal      " ); 
 }
 
@@ -816,7 +816,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case  posClicks : MorsePreferences::encoderClicks = !MorsePreferences::encoderClicks;
                                 internal::displayClicks();
                                 break;
-                case  posExtPaddles : MorsePreferences::reveresePolarity = !MorsePreferences::reveresePolarity;                           // ext paddle on/off
+                case  posExtPaddles : MorsePreferences::reversePolarity = !MorsePreferences::reversePolarity;                           // ext paddle on/off
                                 internal::displayExtPaddles();
                                 break;
                 case  posPolarity: MorsePreferences::didah = !MorsePreferences::didah;                                            // polarity
@@ -1216,7 +1216,7 @@ void MorsePreferences::readPreferences(String repository) {
     MorsePreferences::maxSequence = pref.getUChar("maxSequence");
         
     MorsePreferences::didah = pref.getBool("didah", true);
-    MorsePreferences::reveresePolarity = pref.getBool("useExtPaddle");
+    MorsePreferences::reversePolarity = pref.getBool("useExtPaddle");
     MorsePreferences::encoderClicks = pref.getBool("encoderClicks", true);
     MorsePreferences::echoConf = pref.getBool("echoConf", true);
     MorsePreferences::wordDoubler = pref.getBool("wordDoubler");
@@ -1258,8 +1258,8 @@ void MorsePreferences::writePreferences(String repository) {
         pref.putUChar("keyermode", MorsePreferences::keyermode);
     if (MorsePreferences::interCharSpace != pref.getUChar("farnsworthMode"))
         pref.putUChar("farnsworthMode", MorsePreferences::interCharSpace);
-    if (MorsePreferences::reveresePolarity != pref.getBool("useExtPaddle"))
-        pref.putBool("useExtPaddle", MorsePreferences::reveresePolarity);
+    if (MorsePreferences::reversePolarity != pref.getBool("useExtPaddle"))
+        pref.putBool("useExtPaddle", MorsePreferences::reversePolarity);
     if (MorsePreferences::ACSlength != pref.getUChar("ACSlength"))
         pref.putUChar("ACSlength", MorsePreferences::ACSlength);
     if (MorsePreferences::keyTrainerMode != pref.getUChar("keyTrainerMode"))

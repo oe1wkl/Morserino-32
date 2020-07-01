@@ -118,8 +118,8 @@ private:
 public:
   MorseTable();
   void recordDit();
-  void recordDah();
-  void resetTable();
+  void recordDah();  
+  void resetTable();  
   String retrieveSymbol();
 };
 
