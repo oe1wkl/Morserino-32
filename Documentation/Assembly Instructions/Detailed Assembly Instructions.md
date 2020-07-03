@@ -52,7 +52,7 @@
 
 12. Remove the protection foils from the acrylic glass plates (there is no foil on the engraved side).
 12. First mount the 15mm standoff bolts (female/female) with the supplied metal screws to the top plate of the case; the stand-offs should be under the plate with the engraved inscriptions readable from above.
-13. Mount the antenna connector to the top plate, using the serrated washer on the underside, and the split washer and nut on the top side (it should sit firmly, but do not exercise too much pressure on to the acrylic glass, as otherwise it might crack).
+13. Mount the antenna connector to the top plate, using the serrated washer on the underside, and the split washer and nut on the top side (it should sit firmly, but do not exercise too much pressure on to the acrylic glass, as otherwise it might crack; check if it sitting firmly from time to time - connecting and removing the antenna often could make it come loose over time).
 
 	![Antenna connector][Ass10]
 [Ass10]: Images/sma_connector.jpg "SMA connector"
