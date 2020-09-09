@@ -1,0 +1,920 @@
+= Morserino-32: Handleiding
+W. Kraml (OE1WKL) / Vertaling: Tony Vandenborn (ON6NT)
+v3.0 mei 2020
+:organization: Morserino-32 Handleiding
+:doctype: book
+// Settings:
+:experimental:
+:reproducible:
+:icons: font
+:listing-caption: Listing
+//:sectnums:
+:toc: macro
+:toc-title: Inhoud
+:toclevels: 4
+ifeval::["{asciidoctor-version}" < "1.5.7"]
+:legacy-footnoteref:
+endif::[]
+ifdef::backend-pdf[]
+:pdf-theme: m32
+:pdf-themesdir: {docdir}
+:source-highlighter: rouge
+//:rouge-style: github
+:media: prepress
+endif::[]
+
+toc::[]
+
+[preface]
+== Voorwoord
+
+image::Morserino.jpg[Morserino-32]
+
+[.lead]
+"`*_Morserino-32 -- Een multifunctioneel Morse-apparaat, perfect om te leren en te oefenen_*`"
+
+Deze handleiding geeft de functies weer van firmwareversie 2.x van de Morserino-32. Ze werd grotendeels herschikt en gedeeltelijk herschreven om het gebruiksgemak te vergroten.
+
+Ze werd aangemaakt met **asciidoc** (in de plaats van Markdown voor de eerdere versies), en de PDF-versie werd met
+**asciidoctor-pdf** gerenderd, om te komen tot een handboek, dat beter leesbaar is en aangenaam voor de ogen.
+
+Ik wil iedereen bedanken die via opmerkingen, kritiek en suggesties heeft bijgedragen tot het maken van de Morserino-32 tot een succesvol en uitstekend product.
+
+==  Aansluitingen en bedieningselementen [[controls]]
+
+image::M32_layout.jpg[Wo sind die Anschlüsse und Bedienelemente]
+
+[cols="^.1,.<3,.<10",options=header]
+|===
+|#
+|Aansluiting/Bedieningselement
+|Gebruik
+
+|1
+|3,5mm jack (2-polig): naar zender
+|Sluit deze aan op uw zender of transceiver als u wilt seinen met de Morserino-32.
+
+|2
+|3,5 mm jack (4-polig): Audio in / Line out
+| **Audio-ingang** voor de CW-decoder; sluit hier de audiouitgang van een ontvanger aan, om CW-signalen te decoderen. **Audio-uitgang** (haast zuivere sinus), wordt niet beïnvloed door de volume-instelling. De jack is aangesloten als volgt: Tip en 1. Ring - audio-ingang; 2. Ring: Massa; Sleeve: Audio-uitgang.
+
+|3
+| Audio-ingangsniveau
+| Pas het audio-ingangsniveau aan met behulp van deze trimmer. Voor het aanpassen van het niveau is er een speciale functie, zie daartoe <<appendix2>> aan het einde van deze handleiding.
+
+|4
+|3,5 mm-jack (3-polig): koptelefoon
+|Sluit hier uw koptelefoon aan (alle stereo-koptelefoons van mobiele telefoons met jack-aansluitingen zijn meestal geschikt) om via de koptelefoon te luisteren en de luidspreker uit te schakelen. U kunt geen luidspreker rechtstreeks op deze aansluiting aansluiten zonder een extra interface (deze uitgang vereist een gelijkstroomverbinding naar de massa van meer dan 50 - 300 ohm.)
+
+|5
+|Aan-/uit-schakelaar
+|Verbindt de LiPo-accu met het apparaat, resp. koppelt hem af. Bij frequent gebruik van de Morserino-32 kan de accu aangesloten blijven. Indien u het apparaat echter meerdere dagen niet gebruikt, moet u deze schakelaar gebruiken om de batterij los te koppelen, anders zal deze langzaam ontladen.
+
+|6
+|SMA-antennebus
+|Sluit een antenne aan, geschikt voor de LoRa-frequentie (standaard is dat ca. 433 MHz, maar er zijn ook modules voor 860-925 MHz beschikbaar). Nooit zenden zonder antenne!
+
+|7
+|ROOD (Power/Vol/Scroll) toets
+|Wanneer het apparaat in diepe slaap is gegaan, wordt het wakker en start de Morserino opnieuw op.
+Wanneer het apparaat in werking is (d.w.z. een van de modi wordt momenteel uitgevoerd), schakelt u door kort op deze knop te drukken de functie van de rotary encoder om tussen het instellen van de snelheid en de volumeregeling.
+Door langer op de knop te drukken, kan doorheen het display worden gescrolld met de rotary encoder; nogmaals op de knop drukken schakelt de functie terug naar snelheidsregeling.
+Indien u zich in een menu bevindt, activeert u door lang op deze knop te drukken de functie voor het instellen van het audio-ingangsniveau. Meer informatie vindt u in het deel <<<buttons>>> hieronder.
+
+|8
+|ZWARTE draaiknop
+|Wordt gebruikt voor selectie binnen de menu's, voor het instellen van de snelheid of het volume, voor het scrollen doorheen het scherm en voor het instellen van de verschillende parameters en opties.
+Deze knop kan verdraaid worden, en is tevens een druktoets. Meer informatie vindt u in het deel <<<buttons>>> hieronder.
+
+|9
+|Aansluitingen voor de touchpaddle
+|Deze connectoren zijn bedoeld voor de capacitieve touchpaddles.
+Indien u alleen een externe paddle gebruikt (bijv. ook voor het transport), kunnen de touchpaddles verwijderd worden.
+
+|10
+|3,5 mm jack (3-polig): Externe seinsleutel
+|Gebruik deze aansluiting om een ​​externe (mechanische) paddle aan te sluiten (tip is linker paddle, ring is rechter paddle, de huls is massa),
+of een eenvoudige 'straight key' (de tip is de toets).
+Met een eenvoudige morsesleutel of 'straight key' kunt u met de CW-decoder de kwaliteit van uw seinschrift bewaken!
+**Hou er rekening mee, dat voor andere functies (echo-trainer, transceiver) eenvoudige morsesleutels momenteel NIET ondersteund worden!**
+
+|11
+|Seriële interface
+|Sluit een kabel (rechtstreeks of via een 4-pins connector) aan op een extern serieel apparaat, bijv. een gps-ontvangermodule (dit wordt momenteel niet ondersteund door de software, maar het is niet erg moeilijk te implementeren). De 4 aansluitingen zijn T (Transmit), R (Receive), + en - (3,3V voeding vanaf de Heltec-module).
+
+|12
+|Reset-toets
+|Via een kleine opening is de reset-toets van de Heltec-module bereikbaar (zelden nodig).
+
+|13
+|USB
+|Gebruik een standaard 5V USB-laadapparaat om het apparaat van stroom te voorzien en de LiPo-accu te laden. De firmware van de microcontroller kan opnieuw geprogrammeerd worden via USB (vanuit de programmeeromgeving op een pc, of met behulp van een speciaal update-hulpprogramma (zie <<appendix4>>); een andere mogelijkheid bestaat er in de Morserino-32 firmware via een WLAN-verbinding bij te werken).
+
+De karakters, gegenereerd door de keyer of de decoder, kunnen ook worden uitgevoerd via de seriële verbinding, bijvoorbeeld om ze te verwerken in een extern computerprogramma; zie de beschrijving van de parameter "Seriële uitgang".
+
+|14
+|PRG-toets
+|Via een kleine opening is de programmeertoets van de Heltec-module bereikbaar (normaal gezien niet nodig).
+|===
+
+== Eerste stappen
+
+=== In- en uitschakelen/Laden van de accu [[power]]
+
+
+Indien u het apparaat via een USB-voeding wilt gebruiken, sluit u het eenvoudig op een USB-lader aan met een micro-USB-kabel (max. verbruik  200 mA, zodat elk 5V-laadapparaat voldoet).
+
+Indien u de Morserino met de accu als stroombron wilt gebruiken, schuift u de schuifschakelaar in de stand ON.
+
+Indien het apparaat uitgeschakeld is, maar de accu aangesloten blijft (schuifschakelaar ingeschakeld), bevindt het zich in werkelijkheid in diepe slaap: haast alle functies van de microcontroller zijn uitgeschakeld, en het stroomverbruik is minimaal (minder dan 5% van het normale bedrijf).
+
+Om het apparaat vanuit de diepe slaap in te schakelen, drukt u kort op de RODE toets (Power/Vol/Scroll).
+
+Zodra de Morserino-32 opstart, ziet u gedurende enkele seconden het startscherm.
+Op de bovenste regel ziet u voor welke LoRa-frequentie de M32 geconfigureerd is (onder de vorm van een getal van 5 cijfers);
+onderaan het display ziet u hoeveel acculading er nog resteert.
+Voor de accu volledig leeg is moet u het apparaat op een USB-voeding aansluiten.
+(De accu wordt ook ontladen als u het apparaat niet inschakelt -hoewel dit in de diepe slaap-toestand eerder minimaal is,
+is een volle accu toch na een paar dagen leeg.
+Indien u de Morserino langere tijd niet gaat gebruiken, moet u met de schuifschakelaar achteraan de accu van het apparaat afschakelen...)
+
+WAARSCHUWING: Indien de batterijspanning bij het inschakelen gevaarlijk laag is, wordt op het display een lege batterij-pictogram zichtbaar, en start het apparaat niet op.
+In dit geval moet u zo snel mogelijk beginnen met het laden van de accu.
+
+TIP: Na het gebruiken van een WLAN-functie werkt het meten van de accuspanning niet meer, tot het apparaat in- en weer uitgeschakeld werd, of een reset werd uitgevoerd m.b.v. de reset-toets. De reden hiervoor is een hardware-designfout in het Heltec-board. In dergelijke gevallen toont de Morserino "Unknown" in plaats van de accuspanning, en komt er een vraagteken overheen het batterijsymbool. Na een keer in- en uitschakelen werkt alles terug normaal.
+
+TIP: Indien de accu als leeg wordt aangegeven, terwijl er nog voldoende spanning zou moeten zijn, is het raadzaam om de batterijmeting te kalibreren. Zie daartoe <<appendix1_2>>.
+
+Om het apparaat los te koppelen van de accu (uitschakelen), schuift u de schuifschakelaar naar de UIT-stand, tenzij het via USB wordt gevoed.
+
+Om het apparaat in diepe slaap te brengen zijn er twee mogelijkheden:
+
+*Selecteer in het hoofdmenu de optie "Go To Sleep".
+*Niets doen - indien in het parametermenu een "Time Out”-waarde ingesteld werd. Als het display niet wordt bijgewerkt, schakelt het apparaat zichzelf uit en gaat het in de diepe slaapstand na de daar ingestelde tijd.
+
+Verbind het apparaat **om de accu** op te laden via een USB-kabel met een betrouwbare USB 5V-stroombron, zoals bijv. een computer of een USB-laadapparaat, zoals bijv. een telefoonlader.
+
+WAARSCHUWING: Controleer of de hardware-schakelaar van het apparaat tijdens het laden op *ON* staat - indien u de accu via de schakelaar loskoppelt,
+kan hij niet geladen worden.
+
+Tijdens het laden licht de oranje LED op de ESP32-module helder op.
+Indien de accu losgekoppeld is licht deze LED niet helder op, maar knippert hij nerveus met halve helderheid.
+
+Van zodra de accu volledig geladen is, dooft de oranjekleurige LED.
+
+Natuurlijk kunt u het apparaat steeds gebruiken als het via de USB-aansluiting gevoed wordt, of de accu nu geladen wordt of niet.
+
+[WARNING]
+====
+Om een diepe ontlading van de LiPo-accu te vermijden, schakelt u de Morserino-32 steeds uit met de schuifschakelaar. Laat het apparaat niet gedurende langere tijd in de “Slaapmodus" (één dag of mogelijk twee dagen zijn OK, indien de accu goed opgeladen was; een volledig opgeladen 600 mAh-accu wordt in diepe slaap op 3 tot 4 dagen ontladen tot een spanning van zowat 3,2 V).
+
+De Heltec-module heeft elektronica aan boord voor het laden van de accu, en voorkomt prima het overladen ervan. Maar ze kan diepe ontlading niet voorkomen! **Een diepe ontlading leidt tot verminderde accucapaciteit, en ten slotte tot een voortijdig stuk gaan van de accu!**
+====
+
+=== Instelling van de LoRa-band en frequentie
+
+De standaardversie van de Morserino-32 beschikt over een voorgeconfigureerde frequentie binnen de 433 MHz amateur- en ISM-band (ISM enkel in ITU-Region 1). **Indien dit overeenkomt met uw wensen, moet u verder niets doen.**
+
+Indien het gebruik van deze frequentie in uw Region niet is toegestaan, kunt u een versie van de M32 aanschaffen, die de LoRa-banden tussen 860 en 925 MHz ondersteunt. In dat geval moeten de juiste band en de correcte frequentie geconfigureerd worden, voor u gebruik kunt maken van de de LoRa-functionaliteit van de M32.
+
+[WARNING]
+====
+Denk er om dat er een speciale versie van de Heltec-module nodig voor het gebruik van de 868- of de 920MHz-band.
+De “standaard”-versie ondersteunt enkel de 433 MHz-band, en de alternatieve versie enkel de 868 resp. 920MHz-band!
+
+Heeft u momenteel een standaard M32 en wilt u gebruik maken van de hogere frequentiebanden, dan kunt u voor deze banden een Heltec module (plus antenne) bestellen.
+** Na het vervangen van de Heltec-module moet de LoRa-instelling voor de gewenste band worden uitgevoerd voordat LoRa wordt gebruikt! **
+====
+
+**Zie <<<appendix1_1>> aan het einde van dit document**, om te zien hoe u LoRa voor de modules, die de banden 868 en 929 MHz ondersteunen, kunt configureren, en hoe u de LoRa-frequentie-instellingen kunt wijzigen.
+
+
+=== Gebruik van de ZWARTE en de RODE knop [[tasten]]
+Het selecteren van de verschillende modi en het instellen van de mogelijke parameters gebeurt met de **rotary encoder** en de **ZWARTE knop**.
+
+*Door draaien* loopt u met de rotary encoder doorheen de opties of waarden, **door één keer klikken** met de knop wordt een optie of een waarde geselecteerd,
+of gaat u naar een volgend niveau van het menu (binnen een menu zijn er tot drie niveaus).
+
+Een **dubbele klik** op de ZWARTE knop brengt u naar het menu voor het instellen van de parameters. Als u dubbelklikt binnen een menu, kunnen alle parameters veranderd worden;
+binnen een actief menu kunnen alleen die parameters gewijzigd worden, die relevant zijn voor de actuele modus.
+
+Door **lang indrukken** gaat u vanuit elke modus terug naar het menu, en vanuit een menu één stap omhoog.
+
+Indien u zich in een menu bevindt (bijv. meteen na het inschakelen), start een **lang indrukken** van de **RODE knop** een functie
+om het audio-ingangsniveau (en eventueel het uitgangsniveau voor een apparaat, dat is aangesloten op de line out-uitgang van de Morserino-32) in te stellen.
+Zie <<<appendix2>> aan het einde van dit document.
+
+Zodra u het menu verliet, om een van de modi (Keyer, Generator, Echo-Trainer enz.) uit te voeren,
+dan kunt u met een **enkele druk**op de **RODE (Power/Vol/Scroll) knop** snel tussen de **snelheidsregeling** en de **volumeregeling** omschakelen .
+
+Door **lang indrukken** van de Rode knop terwijl een modus actief is (d.w.z. terwijl er geen menu zichtbaar is) gaan het display en de rotary encoder naar de **scroll-modus** (Het display heeft een buffer van 15 regels; normaal zijn enkel de drie onderste regels zichtbaar. In de scroll-modus kunt u terugbladeren naar hogere regels, en is er helemaal rechts op het display een **scroll-balk** zichtbaar die ongeveer aangeeft, waar u zich binnen de 15 regels van de tekstbuffer bevindt). Door **nogmaals te klikken** wordt de scroll-modus verlaten; de rotary encoder dient weer terug voor de snelheidsregeling.
+
+Wanneer u zich in het parameterinstelmenu bevindt, wordt met een korte klik op de RODE knop een functie voor het laden van een parameter-snapshot geactiveerd. Een parameter-snapshot kan worden opgeslagen met een lange druk op de RODE knop.
+Zie het deel <<snapshots>> voor nadere details.
+
+=== Het display
+
+Het display is onderverdeeld in twee hoofddelen: bovenaan bevindt zich de statusregel, die belangrijke informatie geeft over de huidige status van het apparaat, en onderaan bevindt zich een ** gebied van drie scroll-regels ** waarin de gegenereerde morsetekens in gewone tekst worden weergegeven.  Alle tekens worden omwille van de leesbaarheid in kleine letters weergegeven; speciale tekens (Pro Signs) worden weergegeven als letters tussen haakjes, zoals `<ka>` of `<sk>`. Bovendien wordt in de Echo Trainer-modus (zie verder) het resultaat als "ERR" of "OK" aangegeven (samen met enkele akoestische signalen).
+
+Hoewel er slechts drie regels tekst worden weergegeven, is er een inwendige buffer van 15 regels -- na lang indrukken van de RODE (Vol/Scroll) knop kunt u met de rotary encoder terug scrollen, en de eerdere regels terug zichtbaar maken.
+Dit werkt indien u zich in een van de modi bevindt en de uitvoer op het display gebeurt - niets gaat verloren, en het display keert terug naar de normale toestand van zodra u de scroll-modus verlaat.
+
+==== De statusregel
+
+Terwijl er een menu zichtbaar is (hetzij het startmenu of een menu om instellingen te selecteren), geeft de statusregel de mogelijke keuzes aan (**Select Modus** of **Set Preferences:**).
+
+Indien u zich in Keyer Modus, CW Generator Modus of Echo Trainer Modus bevindt, geeft de statusregel van links naar rechts het volgende aan:
+
+
+*  **A**,**B**, **U**, **N** of **S**, wat de (automatische) **Keyermodus** aangeeft: Iambic **A**, Iambic **B**, **U**ltimatic,  **N**on-Squeeze of **S**traight Key (gewone, seinsleutel, zie voor details over deze modi hieronder in het deel <<keyer>>).
+
+* De actueel ingestelde **snelheid** in woorden per minuut (het referentiewoord is PARIS, wat ook betekent dat 1 wpm overeenkomt met 5 tekens per minuut),
+in de CW Keyer Modus als **nn**WpM, in de CW Generator of de Echo Trainer modus als (nn)**nn**WpM. De waarde tussen haakjes geeft de effectieve snelheid aan, die afwijkt, indien de afstand tussen de woorden of die tussen de tekens op een andere als de door de norm gedefinieerde waarde wordt ingesteld (een lengte van 3 dits voor de afstand tussen de tekens, en een lengte van 7 dits voor de afstand tussen de woorden). Hou rekening met de aanwijzingen uit het deel <<keyer>> in verband met de parameters, die in de CW Generator-modus kunnen worden ingesteld.
++
+In de transceiver-modus ziet u ook twee waarden voor de snelheid -- de waarde tussen haakjes is de snelheid van het ontvangen signaal, de andere de snelheid van uw eigen keyer.
++
+Indien u gebruik maakt van een gewone seinsleutel, wordt de actueel gemeten snelheid zichtbaar gemaakt.
+
+Indien de cijfers, die de snelheid aangeven, in **vet** worden weergegeven, dan verandert het draaien aan de rotary encoder de snelheid. indien ze als gewone cijfers worden aangegeven, verandert het draaien aan de rotary encoder het volume.
+* Een horizontale balk, die zich van links naar rechts uitstrekt, geeft het **volume** van de door het apparaat opgewekte meeluistertoon (de dolle lengte van de balk komt overeen met het hoogste volume). Meestal is dit een wit kader rond de zwarte voortgangsbalk (een verlenging van de resterende statusregel); in het omgekeerde geval (witte voortgangsbalk in een zwart gebied - en de WPM-cijfers niet in vette tekst), verandert het draaien aan de encoder het volume en niet de snelheid.
+* Helemaal rechts op de statusregel bevindt zich een display (met concentrische halve cirkels) dat de radio-overdracht symboliseert als de ** LoRa ** -modus actief is (wanneer de Morserino-32 zich in de LoRa-transceivermodus bevindt, of als u de parameters om via LoRa te zenden in een van de CW-generatormodi instelde).
+
+== Het top-menu en de Morserino-modi
+
+De modus van de Morserino-32 wordt geselecteerd door aan de zwarte draaiknop te draaien en deze kort in te drukken ("klikken") om de geselecteerde functie te selecteren (of, in sommige gevallen, om een ​​submenu weer te geven voor een meer gedetailleerde selectie).
+
+
+=== CW keyer [[keyer]]
+
+Dit is een automatische keyer, die Iambic A, Iambic B (deze worden ook vaak aangeduid met Curtis A en Curtis B) en de Ultimatic -mode ondersteunt,
+samen met de Non Squeeze-modus (imitatie van een straight key met een paddle met twee hendels).
+U kunt ofwel de ingebouwde capacitieve paddle gebruiken, of een externe paddle (met één of twee handels) aansluiten.
+De interne en de externe paddle werken parallel, zodat configureren niet vereist is.
+
+Er zijn een hele reeks **parameters**, die geen bepalen hoe de automatische keyer functioneert.
+Zie voor nadere details het deel <<<parameter>>>. U moet zich in elk geval bewust zijn van het volgende:
+
+
+`External Pol.`: Indien de externe sleutel “verkeerd om" bedraad is, kan dit hier gecorrigeerd worden.
+
+`Paddle-Polarity`: Aan welke kant wilt u de dits en aan welke kant de dahs?
+
+`Keyer-Modus`: Selecteer  Iambic A of B, Ultimatic-modus, Non Squeeze-modus of Straight Key-modus.
+
+Wat zijn deze **Iambic modi**?
+
+Indien u beide paddles van een iambische keyer indrukt, worden afwisselend dahs en dits opgewekt zo lang beide paddles ingedrukt blijven,
+te beginnen met die welke eerst bediend werd (de naam "iambisch" stamt overigens uit iambische verzen,
+waarin korte en lange lettergrepen elkaar afwisselen. De naam "Curtis" is echter afkomstig van de ontwikkelaar van de baanbrekende Curtis Morse Keyer-chip,
+John G. "Jack" Curtis, K6KU, ex W3NSJ).
+
+Het verschil tussen modus A en B zit hem in het gedrag van zodra beide paddles worden losgelaten tijdens het opwekken van het huidige element:
+bij Iambic A stopt de keyer na het huidige element, bij Iambic B voegt de keyer nog een element toe, tegengesteld aan dat van het ogenblik
+waarop de paddle werd losgelaten.
+
+Met andere woorden, in Curtis B-modus wordt de tegenoverliggende paddle gecontroleerd, terwijl het actuele element (dit of dah) wordt uitgegeven,
+en indien binnen deze tijd een paddle wordt gedrukt, dan wordt aan het huidige element een volgend, tegengesteld element toegevoegd.
+In modus A is dit niet het geval. Omdat modus B wat moeilijker te bedienen is, werd dat nadien zo veranderd, dat pas na een bepaald percentage
+van de duur van het element de paddles gecontroleerd worden. Dit is het percentage, dat met de parameters `CurtisB DahT%`  en `CurtisB DitT%`  kan instellen.
+
+Indien u ze op 0, de laagste waarde, instelt, is de modus identiek met de oorspronkelijke Curtis B-modus.
+De later ontwikkelde “verbeterde" Curtis B-modus maakt gebruik van een percentage van ongeveer 35%-40%.
+Indien het percentage op 100 wordt gezet, de hoogste waarde, dan is het gedrag hetzelfde als in de Curtis A-modus.
+
+Met deze parameter kunt u dus elk gedrag tussen Curtis A en de oorspronkelijke Curtis B op een continue schaal instellen,
+en kunt u het percentage voor dits en dahs afzonderlijk instellen (dit is zinvol, omdat de timing voor dits slechts één derde van die van dahs bedraagt,
+zodat het kan gebeuren, dat u hierbij een hoger percentage wilt, zodat de invoer van dits comfortabel is).
+
+**Ultimatic mode**: Indien u in de Ultimatic-modus beide paddles ingedrukt houdt, wordt een dit of een dah gegenereerd
+naargelang welke paddle u het eerst aanraakte, waarna continu het tegengestelde element wordt opgewekt.
+Dit biedt voordelen bij tekens zoals j, b, 1, 2, 6, 7.
+
+**Non-Squeeze mode**: Deze “simuleert" het gedrag van een single-paddle sleutel bij gebruik van een dubbele paddle-sleutel.
+Mensen, die vertrouwd zijn met sleutels met één enkele paddle, hebben in de regel moeilijkheden bij gebruik van sleutels met een dubbele paddle, omdat ze de paddles vaak onbedoeld samendrukken,
+zeker bij hogere snelheden. De Non-Squeeze modus negeert gewoon het samendrukken, wat het voor deze mensen eenvoudiger maakt, een sleutel met dubbele paddle te gebruiken.
+
+TIP: Iambic-modi en de Ultimatic modus kunnen enkel worden gebruikt met de ingebouwde touchpaddles of een externe sleutel met dubbele paddles. Het kiezen van deze modi is niet relevant, indien u gebruik maakt van een sleutel met enkele paddle.
+
+
+De parameter **`Latency`** bepaalt hoe lang na het opwekken van het actuele element (punt of streep) de paddles “doof" zijn.
+In eerdere firmware-versies was deze parameter nul, met als gevold dat juist bij hogere snelheden meer punten dan gewenst werden opgewekt
+omdat met de paddle moest loslaten, terwijl het laatste punt nog “bezig" was. Nu kunt u deze waarde instellen op een waarde tussen 0 en 7,
+wat overeenkomt met een puntlengte tussen 0/8 en 7/8 (de vooraf ingesteld waarde is 4, d.w.z. een halve puntlengte). Als u nog steeds de neiging heeft om ongewenste dits te produceren, kunt u deze waarde verhogen.
+
+Zie voor wat betreft de parameter `AutoChar Spce` (definitie van de minimale afstand tussen de tekens) het deel <<parameters>> voor nadere details.
+
+**Straight Key mode**: Dit is natuurlijk geen automatische modus, maar hiermee kunt u de Morserino-32 ook met een gewone seinsleutel (een 'handpomp') gaan gebruiken. De Morserino gaat alle invoer met de seinsleutel decoderen. De gewone sleutel kan ook worden gebruikt voor de Echo Trainer en de transceiver-modi!
+
+
+=== CW Generator [[generator]]
+
+Deze genereert ofwel willekeurige groepen tekens en woorden voor CW-training, of speelt de inhoud van een tekstbestand af als morsecode. U kunt een reeks opties instellen door de juiste parameters te selecteren (zie het deel <<parameters>> hieronder).
+
+U **start** en **stopt** de CW-generator door kort een paddle (aan één kant of aan beide kanten) aan te raken, of met **een klik op de ZWARTE knop**.
+
+De CW-generator kondigt het begin van zijn activiteit aan met ""`vvv<ka>``" (`+..._ ..._ ..._ ..._ _._._+`), voor hij werkelijk begint met het seinen van groepen of woorden.
+
+Indien u de parameter 'Stop/Next/Rep' activeert, wordt slechts één woord of een groep van tekens hoorbaar gemaakt. Aansluitend stopt de Morserino en wacht op de paddle-invoer. Door drukken op de linker paddle wordt het actuele woord herhaald; door drukken op de rechter paddle wordt het volgende woord gegenereerd. Dit is nuttig om het lezen op het gehoor te trainen: speel een woord af (zonder op het scherm te kijken) en probeer het uit uw hoofd te decoderen. Druk als u niet zeker bent om het te herhalen op de linker paddle. Kijk zodra u het correct meent begrepen te hebben op het display. Nu kunt u ofwel het woord nogmaals herhalen (linker paddle indrukken) of wegkijken en de rechter paddle indrukken voor het volgende woord. (U kunt de werking van de linker en de rechter paddle gemakkelijk onthouden door te denken aan de toetsen van een typische muziekplayer: links is terug, rechts is vooruit.) Denk er om, dat de opties Word Doubler en Stop/Next/Repeat niet compatible zijn met elkaar - indien u de ene op ON zet, wordt de andere automatisch op OFF gezet.
+
+Normaal gezien wekt de Morserino-32 gewoon verder morsetekens, tot u hem handmatig stopt.
+Maar er kan ook een parameter ingesteld worden, die de uitvoer na een bepaald aantal woorden (of lettergroepen) laat pauzeren.
+Zie `Max # of Words` in het deel <<parameters>>.
+
+**Verdere opmerkelijke parameters** voor de CW-generator zijn:
+
+`Intercharacter Space` Hier wordt beschreven, hoeveel afstand er tussen de tekens wordt ingevoegd. De “norm" is een afstand met een lengte van drie dits. Om het meelezen bij hoge snelheid te vergemakkelijken en als goede methode om morsetekens te leren, kunt u deze afstand vergroten. De morsetekens moeten met een behoorlijk hoge snelheid gezonden worden ( > 18 wpm), om te voorkomen dits en dahs te “tellen", zodat u beter het “ritme" van elk teken leert. Over het algemeen is het beter de afstand tussen de woorden te vergroten en niet zozeer de afstand tussen de tekens. Daarom wordt geadviseerd deze waarde tussen 3 en max. 6 in te stellen. Zie verder.
+
+`Interword Space`. Normaal gezien wordt deze gedefinieerd als de lengte van 7 dits. In de CW Keyer modus beginnen we na een pauze van 6 dits aan een nieuw woord, om te vermijden dat tekst op het display zonder spatie tussen de woorden zichtbaar wordt. In de CW Trainer modus kunt u de afstand tussen woorden op waarden instellen tussen 6 en 45 (wat meer is dan het zesvoudige van de normale afstand), om het lezen op het gehoor bij hoge snelheden te vergemakkelijken. Naar analogie met "Farnsworth Spacing" (zie verder) wordt dit ook "Wordsworth Spacing" genoemd. Dit is de beste methode, om het lezen op het gehoor bij hoge snelheden te leren. Natuurlijk kunt u de verlenging van de tekenafstand combineren met de woordafstand.
+
+Aangezien de tekenafstand onafhankelijk van de woordafstand kan worden ingesteld, zou dit betekenen dat men de tekenafstand hoger kan instellen dan de woordafstand, wat behoorlijk verwarrend zou zijn. Om deze verwarring te voorkomen, zal de woordafstand altijd minstens 4 dit-lengtes groter zijn dan de tekenafstand, zelfs als er een kleinere woordafstand is ingesteld.
+
+De ARRL en enkele morse-trainingsprogramma's maken gebruik van iets wat **"Farnsworth Spacing"** genoemd wordt: Hier worden de spaties tussen de karakters en tussen de woorden proportioneel vergroot met een bepaalde factor. U kunt Farnsworth Spacing emuleren door zowel de letter- als de woordafstand te vergroten, en bijv. de afstand tussen tekens op 6 en de woordafstand op 14 in te stellen, waardoor de afstand tussen tekens en woorden effectief wordt verdubbeld. Als u dit doet met een tekensnelheid van 20 WpM, dan is de resulterende effectieve snelheid 14 WpM. Dit wordt op de statusregel aangegeven als (14)**20**WpM.
+
+`Random Groups`: Geeft aan welke tekens in de random tekengroepen moeten worden opgenomen. U kunt kiezen tussen Alpha (letters) / Numerals (cijfers) / Interpunct. (leestekens)/ Pro Signs (gebruikelijke afkortingen)/ Alpha + Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / All Chars (alle tekens).
+
+`Length Rnd Gr`: Geeft aan hoeveel tekens er in de random groepen moeten zitten. Hier kunt u kiezen tussen een vaste lengte (1 tot 6), of een random gekozen lengte tussen 2 tot 3 en 2 tot 6 (binnen deze grenzen random gekozen lengte).
+
+`Length Calls`: : De lengte van de roeptekens, die gegenereerd worden. Kies voor een lengte tussen 3 en 6 of Unlimited (onbeperkt).
+
+`Length Abbrev` en `Length Words`: Lengte van de gebruikelijke CW-afkortingen resp. gebruikelijke Engelse woorden, die opgewekt worden. Kies tussen 2 en 6 of Unlimited (onbeperkt).
+
+`Each Word 2x`: Elk “woord" (tekens tussen de spaties) wordt twee keer gegeven, om lezen op het gehoor te ondersteunen.
+
+Zie voor de minder vaak gebruikte parameters `Key ext TX`, `CW Gen Displ` en `Send via LoRa` het deel <<parameters>>.
+
+
+==== Wat kan gegenereerd worden?
+
+Op het tweede niveau van het menu kunt u kiezen tussen de volgende opties:
+
+* **Random**: Er worden groepen gegenereerd van random tekens. De lengte van de groepen, samen met de selectie tekens kan met een dubbelklik op de zwarte draaiknop worden gekozen in de parameters (zie het deel <<parameters>> voor nadere details).
+* **CW Abbrevs**: Random afkortingen, die in het CW radioverkeer vaak voorkomen (door een parameterinstelling kunt u de maximale lengte van de te trainen afkortingen selecteren).
+* **English Words**: Toevallige woorden uit een lijst van 370 van de meest voorkomende woorden in de engelse taal (ook hier kunt u via een parameter een maximale lengte instellen).
+* **Call Signs**:  Wekt een random reeks tekens op, die de structuur en het uitzicht hebben van het roepteken van een radio-amateur (dit zijn geen echte roeptekens, en er worden er ook gegenereerd die in de werkelijke wereld niet kunnen bestaan, omdat ofwel de prefix niet wordt gebruikt, of de regering van een land bepaalde suffixen niet zal toekennen). De maximale lengte kan via een parameter ingesteld worden.
+* **Mixed**: Kiest random uit de hoger opgesomde mogelijkheden (toevallige tekengroepen, afkortingen, Engelse woorden en roeptekens).
+* **File Player**: Seint de inhoud van een bestand, dat in de Morserino-32 werd geladen, in morse-code.
+Momenteel kan de Morserino slechts één bestand opnemen; van zodra er een nieuw bestand wordt geüpload, wordt het vorige bestand overschreven.
+Het uploaden werkt via WiFi vanaf een pc (of Mac of tablet of smartphone of wat dan ook - zie het deel <<<upload>>> voor instructies over hoe dit moet).
++
+De file player-modus onthoudt waar je bent gestopt (door lang op de ZWARTE knop te drukken om deze modus te verlaten; schakel het apparaat niet gewoon uit - als je dat doet kan de Morserino niet onthouden waar je was gekomen),
+en gaat daar verder zodra u de file player de volgende keer start.
+Van zodra het einde van het bestand bereikt is herbegint het seinen weer van voor af aan.
++
+Het bestand mag alleen ASCII-tekens bevatten (grote of kleine letters speelt geen rol) -
+tekens, die niet in het morse-alfabet voorkomen, worden gewoon genegeerd.
+Gebruikelijke afkortingen (pro signs) mogen voorkomen, ze moeten als combinaties van 2 tekens, ingesloten met [] of <>, geschreven worden, bijv. `<sk>` of `[ka]`, of u kunt er een backslash voor plaatsen, bijv. \kn.
++
+De volgende gebruikelijke afkortingen worden herkend:
+====
+** `<ar>` : wordt op het display weergegeven als + (plusteken).
+** `<bt>` : wordt op het display weergegeven als  = (gelijkheidsteken)
+** `<as> waarde
+** `<ka>>`
+** `<kn>`
+** `<sk>`
+** `<ve>`
+====
+Ook voor de file player is er een parameter met de naam `Randomize File`. Indien deze op "ON" wordt gezet (de standaardwaarde is "OFF"),
+slaat de Morserino na elk geseind woord n woorden over (n = toevalsgetal tussen 0 en 255).
+Omdat bij het einde van het bestand terug vooraan wordt herbegonnen, zullen op een gegeven moment alle woorden in het bestand voorgekomen zijn (maar het kan een tijdje duren).
+Als het bijvoorbeeld om een alfabetische woordenlijst gaat, zitten de in een doorgang geseinde woorden nog steeds in alfabetische volgorde (zij het met onderbrekingen);
+om meer toevallige resultaten te bereiken is het echter het best reeds te beginnen met een lijst van woorden.
+
+Waarvoor kunt u dit gebruiken? U kunt bijvoorbeeld een lijst roeptekens nemen, en dit bestand naar de Morserino-32 uploaden.
+(Op de Morserino-32 GitHub-repository vindt u een lijst met roepnamen die daadwerkelijk actief waren in HF-wedstrijden!)
+Met de File Player kunt u met deze roeptekens trainen volgens het random-principe.
+Om ook andere geschikte bestanden te vinden om te oefenen bezoekt u het Morserino-32 GitHub Repository!
+
+=== Echo Trainer
+
+Hier genereert de Morserino-32 een woord (of een groep karakters; u heeft dezelfde opties als bij de CW generator) waarna hij wacht tot u deze karakters herhaalt met de paddle. Indien u te lang wacht of indien uw antwoord niet correct is, wordt een fout aangegeven ("ERR" op het display en een akoestisch signaal) en wordt het betreffende woord herhaald. Indien u het juiste teken seinde, wordt ook dit akoestisch en op het display ("OK") aangegeven, en wordt het volgende woord gevraagd.
+
+In deze modus wordt het te herhalen woord normaal gezien niet op het display getoond - alleen uw antwoord wordt zichtbaar.
+
+
+De submenu's zijn te vergelijken met die van de CW-generator: **Random, CW Abbrevs, English Words, Call Signs, Mixed** en **File Player**.
+
+
+Net als in de CW-generator-modus start u **het seinen door drukken op een paddle**, waarna de sequentie "`vvv<ka>`" als aankondiging wordt geseind, voor de Echo-Training begint. U kunt deze modus niet stoppen of beëindigen door tegen een paddle te drukken - u gebruikt tenslotte de paddles om uw antwoorden te seinen!  **De enige mogelijkheid om deze modus te stoppen is een klik op de ZWARTE knop van de rotary encoder**!
+
+Ook hier kunt u, net als bij de CW-Generator, een groot aantal parameters instellen, om te beïnvloeden wat er geseind wordt. Van bijzonder belang voor de Echo-Trainer zijn:
+
+`Echo repeats`: hoe vaak een woord herhaald wordt indien het antwoord te laat of verkeerd is, voor er een ander woord wordt geseind.
+
+`Echo Prompt`: Hiermee wordt vastgelegd, hoe de vraag om te seinen er bij de Echo Trainer uit ziet. De mogelijke instellingen zijn: "Sound Only" (alleen akoestisch -- dat is de standaardwaarde; best geschikt om het lezen op het gehoor te oefenen), "Display Only" (enkel weergave op het display -- het te seinen woord wordt op het display getoond maar er wordt geen code hoorbaar; goed voor het leren seinen met de paddle) en "Sound & Display", d.w.z. u hoort EN ziet het te seinen woord.
+
+`Confrm. Tone`: Normaal gezien ("ON") hoort u in de Echo Trainer-modus een akoestische bevestigingstoon. Indien u deze uitschakelt ("OFF"), herhaalt het apparaat alleen de vraag om te seinen indien het antwoord verkeerd was, of zend het een nieuwe set na een juist antwoord. De optische weergave van "OK" of "ERR" wordt in elk geval zichtbaar.
+
+`Max # of Words`: Net als bij de CW-generator kunt u de M32 na een bepaald aantal woorden laten pauzeren.
+
+`Adaptv. Speed`:  Dit kan u helpen te oefenen met de hoogste snelheid. Telkens u een correct antwoord geeft, wordt de snelheid met 1 wpm (woorden per minuut) verhoogd; indien u een fout maakte wordt ze met 1 wpm verlaagd. Op deze manier gaat u uiteindelijk steeds op uw limiet oefenen, wat beslist de beste weg is om uw grenzen verder te verschuiven...
+
+
+
+=== Koch Trainer
+
+De Duitse psycholoog Koch ontwikkelde een methode om het seinen en ontvangen in Morse te leren (rond de jaren 1930), waarbij er elke les een nieuw teken wordt toegevoegd.
+De volgorde is noch alfabetisch noch naargelang de lengte van de morsetekens, maar volgt een bepaald ritmisch patroon,
+zodat de afzonderlijke tekens als een ritme en niet als een reeks dits en dahs worden aangeleerd.
+
+Indien u wilt leren seinen en opnemen volgens de Koch-methode (leren en trainen van het ene teken na het andere),
+**vindt u alles wat u nodig heeft onder het menupunt "Koch Trainer"**.
+Er is een submenu om de les te selecteren, die u wilt trainen, één, om enkel deze nieuwe letter te leren
+(net als bij de Echotrainer-modus, zodat u wordt aangemoedigd, het gehoorde te herhalen), en de modi "CW-Generator" en "Echo-Trainer",
+en deze beide laatste met submenu's voor "Random" (groepen van random karakters uit de tot hiertoe geleerde),
+"CW Abbrevs" (de afkortingen, die normaal gezien in CW QSO's gebruikt worden), "English Words" (vaak gebruikte Engelse woorden) en "Mixed"
+(groepen met random tekens, afkortingen en woorden, die random gemengd worden).
+Natuurlijk worden alleen de al geleerde tekens gebruikt - dat wil zeggen dat, terwijl u nog strijd levert met de eerste letters, het
+aantal afkortingen en woorden logischerwijze zeer beperkt zal zijn).
+
+Om te voorkomen dat u dits en dahs gaat tellen of er over nadenkt en reconstrueert, wat u hoorde, moet de snelheid voldoende hoog zijn (min. 18 wpm), en mogen de
+pauzes niet extreem verlengd worden (het is steeds beter alleen de pauzes tussen de woorden te verlengen,
+en de pauzes tussen de tekens op min of meer de normale tekenafstand te houden).
+Met de M32 kan de woordafstand onafhankelijk van de tekenafstand ingesteld worden, zodat u steeds een instelling zal vinden, die perfect aangepast is op uw noden.
+
+
+
+==== Koch: Select Lesson (kiezen van een les) [[koch]]
+
+Kies een “Koch-les" tussen 1 en 50 (men leert in het totaal 50 tekens volgens de Koch-methode). Het nummer van de les en het teken, dat aan deze les verbonden is, worden in het menu getoond.
+
+De volgorde van de geleerde tekens werd door Koch niet streng vastgelegd, zodat verschillende cursussen licht uiteenlopende volgordes gebruiken. Hier gebruiken we dezelfde tekenvolgorde als in het programma "Just Learn Morse Code", dat op zijn beurt haast identiek is met de volgorde van het softwarepakket "SuperMorse" (zie http://www.qsl.net/kb5wck/super.html). De volgorde is als volgt:
+
+
+[cols=">.3,3,>.3,3",options=header,stripes=odd]
+|===
+| Les nr | Teken | Les nr | Teken
+| 1 | m | 26 | 9
+| 2 | k | 27 | z
+| 3 | r | 28 | h
+| 4 | s | 29 | 3
+| 5 | u | 30 | 8
+| 6 | a | 31 | b
+| 7 | p | 32 | ?
+| 8 | t | 33 | 4
+| 9 | l | 34 | 2
+| 10 | o | 35 | 7
+| 11 | w | 36 | c
+| 12 | i | 37 | 1
+| 13 | . (punt) | 38 | d
+| 14 | n | 39 | 6
+| 15 | j | 40 | x
+0| 16 | e | 41 | - (min)
+| 17 | f | 42 | =
+| 18 | 0 (zero) | 43 | SK (afkorting)
+| 19 | y | 44 | AR (afkorting, ook +)
+| 20 | v | 45 | AS  (afkorting)
+| 21 | , (komma) | 46 | KN  (afkorting)
+| 22 | g | 47 | KA (afkorting)
+| 23 | 5 | 48 | VE (afkorting)
+| 24 | / | 49 | @
+| 25 | q | 50 | : (dubbele punt)
+|===
+
+Er is ook de mogelijkheid, en ietwat andere volgorde voor de tekens te gebruiken, zoals in het populaire online-trainingstool "Learn CW On-line" (LCWO). Dit kan in het parametermenu van de Morserino-32 onder "Koch-Sequence" ingesteld worden.
+
+De tekenvolgorde bij de keuzen van "LCWO" is als volgt:
+
+k m u r e s n a p t l w i . j z = f o y , v g 5 / q 9 2 h 3 8 b ? 4 7 c 1 d 6 0 x - SK AR(+) KA AS KN VE @ :
+
+===== Koch: Oefenen met een zelf gekozen reeks tekens
+
+U kunt de Koch-trainer ook gaan gebruiken om een specifieke reeks tekens te trainen: upload een tekstbestand voor de File Player, met daarin de te trainen tekens (als één of meerdere 'woorden', op één of meer regels), en zet de parameter 'Koch Sequence' op de optie 'Custom Chars'. Op deze manier worden de tekens uit het bestand ingelezen. Nu kunt u de Koch-trainer (CW-generator of Echo-trainer) gebruiken, waarbij deze precies deze tekens voor de training gebruikt (de instelling van de Koch-les heeft hierop nu geen invloed). Als u de tekenset wilt wijzigen, upload dan een nieuw tekstbestand en selecteer opnieuw de optie 'Custom Chars' (zelfs als deze al was geselecteerd) om de nieuwe tekenset voor te bereiden (als u alleen een nieuw tekstbestand upload, wordt de aangepaste reeks tekens niet veranderd - u moet werkelijk naar de parameters gaan, en opnieuw 'Custom Chars' selecteren. Dit is een feature, geen fout: u kunt op deze manier overschakelen tussen het trainen van bepaalde tekens en het gebruik van de File Player met een ander tekstbestand). Indien u de 'Koch Sequence' op M32 of LCWO instelt, wordt de 'normale' Koch Trainer-optie terug hersteld.
+
+==== Koch: Learn New Chr (nieuwe tekens leren)
+
+Indien u dit menu-item selecteert, wordt het nieuwe karakter (dat overeenkomt met de geselecteerde Koch-les) geïntroduceerd - u hoort het geluid en ziet snel de volgorde van de punten en lijnen op het display; het teken wordt ook weergegeven. Dit wordt net zo lang herhaald tot u het stopt door de ZWARTE knop in te drukken. Na elke herhaling heeft u de mogelijkheid met de paddles in te geven wat u hoorde, en u wordt er over geïnformeerd of dat correct was of niet.
+
+Van zodra u het nieuwe teken onder de knie heeft, kunt u zowel naar de CW-generator als naar de Echo-Trainer binnen de Koch-trainer gaan, om het nieuw aangeleerde teken in combinatie met alle tot hier toe geleerde tekens te oefenen.
+
+==== Koch: CW generator en Echo Trainer
+
+De functionaliteit is dezelfde zoals hierboven voor deze beide functies beschreven, met de volgende kleine verschillen:
+
+- Alleen de tekens tot en met de geselecteerde Koch-les worden gegenereerd (resp. de gedefinieerde gebruikerspecifieke tekens, zie hierboven).
+- De parameter 'Random Groups' wordt genegeerd.
+- Er is geen submenu "File Player".
+
+
+
+=== Transceiver
+
+Er zijn in de Morserino-32 drie Transceiver-modi. De eerste is een zelfstandige zenderontvanger voor morse-communicatie met gebruik van de LoRa Spread Spectrum radiotechnologie (in de standaardversie in de 433MHz-band, maar er zijn versies voor de 868 en de 920MHz-banden beschikbaar). De tweede transceiver modus maakt gebruik van het Internet Protokoll (UDP op poort 7373) om te communiceren via een IP netwerk (over WLAN). De derde is een transceiver-modus, die zowel met een externe transceiver (bijv. een kortegolf amateur-transceiver) of met een systeem zoals iCW (CW over Internet) kan worden gebruikt. In elk van de drie gevallen zijn de CW Keyer en de CW Decoder gelijktijdig actief.
+
+
+
+==== LoRa Trx
+
+Zoals hoger vermeld gaat het hierbij om een Morsecode-zenderontvanger, die gebruik maakt van LoRa voor de overdracht van morsetekens naar andere Morserino-32's.
+Naast de functionaliteit van de CW-Keyer wordt alles via de LoRa-transceiver uitgezonden, wat via de keyer wordt ingevoerd
+(met een speciaal dataformaat, dat de punten, strepen en pauzes codeert, onafhankelijk of het om correcte morsetekens gaat of niet);
+de resterende tijd wordt deze frequentie ontvangen, zodat u inderdaad een interactief QSO met morsetekens tussen twee of meer Morserino 32-apparaten kunt voeren!
+Denk er om dat de tekens woord voor woord overgedragen worden,
+er is dus een kleine vertraging aan de ontvangstzijde - QSK is dus niet mogelijk. Het zal noodzakelijk zijn, te zorgen voor een ordelijk doorgeven van de sleutel!
+
+===== Meer informatie over de modus "LoRa Trx".
+In principe werkt deze net als de CW Keyer. Maar zodra er iets wordt ontvangen, toont de statusregel naast de eigen snelheid ook de snelheid van het tegenstation. Dit kan er zo uit zien: **18r20sWpM**, wat betekent dat u een station ontvangt dat seint met een snelheid van 18 Wpm, en dat u zelf zendt aan 20 WpM.
+Bovendien verandert de functie van de volumebalk rechts naast de statusregel: in plaats van het actuele volumeniveau aan te geven, verwijst hij naar de signaalsterkte - een eenvoudige vorm van een S-meter, om zo te zeggen.
+Een volle balk wijst op een RSSI-niveau van ongeveer -20dB, en de balk begint weer te geven bij een niveau van zowat -150dB.
+
+Door indrukken van de RODE Pwr/Vol/Scroll-toets kunt u verder het volume regelen.
+
+Door de zenderontvanger ontvangen morsetekens
+worden in het (scrollbare) tekstveld in vet weergegeven, terwijl alles wat u zelf zendt, in gewone tekst zichtbaar wordt.
+
+Verder moet een volgende kenmerk vermeld worden: de frequentie van de toon, die u bij ontvangst van het tegenstation hoort, wordt zoals in de andere modi ingesteld via de parameter `Pitch`.
+Bij het zenden kan de toonhoogte van de toon dezelfde zijn, of een halve toon hoger of lager dan die van bij de ontvangst --
+dit wordt ingesteld via de parameter `Tone Shift`, net zoals in de Echo Trainer-modus.
+
+Een andere zaak die u misschien moet weten: De LoRa morse-transceiver werkt niet zoals een CW-transceiver op kortegolf, waarbij een ongemoduleerde drager gesleuteld wordt, en de vertraging tussen zender en ontvanger alleen door de vertraging op het pad van de elektromagnetische golven, die de signalen overdragen, bepaald wordt. LoRa maakt gebruik van een Spread Spectrum-technologie voor het zenden van totaalpakketten - net als WLAN op een GSM of PC.
+Daarom wordt alles, wat ingevoerd wordt, eerst in data omgezet -- in principe de snelheid en alle punten, strepen en pauzes tussen de tekens.
+Zodra de pauze lang genoeg is, om als pauze tussen de woorden (als spatie dus) herkend te worden,
+wordt het volledige tot dan toe verzamelde datapakket verzonden, en tot slot met de oorspronkelijke snelheid van de ontvangende Morserino-32 weergegeven.
+
+Als morsecode in een LoRa-datapakket verpakt wordt, worden punten, strepen en pauzes gecodeerd. het is niet zo dat er verstaanbare tekst met ASCII-tekens verzonden wordt. Daardoor is het mogelijk, "illegale" morsetekens te verzenden, of tekens, die enkel in bepaalde talen gebruikt worden. Ze worden correct overgebracht (maar op het display als niet decodeerbaar weergegeven).
+
+Woord voor woord verzenden betekent een niet onaanzienlijke vertraging tussen zender en ontvanger, en de vertraging hangt in grote mate af van de lengte van de te verzenden woorden en de gebruikte snelheid. Aangezien de meeste woorden in een typisch CW-QSO vrij kort zijn (7 tekens of meer is al een heel lang woord), hoeft u zich hier geen zorgen over te maken (tenzij u allebei in dezelfde kamer zit zonder koptelefoon - dan zal het echt verwarrend worden). Maar probeert u eens, echt hele lange woorden te sturen, zeg maar 10 of meer tekens, met een heel lage snelheid (5 wpm) en u zult zien waar ik het over heb!
+
+===== Gebruik van twee verschillende LoRa "Kanalen"
+LoRa-datapakketten worden met een zogenaamd "Sync Word" geadresseerd - de ontvangers verwerpen pakketten, die niet het verwachte synchronisatiewoord vertonen.
+
+Morserino-32 kan vanaf versie 2.0 twee verschillende synchronisatiewoorden gebruiken, en zo effectief via twee verschillende “kanalen"
+communiceren. Dit kan bijv. in een klaslokaalsituatie gebruikt worden,
+om twee onafhankelijke groepen aan te maken, die elkaar niet wederzijds mogen storen.
+
+Normaal gezien werkt de M32 LoRa met het synchronisatiewoord 0x27 (we noemen dit het “standaard”-kanaal), maar via de instelling `LoRa Channel` in het parametermenu
+kan op 0x66 (het “secundair kanaal” genoemd) worden overgeschakeld.
+
+===== Gebruik van verschillende LoRa-frequentiebanden resp. frequenties
+Standaard worden de Morserino 32-bouwsets uitgeleverd met een LoRa-module, die in de 70cm-band werkt,
+en met als standaard-frequentie binnen deze band 434,150MHz (binnen de 70cm amateurband en binnen de Region 1 ISM-band).
+
+Indien u deze frequentie om een of andere reden niet kunt gebruiken (bijv. omwille van bandplannen, om organisatorische redenen, enz.) dan kunt u de frequentie op de standaard LoRa-module tussen 433,65 en 434,55MHz veranderen in stappen van 100kHz.
+
+Indien u een LoRa-frequentie nodig heeft van rond 868 of 920MHz, dan kan de bouwkit met Heltec-modules geleverd worden, die deze hogere frequenties ondersteunen (u kunt ook een dergelijke module nabestellen). In dit geval MOET de Morserino-32 geconfigureerd worden, zodat hij de juiste band en de juiste frequentie gebruikt.
+
+**Zie <<appendix1_1>> aan het einde van dit document**, om te lezen hoe u de LoRa configureert voor modules, die de 868- en de 929MHz-band ondersteunen, en hoe u de LoRa-frequentie-instellingen kunt wijzigen.
+
+
+===== Technische details van de LoRa transceivers
+* Frequentie: De standaardwaarde is 434,150MHz (binnen de 70cm-amateurband en binnen de Region 1 ISM-band) - zie de aanwijzingen hierboven voor het selecteren van andere frequenties.
+* LoRa spreidfactor: 7
+* LoRa bandbreedte: 250kHz
+* LoRa CRC: geen CRC
+* LoRa synchronisatiewoord: 0x27 (= decimaal 39) voor het standaardkanaal en 0x66 (= decimaal 102) voor het secundaire kanaal
+* HF-uitgangsvermogen: 20dBm (100mW)
+
+==== WiFi trx
+
+U kunt deze transceiver-modus gebruiken, om via het internetprotocol met een CW-vriend te communiceren, hetzij over het lokale netwerk, of via het internet. Omdat hiervoor het WLAN-netwerk gebruikt wordt, moet u er zeker van zijn, dat u uw Morserino met uw WLAN kunt verbinden - de functie "WiFi Config" moet voordien al eens uitgevoerd zijn. Binnen uw lokaal netwerk is het gebruik van deze transceiver-modus zeer eenvoudig: selecteer het eenvoudig in het menu, en u kunt communiceren (zonder dat u een Peer IP-adres configureert, wird alles naar het IP-adres 255.255.255.255 verzonden; dit is een broadcast-adres, het kan door alle apparaten binnen dit netwerk worden ontvangen). De Morserino-32 gebruikt de UDP-poort 7373 voor de asynchrone communicatie.
+
+Indien u via het internet met een bepaalde Morserino-32 wilt communiceren, dan moet u het IP-adres van uw vriend configureren. Dit gebeurt via het menupunt 'Config WiFi' (WLAN configureren), waarin nu een derde veld naast SSID en Wachtwoord zichtbaar is. In dit veld moet u het IP-adres van uw partner invoeren, of, indien voorhanden, de DNS hostname. Aansluitend zendt de WiFi-transceiver de pakketten naar dat IP-adres.
+
+Als dit IP-adres zich niet in uw lokale netwerk bevindt en u zich achter een firewall of router bevindt die uw netwerk als een privénetwerk behandelt, kan de Morserino weliswaar dingen naar het internet verzenden (tenzij bepaalde firewallregels de de meeste UDP-poorten blokkeren), maar de pakketten die van uw buddy komen, worden op de router geblokkeerd. In dit geval moet u "Port Forwarding" configureren en de router instrueren, alle UDP-pakketten naar 7373 van uw Morserino te verzenden. Tegelijkertijd moet u aan uw vriend uw vanaf het internet zichtbare IP-adres geven (d.w.z. het IP-adres van uw routerinterface aan uw internetprovider), en uw buddy moet hetzelfde doen (port forwarding configureren en u zijn IP-adres geven, dat zichtbaar is vanaf internet, die u in uw Morserino moet invoeren). Het klinkt misschien wat complex, maar dat is het niet.
+
+Een andere, misschien wat ingewikkelder optie zou zijn om een ​​VPN (Virtual Private Network) op te zetten zodat beide Morserino's zich in hetzelfde "virtuele netwerk" bevinden en dus met elkaar kunnen communiceren zonder dat firewallregels het dataverkeer blokkeren. Hoe dit gaat, valt buiten het bestek van deze handleiding - vraag een internetgoeroe naar meer details!
+
+==== iCW/Ext Trx
+
+In deze modus wordt een op de Morserino-32 aangesloten transceiver gesleuteld, of kunt u het line-out audiosignaal gaan gebruiken
+om bijv. een FM-transceiver te moduleren, of om het voor CW over het internet (iCW - Mumble gebruikt dit als protocol voor het uitwisselen van audiosignalen) te gebruiken.
+Alle CW-signalen, die als audio via de audio-ingang binnenkomen, worden gedecodeerd en op het display zichtbaar.
+Een externe zenderontvanger, die op aansluiting 1 aangesloten is, wordt door de keyer gesleuteld, of u gebruikt het geluidssignaal op de audio-uitgang
+(aansluiting 2), om het naar een computer of een FM-transceiver te brengen.
+
+=== CW decoder
+
+In deze modus worden morsetekens gedecodeerd, en op het display zichtbaar gemaakt. De morsecode kan worden ingevoerd met een gewone seinsleutel ("straight key" - aangesloten op de aansluiting waarop normaal een externe paddle is aangesloten), maar u kunt ook een van de twee touch-paddles gebruiken om als het ware een gewone morsesleutel te simuleren. Door de decodering op deze manier te gebruiken, kunt u seinschrift verbeteren door te controleren of wat u probeert te verzenden, correct werd gedecodeerd.
+
+Ook kunt u een geluidssignaal (op de audio-ingang) decoderen dat bijvoorbeeld van een ontvanger afkomstig is. De toonhoogte moet in de buurt van 700 Hz liggen. Optioneel is er een behoorlijk scherp filter (geïmplementeerd in software) dat alleen tonen in een zeer klein gebiedje rond 700 Hz herkent, en alle andere negeert. Dit wordt door het selecteren van de parameter `Narrow` geactiveerd (zie het deel <<parameters>>).
+
+De statusregel onderscheidt zich licht van bij andere modi. Om te beginnen bevindt de rotary encoder zich steeds in de modus voor het instellen van het volume - de snelheid wordt bepaald op basis van de gedecodeerde morsecode en kan niet handmatig worden ingesteld. Door indrukken van de knop van de rotary encoder wordt de decoder-modus beëindigd, en gaat u terug naar het startmenu.
+
+Links bovenaan naast de statusregel ziet u bij elke toetsdruk een zwarte rechthoek (of als er een 700Hz-toon herkend werd) - deze vervangt de indicatie voor de keyer-modus.
+
+De door de decoder gemeten actuele snelheid wordt in WpM op de statusregel zichtbaar.
+
+Deze modus heeft niet veel parameters (zie het deel <<parameters>>); het belangrijkste is de mogelijkheid, de filterbandbreedte van de audio-decoder tussen smal (ca. 150Hz) en breed (ca. 600Hz) om te schakelen. Voor het decoderen van signalen van een zenderontvanger (waar andere signalen in de buurt kunnen zijn), is het meestal het beste om de bandbreedte in te stellen op "Smal" en het signaal op exact 700 Hz in te stellen. Bij het decoderen van signalen van een FM-transceiver, iCW of een andere omgeving met weinig interferentie, is het beter om de instelling "Breed" te gebruiken - in dit geval hoeft de audiofrequentie niet exact 700 Hz te zijn.
+
+=== WLAN-functies
+
+U kunt de WLAN-mogelijkheid van de Heltec ESP32 WiFi LoRa -module in de Morserino-32 gebruiken voor twee functies van het apparaat:
+
+* Het uploaden van een tekstbestand naar de Morserino-32, dat daarna in de CW generator-modus of de Echo Trainer-modus kan worden “weergegeven".
+* Het uploaden van het binaire bestand van een nieuwe versie van de firmware.
+
+Voor beide functies moet het te uploaden bestand (of het nu een tekstbestand is of het gecompileerde binaire bestand voor de software-update) op uw computer staan ​​(zelfs een tablet of smartphone zal werken, aangezien alleen de basisfunctionaliteit van de webbrowser vereist is op dit apparaat), en moet de Morserino verbonden zijn met hetzelfde WiFi-netwerk als uw computer (of smartphone, enz.).
+
+Om de Morserino-32 met het lokale WLAN-netwerk te verbinden, moet u de SSID (de “naam") van het netwerk en het wachtwoord voor de verbinding daarmee kennen. En u moet deze beide elementen in uw Morserino-32 invoeren. Omdat er geen toetsenbord is om deze informatie gemakkelijk in te voeren, gebruiken we een andere methode en hiervoor is een andere WiFi-functie geïmplementeerd: de netwerkconfiguratie die gebruikt moet worden voordat u de upload- of updatefuncties kunt gaan gebruiken.
+
+Voor thuisnetwerken die (omwille van veiligheidsredenen) een lijst toegelaten MAC-adressen gebruiken, moet u de router configureren en het MAC-adres van de M32 invoeren, voor u de M32 met het netwerk kunt verbinden. Hiertoe is er ook een functie voor het weergeven van het MAC-adres op het display geïmplementeerd.
+
+Alle netwerkbetrokken functies bevinden zich onder het menupunt "**WiFi Functions**".
+
+BELANGRIJK: In softwareversies voor 2.0 waren de WLAN functies niet in het hoofdmenu ondergebracht. Lees in het geval dat u een update van versie  1.x naar versie 2.x wilt uitvoeren via WLAN <<appendix3>> aan het einde van dit document.
+
+==== Weergave van het MAC-adres (Displaying the MAC Address)
+"**Disp MAC Addr**" is het eerste item uit het menu "WiFi Functions”, het geeft het MAC-adres van de Morserino weer op de statusregel. Elke Morserino heeft een éénduidig MAC-adres.
+
+U kunt deze informatie gebruiken om de Morserino toegang te geven tot het WLAN-netwerk indien de WLAN-router zo geconfigureerd is, dat hij alleen bepaalde MAC-adressen tot het net toelaat.
+
+Indien u op de RODE toets drukt, start de Morserino-32 opnieuw op. Indien u niets doet, gaat de Morserino gewoon terug in diepe slaap, naargelang de instellingen die u in dat verband deed.
+
+
+==== Netwerkconfiguratie
+
+Selecteer het submenu "WiFi Config", om de netwerkconfiguratie door te voeren.
+
+Het apparaat start WLAN als **Access Point** en maakt op die manier een eigen WLAN-netwerk (met als SSID "morserino"). Indien u de beschikbare netwerken met een computer of een smartphone overloopt, kunt u het gemakkelijk vinden; gebruikt u dit netwerk op uw PC (of tablet of smartphone  -- er is geen wachtwoord voor de verbinding nodig).
+
+Zodra u met de WLAN "morserino" “verbonden bent, voert u "http://m32.local" in de browser op uw computer in. Indien uw computer of smartphone mDNS niet ondersteunt (Android bijv. doet dat niet, en ook Windows doet dat maar deels), moet u in de browser het IP-adres **192.168.4.1** invoeren in plaats van m32.local. Er wordt dan in de browser een klein formulier zichtbaar met slechts 3 lege velden: "SSID of WiFi network?",  "WiFi Password?" en "WiFi TRX Peer IP?". Voer nu de naam in van uw plaatselijk WLAN-netwerk en het overeenkomstige wachtwoord (het derde veld mag leeg blijven) en klik op de knop "Submit". De Morserino-32 slaat deze netwerkinformatie op, en start opnieuw (het netwerk "morserino" verdwijnt opnieuw).
+
+Het derde veld ("WiFi TRX Peer IP/Host?") wordt gebruikt om de WiFi transceiver-functionaliteit te configureren, d.w.z. om met een andere Morserino te communiceren via het Internet. In dit geval moet u in dit veld het IP-adres (of, indien voorhanden, de DNS hostname) van het tegenstation invullen. Indien u met de Morserino enkel op uw eigen netwerk wilt communiceren, moet hier geen IP-adres worden ingevoerd (in dat geval wordt het broadcast adres gebruikt, zodat alle Morserino's kunnen ontvangen, wat één van het zendt).
+
+BELANGRIJK: Morserino kan geen gebruik maken van een WiFi-netwerk met een "Captive Portal", zoals vaak gebruikt in openbare netwerken.  Deze netwerken verwachten dat op het apparaat, dat zich met het netwerk wil verbinden, een browser beschikbaar is, en dat is bij de Morserino-32 niet het geval...
+
+BELANGRIJK: De Morserino-32 ondersteunt alleen 2.4GHz WLAN's, en geen in het 5GHz-gebied. Blijkbaar duiken er ook occasioneel problemen op met Apple Airport routers.
+
+TIP: Als u uw WLAN al heeft geconfigureerd en deze stap opnieuw uitvoert, wordt de eerder ingevoerde SSID-naam van tevoren in het formulier weergegeven en hoeft u deze alleen indien nodig te wijzigen. Het wachtwoordveld is leeg, maar als u geen nieuw wachtwoord invoert, blijft het oude wachtwoord bewaard. Het veld "TRX Peer IP-adres" wordt ook ingevuld weergegeven indien dit van tevoren is ingevoerd. Indien u de gegevens in dit veld vist, wordt dit IP-adres verwijderd.
+
+TIP: De netwerkconfiguratie wordt opgeslagen in snapshots, d.w.z. u kunt verschillende netwerkinstellingen met snapshots oproepen indien u de Morserino-32 vaak in verschillende netwerkomgevingen gebruikt.
+
+==== Controleren van de netwerkconnectiviteit
+Gebruik het submenu-punt "Check WiFi" onder "WiFi Functions” om de netwerkverbinding te testen.
+
+
+Daarbij ziet u ofwel een foutmelding ("No WiFi" en de gebruikte SSID), of een succesmelding ("Connected!"), de SSID en het IP-adres, dat de Morserino van de WLAN-router kreeg.
+
+TIP: Mogelijk moet u uw Morserino redelijk kort bij uw WLAN-router plaatsen (in dezelfde kamer is normaal gezien OK)! De WLAN-antenne van de Heltec-module is zeer klein, en heeft problemen met de ontvangst van zwakke signalen.
+
+
+TIP: Als u een foutmelding krijgt terwijl toch de juiste toegangsgegevens werden ingevoerd en de Morserino zich in de directe omgeving van de WiFi-router bevindt, moet je het opnieuw proberen - soms lukt de eerste poging om wat voor reden dan ook niet ...
+
+Door op de RODE knop te drukken, keert deze functie terug naar het menu. Indien u niets doet, gaat de Morserino gewoon terug in diepe slaap, naargelang de instellingen die u in dat verband deed.
+
+
+==== Uploaden van een tekstbestand [[upload]]
+
+Van zodra u de Morserino-32 heeft geconfigureerd met uw lokale WiFi-inloggegevens, kunt u een tekstbestand uploaden dat u kunt gebruiken om te oefenen. Momenteel kan er zich maar één bestand op de Morserino-32 bevinden, d.w.z. als u een nieuw bestand upload, wordt het oude overschreven.
+
+Het **bestand**, dat u upload, moet een zuiver ASCII-tekstbestand zonder formattering zijn (geen Word-bestanden, PDF-documenten enz.). Duitse tekens (ÄÖÜäöüß), die als UTF-8 gecodeerd zijn, zijn toegestaan en worden omgezet in ae, oe, ue en ss. Het bestand kan grote en kleine letters, en alle tekens, die deel uitmaken van de Koch-methode, bevatten (in het totaal 50 tekens). Alle andere tekens worden bij het afspelen van de morsetekens gewoon genegeerd. Het te uploaden bestand mag behoorlijk groot zijn - er is daarvoor haast 1 MB geheugenruimte beschikbaar (genoeg, om een kopie van Mark Twain's "De avonturen van Huckleberry Finn" op te slaan).
+
+TIP: Android, Linux, iOS en OSX gebruiken UTF-8 als standaardcodering voor tekstbestanden. Onder Windows is dat niet het geval -- u kunt echter bijv. Notepad gebruiken, en daar onder “Opslaan als" kiezen voor het formaat UTF-8!
+
+Om het bestand te uploaden selecteert u in het menu "WiFi Functions" "File Upload". Na enkele seconden (het apparaat moet eerst verbinding maken met het WLAN-netwerk) geeft de Morserino-32 aan, dat hij wacht op de upload. Nu gaat u met de browser van de computer naar "http://m32.local" (of u vervangt "m32.local" door het op het display zichtbare IP-adres).
+
+TIP: Voor de upload-functie moet de Morserino-32 (en natuurlijk ook de PC of de tablet enz.) terug verbonden zijn met het lokale WLAN-netwerk!
+
+Eerst is er een **Login**-scherm te zien in de browser. Gebruik "**m32**" als gebruiker-ID en "**upload**" als wachtwoord. In de browser wordt nu een dialoog zichtbaar waarin u een bestand kunt selecteren - kies het bestand dat u wilt uploaden (naam of extensie speelt geen rol), en klik op de knop "Begin". Van zodra de upload klaar is (en dat duurt niet zo lang), start de Morserino-32 opnieuw, en kunt u het geüploade bestand in de  *CW Generator* of de *Echo Trainer* modus gaan gebruiken.
+
+BELANGRIJK: Als u het proces om welke reden dan ook moet afbreken, moet u het apparaat opnieuw opstarten door het volledig los te koppelen van de voeding (batterij en USB losgekoppeld) of door op de resetknop te drukken met behulp van een kleine schroevendraaier of een balpen (de resetknop is te bereiken via het gat naast de USB-aansluiting in de richting van de externe paddle-aansluiting).
+
+==== Bijwerken van de Morserino-32 firmware
+
+Het updaten van de firmware van de Morserino-32 via WLAN is een manier om dit te doen. U kunt dit ook doen door de Arduino IDE op een computer te gebruiken (dit vereist nog steeds het installeren van een aantal specifieke bestanden en bibliotheken om de Heltec-module en de ESP32-processor te ondersteunen, dan kan het binaire bestand worden gecompileerd uit de broncode ), of door een speciaal update-hulpprogramma te gebruiken (zie <<appendix4>>).
+
+TIP: U kunt elke gewenste versie installeren; u kunt ook versies overslaan, en zelfs  naar oudere versies teruggaan.
+
+Het bijwerken van de firmware is gaat bijna hetzelfde als het uploaden van een tekstbestand. Eerst moet het binaire bestand worden binnengehaald vanaf het Morserino-32 Repository op GitHub (https://github.com/oe1wkl/Morserino-32 - zoek naar een bestand met de naam "Binaries" onder "Software" . Zoek de nieuwste versie, en download ze op uw computer. De bestandsnaam ziet er uit als volgt:
+
+`morse_3_vx.y.ino.wifi_lora_32.bin` met x.y als versienummer.
+
+Roep nu terug het menu "**WiFi Functions**" op, en selecteer het punt "**Update Firmw**". Ga net als bij het uploaden van een bestand met de browser naar "http://m32.local" (resp. het getoonde IP-adres in de plaats van m32.local), waar u terecht komt in een aanmeldscherm. Ditmaal gebruikt u de gebruikersnaam "**m32**" en het wachtwoord "**update**".
+
+Vervolgens ziet u weer een scherm waarin u een bestand kan selecteren, selecteer het gedownloade binaire bestand, en klik op de knop "Begin". Dit keer duurt alles wat langer - het kan enkele minuten duren, geduld dus. Het bestand is groot, moet gedownload worden en in het geheugen van de Morserino-32 opgeslagen worden en daarna gecontroleerd, om er zeker van te zijn dat het gaat om een uitvoerbaar bestand. Tot slot start het apparaat zichzelf opnieuw op, en ziet u bij de start het nummer van de nieuwe versie op het display.
+
+[TIP]
+====
+Hierna zijn de stappen voor het bijwerken van de firmware via WLAN samengevat:
+
+1. Voer de netwerkconfiguratie door zoals hierboven beschreven (daartoe zorgt de Morserino voor een eigen WiFi-netwerk; u verbindt de browser met de Morserino en u voert in de browser de naam en het wachtwoord in van uw WLAN-netwerk). Dit moet slechts één keer gebeuren, omdat de Morserino deze toegangsgegevens voor toekomstig gebruik opslaat. Het verdient aanbeveling de functie "Check WiFi" te gebruiken, om er zeker van te zijn dat de Morserino verbinding kan maken met uw netwerk. Denk er aan, dat de Morserino eerder dicht bij de WiFi-router moet staan!
+
+2. Download het nieuwe binaire bestand op uw computer.
+
+3. Start "Update Firmware" op de Morserino. Na een tijdje toont hij het IP-adres (dat zich in uw WLAN bevindt!) en een melding, dat hij op een update wacht.
+
+4. Laat uw computer op het thuisnetwerk, en ga met de browser naar afwel het IP-adres van de Morserino of naar "http://m32.local" (dit werkt op Mac's en iPhones, normaal gezien werkt het niet op Windows-pc's of Android-toestellen).
+
+5. U ziet in de browser een aanmeldscherm. Voer als gebruikersnaam "m32" in, en als wachtwoord "update".
+
+6. U kunt nu een bestand selecteren. Selecteer het binaire bestand in de Download-map, en klik op "Begin". U ziet een voortgangsbalk, en na enige tijd (het kan enkele minuten duren - ook als de voortgangsbalk al 100% aangeeft) start de Morserino opnieuw op, met het nieuwe versienummer op het startscherm. Op dat ogenblik weet u, dat de update geslaagd is.
+====
+
+=== Go To Sleep
+
+Als u dit menupunt selecteert gaat de Morserino-32 naar de diepe slaap-modus, waarin hij beduidend minder stroom verbruikt dan tijdens het normale bedrijf. Toch zal ook nu de batterij na enkele dagen leeg zijn, zodat deze modus eigenlijk alleen bedoeld is voor kortere pauzes tussen de trainingseenheden. Zie het deel <<power>> hoger in dit handboek.
+
+== Instellingen [[parameters]]
+
+U bereikt het parametermenu (menu voor de instellingen) steeds via een **dubbelklik** op de **ZWARTE knop van de rotary encoder**. U ziet een `**>**` voor de actuele parameter, en de regel daaronder geeft de huidige waarde. Gebruik de rotary encoder om de beschikbare instellingen te doorlopen. Druk om het parametermenu te verlaten gewoon iets langer op de zwarte knop van de rotary encoder en u gaat terug naar de bedrijfsmodus van waaruit u het menu voor de parameterinstellingen opriep (of terug naar het menu, indien u dat verliet met een dubbelklik).
+
+Klik één keer van zodra de te wijzigen parameter bereikt is. Nu staat het teken `**>**` in de onderste regel van de parameterwaarde; dit duidt aan dat het draaien aan de rotary encoder deze waarde verandert. Klik zodra u met de waarde tevreden bent terug **één keer** om terug te keren naar het selecteren van de parameter, of **druk langer op de knop**, om het parametermenu meteen te verlaten.
+
+Natuurlijk variëren de instelbare parameters naargelang de modus waarin u zich bevindt: Indien u in een bepaalde modus dubbelklikt, komt u alleen bij de parameters, die voor de betreffende modus relevant zijn. Indien u in het startmenu dubbelklikte, wordt het volledige palet parameters zichtbaar.
+
+
+=== Snapshots [[snapshots]]
+Voor verschillende soorten training zijn in de regel verschillende parameterinstellingen vereist - bijv. voor de afstand tussen tekens en voor de woordafstand, voor de lengte van groepen tekens of woorden, enz.  Bij het wisselen van het ene type training naar het andere, moeten verschillende instellingen telkens keer worden gewijzigd.
+
+Om dit te vergemakkelijken kunt u “Snapshots" van de instellingen gebruiken: Nadat alles voor de eerste soort training werd ingesteld, slaat u de huidige parameters op in één van de acht "Snapshots"; u doet hetzelfde met de andere soorten training. U kunt de instellingen dan snel terug oproepen door een bepaald snapshot terug te halen.
+
+TIP: De ingestelde “Koch-les" wordt ook in bewaard in een niet-vluchtig deel van het geheugen, en staat dus meteen na het opnieuw opstarten ter beschikking. Ze wordt niet in de snapshots opgeslagen of door een snapshot overschreven.
+
+==== Opslaan van een snapshot
+
+Dubbelklik eerst, om naar het parametermenu te gaan. Nu kunt u met een langere druk op de RODE toets met de rotary encoder aangeven, op welke plaats de huidige instellingen moeten worden opgeslagen, van "Snapshot 1" tot "Snapshot 8”. Een verdere mogelijke optie is "Cancel Store”; hiermee kunt u teruggaan zonder dat er een snapshot wordt opgeslagen. Snapshot-geheugenplaatsen, die al in gebruik zijn, worden in **vet** zichtbaar, maar u kunt deze ook overschrijven. Met een klik op de zwarte knop slaat u het snapshot op op de gewenste plaats; het opslaan wordt kort bevestigd.
+
+==== Oproepen van een snapshot
+
+Ook hier gaat u met een dubbelklik op de zwarte knop eerst naar het parametermenu. Nu kunt u met een **korte** klik op de RODE knop met de rotary encoder selecteren, welke van de opgeslagen snapshots u wilt terugroepen, wat gebeurt met een klik op de zwarte toets van de rotary encoder; indien er geen snapshots opgeslagen zijn, krijgt u de melding "NO SNAPSHOTS" en gaat u terug met een druk op een willekeurige toets.
+
+==== Wissen van een snapshot
+
+U kunt snapshots die niet meer nodig zijn of onopzettelijk werden aangemaakt ook wissen. Ga daarbij te werk, net alsof u een snapshot wilt oproepen; selecteer het te wissen snapshot met de rotary encoder, en klik op de RODE knop om hem te wissen. Net als bij het opslaan en oproepen van snapshots krijgt u een korte melding, dat de actie slaagde.
+
+
+=== Algemene parameters
+Een hele reeks parameters zijn van algemene aard, en gelden dus voor alle modi van de Morserino-32.
+
+Dat zijn:
+
+`Encoder Click`: Indien u bij het draaien aan de rotary encoder geen klikken wilt horen, zet u deze parameter op OFF.
+
+`Tone Pitch`: De frequentie van de meehoortoon.
+
+`Time Out`:  Indien deze waarde op een andere waarde dan "No timeout" ingesteld is, gaat de M32 na een bepaalde tijd zonder activiteit in de diepe slaap-modus.  U kunt de M32 et een druk op de RODE knop opnieuw starten.
+
+`Quick Start`: Indien u deze instelling op ON zet, voert de M32 na de start meteen de modus uit die laatst actief was, zonder voordien in het menu te blijven staan.
+
+=== Lijst van alle Morserino-32 parameters
+Vetgedrukte waarden zijn standaard- of aanbevolen waarden. Bij oproepen vanuit het startmenu staan alle parameters ter beschikking om te worden gewijzigd; bij oproepen vanuit een lopend menu alleen diegene, die voor de betreffende modus relevant zijn.
+
+[cols="2,6,3",options=header]
+|===
+|Naam parameter
+|Beschrijving
+|Waarde
+
+
+| Encoder Click | Het draaien aan de rotary encoder kan voor een korte toon zorgen, of geluidloos gebeuren   | Off / On
+| Tone Pitch Hz   | De frequentie van de meehoortoon, in Hz | Een reeks tonen tussen 233 en 932Hz, instelbaar over twee ooctaven
+| External Pol.        | Maakt het omkeren mogelijk van de polariteit van een externe paddle. Deze parameter gebruikt u indien een externe paddle “verkeerd om" bedraad is, zodat de punten en de strepen van de interne en de externe paddle aan dezelfde kant liggen. | Normal / Reversed
+| Paddle Polarity | Legt vast, welke zijde van de paddle voor dits is, en welke voor dahs. | ` _. dah-dit` / **`._ di-dah`**
+| Latency | Legt vast, hoe lang na het genereren van het actuele element (punt of streep) de paddle “doof" is. Indien de waarde 0 is, moet de paddle losgelaten worden, terwijl het laatste element nog “bezig" is. Als de waarde op 7 is ingesteld, reageert de paddle pas na 7/8 van een puntlengte op aanraken. | Bij een waarde tussen 0 en 7, dus na 0/8 tot 7/8 van een puntlengte (de standaardwaarde is **4**, d.w.z. een halve puntlengte).
+| Keyer Mode     | Selecteert de Iambic Mode (A of B),  Ultimatic, Non-Squeeze of Straight Key; zie het deel <<keyer>>  | Curtis A / Curtis B / Ultimatic / Non-Squeeze / Straight Key
+| CurtisB DahT% | Timing in de Curtis B mode voor dahs, in procent; zie het deel <<keyer>>       | 0 -- 100, in stappen van 5 [**35 -- 55**]
+| CurtisB DitT% | Timing in de Curtis B mode voor dits, in procent; zie het deel <<keyer>>     | 0 -- 100, in stappen van 5 [**55 -- 80**]
+| AutoChar Spce   | Minimale afstand tussen de tekens, in lengtes van dits.  | Off / min. 2 / **3** / 4 dots
+| Tone Shift | De toonhoogte van de toon, indien u in de LoRa CW Trx Modus of in de Echo Trainer-modus zendt. Kan dezelfde zijn als die u van het tegenstation (resp. de vraag tot zenden in de Echo Trainer-modus) hoort, maar ook een halve toon hoger of lager. |**No Tone Shift** / Up 1/2 Tone / Down 1/2 Tone
+| Interword Spc | De tijdsafstand (het aantal dits) tussen de woorden (zie het deel <<generator>>)   | 6 -- 45 [**7**]
+| Interchar Spc | De tijdsafstand (het aantal dits) tussen de tekens (zie het deel <<generator>>) | 3 -- 15 [**3**]
+| Random Groups | Voor de uitvoer van groepen random tekens geeft u hier aan, welke teken-subgroepen moeten worden ingevoegd. | Alpha (letters)/ Numerals (cijfers) / Interpunct. (leestekens) / Pro Signs (afkortingen.)/ Alpha + Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / All Chars (alle)
+| Length Rnd Gr | Hier kiest u hoeveel tekens elke groep van random tekens moet bevatten; traditioneel zijn er dat 5, maar om te trainen kan het zinvol zijn, met een kleiner aantal te beginnen. | Vaste lengtes 1 -- 6, en 2 tot 3 -- 2 tot 6 (lengte gekozen binnen deze grenzen volgens het random principe) [**5**]
+| Length Calls | Hier geeft u de maximale lengte aan van de gegenereerde roeptekens. | Unlimited (onbeperkt) / max. 3 -- max. 6
+| Length Abbrev | Hier kiest u de maximale lengte van de random gegenereerde algemeen gebruikelijke CW-afkortingen en Q-groepen uit. | Unlimited (onbeperkt) / max. 2 -- max. 6
+| Length Words | Hier kiest u de maximale lengte van de random gegenereerde algemene Engelse woorden. | Unlimited (onbeperkt) / max. 2 -- max. 6
+| Max # of Words | Zodra het aangegeven aantal woorden of tekengroepen bereikt wordt, geeft de Morserino-32 een afsluitend AR ("+"), om aan te geven dat de sequentie beëindigd is, pauzeert, en wacht. Na aanraken van een paddle (of een klik op de zwarte knop) gaat hij verder, en stuurt hij de volgende reeks woorden. (Indien de optie "Auto Stop" actief is, wordt deze parameter in de CW generator genegeerd.) | **Unlimited** (onbeperkt) / 5 tot 250 in stappen van 5
+| CW Gen Displ | Hier kiest u, hoe de CW Trainer moet weergeven wat hij stuurt. | Display off (geen weergave)/ **Char by Char** (teken voor teken) / Word by word (woord voor woord)
+| Each Word 2x | In de CW Trainer-modus wordt in de stand "On" elk “woord" (teken tussen twee spaties) twee maal gestuurd, om te leren op het gehoor mee te lezen. Deze optie en de optie 'Stop/Next/Rep' zijn niet met elkaar compatible; indien u de ene op ON zet, wordt de andere automatisch op OFF gezet.| **Off** / On
+| Randomize File | Indien op "On" ingesteld, slaat de File Player na elk verzonden woord n woorden (n = random getal tussen 0 en 255) over. |  **Off** / On
+|Echo Repeats    |Hier geeft u aan hoe vaak een woord herhaald wordt, indien het antwoord te laat of verkeerd is, voor de Echo Trainer een nieuw woord stuurt. Indien de waarde 0 is, dan is het nieuwe woord steeds een nieuw woord, onafhankelijk van het feit of de reactie correct of verkeerd was.        | 0 -- 6 / Forever (onbeperkt herhalen tot het antwoord juist is)
+|Echo Prompt    | Hiermee legt u vast, hoe u in de Echo Trainer-modus gevraagd gaat worden iets in te voeren. De mogelijke instellingen zijn: "Sound Only" (enkel tonen; standaardwaarde; best om lezen op het gehoor te leren), "Display only" (het woord dat u moet ingeven, wordt op het display getoond, er wordt geen hoorbare code gegenereerd; goed om te leren zenden met de paddle) en "Sound & Display", d.w.z. u hoort de uitnodiging om te seinen EN u kunt haar op het display zien.               | **Sound only** / Display only / Sound&Displ
+| Confrm. Tone  | Hiermee legt u vast, of er in de Echo Trainer-modus een akoestische bevestigingstoon moet mee worden hoorbaar gemaakt. Indien u deze uitschakelt (OFF), herhaalt het apparaat alleen de vraag om te seinen indien het antwoord verkeerd was, of zend het een nieuwe set na een juist antwoord. De optische aanduiding van "OK" of "ERR" blijft echter ook na het uitschakelen van de toon zichtbaar. | **On** / Off
+|Key ext TX        | Hiermee bepaalt u of een aangesloten zender bij gebruik van het apparaat gesleuteld wordt. | Never (nooit) / **CW Keyer only** (alleen bij de CW keyer) / Keyer&Genertr (bij de keyer en de CW-generator)
+| Send via LoRa | Indien ingeschakeld wordt datgene wat de CW-generator stuurt, ook via LoRa overgedragen - op deze manier bereikt u dat één apparaat iets genereert en meerdere andere dezelfde sequentie ontvangen (in de LoRa Trx-modus). Denk er om dat er bij de overdracht via LoRa een antenne aangesloten moet zijn, anders kan de LoRa-transceiver beschadigd raken! | LoRa Tx ON / **LoRa Tx OFF**
+| LoRa Channel | Selecteren, welk virtueel kanaal LoRa gebruikt. | **Standard Ch** / Secondary Ch
+| Bandwidth | Definieert de bandbreedte die de CW-decoder gebruikt (dit is in de software geïmplementeerd met een zogenaamd Goertzel-filter).  (Wide (breed) = ca. 600Hz, Narrow (smal) = ca. 150Hz; middenfrequentie = ca. 700Hz) | **Wide** / Narrow
+| Adaptv. Speed | Als deze optie op ON staat, wordt de snelheid met 1 WpM verhoogd, nadat u in de Echo Trainer-modus een correct antwoord gaf, en met 1 verlaagd, als het antwoord verkeerd was. | ON / **OFF**
+| Koch Sequence | Hiermee bepaalt u de volgorde van de tekens, indien u gebruik maakt van de Koch-methode om te leren en te trainen. U kunt hier om te oefenen ook een specifieke tekenset definiëren met de optie 'Custom Chars' - zie het hoofdstuk <<koch>> (laatste deel).| **M32 / JLMC** (Just Learn Morse Code)  /  LCWO / Custom Chars
+| Time Out | Zodra de in deze parameter aangegeven tijd zonder actualiseren van het display verloopt, gaat het apparaat in diepe slaap-modus. U kunt met een druk op de RODE knop opnieuw starten. | No timeout (geen time-out)/ **5 min** / 10 min / 15 min
+| Quick Start | Maakt het mogelijk (op ON gezet) de aanvankelijke menukeuze over te slaan, d.w.z. dat het apparaat bij de start meteen begint met de uitvoering van de modus, die actief was bij het laatste uitschakelen. | ON / **OFF**
+| STop/Next/Rep | Indien op ON geplaatst stopt het opwekken van morsetekens na elk woord in de CW generator-modus (of de Koch generator-modus), om het leren van het lezen op het gehoor te vergemakkelijken. Na aanraken van de rechterpaddle wordt het volgende woord geseind, en na aanraken van de linker paddle wordt het woord herhaald. Deze optie en de optie 'Each Word 2x' zijn niet met elkaar compatible; indien u de ene op ON zet, wordt de andere automatisch op OFF gezet.| ON / **OFF**
+| Serial Output | Hiermee wordt ingesteld, of op de USB-aansluiting de gegenereerde tekens van de keyer resp. de gedecodeerde tekens van de decoder worden naar buiten gebracht. Bij de instelling "ERRORS only" worden alleen bepaalde foutmeldingen uitgegeven (dat is alleen zo indien geen van de andere opties gekozen werd).
+
+De optie "Everything" geeft zowel de geseinde als de gedecodeerde tekens, samen met alle in de CW generator of de Echo Trainer genereerde tekens. Zie ook <<appendix5>>. | **Keyer** / Decoder / Keyer+Decoder  / Everything / ERRORS only
+|===
+
+== Bijlagen
+
+=== Bijlage 1: Hardware configuratie (LoRa-banden & frequenties en kalibreren van de accu-meting)
+
+Er is een hardware-configuratiemenu dat u bereikt, door tijdens het inschakelen van de Morserino-32 de zwarte knop van de rotary encoder ingedrukt te houden. Van zodra u de knop na het starten los laat, kunt u gewenste configuratie door draaien aan de rotary encoder selecteren, en met een druk op de zwarte knop activeren.
+
+De keuzemogelijkheden zijn "Calibr. Batt." (kalibreren van de accumeting), "LoRa Config." (instellen van de LoRa configuratie overeenkomstig de gebruikte Heltec-module) en "Cancel" (verlaten van het menu zonder iets te veranderen, en doorgaan met het normale starten van de M32).
+
+
+==== Bijlage 1.1: LoRa-banden en frequenties configureren [[appendix1_1]]
+
+Indien u een standaard 433 MHz Heltec module in de Morserino-32 heeft zitten, is hij al voorgeconfigureerd voor de juiste band en een standaardfrequentie binnen deze band.
+
+BELANGRIJK: Indien u de frequentie binnen de standaardband moet veranderen, oen een Heltec-module voor de banden 868 en 920MHz wilt gebruiken, moet u de Morserino-32 configureren voor u gebruik maakt van de LoRa-functies.
+
+De volgende banden en frequentiegebieden, die de bovenste UHF LoRa-frequenties ondersteunen, kunnen in de Morserino-32 voor de Heltec-module geconfigureerd worden:
+
+* 868MHz band:
+		866,25 tot 869,45MHz in stappen van 100 kHz (standaard: 869,15MHz)
+* 920MHz band:
+		920,25 tot 923,15MHz in stappen van 100 kHz (standaard: 920,55MHz)
+
+De standaard Heltec-modules ondersteunen slechts de 433MHz-band, en de Morserino-32 kan zo geconfigureerd worden, dat hij 433,65 tot 434,55MHz in stappen van 100 kHz (standaard: 434,15MHz) gebruikt.
+
+**Om de Morserino-32 voor niet standaard-frequenties en banden te configureren, gaat u tewerk als volgt:**.
+
+
+* Start de Morserino-32 en hou daarbij de ZWARTE knop van de rotary encoder ingedrukt.
+* Van zodra er een melding zichtbaar wordt, laat u de zwarte knop los.
+* Eerst wordt u gevraagd de gewenste band te selecteren (selecteer 433 voor de standaard LoRa-module en 868 of 920 voor de bovenste UHF LoRa-module); draai nu de rotary encoder op de gewenste band en klik één keer kort op de zwarte knop. **De gekozen band moet compatible zijn met de gebruikte Heltec-module!**
+* Nu wordt u gevraagd een frequentie te kiezen binnen de geselecteerde band. De eerst getoonde frequentie is de standaardinstelling voor deze band - als deze in orde is klikt u gewoon één keer op de zwarte knop. In het andere geval kiest u een frequentie, door de rotary encoder te verdraaien en op de knop te klikken zodra de juiste frequentie gevonden werd.
+* Onmiddellijk daarna start de Morserino-32 normaal, met de nu gekozen LoRa-instellingen. Op de bovenste regel van het startscherm zie u de geconfigureerde QRG voor LoRa als een getal van 5 cijfers (bijv. 43415 voor de voorinstelling in de 433MHz-band).
+
+
+==== Bijlage 1.2: Kalibrering van de accumeting [[appendix1_2]]
+
+De in de Heltec-modules aanwezige meting van de accuspanning is helaas niet zo betrouwbaar. Hierbij spelen meerdere factoren een rol: een meetfout binnen de ESP32-processor door kleine variaties in de referentiespanning van de chip (hier een eigenlijk verwaarloosbare kleine meetfout), en problemen met de spanningsdeler op de Heltec module, die voor de meting gebruikt wordt (dit kan leiden tot eerder grote fouten, en grote verschillen tussen verschillende modules). Hoewel het meten van de accuspanning geen elementair probleem betekend voor het gebruik van de M32, is het toch een lastige fout, die er ook kan toe leiden dat de M32 zich niet meer laat inschakelen, omdat de firmware de accuspanning te laag vindt, hoewel dat niet het geval is.
+
+Om de meting van de accuspanning te kalibreren, moet u eerst de spanning van de accu met een multimeter meten. Voer van zodra deze waarde bekend is de volgende stappen uit:
+
+* Schakel de M32 in terwijl u de ZWARTE knop ingedrukt houdt, tot de melding "Release BLACK" zichtbaar wordt.
+* Kies de optie "Calibr. Batt." met de rotary encoder.
+* U ziet op het display de spanning (in milliVolt). Draai nu de rotary encoder in de ene of de andere richting, tot de aangegeven waarde zo dicht mogelijk aansluit bij de door u gemeten accuspanning.
+* Druk opnieuw op de zwarte knop om de kalibratiewaarde op te slaan, en door te gaan met het starten van de M32.
+
+
+=== Bijlage 2: Instellen van het audio-ingangsniveau [[appendix2]]
+
+U kunt nog een **andere functie** bereiken terwijl u zich in het startmenu bevindt - niet door te kiezen binnen een menu, maar met **een lange druk op de rode knop**:
+
+Hiermee start u een functie voor het instellen van het audio-ingangsniveau: Zorg er voor dat er op de ingang een geluidssignaal aangesloten is, bijv. van en kortegolfontvanger (zie <<controls>> bij het begin van dit document, #2), en een balk geeft de spanning van het ingangssignaal aan. Stel nu de blauwe trimpotentiometer zo in, dat de linker en het rechter uiteinden van de heldere balk zich binnen de beide uiterste rechthoeken bevinden. Tegelijk wordt bij deze bedrijfswijze op de Line Out-uitgang een sinussignaal uitgegeven en wordt de transceiveruitgang kortgesloten (indien een zender gesleuteld wordt indien hij op aansluiting #1 aangesloten is - eerst deze transceiver afkoppelen als u dit niet wilt!). U kunt nu bijv. het niveau van het uitgangssignaal op een aangesloten computer instellen, of controleren of een zender gesleuteld wordt.
+
+Een eenvoudige test of een demo voor de Audio In-instelling bestaat er in, de Line Out-uitgang met de Audio In-aansluiting te verbinden (verbind daartoe "Tip" met "Sleeve") en de uitgangstoon naar de audio-ingang te voeren. U kunt zien hoe de balk verandert als u aan de potentiometer draait, waarbij op het einde van het potentiometergebied enkel een kleine balk in het midden overblijft en de beide rechthoeken op beide uiteinde van de indicatie vrij komen (in principe meet u dan enkel de ruis aan de ingang van de op-amp). Op het andere uiteinde van het potentiometer-draaigebied daarentegen gaan de balken verder dan het uiteinde van de rechthoeken. Nu kunt u het niveau met de potentiometer zo instellen, dat de heldere balk de de buitengrenzen van de rechthoeken **bijna** raakt. Dit is de optimale instelling voor de audio-ingang. Natuurlijk moet u dit doen voor de audiobron, die u wilt gaan gebruiken, bijv. voor een ontvanger.
+
+TIP: Alleen indien u zich in het menu bevindt, activeert het **lang indrukken van de RODE knop** de niveau-instelling. Als u zich in een van de Morserino-modi (Keyer, Generator, Echo Trainer, Transceiver enz.) bevindt, activeert een langere druk op de RODE knop de scroll-modus van het display, zodat u de tekst kunt lezen, die al weggescrold is!
+
+=== Bijlage 3: Firmware update-procedure voor eerdere versies dan 2.0 [[appendix3]]
+
+Bij de firmwareversies 1.x waren de WLAN-functies niet via het hoofdmenu bereikbaar, maar door drie keer snel indrukken van de RODE knop. In dat geval moet de update-procedure op volgende wijze worden uitgevoerd:
+
+Als dat nog niet gebeurd is moet eerst de WLAN-configuratie worden doorgevoerd.
+
+Klik terwijl de Morserino-32 het startmenu weergeeft ***drie maal*** snel op de RODE toets, om in het WLAN-menu te komen. Het bovenste item is "WiFi Config". Selecteer dit.
+
+Het apparaat start WiFi als toegangspunt (zoals een WLAN router) en maakt op die manier een eigen WLAN-netwerk (met als SSID “Morserino"). Indien u de beschikbare netwerken met een computer of een smartphone bekijkt vindt u het gemakkelijk. Verbind nu uw computer (of uw smartphone) met dit netwerk (voor deze verbinding heeft u geen wachtwoord nodig).
+
+Voer zodra u verbonden is in uw browser "m32.local" in. Indien uw computer of smartphone mDNS niet ondersteunt (Android bijv. doet dat niet), moet u in uw browser het IP-adres 192.168.4.1 invoeren. Nu wordt in de browser een klein (leeg) formulier zichtbaar met slechts twee velden: "SSID" en "Password". Voer de naam in van uw plaatselijk WLAN-netwerk en het overeenkomstige wachtwoord, en klik op de knop "Submit". De Morserino-32 slaat deze netwerkinfomatie op, en start opnieuw (het netwerk "Morserino" is niet meer zichtbaar).
+
+Roep nu opnieuw het WLAN-menu op door drie keer snel op de RODE knop te klikken, en de optie "**Update Firmw.**" te selecteren. Ga net als bij het uploaden van bestanden met uw browser naar "m32.local" (of naar het op het display zichtbare IP-adres); uiteindelijk ziet u terug aan aanmeldscherm. Gebruik daarvoor de gebruikersnaam "**m32**" en het wachtwoord "**update**".
+
+Vervolgens ziet u weer een scherm waarin u een bestand kan selecteren, selecteer het opgeslagen binaire bestand, en klik op de knop "Begin". Dit keer duurt alles wat langer - het kan enkele minuten duren, geduld dus. Het bestand is groot, moet gedownload worden en in het geheugen van de Morserino-32 opgeslagen worden en daarna gecontroleerd, om er zeker van te zijn dat het gaat om een uitvoerbaar bestand. Tot slot start het apparaat  opnieuw op, en ziet u tijdens het starten het nummer van de nieuwe versie op het display.
+
+Natuurlijk kunt u de firmware ook via USB bijwerken, indien er momenteel nog een oudere softwareversie wordt gebruikt (zie volgende bijlage).
+
+=== Bijlage 4: Bijwerken van de firmware via USB [[appendix4]]
+
+Deze eenvoudige update-werkwijze, momenteel beschikbaar voor het Windows-bedrijfssysteem, werd mogelijk gemaakt door de werkzaamheden van Matthias Jordan en Joe Wittmer.
+
+Ga eerst na of er bij een driver voor USB-naar-serieel CP210x van Silicon Labs geïnstalleerd is, die door de Heltec-module voor haar USB-interface wordt gebruikt. Actuele versies van Windows 10 installeren deze automatisch. Als dat bij u niet het geval is kunt u de driver hier downloaden:
+    https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers
+
+Open om te controleren of u de juiste driver installeerde en om na te gaan met welke poort hij verbonden is het Apparaatbeheer op uw computer (voer in het zoekveld links beneden op het scherm “Apparaatbeheer" in, en u kunt het Apparaatbeheer selecteren).
+
+Verbind nu de Morserino met behulp van een USB-kabel met de computer. Het Apparaatbeheer-scherm wordt bijgewerkt en een item "Ports" zichtbaar maken - open deze, om het volgende te zien: Silicon Labs CP210x ... (COM3). Dit kan in uw geval natuurlijk aan andere COM-poort zijn; noteer dus de correcte poortnaam.
+
+TIP: Zorg er voor dat u een “juiste" USB-kabel gebruikt, gene kabel dus die enkel geschikt is om op te laden!
+
+Download nu het update-programma vanaf Joe's GitHub repository:
+https://github.com/joewittmer/Morserino-32-Firmware-Updater/tree/master/release
+
+Pak dit bestand uit. Hierin zit een programma "update_m32.exe" - kopieer het naar een map naar keuze (normaal gezien is dat bij mij de map ""Downloads"). Download nu ook het binaire Morserino-bestand voor de versie die u wilt installeren van Morserino GitHub, idealerwijze in dezelfde map.
+
+Open nu een commandoregel op de computer (voer in het zoekveld links beneden "cmd" in).
+
+Voer eerst "cd" (change directory) uit naar de directory of map waarin u het programma en het binaire bestand opsloeg; bij mijn download was dat bijv. "Downloads":
+
+`cd Downloads`
+
+Voer nu de volgende commandoregel in:
+
+`update_m32 <COMx> 921600 <binaryfilename>`
+
+Vervang daarbij <COMx> door de correcte naam van de COM-poort, en <binaryfilename> door de correcte naam van het binaire Morserino-bestand. In mijn geval was dat:
+
+`update_m32 COM3 921600 morse_3_v3.0.ino.wifi_lora_32_V2.bin`
+
+Na korte tijd gaat de Morserino-32 opnieuw starten, en het bijgewerkte versienummer tonen.
+
+
+=== Bijlage 5: Gebruik van de seriële uitgang van de Morserino-32 [[appendix5]]
+
+De Morserino-32 kan data via de seriële USB-interface uitvoeren. Hiermee kunt u bijvoorbeeld de tekens die op het display getoond worden zichtbaar maken op terminalscherm van en computer. Op deze manier kunt u de Morserino-uitvoer met een groot scherm of een beamer zichtbaar maken. Dit kan nuttig zijn voor demonstraties en bij opleiding.
+
+De terminal moet ingesteld worden op een baudrate van 115200.
+
+U kunt deze functie ook gebruiken in combinatie met computersoftware, die speciaal voor de Morserino-32 ontwikkeld werd, om diens trainingsfuncties te verbeteren.
+
+Momenteel zijn voor dit doel twee softwareproducten beschikbaar:
+
+* CW Trainer für Morserino van Enzo, IW7DMH (zie https://iw7dmh.jimdofree.com/other-projects/cw-trainer-for-morserino-32/) en
+
+* Morserino Phrases Trainer van Tommy, OZ1THC (zie https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer).
+
+Zie ook de aanwijzingen in verband met de parameter "Serial Output" in het hoofdstuk <<parameters>>.
