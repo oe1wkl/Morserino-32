@@ -96,7 +96,7 @@ Wenn du nur ein externes Paddel verwendest (bzw. auch für den Transport), könn
 |Verwende diesen Anschluss, um entweder ein externes (mechanisches) Paddel anzuschließen (Spitze ist linkes Paddel, Ring ist rechtes Paddel, Hülse ist Masse),
 oder eine einfache Morsetaste (Spitze ist die Taste).
 Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eingabe überwachen!
-**Bitte beachte, dass für andere Funktionen (Echo-Trainer, Transceiver)  einfache Morsetasten derzeit NICHT unterstützt werden!**
+
 
 |11
 |Serielle Schnittstelle

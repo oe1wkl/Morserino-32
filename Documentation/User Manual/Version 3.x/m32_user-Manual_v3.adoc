@@ -96,7 +96,7 @@ If you are only using an external paddle (or for transport), you may remove the 
 |Use this to connect either an external (mechanical) paddle (tip is left paddle, ring is right paddle, sleeve is ground),
 or a straight key (tip is the key).
 With a straight key you can use the CW decoder to monitor the quality of you fist!
-**Please note that other functions (Echo Trainer, Transceiver) currently do NOT support a straight key!**
+
 
 |11
 |Serial Interface
