@@ -38,16 +38,63 @@ const char* MorseWiFi::password = "";
 // HTML for the AP server - used to get SSID and Password for local WiFi network - needed for file upload and OTA SW updates
 const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP Info</title><style> form {width: 420px;}div { margin-bottom: 20px;}"
                 "label {display: inline-block; width: 240px; text-align: right; padding-right: 10px;} button, input {float: right;}</style>"
-                "</head><body>"
-                "<form action='/set' method='get'><div>"
-                "<label for='ssid'>SSID of WiFi network?</label>"
-                "<input name='ssid' id='ssid' value='SSIDV'></div> <div>"
-                "<label for='pw'>WiFi Password?</label>"
-                "<input name='pw' id='pw'></div> <div>"
-                "<label for='trxpeer'>WiFi TRX Peer IP/Host?</label>" 
-                "<input name='trxpeer' id='trxpeer' value='PEERIPV'>"
-                "</div><div>(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
-                "</div><div><button>Submit</button></div></form></body></html>";
+                "</head>"
+                "<body>"
+                  "<form action='/set' method='get'>"
+                    "<div>"   // fields for network 1
+                      "<div>"
+                        "<label for='ssid1'>SSID of WiFi network 1?</label>"
+                        "<input name='ssid1' id='ssid1' value='SSIDV1'>"
+                      "</div>"
+                      "<div>"
+                        "<label for='pw1'>WiFi Password 1?</label>"
+                        "<input name='pw1' id='pw1'>"
+                      "</div>"
+                      "<div>"
+                        "<label for='trxpeer1'>WiFi TRX Peer IP/Host 1?</label>" 
+                        "<input name='trxpeer1' id='trxpeer1' value='PEERIPV1'>"
+                      "</div>"
+                    "</div>"
+                  
+                    "<div>"   // fields for network 2
+                      "<div>"
+                        "<label for='ssid2'>SSID of WiFi network 2?</label>"
+                        "<input name='ssid2' id='ssid2' value='SSIDV2'>"
+                      "</div>"
+                      "<div>"
+                        "<label for='pw2'>WiFi Password 2?</label>"
+                        "<input name='pw2' id='pw2'>"
+                      "</div>"
+                      "<div>"
+                        "<label for='trxpeer2'>WiFi TRX Peer IP/Host 2?</label>" 
+                        "<input name='trxpeer2' id='trxpeer2' value='PEERIPV2'>"
+                      "</div>"
+                    "</div>"
+                  
+                    "<div>"   // fields for network 3
+                      "<div>"
+                        "<label for='ssid3'>SSID of WiFi network 3?</label>"
+                        "<input name='ssid3' id='ssid3' value='SSIDV3'>"
+                      "</div>"
+                      "<div>"
+                        "<label for='pw3'>WiFi Password 3?</label>"
+                        "<input name='pw3' id='pw3'>"
+                      "</div>"
+                      "<div>"
+                        "<label for='trxpeer3'>WiFi TRX Peer IP/Host 3?</label>" 
+                        "<input name='trxpeer3' id='trxpeer3' value='PEERIPV3'>"
+                      "</div>"
+                    "</div>"
+                  
+                    "<div>"
+                      "(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
+                    "</div>"
+                    "<div>"
+                      "<button>Submit</button>"
+                    "</div>"
+                  "</form>"
+                "</body>"
+              "</html>";
 
 
 /*
@@ -202,6 +249,63 @@ void internal::handleNotFound() {
   MorseWiFi::server.send(404, "text/plain", message);
 }
 
+void MorseWiFi::menuNetSelect() {
+  const int numNetworks = 3;
+  String names[numNetworks];
+  names[0] = "1: " + MorsePreferences::wlanSSID1;
+  names[1] = "2: " + MorsePreferences::wlanSSID2;
+  names[2] = "3: " + MorsePreferences::wlanSSID3;
+
+  MorseOutput::clearDisplay();
+  MorseOutput::printOnStatusLine( true, 0,  "Select Wifi");
+
+  int btnClicks;
+  int choice = 0;
+  int previousChoice = -1;
+  while (true) {
+    checkShutDown(false);  // possibly time-out: go to sleep
+    if(choice!=previousChoice) {
+      MorseOutput::clearThreeLines();
+      MorseOutput::printOnScroll(0, REGULAR, 0, names[choice] );
+      previousChoice = choice;
+    }
+    switch(checkEncoder()){
+      case -1:
+        if(choice == 0) {
+          choice = numNetworks;
+        }
+        choice--;
+        break;
+      case 1:
+        choice++;
+        if(choice >= numNetworks){
+          choice = 0;
+        }
+        break;
+    }
+    Buttons::modeButton.Update();
+    btnClicks = Buttons::modeButton.clicks;
+    if(btnClicks == 1)
+      break;
+    if(btnClicks == -1){
+      choice = -1;
+      break;
+    }
+  }
+
+  switch(choice) {
+    case 0: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID1, MorsePreferences::wlanPassword1, MorsePreferences::wlanTRXPeer1);
+      break;
+    case 1: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID2, MorsePreferences::wlanPassword2, MorsePreferences::wlanTRXPeer2);
+      break;
+    case 2: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID3, MorsePreferences::wlanPassword3, MorsePreferences::wlanTRXPeer3);
+      break;
+    case -1: // double click pressed to exit menu
+      break;
+  }
+  
+}
+
 void MorseWiFi::menuExec(uint8_t command) {
   switch (command) {
     case  _wifi_mac:
@@ -266,8 +370,16 @@ void MorseWiFi::startAP() {
     String formular;
     formular.reserve(1024);
     formular = myForm;
-    formular.replace("SSIDV", MorsePreferences::wlanSSID);
-    formular.replace("PEERIPV", MorsePreferences::wlanTRXPeer); 
+
+    formular.replace("SSIDV1", MorsePreferences::wlanSSID1);
+    formular.replace("PEERIPV1", MorsePreferences::wlanTRXPeer1); 
+
+    formular.replace("SSIDV2", MorsePreferences::wlanSSID2);
+    formular.replace("PEERIPV2", MorsePreferences::wlanTRXPeer2); 
+
+    formular.replace("SSIDV3", MorsePreferences::wlanSSID3);
+    formular.replace("PEERIPV3", MorsePreferences::wlanTRXPeer3); 
+
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", formular);
   });
@@ -275,7 +387,13 @@ void MorseWiFi::startAP() {
   server.on("/set", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", "Wifi Info updated - now restarting Morserino-32...");
-    MorsePreferences::writeWifiInfo(String(server.arg("ssid")), String(server.arg("pw")), String(server.arg("trxpeer")));   
+
+    MorsePreferences::writeWifiInfoMultiple(
+      String(server.arg("ssid1")), String(server.arg("pw1")), String(server.arg("trxpeer1")),
+      String(server.arg("ssid2")), String(server.arg("pw2")), String(server.arg("trxpeer2")),
+      String(server.arg("ssid3")), String(server.arg("pw3")), String(server.arg("trxpeer3"))
+    );   
+
     //DEBUG("SSID: " + String(MorsePreferences::wlanSSID) + " Password: " + String(MorsePreferences::wlanPassword) + " Peer. " + String(MorsePreferences::wlanTRXPeer));
     ESP.restart();
   });
@@ -353,9 +471,8 @@ boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Connect to WiFi network
   if (MorsePreferences::wlanSSID == "") 
       return internal::errorConnect(String("WiFi Not Conf"));
-    
-  WiFi.begin(MorsePreferences::wlanSSID.c_str(), MorsePreferences::wlanPassword.c_str());
 
+  WiFi.begin(MorsePreferences::wlanSSID.c_str(), MorsePreferences::wlanPassword.c_str());
   // Wait for connection
   long unsigned int wait = millis();
   while (WiFi.status() != WL_CONNECTED) {

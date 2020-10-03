@@ -35,6 +35,7 @@ namespace MorseWiFi
     extern const char* serverIndex;
 
     void menuExec(uint8_t command);         // called from main menu, with argument from menu
+    void menuNetSelect();                   // display menu of wifi networks to select from
     void startAP();
     boolean wifiConnect();
     void uploadFile();
