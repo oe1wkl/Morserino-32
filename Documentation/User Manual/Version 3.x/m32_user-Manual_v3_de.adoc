@@ -100,7 +100,7 @@ Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eing
 
 |11
 |Serielle Schnittstelle
-|Man ein Kabel (direkt oder über einen 4-poligen Steckverbinder) an ein externes serielles Gerät, z.B. ein GPS-Empfängermodul, anschließen (dies wird derzeit von der Software nicht unterstützt, ist aber nicht sehr schwer zu realisieren). Die 4 Pole sind T (Transmit), R (Receive), + und - (3,3V Stromversorgung vom Heltec-Modul).
+|Man kann ein Kabel (direkt angelötet oder über einen 4-poligen Steckverbinder) an ein externes serielles Gerät, z.B. ein GPS-Empfängermodul, anschließen (dies wird derzeit von der Software nicht unterstützt, ist aber nicht sehr schwer zu realisieren). Die 4 Pole sind T (Transmit), R (Receive), + und - (3,3V Stromversorgung vom Heltec-Modul).
 
 |12
 |Reset-Taste
