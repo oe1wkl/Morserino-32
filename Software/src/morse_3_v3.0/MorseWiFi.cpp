@@ -44,6 +44,8 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
                 "<input name='ssid' id='ssid' value='SSIDV'></div> <div>"
                 "<label for='pw'>WiFi Password?</label>"
                 "<input name='pw' id='pw'></div> <div>"
+                "<label for='nopw'>Empty Password?</label>"
+                "<input type='checkbox' name='nopw' id='nopw'></div> <div>"
                 "<label for='trxpeer'>WiFi TRX Peer IP/Host?</label>" 
                 "<input name='trxpeer' id='trxpeer' value='PEERIPV'>"
                 "</div><div>(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
@@ -275,7 +277,8 @@ void MorseWiFi::startAP() {
   server.on("/set", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", "Wifi Info updated - now restarting Morserino-32...");
-    MorsePreferences::writeWifiInfo(String(server.arg("ssid")), String(server.arg("pw")), String(server.arg("trxpeer")));   
+    //DEBUG("SSID: " + String(server.arg("ssid")) + " Password: " + String(server.arg("pw")) + " NoPW: " + String(server.arg("nopw")) + " Peer. " + String(server.arg("trxpeer")));
+    MorsePreferences::writeWifiInfo(String(server.arg("ssid")), String(server.arg("pw")), String(server.arg("nopw")), String(server.arg("trxpeer")));
     //DEBUG("SSID: " + String(MorsePreferences::wlanSSID) + " Password: " + String(MorsePreferences::wlanPassword) + " Peer. " + String(MorsePreferences::wlanTRXPeer));
     ESP.restart();
   });
@@ -353,8 +356,13 @@ boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Connect to WiFi network
   if (MorsePreferences::wlanSSID == "") 
       return internal::errorConnect(String("WiFi Not Conf"));
-    
-  WiFi.begin(MorsePreferences::wlanSSID.c_str(), MorsePreferences::wlanPassword.c_str());
+
+  const char *wlanPasswd = MorsePreferences::wlanPassword.c_str();
+  if(MorsePreferences::wlanEmptyPassword == "on") {
+    //DEBUG("No password for WiFi");
+    wlanPasswd = NULL;
+  }
+  WiFi.begin(MorsePreferences::wlanSSID.c_str(), wlanPasswd);
 
   // Wait for connection
   long unsigned int wait = millis();

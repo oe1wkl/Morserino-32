@@ -80,6 +80,7 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::menuPtr = 1;                      // current position of menu
   String  MorsePreferences::wlanSSID = "";                    // SSID for connecting to the Internet
   String  MorsePreferences::wlanPassword = "";                // password for connecting to WiFi router
+  String  MorsePreferences::wlanEmptyPassword = "";           // if set then no password required for connecting to WiFi router
   String  MorsePreferences::wlanTRXPeer = "";                 // peer Morserino for WiFI TRX
   uint32_t MorsePreferences::fileWordPointer = 0;             // remember how far we have read the file in player mode / reset when loading new file         
   uint8_t MorsePreferences::promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
@@ -1224,6 +1225,9 @@ void MorsePreferences::readPreferences(String repository) {
 
     MorsePreferences::wlanSSID = pref.getString("wlanSSID");
     MorsePreferences::wlanPassword = pref.getString("wlanPassword");
+    MorsePreferences::wlanEmptyPassword = pref.getString("wlanEmptyPasswd"); // wlanEmptyPassword
+    //DEBUG("readPreferences - wlanEmptyPassword: \"" + String(MorsePreferences::wlanEmptyPassword) + "\"");
+    //DEBUG("readPreferences - pref.getString(\"wlanEmptyPassword\"): \"" + pref.getString("wlanEmptyPasswd") + "\"");
     MorsePreferences::wlanTRXPeer = pref.getString("wlanTRXPeer", "");
     MorsePreferences::lcwoKochSeq = pref.getBool("lcwoKochSeq");
     MorsePreferences::useCustomCharSet = pref.getBool("useCustomChar");
@@ -1358,6 +1362,10 @@ void MorsePreferences::writePreferences(String repository) {
         pref.putString("wlanSSID", MorsePreferences::wlanSSID);
     if (MorsePreferences::wlanPassword != pref.getString("wlanPassword"))
         pref.putString("wlanPassword", MorsePreferences::wlanPassword);
+    if (MorsePreferences::wlanEmptyPassword != pref.getString("wlanEmptyPasswd")){
+        //DEBUG("writePreferences - wlanEmptyPassword: \"" + String(MorsePreferences::wlanEmptyPassword) + "\"");
+        pref.putString("wlanEmptyPasswd", MorsePreferences::wlanEmptyPassword);
+    }
     if (MorsePreferences::wlanTRXPeer != pref.getString("wlanTRXPeer"))
         pref.putString("wlanTRXPeer", MorsePreferences::wlanTRXPeer);
 
@@ -1512,12 +1520,13 @@ void MorsePreferences::writeLastExecuted(uint8_t menuPtr)
     pref.end();                                 // close namespace
 }
 
-void MorsePreferences::writeWifiInfo(String ssid, String passwd, String trxpeer)
+void MorsePreferences::writeWifiInfo(String ssid, String passwd, String emptyPassword, String trxpeer)
 {
     if (ssid != "")
       MorsePreferences::wlanSSID = ssid;
     if (passwd != "")
       MorsePreferences::wlanPassword = passwd;
+    MorsePreferences::wlanEmptyPassword = emptyPassword;
     //if (trxpeer != "")
       MorsePreferences::wlanTRXPeer = trxpeer;
     pref.begin("morserino", false);             // open the namespace as read/write
@@ -1525,6 +1534,10 @@ void MorsePreferences::writeWifiInfo(String ssid, String passwd, String trxpeer)
         pref.putString("wlanSSID", MorsePreferences::wlanSSID);
     if (MorsePreferences::wlanPassword != pref.getString("wlanPassword"))
         pref.putString("wlanPassword", MorsePreferences::wlanPassword);
+    if (MorsePreferences::wlanEmptyPassword != pref.getString("wlanEmptyPasswd")) {
+        //DEBUG("writeWifiInfo - wlanEmptyPassword: \"" + String(MorsePreferences::wlanEmptyPassword) + "\"");
+        pref.putString("wlanEmptyPasswd", MorsePreferences::wlanEmptyPassword);
+    }
     if (MorsePreferences::wlanTRXPeer != pref.getString("wlanTRXPeer"))
         pref.putString("wlanTRXPeer", MorsePreferences::wlanTRXPeer);
 

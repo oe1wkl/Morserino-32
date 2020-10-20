@@ -82,6 +82,7 @@ namespace MorsePreferences
   extern uint8_t menuPtr;
   extern String  wlanSSID;
   extern String  wlanPassword;
+  extern String  wlanEmptyPassword;
   extern String  wlanTRXPeer; 
   extern uint32_t fileWordPointer;
   extern uint8_t promptPause;
@@ -172,7 +173,7 @@ namespace MorsePreferences
   void writeWordPointer();
   void writeVolume();
   void writeLastExecuted(uint8_t menuPtr);
-  void writeWifiInfo(String, String, String);
+  void writeWifiInfo(String, String, String, String);
   void fireCharSeen(boolean wpmOnly);
   void setCurrentOptions(prefPos *current, int size);
 }
