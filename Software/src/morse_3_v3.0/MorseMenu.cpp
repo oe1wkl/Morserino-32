@@ -21,7 +21,7 @@ using namespace MorseMenu;
 //////// variables and constants for the modus menu
 
 
-const uint8_t menuN = 41;     // no of menu items +1
+const uint8_t menuN = 42;     // no of menu items +1
 
 const String menuText [menuN] = {
   "",
@@ -70,9 +70,10 @@ const String menuText [menuN] = {
     "Check WiFi",
     "Upload File",
     "Update Firmw", //39
+    "Wifi Select", //40
   
   
-  "Go To Sleep" } ; // 40
+  "Go To Sleep" } ; // 41
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
        
@@ -113,12 +114,13 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_trxWifi,_trxLora,_trx,0},                         // 32 icw
   {0,_trx,_wifi,_dummy,0},                              // 33 decoder
   {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 34 WiFi
-  {1,_wifi_update,_wifi_config,_wifi,0},                // 35 Disp Mac
+  {1,_wifi_select,_wifi_config,_wifi,0},                // 35 Disp Mac
   {1,_wifi_mac,_wifi_check,_wifi,0},                    // 36 Config Wifi
   {1,_wifi_config,_wifi_upload,_wifi,0},                // 37 Check WiFi
   {1,_wifi_check,_wifi_update,_wifi,0},                 // 38 Upload File
-  {1,_wifi_upload,_wifi_mac,_wifi,0},                   // 39 Update Firmware
-  {0,_wifi,_keyer,_dummy,0}                             // 40 goto sleep
+  {1,_wifi_upload,_wifi_select,_wifi,0},                // 39 Update Firmware
+  {1,_wifi_update,_wifi_mac,_wifi,0},                   // 40 Select network
+  {0,_wifi,_keyer,_dummy,0}                             // 41 goto sleep
 };
 
 //boolean quickStart;                                     // should we execute menu item immediately?
@@ -436,6 +438,9 @@ boolean MorseMenu::menuExec() {                                          // retu
       case _wifi_upload:
       case _wifi_update:
                   MorseWiFi::menuExec((uint8_t) MorsePreferences::menuPtr);
+                  break;
+      case _wifi_select:
+                  MorseWiFi::menuNetSelect();
                   break;
       case  _goToSleep: /// deep sleep
                 checkShutDown(true);

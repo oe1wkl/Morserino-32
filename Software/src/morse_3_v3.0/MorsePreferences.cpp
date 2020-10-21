@@ -81,6 +81,16 @@ Preferences pref;               // use the Preferences library for storing and r
   String  MorsePreferences::wlanSSID = "";                    // SSID for connecting to the Internet
   String  MorsePreferences::wlanPassword = "";                // password for connecting to WiFi router
   String  MorsePreferences::wlanTRXPeer = "";                 // peer Morserino for WiFI TRX
+  String  MorsePreferences::wlanSSID1 = "";                    // SSID for connecting to the Internet
+  String  MorsePreferences::wlanPassword1 = "";                // password for connecting to WiFi router
+  String  MorsePreferences::wlanTRXPeer1 = "";                 // peer Morserino for WiFI TRX
+  String  MorsePreferences::wlanSSID2 = "";                    // SSID for connecting to the Internet
+  String  MorsePreferences::wlanPassword2 = "";                // password for connecting to WiFi router
+  String  MorsePreferences::wlanTRXPeer2 = "";                 // peer Morserino for WiFI TRX
+  String  MorsePreferences::wlanSSID3 = "";                    // SSID for connecting to the Internet
+  String  MorsePreferences::wlanPassword3 = "";                // password for connecting to WiFi router
+  String  MorsePreferences::wlanTRXPeer3 = "";                 // peer Morserino for WiFI TRX
+
   uint32_t MorsePreferences::fileWordPointer = 0;             // remember how far we have read the file in player mode / reset when loading new file         
   uint8_t MorsePreferences::promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
   uint8_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
@@ -1225,6 +1235,17 @@ void MorsePreferences::readPreferences(String repository) {
     MorsePreferences::wlanSSID = pref.getString("wlanSSID");
     MorsePreferences::wlanPassword = pref.getString("wlanPassword");
     MorsePreferences::wlanTRXPeer = pref.getString("wlanTRXPeer", "");
+
+    MorsePreferences::wlanSSID1 = pref.getString("wlanSSID1");
+    MorsePreferences::wlanPassword1 = pref.getString("wlanPassword1");
+    MorsePreferences::wlanTRXPeer1 = pref.getString("wlanTRXPeer1", "");
+    MorsePreferences::wlanSSID2 = pref.getString("wlanSSID2");
+    MorsePreferences::wlanPassword2 = pref.getString("wlanPassword2");
+    MorsePreferences::wlanTRXPeer2 = pref.getString("wlanTRXPeer2", "");
+    MorsePreferences::wlanSSID3 = pref.getString("wlanSSID3");
+    MorsePreferences::wlanPassword3 = pref.getString("wlanPassword3");
+    MorsePreferences::wlanTRXPeer3 = pref.getString("wlanTRXPeer3", "");
+
     MorsePreferences::lcwoKochSeq = pref.getBool("lcwoKochSeq");
     MorsePreferences::useCustomCharSet = pref.getBool("useCustomChar");
     MorsePreferences::customCharSet = pref.getString("customCharSet", "");
@@ -1361,6 +1382,26 @@ void MorsePreferences::writePreferences(String repository) {
     if (MorsePreferences::wlanTRXPeer != pref.getString("wlanTRXPeer"))
         pref.putString("wlanTRXPeer", MorsePreferences::wlanTRXPeer);
 
+    if (MorsePreferences::wlanSSID1 != pref.getString("wlanSSID1"))
+        pref.putString("wlanSSID1", MorsePreferences::wlanSSID1);
+    if (MorsePreferences::wlanPassword1 != pref.getString("wlanPassword1"))
+        pref.putString("wlanPassword1", MorsePreferences::wlanPassword1);
+    if (MorsePreferences::wlanTRXPeer1 != pref.getString("wlanTRXPeer1"))
+        pref.putString("wlanTRXPeer1", MorsePreferences::wlanTRXPeer1);
+
+    if (MorsePreferences::wlanSSID2 != pref.getString("wlanSSID2"))
+        pref.putString("wlanSSID2", MorsePreferences::wlanSSID2);
+    if (MorsePreferences::wlanPassword2 != pref.getString("wlanPassword2"))
+        pref.putString("wlanPassword2", MorsePreferences::wlanPassword2);
+    if (MorsePreferences::wlanTRXPeer2 != pref.getString("wlanTRXPeer2"))
+        pref.putString("wlanTRXPeer2", MorsePreferences::wlanTRXPeer2);
+
+    if (MorsePreferences::wlanSSID3 != pref.getString("wlanSSID3"))
+        pref.putString("wlanSSID3", MorsePreferences::wlanSSID3);
+    if (MorsePreferences::wlanPassword3 != pref.getString("wlanPassword3"))
+        pref.putString("wlanPassword3", MorsePreferences::wlanPassword3);
+    if (MorsePreferences::wlanTRXPeer3 != pref.getString("wlanTRXPeer3"))
+        pref.putString("wlanTRXPeer3", MorsePreferences::wlanTRXPeer3);
 
     if (! morserino)  {
         pref.putUChar("lastExecuted", MorsePreferences::menuPtr);   // store last executed command in snapshots
@@ -1510,6 +1551,61 @@ void MorsePreferences::writeLastExecuted(uint8_t menuPtr)
     pref.begin("morserino", false);             // open the namespace as read/write
     pref.putUChar("lastExecuted", menuPtr);   // store last executed command
     pref.end();                                 // close namespace
+}
+
+void MorsePreferences::writeWifiInfoMultiple(
+  String ssid1, String passwd1, String trxpeer1,
+  String ssid2, String passwd2, String trxpeer2,
+  String ssid3, String passwd3, String trxpeer3
+  )
+{
+    pref.begin("morserino", false);             // open the namespace as read/write
+
+    if (ssid1 != "")
+      MorsePreferences::wlanSSID1 = ssid1;
+    if (passwd1 != "")
+      MorsePreferences::wlanPassword1 = passwd1;
+    //if (trxpeer != "")
+      MorsePreferences::wlanTRXPeer1 = trxpeer1;
+
+    if (MorsePreferences::wlanSSID1 != pref.getString("wlanSSID1"))
+        pref.putString("wlanSSID1", MorsePreferences::wlanSSID1);
+    if (MorsePreferences::wlanPassword1 != pref.getString("wlanPassword1"))
+        pref.putString("wlanPassword1", MorsePreferences::wlanPassword1);
+    if (MorsePreferences::wlanTRXPeer1 != pref.getString("wlanTRXPeer1"))
+        pref.putString("wlanTRXPeer1", MorsePreferences::wlanTRXPeer1);
+
+    if (ssid2 != "")
+      MorsePreferences::wlanSSID2 = ssid2;
+    if (passwd2 != "")
+      MorsePreferences::wlanPassword2 = passwd2;
+    //if (trxpeer != "")
+      MorsePreferences::wlanTRXPeer2 = trxpeer2;
+
+    if (MorsePreferences::wlanSSID2 != pref.getString("wlanSSID2"))
+        pref.putString("wlanSSID2", MorsePreferences::wlanSSID2);
+    if (MorsePreferences::wlanPassword2 != pref.getString("wlanPassword2"))
+        pref.putString("wlanPassword2", MorsePreferences::wlanPassword2);
+    if (MorsePreferences::wlanTRXPeer2 != pref.getString("wlanTRXPeer2"))
+        pref.putString("wlanTRXPeer2", MorsePreferences::wlanTRXPeer2);
+
+    if (ssid3 != "")
+      MorsePreferences::wlanSSID3 = ssid3;
+    if (passwd3 != "")
+      MorsePreferences::wlanPassword3 = passwd3;
+    //if (trxpeer != "")
+      MorsePreferences::wlanTRXPeer3 = trxpeer3;
+
+    if (MorsePreferences::wlanSSID3 != pref.getString("wlanSSID3"))
+        pref.putString("wlanSSID3", MorsePreferences::wlanSSID3);
+    if (MorsePreferences::wlanPassword3 != pref.getString("wlanPassword3"))
+        pref.putString("wlanPassword3", MorsePreferences::wlanPassword3);
+    if (MorsePreferences::wlanTRXPeer3 != pref.getString("wlanTRXPeer3"))
+        pref.putString("wlanTRXPeer3", MorsePreferences::wlanTRXPeer3);
+
+    pref.end();
+
+    writeWifiInfo(ssid1, passwd1, trxpeer1);
 }
 
 void MorsePreferences::writeWifiInfo(String ssid, String passwd, String trxpeer)
