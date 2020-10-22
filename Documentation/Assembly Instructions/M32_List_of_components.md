@@ -1,6 +1,6 @@
-#Packing List Morserino-32	
+# Packing List Morserino-32	
 	
-##All Kits:	
+## All Kits:	
 
 | Qty | Item |
 |:-:|-------|	
@@ -8,7 +8,7 @@
 |1	|Bag with components (pink) (see below)|
 |1	|Heltec ESP32 Wifi LoRa module (preprogrammed that's why the bliste package is cut open; the firmware version (not the hardware version!) is hand-written on the package)|
 	
-###Bag with components (pink; contains 18 items)
+### Bag with components (pink; contains 18 items)
 
 | Qty | Item |
 |:-:|-------|	
@@ -31,7 +31,7 @@
 In the following picture you see these components with the exception of the PCB, the paddles and the black knob:
 ![Components][List01]
 [List01]: Images/M32_Components.png "PImages of componentsn"
-##The following only when ordered with case & antenna:
+## The following only when ordered with case & antenna:
 | Qty | Item |
 |:-:|-------|		
 1	|Bottom plate (acrylic glass)
@@ -39,7 +39,7 @@ In the following picture you see these components with the exception of the PCB,
 1	|Bag with hardware &  antenna (clear -see below)
 
 	
-###Bag with hardware / antenna (clear; 25 items)
+### Bag with hardware / antenna (clear; 25 items)
 | Qty | Item |
 |:-:|-------|		
 1	|Antenna, with SMA male connector
