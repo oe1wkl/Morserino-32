@@ -3867,24 +3867,19 @@ void clearScrollBuffer() {
 }
 
 void flushScroll() {
-  //Serial.println("Flushing String Buffer: " + printToScroll_buffer + "Length: " + printToScroll_buffer.length());
-
   uint8_t len = printToScroll_buffer.length();
   if (len != 0) {
-    printToScroll_internal(printToScroll_lastStyle, printToScroll_buffer);
-  /* Serial.print("flush: " + String(len));
-  for (int i = 0; (i < len); i++) {
-    String t = printToScroll_buffer.substring(i, i+1);
-    //Serial.printf(" flushing %d<%s> ", i, t.c_str());
-    printToScroll_internal(printToScroll_lastStyle, t);
-  }
-      */
-
-  clearScrollBuffer();
+    //Serial.print("flush: ");
+    for (int i = 0; (i < len); i++) {
+      String t = printToScroll_buffer.substring(i, i+1);
+      //Serial.printf(" flushing %d<%s> ", i, t.c_str());
+      printToScroll_internal(printToScroll_lastStyle, t);
+    }
+    clearScrollBuffer();
   }
   else {
-  //Serial.println("(flush)");
-    }
+    //Serial.println("(flush)");
+  }
 }
 
 
