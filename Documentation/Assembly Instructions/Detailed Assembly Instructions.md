@@ -13,7 +13,7 @@
 * Check that all components are ready - identify them with the help of the packing list, and identify where they will go, with the help of the placement drawing. Please notify [mailto:info@morserino.info]() if any components are missing or defective, so that some replacement can be sent to you! ![placement drawing][Ass01]
 [Ass01]: Images/3_placement.jpg "Location of Components"
 
-###Step-by-step instructions (at least read them, even if you decide to do it differently)
+### Step-by-step instructions (at least read them, even if you decide to do it differently)
 
 
 1. First solder the following components to the PCB: The 4 phone jacks (3 different types, but it is easy to see which one fits where); then the trimmer resistor (**its orientation does not matter** - the silk scren on the PCB and the markings on the trimmer do not really fit together), and the sliding switch (the lever facing outward, of course); then the rotary encoder and the push-button switch (be particularly careful with this one - it has a tendency to end up slightly slanted - it might not nicely fit the hole in the top plate in such a case. Make sure it sits really flush on the PCB). This switch has protruding "noses" on its case - one of them should be facing towards the long edge of the PCB, and the other - obviously - towards the loudspeaker.
@@ -74,7 +74,7 @@
 [Ass02]: Images/lunchbox.jpg "Storage in a lunchbox"
  
 
-###Choice of LiPo battery for the Morserino-32
+### Choice of LiPo battery for the Morserino-32
 
 For my prototypes I used a small 600 mAh single-cell LiPo battery that is commonly used in RC devices like quadcopters etc. The brand I use is „Tattu“ and has the following specs (see [https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html]() or [https://www.genstattu.com/tattu-25c-1s-3-7-v-600mah-lipo-battery-pack-with-molex-plug-6pcs.html]()): 
 
