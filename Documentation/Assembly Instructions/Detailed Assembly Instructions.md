@@ -69,7 +69,7 @@ Please not that in edition 2 there are two trimmer potentiometers, one (500 Ohms
 
  *Power cable installed for battery under the Heltec module*
 
-10. Solder the loudspeaker to the PCB (this is last, because it will make soldering the cables on the top side difficult once the speaker sits on the board).
+10. Solder the loudspeaker to the PCB (this is last, because it will make soldering the cables on the top side difficult once the speaker sits on the board). The speaker for the 2nd edition has markings (+, -) - I don't think that the polarity matters, but I put the + side towards the edge of the board.
 
 11. Put the black knob onto the shaft of the encoder (inside the know there are two small guiding ledges that need to be aligned with the flattened side of the shaft), and the red cap onto the shaft of the push button switch.
 

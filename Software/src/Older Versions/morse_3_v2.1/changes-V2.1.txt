@@ -1,0 +1,11 @@
+Changes in Version 2.1
+
+Bug fixes:
+
+* In Generator Mode only vvv<ka> was sent when the option Auto Stop was on. This has been fixed. In addition, the parameter „Max # of Words“ is ignored when „Auto Stop“ is „on“.
+
+* In ‚Echo Trainer' > ‚Random' (length = 1 char) everything was running OK until a '+' occurred. This sign was then repeated in an endless loop, no matter if the answer was correct or not. This has been fixed.
+
+* In The 'echo trainer' with „Max # of Words“ not unlimited, when the last word was repeatedly given wrong, the Morserino hung in a strange state (which could be exited with a press of the black knob). This has been fixed.
+
+* The CW decoder was setting the keyed speed according to the code it was decoding (described in the manual as „bug or feature“). This was a nuisance in Transceiver mode, when you wanted your keyer speed to remain the same no matter what speed the other station was sending with. This has been fixed, decoder speed is now independent from keyer speed. In Transceiver mode both speeds are shown as e.g. r14s18 WpM, which means received 14 WpM, sending at 18 WpM.

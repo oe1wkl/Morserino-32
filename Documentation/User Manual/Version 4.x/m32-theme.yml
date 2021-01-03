@@ -1,0 +1,73 @@
+extends: default
+page:
+  layout: portrait
+  size: A4
+  margin: [1.5cm, 2cm, 1.5cm, 2cm]
+  margin-inner: 4cm
+  margin-outer: 2.5cm
+title-page:
+  logo:
+    image: m32c.png
+  title:
+     font-size: 24
+     font_color: D32F2F
+  subtitle:
+     font-family: Noto Serif
+     font-size: 28
+     font-style: bold
+     font-color: D32F2F
+base:
+  font-family: Helvetica
+  font-color: 111111
+  font-size: 10.5
+  line-height-length: 14
+  line-height: $base-line-height-length / $base-font-size
+vertical-spacing: $base-line-height-length
+heading:
+  font-family: Helvetica
+  font-size: 14
+  font-style: bold
+  line-height: 1.2
+  margin-bottom: $vertical-spacing
+header:
+  font-size: 10
+  font_color: 777777
+  height: 1cm
+  recto:
+    center:
+      content: '_{organization}_'
+  verso:
+    center:
+      content: '_{organization}_'
+footer:
+  font-size: 11
+  font_color: 444444
+  height: 1cm
+  recto:
+    right:
+      content: '{chapter-title} | {page-number}'
+    left:
+      content: image:m32c.png[pdfwidth=0.25in]
+  verso:
+    left:
+      content: '{page-number} | {chapter-title}'
+    right:
+      content: image:m32c.png[pdfwidth=0.25in]
+table:
+  border-color: 888888
+  stripe-background-color: AAAAAA
+toc:
+  font-size: 10
+  title:
+    font-family: Noto Serif
+    font-size: 24
+  dot-leader:
+    font-color: 888888
+heading:
+  font-color: D32F2F
+  h2-font-family: Noto Serif
+  h2-font-size: 24
+  h3-font-size: 18
+  h4-font-size: 14
+literal:
+  background-color: dddddd

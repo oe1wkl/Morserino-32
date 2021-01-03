@@ -1,7 +1,0 @@
-Bug fixes and Improvements:
-- Debounce timing for mechanical paddles changed to better support high speed
-
-New features:
-- A way to display the device's MAC address: press the RED button at start-up (or a bit longer, when you wake up the Morserino), and it will show the MAC address in the status line. Pressing the RED button again reboots the Morserino. Useful if you need to define MAC addresses for allowed devices on your home network.
-
-- A new mode in addition to Iambic A, Iambic B and Ultimatic: Non-Squeeze. This „simulates“ the behavior of a single lever paddle when using a dual lever paddle. Operators used to single lever paddles tend to have difficulties using dual-lever paddles, as they sometimes inadvertently squeeze the paddles, especially at higher speeds. The non-squeeze mode just ignores squeezing, making it easier for these operators to use a dual lever paddle.

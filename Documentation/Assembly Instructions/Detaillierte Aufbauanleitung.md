@@ -73,7 +73,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
  *Anschlusskabel montiert für Akku unter Heltec Modul*
 
 
-10. Löte nun den Lautsprecher auf die Platine (dies erst jetzt, da es schwierig wird, die Kabel auf der Oberseite zu löten, sobald der Lautsprecher auf der Platine sitzt).
+10. Löte nun den Lautsprecher auf die Platine (dies erst jetzt, da es schwierig wird, die Kabel auf der Oberseite zu löten, sobald der Lautsprecher auf der Platine sitzt). Der lautsprecher für die 2. Auflage hat Markierungen (+, -); ich glaube nicht, dass die Polarität wesentlich ist, aber ich setze die + Seite so dass sie zum Rand der Platine zeigt.
 
 11. Setze den schwarzen Knopf auf den Schaft des Drehgebers (im Inneren des Knopfs befinden sich 2 kleine Führungsleisten, die auf die abgeflachte Seite des Schafts auszurichten sind), und die rote Kappe auf den Schaft des Drucktasters.
 

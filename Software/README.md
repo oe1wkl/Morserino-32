@@ -16,6 +16,26 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.0
+
+#### General:
+* Support of new hardware (M32 2nd edition, on PCB board v 4, with Heltec WiFi LoRa module 2.1)
+* Hardware Configuration is now started differently: instead of pressing the black knob while switching on (as was the method for Firmware 3.x) you press now the paddle (touch or external, or straight key) while switching on.
+
+#### Improvements:
+
+* Better granularity with respect to speaker output volume (especially for headphone use)
+* No „weird“ tone change at very low volumes
+
+#### Bug fixes:
+* The combination of parameter „Send with LoRa“ would not send at the correct speed when using a straight key . Fixed.
+* From v.3.0 on a bug had been introduced, by which the selected Koch sequence was not stored in Snapshots. Fixed (thanks Rainer, OE9RIR).
+
+#### New Feature(s):
+* Also with LoRa Trx and WiFi Trx it is now possible, like with CW Generator, to change the output of received items (or generated items in case of CW Generator) between „Char by char“ (default), „Word by word“ and „Display off“ (forcing you to decode by ear ;-) You do this by setting the parameter „CW Gen Displ“.
+* The parameter „Send via LoRa“ has changed its name to „Generator Tx“, and has got three possible values now: „Tx OFF“ (= do not transmit generated CW), „LoRa Tx ON“ (transmit generated code through LoRa) and „WiFi Tx ON“ (transmit generated code through WiFi). This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server.
+* It is now possible to enter and store three different WiFi configurations (thanks to Martin, EI2HIB); this can be useful when you are regularly using the M32 in different locations, or when you are using different TRX peers ( peer-to-peer, chat servers or broadcasts). There is a menu item under WiFi Functions to select one of these configurations.
+
 ### Changes V.3.0.2 (Bug Fix release)
 
 #### Bug fixes:
