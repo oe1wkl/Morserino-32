@@ -94,16 +94,17 @@ Kann gedreht werden und ist auch ein Drucktastenschalter. Weitere Informationen 
 |Diese Leiterplattensteckverbinder nehmen die kapazitiven Touchpaddel auf.
 Wenn du nur ein externes Paddel verwendest (bzw. auch für den Transport), können  die Touchpaddel entfernt werden.
 
+
 |11
+|Serielle Schnittstelle
+|Man kann ein Kabel (direkt angelötet oder über einen 4-poligen Steckverbinder) an ein externes serielles Gerät, z.B. ein GPS-Empfängermodul, anschließen (dies wird derzeit von der Software nicht unterstützt, ist aber nicht sehr schwer zu realisieren). Die 4 Pole sind T (Transmit), R (Receive), + und - (3,3V Stromversorgung vom Heltec-Modul).
+
+|12
 |3,5 mm Klinkenstecker (3-polig): Externes Paddel
 |Verwende diesen Anschluss, um entweder ein externes (mechanisches) Paddel anzuschließen (Spitze ist linkes Paddel, Ring ist rechtes Paddel, Hülse ist Masse),
 oder eine einfache Morsetaste (Spitze ist die Taste).
 Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eingabe überwachen!
 
-
-|12
-|Serielle Schnittstelle
-|Man kann ein Kabel (direkt angelötet oder über einen 4-poligen Steckverbinder) an ein externes serielles Gerät, z.B. ein GPS-Empfängermodul, anschließen (dies wird derzeit von der Software nicht unterstützt, ist aber nicht sehr schwer zu realisieren). Die 4 Pole sind T (Transmit), R (Receive), + und - (3,3V Stromversorgung vom Heltec-Modul).
 
 |13
 |Reset-Taste

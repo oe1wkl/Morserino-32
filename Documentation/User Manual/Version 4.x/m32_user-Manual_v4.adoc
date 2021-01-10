@@ -94,16 +94,17 @@ Can be rotated and is also a push-button switch. See the section <<buttons>> bel
 |These PCB connectors accept the capacitive touch paddles.
 If you are only using an external paddle (or for transport), you may remove the touch paddles.
 
+
 |11
+|Serial Interface
+|You can connect a cable (directly or through a 4-pole pinhead connector) to an external serial device, e.g. a GPS receiver module (this is currently not supported by software, but not very difficult to do). The 4 poles are T (Transmit), R (Receive), + and - (3.3V power from the Heltec module).
+
+|12
 |3.5 mm Phone Jack (3 poles): External Paddle
 |Use this to connect either an external (mechanical) paddle (tip is left paddle, ring is right paddle, sleeve is ground),
 or a straight key (tip is the key).
 With a straight key you can use the CW decoder to monitor the quality of you fist!
 
-
-|12
-|Serial Interface
-|You can connect a cable (directly or through a 4-pole pinhead connector) to an external serial device, e.g. a GPS receiver module (this is currently not supported by software, but not very difficult to do). The 4 poles are T (Transmit), R (Receive), + and - (3.3V power from the Heltec module).
 
 |13
 |Reset Button
