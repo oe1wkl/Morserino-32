@@ -888,7 +888,7 @@ Die in den Heltec-Modulen vorgesehene Messung der Batteriespannung ist leider re
 
 Um die Messung der Batteriespannung zu kalibrieren, musst du zuerst einmal die Spannung des Akkus mit einem Multimeter feststellen. Sobald dieser Wert bekannt ist, führe folgende Schritte aus:
 
-* Schalte den M32 ein, während du den SCHWARZEN Knopf gedrückt hältst, bis die Nachricht "Release BLACK" sichtbar wird.
+* Schalte den M32 ein, während du die Touch Paddles (oder externen Paddles, oder eine externe Handtaste) gedrückt hältst.
 * Wähle die Option "Calibr. Batt." mit dem Drehregler.
 * Man sieht nun eine Spannungsanzeige am Display (in Millivolt). Dreh nun den Drehregler in die eine oder andere Richtung, bis der angezeigte Wert möglichst nahe am gemessenen Wert der Batteriespannung liegt.
 * Drück den Schwarzen Knopf um den Kalibrierungswert zu speichern, und um mit dem Hochfahren des M32 fortzufahren.

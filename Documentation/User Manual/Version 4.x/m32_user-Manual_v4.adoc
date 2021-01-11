@@ -894,7 +894,7 @@ The built-in capability of Heltec modules to measure battery voltage unfortunate
 
 In order to calibrate the voltage measurement, you have to measure the actual battery voltage of your Morserino-32 with the help of a multimeter. Once you know this value, you perform the following steps:
 
-* Start your M32 while holding the BLACK encoder knob pressed, until you see the message to release the black knob.
+* Start your M32 while holding the touch paddles (or external paddles, or straigth key) pressed.
 * Select the Option "Calibr. Batt." with the rotary encoder.
 * You will see a voltage value (in Millivolts) on the display. Now rotate the encoder until the displayed value is as close as possible to the measured battery voltage.
 * Press the BLACK encoder knob to store the calibration value, and to continue with the boot-up of the M32.
