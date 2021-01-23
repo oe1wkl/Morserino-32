@@ -18,6 +18,7 @@
 
 extern unsigned long genTimer;      /// needed for echo trainer 
 extern morserinoMode morseState;
+extern int leftPin;
 
 //////// methods for class Decoder /////////
 

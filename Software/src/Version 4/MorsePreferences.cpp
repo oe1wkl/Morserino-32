@@ -159,7 +159,7 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                                     posEchoToneShift, posTrainerDisplay, posTimeOut, posQuickStart, posSerialOut };
  prefPos MorsePreferences::extTrxOptions[] =     {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posGoertzelBandwidth, posTimeOut, posQuickStart, posSerialOut };
- prefPos MorsePreferences::decoderOptions[] =    {posClicks, posPitch, posGoertzelBandwidth, posTimeOut, posQuickStart, posSerialOut };
+ prefPos MorsePreferences::decoderOptions[] =    {posClicks, posPitch, posCurtisMode, posGoertzelBandwidth, posTimeOut, posQuickStart, posSerialOut };
 
  prefPos MorsePreferences::allOptions[] =        { posClicks, posPitch, posExtPaddles, posPolarity, posLatency,
                                     posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, 

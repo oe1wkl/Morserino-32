@@ -34,7 +34,7 @@ const String PROJECTNAME = "Morserino-32";
 
 #define VERSION_MAJOR 4
 #define VERSION_MINOR 0
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 #define BETA false
 
@@ -93,10 +93,6 @@ namespace Buttons
 //// batteryPin 13 in 3, 37 in 4
 //// these are NOT compile options in this version but will be determined at startup (in setup()), to achieve backwards compatibility
 
-
-/// where are the external paddles?
-const int leftPin = 33;   // external pullup resistor is necessary for closing contacts!
-const int rightPin = 32;  // external pullup resistor is necessary for closing contacts!
 
 /// where is the encoder?
 const int PinCLK=38;                   // Used for generating interrupts using CLK signal - needs external pullup resisitor! 

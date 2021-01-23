@@ -44,6 +44,8 @@
 
 /// variables, value defined at setup()
 uint8_t batteryPin;
+int leftPin, rightPin; /// where are the external paddles?
+
 
 /// variables for battery measurement
 uint16_t volt;              // store measure battery voltage here
@@ -358,9 +360,13 @@ void setup()
   // now set pins according to board version
   if (MorsePreferences::boardVersion == 3) {
     batteryPin = 13;
+    leftPin = 33;
+    rightPin = 32;
   } else {        // must be board version 4
     batteryPin = 37;
     Buttons::modeButton.activeHigh = HIGH;      // in contrast to board v.3, in v4. the active state is HIGH not LOW
+    leftPin = 32;
+    rightPin = 33;
   }
 
 
@@ -511,7 +517,7 @@ boolean key_was_pressed_at_start() {
 boolean checkKey () {
       uint8_t sensor;
       uint8_t ext;
-      sensor = readSensors(LEFT, RIGHT);
+      sensor = readSensors(LEFT, RIGHT, true);
       ext = (uint8_t) !(digitalRead(leftPin) && digitalRead(rightPin));
       //DEBUG("Paddle: " + String(sensor) + " Ext.Key: " + String(ext));
       if (sensor || ext) 
@@ -1027,7 +1033,7 @@ boolean checkPaddles() {
   */
   left = MorsePreferences::reversePolarity ? rightPin : leftPin;
   right = MorsePreferences::reversePolarity ? leftPin : rightPin;
-  sensor = readSensors(LEFT, RIGHT);
+  sensor = readSensors(LEFT, RIGHT, false);
   newL = (sensor >> 1);
   newR = (sensor & 0x01);
   
@@ -1103,7 +1109,7 @@ void togglePolarity () {
 /// 0 = nothing touched,  1= right touched, 2 = left touched, 3 = both touched
 /// binary:   00          01                10                11
 
-uint8_t readSensors(int left, int right) {
+uint8_t readSensors(int left, int right, boolean init) {
   //long int timer = micros();
   //static boolean first = true;
   uint8_t v, lValue, rValue;
@@ -1115,11 +1121,15 @@ uint8_t readSensors(int left, int right) {
     ;                                       // ignore readings with value 0
   rValue = v;
 
-  if (lValue < (MorsePreferences::tLeft+10))     {           //adaptive calibration
-      MorsePreferences::tLeft = ( 7*MorsePreferences::tLeft +  ((lValue+lUntouched) / SENS_FACTOR) ) / 8;
-  }
-  if (rValue < (MorsePreferences::tRight+10))     {           //adaptive calibration
-      MorsePreferences::tRight = ( 7*MorsePreferences::tRight +  ((rValue+rUntouched) / SENS_FACTOR) ) / 8;
+  if (init == false) {
+    if (lValue < (MorsePreferences::tLeft+10))     {           //adaptive calibration
+        MorsePreferences::tLeft = ( 7*MorsePreferences::tLeft +  ((lValue+lUntouched) / SENS_FACTOR) ) / 8;
+    }
+    if (rValue < (MorsePreferences::tRight+10))     {           //adaptive calibration
+        MorsePreferences::tRight = ( 7*MorsePreferences::tRight +  ((rValue+rUntouched) / SENS_FACTOR) ) / 8;
+    }
+  } else {
+    lValue -=20; rValue -=20;
   }
   return ( lValue < MorsePreferences::tLeft ? 2 : 0 ) + (rValue < MorsePreferences::tRight ? 1 : 0 );
 }

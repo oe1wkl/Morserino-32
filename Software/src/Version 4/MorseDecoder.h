@@ -9,6 +9,7 @@
 #define USE_AUDIO false
 
 extern boolean leftKey, rightKey;
+
 extern echoStates echoTrainerState;
 //extern const struct linklist CWtree[];
 extern byte treeptr;
