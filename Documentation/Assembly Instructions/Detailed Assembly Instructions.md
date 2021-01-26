@@ -15,7 +15,10 @@
 
 * Check that all components are ready - identify them with the help of the packing list, and identify where they will go, with the help of the placement drawing. Please notify [mailto:info@morserino.info]() if any components are missing or defective, so that some replacement can be sent to you!
 
-Please not that in edition 2 there are two trimmer potentiometers, one (500 Ohms) with a small knob for fingernail adjustment!
+Please not that in edition 2 there are two trimmer potentiometers, one (500 or 1000 Ohm) with a small knob for fingernail adjustment!
+
+
+ **Note**: *The trimmer with a knob can be 500 or 1000 Ohm, depending on availability - there is no difference in functionality.*
 ![placement drawing](Images/3_placement.jpg)
 
 *Placement of parts, 1st edition*
@@ -28,6 +31,7 @@ Please not that in edition 2 there are two trimmer potentiometers, one (500 Ohms
 
 
 1. First solder the following components to the PCB: The  phone jacks (2 different types - 3 in edition 1 -, but it is easy to see which one fits where); then the trimmer resistor between the jacks (**its orientation does not matter** - the silk screen on the PCB and the markings on the trimmer do not really fit together), and for the 2nd edition the other trimmer (the one with the knob) close to the loudspeaker; as these trimmer are hard to source and depending on availability have different footprints, there are more holes than needed on the PCB, to allow for all variants to be fitted.  It is important that the trimmer sits on the edge of the board, and that each leg is in one of the vertically aligned holes (marked with vertical lines on the top side of the PCB; see the pictures).
+
 
  <img src="Images/RTRIM.jpg" alt="drawing" width="200"/>   
  <img src="Images/Trimmer500.jpg" alt="drawing" width="200"/>

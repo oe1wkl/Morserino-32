@@ -14,7 +14,10 @@
 
 * Überprüfe, ob alle Komponenten bereit sind - identifiziere sie anhand der Packliste und ermittele anhand der Zeichnung, wohin sie gehören. Bitte informiere [mailto:info@morserino.info]() falls Bauteile fehlen oder defekt sein sollten, damit dir Ersatz geschickt werden kann!
 
-Beachte dass in der zweiten Auflage 2 Trimmerpotentiometer enthalten sind, eines davon (500 Ohm) erkennt man an dem kleinen Knopf, mit dem es auch mit dem Fingernagel eingestellt werden kann.
+Beachte dass in der zweiten Auflage 2 Trimmerpotentiometer enthalten sind, eines davon (500 oder 1000 Ohm) erkennt man an dem kleinen Knopf, mit dem es auch mit dem Fingernagel eingestellt werden kann.
+
+**Hinweis:** *Der Trimmer mit Knopf hat einen Wert von 500 oder 1000 Ohm, je nach Verfügbarkeit; dies hat keine Auswirkungen auf die Funktionalität.*
+
 ![placement drawing](Images/3_placement.jpg)
 
 *Anordnung der Komponenten, 1. Auflage*
