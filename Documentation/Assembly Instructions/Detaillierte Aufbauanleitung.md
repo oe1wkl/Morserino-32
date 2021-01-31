@@ -12,7 +12,7 @@
 * Lege alle nötigen Werkzeuge bereit: einen Lötkolben mit feiner Spitze, einen dünnen Lötdraht (verwende kein bleifreies Lot, wenn du dir nicht das Leben schwer machen willst), gute Beleuchtung, möglicherweise eine Lupe, einen kleinen Drahtschneider und (zur Montage des Gehäuses) den kleinen 2mm Inbusschlüssel, der dem Bausatz beiliegt.
 * **Hinweise zum Löten:** KEIN bleifreies Lot verwenden (ich habe es schon erwähnt, nicht wahr?). Verwende einen hochwertigen Lötkolben, der auf eine vernünftige Temperatur eingestellt ist (ich bevorzuge es, ein wenig auf der hohen Seite zu sein - das ermöglicht es, die Verbindungen schnell herzustellen, und einige der Teile sind etwas groß, und wenn sie mit Masse verbunden sind, benötigen sie viel Hitze, um eine einwandfreie Lötstelle herzustellen. Dort viele Sekunden mit dem Lötkolben zu warten, bis das Lot endlich schmilzt, ist eine gute Möglichkeit, die Leiterplatte zu ruinieren.
 
-* Überprüfe, ob alle Komponenten bereit sind - identifiziere sie anhand der Packliste und ermittele anhand der Zeichnung, wohin sie gehören. Bitte informiere [mailto:info@morserino.info]() falls Bauteile fehlen oder defekt sein sollten, damit dir Ersatz geschickt werden kann!
+* Überprüfe, ob alle Komponenten bereit sind - identifiziere sie anhand der Packliste und ermittele anhand der Zeichnung, wohin sie gehören. Bitte informiere [mailto:info@morserino.info](mailto:info@morserino.info) falls Bauteile fehlen oder defekt sein sollten, damit dir Ersatz geschickt werden kann!
 
 Beachte dass in der zweiten Auflage 2 Trimmerpotentiometer enthalten sind, eines davon (500 oder 1000 Ohm) erkennt man an dem kleinen Knopf, mit dem es auch mit dem Fingernagel eingestellt werden kann.
 
@@ -137,7 +137,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 
 ### Auswahl eines geeigneten LiPo Akkus für den Morserino-32
 
-Für meine Morserinos verwende ich einen kleinen 600-mAh-LiPo-Einzelzellenakku, der üblicherweise in RC-Geräten wie Quadcoptern usw. verwendet wird. Die Marke, die ich verwende, ist „Tattu“ und hat die folgenden Spezifikationen (siehe [https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html]() or [https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html]()):
+Für meine Morserinos verwende ich einen kleinen 600-mAh-LiPo-Einzelzellenakku, der üblicherweise in RC-Geräten wie Quadcoptern usw. verwendet wird. Die Marke, die ich verwende, ist „Tattu“ und hat die folgenden Spezifikationen (siehe https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html or https://www.gensace.de/tattu-600mah-3-7v-30c-1s1p-lipo-battery-pack-with-molex-plug-1-pcs-pack.html):
 
 **Tattu** 600mAh 3.7V 30C 1S1P Lipo Akku mit Molex Stecker
 
@@ -156,7 +156,7 @@ Der Akku darf nur eine Zelle haben (Nominalspannung 3,7 V), und sollte mit einem
 Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf der Bodenplatte des Gehäuses montiert werden. Damit man da etwas Flexibilität hat, liegen dem Bausatz Distanzstücke von 6mm und 12mm Länge bei, mit denen man die Bodenplatte befestigen kann. Mit den 12mm Distanzstücken dürfen die größeren Akkus bis zu 10 mm dick sein. Man könnte auch die 6mm und 12mm Abstandsbolzen in Kombination verwenden, da darf der Akku sogar bis zu 16 mm dick sein. Man muss in jedem Fall dafür sorgen, dass der Akku nicht durch vorstehende Spitzen auf der Paltinenunterseite beschädigt werden kann - dies könnte zu Feuer und Explosion des Akkus führen!
 
 Eine Option wäre dieser Typ (im Bild die Batterie unten):
-[https://www.amazon.de/gp/product/B01JJ6DA7A/]() oder dieser Typ: [https://www.amazon.com/FPVERA-Battery-Connector-Charger-Quadcopter/dp/B089R8SGJR/]() oder sogar dieser für noch mehr Kapazität: [https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html]() (aber beachte, dass dieser keinen Molex-Stecker verwendet - Man müsste ein Kabel mit einem geeigneten Stecker finden, um diesen an den Morserino-32 anzuschließen).
+https://www.amazon.de/gp/product/B01JJ6DA7A/ oder dieser Typ: https://www.amazon.com/FPVERA-Battery-Connector-Charger-Quadcopter/dp/B089R8SGJR/ oder sogar dieser für noch mehr Kapazität: https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html (aber beachte, dass dieser keinen Molex-Stecker verwendet - Man müsste ein Kabel mit einem geeigneten Stecker finden, um diesen an den Morserino-32 anzuschließen).
 
 ![Ass03](Images/batteries.jpg)
 
