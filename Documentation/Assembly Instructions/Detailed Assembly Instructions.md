@@ -82,7 +82,7 @@ Please not that in edition 2 there are two trimmer potentiometers, one (500 or 1
 
 	*Thin double sided tape*
 
-13. **(Recommended):** I would now check the battery connector with an Ohm meter after setting the sliding switch to the ON position, to see that we did not create a short circuit anywhere. It should show a relatively high resistance (> 1 MOhm). If it shows close to 0 Ohms, check the cabling! Slide the switch into the OFF position again.
+13. **(Recommended):** I would now check the battery connector with an Ohm meter after setting the sliding switch to the ON position, to see that we did not create a short circuit anywhere. It should show a relatively high resistance (> 100 kOhm). If it shows close to 0 Ohms, check the cabling! Slide the switch into the OFF position again.
 
 14. Plug the battery cable into the Molex connector.
 
@@ -264,5 +264,7 @@ Some general advice should you run into any difficulties, or have questions that
 14. Press the RED button again to leave the Audio Adjust function.
 
 15. **Optional**: with a suitable LiPo battery attached to the Morserino, switch on the power switch (the battery should not be fully charged, but also not be completely empty). The orange LED should come up very brightly, indicating battery is being charged. Disconnect USB, orange light will stop, but Morserino is still working. BATTERY OK.
+
+ *Recommended:* Perform **Calibration of Battery Measurement** now, as described in the user manual (Appendix 1.2).
 
  *If it doesn't work*: Are you using a suitable LiPo battery? Check battery voltage and make sure it is between 3.4 and 3.9 volts. Perform calibration of battery management (see Appendix 1.2 of user manual). Check cable connections for battery (re-solder them). Re-solder power switch. If problem persists, the charging circuit on the Heltec board is likely defect, you need to replace the Heltec module.

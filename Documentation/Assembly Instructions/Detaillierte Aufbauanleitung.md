@@ -86,7 +86,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
  *Dünnes doppelseitiges Klebeband*
 
 
-13. **(Empfohlen):** Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um festzustellen, dass wir nirgendwo einen Kurzschluss erzeugt haben. Es sollte einen relativ hohen Widerstand aufweisen (> 1 MOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebn dann den Schalter wieder in die Position OFF.
+13. **(Empfohlen):** Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um festzustellen, dass wir nirgendwo einen Kurzschluss erzeugt haben. Es sollte einen relativ hohen Widerstand aufweisen (> 100 kOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebn dann den Schalter wieder in die Position OFF.
 
 14. Stecke den Stecker des Akkus in den Molex-Anschluss.
 
@@ -268,5 +268,7 @@ Hier ein allgemeiner Ratschlag, falls du auf Schwierigkeiten stoßen oder Fragen
  14. Drücke die ROTE Taste erneut, um die Funktion zur Einstellung des Pegels für den Line-In Eingang zu verlassen.
 
  15. **Optional**: Schalte den Schiebschalter ein, wenn ein geeigneter LiPo-Akku am Morserino angeschlossen ist (der Akku sollte nicht vollständig aufgeladen, aber auch nicht vollständig leer sein). Die orangefarbene LED sollte sehr hell leuchten, um anzuzeigen, dass der Akku geladen wird. Trenne den USB-Anschluss, das orangefarbene Licht erlischt, aber der Morserino funktioniert noch. BATTERIE OK.
+ 
+ *Empfohlen:* Es wäre angebracht, nun die **Kalibrierung der Batteriemessung** vorzunehmen, wie im Benutzerhandbuch (Anhang 1.2) beschrieben.
 
   *Wenn es nicht funktioniert*: Wird ein geeigneter LiPo-Akku verwendet? Überprüfe die Batteriespannung und stelle sicher, dass sie zwischen 3,4 und 3,9 Volt liegt. Führe eine Kalibrierung des Batteriemanagements durch (siehe Anhang 1.2 des Benutzerhandbuchs). Überprüfe die Kabelverbindungen zur Batterie (nachlöten). Schiebeschalter nachlöten. Wenn das Problem weiterhin besteht, ist die Ladeschaltung des Heltec Moduls wahrscheinlich defekt, und das Heltec Moudl muss getauscht werden.
