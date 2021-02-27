@@ -882,7 +882,7 @@ Die Standard Heltec-Module unterstützen nur das 433 MHz-Band, und der Morserino
 * Unmittelbar danach startet der Morserino-32 normal, mit den nun ausgewählten LoRa-Einstellungen. In der oberen Zeile des Startbildschirms sieht man die konfigurierte QRG für LoRa als 5-stellige Zahl (z.B. 43415 für die Voreinstellung im 433 MHz-Band).
 
 
-==== Appendix 1.2: Kalibrierung der Batteriemessung [[appendix1_2]]
+==== Anhang 1.2: Kalibrierung der Batteriemessung [[appendix1_2]]
 
 Die in den Heltec-Modulen vorgesehene Messung der Batteriespannung ist leider recht unzuverlässig. Anscheinend spielen dabei mehrere Faktoren eine Rolle: ein Messfehler innerhalb des ESP32 Prozessors aufgrund kleiner Variationen der Referenzspannung des Chips (ein hier wohl vernachlässigbar kleiner Messfehler), und Probleme mit dem Spannungsteiler auf dem Heltec Modul, der zur Messung verwendet wird (dies resultiert in einem ziemlich großen Fehler und hoher Variabilität zwischen verschiedenen Modulen). Obwohl das Messen der Batteriespannung kein elementares Problem für den Betrieb des M32 darstellt, ist dies doch ein lästiger Fehler, der auch dazu führen kann, dass cih der M32 nicht mehr einschalten lässt, da die Firmware meint, die Batteriespannung sei zu niedrig, obwohl dies gar nicht der Fall ist.
 
