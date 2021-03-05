@@ -57,7 +57,9 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 
  *Aufgesteckte Buchsenleiste*
 
- ** Sei sehr vorsichtig beim Umgang mit dem Heltec-Modul! Übe keinen Druck auf das Display oder das Kabel aus, das das Display verbindet,  oder auf die kleine Antennenspule neben dem Display** - diese Dinge sind sehr spröde und brechen leicht. **Halte das Heltec-Modul nur an der Platine fest und bring die Leiste durch abwechselnden Druck links und rechts langsam auf die Stifte!**
+ **Sei sehr vorsichtig beim Umgang mit dem Heltec-Modul! Übe keinen Druck auf das Display oder das Kabel aus, das das Display verbindet,  oder auf die kleine Antennenspule neben dem Display** - diese Dinge sind sehr spröde und brechen leicht. **Halte das Heltec-Modul nur an der Platine fest und bring die Leiste durch abwechselnden Druck links und rechts langsam auf die Stifte!**
+ 
+ Wenn du willst, kannst du die Aufkleber mit den Pinbezeichnugnen des Heltec Moduls seitlich auf die Pins des Moduls aufkleben (ist aber keineswegs notwendig): Auf der Seite der Paddles der Aufkleber mit "GND" bis "16", gegenüber der mit "GND" bis "21". "GND" ist jeweils nahe der USB-Buchse.
 
 6. Setze das Heltec-Modul mit den aufgesteckten Leisten vorsichtig auf die Platine, sodass der USB-Anschluss am Rand der Platine positioniert ist, und stelle sicher, dass keine Stifte verbogen werden. Löte dann die Pins der Buchsenleisteniten auf die Platine, und achte dabei darauf, dass alles sehr bündig auf der Platine sitzt.
 
@@ -207,6 +209,7 @@ https://www.amazon.de/gp/product/B01JJ6DA7A/ oder dieser Typ: https://www.amazon
  * Krokodilklemmenkabel (mit sehr kleinen Krokoklemmen)
  * Kleiner flacher Schraubendreher zur Bedienung des blauen Trimmers
  * Ohmmeter
+ * Kopfhörer (Telefonhörer)
  ###### Optional:
  * Externes Paddel mit 3,5 mm Klinkenstecker
  * Handtaste mit 3-poliger 3,5-mm Klinkenstecker
@@ -219,55 +222,57 @@ Hier ein allgemeiner Ratschlag, falls du auf Schwierigkeiten stoßen oder Fragen
 
  ![Heltec](Images/Heltec_Pins.jpg)
 
- 1. Stromversorgung über USB (Netzschalter auf OFF) - Startbildschirm und Menü sollten angezeigt werden und eine gute Lesbarkeit aufweisen. ANZEIGE OK.
+1. Stromversorgung über USB (Netzschalter auf OFF) - Startbildschirm und Menü sollten angezeigt werden und eine gute Lesbarkeit aufweisen. ANZEIGE OK.
 
  *Wenn es nicht funktioniert*: Wenn das Display dunkel bleibt oder fehlende Linien anzeigt, ist es defekt und das Heltec-Modul muss ersetzt werden.
 
- 2. Drehe den SCHWARZEN Knopf - es sollten verschiedene Menüpunkte angezeigt werden. In beide Richtungen drehen. ENCODER-Funktion OK.
+2. Drehe den SCHWARZEN Knopf - es sollten verschiedene Menüpunkte angezeigt werden. In beide Richtungen drehen. ENCODER-Funktion OK.
 
  *Wenn es nicht funktioniert*: Löte den Encoder neu (Seite mit 3 Stiften). Wenn das Probllem bestehen bleibt, löte den Heltec Sockel, Pins 38 und 39, nach.
 
- 3. Drehe den schwarten Knop, bis "CW Keyer" angezeigt wird, und drücke kurz den SCHWARZEN Knopf. Nun sollte der Keyer starten (wird auf dem Display angezeigt). ENCODER SWITCH OK.
+3. Drehe den schwarten Knop, bis "CW Keyer" angezeigt wird, und drücke kurz den SCHWARZEN Knopf. Nun sollte der Keyer starten (wird auf dem Display angezeigt). ENCODER SWITCH OK.
 
  *Wenn es nicht funktioniert*: Löte den Encoder neu (Seite mit 2 Stiften). Wenn das Problem bestehen bleibt, löte den Heltec Sockel Pin 37 nach.
 
- 4. Berühre Sie das linke und das rechte Paddel - eines sollte hörbare und sichtbare Punkte (weiße LED) erzeugen, das andere Striche. TOUCH PADDLES OK.
+4. Berühre Sie das linke und das rechte Paddel - eines sollte hörbare und sichtbare Punkte (weiße LED) erzeugen, das andere Striche. TOUCH PADDLES OK.
 
  *Wenn es nicht funktioniert*: Fehlender Kontakt; Wurde die gelbe Folie an den Sockeln für das Touchpaddel entfernt? Wenn ja, Heltec Sockel, Pins 2 und 12, nachlöten.
 
- 5. **Optional:** Schließe ein externes Paddel an X4 an (unten links). Das Drücken des externen Paddels sollte den gleichen Effekt haben wie das Drücken der Touchpaddles. EXTERNE PADDELS OK.
+5. **Optional:** Schließe ein externes Paddel an X4 an (unten links). Das Drücken des externen Paddels sollte den gleichen Effekt haben wie das Drücken der Touchpaddles. EXTERNE PADDELS OK.
 
  *Wenn es nicht funktioniert*: Wenn Touchpaddles funktionieren: Lötbuchse für externe Paddles / Taste (X4) nachlöten. Bei anhaltendem Problem Heltec Sockel, Pins 32 und 33, nachlöten.
 
- 6. Drücke kurz die ROTE Taste. Dies sollte den Encoder auf Lautstärkeregler umstellen. Drehe den den Encoder, berühre die Paddels und prüfe, ob sich die Lautstärke ändert: ROTER Tastenschalter OK.
+6. Drücke kurz die ROTE Taste. Dies sollte den Encoder auf Lautstärkeregler umstellen. Drehe den den Encoder, berühre die Paddels und prüfe, ob sich die Lautstärke ändert: ROTER Tastenschalter OK.
 
  *Wenn es nicht funktioniert*: Löte den ROTEN Schalter nach. Wenn das Problem bestehen bleibt, löte den Heltec Sockel nach, Pin 0.
 
- 7. Drücke länger auf den SCHWARZEN Knopf (um zum Hauptmenü zurückzukehren).
+6. Schließe Kopfhörer an den Kopfhöreranschluss an und berühre die Paddels - nun sollte der Ton in den Kopfhörern zu hören sein. Man kann den Pegel mit dem Trimmer in der Nähe des Lautsprechers so einstellen, dass bei Auswahl der lautesten Lautstärke der Ton im Kopfhörer sehr laut, aber nicht unangenehm ist (dieser Trimmer hat keinen Einfluss auf die Lautstärke des Lautsprechers).
+ 
+7. Drücke länger auf den SCHWARZEN Knopf (um zum Hauptmenü zurückzukehren).
 
- 8. **Optional**: Schließe anstelle der Paddel eine Handtaste an X4 an. Wähle im Hauptmenü „CW Decoder“. Versuche, einige Morsezeichen mit der Handtaste zu geben. Man sollte einen Ton hören, wenn man die Taste betätigt, und die generierten Zeichen werden auf dem Display dekodiert. HANDTASTE OK.
+8. **Optional**: Schließe anstelle der Paddel eine Handtaste an X4 an. Wähle im Hauptmenü „CW Decoder“. Versuche, einige Morsezeichen mit der Handtaste zu geben. Man sollte einen Ton hören, wenn man die Taste betätigt, und die generierten Zeichen werden auf dem Display dekodiert. HANDTASTE OK.
 
  *Wenn es nicht funktioniert*: Wenn die externen Paddels funktionieren, muss auch auch die Handtaste funktionieren. Überprüfe die Verkabelung der Handtaste!
 
- 9. Stecke das 2-polige (oder 3-polige) Audiokabel an X1 an (1. Buchse oben links).
+9. Stecke das 2-polige (oder 3-polige) Audiokabel an X1 an (1. Buchse oben links).
 
- 10. Stecke das 4-polige Audiokabel an X2-IN / OUT an. Am anderen Ende dieses Kabels verbinde die Spitze des Klinkensteckers mit dem innersten Ring des Klinkensteckers mithilfe des Krokodilklemmenkabels.
+10. Stecke das 4-polige Audiokabel an X2-IN / OUT an. Am anderen Ende dieses Kabels verbinde die Spitze des Klinkensteckers mit dem innersten Ring des Klinkensteckers mithilfe des Krokodilklemmenkabels.
 
- 11. Mit einem Ohmmeter den Widerstand zwischen Spitze und inneren Ring des 2-poligen (oder 3-poligen) Klinkensteckers des Audiokabels an X1 messen. Es sollte einen sehr hohen Widerstand aufweisen (viele Ohm oder sogar unendlich).
+11. Mit einem Ohmmeter den Widerstand zwischen Spitze und inneren Ring des 2-poligen (oder 3-poligen) Klinkensteckers des Audiokabels an X1 messen. Es sollte einen sehr hohen Widerstand aufweisen (viele Ohm oder sogar unendlich).
 
  *Wenn Null Ohm angezeigt wird*: Zwischen dem Optokoppler und der Buchse befindet sich ein Kurzschluss, sehr wahrscheinlich direkt an der Buchse. Überprüfe die Lötstellen der Buchse (X1) auf Lötbrücken!
 
- 12. Drücke länger die ROTE Taste, um die Funktion zur Einstellung des Pegels für den Line-In Eingang zu starten. Man sieht die weiße LED aufleuchten und eine Anzeige „Audio Adjust“ auf dem Display. Verwende nun den Schraubendreher und verändere die Position des Reglers am blauen Trimmer neben X2. Die Anzeige sollte sich ändern und es sollte möglich sein, den Balken innerhalb des äußeren Rechtecks ​​und außerhalb des inneren Rechtecks ​zu ​positionieren.  LINE I/O OK.
+12. Drücke länger die ROTE Taste, um die Funktion zur Einstellung des Pegels für den Line-In Eingang zu starten. Man sieht die weiße LED aufleuchten und eine Anzeige „Audio Adjust“ auf dem Display. Verwende nun den Schraubendreher und verändere die Position des Reglers am blauen Trimmer neben X2. Die Anzeige sollte sich ändern und es sollte möglich sein, den Balken innerhalb des äußeren Rechtecks ​​und außerhalb des inneren Rechtecks ​zu ​positionieren.  LINE I/O OK.
 
   *Wenn es nicht funktioniert*: Überprüfe die Lötstellen der I/O Buchse (X2) und des blauen Trimmers daneben. Überprüfe auch die Pins 17 und 36 der Heltec-Buchse (löte sie nach). Wenn das Problem bestehen bleibt, ist die Hauptplatine defekt (defekter Operationsverstärker). Ersetze den Operationsverstärker.
 
- 13. Messe mit einem Ohmmeter den Widerstand zwischen Spitze und innerem Ring des Klinkensteckers am 2-poligen (oder 3-poligen) Audiokabel. Es sollte nun einen Wert von weniger als 100 Ohm anzeigen. Optokopplerfunktion OK.
+13. Messe mit einem Ohmmeter den Widerstand zwischen Spitze und innerem Ring des Klinkensteckers am 2-poligen (oder 3-poligen) Audiokabel. Es sollte nun einen Wert von weniger als 100 Ohm anzeigen. Optokopplerfunktion OK.
 
   *Wenn es einen hohen oder unendlichen Widerstand zeigt*: Überprüfe die Lötstellen der Klinkenbuchse (X1) auf schlechte Kontakte (nur bei der ersten Auflage des M32). Überprüfe auch Pin 25 der Heltec-Buchse (nachlöten). Wenn das Problem bestehen bleibt, ist die Hauptplatine defekt (defekter Optokoppler). Ersetze den Optokoppler.
 
- 14. Drücke die ROTE Taste erneut, um die Funktion zur Einstellung des Pegels für den Line-In Eingang zu verlassen.
+14. Drücke die ROTE Taste erneut, um die Funktion zur Einstellung des Pegels für den Line-In Eingang zu verlassen.
 
- 15. **Optional**: Schalte den Schiebschalter ein, wenn ein geeigneter LiPo-Akku am Morserino angeschlossen ist (der Akku sollte nicht vollständig aufgeladen, aber auch nicht vollständig leer sein). Die orangefarbene LED sollte sehr hell leuchten, um anzuzeigen, dass der Akku geladen wird. Trenne den USB-Anschluss, das orangefarbene Licht erlischt, aber der Morserino funktioniert noch. BATTERIE OK.
+15. **Optional**: Schalte den Schiebschalter ein, wenn ein geeigneter LiPo-Akku am Morserino angeschlossen ist (der Akku sollte nicht vollständig aufgeladen, aber auch nicht vollständig leer sein). Die orangefarbene LED sollte sehr hell leuchten, um anzuzeigen, dass der Akku geladen wird. Trenne den USB-Anschluss, das orangefarbene Licht erlischt, aber der Morserino funktioniert noch. BATTERIE OK.
  
  *Empfohlen:* Es wäre angebracht, nun die **Kalibrierung der Batteriemessung** vorzunehmen, wie im Benutzerhandbuch (Anhang 1.2) beschrieben.
 

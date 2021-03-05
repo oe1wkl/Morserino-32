@@ -56,6 +56,8 @@ Please not that in edition 2 there are two trimmer potentiometers, one (500 or 1
  *Attached pin headers*
 
  **Be very careful when handling the Heltec module! Do not apply pressure to the display or the cable connecting the display, or the coil antenna** - these things are very brittle and break easily. **Hold the Heltec module by its PCB only and slowly wiggle the header onto the pins!**
+ 
+ If you want, you can glue the sticker with the pin designation of the Heltec module on the side of the module's pins (but this is by no means necessary): On the side of the paddles the sticker with "GND" to "16", opposite the one with "GND" to "21". "GND" is always close to the USB socket.
 
 6. Put the Heltec module with its attached headers carefully onto the PCB, so that the USB connector is positioned on the edge of the PCB, and making sure you are not bending any pins; then solder the header pins to the PCB, again making sure that everything sits very flush on the PCB.
 
@@ -203,6 +205,7 @@ Check to see if the following components seem to be working, and instructions ho
 * Alligator clips cable (with very small clips)
 * Small flat screw driver to operate the blue trimmer
 * Ohm meter
+* Headphones
 ###### Optional:
 * External paddles with 3.5 mm jack
 * Straight key with 3-pole 3.5 mm jack
@@ -230,6 +233,7 @@ Some general advice should you run into any difficulties, or have questions that
 4. Touch left and right paddles - one should create audible and visible (white LED) dots, the other dashes. TOUCH PADDLES OK.
 
  *If it doesn't work*: Missing contact; has the yellow foil on the sockets for the touch paddle been removed? If yes, re-solder Heltec socket, pins 2 & 12.
+ 
 
 5. **Optional:** connect external paddles to X4 (lower left). Pressing external paddles should have same effect as touch paddles. EXTERNAL PADDLES OK.
 
@@ -238,6 +242,8 @@ Some general advice should you run into any difficulties, or have questions that
 6. Press RED quickly. Should change encoder to volume control. Rotate encoder, touch paddles and see if volume changes: RED switch OK.
 
  *If it doesn't work*: Re-solder the RED switch.  If persistent, re-solder Heltec socket, pin 0.
+ 
+6. Connect headphones to the headphone connector and touch the paddles - you should hear the sound in the headphones. You can adjust the level with the trimmer near the loudspeaker, so that when the loudest volume is selected, the audio is very loud but not uncomfortable with your headphones (this trimmer has no influence on the volume of the loudspeaker).
 
 7. Long press of BLACK knob (to get back into Main Menu).
 
@@ -268,3 +274,4 @@ Some general advice should you run into any difficulties, or have questions that
  *Recommended:* Perform **Calibration of Battery Measurement** now, as described in the user manual (Appendix 1.2).
 
  *If it doesn't work*: Are you using a suitable LiPo battery? Check battery voltage and make sure it is between 3.4 and 3.9 volts. Perform calibration of battery management (see Appendix 1.2 of user manual). Check cable connections for battery (re-solder them). Re-solder power switch. If problem persists, the charging circuit on the Heltec board is likely defect, you need to replace the Heltec module.
+
