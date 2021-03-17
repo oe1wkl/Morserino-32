@@ -102,6 +102,7 @@ unsigned int effWpm;                                // calculated effective spee
 unsigned int lUntouched = 0;                        // sensor values (in untouched state) will be stored here
 unsigned int rUntouched = 0;
 
+boolean alternatePitch = false;                     // to change pitch in CW generator / file player
 
 enum AutoStopModes 
   {
@@ -248,6 +249,7 @@ const byte pool[][2]  = {
                {B11100000, 4},  // ö    51
                {B00110000, 4},  // ü    52
                {B11110000, 4}   // ch   53  H
+
             };
 
 ////////////////////////////////////////////////////////////////////
@@ -476,6 +478,7 @@ void setup()
 
 
 
+
   ///////////////////////// mount (or create) SPIFFS file system
     #define FORMAT_SPIFFS_IF_FAILED true
 
@@ -593,10 +596,14 @@ void loop() {
       case morseGenerator:  
                           if (MorsePreferences::autoStopMode) {
                               if ((autoStop == halt))   {                     // we check input
-                                  if (leftKey)
+                                  if (leftKey) {
                                     autoStop = repeatword;
-                                  else if (rightKey)
+                                    delay(15);
+                                  }
+                                  else if (rightKey) {
                                     autoStop = nextword;
+                                    delay(15);
+                                  }
                                   else
                                     break;
                               // for debouncing:
@@ -606,22 +613,21 @@ void loop() {
                               break;
                               } // end of squeeze
                           }                             /// end autostop
-                          //else {                        /// check paddles
-                              if (leftKey  || rightKey)   {
-                                  // for debouncing:
-                                  while (checkPaddles() )
-                                    ;
-                                  active = !active;
-                                  if (active)
-                                      cleanStartSettings();
-                                  else {
-                                      keyOut(false, true, 0, 0);
-                                      MorseOutput::printOnStatusLine( true, 0, "Continue w/ Paddle");
-                                  }
-                              } else {                  /// no paddle pressed - check stop flag
-                                  checkStopFlag();
+                          if (leftKey  || rightKey)   {
+                              // for debouncing:
+                              while (checkPaddles() )
+                                ;
+                              delay(15);
+                              active = !active;
+                              if (active)
+                                  cleanStartSettings();
+                              else {
+                                  keyOut(false, true, 0, 0);
+                                  MorseOutput::printOnStatusLine( true, 0, "Continue w/ Paddle");
                               }
-                          //}
+                          } else {                  /// no paddle pressed - check stop flag
+                              checkStopFlag();
+                          }
                           if (active)
                             generateCW();
                           break;   
@@ -1354,7 +1360,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
                 }
                 fetchNewWord();
                 //DEBUG("New Word: " + CWword);
-                if (CWword.length() == 0)                             // we really should have something here - unless in trx mode; in this case return
+                if (CWword.length() == 0)                         // we really should have something here - unless in trx mode or in a pause; in this case return
                   return;
                 if ((morseState == echoTrainer)) {
                   printOnDisplay(REGULAR, "\n");
@@ -1390,7 +1396,7 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
             if (silentEcho || stopFlag)                                             // we finished maxSequence and so do start output (otherwise we get a short click)
               ;
             else  {
-                keyOut(true, (morseState != loraTrx && morseState != wifiTrx), MorseOutput::notes[MorsePreferences::sidetoneFreq], MorsePreferences::sidetoneVolume);
+                keyOut(true, (morseState != loraTrx && morseState != wifiTrx), pitch(), MorsePreferences::sidetoneVolume);
             }
             generatorState = KEY_DOWN;                              // next state = key down = dit or dah
 
@@ -1455,6 +1461,12 @@ void generateCW () {          // this is called from loop() (frequently!)  and g
   }   /// end switch (generatorState)
 }
 
+int pitch() {                 // find out which pitch to use for the generated CW tone
+    int p = MorseOutput::notes[MorsePreferences::sidetoneFreq];
+    if (alternatePitch && morseState == morseGenerator)
+      p = (MorsePreferences::echoToneShift == 1 ? p * 18 / 17 : p * 17 / 18);
+    return p;
+}
 
 /// when generating CW, we display the character (under certain circumstances)
 /// add code to display in echo mode when parameter is so set
@@ -1466,7 +1478,8 @@ void dispGeneratedChar() {
   
   if (generatorMode == KOCH_LEARN ||
           (MorsePreferences::trainerDisplay == DISPLAY_BY_CHAR &&
-          (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator)))
+          (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator)) ||
+          (morseState == echoTrainer && MorsePreferences::echoDisplay != CODE_ONLY ))
       {       /// we need to output the character on the display now  
         if (clearText.charAt(0) == 0xC3) {            //UTF-8!
           charString = String(clearText.charAt(0)) + String(clearText.charAt(1));                   /// store first 2 chars of clearText in charString
@@ -1615,14 +1628,23 @@ void fetchNewWord() {
                                                       break;
                                       case PLAYER:    if (MorsePreferences::randomFile)
                                                           skipWords(random(MorsePreferences::randomFile+1));
-                                                      clearText = getWord();
+                                                      clearText = getWord(); 
                                                       clearText = cleanUpText(clearText);
                                                       break;  
                                     }   // end switch (generatorMode)
                             }
                             firstTime = false;
       }       /// end if else - we either already had something in trainer mode, or we got a new word
-
+      if (clearText.indexOf('P') != -1) {
+        genTimer = 3 * interWordSpace + millis();
+        clearText = "";
+        return;
+      }
+      if (clearText.indexOf('T') != -1) {
+        alternatePitch = !alternatePitch;
+        clearText = "";
+        return;
+      }
       CWword = generateCWword(clearText);
       echoTrainerWord = clearText;
     } /// else (= not in loraTrx or wifiTrx mode)
@@ -1649,6 +1671,7 @@ void displayMorse(String symbol, boolean decoded) {
     symbol.replace("<sk>", "K");
     symbol.replace("<ve>", "E");
     symbol.replace("<ch>", "H");
+    symbol.replace("<err>", "R");                 // error (<hh>) - to be used to repeat entry in echo trainer mode
     if (symbol != " ")
       echoResponse.concat(symbol);
   }
@@ -1720,7 +1743,16 @@ String getKeyerModeSymbol() {             /// symbol to be displayed on status l
 
 ///////// evaluate the response in Echo Trainer Mode
 void echoTrainerEval() {
+    int i;
     delay(interCharacterSpace / 2);
+    if (echoResponse.endsWith("R")) {
+      echoResponse = "";
+      echoTrainerState = COMPLETE_ANSWER;
+      return;
+    } else 
+    if ((i = echoResponse.indexOf("R")) != -1) {
+      echoResponse = echoResponse.substring(i+1);
+    }
     if (echoResponse == echoTrainerWord) {
       echoTrainerState = SEND_WORD;
       //printToScroll(BOLD,  "OK");
@@ -2275,7 +2307,7 @@ String cleanUpText(String text) {                        // all to lower case, a
   text = utf8umlaut(text);
   
   for (unsigned int i = 0; i<text.length(); ++i) {       // disregard all non-standard characters
-    if (koch.morserinoKochChars.indexOf(c = text.charAt(i)) != -1)     
+    if ((koch.morserinoKochChars.indexOf(c = text.charAt(i)) != -1) || c == 'P' || c == 'T' )      // P for pause  
       result += c;
   }
   return result;
@@ -2299,6 +2331,8 @@ String utf8umlaut(String s) { /// replace umtf umlauts with digraphs, and interp
       s.replace("<kn>", "N");
       s.replace("<sk>", "K");
       s.replace("<ve>", "E");
+      s.replace("<p>", "P");    // pause
+      s.replace("<t>", "T");    // change tone
       s.replace("\\ar", "+");
       s.replace("\\bt", "=");
       s.replace("\\as", "S");
@@ -2306,6 +2340,8 @@ String utf8umlaut(String s) { /// replace umtf umlauts with digraphs, and interp
       s.replace("\\kn", "N");
       s.replace("\\sk", "K");
       s.replace("\\ve", "E");
+      s.replace("\\p", "P");
+      s.replace("\\t", "T");
       return s;
 }
 

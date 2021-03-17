@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v4.0 Januar 2021
+v4.1 März 2021
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -418,6 +418,15 @@ Die folgenden Betriebsabkürzungen werden erkannt:
 ** `<sk>`
 ** `<ve>`
 ====
+
+Es gibt zwei weitere "Sonderzeichen", die wie Betriebsabkürzungen gebildet werden und beim Abspielen einer Datei erkannt werden:
+
+Es ist jetzt möglich, **Pausen** einzuführen (nützlich z.B. wenn man einen QSO-Text abspielt - man kann so längere Pausen zwischen Phrasen haben oder beim Wechsel von Station A zu Station B). Verwende dazu <p> oder \p (mit einem Leerzeichen davor und danach): Jedes <p> (oder [p] oder \p) leitet eine Pause von drei regulären Wortabständen ein. Verwende mehrere Pausenmarkierungen (z. B. \p \p \p), wenn  längere Pausen gewünscht sind. *Achte darauf, dass die Pausenmarkierung durch Leerzeichen voneinander und vom Rest des Textes getrennt ist. Andernfalls wird das gesamte Wort (z.B. cq<p>) durch eine Pause ersetzt!*
+
+Mit dem zweiten Sonderzeichen kann man *Tonänderungen* in die Datei einfügen (nützlich z.B., wenn man QSO-Text abspielt, um Station A von Station B zu unterscheiden). Füge dazu die Tonmarkierung <t> oder \t oder [t] als ein separates Wort ein, d.h. mit mindestens einem Leerzeichen davor und danach). An dieser Stelle ändert sich der beim Abspielen derTon (es sei denn, man habhaten den Parameter „Tone Shift“ auf „No Tone Shift“ gesetzt), und beim nächsten Auftreten der Tonmarkierung wechselt er wieder zum ursprünglichen Ton. *Achte darauf, dass die Tonmarkierung durch Leerzeichen vom Rest des Textes getrennt ist. Andernfalls wird das gesamte Wort (z.B. cq<t>) als Tonmarkierung betrachtet und "cq") geht verloren!*
+
+Im Echo Trainer Modus wird der Tonmarker ignoriert.
+
 Es gibt auch einen Parameter für den File Player namens `Randomize File`. Wenn dieser auf "ON" gesetzt wird (Standardwert ist "OFF"),
 überspringt der Morserino nach jedem gesendeten Wort n Wörter  (n = Zufallszahl zwischen 0 und 255);
 Da am Dateiende wieder von vorne begonnen wird, werden irgendwann alle Wörter in der Datei vorgekommen sein (aber es kann eine Weile dauern).
@@ -440,6 +449,8 @@ Die Untermenüs sind die gleichen wie beim CW-Generator: **Random, CW Abbrevs, E
 
 
 Wie im CW-Generator-Modus startet man **die Generierung durch Drücken eines Paddles**, und dann wird die Sequenz "`vvv<ka>`" als Ankündigung generiert, bevor das Echo-Training beginnt. Du kannst diesen Modus nicht stoppen oder unterbrechen, indem du das Paddel drückst - schließlich benutzt du das Paddel, um deine Antworten zu generieren!  **Die einzige Möglichkeit, diesen Modus zu stoppen, ist ein Klick mit dem SCHWARZEN Knopf des Drehgebers**!
+
+Wenn du während deiner Antwort feststellst, dass du einen Fehler gemacht hast, kannst du deine Antwort "zurücksetzen", indem du das Zeichen für "FEHLER" eingibst, d.h. eine Reihe von 8 Punkten (der Morserino akzeptiert jede Folge von 8 oder mehr Punkten. <err> wird auf dem Display angezeigt und du kannst deine Eingabe von Anfang an neu starten.
 
 Auch hier kann man, wie beim CW-Generator, eine Vielzahl von Parametern einstellen, um zu beeinflussen, was generiert wird. Von besonderem Interesse für den Echo-Trainer sind:
 

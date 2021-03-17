@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v4.0 January 2021
+v4.1 March 2021
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -412,7 +412,7 @@ Once the end of the file is reached, it will commence at the beginning again.
 +
 The file should contain ASCII characters only (upper or lower case does not matter) -
 characters that cannot be represented in Morse code are just ignored.
-Pro signs can be in the file, they need to be written as 2 character representations with either [] or <> around them, e.g. `<sk>` or `[ka]`, or prepend them with a backslash, e.g. \kn.
+Pro signs can be in the file, they need to be written as 2 character representations with either [] or <> around them, e.g. `<sk>` or `[ka]`, or prepend them with a backslash, e.g. `\kn`.
 +
 The following pro signs are recognized:
 ====
@@ -424,6 +424,15 @@ The following pro signs are recognized:
 ** `<sk>`
 ** `<ve>`
 ====
+
+There are two more "special characters", formed in the same way like pro signs, that are recognized while playing a file:
+
+It is now possible to introduce **pauses** (useful e.g., when you play a QSO text - you can have longer pauses between phrases or when switching from station A to station B). Do this by using <p> or \p (with a space before and after): each <p> (or  [p] or \p) introduces a pause of three regular inter-word spaces. Use several pause markers (e.g. like \p \p \p ) if you want longer pauses. *Be careful to have the pause marker separated with spaces from each other and from the rest of the text - if not, the whole word (e.g. cq<p> ) will be replaced by a pause!*
+
+With the second special character you can introduce *tone changes* in the file (useful, when you play QSO text, to distinguish station A from station B, e.g.) Do this by inserting <t> or \t  or [t] (as a separate word, i.e.  with at least a blank space before and after!) as a tone marker. At this point, the tone will change (unless you have set the parameter „Tone Shift“ to „No Tone Shift“), and at the next occurrence of the tone marker it will change back to the original tone. *Be careful to have the tone marker separated with spaces from the rest of the text - if not, the whole word (e.g. cq<t> ) will be considered as the tone marker, and the rest of the word (in our case „cq“) will be lost!*
+
+In Echo Trainer Mode, the tone marker is ignored.
+
 There is also a parameter for file player called `Randomize File`. If set to „On“ (default is „Off“),
 the device will skip n words after each word sent (n = random number between 0 and 255);
 as file reads wrap around at end-of-file, you will see all the words in the file eventually (but it could take a while).
@@ -446,6 +455,8 @@ The sub-menus are the same as for the CW Generator: **Random, CW Abbrevs, Englis
 
 
 Like in CW Generator modus, you **start the generation by pressing a paddle**, and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle -- after all, you use the paddle to generate your responses! So **the only way to stop this modus is a click of the BLACK encoder button**.
+
+During your response, if you realize you made an error, you can "reset" your response by entering the character for "ERROR", i.e. a series of 8 dots (the Morserino accepts any series of dots longer than 7 dots). <err> will show on the display, and you can restart your entry from the beginning.
 
 Again, like with the CW Generator, you can set a huge range of parameters to fine tune the generation of things. Of particular interest for the Echo Trainer are:
 

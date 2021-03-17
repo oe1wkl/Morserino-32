@@ -16,6 +16,33 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.1
+
+####Bug Fixes:
+* The Setting „Echo Prompt“ - „Display Only“ in Echo Trainer mode did not work correctly (the prompt word did not show up on the display, making this setting completely useless). Fixed.
+* When using the „Stop/Next/Repeat“ feature in CW Generator, bouncing of keys could lead to erratic behavior (especially with external paddles - some of them have pretty long bounce times). So it could happen that the M32 thought you would want to stop the whole session, and the next start would begin with „vvv…“ again… Some mechanical paddles are really beasts when it comes to their bouncing behavior! Fixed (hopefully). 
+
+####Improvements:
+* Echo Trainer Mode: if you notice during your response that you made an error, you can now finish that word with an „error“ character (8 - or more - dits, will show as <err> on the display), and then do your entry from the start again. In this way you do not need to wait for the ERR message and the repetition of the prompt.
+
+####New Features:
+2 new features have been implemented into the File Player mode:
+
+* When playing a file, it is now possible to introduce pauses (useful e.g., when you play a QSO text - you can have longer pauses between phrases or when switching from station A to station B). Do this by using \<p> or \p (with a space before and after): each \<p> (or  [p] or \p) introduces a pause of three regular inter-word spaces. Use several pause markers (e.g. like \p \p \p ) if you want longer pauses. Be careful to have the pause marker separated with spaces from each other and from the rest of the text - if not, the whole word (e.g. cq\<p> ) will be replaced by a pause! 
+You can also  use this feature in Echo Trainer mode, there will just be a longer pause, before the next prompt will be generated.
+
+* You can also introduce tone changes in the file (useful, when you play QSO text, to distinguish station A from station B, e.g.) Do this by inserting \<t> or \t  or \[t] (as a separate word, i.e.  with at least a blank space before and after!) as a tone marker. At this point, the tone will change (unless you have set the parameter „Tone Shift“ to „No Tone Shift“), and at the next occurrence of the tone marker it will change back to the original tone. Be careful to have the tone marker separated with spaces from the rest of the text - if not, the whole word (e.g. cq\<t> ) will be considered as the tone marker, and the rest of the word (in our case „cq“) will be lost!
+
+In Echo Trainer Mode, the tone marker is ignored.
+
+
+### Changes V.4.0.1
+
+#### Bug Fixes:
+* The polarity of connections for the external paddles (and straight key) were reversed; fixed.
+* In Decoder mode, the parameter „Keyer Mode“ could not be reached by double-clicking; fixed.
+* Starting hardware configuration with only one touch paddle pressed did frequently not start the hardware calibration, and so it was necessary to press both paddles at start-up; fixed.
+
 ### Changes V.4.0
 
 #### General:

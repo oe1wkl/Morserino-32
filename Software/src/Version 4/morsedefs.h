@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
- *  morse_3 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
- *  Copyright (C) 2018-2020  Willi Kraml, OE1WKL                                                                            ***
+ *  Software for the Morserino-32 (M32) multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module   ***
+ *  Copyright (C) 2018-2021  Willi Kraml, OE1WKL                                                                            ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -33,8 +33,8 @@
 const String PROJECTNAME = "Morserino-32";
 
 #define VERSION_MAJOR 4
-#define VERSION_MINOR 0
-#define VERSION_PATCH 1
+#define VERSION_MINOR 1
+#define VERSION_PATCH 0
 
 #define BETA false
 
