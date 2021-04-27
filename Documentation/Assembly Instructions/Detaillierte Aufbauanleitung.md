@@ -38,7 +38,7 @@ Es ist wichtig, dass der Trimmer am Rand der Platine sitzt und dass sich jedes B
  <img src="Images/Trimmer500.jpg" alt="drawing" width="200"/>
 
 
-2. Jetzt kommt der Schiebeschalter (der Hebel zeigt natürlich nach außen), dann der Drehgeber und der Druckknopfschalter (seien Sie besonders vorsichtig mit diesem - er neigt dazu, leicht schräg zu enden - er passt dann möglicherweise nicht gut in das Loch der oberen Gehäuseplatte. Stelle sicher, dass er wirklich bündig auf der Leiterplatte sitzt. Dieser Schalter hat hervorstehende "Nasen" auf seinem Gehäuse - eine sollte zur langen Kante der Leiterplatte und die andere - klarerweise - zum Lautsprecher zeigen.
+2. Jetzt kommt der Schiebeschalter (der Hebel zeigt natürlich nach außen), dann der Drehgeber und der Druckknopfschalter (sei besonders vorsichtig mit diesem - er neigt dazu, leicht schräg zu enden - er passt dann möglicherweise nicht gut in das Loch der oberen Gehäuseplatte. Stelle sicher, dass er wirklich bündig auf der Leiterplatte sitzt. Dieser Schalter hat hervorstehende "Nasen" auf seinem Gehäuse - eine sollte zur langen Kante der Leiterplatte und die andere - klarerweise - zum Lautsprecher zeigen.
 
 3. Du findest alle diese Bauteile in der rosafarbenen Plastiktüte (siehe auch die Abbildung am Ende dieser Anleitung). Löte noch nicht die 2 Buchsenleisten, die Kabel und den Lautsprecher ein. Stelle sicher, dass alle Komponenten auf der Leiterplatte bündig sind - insbesondere der Drehgeber, der Trimmer und der Drucktastenschalter - ich hab das doch soeben erwähnt, nicht? (sonst passt das Gehäuse dann nicht sehr gut). Stelle sicher, dass sich der Schiebeschalter in der Position "OFF" (in Richtung der Klinkenbuchse) befindet.
 4. Verbinde das Kabel mit dem kleinen 1,25-mm-JST-Stecker mit der Buchse an der Unterseite des Heltec-Moduls (achte darauf, dass du die Buchse nicht mit brutaler Gewalt von der Platine abreißt - halte sie mit dem Finger fest).
@@ -234,7 +234,7 @@ Hier ein allgemeiner Ratschlag, falls du auf Schwierigkeiten stoßen oder Fragen
 
  *Wenn es nicht funktioniert*: Löte den Encoder neu (Seite mit 2 Stiften). Wenn das Problem bestehen bleibt, löte den Heltec Sockel Pin 37 nach.
 
-4. Berühre Sie das linke und das rechte Paddel - eines sollte hörbare und sichtbare Punkte (weiße LED) erzeugen, das andere Striche. TOUCH PADDLES OK.
+4. Berühre das linke und das rechte Paddel - eines sollte hörbare und sichtbare Punkte (weiße LED) erzeugen, das andere Striche. TOUCH PADDLES OK.
 
  *Wenn es nicht funktioniert*: Fehlender Kontakt; Wurde die gelbe Folie an den Sockeln für das Touchpaddel entfernt? Wenn ja, Heltec Sockel, Pins 2 und 12, nachlöten.
 
