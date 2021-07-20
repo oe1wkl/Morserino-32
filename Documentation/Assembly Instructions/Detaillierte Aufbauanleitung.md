@@ -3,6 +3,8 @@
 
 ### Bevor du beginnst:
 
+* **Überprüfe, ob du alle Bauteile erhalten hast!** Siehe die Liste der Bauteile im Appendix "Bauteile"
+
 * **Obwohl der Bausatz recht einfach zu montieren ist, solltest du einige Erfahrungen mit dem Zusammenbau von elektronischen Bausätzen haben.** Wenn nicht, empfehle ich dringend, jemanden um Hilfe zu bitten, der diese Erfahrung hat. Selbst einfach zu bauende Kits können leicht ruiniert werden (natürlich kann ich dir Ersatzteile zur Verfügung stellen, falls etwas Schlimmes passiert ist - aber du wirst verstehen, dass ich das nicht kostenlos tun kann - ich muss die Teile ja selbst auch kaufen.)
 
 * Stelle sicher, dass du weißt, welchen Typ von LiPo-Akku du verwendest und wo du ihn anbringen möchtest:
@@ -164,9 +166,55 @@ https://www.amazon.de/gp/product/B01JJ6DA7A/ oder dieser Typ: https://www.amazon
 
 *Zwei verwendbare Akkutypen*
 
-## Appendix: Components
+## Appendix: Bauteile
 
-*These pictures show the components for the 2nd edition of the Morserino-32. First edition is similar.*
+### Liste aller Bauteile des Bausatzes (2. Auflage):
+	
+(47 Teile)	
+	
+| Anzahl | Bauteil |
+|-------|----- |
+|1|	Platine (mit schon aufgelöteten SMD Bauteilen)|
+|1|	Heltec ESP32 Wifi LoRa board V2.1 (programmiert)|
+|1|	DC Kabel (rot/schwarz) mit Stecker (winzig!)|
+|1|	DC Kabel (rot/schwarz)  mit Stecker  (groß)|
+|1|	Antennenkabel konfektioniert (IPX – SMA female)|
+
+Antistatischer Beutel mit folgenden Bauteilen:
+
+| Anzahl | Bauteil |
+|-------|----- |	
+|1|	Rotary Encoder |
+|1|	Knopf für Rotary Encoder (schwarz)|
+|1|	Push Button Schalter|
+|1|	Kappe für Push Button Schalter (rot)|
+|1|	Trimmer Potentiometer (blau)|
+|1|	Trimmer Potentiometer mit Knopf|
+|1|Schiebeschalter(grau/dunkelrot)|
+|1|	Klinkenbuchse 4-polig (klein)|
+|1|	Klinkenbuchse 3-polig |
+|1|	Lautsprecher|
+|2|	Female Pin Header, 18-polig|
+|2|	Paddles (Platinenmaterial, schwarz, vergoldete Kontakte)|
+
+Bauteile für das Gehäuse:
+
+| Anzahl | Bauteil |
+|-------|----- |	
+|1	|Grundplatte (Acrylglas)|
+|1	|Frontplatte (Acrylglas, graviert)|
+|1	|432 MHz Antenne, mit SMA (male) Stecker|
+|4	|Abstandsbolzen, Nylon schwarz, 15mm, female/female M3|
+|4	|Abstandsbolzen, Nylon schwarz, 6mm, male/female M3 *)|
+|4	|Abstandsbolzen, Nylon schwarz, 12mm, male/female M3 *)|
+|8	|Schwarz anodisierte Schrauben (Inbus) 6mm M3|
+|4	|Selbstklebende Kunststofffüße|
+|1	|2mm Inbus Schlüssel|
+
+*) Man benutzt entweder die 6mm oder die 12mm Abstandsbolzen - siehe Aufbauanleitung
+
+
+*Diese Bilder zeigen die 2. Auflage des Bausatzes. Die erste Auflage war ähnlich.*
 
 ![components](Images/contents_1.jpg)
 

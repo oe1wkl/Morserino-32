@@ -3,6 +3,8 @@
 
 ### Before you begin:
 
+* **Check that you have got all parts!** See the Appendix "Components" .
+
 * **While the kit is rather easy to assemble, you should have some kit-building experience.** If not, I strongly suggest that you get some help from someone who has that experience. Even kits that are easy to build can be ruined (of course I can supply you with spare parts should something bad have happened - but you will understand that I cannot do so for free - I have to buy the parts myself.)
 
 * Make sure you know which type of LiPo battery you are going to use, and where you are going to mount it:
@@ -160,6 +162,52 @@ https://www.amazon.de/gp/product/B01JJ6DA7A/ or this type: https://www.amazon.co
 *Two usable types of battery*
 
 ## Appendix: Components
+
+### List of all components in the kit (2nd edition):
+	
+(47 items in total)	
+	
+| Quantity | Item |
+|-------|----- |
+|1|	PCB (with SMD parts prepopulated)|
+|1|	Heltec ESP32 Wifi LoRa board V2.1 (preprogrammed)|
+|1|	DC cable (red/black) with connector (tiny)|
+|1|	DC cable (red(black) with connector (large)|
+|1|	Antenna Cable Assembly (IPX – SMA female)|
+
+Antistatic bag with following components:
+
+| Quantity | Item |
+|-------|----- |	
+|1|	Rotary Encoder |
+|1|	Knob for Rotary Encoder (black)|
+|1|	Push Button Switch|
+|1|	Cap for Push Button Switch (red)|
+|1|	Trimmer potentiometer (blue)|
+|1|	Trimmer potentiometer with knob|
+|1|	Sliding Switch (grey/dark red)|
+|1|	Phone jack 4-poles (small)|
+|1|	Phone Jack 3-poles |
+|1|	Loudspeaker|
+|2|	Female Pin Header, 18-poles|
+|2|	Paddles (PCB material black, golden edge connector)|
+
+Parts for the case:
+
+| Quantity | Item |
+|-------|----- |	
+|1	|Bottom plate (acrylic glass)|
+|1	|Top plate (acrylic glass, engraved)|
+|1	|432 MHz Antenna, with SMA male connector|
+|4	|Stand-off Bolts, black nylon, 15mm, female/female M3|
+|4	|Stand-off Bolts, black nylon, 6mm, male/female M3 *)|
+|4	|Stand-off Bolts, black nylon, 12mm, male/female M3 *)|
+|8	|Black anodized Screws (hex socket) 6mm M3|
+|4	|Self-adhesive plastic feet|
+|1	|2mm Hex wrench|
+
+*) You use either 6 mm or 12 mm stand-offs – see instructions!
+
 
 *These pictures show the components for the 2nd edition of the Morserino-32. First edition is similar.*
 
