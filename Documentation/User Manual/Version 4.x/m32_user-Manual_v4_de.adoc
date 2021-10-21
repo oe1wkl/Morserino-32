@@ -947,7 +947,7 @@ Verbinden nun den Morserino mithilfe eines USB-Kabels mit dem Computer. Der Ger�
 TIPP: Stelle sicher, dass du ein ein "richtiges" USB-Kabel verwendest, kein Kabel das nur zum Aufladen geeignet ist!
 
 Lade  jetzt das Update-Dienstprogramm aus Joes GitHub-Repository herunter:
-https://github.com/joewittmer/Morserino-32-Firmware-Updater/tree/master/release
+https://github.com/joewittmer/Morserino-32-Firmware-Updater/releases
 
 Entpacke diese Datei. Darin ist ein Programm "update_m32.exe" - kopiere es in einen Ordner deiner Wahl (normalerweise verwende ich den Ordner ""Downloads"). Hole nun auch die binäre Morserino-Datei für die Version, die du installieren möchtest, vom Morserino GitHub, idealerweise in das selbe Verzeichnis.
 
