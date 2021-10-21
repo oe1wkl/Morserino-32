@@ -959,11 +959,11 @@ Zuerst führe  "cd" (change directory) zu dem Verzeichnis aus, in das du das Pro
 
 Gib nun die folgende Befehlszeile ein:
 
-`update_m32 <COMx> 921600 <binaryfilename>`
+`update_m32 -p <COMx> -f <binaryfilename>`
 
 Ersetze  <COMx> durch den korrekten COM-Port-Namen und <binaryfilename> durch den korrekten Namen der Morserino-Binärdatei. In meinem Fall war dies:
 
-`update_m32 COM3 921600 morse_3_v3.0.ino.wifi_lora_32_V2.bin`
+`update_m32 -p COM3 -f m32_v4.1.ino.wifi_lora_32_V2.bin`
 
 Nach kurzer Zeit sollte der Morserino-32 neu starten und die aktualisierte Versionsnummer anzeigen.
 

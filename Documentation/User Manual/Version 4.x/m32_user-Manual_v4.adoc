@@ -962,12 +962,12 @@ Now open a command box on your computer (in the search field in the lower left o
 
 Then enter the following command line:
 
-`update_m32 <COMx> 921600 <binaryfilename>`
+`update_m32 -p <COMx> -f <binaryfilename>`
 
 replacing <COMx> with your COM port name, and <binaryfilename> with the correct name of the Morserino binary file.
 In my case that was:
 
-`update_m32 COM3 921600 morse_3_v3.0.ino.wifi_lora_32_V2.bin`
+`update_m32 -p COM3 -f m32_v4.1.ino.wifi_lora_32_V2.bin`
 
 After a short while your Morserino should restart, showing the updated version number.
 
