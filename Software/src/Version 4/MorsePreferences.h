@@ -111,6 +111,7 @@ namespace MorsePreferences
   extern uint32_t loraQRG;
   extern uint8_t snapShots;
   extern uint8_t boardVersion;
+  extern uint8_t okKeyingMaxCount;
   
   ////// end of variables stored in preferences
   
@@ -124,7 +125,7 @@ namespace MorsePreferences
                   posTrainerDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,
                   posKeyTrainerMode, posLoraTrainerMode, posGoertzelBandwidth, posSpeedAdapt,
                   posKochSeq, posKochFilter, posLatency, posRandomFile, posTimeOut, posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
-                  posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
+                  posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf, posKochAutoSel
                 };
   
   extern const String prefOption[];
@@ -239,6 +240,7 @@ namespace internal {
   void displaySnapRecall();
   void displaySnapStore();
   void displayHwConf();
+  void displayKochAutoSel();
 }
 
 class Koch {
@@ -249,6 +251,7 @@ class Koch {
     uint16_t numberOfAbbr;
     String kochCharSet;
     const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNV@:";
+    uint8_t okKeyingCount;
     
     void createWords(uint8_t, uint8_t);
     void createAbbr(uint8_t, uint8_t);
@@ -265,7 +268,9 @@ class Koch {
     String getRandomAbbrev();
     void setKochChars(boolean);
     void setCustomChars(String chars);
-
+    void moveToNextKochLesson();
+    uint8_t getOkKeyingCount(void);
+    void setOkKeyingCount(uint8_t count);
 };
 
 extern Koch koch;

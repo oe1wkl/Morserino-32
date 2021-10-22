@@ -1744,6 +1744,9 @@ String getKeyerModeSymbol() {             /// symbol to be displayed on status l
 ///////// evaluate the response in Echo Trainer Mode
 void echoTrainerEval() {
     int i;
+    uint8_t okKeyingCount;
+    String okMessage = "OK";
+
     delay(interCharacterSpace / 2);
     if (echoResponse.endsWith("R")) {
       echoResponse = "";
@@ -1755,8 +1758,30 @@ void echoTrainerEval() {
     }
     if (echoResponse == echoTrainerWord) {
       echoTrainerState = SEND_WORD;
-      //printToScroll(BOLD,  "OK");
-      printOnDisplay(BOLD,  "OK");
+      
+      // Check feature is enabled
+      if((MorsePreferences::okKeyingMaxCount > 0) && (generatorMode = KOCH_LEARN))
+      {
+         okKeyingCount = koch.getOkKeyingCount();
+         okKeyingCount++;
+
+         if(okKeyingCount < MorsePreferences::okKeyingMaxCount)
+         {
+            koch.setOkKeyingCount(okKeyingCount);
+         }
+         else
+         {
+            koch.setOkKeyingCount(0);
+            koch.moveToNextKochLesson();
+            MorsePreferences::writePreferences("morserino");
+         }
+         
+         okMessage = okMessage + " " + String(okKeyingCount);
+      }
+
+      //printToScroll(BOLD,  okMessage);
+      printOnDisplay(BOLD,  okMessage);
+      
       if (MorsePreferences::echoConf) {
           MorseOutput::soundSignalOK();
       }
@@ -1767,6 +1792,7 @@ void echoTrainerEval() {
       echoTrainerState = REPEAT_WORD;
       if (generatorMode != KOCH_LEARN || echoResponse != "") {
           printOnDisplay(BOLD, "ERR");
+          koch.setOkKeyingCount(0);
           if (MorsePreferences::echoConf) {
               MorseOutput::soundSignalERR();
           }
@@ -2241,8 +2267,6 @@ void audioLevelAdjust() {
     keyOut(false,  true, 698, 0);                                  /// stop keying
     //keyTx = true;
 }
-
-
 
 String getWord() {
   String result = "";
