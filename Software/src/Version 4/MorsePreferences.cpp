@@ -105,7 +105,8 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::snapShots = 0;                    // keep track which snapshots are being used ( 0 .. 7, called 1 to 8)
 
   uint8_t MorsePreferences::boardVersion = 0;                 // which Morserino board version? v3 uses heltec Wifi Lora V2, V4 uses V2.1
-
+  
+  uint8_t MorsePreferences::okKeyingMaxCount = 0;             // Max number of correct keying before moving to next lesson
 //////// end of variables stored in preferences
 
 //// temporary buffer for conversions, local to this file
@@ -131,7 +132,7 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                               "Koch Sequence", "Koch         ", "Latency      ", "Randomize File",
                               "Time Out     ", "Quick Start  ", "Stop/Next/Rep", "Max # of Words","LoRa Channel  ", "Serial Output", 
                               "LoRa Band    ",  "LoRa Frequ   ", "RECALLSnapshot", "STORE Snapshot",
-                              "Calibrate Batt", "Hardware Conf"};                   
+                              "Calibrate Batt", "Hardware Conf", "Koch Auto Sel"};                   
   prefPos MorsePreferences::keyerOptions[] =      {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, 
                                     posKeyTrainerMode, posTimeOut, posQuickStart, posSerialOut };
   prefPos MorsePreferences::generatorOptions[] =  {posClicks, posPitch, posExtPaddles, posInterWordSpace, posInterCharSpace, posRandomOption, 
@@ -278,7 +279,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 
 void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
   MorseOutput::clearDisplay();
-  if (pos < posLoraBand)
+  if (pos < posLoraBand || (pos == posKochAutoSel))
     MorseOutput::printOnStatusLine( true, 0,  "Set Preferences: ");
   else if (pos < posSnapRecall)
     MorseOutput::printOnStatusLine( true, 0,  "Config LoRa:     ");
@@ -372,7 +373,9 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
      case posVAdjust:     internal::displayVAdjust();
                           break;  
      case posHwConf:      internal::displayHwConf();
-                          break;                  
+                          break;   
+     case  posKochAutoSel:internal::displayKochAutoSel();
+                          break;               
   } /// switch (pos)
   Heltec.display -> display();
 } // displayKeyerPreferences()
@@ -618,7 +621,6 @@ void internal::displayKochFilter() {                          // const String ko
     MorseOutput::printOnScroll(2, REGULAR, 1, numBuffer); 
 }
 
-
 void internal::displayWordDoubler() {
   MorseOutput::printOnScroll(2, REGULAR, 1,  MorsePreferences::wordDoubler ? "On  " :
                                                 "Off " ); 
@@ -800,6 +802,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
             return true;
           }
         }
+
         if ((t=checkEncoder())) {
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);         /// click 
             switch (pos) {
@@ -853,6 +856,10 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                 break;                                                               
                 case  posKochFilter: MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter + t, 1, kochCharsLength);
                                 internal::displayKochFilter();
+                                break;
+
+                case posKochAutoSel: MorsePreferences::okKeyingMaxCount = constrain(MorsePreferences::okKeyingMaxCount + t, 0, 100);
+                                internal::displayKochAutoSel();
                                 break;
 
                 case  posRandomOption : MorsePreferences::randomOption = (MorsePreferences::randomOption + t + 10) % 10;     // which char set for random chars?
@@ -1343,6 +1350,10 @@ void MorsePreferences::writePreferences(String repository) {
               koch.setup();
         }
     }
+
+    if (MorsePreferences::okKeyingMaxCount != pref.getUChar("okKeyingMaxCount")) {
+       pref.putUChar("okKeyingMaxCount", MorsePreferences::okKeyingMaxCount);
+    }
     
     if (MorsePreferences::lcwoKochSeq != pref.getBool("lcwoKochSeq")) {
           pref.putBool("lcwoKochSeq", MorsePreferences::lcwoKochSeq);
@@ -1767,4 +1778,30 @@ String Koch::getRandomAbbrev() {
 
     uint16_t index = abbrIndices[random(numberOfAbbr)];
     return Abbrev::abbreviations[index];
+}
+
+void Koch::moveToNextKochLesson() {
+   MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter + 1, 1, kochCharsLength);
+}
+
+uint8_t Koch::getOkKeyingCount(void)
+{
+   return this->okKeyingCount;
+}
+
+void Koch::setOkKeyingCount(uint8_t count)
+{
+   this->okKeyingCount = count;
+}
+
+void internal::displayKochAutoSel() { 
+    if(MorsePreferences::okKeyingMaxCount)
+    {
+       sprintf(numBuffer, " %2i    ", MorsePreferences::okKeyingMaxCount);
+    }
+    else
+    {
+       sprintf(numBuffer, "%s", " None    ");
+    }
+    MorseOutput::printOnScroll(2, REGULAR, 1, numBuffer); 
 }

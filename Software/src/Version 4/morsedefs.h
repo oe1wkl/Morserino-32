@@ -192,7 +192,7 @@ enum menuNo
         _echo, _echoRand, _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
         _koch, _kochSel, _kochLearn, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
         _kochGenMixed, _kochEcho, _kochEchoRand, _kochEchoAbb, _kochEchoWords, _kochEchoMixed,
-        _trx, _trxLora, _trxWifi, _trxIcw, _decode, _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload, _wifi_update, _wifi_select, _goToSleep 
+        _trx, _trxLora, _trxWifi, _trxIcw, _decode, _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload, _wifi_update, _wifi_select, _goToSleep, _kochAutoSel
   };
 
 enum echoStates 

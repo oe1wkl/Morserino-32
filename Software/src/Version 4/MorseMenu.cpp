@@ -21,7 +21,7 @@ using namespace MorseMenu;
 //////// variables and constants for the modus menu
 
 
-const uint8_t menuN = 42;     // no of menu items +1
+const uint8_t menuN = 43;     // no of menu items +1
 
 const String menuText [menuN] = {
   "",
@@ -73,7 +73,8 @@ const String menuText [menuN] = {
     "Wifi Select", //40
   
   
-  "Go To Sleep" } ; // 41
+  "Go To Sleep",   // 41
+  "Auto Selection" } ; // 42  Koch
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
        
@@ -95,15 +96,15 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_echoWords,_echoMixed,_echo,0},                    // 13 echo calls
   {1,_echoCalls,_echoPlayer,_echo,0},                   // 14 echo mixed
   {1,_echoMixed,_echoRand,_echo,0},                     // 15 echo player
-  {0,_echo,_trx,_dummy,_kochSel},                          // 16 koch
-  {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select
+  {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
+  {1,_kochAutoSel,_kochLearn,_koch,0},                  // 17 koch select
   {1,_kochSel,_kochGen,_koch,0},                        // 18 koch learn new
   {1,_kochLearn,_kochEcho,_koch,_kochGenRand},          // 19 koch gen
   {2,_kochGenMixed,_kochGenAbb,_kochGen,0},             // 20 koch gen random
   {2,_kochGenRand,_kochGenWords,_kochGen,0},            // 21 koch gen abb
   {2,_kochGenAbb,_kochGenMixed,_kochGen,0},             // 22 koch gen words
   {2,_kochGenWords,_kochGenRand,_kochGen,0},            // 23 koch gen mixed
-  {1,_kochGen,_kochSel,_koch,_kochEchoRand},            // 24 koch echo
+  {1,_kochGen,_kochAutoSel,_koch,_kochEchoRand},        // 24 koch echo
   {2,_kochEchoMixed,_kochEchoAbb,_kochEcho,0},          // 25 koch echo random
   {2,_kochEchoRand,_kochEchoWords,_kochEcho,0},         // 26 koch echo abb
   {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words
@@ -120,7 +121,8 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_wifi_check,_wifi_update,_wifi,0},                 // 38 Upload File
   {1,_wifi_upload,_wifi_select,_wifi,0},                // 39 Update Firmware
   {1,_wifi_update,_wifi_mac,_wifi,0},                   // 40 Select network
-  {0,_wifi,_keyer,_dummy,0}                             // 41 goto sleep
+  {0,_wifi,_keyer,_dummy,0},                            // 41 goto sleep
+  {1,_kochEcho,_kochSel,_koch,0},                       // 42 koch Auto select check 16
 };
 
 //boolean quickStart;                                     // should we execute menu item immediately?
@@ -318,6 +320,12 @@ boolean MorseMenu::menuExec() {                                          // retu
       case  _kochSel: // Koch Select 
                 MorsePreferences::displayKeyerPreferencesMenu(MorsePreferences::posKochFilter);
                 MorsePreferences::adjustKeyerPreference(MorsePreferences::posKochFilter);
+                MorsePreferences::writePreferences("morserino");
+                return false;
+                break;
+      case  _kochAutoSel: // Koch Auto Select 
+                MorsePreferences::displayKeyerPreferencesMenu(MorsePreferences::posKochAutoSel);
+                MorsePreferences::adjustKeyerPreference(MorsePreferences::posKochAutoSel);
                 MorsePreferences::writePreferences("morserino");
                 return false;
                 break;
