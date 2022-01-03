@@ -67,6 +67,7 @@ namespace MorsePreferences
   extern uint8_t latency;
   extern uint8_t randomFile;
   extern boolean lcwoKochSeq;
+  extern boolean cwacKochSeq;
   extern uint8_t timeOut;
   extern boolean quickStart;
   extern boolean autoStopMode;
@@ -156,18 +157,7 @@ namespace MorsePreferences
   extern int decoderOptionsSize;
   extern int allOptionsSize;
   
-  /////////////////// Variables for Koch modes
-  
-  //extern String  kochWords[EnglishWords::WORDS_NUMBER_OF_ELEMENTS];
-  //extern unsigned int numberOfWords;
-  //extern String kochAbbr[Abbrev::ABBREV_NUMBER_OF_ELEMENTS];
-  //extern unsigned int numberOfAbbr;
-  
-  //extern String kochChars;
-  
-//  const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAV@:";
-//  const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNV@:";
-//  const int kochCharsLength = 50;
+ 
     
   void updateMemory(uint8_t temp);
   void clearMemory(uint8_t ptr);
@@ -248,14 +238,14 @@ class Koch {
     uint16_t abbrIndices[Abbrev::ABBREV_NUMBER_OF_ELEMENTS];
     uint16_t numberOfAbbr;
     String kochCharSet;
-    const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNV@:";
-    
+    const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNE@:";
+    const String cwacKochChars =      "teanois14rhdl25ucmw36?fypg79/bvkj80=xqz.,-K+ASNE@:";
     void createWords(uint8_t, uint8_t);
     void createAbbr(uint8_t, uint8_t);
     uint8_t wordIsKoch(String);
 
   public:
-    const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAV@:";
+    const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAE@:";
 
     Koch();
     void setup();
@@ -263,7 +253,7 @@ class Koch {
     String getRandomChar(int);
     String getRandomWord();
     String getRandomAbbrev();
-    void setKochChars(boolean);
+    void setKochChars(boolean, boolean);
     void setCustomChars(String chars);
 
 };

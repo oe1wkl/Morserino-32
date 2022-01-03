@@ -52,9 +52,10 @@ boolean Decoder::checkInput() {         /// check if we have a tone signal at A6
 ///// straight key is connected to external paddle connector (tip), i.e. the same as the left pin (dit normally)
 
 if (fromKey) {
-    if (MorsePreferences::keyermode == STRAIGHTKEY)          // we only check the "tip" of the external straight key jack
-        realstate =  !digitalRead(straightPin);
-    else
+// we also check the paddles - you can use them like a cootie key / sideswiper
+//    if (MorsePreferences::keyermode == STRAIGHTKEY)          // we only check the "tip" of the external straight key jack
+//        realstate =  !digitalRead(straightPin);
+//    else
         realstate =  ((!digitalRead(straightPin)) || leftKey || rightKey) ; // we also check the paddles (also the capacitive ones)
 }
 else 

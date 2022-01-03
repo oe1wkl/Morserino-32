@@ -62,7 +62,8 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::randomFile = 0;                   // if 0, play file word by word; if 255, skip random number of words (0 - 255) between reads   
   
   uint8_t MorsePreferences::kochFilter = 5;                   // constrain output to characters learned according to Koch's method 2 - 50 (45??)
-  boolean MorsePreferences::lcwoKochSeq = false;              // if true, replace native sequence with LCWO sequence  
+  boolean MorsePreferences::lcwoKochSeq = false;              // if true, replace native sequence with LCWO sequence 
+  boolean MorsePreferences::cwacKochSeq = false;              // if true, replace native sequence with CWops CW Academy sequence 
   boolean MorsePreferences::useCustomCharSet = false;         // if true, use Koch trainer with custom character set (imported from file)  
   String  MorsePreferences::customCharSet = "";               // a place to store the custom character set
   
@@ -650,8 +651,12 @@ void internal::displayKochSeq() {
       s.reserve(12);
       if (MorsePreferences::useCustomCharSet)
         s = "Custom Chars";
+      else if (MorsePreferences::lcwoKochSeq)
+        s = "LCWO        ";
+      else if (MorsePreferences::cwacKochSeq)
+        s = "CW Academy  ";
       else
-        s = MorsePreferences::lcwoKochSeq ? "LCWO        " :   "M32 / JLMC  ";
+        s = "M32 / JLMC  ";
       MorseOutput::printOnScroll(2, REGULAR, 1, s);
 }
 
@@ -778,7 +783,7 @@ void internal::displayHwConf() {
 boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotating the encoder changes the value, click returns to preferences menu
      //MorseOutput::printOnScroll(1, REGULAR, 0, " ");       /// returns true when a long button press ended it, and false when there was a short click
      MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
-    
+    uint8_t seq;
     int t;
     while (true) {                            // we wait for single click = selection or long click = exit
         pinMode(modeButtonPin, INPUT);
@@ -963,15 +968,29 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case  posSpeedAdapt: MorsePreferences::speedAdapt = !MorsePreferences::speedAdapt;
                                 internal::displaySpeedAdapt();
                                 break; 
-                case posKochSeq:  if ( MorsePreferences::useCustomCharSet) {
-                                    MorsePreferences::useCustomCharSet = false;
-                                    MorsePreferences::lcwoKochSeq = false;
-                                  } 
-                                  else if (MorsePreferences::lcwoKochSeq) {
-                                    MorsePreferences::useCustomCharSet = true;
+                case posKochSeq:  seq = ( MorsePreferences::lcwoKochSeq ? 1 : (MorsePreferences::cwacKochSeq ? 2 :  (MorsePreferences::useCustomCharSet ? 3 : 0 )));
+                                  seq = (seq+2+t) % 4;
+                                  MorsePreferences::lcwoKochSeq = MorsePreferences::cwacKochSeq = MorsePreferences::useCustomCharSet = false;
+                                  switch (seq) {
+                                    case 1: MorsePreferences::lcwoKochSeq = true;
+                                            break;
+                                    case 2: MorsePreferences::cwacKochSeq = true;
+                                            break;
+                                    case 3: MorsePreferences::useCustomCharSet = true;
+                                            break;
+                                    default: break;
                                   }
-                                  else
-                                    MorsePreferences::lcwoKochSeq = true;
+                
+//                  if ( MorsePreferences::useCustomCharSet) {
+//                                    MorsePreferences::useCustomCharSet = false;
+//                                    MorsePreferences::lcwoKochSeq = false;
+//                                  } 
+//                                  else if (MorsePreferences::lcwoKochSeq) {
+//                                    MorsePreferences::useCustomCharSet = true;
+//                                  }
+//                                  else
+//                                    MorsePreferences::lcwoKochSeq = true;
+
                                   internal::displayKochSeq();
                                   break;
                 case posTimeOut:  MorsePreferences::timeOut += (t+1);
@@ -1254,6 +1273,7 @@ void MorsePreferences::readPreferences(String repository) {
     MorsePreferences::wlanPassword3 = pref.getString("wlanPassword3");
     MorsePreferences::wlanTRXPeer3 = pref.getString("wlanTRXPeer3", "");
 
+    MorsePreferences::cwacKochSeq = pref.getBool("cwacKochSeq");
     MorsePreferences::lcwoKochSeq = pref.getBool("lcwoKochSeq");
     MorsePreferences::useCustomCharSet = pref.getBool("useCustomChar");
     MorsePreferences::customCharSet = pref.getString("customCharSet", "");
@@ -1347,7 +1367,16 @@ void MorsePreferences::writePreferences(String repository) {
     if (MorsePreferences::lcwoKochSeq != pref.getBool("lcwoKochSeq")) {
           pref.putBool("lcwoKochSeq", MorsePreferences::lcwoKochSeq);
           if (morserino) {
-            koch.setKochChars(MorsePreferences::lcwoKochSeq);
+            koch.setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
+            if (!MorsePreferences::useCustomCharSet)
+                koch.setup();
+          }
+    }
+    
+    if (MorsePreferences::cwacKochSeq != pref.getBool("cwacKochSeq")) {
+          pref.putBool("cwacKochSeq", MorsePreferences::cwacKochSeq);
+          if (morserino) {
+            koch.setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
             if (!MorsePreferences::useCustomCharSet)
                 koch.setup();
           }
@@ -1714,15 +1743,20 @@ void Koch::setup() {                                                // create th
   if (MorsePreferences::useCustomCharSet)
      setCustomChars(MorsePreferences::customCharSet);
   else
-      setKochChars(MorsePreferences::lcwoKochSeq);
+      setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
    
   //// populate the array for abbreviations and words according to length and Koch filter
   createWords(MorsePreferences::wordLength, MorsePreferences::useCustomCharSet ? kochCharsLength+1 : MorsePreferences::kochFilter) ;  // 
-  createAbbr(MorsePreferences::abbrevLength, MorsePreferences::useCustomCharSet ? kochCharsLength+1 :  MorsePreferences::kochFilter);
+  createAbbr(MorsePreferences::abbrevLength, MorsePreferences::useCustomCharSet ? kochCharsLength+1 : MorsePreferences::kochFilter);
 }
 
-void Koch::setKochChars(boolean lcwo) {             // define the demanded Koch character set
-    kochCharSet = MorsePreferences::lcwoKochSeq ? lcwoKochChars : morserinoKochChars;
+void Koch::setKochChars(boolean lcwo, boolean cwac) {             // define the demanded Koch character set
+    if (lcwo)
+      kochCharSet = lcwoKochChars;
+    else if (cwac)
+      kochCharSet = cwacKochChars;
+    else 
+      kochCharSet = morserinoKochChars;
 }
 
 void Koch::setCustomChars(String chars) {          // define the custom character set

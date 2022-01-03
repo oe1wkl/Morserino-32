@@ -146,7 +146,7 @@ unsigned long interWordTimer = 0;      // timer to detect interword spaces
 unsigned long acsTimer = 0;            // timer to use for automatic character spacing (ACS)
 
 
-const String CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKVäöüH";
+const String CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEäöüH";
 //                      0....5....1....5....2....5....3....5....4....5....5...    
 // we use substrings as char pool for trainer mode
 // SANK will be replaced by <as>, <ka>, <kn> and <sk>, H = ch
@@ -174,6 +174,7 @@ boolean startFirst = true;                        // to indicate that we are sta
 boolean firstTime = true;                         /// for word doubler mode
 
 uint8_t wordCounter = 0;                          // for maxSequence
+uint16_t errCounter = 0;                          // counting errors in echo trainer mode
 boolean stopFlag = false;                         // for maxSequence
 boolean echoStop = false;                         // for maxSequence
 
@@ -544,7 +545,7 @@ void displayStartUp(uint16_t volt) {
   if (BETA)
     s += " beta";
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
-  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2020");
+  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2021");
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
   
@@ -781,6 +782,12 @@ void checkStopFlag() {
     if (stopFlag) {
       active = stopFlag = false;
       keyOut(false, true, 0, 0);
+      if (morseState == echoTrainer) {
+        MorseOutput::clearStatusLine();
+        MorseOutput::printOnStatusLine( true, 0, String(errCounter) + " errs (" + String(wordCounter-2) + " wds)" );
+        delay(5000);
+      }
+      wordCounter = 1; errCounter = 0;
       MorseOutput::printOnStatusLine( true, 0, "Continue w/ Paddle");
     }
 }
@@ -798,7 +805,7 @@ void cleanStartSettings() {
     keyerState = IDLE_STATE;
     interWordTimer = 4294967000;                 // almost the biggest possible unsigned long number :-) - do not output a space at the beginning
     genTimer = millis()-1;                       // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc... 
-    wordCounter = 0;                             // reset word counter for maxSequence
+    errCounter = wordCounter = 0;                // reset word and error counter for maxSequence
     startFirst = true;
     autoStop = nextword;                             // for autoStop mode
     keyOut(false, true, 0, 0);
@@ -1298,7 +1305,7 @@ String getRandomCall(int maxLength) {            // random call-sign like patter
 
 
 /////// generate CW representations from its input string 
-/////// CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKVäöüH";
+/////// CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEäöüH";
 
 String generateCWword(String symbols) {
   int pointer;
@@ -1489,9 +1496,11 @@ void dispGeneratedChar() {
           charString = clearText.charAt(0);
           clearText.remove(0,1);
         }
-        if (generatorMode == KOCH_LEARN)
+        if (generatorMode == KOCH_LEARN) {
+            printOnDisplay(REGULAR," ");                      // output a space
             MorseOutput::clearBuffer();                      // clear the buffer first
-        printOnDisplay((morseState == loraTrx || morseState == wifiTrx) ? BOLD : REGULAR, cleanUpProSigns(charString));
+        }
+        printOnDisplay((morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN) ? BOLD : REGULAR, cleanUpProSigns(charString));
         if (generatorMode == KOCH_LEARN)
             printOnDisplay(REGULAR," ");                      // output a space
       }   //// end display_by_char
@@ -1589,7 +1598,7 @@ void fetchNewWord() {
                                 else if (wordCounter == (limit+1)) {
                                     stopFlag = true;
                                     echoStop = false;
-                                    wordCounter = 1;
+                                    //wordCounter = 1;
                                 }
                             }
                             if (clearText != "+") {
@@ -1753,6 +1762,7 @@ void echoTrainerEval() {
     if ((i = echoResponse.indexOf("R")) != -1) {
       echoResponse = echoResponse.substring(i+1);
     }
+
     if (echoResponse == echoTrainerWord) {
       echoTrainerState = SEND_WORD;
       //printToScroll(BOLD,  "OK");
@@ -1766,6 +1776,7 @@ void echoTrainerEval() {
     } else {
       echoTrainerState = REPEAT_WORD;
       if (generatorMode != KOCH_LEARN || echoResponse != "") {
+          ++errCounter;
           printOnDisplay(BOLD, "ERR");
           if (MorsePreferences::echoConf) {
               MorseOutput::soundSignalERR();
@@ -2031,7 +2042,7 @@ String CWwordToClearText(String cwword) {             // decode the Morse code c
 
 
 String encodeProSigns( String &input ) {
-    /// clean up clearText   -   S <as>,  - A <ka> - N <kn> - K <sk> - H ch - V <ve> etc;
+    /// clean up clearText   -   S <as>,  - A <ka> - N <kn> - K <sk> - H ch - E <ve> etc;
     input.replace("<as>", "S");
     input.replace("<ka>","A");
     input.replace("<kn>","N");

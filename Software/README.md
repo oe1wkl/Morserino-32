@@ -16,11 +16,27 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.2
+
+#### Bug fixes:
+* <ve> in echo mode showed an error even if entered correctly. Fixed.
+* When using a transceiver mode after Koch / Learn New Character, the display would show dots and dashes for each character (as it does in Koch / Learn New Character; that mode had not been reset). Fixed.
+
+
+#### Improvements:
+* If Keyer Mode = Straight Key, you can now use the capacitive paddles like a cootie key / sideswiper.
+* In Koch /Learn New Character: There is a blank on the display between the dots and dashes and the characters in clear text (important when the character is either a „.“ or a „-„  ); the cleartext character is also now displayed in bold.
+
+#### New Features:
+* For the Koch methods, there is now another sequence of characters that is supported: the sequence as used by CWOps CW Academy.
+* In Echo Trainer mode: when you set the parameter „max # of words“ to any value but „Unlimited“ (means the echo trainer will pause after that many words), you will see on the top line of the display how many errors you made in that run (be aware that you can make repeated errors regarding one word). This will be shown for 5 seconds, then you can continue to the next run of words.
+
+
 ### Changes V.4.1
 
 #### Bug Fixes:
 * The Setting „Echo Prompt“ - „Display Only“ in Echo Trainer mode did not work correctly (the prompt word did not show up on the display, making this setting completely useless). Fixed.
-* When using the „Stop/Next/Repeat“ feature in CW Generator, bouncing of keys could lead to erratic behavior (especially with external paddles - some of them have pretty long bounce times). So it could happen that the M32 thought you would want to stop the whole session, and the next start would begin with „vvv…“ again… Some mechanical paddles are really beasts when it comes to their bouncing behavior! Fixed (hopefully). 
+* When using the „Stop/Next/Repeat“ feature in CW Generator, bouncing of keys could lead to erratic behavior (especially with external paddles - some of them have pretty long bounce times). So it could happen that the M32 thought you would want to stop the whole session, and the next start would begin with „vvv…“ again… Some mechanical paddles are really beasts when it comes to their bouncing behavior! Fixed (hopefully).
 
 #### Improvements:
 * Echo Trainer Mode: if you notice during your response that you made an error, you can now finish that word with an „error“ character (8 - or more - dits, will show as <err> on the display), and then do your entry from the start again. In this way you do not need to wait for the ERR message and the repetition of the prompt.

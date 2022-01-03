@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v4.1 March 2021
+v4.2 January 2022
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -103,7 +103,7 @@ If you are only using an external paddle (or for transport), you may remove the 
 |3.5 mm Phone Jack (3 poles): External Paddle
 |Use this to connect either an external (mechanical) paddle (tip is left paddle, ring is right paddle, sleeve is ground),
 or a straight key (tip is the key).
-With a straight key you can use the CW decoder to monitor the quality of you fist!
+
 
 
 |13
@@ -158,6 +158,13 @@ There are numerous parameters, read the manual to find out what they are for.
 
 You can also store and recall parameters in so called „snapshots“.
 
+=== How to Use External Paddles and Keys
+You can connect external paddles (dual lever or single lever), or straight keys (normal, or sideswiper) to your M32, by using the 3.5 mm connector for external keys (12).
+
+To use a straight key, you can either use the CW Decoder modus without changing any parameters (this modus decodes Morse coming either through the audio I/O connector, or from your key). If you want to use the Echo Trainer function, or any of the Transceiver functions with a straight key, you need to change the parameter "Keyer Mode" to "Straight Key" (please note that the function "CW Keyer" will not work when the keyer mode is set to straight key - with a straight key you are the keyer, not the Morserino!).
+
+TIP: You can use the built-in capacitive paddles like a sideswiper / cootie key when the Keyer Mode is Straight Key!
+
 === How To Charge the Battery
 Connect USB power, switch battery switch to ON (I), orange LED will be lit very brightly, when orange LED is dark the  battery is fully charged. When orange LED is lit or flickers dimly, the battery is not connected / not switched on.
 
@@ -187,7 +194,7 @@ Therefore, if you intend not to use the Morserino for a longer period of time, d
 WARNING: If the battery voltage is dangerously low when you attempt to turn it on, an empty battery symbol will show on the screen and the device will refuse to boot up.
 If you see this symbol, you should begin charging your battery as soon as possible.
 
-TIP: After using any of the WiFi functions, battery measurement does not work correctly until the Morserino-32 is powered down and up again (or a reset with the Reset button has been performed). This is due to a hardware problem on the Heltec board. In such cases the Morserino-32 displays "Unknown" instead of the battery voltage, and the battery symbol is shown with an inscribed question mark. After a power cycle everything should work OK again.
+TIP: First edition od M32 only: After using any of the WiFi functions, battery measurement does not work correctly until the Morserino-32 is powered down and up again (or a reset with the Reset button has been performed). This is due to a hardware problem on the Heltec board V2.0. In such cases the Morserino-32 displays "Unknown" instead of the battery voltage, and the battery symbol is shown with an inscribed question mark. After a power cycle everything should work OK again.
 
 TIP: If the display shows the empty battery symbol although sufficient power should still be available, it is advisable to perform a battery measurement calibration. See <<appendix1_2>>.
 
@@ -350,7 +357,7 @@ meaning 0/8 to 7/8 of a dot length (default is 4, i.e. half a dot length). If yo
 
 For the parameter `AutoChar Spce` (defining a minimum length for the space between characters) see the section <<parameters>> for details.
 
-**Straight Key Mode**: This is not really an automatic keyer mode, but it enables the Morserino-32 to be used with a simple straight key. It will decode whatever you key with your straight key. You can also use the Echo Trainer and the Transceiver modes using a straight key!
+**Straight Key Mode**: This is not really an automatic keyer mode, but it enables the Morserino-32 to be used with a simple straight key. The "CW Keyer" functiuon will not work when this parameter has been set, but you can use the Echo Trainer and the Transceiver modes using a straight key!
 
 
 === CW Generator [[generator]]
@@ -466,7 +473,9 @@ Again, like with the CW Generator, you can set a huge range of parameters to fin
 
 `Confrm. Tone`: Normally an audible confirmation tone is sounded in Echo Trainer modus. If you turn it off, the device just repeats the prompt when the response was wrong, or sends a new prompt. The visual indication of "OK" or "ERR" will still be visible when the tone is turned off.
 
-`Max # of Words`: As with CW generator, you can make the M32 stop after a specified number of words.
+`Max # of Words`: As with CW generator, you can make the M32 pause after a specified number of words.
+
+TIP: If this parameter is set to a value between 5 and 250 (and not to "Unlimited"), the M32, when pausing after that number of words, will show (for 5 seconds) how many incorrect entries you made (and the number of words) on the top line of the display (be aware that you can make repeated errors regarding one word, and all of them will be counted).
 
 `Adaptv. Speed`:  This should help you to train for maximum speed. Whenever your response was correct, the speed will be increased by 1 wpm (word per minute); whenever you make a mistake, it will decrease by 1 wpm. Thus you will eventually always train at your limit, which certainly is the best way to push your limits...
 
@@ -532,15 +541,20 @@ The order of the characters learned has not been strictly defined by Koch, and t
 | 25 | q | 50 | : (Colon)
 |===
 
-There is also an option to use a slightly different order of characters, as is used by the popular on-line training tool "Learn CW On-line" (LCWO). This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
+There is also an option to select the sequence of characters. In addition to the native sequence of characters, you can choose  the sequence that is used by the popular on-line training tool "Learn CW On-line" (LCWO), or also the sequence the CW Ops CW Academy courses are using. This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
 
 The sequence of characters when "LCWO" is chosen is as follows:
 
 k m u r e s n a p t l w i . j z = f o y , v g 5 / q 9 2 h 3 8 b ? 4 7 c 1 d 6 0 x - SK AR(+) KA AS KN VE @ :
 
+And the CW Academy sequence of characters is this:
+
+t e a n o i s 1 4 r h d l 2 5 u c m w 3 6 ? f y p g 7 9 / b v k j 8 0 = x q z . , - SK AR(+) KA AS KN VE @ :
+
+
 ===== Koch: Train with a customized set of characters
 
-You can also use the Koch Trainer to train your specific character set:  You upload a text file for the file player that contains the characters you want to train (as one „word“ or several, in one line or more), and then set the parameter 'Koch Sequence' to the new option „Custom Chars“. This reads the characters from the file. Now you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use exactly those characters for your training (the setting of the Koch lesson has no influence at this point). If you want to change the character set, upload a new text file, and re-select the option „Custom Chars“ (even if it had been selected before), to prepare the new character set (if you just upload a new text file, the custom character set will not change - you have to go into parameters and re-select „Custom Chars“ again; this is a feature, not a bug: it means you can switch between training your characters, and using a (different) text file for file player …). Setting „Koch Sequence“ to M32 or LCWO will revert to the „normal“ Koch trainer option.
+You can also use the Koch Trainer to train your specific character set:  You upload a text file for the file player that contains the characters you want to train (as one „word“ or several, in one line or more), and then set the parameter 'Koch Sequence' to the new option „Custom Chars“. This reads the characters from the file. Now you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use exactly those characters for your training (the setting of the Koch lesson has no influence at this point). If you want to change the character set, upload a new text file, and re-select the option „Custom Chars“ (even if it had been selected before), to prepare the new character set (if you just upload a new text file, the custom character set will not change - you have to go into parameters and re-select „Custom Chars“ again; this is a feature, not a bug: it means you can switch between training your characters, and using a (different) text file for file player …). Setting „Koch Sequence“ to M32, LCWO or CW Academy will revert to the „normal“ Koch trainer option.
 
 ==== Koch: Learn New Chr
 
@@ -857,7 +871,7 @@ Be aware that you must have an antenna connected when you transmit via LoRa, oth
 | LoRa Channel | Selects which virtual channel LoRa is using. | **Standard Ch** / Secondary Ch
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frequency = ca 700 Hz) | **Wide** / Narrow
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response in Echo Trainer modus, and will be decreased by 1 whenever you made a mistake. | ON / **OFF**
-| Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. You can also use your customized character set by choosing Custom Chars - see the section  <<koch>>, the last paragraph. | **M32 / JLMC** (Just Learn Morse Code)  /  LCWO / Custom Chars
+| Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. You can also use your customized character set by choosing Custom Chars - see the section  <<koch>>, the last paragraph. | **M32 / JLMC** (Just Learn Morse Code) / Custom Chars  / CW Academy /  LCWO
 | Time Out | If the time specified in this parameter passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min
 | Quick Start | Allows you to bypass the initial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically. | ON / **OFF**

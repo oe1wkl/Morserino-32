@@ -366,6 +366,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 goto startEcho;
       case  _trxLora: // LoRa Transceiver
+                generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::loraTrxOptions, MorsePreferences::loraTrxOptionsSize);
                 morseState = loraTrx;
                 showStartDisplay("", "Start LoRa Trx", "", 500);
@@ -375,6 +376,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 return true;
                 break;
       case  _trxWifi: // Wifi Transceiver
+                generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions, MorsePreferences::wifiTrxOptionsSize);
                 morseState = wifiTrx;
                 MorseOutput::clearDisplay();

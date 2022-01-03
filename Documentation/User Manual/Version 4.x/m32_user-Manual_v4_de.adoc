@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v4.1 März 2021
+v4.2 Jänner 2022
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -103,7 +103,7 @@ Wenn du nur ein externes Paddel verwendest (bzw. auch für den Transport), könn
 |3,5 mm Klinkenstecker (3-polig): Externes Paddel
 |Verwende diesen Anschluss, um entweder ein externes (mechanisches) Paddel anzuschließen (Spitze ist linkes Paddel, Ring ist rechtes Paddel, Hülse ist Masse),
 oder eine einfache Morsetaste (Spitze ist die Taste).
-Mit einer einfachen Taste kannst du mit dem CW-Decoder die Qualität deiner Eingabe überwachen!
+
 
 
 |13
@@ -157,6 +157,13 @@ Es gibt zahlreiche Parameter. Lies das Handbuch, um herauszufinden, wofür sie b
 
 Man kann Parameter auch in sogenannten „Snapshots“ abspeichern und wieder abrufen.
 
+=== Verwendung externer Paddles und Tasten
+Man kann externe Paddles (Doppelhebel oder Einhebel) oder Handtasten (normal oder "Sideswiper") mittels des 3,5-mm-Anschlusses für externe Tasten (12) anschließen.
+
+Um eine Handtaste zu verwenden, kann man entweder den CW-Decoder-Modus benutzen, ohne irgendwelche Parameter zu ändern (dieser Modus decodiert Morse, das entweder über den Audio-I/O-Anschluss oder von der Taste kommt). Wenn man die Echo Trainer-Funktion oder eine der Transceiver-Funktionen mit einer Handtaste verwenden möchte, muss man den Parameter "Keyer Mode" auf "Straight Key" ändern (bitte beachte, dass die Funktion "CW Keyer" nicht funktioniert, wenn der Keyer-Modus auf Straight Key eingestellt ist - mit einer Handtaste bist du der Keyer, nicht der Morserino!).
+
+TIP: Du kannst die eingebauten kapazitiven Paddles wie einen Sideswiper (Cootie Key) verwenden, wenn der Keyer-Modus Straight Key ist!
+
 === So ladet man den Akku auf
 Schließe die USB-Stromversorgung an, schalte den Batterieschalter auf ON (I). Die orangefarbene LED leuchtet sehr hell. Wenn die orangefarbene LED dunkel ist, ist der Akku vollständig aufgeladen. leuchtet die orange LED schwach (oder flickert), ist der Akku nicht angeschlossen / nicht eingeschaltet.
 
@@ -185,7 +192,7 @@ Wenn de den Morserino also für längere Zeit nicht benutzen willst, trenne mit 
 WARNING: Wenn die Batteriespannung beim Einschalten gefährlich niedrig ist, erscheint ein leeres Batteriesymbol auf dem Display und das Gerät weigert sich, hochzufahren.
 In diesem Fall solltest du so schnell wie möglich mit dem Laden des Akkus beginnen.
 
-TIP: Nach dem Benutzen einer WLAN Funktion funktioniert das Messen der Batteriespannung nicht mehr, bis das Gerät komplett ein- und wieder ausgeschaltet wurde, oder ein Reset mit dem Reset-Button durchgeführt wurde. Der Grund ist ein Hardware Designfehler des Heltec Boards. In solchen Fällen zeigt der Morserino nun "Unknown" anstelle der Batteriespannung an, und das Batteriesymbol ist mit einem Fragezeichen überschrieben. Nach dem Ein- und Ausschalten sollte alles wieder normal funktionieren.
+TIP: Nur für M32 der ersten Generation: Nach dem Benutzen einer WLAN Funktion funktioniert das Messen der Batteriespannung nicht mehr, bis das Gerät komplett ein- und wieder ausgeschaltet wurde, oder ein Reset mit dem Reset-Button durchgeführt wurde. Der Grund ist ein Hardware Designfehler des Heltec Boards V2.0. In solchen Fällen zeigt der Morserino nun "Unknown" anstelle der Batteriespannung an, und das Batteriesymbol ist mit einem Fragezeichen überschrieben. Nach dem Ein- und Ausschalten sollte alles wieder normal funktionieren.
 
 TIP: Falls leere Batterie angezeigt wird, aber eigentlich noch genügend Spannung vorhanden sein müsste, ist es ratsam, eine Kalibrierung der Batteriemessung durchzuführen. Siehe dazu <<appendix1_2>>.
 
@@ -347,7 +354,7 @@ was 0/8 bis 7/8 einer Punktlänge bedeutet (Defaultwert ist 4, d.h. eine halbe P
 
 Für den Parameter `AutoChar Spce` (Definition einer Mindestlänge für den Abstand zwischen den Zeichen) siehe den Abschnitt <<parameters>> für Details.
 
-**Straight Key Mode**: Das ist natürlich kein automatischer Modus, sondern man kann damit den Morserino-32 auch mit einer normalen Handtaste ("Klopftaste") verwenden. Der Morserino wird alle Eingaben mit der Handtaste decodieren. Man kann die Handtaste auch für den Ecoh Trainer und für die Transceiver Modi verwenden!
+**Straight Key Mode**: Das ist natürlich kein automatischer Modus, sondern man kann damit den Morserino-32 auch mit einer normalen Handtaste ("Klopftaste") verwenden. Der Modus "CW Keyer" funktioniert nicht, wenn dieser Parameter gesetzt ist, aber man kann die Handtaste für den Echo Trainer und für die Transceiver Modi verwenden!
 
 
 === CW Generator [[generator]]
@@ -462,6 +469,8 @@ Auch hier kann man, wie beim CW-Generator, eine Vielzahl von Parametern einstell
 
 `Max # of Words`: Wie beim CW-Generator kann man den M32 nach einer bestimmten Anzahl von Wörtern pausieren lassen.
 
+TIP: Wenn dieser Parameter auf einen Wert zwischen 5 und 250 (und nicht auf "Unlimited") eingestellt ist, zeigt der M32 bei einer Pause nach dieser Anzahl von Wörtern in der obersten Zeile des Displays (für 5 Sekunden) an, wie viele falsche Eingaben du gemacht hast (und die Anzahl der Wörter). Beachte, dass man bei ein und demselben Wort wiederholt Fehler machen kann, die alle mitgezählt werden.
+
 `Adaptv. Speed`:  Dies sollte dir helfen, auf Höchstgeschwindigkeit zu trainieren. Wann immer deine Antwort richtig war, wird die Geschwindigkeit um 1 wpm (Wort pro Minute) erhöht; hast du einen fehler gemacht, wird sie um 1 wpm reduziert. So wirst du schließlich immer an deinem Limit trainieren, was sicherlich der beste Weg ist, um deine Grenzen weiter hinaus zu schieben ...
 
 
@@ -526,15 +535,21 @@ Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden
 | 25 | q | 50 | : (Doppelpunkt)
 |===
 
-Es gibt auch die Möglichkeit, eine etwas andere Reihenfolge der Zeichen zu verwenden, wie es das beliebte Online-Trainingstool "Learn CW On-line" (LCWO) verwendet. Dies kann im Parametermenü des Morserino-32 unter "Koch-Sequence" eingestellt werden.
+Es besteht auch die Möglichkeit, die Reihenfolge der zu lernenden Zeichen auszuwählen. Neben der nativen Zeichenfolge kann man die Reihenfolge wählen, die vom beliebten Online-Trainingstool "Learn CW Online" (LCWO) verwendet wird, oder auch die Reihenfolge, welche die CW Ops CW Academy-Kurse benutzen. Dies kann im Parametermenü des Morserino-32 unter "Koch Sequence" eingestellt werden.
 
 Die Zeichenfolge bei der Auswahl von "LCWO" ist wie folgt:
 
 k m u r e s n a p t l w i . j z = f o y , v g 5 / q 9 2 h 3 8 b ? 4 7 c 1 d 6 0 x - SK AR(+) KA AS KN VE @ :
 
+Und die Reihenfolge der CW Academy sieht so aus:
+
+t e a n o i s 1 4 r h d l 2 5 u c m w 3 6 ? f y p g 7 9 / b v k j 8 0 = x q z . , - SK AR(+) KA AS KN VE @ :
+
+
+
 ===== Koch: Üben mit einer maßgeschneiderten Zeichenmenge
 
-Man kann den Koch-Trainer auch verwenden, um einen spezifischen Satz von Zeichen zu trainieren: Lade eine Textdatei für den File Player hoch, der die zu trainierenden Zeichen enthält (als ein „Wort“ oder mehrere, in einer Zeile oder mehr), und setze dann den Parameter 'Koch Sequence' auf die Option 'Custom Chars'. Damit werden die Zeichen aus der Datei eingelesen. Jetzt kann man den Koch-Trainer (CW-Generator oder Echo-Trainer) benutzennun, der genau diese Zeichen für das Training verwendet (die Einstellung der Koch-Lektion hat zu diesem Zeitpunkt keinen Einfluss). Wenn du den Zeichensatz ändern möchtest, lade  eine neue Textdatei hoch und wähle  die Option 'Custom Chars' erneut aus (auch wenn diese zuvor schon ausgewählt war), um den neuen Zeichensatz vorzubereiten (wenn man nur eine neue Textdatei hochlädt wird sich der benutzerdefinierte Zeichensatz nicht ändern - man muss in die Parameter gehen und erneut 'Custom Chars' auswählen. Dies ist ein Feature, kein Fehler: Man kann so zwischen dem Trainieren einmzelner bestimmter Zeichen und der Verwendung des File Players mit einer anderen Textdatei wechseln.). Wenn man 'Koch Sequence' auf M32 oder LCWO einstellt, wird die „normale“ Koch-Trainer-Option wiederhergestellt.
+Man kann den Koch-Trainer auch verwenden, um einen spezifischen Satz von Zeichen zu trainieren: Lade eine Textdatei für den File Player hoch, der die zu trainierenden Zeichen enthält (als ein „Wort“ oder mehrere, in einer Zeile oder mehr), und setze dann den Parameter 'Koch Sequence' auf die Option 'Custom Chars'. Damit werden die Zeichen aus der Datei eingelesen. Jetzt kann man den Koch-Trainer (CW-Generator oder Echo-Trainer) benutzennun, der genau diese Zeichen für das Training verwendet (die Einstellung der Koch-Lektion hat zu diesem Zeitpunkt keinen Einfluss). Wenn du den Zeichensatz ändern möchtest, lade  eine neue Textdatei hoch und wähle  die Option 'Custom Chars' erneut aus (auch wenn diese zuvor schon ausgewählt war), um den neuen Zeichensatz vorzubereiten (wenn man nur eine neue Textdatei hochlädt wird sich der benutzerdefinierte Zeichensatz nicht ändern - man muss in die Parameter gehen und erneut 'Custom Chars' auswählen. Dies ist ein Feature, kein Fehler: Man kann so zwischen dem Trainieren einmzelner bestimmter Zeichen und der Verwendung des File Players mit einer anderen Textdatei wechseln.). Wenn man 'Koch Sequence' auf M32, LCWO oder CA Academy einstellt, wird die „normale“ Koch-Trainer-Option wieder hergestellt.
 
 ==== Koch: Learn New Chr (Neues Zeichen Lernen)
 
@@ -850,7 +865,7 @@ Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da so
 | LoRa Channel | Wählt aus, welchen virtuellen Kanal LoRa verwendet. | **Standard Ch** / Secondary Ch
 | Bandwidth | Definiert die Bandbreite, die der CW-Decoder verwendet (dies ist in Software mit einem so genannten Goertzel-Filter implementiert).  (Wide (breit) = ca. 600 Hz, Narrow (schmal) = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz) | **Wide** / Narrow
 | Adaptv. Speed | Wenn diese Option auf ON gesetzt ist, wird die Geschwindigkeit um 1 WpM erhöht, wenn man im Echo Trainer-Modus eine korrekte Antwort gegeben hat, und um 1 verringert, wenn die Antwort fehlerhaft war. | ON / **OFF**
-| Koch Sequence | Dies bestimmt die Reihenfolge der Zeichen, wenn man die Koch-Methode zum Lernen und Trainieren verwendet. Man kann hier auch seinen spezifischen zeichensatz zum Üben definieren, mit der Option 'Custom Chars' - siehe das Kapitel <<koch>> (letzter Absatz).| **M32 / JLMC** (Just Learn Morse Code)  /  LCWO / Custom Chars
+| Koch Sequence | Dies bestimmt die Reihenfolge der Zeichen, wenn man die Koch-Methode zum Lernen und Trainieren verwendet. Man kann hier auch seinen spezifischen zeichensatz zum Üben definieren, mit der Option 'Custom Chars' - siehe das Kapitel <<koch>> (letzter Absatz).| **M32 / JLMC** (Just Learn Morse Code) / Custom Chars  / CW Academy /  LCWO
 | Time Out | Wenn die in diesem Parameter angegebene Zeit ohne Aktualisierung der Anzeige vergeht, geht das Gerät in den Tiefschlafmodus. Man kann es durch Drücken der ROTEN Taste neu starten. | No timeout (kein Timeout)/ **5 min** / 10 min / 15 min
 | Quick Start | Ermöglicht es (gesetzt auf ON), die anfängliche Menüauswahl zu umgehen, d.h. das Gerät beginnt beim Start sofort mit der Ausführung des Modus, der vor dem letzten Ausschalten wirksam war. | ON / **OFF**
 | STop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**
