@@ -125,6 +125,7 @@ void Decoder::decode() {
                               lacktime = 5;                                   ///  when high speeds we have to have a little more pause before new word
                               if (d_wpm > 35) lacktime = 6;
                                 else if (d_wpm > 30) lacktime = 5.5;
+                                else if (morseState == echoTrainer) lacktime = MorsePreferences::interWordSpace + 1;
                               if (lowDuration > (lacktime * ditAvg)) {
                                    displayMorse(myTable.retrieveSymbol(), !fromKey);            ////////end of word////////// !!!!!   
                                    decoderState = LOW_;

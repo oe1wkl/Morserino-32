@@ -16,6 +16,10 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.2.1
+
+#### Bug fixes:
+* There was an annoying bug in Echo Trainer for those, who use it with a straight key: the inter-word space chosen in the parameters was not properly considered, so you had to keep really tight pauses between the characters, or the pause was considered as end of word, resulting of course in an error. Fixed (tnx to Roland, DG6RW, for doing the analysis).
 ### Changes V.4.2
 
 #### Bug fixes:
