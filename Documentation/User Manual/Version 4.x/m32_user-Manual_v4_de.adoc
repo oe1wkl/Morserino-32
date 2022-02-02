@@ -901,7 +901,7 @@ Die Standard Heltec-Module unterstützen nur das 433 MHz-Band, und der Morserino
 **Um den Morserino-32 für nicht standardisierte Frequenzen und Bänder zu konfigurieren, gehe bitte wie folgt vor:**.
 
 
-* Starte den Morserino-32 und halte dabei den SCHWARZEN Drehgeberknopf gedrückt.
+* Schalte den M32 ein, während du die Touch Paddles (oder externen Paddles, oder eine externe Handtaste) gedrückt hältst.
 * Sobald eine Nachricht erscheint, lass den schwarzen Knopf los.
 * Zuerst wird man aufgefordert, das gewünschte Band auszuwählen (wähle 433 für das Standard-LoRa-Modul und entweder 868 oder 920 für das obere UHF-LoRa-Modul); drehe den Drehgeber auf das gewünschte Band und klicke einmal kurz auf den schwarzen Knopf. **Die Bandauswahl muss für das verwendete Heltec-Modul passen!**
 * Jetzt wird man aufgefordert, eine Frequenz innerhalb des ausgewählten Bandes auszuwählen. Die erste angezeigte Frequenz ist die Standardeinstellung für dieses Band - wenn das in Ordnung ist, klicke einfach einmal auf den schwarzen Knopf, andernfalls wähle eine Frequenz aus, indem du den Drehgeber drehst und auf den Knopf klickst, sobald Sie die richtige Frequenz gefunden wurde.

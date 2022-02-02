@@ -906,7 +906,7 @@ The default Heltec modules supports the 433 MHz band only, and the Morserino-32 
 **In order to configure the Morserino-32 for non-standard frequencies and bands, please proceed as follows:**
 
 
-* Start your Morserino-32 keeping the BLACK encoder knob pressed.
+* Start your M32 while holding the touch paddles (or external paddles, or straigth key) pressed.
 * When you see a message, release the black knob.
 * Select the Option "LoRa Config." with the rotary encoder.
 * First you will be asked to select the desired band (select 433 for the default LoRa module, and either 868 or 920 for the upper UHF LoRa module); rotate the encoder to the desired band, and click the black knob once. **The band selection has to fit the Heltec module you are using!**
