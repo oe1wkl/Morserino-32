@@ -1741,13 +1741,29 @@ uint8_t Koch::wordIsKoch(String thisWord) {   /// returns the highest Koch seque
 
 void Koch::setup() {                                                // create the Koch tables according to custom char or Koch filter, and length
   if (MorsePreferences::useCustomCharSet)
-     setCustomChars(MorsePreferences::customCharSet);
+    setCustomChars(MorsePreferences::customCharSet);
   else
-      setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
+    setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
    
   //// populate the array for abbreviations and words according to length and Koch filter
   createWords(MorsePreferences::wordLength, MorsePreferences::useCustomCharSet ? kochCharsLength+1 : MorsePreferences::kochFilter) ;  // 
   createAbbr(MorsePreferences::abbrevLength, MorsePreferences::useCustomCharSet ? kochCharsLength+1 : MorsePreferences::kochFilter);
+
+  String charSet = getCharSet();
+  int16_t probability = 0;
+  for (int i = 0; i < kochCharsLength; i++)
+  {
+    if (i >= charSet.length())
+      probability = 0;
+    else if (i > charSet.length() - 6)
+      probability = 7 + i - charSet.length();
+    else
+      probability = 1;
+    
+    adaptiveProbabilities[i] = probability;
+  }
+
+  initSequence = getRandomCharSet();
 }
 
 void Koch::setKochChars(boolean lcwo, boolean cwac) {             // define the demanded Koch character set
@@ -1801,4 +1817,135 @@ String Koch::getRandomAbbrev() {
 
     uint16_t index = abbrIndices[random(numberOfAbbr)];
     return Abbrev::abbreviations[index];
+}
+
+String Koch::getAdaptiveChar(int maxl) {
+  String result = getInitChar(maxl);
+  String charSet = getCharSet();
+  result.reserve(7);
+  int16_t probabilitySum = getProbabilitySum();
+
+  while (result.length() < maxl)
+  {
+    int16_t randomOffset = random(probabilitySum);
+    
+    for (int j = 0; j < charSet.length(); j++)
+    {
+      randomOffset -= adaptiveProbabilities[j];
+      if (randomOffset < 0)
+      {
+        result += charSet.charAt(j);
+        break;
+      }
+    }
+  }
+
+  return result;
+}
+
+int16_t Koch::getProbabilitySum()
+{
+  int16_t sum = 0;
+  for (int i = 0; i < kochCharsLength; i++)
+  {
+    sum += adaptiveProbabilities[i];
+  }
+  return sum;
+}
+
+String Koch::getInitChar(int maxl)
+{
+  String result;
+
+  if (maxl <= initSequence.length())
+  {
+    result = initSequence.substring(0, maxl);
+    initSequence = initSequence.substring(maxl, initSequence.length());
+  }
+  else
+  {
+    result = initSequence;
+    initSequence = "";
+  }
+
+  return result;
+}
+
+String Koch::getCharSet()
+{
+  if (MorsePreferences::useCustomCharSet)
+    return MorsePreferences::customCharSet;
+  else
+    return kochCharSet.substring(0, MorsePreferences::kochFilter);
+}
+
+String Koch::getRandomCharSet()
+{
+  String sortedCharSet = getCharSet();
+  String randomCharSet = "";
+
+  while (sortedCharSet.length() > 0)
+  {
+    int index = random(sortedCharSet.length());
+    randomCharSet += sortedCharSet.charAt(index);
+    sortedCharSet = sortedCharSet.substring(0, index) + sortedCharSet.substring(index + 1, sortedCharSet.length());
+  }
+  
+  return randomCharSet;
+}
+
+void Koch::increaseWordProbability(String expected, String received)
+{
+  int failedIndex = getFailedCharIndex(expected, received);
+  if (failedIndex == -1)
+    return;
+
+  increaseCharProbability(expected.charAt(failedIndex), 4);
+  
+  if (failedIndex > 0 && expected.charAt(failedIndex - 1) != expected.charAt(failedIndex))
+    increaseCharProbability(expected.charAt(failedIndex - 1), 2);
+  if (failedIndex < expected.length() && expected.charAt(failedIndex + 1) != expected.charAt(failedIndex))
+    increaseCharProbability(expected.charAt(failedIndex + 1), 2);
+}
+
+int Koch::getFailedCharIndex(String expected, String received)
+{
+  for (int i = 0; i < expected.length(); i++)
+  {
+    if (i >= received.length())
+      return i;
+
+    if (expected.charAt(i) != received.charAt(i))
+      return i;
+  }
+
+  return -1;
+}
+
+void Koch::increaseCharProbability(char c, int16_t count)
+{
+  String charSet = getCharSet();
+  int increaseIndex = charSet.indexOf(c);
+
+  adaptiveProbabilities[increaseIndex] += count;
+
+  if (adaptiveProbabilities[increaseIndex] > charSet.length())
+    adaptiveProbabilities[increaseIndex] = charSet.length();
+}
+
+void Koch::decreaseWordProbability(String word)
+{
+  for (int i = 0; i < word.length(); i++)
+  {
+    decreaseCharProbability(word.charAt(i));
+  }
+}
+
+void Koch::decreaseCharProbability(char c)
+{
+  String charSet = getCharSet();
+  int decreaseIndex = charSet.indexOf(c);
+
+  if (adaptiveProbabilities[decreaseIndex] > 1)
+    adaptiveProbabilities[decreaseIndex]--;
 }

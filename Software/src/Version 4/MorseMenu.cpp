@@ -21,7 +21,7 @@ using namespace MorseMenu;
 //////// variables and constants for the modus menu
 
 
-const uint8_t menuN = 42;     // no of menu items +1
+const uint8_t menuN = 43;     // no of menu items +1
 
 const String menuText [menuN] = {
   "",
@@ -56,24 +56,25 @@ const String menuText [menuN] = {
       "CW Abbrevs",
       "English Words",
       "Mixed",
+      "Adapt. Rand.",
   
-  "Transceiver",    // 29
+  "Transceiver",    // 30
     "LoRa Trx",
     "WiFi Trx",
     "iCW/Ext Trx",
   
-  "CW Decoder",     // 33
+  "CW Decoder",     // 34
 
-  "WiFi Functions", // 34
+  "WiFi Functions", // 35
     "Disp MAC Addr",
     "Config WiFi",
     "Check WiFi",
     "Upload File",
-    "Update Firmw", //39
-    "Wifi Select", //40
+    "Update Firmw", //40
+    "Wifi Select", //41
   
   
-  "Go To Sleep" } ; // 41
+  "Go To Sleep" } ; // 42
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
        
@@ -95,7 +96,7 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_echoWords,_echoMixed,_echo,0},                    // 13 echo calls
   {1,_echoCalls,_echoPlayer,_echo,0},                   // 14 echo mixed
   {1,_echoMixed,_echoRand,_echo,0},                     // 15 echo player
-  {0,_echo,_trx,_dummy,_kochSel},                          // 16 koch
+  {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
   {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select
   {1,_kochSel,_kochGen,_koch,0},                        // 18 koch learn new
   {1,_kochLearn,_kochEcho,_koch,_kochGenRand},          // 19 koch gen
@@ -104,23 +105,24 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochGenAbb,_kochGenMixed,_kochGen,0},             // 22 koch gen words
   {2,_kochGenWords,_kochGenRand,_kochGen,0},            // 23 koch gen mixed
   {1,_kochGen,_kochSel,_koch,_kochEchoRand},            // 24 koch echo
-  {2,_kochEchoMixed,_kochEchoAbb,_kochEcho,0},          // 25 koch echo random
+  {2,_kochEchoAdaptive,_kochEchoAbb,_kochEcho,0},       // 25 koch echo random
   {2,_kochEchoRand,_kochEchoWords,_kochEcho,0},         // 26 koch echo abb
   {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words
-  {2,_kochEchoWords,_kochEchoRand,_kochEcho,0},         // 28 koch echo mixed
-  {0,_koch,_decode,_dummy,_trxLora},                    // 29 transceiver
-  {1,_trxIcw,_trxWifi,_trx,0},                          // 30 lora
-  {1,_trxLora,_trxIcw,_trx,0},                          // 31 wifi
-  {1,_trxWifi,_trxLora,_trx,0},                         // 32 icw
-  {0,_trx,_wifi,_dummy,0},                              // 33 decoder
-  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 34 WiFi
-  {1,_wifi_select,_wifi_config,_wifi,0},                // 35 Disp Mac
-  {1,_wifi_mac,_wifi_check,_wifi,0},                    // 36 Config Wifi
-  {1,_wifi_config,_wifi_upload,_wifi,0},                // 37 Check WiFi
-  {1,_wifi_check,_wifi_update,_wifi,0},                 // 38 Upload File
-  {1,_wifi_upload,_wifi_select,_wifi,0},                // 39 Update Firmware
-  {1,_wifi_update,_wifi_mac,_wifi,0},                   // 40 Select network
-  {0,_wifi,_keyer,_dummy,0}                             // 41 goto sleep
+  {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed
+  {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive
+  {0,_koch,_decode,_dummy,_trxLora},                    // 30 transceiver
+  {1,_trxIcw,_trxWifi,_trx,0},                          // 31 lora
+  {1,_trxLora,_trxIcw,_trx,0},                          // 32 wifi
+  {1,_trxWifi,_trxLora,_trx,0},                         // 33 icw
+  {0,_trx,_wifi,_dummy,0},                              // 34 decoder
+  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 35 WiFi
+  {1,_wifi_select,_wifi_config,_wifi,0},                // 36 Disp Mac
+  {1,_wifi_mac,_wifi_check,_wifi,0},                    // 37 Config Wifi
+  {1,_wifi_config,_wifi_upload,_wifi,0},                // 38 Check WiFi
+  {1,_wifi_check,_wifi_update,_wifi,0},                 // 39 Upload File
+  {1,_wifi_upload,_wifi_select,_wifi,0},                // 40 Update Firmware
+  {1,_wifi_update,_wifi_mac,_wifi,0},                   // 41 Select network
+  {0,_wifi,_keyer,_dummy,0}                             // 42 goto sleep
 };
 
 //boolean quickStart;                                     // should we execute menu item immediately?
@@ -364,6 +366,15 @@ boolean MorseMenu::menuExec() {                                          // retu
                 generatorMode = KOCH_MIXED;
                 kochActive = true;
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
+                goto startEcho;
+      case  _kochEchoAdaptive: // Koch Echo Adaptive - 6
+                generatorMode = KOCH_ADAPTIVE;
+                kochActive = true;
+                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
+
+                // re-run the setup, this will reset the character probabilities
+                koch.setup();
+                
                 goto startEcho;
       case  _trxLora: // LoRa Transceiver
                 generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
