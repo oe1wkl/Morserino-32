@@ -1211,12 +1211,10 @@ String getRandomChars(int maxLength, int option) {             /// random char s
       maxLength = random(2, maxLength - 3);                     // maxLength is max 10, so random upper limit is 7, means max 6 chars...
     }
     if (kochActive) {
-      switch (option) {
-        case OPT_KOCH: 
-          return koch.getRandomChar(maxLength);
-        case OPT_KOCH_ADAPTIVE:
-          return koch.getAdaptiveChar(maxLength);
-      }
+      if (option == OPT_KOCH_ADAPTIVE)
+        return koch.getAdaptiveChar(maxLength);
+      else
+        return koch.getRandomChar(maxLength);
     } else {
          switch (option) {
           case OPT_NUM: 
