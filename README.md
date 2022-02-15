@@ -12,7 +12,7 @@ Announcements via Email (through Mailchimp): http://eepurl.com/dwEVkz
 
 User Group (Email, through groups.io): https://groups.io/g/morserino
 
-![Morserino Image](https://raw.githubusercontent.com/oe1wkl/Morserino-32/master/Documentation/User%20Manual/Images/Morserino.jpg)
+![Morserino Image](https://raw.githubusercontent.com/oe1wkl/Morserino-32/master/Documentation/User%20Manual/Version%204.x/Morserino.jpg)
 
 ![DXZone logo](https://raw.githubusercontent.com/oe1wkl/Morserino-32/master/dxzone_180x85_rounded.gif)
 

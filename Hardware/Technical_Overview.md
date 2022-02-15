@@ -21,7 +21,7 @@ Two output pins of the ESP32 (Pins 22 asn 23) are being used to generate an audi
 
 For headphone use the speaker is replaced with a resistor (R11)  and the two speakers of the headphone in series, to bring the audio level down to a comfortable level.
 
-This arrangement creates low power audio, but certainly not in WiFi quality (the resulting audio is not a sinus tone, but has pretty strong 2nd, 3rd and 5th harmonics).
+This arrangement creates low power audio, but certainly not in HiFi quality (the resulting audio is not a sinus tone, but has pretty strong 2nd, 3rd and 5th harmonics).
 
 #### Audio Output (Line-Out)
 
