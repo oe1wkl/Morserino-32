@@ -17,11 +17,11 @@ A 3-pole phone jack offers connectivity to two ESP32 GPIO pins (Pins 32 und 33) 
 
 
 #### Audio for Loudspeaker or Headphones
-Two output pins of the ESP32 (Pins 22 asn 23) are being used to generate an audio signal with the volume controlled by software: one pin generates a square signal with the desired frequency and 50& duty cycle, another output creates a high frequency signal (32 kHz) with a variable duty cycle. These two signals are mixed with the help of an AND gate made from two discrete transistors (T1 and T2), thus creating a puls-width modulated audio signal, with the resulting signal fed directly into a 60 Ohm loudspeaker. The speaker acts as a cheap low pass filter, thus changing the pulse-width modulation into amplitude modulation. 
+Two output pins of the ESP32 (Pins 22 asn 23) are being used to generate an audio signal with the volume controlled by software: one pin generates a square signal with the desired frequency and 50& duty cycle, another output creates a high frequency signal (32 kHz) with a variable duty cycle. These two signals are mixed with the help of an AND gate made from two discrete transistors (T1 and T2), thus creating a puls-width modulated audio signal, with the resulting signal fed directly into a 60 Ohm loudspeaker. The speaker acts as a cheap low pass filter, thus changing the pulse-width modulation into amplitude modulation.
 
 For headphone use the speaker is replaced with a resistor (R11)  and the two speakers of the headphone in series, to bring the audio level down to a comfortable level.
 
-This arrangement creates low power audio, but certainly not in WiFi quality (the resulting audio is not a sinus tone, but has pretty strong 2nd, 3rd and 5th harmonics).
+This arrangement creates low power audio, but certainly not in HiFi quality (the resulting audio is not a sinus tone, but has pretty strong 2nd, 3rd and 5th harmonics).
 
 #### Audio Output (Line-Out)
 

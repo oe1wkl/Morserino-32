@@ -22,7 +22,7 @@ Zwei Ausgangspins des ESP32 (Pins 22 und 23) werden verwendet, um ein Audiosigna
 
 Bei Verwendung von Kopfhörern wird der Lautsprecher durch einen Widerstand (R11) und die beiden Lautsprecher des Kopfhörers in Reihe ersetzt, um das Audiosignal auf einen angenehmen Pegel zu bringen.
 
-Dieses Arrangement erzeugt Audio mit geringem Stromverbrauch, aber sicherlich nicht in WiFi-Qualität (das resultierende Audio ist kein Sinuston, sondern hat ziemlich starke 2., 3. und 5. Oberwellen).
+Dieses Arrangement erzeugt Audio mit geringem Stromverbrauch, aber sicherlich nicht in HiFi-Qualität (das resultierende Audio ist kein Sinuston, sondern hat ziemlich starke 2., 3. und 5. Oberwellen).
 
 ####Audioausgang (Line-Out)
 
