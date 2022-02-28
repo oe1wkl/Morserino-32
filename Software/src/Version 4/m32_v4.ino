@@ -1210,8 +1210,11 @@ String getRandomChars(int maxLength, int option) {             /// random char s
     if (maxLength > 6) {                                        // we use a random length!
       maxLength = random(2, maxLength - 3);                     // maxLength is max 10, so random upper limit is 7, means max 6 chars...
     }
-    if (kochActive) { 
-      result = koch.getRandomChar(maxLength);
+    if (kochActive) {
+      if (option == OPT_KOCH_ADAPTIVE)
+        return koch.getAdaptiveChar(maxLength);
+      else
+        return koch.getRandomChar(maxLength);
     } else {
          switch (option) {
           case OPT_NUM: 
@@ -1635,6 +1638,8 @@ void fetchNewWord() {
                                                                   break;
                                                       }
                                                       break;
+                                      case KOCH_ADAPTIVE:clearText = getRandomChars(MorsePreferences::randomLength, OPT_KOCH_ADAPTIVE);
+                                                      break;
                                       case PLAYER:    if (MorsePreferences::randomFile)
                                                           skipWords(random(MorsePreferences::randomFile+1));
                                                       clearText = getWord(); 
@@ -1770,6 +1775,9 @@ void echoTrainerEval() {
       if (MorsePreferences::echoConf) {
           MorseOutput::soundSignalOK();
       }
+      if (kochActive){
+        koch.decreaseWordProbability(echoTrainerWord);
+      }
       delay(interWordSpace);
       if (MorsePreferences::speedAdapt)
           changeSpeed(1);
@@ -1780,6 +1788,9 @@ void echoTrainerEval() {
           printOnDisplay(BOLD, "ERR");
           if (MorsePreferences::echoConf) {
               MorseOutput::soundSignalERR();
+          }
+          if (kochActive){
+            koch.increaseWordProbability(echoTrainerWord, echoResponse);
           }
       }
       delay(interWordSpace);
