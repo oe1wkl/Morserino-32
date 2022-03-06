@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v4.2 Jänner 2022
+v4.3 März 2022
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -564,7 +564,29 @@ Die Funktionalität ist die gleiche wie oben für diese beiden Funktionen beschr
 - Es werden nur die Zeichen bis zur ausgewählten Koch-Lektion generiert (bzw die definierten benutzerspezifischen Zeichen, siehe weiter oben).
 - Der Parameter 'Random Groups' wird ignoriert.
 - Es gibt kein Untermenü "File Player".
+- Es gibt Im Koch Echo Trainer auch das Untermenü "Adapt. Rand.", siehe unten.
 
+==== Koch Echo Trainer: Adaptive Random
+
+Der "Adaptive Random"-Modus modifiziert die zufällige Auswahl von Zeichen in Abhängigkeit von den eingegebenen Antworten. Ein falsches Zeichen erhöht die Wahrscheinlichkeit, ausgewählt zu werden. Ein korrekt eingegebenes Zeichen verringert seine Wahrscheinlichkeit.
+
+Um den adaptiven Modus zu starten, starte: Koch Trainer > Echo Trainer > Adapt. Rand.
+
+===== Bemerkungen:
+
+- Die Wahrscheinlichkeiten werden jedes Mal auf den Standardwert zurückgesetzt, wenn man den „Adaptive Random“-Modus startet.
+
+- Die letzten Kochlektionen / Zeichen haben eine höhere Wahrscheinlichkeit zu Beginn der Session.
+
+- Zu Beginn der Sitzung wird jedes Zeichen einmal (in zufälliger Reihenfolge) ausgewählt.
+
+- Nachdem jedes Zeichen einmal ausgewählt wurde, werden die nächsten Zeichen zufällig ausgewählt, falsch eingegebene Zeichen haben eine höhere Wahrscheinlichkeit, ausgewählt zu werden.
+
+- Ein falsch eingegebenes Zeichen erhöht auch die Wahrscheinlichkeit des Zeichens links und rechts. Z.B. "z/?" gefragt und du antwortest mit "g/?". Dann wird die Wahrscheinlichkeit von z erhöht und die Wahrscheinlichkeit von / wird ebenfalls etwas erhöht.
+
+- Nur das erste falsche Zeichen wird analysiert. Spätere Eingaben werden nicht ausgewertet. Z.B. "z/?" gefragt und du antwortest mit "gz/?". Die Wahrscheinlichkeiten werden auf die gleiche Weise wie im vorherigen Beispiel erhöht.
+
+- Erwarten nicht nur reinen Spaß in diesem Modus. Der adaptive Modus quält dich mit den Zeichen, die  nicht jedes Mal 100% richtig eingegeben wurden. Wenn  einmal ein Zeichen falsch eingegeben wurde, hast du oft die Möglichkeit, das Zeichen wieder falsch einzugeben, wodurch sich die Wahrscheinlichkeit erhöht, erneut ausgewählt zu werden. Wenn die totale Frustration erreicht ist, wechsle am besten zurück in den Koch-Random-Modus und entspann dich für einige Zeit, bevor du den „Adaptive Random“-Modus erneut verwendest.
 
 
 === Transceiver
@@ -871,7 +893,7 @@ Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da so
 | STop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**
 | Serial Output | Damit wird eingestellt, ob am USB Anschluss die generierten Zeichen des Keyers bzw. die dekodierten Zeichen des Decoders ausgegeben werden sollen. Bei der Einstellung "ERRORS only" werden nur gewisse Fehlermeldungen dort ausgegeben (diese allerdings nur wenn keine der anderen Optionen gewählt wurde).
 
-Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. Siehe auch <<appendix5>>. | **Keyer** / Decoder / Keyer+Decoder  / Everything / ERRORS only
+Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. Siehe auch <<appendix5>>. | Keyer / Decoder / Keyer+Decoder  / **Everything** (Default seit 4.3) / ERRORS only
 |===
 
 == Anhänge

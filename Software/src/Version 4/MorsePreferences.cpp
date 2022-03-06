@@ -73,7 +73,7 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::loraSyncW = 0x27;                 // allows to set different LoRa sync words, and so creating virtual "channels"
   uint8_t MorsePreferences::maxSequence = 0;                  // max # of words generated before the Morserino pauses
 
-  uint8_t MorsePreferences::serialOut = 1;                    // shall we output characters on USB serial? 0 = none (but DEBUG/ERR) 1 = keyer, 2 = decoder, 3 = both, 7 = everything
+  uint8_t MorsePreferences::serialOut = 7;                    // shall we output characters on USB serial? 0 = none (but DEBUG/ERR) 1 = keyer, 2 = decoder, 3 = both, 7 = everything
 
   ///// stored in preferences, but not adjustable through preferences menu:
   uint8_t MorsePreferences::responsePause = 5;                // in echoTrainer mode, how long do we wait for response? in interWordSpaces; 2-12, default 5

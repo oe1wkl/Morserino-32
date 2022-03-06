@@ -16,6 +16,26 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.3
+
+#### New Feature (thanks to Oliver, DO1GDO):
+
+* Adaptive Random Mode for Koch Trainer
+
+	The "Adaptive Random" mode modifies the random selection of characters with feedback from the keyed responses. A wrong character will increase its probability to be selected. A correctly keyed character will reduce its probability.
+	
+	To start the adaptive mode start: Koch Trainer > Echo Trainer > Adapt. Rand.
+
+	##### Remarks:
+	
+	   * Probabilities will be reset to its default every time you start "Adaptive Random" mode.
+	   * The last Koch lessons / characters have a higher probability at the beginning of the session.
+	   * At the beginning of the session, every character will be selected once (in random order).
+	   * After every character was selected once, the next characters are selected randomly, characters that have been keyed wrong will have a higher probability to be selected.
+	   * A wrong keyed character will also increase the probability of the character left and right. E.g. "z/?" is asked and you reply with "g/?". Then the probability of z will be increased and probability of / will also be increased a little.
+	   * Only the first wrong character will be analyzed. Subsequent input will not be analyzed. E.g. "z/?" is asked and you reply with "gz/?". Probabilities will be increased the same way as in previous example.
+	   * Do not expect to have any fun in this mode. The adaptive mode will tease you with the characters that you cannot key 100% correctly every time. Once you have keyed a character wrong, that will give you the chance to key the character wrong again and thus increasing its probability to be selected again. If you reached a total level of frustration, switch back to koch random mode and relax some time before using the "Adaptive Random" mode again.
+
 ### Changes V.4.2.1
 
 #### Bug fixes:
