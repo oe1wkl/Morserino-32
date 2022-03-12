@@ -263,10 +263,10 @@ class Koch {
     void setKochChars(boolean, boolean);
     void setCustomChars(String chars);
     int16_t getProbabilitySum();
-    void increaseWordProbability(String expected, String received);
-    int getFailedCharIndex(String expected, String received);
+    void increaseWordProbability(String& expected, String& received);
+    int getFailedCharIndex(String& expected, String& received);
     void increaseCharProbability(char c, int16_t count);
-    void decreaseWordProbability(String word);
+    void decreaseWordProbability(String& word);
     void decreaseCharProbability(char c);
 };
 

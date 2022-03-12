@@ -1894,7 +1894,7 @@ String Koch::getRandomCharSet()
   return randomCharSet;
 }
 
-void Koch::increaseWordProbability(String expected, String received)
+void Koch::increaseWordProbability(String& expected, String& received)
 {
   int failedIndex = getFailedCharIndex(expected, received);
   if (failedIndex == -1)
@@ -1908,7 +1908,7 @@ void Koch::increaseWordProbability(String expected, String received)
     increaseCharProbability(expected.charAt(failedIndex + 1), 2);
 }
 
-int Koch::getFailedCharIndex(String expected, String received)
+int Koch::getFailedCharIndex(String& expected, String& received)
 {
   for (int i = 0; i < expected.length(); i++)
   {
@@ -1933,7 +1933,7 @@ void Koch::increaseCharProbability(char c, int16_t count)
     adaptiveProbabilities[increaseIndex] = charSet.length();
 }
 
-void Koch::decreaseWordProbability(String word)
+void Koch::decreaseWordProbability(String& word)
 {
   for (int i = 0; i < word.length(); i++)
   {
