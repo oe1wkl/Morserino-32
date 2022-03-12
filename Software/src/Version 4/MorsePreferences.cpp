@@ -1881,16 +1881,17 @@ String Koch::getCharSet()
 
 String Koch::getRandomCharSet()
 {
-  String sortedCharSet = getCharSet();
-  String randomCharSet = "";
+  String charSet = getCharSet();
+  String randomCharSet;
+  randomCharSet.reserve(charSet.length());
 
-  while (sortedCharSet.length() > 0)
+  for (int i = 0; i < charSet.length(); i++)
   {
-    int index = random(sortedCharSet.length());
-    randomCharSet += sortedCharSet.charAt(index);
-    sortedCharSet = sortedCharSet.substring(0, index) + sortedCharSet.substring(index + 1, sortedCharSet.length());
+    int charIndex = random(charSet.length() - i);
+    randomCharSet += charSet.charAt(charIndex);
+    charSet.setCharAt(charIndex, charSet.charAt(charSet.length() - i - 1));
   }
-  
+
   return randomCharSet;
 }
 
