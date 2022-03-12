@@ -246,6 +246,7 @@ class Koch {
 
     int16_t adaptiveProbabilities[kochCharsLength];
     String initSequence;
+    uint8_t initSequenceIndex;
 
   public:
     const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAE@:";

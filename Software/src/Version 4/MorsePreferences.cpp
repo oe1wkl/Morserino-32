@@ -1764,6 +1764,7 @@ void Koch::setup() {                                                // create th
   }
 
   initSequence = getRandomCharSet();
+  initSequenceIndex = 0;
 }
 
 void Koch::setKochChars(boolean lcwo, boolean cwac) {             // define the demanded Koch character set
@@ -1857,15 +1858,15 @@ String Koch::getInitChar(int maxl)
 {
   String result;
 
-  if (maxl <= initSequence.length())
+  if (initSequenceIndex >= initSequence.length())
+    return result;
+  
+  result.reserve(maxl);
+
+  while (result.length() < maxl && initSequenceIndex < initSequence.length())
   {
-    result = initSequence.substring(0, maxl);
-    initSequence = initSequence.substring(maxl, initSequence.length());
-  }
-  else
-  {
-    result = initSequence;
-    initSequence = "";
+    result += initSequence.charAt(initSequenceIndex);
+    initSequenceIndex++;
   }
 
   return result;
@@ -1905,7 +1906,7 @@ void Koch::increaseWordProbability(String& expected, String& received)
   
   if (failedIndex > 0 && expected.charAt(failedIndex - 1) != expected.charAt(failedIndex))
     increaseCharProbability(expected.charAt(failedIndex - 1), 2);
-  if (failedIndex < expected.length() && expected.charAt(failedIndex + 1) != expected.charAt(failedIndex))
+  if ((failedIndex+1) < expected.length() && expected.charAt(failedIndex + 1) != expected.charAt(failedIndex))
     increaseCharProbability(expected.charAt(failedIndex + 1), 2);
 }
 
