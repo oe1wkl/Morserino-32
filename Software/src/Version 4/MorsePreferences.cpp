@@ -1924,7 +1924,7 @@ int Koch::getFailedCharIndex(String& expected, String& received)
   return -1;
 }
 
-void Koch::increaseCharProbability(char c, int16_t count)
+void Koch::increaseCharProbability(char c, uint8_t count)
 {
   String charSet = getCharSet();
   int increaseIndex = charSet.indexOf(c);

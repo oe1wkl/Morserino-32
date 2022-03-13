@@ -244,7 +244,7 @@ class Koch {
     void createAbbr(uint8_t, uint8_t);
     uint8_t wordIsKoch(String);
 
-    int16_t adaptiveProbabilities[kochCharsLength];
+    uint8_t adaptiveProbabilities[kochCharsLength];
     String initSequence;
     uint8_t initSequenceIndex;
 
@@ -266,7 +266,7 @@ class Koch {
     int16_t getProbabilitySum();
     void increaseWordProbability(String& expected, String& received);
     int getFailedCharIndex(String& expected, String& received);
-    void increaseCharProbability(char c, int16_t count);
+    void increaseCharProbability(char c, uint8_t count);
     void decreaseWordProbability(String& word);
     void decreaseCharProbability(char c);
 };
