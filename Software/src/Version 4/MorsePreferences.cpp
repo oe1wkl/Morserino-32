@@ -1750,7 +1750,7 @@ void Koch::setup() {                                                // create th
   createAbbr(MorsePreferences::abbrevLength, MorsePreferences::useCustomCharSet ? kochCharsLength+1 : MorsePreferences::kochFilter);
 
   String charSet = getCharSet();
-  int16_t probability = 0;
+  uint8_t probability = 0;
   for (int i = 0; i < kochCharsLength; i++)
   {
     if (i >= charSet.length())
@@ -1924,7 +1924,7 @@ int Koch::getFailedCharIndex(String& expected, String& received)
   return -1;
 }
 
-void Koch::increaseCharProbability(char c, int16_t count)
+void Koch::increaseCharProbability(char c, uint8_t count)
 {
   String charSet = getCharSet();
   int increaseIndex = charSet.indexOf(c);
