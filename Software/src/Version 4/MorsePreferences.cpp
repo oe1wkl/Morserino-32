@@ -1904,7 +1904,7 @@ void Koch::increaseWordProbability(String expected, String received)
   
   if (failedIndex > 0 && expected.charAt(failedIndex - 1) != expected.charAt(failedIndex))
     increaseCharProbability(expected.charAt(failedIndex - 1), 2);
-  if (failedIndex < expected.length() && expected.charAt(failedIndex + 1) != expected.charAt(failedIndex))
+  if ((failedIndex + 1) < expected.length() && expected.charAt(failedIndex + 1) != expected.charAt(failedIndex))
     increaseCharProbability(expected.charAt(failedIndex + 1), 2);
 }
 
