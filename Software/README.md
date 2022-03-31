@@ -16,6 +16,12 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.3.1
+
+#### Bug fixes: ####
+
+* There was a memory (heap corruption) bug in the Adaptive Random mode (introduced in V.4.3), when you had selected the very last Koch lesson („:“); after a correct response the Morserino would restart itself. This has been fixed (thanks to Oliver, DO1GDO).
+
 ### Changes V.4.3
 
 #### New Feature (thanks to Oliver, DO1GDO):
