@@ -10,7 +10,7 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 3. Install the development framework through the Arduino IDE; follow these instructions: <https://heltec-automation-docs.readthedocs.io/en/latest/esp32+arduino/quick_start.html>.
 
-4. Get the source for the Morserino-32 firmware Version 3.x from GitHub (<https://github.com/oe1wkl/Morserino-32/tree/master/Software/src>).
+4. Get the source for the latest Morserino-32 firmware from GitHub (<https://github.com/oe1wkl/Morserino-32/releases>).
 
 5. Load the .ino file into the IDE (the other source files will be loaded automatically as well), and compile (and upload).
 
