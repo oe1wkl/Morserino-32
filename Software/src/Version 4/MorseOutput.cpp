@@ -86,6 +86,26 @@ void MorseOutput::sleep()
   Heltec.display -> sleep();                //OLED sleep
 }
 
+void MorseOutput::decreaseBrightness() {
+    switch (MorsePreferences::oledBrightness) {
+      case 255: 
+                MorsePreferences::oledBrightness = 127;
+                break;
+      case 127:
+                MorsePreferences::oledBrightness = 63;
+                break;
+      case 63:
+                MorsePreferences::oledBrightness = 28;
+                break;
+      case 28:
+                MorsePreferences::oledBrightness = 9;
+                break;
+      default:
+                MorsePreferences::oledBrightness = 255;
+                break;
+    }
+    Heltec.display -> setBrightness(MorsePreferences::oledBrightness);
+}
 
 
 void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {

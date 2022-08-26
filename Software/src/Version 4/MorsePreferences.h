@@ -68,6 +68,7 @@ namespace MorsePreferences
   extern uint8_t randomFile;
   extern boolean lcwoKochSeq;
   extern boolean cwacKochSeq;
+  extern boolean extAudioOnDecode;
   extern uint8_t timeOut;
   extern boolean quickStart;
   extern boolean autoStopMode;
@@ -112,6 +113,7 @@ namespace MorsePreferences
   extern uint32_t loraQRG;
   extern uint8_t snapShots;
   extern uint8_t boardVersion;
+  extern uint8_t oledBrightness;
   
   ////// end of variables stored in preferences
   
@@ -124,7 +126,8 @@ namespace MorsePreferences
                   posRandomLength, posCallLength, posAbbrevLength, posWordLength,
                   posTrainerDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,
                   posKeyTrainerMode, posLoraTrainerMode, posGoertzelBandwidth, posSpeedAdapt,
-                  posKochSeq, posKochFilter, posLatency, posRandomFile, posTimeOut, posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
+                  posKochSeq, posKochFilter, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, 
+                  posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
                   posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
                 };
   
@@ -219,6 +222,7 @@ namespace internal {
   void displayGoertzelBandwidth();
   void displaySpeedAdapt();
   void displayKochSeq();
+  void displayExtAudioOnDecode();
   void displayTimeOut();
   void displayQuickStart();
   void displayAutoStop();

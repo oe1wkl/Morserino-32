@@ -407,6 +407,7 @@ void setup()
 
  // init display, LoRa, Serial
   Heltec.begin(true /*DisplayEnable Enable*/, true /*LoRa Enable*/, true /*Serial Enable*/, true /*LoRa use PABOOST*/, BAND /*LoRa RF working band*/);
+  Heltec.display -> setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
   MorseOutput::soundSetup();
@@ -707,6 +708,8 @@ void loop() {
                     MorseOutput::displayScrollBar(true);
                 }
                 break;
+      case 2:   MorseOutput::decreaseBrightness();                                                                                       // step through screen brightness levels
+                break;
     }
    
     switch (Buttons::modeButton.clicks) {                                // actions based on enocder button
@@ -770,6 +773,7 @@ void loop() {
     checkShutDown(false);         // check for time out
     
 }     /////////////////////// end of loop() /////////
+
 
 void updateManualSpeed() {
   if (MorsePreferences::keyermode == STRAIGHTKEY && speedChanged) {
@@ -1050,10 +1054,10 @@ boolean checkPaddles() {
   newL = (sensor >> 1);
   newR = (sensor & 0x01);
   
-  if (MorsePreferences::keyermode != STRAIGHTKEY) {
+  //if (MorsePreferences::keyermode != STRAIGHTKEY) {               // read external paddle presses
       newL = newL | (!digitalRead(left)) ;
       newR = newR | (!digitalRead(right)) ;
-  }
+  //}
   
   if ((MorsePreferences::keyermode == NONSQUEEZE) && newL && newR) 
     return (leftKey || rightKey);
@@ -2200,35 +2204,49 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
 
   static int intPitch, extPitch;
 
-  boolean noTx = ((morseState == echoTrainer || morseState == loraTrx || morseState == wifiTrx || 
-      MorsePreferences::keyTrainerMode == 0 || (MorsePreferences::keyTrainerMode == 1 && morseState == morseGenerator)) ? true : !fromHere);
-
-// DEBUG("keyOut: " + String(on) + String(fromHere));
+  boolean noTx = true;
+  switch (MorsePreferences::keyTrainerMode) {
+      case 0: //noTx = true;                            // par "Key Ext Tx" = NEVER //true has already been set
+              break;
+      case 1: if (morseState == morseKeyer && fromHere)           //  CW Keyer Only
+                noTx = false;
+              break;
+      case 2: if ((morseState == morseKeyer || morseState == morseGenerator) && fromHere)   // CW Keyer && generator
+                noTx = false;
+              break;
+      case 3: if ( ((morseState == morseKeyer || morseState == morseGenerator) && fromHere) ||
+                   ((morseState == loraTrx || morseState == wifiTrx) && !fromHere) )
+                noTx = false;
+      default:  break;
+  }
+                
+//DEBUG("keyOut: " + String(on) + String(fromHere) + String(noTx));
   if (on) {
       if (fromHere) {
         intPitch = f;
         intTone = true;
         MorseOutput::pwmTone(intPitch, volume, true);
-        keyTransmitter(noTx);
       } else {                    // not from here
         extTone = true;
         extPitch = f;
         if (!intTone) 
-          MorseOutput::pwmTone(extPitch, volume, false);
+          MorseOutput::pwmTone(extPitch, volume, MorsePreferences::extAudioOnDecode);      // set to true if you want external audio out!
         }
+      keyTransmitter(noTx);
+
   } else {                      // key off
         if (fromHere) {
           intTone = false;
           if (extTone)
-            MorseOutput::pwmTone(extPitch, volume, false);
+            MorseOutput::pwmTone(extPitch, volume, MorsePreferences::extAudioOnDecode);
           else
             MorseOutput::pwmNoTone();
-          digitalWrite(keyerPin, LOW);      // stop keying Tx
         } else {                 // not from here
           extTone = false;
           if (!intTone)
             MorseOutput::pwmNoTone();
         }
+        digitalWrite(keyerPin, LOW);      // stop keying Tx
   }   // end key off
 }
 
@@ -2257,7 +2275,7 @@ void audioLevelAdjust() {
             if (testData[i] > maxi)
               maxi = testData[i];
         }
-        DEBUG("From " + String(mini) + " to " + String(maxi));
+        //DEBUG("From " + String(mini) + " to " + String(maxi));
         MorseOutput::showVolumeScope(mini, maxi);
     } // end while
     keyOut(false,  true, 698, 0);                                  /// stop keying

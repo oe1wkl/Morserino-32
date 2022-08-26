@@ -16,6 +16,17 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.4
+
+#### New features:
+
+* You can set the brightness of the display, by double-clicking the RED button. There are 5 levels of brightness. Each double-click reduces the brightness a bit, when the lowest level has been reached a double click resets the display to full brightness again.
+* There is a new option for the parameter „Key ext TX“ (Keyer&Gen.&RX) that allows the Morserino-32 in either LoRa or Internet transceiver mode to key a connected transmitter. This can be useful for remote control of a transmitter with the help of two Morserinos.
+* There is a new parameter, „Decoded on I/O“, that can be set to „On“ or „Off“ (which is the default): normally, decoded CW that comes from an external source (when using any of the transceiver modi, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this parameter set to „ON“, the audio is also sent to the external audio I/O port.
+
+#### Improvement:
+* Using a straight key, you can now also start the sessions in Echo Trainer (and Generator) modes by pressing the straight key (so far you had to touch the capacitive paddles or use the black knob to start the session; these methods work as before, of course).
+
 ### Changes V.4.3.1
 
 #### Bug fixes: ####
@@ -29,11 +40,11 @@ It is now quite straightforward to set up an environment to build the Morserino-
 * Adaptive Random Mode for Koch Trainer
 
 	The "Adaptive Random" mode modifies the random selection of characters with feedback from the keyed responses. A wrong character will increase its probability to be selected. A correctly keyed character will reduce its probability.
-	
+
 	To start the adaptive mode start: Koch Trainer > Echo Trainer > Adapt. Rand.
 
 	##### Remarks:
-	
+
 	   * Probabilities will be reset to its default every time you start "Adaptive Random" mode.
 	   * The last Koch lessons / characters have a higher probability at the beginning of the session.
 	   * At the beginning of the session, every character will be selected once (in random order).

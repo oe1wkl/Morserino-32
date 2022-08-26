@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v4.3 März 2022
+v4.4 August 2022
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -82,6 +82,7 @@ image::M32_layout.jpg[Wo sind die Anschlüsse und Bedienelemente]
 |Wenn das Gerät in den Tiefschlaf gegangen ist, wacht es auf und startet den Morserino neu.
 Wenn das Gerät in Betrieb ist (d.h. einer der Modi gerade exekutiert wird), wird durch kurzes Drücken dieser Taste die Funktion des Drehgebers zwischen der Einstellung der Geschwindigkeit und dem Lautstärkeregler umgeschaltet.
 Ein langer Druck auf die Taste ermöglicht es, die Anzeige mit dem Drehgeber zu scrollen, ein erneuter Druck auf die Taste schaltet die Funktion wieder auf Geschwindigkeitsregelung um.
+Doppelklick dieser Taste reduziert die Displayhelligkeit.
 Befindet man sich im Menü, wird durch langes Drücken dieser Taste die Funktion zum Einstellen des Audioeingangspegels aktiviert. Weitere Informationen dazu im Abschnitt <<<buttons>>> unten.
 
 |9
@@ -147,6 +148,9 @@ Dies geschieht mit SCHWARZ und ROT, wenn man sich in einer der Modi (Funktionen)
 * Geschwindigkeit ändern: SCHWARZ drehen.
 * Lautstärke ändern: Klicke auf ROT, drehe SCHWARZ, um die Lautstärke anzupassen, und klicke erneut auf ROT, um zur Geschwindigkeitseinstellung zurückzukehren.
 * Bildlaufanzeige: Langes Drücken von ROT, Scrollen mit SCHWARZ vor und zurück, Beenden mit ROTEM Klick.
+
+=== So ändert man die Helligkeit des Displays
+Es gibt 5 Helligkeitsstufen. Jeder Doppelklick der ROTEN Taste reduziert die Helligkeit ein wenig; wenn die niedrigste Helligkeitsstufe erreicht ist, wird mit dem Doppelklick wieder die volle Displayhelligkeit eingestellt.
 
 === So ändert man Parameter (Einstellungen):
 Doppelklicke auf SCHWARZ, drehe SCHWARZ, um den Parameter auszuwählen, den du ändern möchtest. Langes Drücken von SCHWARZ, um das Parametermenü zu verlassen.
@@ -258,9 +262,11 @@ Siehe <<<appendix2>> am Ende dieses Dokuments.
 Hat man das Menü verlassen haben, um einen der Modi (Keyer, Generator, Echo-Trainer usw.) auszuführen,
 kann man mit der **ROTEN (Power/Vol/Scroll) Taste**  schnell zwischen **Geschwindigkeitsregelung** und **Lautstärkeregelung** mit einem **einfachen Klick** umschalten.
 
-Durch einen **langen Druck** der ROTEN Taste während ein Modus aktiv ist (d.h. wenn das Menü nicht angezeigt wird) wechselt die Anzeige und der Drehgeber in den **Scroll-Modus** (die Anzeige hat einen Puffer von 15 Zeilen, und normalerweise sind nur die unteren drei Zeilen sichtbar; im Scroll-Modus kann man zu den vorherigen Zeilen zurückblättern; während man  im Scroll-Modus ist, wird ein **Scrollbalken** ganz rechts auf der Anzeige sichtbar, der ungefähr anzeigt, wo man sich innerhalb der 15 Zeilen des Textpuffers befindet). Mit einem **erneuten Klick** wird der Scroll-Modus verlassen, und der Drehgeber dient wieder der Geschwindigkeitsregelung.
+Durch einen **Doppelklick** der **Roten Taste** wird die Helligkeit des Displays reduziert. Es gibt 5 Helligkeitsstufen. Wenn die niedrigste Helligkeitsstufe erreicht ist, wird mit dem Doppelklick wieder die volle Displayhelligkeit eingestellt.
 
-Wenn man sich im Menü zur Parametereinstellung befindet, wird mit einem  kurzen Klick auf die ROTE Taste eine Funktion zum Laden eines Parameter-Snapshots aktiviert, und mit einem langen Druck auf die ROTE Taste kann man  einen Parameter-Snapshot abspeichern.
+Durch einen **langen Druck** der **ROTEN** Taste während ein Modus aktiv ist (d.h. wenn das Menü nicht angezeigt wird) wechselt die Anzeige und der Drehgeber in den **Scroll-Modus** (die Anzeige hat einen Puffer von 15 Zeilen, und normalerweise sind nur die unteren drei Zeilen sichtbar; im Scroll-Modus kann man zu den vorherigen Zeilen zurückblättern; während man  im Scroll-Modus ist, wird ein **Scrollbalken** ganz rechts auf der Anzeige sichtbar, der ungefähr anzeigt, wo man sich innerhalb der 15 Zeilen des Textpuffers befindet). Mit einem **erneuten Klick** wird der Scroll-Modus verlassen, und der Drehgeber dient wieder der Geschwindigkeitsregelung.
+
+Wenn man sich im Menü zur Parametereinstellung befindet, wird mit einem  kurzen Klick auf die **ROTE** Taste eine Funktion zum Laden eines Parameter-Snapshots aktiviert, und mit einem langen Druck auf die **ROTE** Taste kann man  einen Parameter-Snapshot abspeichern.
 Siehe den Abschnitt <<snapshots>> für weitere Details.
 
 === Das Display
@@ -361,7 +367,7 @@ Für den Parameter `AutoChar Spce` (Definition einer Mindestlänge für den Abst
 
 Dieser erzeugt entweder zufällige Gruppen von Zeichen und Wörtern für das CW-Training oder spielt den Inhalt einer Textdatei als Morsezeichen ab. Man kann eine Reihe von Optionen einstellen, indem man die entsprechenden Parameter auswählt (siehe den Abschnitt über <<parameters>> weiter unten).
 
-Man **startet** und **stoppt** den CW-Generator, indem man kurz ein Paddel (entweder einseitig oder beidseitig) berührt, oder **durch Klicken auf den SCHWARZEN Knopf**.
+Man **startet** und **stoppt** den CW-Generator, indem man kurz ein Paddel (entweder einseitig oder beidseitig) berührt, oder **durch Klicken auf den SCHWARZEN Knopf** (bei Benutzung einer Handtaste kann man auch diese zum Starten und Stoppen verwenden).
 
 Zu Beginn kündigt der CW Generator seine Aktivität durch ""`vvv<ka>``" an (`+..._ ..._ ..._ ..._ _._._+`), bevor er tatsächlich beginnt, Gruppen oder Wörter zu erzeugen.
 
@@ -455,7 +461,7 @@ In diesem Modus wird das zu wiederholende Wort normalerweise nicht auf dem Displ
 Die Untermenüs sind die gleichen wie beim CW-Generator: **Random, CW Abbrevs, English Words, Call Signs, Mixed** and **File Player**.
 
 
-Wie im CW-Generator-Modus startet man **die Generierung durch Drücken eines Paddles**, und dann wird die Sequenz "`vvv<ka>`" als Ankündigung generiert, bevor das Echo-Training beginnt. Du kannst diesen Modus nicht stoppen oder unterbrechen, indem du das Paddel drückst - schließlich benutzt du das Paddel, um deine Antworten zu generieren!  **Die einzige Möglichkeit, diesen Modus zu stoppen, ist ein Klick mit dem SCHWARZEN Knopf des Drehgebers**!
+Wie im CW-Generator-Modus startet man **die Generierung durch Drücken eines Paddles** (oder Drücken des schwarzen Knopfs, oder - falls man eine solche verwendet - der Handtaste), und dann wird die Sequenz "`vvv<ka>`" als Ankündigung generiert, bevor das Echo-Training beginnt. Du kannst diesen Modus nicht stoppen oder unterbrechen, indem du das Paddel (oder die Morsetaste)drückst - schließlich benutzt du das Paddel, um deine Antworten zu generieren!  **Die einzige Möglichkeit, diesen Modus zu stoppen, ist ein Klick mit dem SCHWARZEN Knopf des Drehgebers**!
 
 Wenn du während deiner Antwort feststellst, dass du einen Fehler gemacht hast, kannst du deine Antwort "zurücksetzen", indem du das Zeichen für "FEHLER" eingibst, d.h. eine Reihe von 8 Punkten (der Morserino akzeptiert jede Folge von 8 oder mehr Punkten. <err> wird auf dem Display angezeigt und du kannst deine Eingabe von Anfang an neu starten.
 
@@ -881,13 +887,14 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem St
 |Echo Repeats    |Hier stellt man ein, wie oft ein Wort wiederholt wird, wenn die Antwort entweder zu spät oder fehlerhaft ist, bevor der Echo Trainer ein neues Wort generiert. Wenn der Wert 0 ist, dann ist das nächste Wort immer ein neues, unabhängig davon, ob die Reaktion richtig  oder falsch war.        | 0 -- 6 / Forever (unbegrenzte Wiederholung, bis die Antwort richtig ist)
 |Echo Prompt    | Hiermit wird festgelegt, wie man im Echo-Trainer-Modus zur Eingabe aufgefordert wird. Die möglichen Einstellungen sind: "Sound Only" (nur Töne; Standardwert; am besten zum Gehörlesen Lernen), "Display only" (das Wort, das man eingeben soll, wird auf dem Display angezeigt, es wird kein hörbarer Code erzeugt; gut zum Geben Lernen mit dem  Paddel) und "Sound & Display", d.h. man hört die Eingabeaufforderung UND man kann sie auf dem Display sehen.               | **Sound only** / Display only / Sound&Displ
 | Confrm. Tone  | Hiermit wird festgelegt, ob im Echo-Trainer-Modus ein akustischer Bestätigungston ausgegeben werden soll. Wenn man das ausschaltet (Off), wiederholt das Gerät nur die Eingabeaufforderung, wenn die Antwort falsch war, oder sendet eine neue Eingabeaufforderung. Die optische Anzeige von "OK" oder "ERR" ist aber auch nach dem Ausschalten des Tons sichtbar. | **On** / Off
-|Key ext TX        | Hier legt man fest, ob ein angeschlossener Sender bei der Verwendung des Gerätes getastet wird. | Never (niemals) / **CW Keyer only** (nur beim CW Keyer) / Keyer&Genertr (beim Keyer und beim CW Generator)
+|Key ext TX        | Hier legt man fest, ob ein angeschlossener Sender bei der Verwendung des Gerätes getastet wird. Gen = Generator modi, RX = LoRa and Internet receiver | Never (niemals) / **CW Keyer only** (nur beim CW Keyer) / Keyer & Gen. / Keyer&Gen.&RX
 | Generator Tx (früher "Send via LoRa" genannt) | Damit kann der CW-Generator senden, was er generiert, entweder über LoRa oder über WLAN. Auf diese Weise kann ein M32 etwas generieren und mehrere andere die gleiche Sequenz empfangen. Dies kann in allen Modi CW Generator und Koch / CW Generator verwendet werden, einschließlich File Player. Könnte für Gruppen von Lernenden nützlich sein, da man z.B. den Inhalt einer Datei an eine Gruppe von Personen übermitteln kann. Dies sollte natürlich nur mit Vorsicht (und nicht über einen längeren Zeitraum) auf öffentlichen M32-Chat-Servern verwendet werden, kann jedoch für eine Gruppe im selben Netzwerksegment, die Broadcast als TrX-Peer verwendet, oder einen privat eingerichteten Chat-Server sehr nützlich sein, oder über LoRa, wenn alle Teilnehmer nahe genug beieinander sind.
 Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da sonst der LoRa-Transceiver möglicherweise zerstört wird! | ** „Tx OFF“ ** (= generiertes CW nicht übertragen), „LoRa Tx ON“ (generiertes CW über LoRa übertragen) und „WiFi Tx ON“ (generiertes CQ über WiFi übertragen).
 | LoRa Channel | Wählt aus, welchen virtuellen Kanal LoRa verwendet. | **Standard Ch** / Secondary Ch
 | Bandwidth | Definiert die Bandbreite, die der CW-Decoder verwendet (dies ist in Software mit einem so genannten Goertzel-Filter implementiert).  (Wide (breit) = ca. 600 Hz, Narrow (schmal) = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz) | **Wide** / Narrow
 | Adaptv. Speed | Wenn diese Option auf ON gesetzt ist, wird die Geschwindigkeit um 1 WpM erhöht, wenn man im Echo Trainer-Modus eine korrekte Antwort gegeben hat, und um 1 verringert, wenn die Antwort fehlerhaft war. | ON / **OFF**
 | Koch Sequence | Dies bestimmt die Reihenfolge der Zeichen, wenn man die Koch-Methode zum Lernen und Trainieren verwendet. Man kann hier auch seinen spezifischen zeichensatz zum Üben definieren, mit der Option 'Custom Chars' - siehe das Kapitel <<koch>> (letzter Absatz).| **M32 / JLMC** (Just Learn Morse Code) / Custom Chars  / CW Academy /  LCWO
+| Decoded on I/O | Normalerweise wird dekodiertes CW, das aus einer externen Quelle stammt (in einem der Transceiver Modi, oder beim Dekodieren von externem Audio) auf dem Lautsprecher (oder Kopfhörer) des M32 wiedergegeben, aber nicht an den externen I/O Ausgang gesendet. Wird dieser Parameter auf "On" gesetzt, wird  der Ton des Dekoders auch an den externen I/O Ausgang geliefert. | On / **Off**
 | Time Out | Wenn die in diesem Parameter angegebene Zeit ohne Aktualisierung der Anzeige vergeht, geht das Gerät in den Tiefschlafmodus. Man kann es durch Drücken der ROTEN Taste neu starten. | No timeout (kein Timeout)/ **5 min** / 10 min / 15 min
 | Quick Start | Ermöglicht es (gesetzt auf ON), die anfängliche Menüauswahl zu umgehen, d.h. das Gerät beginnt beim Start sofort mit der Ausführung des Modus, der vor dem letzten Ausschalten wirksam war. | ON / **OFF**
 | STop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**

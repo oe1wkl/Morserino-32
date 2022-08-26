@@ -163,7 +163,7 @@ void MorseMenu::menu_() {
             delay(600);
             MorseOutput::clearDisplay();
         }
-        else {
+        else {           
             Buttons::modeButton.Update();
             command = Buttons::modeButton.clicks;
         }
@@ -205,6 +205,9 @@ void MorseMenu::menu_() {
                     MorseOutput::clearDisplay();
                     MorseMenu::menuDisplay(disp);
                     break;
+          case 2:   MorseOutput::decreaseBrightness();
+                    MorseMenu::menuDisplay(disp);
+                    break;
        }
        checkShutDown(false);                  // check for time out   
   } // end while - we leave as soon as the button has been pressed
@@ -216,7 +219,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
   uint8_t oneUp = menuNav[ptr][naviUp];
   uint8_t twoUp = menuNav[oneUp][naviUp];
   uint8_t oneDown = menuNav[ptr][naviDown];
-    
+
   MorseOutput::printOnStatusLine( true, 0,  "Select Modus:     ");
   
   // delete previous content

@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v4.3 March 2022
+v4.4 August 2022
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -82,6 +82,7 @@ If you will not use the device for several days, disconnect the battery (through
 |When the device has gone into deep sleep, this wakes up and restarts your Morserino.
 When the device is up and running (performing one of the modi), a short press of this button swaps the rotary encoder between adjusting the keyer speed and volume control.
 A long press of the button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.
+A double click of this button reduces display brightness.
 While in the menu, a long press starts the mode to adjust audio input level. See the section <<buttons>> below for further details.
 
 |9
@@ -148,6 +149,10 @@ This is done with BLACK and RED when you are in one of the operation functions (
 * Change speed: rotate BLACK.
 * Change volume: click RED, rotate BLACK to adjust volume, click RED again to revert to speed setting.
 * Scroll display: long press of RED, scroll back and forth with BLACK, exit with RED click.
+
+=== How To Change the Brightness of the Display
+There are 5 levels of brightness. Each double-click of the RED button reduces the brightness a bit, when the lowest level has been reached a double click resets the display to full brightness again.
+
 
 === How To Change Parameters (settings):
 Double click BLACK, rotate BLACK to select the parameter you want to change. Long press of BLACK to exit parameter menu.
@@ -251,6 +256,8 @@ If done from within a modus, only the parameters that are relevant for the curre
 
 A ***long press*** brings you back to the menu from any of the modi, and within the menu promotes you a level up.
 
+A **double click** of the **RED** button reduces display brightness; there are 5 levels of brightness. When the lowest level has been reached a double click resets the display to full brightness again.
+
 While you are selecting a menu (e.g. immediately after power-on), a **long press** of the **RED button** starts a function
 to adjust the audio input level (and possibly the output level on a device you connected to the Morserino-32's line-out port).
 See <<app2>> towards the end of this document.
@@ -258,9 +265,9 @@ See <<app2>> towards the end of this document.
 When you left the menu to execute one of the modi (keyer, generator, echo trainer etc.)
 the **RED (Power/Vol/Scroll) Button** allows you to quickly toggle between **speed control** and **volume control** with a **single click**.
 
-A **long click** of the RED button while a modus is active (i.e. when the menu is not shown) changes the display and encoder into **scroll mode** (the display has a buffer of 15 lines, and normally only the bottom three lines can be seen; in scroll mode you can scroll back to the previous lines; while you are in scroll mode, a **scroll bar** is shown at the far right side of the display, indicating roughly where you are within the 15 lines of text buffer). **Clicking** again in scroll mode changes the screen into its normal operating mode and brings the encoder back to speed control.
+A **long click** of the **RED** button while a modus is active (i.e. when the menu is not shown) changes the display and encoder into **scroll mode** (the display has a buffer of 15 lines, and normally only the bottom three lines can be seen; in scroll mode you can scroll back to the previous lines; while you are in scroll mode, a **scroll bar** is shown at the far right side of the display, indicating roughly where you are within the 15 lines of text buffer). **Clicking** again in scroll mode changes the screen into its normal operating mode and brings the encoder back to speed control.
 
-When you are in the parameter setting menu, a **short click** of the RED button **recalls** a parameter snapshot, and a **long press** of the RED button **stores** a parameter snapshot.
+When you are in the parameter setting menu, a **short click** of the **RED** button **recalls** a parameter snapshot, and a **long press** of the RED button **stores** a parameter snapshot.
 See the section <<snapshots>> for further details.
 
 
@@ -295,7 +302,7 @@ When the digits indicating the speed are shown as **bold**, turning the rotary e
 
 == The Top Menu and the Morserino Modi
 
-You select the Moodus of your Morserino-32 by rotating the black encoder knob, and quickly pressing ("clicking") that knob to select that function (or, in several cases, a sub-menu for a more detailed selection).
+You select the Modus of your Morserino-32 by rotating the black encoder knob, and quickly pressing ("clicking") that knob to select that function (or, in several cases, a sub-menu for a more detailed selection).
 
 
 === CW Keyer [[keyer]]
@@ -357,14 +364,14 @@ meaning 0/8 to 7/8 of a dot length (default is 4, i.e. half a dot length). If yo
 
 For the parameter `AutoChar Spce` (defining a minimum length for the space between characters) see the section <<parameters>> for details.
 
-**Straight Key Mode**: This is not really an automatic keyer mode, but it enables the Morserino-32 to be used with a simple straight key. The "CW Keyer" functiuon will not work when this parameter has been set, but you can use the Echo Trainer and the Transceiver modes using a straight key!
+**Straight Key Mode**: This is not really an automatic keyer mode, but it enables the Morserino-32 to be used with a simple straight key. The "CW Keyer" function will not work when this parameter has been set, but you can use the Echo Trainer and the Transceiver modes using a straight key!
 
 
 === CW Generator [[generator]]
 
 This either generates randomized groups of characters and words for CW training purposes, or plays the contents of a text file in Morse code. You can set a number of options by choosing appropriate parameters (see the section <<parameters>> below).
 
-You can **start** and **stop** the CW Generator **by quickly pressing a paddle** (either one side or both), or **by clicking the BLACK knob**.
+You can **start** and **stop** the CW Generator **by quickly pressing a paddle** (either one side or both), or **by clicking the BLACK knob** (when using a straight key, you can also press that key to start and stop the session).
 
 When it starts, it will first alert you by generating "`vvv<ka>`" (`+..._    ..._    ..._      _._._+`) in Morse code, before it actually begins generating groups or words.
 
@@ -461,7 +468,7 @@ In this modus, the prompt word will not normally be shown on the display -- only
 The sub-menus are the same as for the CW Generator: **Random, CW Abbrevs, English Words, Call Signs, Mixed** and **File Player**.
 
 
-Like in CW Generator modus, you **start the generation by pressing a paddle**, and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle -- after all, you use the paddle to generate your responses! So **the only way to stop this modus is a click of the BLACK encoder button**.
+Like in CW Generator modus, you **start the generation by pressing a paddle** (or the back knob, or - if you are using one - the straight key), and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle or the straight key -- after all, you use the paddle (or straight key) to generate your responses! So **the only way to stop this modus is a click of the BLACK encoder button**.
 
 During your response, if you realize you made an error, you can "reset" your response by entering the character for "ERROR", i.e. a series of 8 dots (the Morserino accepts any series of dots longer than 7 dots). <err> will show on the display, and you can restart your entry from the beginning.
 
@@ -887,13 +894,14 @@ Bold values are standard or recommended ones. When called from the start menu, a
 |Echo Repeats    |Here you can set how often a word is repeated if the answer is either too late or incorrect before the Echo Trainer generates a new word. If the value is 0, then the next word is always a new one, regardless of whether the response was right or wrong.     | 0 -- 6 / Forever
 |Echo Prompt    | This defines how you are prompted in Echo Trainer mode. The possible settings are: „Sound only“ (default; the standard behavior in previous versions; best for learning to copy in your head), „Display only“ (the word you are supposed to enter is shown on the screen, no audible code is generated; good for training paddle input), and „Sound & Display“, i.e you hear the prompt AND you can see it on the display.               | **Sound only** / Display only / Sound&Displ
 | Confrm. Tone  | This defines if an audible confirmation tone should be sounded in Echo Trainer modus. If you turn it off, the device just repeats the prompt when the response was wrong, or sends a new prompt. The visual indication of "OK" or "ERR" will still be visible when the tone is turned off. | **On** / Off
-|Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device | Never / **CW Keyer only** / Keyer&Genertr
+|Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device. Gen = generator modi, RX = LoRa or Internet Receiver modi | Never / **CW Keyer only** / Keyer & Gen. / Keyer&Gen.&RX
 | Generator Tx (used to be called "Send via LoRa") | This allows the CW Generator to send, what it generates, eiher via LoRa or via WiFi - so you can have one device generating something, and several others receiving the same sequence. This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server, or via LoRa when all participants are close enough together.
 Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed! | **„Tx OFF“** (= do not transmit generated CW), „LoRa Tx ON“ (transmit generated code through LoRa) and „WiFi Tx ON“ (transmit generated code through WiFi).
 | LoRa Channel | Selects which virtual channel LoRa is using. | **Standard Ch** / Secondary Ch
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frequency = ca 700 Hz) | **Wide** / Narrow
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response in Echo Trainer modus, and will be decreased by 1 whenever you made a mistake. | ON / **OFF**
 | Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. You can also use your customized character set by choosing Custom Chars - see the section  <<koch>>, the last paragraph. | **M32 / JLMC** (Just Learn Morse Code) / Custom Chars  / CW Academy /  LCWO
+| Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modi, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this parameter set to „ON“, the audio is also sent to the external audio I/O port. | On / **Off**
 | Time Out | If the time specified in this parameter passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min
 | Quick Start | Allows you to bypass the initial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically. | ON / **OFF**
