@@ -379,17 +379,14 @@ void setup()
   MorsePreferences::readPreferences("morserino");
   koch.setup(); 
 
- 
-   // enable Vext
   pinMode(Vext, OUTPUT);
-  digitalWrite(Vext,LOW);
-  
-  //DEBUG("Vext ON");
- 
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
   pinMode(modeButtonPin, INPUT);
+
+  // enable Vext
+  digitalWrite(Vext,LOW);
 
  //DEBUG("Volt: " + String(volt));
 
@@ -1846,6 +1843,14 @@ String cleanUpProSigns( String &input ) {
 //// measure battery voltage in mV
 
 int16_t batteryVoltage() {      /// measure battery voltage and return result in milliVolts
+
+      // board version 3 requires Vext being on for reading the battery voltage
+      if (MorsePreferences::boardVersion == 3)
+         digitalWrite(Vext,LOW);
+      // board version 4 requires Vext being off for reading the battery voltage
+      else if (MorsePreferences::boardVersion == 4)
+         digitalWrite(Vext,HIGH);
+
       delay(64);
       double v= 0; int counts = 4;
       for (int i=0; i<counts   ; ++i) {
@@ -1855,7 +1860,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
       }
       v /= counts;
       if (MorsePreferences::boardVersion == 4)      // adjust measurement for board version 4
-        v *= 1.7;
+        v *= 1.1;
       voltage_raw = v;
       v *= (MorsePreferences::vAdjust * 12.9);      // adjust measurement and convert to millivolts
       return (int16_t) v;                                                                                       
