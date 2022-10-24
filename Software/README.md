@@ -16,6 +16,13 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.4.1
+
+#### Improvements:
+
+* Thanks to Michael Lass the battery measurement has been significantly improved for the 2nd edition Morserinos (Board 4.x) - unfortunately this I not possible for the older ones. Re-calibration of the battery measurement is recommended!
+* When using a straight key, only the tip of the 3-pole jack is being read, so you can use a 2-pole connector without getting a continuous tone (this became an issue with the last version, when we read the straight key also for starting a session in echo trainer mode etc.)
+
 ### Changes V.4.4
 
 #### New features:

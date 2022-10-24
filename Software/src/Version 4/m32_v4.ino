@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
- *  m32_v4 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
- *  Copyright (C) 2018-2020  Willi Kraml, OE1WKL                                                                            ***
+ *  m32_v5 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
+ *  Copyright (C) 2018-2022  Willi Kraml, OE1WKL                                                                            ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -380,16 +380,15 @@ void setup()
   koch.setup(); 
 
  
-   // enable Vext
   pinMode(Vext, OUTPUT);
-  digitalWrite(Vext,LOW);
-  
-  //DEBUG("Vext ON");
- 
+
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
   pinMode(modeButtonPin, INPUT);
+
+  //enable Vext
+  digitalWrite(Vext,LOW);
 
  //DEBUG("Volt: " + String(volt));
 
@@ -546,7 +545,7 @@ void displayStartUp(uint16_t volt) {
   if (BETA)
     s += " beta";
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
-  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2021");
+  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2022");
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
   
@@ -1053,11 +1052,11 @@ boolean checkPaddles() {
   sensor = readSensors(LEFT, RIGHT, false);
   newL = (sensor >> 1);
   newR = (sensor & 0x01);
-  
-  //if (MorsePreferences::keyermode != STRAIGHTKEY) {               // read external paddle presses
-      newL = newL | (!digitalRead(left)) ;
-      newR = newR | (!digitalRead(right)) ;
-  //}
+                                                          // read external paddle presses
+  newL = newL | (!digitalRead(left)) ;                    // tip (=left) always, to be able to use straight key to initiate echo trainer etc
+  if (MorsePreferences::keyermode != STRAIGHTKEY) {               
+      newR = newR | (!digitalRead(right)) ;               // ring (=right) only when in straight key mode, to prevent continuous activation 
+  }                                                       // when used with a 2-pole jack on the straight key
   
   if ((MorsePreferences::keyermode == NONSQUEEZE) && newL && newR) 
     return (leftKey || rightKey);
@@ -1846,7 +1845,14 @@ String cleanUpProSigns( String &input ) {
 //// measure battery voltage in mV
 
 int16_t batteryVoltage() {      /// measure battery voltage and return result in milliVolts
-      delay(64);
+  
+      // board version 3 requires Vext being on for reading the battery voltage
+      if (MorsePreferences::boardVersion == 3)
+         digitalWrite(Vext,LOW);
+      // board version 4 requires Vext being off for reading the battery voltage
+      else if (MorsePreferences::boardVersion == 4)
+         digitalWrite(Vext,HIGH);
+
       double v= 0; int counts = 4;
       for (int i=0; i<counts   ; ++i) {
          v+= ReadVoltage(batteryPin);
@@ -1855,11 +1861,19 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
       }
       v /= counts;
       if (MorsePreferences::boardVersion == 4)      // adjust measurement for board version 4
-        v *= 1.7;
+        v *= 1.1;
       voltage_raw = v;
       v *= (MorsePreferences::vAdjust * 12.9);      // adjust measurement and convert to millivolts
       return (int16_t) v;                                                                                       
 }
+
+
+
+
+
+
+
+
 
 
 double ReadVoltage(byte pin){
