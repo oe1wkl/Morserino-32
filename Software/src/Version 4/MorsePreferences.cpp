@@ -1864,8 +1864,8 @@ uint8_t Koch::adjustForCarousel(uint8_t offset) {
       return (offset+3*carouselStart) % 18;
     }
     offset -= 18;
-    if (offset<18) { // BC2
-      return (offset+3*carouselStart) % 18 + 18;
+    if (offset<27) { // BC2
+      return (offset+3*carouselStart) % 27 + 18;
     }
   }   
   return offset;    
