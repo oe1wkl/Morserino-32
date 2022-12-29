@@ -68,6 +68,8 @@ namespace MorsePreferences
   extern uint8_t randomFile;
   extern boolean lcwoKochSeq;
   extern boolean cwacKochSeq;
+  extern boolean licwKochSeq;
+  extern uint8_t carouselStart;
   extern boolean extAudioOnDecode;
   extern uint8_t timeOut;
   extern boolean quickStart;
@@ -126,7 +128,7 @@ namespace MorsePreferences
                   posRandomLength, posCallLength, posAbbrevLength, posWordLength,
                   posTrainerDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,
                   posKeyTrainerMode, posLoraTrainerMode, posGoertzelBandwidth, posSpeedAdapt,
-                  posKochSeq, posKochFilter, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, 
+                  posKochSeq, posCarouselStart, posKochFilter, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, 
                   posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
                   posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
                 };
@@ -222,6 +224,7 @@ namespace internal {
   void displayGoertzelBandwidth();
   void displaySpeedAdapt();
   void displayKochSeq();
+  void displayCarouselStart();
   void displayExtAudioOnDecode();
   void displayTimeOut();
   void displayQuickStart();
@@ -244,6 +247,7 @@ class Koch {
     String kochCharSet;
     const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNE@:";
     const String cwacKochChars =      "teanois14rhdl25ucmw36?fypg79/bvkj80=xqz.,-K+ASNE@:";
+    const String licwKochChars =      "reatinpsglcdhofuwbkmy59,qxv73?+K=16.ZJ/28B40ASNE@:";
     void createWords(uint8_t, uint8_t);
     void createAbbr(uint8_t, uint8_t);
     uint8_t wordIsKoch(String);
@@ -265,7 +269,7 @@ class Koch {
     String getCharSet();
     String getRandomCharSet();
     String getInitChar(int);
-    void setKochChars(boolean, boolean);
+    void setKochChars(boolean, boolean, boolean);
     void setCustomChars(String chars);
     int16_t getProbabilitySum();
     void increaseWordProbability(String& expected, String& received);
@@ -273,6 +277,7 @@ class Koch {
     void increaseCharProbability(char c, uint8_t count);
     void decreaseWordProbability(String& word);
     void decreaseCharProbability(char c);
+    uint8_t adjustForCarousel(uint8_t offset);
 };
 
 extern Koch koch;

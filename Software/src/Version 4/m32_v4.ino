@@ -146,13 +146,13 @@ unsigned long interWordTimer = 0;      // timer to detect interword spaces
 unsigned long acsTimer = 0;            // timer to use for automatic character spacing (ACS)
 
 
-const String CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEäöüH";
-//                      0....5....1....5....2....5....3....5....4....5....5...    
+const String CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH";
+//                      0....5....1....5....2....5....3....5....4....5....5....6....    
 // we use substrings as char pool for trainer mode
 // SANK will be replaced by <as>, <ka>, <kn> and <sk>, H = ch
 // a = CWchars.substring(0,26); 9 = CWchars.substring(26,36); ? = CWchars.substring(36,45); <> = CWchars.substring(44,49);
-// a9 = CWchars.substring(0,36); 9? = CWchars.substring(26,45); ?<> = CWchars.substring(36,50);
-// a9? = CWchars.substring(0,45); 9?<> = CWchars.substring(26,50);
+// a9 = CWchars.substring(0,36); 9? = CWchars.substring(26,45); ?<> = CWchars.substring(36,52);
+// a9? = CWchars.substring(0,45); 9?<> = CWchars.substring(26,52);
 // a9?<> = CWchars;
 
 
@@ -245,11 +245,12 @@ const byte pool[][2]  = {
                {B10110000, 5},  // <kn> 47 N
                {B00010100, 6},   // <sk> 48    K
                {B00010000, 5},  // <ve> 49 E
+               {B10001010, 7},  // <bk> 50  B               
 // German characters
-               {B01010000, 4},  // ä    50   
-               {B11100000, 4},  // ö    51
-               {B00110000, 4},  // ü    52
-               {B11110000, 4}   // ch   53  H
+               {B01010000, 4},  // ä    51   
+               {B11100000, 4},  // ö    52
+               {B00110000, 4},  // ü    53
+               {B11110000, 4}   // ch   54  H
 
             };
 
@@ -1207,7 +1208,7 @@ String getRandomAbbrev( int maxLength) {        //// give me a random CW abbrevi
 String getRandomChars(int maxLength, int option) {             /// random char string, eg. group of 5, 9 differing character pools; maxLength = 1-6
     String result = ""; 
     result.reserve(7);
-    int s = 0, e = 50;
+    int s = 0, e = 51;
     int i;
   
     if (maxLength > 6) {                                        // we use a random length!
@@ -1241,7 +1242,7 @@ String getRandomChars(int maxLength, int option) {             /// random char s
           case OPT_NUMPUNCT:
           case OPT_PUNCT: 
                                 e = 45; break;
-          default:              e = 50; break;
+          default:              e = 51; break;
         }
 
         for (i = 0; i < maxLength; ++i) 
