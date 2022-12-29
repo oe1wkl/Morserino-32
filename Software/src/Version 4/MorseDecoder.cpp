@@ -19,6 +19,7 @@
 extern unsigned long genTimer;      /// needed for echo trainer 
 extern morserinoMode morseState;
 extern int leftPin;
+extern int rightPin;
 
 //////// methods for class Decoder /////////
 
@@ -42,7 +43,7 @@ void Decoder::setup() {
 }
 
 
-#define straightPin leftPin
+#define straightPin (MorsePreferences::reversePolarity ? rightPin : leftPin)
 
 
 boolean Decoder::checkInput() {         /// check if we have a tone signal at A6 with Gortzel's algorithm or from a key (fromKey == true), and apply some noise blanking as well
