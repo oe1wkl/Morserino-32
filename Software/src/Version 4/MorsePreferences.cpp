@@ -681,17 +681,17 @@ void internal::displayCarouselStart() {
     String CarouselStartValue;
     
     switch (MorsePreferences::carouselStart) {
-          case 0: CarouselStartValue     = " No Adjust";
+          case 0: CarouselStartValue     = "Begin REA ";
                   break;
-          case 1: CarouselStartValue     = " +1 Week  ";
+          case 1: CarouselStartValue     = "Begin TIN ";
                   break;
-          case 2: CarouselStartValue     = " +2 Weeks ";
+          case 2: CarouselStartValue     = "Begin PSG ";
                   break;
-          case 3: CarouselStartValue     = " +3 Weeks ";
+          case 3: CarouselStartValue     = "Begin LCD ";
                   break;
-          case 4: CarouselStartValue     = " +4 Weeks ";
+          case 4: CarouselStartValue     = "Begin HOF ";
                   break;
-          case 5: CarouselStartValue     = " +5 Weeks ";
+          case 5: CarouselStartValue     = "Begin UWB ";
                   break;
       }
       MorseOutput::printOnScroll(2, REGULAR, 1, CarouselStartValue);
