@@ -1332,6 +1332,12 @@ void MorsePreferences::readPreferences(String repository) {
     MorsePreferences::cwacKochSeq = pref.getBool("cwacKochSeq");
     MorsePreferences::lcwoKochSeq = pref.getBool("lcwoKochSeq");
     MorsePreferences::licwKochSeq = pref.getBool("licwKochSeq");
+
+    if ((temp = pref.getUChar("carouselStart")))
+       MorsePreferences::carouselStart = temp;
+    else if (morserino)
+       pref.putUChar("carouselStart", MorsePreferences::carouselStart);
+
     MorsePreferences::useCustomCharSet = pref.getBool("useCustomChar");
     MorsePreferences::customCharSet = pref.getString("customCharSet", "");
     MorsePreferences::quickStart = pref.getBool("quickStart");
