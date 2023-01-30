@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v4.4 August 2022
+v4.5 Januar 2023
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -230,7 +230,7 @@ Das Heltec-Modul hat eine Elektronik zum Laden des Akkus an Bord und verhindert 
 
 Die Standardversion des Morserino-32 verfügt über eine vorkonfigurierte Frequenz innerhalb des 433 MHz Amateur- und ISM-Bandes (ISM nur in ITU-Region 1). **Wenn das Ihren Anforderungen entspricht, musst du jetzt nichts weiter tun.**
 
-Wenn die Nutzung dieser Frequenz in deiner Region nicht erlaubt ist, kann man eine Version des M32 kaufen, die die LoRa-Bänder zwischen 860 und 925 MHz unterstützt. In diesem Fall muss man das richtige Band und die richtige Frequenz konfigurieren, bevor man die LoRa-Funktionalität des M32 nutzen kann.
+Wenn die Nutzung dieser Frequenz in deiner Region nicht erlaubt ist, muss man eine Version des Heltec Moduls (Version 2.0 für die erste Edition des Morserino, V.2.1 für die zweite Edition) kaufen, die die LoRa-Bänder zwischen 860 und 925 MHz unterstützt. In diesem Fall muss man das richtige Band und die richtige Frequenz konfigurieren, bevor man die LoRa-Funktionalität des M32 nutzen kann.
 
 [WARNING]
 ====
@@ -395,7 +395,7 @@ Die ARRL und einige Morsetrainingsprogramme verwenden etwas, das sie **"Farnswor
 
 `Length Abbrev` und `Length Words`: Die Länge der gebräuchlichen CW-Abkürzungen bzw. gebräuchlichen englischen Wörter, die generiert werden. Wähle zwischen 2 und 6 oder Unlimited (unbegrenzt).
 
-`Each Word 2x`: Jedes "Wort" (Zeichen zwischen Leerzeichen) wird zweimal ausgegeben, um das Gehörlesen zu unterstützen.
+`Each Word 2x`: Jedes "Wort" (Zeichen zwischen Leerzeichen) wird zweimal ausgegeben, um das Gehörlesen zu unterstützen (ON). Falls ein vergrößerter Abstand zwischen den Zeichen gewählt wurde ("Farnsworth Spacing"), kann die Wiederholung auch mit geringerem Abstand (ON less ICS) oder ohne Farnsworth Spacing (ON true WpM)erzeugt werden.
 
 Für die weniger häufig verwendeten Parameter `Key ext TX`, `CW Gen Displ` und `Send via LoRa` siehe den Abschnitt <<parameters>>.
 
@@ -425,11 +425,12 @@ Die folgenden Betriebsabkürzungen werden erkannt:
 ====
 ** `<ar>` : wird auf dem Display als + (Pluszeichen) angezeigt.
 ** `<bt>` : wird auf dem Display angezeigt als = (Gleichheitszeichen)
-** `<as>wert
+** `<as>`
 ** `<ka>>`
 ** `<kn>`
 ** `<sk>`
 ** `<ve>`
+** `<bk>`
 ====
 
 Es gibt zwei weitere "Sonderzeichen", die wie Betriebsabkürzungen gebildet werden und beim Abspielen einer Datei erkannt werden:
@@ -537,11 +538,14 @@ Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden
 | 21 | , (Comma) | 46 | KN  (Betriebsabkürzung)
 | 22 | g | 47 | KA (Betriebsabkürzung)
 | 23 | 5 | 48 | VE (Betriebsabkürzung)
-| 24 | / | 49 | @
-| 25 | q | 50 | : (Doppelpunkt)
+| 24 | / | 49 | BK (Betriebsabkürzung)
+| 25 | q | 50 | @
+|   |  | 51 | : (Colon)
 |===
 
-Es besteht auch die Möglichkeit, die Reihenfolge der zu lernenden Zeichen auszuwählen. Neben der nativen Zeichenfolge kann man die Reihenfolge wählen, die vom beliebten Online-Trainingstool "Learn CW Online" (LCWO) verwendet wird, oder auch die Reihenfolge, welche die CW Ops CW Academy-Kurse benutzen. Dies kann im Parametermenü des Morserino-32 unter "Koch Sequence" eingestellt werden.
+Es besteht auch die Möglichkeit, die Reihenfolge der zu lernenden Zeichen auszuwählen. Neben der nativen Zeichenfolge kann man die Reihenfolge wählen, die vom beliebten Online-Trainingstool "Learn CW Online" (LCWO) verwendet wird, oder die Reihenfolge, welche die CW Ops CW Academy-Kurse benutzen, oder auch die Reihenfolge entsprechend dem "Carousel" Curriculum des Long Island CW (LICW) Clubs. Dies kann im Parametermenü des Morserino-32 unter "Koch Sequence" eingestellt werden.
+
+Falls du einen Kurses bei LICW machst, solltest du zusätzlich den Parameter „LICW Carousel“ entsprechend deinem Einstiegspunkt in deren Curriculum einstellen (zB. wenn du innerhalb von BC1 – Basic Course 1 – einen Kurs mit den Buchstaben p, g und s beginnst, setze diesen Parameter auf "BC1: p g s". Alle weiteren Zeichen, die du in BC1 lernen wirst, werden in der gleichen Reihenfolge in den Morserino Koch-Lektionen widergespiegelt. Wenn du BC1 absolviert hast, steigst du in BC2 ein, zB. beginnend mit Zeichen 7, 3 und ?, also solltest du nun diesen Parameter jetzt auf "BC2: 7 3 ?" setzen.)
 
 Die Zeichenfolge bei der Auswahl von "LCWO" ist wie folgt:
 
@@ -550,6 +554,9 @@ k m u r e s n a p t l w i . j z = f o y , v g 5 / q 9 2 h 3 8 b ? 4 7 c 1 d 6 0 
 Und die Reihenfolge der CW Academy sieht so aus:
 
 t e a n o i s 1 4 r h d l 2 5 u c m w 3 6 ? f y p g 7 9 / b v k j 8 0 = x q z . , - SK AR(+) KA AS KN VE @ :
+
+Die Reihenfolge der LICW Kurse ist folgende:
+r e a t i n p s g l c d h o f u w b k m y 5 9 , q x v 7 3 ? + SK = 1 6 . Z J / 2 8 BK 4 0
 
 
 
@@ -649,7 +656,7 @@ und als Standardfrequenz innerhalb dieses Bandes auf 434,150 MHz (innerhalb des 
 
 Wenn man diese Frequenz aus irgendeinem Grund nicht nutzen kann (z.B. wegen Bandplänen, aus regulatorischen Gründen usw.), kann man die Frequenz am Standard-LoRa-Modul zwischen 433,65 und 434,55 MHz in Schritten von 100 kHz ändern.
 
-Sollte man eine LoRa-Frequenz entweder um 868 MHz oder um 920 MHz benötigen, kann der Bausatz mit Heltec-Modulen geliefert werden, die diesen höheren Frequenzbereich unterstützen (man kann auch ein solches Modul nachkaufen). In diesem Fall MUSS der Morserino-32  konfiguriert werden, damit er das richtige Band und die richtige Frequenz verwendet.
+Sollte man eine LoRa-Frequenz entweder um 868 MHz oder um 920 MHz benötigen, muss ein Heltec-Modul beschafft werden, die diesen höheren Frequenzbereich unterstützen. In diesem Fall MUSS der Morserino-32  konfiguriert werden, damit er das richtige Band und die richtige Frequenz verwendet.
 
 **Siehe <<appendix1_1>> am Ende dieses Dokuments**, um zu erfahren, wie man LoRa für Module konfiguriert, die die Bänder 868 und 929 MHz unterstützen, und wie man die LoRa-Frequenzeinstellungen ändern kann.
 
@@ -882,7 +889,7 @@ Fettgedruckte Werte sind Standard- oder empfohlene Werte. Beim Aufruf aus dem St
 | Length Words | Hier wählt man die maximale Länge der zufällig generierten allgemeinen englischen Wörter aus. | Unlimited (unbegrenzt) / max. 2 -- max. 6
 | Max # of Words | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen erzeugt wurde, erzeugt der Morserino-32 ein abschließendes AR ("+"), um anzuzeigen, dass diese Sequenz beendet ist, und pausiert dann und wartet - nach Berühren eines Paddels (oder einem Klick auf den schwarzen Knopf) fährt er fort und erzeugt die nächste Folge von Wörtern. (Falls die Option "Auto Stop" aktiv ist, wird dieser Parameter im CW Generator ignoriert.) | **Unlimited** (unbegrenzt) / 5 bis 250 in Schritten von  5
 | CW Gen Displ | Hier wählt man aus, wie der CW Trainer bzw. LoRa oder WiFi Transceiver anzeigen soll, was er erzeugt bzw. empfängt. | Display off (keine Anzeige)/ **Char by Char** (Zeichen für Zeichen) / Word by word (Wort für Wort)
-| Each Word 2x | Im CW Trainer Modus wird bei Stellung "On" jedes "Wort" (Zeichen zwischen den Leerzeichen) zweimal ausgegeben, um zu lernen, nach Gehör mitzulesen. Diese Option und die Option 'Stop/Next/Rep' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| **Off** / On
+| Each Word 2x | Im CW Generator Modus wird bei Stellung "ON" jedes "Wort" (Zeichen zwischen den Leerzeichen) zweimal ausgegeben, um zu lernen, nach Gehör mitzulesen. Diese Option und die Option 'Stop/Next/Rep' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt. Es gibt drei ON-Möglichkeiten: normal (ein eventuell gesetzter vergrößerter Zwischenzeichenraum (inter-character space) wird bei der Wiederholung beibehalten); ON less ICS: der Zwischenraum wird verkleinert; ON true WpM: der vergrößerte Zwischenraum zwischen Zeichen wird bei der Wiederholung ignoriert.| **OFF** / ON / ON (less ICS) / ON (true WpM)
 | Randomize File | Wenn auf "On" gesetzt, überspringt der File Player nach jedem gesendeten Wort n Wörter (n = Zufallszahl zwischen 0 und 255). |  **Off** / On
 |Echo Repeats    |Hier stellt man ein, wie oft ein Wort wiederholt wird, wenn die Antwort entweder zu spät oder fehlerhaft ist, bevor der Echo Trainer ein neues Wort generiert. Wenn der Wert 0 ist, dann ist das nächste Wort immer ein neues, unabhängig davon, ob die Reaktion richtig  oder falsch war.        | 0 -- 6 / Forever (unbegrenzte Wiederholung, bis die Antwort richtig ist)
 |Echo Prompt    | Hiermit wird festgelegt, wie man im Echo-Trainer-Modus zur Eingabe aufgefordert wird. Die möglichen Einstellungen sind: "Sound Only" (nur Töne; Standardwert; am besten zum Gehörlesen Lernen), "Display only" (das Wort, das man eingeben soll, wird auf dem Display angezeigt, es wird kein hörbarer Code erzeugt; gut zum Geben Lernen mit dem  Paddel) und "Sound & Display", d.h. man hört die Eingabeaufforderung UND man kann sie auf dem Display sehen.               | **Sound only** / Display only / Sound&Displ
@@ -893,11 +900,12 @@ Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da so
 | LoRa Channel | Wählt aus, welchen virtuellen Kanal LoRa verwendet. | **Standard Ch** / Secondary Ch
 | Bandwidth | Definiert die Bandbreite, die der CW-Decoder verwendet (dies ist in Software mit einem so genannten Goertzel-Filter implementiert).  (Wide (breit) = ca. 600 Hz, Narrow (schmal) = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz) | **Wide** / Narrow
 | Adaptv. Speed | Wenn diese Option auf ON gesetzt ist, wird die Geschwindigkeit um 1 WpM erhöht, wenn man im Echo Trainer-Modus eine korrekte Antwort gegeben hat, und um 1 verringert, wenn die Antwort fehlerhaft war. | ON / **OFF**
-| Koch Sequence | Dies bestimmt die Reihenfolge der Zeichen, wenn man die Koch-Methode zum Lernen und Trainieren verwendet. Man kann hier auch seinen spezifischen zeichensatz zum Üben definieren, mit der Option 'Custom Chars' - siehe das Kapitel <<koch>> (letzter Absatz).| **M32 / JLMC** (Just Learn Morse Code) / Custom Chars  / CW Academy /  LCWO
+| Koch Sequence | Dies bestimmt die Reihenfolge der Zeichen, wenn man die Koch-Methode zum Lernen und Trainieren verwendet. Man kann hier auch seinen spezifischen zeichensatz zum Üben definieren, mit der Option 'Custom Chars' - siehe das Kapitel <<koch>> (letzter Absatz).| **M32 / JLMC** (Just Learn Morse Code) / LICW Carousel / LCWO / Custom Chars  / CW Academy /
+| LICW Carousel | Damit wird der "Einstiegspunkt" ins Curriculum des LICW Clubs gewählt (dies ist nur relevant, wenn der Parameter "Koch Sequence" auf "LICW Carousel" gesetzt ist). Wenn du einen Kurs innerhalb des Carousel BC1 beginnst, sollst du diesen Parameter entsprechend setzen; und dann wieder, wenn du mit einem Kurs in BC2 einsteigst. |  **BC1: r e a** / BC1: t i n / BB1: p g s  / BC1: l c d / BC1: h o f / BC1: u w b / BC2: k m y / BC2: 5 9 , / BC2: q x v / BC2: 7 3 ? / BC2: ar sk = / BC2: 1 6 . / BC2: z j / / BC2: 2 8 bk / BC2: 4 0
 | Decoded on I/O | Normalerweise wird dekodiertes CW, das aus einer externen Quelle stammt (in einem der Transceiver Modi, oder beim Dekodieren von externem Audio) auf dem Lautsprecher (oder Kopfhörer) des M32 wiedergegeben, aber nicht an den externen I/O Ausgang gesendet. Wird dieser Parameter auf "On" gesetzt, wird  der Ton des Dekoders auch an den externen I/O Ausgang geliefert. | On / **Off**
 | Time Out | Wenn die in diesem Parameter angegebene Zeit ohne Aktualisierung der Anzeige vergeht, geht das Gerät in den Tiefschlafmodus. Man kann es durch Drücken der ROTEN Taste neu starten. | No timeout (kein Timeout)/ **5 min** / 10 min / 15 min
 | Quick Start | Ermöglicht es (gesetzt auf ON), die anfängliche Menüauswahl zu umgehen, d.h. das Gerät beginnt beim Start sofort mit der Ausführung des Modus, der vor dem letzten Ausschalten wirksam war. | ON / **OFF**
-| STop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**
+| Stop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**
 | Serial Output | Damit wird eingestellt, ob am USB Anschluss die generierten Zeichen des Keyers bzw. die dekodierten Zeichen des Decoders ausgegeben werden sollen. Bei der Einstellung "ERRORS only" werden nur gewisse Fehlermeldungen dort ausgegeben (diese allerdings nur wenn keine der anderen Optionen gewählt wurde).
 
 Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. Siehe auch <<appendix5>>. | Keyer / Decoder / Keyer+Decoder  / **Everything** (Default seit 4.3) / ERRORS only

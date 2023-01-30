@@ -111,14 +111,15 @@ void MorseOutput::decreaseBrightness() {
 void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {
   boolean styleChanged = (style != printToScroll_lastStyle);
   boolean lengthExceeded = printToScroll_buffer.length() + text.length() > 10;
-  //DEBUG("printToScroll String: " + text);
+  // DEBUG("printToScroll String: >" + text + "<");
   if (styleChanged || lengthExceeded) {
+    // DEBUG("FLUSH!");
     MorseOutput::flushScroll(scroll);
   }
 
   printToScroll_buffer += text;
   printToScroll_lastStyle = style;
-  //DEBUG("printToScroll_buffer: " + printToScroll_buffer);
+  // DEBUG("printToScroll_buffer: >" + printToScroll_buffer + "<");
   if (autoflush || text.endsWith("\n")) {
     MorseOutput::flushScroll(scroll);
   }
@@ -147,8 +148,13 @@ void MorseOutput::flushScroll(boolean scroll) {
 
 
 /// store text in textBuffer, if it fits the screen line; otherwise scroll up, clear bottom buffer, store in new buffer, print on new line
+
 void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean scroll) {
 
+  // for DEBUG
+  //char c;
+  //unsigned char ch;
+  //
   static uint8_t pos = 0;
   static uint8_t screenPos = 0;
   static FONT_ATTRIB lastStyle = REGULAR;
@@ -181,12 +187,14 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
     textBuffer[bottomLine][pos] = (char) 0;                 // add 0 character
   } else {
     if (style == lastStyle)  {                                // not regular, but we have no change in style!
-      pos -= 1;                                               // go one pos back to overwrite style marker
+      ///DEBUG("lastStyle :" + text);
+      //pos -= 1;                                               // go one pos back to overwrite style marker
       memcpy(&textBuffer[bottomLine][pos], text.c_str(), l);  // copy the string of characters
       pos += l;
       textBuffer[bottomLine][pos++] = (char) style;           // add the style marker
       textBuffer[bottomLine][pos] = (char) 0;                 // add 0 character
     } else {
+      //DEBUG("NOTlastStyle :" + text);
       textBuffer[bottomLine][pos++] = (char) style;           // add the style marker at the beginning
       memcpy(&textBuffer[bottomLine][pos], text.c_str(), l);  // copy the string of characters
       pos += l;
@@ -195,6 +203,12 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
       lastStyle = style;                                      // remember new style flag
     }
   }
+///// for debugging: show contents of text buffer
+///DEBUG("Buffer:");
+///for (int i  = 0; (c = textBuffer[bottomLine][i]); ++i) {
+///  DEBUG(String( ch = c ) + " <");
+/// }
+/////
 
   if (relPos == maxPos) {                                     // we show the bottom lines on the screen, therefore we add the new stuff  immediately
     /// and send string to screen, avoiding refresh of complete line
@@ -211,6 +225,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
 
 
 void MorseOutput::newLine(boolean scroll) {
+  //DEBUG("Newline!");
   linePointer = (linePointer + 1) % NoOfLines;
   if (relPos && relPos != maxPos)
     --relPos;
@@ -225,6 +240,7 @@ void MorseOutput::newLine(boolean scroll) {
 }
 
 /// refresh all three lines from buffer in scroll area;
+
 void MorseOutput::refreshScrollArea(int relPos) {
   //int pos = ((bottomLine + relPos +1) % NoOfLines);
   refreshScrollLine(((bottomLine + relPos + 1) % NoOfLines), 0);          /// refresh all three lines
@@ -234,11 +250,13 @@ void MorseOutput::refreshScrollArea(int relPos) {
 }
 
 /// print a line to the screen
+
 void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   String temp;
   temp.reserve(16);
   temp = "";
   char c;
+  unsigned char ch;
   boolean irFlag = false;
   FONT_ATTRIB style = REGULAR;
   int pos = 0;
@@ -247,9 +265,11 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   Heltec.display -> setColor(BLACK);
   Heltec.display -> fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , 127, LINE_HEIGHT + 1); // black out the line on screen
   for (int i = 0; (c = textBuffer[bufferLine][i]) ; ++i) {
-    if (c < 4)   {         /// a flag
+    // if (c == ' ') DEBUG("Blank!");
+    if (c < 5)   {         /// a flag
       if (irFlag)         /// at the end of an emphasized string
       {
+            //DEBUG("irFl>>" + temp + "<<");
         charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
         style = REGULAR; 
         pos += charsPrinted; 
@@ -259,6 +279,8 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
       else                /// at the beginning of an emphasized string
       {
         if (temp.length()) {
+              //DEBUG("noFl>>" + temp + "<<");
+
           charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
           style = REGULAR; 
           pos += charsPrinted; 
@@ -270,17 +292,20 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
     }
     else {                /// normal character - add it to temp
       temp += c;
+      // DEBUG("temp >>" + temp + "<<");
     }
   }
-  if (temp.length())
+  
+  if (temp.length()) 
     MorseOutput::printOnScroll(displayLine, style, pos, temp);
 }
 
 
 /// place a string onto the scroll area; line = 0, 1 or 2
+
 uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring) {
   uint8_t w;
-
+// DEBUG("pos: " + String(xpos) + " >" + mystring + "<");
   if (how > BOLD)
     Heltec.display -> setColor(WHITE);
   else
@@ -309,6 +334,7 @@ uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, 
 }
 
 /// clear the three lines of the display area
+
 void MorseOutput::clearThreeLines() {
   for (int i = 0; i < 3; ++i) {
     Heltec.display -> setColor(BLACK);
@@ -366,6 +392,7 @@ void MorseOutput::displayScrollBar(boolean visible) {          /// display a scr
 
 
 ///// display battery status as text and icon, parameter v: Voltage in mV
+
 void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
 
   int a, b, c; String s; double d;
@@ -528,9 +555,10 @@ void MorseOutput::soundSetup()
 
 
 void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut) { // frequency in Hertz, volume in range 0 - 19; we use 10 bit resolution
-  //const uint16_t vol[] = {0,  1, 2, 3, 4, 6, 9, 14, 21, 31, 45, 70, 100, 145, 220, 320, 470, 720, 1023}; // 19 values
   const uint16_t vol[] =   {0,  1, 2, 4, 6, 9, 14, 21, 31, 45, 70, 100, 140, 200, 280, 390, 512, 680, 840, 1023}; // 20 values
-  int i = constrain(volume, 0, 19);
+  unsigned int i = constrain(volume, 0, 19);
+  unsigned int j = vol[i] >> 5;     // experimental: soften the inital click
+  
   //DEBUG(String(vol[i]));
   //DEBUG(String(frequency));
   if (lineOut) {
@@ -538,7 +566,9 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
       ledcWrite(lineOutChannel, dutyCycleFiftyPercent);
   }
 
-  ledcWrite(volChannel, volFreq);
+  //ledcWrite(volChannel, volFreq);
+    ledcWrite(volChannel, j);       // experimental: soften the inital click
+    delay(6);                       // experimental: soften the inital click
   ledcWrite(volChannel, vol[i]);
   ledcWriteTone(toneChannel, frequency);
  
@@ -546,17 +576,14 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
   if (i == 0 ) 
       ledcWrite(toneChannel, dutyCycleZero);
   else 
-  //else if (i > 2)
       ledcWrite(toneChannel, dutyCycleFiftyPercent);
-  //else
-      //ledcWrite(toneChannel, i*i*i + 4 + 2*i);          /// an ugly hack to allow for lower volumes on headphones
-      //ledcWrite(toneChannel,400);
 }
 
 
 void MorseOutput::pwmNoTone() {      // stop playing a tone by changing duty cycle of the tone to 0
   ledcWrite(toneChannel, dutyCycleTwentyPercent);
   ledcWrite(lineOutChannel, dutyCycleTwentyPercent);
+  ledcWrite(volChannel, 2);         // experimental: soften the click
   delayMicroseconds(125);
   ledcWrite(toneChannel, dutyCycleZero);
   ledcWrite(lineOutChannel, dutyCycleZero);

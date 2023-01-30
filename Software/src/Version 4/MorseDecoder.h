@@ -32,7 +32,7 @@ struct linklist {
 };
 
 
-const struct linklist CWtree[67]  = {
+const struct linklist CWtree[69]  = {
   {"",1,2},            // 0
   {"e", 3,4},         // 1
   {"t",5,6},          // 2
@@ -80,7 +80,7 @@ const struct linklist CWtree[67]  = {
   {"*", 56, 63},      // 40
   {"1", 57, 63},      // 41
   {"6", 63, 58},      // 42
-  {"=", 63, 63},      // 43
+  {"=", 67, 63},      // 43
   {"/", 63, 63},      // 44
   {"<ka>", 59, 60},        // 45 !! <ka>
   {"<kn>", 63, 63},        // 46 !! <kn>
@@ -105,7 +105,9 @@ const struct linklist CWtree[67]  = {
   {"*", 63, 63},       // 63 Default for all unidentified characters
   {"*", 65, 63},       // 64
   {"*", 66, 63},       // 65
-  {"<err>", 66, 63}      // 66 !! Error - backspace
+  {"<err>", 66, 63},      // 66 !! Error - backspace
+  {"*", 63, 68},        // 67
+  {"<bk>", 63, 63}      // 68 <bk>
 };
 
 //// we define two classes: MorseTable (a pointer to the linked list defined above, and mthods to manipulate the pointer)

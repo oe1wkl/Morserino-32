@@ -11,7 +11,7 @@
 #include "english_words.h"
 #include "goertzel.h"
 
-const int kochCharsLength = 50;
+//const int kochCharsLength = 51;
 
 extern int8_t hwConf;
 
@@ -57,7 +57,8 @@ namespace MorsePreferences
   extern uint8_t echoRepeats;
   extern uint8_t echoDisplay;
   extern uint8_t kochFilter;
-  extern boolean wordDoubler;
+  //extern boolean wordDoubler;
+  extern uint8_t wordDoubler;
   extern uint8_t echoToneShift;
   extern boolean echoConf;
   extern uint8_t keyTrainerMode;
@@ -68,6 +69,9 @@ namespace MorsePreferences
   extern uint8_t randomFile;
   extern boolean lcwoKochSeq;
   extern boolean cwacKochSeq;
+  extern boolean licwKochSeq;
+  extern uint8_t carouselStart;
+  extern uint8_t kochCharsLength;
   extern boolean extAudioOnDecode;
   extern uint8_t timeOut;
   extern boolean quickStart;
@@ -126,7 +130,7 @@ namespace MorsePreferences
                   posRandomLength, posCallLength, posAbbrevLength, posWordLength,
                   posTrainerDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,
                   posKeyTrainerMode, posLoraTrainerMode, posGoertzelBandwidth, posSpeedAdapt,
-                  posKochSeq, posKochFilter, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, 
+                  posKochSeq, posCarouselStart, posKochFilter, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut,  
                   posQuickStart, posAutoStop,posMaxSequence, posLoraSyncW,   posSerialOut,
                   posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
                 };
@@ -174,7 +178,8 @@ namespace MorsePreferences
   void createKochWords(uint8_t maxl, uint8_t koch);
   uint8_t wordIsKoch(String thisWord);
   void createKochAbbr(uint8_t maxl, uint8_t koch);
-  void setKochChars(boolean lcwo);
+  //void setKochChars(boolean lcwo);
+  //uint8_t setupLICWkochChars();
   void setCustomChars(String);
   void kochSetup();
   void loraSystemSetup();
@@ -222,6 +227,7 @@ namespace internal {
   void displayGoertzelBandwidth();
   void displaySpeedAdapt();
   void displayKochSeq();
+  void displayCarouselStart();
   void displayExtAudioOnDecode();
   void displayTimeOut();
   void displayQuickStart();
@@ -242,19 +248,22 @@ class Koch {
     uint16_t abbrIndices[Abbrev::ABBREV_NUMBER_OF_ELEMENTS];
     uint16_t numberOfAbbr;
     String kochCharSet;
-    const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNE@:";
-    const String cwacKochChars =      "teanois14rhdl25ucmw36?fypg79/bvkj80=xqz.,-K+ASNE@:";
+    String licwKochChars;
+    const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNEB@:";
+    const String cwacKochChars =      "teanois14rhdl25ucmw36?fypg79/bvkj80=xqz.,-K+ASNEB@:";
+    //uint8_t kochCharsLength;
     void createWords(uint8_t, uint8_t);
     void createAbbr(uint8_t, uint8_t);
     uint8_t wordIsKoch(String);
 
-    uint8_t adaptiveProbabilities[kochCharsLength];
+    uint8_t adaptiveProbabilities[51];
     String initSequence;
     uint8_t initSequenceIndex;
 
   public:
-    const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAE@:";
-
+    const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAEB@:";
+    const String licwAllKochChars =   "reatinpgslcdhofuwbkmy59,qxv73?+K=16.zj/28B40-ASNE@:";
+    
     Koch();
     void setup();
     String getNewChar();
@@ -265,7 +274,8 @@ class Koch {
     String getCharSet();
     String getRandomCharSet();
     String getInitChar(int);
-    void setKochChars(boolean, boolean);
+    void setKochChars(boolean, boolean, boolean);
+    uint8_t setupLICWkochChars(uint8_t);
     void setCustomChars(String chars);
     int16_t getProbabilitySum();
     void increaseWordProbability(String& expected, String& received);
@@ -273,6 +283,7 @@ class Koch {
     void increaseCharProbability(char c, uint8_t count);
     void decreaseWordProbability(String& word);
     void decreaseCharProbability(char c);
+    uint8_t adjustForCarousel(uint8_t offset);
 };
 
 extern Koch koch;

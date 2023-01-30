@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v4.4 August 2022
+v4.5 January 2023
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -52,7 +52,7 @@ image::M32_layout.jpg[Where are the connectors and controls]
 |Connect this to your transmitter or transceiver if you would like to key them with this device. Only the tip and sleeve are being used.
 
 |2
-|.5mm Phone Jack (4 poles): Audio In / Line Out
+|3.5mm Phone Jack (4 poles): Audio In / Line Out
 |**Audio input** for the CW decoder; connect the audio output of a receiver for decoding CW signals. **Audio output** (pretty close to a pure sine wave) that is not influenced by setting the loudspeaker volume. The assignments to the jack are as follows: Tip and 1st ring - audio in; 2nd ring: ground; sleeve: audio out.
 
 |3
@@ -231,7 +231,7 @@ The Heltec module has electronics on board for charging the battery, and it it p
 
 The standard version of the Morserino-32 comes with a pre-configured frequency within the 433 MHz Amateur and ISM band (ISM only in ITU Region 1). **If this fits your requirements, you have nothing to do at this stage.**
 
-If your regulations do not allow the use of this frequency, you can buy a version of the M32 that supports LoRa bands between 860 and 925 Mhz. **In this case you have to configure the correct band and frequency before you are going to use the LoRa functionality of the M32.**
+If your regulations do not allow the use of this frequency, you need to get a Heltec mpodule (version 2.0 for 1st edition, 2.1 for 2nd edition) that supports LoRa bands between 860 and 925 Mhz. **In this case you have to configure the correct band and frequency before you are going to use the LoRa functionality of the M32.**
 
 [WARNING]
 ====
@@ -402,7 +402,7 @@ The ARRL and some Morse code training programs use something they call *"Farnswo
 
 `Length Abbrev` and `Length Words`: The length of common CW abbreviations or common English words, respectively, that will be generated. Choose between 2 and 6, or Unlimited.
 
-`Each Word 2x`: Each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear.
+`Each Word 2x`: Each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear (ON). If an increased space between the characters has been selected ("Farnsworth Spacing"), the repetition can also be generated with a smaller space (ON less ICS) or without Farnsworth Spacing (ON true WpM).
 
 For the less frequently used parameters `Key ext TX` , `CW Gen Displ` and `Send via LoRa` see the section <<parameters>>.
 
@@ -437,6 +437,7 @@ The following pro signs are recognized:
 ** `<kn>`
 ** `<sk>`
 ** `<ve>`
+** `<bk>`
 ====
 
 There are two more "special characters", formed in the same way like pro signs, that are recognized while playing a file:
@@ -544,11 +545,14 @@ The order of the characters learned has not been strictly defined by Koch, and t
 | 21 | , (comma) | 46 | KN  (Pro Sign)
 | 22 | g | 47 | KA (Pro Sign)
 | 23 | 5 | 48 | VE (Pro Sign)
-| 24 | / | 49 | @
-| 25 | q | 50 | : (Colon)
+| 24 | / | 49 | BK (Pro Sign)
+| 25 | q | 50 | @
+|   |  | 51 | : (Colon)
 |===
 
-There is also an option to select the sequence of characters. In addition to the native sequence of characters, you can choose  the sequence that is used by the popular on-line training tool "Learn CW On-line" (LCWO), or also the sequence the CW Ops CW Academy courses are using. This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
+	There is also an option to select the sequence of characters. In addition to the native sequence of characters, you can choose  the sequence that is used by the popular on-line training tool "Learn CW On-line" (LCWO), or the sequence the CW Ops CW Academy courses are using, or the order of "Carousel" curriculum of the Long Island CW (LICW) Club. This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
+
+	In the case of attending a course with LICW, you should also set the parameter "LICW Carousel" according to your entry point into their curriculum (eg. if you start a course within BC1 - Basic Course 1 - with the characters p, g and s, set this pareameter to "BC1: p g s". All further characters you are going to learn in BC1 will be reflected in the same order as your Koch lessons in teh Morserino. Once you have finished BC1, you will enroll in BC2, say beginning with characters 7, 3 and ?, and so you should now set this parameter to "BC2: 7 3 ?".)
 
 The sequence of characters when "LCWO" is chosen is as follows:
 
@@ -558,10 +562,13 @@ And the CW Academy sequence of characters is this:
 
 t e a n o i s 1 4 r h d l 2 5 u c m w 3 6 ? f y p g 7 9 / b v k j 8 0 = x q z . , - SK AR(+) KA AS KN VE @ :
 
+The sequence of the LICW courses is as follows:
+r e a t i n p s g l c d h o f u w b k m y 5 9 , q x v 7 3 ? + SK = 1 6 . Z J / 2 8 BK 4 0
+
 
 ===== Koch: Train with a customized set of characters
 
-You can also use the Koch Trainer to train your specific character set:  You upload a text file for the file player that contains the characters you want to train (as one „word“ or several, in one line or more), and then set the parameter 'Koch Sequence' to the new option „Custom Chars“. This reads the characters from the file. Now you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use exactly those characters for your training (the setting of the Koch lesson has no influence at this point). If you want to change the character set, upload a new text file, and re-select the option „Custom Chars“ (even if it had been selected before), to prepare the new character set (if you just upload a new text file, the custom character set will not change - you have to go into parameters and re-select „Custom Chars“ again; this is a feature, not a bug: it means you can switch between training your characters, and using a (different) text file for file player …). Setting „Koch Sequence“ to M32, LCWO or CW Academy will revert to the „normal“ Koch trainer option.
+You can also use the Koch Trainer to train your specific character set:  You upload a text file for the file player that contains the characters you want to train (as one „word“ or several, in one line or more), and then set the parameter 'Koch Sequence' to the new option „Custom Chars“. This reads the characters from the file. Now you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use exactly those characters for your training (the setting of the Koch lesson has no influence at this point). If you want to change the character set, upload a new text file, and re-select the option „Custom Chars“ (even if it had been selected before), to prepare the new character set (if you just upload a new text file, the custom character set will not change - you have to go into parameters and re-select „Custom Chars“ again; this is a feature, not a bug: it means you can switch between training your characters, and using a (different) text file for file player …). Setting „Koch Sequence“ to M32, LCWO, LICW or CW Academy will revert to the „normal“ Koch trainer option.
 
 ==== Koch: Learn New Chr
 
@@ -656,7 +663,7 @@ and as standard frequency within that band on 434.150 MHz (within 70cm Amateur b
 
 If for whatever reason you cannot use this frequency (maybe because of band plans, regulatory reasons etc.), you can change the frequency on the standard LoRa Module between 433.65 and 434.55 MHz in steps of 100 kHz.
 
-Should you require a LoRa frequency either around 868 MHz or around 920 MHz, the kit can be shipped with Heltec modules that support this higher frequency range (it is also possible to buy such a Heltec module later on). In that case, you MUST configure your Morserino to use the correct band and frequency.
+Should you require a LoRa frequency either around 868 MHz or around 920 MHz, you need to get a Heltec module that support this higher frequency range. In that case, you MUST configure your Morserino to use the correct band and frequency.
 
 **See <<appendix1_1>> at the end of this document** to learn how you can configure LoRa for modules that support the 868 and 929 MHz bands, and how to change the LoRa frequency settings.
 
@@ -889,7 +896,7 @@ Bold values are standard or recommended ones. When called from the start menu, a
 | Length Words | Select the maximum length of the randomly generated common English words | Unlimited / max. 2 -- max. 6
 | Max # of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause  and wait - with a touch of a paddle (or clicking the black knob) it will continue and generate the next sequence of  words. (When "Auto Stop" is active, this parameter will be ignored in CW Generator modus.) | **Unlimited** / 5 to 250 in steps of 5
 | CW Gen Displ | Select, how the CW Generator, or the LoRa or CW Transceiver should display what is generated or received | Display off / **Char by Char** / Word by word
-| Each Word 2x | In the CW Trainer modus, each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear. This option and the option 'Stop/Next/Rep' are not compatible with each other, setting one to ON, will set the other to OFF automatically.| **Off** / On
+| Each Word 2x | In the CW Generator modus, each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear. This option and the option 'Stop/Next/Rep' are not compatible with each other, setting one to ON, will set the other to OFF automatically. There are three ON settings: normal (if an increased inter-character space has been set, it will also be honoured during the repetition;  ON less ICS: the additional inter-character space will be reduced during the repetition; ON true WpM: the increased inter-character space will be ignored during the repetition.| **OFF** / ON / ON (less ICS) / ON (true WpM)
 | Randomize File | If set to „On“, file player will skip n words after each word sent (n = random number between 0 and 255) |  **Off** / On
 |Echo Repeats    |Here you can set how often a word is repeated if the answer is either too late or incorrect before the Echo Trainer generates a new word. If the value is 0, then the next word is always a new one, regardless of whether the response was right or wrong.     | 0 -- 6 / Forever
 |Echo Prompt    | This defines how you are prompted in Echo Trainer mode. The possible settings are: „Sound only“ (default; the standard behavior in previous versions; best for learning to copy in your head), „Display only“ (the word you are supposed to enter is shown on the screen, no audible code is generated; good for training paddle input), and „Sound & Display“, i.e you hear the prompt AND you can see it on the display.               | **Sound only** / Display only / Sound&Displ
@@ -900,7 +907,8 @@ Be aware that you must have an antenna connected when you transmit via LoRa, oth
 | LoRa Channel | Selects which virtual channel LoRa is using. | **Standard Ch** / Secondary Ch
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frequency = ca 700 Hz) | **Wide** / Narrow
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response in Echo Trainer modus, and will be decreased by 1 whenever you made a mistake. | ON / **OFF**
-| Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. You can also use your customized character set by choosing Custom Chars - see the section  <<koch>>, the last paragraph. | **M32 / JLMC** (Just Learn Morse Code) / Custom Chars  / CW Academy /  LCWO
+| Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. You can also use your customized character set by choosing Custom Chars - see the section  <<koch>>, the last paragraph. | **M32 / JLMC** (Just Learn Morse Code) / LICW Carousel / LCWO / Custom Chars  / CW Academy /
+| LICW Carousel | This defines the "Entry Point" into the LICW Carousel curriculum (only relevant if the paramter "Koch Sequence" is set to "LICW Carousel"). When you start a course in BC1, you should set this accordingly, and also set it again when you join the carousel classes for BC2. | **BC1: r e a** / BC1: t i n / BB1: p g s  / BC1: l c d / BC1: h o f / BC1: u w b / BC2: k m y / BC2: 5 9 , / BC2: q x v / BC2: 7 3 ? / BC2: ar sk = / BC2: 1 6 . / BC2: z j / / BC2: 2 8 bk / BC2: 4 0
 | Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modi, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this parameter set to „ON“, the audio is also sent to the external audio I/O port. | On / **Off**
 | Time Out | If the time specified in this parameter passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min
 | Quick Start | Allows you to bypass the initial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**

@@ -49,7 +49,8 @@ Preferences pref;               // use the Preferences library for storing and r
 
   uint8_t MorsePreferences::echoRepeats = 3;                  // how often will echo trainer repeat an erroniously entered word? 0 - 7, 7=forever, default = 3
   uint8_t MorsePreferences::echoDisplay = 1;                  //  1 = CODE_ONLY 2 = DISP_ONLY 3 = CODE_AND_DISP
-  boolean MorsePreferences::wordDoubler = false;              // in CW trainer mode only, repeat each word
+  //boolean MorsePreferences::wordDoubler = false;              // in CW trainer mode only, repeat each word
+  uint8_t MorsePreferences::wordDoubler = 0;
   uint8_t MorsePreferences::echoToneShift = 1;                // 0 = no shift, 1 = up, 2 = down (a half tone)                   0 - 2
   boolean MorsePreferences::echoConf = true;                  // true if echo trainer confirms audibly too, not just visually
   uint8_t MorsePreferences::keyTrainerMode = 1;               // key a transmitter in generator and player mode?
@@ -64,6 +65,9 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::kochFilter = 5;                   // constrain output to characters learned according to Koch's method 2 - 50 (45??)
   boolean MorsePreferences::lcwoKochSeq = false;              // if true, replace native sequence with LCWO sequence 
   boolean MorsePreferences::cwacKochSeq = false;              // if true, replace native sequence with CWops CW Academy sequence 
+  boolean MorsePreferences::licwKochSeq = false;              // if true, replace native sequence with LICW Carousel sequence 
+  uint8_t MorsePreferences::carouselStart = 0;                // Offset for LICW Carousel
+  uint8_t MorsePreferences::kochCharsLength = 52;             // # of chars for Koch training
   boolean MorsePreferences::useCustomCharSet = false;         // if true, use Koch trainer with custom character set (imported from file)  
   String  MorsePreferences::customCharSet = "";               // a place to store the custom character set
 
@@ -132,7 +136,7 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                               "Length Rnd Gr", "Length Calls ", "Length Abbrev", "Length Words ", 
                               "CW Gen Displ ", "Each Word 2x ", "Echo Prompt  ", "Echo Repeats ", "Confrm. Tone ", 
                               "Key ext TX   ", "Generator Tx ", "Bandwidth    ", "Adaptv. Speed", 
-                              "Koch Sequence", "Koch         ", "Latency      ", "Randomize File", "Decoded on I/O",
+                              "Koch Sequence", "LICW Carousel", "Koch         ", "Latency      ", "Randomize File", "Decoded on I/O",
                               "Time Out     ", "Quick Start  ", "Stop/Next/Rep", "Max # of Words", "LoRa Channel  ", "Serial Output", 
                               "LoRa Band    ",  "LoRa Frequ   ", "RECALLSnapshot", "STORE Snapshot",
                               "Calibrate Batt", "Hardware Conf"};                   
@@ -152,10 +156,10 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                                     posQuickStart, posSerialOut };
  prefPos MorsePreferences::kochGenOptions[] =    {posClicks, posPitch, posExtPaddles, posInterWordSpace, posInterCharSpace, 
                                     posRandomLength,  posAbbrevLength, posWordLength, posMaxSequence,  posAutoStop,
-                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posKochSeq, posTimeOut, posQuickStart, posSerialOut };
+                                    posTrainerDisplay, posWordDoubler, posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posKochSeq, posCarouselStart, posTimeOut, posQuickStart, posSerialOut };
  prefPos MorsePreferences::kochEchoOptions[] =   {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posInterWordSpace, posInterCharSpace, 
-                                    posRandomLength, posAbbrevLength, posWordLength, posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posSpeedAdapt, posKochSeq, posTimeOut, 
+                                    posRandomLength, posAbbrevLength, posWordLength, posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posSpeedAdapt, posKochSeq, posCarouselStart, posTimeOut, 
                                     posQuickStart, posSerialOut };
  prefPos MorsePreferences::loraTrxOptions[] =    {posClicks, posPitch, posExtPaddles, posPolarity, posLatency, posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
                                     posEchoToneShift, posTrainerDisplay, posKeyTrainerMode, posExtAudioOnDecode, posTimeOut, posQuickStart, posLoraSyncW, posSerialOut };
@@ -170,7 +174,7 @@ const String MorsePreferences::prefOption[] = { "Encoder Click", "Tone Pitch Hz"
                                     posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption, 
                                     posRandomLength, posCallLength, posAbbrevLength, posWordLength, posMaxSequence, posAutoStop, 
                                     posTrainerDisplay, posRandomFile, posWordDoubler, posEchoRepeats, posEchoDisplay, posEchoConf, 
-                                    posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posGoertzelBandwidth, posSpeedAdapt, posKochSeq, 
+                                    posKeyTrainerMode, posLoraTrainerMode, posLoraSyncW, posGoertzelBandwidth, posSpeedAdapt, posKochSeq, posCarouselStart,
                                     posExtAudioOnDecode, posTimeOut, posQuickStart, posSerialOut};
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
@@ -357,6 +361,8 @@ void MorsePreferences::displayKeyerPreferencesMenu(int pos) {
     case posRandomFile:   internal::displayRandomFile();
                           break;
     case posKochSeq:      internal::displayKochSeq();
+                          break;
+    case posCarouselStart: internal::displayCarouselStart();
                           break;
     case posExtAudioOnDecode:
                           internal::displayExtAudioOnDecode();
@@ -623,7 +629,6 @@ void internal::displayEchoConf() {
 void internal::displayKochFilter() {                          // const String kochChars 
     String str;
     str.reserve(6);
-    //str = (String) kochChars.charAt(MorsePreferences::kochFilter - 1);
     str = koch.getNewChar();
     cleanUpProSigns(str);
     sprintf(numBuffer, "%2i %s   ", MorsePreferences::kochFilter, str.c_str());
@@ -632,9 +637,21 @@ void internal::displayKochFilter() {                          // const String ko
 
 
 void internal::displayWordDoubler() {
-  MorseOutput::printOnScroll(2, REGULAR, 1,  MorsePreferences::wordDoubler ? "On  " :
-                                                "Off " ); 
+  String str;
+  str.reserve(13);
+  switch(MorsePreferences::wordDoubler) {
+    case 0: str = "OFF          ";
+            break;
+    case 1: str = "ON           ";
+            break;
+    case 2: str = "ON (less ICS)";
+            break;
+    case 3: str = "ON (true WpM)";
+            break;
+  }
+  MorseOutput::printOnScroll(2, REGULAR, 1, str);
 }
+               
 
 void internal::displayRandomFile() {
     MorseOutput::printOnScroll(2, REGULAR, 1,  MorsePreferences::randomFile ? "On  " :
@@ -661,14 +678,55 @@ void internal::displayKochSeq() {
       String s;
       s.reserve(12);
       if (MorsePreferences::useCustomCharSet)
-        s = "Custom Chars";
+        s = "Custom Chars ";
       else if (MorsePreferences::lcwoKochSeq)
-        s = "LCWO        ";
+        s = "LCWO         ";
       else if (MorsePreferences::cwacKochSeq)
-        s = "CW Academy  ";
+        s = "CW Academy   ";
+      else if (MorsePreferences::licwKochSeq)
+        s = "LICW Carousel";
       else
-        s = "M32 / JLMC  ";
+        s = "M32 / JLMC   ";
       MorseOutput::printOnScroll(2, REGULAR, 1, s);
+}
+
+void internal::displayCarouselStart() {
+    String CarouselStartValue;
+    CarouselStartValue.reserve(13);
+    
+    switch (MorsePreferences::carouselStart) {
+          case 0: CarouselStartValue     =  "BC1: r e a  ";
+                  break;
+          case 1: CarouselStartValue     =  "BC1: t i n  ";
+                  break;
+          case 2: CarouselStartValue     =  "BC1: p g s  ";
+                  break;
+          case 3: CarouselStartValue     =  "BC1: l c d  ";
+                  break;
+          case 4: CarouselStartValue     =  "BC1: h o f  ";
+                  break;
+          case 5: CarouselStartValue     =  "BC1: u w b  ";
+                  break;
+          case 6: CarouselStartValue     =  "BC2: k m y  ";
+                  break;
+          case 7: CarouselStartValue     =  "BC2: 5 9 ,  ";
+                  break;
+          case 8: CarouselStartValue     =  "BC2: q x v  ";
+                  break;
+          case 9: CarouselStartValue     =  "BC2: 7 3 ?   ";
+                  break;
+          case 10: CarouselStartValue     = "BC2: ar sk =";
+                  break;
+          case 11: CarouselStartValue     = "BC2: 1 6 .  ";
+                  break; 
+          case 12: CarouselStartValue     = "BC2: z j /  ";
+                  break;
+          case 13: CarouselStartValue     = "BC2: 2 8 bk ";
+                  break;
+          case 14: CarouselStartValue     = "BC2: 4 0    ";
+                  break;                                
+      }
+      MorseOutput::printOnScroll(2, REGULAR, 1, CarouselStartValue);
 }
 
 void internal::displayExtAudioOnDecode() {
@@ -795,7 +853,8 @@ void internal::displayHwConf() {
   MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
 
-//// function to addjust the selected preference
+
+//// function to adjust the selected preference
 
 boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotating the encoder changes the value, click returns to preferences menu
      //MorseOutput::printOnScroll(1, REGULAR, 0, " ");       /// returns true when a long button press ended it, and false when there was a short click
@@ -873,9 +932,16 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                 internal::displayInterCharSpace();                                           
                                 updateTimings();
                                 break;                                                               
-                case  posKochFilter: MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter + t, 1, kochCharsLength);
-                                internal::displayKochFilter();
-                                break;
+                case  posKochFilter: if (MorsePreferences::licwKochSeq) {
+                                        MorsePreferences::kochCharsLength = koch.setupLICWkochChars(MorsePreferences::carouselStart);
+                                        MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter + t, (kochCharsLength > 18 ? 19 : 1), kochCharsLength);
+                                      }
+                                      else {
+                                        MorsePreferences::kochCharsLength = 52;
+                                        MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter + t, 1, 51);
+                                      }
+                                      internal::displayKochFilter();
+                                      break;
 
                 case  posRandomOption : MorsePreferences::randomOption = (MorsePreferences::randomOption + t + 10) % 10;     // which char set for random chars?
                                 internal::displayRandomOption();
@@ -948,12 +1014,15 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                 MorsePreferences::echoToneShift = constrain(MorsePreferences::echoToneShift-1, 0, 2);
                                 internal::displayEchoToneShift();
                                 break;
-                case  posWordDoubler: MorsePreferences::wordDoubler = !MorsePreferences::wordDoubler;
-                                if (MorsePreferences::wordDoubler) {
+                case  posWordDoubler: MorsePreferences::wordDoubler += (t+1);                                 // can be 0 (= False = OFF), 1 (SLOW), 2 (Faster) or 3 (Fastest)
+                                MorsePreferences::wordDoubler = constrain(MorsePreferences::wordDoubler-1, 0, 3);
+                                //MorsePreferences::wordDoubler = !MorsePreferences::wordDoubler;
+                                if (MorsePreferences::wordDoubler != 0) {
                                   MorsePreferences::autoStopMode = false;
                                   cleanStartSettings();
                                 }
                                 internal::displayWordDoubler();
+                                updateTimings();
                                 break;
                 case posAutoStop: MorsePreferences::autoStopMode = !MorsePreferences::autoStopMode;
                                 if (MorsePreferences::autoStopMode)
@@ -985,30 +1054,31 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case  posSpeedAdapt: MorsePreferences::speedAdapt = !MorsePreferences::speedAdapt;
                                 internal::displaySpeedAdapt();
                                 break; 
-                case posKochSeq:  seq = ( MorsePreferences::lcwoKochSeq ? 1 : (MorsePreferences::cwacKochSeq ? 2 :  (MorsePreferences::useCustomCharSet ? 3 : 0 )));
-                                  seq = (seq+2+t) % 4;
-                                  MorsePreferences::lcwoKochSeq = MorsePreferences::cwacKochSeq = MorsePreferences::useCustomCharSet = false;
+                case posKochSeq:  seq = ( MorsePreferences::lcwoKochSeq ? 1 : (MorsePreferences::cwacKochSeq ? 2 :  (MorsePreferences::licwKochSeq ? 3 : (MorsePreferences::useCustomCharSet ? 4 : 0 ) )));
+                                  seq = (seq+2+t) % 5;
+                                  MorsePreferences::lcwoKochSeq = MorsePreferences::cwacKochSeq = MorsePreferences::licwKochSeq = MorsePreferences::useCustomCharSet = false;
+                                  MorsePreferences::kochCharsLength = 51;
+                                  MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, 0, kochCharsLength);
                                   switch (seq) {
                                     case 1: MorsePreferences::lcwoKochSeq = true;
                                             break;
                                     case 2: MorsePreferences::cwacKochSeq = true;
                                             break;
-                                    case 3: MorsePreferences::useCustomCharSet = true;
+                                    case 3: MorsePreferences::licwKochSeq = true;
+                                            MorsePreferences::kochCharsLength = koch.setupLICWkochChars(MorsePreferences::carouselStart);
+                                            MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, (kochCharsLength > 18 ? 0 : 18), kochCharsLength);
+                                            //DEBUG("l: " + String(MorsePreferences::kochCharsLength) + " filter: " + MorsePreferences::kochFilter);
                                             break;
+                                    case 4: MorsePreferences::useCustomCharSet = true;
                                     default: break;
                                   }
-                
-//                  if ( MorsePreferences::useCustomCharSet) {
-//                                    MorsePreferences::useCustomCharSet = false;
-//                                    MorsePreferences::lcwoKochSeq = false;
-//                                  } 
-//                                  else if (MorsePreferences::lcwoKochSeq) {
-//                                    MorsePreferences::useCustomCharSet = true;
-//                                  }
-//                                  else
-//                                    MorsePreferences::lcwoKochSeq = true;
-
                                   internal::displayKochSeq();
+                                  break;
+                case posCarouselStart: MorsePreferences::carouselStart = constrain(MorsePreferences::carouselStart+t, 0, 14);
+                                  MorsePreferences::kochCharsLength = koch.setupLICWkochChars(MorsePreferences::carouselStart);
+                                  MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, (kochCharsLength > 18 ? 0 : 18), kochCharsLength);
+                                  //DEBUG("l: " + String(MorsePreferences::kochCharsLength) + " filter: " + MorsePreferences::kochFilter);
+                                  internal::displayCarouselStart();
                                   break;
                 case posExtAudioOnDecode:
                                   MorsePreferences::extAudioOnDecode = !MorsePreferences::extAudioOnDecode;
@@ -1052,8 +1122,6 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                 case posSnapRecall: 
                                   if (memCounter) {
                                       memPtr = (memPtr +t + memCounter + 1) % (memCounter+1);
-                                      //memPtr += (t+1);
-                                      //memPtr = constrain(memPtr-1, 0, memCounter);
                                   }
                                   internal::displaySnapRecall();
                                   break;
@@ -1274,13 +1342,28 @@ void MorsePreferences::readPreferences(String repository) {
     else if (morserino)
         pref.putUChar("loraSyncW", MorsePreferences::loraSyncW);
 
+    if ((temp = pref.getUChar("carouselStart")))
+       MorsePreferences::carouselStart = temp;
+    else if (morserino)
+       pref.putUChar("carouselStart", MorsePreferences::carouselStart);
+
+    if ((temp = pref.getUChar("kochCharsLength")))
+       MorsePreferences::kochCharsLength = temp;
+    else if (morserino)
+       pref.putUChar("kochCharsLength", MorsePreferences::kochCharsLength);
+
+    if ((temp = pref.getUChar("wordDoubler")))
+       MorsePreferences::wordDoubler = temp;
+    else if (morserino)
+       pref.putUChar("wordDoubler", MorsePreferences::wordDoubler);
+
     MorsePreferences::maxSequence = pref.getUChar("maxSequence");
         
     MorsePreferences::didah = pref.getBool("didah", true);
     MorsePreferences::reversePolarity = pref.getBool("useExtPaddle");
     MorsePreferences::encoderClicks = pref.getBool("encoderClicks", true);
     MorsePreferences::echoConf = pref.getBool("echoConf", true);
-    MorsePreferences::wordDoubler = pref.getBool("wordDoubler");
+    //MorsePreferences::wordDoubler = pref.getBool("wordDoubler");
     MorsePreferences::speedAdapt  = pref.getBool("speedAdapt");
     MorsePreferences::extAudioOnDecode = pref.getBool("extAudioOnDecode");
 
@@ -1300,6 +1383,8 @@ void MorsePreferences::readPreferences(String repository) {
 
     MorsePreferences::cwacKochSeq = pref.getBool("cwacKochSeq");
     MorsePreferences::lcwoKochSeq = pref.getBool("lcwoKochSeq");
+    MorsePreferences::licwKochSeq = pref.getBool("licwKochSeq");
+    
     MorsePreferences::useCustomCharSet = pref.getBool("useCustomChar");
     MorsePreferences::customCharSet = pref.getString("customCharSet", "");
     MorsePreferences::quickStart = pref.getBool("quickStart");
@@ -1392,7 +1477,7 @@ void MorsePreferences::writePreferences(String repository) {
     if (MorsePreferences::lcwoKochSeq != pref.getBool("lcwoKochSeq")) {
           pref.putBool("lcwoKochSeq", MorsePreferences::lcwoKochSeq);
           if (morserino) {
-            koch.setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
+            koch.setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq, MorsePreferences::licwKochSeq);
             if (!MorsePreferences::useCustomCharSet)
                 koch.setup();
           }
@@ -1401,14 +1486,34 @@ void MorsePreferences::writePreferences(String repository) {
     if (MorsePreferences::cwacKochSeq != pref.getBool("cwacKochSeq")) {
           pref.putBool("cwacKochSeq", MorsePreferences::cwacKochSeq);
           if (morserino) {
-            koch.setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
+            koch.setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq, MorsePreferences::licwKochSeq);
             if (!MorsePreferences::useCustomCharSet)
                 koch.setup();
           }
     }
+
+    if (MorsePreferences::licwKochSeq != pref.getBool("licwKochSeq")) {
+          pref.putBool("licwKochSeq", MorsePreferences::licwKochSeq);
+          if (morserino) {
+            koch.setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq, MorsePreferences::licwKochSeq);
+            if (!MorsePreferences::useCustomCharSet)
+                koch.setup();
+          }
+    }
+
+    if (MorsePreferences::carouselStart != pref.getUChar("carouselStart")) {
+        pref.putUChar("carouselStart", MorsePreferences::carouselStart);
+        koch.setup();
+    }
     
-    if (MorsePreferences::wordDoubler != pref.getBool("wordDoubler"))
-        pref.putBool("wordDoubler", MorsePreferences::wordDoubler);
+    if (MorsePreferences::kochCharsLength != pref.getUChar("kochCharsLength")) {
+        pref.putUChar("kochCharsLength", MorsePreferences::kochCharsLength);
+        koch.setup();
+    }
+
+
+    if (MorsePreferences::wordDoubler != pref.getUChar("wordDoubler"))
+        pref.putUChar("wordDoubler", MorsePreferences::wordDoubler);
     if (MorsePreferences::speedAdapt != pref.getBool("speedAdapt"))
         pref.putBool("speedAdapt", MorsePreferences::speedAdapt);
     if (MorsePreferences::loraTrainerMode != pref.getUChar("loraTrainerMode"))
@@ -1737,7 +1842,7 @@ void Koch::createWords(uint8_t maxl, uint8_t koch) {                  // this fu
   numberOfWords = 0;
   //DEBUG("koch: " + String(koch));
   for (int i = EnglishWords::WORDS_POINTER[maxl]; i< EnglishWords::WORDS_NUMBER_OF_ELEMENTS; ++i) {     // do this for all words with max length maxl
-      if (wordIsKoch(EnglishWords::words[i]) < koch) {
+      if (wordIsKoch(EnglishWords::words[i]) <= koch) {
           wordIndices[numberOfWords++] = i;
       }
   }
@@ -1747,7 +1852,7 @@ void Koch::createAbbr(uint8_t maxl, uint8_t koch) {                  // this fun
   numberOfAbbr = 0;
   
   for (int i = Abbrev::ABBREV_POINTER[maxl]; i< Abbrev::ABBREV_NUMBER_OF_ELEMENTS; ++i) {     // do this for all words with max length maxl
-      if (wordIsKoch(Abbrev::abbreviations[i]) < koch)
+      if (wordIsKoch(Abbrev::abbreviations[i]) <= koch)
           abbrIndices[numberOfAbbr++] = i;
   }
 }
@@ -1757,14 +1862,16 @@ uint8_t Koch::wordIsKoch(String thisWord) {   /// returns the highest Koch seque
   int index;
   uint8_t l = thisWord.length();
   String charSet;
-  charSet.reserve(51);
+  charSet.reserve(52);
   
   charSet = MorsePreferences::useCustomCharSet ? MorsePreferences::customCharSet : kochCharSet;
+  //DEBUG("set: " + charSet + " word: " + thisWord);
   for ( int i = 0; i< l; ++i) {
     index = charSet.indexOf(thisWord.charAt(i))+1;
     if (index == 0) 
       index = kochCharsLength + 1;
     thisKoch = _max(thisKoch, index);
+    //DEBUG("thisKoch: " + String(thisKoch));
   }
   return thisKoch;
 }
@@ -1774,7 +1881,7 @@ void Koch::setup() {                                                // create th
   if (MorsePreferences::useCustomCharSet)
     setCustomChars(MorsePreferences::customCharSet);
   else
-    setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq);
+    setKochChars(MorsePreferences::lcwoKochSeq, MorsePreferences::cwacKochSeq, MorsePreferences::licwKochSeq);
    
   //// populate the array for abbreviations and words according to length and Koch filter
   createWords(MorsePreferences::wordLength, MorsePreferences::useCustomCharSet ? kochCharsLength+1 : MorsePreferences::kochFilter) ;  // 
@@ -1798,13 +1905,41 @@ void Koch::setup() {                                                // create th
   initSequenceIndex = 0;
 }
 
-void Koch::setKochChars(boolean lcwo, boolean cwac) {             // define the demanded Koch character set
+void Koch::setKochChars(boolean lcwo, boolean cwac, boolean licw) { // define the demanded Koch character set
     if (lcwo)
       kochCharSet = lcwoKochChars;
     else if (cwac)
       kochCharSet = cwacKochChars;
+    else if (licw) {
+      setupLICWkochChars(MorsePreferences::carouselStart);
+      kochCharSet = licwKochChars;
+    }
     else 
       kochCharSet = morserinoKochChars;
+}
+
+
+
+uint8_t Koch::setupLICWkochChars(uint8_t start) {                              // set up the string of characters used for LICW carousel Koch training, return length
+    // depends on: carouselStart
+    //uint8_t start = MorsePreferences::carouselStart;
+    uint8_t l;
+    String temp;
+    temp.reserve(43);
+    if (start < 6)      // BC 1
+      {
+        temp = licwAllKochChars.substring(3*start,18) + (start > 0 ? licwAllKochChars.substring(0, 3*start) : "");
+        l = 18;
+      }
+      else              // BC 2
+      {
+        temp = licwAllKochChars.substring(0,18) + licwAllKochChars.substring(3*start,44) +
+                        (start > 6 ? licwAllKochChars.substring(18, 3*start) : "");
+        l = 44;
+      }
+    // DEBUG("Start: " + String(start) + "licwKochChars: " + temp);
+    licwKochChars = temp;
+    return l;
 }
 
 void Koch::setCustomChars(String chars) {          // define the custom character set
@@ -1898,7 +2033,7 @@ String Koch::getInitChar(int maxl)
   {
     result += initSequence.charAt(initSequenceIndex);
     initSequenceIndex++;
-  }
+        }
 
   return result;
 }
@@ -1947,7 +2082,7 @@ int Koch::getFailedCharIndex(String& expected, String& received)
   {
     if (i >= received.length())
       return i;
-
+          
     if (expected.charAt(i) != received.charAt(i))
       return i;
   }
