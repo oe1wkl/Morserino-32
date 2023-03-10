@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v4.5 January 2023
+v4.5.1 March 2023
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -737,7 +737,7 @@ If you press the RED button, the Morserino-32 will restart normally. if you do n
 
 ==== Network Configuration
 
-Select the sub-menu "WiFi Config" to proceed with network configuration.
+Select the sub-menu **"WiFi Config"** to proceed with network configuration.
 
 The device will start WiFi as an *access point*, thus creating its own WiFi Network (with the SSID "morserino"). If you check the available networks with your computer or smartphone, you will find it easily; please select this network on your computer (or tablet, or smartphone -- you will not need a password to connect).
 
@@ -754,9 +754,9 @@ IMPORTANT: Your Morserino cannot make use of a WiFi network with a "captive port
 IMPORTANT: Your Morserino-32 only supports WiFi networks in the 2.4 GHz band, not in the 5 GHz band. It also sometimes seems to have problems with Apple Airport routers.
 
 
-TIP: If you have configured your WiFi before, and perform this step again, the previously entered SSID name will be pre-filled in the form, and you only need to change it if necessary. The password field will be empty, but if you do not enter a new one, the old password will still be stored. The TRX Peer IP address field will also be pre-filled with a value if you have entered one before. If you now delete the values in this field, this IP address will be deleted.
+TIP: If you have configured your WiFi before, and perform this step again, the previously entered SSID name will be pre-filled in the form, and you only need to change it if necessary. The password field will be empty, but if you do not enter a new one, the old password will still be used. The TRX Peer IP address field will also be pre-filled with a value if you have entered one before. If you now delete the values in this field, this IP address will be deleted.
 
-TIP: You can configure three different network settings; but the network configurations will also be stored in Snapshots, this means you can also use snapshots to recall many more different network settings.
+TIP: You can configure three different network settings; from version 4.5.1 on  the network configurations will not be stored in Snapshots, this means you cannot use snapshots to recall different network settings.
 
 ==== Checking your network connectivity
 Use the sub-menu entry "Check WiFi" under "WiFi Functions" to test network connectivity.
@@ -839,7 +839,7 @@ For different types of training you usually need different settings of the param
 
 In order to make this easier, you can use "snapshots" of the settings: once you have changed everything for your first mode of training, you store all current parameters in one of eight snapshots; then you do the same with your other training modes. You can then quickly recall the settings by recalling a particular snapshot.
 
-TIP: The "Koch Lesson" that you selected will be stored in non-volatile storage and hence will be available after a restart, but it will not be stored or overwritten in one of the snapshots.
+TIP: The "Koch Lesson" that you selected will be stored in non-volatile storage and hence will be available after a restart, but it will not be stored or overwritten in one of the snapshots. The same is true for WiFi settings, the "Serial Out" parameter, or your setting of speed and speaker volume.
 
 ==== Storing a snapshot
 
@@ -913,9 +913,7 @@ Be aware that you must have an antenna connected when you transmit via LoRa, oth
 | Time Out | If the time specified in this parameter passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min
 | Quick Start | Allows you to bypass the initial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically. | ON / **OFF**
-| Serial Output | Here you control, if generated characters from the Keyer and/or decoded characters from the Decoder should be output on the USB connector. With the setting "ERRORS only" only certain debugging messages will be output (these only when no other option has been selected).
-
-The option "Everything" displays both keyed and decoded characters, and also all output generated in CW Generator or Echo Trainer.  See also <<appendix5>>.| Keyer / Decoder / Keyer+Decoder / **Everything** (default since 4.3) / ERRORS only
+| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the recevier side of LoRa or WiFi Transceiver modes). "Nothing" sends out none of these characters (but certain system or error messages might still appear), while "All" send out everything. See also <<appendix5>>.| Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since 4.3)
 |===
 
 == Appendices

@@ -16,7 +16,7 @@ extern byte treeptr;
 extern boolean lastWasKey;
 extern boolean speedChanged;
 
-extern void displayMorse(String, boolean);
+extern void displayDecodedMorse(String, boolean);
 extern void cwForTx (int);
 extern void sendWithLora();
 extern void sendWithWifi();

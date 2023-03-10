@@ -16,6 +16,38 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.5.1
+
+#### Bug Fix(es):
+* In the mode „Transceiver / iCW/Ext Trx“ the external transmitter (connected to connector 1, marked as X1_Key on PCB) was not keyed. Fixed.
+
+#### Bug Fix / Feature Modification:
+* The implementation of the „Serial Out“ parameter was buggy (and probably also confusing), and has been simplified. There are now 5 possible settings:
+    * Nothing (certain errors might still be sent to serial port)
+    * Keyed : essentially, what you enter through paddles
+    * Decoded: what you enter through a straight key, or decoded audio
+    * Keyed+Decoded: the previous 2 options combined
+    * Generated: what the Morserino generates (also includes packets received through LoRa or WiFi)
+    * All (= Keyed+Decoded+Generated)
+
+#### Feature Change(s) / Improvements:
+* The WiFi settings, as well as the setting for „Serial Out“, had been stored in (and retrieved from) snapshots. In most cases this just lead to confusions and unpredictable behavior. These settings are now not stored in snapshots, and never changed by recalling a snapshot. Now the following parameters are never overwritten by recalling a snapshot:
+    * WiFi Settings
+    * Serial Out
+    * Koch lesson
+    * Speed
+    * Speaker volume
+
+### Changes V.4.5
+
+#### New Feature(s):
+* Additional Koch character sequence. Thanks to help of Gavin, M0ETA, Morserino now also supports the character sequence used by the Long Island CW Club (LICW) for their new „carousel“ curriculum, including the option to set the beginning for each carousel entry point. To achieve that, set the option „Koch Sequence“ to „LICW Carousel“, and set the option „LICW Carousel“ to the appropriate starting sequence (there is an option for each LICW lesson for BC1 and BC2 to be used as entry point).
+* The pro sign <BK> is now also supported.
+* Additional options for word doubler (in CW Generator and File Player): there are now 3 different options for switching this on. The difference is, if the repetition is played with an increased inter-character speed (ICS). Which effectively gives you Farnsworth spacing): ON (same ICS), ON (less ICS) and ON (true WpM). ON (same ICS) works the same way as in the past, I.e. the Inter-character space that had been set is also used for the repetition. ON (true WpM) plays the repetition without additional inter-character space, i.e. play the repetition at true WpM. ON (less ICS) reduces the additional inter-character space to half its value, i.e. plays the repetition at slightly higher effective WpM. This should help the transition from Farnsworth spacing to actual spacing.
+
+#### Bug Fix(es):
+* In „Koch / Learn New Character“ blanks were disappearing when the screen scrolled up. Fixed.
+
 ### Changes V.4.4.1
 
 #### Improvements:

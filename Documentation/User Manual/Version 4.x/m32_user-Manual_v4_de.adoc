@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v4.5 Januar 2023
+v4.5.1 März 2023
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -728,7 +728,7 @@ Wenn man die ROTE Taste drückt, startet der Morserino-32  neu. Wenn man nichts 
 
 ==== Netzwerkkonfiguration
 
-Wähl das Untermenü "WiFi Config", um die Netzwerkkonfiguration durchzuführen.
+Wähl das Untermenü **"WiFi Config"**, um die Netzwerkkonfiguration durchzuführen.
 
 Das Gerät startet WLAN als **Access Point** und erstellt so ein eigenes WLAN-Netzwerk (mit der SSID "morserino"). Wenn man die verfügbaren Netzwerke mit dem Computer oder Smartphone überprüft, kann man es leicht finden; bitte verwenden dieses Netzwerk auf deinem PC (oder  Tablett oder  Smartphone  -- du benötigst kein Passwort zur Verbindung).
 
@@ -746,7 +746,7 @@ IMPORTANT: Der Morserino-32 unterstützt nur 2.4 GHz WLANs, und keine im 5 GHz B
 
 TIP: Wenn man sein WLAN bereits konfiguriert hat und diesen Schritt erneut ausführt, wird der zuvor eingegebene SSID-Name im Formular vorab angezeigt, und man muss ihn nur bei Bedarf ändern. Das Passwortfeld ist leer, aber wenn man kein neues Passwort eingibt, bleibt das alte Passwort weiterhin gespeichert. Das Feld "TRX Peer IP-Address" wird ebenfalls mit einem Wert angezeigt, falls man zuvor einen eingegeben hat. Wenn man die Werte in diesem Feld löscht, wird diese IP-Adresse gelöscht.
 
-TIP: Man kann  bis zu drei Netzwerkkonfigurationen eingeben;  eie Netzwerkkonfigurationen werden aber auch in den Snapshots gespeichert, so dass man insgesamt sehr viel mehr verschiedene Netzwerkkonfigurationen verwenden kann.
+TIP: Man kann  bis zu drei Netzwerkkonfigurationen eingeben;  ab version 4.5.1 werden die Netzwerkkonfigurationen nicht mehr in den Snapshots gespeichert, so dass man diese nicht zum Speichern verschiedener Netzwerkkonfigurationen verwenden kann.
 
 ==== Überprüfen der Netzwerkkonnektivität
 Verwende  den Untermenüpunkt "Check WiFi" unter "WiFi Functions", um die Netzwerkverbindung zu testen.
@@ -832,7 +832,7 @@ Für verschiedene Trainingsarten benötigt man in der Regel unterschiedliche Ein
 
 Um dies zu erleichtern, kann man "Schnappschüsse" der Einstellungen verwenden: Nachdem  alles für die ersten Trainingsart eingestellt wurde, speichert man alle aktuellen Parameter in einem von acht ""Snapshots"; dann macht man dasselbe mit den anderen Trainingsarten. Man kann die Einstellungen dann schnell abrufen, indem man einen bestimmten Snapshot zurück holt.
 
-TIP: Die eingestellte "Koch-Lektion" wird auch im nichtflüchtigen Speicher abgelegt und steht somit nach einem Neustart zur Verfügung, wird aber nicht in den Snapshots gespeichert oder von einem Snapshot überschrieben.
+TIP: Die eingestellte "Koch-Lektion" wird auch im nichtflüchtigen Speicher abgelegt und steht somit nach einem Neustart zur Verfügung, wird aber nicht in den Snapshots gespeichert oder von einem Snapshot überschrieben. Dies gilt auch für die WLAN Ei nstellungen, den "Serial Out" parameter, oder die Einstellungen von Geschwindigkeit und Lautstärke.
 
 ==== Speichern eines Snapshots
 
@@ -906,9 +906,7 @@ Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da so
 | Time Out | Wenn die in diesem Parameter angegebene Zeit ohne Aktualisierung der Anzeige vergeht, geht das Gerät in den Tiefschlafmodus. Man kann es durch Drücken der ROTEN Taste neu starten. | No timeout (kein Timeout)/ **5 min** / 10 min / 15 min
 | Quick Start | Ermöglicht es (gesetzt auf ON), die anfängliche Menüauswahl zu umgehen, d.h. das Gerät beginnt beim Start sofort mit der Ausführung des Modus, der vor dem letzten Ausschalten wirksam war. | ON / **OFF**
 | Stop/Next/Rep | Wenn auf ON gestellt, stoppt die Erzeugung von Morsezeichen nach jedem Wort im CW-Generator-Modus (oder Koch Generator Modus), um das Erlernen des Gehörlesens zu erleichtern. Nach Berühren des rechten Paddels wird das nächste Wort abgespielt, und durch Berühren des linken Paddles wird das Wort wiederholt. Diese Option und die Option 'Each Word 2x' sind nicht miteinander kompatibel; setzt man die eine auf ON, wird die andere automatisch auf OFF gesetzt.| ON / **OFF**
-| Serial Output | Damit wird eingestellt, ob am USB Anschluss die generierten Zeichen des Keyers bzw. die dekodierten Zeichen des Decoders ausgegeben werden sollen. Bei der Einstellung "ERRORS only" werden nur gewisse Fehlermeldungen dort ausgegeben (diese allerdings nur wenn keine der anderen Optionen gewählt wurde).
-
-Die Option "Everything" zeigt sowohl gegebene als auch dekodierte Zeichen, sowie alle im CW Generator oder Echo Trainer generierten Ausgaben an. Siehe auch <<appendix5>>. | Keyer / Decoder / Keyer+Decoder  / **Everything** (Default seit 4.3) / ERRORS only
+| Serial Output | Damit wird gesteuert, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; es wird zwischen Zeichen vom Iambic-Keyer, decodierten Zeichen (vom CW-Decoder oder einer Handtaste) und "generierten" Zeichen (vom CW-Generator usw., auch von der Empfängerseite des LoRa- oder WiFi-Transceiver-Modus) unterschieden. "Nothing" sendet keines dieser Zeichen (aber bestimmte System- oder Fehlermeldungen können trotzdem erscheinen), während "All" alles sendet. Siehe auch <<appendix5>>. |  Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default seit 4.3)
 |===
 
 == Anhänge

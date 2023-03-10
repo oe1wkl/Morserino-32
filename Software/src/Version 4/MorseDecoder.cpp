@@ -103,7 +103,7 @@ void Decoder::decode() {
                               if (d_wpm > 35) lacktime = 2.4;
                                 else if (d_wpm > 30) lacktime = 2.3;
                               if (lowDuration > (lacktime * ditAvg)) {
-                                displayMorse(myTable.retrieveSymbol(), !fromKey);       //displayMorse(!fromKey);    /////////////////////////!!! decode the morse character and display it
+                                displayDecodedMorse(myTable.retrieveSymbol(), false);       //displayDecodedMorse(!fromKey);    /////////////////////////!!! decode the morse character and display it
                                 wpm = (d_wpm + (int) (7200 / (dahAvg + 3*ditAvg))) / 2;     //// recalculate speed in wpm
                                 if (d_wpm != wpm) {
                                   d_wpm = wpm;
@@ -127,7 +127,7 @@ void Decoder::decode() {
                                 else if (d_wpm > 30) lacktime = 5.5;
                                 else if (morseState == echoTrainer) lacktime = MorsePreferences::interWordSpace + 1;
                               if (lowDuration > (lacktime * ditAvg)) {
-                                   displayMorse(myTable.retrieveSymbol(), !fromKey);            ////////end of word////////// !!!!!   
+                                   displayDecodedMorse(myTable.retrieveSymbol(), false);            ////////end of word////////// !!!!!   
                                    decoderState = LOW_;
                                    if (morseState == echoTrainer && echoTrainerState == COMPLETE_ANSWER)   {       // change the state of the trainer at end of word in case of echo trainer
                                        echoTrainerState = EVAL_ANSWER;

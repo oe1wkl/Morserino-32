@@ -78,7 +78,7 @@ Preferences pref;               // use the Preferences library for storing and r
   uint8_t MorsePreferences::loraSyncW = 0x27;                 // allows to set different LoRa sync words, and so creating virtual "channels"
   uint8_t MorsePreferences::maxSequence = 0;                  // max # of words generated before the Morserino pauses
 
-  uint8_t MorsePreferences::serialOut = 7;                    // shall we output characters on USB serial? 0 = none (but DEBUG/ERR) 1 = keyer, 2 = decoder, 3 = both, 7 = everything
+  uint8_t MorsePreferences::serialOut = 5;                    // shall we output characters on USB serial? 
 
   ///// stored in preferences, but not adjustable through preferences menu:
   uint8_t MorsePreferences::responsePause = 5;                // in echoTrainer mode, how long do we wait for response? in interWordSpaces; 2-12, default 5
@@ -763,20 +763,25 @@ void internal::displayAutoStop() {
 
 void internal::displaySerialOut() {
       String option;
+      DEBUG(String(MorsePreferences::serialOut));
       switch (MorsePreferences::serialOut) {
-          case 0: option = "ERRORS only  ";
+          case 0: option = "Nothing      ";
                   break;
-          case 1: option = "Keyer        ";
+          case 1: option = "Keyed        ";
                   break;
-          case 2: option = "Decoder      ";
+          case 2: option = "Decoded      ";
                   break;
-          case 3: option = "Keyer+Decoder";
+          case 3: option = "Keyed+Decoded";
                   break;
-          case 7: option = "Everything   ";
+          case 4: option = "Generated    ";
+                  break;
+          case 5: option = "All          ";
                   break;
       }
       MorseOutput::printOnScroll(2, REGULAR, 1, option);
 }
+
+
 
 void internal::displayVAdjust() {
   volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * 12.9));   // recalculate millivolts for new adjustment
@@ -971,12 +976,8 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                 internal::displayWordLength();
                                 break;
                 case  posSerialOut:
-                                MorsePreferences::serialOut = (MorsePreferences::serialOut + t + 8) % 8;                      // what to output on USB serial
-                                if (MorsePreferences::serialOut == 6)
-                                    MorsePreferences::serialOut = 3;
-                                else if (MorsePreferences::serialOut == 4)
-                                    MorsePreferences::serialOut = 7;
-                                
+                                MorsePreferences::serialOut += (t+1);
+                                MorsePreferences::serialOut = constrain(MorsePreferences::serialOut-1,0,5);
                                 internal::displaySerialOut();
                                 break;
                 case  posMaxSequence: 
@@ -1166,7 +1167,7 @@ void MorsePreferences::readPreferences(String repository) {
  
   /// new code for reading preferences values - we check if we have a value, and if yes, we use it; if no, we use and write a default value
 
-    if (morserino) {
+  if (morserino) {                             // the following parameters are never changed by snapshots!
       if ((temp = pref.getUChar("version_major")) != MorsePreferences::version_major)
          pref.putUChar("version_major", MorsePreferences::version_major);
       if ((temp = pref.getUChar("version_minor")) != MorsePreferences::version_minor)
@@ -1197,6 +1198,27 @@ void MorsePreferences::readPreferences(String repository) {
       }  // end: we have snapshots
       
       MorsePreferences::fileWordPointer = pref.getUInt("fileWordPtr"); // do not read fileWordPointer from other snapshots! we never write anything there!
+
+      MorsePreferences::wlanSSID = pref.getString("wlanSSID");
+      MorsePreferences::wlanPassword = pref.getString("wlanPassword");
+      MorsePreferences::wlanTRXPeer = pref.getString("wlanTRXPeer", "");
+  
+      MorsePreferences::wlanSSID1 = pref.getString("wlanSSID1");
+      MorsePreferences::wlanPassword1 = pref.getString("wlanPassword1");
+      MorsePreferences::wlanTRXPeer1 = pref.getString("wlanTRXPeer1", "");
+      MorsePreferences::wlanSSID2 = pref.getString("wlanSSID2");
+      MorsePreferences::wlanPassword2 = pref.getString("wlanPassword2");
+      MorsePreferences::wlanTRXPeer2 = pref.getString("wlanTRXPeer2", "");
+      MorsePreferences::wlanSSID3 = pref.getString("wlanSSID3");
+      MorsePreferences::wlanPassword3 = pref.getString("wlanPassword3");
+      MorsePreferences::wlanTRXPeer3 = pref.getString("wlanTRXPeer3", "");
+
+      if ((temp = pref.getUChar("serialOut", 255)) != 255)
+        MorsePreferences::serialOut = temp;
+      else 
+        pref.putUChar("serialOut", MorsePreferences::serialOut);
+
+
     }  // endif morserino
 
      //board version 4: at this stage we leave it at 0 if not set otherwise, but change it at setup()
@@ -1265,11 +1287,6 @@ void MorsePreferences::readPreferences(String repository) {
        MorsePreferences::wordLength = temp;
     else if (morserino)
        pref.putUChar("wordLength", MorsePreferences::wordLength);
-
-    if ((temp = pref.getUChar("serialOut", 255)) != 255)
-      MorsePreferences::serialOut = temp;
-    else if (morserino)
-      pref.putUChar("serialOut", MorsePreferences::serialOut);
 
     if ((temp = pref.getUChar("trainerDisplay", 255)) != 255)
        MorsePreferences::trainerDisplay = temp;
@@ -1367,20 +1384,7 @@ void MorsePreferences::readPreferences(String repository) {
     MorsePreferences::speedAdapt  = pref.getBool("speedAdapt");
     MorsePreferences::extAudioOnDecode = pref.getBool("extAudioOnDecode");
 
-    MorsePreferences::wlanSSID = pref.getString("wlanSSID");
-    MorsePreferences::wlanPassword = pref.getString("wlanPassword");
-    MorsePreferences::wlanTRXPeer = pref.getString("wlanTRXPeer", "");
-
-    MorsePreferences::wlanSSID1 = pref.getString("wlanSSID1");
-    MorsePreferences::wlanPassword1 = pref.getString("wlanPassword1");
-    MorsePreferences::wlanTRXPeer1 = pref.getString("wlanTRXPeer1", "");
-    MorsePreferences::wlanSSID2 = pref.getString("wlanSSID2");
-    MorsePreferences::wlanPassword2 = pref.getString("wlanPassword2");
-    MorsePreferences::wlanTRXPeer2 = pref.getString("wlanTRXPeer2", "");
-    MorsePreferences::wlanSSID3 = pref.getString("wlanSSID3");
-    MorsePreferences::wlanPassword3 = pref.getString("wlanPassword3");
-    MorsePreferences::wlanTRXPeer3 = pref.getString("wlanTRXPeer3", "");
-
+    
     MorsePreferences::cwacKochSeq = pref.getBool("cwacKochSeq");
     MorsePreferences::lcwoKochSeq = pref.getBool("lcwoKochSeq");
     MorsePreferences::licwKochSeq = pref.getBool("licwKochSeq");
@@ -1441,8 +1445,7 @@ void MorsePreferences::writePreferences(String repository) {
         if (morserino)
           koch.setup();
     }
-    if (MorsePreferences::serialOut != pref.getUChar("serialOut"))
-        pref.putUChar("serialOut", MorsePreferences::serialOut);
+
     if (MorsePreferences::trainerDisplay != pref.getUChar("trainerDisplay"))
         pref.putUChar("trainerDisplay", MorsePreferences::trainerDisplay);
     if (MorsePreferences::echoDisplay != pref.getUChar("echoDisplay"))
@@ -1465,13 +1468,6 @@ void MorsePreferences::writePreferences(String repository) {
     if (MorsePreferences::customCharSet != pref.getString("customCharSet")) {
         pref.putString("customCharSet", MorsePreferences::customCharSet);
         koch.setup();
-    }
-    if (morserino) {
-        if (MorsePreferences::kochFilter != pref.getUChar("kochFilter")) {
-            pref.putUChar("kochFilter", MorsePreferences::kochFilter);
-            if (!MorsePreferences::useCustomCharSet)                          // we update these only if we do not use a custom character set!
-              koch.setup();
-        }
     }
     
     if (MorsePreferences::lcwoKochSeq != pref.getBool("lcwoKochSeq")) {
@@ -1546,40 +1542,51 @@ void MorsePreferences::writePreferences(String repository) {
     if (MorsePreferences::snapShots != pref.getUChar("snapShots"))
         pref.putUChar("snapShots", MorsePreferences::snapShots);
 
-    if (MorsePreferences::wlanSSID != pref.getString("wlanSSID"))
-        pref.putString("wlanSSID", MorsePreferences::wlanSSID);
-    if (MorsePreferences::wlanPassword != pref.getString("wlanPassword"))
-        pref.putString("wlanPassword", MorsePreferences::wlanPassword);
-    if (MorsePreferences::wlanTRXPeer != pref.getString("wlanTRXPeer"))
-        pref.putString("wlanTRXPeer", MorsePreferences::wlanTRXPeer);
-
-    if (MorsePreferences::wlanSSID1 != pref.getString("wlanSSID1"))
-        pref.putString("wlanSSID1", MorsePreferences::wlanSSID1);
-    if (MorsePreferences::wlanPassword1 != pref.getString("wlanPassword1"))
-        pref.putString("wlanPassword1", MorsePreferences::wlanPassword1);
-    if (MorsePreferences::wlanTRXPeer1 != pref.getString("wlanTRXPeer1"))
-        pref.putString("wlanTRXPeer1", MorsePreferences::wlanTRXPeer1);
-
-    if (MorsePreferences::wlanSSID2 != pref.getString("wlanSSID2"))
-        pref.putString("wlanSSID2", MorsePreferences::wlanSSID2);
-    if (MorsePreferences::wlanPassword2 != pref.getString("wlanPassword2"))
-        pref.putString("wlanPassword2", MorsePreferences::wlanPassword2);
-    if (MorsePreferences::wlanTRXPeer2 != pref.getString("wlanTRXPeer2"))
-        pref.putString("wlanTRXPeer2", MorsePreferences::wlanTRXPeer2);
-
-    if (MorsePreferences::wlanSSID3 != pref.getString("wlanSSID3"))
-        pref.putString("wlanSSID3", MorsePreferences::wlanSSID3);
-    if (MorsePreferences::wlanPassword3 != pref.getString("wlanPassword3"))
-        pref.putString("wlanPassword3", MorsePreferences::wlanPassword3);
-    if (MorsePreferences::wlanTRXPeer3 != pref.getString("wlanTRXPeer3"))
-        pref.putString("wlanTRXPeer3", MorsePreferences::wlanTRXPeer3);
-
     if (! morserino)  {
         pref.putUChar("lastExecuted", MorsePreferences::menuPtr);   // store last executed command in snapshots
 
-     if (morserino) {
+/// the following not stored into snapshots
+
+
+    if (morserino) {           
         pref.putUChar("brightness", MorsePreferences::oledBrightness);  // if not snapshots, store current screen brightness
-     }
+        
+        if (MorsePreferences::serialOut != pref.getUChar("serialOut"))
+            pref.putUChar("serialOut", MorsePreferences::serialOut);
+
+        if (MorsePreferences::kochFilter != pref.getUChar("kochFilter")) {
+            pref.putUChar("kochFilter", MorsePreferences::kochFilter);
+            if (!MorsePreferences::useCustomCharSet)                          // we update these only if we do not use a custom character set!
+                koch.setup();
+        }
+        if (MorsePreferences::wlanSSID != pref.getString("wlanSSID"))
+            pref.putString("wlanSSID", MorsePreferences::wlanSSID);
+        if (MorsePreferences::wlanPassword != pref.getString("wlanPassword"))
+            pref.putString("wlanPassword", MorsePreferences::wlanPassword);
+        if (MorsePreferences::wlanTRXPeer != pref.getString("wlanTRXPeer"))
+            pref.putString("wlanTRXPeer", MorsePreferences::wlanTRXPeer);
+    
+        if (MorsePreferences::wlanSSID1 != pref.getString("wlanSSID1"))
+            pref.putString("wlanSSID1", MorsePreferences::wlanSSID1);
+        if (MorsePreferences::wlanPassword1 != pref.getString("wlanPassword1"))
+            pref.putString("wlanPassword1", MorsePreferences::wlanPassword1);
+        if (MorsePreferences::wlanTRXPeer1 != pref.getString("wlanTRXPeer1"))
+            pref.putString("wlanTRXPeer1", MorsePreferences::wlanTRXPeer1);
+    
+        if (MorsePreferences::wlanSSID2 != pref.getString("wlanSSID2"))
+            pref.putString("wlanSSID2", MorsePreferences::wlanSSID2);
+        if (MorsePreferences::wlanPassword2 != pref.getString("wlanPassword2"))
+            pref.putString("wlanPassword2", MorsePreferences::wlanPassword2);
+        if (MorsePreferences::wlanTRXPeer2 != pref.getString("wlanTRXPeer2"))
+            pref.putString("wlanTRXPeer2", MorsePreferences::wlanTRXPeer2);
+    
+        if (MorsePreferences::wlanSSID3 != pref.getString("wlanSSID3"))
+            pref.putString("wlanSSID3", MorsePreferences::wlanSSID3);
+        if (MorsePreferences::wlanPassword3 != pref.getString("wlanPassword3"))
+            pref.putString("wlanPassword3", MorsePreferences::wlanPassword3);
+        if (MorsePreferences::wlanTRXPeer3 != pref.getString("wlanTRXPeer3"))
+            pref.putString("wlanTRXPeer3", MorsePreferences::wlanTRXPeer3);
+     }  //// end if (morserino)
     }
 
 
@@ -1705,7 +1712,7 @@ void MorsePreferences::loraSystemSetup() {
 /////// System Setup / Battery Measurement Calibration  /////// called from system config (black knob at start-up)
 void MorsePreferences::calibrateVoltageMeasurement() {
   //voltage_raw = volt / 19.2 * MorsePreferences::vAdjust;
-  DEBUG("v_raw: " + String(voltage_raw));
+  // DEBUG("v_raw: " + String(voltage_raw));
   MorsePreferences::displayKeyerPreferencesMenu(MorsePreferences::posVAdjust);
   MorsePreferences::adjustKeyerPreference(MorsePreferences::posVAdjust);
   pref.begin("morserino", false);             // open the namespace as read/write
