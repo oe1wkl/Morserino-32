@@ -16,6 +16,11 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.4.5.2
+
+#### Bug Fix(es):
+* Through a stupid mistake of mine, a nasty bug was introduced into 4.5.1: a few vital bits of information were not written into non-volatile storage, and therefore not preserved through a power-off or re-boot. The information affected by the bug is the selected **Koch lesson**, and **WiFi information**. This has been fixed in this maintenance release. <b>It might mean that you need to update from 4.5.1. by USB</b>, unless you had a WiFi setup with a previous version!
+
 ### Changes V.4.5.1
 
 #### Bug Fix(es):

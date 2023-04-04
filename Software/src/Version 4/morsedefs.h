@@ -34,7 +34,7 @@ const String PROJECTNAME = "Morserino-32";
 
 #define VERSION_MAJOR 4
 #define VERSION_MINOR 5
-#define VERSION_PATCH 1
+#define VERSION_PATCH 2
 
 #define BETA false
 

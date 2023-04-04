@@ -763,7 +763,6 @@ void internal::displayAutoStop() {
 
 void internal::displaySerialOut() {
       String option;
-      DEBUG(String(MorsePreferences::serialOut));
       switch (MorsePreferences::serialOut) {
           case 0: option = "Nothing      ";
                   break;
@@ -1156,7 +1155,6 @@ void MorsePreferences::readPreferences(String repository) {
     morserino = true;
 
   repository.toCharArray(repName, l);
-  // DEBUG("Reading from repository: " + String(repName));
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
@@ -1173,12 +1171,10 @@ void MorsePreferences::readPreferences(String repository) {
       if ((temp = pref.getUChar("version_minor")) != MorsePreferences::version_minor)
          pref.putUChar("version_minor", MorsePreferences::version_minor);
  
-      if ((temp = pref.getUChar("kochFilter")))
+      if ((temp = pref.getUChar("kochFilter"))) 
          MorsePreferences::kochFilter = temp;
       else 
          pref.putUChar("kochFilter", MorsePreferences::kochFilter);
-
-
       if (temp = pref.getUChar("vAdjust"))
         MorsePreferences::vAdjust = temp;
         
@@ -1382,7 +1378,7 @@ void MorsePreferences::readPreferences(String repository) {
     MorsePreferences::echoConf = pref.getBool("echoConf", true);
     //MorsePreferences::wordDoubler = pref.getBool("wordDoubler");
     MorsePreferences::speedAdapt  = pref.getBool("speedAdapt");
-    MorsePreferences::extAudioOnDecode = pref.getBool("extAudioOnDecode");
+    MorsePreferences::extAudioOnDecode = pref.getBool("extAudioOnDecod");
 
     
     MorsePreferences::cwacKochSeq = pref.getBool("cwacKochSeq");
@@ -1407,12 +1403,10 @@ void MorsePreferences::writePreferences(String repository) {
   boolean morserino = false;
   
   if (repository == "morserino")
-    morserino = true;
-//DEBUG("Writing to repository: " + repository);
+      morserino = true;
   repository.toCharArray(repName, l);
 
   pref.begin(repName, false);                // open namespace in read/write mode
- 
     if (MorsePreferences::sidetoneFreq != pref.getUChar("sidetoneFreq"))
         pref.putUChar("sidetoneFreq", MorsePreferences::sidetoneFreq);    
     if (MorsePreferences::didah != pref.getBool("didah"))
@@ -1544,11 +1538,11 @@ void MorsePreferences::writePreferences(String repository) {
 
     if (! morserino)  {
         pref.putUChar("lastExecuted", MorsePreferences::menuPtr);   // store last executed command in snapshots
-
+    }
 /// the following not stored into snapshots
 
 
-    if (morserino) {           
+    if (morserino) {  
         pref.putUChar("brightness", MorsePreferences::oledBrightness);  // if not snapshots, store current screen brightness
         
         if (MorsePreferences::serialOut != pref.getUChar("serialOut"))
@@ -1559,6 +1553,7 @@ void MorsePreferences::writePreferences(String repository) {
             if (!MorsePreferences::useCustomCharSet)                          // we update these only if we do not use a custom character set!
                 koch.setup();
         }
+
         if (MorsePreferences::wlanSSID != pref.getString("wlanSSID"))
             pref.putString("wlanSSID", MorsePreferences::wlanSSID);
         if (MorsePreferences::wlanPassword != pref.getString("wlanPassword"))
@@ -1587,8 +1582,6 @@ void MorsePreferences::writePreferences(String repository) {
         if (MorsePreferences::wlanTRXPeer3 != pref.getString("wlanTRXPeer3"))
             pref.putString("wlanTRXPeer3", MorsePreferences::wlanTRXPeer3);
      }  //// end if (morserino)
-    }
-
 
   pref.end();
 }
