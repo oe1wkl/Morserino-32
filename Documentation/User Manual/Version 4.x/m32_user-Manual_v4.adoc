@@ -835,7 +835,7 @@ Obviously the parameters that can be set vary depending on the modus you are in:
 
 
 === Snapshots [[snapshots]]
-For different types of training you usually need different settings of the parameters - you might want to change the inter-character- or inter-word spaces, or the length of character groups or words, etc. S going from one type of training to the next would require you to change various settings every time.
+For different types of training you usually need different settings of the parameters - you might want to change the inter-character- or inter-word spaces, or the length of character groups or words, etc. So going from one type of training to the next would require you to change various settings every time.
 
 In order to make this easier, you can use "snapshots" of the settings: once you have changed everything for your first mode of training, you store all current parameters in one of eight snapshots; then you do the same with your other training modes. You can then quickly recall the settings by recalling a particular snapshot.
 
@@ -847,7 +847,8 @@ First, double click to get into the parameter menu. Now a long press of the RED 
 
 ==== Recalling a snapshot
 
-Again, you double click the black knob first to get into the parameters menu. Now a **short** click on the RED button lets you select with the encoder which of the stored snapshots you want to recall, and you recall it by clicking the black encoder button; if there are no snapshots stored, you get a message "NO SNAPSHOTS" and you can leave by clicking any of the buttons.
+Again, you double click the black knob first to get into the parameters menu. Now a **short** click on the RED button lets you select with the encoder which of the stored snapshots you want to recall, and you recall it by clicking the black encoder button; again, there is an option that reads "Cancel Recall", which allows you to get out without recalling a snapshot.
+ If there are no snapshots stored, you get a message "NO SNAPSHOTS" and you can leave by clicking any of the buttons.
 
 ==== Deleting a snapshot
 

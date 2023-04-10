@@ -168,7 +168,7 @@ Um eine Handtaste zu verwenden, kann man entweder den CW-Decoder-Modus benutzen,
 
 TIP: Du kannst die eingebauten kapazitiven Paddles wie einen Sideswiper (Cootie Key) verwenden, wenn der Keyer-Modus Straight Key ist!
 
-=== So ladet man den Akku auf
+=== So lädt man den Akku auf
 Schließe die USB-Stromversorgung an, schalte den Batterieschalter auf ON (I). Die orangefarbene LED leuchtet sehr hell. Wenn die orangefarbene LED dunkel ist, ist der Akku vollständig aufgeladen. leuchtet die orange LED schwach (oder flickert), ist der Akku nicht angeschlossen / nicht eingeschaltet.
 
 
@@ -832,7 +832,7 @@ Für verschiedene Trainingsarten benötigt man in der Regel unterschiedliche Ein
 
 Um dies zu erleichtern, kann man "Schnappschüsse" der Einstellungen verwenden: Nachdem  alles für die ersten Trainingsart eingestellt wurde, speichert man alle aktuellen Parameter in einem von acht ""Snapshots"; dann macht man dasselbe mit den anderen Trainingsarten. Man kann die Einstellungen dann schnell abrufen, indem man einen bestimmten Snapshot zurück holt.
 
-TIP: Die eingestellte "Koch-Lektion" wird auch im nichtflüchtigen Speicher abgelegt und steht somit nach einem Neustart zur Verfügung, wird aber nicht in den Snapshots gespeichert oder von einem Snapshot überschrieben. Dies gilt auch für die WLAN Ei nstellungen, den "Serial Out" parameter, oder die Einstellungen von Geschwindigkeit und Lautstärke.
+TIP: Die eingestellte "Koch-Lektion" wird auch im nichtflüchtigen Speicher abgelegt und steht somit nach einem Neustart zur Verfügung, wird aber nicht in den Snapshots gespeichert oder von einem Snapshot überschrieben. Dies gilt auch für die WLAN Einstellungen, den "Serial Out" Parameter, oder die Einstellungen von Geschwindigkeit und Lautstärke.
 
 ==== Speichern eines Snapshots
 
@@ -840,7 +840,9 @@ Doppelklicke zunächst, um in das Parametermenü zu gelangen. Nun kannst du nach
 
 ==== Abrufen eines Snapshots
 
-Auch hier steigt man mit einem Doppelklick auf den schwarzen Knopf zuerst in das Parametermenü ein. Nun kann man nach einem **kurzen** Klick auf die ROTE Taste mit dem Drehgeber auswählen, welche der gespeicherten Schnappschüsse man abrufen möchte, was mit Klicken auf die schwarze Drehgebertaste erfolgt; wenn keine Schnappschüsse gespeichert sind, erhält man eine Meldung "NO SNAPSHOTS" und man steigt mit einem Druck auf eine beliebige Taste wieder aus.
+Doppelklicke zunächst, um in das Parametermenü zu gelangen. Nun kannst du nach längerem Drücken der ROTEN Taste mit dem Drehgeber wählen, an welcher Stelle  die aktuellen Einstellungen gespeichert werden sollen, von "Snapshot 1" bis "Snapshot 8"; eine weitere Option lautet "Cancel Store" und ermöglicht  das Aussteigen ohne Speichern eines Snapshots. Snapshot-Speicherorte, die bereits in Gebrauch sind, werden in **fett** angezeigt, aber man kann auch diese überschreiben. Ein Klick auf den schwarzen Knopf speichert den Schnappschuss an der gewünschten Stelle und zeigt kurz an, dass gespeichert wurde.
+Auch hier steigt man mit einem Doppelklick auf den schwarzen Knopf zuerst in das Parametermenü ein. Nun kann man nach einem **kurzen** Klick auf die ROTE Taste mit dem Drehgeber auswählen, welche der gespeicherten Schnappschüsse man abrufen möchte, was mit Klicken auf die schwarze Drehgebertaste erfolgt; eine weitere Option lautet "Cancel Recall" und
+ermöglicht  das Aussteigen ohne einen Snapshot abzurufen. Wenn keine Schnappschüsse gespeichert sind, erhält man eine Meldung "NO SNAPSHOTS" und man steigt mit einem Druck auf eine beliebige Taste wieder aus.
 
 ==== Löschen eines Snapshots
 
