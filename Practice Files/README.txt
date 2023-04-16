@@ -27,7 +27,9 @@ RealQSOs.TXT
 
 
 phrases_2_words.txt
+===================
 phrases_3_words.txt
+===================
 phrases_4_words.txt
 ===================
 	These three files make use of commonly used English phrases, 2, 3, or 4 words long,
@@ -38,6 +40,11 @@ phrases_4_words.txt
   	- set the Parameter "Randomize File" to "Off"
   	- play it with CW generator/File Player or Echo Trainer/File Player
 
+schwierigere_woerter_dt.txt
+===========================
 
+	A long list of german words, some quite long ;-) . You might want to use the option "Randomize"...
+
+	Eine lange Liste langer deutscher Wörter ;-) Zum Üben empfiehlt sich die Option "Randomize"
 
 NB: In all cases, you might want to set the option "Each Word 2x" to "On" when using the mode CW Generator - each word will then be played two times.
