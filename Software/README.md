@@ -2,7 +2,9 @@
 
 ## Build Instructions (for Arduino IDE)
 
-It is now quite straightforward to set up an environment to build the Morserino-32 binary code from the source. As we are using now the latest ESP32 libraries from Heltec, and the source of the Clivkbutton library has been included into the source, there is no need to hint for libraries.
+It is now quite straightforward to set up an environment to build the Morserino-32 binary code from the source. As we are using now the latest ESP32 libraries from Heltec, and the source of the Clivkbutton library has been included into the source, there is no need to hunt for libraries.
+
+**NOTICE: As Heltec changed their development environment libraries to accomodate newer products, you might need to set up an environment with their older library versions!**
 
 1. Set up the Arduino IDE from <https://www.arduino.cc/en/Main/Software>.
 
@@ -15,6 +17,29 @@ It is now quite straightforward to set up an environment to build the Morserino-
 5. Load the .ino file into the IDE (the other source files will be loaded automatically as well), and compile (and upload).
 
 ## Change History
+
+### Changes V.5.0
+
+#### Bug fixes:
+
+* `<bk>` was not recognized as pro sign in file player. Fixed.
+* `<err>` was only recognized once in echo Trainer mode, so you could only correct one error within a word. Fixed: it behaves now like a backspace key.
+* Some inconsistencies in displaying snapshot functions and hardware calibration functions. Fixed.
+* Paddle polarity was the opposite as shown in the preferences. Fixed.
+* Touching touch paddles at power-on to get into hardware configuration menu was not very reliable. Hopefully fixed.
+
+#### Feature Modifications / Improvements:
+
+* `\c` or `<c>` marks the begin of a comment in a file player text file - these characters or the word containing one of these and the rest of the line are ignored.
+* The order of parameters in the parameter menu has been changed slightly to make the grouping a bit more logical. The user manual has been changed to make sure the order in the manual is the same as in the M32.
+
+#### New Feature(s):
+
+* Implementation of a serial protocol (see separate documentation on GitHub).
+
+ This allows (through some software on a computer connected through USB) screen or voice output of menus and settings (e.g. making the M32 usable for blind or visually impaired people), and also allows remote control of all Morserino features from the computer (like setting parameters, managing snapshots, changing speed, exiting and entering menus, uploading text files and even automated keying). The protocol is described in a separate document.
+* LoRa output power is now configurable through the Hardware Config Menu, and can be set between 10 and 100 mW (10 - 20 dBm); previously it always used the default of 25 mW (14 dBm). Be aware that some countries have restriction regarding maximal power of LoRa - so check your mileage before changing the default to something higher!
+
 
 ### Changes V.4.5.2
 

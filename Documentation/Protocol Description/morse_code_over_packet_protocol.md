@@ -1,5 +1,9 @@
 # Morse Code Over Packet Protocol (MOPP)
 
+	Date: June 06, 2020
+	Version: 1.0
+	Authors: Willi, OE1WKL
+	
 ## Introduction
 
 In order to send Morse code over either LoRa or over IP, both of which transmit byte strings as packet payloads, we need a protocol to represent Morse code within these byte strings. For the Morserino-32 the following protocol (calles MOPP for short) has been established (which could of course be used by other hardware or software tools).
