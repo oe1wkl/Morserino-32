@@ -1124,16 +1124,18 @@ Nach kurzer Zeit sollte der Morserino-32 neu starten und die aktualisierte Versi
 
 === Anhang 5: Verwenden des seriellen Ausgangs des Morserino-32 [[appendix5]]
 
-Der Morserino-32 kann Daten über die serielle USB-Schnittstelle ausgeben. Hiermit kann man beispielsweise die Zeichen anzeigen, die auf dem Display gezeigt werden, auch in einem Terminalfenster eines Computers anzeigen. Auf diese Weise kann man die Morserino-Ausgabe mit einem großen Bildschirm oder einem Projektor sichtbar machen. Dies kann für Ausstellungen oder auch bei Schulungen nützlich sein.
+Der Morserino-32 ist in der Lage, Daten über die serielle USB-Schnittstelle auszugeben. Damit kann man sich beispielsweise die Zeichen, die auf dem Display angezeigt werden, in einem Terminalfenster eines Computers anzeigen lassen. Auf diese Weise können Sie die Morserino-Ausgabe auf einer großen Leinwand oder einem Projektor zeigen; dies könnte für Präsentationen oder den Einsatz im Klassenzimmer nützlich sein.
 
-Man muss eine Baudrate von 115200 für das Terminal einstellen.
+In Version 5 wurde ein vollständiges Zwei-Weg-Protokoll namens „M32 Serial Protocol“ implementiert. Dies ermöglicht (über eine Software auf einem über USB angeschlossenen Computer) die Bildschirm- oder Sprachausgabe von Menüs und Einstellungen (z.B. um den M32 für blinde oder sehbehinderte Menschen nutzbar zu machen), und ermöglicht auch die Fernsteuerung aller Morserino-Funktionen vom Computer aus (z.B. Einstellungen, Parameter, Ändern von Geschwindigkeit und Lautstärke, Verlassen und Aufrufen von Menüs und sogar automatische CW Generierung). Das Protokoll wird in einem separaten Dokument beschrieben, das auf GitHub verfügbar ist.
 
-Man kann diese Funktion auch in Verbindung mit Computersoftware verwenden, die speziell für den Morserino-32 entwickelt wurde, um dessen Trainingsfunktionen zu verbessern.
+Für den verwendeten seriellen Port des angeschlossenen Computers muss man eine Baudrate von 115200 auswählen.
 
-Derzeit sind zwei Softwareprodukte für diesen Zweck verfügbar:
+Man kann die serielle Kommunikation in Verbindung mit Computersoftware verwenden, die speziell für den Morserino-32 geschrieben wurde, um seine Trainingsfähigkeiten zu verbessern. Derzeit stehen hierfür drei Softwareprodukte zur Verfügung:
 
-* CW Trainer für Morserino von Enzo, IW7DMH (siehe https://iw7dmh.jimdofree.com/other-projects/cw-trainer-for-morserino-32/) und
+* Morserino-32 CW Training von Christof, OE6CHD (siehe https://tegmento.org/; dies läuft auf Chrome-Browsern, auf Mac, Windows und Linux und erfordert keine Installation; es nutzt auch bereits die Funktionen des seriellen Protokolls),
 
-* Morserino Phrases Trainer von Tommy, OZ1THC (siehe https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer).
+* CW Trainer for Morserino by Enzo, IW7DMH (see https://iw7dmh.jimdofree.com/other-projects/cw-trainer-for-morserino-32/), and
 
-Siehe auch die Hinweise zum Parameter "Serial Output" im Kapitel <<parameters>>.
+* Morserino Phrases Trainer by Tommy, OZ1THC (see https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer).
+
+Siehe auch die Beschreibung des Parameters "Serial Output" im Abschnitt <<parameters>>.
