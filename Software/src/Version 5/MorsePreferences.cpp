@@ -120,14 +120,14 @@ parameter MorsePreferences::pliste[] = {
     {"No Tone Shift", "Up 1 Half", "Down 1 Half"}
   },
   {
-    7, 6, 45, 1,                                                // Generator: normal interword spacing in lengths of dit,          6 - 45 ; default = norm = 7
+    7, 6, 105, 1,                                                // Generator: normal interword spacing in lengths of dit,          6 - 45 ; default = norm = 7
     "InterWord Spc",
     "The time (in dits) that is inserted between generated words",
     false,
     {}
   },
   {
-    3, 3, 24, 1,                                                  // for generators: intercharacter space, in dit dit lengths
+    3, 3, 45, 1,                                                  // for generators: intercharacter space, in dit dit lengths
     "Interchar Spc",
     "Space between generated characters, in dits",
     false,
