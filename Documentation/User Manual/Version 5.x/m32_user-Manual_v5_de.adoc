@@ -939,9 +939,9 @@ Die folgenden Parameter steuern, wie Zeichen zufällig generiert und abgespielt 
 |Description
 |Values
 
-| Interchar Spc | Der zeitliche Abstand (als Anzahl von Dits) der zwischen Zeichen eingefügt wird (siehe den Abschnitt <<generator>>) | 3 -- 15 [**3**]
+| Interchar Spc | Der zeitliche Abstand (als Anzahl von Dits) der zwischen Zeichen eingefügt wird (siehe den Abschnitt <<generator>>) | 3 -- 45 [**3**]
 
-| Interword Spc | Der zeitliche Abstand (als Anzahl von Dits) der zwischen Wörtern eingefügt wird (siehe den Abschnitt <<generator>>)   | 6 -- 45 [**7**]
+| Interword Spc | Der zeitliche Abstand (als Anzahl von Dits) der zwischen Wörtern eingefügt wird (siehe den Abschnitt <<generator>>)   | 6 -- 105 [**7**]
 
 | Random Groups | Für die Ausgabe von Gruppen von zufälligen Zeichen legt man hier fest, welche Zeichenuntermengen inkludiert sein sollen. | Alpha (Buchstaben)/ Numerals (Ziffern) / Interpunct. (Satzzeichen) / Pro Signs (Betriebsabk.)/ Alpha + Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / All Chars (Alle)
 

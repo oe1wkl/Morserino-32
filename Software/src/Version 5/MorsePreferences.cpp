@@ -120,14 +120,14 @@ parameter MorsePreferences::pliste[] = {
     {"No Tone Shift", "Up 1 Half", "Down 1 Half"}
   },
   {
-    7, 6, 45, 1,                                                // Generator: normal interword spacing in lengths of dit,          6 - 45 ; default = norm = 7
+    7, 6, 105, 1,                                                // Generator: normal interword spacing in lengths of dit,          6 - 45 ; default = norm = 7
     "InterWord Spc",
     "The time (in dits) that is inserted between generated words",
     false,
     {}
   },
   {
-    3, 3, 24, 1,                                                  // for generators: intercharacter space, in dit dit lengths
+    3, 3, 45, 1,                                                  // for generators: intercharacter space, in dit dit lengths; default = 3
     "Interchar Spc",
     "Space between generated characters, in dits",
     false,
@@ -873,6 +873,7 @@ void MorsePreferences::handleKochSequence() {
               MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = 51;
               MorsePreferences::kochMinimum = 1;
               MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
+              koch.setup();
     }
 }
 
@@ -881,6 +882,7 @@ void MorsePreferences::handleCarouselChange() {
       MorsePreferences::kochMinimum = kochCharsLength > 18 ? 19 : 1;
 //DEBUG("@ 842: kMin: " + String(MorsePreferences::kochMinimum) + " kMax: " + String(MorsePreferences::kochMaximum));
       MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
+      koch.setup();
 }
 
 
@@ -1139,6 +1141,8 @@ void MorsePreferences::writePreferences(String repository) {
             }     // end of "special cases"
       }           // end of "stored value is different"
   }               // end of "for all these preferences"
+  updateTimings();
+
   pref.end();
 // DEBUG("end l. 1087");
 }
@@ -1446,7 +1450,9 @@ Koch::Koch() {
 
 void Koch::createWords(uint8_t maxl, uint8_t koch) {                  // this function creates an array of words that are compliant to Koch filter and max word length
   numberOfWords = 0;
+  //DEBUG("ptr: " + String(maxl));
   //DEBUG("koch: " + String(koch));
+  maxl = (maxl == 0 ? 0 : maxl+1);
   for (int i = EnglishWords::WORDS_POINTER[maxl]; i< EnglishWords::WORDS_NUMBER_OF_ELEMENTS; ++i) {     // do this for all words with max length maxl
       if (wordIsKoch(EnglishWords::words[i]) <= koch) {
           wordIndices[numberOfWords++] = i;
@@ -1456,8 +1462,11 @@ void Koch::createWords(uint8_t maxl, uint8_t koch) {                  // this fu
 
 void Koch::createAbbr(uint8_t maxl, uint8_t koch) {                  // this function creates an array of abbrevs that are compliant to Koch filter and max word length
   numberOfAbbr = 0;
+  maxl = (maxl == 0 ? 0 : maxl+1);
 
+  //DEBUG("ptr: " + String(maxl));
   for (int i = Abbrev::ABBREV_POINTER[maxl]; i< Abbrev::ABBREV_NUMBER_OF_ELEMENTS; ++i) {     // do this for all words with max length maxl
+    DEBUG(Abbrev::abbreviations[i]);
       if (wordIsKoch(Abbrev::abbreviations[i]) <= koch)
           abbrIndices[numberOfAbbr++] = i;
   }

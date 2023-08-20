@@ -178,7 +178,7 @@ namespace MorsePreferences
   void handleKochSequence();
   void handleCarouselChange();
   void setCustomChars(String);
-  void kochSetup();
+  //void kochSetup();
   void loraSystemSetup();
   void determineBoardVersion();
   void calibrateVoltageMeasurement();

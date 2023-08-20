@@ -35,13 +35,13 @@ const String PROJECTNAME = "Morserino-32";
 
 #define VERSION_MAJOR 5
 #define VERSION_MINOR 0
-#define VERSION_PATCH 0
+#define VERSION_PATCH 1
 
 #define BETA false
 
 // using the M32 serial protocol
 
-//define M32Protocol version 
+//define M32Protocol version updateTimings()
 #define M32P_VERSION "1.0"
 
 /////// protocol version for Lora - for the time being this is B01

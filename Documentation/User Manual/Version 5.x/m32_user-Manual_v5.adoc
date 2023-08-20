@@ -940,9 +940,9 @@ The following parameters control how characters are generated and played randoml
 |Description
 |Values
 
-| Interchar Spc | The time (in lengths of a dit) that is inserted between characters (see section <<generator>> ) | 3 -- 15 [**3**]
+| Interchar Spc | The time (in lengths of a dit) that is inserted between characters (see section <<generator>> ) | 3 -- 45 [**3**]
 
-| Interword Spc | The time (in lengths of a dit) that is inserted between words (see section <<generator>> )    | 6 -- 45 [**7**]
+| Interword Spc | The time (in lengths of a dit) that is inserted between words (see section <<generator>> )    | 6 -- 105 [**7**]
 
 | Random Groups | For the output of groups of random characters, determine which character subsets should be included | Alpha / Numerals / Interpunct. / Pro Signs / Alpha + Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / All Chars
 

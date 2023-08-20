@@ -4,19 +4,28 @@
 
 It is now quite straightforward to set up an environment to build the Morserino-32 binary code from the source. As we are using now the latest ESP32 libraries from Heltec, and the source of the Clivkbutton library has been included into the source, there is no need to hunt for libraries.
 
-**NOTICE: As Heltec changed their development environment libraries to accomodate newer products, you might need to set up an environment with their older library versions!**
+**NOTICE: As Heltec changed their development environment libraries to accomodate newer products, these instructions do not work anymore, and you might need to set up an environment with their older library versions!**
 
 1. Set up the Arduino IDE from <https://www.arduino.cc/en/Main/Software>.
 
-2. Install on your computer the USB driver for the SiLabs CP2104 chip, used in the Heltec board for USB communication. Follow these instructions: <https://heltec-automation-docs.readthedocs.io/en/latest/general/establish_serial_connection.html>.
+2. Install on your computer the USB driver for the SiLabs CP2104 chip, used in the Heltec board for USB communication. Follow these instructions: <https://heltecdocs-fock.readthedocs.io/general/establish_serial_connection.html>.
 
-3. Install the development framework through the Arduino IDE; follow these instructions: <https://heltec-automation-docs.readthedocs.io/en/latest/esp32+arduino/quick_start.html>.
+3. Install the development framework through the Arduino IDE; follow these instructions: <https://docs.heltec.org/en/node/esp32/quick_start.html>. **NOTICE: As Heltec changed their development environment libraries to accomodate newer products, this might not work flawlessly anymore!**
 
 4. Get the source for the latest Morserino-32 firmware from GitHub (<https://github.com/oe1wkl/Morserino-32/releases>).
 
 5. Load the .ino file into the IDE (the other source files will be loaded automatically as well), and compile (and upload).
 
 ## Change History
+
+### Changes V.5.0.1
+
+#### Bug fixes:
+* A change of values for inter character space and inter word space was registered and shown on display, but only became effective after a restart. Fixed.
+* In Koch trainer, the length of words and abbreviations was not handled correctly (generated things were always max l-1 long, not l). Fixed.
+
+#### Feature Modification
+* The max value for inter character space was changed from 24 to 45, and the max value for inter word space from  45 to 105, to accommodate the initial settings used by CW Academy.
 
 ### Changes V.5.0
 
