@@ -322,7 +322,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorsePreferences::setCurrentOptions(MorsePreferences::playerOptions, MorsePreferences::playerOptionsSize);
                 file = SPIFFS.open("/player.txt");                            // open file
                 //skip p_fileWordPointer words, as they have been played before
-                wcount = MorsePreferences::fileWordPointer;
+                wcount = MorsePreferences::fileWordPointer-1;
                 MorsePreferences::fileWordPointer = 0;
                 skipWords(wcount);
                 
@@ -350,7 +350,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorsePreferences::setCurrentOptions(MorsePreferences::echoPlayerOptions, MorsePreferences::echoPlayerOptionsSize);
                 file = SPIFFS.open("/player.txt");                            // open file
                 //skip p_fileWordPointer words, as they have been played before
-                wcount = MorsePreferences::fileWordPointer;
+                wcount = MorsePreferences::fileWordPointer-1;
                 MorsePreferences::fileWordPointer = 0;
                 skipWords(wcount);
        startEcho:

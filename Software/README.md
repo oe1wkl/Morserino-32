@@ -18,6 +18,17 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.5.0.2
+
+#### Bug fixes:
+* In V4.5 two more options were introduced for the feature „Word doubling“ (play each word 2x in Generator and File Player modes), to change a higher  inter-character space value when the word is repeated: "ON (true WpM)" to ignore the higher inter-character space completely , and "ON (less ICS)" to add only half of the excess inter-character space. In V.5 this change was erroneously lost, and now it has been re-introduced.
+* There was a problem with the serial protocol: even when there were 8 snapshots stored, the command „GET snapshots“ would only return 7. Fixed.
+* The Parameters „Each Word 2x“ and „Stop/Next/Rep“ are mutually exclusive, so if you activate one, the other should be set to OFF. This did not happen, and strange effects occurred if you set both parameters to ON. Fixed.
+* When stopping file player and then restarting it, it should continue with the next word after the interruption, but it always skipped another word. Fixed.
+* Under certain circumstances a DEBUG message appeared on the serial output . Fixed.
+
+
+
 ### Changes V.5.0.1
 
 #### Bug fixes:

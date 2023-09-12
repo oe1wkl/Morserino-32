@@ -176,11 +176,11 @@ parameter MorsePreferences::pliste[] = {
     {"Display off", "Char by char", "Word by word"}
   },
   {
-    0, 0, 1,  1,                                                // in CW trainer mode: repeat each word?
+    0, 0, 3,  1,                                                // in CW trainer mode: repeat each word?
     "Each Word 2x",
     "Repeat each generated word",
     true,
-    {"OFF", "ON"}
+    {"OFF", "ON", "ON (less ICS)", "ON (true WpM)"}
   },
   {
     1, 1, 3,  1,                                                //  1 = CODE_ONLY 2 = DISP_ONLY 3 = CODE_AND_DISP
@@ -604,20 +604,21 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   itemLine = (pos <= posSerialOut ? MorsePreferences::pliste[pos].parName : extraItems[pos-posKochFilter]);
   itemLine += emptyLine.substring(0,maxLength - itemLine.length());
   MorseOutput::printOnScroll(1, BOLD, 0, itemLine);  
-  displayValueLine(pos);                              
+  displayValueLine(pos, itemLine, false);                              
 }
 
 /// posKochFilter, posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
 
 
 
-void MorsePreferences::displayValueLine(prefPos pos) {
+void MorsePreferences::displayValueLine(prefPos pos, String itemText, boolean jsonOnly) {
     String valueLine; valueLine.reserve(20);
     const String emptyLine = "                    ";
     const int maxLength = 14;
     String jsonValueLine; jsonValueLine.reserve(48);
     String item; item.reserve(18);
     int value;
+
 
     value = pos <= posSerialOut ? (int) pliste[pos].value : getValue(pos);
     valueLine = (pos <= posSerialOut ? (pliste[pos].isMapped ? pliste[pos].mapping[pliste[pos].value] : String(pliste[pos].value)) : getValueLine(pos));
@@ -639,17 +640,19 @@ void MorsePreferences::displayValueLine(prefPos pos) {
                 item = "Store Snapshot";
                 break;
         default: 
-                item = itemLine;
+                item = itemText;
                 item.trim();
                 break;
       }
-      if (pos < posKochFilter || pos == posSnapRecall || pos == posSnapStore)
+      if (pos < posKochFilter || pos == posSnapRecall || pos == posSnapStore) {
           jsonConfigShort(item, value, jsonValueLine);
+      }
       else if (pos == posKochFilter)
           jsonMenu(MorseMenu::getMenuPath(MorsePreferences::menuPtr) + "/" + jsonValueLine, (unsigned int) MorsePreferences::menuPtr, 
               (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr));
     }
-    MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
+    if (! jsonOnly) 
+      MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
 }
 
 int MorsePreferences::getValue(prefPos pos) {     /// a value to return for m32protocol
@@ -796,6 +799,17 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                   if (mini == 0) {
                       temp = val + maxi + vstep + t*vstep;
                       pliste[pos].value = temp % (maxi + vstep);
+                      
+                      if (pliste[pos].value != 0) {
+                        if (pos == posWordDoubler) {
+                            pliste[posAutoStop].value = 0;
+                            displayValueLine(posAutoStop, MorsePreferences::pliste[posAutoStop].parName, true);
+                        }
+                        else if (pos == posAutoStop) {
+                            pliste[posWordDoubler].value = 0;
+                            displayValueLine(posWordDoubler, MorsePreferences::pliste[posWordDoubler].parName,  true);
+                        }
+                      }
                   } else {
                       temp = val + maxi - 2*mini + vstep  + t*vstep;
                       pliste[pos].value = (temp % (maxi - mini +vstep)) + mini;
@@ -853,7 +867,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                   break;
                   }
             }
-            displayValueLine(pos);          /// now display the value
+            displayValueLine(pos, itemLine, false);          /// now display the value
             Heltec.display -> display();                                                      // update the display
          }      // end if     (checkEncoder)
          checkShutDown(false);         // check for time out
@@ -1466,7 +1480,7 @@ void Koch::createAbbr(uint8_t maxl, uint8_t koch) {                  // this fun
 
   //DEBUG("ptr: " + String(maxl));
   for (int i = Abbrev::ABBREV_POINTER[maxl]; i< Abbrev::ABBREV_NUMBER_OF_ELEMENTS; ++i) {     // do this for all words with max length maxl
-    DEBUG(Abbrev::abbreviations[i]);
+    // DEBUG(Abbrev::abbreviations[i]);
       if (wordIsKoch(Abbrev::abbreviations[i]) <= koch)
           abbrIndices[numberOfAbbr++] = i;
   }

@@ -2792,8 +2792,8 @@ void m32Put(String type, String token, String value) {                    /// PU
         }
       }
       else if (token == "clear" || token == "recall") {
-         int i = value.toInt() - 1;                                                   // i must == 0..7 (input was 1..8)
-         if (i >= 0 && i <= 7 && MorsePreferences::memCounter > 0) {                  /// and memCouner must > 0
+         int i = value.toInt() - 1;                                                   // i must be == 0..7 (input was 1..8)
+         if (i >= 0 && i <= 7 && MorsePreferences::memCounter > 0) {                  /// and memCounter must be > 0
             for (uint8_t y = 0; y < MorsePreferences::memCounter; ++y) {              // we look if snapshot number i does exist within existing snapshot
               if (MorsePreferences::memories[y] == i)  {                              // we found the correct snapshot 
                 if (token == "clear")                                                 // so we either clear
@@ -3043,6 +3043,19 @@ boolean setParameter(String token, String value) {      // change a parameter, r
       if (v < MorsePreferences::pliste[i].minimum || v > MorsePreferences::pliste[i].maximum)     // error: value out of range!
         return true;    
       MorsePreferences::pliste[i].value = v;
+
+      if (v != 0) {     // wordDoubler and Autostop are mutually exclusive! 
+                        if (i == posWordDoubler) {
+                            MorsePreferences::pliste[posAutoStop].value = 0;
+                            MorsePreferences::displayValueLine(posAutoStop, MorsePreferences::pliste[posAutoStop].parName, true);
+                        }
+                        else if (i == posAutoStop) {
+                            MorsePreferences::pliste[posWordDoubler].value = 0;
+                            MorsePreferences::displayValueLine(posWordDoubler, MorsePreferences::pliste[posWordDoubler].parName,  true);
+                        }
+                      }
+
+                      
       if (i == posKochSeq) 
             MorsePreferences::handleKochSequence();
       else if (i == posCarouselStart) 
@@ -3152,12 +3165,12 @@ void jsonControls() {
 
 
 void jsonSnapshots() {
-  DynamicJsonDocument doc(144);
-  StaticJsonDocument <128> arr;
+  DynamicJsonDocument doc(164);
+  StaticJsonDocument <164> arr;
   JsonObject conf = doc.createNestedObject("snapshots");
   JsonArray array = arr.to<JsonArray>();
 
-  // DEBUG("memCounter: " + String(MorsePreferences::memCounter));
+  //DEBUG("memCounter: " + String(MorsePreferences::memCounter));
   for (int i = 0; i < MorsePreferences::memCounter; ++i) {
     array.add((int) MorsePreferences::memories[i] +1 );
    }
