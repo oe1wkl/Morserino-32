@@ -18,6 +18,12 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.5.0.3
+
+#### Bug fixes:
+* There was a problem introduced with the last bug fix regarding File Player, so that after uploading a new file, the file player would not start, and the M32 would not react to anything. Fixed.
+* As of version 5.0, a bug had been introduced that affected WiFi and LoRa transceiver modes: if an undecodable or unrecognized character was received, a series of spurious dits and dahs were generated. Fixed.
+
 ### Changes V.5.0.2
 
 #### Bug fixes:

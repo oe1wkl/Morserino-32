@@ -295,7 +295,7 @@ boolean speedChanged = false;
 
 /////////////////// Variables for LoRa: Buffer management etc
 
-char cwTxBuffer[128];
+char cwTxBuffer[80];
 
 uint8_t cwRxBuffer[1024];
 uint16_t byteBuFree = sizeof(cwRxBuffer);
@@ -1764,7 +1764,7 @@ void fetchNewWord() {
       }       /// end if else - we either already had something in trainer mode, or we got a new word
 
 
-    } /// else (= not in loraTrx or wifiTrx mode, or in PlayCW)
+    
       if (clearText.indexOf('P') != -1) {
         genTimer = 3 * interWordSpace + millis();
         clearText = "";
@@ -1777,6 +1777,7 @@ void fetchNewWord() {
       }
       CWword = generateCWword(clearText);
       echoTrainerWord = clearText;
+    } /// else (= not in loraTrx or wifiTrx mode, or in PlayCW, or other generator modes)
 } // end of fetchNewWord()
 
 
@@ -2089,7 +2090,7 @@ void cwForTx (int element) {
       cwTxBuffer[1] |= temp;
       pairCounter = 7;                    /// so far we have used 7 bit pairs: 4 in the first byte (protocol version+serial); 3 in the 2nd byte (wpm)
       } 
-      else if (pairCounter > sizeof(cwTxBuffer)*4-1) { // prevent buffer overflow
+      else if (pairCounter > sizeof(cwTxBuffer)*4 -4) { // prevent buffer overflow
           return;
       }
 
@@ -2146,7 +2147,7 @@ void onLoraReceive(int packetSize){
   String result;
   result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
   result = "";
-  
+
   // received a packet
   // read packet
   for (int i = 0; i < packetSize; i++)
@@ -2154,7 +2155,7 @@ void onLoraReceive(int packetSize){
     result += (char)LoRa.read();
     //DEBUG(String((char)LoRa.read()));
   }
-  if (packetSize < sizeof(cwTxBuffer))
+  if (packetSize <= sizeof(cwTxBuffer))
       storePacket(LoRa.packetRssi(), result);
   else
       DEBUG("LoRa Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
@@ -2170,7 +2171,7 @@ void onWifiReceive(AsyncUDPPacket packet) {
   //DEBUG("WifiReceive! " + String(result));
   if (packet.length() == 0)             // empty (= keepalive) packet
     return;
-  if (packet.length() < sizeof(cwTxBuffer)+1)
+  if (packet.length() <= sizeof(cwTxBuffer))
       storePacket(WiFi.RSSI(), result);
   else
       DEBUG("UDP Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
@@ -2184,7 +2185,6 @@ String CWwordToClearText(String cwword) {             // decode the Morse code c
   String symbol;
   symbol.reserve(5);
 
-  
   result = "";
   for (int i = 0; i < cwword.length(); ++i) {
       char c = cwword[i];
@@ -2194,7 +2194,6 @@ String CWwordToClearText(String cwword) {             // decode the Morse code c
           case '2': ptr = CWtree[ptr].dah;
                     break;
           case '0': symbol = CWtree[ptr].symb;
-
                     ptr = 0;
                     result += symbol;
                     break;
@@ -2274,8 +2273,9 @@ uint8_t cwBuWrite(int rssi, String packet) {
 boolean cwBuReady() {
   if (byteBuFree == sizeof(cwRxBuffer))
     return (false);
-  else
+  else {
     return true;
+  }
 }
 
 
@@ -2293,7 +2293,6 @@ uint8_t cwBuRead(uint8_t* buIndex) {
     return l;
   }
 }
-
 
 
 
@@ -2315,7 +2314,6 @@ uint8_t decodePacket(int* rssi, int* wpm, String* cwword) {
   uint8_t index = 0;
 
   l = cwBuRead(&index);           // where are we in  the buffer, and how long is the total packet inkl. rssi byte?
-
   for (int i = 0; i < l; ++i) {     // decoding loop
     c = cwRxBuffer[index+i];
 
@@ -3204,7 +3202,8 @@ void jsonFileFirstLine() {
       else
         Serial.write(c);
   }
-  Serial.print("\"}}");  
+  Serial.print("\"}}"); 
+  file.close(); 
 }
 
 
@@ -3220,6 +3219,7 @@ void jsonFileText() {                                           // get file cont
       Serial.write(c);
    }
   Serial.print("\"}}");
+  file.close();
 }
 
 
