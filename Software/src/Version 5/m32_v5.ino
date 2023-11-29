@@ -116,6 +116,10 @@ String inputString = "";      // a String to hold incoming data         // for s
 boolean stringComplete = false;  // whether the string is complete
 String vsn, brd;              // strings to hold firmware version and board version
 
+// things for memory keyer
+int8_t ptr = 0;               // used for selecting a CW memory
+uint8_t memList[9];       // list of non-empty memory numbers
+int8_t maxMemCount = 0;
 
 
 unsigned int interCharacterSpace, interWordSpace;   // need to be properly initialised!
@@ -192,7 +196,7 @@ int rxInterCharacterSpace = 0;
 int rxInterWordSpace = 0;
 
 
-boolean genIsActive= false;                           // flag for trainer mode
+boolean genIsActive= false;                       // flag for trainer mode
 boolean startFirst = true;                        // to indicate that we are starting a new sequence in the trainer modi
 boolean firstTime = true;                         /// for word doubler mode
 
@@ -200,10 +204,11 @@ uint8_t wordCounter = 0;                          // for maxSequence
 uint16_t errCounter = 0;                          // counting errors in echo trainer mode
 boolean stopFlag = false;                         // for maxSequence
 boolean echoStop = false;                         // for maxSequence
+String lastWord = "";                             // for maxSequence
 
-unsigned long genTimer;                         // timer used for generating morse code in trainer mode
+unsigned long genTimer;                           // timer used for generating morse code in trainer mode
 
-enum MORSE_TYPE {KEY_DOWN, KEY_UP };                    //   State Machine Defines
+enum MORSE_TYPE {KEY_DOWN, KEY_UP };              //   State Machine Defines
 unsigned char generatorState;
 
 const String continueMsg4Disp = "Continue w/ Paddle";
@@ -749,7 +754,8 @@ void loop() {
                     //MorseOutput::refreshScrollArea((bottomLine + 1 + relPos) % NoOfLines);
                     MorseOutput::refreshScrollArea(MorseOutput::relPos);
                     MorseOutput::displayScrollBar(false);
-                } else if (encoderState == volumeSettingMode && morseState != morseDecoder) {          //  single click toggles encoder between speed and volume
+                } 
+                else if (encoderState == volumeSettingMode && morseState != morseDecoder) {          //  single click toggles encoder between speed and volume
                   encoderState = speedSettingMode;
                   MorsePreferences::writeVolume();
                   displayCWspeed();
@@ -783,7 +789,16 @@ void loop() {
                       jsonActivate(ACT_EXIT); 
                   MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
                   return;
-       case 1:    if (morseState == morseGenerator || morseState == echoTrainer) {//  start/stop in trainer modi, in others does nothing currently
+       case 1:    if (encoderState == memSelMode) {
+                    if (ptr != 0) {
+                      preparePlay(memList[ptr]);
+                      if (m32protocol)
+                        jsonOK();
+                    }
+                    encoderState = speedSettingMode;
+                    updateTopLine();
+                 }
+                 else if (morseState == morseGenerator || morseState == echoTrainer) {//  start/stop in trainer modi, in others does nothing currently
                   genIsActive = !genIsActive;
                   if (!genIsActive) {
                         keyOut(false, true, 0, 0);
@@ -795,6 +810,10 @@ void loop() {
                     cleanStartSettings();
                   }
                         
+              } else if (morseState == morseKeyer || morseState == morseTrx) {  // when Keyer is active, we select a keyer memory
+                    if (m32protocol)
+                        jsonCreate("message", "Select Memory", "");
+                    memoryKeyer();
               }
               break;
        case 2:  MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
@@ -835,6 +854,13 @@ void loop() {
                                   //portEXIT_CRITICAL(&mux);
                                   MorseOutput::displayScrollBar(true);
                                   break;
+           case memSelMode:       ptr +=t;
+                                  if (ptr == -1)
+                                    ptr = maxMemCount;
+                                  if (ptr > maxMemCount)
+                                    ptr = 0;
+                                  dispMem(memList[ptr]);
+                                  break;
           }
     } // encoder 
     checkShutDown(false);         // check for time out
@@ -851,7 +877,8 @@ void updateManualSpeed() {
 
 void checkStopFlag() {
     if (stopFlag) {
-      genIsActive= stopFlag = false;
+      lastWord = clearText;
+      genIsActive = stopFlag = false;
       keyOut(false, true, 0, 0);
       if (morseState == echoTrainer) {
         MorseOutput::clearStatusLine();
@@ -859,6 +886,8 @@ void checkStopFlag() {
         delay(5000);
       }
       wordCounter = 1; errCounter = 0;
+      //if (MorsePreferences::fileWordPointer > 1)
+      //  --MorsePreferences::fileWordPointer;          // avoid that a word is being skipped after interruption
       MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
       if (m32protocol)
         jsonCreate("message", continueMsg4Json, "");
@@ -1454,7 +1483,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                     (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW == true))
                   {
                       displayGeneratedMorse(morseState == morseGenerator ? REGULAR : BOLD,cleanUpProSigns(clearText));
-                      clearText = "";
+                      //clearText = "";
                   }
                 }
                 fetchNewWord();
@@ -1513,7 +1542,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 if (morseState == echoTrainer) {
                     switch (echoTrainerState) {
                         case START_ECHO:  echoTrainerState = SEND_WORD;
-                                          genTimer = millis() + interCharacterSpace + (MorsePreferences::promptPause * interWordSpace);
+                                          genTimer = millis() + 300 + 2 * interCharacterSpace + interWordSpace / 8;
                                           break;
                         case REPEAT_WORD:
                                           // fall through 
@@ -1526,7 +1555,9 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                                                     displayGeneratedMorse(INVERSE_REGULAR, ">");    /// add a blank after the word on the display
                                                 }
                                                 ++repeats;
-                                                genTimer = millis() + MorsePreferences::responsePause * interWordSpace;
+                                                //genTimer = millis() + MorsePreferences::responsePause * interWordSpace;
+                                                genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 4;
+                                                // DEBUG("@1539: wait_time: " + String (genTimer - millis()));
                                           }
                         default:          break;
                     }
@@ -1629,13 +1660,17 @@ void fetchNewWord() {
        startFirst = false;
        ////// from here: retrieve next CWword from buffer!
         if (cwBuReady()) {
-            displayGeneratedMorse(BOLD, " ");
             uint8_t header = decodePacket(&rssi, &rxWpm, &CWword);
-            
+            if (header == 0)  {                                   // invalid packet
+              DEBUG("Invalid LoRa packet: EOW within packet!");
+              return;
+            }
             if ((header >> 6) != 1)                             // invalid protocol version
               return;
             if ((rxWpm < 5) || (rxWpm >60))                    // invalid speed
               return;
+              
+            displayGeneratedMorse(BOLD, " ");
             clearText = CWwordToClearText(CWword);            
             rxDitLength = 1200 /   rxWpm ;                      // set new value for length of dits and dahs and other timings
             rxDahLength = 3* rxDitLength ;                      // calculate the other timing values
@@ -1655,8 +1690,14 @@ void fetchNewWord() {
           playCW = false;
           return;
         }
+        clearText.replace("T", "");
+        if (clearText.indexOf('P') != -1) {
+            genTimer = 3 * interWordSpace + millis();
+            clearText = "";
+        }
         CWword = generateCWword(clearText);
         displayGeneratedMorse(REGULAR, " ");
+        return;
     }
     else {
     if ((morseState == morseGenerator) /*&& !MorsePreferences::pliste[posAutoStop].value*/ ) {
@@ -1754,7 +1795,12 @@ void fetchNewWord() {
                                                       break;
                                       case PLAYER:    if (MorsePreferences::pliste[posRandomFile].value != 0)
                                                           skipWords(random(256));
-                                                      clearText = getWord();                // includes cleanUptext()
+                                                      if (lastWord == "")
+                                                          clearText = getWord();                // includes cleanUptext()
+                                                      else {
+                                                          clearText = lastWord;
+                                                          lastWord = "";
+                                                      }
                                                       //clearText = cleanUpText(getWord()); 
                                                       //clearText = cleanUpText(clearText);
                                                       break;  
@@ -1762,7 +1808,6 @@ void fetchNewWord() {
                             }
                             firstTime = false;
       }       /// end if else - we either already had something in trainer mode, or we got a new word
-
 
     
       if (clearText.indexOf('P') != -1) {
@@ -2007,13 +2052,6 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 
 
 
-
-
-
-
-
-
-
 double ReadVoltage(byte pin){
   adcAttachPin(batteryPin);
   analogSetClockDiv(128);           //  this value was found by experimenting - no clue what it really does :-(
@@ -2144,33 +2182,55 @@ void sendWithWifi() {           // hand this string over as payload to the WiFi 
 }
 
 void onLoraReceive(int packetSize){
-  String result;
+  u_int maxl = sizeof(cwTxBuffer) < packetSize ? sizeof(cwTxBuffer) : packetSize;
+  String result; 
+  String reason = "";
+  reason.reserve(9);
   result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
   result = "";
 
   // received a packet
   // read packet
-  for (int i = 0; i < packetSize; i++)
+  for (int i = 0; i < maxl; i++)
   {
     result += (char)LoRa.read();
-    //DEBUG(String((char)LoRa.read()));
   }
-  if (packetSize <= sizeof(cwTxBuffer))
+  //DEBUG("@2162: 0st byte: " + String(int(result.charAt(0)), BIN ));
+  //DEBUG("@2162: 1st byte: " + String(int(result.charAt(1)), BIN ));
+  //DEBUG("@2162: 2nd byte: " + String(int(result.charAt(2)), BIN ));
+  if (sizeof(cwTxBuffer) < packetSize)
+    reason = "LENGTH";
+  if ((result.charAt(0) & 0b11000000) != 0b01000000)  {     // check protocol version # 
+    reason = "PROT.VER";
+    goto error;
+  }
+  if ((result.charAt(1) & 0b00000011) && packetSize <= sizeof(cwTxBuffer)) {    // 1st actual morse element must not be 0b00
+    //DEBUG("@2170: packetSize: " + String(packetSize));
       storePacket(LoRa.packetRssi(), result);
-  else
-      DEBUG("LoRa Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
+      return;
+  }
+  if (reason == "")
+    reason = "EOFC";
+  error:    DEBUG("Invalid LoRa Packet: " + reason + "! Discarded...");
 }
 
 void onWifiReceive(AsyncUDPPacket packet) {
+  u_int maxl = sizeof(cwTxBuffer) < packet.length() ? sizeof(cwTxBuffer) : packet.length();
   String result;
+  
   result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
   result = "";
-  for (int i = 0; i < packet.length(); i++) {
+    //DEBUG("@2172: onWiFiReceive: packetSize = " + String(packet.length()));
+
+  if (packet.length() == 0)             // empty (= keepalive) packet
+    return;
+  for (int i = 0; i < maxl; i++) {
     result += (char)packet.data()[i];
   }
   //DEBUG("WifiReceive! " + String(result));
-  if (packet.length() == 0)             // empty (= keepalive) packet
-    return;
+    //DEBUG("@2178: protocol version = " + String((result.charAt(1) & 0b11000000)));
+
+
   if (packet.length() <= sizeof(cwTxBuffer))
       storePacket(WiFi.RSSI(), result);
   else
@@ -2312,9 +2372,10 @@ void storePacket(int rssi, String packet) {             // whenever we receive s
 uint8_t decodePacket(int* rssi, int* wpm, String* cwword) {
   uint8_t l, c, header=0;
   uint8_t index = 0;
+  int i;
 
   l = cwBuRead(&index);           // where are we in  the buffer, and how long is the total packet inkl. rssi byte?
-  for (int i = 0; i < l; ++i) {     // decoding loop
+  for (i = 0; i < l; ++i) {     // decoding loop
     c = cwRxBuffer[index+i];
 
     switch (i) {
@@ -2332,11 +2393,17 @@ uint8_t decodePacket(int* rssi, int* wpm, String* cwword) {
                     if (cc != 3) {
                         *cwword  += (char) (cc + 48);
                     }
-                    else break;
+                    else goto endloop;                                       // EOW
                 }
                 break;
     } // end switch
   }   // end for
+  endloop:
+    if (i < (l-1)) {             // we found EOW, but the packet continues! must be a spurious packet!
+      *cwword = "";
+      return 0;
+    }
+  
   return header;
 }      // end decodePacket
 
@@ -2431,6 +2498,62 @@ void audioLevelAdjust() {
     //keyTx = true;
 }
 
+////////////////////////// memoryKeyer /////////////////
+
+void memoryKeyer() {
+    
+    // fill the list variables
+    memList[0] = maxMemCount = 0;
+    for (int i = 0; i<8; ++i) {
+      if (MorsePreferences::cwMemMask & 1 << i) {
+        memList[maxMemCount+1] = i+1;
+        ++maxMemCount;
+      }
+    } // end for
+
+    // display memories, change by rotating encoder, until one or "exit" is selected
+    // if no memories are non-empty, show error message and return
+    // if a memory is selected, play it
+    MorseOutput::clearStatusLine();
+    if (maxMemCount == 0) {                   // no memories have been set
+      MorseOutput::printOnStatusLine(true, 0, "No memories stored");
+      if (m32protocol)
+          jsonCreate("message", "No memories stored!", "");
+      delay(500);
+      updateTopLine();
+      return;
+    } else {                        // let user choose
+      dispMem(memList[ptr]);
+      encoderState = memSelMode;
+      return;
+    }
+}
+
+void dispMem(int8_t memNo) {
+  MorseOutput::clearStatusLine();
+  if (memNo == 0)   {    // exit
+    MorseOutput::printOnStatusLine(true, 0, "EXIT");
+    if (m32protocol) jsonCreate("message", "Click to Exit", "");
+  }
+  else {
+    String Number = (memNo < 3 ? "R" : "_") + String(memNo) + ": " ;
+    String Value = Number + String(MorsePreferences::cwMem[memNo-1]);
+    Value = Value.substring(0,18);
+    MorseOutput::printOnStatusLine(false, 0, Value);
+    if (m32protocol) jsonCreate("message", "Memory " + Value, "");
+    }
+}
+
+void preparePlay(int8_t memNo) {
+    playCWBuffer = String(MorsePreferences::cwMem[memNo-1]);
+    playCWIndex = 0;
+    playCWMaxIndex = playCWBuffer.length();
+    startFirst = false;
+    playCW = true;
+    if ((memNo < 3))
+            repeatPlayCW = true;
+}
+
 ////////////////////////// getM32PWord() ///////////////   for cw play command in M32protocol
 
 String getM32PWord() {
@@ -2438,14 +2561,13 @@ String getM32PWord() {
   result.reserve(128);
   byte c;
 
-  if (playCWIndex > playCWMaxIndex)
+  if (playCWIndex >= playCWMaxIndex)
     if (repeatPlayCW)
       playCWIndex = 0;
     else
       return "";
-  while (playCWIndex <= playCWMaxIndex) {
+  while (playCWIndex < playCWMaxIndex) {
     c = playCWBuffer.charAt(playCWIndex);
- //DEBUG("@ 2426 c " + String(c));
     ++playCWIndex;
     if (isSpace(c))
       break;
@@ -2462,8 +2584,6 @@ String getM32PWord() {
 String getWord() {
   String result = "";
   result.reserve(250);
-  //char buf[250];
-  
   byte c;
   static boolean eof = false;
 
@@ -2678,7 +2798,7 @@ thirdArg.reserve(20);
   ////////////// evaluate commands, call appropriate subroutine
 
   if (command == "get") 
-    m32Get(firstArg, secondArg);
+    m32Get(firstArg, secondArg, thirdArg);
   else if (command == "put")
     m32Put(firstArg, secondArg, thirdArg);
   else
@@ -2686,7 +2806,7 @@ thirdArg.reserve(20);
 }
 
 
-void m32Get(String type, String token) {                    /// GET command
+void m32Get(String type, String token, String value) {                    /// GET command
     // the external party wants some data from us
     //check if we have at least 1 agument
     if (type == "") {
@@ -2731,6 +2851,16 @@ void m32Get(String type, String token) {                    /// GET command
     else if (type == "kochlesson") {
       jsonGetKoch();
     }
+    else if (type == "cw") {
+      if (token == "memories") {
+        jsonGetCwStores();
+      }
+      else if (token == "memory") {
+        jsonGetCwStore(value);
+      }
+      else
+        jsonError("GET CW " + token + ": INVALID ARGUMENT");
+    }
     else
     /// no recognizable type for the get command
         jsonError("GET " + type + ": UNKNOWN COMMAND");
@@ -2740,6 +2870,7 @@ void m32Get(String type, String token) {                    /// GET command
 void m32Put(String type, String token, String value) {                    /// PUT command
     // the external party wants us to receive some data
     // check if we have three args
+    uint8_t number;
     if (token == "" || type == "") {
           jsonError("NOT ENOUGH ARGUMENTS");
           return;
@@ -2835,21 +2966,21 @@ void m32Put(String type, String token, String value) {                    /// PU
     //////////////////////// WIFI ///////////////////
     else if (type == "wifi") {
       String n = value.substring(0,1);
-      int number = n.toInt();  
-      if (number < 1 || number > 3)
+      int nr = n.toInt();  
+      if (nr < 1 || nr > 3)
         return (jsonError("INVALID WIFI NUMBER"));                   
       if (value.indexOf("/") == 1) 
         value = value.substring(2);
       else value == "";
 
       if (token == "select")
-        selectWifi(number);
+        selectWifi(nr);
       else if (token == "ssid")
-        setSsid(number, value);
+        setSsid(nr, value);
       else if (token == "password")
         setPassword(number, value);
       else if (token == "trxpeer")
-        setTrxPeer(number, value);
+        setTrxPeer(nr, value);
       else
         jsonError("INVALID PROPERTY " + token);
     } // end type == "wifi"
@@ -2909,25 +3040,59 @@ void m32Put(String type, String token, String value) {                    /// PU
         else
           jsonError("INVALID KOCH LESSON " + token);
     }
-    ////////////////////// CW/PLAY /////////////////////////////
+    ////////////////////// CW/PLAY/CWMEMORY /////////////////////////////
     else if (type == "cw") {
-      if (token == "play" || token == "repeat") {
+      if (token == "play" || token == "repeat" || token == "recall") {
         if (m32state != menu_loop && (morseState == morseKeyer || morseState == morseTrx)) {
-          playCWBuffer = value;
+          if (token == "recall") {
+            /// value must be 1..8
+            number = value.toInt();
+;
+            if (number < 1 || number > 8 || (MorsePreferences::cwMemMask & 1 << (number-1)) == 0)
+              return (jsonError("INVALID CW MEMORY NUMBER")); 
+
+            playCWBuffer = String(MorsePreferences::cwMem[number-1]);
+            //DEBUG("@2968: playCWBuffer: " + playCWBuffer);
+          }
+          else {
+              playCWBuffer = value;
+          }
           playCWIndex = 0;
-          playCWMaxIndex = value.length() - 1;
+          playCWMaxIndex = playCWBuffer.length();
           startFirst = false;
           playCW = true;
-          if (token == "repeat")
+          if ((token == "repeat") || (token == "recall" && number < 3))
             repeatPlayCW = true;
           jsonOK();
+          
         }
         else
           jsonError("CW/PLAY: Keyer not active");
       }
       else if (token == "stop") 
         stopPlayCw();
-      else
+      
+      else if (token == "store") {
+          // extract mem # from value
+          int number = value.toInt();
+          if (number < 1 || number > 8)
+            return (jsonError("INVALID CW MEMORY NUMBER"));                                    
+          if (value.indexOf("/") == 1) 
+            value = value.substring(2);
+          else value == "";
+          
+          // store it, or erase it if empty
+          value = value.substring(0,47); 
+          value.toCharArray(MorsePreferences::cwMem[number-1],48);
+          if (value == "")
+            MorsePreferences::cwMemMask &= ~(1 << (number-1));
+          else 
+            MorsePreferences::cwMemMask |= 1 << (number-1);
+          // make it permanent 
+          MorsePreferences::setCwMem(number, value);
+          jsonOK();
+        }      
+        else
         jsonError("CW: INVALID ARGUMENT " + token);
     }
     else
@@ -3326,4 +3491,39 @@ void stopPlayCw() {     /// sort of emergency stop for M32p cw/play
             playCWMaxIndex = 0;
             startFirst = true;
             jsonOK();
+}
+
+
+
+void jsonGetCwStores() {
+  DynamicJsonDocument doc(164);
+  StaticJsonDocument <164> arr;
+  JsonObject conf = doc.createNestedObject("CW Memories");
+  JsonArray array = arr.to<JsonArray>();
+
+  for (int i = 0; i <8 ; ++i) {
+    if (MorsePreferences::cwMemMask & 1 << i)
+      array.add(i+1);
+  }
+
+   conf["cw memories in use"] = array;
+   serializeJson(doc, Serial);
+}
+
+void jsonGetCwStore(String value) {
+  
+    int number =  value.toInt();
+    if (number < 1 || number > 8 )
+      return (jsonError("INVALID CW MEMORY NUMBER")); 
+    // check cwMemMask if this memory number is active
+    if (MorsePreferences::cwMemMask & 1 << (number-1) == 0)     // empty memory
+      jsonError("CW MEMORY " + value + " IS EMPTY");
+    else {
+        DynamicJsonDocument doc(256);
+        JsonObject obj  = doc.createNestedObject("CW Memory");
+        obj["number"] = number;
+        obj["content"] = String(MorsePreferences::cwMem[number-1]);
+        serializeJson(doc, Serial);
+    }
+  
 }

@@ -104,6 +104,8 @@ namespace MorsePreferences
   extern uint8_t snapShots;
   extern uint8_t boardVersion;
   extern uint8_t oledBrightness;
+  extern char cwMem[][48];
+  extern uint8_t cwMemMask;
   
   ////// end of variables stored in preferences
   
@@ -189,6 +191,8 @@ namespace MorsePreferences
   void writeWifiInfoMultiple(String, String, String, String, String, String, String, String, String);
   void fireCharSeen(boolean wpmOnly);
   void setCurrentOptions(prefPos *current, int size);
+  void setCwMem(uint8_t, String);
+  void getCwMem();
 }
 
 
@@ -201,7 +205,7 @@ class Koch {
     String kochCharSet;
     String licwKochChars;
     const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNEB@:";
-    const String cwacKochChars =      "teanois14rhdl25ucmw36?fypg79/bvkj80=xqz.,-K+ASNEB@:";
+    const String cwacKochChars =      "teanois14rhdl25ucmw36?fypg79/bvkj80=xqzBK.,-+ASNE@:";
     //uint8_t kochCharsLength;
     void createWords(uint8_t, uint8_t);
     void createAbbr(uint8_t, uint8_t);

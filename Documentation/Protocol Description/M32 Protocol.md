@@ -1,7 +1,7 @@
 # The M32 Serial Protocol
 
-	Date: June 10, 2023
-	Version: 1.0
+	Date: November 28, 2023
+	Version: 1.1
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
 The USB bus can be used for two-way communication with a connected computer. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
@@ -404,7 +404,7 @@ Example:
 
 This sets Koch lesson to lesson number <n>.
 
-### Automated CW Keyer
+### Automated CW Keyer and Memory Keyer
 
 `PUT cw/play/<text to be played>`		
 
@@ -418,4 +418,33 @@ This is similar to the command above, but the text  string is repeated until sto
 
 This will stop the CW player (it has the same effect as beginning to key manually while the commands `PUT cw/play` or `PUT cw/repeat` are active).
 
-Note: you can use "<p"> or "\p" within <text to be played> to generate a short pause.
+Note: you can use "\<p>" or "\p" within `<text to be played>` to generate a short pause.
+
+`PUT cw/store/<n>/<content>`
+
+Store `<content>` in permanent memory number `<n>` (n is 1 .. 8); if `<content>` is an empty string, this memory is deleted. `<content>` can be normal Morse code characters, pro signs, e.g. "\<bk>", and also "[p]" or  "\p"  for a pause.
+
+`PUT cw/recall/<n>`
+
+Generate Morse code from the content in memory number `<n>`; if `<n>` is 1 or 2, do this until stopped by touching a paddle, or by the `PUT cw/stop` command.
+
+`GET cw/memories`
+
+Get a list of memory numbers that have some content stored.
+
+Example:  
+
+	get cw/memories
+	-> {„CW Memories":{"cw memories in use":[1,3,4]}}
+
+`GET cw/memory/<n>`
+
+Get contents of memory number `<n>`.
+
+Example:  
+
+	get cw/memory/
+	-> {"CW Memory":{"number":1,"content":"cq cq cq de oe1wkl oe1wkl [p]"}}
+
+*Note*:
+Content stored in permanent memory can be recalled ("played") in Morserino-32's keyer mode, even when the Morserino is operated stand-alone and  there is no serial connection to a computer (see user manual for details).

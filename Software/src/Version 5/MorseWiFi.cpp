@@ -251,11 +251,14 @@ void internal::handleNotFound() {
 
 void MorseWiFi::menuNetSelect() {
   const int numNetworks = 3;
-  String names[numNetworks];
+  String names[numNetworks]; String peers[numNetworks];
   names[0] = "1: " + MorsePreferences::wlanSSID1;
+  peers[0] = "/ " + MorsePreferences::wlanTRXPeer1;
   names[1] = "2: " + MorsePreferences::wlanSSID2;
+  peers[1] = "/ " + MorsePreferences::wlanTRXPeer2;
   names[2] = "3: " + MorsePreferences::wlanSSID3;
-
+  peers[2] = "/ " + MorsePreferences::wlanTRXPeer3;
+  
   MorseOutput::clearDisplay();
   MorseOutput::printOnStatusLine( true, 0,  "Select Wifi");
 
@@ -267,8 +270,11 @@ void MorseWiFi::menuNetSelect() {
     if(choice!=previousChoice) {
       MorseOutput::clearThreeLines();
       MorseOutput::printOnScroll(0, REGULAR, 0, names[choice] );
-      if (m32protocol)
+      MorseOutput::printOnScroll(1, REGULAR, 0, peers[choice] );
+      if (m32protocol) {
                   jsonCreate("message", names[choice], "");
+                  jsonCreate("message", peers[choice], "");
+      }
       previousChoice = choice;
     }
     switch(checkEncoder()){

@@ -18,6 +18,34 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.5.1
+
+#### Feature Modifications / Improvements
+* When selecting a WiFi setting, the peer IP name is displayed together with the SSID.
+* In LoRa transceiver mode, sometimes spurious characters are received as a result of local ambient noise. Packet headers are now checked for the correct protocol version etc, which should make this a rather rare occurrence.
+* Into the list of common amateur radio abbreviations, „QSZ“ („Send each word or group twice“) and „QAZ“ („Closing because of thunderstorm“) have been included.
+* There is a new algorithm for calculating the  waiting time in Echo trainer; especially with very long inter-word spacing that was insanely long, more or less unusable. While it is still to some degree depending on inter-character and inter-word spacing, the differences are not so big anymore.
+* The user manual now contains an appendix with all CW abbreviations used by the Morserino-32.
+
+#### Bug Fixes:
+* A pause was not played correctly when using the M32Protocol command „put cw/play/…“ or „put cw/repeat/…“. Fixed.
+* When he file player reassumed playing after being stopped, it missed a word of the text (the fix in 5.0.2 fixed only part of it). Fixed (hopefully for good).
+* The last characters in the CWOps Academy character sequence were in the wrong order. Fixed.
+
+
+#### New Feature(s)
+* Implementation of a memory keyer: 8 memory slots (with max. 47 characters per slot) can be stored permanently (but you need a computer program that implements the serial protocol in order to define these memories). But once defined, you can recall these memories also stand-alone within keyer mode (or within mode iCW/Ext Trx). Memory slots 1 and 2 will be played in a loop (until stopped by touching the paddle or key), e.g. useful for a CQ loop, the other 6 slots play just once when activated.
+
+	For this feature there are new commands in the serial protocol:
+    * PUT cw/store/<n>/<content> : store <content> in permanent memory number <n> (n is 1 .. 8); if content is an empty string, this memory is deleted. <content> can be normal Morse code characters, pro signs, e.g. <bk>, and also [p] or  \p for a pause
+    * PUT cw/recall/<n>: generate morse code from the content in memory number <n>; if <n> is 1 or 2, do this until stopped by touching a paddle, or by the PUT cw/stop command
+    * GET cw/memories : get a list of memory numbers that have some content stored; example:  get cw/memories -> {„CW Memories":{"cw memories in use":[1,3,4]}}
+    * GET cw/memory/<n> : get contents of memory number <n>; example:  get cw/memory/1 -> {"CW Memory":{"number":1,"content":"cq cq cq de oe1wkl oe1wkl [p]"}}
+
+	In Keyer mode (or within mode iCW/Ext Trx) you can recall a memory by pressing the black encoder knob quickly once, and then select by rotating the encoder the memory you want to be „played“
+	- the number (and beginning of content) are shown in the top display line. You start the generation of content by clicking again with the encoder knob
+	(if EXIT is shown and you press the encoder, you leave without anything being generated). Here also memories 1 and 2 are played continuously, until interrupted by manual entry.
+
 ### Changes V.5.0.3
 
 #### Bug fixes:

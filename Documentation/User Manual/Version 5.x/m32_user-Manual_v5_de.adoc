@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v5.0 Juni 2023
+v5.1 November 2023
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -362,6 +362,29 @@ Für den Parameter `AutoChar Spce` (Definition einer Mindestlänge für den Abst
 
 **Straight Key Mode**: Das ist natürlich kein automatischer Modus, sondern man kann damit den Morserino-32 auch mit einer normalen Handtaste ("Klopftaste") verwenden. Der Modus "CW Keyer" funktioniert nicht, wenn dieser Parameter gesetzt ist, aber man kann die Handtaste für den Echo Trainer und für die Transceiver Modi verwenden!
 
+==== CW Memory Keyer
+
+Ab Version 5.1 verfügt der  Morserino auch über eine CW Speicherfunktion. Es gibt 8 Speicherplätze, und jeder Speicherplatz kann bis zu 47 Zeichen enthalten. Zusätzlich zu normalen Morsezeichen (Buchstaben, Ziffern, Satzzeichen) können auch Betriebsabkürzungen sowie eine Markierung für eine Pause enthalten sein (zur Kodierung von Betriebsabkürzungen und dem Pausezeichen siehe weiter unten Abschnitt <<encoding>>).
+
+Die Speicher können in den Modi "CW Keyer" und "iCW/Ext Trx" abgerufen werden (aus technischen Gründen nicht in "WiFi Trx" oder "LoRa Trx"). Man ruft einen Speicher auf, indem man den schwarzen Encoder-Knopf einmal schnell drückt - wenn Speicher definiert wurden, kann man in der oberen Zeile mit dem Encoder durch die definierten Speicher blättern, und es gibt auch eine EXIT-Option, wenn man sich anders entscheidet. Wenn keine Speicherplätze definiert sind, wird eine Fehlermeldung angezeigt.
+
+Die Speicher 1 und 2 werden wiederholt abgespielt, bis sie durch eine manuelle Eingabe gestoppt werden, alle anderen Speicher werden nur einmal abgespielt.
+
+===== Definiton der Speicherplätze
+
+Der Inhalt der Speicherplätze kann nur über das Serielle Protokoll definiert werden, entweder durch ein Computerprogramm, welches das Protokoll implementiert hat, oder manuell über die Eingabe mit einem Terminalprogramm. (Das serielle Protokoll ist in einem eigenen Dokument spezifiziert).
+
+Der Befehl zum Definieren eines Speicherplatzes geht wie folgt:
+
+`PUT cw/store/<n>/<content>`
+
+Damit wird die Zeichenfolge `<content>` im permanenten Speicher mit der Nummer  `<n>` abgelegt (n ist 1 .. 8); ist diese Zeichenfolge leer, wird der betreffende Speicherplatz gelöscht. In der Zeichenfolge dürfen normale Zeichen (Buchstaben, Ziffern, Satzzeichen) sein, oder Betriebsabkürzungen (z.B. "<bk>",) oder auch ein Symbol, um eine Pause zu markieren ("[p]" oder "\p" ).
+
+Falls man die manuelle Methode mittels Terminalprogramm benutzt, muss man das Protokoll durch den Befehl
+ `PUT device/protocol/on` initialisieren, bevor man weitere Kommandos eingeben kann, und man sollte es zum Abschluss auch wie folgt beenden: `PUT device/protocol/off`.
+
+
+
 
 === CW Generator [[generator]]
 
@@ -405,7 +428,7 @@ Für die weniger häufig verwendeten Parameter `Key ext TX`, `CW Gen Displ` und 
 Auf der zweiten Ebene des Menüs kann man zwischen den folgenden Optionen wählen:
 
 * **Random**: Erzeugt Gruppen von zufälligen Zeichen. Die Länge der Gruppen sowie die Wahl der Zeichen kann in den Parametern durch Doppelklick auf den schwarzen Drehknopf ausgewählt werden (siehe den Abschnitt <<parameters>> für nähere Details).
-* **CW Abbrevs**: Zufällige Abkürzungen, die im CW-Funkverkehr sehr häufig vorkommen (durch eine Parametereinstellung kann man die maximale Länge der zu trainierenden Abkürzungen wählen).
+* **CW Abbrevs**: Zufällige Abkürzungen und Q-gruppen, die im CW-Funkverkehr sehr häufig vorkommen (durch eine Parametereinstellung kann man die maximale Länge der zu trainierenden Abkürzungen wählen). Siehe <<appendix6>>, dort findete man eine Liste der Abkürzungen, die erzeugt werden können.
 * **English Words**: Zufällige Wörter aus einer Liste der 370 häufigsten Wörter der englischen Sprache (wiederum kann man über einen Parameter eine maximale Länge einstellen).
 * **Call Signs**:  Erzeugt zufällige Zeichenketten, die die Struktur und das Aussehen von Amateurfunk-Rufzeichen haben (dies sind keine echten Rufzeichen, und es werden auch welche erzeugt, die in der realen Welt nicht existieren könnten, da entweder das Präfix nicht verwendet wird oder die Verwaltung eines Landes bestimmte Suffixe nicht zuteilen würde). Die maximale Länge kann über einen Parameter eingestellt werden.
 * **Mixed**: Wählt zufällig aus den bisherigen Möglichkeiten (zufällige Zeichengruppen, Abkürzungen, englische Wörter und Rufzeichen).
@@ -416,11 +439,16 @@ Der Upload funktioniert über WLAN von einem PC (oder Mac oder Tablett oder Smar
 Der File-Player-Modus merkt sich, wo man angehalten hat (indem man den SCHWARZEN Knopf lange drückt, um diesen Modus zu verlassen; schalte nicht einfach aus - wenn du das tust, hat der Morserino keine Chance, sich zu erinnern, wo du warst),
 und es wird dann dort fortgesetzt, wenn man den File Player das nächste Mal neu startet.
 Sobald das Ende der Datei erreicht ist, beginnt as Abspielen wieder am Anfang.
-+
+
+
+==== Kodierung von Textdateien [[encoding]]
+
 Die Datei sollte nur ASCII-Zeichen enthalten (Groß- oder Kleinschreibung spielt keine Rolle) -
 Zeichen, die nicht im Morsealphabet dargestellt werden können, werden einfach ignoriert.
 Betriebsabkürzungen (pro signs) dürfen vorhanden sein, sie müssen als 2-Zeichen-Kombinationen, eingeschlossen in  [] oder <>,  geschrieben werden, z.B. `<sk>` oder `[ka]`, oder stelle einen verkehrten Schrägstrich davor, z.B. \kn.
-+
+
+===== Betriebsabkürzungen
+
 Die folgenden Betriebsabkürzungen werden erkannt:
 ====
 ** `<ar>` : wird auf dem Display als + (Pluszeichen) angezeigt.
@@ -448,7 +476,7 @@ Im Echo Trainer Modus wird der Tonmarker ignoriert.
 
 Das dritte mögliche Sonderzeichen innerhalb von Textdateien dient dazu, **Kommentare** einzufügen. <c> oder \c in einem Wort oder auch für sich alleine machen dieses Wort und den Rest der Zeile zu einem Kommentar, der nicht vom File Player abgespielt wird.
 
-===== Zufallswiedergabe
+==== Zufallswiedergabe
 Es gibt auch einen Parameter für den File Player namens `Randomize File`. Wenn dieser auf "ON" gesetzt wird (Standardwert ist "OFF"),
 überspringt der Morserino nach jedem gesendeten Wort n Wörter  (n = Zufallszahl zwischen 0 und 255);
 Da am Dateiende wieder von vorne begonnen wird, werden irgendwann alle Wörter in der Datei vorgekommen sein (aber es kann eine Weile dauern).
@@ -819,7 +847,7 @@ Im Folgenden sind die Schritte zum Aktualisieren der Firmware über WLAN zusamme
 
 
 ==== WiFi Select
-Hier kannst du auswählen, welche Netzwerkconfiguration verwendet werden soll, wenn mehr als ein Netzwerk konfiguriert ist.
+Hier kannst du auswählen, welche Netzwerkconfiguration verwendet werden soll, wenn mehr als ein Netzwerk konfiguriert ist. SSID und Peer Host werden angezeigt, und mit dem Encoder wählt man aus den verfügbaren Konfigurationen aus.
 
 
 === Go To Sleep
@@ -1100,12 +1128,12 @@ Verbinden nun den Morserino mithilfe eines USB-Kabels mit dem Computer. Der Ger�
 
 TIP: Stelle sicher, dass du ein ein "richtiges" USB-Kabel verwendest, kein Kabel das nur zum Aufladen geeignet ist!
 
-Lade  jetzt das Update-Dienstprogramm aus Joes GitHub-Repository herunter:
+Lade  jetzt das Update-Dienstprogramm aus Joes GitHub-Repository herunter, wobei du die für dein betriebssystem passende zip-Datei wählen musst:
 https://github.com/joewittmer/Morserino-32-Firmware-Updater/releases
 
-Entpacke diese Datei. Darin ist ein Programm "update_m32.exe" - kopiere es in einen Ordner deiner Wahl (normalerweise verwende ich den Ordner ""Downloads"). Hole nun auch die binäre Morserino-Datei für die Version, die du installieren möchtest, vom Morserino GitHub, idealerweise in das selbe Verzeichnis.
+Entpacke diese Datei. Darin ist ein Programm "update_m32.exe" (so heißt es für Windows; andere betriebssysteme verwenden keine Dateinamenerweiterung)- kopiere es in einen Ordner deiner Wahl (normalerweise verwende ich den Ordner ""Downloads"). Hole nun auch die binäre Morserino-Datei für die Version, die du installieren möchtest, vom Morserino GitHub, idealerweise in das selbe Verzeichnis.
 
-Öffne nun ein Befehlsfeld auf dem Computer (gib im Suchfeld unten links auf dem Bildschirm "cmd" ein).
+Öffne nun ein Befehlsfeld auf dem Computer (Windows: gib im Suchfeld unten links auf dem Bildschirm "cmd" ein).
 
 Zuerst führe  "cd" (change directory) zu dem Verzeichnis aus, in das du das Programm und die Binärdatei gespeichert hast; z.B., falls dies das "Downloads" Verzeichnis war:
 
@@ -1115,12 +1143,19 @@ Gib nun die folgende Befehlszeile ein:
 
 `update_m32 -p <COMx> -f <binaryfilename>`
 
-Ersetze  <COMx> durch den korrekten COM-Port-Namen und <binaryfilename> durch den korrekten Namen der Morserino-Binärdatei. In meinem Fall war dies:
+Ersetze  <COMx> durch den korrekten COM-Port-Namen und <binaryfilename> durch den korrekten Namen der Morserino-Binärdatei. In meinem Fall war dies auf einem Windows-Rechner:
 
 `update_m32 -p COM3 -f m32_v4.1.ino.wifi_lora_32_V2.bin`
 
+Bzw. auf einem Mac oder Linuxrechner:
+
+`./update_m32 -p /dev/tty.usbserial-0001 -f m32_v5.1.ino.wifi_lora_32_V2.bin`
+
 Nach kurzer Zeit sollte der Morserino-32 neu starten und die aktualisierte Versionsnummer anzeigen.
 
+Es gibt auch eine Option, den Permanentspeicher des M32 komplett zu löschen, bevor die Firmware neu aufgespielt wird; dies kann helfen, wenn der Permanentspeicher aus irgend einem Grund korrumpiert ist. Um dies zu erreichen, häng einfach die Option `-e` an die Befehlszeile an, wie zum Beispiel so (hier unter OSX): 
+
+`./update_m32 -p /dev/tty.usbserial-0001 -f m32_v5.1.ino.wifi_lora_32_V2.bin -e`
 
 === Anhang 5: Verwenden des seriellen Ausgangs des Morserino-32 [[appendix5]]
 
@@ -1139,3 +1174,254 @@ Man kann die serielle Kommunikation in Verbindung mit Computersoftware verwenden
 * Morserino Phrases Trainer by Tommy, OZ1THC (see https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer).
 
 Siehe auch die Beschreibung des Parameters "Serial Output" im Abschnitt <<parameters>>.
+
+=== Anhang 6: Liste der von Morserino-32 verwendeten üblichen CW Abkürzungen[[appendix6]]
+
+Die Liste enthält Definitionen in Englisch und Deutsch, getrennt durch einen Schrägstrich. Nicht alle Abkürzungen sind in allen Sprachen gleich üblich.
+
+[horizontal]
+33::	female ham greeting / Gruß unter Funkerinnen
+44::	WFF greetings
+55::	(I wish you success) / Viel Erfolg!
+72::	QRP greeting / Gruß unter QRP Stationen
+73::	best wishes / viele Grüße
+88::	love and kisses / Alles Liebe
+99::	get lost / verschwinde!
+aa::	all after / alles nach
+ab::	all before / alles vor
+abt::	about / ungefähr, um
+ac::	alternating current / Wechselstrom
+adr::	address / Adresse
+af::	audio frequency / Niederfrequenz
+agc::	automatic gain control / automatische Verstärkungsregelung
+agn::	Again / wieder
+alc::	automatic level control / automatische Pegelanpassung
+am::	amplitude modulation / Amplitudenmodulation
+am::	ante meridiem / vormittags
+ans::	answer / Antwort
+ant::	antenna (aerial) / Antenne
+atv::	amateur TV
+avc::	automatic volume control / automatische Lautstärkeregelung
+award::	Award / Amateurfunkdiplom
+awdh::	(good bye) / auf Wiederhören
+awds::	(good bye) / auf Wiedersehen
+b4::	before / bevor
+bc::	broadcast / Rundfunk
+bci::	broadcast interference / Rundfunkstörung(en)
+bcnu::	be seeing you / hoffe dich wieder zu treffen
+bd::	bad / schlecht
+bfo::	beat frequency oscillator / Überlagerungsoszillator
+bk::	break / Aufforderung zur Unterbrechung
+bpm::	(beats per minute) / Buchstaben pro Minute
+btr::	better / besser
+btw::	by the way / nebenbei bemerkt
+bug::	Bug / mechanisch-automatische Taste
+buro::	(QSL) bureau / QSL Büro
+call::	call sign / Rufzeichen
+cfm::	confirm / bestätige
+cl::	closing / schließe meine Station
+conds::	conditions / (Ausbreitungs-)Bedingungen
+condx::	conditions for dx / Bedingungen für DX
+congrats::	congratulations / gratuliere
+cq::	cq (calling anybody) / allgemeiner Anruf
+cu::	see you / hoffe auf ein weiteres Treffen
+cuagn::	see you again / hoffe ain weiteres Treffen
+cul::	call you later / rufe dich später
+cw::	continuous wave (=Morse code) / Morsetelegrafie
+db::	deziBel
+dc::	direct current / Gleichstrom
+de::	from (call sign) / von (Rufzeichen)
+diff::	difference / Unterschied
+dr::	dear / liebe(r)
+dwn::	down / abwärts, hinab
+dx::	(great) distance / große Entfernung
+ee::	end / Ende
+el::	(antenna) element(s) / (Antennen) Element(e)
+elbug::	Elbug = electronic bu) / Elbug (elektronische autom. Taste)
+es::	and / und
+excus::	excuse me / Entschuldigung
+fb::	fine business / ausgezeichnet
+fer::	for / für
+fm::	frequency modulation / Frequenzmodulation
+fone::	telephony / Telefonie
+fr::	for / für
+frd::	friend / Friend
+freq::	frequency / Frequenz
+fwd::	forward / vorwärts
+ga::	(good evening) / Guten Abend
+gb::	good bye / Auf Wiedersehen
+gd::	good / gut
+gd::	good day / guten Tag
+ge::	good evening / guten Abend
+gl::	good luck / viel Glück
+gm::	good morning / guten Morgen
+gn::	good night / gute Nacht
+gnd::	ground / Erde (Erdpotenzial)
+gp::	ground plane / Groundplane-Antenne
+gs::	greenstamp / 1-Dollar-Note
+gt::	(good day) / guten Tag
+gud::	good / gut
+ham::	ham (radio amateur) / Funkamateur
+hf::	high frequency / Hochfrequenz
+hi::	hi(larious) – laughing / ich lache
+hpe::	hope / ich hoffe
+hr::	here / hier
+hrd::	heard /  gehört
+hrs::	hours /  Stunden
+hv::	have / habe
+hvy::	heavy / schwer
+hw::	how (copy) / wie werde ich gehört?
+i::	I / ich
+iaru::	International Amateur Radio Union
+if::	intermediate frequency / Zwischenfrequenz
+ii::	I repeat / ich wiederhole
+info::	information / Information
+inpt::	input / Eingangsleistung
+irc::	international return coupon / internationaler Antwortschein
+itu::	International Telecommunications Union / internationale Fernmeldeunion
+k::	come (please answer) / bitte kommen (bitte antworten)
+khz::	kiloHertz
+km::	kiloMeter
+kw::	kiloWatt
+ky::	key / Morsetaste
+lbr::	(dear) / lieber
+lf::	low frequency / Niederfrequenz
+lid::	bad operator / Funker mit schlechter Betriebstechnik
+lis::	licensed / lizenziert
+lng::	long / lang
+loc::	locator / Standort(kenner)
+log::	log book / Stationstagebuch
+lp::	long path / langer Ausbreitungsweg
+lsb::	lower sideband / unteres Seitenband
+luf::	lowest usable frequency / niedrigste brauchbare Frequenz
+lw::	long wire (antenna) / Langdrahtantenne
+ma::	milliAmpere
+mesz::	(middle European summer time) / mitteleuropäische Sommerzeit
+mez::	(middle Europena time) / mitteleuropäische Zeit(zone)
+mgr::	(QSL) manager /  (QSL-)Manager
+mhz::	megaHertz
+min::	minute / Minute
+mins::	minutes / Minuten
+mm::	maritime mobile / Station auf einem Schiff zur See
+mni::	many / viele
+mod::	modulation /  Modulation
+msg::	message / Nachricht
+mtr::	meter / Messinstrument
+muf::	maximum usable frequency / höchste brauchbare Frequenz
+my::	my / mein
+n::	no / nein, kein
+net::	network / (Funk-)Netzwerk
+nf::	(low frequency) / Niederfrequenz
+nil::	nothing /  nichts
+no::	no / nein, kein
+nr::	near / nahe
+nr::	number / Nummer
+nw::	now / jetzt
+ok::	ok / in Ordnung
+om::	old man, ham / Anrede f. Funkamateur
+op::	operator / Funker
+osc::	oscillator / Oszillator
+oscar::	OSCAR (satellite) / OSCAR Amateurfunksatellit
+output::	output / Ausgangsleistung
+ow::	old woman / Funkamateurin
+pa::	power amplifier / Endstufe, Leistungsverstärker
+pep::	peak envelop power / Hüllkurvenspitzenleistung
+pm::	post meridiem, afternoon / Nachmittag
+pse::	please / bitte
+psed::	pleased /  erfreut
+pwr::	power / Leistung
+px::	prefix / Präfix, Landeskenner
+qaz:: closing because of thunderstorm / ich beende wegen Gewitter
+qra::	name of my station is… / der Name meiner Funkstelle ist
+qrb::	distance between  stations is … / Entfernung zisachen den Stationen ist…
+qrg::	exact frequency is … / genaue Frequenz ist ...
+qrl::	I am busy, don’t interfere / bin beschäftigt, bitte nicht stören
+qrm::	interference / Störung
+qrn::	atmosperic noise (static) / atmosphärische Störungen
+qro::	increase power / erhöhe die Senderleistung
+qrp::	decrease power / vermindere die Senderleistung
+qrq::	send faster / gib schneller
+qrs::	send slower / gib langsamer
+qrt::	suspending operation / Einstellen des Sendebetriebs
+qru::	I have nothing (more)  for you / ich habe nichts (weiteres) für dich
+qrv::	I am ready / ich bin betriebsbereit
+qrx::	will call you again (on frequ. …) / werde dich wieder anrufen (auf Frequ. …)
+qrz::	you are called by … / du wirst von … gerufen
+qsb::	your signals are fading / die Stärke deiner Zeichen schwankt
+qsk::	I can hear between my signals / ich kann zwischen meinen Zeichen hören
+qsl::	I acknowledge receipt / ich gebe Empfangsbestätigung
+qso::	I can communicate (with …) directly / ich kann direkt (mit …) verkehren
+qsp::	I will relay (to …) / ich werde (an …) vermitteln
+qst::	broadcasting to all / Nachricht an alle
+qsy::	change (transmit) frequency to … / ändere (Sende-)frequenz auf…
+qsz::	send each word twice / jedes Wort zweimal senden
+qtc::	I have messages for you / ich habe Nachrichten für dich
+qth::	my position is … / mein Standort ist …
+qtr::	correct time UTC is … / genaue Zeit UTC ist …
+r::	right, received, ‚roger‘ / richtig, (korrekt) empfangen
+rcvd::	received / empfangen
+re::	regarding / bezüglich
+ref::	reference /  Bezug, Referenz
+rf::	radio frequency / Hochfrequenz
+rfi::	radio frequency interference / Hochfrquenzstörung
+rig::	rig, equipment / Stationseinrichtung, -ausstattung
+rprt::	report / Rapport (Empfangsbericht)
+rpt::	repeat / wiederhole
+rst::	RST (readability, signal strength, tone) / Lesbarkeit, Lautstärke, Ton
+rtty::	radio teletype / (Funk-)Fernschreiben
+rx::	receiver / Empfänger
+sase::	self addressed stamped envelope / frankiertes Kuvert mit eigener Adresse
+shf::	super high frequency / Zentimeterwellenbereich
+sigs::	signs / Zeichen
+sked::	schedule / Verabredung
+sn::	soon / bald
+sp::	short path / kurzer Ausbreitungsweg
+sri::	sorry / tut mir leid
+ssb::	single sideband / Einseitenbandmodulation
+sstv::	slow scan tv / Schmalbandfernsehen
+stn::	station / Station
+sure::	sure / sicher
+swl::	short wave listener / Kurzwellenhörer
+swr::	standin wave ratio / Stehwellenverhältnis
+t::	turns, tera-, abbr. f. 0 / Windungen, tera-, Abk. f. 0
+temp::	temperature / Temperatur
+test::	test, contest / Versuch, Kontest
+tia::	thanks in advance / danke vorab
+tks::	thanks / danke  
+tnx::	thanks / danke  
+trx::	transceiver / Sendeempfänger
+tu::	thank you / danke dir
+tvi::	TV interference / Fernsehstörungen
+tx::	transmitter / Sender
+u::	you / du (Sie)
+ufb::	ultra fine business / ganz ausgezeichnet
+uhf::	ultra high frequency / Ultrakurzwelle, Dezimeterwellenbereich
+ukw::	(very high frequency, vhf) / Ultrakurzwelle
+unlis::	unlicensed / unlizensiert (Pirat)
+up::	up / nach oben
+ur::	your / dein
+usb::	upper sideband / oberes Seitenband
+utc::	universal time coordinated / Koordinierte Weltzeit
+v::	variable (frequency), voice / variable (Frequenz), Telefonie
+vert::	vertical (antenna) / Vertikalantenne
+vfo::	variable frequency oscillator / Oszillator mit einstellbarer Frequenz
+vhf::	very high frequency / UKW-Bereich, Meterwellenbereich
+vl::	(many) / viel
+vln::	(many) / vielen
+vy::	very / sehr
+w::	Watt
+watts::	watts / Watt (plural)
+wid::	with / mit
+wkd::	worked / gearbeitet
+wkg::	working / arbeite gerade
+wl::	will / werde
+wpm::	words per minute / Wörter pro Minute
+wtts::	watts / Watt (plural)
+wx::	weather / Wetter
+xcus::	excuse me / Entschuldigung
+xcvr::	transceiver / Sendeempfänger
+xmas::	christmas / Weihnachten
+xtal::	crystal / Quarz
+xyl::	ex young lady, wife / Ehefrau
+yl::	young lady, woman / Frau, Fräulein
+z::	zulu time / Greenwich-Zeit

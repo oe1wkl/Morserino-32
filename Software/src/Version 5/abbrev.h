@@ -7,9 +7,9 @@
 namespace Abbrev
 {
 
-  const int ABBREV_NUMBER_OF_ELEMENTS = 243;                                    // how many items all together?
+  const int ABBREV_NUMBER_OF_ELEMENTS = 245;                                    // how many items all together?
   const int ABBREV_MAX_SIZE = 9;                                                // longest item +1
-  const int ABBREV_POINTER[] = {0, 234, 149, 41, 11, 2, 1, 0};// array where items start with length = index
+  const int ABBREV_POINTER[] = {0, 236, 151, 41, 11, 2, 1, 0};// array where items start with length = index
   
   const String abbreviations[ABBREV_NUMBER_OF_ELEMENTS]  = { 
     { "congrats" },   /// l = 8
@@ -107,6 +107,7 @@ namespace Abbrev
     { "pep" },
     { "pse" },
     { "pwr" },
+    { "qaz" },
     { "qra" },
     { "qrb" },
     { "qrg" },
@@ -129,6 +130,7 @@ namespace Abbrev
     { "qsp" },
     { "qst" },
     { "qsy" },
+    { "qsz" },
     { "qtc" },
     { "qth" },
     { "qtr" },
@@ -161,7 +163,7 @@ namespace Abbrev
     { "wkg" },
     { "wpm" },
     { "xyl" },
-    { "33" },         //// l=2 pos = 149
+    { "33" },         //// l=2 pos = 151
     { "44" },
     { "55" },
     { "72" },
@@ -246,7 +248,7 @@ namespace Abbrev
     { "wl" },
     { "wx" },
     { "yl" },
-    { "i" },        /// l = 1; pos = 234
+    { "i" },        /// l = 1; pos = 236
     { "k" },
     { "n" },
     { "r" },

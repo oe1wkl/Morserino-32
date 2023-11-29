@@ -342,7 +342,7 @@ uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 
   uint8_t MorsePreferences::kochMaximum = 52;
   String  MorsePreferences::customCharSet = "";               // a place to store the custom character set
   boolean MorsePreferences::useCustomChars = false;           // flag if we should use custom characters
-  uint8_t MorsePreferences::responsePause = 5;                // in echoTrainer mode, how long do we wait for response? in interWordSpaces; 2-12, default 5
+  //uint8_t MorsePreferences::responsePause = 5;                // in echoTrainer mode, how long do we wait for response? in interWordSpaces; 2-12, default 5
 
   uint8_t MorsePreferences::menuPtr = 1;                      // current position of menu
   uint8_t MorsePreferences::newMenuPtr = 1;                   // current position of menu when changed
@@ -360,7 +360,7 @@ uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 
   String  MorsePreferences::wlanTRXPeer3 = "";                 // peer Morserino for WiFI TRX
 
   uint32_t MorsePreferences::fileWordPointer = 0;             // remember how far we have read the file in player mode / reset when loading new file
-  uint8_t MorsePreferences::promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
+  //uint8_t MorsePreferences::promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
   uint8_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
   uint8_t MorsePreferences::tRight = 20;                      // threshold for right paddle
 
@@ -373,6 +373,9 @@ uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 
 
   uint8_t MorsePreferences::oledBrightness = 255;
 
+//////// variables for storing CW memories
+char MorsePreferences::cwMem[8][48];                                            // to be stored as String objects in permamnent memory
+uint8_t MorsePreferences::cwMemMask = 0;
 
 //////// end of variables stored in preferences
 
@@ -943,6 +946,8 @@ void MorsePreferences::readPreferences(String repository) {
       MorsePreferences::wlanPassword3 = pref.getString("wlanPassword3");
       MorsePreferences::wlanTRXPeer3 = pref.getString("wlanTRXPeer3", "");
 
+      MorsePreferences::getCwMem();
+
       if ((temp = pref.getUChar("brightness")))
          MorsePreferences::oledBrightness = temp;
 
@@ -1158,7 +1163,6 @@ void MorsePreferences::writePreferences(String repository) {
   updateTimings();
 
   pref.end();
-// DEBUG("end l. 1087");
 }
 
 
@@ -1169,7 +1173,6 @@ boolean  MorsePreferences::recallSnapshot() {         // return true if we selec
     MorsePreferences::memPtr = 0;
     displayKeyerPreferencesMenu(posSnapRecall);
     if (!adjustKeyerPreference(posSnapRecall)) {
-        //DEBUG("recall memPtr: " + String(memPtr));
         text = "Snap " + String(MorsePreferences::memories[MorsePreferences::memPtr]+1) + " RECALLD";
         if(MorsePreferences::memCounter) {
           if (MorsePreferences::memPtr != MorsePreferences::memCounter)  {
@@ -1202,7 +1205,6 @@ boolean MorsePreferences::storeSnapshot(uint8_t menu) {        // return true if
     displayKeyerPreferencesMenu(posSnapStore);
     adjustKeyerPreference(posSnapStore);
     Buttons:: volButton.Update();
-        //DEBUG("store memPtr: " + String(memPtr));
     if (MorsePreferences::memPtr != 8)  {
         doWriteSnapshot(memPtr, menu);
         text = "Snap " + String(MorsePreferences::memPtr+1) + " STORED ";
@@ -1243,7 +1245,6 @@ void MorsePreferences::updateMemory(uint8_t temp) {         // temp is a bitmap,
           }
           t = t >> 1;   // shift one position to the right
         }
- //DEBUG("update Memory: positions = " + String(MorsePreferences::memCounter));     
 }
 
 void MorsePreferences::clearMemory(uint8_t ptr) {
@@ -1455,6 +1456,32 @@ void MorsePreferences::writeWifiInfo(String ssid, String passwd, String trxpeer)
 void MorsePreferences::setCurrentOptions(prefPos *current, int size) {
   MorsePreferences::currentOptions = current;
   currentOptionSize = size;
+}
+
+void MorsePreferences::setCwMem(uint8_t number, String value) {           // store CW memories in preferences
+  String memName = "cwmem" + String(number);
+  char buf[8];
+  memName.toCharArray(buf,7);
+  pref.begin("morserino", false);     // open read/write
+  if (value != "")
+    pref.putString(buf, value);
+  else
+    pref.remove(buf);
+  pref.end();
+}
+
+void MorsePreferences::getCwMem() {
+  char buf[8];
+  String value; value.reserve(48);
+  MorsePreferences::cwMemMask = 0;
+  for (uint8_t i = 1; i<9; ++i) {
+    String memName =  "cwmem" + String(i);
+    memName.toCharArray(buf,7);
+    value = pref.getString(buf, "");
+    value.toCharArray(MorsePreferences::cwMem[i-1],48);
+    if (value != "")
+        MorsePreferences::cwMemMask |= 1 << (i-1);
+  }
 }
 
 //////// methods for class Koch ///////////////////////////////////////////////////////
