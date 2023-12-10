@@ -582,7 +582,7 @@ The order of the characters learned has not been strictly defined by Koch, and t
 
 ::	There is also an option to select the sequence of characters. In addition to the native sequence of characters, you can choose  the sequence that is used by the popular on-line training tool "Learn CW On-line" (LCWO), or the sequence the CW Ops CW Academy courses are using, or the order of "Carousel" curriculum of the Long Island CW (LICW) Club. This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
 
-::	In the case of attending a course with LICW, you should also set the parameter "LICW Carousel" according to your entry point into their curriculum (eg. if you start a course within BC1 - Basic Course 1 - with the characters p, g and s, set this pareameter to "BC1: p g s". All further characters you are going to learn in BC1 will be reflected in the same order as your Koch lessons in teh Morserino. Once you have finished BC1, you will enroll in BC2, say beginning with characters 7, 3 and ?, and so you should now set this parameter to "BC2: 7 3 ?".)
+::	In the case of attending a course with LICW, you should also set the parameter "LICW Carousel" according to your entry point into their curriculum (eg. if you start a course within BC1 - Basic Course 1 - with the characters p, g and s, set this pareameter to "BC1: p g s". All further characters you are going to learn in BC1 will be reflected in the same order as your Koch lessons in the Morserino. Once you have finished BC1, you will enroll in BC2, say beginning with characters 7, 3 and ?, and so you should now set this parameter to "BC2: 7 3 ?".)
 
 The sequence of characters when "LCWO" is chosen is as follows:
 
@@ -1127,7 +1127,7 @@ TIP: Make sure you have a cable that is a "proper" USB cable, not just a cable f
 Now download the update utility from Joe's GitHub repository, making sure you get the correct zip File for your operating system:
 https://github.com/joewittmer/Morserino-32-Firmware-Updater/releases
 
-Unzip that file. You will find a program (in teh case of the Windows OS) "update_m32.exe" (without a filename extension for other operating systems)- copy that to a folder of your choice (I usually prefer the folder Downloads). Now get the binary Morserino file for the version you want to install from the Morserino GitHub, ideally into the same directory.
+Unzip that file. You will find a program (in the case of the Windows OS) "update_m32.exe" (without a filename extension for other operating systems)- copy that to a folder of your choice (I usually prefer the folder Downloads). Now get the binary Morserino file for the version you want to install from the Morserino GitHub, ideally into the same directory.
 
 Now open a command box on your computer (for Windows: in the search field in the lower left of the screen start typing "cmd" and it will come up for selection). First "cd" (change directory) to the directory where the utility and the binary file are located; e.g., if you used the Downloads directory:
 
