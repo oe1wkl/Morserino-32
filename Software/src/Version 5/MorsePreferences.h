@@ -205,7 +205,7 @@ class Koch {
     String kochCharSet;
     String licwKochChars;
     const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNEB@:";
-    const String cwacKochChars =      "teanois14rhdl25ucmw36?fypg79/bvkj80=xqzBK.,-+ASNE@:";
+    const String cwacKochChars =      "teanois14rhdl25ucmw36?fy,pgq79/bv+kj80=xzBK.-ASNE@:";
     //uint8_t kochCharsLength;
     void createWords(uint8_t, uint8_t);
     void createAbbr(uint8_t, uint8_t);
