@@ -927,13 +927,13 @@ These parameters control the behavior of the paddles (built in or external), in 
 
 | Keyer Mode     | Sets the Iambic Mode (A or B),  Ultimatic, Non-Squeeze or Straight Key; see the section <<keyer>>  | Curtis A / Curtis B / Ultimatic / Non-Squeeze / Straight Key
 
-| CurtisB DahT% | Timing in Curtis B mode for dahs; see below     | 0 -- 100, in steps of 5 [**35 - 55**]
+| CurtisB DahT% | Timing in Curtis B mode for dahs; see the section <<keyer>>      | 0 -- 100, in steps of 5 [**35 - 55**]
 
-| CurtisB DitT% | Timing in Curtis B mode for dits; see below     | 0 -- 100, in steps of 5 [**55 - 100**]
+| CurtisB DitT% | Timing in Curtis B mode for dits; see the section <<keyer>>      | 0 -- 100, in steps of 5 [**55 - 100**]
 
 | AutoChar Spce   | Minimum spacing between characters  | Off / min. 2 / **3** / 4 dots
 
-| Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf“. If it is 0, you have to release the paddle while the last element is still „on“. If set to 7, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0 and 7, meaning 0/8 to 7/8 of a dot length (default is **4**, i.e. half a dot length).
+| Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf“. If it is 0%, you have to release the paddle while the last element is still „on“. If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length).
 
 |===
 

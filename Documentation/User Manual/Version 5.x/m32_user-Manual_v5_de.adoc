@@ -936,7 +936,7 @@ Diese Parameter steuern das Verhalten der Paddles (eingebaut oder extern), insbe
 
 | AutoChar Spce   | Minimaler Abstand zwischen den Zeichen, in Längen eines Dits.  | Off / min. 2 / **3** / 4 dots
 
-| Latency | Legt fest, wie lange nach dem Erzeugen des aktuellen Elements (Punkt oder Strich) die Paddel "taub" sind. Wenn der Wert 0 ist, muss man das Paddel loslassen, während das letzte Element noch "an" ist. Ist der Wert auf 7 eingestellt, reagieren die Paddel erst nach 7/8 einer Punktlänge auf eine Berührung. | Ein Wert zwischen 0 und 7, also 0/8 bis 7/8 einer Punktlänge (Standardwert ist **4**, d.h. eine halbe Punktlänge).
+| Latency | Legt fest, wie lange nach dem Erzeugen des aktuellen Elements (Punkt oder Strich) die Paddel "taub" sind. Wenn der Wert 0% ist, muss man das Paddel loslassen, während das letzte Element noch "an" ist. Ist der Wert auf 87.5% eingestellt, reagieren die Paddel erst nach 7/8 einer Punktlänge auf eine Berührung. | Ein Wert zwischen 0% und 87.5%, also 0/8 bis 7/8 einer Punktlänge (Standardwert ist **50%**, d.h. eine halbe Punktlänge).
 
 |===
 
@@ -1153,7 +1153,7 @@ Bzw. auf einem Mac oder Linuxrechner:
 
 Nach kurzer Zeit sollte der Morserino-32 neu starten und die aktualisierte Versionsnummer anzeigen.
 
-Es gibt auch eine Option, den Permanentspeicher des M32 komplett zu löschen, bevor die Firmware neu aufgespielt wird; dies kann helfen, wenn der Permanentspeicher aus irgend einem Grund korrumpiert ist. Um dies zu erreichen, häng einfach die Option `-e` an die Befehlszeile an, wie zum Beispiel so (hier unter OSX): 
+Es gibt auch eine Option, den Permanentspeicher des M32 komplett zu löschen, bevor die Firmware neu aufgespielt wird; dies kann helfen, wenn der Permanentspeicher aus irgend einem Grund korrumpiert ist. Um dies zu erreichen, häng einfach die Option `-e` an die Befehlszeile an, wie zum Beispiel so (hier unter OSX):
 
 `./update_m32 -p /dev/tty.usbserial-0001 -f m32_v5.1.ino.wifi_lora_32_V2.bin -e`
 
