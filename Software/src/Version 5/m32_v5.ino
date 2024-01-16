@@ -386,8 +386,6 @@ void setup()
    //// 7. check for press of key/paddle at start, to initiate hw config
    //// 8. do the remaining initialisations
 
-  Serial.begin(115200);
-  delay(50); // give me time to bring up serial monitor
   // reserve 200 bytes for the serial inputString variable defiend above:
   inputString.reserve(255);
 
@@ -2719,7 +2717,7 @@ void serialEvent() {
         inputString += inChar;
         // if the incoming character is a newline, set a flag so the main loop can
         // do something about it:
-        if (inChar == '\n') {
+        if (inChar == '\n' || inChar == '\r') {
           stringComplete = true;
           break;
         }
