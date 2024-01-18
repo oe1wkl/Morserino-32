@@ -356,7 +356,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       msg = "Connected! " + MorsePreferences::wlanSSID + " - " + WiFi.localIP().toString();
                       MorseOutput::printOnStatusLine( true, 0,  "Connected!    ");
                       MorseOutput::printOnScroll(0, REGULAR, 0, MorsePreferences::wlanSSID);
-                      MorseOutput::printOnScroll(1, REGULAR, 0, WiFi.localIP().toString());
+                      MorseOutput::printOnScroll(1, REGULAR, 0, WiFi.localIP().toString(), true);
                   }
                   //WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi                      
                   delay(1000);
@@ -492,7 +492,7 @@ void MorseWiFi::updateFirmware()   {                   /// start wifi client, we
   MorseOutput::printOnStatusLine( true, 0, "Waiting f. Update ");
   MorseOutput::printOnScroll(0, REGULAR, 0,  "URL: m32.local");
   MorseOutput::printOnScroll(1, REGULAR, 0,  "IP:");
-  MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString());
+  MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString(), true);
   while(true) {
     server.handleClient();
     delay(10);

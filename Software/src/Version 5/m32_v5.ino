@@ -587,7 +587,7 @@ void displayStartUp(uint16_t volt) {
     vsn += " beta";
   s += vsn;
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
-  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2023");
+  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2024");
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
   
@@ -612,7 +612,17 @@ void loop() {
    int t;
 
    m32state = active_loop;
+
+   if (playCW) {
+                  if (checkPaddles()) {
+                    stopPlayCw();
+                    while (checkPaddles())
+                      ;
+                    return;
+                  }
+   }
    
+                  
    switch (keyerState) {
       case DIT:
       case DAH:
@@ -624,25 +634,20 @@ void loop() {
    
    switch (morseState) {
       case morseKeyer:    if (doPaddleIambic(leftKey, rightKey)) {
-                              if (playCW) 
-                                stopPlayCw();
                               return;                                                        // we are busy keying and so need a very tight loop !
                           }
-                          if (playCW)
-                            generateCW();
+                          if (playCW) 
+                              generateCW();
                           break;
+                          
       case loraTrx:      
       case wifiTrx:       if (doPaddleIambic(leftKey, rightKey)) {
-                              if (playCW) 
-                                stopPlayCw();
                               return;                                                        // we are busy keying and so need a very tight loop !
                           }
                           generateCW();
                           break;
 
       case morseTrx:      if (doPaddleIambic(leftKey, rightKey)) {
-                              if (playCW) 
-                                  stopPlayCw();
                               return;                                                        // we are busy keying and so need a very tight loop !
                           } 
                           if (playCW)

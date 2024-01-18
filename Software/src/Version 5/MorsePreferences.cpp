@@ -654,8 +654,15 @@ void MorsePreferences::displayValueLine(prefPos pos, String itemText, boolean js
           jsonMenu(MorseMenu::getMenuPath(MorsePreferences::menuPtr) + "/" + jsonValueLine, (unsigned int) MorsePreferences::menuPtr, 
               (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr));
     }
-    if (! jsonOnly) 
-      MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
+    if (! jsonOnly) {
+      if (pos == posSnapStore) {
+        uint8_t mask = 1;
+        mask = mask << MorsePreferences::memPtr;
+        MorseOutput::printOnScroll(2, MorsePreferences::snapShots & mask ? BOLD : REGULAR, 1, valueLine);
+        }
+      else
+        MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
+    }
 }
 
 int MorsePreferences::getValue(prefPos pos) {     /// a value to return for m32protocol

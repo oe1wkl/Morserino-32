@@ -18,6 +18,17 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.5.1.1
+
+#### Feature Modifications
+* CW Academy has changed the order of characters in their course. This has been taken into account in Morserino’s CWA character sequence.
+
+#### Bug Fixes:
+* When using the CW memory, the automatic playing of the memory could only be stopped when using an iambic mode, but you could not stop it when using a straight key. Fixed.
+* When an IP address with 4 times 3 digits was displayed, the last digit was not completely visible on screen (because the font was too big for 15 chars on a line). Fixed (using a smaller font).
+* When storing snapshots, already used snapshot locations should have been shown in bold face, but this was not the case. Fixed.
+
+
 ### Changes V.5.1
 
 #### Feature Modifications / Improvements

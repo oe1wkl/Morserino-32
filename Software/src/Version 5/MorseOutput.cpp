@@ -303,18 +303,24 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
 /// place a string onto the scroll area; line = 0, 1 or 2
 
-uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring) {
+uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring, boolean small) {
   uint8_t w;
 // DEBUG("pos: " + String(xpos) + " >" + mystring + "<");
   if (how > BOLD)
     Heltec.display -> setColor(WHITE);
   else
     Heltec.display -> setColor(BLACK);
-
-  if (how & BOLD)
-    Heltec.display -> setFont(DialogInput_bold_15);
-  else
-    Heltec.display -> setFont(DialogInput_plain_15);
+if (small) {
+if (how & BOLD)
+      Heltec.display -> setFont(DialogInput_bold_12);
+    else
+      Heltec.display -> setFont(DialogInput_plain_12);
+  } else {
+    if (how & BOLD)
+      Heltec.display -> setFont(DialogInput_bold_15);
+    else
+      Heltec.display -> setFont(DialogInput_plain_15);
+  }
 
   Heltec.display -> setTextAlignment(TEXT_ALIGN_LEFT);
 
@@ -332,6 +338,39 @@ uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, 
   resetTOT();
   return w;         // we return the actual width of the output, in case of converted UTF8 characters
 }
+
+/*
+uint8_t MorseOutput::printOnScrollSmall(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring) {
+  uint8_t w;
+// DEBUG("pos: " + String(xpos) + " >" + mystring + "<");
+  if (how > BOLD)
+    Heltec.display -> setColor(WHITE);
+  else
+    Heltec.display -> setColor(BLACK);
+
+  if (how & BOLD)
+    Heltec.display -> setFont(DialogInput_bold_12);
+  else
+    Heltec.display -> setFont(DialogInput_plain_12);
+
+  Heltec.display -> setTextAlignment(TEXT_ALIGN_LEFT);
+
+  // convert the array characters into a String object
+  w = Heltec.display -> getStringWidth(mystring);
+  Heltec.display -> fillRect(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT , w, LINE_HEIGHT + 1);
+
+  if (how > BOLD)
+    Heltec.display -> setColor(BLACK);
+  else
+    Heltec.display -> setColor(WHITE);
+
+  Heltec.display -> drawString(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT, mystring);
+  Heltec.display -> display();
+  resetTOT();
+  return w;         // we return the actual width of the output, in case of converted UTF8 characters
+}
+*/
+
 
 /// clear the three lines of the display area
 

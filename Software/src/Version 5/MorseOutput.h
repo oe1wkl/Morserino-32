@@ -30,7 +30,7 @@ namespace MorseOutput
   void clearBuffer();
   void refreshScrollArea(int relPos);
   void refreshScrollLine(int bufferLine, int displayLine);
-  uint8_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring);
+  uint8_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring, boolean small = false);
   void printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll);   
   void printToScroll_internal(FONT_ATTRIB style, String text, boolean scroll);
   void clearThreeLines();

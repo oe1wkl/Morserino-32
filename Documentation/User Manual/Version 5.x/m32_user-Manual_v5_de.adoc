@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v5.1 November 2023
+v5.1.1 Januar 2024
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
