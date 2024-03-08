@@ -103,7 +103,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 
 17. Montiere zuerst die 15 mm-Abstandsbolzen (weiblich / weiblich) mit den mitgelieferten Metallschrauben an der oberen Platte des Gehäuses. Die Bolzen sollten sich unter der Platte befinden, und die eingravierten Inschriften von oben lesbar sein.
 
-18. Befestige den Antennenstecker an der oberen Platte. Verwende dazu die gezahnte Unterlegscheibe an der Unterseite und den Federring sowie die Mutter an der Oberseite (sie sollte fest sitzen, aber auf das Acrylglas keinen zu hohen Druck ausüben, da dieses sonst springen könnte; überprüfe des öfteren, ob der NAschluss fest sitzt - häufiges Entfernen und Anschließen der Antenne kann die Befestigung lockern).
+18. Befestige den Antennenstecker an der oberen Platte. Verwende dazu die gezahnte Unterlegscheibe an der Unterseite und den Federring sowie die Mutter an der Oberseite (sie sollte fest sitzen, aber auf das Acrylglas keinen zu hohen Druck ausüben, da dieses sonst springen könnte; überprüfe des öfteren, ob der Anschluss fest sitzt - häufiges Entfernen und Anschließen der Antenne kann die Befestigung lockern).
 
 	![Antenna connector](Images/sma_connector.jpg)
 
