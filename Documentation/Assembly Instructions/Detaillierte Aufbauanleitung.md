@@ -90,7 +90,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
  *Dünnes doppelseitiges Klebeband*
 
 
-13. **(Empfohlen):** Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um festzustellen, dass wir nirgendwo einen Kurzschluss erzeugt haben. Es sollte einen relativ hohen Widerstand aufweisen (> 100 kOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebn dann den Schalter wieder in die Position OFF.
+13. **(Empfohlen):** Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um festzustellen, dass wir nirgendwo einen Kurzschluss erzeugt haben. Es sollte einen relativ hohen Widerstand aufweisen (> 100 kOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebe dann den Schalter wieder in die Position OFF.
 
 14. Stecke den Stecker des Akkus in den Molex-Anschluss.
 
