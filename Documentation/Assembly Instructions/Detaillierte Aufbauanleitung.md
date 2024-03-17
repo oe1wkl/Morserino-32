@@ -252,7 +252,7 @@ Bauteile für das Gehäuse:
 
  #### Vorbereitung - Benötigt werden:
  * Aufgebauter Morserino-32 mit angebrachten Touchpaddels
- * Audiokabel mit 3,5 mm 4-poligen Klinkenstekcern an beiden Enden
+ * Audiokabel mit 3,5 mm 4-poligen Klinkensteckern an beiden Enden
  * Audiokabel mit 3,5 mm 2-poligen oder 3-poligen Klinkensteckern an beiden Enden
  * Krokodilklemmenkabel (mit sehr kleinen Krokoklemmen)
  * Kleiner flacher Schraubendreher zur Bedienung des blauen Trimmers
