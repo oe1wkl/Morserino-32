@@ -1,6 +1,6 @@
 # Morserino-32 Technical Overview
 
-The Morserino-32 is based on the Heltec WiFi LORA 32 V.2 module (see http://www.heltec.cn/project/wifi-lora-32/?lang=en). This module comes with mayn integrated features, that really build the core of Morserino-32's functionality:
+The Morserino-32 is based on the Heltec WiFi LORA 32 V.2 module (see http://www.heltec.cn/project/wifi-lora-32/?lang=en). This module comes with many integrated features, that really build the core of Morserino-32's functionality:
 
 * MCU (ESP32, 240 MHz clock speed), RAM (520 KB SRAM) and Flash Memory (64 MB)
 * OLED monochrome graphics display (128x64 pixels)
@@ -13,11 +13,11 @@ So in fact we only need some periphery to turn this jewel into a multi-functiona
 As ESP32 MCU already has touch input (we use Pins 2 and 12), we only need to supply the mechanics. Two paddles made from PCB material are connected to the mainboard through PCB edge connectors.
 
 #### External Paddles
-A 3-pole phone jack offers connectivity to two ESP32 GPIO pins (Pins 32 und 33) that are pulled-up to 3.3 V.
+A 3-pole phone jack offers connectivity to two ESP32 GPIO pins (Pins 32 and 33) that are pulled-up to 3.3 V.
 
 
 #### Audio for Loudspeaker or Headphones
-Two output pins of the ESP32 (Pins 22 asn 23) are being used to generate an audio signal with the volume controlled by software: one pin generates a square signal with the desired frequency and 50& duty cycle, another output creates a high frequency signal (32 kHz) with a variable duty cycle. These two signals are mixed with the help of an AND gate made from two discrete transistors (T1 and T2), thus creating a puls-width modulated audio signal, with the resulting signal fed directly into a 60 Ohm loudspeaker. The speaker acts as a cheap low pass filter, thus changing the pulse-width modulation into amplitude modulation.
+Two output pins of the ESP32 (Pins 22 and 23) are being used to generate an audio signal with the volume controlled by software: one pin generates a square signal with the desired frequency and 50% duty cycle, another output creates a high frequency signal (32 kHz) with a variable duty cycle. These two signals are mixed with the help of an AND gate made from two discrete transistors (T1 and T2), thus creating a puls-width modulated audio signal, with the resulting signal fed directly into a 60 Ohm loudspeaker. The speaker acts as a cheap low pass filter, thus changing the pulse-width modulation into amplitude modulation.
 
 For headphone use the speaker is replaced with a resistor (R11)  and the two speakers of the headphone in series, to bring the audio level down to a comfortable level.
 
@@ -44,4 +44,4 @@ A LiPo battery is connected to the ESP32's battery charging circuitry through a 
 #### Serial Port
 On the PCB there is a provison for 4 pin headers (to the left of the external paddles connector). Through this connector you can connect external devices through the serial port of the ESP32 (the headers are marked as **R** (Receive), **T** (Transmit), **+** (3.3V) and **-** (ground). R and T are connected to Pins RX and TX of the ESP32, the positive voltage taken from the VEXT pin.
 
-Thsi could be used, for example, to connect a GPS module to the Morserino-32. While this is currently not supported by software, it would be relatively straightforward to create a LoRa APRS beacon.
+This could be used, for example, to connect a GPS module to the Morserino-32. While this is currently not supported by software, it would be relatively straightforward to create a LoRa APRS beacon.

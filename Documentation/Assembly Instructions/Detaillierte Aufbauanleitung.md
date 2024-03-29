@@ -90,7 +90,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
  *Dünnes doppelseitiges Klebeband*
 
 
-13. **(Empfohlen):** Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um festzustellen, dass wir nirgendwo einen Kurzschluss erzeugt haben. Es sollte einen relativ hohen Widerstand aufweisen (> 100 kOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebn dann den Schalter wieder in die Position OFF.
+13. **(Empfohlen):** Ich würde jetzt den Batterieanschluss mit einem Ohmmeter überprüfen, nachdem ich den Schiebeschalter auf ON gestellt habe, um festzustellen, dass wir nirgendwo einen Kurzschluss erzeugt haben. Es sollte einen relativ hohen Widerstand aufweisen (> 100 kOhm). Wenn es nahe 0 Ohm anzeigt, überprüfe die Verkabelung! Schiebe dann den Schalter wieder in die Position OFF.
 
 14. Stecke den Stecker des Akkus in den Molex-Anschluss.
 
@@ -103,7 +103,7 @@ Der rote Draht muss auf der Seite sein, wo am Heltec-Modul ein + aufgedruckt ist
 
 17. Montiere zuerst die 15 mm-Abstandsbolzen (weiblich / weiblich) mit den mitgelieferten Metallschrauben an der oberen Platte des Gehäuses. Die Bolzen sollten sich unter der Platte befinden, und die eingravierten Inschriften von oben lesbar sein.
 
-18. Befestige den Antennenstecker an der oberen Platte. Verwende dazu die gezahnte Unterlegscheibe an der Unterseite und den Federring sowie die Mutter an der Oberseite (sie sollte fest sitzen, aber auf das Acrylglas keinen zu hohen Druck ausüben, da dieses sonst springen könnte; überprüfe des öfteren, ob der NAschluss fest sitzt - häufiges Entfernen und Anschließen der Antenne kann die Befestigung lockern).
+18. Befestige den Antennenstecker an der oberen Platte. Verwende dazu die gezahnte Unterlegscheibe an der Unterseite und den Federring sowie die Mutter an der Oberseite (sie sollte fest sitzen, aber auf das Acrylglas keinen zu hohen Druck ausüben, da dieses sonst springen könnte; überprüfe des öfteren, ob der Anschluss fest sitzt - häufiges Entfernen und Anschließen der Antenne kann die Befestigung lockern).
 
 	![Antenna connector](Images/sma_connector.jpg)
 
@@ -157,7 +157,7 @@ Natürlich kann man ähnliche Akkus auch anderer Hersteller benutzen; damit der 
 
 Der Akku darf nur eine Zelle haben (Nominalspannung 3,7 V), und sollte mit einem Molex-Stecker versehen sein (ein Kabel mit passendem Gegenstück ist im Bausatz enthalten. Willst du einen Akku mit anderem Anschluss benutzen, musst du dir selber ein passendes Kabel mit Stecker besorgen).
 
-Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf der Bodenplatte des Gehäuses montiert werden. Damit man da etwas Flexibilität hat, liegen dem Bausatz Distanzstücke von 6mm und 12mm Länge bei, mit denen man die Bodenplatte befestigen kann. Mit den 12mm Distanzstücken dürfen die größeren Akkus bis zu 10 mm dick sein. Man könnte auch die 6mm und 12mm Abstandsbolzen in Kombination verwenden, da darf der Akku sogar bis zu 16 mm dick sein. Man muss in jedem Fall dafür sorgen, dass der Akku nicht durch vorstehende Spitzen auf der Paltinenunterseite beschädigt werden kann - dies könnte zu Feuer und Explosion des Akkus führen!
+Du kannst auch größere Akkus verwenden, die müssen dann unter der Platine auf der Bodenplatte des Gehäuses montiert werden. Damit man da etwas Flexibilität hat, liegen dem Bausatz Distanzstücke von 6mm und 12mm Länge bei, mit denen man die Bodenplatte befestigen kann. Mit den 12mm Distanzstücken dürfen die größeren Akkus bis zu 10 mm dick sein. Man könnte auch die 6mm und 12mm Abstandsbolzen in Kombination verwenden, da darf der Akku sogar bis zu 16 mm dick sein. Man muss in jedem Fall dafür sorgen, dass der Akku nicht durch vorstehende Spitzen auf der Platinenunterseite beschädigt werden kann - dies könnte zu Feuer und Explosion des Akkus führen!
 
 Eine Option wäre dieser Typ (im Bild die Batterie unten):
 https://www.amazon.de/gp/product/B01JJ6DA7A/ oder dieser Typ: https://www.amazon.com/FPVERA-Battery-Connector-Charger-Quadcopter/dp/B089R8SGJR/ oder sogar dieser für noch mehr Kapazität: https://www.gensace.de/gens-ace-3500mah-3-7v-tx-2s1p-lipo-battery-pack-with-jr-plug.html (aber beachte, dass dieser keinen Molex-Stecker verwendet - Man müsste ein Kabel mit einem geeigneten Stecker finden, um diesen an den Morserino-32 anzuschließen).
@@ -252,7 +252,7 @@ Bauteile für das Gehäuse:
 
  #### Vorbereitung - Benötigt werden:
  * Aufgebauter Morserino-32 mit angebrachten Touchpaddels
- * Audiokabel mit 3,5 mm 4-poligen Klinkenstekcern an beiden Enden
+ * Audiokabel mit 3,5 mm 4-poligen Klinkensteckern an beiden Enden
  * Audiokabel mit 3,5 mm 2-poligen oder 3-poligen Klinkensteckern an beiden Enden
  * Krokodilklemmenkabel (mit sehr kleinen Krokoklemmen)
  * Kleiner flacher Schraubendreher zur Bedienung des blauen Trimmers
