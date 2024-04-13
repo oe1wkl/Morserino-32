@@ -11,7 +11,7 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 2. Install on your computer the USB driver for the SiLabs CP2104 chip, used in the Heltec board for USB communication. Follow these instructions: <https://heltecdocs-fock.readthedocs.io/general/establish_serial_connection.html>.
 
-3. ~~ Install the development framework through the Arduino IDE; follow these instructions: <https://docs.heltec.org/en/node/esp32/quick_start.html>. **NOTICE: As Heltec changed their development environment libraries to accomodate newer products, this might not work flawlessly anymore!** ~~
+3. <del> Install the development framework through the Arduino IDE; follow these instructions: <https://docs.heltec.org/en/node/esp32/quick_start.html>. **NOTICE: As Heltec changed their development environment libraries to accomodate newer products, this might not work flawlessly anymore!** </del>
 
 	**Please refer to the GitHub site of Andres Lohr, DB7AL,  how to set up a development environment that works with the current source code:** <https://github.com/alohr/Morserino-32/blob/develop/Software/NOTES.md>
 
