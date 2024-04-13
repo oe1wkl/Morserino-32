@@ -4,13 +4,17 @@
 
 It is now quite straightforward to set up an environment to build the Morserino-32 binary code from the source. As we are using now the latest ESP32 libraries from Heltec, and the source of the Clivkbutton library has been included into the source, there is no need to hunt for libraries.
 
-**NOTICE: As Heltec changed their development environment libraries to accomodate newer products, these instructions do not work anymore, and you might need to set up an environment with their older library versions!**
+**NOTICE: As Heltec changed their development environment libraries to accomodate newer products, these instructions do not work anymore, and you might need to set up an environment with their older library versions! See item 3 below.**
+
 
 1. Set up the Arduino IDE from <https://www.arduino.cc/en/Main/Software>.
 
 2. Install on your computer the USB driver for the SiLabs CP2104 chip, used in the Heltec board for USB communication. Follow these instructions: <https://heltecdocs-fock.readthedocs.io/general/establish_serial_connection.html>.
 
-3. Install the development framework through the Arduino IDE; follow these instructions: <https://docs.heltec.org/en/node/esp32/quick_start.html>. **NOTICE: As Heltec changed their development environment libraries to accomodate newer products, this might not work flawlessly anymore!**
+3. ~~ Install the development framework through the Arduino IDE; follow these instructions: <https://docs.heltec.org/en/node/esp32/quick_start.html>. **NOTICE: As Heltec changed their development environment libraries to accomodate newer products, this might not work flawlessly anymore!** ~~
+
+	**Please refer to the GitHub site of Andres Lohr, DB7AL,  how to set up a development environment that works with the current source code:** <https://github.com/alohr/Morserino-32/blob/develop/Software/NOTES.md>
+
 
 4. Get the source for the latest Morserino-32 firmware from GitHub (<https://github.com/oe1wkl/Morserino-32/releases>).
 
