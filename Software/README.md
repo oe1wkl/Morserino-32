@@ -22,6 +22,19 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.5.1.2
+
+#### Feature Modifications:
+* The timings of echo trainer were still not good enough for very huge settings of inter-word space (you might want these setting to be huge if you want more grace time after the prompt). These have been modified now and should hopefully turn out to be reasonable.
+* In echo trainer mode, entering an 'error' character (7 or more dits) would just delete the last character you had entered (like a backspace). This has been changed now to a complete reset of the word. So after you realize you made a mistake, send the 7 or more dits, and then immediately start keyeing the word from the beginning.
+* The nomenclature of the pitches that can be selected has been changed. Besides the values in Hz, there were the names of the nearest equivalent musical tones given, but (inconsistently) in the German nomenclature (e.g. a2 for 880Hz). This has been changed to the names common in English (A5 with this example of 880Hz).
+
+#### Bug Fixes:
+* The pitches of the side tone did not correspond to the pitches shown in the parameter menu (caused by an index error in an array), and were one step too low. Fixed.
+* When connecting a straight key with a two-pole plug to the Morserino, it would always go into „Hardware Config“ at start-up (because the 2-pole plug creates a short for the 3-pole jack ring). Fixed.
+* When the option „Keyer&Gen.&RX“ was selected for the parameter „Key ext TX“, the Morserino would not key a transmitter in mode „Transceiver / iCW/Ext Trx“. Fixed.
+
+
 ### Changes V.5.1.1
 
 #### Feature Modifications

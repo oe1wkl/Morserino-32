@@ -20,7 +20,7 @@ namespace MorseOutput
   extern int8_t relPos;
   extern volatile uint64_t TOTcounter;
   const int notes[] =
-        {0, 233, 262, 294, 311, 349, 392, 440, 466, 523, 587, 622, 698, 784, 880, 932};
+        {233, 262, 294, 311, 349, 392, 440, 466, 523, 587, 622, 698, 784, 880, 932};
 
   
   void clearDisplay();
@@ -56,7 +56,7 @@ namespace MorseOutput
 
   void soundSetup();
   void pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut);
-  void pwmNoTone();
+  void pwmNoTone(unsigned int volume);
   void pwmClick(unsigned int volume);
   void soundSignalOK();
   void soundSignalERR();

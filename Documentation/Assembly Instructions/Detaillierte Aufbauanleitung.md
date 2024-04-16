@@ -224,9 +224,12 @@ Bauteile für das Gehäuse:
 
 ***Teile aus der Bauteiltüte, angeordnet wie sie auf der Platine zu sitzen kommen:*** *1: 4-poliger Klinkenstecker, 2: Trimmer, 3: 3-poliger Klinkenstecker, 4: Trimmer mit Knopf, 5: Schiebeschalter, 6: Lautsprecher, 7: Buchsenleisten 18-polig, 8: Touch paddles, 9: Rotary Encoder und schwarzer Knopf, 10: Drucktaster und rote Tastenkappe.* **Anmerkung zur 1. Auflage:** Teil #4 gibt es nicht, und Teil #3 ist zweimal vorhanden; es gibt noch einen zusätzlichen 2-poligen Klinkenstecker. Lautsprecher sieht anders aus.
 
- ## Morserino-Test nach Zusammenbau & Fehlerbehebung
 
- #### Ziel
+
+
+## Morserino-Test nach Zusammenbau & Fehlerbehebung
+
+#### Ziel
  Überprüfung, ob die folgenden Komponenten zu funktionieren scheinen, und Anweisungen zur Behebung von Problemen
  (sollte weit über 95% aller bisher beobachteten Probleme abdecken):
 
@@ -250,7 +253,7 @@ Bauteile für das Gehäuse:
 
  (In Bezug auf Fehler beim Zusammenbau kann hier nicht viel passieren, abgesehen davon, dass das LoRa 432 MHz-Antennenkabel und die Antenne nicht richtig angeschlossen sind.)
 
- #### Vorbereitung - Benötigt werden:
+#### Vorbereitung - Benötigt werden:
  * Aufgebauter Morserino-32 mit angebrachten Touchpaddels
  * Audiokabel mit 3,5 mm 4-poligen Klinkensteckern an beiden Enden
  * Audiokabel mit 3,5 mm 2-poligen oder 3-poligen Klinkensteckern an beiden Enden
@@ -258,14 +261,14 @@ Bauteile für das Gehäuse:
  * Kleiner flacher Schraubendreher zur Bedienung des blauen Trimmers
  * Ohmmeter
  * Kopfhörer (Telefonhörer)
- ###### Optional:
+###### Optional:
  * Externes Paddel mit 3,5 mm Klinkenstecker
  * Handtaste mit 3-poliger 3,5-mm Klinkenstecker
  * LiPo-Akku für Morserino
 
 Hier ein allgemeiner Ratschlag, falls du auf Schwierigkeiten stoßen oder Fragen haben solltest, die in diesem Dokument oder im Benutzerhandbuch nicht beantwortet zu werden scheinen: **Tritt der Morserino-Benutzergruppe** auf groups.io bei (<https://groups.io/g/morserino>). Viele sachkundige Leute lesen dort mit, und es ist wahrscheinlich der kürzeste Weg zu einer nützlichen Antwort!
 
- #### Test- und Fehlerbehebungsverfahren
+#### Test- und Fehlerbehebungsverfahren
  (Siehe Bild zur Identifizierung der Heltec Pins zum erneuten Löten der Heltec-Sockelleisten.)
 
  ![Heltec](Images/Heltec_Pins.jpg)

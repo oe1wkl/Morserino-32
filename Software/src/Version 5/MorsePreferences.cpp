@@ -68,7 +68,7 @@ parameter MorsePreferences::pliste[] = {
     "Tone Pitch",
     "Pitch of CW tone",
     true,
-    {"233 Hz bflat", "262 Hz c1", "294 Hz d1", "311 Hz e1", "349 Hz f1", "392 Hz g1", "440 Hz a1", "466 Hz b1flat", "523 Hz c2", "587 Hz d2", "622 Hz e2", "698 Hz f2", "784 Hz g2", "880 Hz a2", "932 Hz b2flat"}
+    {"233 Hz Bb3", "262 Hz C4", "294 Hz D4", "311 Hz E4", "349 Hz F4", "392 Hz G4", "440 Hz A4", "466 Hz Bb4", "523 Hz C5", "587 Hz D5", "622 Hz E5", "698 Hz F5", "784 Hz G5", "880 Hz A5", "932 Hz Bb5"}
   },
   {
     0, 0, 1, 1,                                                   // true (1) when we need to reverse the polarity of the ext paddle
@@ -120,7 +120,7 @@ parameter MorsePreferences::pliste[] = {
     {"No Tone Shift", "Up 1 Half", "Down 1 Half"}
   },
   {
-    7, 6, 105, 1,                                                // Generator: normal interword spacing in lengths of dit,          6 - 45 ; default = norm = 7
+    7, 6, 105, 1,                                                // Generator: normal interword spacing in lengths of dit,          6 - 105 ; default = norm = 7
     "InterWord Spc",
     "The time (in dits) that is inserted between generated words",
     false,

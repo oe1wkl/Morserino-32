@@ -12,7 +12,7 @@
     If not, see <https://www.gnu.org/licenses/>.
  *****************************************************************************************************************************/
 
-/// This mpodule contrains functions for output on the display, on the USB serial output, on the speaker and on line out
+/// This module contains functions for output on the display, on the USB serial output, on the speaker and on line out
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ////////////////////////////// New scrolling display
@@ -597,8 +597,8 @@ void MorseOutput::soundSetup()
 void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut) { // frequency in Hertz, volume in range 0 - 19; we use 10 bit resolution
   const uint16_t vol[] =   {0,  1, 2, 4, 6, 9, 14, 21, 31, 45, 70, 100, 140, 200, 280, 390, 512, 680, 840, 1023}; // 20 values
   unsigned int i = constrain(volume, 0, 19);
-  unsigned int j = vol[i] >> 5;     // experimental: soften the inital click
-  
+  unsigned int j = vol[i] >> 8;     // experimental: soften the inital click
+  unsigned int jj = vol[i] >> 3;
   //DEBUG(String(vol[i]));
   //DEBUG(String(frequency));
   if (lineOut) {
@@ -606,27 +606,51 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
       ledcWrite(lineOutChannel, dutyCycleFiftyPercent);
   }
 
-  //ledcWrite(volChannel, volFreq);
-    ledcWrite(volChannel, j);       // experimental: soften the inital click
-    delay(6);                       // experimental: soften the inital click
-  ledcWrite(volChannel, vol[i]);
-  ledcWriteTone(toneChannel, frequency);
- 
+  ledcWrite(volChannel, 0);
 
-  if (i == 0 ) 
+  if (i == 0 ) {
       ledcWrite(toneChannel, dutyCycleZero);
-  else 
-      ledcWrite(toneChannel, dutyCycleFiftyPercent);
+      ledcWrite(lineOutChannel, dutyCycleZero);
+  }
+  else  {
+  ledcWrite(toneChannel, dutyCycleFiftyPercent);
+  ledcWrite(lineOutChannel, dutyCycleFiftyPercent);
+  }
+  ledcWriteTone(toneChannel, frequency);
+
+
+  //ledcWrite(volChannel, volFreq);
+  ledcWrite(volChannel, j);       // experimental: soften the inital click
+  delay(3);                       // experimental: soften the inital click
+  ledcWrite(volChannel, jj);       // experimental: soften the inital click
+ 
+  delay(3);
+    
+  ledcWrite(volChannel, vol[i]); 
+   
+
+
 }
 
 
-void MorseOutput::pwmNoTone() {      // stop playing a tone by changing duty cycle of the tone to 0
-  ledcWrite(toneChannel, dutyCycleTwentyPercent);
-  ledcWrite(lineOutChannel, dutyCycleTwentyPercent);
-  ledcWrite(volChannel, 2);         // experimental: soften the click
-  delayMicroseconds(125);
+void MorseOutput::pwmNoTone(unsigned int volume) {      // stop playing a tone by changing duty cycle of the tone to 0
+  const uint16_t vol[] =   {0,  1, 2, 4, 6, 9, 14, 21, 31, 45, 70, 100, 140, 200, 280, 390, 512, 680, 840, 1023}; // 20 values
+  unsigned int i = constrain(volume, 0, 19);
+  unsigned int j = vol[i] >> 8;     // experimental: soften the inital click
+  unsigned int jj = vol[i] >> 3;
+  
+  //ledcWrite(toneChannel, 450);
+  //ledcWrite(lineOutChannel, 450);
+  ledcWrite(volChannel, jj);         // experimental: soften the click
+  delay(3);
+  ledcWrite(volChannel, j);         // experimental: soften the click
+  delay(3);
+
+  ledcWrite(volChannel, 0);
+
   ledcWrite(toneChannel, dutyCycleZero);
   ledcWrite(lineOutChannel, dutyCycleZero);
+
 }
 
 
@@ -641,21 +665,21 @@ void MorseOutput::pwmClick(unsigned int volume) {                        /// gen
     delay(6);
     //pwmTone(143,volume-4, false);
     //delay(7);
-    pwmNoTone();
+    pwmNoTone(volume);
 }
 
 void MorseOutput::soundSignalOK() {
     pwmTone(440, MorsePreferences::sidetoneVolume, false);
     delay(97);
-    pwmNoTone();
+    pwmNoTone(MorsePreferences::sidetoneVolume);
     pwmTone(587, MorsePreferences::sidetoneVolume, false);
     delay(193);
-    pwmNoTone();
+    pwmNoTone(MorsePreferences::sidetoneVolume);
 }
 
 
 void MorseOutput::soundSignalERR() {
     pwmTone(311, MorsePreferences::sidetoneVolume, false);
     delay(193);
-    pwmNoTone();
+    pwmNoTone(MorsePreferences::sidetoneVolume);
 }

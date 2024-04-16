@@ -562,7 +562,10 @@ boolean checkKey () {
       uint8_t sensor;
       uint8_t ext;
       sensor = readSensors(LEFT, RIGHT, true);
-      ext = (uint8_t) !(digitalRead(leftPin) && digitalRead(rightPin));
+      if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY)
+        ext = (uint8_t) !digitalRead(leftPin);
+      else
+        ext = (uint8_t) !(digitalRead(leftPin) && digitalRead(rightPin));
       //DEBUG("Paddle: " + String(sensor) + " Ext.Key: " + String(ext));
       if (sensor || ext) 
         return true;
@@ -1118,6 +1121,8 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                         acsTimer = millis() + (MorsePreferences::pliste[posACS].value + 1) * ditLength; // prime the ACS timer
                                    if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx)
                                       interWordTimer = millis() + 5*ditLength;
+                                   else if (morseState == echoTrainer)
+                                       interWordTimer = millis() + 7*ditLength + interWordSpace/8;   // waiting for end of word in echo trainer
                                    else
                                        interWordTimer = millis() + interWordSpace;  // prime the timer to detect a space between characters
                                                                               // nominally 7 dit-lengths, but we are not quite so strict here in keyer or TrX mode,
@@ -1547,7 +1552,9 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 if (morseState == echoTrainer) {
                     switch (echoTrainerState) {
                         case START_ECHO:  echoTrainerState = SEND_WORD;
-                                          genTimer = millis() + 300 + 2 * interCharacterSpace + interWordSpace / 8;
+                                          genTimer = millis() + 300 + interCharacterSpace + interWordSpace / 8;
+                                          //DEBUG("@1551: wait_time_1: " + String (genTimer - millis()));
+
                                           break;
                         case REPEAT_WORD:
                                           // fall through 
@@ -1561,8 +1568,8 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                                                 }
                                                 ++repeats;
                                                 //genTimer = millis() + MorsePreferences::responsePause * interWordSpace;
-                                                genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 4;
-                                                // DEBUG("@1539: wait_time: " + String (genTimer - millis()));
+                                                genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 3;
+                                                //DEBUG("@1567: wait_time_2: " + String (genTimer - millis()));
                                           }
                         default:          break;
                     }
@@ -1833,7 +1840,7 @@ void fetchNewWord() {
 
 /// the next function is used to display KEYED and DECODED characters 
 
-  void displayDecodedMorse(String symbol, boolean keyed) {
+void displayDecodedMorse(String symbol, boolean keyed) {
 
   // output  the symbol; flush if not morseGenerator, otherwise if not autostop
   MorseOutput::printToScroll( REGULAR, symbol, true, encoderState == scrollMode);
@@ -1841,7 +1848,7 @@ void fetchNewWord() {
   SerialOutMorse(symbol, keyed ? 0b001 : 0b010);
   
   if (morseState == echoTrainer) {                /// store the character in the response string
-    symbol.replace("<as>", "S");                  // maybe we need it for echo trainer or for autstop mode
+    symbol.replace("<as>", "S");                  // maybe we need it for echo trainer or for autostop mode
     symbol.replace("<ka>", "A");
     symbol.replace("<kn>", "N");
     symbol.replace("<sk>", "K");
@@ -1850,7 +1857,8 @@ void fetchNewWord() {
     symbol.replace("<bk>", "B");
     symbol.replace("<err>", "R");                 // error (<hh>) - to be used to repeat entry in echo trainer mode
     if (symbol == "R")
-      echoResponse.remove(echoResponse.length()-1);
+      //echoResponse.remove(echoResponse.length()-1);
+      echoResponse="";                            // we want a complete reset of the word after an error
     else if (symbol != " ")
       echoResponse.concat(symbol);
      //DEBUG("@1795: echoResponse: " + echoResponse);
@@ -1954,7 +1962,7 @@ void echoTrainerEval() {
       if (kochActive){
         koch.decreaseWordProbability(echoTrainerWord);
       }
-      delay(interWordSpace);
+      delay(16*ditLength + interWordSpace/12);
       if (MorsePreferences::pliste[posSpeedAdapt].value)
           changeSpeed(1);
     } else {
@@ -1969,7 +1977,7 @@ void echoTrainerEval() {
             koch.increaseWordProbability(echoTrainerWord, echoResponse);
           }
       }
-      delay(interWordSpace);
+      delay(16*ditLength + interWordSpace/12);
       if (MorsePreferences::pliste[posSpeedAdapt].value)
           changeSpeed(-1);
     }
@@ -2435,7 +2443,7 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
       case 2: if ((morseState == morseKeyer || morseState == morseGenerator) && fromHere)   // CW Keyer && generator
                 noTx = false;
               break;
-      case 3: if ( ((morseState == morseKeyer || morseState == morseGenerator) && fromHere) ||
+      case 3: if ( ((morseState == morseKeyer || morseState == morseGenerator || morseState ==  morseTrx) && fromHere) ||
                    ((morseState == loraTrx || morseState == wifiTrx) && !fromHere) )
                 noTx = false;
       default:  break;
@@ -2461,11 +2469,11 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
           if (extTone)
             MorseOutput::pwmTone(extPitch, volume, MorsePreferences::pliste[posExtAudioOnDecode].value);
           else
-            MorseOutput::pwmNoTone();
+            MorseOutput::pwmNoTone(volume);
         } else {                 // not from here
           extTone = false;
           if (!intTone)
-            MorseOutput::pwmNoTone();
+            MorseOutput::pwmNoTone(volume);
         }
         digitalWrite(keyerPin, LOW);      // stop keying Tx
   }   // end key off

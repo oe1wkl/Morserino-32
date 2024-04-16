@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v5.1.1 January 2024
+v5.1.2 April 2024
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -231,14 +231,13 @@ The Heltec module has electronics on board for charging the battery, and it it p
 
 The standard version of the Morserino-32 comes with a pre-configured frequency within the 433 MHz Amateur and ISM band (ISM only in ITU Region 1). **If this fits your requirements, you have nothing to do at this stage.**
 
-If your regulations do not allow the use of this frequency, you need to get a Heltec mpodule (version 2.0 for 1st edition, 2.1 for 2nd edition) that supports LoRa bands between 860 and 925 Mhz. **In this case you have to configure the correct band and frequency before you are going to use the LoRa functionality of the M32.**
+If you cannot use  this frequency, you need to get a Heltec module (version 2.0 for 1st edition, 2.1 for 2nd edition) that supports LoRa bands between 860 and 925 Mhz (this could turn out to be very difficult). **In this case you have to configure the correct band and frequency before you are going to use the LoRa functionality of the M32.**
 
 [WARNING]
 ====
 Please be aware that you need a special version of the Heltec module for the use of the 868 or 920 MHz band.
-The "standard" version only supports the 433 MHz band, and the alternative version only supports the 868 and 920 MHz bands!
+The "standard" version only supports the 433 MHz band, and I cannot provide Heltec moules for other frequencies!
 
-If you currently have a standard M32 and want to use the higher frequency bands, you can order a Heltec module (plus antenna) for these bands.
 **After replacing the Heltec module you have to perform the LoRa setup for the required band before using LoRa!**
 ====
 
@@ -430,7 +429,7 @@ For the less frequently used parameters `Key ext TX` , `CW Gen Displ` and `Send 
 You can choose between the following at the second level of the menu:
 
 * **Random**: Generates groups of random characters. The length of the groups as well as the choice of characters can be selected in the parameters, by double clicking the black rotary knob (see the description of parameters for details).
-* **CW Abbrevs**: Random abbreviations and Q-codes that are very common in CW transmissions (through a parameter setting you can choose the maximum length of the abbreviations you want to train). See <<appendix6>> for the abbreviations that can be generated.
+* **CW Abbrevs**: Random abbreviations and Q-codes that are very common in CW transmissions (through a parameter setting you can choose the maximum length of the abbreviations you want to train). See <<appendix7>> for the abbreviations that can be generated.
 * **English Words**: Random words from a list of the 370 most common words in the English language (again you can set a maximum length through a parameter).
 * **Call Signs**: Generates random strings that have the structure and appearance of amateur radio call signs (these are not real call signs, and there will be some generated that could not exist in the real world, as either the prefix is not in use or a country's administration would not hand out certain suffixes). The maximum length can be selected through a parameter.
 * **Mixed**: Selects randomly from the previous possibilities (random character groups, abbreviations, English words and call signs).
@@ -501,7 +500,7 @@ The sub-menus are the same as for the CW Generator: **Random, CW Abbrevs, Englis
 
 Like in CW Generator modus, you **start the generation by pressing a paddle** (or the back knob, or - if you are using one - the straight key), and then the sequence "`vvv<ka>`" will be generated as an alert before the echo training starts. You cannot stop or interrupt this modus by pressing the paddle or the straight key -- after all, you use the paddle (or straight key) to generate your responses! So **the only way to stop this modus is a click of the BLACK encoder button**.
 
-During your response, if you realize you made an error, you can "reset" your response by entering the character for "ERROR", i.e. a series of 8 dots (the Morserino accepts any series of dots longer than 7 dots). <err> will show on the display, and you can restart your entry from the beginning.
+TIP: During your response, if you realize you made an error, you can "reset" your response by entering the character for "ERROR", i.e. a series of 8 dots (the Morserino accepts any series of dots longer than 7 dots). <err> will show on the display, and you can restart your entry from the beginning.
 
 Again, like with the CW Generator, you can set a huge range of parameters to fine tune the generation of things. Of particular interest for the Echo Trainer are:
 
@@ -817,7 +816,7 @@ IMPORTANT: If for any reason you need to abort the process, you have to restart 
 
 ==== Updating the Morserino-32 Firmware
 
-Updating the firmware of the Morserino-32 through WiFi is one way of doing it;  you can also do this by using the Arduino IDE on your computer (you also need to install a bunch of specific files and libraries for support of the Heltec module and the ESP32 processor, and then compile the binary from the source code), or by using a special update utility (see <<appendix4>>).
+TIP: Updating the firmware of the Morserino-32 through WiFi is one way of doing it;  you can also do this by using the Arduino IDE on your computer (you also need to install a bunch of specific files and libraries for support of the Heltec module and the ESP32 processor, and then compile the binary from the source code), or, much easier, by using a special update utility (see <<appendix4>>), or - and this is the easiest way - by just using a browser and USB (see <<appendix5>>).
 
 TIP: You can update to any version, you can "jump" versions, you can also go back to an older version.
 
@@ -901,13 +900,13 @@ A number of parameters are very generic in nature, and therefore apply to all mo
 
 | Encoder Click | Turning the encoder may generate a short tone burst, or be silent   | Off / On
 
-| Tone Pitch Hz   | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the B flat major scale from b flat to b'' flat (2 octaves)
+| Tone Pitch Hz   | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the F major scale from Bb3 to Bb5  (2 octaves)
 
 | Time Out | If the time specified in this parameter passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the RED button. | No timeout / **5 min** / 10 min / 15 min
 
 | Quick Start | Allows you to bypass the initial menu selection, i.e.  at startup the device will immediately begin executing the modus that had been in effect before last shutdown. | ON / **OFF**
 
-| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the recevier side of LoRa or WiFi Transceiver modes). "Nothing" sends out none of these characters (but certain system or error messages might still appear), while "All" send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also <<appendix5>>.| Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since 4.3)
+| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the recevier side of LoRa or WiFi Transceiver modes). "Nothing" sends out none of these characters (but certain system or error messages might still appear), while "All" send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also <<appendix6>>.| Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since 4.3)
 |===
 
 
@@ -994,6 +993,8 @@ The following parameters control how characters are generated and played randoml
 
 The following parameters control the essential properties of the Echo Trainer (however, Tone Shift is also interesting for the transceiver modes).
 
+TIP: Increasing the value for "Inter-word Space" also increases the "grace time" after the prompt before you must begin keying your response!
+
 [cols="2,6,3",options=header]
 |===
 |Parameter Name
@@ -1024,7 +1025,7 @@ These Parameters control some functions available for transmitting (either direc
 |Values
 
 
-|Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device. Gen = generator modi, RX = LoRa or Internet Receiver modi | Never / **CW Keyer only** / Keyer & Gen. / Keyer&Gen.&RX
+|Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device. Gen = generator modi, RX = LoRa or Internet Receiver modi. The option "Keyer & Gen." makes the morserino key an external transmitter also form a generator mode, useful for training transmissions, for example. The option "Keyer&Gen.&RX" is useful if you want to transmit on your transmitter what the Morserino received through LoRa or WiFi (for remote operations). | Never / **CW Keyer only** (and also for Transceiver modes)/ Keyer & Gen. / Keyer&Gen.&RX
 
 | Generator Tx (used to be called "Send via LoRa") | This allows the CW Generator to send, what it generates, eiher via LoRa or via WiFi - so you can have one device generating something, and several others receiving the same sequence. This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server, or via LoRa when all participants are close enough together.
 Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed! | **„Tx OFF“** (= do not transmit generated CW), „LoRa Tx ON“ (transmit generated code through LoRa) and „WiFi Tx ON“ (transmit generated code through WiFi).
@@ -1152,7 +1153,16 @@ There is also an option to fully erase the M32's permanent memory before install
 
 `./update_m32 -p /dev/tty.usbserial-0001 -f m32_v5.1.ino.wifi_lora_32_V2.bin -e`
 
-=== Appendix 5: Using the Serial Output of the Morserino-32 [[appendix5]]
+=== Appendix 5: Updating the Firmware via USB and a Browser supporting USBserial [[appendix5]]
+
+Some browsers support the USBserial extension, which allows to access a serial port directly from the browser; currently these are Google Chrome and Microsoft Edge, and at least on some platforms also Opera.
+By using such a browser, updating the firmware to the latest release becomes really very easy (no firmware download necessary, and no command lines...).
+
+You need to make sure you have a driver for the SiLab CP210x chip, and a USB cable that allows data transfer.
+
+Then you just connect your Morserino-32 to your computer via USB, and go to https://www.morserino.info/flash.html, and follow the instructions there.
+
+=== Appendix 6: Using the Serial Output of the Morserino-32 [[appendix6]]
 
 The Morserino-32 is able to output data via the serial USB interface. This can be used, for example, to show the characters that are shown on the display in a computer terminal window. This way you can show the Morserino output on a big screen or projector; this could be useful for presentations or classroom use.
 
@@ -1170,7 +1180,7 @@ One can use serial communications in conjunction with computer software written 
 
 See also the description of the "Serial Output" parameter in the <<parameters>> section.
 
-=== Appendix 6: List of common CW abbreviations used by Morserino-32 [[appendix6]]
+=== Appendix 7: List of common CW abbreviations used by Morserino-32 [[appendix7]]
 
 The list contains definitions in English and German, separated by a slash. Not all abbreviations are very common in all languages; abbreviations uncommon in English are in parentheses ().
 
