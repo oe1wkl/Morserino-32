@@ -2,7 +2,6 @@
 
 ## Build Instructions (for Arduino IDE)
 
-It is now quite straightforward to set up an environment to build the Morserino-32 binary code from the source. As we are using now the latest ESP32 libraries from Heltec, and the source of the Clivkbutton library has been included into the source, there is no need to hunt for libraries.
 
 **NOTICE: As Heltec changed their development environment libraries to accomodate newer products, these instructions do not work anymore, and you might need to set up an environment with their older library versions! See item 3 below.**
 
