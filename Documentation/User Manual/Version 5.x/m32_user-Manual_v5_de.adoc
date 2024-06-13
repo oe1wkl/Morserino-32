@@ -1,6 +1,6 @@
 = Morserino-32: Benutzerhandbuch
 W. Kraml (OE1WKL)
-v5.1.2 April 2024
+v5.1.3 Juni 2024
 :organization: Morserino-32 Benutzerhandbuch
 :doctype: book
 // Settings:
@@ -359,7 +359,7 @@ was 0/8 bis 7/8 einer Punktlänge bedeutet (Defaultwert ist 4, d.h. eine halbe P
 
 Für den Parameter `AutoChar Spce` (Definition einer Mindestlänge für den Abstand zwischen den Zeichen) siehe den Abschnitt <<parameters>> für Details.
 
-**Straight Key Mode**: Das ist natürlich kein automatischer Modus, sondern man kann damit den Morserino-32 auch mit einer normalen Handtaste ("Klopftaste") verwenden. Der Modus "CW Keyer" funktioniert nicht, wenn dieser Parameter gesetzt ist, aber man kann die Handtaste für den Echo Trainer und für die Transceiver Modi verwenden!
+**Straight Key Mode**: Das ist natürlich kein automatischer Modus, sondern man kann damit den Morserino-32 auch mit einer normalen Handtaste ("Klopftaste") verwenden.
 
 ==== CW Memory Keyer
 
@@ -1166,6 +1166,8 @@ Durch die Verwendung eines solchen Browsers wird das Aktualisieren der Firmware 
 Man muss nur sicherstellen, dass man den Treiber für den SiLab CP210x-Chip installiert hat und über und ein USB-Kabel verfügt, das die Datenübertragung ermöglicht.
 
 Dann schließt man den Morserino-32 einfach über USB an den Computer an, geht zu https://www.morserino.info/flash.html und befolgt die dortigen Anweisungen.
+
+WARNING: Manche Morserinos haben anscheinend ein Problem nach dieser Update-Methode, entweder beim Einschalten, oder beim Aufwachen aus dem Sleep Modus. Abschalten des Morserinos nach dem Update, bevor er in den Schlafmodus fällt, scheint dem beizukommen.
 
 === Anhang 6: Verwenden des seriellen Ausgangs des Morserino-32 [[appendix6]]
 

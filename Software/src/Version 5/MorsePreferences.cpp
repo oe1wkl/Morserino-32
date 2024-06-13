@@ -54,7 +54,13 @@ const char * prefName[] = {"encoderClicks", "sidetoneFreq", "useExtPaddle", "did
                       "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt",
                       "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
                       "quickStart", "autoStop", "maxSequence", "LoraChannel", "serialOut"};
-
+/* parameter:
+     uint8_t value; const uint8_t minimum; const uint8_t maximum; const uint8_t stepValue;
+     const char *parName;
+     const char *parDescript;
+     const boolean isMapped;
+     const char *mapping[MAX_MAP_ELEMENTS];
+ */
 parameter MorsePreferences::pliste[] = {
   {
     1, 0, 1, 1,                                                 // should rotating the encoder generate a click? yes If 1

@@ -610,22 +610,17 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
 
   if (i == 0 ) {
       ledcWrite(toneChannel, dutyCycleZero);
-      ledcWrite(lineOutChannel, dutyCycleZero);
   }
   else  {
   ledcWrite(toneChannel, dutyCycleFiftyPercent);
-  ledcWrite(lineOutChannel, dutyCycleFiftyPercent);
-  }
   ledcWriteTone(toneChannel, frequency);
-
+  }
 
   //ledcWrite(volChannel, volFreq);
   ledcWrite(volChannel, j);       // experimental: soften the inital click
   delay(3);                       // experimental: soften the inital click
   ledcWrite(volChannel, jj);       // experimental: soften the inital click
- 
   delay(3);
-    
   ledcWrite(volChannel, vol[i]); 
    
 

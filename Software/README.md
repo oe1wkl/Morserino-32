@@ -22,6 +22,12 @@ It is now quite straightforward to set up an environment to build the Morserino-
 
 ## Change History
 
+### Changes V.5.1.3
+
+#### Bug Fixes:
+* When the loudspeaker / headphones volume was turned down to zero, the line-out audio was also switched off. Fixed.
+* When the paramater „Latency“ was set to zero, the Morserino would hang. Fixed.
+
 ### Changes V.5.1.2
 
 #### Feature Modifications:

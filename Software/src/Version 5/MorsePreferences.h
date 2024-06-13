@@ -115,7 +115,7 @@ namespace MorsePreferences
   #define MAX_MAP_ELEMENTS 15
 
   struct parameter {
-    uint8_t value;
+     uint8_t value;
      const uint8_t minimum;
      const uint8_t maximum;
      const uint8_t stepValue;

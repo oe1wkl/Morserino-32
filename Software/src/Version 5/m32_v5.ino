@@ -67,6 +67,8 @@ portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
 
 volatile int8_t _oldState;
 
+int8_t woken = 0;
+
 #define LATCHSTATE 3
 
 volatile int8_t encoderPos = 0;
@@ -406,22 +408,23 @@ void setup()
   }
 
 
-// read preferences from non-volatile storage
-// if version cannot be read, we have a new ESP32 and need to write the preferences first
+  pinMode(Vext, OUTPUT);
+  //enable Vext
+  digitalWrite(Vext,LOW);
+  
+  
+
+  // read preferences from non-volatile storage
+  // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
   MorsePreferences::readPreferences("morserino");
   koch.setup(); 
-
- 
-  pinMode(Vext, OUTPUT);
-
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
   pinMode(modeButtonPin, INPUT);
 
-  //enable Vext
-  digitalWrite(Vext,LOW);
+
 
  //DEBUG("Volt: " + String(volt));
 
@@ -432,10 +435,8 @@ void setup()
   pinMode(leftPin, INPUT);          // external keyer left paddle
   pinMode(rightPin, INPUT);         // external keyer right paddle
 
-  /// enable deep sleep
-  esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, (esp_sleep_ext1_wakeup_mode_t) 0); //1 = High, 0 = Low
+  
   analogSetAttenuation(ADC_0db);
-
 
  // init display, LoRa
   Heltec.begin(true /*DisplayEnable Enable*/, true /*LoRa Enable*/, true /*Serial Enable*/, true /*LoRa use PABOOST*/, BAND /*LoRa RF working band*/);
@@ -496,7 +497,6 @@ void setup()
   /// set up quickstart - this should only be done once at startup - after successful quickstart we disable it to allow normal menu operation
   quickStart = MorsePreferences::pliste[posQuickStart].value;
 
-
 ////////////  Setup for LoRa
 
   LoRa.setFrequency(MorsePreferences::loraQRG+0000);                       /// default = 434.150 MHz - Region 1 ISM Band, can be changed by system setup
@@ -511,8 +511,6 @@ void setup()
   LoRa.onReceive(onLoraReceive);
   /// initialise the serial number
   cwTxSerial = random(64);
-
-
 
 
   ///////////////////////// mount (or create) SPIFFS file system
@@ -543,9 +541,7 @@ void setup()
     while (Serial.available())        // remove spurious input from Serial port
       Serial.read();
     inputString = "";
-
     MorseMenu::menu_();
-    
 } /////////// END setup()
 
 
@@ -1049,7 +1045,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
            if (millis() >= ktimer) {                // are we at end of key down ?
                keyOut(false, true, 0, 0);
                ktimer = millis() + ditLength -1;    // inter-element time
-               latencytimer = millis() + ((MorsePreferences::pliste[posLatency].value-1) * ditLength / 8);
+               latencytimer = millis() + ((MorsePreferences::pliste[posLatency].value) * ditLength / 8);
                keyerState = INTER_ELEMENT;       // next state
             }
             else if (millis() >= curtistimer ) {     // in Curtis mode we check paddle as soon as Curtis time is off
@@ -2103,15 +2099,24 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 void shutMeDown() {
   MorseOutput::sleep();     /// shut down Heltec display
   if (m32protocol)
-    jsonError("M32 DEEP SLEEP SHUTDOWN BY USER");
+    jsonError("M32 SLEEP SHUTDOWN BY USER");
+  
+  esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0); //1 = High, 0 = Low
+
   LoRa.sleep();                   //LORA sleep
   WiFi.disconnect(true, false);
-  delay(50);
+  delay(100);
   digitalWrite(Vext,HIGH);
-  delay(50);
+  delay(100);
+  /*esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_ON);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_ON);
+    esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_ON);*/
+    
   esp_deep_sleep_start();         // go to deep sleep
+  esp_restart();
+return;
 }
-
 
 
 

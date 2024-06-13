@@ -1,6 +1,6 @@
 = Morserino-32: User Manual
 W. Kraml (OE1WKL)
-v5.1.2 April 2024
+v5.1.3 June 2024
 :organization: Morserino-32 User Manual
 :doctype: book
 // Settings:
@@ -363,7 +363,7 @@ meaning 0/8 to 7/8 of a dot length (default is 4, i.e. half a dot length). If yo
 
 For the parameter `AutoChar Spce` (defining a minimum length for the space between characters) see the section <<parameters>> for details.
 
-**Straight Key Mode**: This is not really an automatic keyer mode, but it enables the Morserino-32 to be used with a simple straight key. The "CW Keyer" function will not work when this parameter has been set, but you can use the Echo Trainer and the Transceiver modes using a straight key!
+**Straight Key Mode**: This is not really an automatic keyer mode, but it enables the Morserino-32 to be used with a simple straight key.
 
 ==== CW Memory Keyer
 
@@ -1161,6 +1161,8 @@ By using such a browser, updating the firmware to the latest release becomes rea
 You need to make sure you have a driver for the SiLab CP210x chip, and a USB cable that allows data transfer.
 
 Then you just connect your Morserino-32 to your computer via USB, and go to https://www.morserino.info/flash.html, and follow the instructions there.
+
+WARNING: It seems that some Morserinos have problems waking up or restarting when this method has been used. Make sure that you shut down the Morserino after the update, before it goes to sleep. This seems to help.
 
 === Appendix 6: Using the Serial Output of the Morserino-32 [[appendix6]]
 
