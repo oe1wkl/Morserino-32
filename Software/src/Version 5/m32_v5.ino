@@ -27,6 +27,8 @@
 
 
 #include "morsedefs.h"
+#include "MorserinoJson.h"
+
 #include "wklfonts.h"         // monospaced fonts in size 12 (regular and bold) for smaller text and 15 for larger text (regular and bold), called :
                               // DialogInput_plain_12, DialogInput_bold_12 & DialogInput_plain_15, DialogInput_bold_15
                               // these fonts were created with this tool: http://oledHeltec.display -> squix.ch/#/home
