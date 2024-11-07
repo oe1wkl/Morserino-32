@@ -3,16 +3,11 @@
 ## Build Instructions (for Arduino IDE)
 
 
-**NOTICE: As Heltec changed their development environment libraries to accomodate newer products, these instructions do not work anymore, and you might need to set up an environment with their older library versions! See item 3 below.**
-
-
 1. Set up the Arduino IDE from <https://www.arduino.cc/en/Main/Software>.
 
 2. Install on your computer the USB driver for the SiLabs CP2104 chip, used in the Heltec board for USB communication. Follow these instructions: <https://heltecdocs-fock.readthedocs.io/general/establish_serial_connection.html>.
 
-3. <del> Install the development framework through the Arduino IDE; follow these instructions: <https://docs.heltec.org/en/node/esp32/quick_start.html>. **NOTICE: As Heltec changed their development environment libraries to accomodate newer products, this might not work flawlessly anymore!** </del>
-
-	**Please refer to the GitHub site of Andres Lohr, DB7AL,  how to set up a development environment that works with the current source code:** <https://github.com/alohr/Morserino-32/blob/develop/Software/NOTES.md>
+3. Using the Arduino Board Manager install Esspressif esp32 2.0.11 for board support, and choose the Board "Heltec WiFi Lora 32 (V2)". With the Arduino Library Manager install the library "Heltec ESP32 Dev Boards" Version 1.1.5. You also have to install the libraries "ESP32Encoder" (by Kevin Harrington), Version 0.11.7, and ArduinoJson (By Benoit Blanchon), Version 6.20.1.
 
 
 4. Get the source for the latest Morserino-32 firmware from GitHub (<https://github.com/oe1wkl/Morserino-32/releases>).
@@ -20,6 +15,23 @@
 5. Load the .ino file into the IDE (the other source files will be loaded automatically as well), and compile (and upload).
 
 ## Change History
+
+### Changes V.6.0
+
+#### Bug Fixes:
+* There were some parsing errors in the M32 protocol Handel for storing and showing CW memories. Fixed.
+* Dits and dahs were 6ms too long (that bug was introduced in 5.1.x). Fixed.
+
+#### Feature Modifications:
+* Perhaps the most significant change is that - as a result of moving to a more up-to-date platform - firmware update via the browser based method is now working without any strange side-effects!
+* Improved Echo Trainer timings: the setting of inter-character space had not been considered when calculating the maximum waiting time for a response, or between characters of the response. This has been improved now.
+* Ultimatic mode did not have a memory (remembering the opposite entry while the original is still activated); this has been changed (and reacts similar to the Iambic B timing, i.e. you can also modify the timing by modifying the parameters ‚CurtisB DahT%‘ and ‚CurtisB DitT%’.
+
+#### Other Changes (no functional impact):
+* Changed IDE from Arduino to PlatformIO (thanks Hari, OE6HKE, for his help; Framework is still Arduino, and the main file still called .ino, so compilation using Arduino IDE will still work).
+* This included changing words and abbreviations from being represented as String objects to arrays, solving a segment size problem that occurred in the PlatformIO IDE.
+* Replaced the home-brewed encoder interrupt routine with a standard library, so this should be more stable and have less missing steps (the existing routines worked ok, but there were more missed steps when compiled in notes PlatformIO IDE).
+
 
 ### Changes V.5.1.3
 

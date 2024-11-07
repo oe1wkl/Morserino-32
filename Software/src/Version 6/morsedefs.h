@@ -38,21 +38,22 @@ const String PROJECTNAME = "Morserino-32";
 #define VERSION_MINOR 0
 #define VERSION_PATCH 0
 
-#define BETA true                                                                                                                                                                                                                                                                                                                                                                                                                                                                
-
-// using the M32 serial protocol
-
-//define M32Protocol version updateTimings()
-#define M32P_VERSION "1.1"
-
-/////// protocol version for Lora - for the time being this is B01
-/////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
-#define CW_TRX_PROTO_VERSION B01
+#define BETA false                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 
 
 #define IGNORE_SERIALOUT false
 
 // if IGNORE_SERIALOUT is true, alle DEBUG messages are on serial out, even when Serial Out is active outputting characters from Keyer, Decoder etc
+
+
+// using the M32 serial protocol
+//define M32Protocol version updateTimings()
+#define M32P_VERSION "1.1"
+
+/////// protocol version for IP (and LoRa) - for the time being this is B01
+/////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
+#define CW_TRX_PROTO_VERSION B01
+
 
 
 namespace Buttons
