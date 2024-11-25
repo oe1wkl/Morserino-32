@@ -149,13 +149,13 @@ const int HF_Pin = 22;
 
 
 /// where are the touch paddles?
-#ifdef PIN_PADDLE_LEFT
-const int LEFT = PIN_PADDLE_LEFT;
+#ifdef PIN_TOUCH_LEFT
+const int LEFT = PIN_TOUCH_LEFT;
 #else
 const int LEFT = T2;        // = Pin 2
 #endif
-#ifdef PIN_PADDLE_RIGHT
-const int RIGHT = PIN_PADDLE_RIGHT;
+#ifdef PIN_TOUCH_RIGHT
+const int RIGHT = PIN_TOUCH_RIGHT;
 #else
 const int RIGHT = T5;       // = Pin 12
 #endif
