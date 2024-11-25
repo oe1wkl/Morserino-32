@@ -50,7 +50,11 @@ ClickButton::ClickButton(uint8_t buttonPin)
   debounceTime   = 20;            // Debounce timer in ms
   multiclickTime = 250;           // Time limit for multi clicks
   longClickTime  = 1000;          // time until long clicks register
+#ifdef INTERNAL_PULLUP
+  pinMode(pin, INPUT_PULLUP);
+#else
   pinMode(pin, INPUT);
+#endif
 }
 
 /*
