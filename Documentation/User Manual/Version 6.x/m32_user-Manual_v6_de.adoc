@@ -149,6 +149,8 @@ Dies geschieht mit SCHWARZ und ROT, wenn man sich in einer der Modi (Funktionen)
 * Lautstärke ändern: Klicke auf ROT, drehe SCHWARZ, um die Lautstärke anzupassen, und klicke erneut auf ROT, um zur Geschwindigkeitseinstellung zurückzukehren.
 * Bildlaufanzeige: Langes Drücken von ROT, Scrollen mit SCHWARZ vor und zurück, Beenden mit ROTEM Klick.
 
+Die Geschwindigkeit wird in den permanenten Speicher geschrieben (und somit nach dem Start wieder abgerufen), nachdem 12 Zeichen mit der gleichen Geschwindigkeit eingegeben wurden, und die Lautstärke wird geschrieben, sobald man mit dem ROTEN Knopf vom Lautstärkeeinstellungsmodus zurück in den Geschwindigkeitseinstellmodus wechselt.
+
 === So ändert man die Helligkeit des Displays
 Es gibt 5 Helligkeitsstufen. Jeder Doppelklick der ROTEN Taste reduziert die Helligkeit ein wenig; wenn die niedrigste Helligkeitsstufe erreicht ist, wird mit dem Doppelklick wieder die volle Displayhelligkeit eingestellt.
 

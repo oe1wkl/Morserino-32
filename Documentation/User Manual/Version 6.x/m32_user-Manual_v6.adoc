@@ -150,6 +150,8 @@ This is done with BLACK and RED when you are in one of the operation functions (
 * Change volume: click RED, rotate BLACK to adjust volume, click RED again to revert to speed setting.
 * Scroll display: long press of RED, scroll back and forth with BLACK, exit with RED click.
 
+Speed is written to permanent memory (and hence recalled after start-up) after 12 characters keyed at the same speed, and volume is written as soon as you toggle back from volume setting mode to speed setting mode with the RED knob.
+
 === How To Change the Brightness of the Display
 There are 5 levels of brightness. Each double-click of the RED button reduces the brightness a bit, when the lowest level has been reached a double click resets the display to full brightness again.
 
