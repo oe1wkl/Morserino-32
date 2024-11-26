@@ -60,7 +60,7 @@ ClickButton Buttons::volButton(volButtonPin);               // external pullup f
 
 Decoder keyDecoder(USE_KEY);
 Decoder audioDecoder(USE_AUDIO);
-MorseTable keyerTable;
+M32MorseTable keyerTable;
 Koch koch;
 
 // things for reading the encoder

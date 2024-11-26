@@ -25,7 +25,7 @@ extern int leftPin;
 Decoder::Decoder(boolean key) {
    fromKey = key;                // this instance should be audio or key?
    setup();
-   MorseTable myTable;
+   M32MorseTable myTable;
 }
 
 void Decoder::setup() {
@@ -228,26 +228,26 @@ uint8_t Decoder::getWpm() {
 }
 
 
-//////// methods for class MorseTable /////////
+//////// methods for class M32MorseTable /////////
 
-MorseTable::MorseTable()
+M32MorseTable::M32MorseTable()
 {
   treeptr = 0;
 }
 
-void MorseTable::recordDit() {      /// walk down the dit branch
+void M32MorseTable::recordDit() {      /// walk down the dit branch
   treeptr = CWtree[treeptr].dit;
 }
 
-void MorseTable::recordDah() {      /// walk down the dah branch
+void M32MorseTable::recordDah() {      /// walk down the dah branch
   treeptr = CWtree[treeptr].dah;
 }
 
-void MorseTable::resetTable() {     /// go back to the root
+void M32MorseTable::resetTable() {     /// go back to the root
   treeptr = 0;
 }
 
-String MorseTable::retrieveSymbol() { /// deliver the character, and go backk to the root
+String M32MorseTable::retrieveSymbol() { /// deliver the character, and go backk to the root
   String symbol;
   symbol.reserve(6);
   if (treeptr == 0 )  
