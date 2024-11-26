@@ -119,8 +119,8 @@ int8_t maxMemCount = 0;
 unsigned int interCharacterSpace, interWordSpace;   // need to be properly initialised!
 unsigned int halfICS;                               // used for word doubling: half of extra ICS
 unsigned int effWpm;                                // calculated effective speed in WpM
-unsigned int lUntouched = 0;                        // sensor values (in untouched state) will be stored here
-unsigned int rUntouched = 0;
+touch_value_t lUntouched = 0;                        // sensor values (in untouched state) will be stored here
+touch_value_t rUntouched = 0;
 
 boolean alternatePitch = false;                     // to change pitch in CW generator / file player
 
@@ -1275,9 +1275,12 @@ void togglePolarity () {
 /// binary:   00          01                10                11
 
 uint8_t readSensors(int left, int right, boolean init) {
+#ifdef TOUCHPADDLES_DISABLED
+  return 0;
+#else
   //long int timer = micros();
   //static boolean first = true;
-  uint8_t v, lValue, rValue;
+  touch_value_t v, lValue, rValue;
   
   while ( !(v=touchRead(left)) )
     ;                                       // ignore readings with value 0
@@ -1287,13 +1290,17 @@ uint8_t readSensors(int left, int right, boolean init) {
   rValue = v;
 
   if (init == false) {
-    if (lValue < (MorsePreferences::tLeft+10))     {           //adaptive calibration
-        MorsePreferences::tLeft = ( 7*MorsePreferences::tLeft +  ((lValue+lUntouched) / SENS_FACTOR) ) / 8;
+    if (sizeof(touch_value_t) < 4) { // pre ESP32-S2/S3 chips use touch values below 32bit so calibration is needed
+      if (lValue < (MorsePreferences::tLeft+10))     {           //adaptive calibration
+          MorsePreferences::tLeft = ( 7*MorsePreferences::tLeft +  ((lValue+lUntouched) / SENS_FACTOR) ) / 8;
+      }
+      if (rValue < (MorsePreferences::tRight+10))     {           //adaptive calibration
+          MorsePreferences::tRight = ( 7*MorsePreferences::tRight +  ((rValue+rUntouched) / SENS_FACTOR) ) / 8;
+      }
+      return ( lValue < MorsePreferences::tLeft ? 2 : 0 ) + (rValue < MorsePreferences::tRight ? 1 : 0 );
+    } else { // ESP32-S2 & S3
+      return ( lValue > MorsePreferences::tLeft ? 2 : 0 ) + (rValue > MorsePreferences::tRight ? 1 : 0 );
     }
-    if (rValue < (MorsePreferences::tRight+10))     {           //adaptive calibration
-        MorsePreferences::tRight = ( 7*MorsePreferences::tRight +  ((rValue+rUntouched) / SENS_FACTOR) ) / 8;
-    }
-    return ( lValue < MorsePreferences::tLeft ? 2 : 0 ) + (rValue < MorsePreferences::tRight ? 1 : 0 );
   } else {
     //DEBUG("@1216: tLeft: " + String(MorsePreferences::tLeft));
     //lValue -=25; rValue -=25;
@@ -1303,11 +1310,13 @@ uint8_t readSensors(int left, int right, boolean init) {
     else
       return 0; 
   }
+#endif
 }
 
 
 void initSensors() {
-  int v;
+#ifndef TOUCHPADDLES_DISABLED
+  touch_value_t v;
   lUntouched = rUntouched = 60;       /// new: we seek minimum
   for (int i=0; i<8; ++i) {
       while ( !(v=touchRead(LEFT)) )
@@ -1321,8 +1330,14 @@ void initSensors() {
   }
   lUntouched /= 8;
   rUntouched /= 8;
-  MorsePreferences::tLeft = lUntouched - 9;
-  MorsePreferences::tRight = rUntouched - 9;
+  if (sizeof(touch_value_t) < 4) { // ESP32 pre S2/S3
+    MorsePreferences::tLeft = lUntouched - 9;
+    MorsePreferences::tRight = rUntouched - 9;
+  } else { // fixed threshold works fine on ESP32 S2&S3 due to 32 bit value ranges
+    MorsePreferences::tLeft = lUntouched + 10000;
+    MorsePreferences::tRight = rUntouched + 10000;
+  }
+#endif
 }
 
 
