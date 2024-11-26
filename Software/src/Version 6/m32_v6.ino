@@ -415,17 +415,35 @@ void setup()
     rightPin = 32;
   } else {        // must be board version 4
     batteryPin = 37;
+#ifndef INTERNAL_PULLUP
     Buttons::modeButton.activeHigh = HIGH;      // in contrast to board v.3, in v4. the active state is HIGH not LOW
+#endif
     leftPin = 32;
     rightPin = 33;
   }
 
+#ifdef PIN_PADDLE_LEFT
+  leftPin = PIN_PADDLE_LEFT;
+#endif
+#ifdef PIN_PADDLE_RIGHT
+  rightPin = PIN_PADDLE_RIGHT;
+#endif
 
+#ifdef PIN_BATTERY
+  batteryPin = PIN_BATTERY;
+#endif
+
+#ifdef Heltec_Vext
   pinMode(Vext, OUTPUT);
   //enable Vext
   digitalWrite(Vext,LOW);
-  
-  
+#endif
+
+#ifdef PIN_VEXT
+  pinMode(VEXT, OUTPUT);
+  digitalWrite(VEXT, LOW);
+#endif
+
 
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
@@ -435,8 +453,11 @@ void setup()
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
+#ifdef INTERNAL_PULLUP
+  pinMode(modeButtonPin, INPUT_PULLUP);
+#else
   pinMode(modeButtonPin, INPUT);
-
+#endif
 
 
  //DEBUG("Volt: " + String(volt));
@@ -445,9 +466,13 @@ void setup()
   pinMode(PinCLK,INPUT_PULLUP);
   pinMode(PinDT,INPUT_PULLUP);  
   pinMode(keyerPin, OUTPUT);        // we can use the built-in LED to show when the transmitter is being keyed
-  pinMode(leftPin, INPUT);          // external keyer left paddle
-  pinMode(rightPin, INPUT);         // external keyer right paddle
-
+#ifdef INTERNAL_PULLUP
+  pinMode(leftPin, INPUT_PULLUP);          // external keyer left paddle
+  pinMode(rightPin, INPUT_PULLUP);         // external keyer right paddle
+#else
+  pinMode(leftPin, INPUT);
+  pinMode(rightPin, INPUT);
+#endif
   
   analogSetAttenuation(ADC_0db);
 
@@ -465,7 +490,11 @@ void setup()
 /// set up for encoder button
 //  pinMode(modeButtonPin, INPUT);
   pinMode(volButtonPin, INPUT_PULLUP);               // external pullup for all GPIOS > 32 with ESP32-LORA
+#ifdef INTERNAL_PULLUP
+  pinMode(modeButtonPin, INPUT_PULLUP);
+#else
   pinMode(modeButtonPin, INPUT);
+#endif
                                                      // wake up also works without external pullup! Interesting!
   
   // Setup button timers (all in milliseconds / ms)

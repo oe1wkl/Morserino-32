@@ -780,8 +780,12 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
             jsonActivate(ACT_EXIT); 
             goToMenu = false;
             return true;
-        } 
+        }
+#ifdef INTERNAL_PULLUP
+        pinMode(modeButtonPin, INPUT_PULLUP);
+#else
         pinMode(modeButtonPin, INPUT);
+#endif
 
         Buttons::modeButton.Update();
         switch (Buttons::modeButton.clicks) {

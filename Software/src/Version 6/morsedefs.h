@@ -104,38 +104,84 @@ namespace Buttons
 
 
 /// where is the encoder?
-const int PinCLK=38;                   // Used for generating interrupts using CLK signal - needs external pullup resisitor! 
-const int PinDT=39;                    // Used for reading DT signal  - needs external pullup resisitor! 
+#ifdef PIN_ROT_CLK
+const int PinCLK=PIN_ROT_CLK;          // Used for generating interrupts using CLK signal - needs external pullup resisitor!
+#else
+const int PinCLK=38;
+#endif
+
+#ifdef PIN_ROT_DT
+const int PinDT=PIN_ROT_DT;            // Used for reading DT signal  - needs external pullup resisitor! 
+#else
+const int PinDT=39;
+#endif
 
 /// encoder switch (BLACK knob)
+#ifdef PIN_ROT_CLK
+const int modeButtonPin = PIN_ROT_BTN;
+#else
 const int modeButtonPin = 37;
+#endif
 
 /// 2nd switch button - toggles between Speed control and Volume control (RED button)
+#ifdef PIN_VOL_BTN
+const int volButtonPin = PIN_VOL_BTN;
+#else
 const int volButtonPin = 0;
+#endif
 
 
 //// with the following we define which pins are used as output for the two pwm channels
 //// HF output (with varying duticycle and fixed frequency) and LF output (with varying frequency and fixed dutycycle of 50%)
 /// are being added with a 2-transistor AND gate to create a tone frequency with variable frequency and volume
 
-const int LF_Pin = 23;    // for the lower (= NF) frequency generation
-const int HF_Pin = 22;    // for the HF PWM generation
+#ifdef PIN_LF
+const int LF_Pin = PIN_LF;    // for the lower (= NF) frequency generation
+#else
+const int LF_Pin = 23;
+#endif
+
+#ifdef PIN_HF
+const int HF_Pin = PIN_HF;    // for the HF PWM generation
+#else
+const int HF_Pin = 22;
+#endif
 
 
 /// where are the touch paddles?
+#ifdef PIN_TOUCH_LEFT
+const int LEFT = PIN_TOUCH_LEFT;
+#else
 const int LEFT = T2;        // = Pin 2
+#endif
+#ifdef PIN_TOUCH_RIGHT
+const int RIGHT = PIN_TOUCH_RIGHT;
+#else
 const int RIGHT = T5;       // = Pin 12
+#endif
 
 // Tx keyer 
-const int keyerPin = 25;        // this keys the transmitter / through a MOSFET Optocoupler - at the same time lights up the LED
+#ifdef PIN_KEYER
+const int keyerPin = PIN_KEYER; // this keys the transmitter / through a MOSFET Optocoupler - at the same time lights up the LED
+#else
+const int keyerPin = 25;
+#endif
 
 
 // audio in
-const int audioInPin = 36;      // audio in for Morse decoder // 
+#ifdef PIN_AUDIO_IN
+const int audioInPin = PIN_AUDIO_IN;      // audio in for Morse decoder // 
+#else
+const int audioInPin = 36;
+#endif
 
 
 // NF Line-out (for iCW etc.)
+#ifdef PIN_AUDIO_OUT
+const int lineOutPin = PIN_AUDIO_OUT; // for NF line out
+#else
 const int lineOutPin = 17; // for NF line out
+#endif
 
 
 // SENS_FACTOR is used for auto-calibrating sensitivity of touch paddles (somewhere between 2.0 and 2.5)
