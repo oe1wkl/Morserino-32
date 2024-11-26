@@ -367,8 +367,8 @@ uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 
 
   uint32_t MorsePreferences::fileWordPointer = 0;             // remember how far we have read the file in player mode / reset when loading new file
   //uint8_t MorsePreferences::promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
-  uint8_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
-  uint8_t MorsePreferences::tRight = 20;                      // threshold for right paddle
+  touch_value_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
+  touch_value_t MorsePreferences::tRight = 20;                      // threshold for right paddle
 
   uint8_t MorsePreferences::vAdjust = 180;                    // correction value: 155 - 250
 
