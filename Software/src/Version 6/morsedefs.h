@@ -187,8 +187,64 @@ const int lineOutPin = 17; // for NF line out
 // SENS_FACTOR is used for auto-calibrating sensitivity of touch paddles (somewhere between 2.0 and 2.5)
 #define SENS_FACTOR 2.22
 
+#ifndef BAND
 #define BAND    433E6  //you can set band here directly,e.g. 868E6,915E6
+#endif
 
+#ifndef LORA_DISABLED // this is used to default to lora for Arduino IDE legacy builds
+#define LORA_RADIOLIB
+#endif
+
+#ifdef RADIO_SX1262
+#define RADIO SX1262
+#else
+#define RADIO SX1278
+#define RADIO_SX1278 1
+#endif
+
+// heltec lora v2 pins as defaults
+
+#ifndef LoRa_nss
+#define LoRa_nss 18
+#endif
+
+#ifndef LoRa_dio0
+#define LoRa_dio0 26
+#endif
+
+#ifndef LoRa_dio1
+#define LoRa_dio1 35
+#endif
+
+#ifdef LoRa_dio2
+#define LoRa_dio2 34
+#endif
+
+#ifndef LoRa_MISO
+#define LoRa_MISO 19
+#endif
+
+#ifndef LoRa_MOSI
+#define LoRa_MOSI 27
+#endif
+
+#ifndef LoRa_nrst
+#define LoRa_nrst 14
+#endif
+
+#ifndef LoRa_SCK
+#define LoRa_SCK SCK
+#endif
+
+#ifndef LoRa_busy
+#define LoRa_busy 13
+#endif
+
+/*
+  heltec v2:
+  lora cs: 18
+  lora sck: 5
+*/
 
 ///////////////////////////////////////// END OF HARDWARE DEFS ////////////////////////////////////////////////////////////////////
 
