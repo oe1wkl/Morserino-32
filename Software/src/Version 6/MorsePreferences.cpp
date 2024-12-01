@@ -583,7 +583,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             displayKeyerPreferencesMenu(posPtr);
             MorseOutput::printOnScroll(2, REGULAR, 0, " ");
 
-            Heltec.display -> display();                                                        // update the display
+            MorseOutput::refreshDisplay();
          }    // end if (encoderPos)
          checkShutDown(false);         // check for time out
   } // end while - we leave as soon as the button has been pressed long
@@ -893,7 +893,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                   }
             }
             displayValueLine(pos, itemLine, false);          /// now display the value
-            Heltec.display -> display();                                                      // update the display
+	    MorseOutput::refreshDisplay(); // update the display
          }      // end if     (checkEncoder)
          checkShutDown(false);         // check for time out
     }    // end while(true)

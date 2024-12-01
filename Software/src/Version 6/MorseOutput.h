@@ -24,7 +24,9 @@ namespace MorseOutput
 
   
   void clearDisplay();
+  void refreshDisplay();
   void decreaseBrightness();
+  void setBrightness(uint8_t brightness);
   void sleep();
   void printOnStatusLine(boolean strong, uint8_t xpos, String string);
   void clearBuffer();

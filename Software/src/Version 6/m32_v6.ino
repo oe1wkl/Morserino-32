@@ -497,7 +497,7 @@ void setup()
  // init display (LoRa Enable is false here as this is handled via radiolib)
   Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/, true /*LoRa use PABOOST*/, BAND /*LoRa RF working band*/);
 
-  Heltec.display -> setBrightness(MorsePreferences::oledBrightness);
+  MorseOutput::setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
   MorseOutput::soundSetup();
 
@@ -1994,7 +1994,7 @@ void displayCWspeed() {
     sprintf(numBuf, "%2i", (morseState == morseDecoder ? wpm : MorsePreferences::wpm));         // d_wpm (decode) or p_wpm (default)
   MorseOutput::printOnStatusLine(encoderState == speedSettingMode ? true : false, 7,  numBuf);
   MorseOutput::printOnStatusLine(false, 10,  "WpM");
-  Heltec.display -> display();
+  MorseOutput::refreshDisplay();
 }
 
 
@@ -2023,7 +2023,7 @@ void updateTopLine() {
       MorseOutput::dispWifiLogo();
 
   MorseOutput::displayVolume(encoderState == speedSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
-  Heltec.display -> display();
+  MorseOutput::refreshDisplay();
 }
 
 
@@ -2177,7 +2177,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
           MorseOutput::printOnScroll(2, REGULAR, 0, "RED to turn ON");
           if (m32protocol)
                   jsonCreate("message", "Power off", "");
-          Heltec.display -> display();
+          MorseOutput::refreshDisplay();
           delay (1500);
           shutMeDown();
       }
