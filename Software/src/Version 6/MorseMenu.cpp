@@ -16,6 +16,11 @@
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
 
+#ifdef LORA_RADIOLIB
+#include <RadioLib.h>
+extern RADIO radio;
+#endif
+
 using namespace MorseMenu;
 
 //////// variables and constants for the modus menu
@@ -135,8 +140,10 @@ void MorseMenu::menu_() {
    uint8_t disp = 0;
    int t, command;
    m32state = menu_loop;
-      
-    LoRa.idle();
+
+#ifdef LORA_RADIOLIB
+    radio.standby();
+#endif
     WiFi.disconnect(true, false);
     genIsActive = false;
     cleanStartSettings();
@@ -430,7 +437,9 @@ boolean MorseMenu::menuExec() {                                          // retu
                 showStartDisplay("", "Start LoRa Trx", "", 500);
                 clearPaddleLatches();
                 clearText = "";
-                LoRa.receive();
+#ifdef LORA_RADIOLIB
+                radio.startReceive();
+#endif
                 executeNow = false;
                 return true;
                 break;

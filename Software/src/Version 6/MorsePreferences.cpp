@@ -20,6 +20,11 @@
 #include "ClickButton.h"   // button control library
 #include "goertzel.h"
 
+#ifdef LORA_RADIOLIB
+#include <RadioLib.h>
+extern RADIO radio;
+#endif
+
 using namespace MorsePreferences;
 
 Preferences pref;               // use the Preferences library for storing and retrieving objects
@@ -1158,7 +1163,9 @@ void MorsePreferences::writePreferences(String repository) {
             switch (i) {                                                              // in certain cases we need to do something
               case posLoraChannel:
                     if (morserino)
-                      LoRa.setSyncWord(MorsePreferences::pliste[posLoraChannel].value == 0 ? 0x27 : 0x66);
+#ifdef LORA_RADIOLIB
+                      radio.setSyncWord(MorsePreferences::pliste[posLoraChannel].value == 0 ? 0x27 : 0x66);
+#endif
                     break;
               case posGoertzelBandwidth:
                     if (morserino)

@@ -110,16 +110,16 @@ const struct linklist CWtree[69]  = {
   {"<bk>", 63, 63}      // 68 <bk>
 };
 
-//// we define two classes: MorseTable (a pointer to the linked list defined above, and mthods to manipulate the pointer)
+//// we define two classes: M32MorseTable (a pointer to the linked list defined above, and mthods to manipulate the pointer)
 ////                   and  Decoder (which decodes signals from a key or from audio - derived from a Goertzel filter) 
 
-class MorseTable {
+class M32MorseTable {
 
 private:
   byte treeptr;
 
 public:
-  MorseTable();
+  M32MorseTable();
   void recordDit();
   void recordDah();  
   void resetTable();  
@@ -155,7 +155,7 @@ private:
   void recalculateDah(unsigned long );
 
   //byte treeptr;                          // pointer used to navigate within the linked list representing the dichotomic tree
-  MorseTable myTable;
+  M32MorseTable myTable;
   
 public:
   Decoder(boolean);
