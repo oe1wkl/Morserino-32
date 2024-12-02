@@ -16,7 +16,6 @@
 #define MORSEDEFS_H
 
 #include "Arduino.h"
-#include "heltec.h"
 #include <ESP32Encoder.h>   // https://github.com/madhephaestus/ESP32Encoder.git 
 #include <ArduinoJson.h>
 #include "ClickButton.h"   // button control library
@@ -183,6 +182,23 @@ const int lineOutPin = PIN_AUDIO_OUT; // for NF line out
 const int lineOutPin = 17; // for NF line out
 #endif
 
+#ifndef SKIP_LEGACY_PINDEFS // workaround to allow arduino compilation with default values for legacy heltec v2
+#ifndef OLED_SDA
+#define OLED_SDA 4
+#endif
+
+#ifndef OLED_SCL
+#define OLED_SCL 15
+#endif
+
+#ifndef OLED_RST
+#define OLED_RST 16
+#endif
+
+#ifndef PIN_VEXT
+#define PIN_VEXT 21
+#endif
+#endif
 
 // SENS_FACTOR is used for auto-calibrating sensitivity of touch paddles (somewhere between 2.0 and 2.5)
 #define SENS_FACTOR 2.22

@@ -451,18 +451,6 @@ void setup()
   batteryPin = PIN_BATTERY;
 #endif
 
-#ifdef Heltec_Vext
-  pinMode(Vext, OUTPUT);
-  //enable Vext
-  digitalWrite(Vext,LOW);
-#endif
-
-#ifdef PIN_VEXT
-  pinMode(VEXT, OUTPUT);
-  digitalWrite(VEXT, LOW);
-#endif
-
-
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
@@ -477,6 +465,10 @@ void setup()
   pinMode(modeButtonPin, INPUT);
 #endif
 
+#ifdef PIN_VEXT
+  pinMode(PIN_VEXT, OUTPUT);
+  digitalWrite(PIN_VEXT, LOW);
+#endif
 
  //DEBUG("Volt: " + String(volt));
 
@@ -494,10 +486,10 @@ void setup()
   
   analogSetAttenuation(ADC_0db);
 
- // init display (LoRa Enable is false here as this is handled via radiolib)
-  Heltec.begin(true /*DisplayEnable Enable*/, false /*LoRa Enable*/, true /*Serial Enable*/, true /*LoRa use PABOOST*/, BAND /*LoRa RF working band*/);
+  // init display
+  MorseOutput::initDisplay();
 
-  Heltec.display -> setBrightness(MorsePreferences::oledBrightness);
+  MorseOutput::setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
   MorseOutput::soundSetup();
 
@@ -1994,7 +1986,7 @@ void displayCWspeed() {
     sprintf(numBuf, "%2i", (morseState == morseDecoder ? wpm : MorsePreferences::wpm));         // d_wpm (decode) or p_wpm (default)
   MorseOutput::printOnStatusLine(encoderState == speedSettingMode ? true : false, 7,  numBuf);
   MorseOutput::printOnStatusLine(false, 10,  "WpM");
-  Heltec.display -> display();
+  MorseOutput::refreshDisplay();
 }
 
 
@@ -2023,7 +2015,7 @@ void updateTopLine() {
       MorseOutput::dispWifiLogo();
 
   MorseOutput::displayVolume(encoderState == speedSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
-  Heltec.display -> display();
+  MorseOutput::refreshDisplay();
 }
 
 
@@ -2126,12 +2118,14 @@ String cleanUpProSigns( String &input ) {
 
 int16_t batteryVoltage() {      /// measure battery voltage and return result in milliVolts
   
+#ifdef PIN_VEXT
       // board version 3 requires Vext being on for reading the battery voltage
       if (MorsePreferences::boardVersion == 3)
-         digitalWrite(Vext,LOW);
+         digitalWrite(PIN_VEXT,LOW);
       // board version 4 requires Vext being off for reading the battery voltage
       else if (MorsePreferences::boardVersion == 4)
-         digitalWrite(Vext,HIGH);
+         digitalWrite(PIN_VEXT,HIGH);
+#endif
 
       double v= 0; int counts = 4;
       for (int i=0; i<counts   ; ++i) {
@@ -2177,7 +2171,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
           MorseOutput::printOnScroll(2, REGULAR, 0, "RED to turn ON");
           if (m32protocol)
                   jsonCreate("message", "Power off", "");
-          Heltec.display -> display();
+          MorseOutput::refreshDisplay();
           delay (1500);
           shutMeDown();
       }
@@ -2195,8 +2189,10 @@ void shutMeDown() {
 #endif
   WiFi.disconnect(true, false);
   delay(100);
-  digitalWrite(Vext,HIGH);
+#ifdef PIN_VEXT
+  digitalWrite(PIN_VEXT,HIGH);
   delay(100);
+#endif
   /*esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_ON);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_ON);

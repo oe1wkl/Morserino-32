@@ -2,7 +2,6 @@
 #define MORSEDISPLAY_H_
 
 #include "Arduino.h"
-#include "heltec.h"
 
 #define NoOfLines 15
 
@@ -22,9 +21,11 @@ namespace MorseOutput
   const int notes[] =
         {233, 262, 294, 311, 349, 392, 440, 466, 523, 587, 622, 698, 784, 880, 932};
 
-  
+  void initDisplay();
   void clearDisplay();
+  void refreshDisplay();
   void decreaseBrightness();
+  void setBrightness(uint8_t brightness);
   void sleep();
   void printOnStatusLine(boolean strong, uint8_t xpos, String string);
   void clearBuffer();

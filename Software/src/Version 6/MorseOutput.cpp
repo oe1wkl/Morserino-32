@@ -25,11 +25,13 @@
 #define C_WIDTH 9
 
 #include <Arduino.h>
-#include "heltec.h"
 #include "MorseOutput.h"
 #include "morsedefs.h"
 #include "wklfonts.h"
 #include "MorsePreferences.h"
+
+#include  "SSD1306Wire.h"
+SSD1306Wire display(0x3c, OLED_SDA, OLED_SCL, GEOMETRY_128_64, I2C_ONE, 700000);
 
 using namespace MorseOutput;
 
@@ -74,16 +76,33 @@ const int  dutyCycleZero = 0;
 
 ////// Display functions
 
+void MorseOutput::initDisplay()
+{
+#ifdef OLED_RST
+  pinMode(OLED_RST, OUTPUT);
+  digitalWrite(OLED_RST, LOW);
+  delay(50);
+  digitalWrite(OLED_RST, HIGH);
+#endif
+  display.init();
+  display.flipScreenVertically();
+  display.clear();
+}
 
 void MorseOutput::clearDisplay()
 {
-  Heltec.display -> clear();
-  Heltec.display -> display();
+  display.clear();
+  display.display();
+}
+
+void MorseOutput::refreshDisplay()
+{
+  display.display();
 }
 
 void MorseOutput::sleep()
 {
-  Heltec.display -> sleep();                //OLED sleep
+  display.displayOff(); // OLED sleep
 }
 
 void MorseOutput::decreaseBrightness() {
@@ -104,9 +123,12 @@ void MorseOutput::decreaseBrightness() {
                 MorsePreferences::oledBrightness = 255;
                 break;
     }
-    Heltec.display -> setBrightness(MorsePreferences::oledBrightness);
+    display.setBrightness(MorsePreferences::oledBrightness);
 }
 
+void MorseOutput::setBrightness(uint8_t brightness) {
+  display.setBrightness(brightness);
+}
 
 void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {
   boolean styleChanged = (style != printToScroll_lastStyle);
@@ -215,8 +237,8 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
     //DEBUG("relPos: " + String(relPos));
     MorseOutput::printOnScroll(2, style, screenPos, text);               // these characters are 9 pixels wide,
   }
-  Heltec.display -> setFont(DialogInput_plain_15);;
-  screenPos += (Heltec.display -> getStringWidth(text) / C_WIDTH);
+  display.setFont(DialogInput_plain_15);;
+  screenPos += (display.getStringWidth(text) / C_WIDTH);
   if (linebreak) {
     MorseOutput::newLine(scroll);
     pos = 0;  screenPos = 0; lastStyle = REGULAR;
@@ -246,7 +268,7 @@ void MorseOutput::refreshScrollArea(int relPos) {
   refreshScrollLine(((bottomLine + relPos + 1) % NoOfLines), 0);          /// refresh all three lines
   refreshScrollLine(((bottomLine + relPos + 2) % NoOfLines), 1);
   refreshScrollLine(((bottomLine + relPos + 3) % NoOfLines), 2);
-  Heltec.display -> display();
+  display.display();
 }
 
 /// print a line to the screen
@@ -262,8 +284,8 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   int pos = 0;
   uint8_t charsPrinted;
 
-  Heltec.display -> setColor(BLACK);
-  Heltec.display -> fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , 127, LINE_HEIGHT + 1); // black out the line on screen
+  display.setColor(BLACK);
+  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , 127, LINE_HEIGHT + 1); // black out the line on screen
   for (int i = 0; (c = textBuffer[bufferLine][i]) ; ++i) {
     // if (c == ' ') DEBUG("Blank!");
     if (c < 5)   {         /// a flag
@@ -307,34 +329,34 @@ uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, 
   uint8_t w;
 // DEBUG("pos: " + String(xpos) + " >" + mystring + "<");
   if (how > BOLD)
-    Heltec.display -> setColor(WHITE);
+    display.setColor(WHITE);
   else
-    Heltec.display -> setColor(BLACK);
+    display.setColor(BLACK);
 if (small) {
 if (how & BOLD)
-      Heltec.display -> setFont(DialogInput_bold_12);
+      display.setFont(DialogInput_bold_12);
     else
-      Heltec.display -> setFont(DialogInput_plain_12);
+      display.setFont(DialogInput_plain_12);
   } else {
     if (how & BOLD)
-      Heltec.display -> setFont(DialogInput_bold_15);
+      display.setFont(DialogInput_bold_15);
     else
-      Heltec.display -> setFont(DialogInput_plain_15);
+      display.setFont(DialogInput_plain_15);
   }
 
-  Heltec.display -> setTextAlignment(TEXT_ALIGN_LEFT);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
 
   // convert the array characters into a String object
-  w = Heltec.display -> getStringWidth(mystring);
-  Heltec.display -> fillRect(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT , w, LINE_HEIGHT + 1);
+  w = display.getStringWidth(mystring);
+  display.fillRect(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT , w, LINE_HEIGHT + 1);
 
   if (how > BOLD)
-    Heltec.display -> setColor(BLACK);
+    display.setColor(BLACK);
   else
-    Heltec.display -> setColor(WHITE);
+    display.setColor(WHITE);
 
-  Heltec.display -> drawString(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT, mystring);
-  Heltec.display -> display();
+  display.drawString(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT, mystring);
+  display.display();
   resetTOT();
   return w;         // we return the actual width of the output, in case of converted UTF8 characters
 }
@@ -344,28 +366,28 @@ uint8_t MorseOutput::printOnScrollSmall(uint8_t line, FONT_ATTRIB how, uint8_t x
   uint8_t w;
 // DEBUG("pos: " + String(xpos) + " >" + mystring + "<");
   if (how > BOLD)
-    Heltec.display -> setColor(WHITE);
+    display.setColor(WHITE);
   else
-    Heltec.display -> setColor(BLACK);
+    display.setColor(BLACK);
 
   if (how & BOLD)
-    Heltec.display -> setFont(DialogInput_bold_12);
+    display.setFont(DialogInput_bold_12);
   else
-    Heltec.display -> setFont(DialogInput_plain_12);
+    display.setFont(DialogInput_plain_12);
 
-  Heltec.display -> setTextAlignment(TEXT_ALIGN_LEFT);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
 
   // convert the array characters into a String object
-  w = Heltec.display -> getStringWidth(mystring);
-  Heltec.display -> fillRect(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT , w, LINE_HEIGHT + 1);
+  w = display.getStringWidth(mystring);
+  display.fillRect(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT , w, LINE_HEIGHT + 1);
 
   if (how > BOLD)
-    Heltec.display -> setColor(BLACK);
+    display.setColor(BLACK);
   else
-    Heltec.display -> setColor(WHITE);
+    display.setColor(WHITE);
 
-  Heltec.display -> drawString(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT, mystring);
-  Heltec.display -> display();
+  display.drawString(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT, mystring);
+  display.display();
   resetTOT();
   return w;         // we return the actual width of the output, in case of converted UTF8 characters
 }
@@ -376,9 +398,9 @@ uint8_t MorseOutput::printOnScrollSmall(uint8_t line, FONT_ATTRIB how, uint8_t x
 
 void MorseOutput::clearThreeLines() {
   for (int i = 0; i < 3; ++i) {
-    Heltec.display -> setColor(BLACK);
-    Heltec.display -> fillRect(0, SCROLL_TOP + i * LINE_HEIGHT , 127, LINE_HEIGHT + 1);
-    Heltec.display -> setColor(WHITE);
+    display.setColor(BLACK);
+    display.fillRect(0, SCROLL_TOP + i * LINE_HEIGHT , 127, LINE_HEIGHT + 1);
+    display.setColor(WHITE);
   }
 }
 
@@ -395,20 +417,20 @@ void MorseOutput::drawVolumeCtrl (boolean inverse, uint16_t x, uint16_t y, uint1
   int i = (width - 4) * volume / 19;
 //DEBUG(String(i));
   if (inverse)
-    Heltec.display -> setColor(BLACK);
+    display.setColor(BLACK);
   else
-    Heltec.display -> setColor(WHITE);
+    display.setColor(WHITE);
 
-  Heltec.display -> fillRect(x, y, width, height);
+  display.fillRect(x, y, width, height);
 
   if (!inverse)
-    Heltec.display -> setColor(BLACK);
+    display.setColor(BLACK);
   else
-    Heltec.display -> setColor(WHITE);
+    display.setColor(WHITE);
 
-  Heltec.display -> fillRect(x + 2, y + 4, (width - 4) * volume / 19, height - 8);
-  Heltec.display -> drawHorizontalLine(x + 2, y + height / 2, width - 4);
-  Heltec.display -> display();
+  display.fillRect(x + 2, y + 4, (width - 4) * volume / 19, height - 8);
+  display.drawHorizontalLine(x + 2, y + height / 2, width - 4);
+  display.display();
   resetTOT();
 }
 
@@ -417,15 +439,15 @@ void MorseOutput::displayScrollBar(boolean visible) {          /// display a scr
   const int l_bar = 3 * 49 / NoOfLines;
 
   if (visible) {
-    Heltec.display -> setColor(WHITE);
-    Heltec.display -> drawVerticalLine(127, 15, 49);
-    Heltec.display -> setColor(BLACK);
-    Heltec.display -> drawVerticalLine(127, 15 + (relPos * (49 - l_bar) / maxPos), l_bar);
+    display.setColor(WHITE);
+    display.drawVerticalLine(127, 15, 49);
+    display.setColor(BLACK);
+    display.drawVerticalLine(127, 15 + (relPos * (49 - l_bar) / maxPos), l_bar);
   } else {
-    Heltec.display -> setColor(BLACK);
-    Heltec.display -> drawVerticalLine(127, 15, 49);
+    display.setColor(BLACK);
+    display.drawVerticalLine(127, 15, 49);
   }
-  Heltec.display -> display();
+  display.display();
   resetTOT();
 }
 
@@ -448,17 +470,17 @@ void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
   printOnScroll(2, REGULAR, 0, s);
   int w = constrain(v, 3100, 4100);
   w = map(w, 3100, 4100, 0, 31);
-  Heltec.display -> drawRect(75, SCROLL_TOP + 2 * LINE_HEIGHT + 3, 35, LINE_HEIGHT - 4);
-  Heltec.display -> drawRect(110, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 4, LINE_HEIGHT - 8);
+  display.drawRect(75, SCROLL_TOP + 2 * LINE_HEIGHT + 3, 35, LINE_HEIGHT - 4);
+  display.drawRect(110, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 4, LINE_HEIGHT - 8);
   if (v > 1000)
-    Heltec.display -> fillRect(77, SCROLL_TOP + 2 * LINE_HEIGHT + 5 , w, LINE_HEIGHT - 8);
-  Heltec.display -> display();
+    display.fillRect(77, SCROLL_TOP + 2 * LINE_HEIGHT + 5 , w, LINE_HEIGHT - 8);
+  display.display();
 }
 
 void MorseOutput::displayEmptyBattery(void (*f)()) {                                /// display a warning and go to (return to) deep sleep
-  Heltec.display -> clear();
-  Heltec.display -> drawRect(10, 11, 95, 50);
-  Heltec.display -> drawRect(105, 26, 15, 20);
+  display.clear();
+  display.drawRect(10, 11, 95, 50);
+  display.drawRect(105, 26, 15, 20);
   printOnScroll(1, INVERSE_BOLD, 4,  "EMPTY");
   delay(4000);
   (*f)();
@@ -468,7 +490,7 @@ void MorseOutput::displayEmptyBattery(void (*f)()) {                            
 /// display volume as a progress bar: vol = 1-100
 void MorseOutput::displayVolume (boolean speedsetting, uint8_t volume) {
   drawVolumeCtrl(speedsetting ? false : true, 93, 0, 28, 15, volume);
-  Heltec.display -> display();
+  display.display();
 }
 
 
@@ -489,33 +511,33 @@ void MorseOutput::updateSMeter(int rssi) {
     drawVolumeCtrl( false, 93, 0, 28, 15, constrain(map(rssi, -150, -20, 0, 100), 0, 100));
     wasZero = false;
   }
-  Heltec.display -> display();
+  display.display();
 }
 
 /// for morse decoder: show a suqare on status line when we detected a signal
 
 void MorseOutput::drawInputStatus( boolean on) {
   if (on)
-    Heltec.display -> setColor(BLACK);
+    display.setColor(BLACK);
   else
-    Heltec.display -> setColor(WHITE);
-  Heltec.display -> fillRect(1, 1, 13, 13);
-  Heltec.display -> display();
+    display.setColor(WHITE);
+  display.fillRect(1, 1, 13, 13);
+  display.display();
 }
 
 
 void MorseOutput::dispLoraLogo() {                     /// display a small logo in the top right corner to indicate we operate with LoRa
-  Heltec.display -> setColor(BLACK);
-  Heltec.display -> drawXbm(121, 2, lora_width, lora_height, lora_bits);
-  Heltec.display -> setColor(WHITE);
-  Heltec.display -> display();
+  display.setColor(BLACK);
+  display.drawXbm(121, 2, lora_width, lora_height, lora_bits);
+  display.setColor(WHITE);
+  display.display();
 }
 
 void MorseOutput::dispWifiLogo() {     // display a small logo in the top right corner to indicate we operate with WiFi
-  Heltec.display -> setColor(BLACK);
-  Heltec.display -> drawXbm(121, 2, wifi_width, wifi_height, wifi_bits);
-  Heltec.display -> setColor(WHITE);
-  Heltec.display -> display();
+  display.setColor(BLACK);
+  display.drawXbm(121, 2, wifi_width, wifi_height, wifi_bits);
+  display.setColor(WHITE);
+  display.display();
 }
 
 //////// Display the status line in CW Keyer Mode
@@ -526,32 +548,32 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
 
 void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string) {    // place a string onto the status line; chars are 7px wide = 18 chars per line
   if (strong)
-    Heltec.display -> setFont(DialogInput_bold_12);
+    display.setFont(DialogInput_bold_12);
   else
-    Heltec.display -> setFont(DialogInput_plain_12);
-  Heltec.display -> setTextAlignment(TEXT_ALIGN_LEFT);
-  uint8_t w = Heltec.display -> getStringWidth(string);
-  Heltec.display -> setColor(WHITE);
-  Heltec.display -> fillRect(xpos * 7, 0 , w, 15);
-  Heltec.display -> setColor(BLACK);
-  Heltec.display -> drawString(xpos * 7, 0, string);
-  Heltec.display -> setColor(WHITE);
-  Heltec.display -> display();
+    display.setFont(DialogInput_plain_12);
+  display.setTextAlignment(TEXT_ALIGN_LEFT);
+  uint8_t w = display.getStringWidth(string);
+  display.setColor(WHITE);
+  display.fillRect(xpos * 7, 0 , w, 15);
+  display.setColor(BLACK);
+  display.drawString(xpos * 7, 0, string);
+  display.setColor(WHITE);
+  display.display();
   resetTOT();
 }
 
 void MorseOutput::clearStatusLine() {              // the status line is at the top, and inverted!
-  Heltec.display -> setColor(WHITE);
-  Heltec.display -> fillRect(0, 0, 128, 15);
-  Heltec.display -> setColor(BLACK);
+  display.setColor(WHITE);
+  display.fillRect(0, 0, 128, 15);
+  display.setColor(BLACK);
 
-  Heltec.display -> display();
+  display.display();
 }
 
 void MorseOutput::clearLine(uint8_t line) {                                              /// clear a line - display is done somewhere else!
-  Heltec.display -> setColor(BLACK);
-  Heltec.display -> fillRect(0, SCROLL_TOP + line * LINE_HEIGHT , 127, LINE_HEIGHT+1);
-  Heltec.display -> setColor(WHITE);
+  display.setColor(BLACK);
+  display.fillRect(0, SCROLL_TOP + line * LINE_HEIGHT , 127, LINE_HEIGHT+1);
+  display.setColor(WHITE);
 }
 
 
@@ -562,10 +584,10 @@ void MorseOutput::showVolumeScope(uint16_t mini, uint16_t maxi)
   b = map(maxi, 0, 4000, 0, 125);
   c = b - a;
   MorseOutput::clearLine(2);
-  Heltec.display->drawRect(5, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 102, LINE_HEIGHT - 8);
-  Heltec.display->drawRect(30, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 52, LINE_HEIGHT - 8);
-  Heltec.display->fillRect(a, SCROLL_TOP + 2 * LINE_HEIGHT + 7, c, LINE_HEIGHT - 11);
-  Heltec.display->display();
+  display.drawRect(5, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 102, LINE_HEIGHT - 8);
+  display.drawRect(30, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 52, LINE_HEIGHT - 8);
+  display.fillRect(a, SCROLL_TOP + 2 * LINE_HEIGHT + 7, c, LINE_HEIGHT - 11);
+  display.display();
 }
 
 

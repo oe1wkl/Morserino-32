@@ -171,7 +171,7 @@ void MorseMenu::menu_() {
             if (m32protocol)
               jsonCreate("message", "Quick Start", "");
             MorseOutput::printOnScroll(2, REGULAR, 1, "QUICK START");
-            Heltec.display -> display();
+            MorseOutput::refreshDisplay();
             delay(600);
             MorseOutput::clearDisplay();
         }
