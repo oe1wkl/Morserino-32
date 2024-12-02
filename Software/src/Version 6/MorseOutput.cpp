@@ -31,7 +31,17 @@
 #include "MorsePreferences.h"
 
 #include  "SSD1306Wire.h"
-SSD1306Wire display(0x3c, OLED_SDA, OLED_SCL, GEOMETRY_128_64, I2C_ONE, 700000);
+SSD1306Wire display(0x3c, OLED_SDA, OLED_SCL, GEOMETRY_128_64, I2C_TWO, 700000);
+
+#ifdef CONFIG_SOUND_I2S
+#include "I2S_Sidetone.hpp"
+I2S_Sidetone sidetone;
+#endif
+
+#ifdef CONFIG_WM8960
+#include <SparkFun_WM8960_Arduino_Library.h>
+WM8960 codec;
+#endif
 
 using namespace MorseOutput;
 
@@ -601,22 +611,87 @@ void MorseOutput::resetTOT() {       //// reset the Time Out Timer - we do this 
 
 void MorseOutput::soundSetup()
 {
-    // set up PWMs for tone generation
-    ledcSetup(toneChannel, toneFreq, pwmResolution);
-    ledcAttachPin(LF_Pin, toneChannel);
+#ifndef CONFIG_SOUND_I2S
+  // set up PWMs for tone generation
+  ledcSetup(toneChannel, toneFreq, pwmResolution);
+  ledcAttachPin(LF_Pin, toneChannel);
 
-    ledcSetup(lineOutChannel, toneFreq, pwmResolution);
-    ledcAttachPin(lineOutPin, lineOutChannel);                                    ////// change this for real version - no line out currntly
+  ledcSetup(lineOutChannel, toneFreq, pwmResolution);
+  ledcAttachPin(lineOutPin, lineOutChannel);                                    ////// change this for real version - no line out currntly
 
-    ledcSetup(volChannel, volFreq, pwmResolution);
-    ledcAttachPin(HF_Pin, volChannel);
+  ledcSetup(volChannel, volFreq, pwmResolution);
+  ledcAttachPin(HF_Pin, volChannel);
 
-    ledcWrite(toneChannel, 0);
-    ledcWrite(lineOutChannel, 0);
+  ledcWrite(toneChannel, 0);
+  ledcWrite(lineOutChannel, 0);
+#else
+#ifdef CONFIG_WM8960
+#pragma message ("WM8960 CODEC")
+	Wire.begin(CONFIG_WM8960_SDA, CONFIG_WM8960_SCL);
+	if (codec.begin() == false) //Begin communication over I2C
+	{
+		DEBUG("The WM8960 did not respond. Please check wiring.");
+	} else {
+    DEBUG("WM8960 is connected properly.");
+    // General setup needed
+    codec.enableVREF();
+    codec.enableVMID();
+
+    // Connect from DAC outputs to output mixer
+    codec.enableLD2LO();
+    codec.enableRD2RO();
+
+    // Enable output mixers
+    codec.enableLOMIX();
+    codec.enableROMIX();
+
+    // CLOCK STUFF, These settings will get you 44.1KHz sample rate, and class-d
+    // freq at 705.6kHz
+    codec.enablePLL(); // Needed for class-d amp clock
+    codec.setPLLPRESCALE(WM8960_PLLPRESCALE_DIV_2);
+    codec.setSMD(WM8960_PLL_MODE_FRACTIONAL);
+    codec.setCLKSEL(WM8960_CLKSEL_PLL);
+    codec.setSYSCLKDIV(WM8960_SYSCLK_DIV_BY_2);
+    codec.setBCLKDIV(4);
+    codec.setDCLKDIV(WM8960_DCLKDIV_16);
+    codec.setPLLN(7);
+    codec.setPLLK(0x86, 0xC2, 0x26); // PLLK=86C226h
+    codec.setWL(WM8960_WL_16BIT);
+
+    codec.enablePeripheralMode();
+
+    codec.enableDacLeft();
+    codec.enableDacRight();
+
+    codec.disableDacMute();   // Default is "soft mute" on, so we must disable mute to make channels active
+    //codec.enableLoopBack(); // Loopback sends ADC data directly into DAC
+    codec.disableLoopBack();
+
+    codec.enableSpeakers();
+
+    codec.setDacLeftDigitalVolumeDB(20.0);
+    codec.setDacRightDigitalVolumeDB(20.0);
+
+    Serial.println("SPKR Volume set to 0dB");
+    codec.setSpeakerVolumeDB(6.00);
+
+    codec.enableHeadphones();
+    codec.setHeadphoneVolumeDB(6.00);
+
+    // headphone jack detection
+    codec.enableHeadphoneJackDetect();
+    codec.setHeadphoneJackDetectInput(WM8960_JACKDETECT_LINPUT3);
+	}
+
+#endif
+  sidetone.begin(44100,16,2,128); //  defaults to 44100, 16, 2, 32
+  sidetone.setFrequency(600.0);
+#endif
 }
 
 
 void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut) { // frequency in Hertz, volume in range 0 - 19; we use 10 bit resolution
+#ifndef CONFIG_SOUND_I2S
   const uint16_t vol[] =   {0,  1, 2, 4, 6, 9, 14, 21, 31, 45, 70, 100, 140, 200, 280, 390, 512, 680, 840, 1023}; // 20 values
   unsigned int i = constrain(volume, 0, 19);
   unsigned int j = vol[i] >> 8;     // experimental: soften the inital click
@@ -645,12 +720,16 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
   delay(3);
   ledcWrite(volChannel, vol[i]); 
    
-
-
+#else
+  sidetone.setFrequency(frequency);
+  sidetone.setVolume(float(volume) / 19.0);
+  sidetone.on();
+#endif
 }
 
 
 void MorseOutput::pwmNoTone(unsigned int volume) {      // stop playing a tone by changing duty cycle of the tone to 0
+#ifndef CONFIG_SOUND_I2S
   const uint16_t vol[] =   {0,  1, 2, 4, 6, 9, 14, 21, 31, 45, 70, 100, 140, 200, 280, 390, 512, 680, 840, 1023}; // 20 values
   unsigned int i = constrain(volume, 0, 19);
   unsigned int j = vol[i] >> 8;     // experimental: soften the inital click
@@ -668,6 +747,9 @@ void MorseOutput::pwmNoTone(unsigned int volume) {      // stop playing a tone b
   ledcWrite(toneChannel, dutyCycleZero);
   ledcWrite(lineOutChannel, dutyCycleZero);
 
+#else
+  sidetone.off();
+#endif
 }
 
 
@@ -689,6 +771,9 @@ void MorseOutput::soundSignalOK() {
     pwmTone(440, MorsePreferences::sidetoneVolume, false);
     delay(97);
     pwmNoTone(MorsePreferences::sidetoneVolume);
+#ifdef CONFIG_SOUND_I2S
+    delay(20);
+#endif
     pwmTone(587, MorsePreferences::sidetoneVolume, false);
     delay(193);
     pwmNoTone(MorsePreferences::sidetoneVolume);
