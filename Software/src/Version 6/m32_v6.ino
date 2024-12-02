@@ -644,10 +644,12 @@ void displayStartUp(uint16_t volt) {
   MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2024");
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
-  
+
+#ifndef SKIP_BATTERY_PROTECT
   if (volt > 1000 && volt < 2800)
     MorseOutput::displayEmptyBattery(shutMeDown);
   else 
+#endif
     MorseOutput::displayBatteryStatus(volt);
   //prepare board version, just in case we want to switch to M32protocol later on
   if (MorsePreferences::boardVersion == 3)
