@@ -669,14 +669,15 @@ void MorseOutput::soundSetup()
 
     codec.enableSpeakers();
 
-    codec.setDacLeftDigitalVolumeDB(20.0);
-    codec.setDacRightDigitalVolumeDB(20.0);
+    codec.setDacLeftDigitalVolume(255);
+    codec.setDacRightDigitalVolume(255);
 
-    Serial.println("SPKR Volume set to 0dB");
-    codec.setSpeakerVolumeDB(6.00);
+    codec.setSpeakerVolumeDB(0.00);
+    codec.setSpeakerDcGain(5);
+    codec.setSpeakerAcGain(5);
 
     codec.enableHeadphones();
-    codec.setHeadphoneVolumeDB(6.00);
+    codec.setHeadphoneVolumeDB(0.00);
 
     // headphone jack detection
     codec.enableHeadphoneJackDetect();
