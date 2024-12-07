@@ -90,8 +90,6 @@ ESP32Encoder rotaryEncoder;
 // <== left,  count down
 
 
-int8_t woken = 0;  // what for?
-
 
 ///// the states the morserino can be in - selected in top level menu
 morserinoMode morseState = morseKeyer;
@@ -155,7 +153,7 @@ GEN_TYPE generatorMode = RANDOMS;          // trainer: what symbol (groups) are 
 File file;
 
 /// variable for selecting a hardware configuration menu option
-int8_t hwConf = 1;                            // 0 = cancel hw config, 1 = battery measurement calibration, 2 = lora config
+int8_t hwConf = 1;                            // 0 = cancel hw config, 1 = battery measurement calibration, 2 = flip screen, 3 = lora config
 
 boolean kochActive = false;                   // set to true when in Koch trainer mode
 
@@ -532,7 +530,10 @@ void setup()
             case 1: 
                     MorsePreferences::calibrateVoltageMeasurement();
                     break;
-            case 2: MorsePreferences::loraSystemSetup();
+            case 2: MorsePreferences::flipScreen(); 
+                    ESP.restart();
+                    break;       
+            case 3: MorsePreferences::loraSystemSetup();
                     break;
             default: break;
          }

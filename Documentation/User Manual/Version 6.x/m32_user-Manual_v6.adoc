@@ -1045,11 +1045,11 @@ Be aware that you must have an antenna connected when you transmit via LoRa, oth
 
 == Appendices
 
-=== Appendix 1:  Hardware Configuration (LoRa and Calibration of Battery Measurement)
+=== Appendix 1:  Hardware Configuration (Screen, LoRa and Calibration of Battery Measurement)
 
 There is a hardware configuration menu that  can be reached by pressing a paddle (or external paddle or straight key) while switching the M32 on. You can then select the configuration you want to perform by rotating the encoder knob, and pressing it once the right option shows up.
 
-The selectable options are "Calibr. Batt." (calibration of battery measurement), "LoRa Config." and "Cancel" (which just leaves this menu and continues with regular start-up of the M32).
+The selectable options are "Calibr. Batt." (calibration of battery measurement), "Flip Screen", "LoRa Config." and "Cancel" (which just leaves this menu and continues with regular start-up of the M32).
 
 ==== Appendix 1.1: Configuring LoRa Bands, Frequencies and Output Power [[appendix1_1]]
 
@@ -1088,6 +1088,10 @@ In order to calibrate the voltage measurement, you have to measure the actual ba
 * You will see a voltage value (in Millivolts) on the display. Now rotate the encoder until the displayed value is as close as possible to the measured battery voltage.
 * Press the BLACK encoder knob to store the calibration value, and to continue with the boot-up of the M32.
 
+==== Appendix 1.3: Flipping the display screen for left-hand use [[appendix1_3]]
+
+This is probably only relevant for the M32 Pocket!
+With the M32 Pocket, if you want to key with your left hand, the normal display would be upsode down; with this configuration option the display is rotated by 180° to allow lef-thand use.
 
 === Appendix 2: Adjusting Audio Input Level [[app2]]
 

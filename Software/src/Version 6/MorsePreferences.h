@@ -101,6 +101,7 @@ namespace MorsePreferences
  #define QRG920 920.55E6
   extern uint32_t loraQRG;
   extern uint8_t loraPower;
+  extern boolean leftHanded;
   extern uint8_t snapShots;
   extern uint8_t boardVersion;
   extern uint8_t oledBrightness;
@@ -182,6 +183,7 @@ namespace MorsePreferences
   void setCustomChars(String);
   //void kochSetup();
   void loraSystemSetup();
+  void flipScreen();
   void determineBoardVersion();
   void calibrateVoltageMeasurement();
   void writeWordPointer();

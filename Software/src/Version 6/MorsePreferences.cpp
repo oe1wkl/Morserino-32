@@ -47,7 +47,7 @@ Preferences pref;               // use the Preferences library for storing and r
       posQuickStart, posAutoStop, posMaxSequence, posLoraChannel,   posSerialOut,                   // 31
       // to be treated differently:
       posKochFilter,                                                                                // 36
-      posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf                  // 37
+      posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf, posScreen                  // 37
       };
   */
 
@@ -331,7 +331,7 @@ String extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", 
 uint8_t MorsePreferences::loraBand = 0;                     // 0 = 433, 1 = 868, 2 = 920
 uint32_t MorsePreferences::loraQRG = QRG433;                // for 70 cm band
 uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 25 mW
-
+boolean MorsePreferences::leftHanded = false;               // to flip screen for left-handed use in Pocket
 
 
   ///// stored in preferences, but not adjustable through preferences menu:
@@ -353,7 +353,6 @@ uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 
   uint8_t MorsePreferences::kochMaximum = 52;
   String  MorsePreferences::customCharSet = "";               // a place to store the custom character set
   boolean MorsePreferences::useCustomChars = false;           // flag if we should use custom characters
-  //uint8_t MorsePreferences::responsePause = 5;                // in echoTrainer mode, how long do we wait for response? in interWordSpaces; 2-12, default 5
 
   uint8_t MorsePreferences::menuPtr = 1;                      // current position of menu
   uint8_t MorsePreferences::newMenuPtr = 1;                   // current position of menu when changed
@@ -371,7 +370,6 @@ uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 
   String  MorsePreferences::wlanTRXPeer3 = "";                 // peer Morserino for WiFI TRX
 
   uint32_t MorsePreferences::fileWordPointer = 0;             // remember how far we have read the file in player mode / reset when loading new file
-  //uint8_t MorsePreferences::promptPause = 2;                  // in echoTrainer mode, length of pause before we send next word; multiplied by interWordSpace
   touch_value_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
   touch_value_t MorsePreferences::tRight = 20;                      // threshold for right paddle
 
@@ -621,7 +619,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   displayValueLine(pos, itemLine, false);                              
 }
 
-/// posKochFilter, posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf
+/// posKochFilter, posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posScreen, posHwConf
 
 
 
@@ -753,11 +751,14 @@ String MorsePreferences::getValueLine(prefPos pos) {
       sprintf(numBuffer, "%4d mV", volt);
       str = String(numBuffer);
       break;
+    
     case posHwConf:
       switch (hwConf) {
         case 1:   str = "Calibr. Batt.";
                   break;
-        case 2:   str = "LoRa Config.";
+        case 2:   str = "Flip Screen";
+                  break;
+        case 3:   str = "LoRa Config.";
                   break;
         default:  str = "Cancel";
                   break;
@@ -883,8 +884,8 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                   MorsePreferences::vAdjust = constrain(MorsePreferences::vAdjust, 155, 254);
                                   break;
                       case posHwConf:
-                                  hwConf += (t+3);
-                                  hwConf = hwConf % 3;
+                                  hwConf += (t+4);
+                                  hwConf = hwConf % 4;
                                   break;
                       case posLoraPower:
                                   MorsePreferences::loraPower += t;                              // set the LoRa band
@@ -1010,6 +1011,11 @@ void MorsePreferences::readPreferences(String repository) {
           MorsePreferences::loraPower = temp;
       else
           MorsePreferences::loraPower = 14;
+
+      if (temp = pref.getBool("leftHanded"))
+          MorsePreferences::leftHanded = temp;
+      else
+          MorsePreferences::leftHanded = false;
           
       MorsePreferences::snapShots = pref.getUChar("snapShots",0);
       updateMemory(MorsePreferences::snapShots);
@@ -1073,7 +1079,6 @@ void MorsePreferences::writePreferences(String repository) {
   if (morserino) {                                                    // the following things are not stored in snapshots anymore, 
                                                                       //only in the ""Morserino" permanent memory
      pref.putUChar("brightness", MorsePreferences::oledBrightness);  // if not snapshots, store current screen brightness
-
      if (MorsePreferences::pliste[posSerialOut].value != pref.getUChar("serialOut")) {
          pref.remove("serialOut");
          pref.putUChar("serialOut", MorsePreferences::pliste[posSerialOut].value);
@@ -1363,6 +1368,12 @@ void MorsePreferences::calibrateVoltageMeasurement() {
   pref.end();
 }
 
+void MorsePreferences::flipScreen() {
+  MorsePreferences::leftHanded = ! MorsePreferences::leftHanded;
+  pref.begin("morserino", false);
+  pref.putBool("leftHanded", MorsePreferences::leftHanded);
+  pref.end();
+}
 
 void MorsePreferences::fireCharSeen(boolean wpmOnly)
 {

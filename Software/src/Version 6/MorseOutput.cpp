@@ -95,7 +95,8 @@ void MorseOutput::initDisplay()
   digitalWrite(OLED_RST, HIGH);
 #endif
   display.init();
-  display.flipScreenVertically();
+  if (! MorsePreferences::leftHanded)
+    display.flipScreenVertically();
   display.clear();
 }
 

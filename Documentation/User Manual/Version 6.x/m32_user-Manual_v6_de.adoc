@@ -1046,7 +1046,7 @@ Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da so
 
 == Anhänge
 
-=== Anhang 1: Hardware Konfiguration (LoRa und Kalibrierung der Batterie-Messung)
+=== Anhang 1: Hardware Konfiguration (Anzeige, LoRa und Kalibrierung der Batterie-Messung)
 
 Es gibt ein Hardware-Konfigurationsmenü, welches man erreicht, indem man das Paddle (oder ein externes Paddle bzw. eine Handtaste) beim Einschalten des Morserino-32 gedrückt hält. Man kann dann die gewünschte Konfiguration durch Drehen des Drehreglers auswählen, und mit einem Druck auf den schwarzen Knopf aktivieren.
 
@@ -1090,6 +1090,10 @@ Um die Messung der Batteriespannung zu kalibrieren, musst du zuerst einmal die S
 * Man sieht nun eine Spannungsanzeige am Display (in Millivolt). Dreh nun den Drehregler in die eine oder andere Richtung, bis der angezeigte Wert möglichst nahe am gemessenen Wert der Batteriespannung liegt.
 * Drück den Schwarzen Knopf um den Kalibrierungswert zu speichern, und um mit dem Hochfahren des M32 fortzufahren.
 
+==== Anhang 1.3: Flip Screen (Drehung des Displays für linkshändige Benutzung)
+
+Dies ist vermutlich nur für das M32 Pocket relevant!
+Würde man beim M32 Pocket mit der linken Hand die Paddles betätigen, würde die Anzeige auf dem Kopf stehen; mit dieser Konfigurationsoption wird die Anzeige um 180° gedreht, um eine linkshändige Bedienung zu ermöglichen.
 
 === Anhang 2: Einstellen des Audioeingangspegels [[appendix2]]
 
