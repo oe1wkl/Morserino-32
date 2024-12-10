@@ -653,12 +653,16 @@ void displayStartUp(uint16_t volt) {
 #endif
     MorseOutput::displayBatteryStatus(volt);
   //prepare board version, just in case we want to switch to M32protocol later on
+#ifdef ARDUINO_heltec_wifi_kit_32_V3
+    brd = "M32Pocket";
+#else
   if (MorsePreferences::boardVersion == 3)
     brd = "1st edition";
   else if (MorsePreferences::boardVersion == 4)
     brd = "2nd edition";
   else
     brd = "unknown";
+#endif
   delay(2000);
   
 }
@@ -2120,7 +2124,10 @@ String cleanUpProSigns( String &input ) {
 //// measure battery voltage in mV
 
 int16_t batteryVoltage() {      /// measure battery voltage and return result in milliVolts
-  
+#ifdef PIN_ADC_CTRL
+  #define	ADC_Ctrl  PIN_ADC_CTRL
+  pinMode(ADC_Ctrl,OUTPUT);
+#endif
 #ifdef PIN_VEXT
       // board version 3 requires Vext being on for reading the battery voltage
       if (MorsePreferences::boardVersion == 3)
@@ -2129,18 +2136,28 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
       else if (MorsePreferences::boardVersion == 4)
          digitalWrite(PIN_VEXT,HIGH);
 #endif
-
+#ifdef ARDUINO_heltec_wifi_kit_32_V3
+      digitalWrite(ADC_Ctrl,LOW);
+        delay(100);
+#endif
       double v= 0; int counts = 4;
       for (int i=0; i<counts   ; ++i) {
          v+= ReadVoltage(batteryPin);
          delay(8);
-         //DEBUG(String(v,4));
       }
+#ifdef ARDUINO_heltec_wifi_kit_32_V3
+        digitalWrite(ADC_Ctrl,HIGH);
+#endif
       v /= counts;
+      //DEBUG(String(v,4));
+
       if (MorsePreferences::boardVersion == 4)      // adjust measurement for board version 4
         v *= 1.1;
       voltage_raw = v;
-      v *= (MorsePreferences::vAdjust * 12.9);      // adjust measurement and convert to millivolts
+      //DEBUG("Board " + String(MorsePreferences::boardVersion));
+      //DEBUG("V raw " + String(voltage_raw,5));
+      //DEBUG("Vadjust " + String(MorsePreferences::vAdjust));
+      v *= (MorsePreferences::vAdjust * VOLT_CALIBRATE);      // adjust measurement and convert to millivolts
       return (int16_t) v;                                                                                       
 }
 
@@ -2156,9 +2173,15 @@ double ReadVoltage(byte pin){
   //DEBUG("ReadVoltage:" + String(reading));
   if(reading < 4 || reading > 4092)     /// invalid measurement
     return 0;
+
+#ifndef ARDUINO_heltec_wifi_kit_32_V3  
   //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
   return -0.000000000000016 * pow(reading,4) + 0.000000000118171 * pow(reading,3)- 0.000000301211691 * pow(reading,2)+ 0.001109019271794 * reading + 0.034143524634089;
-} // Added an improved polynomial, use either, comment out as required
+  // Added an improved polynomial, use either, comment out as required
+#else
+  return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
+#endif
+} 
 
 
 

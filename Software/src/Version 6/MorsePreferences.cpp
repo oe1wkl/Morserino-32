@@ -747,7 +747,7 @@ String MorsePreferences::getValueLine(prefPos pos) {
       }
       break;
     case posVAdjust:
-      volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * 12.9));   // recalculate millivolts for new adjustment
+      volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * VOLT_CALIBRATE));   // recalculate millivolts for new adjustment
       sprintf(numBuffer, "%4d mV", volt);
       str = String(numBuffer);
       break;

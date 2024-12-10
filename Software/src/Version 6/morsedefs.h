@@ -146,6 +146,12 @@ const int HF_Pin = PIN_HF;    // for the HF PWM generation
 const int HF_Pin = 22;
 #endif
 
+/// voltage calibration factor
+#ifdef ARDUINO_heltec_wifi_kit_32_V3
+#define VOLT_CALIBRATE 18.9
+#else
+#define VOLT_CALIBRATE 12.9
+#endif
 
 /// where are the touch paddles?
 #ifdef PIN_TOUCH_LEFT
