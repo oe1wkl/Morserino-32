@@ -1329,13 +1329,21 @@ uint8_t readSensors(int left, int right, boolean init) {
       return ( lValue > MorsePreferences::tLeft ? 2 : 0 ) + (rValue > MorsePreferences::tRight ? 1 : 0 );
     }
   } else {
-    //DEBUG("@1216: tLeft: " + String(MorsePreferences::tLeft));
+    //DEBUG("@1332: tLeft: " + String(MorsePreferences::tLeft));
     //lValue -=25; rValue -=25;
-    //DEBUG("@1216: lValue, rValue: " + String (lValue) + " " + String(rValue));
-    if (lValue < 32 || rValue < 32)
-      return 3;
-    else
-      return 0; 
+    DEBUG("@1334: lValue, rValue: " + String (lValue) + " " + String(rValue));
+    if (sizeof(touch_value_t) < 4) {
+        if (lValue < 32 || rValue < 32)
+          return 3;
+        else
+          return 0; 
+          }
+    else {
+        if (lValue > 85000 || rValue > 85000)
+          return 3;
+        else
+          return 0; 
+    }
   }
 #endif
 }
