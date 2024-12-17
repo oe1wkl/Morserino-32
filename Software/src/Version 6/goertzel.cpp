@@ -29,15 +29,28 @@
 
 #include "goertzel.h"
 
+#ifdef CONFIG_DECODER_I2S
+#include "I2S_Sidetone.hpp"
+extern I2S_Sidetone sidetone;
+#endif
+
+
 using namespace Goertzel;
 
   float coeff;
   float sine;
   float cosine;
+#ifdef CONFIG_DECODER_I2S
+  const float sampling_freq = 44100.0;
+  int16_t testData[8192]; // buffer for freq analysis - for i2s this needs to be a signed int and big enough for largest possible frame
+  int goertzel_n = 512; // TODO: test different values with i2s
+#else
   const float sampling_freq = 106000.0;
-  const float target_freq = 698.0; /// adjust for your needs see above
+  uint16_t testData[1216];         /// buffer for freq analysis - max. 608 samples; you could increase this (and n) to a max of 1216, for sample time 10 ms, and bw 88 Hz
   int goertzel_n = 152;   //// you can use:         152, 304, 456 or 608 - thats the max buffer reserved in checktone()
                           ///// resulting bandwidth: 700, 350, 233 or 175 Hz, respectively
+#endif
+  const float target_freq = 622.0; /// adjust for your needs see above
   float bw;
   float Q1 = 0;
   float Q2 = 0;
@@ -64,13 +77,17 @@ void Goertzel::setup() {                 /// pre-compute some values (sine, cosi
 
 boolean Goertzel::checkInput() {                  // check the audio input for a signal
     float magnitude ;
-    uint16_t testData[1216];         /// buffer for freq analysis - max. 608 samples; you could increase this (and n) to a max of 1216, for sample time 10 ms, and bw 88 Hz
- 
 
+#ifdef CONFIG_DECODER_I2S
+    int num_bytes=sidetone.available();
+    int bytes_read = sidetone.readBytes((uint8_t *)testData, num_bytes);
+    for (int index = 0; index < bytes_read/8 ; ++index) {
+#else
     for (int index = 0; index < goertzel_n ; index++)
             testData[index] = analogRead(audioInPin);
     //DEBUG("Read and stored analog values!");
     for (int index = 0; index < goertzel_n ; index++) {
+#endif
       float Q0;
       Q0 = coeff * Q1 - Q2 + (float) testData[index];
       Q2 = Q1;
