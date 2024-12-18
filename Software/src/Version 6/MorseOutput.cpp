@@ -638,6 +638,48 @@ void MorseOutput::soundSetup()
     codec.enableVREF();
     codec.enableVMID();
 
+#ifdef CONFIG_DECODER_I2S
+    // configure mic input for decoder
+
+    // link ADCLRC with DACLRC
+    codec.setALRCGPIO();
+
+    // Setup signal flow to the ADC
+
+    codec.enableLMIC();
+    codec.enableRMIC();
+
+    // Connect from INPUT1 to "n" (aka inverting) inputs of PGAs.
+    codec.connectLMN1();
+    codec.connectRMN1();
+
+    // Disable mutes on PGA inputs (aka INTPUT1)
+    codec.disableLINMUTE();
+    codec.disableRINMUTE();
+
+    // Set pga volumes
+    codec.setLINVOLDB(0.00); // Valid options are -17.25dB to +30dB (0.75dB steps)
+    codec.setRINVOLDB(0.00); // Valid options are -17.25dB to +30dB (0.75dB steps)
+
+    // Set input boosts to get inputs 1 to the boost mixers
+    codec.setLMICBOOST(WM8960_MIC_BOOST_GAIN_0DB);
+    codec.setRMICBOOST(WM8960_MIC_BOOST_GAIN_0DB);
+
+    // Connect from MIC inputs (aka pga output) to boost mixers
+    codec.connectLMIC2B();
+    codec.connectRMIC2B();
+
+    // Enable boost mixers
+    codec.enableAINL();
+    codec.enableAINR();
+
+    // Connect LB2LO (booster to output mixer (analog bypass)
+    codec.enableLB2LO();
+    codec.enableRB2RO();
+
+    // config mic input end
+#endif
+
     // Connect from DAC outputs to output mixer
     codec.enableLD2LO();
     codec.enableRD2RO();
@@ -661,6 +703,8 @@ void MorseOutput::soundSetup()
 
     codec.enablePeripheralMode();
 
+    codec.enableAdcLeft();
+    codec.enableAdcRight();
     codec.enableDacLeft();
     codec.enableDacRight();
 
