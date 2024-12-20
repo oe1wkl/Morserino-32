@@ -148,7 +148,7 @@ const int HF_Pin = 22;
 
 /// voltage calibration factor
 #ifdef ARDUINO_heltec_wifi_kit_32_V3
-#define VOLT_CALIBRATE 18.9
+#define VOLT_CALIBRATE 4.33
 #else
 #define VOLT_CALIBRATE 12.9
 #endif

@@ -2157,16 +2157,21 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
         digitalWrite(ADC_Ctrl,HIGH);
 #endif
       v /= counts;
-      //DEBUG(String(v,4));
-
+      //DEBUG("ReadVoltage:" + String(v));
+  #ifndef ARDUINO_heltec_wifi_kit_32_V3      
       if (MorsePreferences::boardVersion == 4)      // adjust measurement for board version 4
         v *= 1.1;
+  #endif
+
       voltage_raw = v;
-      //DEBUG("Board " + String(MorsePreferences::boardVersion));
-      //DEBUG("V raw " + String(voltage_raw,5));
-      //DEBUG("Vadjust " + String(MorsePreferences::vAdjust));
+  #ifndef ARDUINO_heltec_wifi_kit_32_V3      
       v *= (MorsePreferences::vAdjust * VOLT_CALIBRATE);      // adjust measurement and convert to millivolts
-      return (int16_t) v;                                                                                       
+  #else
+      v = v - 200 + MorsePreferences::vAdjust;
+      v *= VOLT_CALIBRATE;
+  #endif
+      return (int16_t) v;   
+
 }
 
 
@@ -2184,10 +2189,17 @@ double ReadVoltage(byte pin){
 
 #ifndef ARDUINO_heltec_wifi_kit_32_V3  
   //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
-  return -0.000000000000016 * pow(reading,4) + 0.000000000118171 * pow(reading,3)- 0.000000301211691 * pow(reading,2)+ 0.001109019271794 * reading + 0.034143524634089;
+  return (-0.000000000000016 * pow(reading,4) + 0.000000000118171 * pow(reading,3)- 0.000000301211691 * pow(reading,2)+ 0.001109019271794 * reading + 0.034143524634089);
   // Added an improved polynomial, use either, comment out as required
 #else
-  return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
+//DEBUG("V raw:" + String(reading));
+  if (reading < 0.838)
+    reading = reading - (reading-616)/4.5;
+  else  
+    reading = reading - (1006 - reading)/4.5;
+// DEBUG("V corrected:" + String(reading));
+  return reading;
+  //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
 #endif
 } 
 
