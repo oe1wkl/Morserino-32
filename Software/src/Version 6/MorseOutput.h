@@ -56,6 +56,7 @@ namespace MorseOutput
   void resetTOT();
 
   void soundSetup();
+  void soundSuspend();
   void pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut);
   void pwmNoTone(unsigned int volume);
   void pwmClick(unsigned int volume);

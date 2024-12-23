@@ -2235,6 +2235,7 @@ void shutMeDown() {
 #endif
   WiFi.disconnect(true, false);
   delay(100);
+  MorseOutput::soundSuspend();
 #ifdef PIN_VEXT
   digitalWrite(PIN_VEXT,HIGH);
   delay(100);
