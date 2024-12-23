@@ -735,6 +735,13 @@ void MorseOutput::soundSetup()
 #endif
 }
 
+void MorseOutput::soundSuspend()
+{
+#ifdef CONFIG_WM8960
+  codec.disableVREF();
+  codec.disableVMID();
+#endif
+}
 
 void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut) { // frequency in Hertz, volume in range 0 - 19; we use 10 bit resolution
 #ifndef CONFIG_SOUND_I2S
