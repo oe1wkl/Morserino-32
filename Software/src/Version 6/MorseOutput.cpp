@@ -738,8 +738,10 @@ void MorseOutput::soundSetup()
 void MorseOutput::soundSuspend()
 {
 #ifdef CONFIG_WM8960
+  codec.reset();
+  delay(10);
   codec.disableVREF();
-  codec.disableVMID();
+
 #endif
 }
 
