@@ -2630,6 +2630,10 @@ void audioLevelAdjust() {
     uint16_t dataSize = 1216;
     uint16_t testData[dataSize];
 
+  #ifdef CONFIG_SOUND_I2S
+    return;
+  #endif
+
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, BOLD, 0, "Audio In Adj.");
     MorseOutput::printOnScroll(1, REGULAR, 0, "End with RED");

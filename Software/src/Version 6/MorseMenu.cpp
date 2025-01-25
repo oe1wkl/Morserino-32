@@ -115,10 +115,17 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words  -e
   {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed  -e
   {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive  -e
+#ifdef LORA_DISABLED
+  {0,_koch,_decode,_dummy,_trxWifi},                    // 30 transceiver
+  {1,_trxIcw,_trxWifi,_trx,0},                          // 31 lora  -e
+  {1,_trxIcw,_trxIcw,_trx,0},                          // 32 wifi  -e
+  {1,_trxWifi,_trxWifi,_trx,0},                         // 33 icw  -e
+#else
   {0,_koch,_decode,_dummy,_trxLora},                    // 30 transceiver
   {1,_trxIcw,_trxWifi,_trx,0},                          // 31 lora  -e
   {1,_trxLora,_trxIcw,_trx,0},                          // 32 wifi  -e
   {1,_trxWifi,_trxLora,_trx,0},                         // 33 icw  -e
+ #endif
   {0,_trx,_wifi,_dummy,0},                              // 34 decoder  -e
   {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 35 WiFi
   {1,_wifi_select,_wifi_config,_wifi,0},                // 36 Disp Mac  -e!!

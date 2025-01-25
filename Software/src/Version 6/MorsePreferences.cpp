@@ -221,13 +221,23 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"Never", "CW Keyer only", "Keyer & Gen.", "Keyer&Gen.&RX"}
   },
+#ifdef LORA_DISABLED
+ {
+    0, 0, 1,  1,                                                // transmit generated/played things via LoRa or WiFi?
+    "Generator Tx",
+    "Generated CW to be sent by WiFi?",
+    true,
+    {"WiFi Tx OFF",  "WiFi Tx ON"}
+  },
+#else
   {
     0, 0, 2,  1,                                                // transmit generated/played things via LoRa or WiFi?
     "Generator Tx",
-    "Generated CW to be sent by LoRa or Wifi?",
+    "Generated CW to be sent by LoRa or WiFi?",
     true,
     {"Tx OFF", "LoRa Tx ON", "WiFi Tx ON"}
   },
+#endif
   {
     0, 0, 1, 1,                                                 //  0: "Wide" 1: "Narrow"
     "Bandwidth",
@@ -463,7 +473,11 @@ uint8_t MorsePreferences::memPtr = 0;
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength, 
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler, 
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, 
-                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel, posGoertzelBandwidth, posExtAudioOnDecode 
+                                                   posKeyExternalTx, posLoraCwTransmit, 
+                                              #ifndef LORA_DISABLED
+                                                   posLoraChannel, 
+                                              #endif
+                                                   posGoertzelBandwidth, posExtAudioOnDecode 
                                                  };
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
