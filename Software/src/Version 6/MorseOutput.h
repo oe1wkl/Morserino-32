@@ -56,6 +56,9 @@ namespace MorseOutput
   void resetTOT();
 
   void soundSetup();
+#ifdef CONFIG_TLV320AIC3100
+  void soundEventHandler();
+#endif
   void soundSuspend();
   void pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut);
   void pwmNoTone(unsigned int volume);

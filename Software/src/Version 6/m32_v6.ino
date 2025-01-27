@@ -325,6 +325,13 @@ uint8_t cwTxSerial;                                     /// a 6 bit serial numbe
 
 IPAddress peerIP;
 
+#ifdef CONFIG_TLV320AIC3100_INT
+volatile bool codec_event = false;
+void IRAM_ATTR codec_isr() {
+  codec_event = digitalRead(CONFIG_TLV320AIC3100_INT) == HIGH ? true : false;
+}
+#endif
+
 /*
 ////////////////////////////////////////////////////////////////////
 // encoder subroutines
@@ -491,6 +498,10 @@ void setup()
   MorseOutput::clearDisplay();
   MorseOutput::soundSetup();
 
+#ifdef CONFIG_TLV320AIC3100_INT
+  pinMode(CONFIG_TLV320AIC3100_INT, INPUT);
+  attachInterrupt(CONFIG_TLV320AIC3100_INT, codec_isr, RISING);
+#endif
 
   rotaryEncoder.attachHalfQuad ( PinDT, PinCLK );
   rotaryEncoder.setCount ( 0 );
@@ -935,7 +946,13 @@ void loop() {
       onLoraReceive();
     }
 #endif
-    
+
+#ifdef CONFIG_TLV320AIC3100_INT
+    if (codec_event) {
+      codec_event = false;
+      MorseOutput::soundEventHandler();
+    }
+#endif
 }     /////////////////////// end of loop() /////////
 
 
