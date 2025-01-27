@@ -43,6 +43,11 @@ I2S_Sidetone sidetone;
 WM8960 codec;
 #endif
 
+#ifdef CONFIG_TLV320AIC3100
+#include "tlv320aic31xx_codec.h"
+TLV320AIC31xx codec(&Wire);
+#endif
+
 using namespace MorseOutput;
 
 char textBuffer[NoOfLines][2 * NoOfCharsPerLine + 1]; /// we need extra room for style markers (FONT_ATTRIB stored as characters to toggle on/off the style within a line)
@@ -730,10 +735,79 @@ void MorseOutput::soundSetup()
 	}
 
 #endif
+#ifdef CONFIG_TLV320AIC3100
+#pragma message ("TLV320AIC3100 CODEC")
+    Wire.begin(CONFIG_TLV320AIC3100_SDA, CONFIG_TLV320AIC3100_SCL);
+    if (!codec.begin()) {
+      Serial.println("ERROR: TLV320AIC3100 Codec didn't respond via I2C!");
+    } else {
+      codec.setWordLength(AIC31XX_WORD_LEN_16BITS);
+
+      // clock configuration for 44,1kHz 16bit stereo, the master clock will be derived via PLL from the i2s BCLK
+      codec.setCLKMUX(AIC31XX_PLL_CLKIN_BCLK, AIC31XX_CODEC_CLKIN_PLL);
+      codec.setPLL(1, 2, 32, 0); // uint8_t pll_p, uint8_t pll_r, uint8_t pll_j, uint16_t pll_d
+      codec.setNDACVal(8);
+      codec.setNDACPower(true);
+      codec.setMDACVal(2);
+      codec.setMDACPower(true);
+      codec.setNADCVal(8);
+      codec.setNADCPower(true);
+      codec.setMADCVal(2);
+      codec.setMADCPower(true);
+      codec.setPLLPower(1);
+      delay(20); // let PLL settle
+
+      codec.setMicPGAEnable(true);
+      codec.writeRegister(AIC31XX_MICPGAPI, 0x10); // MIC1RP 10k
+
+      // enable internal clock for timer
+      // this is required as we derive master clock from BCLK and hence have no MCLK input
+      codec.modifyRegister(AIC31XX_TIMERDIVIDER, AIC31XX_TIMER_SELECT_MASK, 0);
+
+      // enable headset detection and trigger interrupt 1 for headset events
+      codec.enableHeadsetDetect();
+      codec.setHSDetectInt1(true);
+
+      // codec.writeRegister(AIC31XX_MICBIAS,11);
+      codec.enableDAC();
+      codec.setDACMute(false);
+      codec.setDACVolume(20.0f,20.0f);
+      codec.enableADC();
+      codec.setADCGain(-12.0f);
+      // run soundEventHandler once to mute/unmute HP/Spk depending on HS plug state
+      soundEventHandler();
+
+      // codec.dumpRegisters(); // nifty when debugging codec issues
+    }
+#endif
   sidetone.begin(44100,16,2,128); //  defaults to 44100, 16, 2, 32
   sidetone.setFrequency(600.0);
 #endif
 }
+
+#ifdef CONFIG_TLV320AIC3100
+void MorseOutput::soundEventHandler() {
+  // interrupt reason needs to be read, otherwise the codec won't send any further interrupts
+  if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
+    Serial.println("AIC31XX: Headset plug interrupt triggered");
+  }
+  if (codec.isHeadsetDetected()) {
+    Serial.println("AIC31XX: Headset detected");
+    codec.enableHeadphoneAmp();
+    codec.setHeadphoneVolume(-10.0f,-10.0f); // unmute
+    codec.setHeadphoneGain(0.0f,0.0f);
+    codec.setHeadphoneMute(false); // unmute hp
+    codec.setSpeakerMute(true); // unmute class d speaker amp
+  } else {
+    Serial.println("AIC31XX: Headset not plugged");
+    codec.enableSpeakerAmp();
+    codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
+    codec.setSpeakerVolume(-10.0f); // unmute
+    codec.setSpeakerMute(false); // unmute class d speaker amp
+    codec.setHeadphoneMute(true); // mute hp
+  }
+}
+#endif
 
 void MorseOutput::soundSuspend()
 {
@@ -741,7 +815,9 @@ void MorseOutput::soundSuspend()
   codec.reset();
   delay(10);
   codec.disableVREF();
-
+#endif
+#ifdef CONFIG_TLV320AIC3100
+  codec.reset();
 #endif
 }
 
