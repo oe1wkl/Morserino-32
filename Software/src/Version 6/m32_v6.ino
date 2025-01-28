@@ -470,9 +470,13 @@ void setup()
   pinMode(modeButtonPin, INPUT);
 #endif
 
+#ifndef VEXT_ON_VALUE
+#define VEXT_ON_VALUE LOW
+#endif
+
 #ifdef PIN_VEXT
   pinMode(PIN_VEXT, OUTPUT);
-  digitalWrite(PIN_VEXT, LOW);
+  digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 #endif
 
  //DEBUG("Volt: " + String(volt));
@@ -2156,10 +2160,10 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 #ifdef PIN_VEXT
       // board version 3 requires Vext being on for reading the battery voltage
       if (MorsePreferences::boardVersion == 3)
-         digitalWrite(PIN_VEXT,LOW);
+         digitalWrite(PIN_VEXT,VEXT_ON_VALUE);
       // board version 4 requires Vext being off for reading the battery voltage
       else if (MorsePreferences::boardVersion == 4)
-         digitalWrite(PIN_VEXT,HIGH);
+         digitalWrite(PIN_VEXT,! VEXT_ON_VALUE);
 #endif
 #ifdef ARDUINO_heltec_wifi_kit_32_V3
       digitalWrite(ADC_Ctrl,LOW);
@@ -2254,7 +2258,7 @@ void shutMeDown() {
   delay(100);
   MorseOutput::soundSuspend();
 #ifdef PIN_VEXT
-  digitalWrite(PIN_VEXT,HIGH);
+  digitalWrite(PIN_VEXT, ! VEXT_ON_VALUE);
   delay(100);
 #endif
   /*esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH,   ESP_PD_OPTION_ON);

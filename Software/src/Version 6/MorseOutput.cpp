@@ -17,21 +17,33 @@
 
 ////////////////////////////// New scrolling display
 
+#ifndef CONFIG_DISPLAYWRAPPER
 /// circular buffer: 14 chars by NoOfLines lines (bottom 3 are visible)
 #define NoOfLines 15
 #define NoOfCharsPerLine 14
 #define SCROLL_TOP 15
 #define LINE_HEIGHT 16
 #define C_WIDTH 9
+#else
+#define NoOfCharsPerLine 512
+#define LINE_HEIGHT display.getStringHeight("A")
+#define C_WIDTH display.getStringWidth("A")
+#define SCROLL_TOP display.getHeight()==64 ? 15 : 31
+#endif
 
 #include <Arduino.h>
 #include "MorseOutput.h"
 #include "morsedefs.h"
-#include "wklfonts.h"
 #include "MorsePreferences.h"
 
+#ifndef CONFIG_DISPLAYWRAPPER
+#include "wklfonts.h"
 #include  "SSD1306Wire.h"
 SSD1306Wire display(0x3c, OLED_SDA, OLED_SCL, GEOMETRY_128_64, I2C_TWO, 700000);
+#else
+#include "DisplayWrapper.h"
+DisplayWrapper display;
+#endif
 
 #ifdef CONFIG_SOUND_I2S
 #include "I2S_Sidetone.hpp"
@@ -211,7 +223,11 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
     text.replace("\n", "");
     l = text.length();
   }
+#ifdef CONFIG_DISPLAYWRAPPER
+  int textTooLong = (screenPos + l > display.getWidth()/display.getStringWidth("A"));
+#else
   int textTooLong = (screenPos + l > NoOfCharsPerLine);
+#endif
 
   if (textTooLong) {                 // we need to scroll up and start a new line
     MorseOutput::newLine(scroll);
@@ -301,7 +317,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   uint8_t charsPrinted;
 
   display.setColor(BLACK);
-  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , 127, LINE_HEIGHT + 1); // black out the line on screen
+  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT + 1); // black out the line on screen
   for (int i = 0; (c = textBuffer[bufferLine][i]) ; ++i) {
     // if (c == ' ') DEBUG("Blank!");
     if (c < 5)   {         /// a flag
@@ -415,7 +431,7 @@ uint8_t MorseOutput::printOnScrollSmall(uint8_t line, FONT_ATTRIB how, uint8_t x
 void MorseOutput::clearThreeLines() {
   for (int i = 0; i < 3; ++i) {
     display.setColor(BLACK);
-    display.fillRect(0, SCROLL_TOP + i * LINE_HEIGHT , 127, LINE_HEIGHT + 1);
+    display.fillRect(0, SCROLL_TOP + i * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT + 1);
     display.setColor(WHITE);
   }
 }
@@ -456,12 +472,12 @@ void MorseOutput::displayScrollBar(boolean visible) {          /// display a scr
 
   if (visible) {
     display.setColor(WHITE);
-    display.drawVerticalLine(127, 15, 49);
+    display.drawVerticalLine(display.getWidth()-1, 15, 49);
     display.setColor(BLACK);
-    display.drawVerticalLine(127, 15 + (relPos * (49 - l_bar) / maxPos), l_bar);
+    display.drawVerticalLine(display.getWidth()-1, 15 + (relPos * (49 - l_bar) / maxPos), l_bar);
   } else {
     display.setColor(BLACK);
-    display.drawVerticalLine(127, 15, 49);
+    display.drawVerticalLine(display.getWidth()-1, 15, 49);
   }
   display.display();
   resetTOT();
@@ -505,7 +521,7 @@ void MorseOutput::displayEmptyBattery(void (*f)()) {                            
 
 /// display volume as a progress bar: vol = 1-100
 void MorseOutput::displayVolume (boolean speedsetting, uint8_t volume) {
-  drawVolumeCtrl(speedsetting ? false : true, 93, 0, 28, 15, volume);
+  drawVolumeCtrl(speedsetting ? false : true, display.getWidth()-35, 0, 28, SCROLL_TOP, volume);
   display.display();
 }
 
@@ -520,11 +536,11 @@ void MorseOutput::updateSMeter(int rssi) {
     if (wasZero)
       return;
     else {
-      drawVolumeCtrl( false, 93, 0, 28, 15, 0);
+      drawVolumeCtrl( false, display.getWidth()-35, 0, 28, 15, 0);
       wasZero = true;
     }
   else {
-    drawVolumeCtrl( false, 93, 0, 28, 15, constrain(map(rssi, -150, -20, 0, 100), 0, 100));
+    drawVolumeCtrl( false, display.getWidth()-35, 0, 28, 15, constrain(map(rssi, -150, -20, 0, 100), 0, 100));
     wasZero = false;
   }
   display.display();
@@ -544,14 +560,14 @@ void MorseOutput::drawInputStatus( boolean on) {
 
 void MorseOutput::dispLoraLogo() {                     /// display a small logo in the top right corner to indicate we operate with LoRa
   display.setColor(BLACK);
-  display.drawXbm(121, 2, lora_width, lora_height, lora_bits);
+  display.drawXbm(display.getWidth()-7, 2, lora_width, lora_height, lora_bits);
   display.setColor(WHITE);
   display.display();
 }
 
 void MorseOutput::dispWifiLogo() {     // display a small logo in the top right corner to indicate we operate with WiFi
   display.setColor(BLACK);
-  display.drawXbm(121, 2, wifi_width, wifi_height, wifi_bits);
+  display.drawXbm(display.getWidth()-7, 2, wifi_width, wifi_height, wifi_bits);
   display.setColor(WHITE);
   display.display();
 }
@@ -570,9 +586,9 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string)
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   uint8_t w = display.getStringWidth(string);
   display.setColor(WHITE);
-  display.fillRect(xpos * 7, 0 , w, 15);
+  display.fillRect(xpos * display.getStringWidth("A"), 0 , w, LINE_HEIGHT-1);
   display.setColor(BLACK);
-  display.drawString(xpos * 7, 0, string);
+  display.drawString(xpos * display.getStringWidth("A"), 0, string);
   display.setColor(WHITE);
   display.display();
   resetTOT();
@@ -580,7 +596,7 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string)
 
 void MorseOutput::clearStatusLine() {              // the status line is at the top, and inverted!
   display.setColor(WHITE);
-  display.fillRect(0, 0, 128, 15);
+  display.fillRect(0, 0, display.getWidth(), LINE_HEIGHT-1);
   display.setColor(BLACK);
 
   display.display();
@@ -588,7 +604,7 @@ void MorseOutput::clearStatusLine() {              // the status line is at the 
 
 void MorseOutput::clearLine(uint8_t line) {                                              /// clear a line - display is done somewhere else!
   display.setColor(BLACK);
-  display.fillRect(0, SCROLL_TOP + line * LINE_HEIGHT , 127, LINE_HEIGHT+1);
+  display.fillRect(0, SCROLL_TOP + line * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT+1);
   display.setColor(WHITE);
 }
 
