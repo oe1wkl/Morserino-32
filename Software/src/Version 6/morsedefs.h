@@ -116,7 +116,7 @@ const int PinDT=39;
 #endif
 
 /// encoder switch (BLACK knob)
-#ifdef PIN_ROT_CLK
+#ifdef PIN_ROT_BTN
 const int modeButtonPin = PIN_ROT_BTN;
 #else
 const int modeButtonPin = 37;
