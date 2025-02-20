@@ -675,7 +675,7 @@ void displayStartUp(uint16_t volt) {
     vsn += " beta";
   s += vsn;
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
-  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2024");
+  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2025");
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
 
