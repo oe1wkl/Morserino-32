@@ -487,7 +487,6 @@ void MorseOutput::displayScrollBar(boolean visible) {          /// display a scr
 ///// display battery status as text and icon, parameter v: Voltage in mV
 
 void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
-
   int a, b, c; String s; double d;
   s.reserve(20);
   d = v / 50;
@@ -499,13 +498,41 @@ void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
     s = "U: " + String(a) + "." + String(b) + " V";
   else
     s = "Unknown   ?";
+#ifdef CONFIG_MCP73871
+  uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
+  switch (powerpath_state) {
+      case 0:
+        s = "Charger Fault!";
+        break;
+      case 2:
+        s = "Charging";
+        break;
+      case 3:
+        s = "Low Battery!";
+        break;
+      case 4:
+        s = "Charge complete";
+        break;
+      case 6:
+        s = "No Battery!";
+        break;
+      case 7:
+        // Serial.println("Shutdown No Input Power Present");
+        break;
+      default:
+        //Serial.print("Unknown State: ");
+        break;
+    }
+#endif
   printOnScroll(2, REGULAR, 0, s);
+#ifndef CONFIG_MCP73871
   int w = constrain(v, 3100, 4100);
   w = map(w, 3100, 4100, 0, 31);
   display.drawRect(75, SCROLL_TOP + 2 * LINE_HEIGHT + 3, 35, LINE_HEIGHT - 4);
   display.drawRect(110, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 4, LINE_HEIGHT - 8);
   if (v > 1000)
     display.fillRect(77, SCROLL_TOP + 2 * LINE_HEIGHT + 5 , w, LINE_HEIGHT - 8);
+#endif
   display.display();
 }
 
