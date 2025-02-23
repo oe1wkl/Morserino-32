@@ -675,14 +675,25 @@ void displayStartUp(uint16_t volt) {
     vsn += " beta";
   s += vsn;
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
+#ifdef CONFIG_DISPLAYWRAPPER
+  MorseOutput::printOnScroll(1, REGULAR, 0, "(c) 2018-2025");
+#else
   MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2025");
+#endif
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
 
 #ifndef SKIP_BATTERY_PROTECT
+#ifdef CONFIG_MCP73871
+  uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
+  if (powerpath_state == 3) // low battery
+    MorseOutput::displayEmptyBattery(shutMeDown);
+  else
+#else
   if (volt > 1000 && volt < 2800)
     MorseOutput::displayEmptyBattery(shutMeDown);
   else 
+#endif
 #endif
     MorseOutput::displayBatteryStatus(volt);
   //prepare board version, just in case we want to switch to M32protocol later on
