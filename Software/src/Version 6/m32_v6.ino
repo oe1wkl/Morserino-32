@@ -665,7 +665,9 @@ void displayStartUp(uint16_t volt) {
   s.reserve(18);
   s = PROJECTNAME + String(" ");                         
   MorseOutput::clearDisplay();
+#ifndef LORA_DISABLED
   s += String(MorsePreferences::loraQRG / 10000);
+#endif  
   MorseOutput::printOnStatusLine( true, 0, s);
   s = "V." ;
   vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR) ;
