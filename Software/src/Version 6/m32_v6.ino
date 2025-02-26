@@ -1461,8 +1461,12 @@ String getRandomWord( int maxLength) {        //// give me a random English word
       ++maxLength;
     if (kochActive)
         return koch.getRandomWord(); 
-    else 
+    else
+#ifdef CONFIG_ENGLISH_OXFORD
+        return getEnglishWord(maxLength == 0 ? 100 : maxLength); 
+#else
         return EnglishWords::words[random(EnglishWords::WORDS_POINTER[maxLength], EnglishWords::WORDS_NUMBER_OF_ELEMENTS)];
+#endif
 }
 
 String getRandomAbbrev( int maxLength) {        //// give me a random CW abbreviation , max maxLength chars long (1-5 = 2-6) - 0 returns any length
