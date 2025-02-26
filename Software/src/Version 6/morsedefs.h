@@ -35,7 +35,7 @@ const String PROJECTNAME = "Morserino-32";
 
 #define VERSION_MAJOR 6
 #define VERSION_MINOR 0
-#define VERSION_PATCH 1
+#define VERSION_PATCH 2
 
 #define BETA true                                                                                                                                                                                                                                                                                                                                                                                                                                                                
 
@@ -350,7 +350,11 @@ enum prefPos : uint8_t {
                 posGeneratorDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,            // 16           
                 posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, posSpeedAdapt,                     // 21
                 posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut,     // 25
-                posQuickStart, posAutoStop,posMaxSequence, posLoraChannel,   posSerialOut,                    // 31
+                posQuickStart, posAutoStop,posMaxSequence, posLoraChannel,                                    // 31
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+				posBluetoothOut,
+#endif
+                posSerialOut,
                 // to be treated differently:
                 posKochFilter,                                                                                // 36
                 posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf    // 37

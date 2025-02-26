@@ -60,6 +60,11 @@ void packetReceived() {
   loraReceived = true;
 }
 
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+#include "MorseBluetooth.h"
+using namespace MorseBluetooth;
+#endif
+
 // define the buttons for the clickbutton library, & other classes that we need
 
 /// variables, value defined at setup()
@@ -596,6 +601,14 @@ void setup()
   radio.setCRC(false);
   radio.setPacketReceivedAction(packetReceived);
 #endif
+
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+  if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
+    // Initialize Bluetooth System
+    MorseBluetooth::initializeBluetooth();
+  }
+#endif
+
   /// initialise the serial number
   cwTxSerial = random(64);
 
@@ -665,7 +678,9 @@ void displayStartUp(uint16_t volt) {
   s.reserve(18);
   s = PROJECTNAME + String(" ");                         
   MorseOutput::clearDisplay();
+#ifndef LORA_DISABLED
   s += String(MorsePreferences::loraQRG / 10000);
+#endif  
   MorseOutput::printOnStatusLine( true, 0, s);
   s = "V." ;
   vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR) ;
@@ -1461,8 +1476,12 @@ String getRandomWord( int maxLength) {        //// give me a random English word
       ++maxLength;
     if (kochActive)
         return koch.getRandomWord(); 
-    else 
+    else
+#ifdef CONFIG_ENGLISH_OXFORD
+        return getEnglishWord(maxLength == 0 ? 100 : maxLength); 
+#else
         return EnglishWords::words[random(EnglishWords::WORDS_POINTER[maxLength], EnglishWords::WORDS_NUMBER_OF_ELEMENTS)];
+#endif
 }
 
 String getRandomAbbrev( int maxLength) {        //// give me a random CW abbreviation , max maxLength chars long (1-5 = 2-6) - 0 returns any length
@@ -2015,6 +2034,10 @@ void displayDecodedMorse(String symbol, boolean keyed) {
   MorseOutput::printToScroll( REGULAR, symbol, true, encoderState == scrollMode);
 
   SerialOutMorse(symbol, keyed ? 0b001 : 0b010);
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+  if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
+    MorseBluetooth::bluetoothTypeString(symbol);
+#endif
   
   if (morseState == echoTrainer) {                /// store the character in the response string
     symbol.replace("<as>", "S");                  // maybe we need it for echo trainer or for autostop mode
@@ -2042,6 +2065,10 @@ void displayDecodedMorse(String symbol, boolean keyed) {
 void displayGeneratedMorse(FONT_ATTRIB style, String s) {
    MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
    SerialOutMorse(s, 0b100); // dec 4
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
+		MorseBluetooth::bluetoothTypeString(s);
+#endif
 }
 
 
@@ -2190,6 +2217,10 @@ void keyTransmitter(boolean noTx) {
   if (noTx )
       return;
    digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+      MorseBluetooth::bluetoothTypeLCTRL(true);
+#endif
 }
 
 String cleanUpProSigns( String &input ) {
@@ -2698,6 +2729,10 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
             MorseOutput::pwmNoTone(volume);
         }
         digitalWrite(keyerPin, LOW);      // stop keying Tx
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+          MorseBluetooth::bluetoothTypeLCTRL(false);
+#endif
   }   // end key off
 }
 
