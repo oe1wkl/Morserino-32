@@ -468,16 +468,23 @@ void MorseOutput::drawVolumeCtrl (boolean inverse, uint16_t x, uint16_t y, uint1
 
 
 void MorseOutput::displayScrollBar(boolean visible) {          /// display a scroll bar on the right edge of the display
-  const int l_bar = 3 * 49 / NoOfLines;
+  #ifdef TFT_WIDTH
+    const int v_start = TFT_WIDTH/5-2;
+    const int bar_total = TFT_WIDTH - v_start;
+  #else 
+    const int bar_total = 49 ;      // for the old Heltec display
+    const int v_start = 15; 
+  #endif
+  const int l_bar = 3 * bar_total / NoOfLines;
 
   if (visible) {
     display.setColor(WHITE);
-    display.drawVerticalLine(display.getWidth()-1, 15, 49);
+    display.drawVerticalLine(display.getWidth()-1, v_start, bar_total);
     display.setColor(BLACK);
-    display.drawVerticalLine(display.getWidth()-1, 15 + (relPos * (49 - l_bar) / maxPos), l_bar);
+    display.drawVerticalLine(display.getWidth()-1, v_start + (relPos * (bar_total - l_bar) / maxPos), l_bar);
   } else {
     display.setColor(BLACK);
-    display.drawVerticalLine(display.getWidth()-1, 15, 49);
+    display.drawVerticalLine(display.getWidth()-1, v_start, bar_total);
   }
   display.display();
   resetTOT();

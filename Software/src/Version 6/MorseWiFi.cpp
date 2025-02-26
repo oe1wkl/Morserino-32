@@ -373,6 +373,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                           checkShutDown(false);  // possibly time-out: go to sleep
                           if (digitalRead(volButtonPin) == LOW) {
                             WiFi.disconnect(true,false);
+                            MorseOutput::clearDisplay();
                             return;
                           }
                     }

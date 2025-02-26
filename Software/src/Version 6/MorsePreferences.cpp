@@ -567,6 +567,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                         if (m32protocol && posPtr < posKochFilter)
                             jsonActivate(ACT_EXIT);
                         writePreferences("morserino");
+                        MorseOutput::clearDisplay();
                         //delay(200);
                         return false;
                         break;
