@@ -58,7 +58,12 @@ const char * prefName[] = {"encoderClicks", "sidetoneFreq", "useExtPaddle", "did
                       "GeneratorDispl", "wordDoubler", "echoDisplay", "echoRepeats", "echoConf",
                       "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt",
                       "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
-                      "quickStart", "autoStop", "maxSequence", "LoraChannel", "serialOut"};
+                      "quickStart", "autoStop", "maxSequence", "LoraChannel",
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+					  "bluetoothOut",
+#endif
+					  "serialOut"
+					};
 /* parameter:
      uint8_t value; const uint8_t minimum; const uint8_t maximum; const uint8_t stepValue;
      const char *parName;
@@ -324,6 +329,15 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"Standard", "Secondary"}
   },
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+  {
+    0, 0, 3, 1,                                                 // output via Bluetooth? 0 = none, 1= keyed sends CTRL key, 2 = decoded chars are sent as keystrokes, 3=both
+    "BLT Kbrd Output",
+    "Select what is sent to the Bluetooth Keyboard output",
+    true,
+    {"Nothing", "Vband Keying", "Decoded", "Keyed+Decoded"}
+  },
+#endif
   {
     5, 0, 5, 1,                                                 // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
     "Serial Output",
@@ -411,55 +425,60 @@ uint8_t MorsePreferences::memories[8];
 uint8_t MorsePreferences::memCounter;
 uint8_t MorsePreferences::memPtr = 0;
 
-
-  prefPos MorsePreferences::keyerOptions[] =    { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posBluetoothOut, posSerialOut, posPolarity, posExtPddlPolarity
+#else
+#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity
+#endif
+  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency 
                                                  };
-  prefPos MorsePreferences::generatorOptions[] = { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, posInterCharSpace, posInterWordSpace, 
+  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE,
+                                                   posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength, 
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler, 
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
- prefPos MorsePreferences::playerOptions[] =     { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE,
                                                    posInterCharSpace, posInterWordSpace, 
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler, 
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
                                                  
- prefPos MorsePreferences::echoPlayerOptions[] = { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace, 
                                                    posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, 
                                                  };
                                                  
- prefPos MorsePreferences::echoTrainerOptions[]= { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace, 
                                                    posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength, 
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, 
                                                  };
                                                  
- prefPos MorsePreferences::kochGenOptions[] =    { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE,
                                                    posKochSeq, posCarouselStart, posInterCharSpace,  posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength, 
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler, 
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
                                                  
- prefPos MorsePreferences::kochEchoOptions[] =   { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart, 
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength, 
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, 
                                                  };
                                                  
- prefPos MorsePreferences::loraTrxOptions[] =    { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posGeneratorDisplay, 
                                                    posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode 
                                                  };
                                                  
- prefPos MorsePreferences::wifiTrxOptions[] =    { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posGeneratorDisplay, posEchoToneShift,
                                                    posKeyExternalTx,  posExtAudioOnDecode 
                                                  };
                                                  
- prefPos MorsePreferences::extTrxOptions[] =     { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posEchoToneShift, 
                                                    posGoertzelBandwidth, posExtAudioOnDecode 
                                                  };
@@ -468,7 +487,7 @@ uint8_t MorsePreferences::memPtr = 0;
                                                    posCurtisMode, posGoertzelBandwidth, posExtAudioOnDecode 
                                                  };
 
- prefPos MorsePreferences::allOptions[] =        { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart, 
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength, 
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler, 

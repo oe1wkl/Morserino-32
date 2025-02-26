@@ -60,6 +60,11 @@ void packetReceived() {
   loraReceived = true;
 }
 
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+#include "MorseBluetooth.h"
+using namespace MorseBluetooth;
+#endif
+
 // define the buttons for the clickbutton library, & other classes that we need
 
 /// variables, value defined at setup()
@@ -596,6 +601,14 @@ void setup()
   radio.setCRC(false);
   radio.setPacketReceivedAction(packetReceived);
 #endif
+
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+  if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
+    // Initialize Bluetooth System
+    MorseBluetooth::initializeBluetooth();
+  }
+#endif
+
   /// initialise the serial number
   cwTxSerial = random(64);
 
@@ -2017,6 +2030,10 @@ void displayDecodedMorse(String symbol, boolean keyed) {
   MorseOutput::printToScroll( REGULAR, symbol, true, encoderState == scrollMode);
 
   SerialOutMorse(symbol, keyed ? 0b001 : 0b010);
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+  if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
+    MorseBluetooth::bluetoothTypeString(symbol);
+#endif
   
   if (morseState == echoTrainer) {                /// store the character in the response string
     symbol.replace("<as>", "S");                  // maybe we need it for echo trainer or for autostop mode
@@ -2044,6 +2061,10 @@ void displayDecodedMorse(String symbol, boolean keyed) {
 void displayGeneratedMorse(FONT_ATTRIB style, String s) {
    MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
    SerialOutMorse(s, 0b100); // dec 4
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
+		MorseBluetooth::bluetoothTypeString(s);
+#endif
 }
 
 
@@ -2192,6 +2213,10 @@ void keyTransmitter(boolean noTx) {
   if (noTx )
       return;
    digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+      MorseBluetooth::bluetoothTypeLCTRL(true);
+#endif
 }
 
 String cleanUpProSigns( String &input ) {
@@ -2700,6 +2725,10 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
             MorseOutput::pwmNoTone(volume);
         }
         digitalWrite(keyerPin, LOW);      // stop keying Tx
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+          MorseBluetooth::bluetoothTypeLCTRL(false);
+#endif
   }   // end key off
 }
 
