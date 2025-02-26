@@ -332,6 +332,13 @@ void IRAM_ATTR codec_isr() {
 }
 #endif
 
+#ifdef CONFIG_MCP73871
+volatile bool powerpath_event = true; // read powerpath state once during startup
+void IRAM_ATTR powerpath_isr() {
+  powerpath_event = true;
+}
+#endif
+
 /*
 ////////////////////////////////////////////////////////////////////
 // encoder subroutines
@@ -507,6 +514,15 @@ void setup()
   attachInterrupt(CONFIG_TLV320AIC3100_INT, codec_isr, RISING);
 #endif
 
+#ifdef CONFIG_MCP73871
+  pinMode(CONFIG_MCP_PG_PIN, INPUT_PULLUP);
+  pinMode(CONFIG_MCP_STAT1_PIN, INPUT_PULLUP);
+  pinMode(CONFIG_MCP_STAT2_PIN, INPUT_PULLUP);
+  attachInterrupt(CONFIG_MCP_PG_PIN, powerpath_isr, CHANGE);
+  attachInterrupt(CONFIG_MCP_STAT1_PIN, powerpath_isr, CHANGE);
+  attachInterrupt(CONFIG_MCP_STAT2_PIN, powerpath_isr, CHANGE);
+#endif
+
   rotaryEncoder.attachHalfQuad ( PinDT, PinCLK );
   rotaryEncoder.setCount ( 0 );
  
@@ -613,7 +629,9 @@ void setup()
       Serial.read();
     inputString = "";
     MorseMenu::menu_();
-} /////////// END setup()
+
+
+  } /////////// END setup()
 
 
 boolean key_was_pressed_at_start() {
@@ -657,14 +675,21 @@ void displayStartUp(uint16_t volt) {
     vsn += " beta";
   s += vsn;
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
-  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2024");
+  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2025");
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
 
 #ifndef SKIP_BATTERY_PROTECT
+#ifdef CONFIG_MCP73871
+  uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
+  if (powerpath_state == 3) // low battery
+    MorseOutput::displayEmptyBattery(shutMeDown);
+  else
+#else
   if (volt > 1000 && volt < 2800)
     MorseOutput::displayEmptyBattery(shutMeDown);
   else 
+#endif
 #endif
     MorseOutput::displayBatteryStatus(volt);
   //prepare board version, just in case we want to switch to M32protocol later on
@@ -955,6 +980,38 @@ void loop() {
     if (codec_event) {
       codec_event = false;
       MorseOutput::soundEventHandler();
+    }
+#endif
+
+#ifdef CONFIG_MCP73871
+  if (powerpath_event) {
+    powerpath_event = false;
+    uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
+    Serial.print("Powerpath state change:");
+    switch (powerpath_state) {
+      case 0:
+        Serial.println("FAULT");
+        break;
+      case 2:
+        Serial.println("Charging");
+        break;
+      case 3:
+        Serial.println("Low Battery");
+        break;
+      case 4:
+        Serial.println("Charge complete standby");
+        break;
+      case 6:
+        Serial.println("Shutdown No Battery Present");
+        break;
+      case 7:
+        Serial.println("Shutdown No Input Power Present");
+        break;
+      default:
+        Serial.print("Unknown State: ");
+        Serial.println(powerpath_state);
+        break;
+      }
     }
 #endif
 }     /////////////////////// end of loop() /////////
