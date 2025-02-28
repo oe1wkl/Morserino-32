@@ -657,6 +657,38 @@ void MorseOutput::resetTOT() {       //// reset the Time Out Timer - we do this 
 
 /////// functions for audio output
 
+#ifdef CONFIG_TLV320AIC3100
+void soundEnableHeadphone(void) {
+    codec.enableHeadphoneAmp();
+    codec.setHeadphoneVolume(-10.0f,-10.0f); // unmute
+    codec.setHeadphoneGain(0.0f,0.0f);
+    codec.setHeadphoneMute(false); // unmute hp
+    codec.setSpeakerMute(true); // unmute class d speaker amp
+}
+
+void soundEnableSpeaker(void) {
+    codec.enableSpeakerAmp();
+    codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
+    codec.setSpeakerVolume(-10.0f); // unmute
+    codec.setSpeakerMute(false); // unmute class d speaker amp
+    codec.setHeadphoneMute(true); // mute hp
+}
+
+void MorseOutput::soundEventHandler() {
+  // interrupt reason needs to be read, otherwise the codec won't send any further interrupts
+  if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
+    Serial.println("AIC31XX: Headset plug interrupt triggered");
+  }
+  if (codec.isHeadsetDetected()) {
+    Serial.println("AIC31XX: Headset detected");
+	soundEnableHeadphone();
+  } else {
+    Serial.println("AIC31XX: Headset not plugged");
+	soundEnableSpeaker();
+  }
+}
+#endif
+
 
 void MorseOutput::soundSetup()
 {
@@ -806,6 +838,7 @@ void MorseOutput::soundSetup()
       // enable internal clock for timer
       // this is required as we derive master clock from BCLK and hence have no MCLK input
       codec.modifyRegister(AIC31XX_TIMERDIVIDER, AIC31XX_TIMER_SELECT_MASK, 0);
+      codec.modifyRegister(AIC31XX_TIMERDIVIDER, 0x3F, 0x10);
 
       // enable headset detection and trigger interrupt 1 for headset events
       codec.enableHeadsetDetect();
@@ -817,7 +850,8 @@ void MorseOutput::soundSetup()
       codec.setDACVolume(20.0f,20.0f);
       codec.enableADC();
       codec.setADCGain(-12.0f);
-      // run soundEventHandler once to mute/unmute HP/Spk depending on HS plug state
+      // Enable the speaker and then run soundEventHandler once to mute/unmute HP/Spk depending on HS plug state
+	  soundEnableSpeaker();
       soundEventHandler();
 
       // codec.dumpRegisters(); // nifty when debugging codec issues
@@ -827,30 +861,6 @@ void MorseOutput::soundSetup()
   sidetone.setFrequency(600.0);
 #endif
 }
-
-#ifdef CONFIG_TLV320AIC3100
-void MorseOutput::soundEventHandler() {
-  // interrupt reason needs to be read, otherwise the codec won't send any further interrupts
-  if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
-    Serial.println("AIC31XX: Headset plug interrupt triggered");
-  }
-  if (codec.isHeadsetDetected()) {
-    Serial.println("AIC31XX: Headset detected");
-    codec.enableHeadphoneAmp();
-    codec.setHeadphoneVolume(-10.0f,-10.0f); // unmute
-    codec.setHeadphoneGain(0.0f,0.0f);
-    codec.setHeadphoneMute(false); // unmute hp
-    codec.setSpeakerMute(true); // unmute class d speaker amp
-  } else {
-    Serial.println("AIC31XX: Headset not plugged");
-    codec.enableSpeakerAmp();
-    codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
-    codec.setSpeakerVolume(-10.0f); // unmute
-    codec.setSpeakerMute(false); // unmute class d speaker amp
-    codec.setHeadphoneMute(true); // mute hp
-  }
-}
-#endif
 
 void MorseOutput::soundSuspend()
 {
