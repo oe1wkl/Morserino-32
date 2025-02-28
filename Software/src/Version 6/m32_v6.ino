@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
  *  m32_v5 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
- *  Copyright (C) 2018-2022  Willi Kraml, OE1WKL                                                                            ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                            ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -17,12 +17,12 @@
  *  (see: https://heltec-automation-docs.readthedocs.io/en/latest/esp32+arduino/quick_start.html)
  *
  *  ClickButton library -> https://code.google.com/p/clickbutton/ by Ragnar Aronsen
- * 
- * 
- *  For volume control of NF output: I used a similar principle as  Connor Nishijima, see 
+ *
+ *
+ *  For volume control of NF output: I used a similar principle as  Connor Nishijima, see
  *                                   https://hackaday.io/project/11957-10-bit-component-less-volume-control-for-arduino
  *                                   but actually using two PWM outputs, connected with an AND gate
- * 
+ *
  ****************************************************************************************************************************/
 
 
@@ -145,10 +145,10 @@ touch_value_t rUntouched = 0;
 
 boolean alternatePitch = false;                     // to change pitch in CW generator / file player
 
-enum AutoStopModes 
+enum AutoStopModes
   {
       nextword, halt, repeatword
-  }; 
+  };
 
 AutoStopModes autoStop = halt;
 
@@ -189,7 +189,7 @@ unsigned long acsTimer = 0;            // timer to use for automatic character s
 
 //const String CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH";
 const char CWchars[] = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH";
-//                      0....5....1....5....2....5....3....5....4....5....5....5    
+//                      0....5....1....5....2....5....3....5....4....5....5....5
 // we use substrings as char pool for trainer mode
 // SANKEB will be replaced by <as>, <ka>, <kn>, <sk>, <ve> and <bk>, H = ch
 // a = CWchars.substring(0,26); 9 = CWchars.substring(26,36); ? = CWchars.substring(36,45); <> = CWchars.substring(44,51);
@@ -236,7 +236,7 @@ byte poolPair[2];           // storage in RAM for one morse code character
 
 const byte pool[][2]  = {
 // letters
-               {B01000000, 2},  // a    0     
+               {B01000000, 2},  // a    0
                {B10000000, 4},  // b
                {B10100000, 4},  // c
                {B10000000, 3},  // d
@@ -245,13 +245,13 @@ const byte pool[][2]  = {
                {B11000000, 3},  // g
                {B00000000, 4},  // h
                {B00000000, 2},  // i
-               {B01110000, 4},  // j 
+               {B01110000, 4},  // j
                {B10100000, 3},  // k
                {B01000000, 4},  // l
-               {B11000000, 2},  // m  
+               {B11000000, 2},  // m
                {B10000000, 2},  // n
                {B11100000, 3},  // o
-               {B01100000, 4},  // p  
+               {B01100000, 4},  // p
                {B11010000, 4},  // q
                {B01000000, 3},  // r
                {B00000000, 3},  // s
@@ -263,7 +263,7 @@ const byte pool[][2]  = {
                {B10110000, 4},  // y
                {B11000000, 4},  // z  25
 // numbers
-               {B11111000, 5},  // 0  26    
+               {B11111000, 5},  // 0  26
                {B01111000, 5},  // 1
                {B00111000, 5},  // 2
                {B00011000, 5},  // 3
@@ -274,24 +274,24 @@ const byte pool[][2]  = {
                {B11100000, 5},  // 8
                {B11110000, 5},  // 9  35
 // interpunct   . , : - / = ? @ +    010101 110011 111000 100001 10010 10001 001100 011010 01010
-               {B01010100, 6},  // .  36    
-               {B11001100, 6},  // ,  37    
-               {B11100000, 6},  // :  38    
-               {B10000100, 6},  // -  39    
-               {B10010000, 5},  // /  40    
-               {B10001000, 5},  // =  41    
-               {B00110000, 6},  // ?  42    
-               {B01101000, 6},  // @  43    
-               {B01010000, 5},  // +  44    (at the same time <ar> !) 
+               {B01010100, 6},  // .  36
+               {B11001100, 6},  // ,  37
+               {B11100000, 6},  // :  38
+               {B10000100, 6},  // -  39
+               {B10010000, 5},  // /  40
+               {B10001000, 5},  // =  41
+               {B00110000, 6},  // ?  42
+               {B01101000, 6},  // @  43
+               {B01010000, 5},  // +  44    (at the same time <ar> !)
 // Pro signs  <>  <as> <ka> <kn> <sk>
                {B01000000, 5},  // <as> 45    S
                {B10101000, 5},  // <ka> 46    A
                {B10110000, 5},  // <kn> 47    N
                {B00010100, 6},  // <sk> 48    K
                {B00010000, 5},  // <ve> 49    E
-               {B10001010, 7},  // <bk> 50    B       
+               {B10001010, 7},  // <bk> 50    B
 // German characters
-               {B01010000, 4},  // ä    50   
+               {B01010000, 4},  // ä    50
                {B11100000, 4},  // ö    51
                {B00110000, 4},  // ü    52
                {B11110000, 4}   // ch   53    H
@@ -362,7 +362,7 @@ portENTER_CRITICAL_ISR(&mux);
     if (_oldState != thisState) {
       stateRegister = (stateRegister << 2) | thisState;
       if (thisState == LATCHSTATE) {
-        
+
           if (stateRegister == 135 )
             encoderPos = 1;
           else if (stateRegister == 75)
@@ -371,7 +371,7 @@ portENTER_CRITICAL_ISR(&mux);
             encoderPos = 0;
         }
     _oldState = thisState;
-    } 
+    }
 portEXIT_CRITICAL_ISR(&mux);
 }
 
@@ -379,7 +379,7 @@ portEXIT_CRITICAL_ISR(&mux);
 
 int IRAM_ATTR checkEncoder() {
   int t;
-  
+
   portENTER_CRITICAL(&mux);
 
   t = encoderPos;
@@ -394,14 +394,14 @@ int IRAM_ATTR checkEncoder() {
 }
 */
 
-int checkEncoder() 
+int checkEncoder()
 {
     static long int oldPosition = 0;
     long newPosition = rotaryEncoder.getCount() / 2 ;
     long diff;
 
 
-    if (newPosition == oldPosition) 
+    if (newPosition == oldPosition)
         return 0;
     else {
         //  Serial.println ("newPos: " + String(newPosition));
@@ -410,7 +410,7 @@ int checkEncoder()
         if (diff > 0)
             return 1;
         else
-            return -1;  
+            return -1;
     }
 }
 
@@ -418,7 +418,7 @@ int checkEncoder()
 //////////////////////// Argumenbt to DEBUG has to be a String object
 
 void DEBUG (String s) {
-  if (!MorsePreferences::pliste[posSerialOut].value || IGNORE_SERIALOUT) 
+  if (!MorsePreferences::pliste[posSerialOut].value || IGNORE_SERIALOUT)
     Serial.println(s);
 }
 
@@ -472,7 +472,7 @@ void setup()
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
   MorsePreferences::readPreferences("morserino");
-  koch.setup(); 
+  koch.setup();
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
@@ -495,7 +495,7 @@ void setup()
 
   // set up the encoder - we need external pull-ups as the pins used do not have built-in pull-ups!
   pinMode(PinCLK,INPUT_PULLUP);
-  pinMode(PinDT,INPUT_PULLUP);  
+  pinMode(PinDT,INPUT_PULLUP);
   pinMode(keyerPin, OUTPUT);        // we can use the built-in LED to show when the transmitter is being keyed
 #ifdef INTERNAL_PULLUP
   pinMode(leftPin, INPUT_PULLUP);          // external keyer left paddle
@@ -504,7 +504,7 @@ void setup()
   pinMode(leftPin, INPUT);
   pinMode(rightPin, INPUT);
 #endif
-  
+
   analogSetAttenuation(ADC_0db);
 
   // init display
@@ -530,7 +530,7 @@ void setup()
 
   rotaryEncoder.attachHalfQuad ( PinDT, PinCLK );
   rotaryEncoder.setCount ( 0 );
- 
+
 
 /// set up for encoder button
 //  pinMode(modeButtonPin, INPUT);
@@ -541,10 +541,10 @@ void setup()
   pinMode(modeButtonPin, INPUT);
 #endif
                                                      // wake up also works without external pullup! Interesting!
-  
+
   // Setup button timers (all in milliseconds / ms)
   // (These are default if not set, but changeable for convenience)
-  
+
   Buttons::modeButton.debounceTime   = 11;   // Debounce timer in ms
   Buttons::modeButton.multiclickTime = 220;  // Time limit for multi clicks
   Buttons::modeButton.longClickTime  = 350; // time until "held-down clicks" register
@@ -561,14 +561,14 @@ void setup()
       if (key_was_pressed_at_start()) {
          MorsePreferences::displayKeyerPreferencesMenu(posHwConf);
          MorsePreferences::adjustKeyerPreference(posHwConf);
-    
+
          switch (hwConf) {
-            case 1: 
+            case 1:
                     MorsePreferences::calibrateVoltageMeasurement();
                     break;
-            case 2: MorsePreferences::flipScreen(); 
+            case 2: MorsePreferences::flipScreen();
                     ESP.restart();
-                    break;       
+                    break;
             case 3: MorsePreferences::loraSystemSetup();
                     break;
             default: break;
@@ -623,7 +623,7 @@ void setup()
   //////////////////////// create file player.txt if it does not exist|
   const char * defaultFile = "This is just an initial dummy file for the player. Dies ist nur die anfänglich enthaltene Standarddatei für den Player.\n"
                              "Did you not upload your own file? Hast du keine eigene Datei hochgeladen?";
-                             
+
     if (!SPIFFS.exists("/player.txt")) {                                    // file does not exist, therefor we create it from the text above
         file = SPIFFS.open("/player.txt", FILE_WRITE);
         if(!file){
@@ -636,7 +636,7 @@ void setup()
             DEBUG("- write failed");
         }
         file.close();
-    }    
+    }
     displayStartUp(volt);
     while (Serial.available())        // remove spurious input from Serial port
       Serial.read();
@@ -648,9 +648,9 @@ void setup()
 
 
 boolean key_was_pressed_at_start() {
-     
+
       if (checkKey()) {
-          MorseOutput::clearDisplay();   
+          MorseOutput::clearDisplay();
           return true;
       }
       else return false;
@@ -665,7 +665,7 @@ boolean checkKey () {
       else
         ext = (uint8_t) !(digitalRead(leftPin) && digitalRead(rightPin));
       //DEBUG("Paddle: " + String(sensor) + " Ext.Key: " + String(ext));
-      if (sensor || ext) 
+      if (sensor || ext)
         return true;
       else
         return false;
@@ -676,11 +676,11 @@ boolean checkKey () {
 void displayStartUp(uint16_t volt) {
   String s;
   s.reserve(18);
-  s = PROJECTNAME + String(" ");                         
+  s = PROJECTNAME + String(" ");
   MorseOutput::clearDisplay();
 #ifndef LORA_DISABLED
   s += String(MorsePreferences::loraQRG / 10000);
-#endif  
+#endif
   MorseOutput::printOnStatusLine( true, 0, s);
   s = "V." ;
   vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR) ;
@@ -703,7 +703,7 @@ void displayStartUp(uint16_t volt) {
 #else
   if (volt > 1000 && volt < 2800)
     MorseOutput::displayEmptyBattery(shutMeDown);
-  else 
+  else
 #endif
 #endif
     MorseOutput::displayBatteryStatus(volt);
@@ -719,7 +719,7 @@ void displayStartUp(uint16_t volt) {
     brd = "unknown";
 #endif
   delay(2000);
-  
+
 }
 
 ///////////////////////// THE MAIN LOOP - do this OFTEN! /////////////////////////////////
@@ -737,26 +737,26 @@ void loop() {
                     return;
                   }
    }
-   
-                  
+
+
    switch (keyerState) {
       case DIT:
       case DAH:
-      case KEY_START: 
+      case KEY_START:
                break;
       default: checkPaddles();
                break;
    }
-   
+
    switch (morseState) {
       case morseKeyer:    if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
                           }
-                          if (playCW) 
+                          if (playCW)
                               generateCW();
                           break;
-                          
-      case loraTrx:      
+
+      case loraTrx:
       case wifiTrx:       if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
                           }
@@ -765,16 +765,16 @@ void loop() {
 
       case morseTrx:      if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
-                          } 
+                          }
                           if (playCW)
-                            generateCW(); 
+                            generateCW();
                           audioDecoder.decode();
                           if (speedChanged) {
                             speedChanged = false;
                             displayCWspeed();
                           }
-                          break;    
-      case morseGenerator:  
+                          break;
+      case morseGenerator:
                           if (MorsePreferences::pliste[posAutoStop].value) {
                               if ((autoStop == halt))   {                     // we check input
                                   if (leftKey) {
@@ -814,7 +814,7 @@ void loop() {
                           }
                           if (genIsActive)
                             generateCW();
-                          break;   
+                          break;
       case echoTrainer:                             ///// check stopFlag triggered by maxSequence
                           checkStopFlag();
                           if (!genIsActive&& (leftKey  || rightKey))   {                       // touching a paddle starts  the generation of code
@@ -822,22 +822,22 @@ void loop() {
                               while (checkPaddles() )
                                   ;                                                           // wait until paddles are released
                               genIsActive = !genIsActive;
-             
+
                               cleanStartSettings();
                           } /// end touch to start
                           if (genIsActive)
                           switch (echoTrainerState) {
-                            case  START_ECHO:   
+                            case  START_ECHO:
                             case  SEND_WORD:
                             case  REPEAT_WORD:  echoResponse = ""; generateCW();
                                                 break;
                             case  EVAL_ANSWER:  echoTrainerEval();
                                                 break;
-                            case  COMPLETE_ANSWER:                    
-                            case  GET_ANSWER:   if (doPaddleIambic(leftKey, rightKey)) 
+                            case  COMPLETE_ANSWER:
+                            case  GET_ANSWER:   if (doPaddleIambic(leftKey, rightKey))
                                                 return;                             // we are busy keying and so need a very tight loop !
                                                 break;
-                            }                              
+                            }
                             break;
       case morseDecoder: //DEBUG("case morseDecoder");
                          keyDecoder.decode();
@@ -847,8 +847,8 @@ void loop() {
                             displayCWspeed();
                           }
       default:            break;
-            
-                        
+
+
   } // end switch and code depending on state of metaMorserino
 
 /// if we have time check for serial input and for button presses
@@ -856,7 +856,7 @@ void loop() {
   // check serial input
     serialEvent();
     if (goToMenu) {
-        jsonActivate(ACT_EXIT); 
+        jsonActivate(ACT_EXIT);
         goToMenu = false;
         MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
         return;
@@ -864,7 +864,7 @@ void loop() {
   // check buttons
     Buttons::modeButton.Update();
     Buttons::volButton.Update();
-    
+
     switch (Buttons::volButton.clicks) {
       case 1:   if (encoderState == scrollMode) {
                     if (morseState != morseDecoder)
@@ -875,13 +875,13 @@ void loop() {
                     //MorseOutput::refreshScrollArea((bottomLine + 1 + relPos) % NoOfLines);
                     MorseOutput::refreshScrollArea(MorseOutput::relPos);
                     MorseOutput::displayScrollBar(false);
-                } 
+                }
                 else if (encoderState == volumeSettingMode && morseState != morseDecoder) {          //  single click toggles encoder between speed and volume
                   encoderState = speedSettingMode;
                   MorsePreferences::writeVolume();
                   displayCWspeed();
-                  MorseOutput::displayVolume(true, MorsePreferences::sidetoneVolume);  
-                  
+                  MorseOutput::displayVolume(true, MorsePreferences::sidetoneVolume);
+
                 }
                 else {
                   encoderState = volumeSettingMode;
@@ -895,7 +895,7 @@ void loop() {
                     //MorseOutput::refreshScrollArea((bottomLine + 1 + relPos) % NoOfLines);
                     MorseOutput::refreshScrollArea(MorseOutput::relPos);
                     MorseOutput::displayScrollBar(false);
-                }       
+                }
                 else {
                     encoderState = scrollMode;
                     MorseOutput::displayScrollBar(true);
@@ -904,10 +904,10 @@ void loop() {
       case 2:   MorseOutput::decreaseBrightness();                                                                                       // step through screen brightness levels
                 break;
     }
-   
+
     switch (Buttons::modeButton.clicks) {                                // actions based on encoder button
        case -1:   if (m32protocol)
-                      jsonActivate(ACT_EXIT); 
+                      jsonActivate(ACT_EXIT);
                   MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
                   return;
        case 1:    if (encoderState == memSelMode) {
@@ -930,7 +930,7 @@ void loop() {
                   else {
                     cleanStartSettings();
                   }
-                        
+
               } else if (morseState == morseKeyer || morseState == morseTrx) {  // when Keyer is active, we select a keyer memory
                     if (m32protocol)
                         jsonCreate("message", "Select Memory", "");
@@ -940,7 +940,7 @@ void loop() {
        case 2:  MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
                 MorseOutput::clearDisplay();                                 // restore display
                 updateTopLine();
-                if (morseState == morseGenerator || morseState == echoTrainer) 
+                if (morseState == morseGenerator || morseState == echoTrainer)
                     stopFlag = true;                                  // we stop what we had been doing
                 else
                     stopFlag = false;
@@ -948,16 +948,16 @@ void loop() {
                 //firstTime = true;
      default: break;
     }
-    
+
 /// and we have time to check the encoder
      if ((t = checkEncoder())) {
         //DEBUG("t: " + String(t));
         MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);         /// click
         switch (encoderState) {
-          case speedSettingMode:  
+          case speedSettingMode:
                                   changeSpeed(t);
                                   break;
-          case volumeSettingMode: 
+          case volumeSettingMode:
                                   changeVolume(t);
                                   break;
           case scrollMode:
@@ -982,7 +982,7 @@ void loop() {
                                   dispMem(memList[ptr]);
                                   break;
           }
-    } // encoder 
+    } // encoder
     checkShutDown(false);         // check for time out
 #ifdef LORA_RADIOLIB
     if(loraReceived) {
@@ -1067,10 +1067,10 @@ void cleanStartSettings() {
     clearText = "";
     CWword = "";
     echoTrainerState = START_ECHO;
-    generatorState = KEY_UP; 
+    generatorState = KEY_UP;
     keyerState = IDLE_STATE;
     interWordTimer = 4294967000;                 // almost the biggest possible unsigned long number :-) - do not output a space at the beginning
-    genTimer = millis()-1;                       // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc... 
+    genTimer = millis()-1;                       // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc...
     errCounter = wordCounter = 0;                // reset word and error counter for maxSequence
     startFirst = true;
     autoStop = nextword;                             // for autoStop mode
@@ -1096,9 +1096,9 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
     return false;
   }
   if (MorsePreferences::pliste[posPolarity].value == 0)   {              // swap left and right values if necessary!
-      paddleSwap = dit; dit = dah; dah = paddleSwap; 
+      paddleSwap = dit; dit = dah; dah = paddleSwap;
   }
-      
+
 
   switch (keyerState) {                                         // this is the keyer state machine
      case IDLE_STATE:
@@ -1120,7 +1120,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                 return false;
              }
          }
-        
+
        // Was there a paddle press?
         if (dit || dah ) {
             updatePaddleLatch(dit, dah);  // trigger the paddle latches
@@ -1133,14 +1133,14 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                 DIT_FIRST = true;          // first paddle pressed after IDLE was a DIT
             }
             else {
-                setDAHstate();  
+                setDAHstate();
                 DIT_FIRST = false;         // first paddle was a DAH
             }
         }
         else {
            if (echoTrainerState == GET_ANSWER && millis() > genTimer) {
             echoTrainerState = EVAL_ANSWER;
-         } 
+         }
          return false;                // we return false if there was no paddle press in IDLE STATE - Arduino can do other tasks for a bit
         }
         break;
@@ -1155,7 +1155,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             ktimer = ditLength;                              // prime timer for dit
             switch ( MorsePreferences::pliste[posCurtisMode].value ) {
               case ULTIMATIC:                                // we check early in Ultimatic mode too, to get a dah memory
-              case IAMBICB:  curtistimer = 2 + (ditLength * MorsePreferences::pliste[posCurtisBDotTiming].value / 100);   
+              case IAMBICB:  curtistimer = 2 + (ditLength * MorsePreferences::pliste[posCurtisBDotTiming].value / 100);
                              break;                         // enhanced Curtis mode B starts checking after some time
               case NONSQUEEZE:
                              curtistimer = 3;
@@ -1166,13 +1166,13 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             }
             keyerState = KEY_START;                          // set next state of state machine
             break;
-            
+
     case DAH:
             if ( MorsePreferences::pliste[posACS].value > 0 && (millis() <= acsTimer))  // if we do automatic character spacing, and haven't waited for 3 dits...
               break;
             clearPaddleLatches();                          // clear the paddle latches
             keyerControl &= ~(DIT_LAST);                    // clear 'dit last' latch  - we are not processing a DIT
-            
+
             ktimer = dahLength;
             switch (MorsePreferences::pliste[posCurtisMode].value) {
               case ULTIMATIC:                              // we check early in Ultimatic mode too, to get a dit memory
@@ -1187,9 +1187,9 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             }
             keyerState = KEY_START;                          // set next state of state machine
             break;
-     
 
-      
+
+
     case KEY_START:
           // Assert key down, start timing, state shared for dit or dah
           pitch = MorseOutput::notes[MorsePreferences::pliste[posPitch].value];
@@ -1199,11 +1199,11 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
 
            keyOut(true, true, pitch, MorsePreferences::sidetoneVolume);
            corrTime = millis() - 6;           // need to correct for longer dit and dah time (see output routine)
-           ktimer +=corrTime;                     // set ktimer to interval end time          
+           ktimer +=corrTime;                     // set ktimer to interval end time
            curtistimer += corrTime;                // set curtistimer to curtis end time
            keyerState = KEYED;                     // next state
            break;
- 
+
     case KEYED:
                                                    // Wait for timers to expire
            if (millis() >= ktimer) {                // are we at end of key down ?
@@ -1216,11 +1216,11 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                  if (keyerControl & DIT_LAST)       // last element was a dit
                     updatePaddleLatch(false, dah);  // not sure here: we only check the opposite paddle - should be ok for Curtis B
                  else
-                    updatePaddleLatch(dit, false);  
-                 // updatePaddleLatch(dit, dah);       // but we remain in the same state until element time is off! 
+                    updatePaddleLatch(dit, false);
+                 // updatePaddleLatch(dit, dah);       // but we remain in the same state until element time is off!
             }
             break;
- 
+
     case INTER_ELEMENT:
             //if ((p_keyermode != NONSQUEEZE) && (millis() < latencytimer)) {     // or should it be p_keyermode > 2 ? Latency for Ultimatic mode?
             if (millis() < latencytimer) {
@@ -1230,42 +1230,42 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                     updatePaddleLatch(dit, false);
             }
             else {
-                updatePaddleLatch(dit, dah);          // latch paddle state while between elements       
+                updatePaddleLatch(dit, dah);          // latch paddle state while between elements
                 if (millis() >= ktimer) {               // at end of INTER-ELEMENT
                     switch(keyerControl) {
                           case 3:                                         // both paddles are latched
-                          case 7: 
+                          case 7:
                                   switch (MorsePreferences::pliste[posCurtisMode].value) {
                                       case STRAIGHTKEY: break;
                                       case NONSQUEEZE:  if (DIT_FIRST)                      // when first element was a DIT
                                                                setDITstate();            // next element is a DIT again
                                                         else                                // but when first element was a DAH
-                                                               setDAHstate();            // the next element is a DAH again! 
+                                                               setDAHstate();            // the next element is a DAH again!
                                                         break;
                                       case ULTIMATIC:   if (DIT_FIRST)                      // when first element was a DIT
                                                                setDAHstate();            // next element is a DAH
                                                         else                                // but when first element was a DAH
-                                                               setDITstate();            // the next element is a DIT! 
+                                                               setDITstate();            // the next element is a DIT!
                                                         break;
                                       default:          if (keyerControl & DIT_LAST)     // Iambic: last element was a dit - this is case 7, really
                                                             setDAHstate();               // next element will be a DAH
                                                         else                                // and this is case 3 - last element was a DAH
-                                                            setDITstate();               // the next element is a DIT                         
+                                                            setDITstate();               // the next element is a DIT
                                    }
                                    break;
-                                                                          // dit only is latched, regardless what was last element  
+                                                                          // dit only is latched, regardless what was last element
                           case 1:
-                          case 5:  
+                          case 5:
                                    setDITstate();
                                    break;
                                                                           // dah only latched, regardless what was last element
                           case 2:
-                          case 6:  
+                          case 6:
                                    setDAHstate();
                                    break;
                                                                           // none latched, regardless what was last element
                           case 0:
-                          case 4:  
+                          case 4:
                                    keyerState = IDLE_STATE;               // we are at the end of the character and go back into IDLE STATE
                                    displayDecodedMorse(keyerTable.retrieveSymbol(), true);                        // display the decoded morse character(s)
 
@@ -1286,7 +1286,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    else
                                        interWordTimer = millis() + interWordSpace;  // prime the timer to detect a space between characters
                                                                               // nominally 7 dit-lengths, but we are not quite so strict here in keyer or TrX mode,
-                                                                              // use the extended time in echo trainer mode to allow longer space between characters, 
+                                                                              // use the extended time in echo trainer mode to allow longer space between characters,
                                                                               // like in listening
                                    keyerControl = 0;                          // clear all latches completely before we go to IDLE
                           break;
@@ -1295,7 +1295,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             } // end of INTER_ELEMENT
   } // end switch keyerState - end of state machine
 
-  if (keyerControl & 3)                                               // any paddle latch?                            
+  if (keyerControl & 3)                                               // any paddle latch?
     return true;                                                      // we return true - we processed a paddle press
   else
     return false;                                                     // when paddle latches are cleared, we return false
@@ -1303,7 +1303,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
 
 
 
-//// this function checks the paddles (touch or external), returns true when a paddle has been activated, 
+//// this function checks the paddles (touch or external), returns true when a paddle has been activated,
 ///// and sets the global variable leftKey and rightKey accordingly
 
 
@@ -1313,7 +1313,7 @@ boolean checkPaddles() {
   int left, right;
   static long lTimer = 0, rTimer = 0;
   const int debDelay = 512;       // debounce time = 0,512  ms
-  
+
   /* internal and external paddles are now working in parallel - the parameter p_useExtPaddle is used to indicate reverse polarity of external paddle
   */
   left = MorsePreferences::pliste[posExtPddlPolarity].value ? rightPin : leftPin;
@@ -1323,11 +1323,11 @@ boolean checkPaddles() {
   newR = (sensor & 0x01);
                                                           // read external paddle presses
   newL = newL | (!digitalRead(left)) ;                    // tip (=left) always, to be able to use straight key to initiate echo trainer etc
-  if (MorsePreferences::pliste[posCurtisMode].value != STRAIGHTKEY) {               
-      newR = newR | (!digitalRead(right)) ;               // ring (=right) only when in straight key mode, to prevent continuous activation 
+  if (MorsePreferences::pliste[posCurtisMode].value != STRAIGHTKEY) {
+      newR = newR | (!digitalRead(right)) ;               // ring (=right) only when in straight key mode, to prevent continuous activation
   }                                                       // when used with a 2-pole jack on the straight key
-  
-  if ((MorsePreferences::pliste[posCurtisMode].value == NONSQUEEZE) && newL && newR) 
+
+  if ((MorsePreferences::pliste[posCurtisMode].value == NONSQUEEZE) && newL && newR)
     return (leftKey || rightKey);
 
   if (newL != oldL)
@@ -1335,11 +1335,11 @@ boolean checkPaddles() {
   if (newR != oldR)
       rTimer = micros();
   if (micros() - lTimer > debDelay)
-      if (newL != leftKey) 
+      if (newL != leftKey)
           leftKey = newL;
   if (micros() - rTimer > debDelay)
-      if (newR != rightKey) 
-          rightKey = newR;       
+      if (newR != rightKey)
+          rightKey = newR;
 
   oldL = newL;
   oldR = newR;
@@ -1352,7 +1352,7 @@ boolean checkPaddles() {
 
 // update the paddle latches in keyerControl
 void updatePaddleLatch(boolean dit, boolean dah)
-{ 
+{
     if (dit)
       keyerControl |= DIT_L;
     if (dah)
@@ -1383,10 +1383,10 @@ void setDAHstate() {
 
 // toggle polarity of paddles
 void togglePolarity () {
-      MorsePreferences::pliste[posPolarity].value = MorsePreferences::pliste[posPolarity].value ? 0 : 1; 
+      MorsePreferences::pliste[posPolarity].value = MorsePreferences::pliste[posPolarity].value ? 0 : 1;
      //displayPolarity();
 }
-  
+
 
 /// function to read sensors:
 /// read both left and right twice, repeat reading if it returns 0
@@ -1401,7 +1401,7 @@ uint8_t readSensors(int left, int right, boolean init) {
   //long int timer = micros();
   //static boolean first = true;
   touch_value_t v, lValue, rValue;
-  
+
   while ( !(v=touchRead(left)) )
     ;                                       // ignore readings with value 0
   lValue = v;
@@ -1429,13 +1429,13 @@ uint8_t readSensors(int left, int right, boolean init) {
         if (lValue < 32 || rValue < 32)
           return 3;
         else
-          return 0; 
+          return 0;
           }
     else {
         if (lValue > 85000 || rValue > 85000)
           return 3;
         else
-          return 0; 
+          return 0;
     }
   }
 #endif
@@ -1475,10 +1475,10 @@ String getRandomWord( int maxLength) {        //// give me a random English word
     else if (maxLength != 0)
       ++maxLength;
     if (kochActive)
-        return koch.getRandomWord(); 
+        return koch.getRandomWord();
     else
 #ifdef CONFIG_ENGLISH_OXFORD
-        return getEnglishWord(maxLength == 0 ? 100 : maxLength); 
+        return getEnglishWord(maxLength == 0 ? 100 : maxLength);
 #else
         return EnglishWords::words[random(EnglishWords::WORDS_POINTER[maxLength], EnglishWords::WORDS_NUMBER_OF_ELEMENTS)];
 #endif
@@ -1492,7 +1492,7 @@ String getRandomAbbrev( int maxLength) {        //// give me a random CW abbrevi
     if (kochActive)
         return koch.getRandomAbbrev();
     else
-        return Abbrev::abbreviations[random(Abbrev::ABBREV_POINTER[maxLength], Abbrev::ABBREV_NUMBER_OF_ELEMENTS)];  
+        return Abbrev::abbreviations[random(Abbrev::ABBREV_POINTER[maxLength], Abbrev::ABBREV_NUMBER_OF_ELEMENTS)];
 }
 
 // we use substrings as char pool for trainer mode
@@ -1506,16 +1506,16 @@ String getRandomAbbrev( int maxLength) {        //// give me a random CW abbrevi
   //    5: a9 = CWchars.substring(0,36);
   //    6: 9? = CWchars.substring(26,45);
   //    7: ?<> = CWchars.substring(36,51);
-  //    8: a9? = CWchars.substring(0,45); 
+  //    8: a9? = CWchars.substring(0,45);
   //    9: 9?<> = CWchars.substring(26,51);
   //  {OPT_ALL, OPT_ALPHA, OPT_NUM, OPT_PUNCT, OPT_PRO, OPT_ALNUM, OPT_NUMPUNCT, OPT_PUNCTPRO, OPT_ALNUMPUNCT, OPT_NUMPUNCTPRO}
 
 String getRandomChars(int maxLength, int option) {             /// random char string, eg. group of 5, 9 differing character pools; maxLength = 1-6
-    String result = ""; 
+    String result = "";
     result.reserve(7);
     int s = 0, e = 51;
     int i;
-  
+
     if (maxLength > 6) {                                        // we use a random length!
       maxLength = random(2, maxLength - 3);                     // maxLength is max 10, so random upper limit is 7, means max 6 chars...
     }
@@ -1526,31 +1526,31 @@ String getRandomChars(int maxLength, int option) {             /// random char s
         return koch.getRandomChar(maxLength);
     } else {
          switch (option) {
-          case OPT_NUM: 
-          case OPT_NUMPUNCT: 
-          case OPT_NUMPUNCTPRO: 
+          case OPT_NUM:
+          case OPT_NUMPUNCT:
+          case OPT_NUMPUNCTPRO:
                                 s = 26; break;
-          case OPT_PUNCT: 
-          case OPT_PUNCTPRO: 
+          case OPT_PUNCT:
+          case OPT_PUNCTPRO:
                                 s = 36; break;
-          case OPT_PRO: 
+          case OPT_PRO:
                                 s = 44; break;
           default:              s = 0;  break;
         }
         switch (option) {
-          case OPT_ALPHA: 
+          case OPT_ALPHA:
                                 e = 26;  break;
-          case OPT_ALNUM: 
-          case OPT_NUM: 
+          case OPT_ALNUM:
+          case OPT_NUM:
                                 e = 36; break;
-          case OPT_ALNUMPUNCT: 
+          case OPT_ALNUMPUNCT:
           case OPT_NUMPUNCT:
-          case OPT_PUNCT: 
+          case OPT_PUNCT:
                                 e = 45; break;
           default:              e = 51; break;
         }
 
-        for (i = 0; i < maxLength; ++i) 
+        for (i = 0; i < maxLength; ++i)
           //result += CWchars.charAt(random(s,e));
           result += CWchars[random(s,e)];
   }
@@ -1568,12 +1568,12 @@ String getRandomCall(int maxLength) {            // random call-sign like patter
   if (maxLength > 4)
       maxLength = 4;
   if (maxLength != 0)
-      maxLength += 2; 
+      maxLength += 2;
   if (maxLength == 3)
       prefix = 0;
-  else  
+  else
       prefix = prefixType[random(0,6)];           // what type of prefix?
-      
+
   switch (prefix) {
       case 1: call += CWchars[random(0,26)];     // CWchars.charAt(random(0,26));
               ++l;
@@ -1617,7 +1617,7 @@ String getRandomCall(int maxLength) {            // random call-sign like patter
 }
 
 
-/////// generate CW representations from its input string 
+/////// generate CW representations from its input string
 /////// CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEäöüH";
 
 String generateCWword(String symbols) {
@@ -1625,19 +1625,19 @@ String generateCWword(String symbols) {
   byte bitMask, NoE;
   //byte nextElement[8];      // the list of elements; 0 = dit, 1 = dah
   String result = "";
-  
+
   int l = symbols.length();
-  
+
   for (int i = 0; i<l; ++i) {
     char c = symbols.charAt(i);                                 // next char in string
-    
+
     //pointer = CWchars.indexOf(c);                               // at which position is the character in CWchars?
     pointer = indexOfConstStr(CWchars, c);
     NoE = pool[pointer][1];                                     // how many elements in this morse code symbol?
     bitMask = pool[pointer][0];                                 // bitMask indicates which of the elements are dots and which are dashes
     for (int j=0; j<NoE; ++j) {
         result += (bitMask & B10000000 ? "2" : "1" );         // get MSB and store it in string - 2 is dah, 1 is dit, 0 = inter-element space
-        bitMask = bitMask << 1;                               // shift bitmask 1 bit to the left 
+        bitMask = bitMask << 1;                               // shift bitmask 1 bit to the left
         //DEBUG("Bitmask: ");
         //DEBUG(String(bitmask, BIN));
       } /// now we are at the end of one character, therefore we add enough space for inter-character
@@ -1657,11 +1657,11 @@ int indexOfConstStr(const char* string, char c) {
 }
 
 void generateCW () {          ////// this is called from loop() (frequently!)  and generates CW  ////////////////////////////
-  
+
   static int l;
   static char c;
   boolean silentEcho;
-  
+
   switch (generatorState) {                                             // CW generator state machine - key is up or down
     case KEY_UP:
             if (millis() < genTimer)                                    // not yet at end of the pause: just wait
@@ -1671,7 +1671,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 CWword = "";
             }
             l = CWword.length();
-            
+
             if (l==0)  {                                               // fetch a new word if we have an empty word
                 if (clearText.length() > 0) {                          // this should not be reached at all.... except when display word by word
                   //DEBUG("Text left: " + clearText);
@@ -1692,11 +1692,11 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 }
             }
             c = CWword[0];                                            // retrieve next element from CWword; if 0, we were at end of character
-            CWword.remove(0,1); 
+            CWword.remove(0,1);
             if (c == '0' || !CWword.length())  {                      // a character just had been finished //// is there an error here?
                    if (c == '0') {
                       c = CWword[0];                                  // retrieve next element from CWword;
-                      CWword.remove(0,1); 
+                      CWword.remove(0,1);
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1)
                           cwForTx(0);                             // send end of character to transmit buffer
                       }
@@ -1709,10 +1709,10 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 genTimer = millis() + 2;      // very short timing
             else if (morseState != loraTrx && morseState != wifiTrx)
                 genTimer = millis() + (c == '1' ? ditLength-6 : dahLength-6);           // start a dit or a dah, acording to the next element, correct for slightly loner dit and dah, see output routine
-            else 
+            else
                 genTimer = millis() + (c == '1' ? rxDitLength : rxDahLength);
             if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1)             // send the element to transmit buffer
-                c == '1' ? cwForTx(1) : cwForTx(2) ; 
+                c == '1' ? cwForTx(1) : cwForTx(2) ;
             /// if Koch learn character we show dit or dah
             if (generatorMode == KOCH_LEARN)
                 displayGeneratedMorse(BOLD, c == '1' ? "."  : "-");
@@ -1733,7 +1733,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
 
            keyOut(false, (morseState != loraTrx && morseState != wifiTrx), 0, 0);
             if (! CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode or autoStop mode
-                if (morseState == morseGenerator) 
+                if (morseState == morseGenerator)
                     autoStop = MorsePreferences::pliste[posAutoStop].value ? halt : nextword;
                 dispGeneratedChar();
                 if (morseState == echoTrainer) {
@@ -1744,7 +1744,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
 
                                           break;
                         case REPEAT_WORD:
-                                          // fall through 
+                                          // fall through
                         case SEND_WORD:   if (echoStop)
                                                 break;
                                           else {
@@ -1761,7 +1761,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                         default:          break;
                     }
                 }
-                else { 
+                else {
                       genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : interWordSpace) ;  // we need a pause for interWordSpace
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1) {                                   // in generator mode and we want to send with LoRa
                           cwForTx(0);
@@ -1770,32 +1770,32 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                             sendWithLora();                         // finalise the string and send it to LoRA
                           else sendWithWifi();                      // or WiFi
                           delay(interCharacterSpace+ditLength);             // we need a slightly longer pause otherwise the receiving end might fall too far behind...
-                      } 
+                      }
                 }
              }
              else if ((c = CWword[0]) == '0') {                                                                        // we are at end of character
-//              // display last character 
+//              // display last character
 //              // genTimer small if in echo mode and no code!
-                dispGeneratedChar(); 
+                dispGeneratedChar();
                 if (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value == DISP_ONLY)
                     genTimer = millis() +1;
-                else            
+                else
                     genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterCharacterSpace : wordDoublerICS());          // pause = intercharacter space
              }
              else  {                                                                                                   // we are in the middle of a character
                 genTimer = millis() + ((morseState == loraTrx  || morseState == wifiTrx) ? rxDitLength : ditLength);                              // pause = interelement space
              }
              generatorState = KEY_UP;                               // next state = key up = pause
-             break;         
+             break;
   }   /// end switch (generatorState)
 }
 
 unsigned int wordDoublerICS() {
     if (morseState != morseGenerator || (MorsePreferences::pliste[posWordDoubler].value == 0) || ( MorsePreferences::pliste[posWordDoubler].value != 0 && firstTime == false))
       return interCharacterSpace;
-    
+
     switch (MorsePreferences::pliste[posWordDoubler].value) {
-     
+
       case 2: return halfICS;
               break;
       case 3: return 3*ditLength;
@@ -1819,12 +1819,12 @@ int pitch() {                 // find out which pitch to use for the generated C
 void dispGeneratedChar() {
   static String charString;
   charString.reserve(10);
-  
+
   if (generatorMode == KOCH_LEARN ||
           (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_CHAR &&
           (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
           (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY ))
-      {       /// we need to output the character on the display now  
+      {       /// we need to output the character on the display now
         if (clearText.charAt(0) == 0xC3) {            //UTF-8!
           charString = String(clearText.charAt(0)) + String(clearText.charAt(1));                   /// store first 2 chars of clearText in charString
           clearText.remove(0,2);                                                    /// and remove them from clearText
@@ -1841,9 +1841,9 @@ void dispGeneratedChar() {
         if (generatorMode == KOCH_LEARN)
             displayGeneratedMorse(REGULAR," ");                      // output a space
       }   //// end display_by_char
-      
+
       ++charCounter;                         // count this character
-     
+
      // if we have seen 12 chars since changing speed, we write the config to Preferences
      if (charCounter == 12) {
         MorsePreferences::fireCharSeen(true);
@@ -1869,20 +1869,20 @@ void fetchNewWord() {
               return;
             if ((rxWpm < 5) || (rxWpm >60))                    // invalid speed
               return;
-              
+
             displayGeneratedMorse(BOLD, " ");
-            clearText = CWwordToClearText(CWword);            
+            clearText = CWwordToClearText(CWword);
             rxDitLength = 1200 /   rxWpm ;                      // set new value for length of dits and dahs and other timings
             rxDahLength = 3* rxDitLength ;                      // calculate the other timing values
             rxInterCharacterSpace = 3 * rxDitLength;
             rxInterWordSpace = 7 * rxDitLength;
             sprintf(numBuffer, "%2ir", rxWpm);
-            MorseOutput::printOnStatusLine( true, 4,  numBuffer); 
+            MorseOutput::printOnStatusLine( true, 4,  numBuffer);
             MorseOutput::printOnStatusLine( true, 9, "s");
             MorseOutput::updateSMeter(rssi);                                 // indicate signal strength of new packet
        }
        else return;                                             // we did not receive anything
-               
+
     } // end if loraTrx or wifiTrx
     else if (playCW) {                      //// playCW  //// - get next word from m32protocol input buffer
         clearText = getM32PWord();
@@ -1903,7 +1903,7 @@ void fetchNewWord() {
     if ((morseState == morseGenerator) /*&& !MorsePreferences::pliste[posAutoStop].value*/ ) {
         displayGeneratedMorse(REGULAR, " ");    /// in any case, add a blank after the word on the display
     }
-    
+
     if (generatorMode == KOCH_LEARN) {
         startFirst = false;
         echoTrainerState = SEND_WORD;
@@ -1921,7 +1921,7 @@ void fetchNewWord() {
         interWordTimer = 4294967000;                   /// interword timer should not trigger something now
         //DEBUG("echoTrainerState: " + String(echoTrainerState));
         switch (echoTrainerState) {
-            case  REPEAT_WORD:  if (MorsePreferences::pliste[posEchoRepeats].value == 7 || repeats <= MorsePreferences::pliste[posEchoRepeats].value) 
+            case  REPEAT_WORD:  if (MorsePreferences::pliste[posEchoRepeats].value == 7 || repeats <= MorsePreferences::pliste[posEchoRepeats].value)
                                     clearText = echoTrainerWord;
                                 else {
                                     clearText = echoTrainerWord;
@@ -1936,14 +1936,14 @@ void fetchNewWord() {
             case  SEND_WORD:    goto randomGenerate;
             default:            break;
         }   /// end special cases for echo Trainer
-    } else {   
-   
+    } else {
+
       randomGenerate:       repeats = 0;
                             clearText = "";
                             if ((MorsePreferences::pliste[posMaxSequence].value != 0) && (generatorMode != KOCH_LEARN))
                               if ( morseState == echoTrainer || ((morseState == morseGenerator) && !MorsePreferences::pliste[posAutoStop].value) ) {
-                                // a case for maxSequence - no maxSequence in autostop mode                         
-                                ++ wordCounter;                                                               // 
+                                // a case for maxSequence - no maxSequence in autostop mode
+                                ++ wordCounter;                                                               //
                                 int limit = 1 + MorsePreferences::pliste[posMaxSequence].value;
                                 if (wordCounter == limit) {
                                   clearText = "+";
@@ -2001,15 +2001,15 @@ void fetchNewWord() {
                                                           clearText = lastWord;
                                                           lastWord = "";
                                                       }
-                                                      //clearText = cleanUpText(getWord()); 
+                                                      //clearText = cleanUpText(getWord());
                                                       //clearText = cleanUpText(clearText);
-                                                      break;  
+                                                      break;
                                     }   // end switch (generatorMode)
                             }
                             firstTime = false;
       }       /// end if else - we either already had something in trainer mode, or we got a new word
 
-    
+
       if (clearText.indexOf('P') != -1) {
         genTimer = 3 * interWordSpace + millis();
         clearText = "";
@@ -2026,7 +2026,7 @@ void fetchNewWord() {
 } // end of fetchNewWord()
 
 
-/// the next function is used to display KEYED and DECODED characters 
+/// the next function is used to display KEYED and DECODED characters
 
 void displayDecodedMorse(String symbol, boolean keyed) {
 
@@ -2038,7 +2038,7 @@ void displayDecodedMorse(String symbol, boolean keyed) {
   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
     MorseBluetooth::bluetoothTypeString(symbol);
 #endif
-  
+
   if (morseState == echoTrainer) {                /// store the character in the response string
     symbol.replace("<as>", "S");                  // maybe we need it for echo trainer or for autostop mode
     symbol.replace("<ka>", "A");
@@ -2054,7 +2054,7 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     else if (symbol != " ")
       echoResponse.concat(symbol);
      //DEBUG("@1795: echoResponse: " + echoResponse);
-    
+
   }
 }   /// end of displayDecodedMorse()
 
@@ -2087,7 +2087,7 @@ void SerialOutMorse(String s, uint8_t origin) {
 void displayCWspeed() {
   char numBuf[16];                // for number to string conversion with sprintf()
   uint8_t wpm;
-  
+
   wpm = lastWasKey ? keyDecoder.getWpm() : audioDecoder.getWpm();
   if ((morseState ==  echoTrainer && MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY))
     sprintf(numBuf, "(%2i)", wpm);
@@ -2098,10 +2098,10 @@ void displayCWspeed() {
   else sprintf(numBuf, "    ");
 
   MorseOutput::printOnStatusLine(false, 3,  numBuf);                                         // effective wpm or rxwpm
-  
-  if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY && 
+
+  if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY &&
       (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx ))
-        sprintf(numBuf, "%2i", wpm);  
+        sprintf(numBuf, "%2i", wpm);
   else
     sprintf(numBuf, "%2i", (morseState == morseDecoder ? wpm : MorsePreferences::wpm));         // d_wpm (decode) or p_wpm (default)
   MorseOutput::printOnStatusLine(encoderState == speedSettingMode ? true : false, 7,  numBuf);
@@ -2113,7 +2113,7 @@ void displayCWspeed() {
 void updateTopLine() {
   String symbol;
   symbol.reserve(5);
-  
+
   MorseOutput::clearStatusLine();
 
   if (morseState == morseGenerator) {
@@ -2189,7 +2189,7 @@ void updateTimings() {
   halfICS = (3 + MorsePreferences::pliste[posInterCharSpace].value) * ditLength / 2;
   interWordSpace = _max(MorsePreferences::pliste[posInterWordSpace].value, MorsePreferences::pliste[posInterCharSpace].value+4) * ditLength;
   effWpm = 60000 / (31 * ditLength + 4 * interCharacterSpace + interWordSpace );  ///  effective wpm with lengthened spaces = Farnsworth speed
-} 
+}
 
 void changeSpeed( int t) {
   MorsePreferences::wpm += t;
@@ -2267,19 +2267,19 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 #endif
       v /= counts;
       //DEBUG("ReadVoltage:" + String(v));
-  #ifndef ARDUINO_heltec_wifi_kit_32_V3      
+  #ifndef ARDUINO_heltec_wifi_kit_32_V3
       if (MorsePreferences::boardVersion == 4)      // adjust measurement for board version 4
         v *= 1.1;
   #endif
 
       voltage_raw = v;
-  #ifndef ARDUINO_heltec_wifi_kit_32_V3      
+  #ifndef ARDUINO_heltec_wifi_kit_32_V3
       v *= (MorsePreferences::vAdjust * VOLT_CALIBRATE);      // adjust measurement and convert to millivolts
   #else
       v = v - 200 + MorsePreferences::vAdjust;
       v *= VOLT_CALIBRATE;
   #endif
-      return (int16_t) v;   
+      return (int16_t) v;
 
 }
 
@@ -2296,7 +2296,7 @@ double ReadVoltage(byte pin){
   if(reading < 4 || reading > 4092)     /// invalid measurement
     return 0;
 
-#ifndef ARDUINO_heltec_wifi_kit_32_V3  
+#ifndef ARDUINO_heltec_wifi_kit_32_V3
   //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
   return (-0.000000000000016 * pow(reading,4) + 0.000000000118171 * pow(reading,3)- 0.000000301211691 * pow(reading,2)+ 0.001109019271794 * reading + 0.034143524634089);
   // Added an improved polynomial, use either, comment out as required
@@ -2304,13 +2304,13 @@ double ReadVoltage(byte pin){
 //DEBUG("V raw:" + String(reading));
   if (reading < 0.838)
     reading = reading - (reading-616)/4.5;
-  else  
+  else
     reading = reading - (1006 - reading)/4.5;
 // DEBUG("V corrected:" + String(reading));
   return reading;
   //return -0.000000000009824 * pow(reading,3) + 0.000000016557283 * pow(reading,2) + 0.000854596860691 * reading + 0.065440348345433;
 #endif
-} 
+}
 
 
 
@@ -2319,8 +2319,8 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
   if (m32protocol && !enforce)                          /// no time-out while m32protocol is active unless forced
     return;
   if (MorsePreferences::pliste[posTimeOut].value || enforce) {
-      timeOut = 300000UL * MorsePreferences::pliste[posTimeOut].value;  
-      if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {            
+      timeOut = 300000UL * MorsePreferences::pliste[posTimeOut].value;
+      if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {
           MorseOutput::clearDisplay();
           MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Power OFF...");
           MorseOutput::printOnScroll(2, REGULAR, 0, "RED to turn ON");
@@ -2330,14 +2330,14 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
           delay (1500);
           shutMeDown();
       }
-  }  
+  }
 }
 
 void shutMeDown() {
   MorseOutput::sleep();     /// shut down Heltec display
   if (m32protocol)
     jsonError("M32 SLEEP SHUTDOWN BY USER");
-  
+
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0); //1 = High, 0 = Low
 #ifdef LORA_RADIOLIB
   radio.sleep();
@@ -2353,7 +2353,7 @@ void shutMeDown() {
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_SLOW_MEM, ESP_PD_OPTION_ON);
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_FAST_MEM, ESP_PD_OPTION_ON);
     esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_ON);*/
-    
+
   esp_deep_sleep_start();         // go to deep sleep
   esp_restart();
 return;
@@ -2386,7 +2386,7 @@ void cwForTx (int element) {
       temp = wpm * 4;                   /// shift left 2 bits
       cwTxBuffer[1] |= temp;
       pairCounter = 7;                    /// so far we have used 7 bit pairs: 4 in the first byte (protocol version+serial); 3 in the 2nd byte (wpm)
-      } 
+      }
       else if (pairCounter > sizeof(cwTxBuffer)*4 -4) { // prevent buffer overflow
           return;
       }
@@ -2403,7 +2403,7 @@ void cwForTx (int element) {
 
   if (temp != 3)
       ++pairCounter;
-  else {  
+  else {
       --pairCounter; /// we are at end of word and step back to end of character
       if (pairCounter % 4 != 0)      {           // do nothing if we have a zero in the topmost two bits already, as this was end of character
           temp = temp << (2*(3-(pairCounter % 4)));
@@ -2447,7 +2447,7 @@ void onLoraReceive(){
 #ifdef LORA_RADIOLIB
   int packetSize = radio.getPacketLength();
   u_int maxl = sizeof(cwTxBuffer) < packetSize ? sizeof(cwTxBuffer) : packetSize;
-  String result; 
+  String result;
   String reason = "";
   reason.reserve(9);
   result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
@@ -2462,7 +2462,7 @@ void onLoraReceive(){
     //DEBUG("@2162: 2nd byte: " + String(int(result.charAt(2)), BIN ));
     if (sizeof(cwTxBuffer) < packetSize)
       reason = "LENGTH";
-    if ((result.charAt(0) & 0b11000000) != 0b01000000)  {     // check protocol version # 
+    if ((result.charAt(0) & 0b11000000) != 0b01000000)  {     // check protocol version #
       reason = "PROT.VER";
       goto error;
     }
@@ -2483,7 +2483,7 @@ void onLoraReceive(){
 void onWifiReceive(AsyncUDPPacket packet) {
   u_int maxl = sizeof(cwTxBuffer) < packet.length() ? sizeof(cwTxBuffer) : packet.length();
   String result;
-  
+
   result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
   result = "";
     //DEBUG("@2172: onWiFiReceive: packetSize = " + String(packet.length()));
@@ -2547,8 +2547,8 @@ String encodeProSigns( String &input ) {
 }
 
 
-//// new buffer code: unpack when needed, to save buffer space. We just use 1024 bytes of buffer, instead of 32k! 
-//// in addition to the received packet, we need to store the RSSI as 8 bit positive number 
+//// new buffer code: unpack when needed, to save buffer space. We just use 1024 bytes of buffer, instead of 32k!
+//// in addition to the received packet, we need to store the RSSI as 8 bit positive number
 //// (it is always between -20 and -150, so an 8bit integer is fine as long as we store it without sign as an unsigned number)
 //// the buffer is a 1024 byte ring buffer with two pointers:
 ////   nextBuRead where the next packet starts for reading it out; is incremented by l to get the next buffer read position
@@ -2572,7 +2572,7 @@ String encodeProSigns( String &input ) {
 ////        uint8_t mylength;
 ////        foo() {
 ////          myLength = cwBuRead(&myIndex);
-////          if (myLength != 0) 
+////          if (myLength != 0)
 ////            doSomethingWith(ourBuffer[myIndex], myLength);
 ////        }
 
@@ -2607,7 +2607,7 @@ boolean cwBuReady() {
 
 uint8_t cwBuRead(uint8_t* buIndex) {
 ////    uint8_t cwBuRead(uint8_t* buIndex): returns length of packet, and index where to read in buffer by reference
-  uint8_t l;  
+  uint8_t l;
   if (byteBuFree == sizeof(cwRxBuffer))
     return 0;
   else {
@@ -2651,7 +2651,7 @@ uint8_t decodePacket(int* rssi, int* wpm, String* cwword) {
                 break;
       case  2:  *wpm = (uint8_t) (c >> 2);  // the first data byte contains the wpm info in the first six bits, and actual morse in the remaining two bits
                                             // now take remaining two bits and store them in CWword as ASCII
-                *cwword = (char) ((c & B011) +48); 
+                *cwword = (char) ((c & B011) +48);
                 break;
       default:                              // decode the rest of the packet; we do this for all but the first byte  /// we need to handle end of word!!! therefore the break
                 for (int j = 0; j < 4; ++j) {
@@ -2669,14 +2669,14 @@ uint8_t decodePacket(int* rssi, int* wpm, String* cwword) {
       *cwword = "";
       return 0;
     }
-  
+
   return header;
 }      // end decodePacket
 
 
 ///// side tone and external trx key function
 
-void keyOut(boolean on,  boolean fromHere, int f, int volume) {                                      
+void keyOut(boolean on,  boolean fromHere, int f, int volume) {
   //// generate a side-tone with frequency f when on==true, or turn it off
   //// differentiate external (decoder, sometimes cw_generate) and internal (keyer, sometimes Cw-generate) side tones - parameter fromHere
   //// key transmitter (and line-out audio if we are in a suitable mode) - parameter noTx true: do not key transmitter
@@ -2701,7 +2701,7 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
                 noTx = false;
       default:  break;
   }
-                
+
 //DEBUG("keyOut: " + String(on) + String(fromHere) + String(noTx));
   if (on) {
       if (fromHere) {
@@ -2711,7 +2711,7 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
       } else {                    // not from here
         extTone = true;
         extPitch = f;
-        if (!intTone) 
+        if (!intTone)
           MorseOutput::pwmTone(extPitch, volume, MorsePreferences::pliste[posExtAudioOnDecode].value);      // set to true if you want external audio out!
         }
       keyTransmitter(noTx);
@@ -2775,7 +2775,7 @@ void audioLevelAdjust() {
 ////////////////////////// memoryKeyer /////////////////
 
 void memoryKeyer() {
-    
+
     // fill the list variables
     memList[0] = maxMemCount = 0;
     for (int i = 0; i<8; ++i) {
@@ -2875,7 +2875,7 @@ String getWord() {
         result = cleanUpText(result);
         if (result.indexOf('C') != -1) {              // a comment starts here - ignore everything until end of line
           result = "";
-          while (file.available()) { 
+          while (file.available()) {
             char c = file.read();
             if (c  == '\n') {
               break;
@@ -2891,7 +2891,7 @@ String getWord() {
     MorsePreferences::fileWordPointer = 0;
     while (!file.available())
       ;
-    return result;                                    
+    return result;
 }
 
 //// get a string containing all different characters found in a file; used for training with custiomized character set
@@ -2901,7 +2901,7 @@ String getCustomChars() {
   usedChars.reserve(64);
   String w;
   char c;
-  
+
   file.close(); file = SPIFFS.open("/player.txt");
   MorsePreferences::fileWordPointer = 0;
   while (file.available()) {
@@ -2926,7 +2926,7 @@ String cleanUpText(String text) {                        // all to lower case, a
   result.reserve(128);
   text.toLowerCase();
   text = utf8umlaut(text);
-  
+
   for (unsigned int i = 0; i<text.length(); ++i) {       // disregard all non-standard characters
     if ((koch.morserinoKochChars.indexOf(c = text.charAt(i)) != -1) || c == 'P' || c == 'T' || c == 'C')      // P for pause  , T for tone, C for comment
       result += c;
@@ -3000,14 +3000,14 @@ void serialEvent() {
       }
       if (stringComplete) {
               inputString.trim();
-              
-              if (m32protocol) 
+
+              if (m32protocol)
                 serialDecode(inputString);
               else {
                 inputString.toLowerCase();
                 if (inputString  == "put device/protocol/on")  {  /// client wants to switch m32 Protocol on
                   m32protocol = true;
-                  jsonDevice(); 
+                  jsonDevice();
                 }
               }
           // clear the string:
@@ -3039,12 +3039,12 @@ thirdArg.reserve(20);
     command = input.substring(0,blank);
     command.toLowerCase();
     String argument = input.substring(blank+1);
-    int slash = argument.indexOf("/");                      
+    int slash = argument.indexOf("/");
     if (slash != -1) {                                      // at least 2 args
       firstArg = argument.substring(0,slash);
       firstArg.toLowerCase();
       secondArg = argument.substring(slash+1);
-      
+
       slash = secondArg.indexOf("/");
           if (slash != -1) {                                    // 3 args
             thirdArg = secondArg.substring(slash+1);
@@ -3055,7 +3055,7 @@ thirdArg.reserve(20);
             secondArg.toLowerCase();
             thirdArg = "";
           }
-          
+
       }   /// end of 2 args
       else {
         firstArg = argument;
@@ -3068,10 +3068,10 @@ thirdArg.reserve(20);
   else {     /// we have no arguments!
     jsonError("MISSING ARGUMENT");
     return;
-  } 
+  }
   ////////////// evaluate commands, call appropriate subroutine
 
-  if (command == "get") 
+  if (command == "get")
     m32Get(firstArg, secondArg, thirdArg);
   else if (command == "put")
     m32Put(firstArg, secondArg, thirdArg);
@@ -3087,27 +3087,27 @@ void m32Get(String type, String token, String value) {                    /// GE
         jsonError("ARGUMENT(S) MISSING");
         return;
     }
-    if (type == "control") {  
+    if (type == "control") {
         if (token == "speed")
           jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, true);
         else if (token == "volume")
           jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, true);
         else /// invalid argument {
           jsonError("INVALID ARGUMENT");
-    } 
+    }
     else if (type == "controls")
         jsonControls();
-    else if (type == "device") 
+    else if (type == "device")
         jsonDevice();
     else if (type == "menu")
         //jsonCreate("menu", MorseMenu::cmdPath, state);
-        jsonMenu(MorseMenu::getMenuPath(MorsePreferences::newMenuPtr), (int)MorsePreferences::newMenuPtr, 
-              (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::newMenuPtr));    
-    else if (type == "menus") 
+        jsonMenu(MorseMenu::getMenuPath(MorsePreferences::newMenuPtr), (int)MorsePreferences::newMenuPtr,
+              (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::newMenuPtr));
+    else if (type == "menus")
         jsonMenuList();
     else if (type == "config")
-        jsonParameter(token); 
-    else if (type == "configs") 
+        jsonParameter(token);
+    else if (type == "configs")
         jsonParameterList();
     else if (type == "snapshots")
         jsonSnapshots();
@@ -3138,8 +3138,8 @@ void m32Get(String type, String token, String value) {                    /// GE
     else
     /// no recognizable type for the get command
         jsonError("GET " + type + ": UNKNOWN COMMAND");
-}     
-  
+}
+
 
 void m32Put(String type, String token, String value) {                    /// PUT command
     // the external party wants us to receive some data
@@ -3148,7 +3148,7 @@ void m32Put(String type, String token, String value) {                    /// PU
     if (token == "" || type == "") {
           jsonError("NOT ENOUGH ARGUMENTS");
           return;
-    } 
+    }
     /////////////////// CONTROL /////////////////////
     if (type == "control") {
          if (token == "speed") {
@@ -3173,7 +3173,7 @@ void m32Put(String type, String token, String value) {                    /// PU
             jsonError("INVALID Value " + value);
       }
       else jsonError("INVALID NAME " + token);
-    } 
+    }
     ////////////////// CONFIG //////////////////////////
     else if (type == "config") {
       if (setParameter(token, value))   // true: error setting the paramter!
@@ -3185,7 +3185,7 @@ void m32Put(String type, String token, String value) {                    /// PU
     else if (type == "snapshot") {
       if (token == "store") {
         int i = value.toInt() -1;
-        if (i >= 0 && i <= 7 )  {                                              
+        if (i >= 0 && i <= 7 )  {
             MorsePreferences::doWriteSnapshot(i, MorsePreferences::menuPtr);      /// has to be a value 0 .. 7, therefore i-1
             jsonOK();
         }
@@ -3198,7 +3198,7 @@ void m32Put(String type, String token, String value) {                    /// PU
          int i = value.toInt() - 1;                                                   // i must be == 0..7 (input was 1..8)
          if (i >= 0 && i <= 7 && MorsePreferences::memCounter > 0) {                  /// and memCounter must be > 0
             for (uint8_t y = 0; y < MorsePreferences::memCounter; ++y) {              // we look if snapshot number i does exist within existing snapshot
-              if (MorsePreferences::memories[y] == i)  {                              // we found the correct snapshot 
+              if (MorsePreferences::memories[y] == i)  {                              // we found the correct snapshot
                 if (token == "clear")                                                 // so we either clear
                     MorsePreferences::doClearMemory(y);
                 else {
@@ -3208,7 +3208,7 @@ void m32Put(String type, String token, String value) {                    /// PU
                 jsonOK();
                 return;                                                               // we are done here, and return
               }                                                                       // otherwise:
-            }                                                                         /// not found        
+            }                                                                         /// not found
             jsonError("NO SUCH SNAPSHOT");
          } else
             jsonError("NO SUCH SNAPSHOT");
@@ -3219,7 +3219,7 @@ void m32Put(String type, String token, String value) {                    /// PU
     //////////////////// FILE //////////////////////
     else if (type == "file") {
       if (token == "new") {
-        File file = SPIFFS.open("/player.txt", "w");            // Open the file for writing in SPIFFS 
+        File file = SPIFFS.open("/player.txt", "w");            // Open the file for writing in SPIFFS
         file.println(value);
         file.close();
         MorsePreferences::fileWordPointer = 0;                              // reset word counter for file player
@@ -3227,23 +3227,23 @@ void m32Put(String type, String token, String value) {                    /// PU
         jsonOK();
       }
       else if (token == "append") {
-        File file = SPIFFS.open("/player.txt", "a");            // Open the file for appending in SPIFFS 
+        File file = SPIFFS.open("/player.txt", "a");            // Open the file for appending in SPIFFS
         file.println(value);
         file.close();
         MorsePreferences::fileWordPointer = 0;                              // reset word counter for file player
         MorsePreferences::writeWordPointer();
         jsonOK();
       }
-      else 
+      else
         jsonError("INVALID ACTION file " + token);
     }  // end type == "file"
     //////////////////////// WIFI ///////////////////
     else if (type == "wifi") {
       String n = value.substring(0,1);
-      int nr = n.toInt();  
+      int nr = n.toInt();
       if (nr < 1 || nr > 3)
-        return (jsonError("INVALID WIFI NUMBER"));                   
-      if (value.indexOf("/") == 1) 
+        return (jsonError("INVALID WIFI NUMBER"));
+      if (value.indexOf("/") == 1)
         value = value.substring(2);
       else value == "";
 
@@ -3323,7 +3323,7 @@ void m32Put(String type, String token, String value) {                    /// PU
             number = value.toInt();
 ;
             if (number < 1 || number > 8 || (MorsePreferences::cwMemMask & 1 << (number-1)) == 0)
-              return (jsonError("INVALID CW MEMORY NUMBER")); 
+              return (jsonError("INVALID CW MEMORY NUMBER"));
 
             playCWBuffer = String(MorsePreferences::cwMem[number-1]);
             //DEBUG("@2968: playCWBuffer: " + playCWBuffer);
@@ -3338,46 +3338,46 @@ void m32Put(String type, String token, String value) {                    /// PU
           if ((token == "repeat") || (token == "recall" && number < 3))
             repeatPlayCW = true;
           jsonOK();
-          
+
         }
         else
           jsonError("CW/PLAY: Keyer not active");
       }
-      else if (token == "stop") 
+      else if (token == "stop")
         stopPlayCw();
-      
+
       else if (token == "store") {
           // extract mem # from value
           //DEBUG("value: " + value);
           int number = value.toInt();
           if (number < 1 || number > 8)
-            return (jsonError("INVALID CW MEMORY NUMBER")); 
-          //DEBUG("indexOf: " + String(value.indexOf("/")) );                                     
-          if (value.indexOf("/") == 1) 
+            return (jsonError("INVALID CW MEMORY NUMBER"));
+          //DEBUG("indexOf: " + String(value.indexOf("/")) );
+          if (value.indexOf("/") == 1)
             value = value.substring(2);
           else if (value.length() != 0)
             return (jsonError("INVALID CW MEMORY ARGUMENT"));
           else value = "";
-          
+
           // store it, or erase it if empty
-          value = value.substring(0,47); 
+          value = value.substring(0,47);
           value.toCharArray(MorsePreferences::cwMem[number-1],48);
           if (value == "")
             MorsePreferences::cwMemMask &= ~(1 << (number-1));
-          else 
+          else
             MorsePreferences::cwMemMask |= 1 << (number-1);
-          // make it permanent 
+          // make it permanent
           MorsePreferences::setCwMem(number, value);
           jsonOK();
-        }      
+        }
         else
         jsonError("CW: INVALID ARGUMENT " + token);
     }
     else
        jsonError("COMMAND " + type + " NOT YET IMPLEMENTED");
 }
-      
- 
+
+
 
 ///// create json output for serial port
 
@@ -3406,7 +3406,7 @@ void jsonMenu(String path, unsigned int number, boolean active, boolean exec) {
   obj["executable"] = exec;
   obj["active"] = active;
 
-  serializeJson(doc, Serial);  
+  serializeJson(doc, Serial);
 }
 
 
@@ -3436,14 +3436,14 @@ void jsonParameter(String token) {                  /// find parameter "token" a
       pname = MorsePreferences::pliste[i].parName;
       pname.toLowerCase();
       if (token != pname)
-        continue; 
+        continue;
       jsonConfigLong(MorsePreferences::pliste[i]);
       found = true;
       break;
     }
     // not found
     if (!found)
-      jsonError("INVALID PARAMETER");    
+      jsonError("INVALID PARAMETER");
 }
 
 void jsonParameterList() {                        // get all parameter names and their values, and send them as json object
@@ -3456,11 +3456,11 @@ void jsonParameterList() {                        // get all parameter names and
       JsonObject obj = doc.createNestedObject();
       obj["name"] = MorsePreferences::pliste[i].parName;
       obj["value"] = (int) MorsePreferences::pliste[i].value;
-      if (MorsePreferences::pliste[i].isMapped) 
+      if (MorsePreferences::pliste[i].isMapped)
           obj["displayed"] = MorsePreferences::pliste[i].mapping[MorsePreferences::pliste[i].value];
       else if (i == posMaxSequence && MorsePreferences::pliste[i].value == 0)
           obj["displayed"] = "Unlimited";
-      else 
+      else
           obj["displayed"] = String(MorsePreferences::pliste[i].value);
       array.add(obj);
     }
@@ -3473,19 +3473,19 @@ boolean setParameter(String token, String value) {      // change a parameter, r
     String pname; pname.reserve(20);
     bool found = false;
     int v = (int) value.toInt();
-    
+
     // first find the right parameter ....
     for (uint8_t i = 0; i <= posSerialOut; ++i) {
       pname = MorsePreferences::pliste[i].parName;
       pname.toLowerCase();
       if (token != pname)
-        continue; 
+        continue;
       // if found, change its value
       if (v < MorsePreferences::pliste[i].minimum || v > MorsePreferences::pliste[i].maximum)     // error: value out of range!
-        return true;    
+        return true;
       MorsePreferences::pliste[i].value = v;
 
-      if (v != 0) {     // wordDoubler and Autostop are mutually exclusive! 
+      if (v != 0) {     // wordDoubler and Autostop are mutually exclusive!
                         if (i == posWordDoubler) {
                             MorsePreferences::pliste[posAutoStop].value = 0;
                             MorsePreferences::displayValueLine(posAutoStop, MorsePreferences::pliste[posAutoStop].parName, true);
@@ -3496,17 +3496,17 @@ boolean setParameter(String token, String value) {      // change a parameter, r
                         }
                       }
 
-                      
-      if (i == posKochSeq) 
+
+      if (i == posKochSeq)
             MorsePreferences::handleKochSequence();
-      else if (i == posCarouselStart) 
+      else if (i == posCarouselStart)
             MorsePreferences::handleCarouselChange();
       found = true;
       break;
     }
 
     MorsePreferences::writePreferences("morserino");    // store the new value
-    if (found) 
+    if (found)
       return false;
     else // not found
       return true;
@@ -3515,13 +3515,13 @@ boolean setParameter(String token, String value) {      // change a parameter, r
 void jsonGetKoch() {                                    // get current Koch lesson setting, and associated values
   DynamicJsonDocument doc(1536);
   StaticJsonDocument <1024> arr;
-  JsonObject kochlesson = doc.createNestedObject("kochlesson");  
+  JsonObject kochlesson = doc.createNestedObject("kochlesson");
   kochlesson["value"] = MorsePreferences::kochFilter;
   kochlesson["minimum"] = MorsePreferences::kochMinimum;
   kochlesson["maximum"] = MorsePreferences::kochMaximum;
   //int diff = MorsePreferences::kochMaximum - MorsePreferences::kochMinimum;
   JsonArray array = arr.to<JsonArray>();
-  for (int i = MorsePreferences::kochMinimum-1; i < MorsePreferences::kochMaximum; ++i) { 
+  for (int i = MorsePreferences::kochMinimum-1; i < MorsePreferences::kochMaximum; ++i) {
     String s = koch.getKochChar(i);
     array.add(cleanUpProSigns(s));
   }
@@ -3565,7 +3565,7 @@ void jsonCreate(String objName, String path, String state) {
   obj["content"] = path;
   if (state != "")
     obj["status"] = state;
-  serializeJson(doc, Serial);  
+  serializeJson(doc, Serial);
 }
 
 void jsonActivate(actMessage active) {                     /// if active == 1: we are LEAVING a mode
@@ -3591,7 +3591,7 @@ void jsonControl(String item, uint8_t value, uint8_t mini, uint8_t maxi, boolean
 
 void jsonControls() {
   DynamicJsonDocument liste(128);
-  
+
   JsonObject speedo = liste.createNestedObject();
   speedo["name"] = "speed";
   speedo["value"] = MorsePreferences::wpm;
@@ -3621,7 +3621,7 @@ void jsonSnapshots() {
 
 void jsonFileStats() {                                            // get info about SPIFFS file system
   long unsigned int total, used;
- 
+
   DynamicJsonDocument doc(128);
   JsonObject conf = doc.createNestedObject("file");
   File file = SPIFFS.open("/player.txt", "r");
@@ -3636,7 +3636,7 @@ void jsonFileStats() {                                            // get info ab
 void jsonFileFirstLine() {
   File file = SPIFFS.open("/player.txt", "r");                  // Open the file for reading in SPIFFS - no error handling, file must exist
   Serial.print("{\"file\":{\"first line\":\"");
-  while (file.available()){  
+  while (file.available()){
       char c = file.read();
       if (c == '{' || c == '}')
         continue;
@@ -3645,8 +3645,8 @@ void jsonFileFirstLine() {
       else
         Serial.write(c);
   }
-  Serial.print("\"}}"); 
-  file.close(); 
+  Serial.print("\"}}");
+  file.close();
 }
 
 
@@ -3669,32 +3669,32 @@ void jsonFileText() {                                           // get file cont
 void jsonGetWifi() {
   DynamicJsonDocument liste(512);
   String activeWiFiConf = MorsePreferences::wlanSSID == "" ? "INVALID" : MorsePreferences::wlanSSID + MorsePreferences::wlanTRXPeer;
-  
+
   JsonObject entry1 = liste.createNestedObject();
   entry1["ssid"] = MorsePreferences::wlanSSID1;
   entry1["trxpeer"] = MorsePreferences::wlanTRXPeer1;
   entry1["selected"] = (MorsePreferences::wlanSSID1 + MorsePreferences::wlanTRXPeer1 == activeWiFiConf ? true : false);
-  
-  
+
+
   JsonObject entry2 = liste.createNestedObject();
   entry2["ssid"] = MorsePreferences::wlanSSID2;
   entry2["trxpeer"] = MorsePreferences::wlanTRXPeer2;
   entry2["selected"] = (MorsePreferences::wlanSSID2 + MorsePreferences::wlanTRXPeer2 == activeWiFiConf ? true : false);
-  
+
   JsonObject entry3 = liste.createNestedObject();
   entry3["ssid"] = MorsePreferences::wlanSSID3;
   entry3["trxpeer"] = MorsePreferences::wlanTRXPeer3;
   entry3["selected"] = (MorsePreferences::wlanSSID3 + MorsePreferences::wlanTRXPeer2 == activeWiFiConf ? true : false);
-  
+
  DynamicJsonDocument doc(512);
   doc["wifi"] = liste;
   serializeJson(doc,Serial);
 }
 
 
-void setSsid(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument 
+void setSsid(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument
   switch (i) {
-    case 1: 
+    case 1:
         MorsePreferences::wlanSSID1 = str;
         break;
     case 2:
@@ -3711,9 +3711,9 @@ void setSsid(int i, String str) {                                       // parse
   jsonOK();
 }
 
-void setPassword(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument  
+void setPassword(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument
   switch (i) {
-    case 1: 
+    case 1:
         MorsePreferences::wlanPassword1 = str;
         break;
     case 2:
@@ -3730,9 +3730,9 @@ void setPassword(int i, String str) {                                       // p
   jsonOK();
 }
 
-void setTrxPeer(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument  
+void setTrxPeer(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument
   switch (i) {
-    case 1: 
+    case 1:
         MorsePreferences::wlanTRXPeer1 = str;
         break;
     case 2:
@@ -3789,10 +3789,10 @@ void jsonGetCwStores() {
 }
 
 void jsonGetCwStore(String value) {
-  
+
     int number =  value.toInt();
     if (number < 1 || number > 8 )
-      return (jsonError("INVALID CW MEMORY NUMBER")); 
+      return (jsonError("INVALID CW MEMORY NUMBER"));
     // check cwMemMask if this memory number is active
     if ((MorsePreferences::cwMemMask & 1 << (number-1)) == 0b0)     // empty memory
       jsonError("CW MEMORY " + value + " IS EMPTY");
@@ -3803,5 +3803,5 @@ void jsonGetCwStore(String value) {
         obj["content"] = String(MorsePreferences::cwMem[number-1]);
         serializeJson(doc, Serial);
     }
-  
+
 }

@@ -1,5 +1,5 @@
-#ifndef ClickButton_H
-#define ClickButton_H
+#ifndef ClickButton_H_
+#define ClickButton_H_
 
 #if (ARDUINO <  100)
 #include <WProgram.h>
@@ -33,4 +33,4 @@ class ClickButton
     long _lastBounceTime;         // the last time the button input pin was toggled, due to noise or a press
 };
 
-#endif
+#endif /* #ifndef ClickButton_H_ */

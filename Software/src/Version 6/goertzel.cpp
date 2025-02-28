@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
  *  morse_3 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
- *  Copyright (C) 2018-2020  Willi Kraml, OE1WKL                                                                            ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                            ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -103,19 +103,19 @@ boolean Goertzel::checkInput() {                  // check the audio input for a
     ///////////////////////////////////////////////////////////
     // here we will try to set the magnitude limit automatic //
     ///////////////////////////////////////////////////////////
-  
+
     if (magnitude > magnitudelimit_low) {
       magnitudelimit = (magnitudelimit + ((magnitude - magnitudelimit) / 6)); /// moving average filter
     }
-  
+
     if (magnitudelimit < magnitudelimit_low)
       magnitudelimit = magnitudelimit_low;
-    
+
     ////////////////////////////////////
     // now we check for the magnitude //
     // and return true or false       //
     ////////////////////////////////////
-  
+
     if (magnitude > magnitudelimit * 0.6) // just to have some space up
       return true;
     else

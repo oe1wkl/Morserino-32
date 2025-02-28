@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
     morse_3 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module **
-    Copyright (C) 2018 ff.  Willi Kraml, OE1WKL                                                                             **
+    Copyright (C) 2018-2025 ff.  Willi Kraml, OE1WKL                                                                        **
 
     This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
     as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -135,7 +135,7 @@ void MorseOutput::sleep()
 
 void MorseOutput::decreaseBrightness() {
     switch (MorsePreferences::oledBrightness) {
-      case 255: 
+      case 255:
                 MorsePreferences::oledBrightness = 127;
                 break;
       case 127:
@@ -325,9 +325,9 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
       {
             //DEBUG("irFl>>" + temp + "<<");
         charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
-        style = REGULAR; 
-        pos += charsPrinted; 
-        temp = ""; 
+        style = REGULAR;
+        pos += charsPrinted;
+        temp = "";
         irFlag = false;
       }
       else                /// at the beginning of an emphasized string
@@ -336,11 +336,11 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
               //DEBUG("noFl>>" + temp + "<<");
 
           charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
-          style = REGULAR; 
-          pos += charsPrinted; 
+          style = REGULAR;
+          pos += charsPrinted;
           temp = "";
         }
-        style = (FONT_ATTRIB) c; 
+        style = (FONT_ATTRIB) c;
         irFlag = true;
       }
     }
@@ -349,8 +349,8 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
       // DEBUG("temp >>" + temp + "<<");
     }
   }
-  
-  if (temp.length()) 
+
+  if (temp.length())
     MorseOutput::printOnScroll(displayLine, style, pos, temp);
 }
 
@@ -892,8 +892,8 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
   delay(3);                       // experimental: soften the inital click
   ledcWrite(volChannel, jj);       // experimental: soften the inital click
   delay(3);
-  ledcWrite(volChannel, vol[i]); 
-   
+  ledcWrite(volChannel, vol[i]);
+
 #else
   sidetone.setFrequency(frequency);
   sidetone.setVolume(float(volume) / 19.0);
@@ -908,7 +908,7 @@ void MorseOutput::pwmNoTone(unsigned int volume) {      // stop playing a tone b
   unsigned int i = constrain(volume, 0, 19);
   unsigned int j = vol[i] >> 8;     // experimental: soften the inital click
   unsigned int jj = vol[i] >> 3;
-  
+
   //ledcWrite(toneChannel, 450);
   //ledcWrite(lineOutChannel, 450);
   ledcWrite(volChannel, jj);         // experimental: soften the click

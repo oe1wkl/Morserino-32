@@ -1,6 +1,20 @@
 #ifndef MORSEDECODER_H_
 #define MORSEDECODER_H_
 
+/******************************************************************************************************************************
+ *  Software for the Morserino-32 (M32) multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module   ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                            ***
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program.
+ *  If not, see <https://www.gnu.org/licenses/>.
+ *****************************************************************************************************************************/
+
 #include <Arduino.h>
 #include "morsedefs.h"
 #include "goertzel.h"
@@ -20,7 +34,7 @@ extern void displayDecodedMorse(String, boolean);
 extern void cwForTx (int);
 extern void sendWithLora();
 extern void sendWithWifi();
- 
+
 void keyOut(boolean,  boolean, int, int);
 
 ///////////////////////////////////////////// the tree for decoding CW //////////////////////////////////////
@@ -66,14 +80,14 @@ const struct linklist CWtree[69]  = {
   {"z", 47, 48},      // 27
   {"q", 63, 63},      // 28
   {"ö", 49, 63},      // 29 german oe
-  {"<ch>", 50, 51},        // 30 !!! german "ch" 
+  {"<ch>", 50, 51},        // 30 !!! german "ch"
 //---------------------------------------------
   {"5", 64, 63},      // 31
   {"4", 63, 63},      // 32
   {"<ve>", 63, 52},      // 33  or <sn>, sometimes "*"
   {"3", 63,63},       // 34
   {"*", 53,63,},      // 35 * used for all unidentifiable characters ¬
-  {"2", 63, 63},      // 36 
+  {"2", 63, 63},      // 36
   {"<as>", 63,63},         // 37 !! <as>
   {"*", 54, 63},      // 38
   {"+", 63, 55},      // 39
@@ -111,7 +125,7 @@ const struct linklist CWtree[69]  = {
 };
 
 //// we define two classes: M32MorseTable (a pointer to the linked list defined above, and mthods to manipulate the pointer)
-////                   and  Decoder (which decodes signals from a key or from audio - derived from a Goertzel filter) 
+////                   and  Decoder (which decodes signals from a key or from audio - derived from a Goertzel filter)
 
 class M32MorseTable {
 
@@ -121,8 +135,8 @@ private:
 public:
   M32MorseTable();
   void recordDit();
-  void recordDah();  
-  void resetTable();  
+  void recordDah();
+  void resetTable();
   String retrieveSymbol();
 };
 
@@ -135,16 +149,16 @@ private:
   boolean filteredStateBefore;
   DECODER_STATES decoderState;
 
-  // Noise Blanker time (currently fixed)     
+  // Noise Blanker time (currently fixed)
   int nbtime;  /// ms noise blanker
-  
+
   unsigned long startTimeHigh;
   unsigned long highDuration;
   unsigned long lastStartTime;
   boolean realstate;
   boolean realstatebefore;
   long startTimeLow;
-  long lowDuration;  
+  long lowDuration;
   unsigned long ditAvg, dahAvg;     /// average values of dit and dah lengths to decode as dit or dah and to adapt to speed change
   uint8_t d_wpm;                    /// wpm as decoded
 
@@ -156,7 +170,7 @@ private:
 
   //byte treeptr;                          // pointer used to navigate within the linked list representing the dichotomic tree
   M32MorseTable myTable;
-  
+
 public:
   Decoder(boolean);
   void setup();
@@ -165,4 +179,4 @@ public:
 
 }; /// end of class Decoder
 
-#endif /* MORSEDECODER_H_ */
+#endif /* #ifndef MORSEDECODER_H_ */
