@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
  *  morse_3 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
- *  Copyright (C) 2018-2020  Willi Kraml, OE1WKL                                                                            ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                            ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -16,7 +16,7 @@
 #include "MorseDecoder.h"
 #include "MorseOutput.h"
 
-extern unsigned long genTimer;      /// needed for echo trainer 
+extern unsigned long genTimer;      /// needed for echo trainer
 extern morserinoMode morseState;
 extern int leftPin;
 
@@ -47,7 +47,7 @@ void Decoder::setup() {
 
 boolean Decoder::checkInput() {         /// check if we have a tone signal at A6 with Gortzel's algorithm or from a key (fromKey == true), and apply some noise blanking as well
                                         /// we return true when we detected a change in state, false otherwise!
-  
+
 ///// check straight key first before you check audio in.... (unless we are in transceiver mode)
 ///// straight key is connected to external paddle connector (tip), i.e. the same as the left pin (dit normally)
 
@@ -58,7 +58,7 @@ if (fromKey) {
 //    else
         realstate =  ((!digitalRead(straightPin)) || leftKey || rightKey) ; // we also check the paddles (also the capacitive ones)
 }
-else 
+else
     realstate = Goertzel::checkInput();
 
 
@@ -69,17 +69,17 @@ else
   if (realstate != realstatebefore) {
     lastStartTime = millis();
 }
-  
+
   if ((millis() - lastStartTime) > nbtime) {
     if (realstate != filteredState) {
       filteredState = realstate;
     }
   }
   realstatebefore = realstate;
- 
+
  if (filteredState == filteredStateBefore) {
   //DEBUG("checkInput returns false");
-  return false; 
+  return false;
  }// no change detected in filteredState
  else {
     filteredStateBefore = filteredState;
@@ -89,7 +89,7 @@ else
 }   /// end checkInput()
 
 
-void Decoder::decode() {             
+void Decoder::decode() {
   float lacktime;
   int wpm;
 
@@ -99,7 +99,7 @@ void Decoder::decode() {
                               decoderState = HIGH_;
                           } else {
                               lowDuration = millis() - startTimeLow;                        // we record the length of the pause
-                              lacktime = 2.2;                                               ///  when high speeds we have to have a little more pause before new letter 
+                              lacktime = 2.2;                                               ///  when high speeds we have to have a little more pause before new letter
                               if (d_wpm > 35) lacktime = 2.4;
                                 else if (d_wpm > 30) lacktime = 2.3;
                               if (lowDuration > (lacktime * ditAvg)) {
@@ -127,7 +127,7 @@ void Decoder::decode() {
                                 else if (d_wpm > 30) lacktime = 5.5;
                                 else if (morseState == echoTrainer) lacktime = MorsePreferences::pliste[posInterWordSpace].value + 1;
                               if (lowDuration > (lacktime * ditAvg)) {
-                                   displayDecodedMorse(myTable.retrieveSymbol(), false);            ////////end of word////////// !!!!!   
+                                   displayDecodedMorse(myTable.retrieveSymbol(), false);            ////////end of word////////// !!!!!
                                    decoderState = LOW_;
                                    if (morseState == echoTrainer && echoTrainerState == COMPLETE_ANSWER)   {       // change the state of the trainer at end of word in case of echo trainer
                                        echoTrainerState = EVAL_ANSWER;
@@ -160,7 +160,7 @@ void Decoder::decode() {
                               decoderState = INTERELEMENT_;
                           }
                           break;
-    } 
+    }
 }
 
 
@@ -168,14 +168,14 @@ void Decoder::ON_() {                         /// what we do when we just detect
   unsigned long timeNow = millis();
   lowDuration = timeNow - startTimeLow;             // we record the length of the pause
   startTimeHigh = timeNow;                          // prime the timer for the high state
-  
+
   unsigned int pitch = MorseOutput::notes[MorsePreferences::pliste[posPitch].value];
         if ((morseState == echoTrainer || morseState == loraTrx || morseState == wifiTrx) && MorsePreferences::pliste[posEchoToneShift].value != 0) {
            pitch = (MorsePreferences::pliste[posEchoToneShift].value == 1 ? pitch * 18 / 17 : pitch * 17 / 18);        /// one half tone higher or lower, as set in parameters in echo trainer mode
         }
-  keyOut(true, fromKey, pitch, MorsePreferences::sidetoneVolume);   
+  keyOut(true, fromKey, pitch, MorsePreferences::sidetoneVolume);
   MorseOutput::drawInputStatus(true);
-  
+
   if (lowDuration < ditAvg * 2.4)                    // if we had an inter-element pause,
     recalculateDit(lowDuration);                    // use it to adjust speed
 }
@@ -197,10 +197,10 @@ void Decoder::OFF_() {                                 /// what we do when we ju
       }
       else  {        /// we got a dah
             myTable.recordDah();
-            //treeptr = CWtree[treeptr].dah;   
+            //treeptr = CWtree[treeptr].dah;
             recalculateDah(highDuration);
             if (morseState == loraTrx || morseState == wifiTrx)
-                cwForTx(2);                 
+                cwForTx(2);
       }
   }
   keyOut(false, fromKey, 0, 0);
@@ -218,7 +218,7 @@ void Decoder::recalculateDah(unsigned long duration) {       /// recalculate the
       dahAvg = (dahAvg + 2* duration) / 3;            /// we adjust faster, ditAvg as well!
       ditAvg = ditAvg/2 + dahAvg/6;
   }
-  else { 
+  else {
       dahAvg = (3* ditAvg + dahAvg + duration) / 3;
   }
 }
@@ -250,7 +250,7 @@ void M32MorseTable::resetTable() {     /// go back to the root
 String M32MorseTable::retrieveSymbol() { /// deliver the character, and go backk to the root
   String symbol;
   symbol.reserve(6);
-  if (treeptr == 0 )  
+  if (treeptr == 0 )
     return String(" ");     /// we display a blank
   symbol = CWtree[treeptr].symb;
   treeptr = 0;

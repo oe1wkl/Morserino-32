@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
  *  morse_3 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
- *  Copyright (C) 2018-2020  Willi Kraml, OE1WKL                                                                                 ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                                 ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -11,7 +11,7 @@
  *  You should have received a copy of the GNU General Public License along with this program.
  *  If not, see <https://www.gnu.org/licenses/>.
  *****************************************************************************************************************************/
- 
+
 #include "morsedefs.h"
 #include "MorseWiFi.h"
 #include "MorseOutput.h"
@@ -51,11 +51,11 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
                         "<input name='pw1' id='pw1'>"
                       "</div>"
                       "<div>"
-                        "<label for='trxpeer1'>WiFi TRX Peer IP/Host 1?</label>" 
+                        "<label for='trxpeer1'>WiFi TRX Peer IP/Host 1?</label>"
                         "<input name='trxpeer1' id='trxpeer1' value='PEERIPV1'>"
                       "</div>"
                     "</div>"
-                  
+
                     "<div>"   // fields for network 2
                       "<div>"
                         "<label for='ssid2'>SSID of WiFi network 2?</label>"
@@ -66,11 +66,11 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
                         "<input name='pw2' id='pw2'>"
                       "</div>"
                       "<div>"
-                        "<label for='trxpeer2'>WiFi TRX Peer IP/Host 2?</label>" 
+                        "<label for='trxpeer2'>WiFi TRX Peer IP/Host 2?</label>"
                         "<input name='trxpeer2' id='trxpeer2' value='PEERIPV2'>"
                       "</div>"
                     "</div>"
-                  
+
                     "<div>"   // fields for network 3
                       "<div>"
                         "<label for='ssid3'>SSID of WiFi network 3?</label>"
@@ -81,11 +81,11 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
                         "<input name='pw3' id='pw3'>"
                       "</div>"
                       "<div>"
-                        "<label for='trxpeer3'>WiFi TRX Peer IP/Host 3?</label>" 
+                        "<label for='trxpeer3'>WiFi TRX Peer IP/Host 3?</label>"
                         "<input name='trxpeer3' id='trxpeer3' value='PEERIPV3'>"
                       "</div>"
                     "</div>"
-                  
+
                     "<div>"
                       "(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
                     "</div>"
@@ -101,7 +101,7 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
  * HTML for Upload Login page
  */
 
-const char* MorseWiFi::uploadLoginIndex = 
+const char* MorseWiFi::uploadLoginIndex =
  "<form name='loginForm'>"
     "<table width='20%' bgcolor='A09F9F' align='center'>"
         "<tr>"
@@ -143,7 +143,7 @@ const char* MorseWiFi::uploadLoginIndex =
 "</script>";
 
 
-const char* MorseWiFi::updateLoginIndex = 
+const char* MorseWiFi::updateLoginIndex =
  "<form name='loginForm'>"
     "<table width='20%' bgcolor='A09F9F' align='center'>"
         "<tr>"
@@ -185,7 +185,7 @@ const char* MorseWiFi::updateLoginIndex =
 "</script>";
 
 
-const char* MorseWiFi::serverIndex = 
+const char* MorseWiFi::serverIndex =
 "<script src='https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>"
 "<form method='POST' action='#' enctype='multipart/form-data' id='upload_form'>"
    "<input type='file' name='update'>"
@@ -214,7 +214,7 @@ const char* MorseWiFi::serverIndex =
   "return xhr;"
   "},"
   "success:function(d, s) {"
-  "console.log('success!')" 
+  "console.log('success!')"
  "},"
  "error: function (a, b, c) {"
  "}"
@@ -222,7 +222,7 @@ const char* MorseWiFi::serverIndex =
  "});"
  "</script>";
 
-namespace internal 
+namespace internal
 {
     String getContentType(String filename); // convert the file extension to the MIME type
     boolean handleFileRead(String path);       // send the right file to the client (if it exists)
@@ -258,7 +258,7 @@ void MorseWiFi::menuNetSelect() {
   peers[1] = "/ " + MorsePreferences::wlanTRXPeer2;
   names[2] = "3: " + MorsePreferences::wlanSSID3;
   peers[2] = "/ " + MorsePreferences::wlanTRXPeer3;
-  
+
   MorseOutput::clearDisplay();
   MorseOutput::printOnStatusLine( true, 0,  "Select Wifi");
 
@@ -311,7 +311,7 @@ void MorseWiFi::menuNetSelect() {
     case -1: // long (?) click pressed to exit menu
       break;
   }
-  
+
 }
 
 void MorseWiFi::menuExec(uint8_t command) {
@@ -323,7 +323,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                   msg = "MAC Address is " + WiFi.macAddress();
                   MorseOutput::printOnStatusLine( true, 0,  WiFi.macAddress());
 
-                  delay(1000); 
+                  delay(1000);
                   if (m32protocol) {
                      jsonCreate("message", msg, "");
                      WiFi.disconnect(true,false);
@@ -331,7 +331,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                   }
                   else {
                     delay(2000);
-                    MorseOutput::printOnScroll(0, REGULAR, 0, "RED: return" );                    
+                    MorseOutput::printOnScroll(0, REGULAR, 0, "RED: return" );
                     while (true) {  // wait
                           checkShutDown(false);  // possibly time-out: go to sleep
                           if (digitalRead(volButtonPin) == LOW) {
@@ -351,14 +351,14 @@ void MorseWiFi::menuExec(uint8_t command) {
                   if (m32protocol)
                     jsonCreate("message", msg + "Please wait", "");
                   if (! MorseWiFi::wifiConnect())
-                      msg = ""; //return false;  
+                      msg = ""; //return false;
                   else {
                       msg = "Connected! " + MorsePreferences::wlanSSID + " - " + WiFi.localIP().toString();
                       MorseOutput::printOnStatusLine( true, 0,  "Connected!    ");
                       MorseOutput::printOnScroll(0, REGULAR, 0, MorsePreferences::wlanSSID);
                       MorseOutput::printOnScroll(1, REGULAR, 0, WiFi.localIP().toString(), true);
                   }
-                  //WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi                      
+                  //WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi
                   delay(1000);
                   if (m32protocol) {
                       if (msg != "")
@@ -399,25 +399,25 @@ void MorseWiFi::startAP() {
   MorseOutput::printOnScroll(1, REGULAR, 0,  "URL: m32.local");
   MorseOutput::printOnScroll(2, REGULAR, 0,  "RED to abort");
   internal::startMDNS();
-  
-  server.on("/", HTTP_GET, []() { 
+
+  server.on("/", HTTP_GET, []() {
     String formular;
     formular.reserve(1024);
     formular = myForm;
 
     formular.replace("SSIDV1", MorsePreferences::wlanSSID1);
-    formular.replace("PEERIPV1", MorsePreferences::wlanTRXPeer1); 
+    formular.replace("PEERIPV1", MorsePreferences::wlanTRXPeer1);
 
     formular.replace("SSIDV2", MorsePreferences::wlanSSID2);
-    formular.replace("PEERIPV2", MorsePreferences::wlanTRXPeer2); 
+    formular.replace("PEERIPV2", MorsePreferences::wlanTRXPeer2);
 
     formular.replace("SSIDV3", MorsePreferences::wlanSSID3);
-    formular.replace("PEERIPV3", MorsePreferences::wlanTRXPeer3); 
+    formular.replace("PEERIPV3", MorsePreferences::wlanTRXPeer3);
 
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", formular);
   });
-  
+
   server.on("/set", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", "Wifi Info updated - now restarting Morserino-32...");
@@ -426,14 +426,14 @@ void MorseWiFi::startAP() {
       String(server.arg("ssid1")), String(server.arg("pw1")), String(server.arg("trxpeer1")),
       String(server.arg("ssid2")), String(server.arg("pw2")), String(server.arg("trxpeer2")),
       String(server.arg("ssid3")), String(server.arg("pw3")), String(server.arg("trxpeer3"))
-    );   
+    );
 
     //DEBUG("SSID: " + String(MorsePreferences::wlanSSID) + " Password: " + String(MorsePreferences::wlanPassword) + " Peer. " + String(MorsePreferences::wlanTRXPeer));
     ESP.restart();
   });
-  
+
   server.onNotFound(internal::handleNotFound);
-  
+
   server.begin();
   while (true) {
       server.handleClient();
@@ -452,17 +452,17 @@ void MorseWiFi::startAP() {
 void MorseWiFi::updateFirmware()   {                   /// start wifi client, web server and upload new binary from a local computer
   if (! wifiConnect())
     return;
- 
+
   server.on("/", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", updateLoginIndex);
   });
-  
+
   server.on("/serverIndex", HTTP_GET, []() {
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", serverIndex);
   });
-  
+
   /*handling uploading firmware file */
   server.on("/update", HTTP_POST, []() {
     server.sendHeader("Connection", "close");
@@ -500,10 +500,10 @@ void MorseWiFi::updateFirmware()   {                   /// start wifi client, we
   }
 }
 
-  
+
 boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Connect to WiFi network
-  if (MorsePreferences::wlanSSID == "") 
+  if (MorsePreferences::wlanSSID == "")
       return internal::errorConnect(String("WiFi Not Conf"));
 
   WiFi.begin(MorsePreferences::wlanSSID.c_str(), MorsePreferences::wlanPassword.c_str());
@@ -565,7 +565,7 @@ server.on("/update", HTTP_POST, [](){                  // if the client posts to
     ESP.restart();},                                  // Send status 200 (OK) to tell the client we are ready to receive; when done, restart the ESP32
     internal::handleFileUpload                                    // Receive and save the file
   );
-  
+
   server.onNotFound([]() {                              // If the client requests any URI
     if (!internal::handleFileRead(server.uri()))                  // send it if it exists
       server.send(404, "text/plain", "404: Not Found"); // otherwise, respond with a 404 (Not Found) error
@@ -577,7 +577,7 @@ server.on("/update", HTTP_POST, [](){                  // if the client posts to
   MorseOutput::printOnStatusLine( true, 0, "Waiting f. Upload ");
   MorseOutput::printOnScroll(0, REGULAR, 0,  "URL: m32.local");
   MorseOutput::printOnScroll(1, REGULAR, 0,  "IP:");
-  MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString());  
+  MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString());
   while(true) {
     server.handleClient();
     //delay(5);

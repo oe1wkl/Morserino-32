@@ -1,6 +1,6 @@
 /******************************************************************************************************************************
  *  morse_3 Software for the Morserino-32 multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module ***
- *  Copyright (C) 2018-2020  Willi Kraml, OE1WKL                                                                            ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                            ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -31,7 +31,7 @@ using namespace MorseMenu;
 const String menuText [menuN] = {
   "",
   "CW Keyer", // 1
-  
+
   "CW Generator", // 2
     "Random",
     "CW Abbrevs",
@@ -47,7 +47,7 @@ const String menuText [menuN] = {
     "Call Signs",
     "Mixed",
     "File Player",
-  
+
   "Koch Trainer", // 16
     "Select Lesson",
     "Learn New Chr",
@@ -62,12 +62,12 @@ const String menuText [menuN] = {
       "English Words",
       "Mixed",
       "Adapt. Rand.",
-  
+
   "Transceiver",    // 30
     "LoRa Trx",
     "WiFi Trx",
     "iCW/Ext Trx",
-  
+
   "CW Decoder",     // 34
 
   "WiFi Functions", // 35
@@ -77,15 +77,15 @@ const String menuText [menuN] = {
     "Upload File",
     "Update Firmw", //40
     "Wifi Select", //41
-  
-  
+
+
   "Go To Sleep" } ; // 42
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
-       
+
 
 const uint8_t menuNav [menuN] [5] = {                   // { level, left, right, up, down}
-  { 0,0,0,0,0},                                         // 0 = dummy                
+  { 0,0,0,0,0},                                         // 0 = dummy
   {0,_goToSleep,_gen,_dummy,0},                         // 1 keyer  -e
   {0,_keyer,_echo,_dummy,_genRand},                     // 2 generator
   {1,_genPlayer,_genAbb,_gen,0},                        // 3 gen random -e
@@ -163,7 +163,7 @@ void MorseMenu::menu_() {
     MorsePreferences::writeWordPointer();
     file.close();                               // just in case it is still open....
     MorseOutput::clearDisplay();
-    
+
     while (true) {                          // we wait for a click (= selection) or to get some serial input
         serialEvent();
 
@@ -186,7 +186,7 @@ void MorseMenu::menu_() {
             executeMenu = false;
             command = 1;
         }
-        else {           
+        else {
             Buttons::modeButton.Update();
             command = Buttons::modeButton.clicks;
         }
@@ -212,7 +212,7 @@ void MorseMenu::menu_() {
                   }
                   break;
           case -1:  // we need to go one level up, if possible
-                  if (menuNav[MorsePreferences::newMenuPtr][naviUp] != 0) 
+                  if (menuNav[MorsePreferences::newMenuPtr][naviUp] != 0)
                       MorsePreferences::newMenuPtr = menuNav[MorsePreferences::newMenuPtr][naviUp];
           default: break;
         }
@@ -223,7 +223,7 @@ void MorseMenu::menu_() {
        }
 
        Buttons::volButton.Update();
-    
+
        switch (Buttons::volButton.clicks) {
           case -1:  audioLevelAdjust();                         /// for adjusting line-in audio level (at the same time keying tx and sending oudio on line-out
                     MorseOutput::clearDisplay();
@@ -233,10 +233,10 @@ void MorseMenu::menu_() {
                     MorseMenu::menuDisplay(disp);
                     break;
        }
-       checkShutDown(false);                  // check for time out   
+       checkShutDown(false);                  // check for time out
   } // end while - we leave as soon as the button has been pressed
   // MorseMenu::inMenuLoop = false;
-} // end menu_() 
+} // end menu_()
 
 
 void MorseMenu::menuDisplay(uint8_t ptr) {
@@ -247,10 +247,10 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
 
 
   MorseOutput::printOnStatusLine( true, 0,  "Select Modus:     ");
-  
+
   // delete previous content
   MorseOutput::clearThreeLines();
-  
+
   /// level 0: top line, possibly ".." on line 1
   /// level 1: higher level on 0, item on 1, possibly ".." on 2
   /// level 2: higher level on 1, highest level on 0, item on 2
@@ -276,7 +276,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
       jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));
   }
-  
+
 }
 
 String MorseMenu::getMenuPath(uint8_t ptr) {
@@ -304,14 +304,14 @@ boolean MorseMenu::menuExec() {                                          // retu
 //  const char* peerHost;
   String s;
 
-  if (m32protocol && (MorsePreferences::menuPtr != _kochSel)) 
-      jsonActivate(ACT_ON); 
-      
+  if (m32protocol && (MorsePreferences::menuPtr != _kochSel))
+      jsonActivate(ACT_ON);
+
   m32state = active_loop;
 
   kochActive = false;
   keyerState = IDLE_STATE;
-  
+
   switch (MorsePreferences::menuPtr) {
     case  _keyer:  /// keyer
                 MorsePreferences::setCurrentOptions(MorsePreferences::keyerOptions, MorsePreferences::keyerOptionsSize);
@@ -331,7 +331,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 3);                   /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
                 MorsePreferences::setCurrentOptions(MorsePreferences::generatorOptions, MorsePreferences::generatorOptionsSize);
                 goto startGenerator;
-     case _genPlayer:  
+     case _genPlayer:
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 3);                   /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
                 MorsePreferences::setCurrentOptions(MorsePreferences::playerOptions, MorsePreferences::playerOptionsSize);
                 file = SPIFFS.open("/player.txt");                            // open file
@@ -376,7 +376,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 executeNow = false;
                 return true;
                 break;
-      case  _kochSel: // Koch Select 
+      case  _kochSel: // Koch Select
                 MorsePreferences::displayKeyerPreferencesMenu(posKochFilter);
                 MorsePreferences::adjustKeyerPreference(posKochFilter);
                 MorsePreferences::writePreferences("morserino");
@@ -389,7 +389,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 executeNow = false;
                 goto startEcho;
-      case  _kochGenRand: // RANDOMS 
+      case  _kochGenRand: // RANDOMS
                 generatorMode = RANDOMS;
                 kochActive = true;
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
@@ -534,7 +534,7 @@ boolean MorseMenu::setupWifi() {
     return(false);
   }
 
-  if (MorsePreferences::wlanTRXPeer.length() == 0) 
+  if (MorsePreferences::wlanTRXPeer.length() == 0)
       peer = "255.255.255.255";     // send to local broadcast IP if not set
   else
       peer = MorsePreferences::wlanTRXPeer;

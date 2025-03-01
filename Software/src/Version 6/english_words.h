@@ -9,8 +9,8 @@ namespace EnglishWords
   const int WORDS_NUMBER_OF_ELEMENTS = 373;                           // how many items all together?
   const int WORDS_MAX_SIZE = 14;                                      // longest item  +1
   const int WORDS_POINTER[] = {0, 370, 345, 275, 144, 66, 34, 14};    // array where items start with length = index
-  
-  const char * const words[]  = { 
+
+  const char * const words[]  = {
      "international" ,
      "university" ,
      "government" ,
@@ -319,8 +319,8 @@ namespace EnglishWords
      "own" ,
      "due" ,
      "won" ,
-     "sum" ,  // 
-     "usa" ,  // 
+     "sum" ,  //
+     "usa" ,  //
      "you" , /// new
      "hot" , /// new
      "how" , /// new
@@ -357,9 +357,9 @@ namespace EnglishWords
      "eat" , // new
      "cut" , // new
      "of" ,     /// l = 2, pos = 345
-     "km" ,   // 
-     "mr" ,   // 
-     "us" ,   // 
+     "km" ,   //
+     "mr" ,   //
+     "us" ,   //
      "in" ,
      "to" ,
      "is" ,
@@ -382,7 +382,7 @@ namespace EnglishWords
      "my" , // new
      "me" , // new
      "a" ,  // 370
-     "i" ,   /// 
+     "i" ,   ///
      "m"      // pos = 372
     };
   }
@@ -5306,4 +5306,4 @@ const char* getEnglishWord(int maxWordLength);
 
 #endif // CONFIG_ENGLISH_OXFORD
 
-#endif // ENGLISH_WORDS_H
+#endif // ENGLISH_WORDS_H_

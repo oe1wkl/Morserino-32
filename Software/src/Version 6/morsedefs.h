@@ -1,6 +1,9 @@
+#ifndef MORSEDEFS_H_
+#define MORSEDEFS_H_
+
 /******************************************************************************************************************************
  *  Software for the Morserino-32 (M32) multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module   ***
- *  Copyright (C) 2018-2021  Willi Kraml, OE1WKL                                                                            ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                            ***
  *
  *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
  *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
@@ -12,11 +15,8 @@
  *  If not, see <https://www.gnu.org/licenses/>.
  *****************************************************************************************************************************/
 
-#ifndef MORSEDEFS_H
-#define MORSEDEFS_H
-
 #include "Arduino.h"
-#include <ESP32Encoder.h>   // https://github.com/madhephaestus/ESP32Encoder.git 
+#include <ESP32Encoder.h>   // https://github.com/madhephaestus/ESP32Encoder.git
 #include <ArduinoJson.h>
 #include "ClickButton.h"   // button control library
 #include "WiFi.h"
@@ -37,7 +37,7 @@ const String PROJECTNAME = "Morserino-32";
 #define VERSION_MINOR 0
 #define VERSION_PATCH 2
 
-#define BETA true                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+#define BETA true
 
 
 #define IGNORE_SERIALOUT true
@@ -110,7 +110,7 @@ const int PinCLK=38;
 #endif
 
 #ifdef PIN_ROT_DT
-const int PinDT=PIN_ROT_DT;            // Used for reading DT signal  - needs external pullup resisitor! 
+const int PinDT=PIN_ROT_DT;            // Used for reading DT signal  - needs external pullup resisitor!
 #else
 const int PinDT=39;
 #endif
@@ -165,7 +165,7 @@ const int RIGHT = PIN_TOUCH_RIGHT;
 const int RIGHT = T5;       // = Pin 12
 #endif
 
-// Tx keyer 
+// Tx keyer
 #ifdef PIN_KEYER
 const int keyerPin = PIN_KEYER; // this keys the transmitter / through a MOSFET Optocoupler - at the same time lights up the LED
 #else
@@ -175,7 +175,7 @@ const int keyerPin = 25;
 
 // audio in
 #ifdef PIN_AUDIO_IN
-const int audioInPin = PIN_AUDIO_IN;      // audio in for Morse decoder // 
+const int audioInPin = PIN_AUDIO_IN;      // audio in for Morse decoder //
 #else
 const int audioInPin = 36;
 #endif
@@ -296,9 +296,9 @@ enum PROMPT_TYPE                // how we prompt in echo trainer mode
   };
 
 enum GEN_TYPE                   // the things we can generate in generator mode
-  { 
+  {
       RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE
-  };              
+  };
 
 
 enum DECODER_STATES             // state machine for decoding CW
@@ -309,7 +309,7 @@ enum DECODER_STATES             // state machine for decoding CW
 enum encoderMode                // define modes for state machine of the various modi the encoder can be in
   {
       speedSettingMode, volumeSettingMode, scrollMode, memSelMode
-  }; 
+  };
 
 enum morserinoMode              // the states the morserino can be in - selected in top level menu
   {
@@ -318,36 +318,36 @@ enum morserinoMode              // the states the morserino can be in - selected
 
 const uint8_t menuN = 43;     // no of menu items +1
 
-enum menuNo 
+enum menuNo
   {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords, _genCalls, _genMixed, _genPlayer,
         _echo, _echoRand, _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
         _koch, _kochSel, _kochLearn, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
         _kochGenMixed, _kochEcho, _kochEchoRand, _kochEchoAbb, _kochEchoWords, _kochEchoMixed, _kochEchoAdaptive,
-        _trx, _trxLora, _trxWifi, _trxIcw, _decode, _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload, _wifi_update, _wifi_select, _goToSleep 
+        _trx, _trxLora, _trxWifi, _trxIcw, _decode, _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload, _wifi_update, _wifi_select, _goToSleep
   };
 
 enum loops
   { active_loop, menu_loop, preferences_loop
   };
 
-  
-enum echoStates 
-  {   
-      START_ECHO, SEND_WORD, REPEAT_WORD, GET_ANSWER, COMPLETE_ANSWER, EVAL_ANSWER 
-  };
 
-enum KEYERSTATES 
+enum echoStates
   {
-      IDLE_STATE, DIT, DAH, KEY_START, KEYED, INTER_ELEMENT 
+      START_ECHO, SEND_WORD, REPEAT_WORD, GET_ANSWER, COMPLETE_ANSWER, EVAL_ANSWER
   };
 
-  
+enum KEYERSTATES
+  {
+      IDLE_STATE, DIT, DAH, KEY_START, KEYED, INTER_ELEMENT
+  };
+
+
 enum prefPos : uint8_t {
                 posClicks, posPitch, posExtPddlPolarity, posPolarity,                                         // 0
                 posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,                              // 4
                 posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption,                      // 8
                 posRandomLength, posCallLength, posAbbrevLength, posWordLength,                               // 12
-                posGeneratorDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,            // 16           
+                posGeneratorDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,            // 16
                 posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, posSpeedAdapt,                     // 21
                 posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut,     // 25
                 posQuickStart, posAutoStop,posMaxSequence, posLoraChannel,                                    // 31
@@ -359,7 +359,7 @@ enum prefPos : uint8_t {
                 posKochFilter,                                                                                // 36
                 posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf    // 37
 };
-  
+
 enum actMessage : int {
   ACT_EXIT, ACT_ON, ACT_SET, ACT_CANCELLED, ACT_RECALLED, ACT_CLEARED
 };
@@ -371,4 +371,4 @@ extern void DEBUG (String s);
 #define _min(a,b) ((a)<(b)?(a):(b))
 #define _max(a,b) ((a)>(b)?(a):(b))
 
-#endif
+#endif /* #ifndef MORSEDEFS_H_ */

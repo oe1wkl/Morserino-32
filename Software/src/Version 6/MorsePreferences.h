@@ -1,5 +1,19 @@
-#ifndef PREFS_H
-#define PREFS_H
+#ifndef MORSEPREFERENCES_H_
+#define MORSEPREFERENCES_H_
+
+/******************************************************************************************************************************
+ *  Software for the Morserino-32 (M32) multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module   ***
+ *  Copyright (C) 2018-2025  Willi Kraml, OE1WKL                                                                            ***
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program.
+ *  If not, see <https://www.gnu.org/licenses/>.
+ *****************************************************************************************************************************/
 
 #include <Arduino.h>
 #include <Preferences.h>   // ESP 32 library for storing things in non-volatile storage
@@ -43,7 +57,7 @@ namespace MorsePreferences
 {
   //String extraItems[8];
   // the preferences variable and their defaults
-  
+
   extern boolean useCustomChars;
   extern String  customCharSet;
 
@@ -52,7 +66,7 @@ namespace MorsePreferences
   extern uint8_t sidetoneVolume;
   extern const uint8_t volumeMin;
   extern const uint8_t volumeMax;
- 
+
   extern uint8_t wpm;
   extern const uint8_t wpmMin;
   extern const uint8_t wpmMax;
@@ -66,29 +80,29 @@ namespace MorsePreferences
   extern uint8_t memories[8];           // contains snapshot numbers 0..7 for each stored snapshot
   extern uint8_t memCounter;            // contains number of stored snapshots
   extern uint8_t memPtr;
-  
+
   ///// stored in preferences, but not adjustable through preferences menu:
   extern uint8_t responsePause;
   extern uint8_t menuPtr;
   extern uint8_t newMenuPtr;
-  
+
   //current network config
   extern String  wlanSSID;
   extern String  wlanPassword;
-  extern String  wlanTRXPeer; 
+  extern String  wlanTRXPeer;
 
   // config for up to three networks
   extern String  wlanSSID1;
   extern String  wlanPassword1;
-  extern String  wlanTRXPeer1; 
-  
+  extern String  wlanTRXPeer1;
+
   extern String  wlanSSID2;
   extern String  wlanPassword2;
-  extern String  wlanTRXPeer2; 
-  
+  extern String  wlanTRXPeer2;
+
   extern String  wlanSSID3;
   extern String  wlanPassword3;
-  extern String  wlanTRXPeer3; 
+  extern String  wlanTRXPeer3;
 
   extern uint32_t fileWordPointer;
   extern uint8_t promptPause;
@@ -107,11 +121,11 @@ namespace MorsePreferences
   extern uint8_t oledBrightness;
   extern char cwMem[][48];
   extern uint8_t cwMemMask;
-  
+
   ////// end of variables stored in preferences
-  
+
   //// for adjusting preferences
-  
+
 
   #define MAX_MAP_ELEMENTS 15
 
@@ -125,7 +139,7 @@ namespace MorsePreferences
      const boolean isMapped;
      const char *mapping[MAX_MAP_ELEMENTS];
   };
-  
+
   extern parameter pliste[];
 
   extern const String prefOption[];
@@ -142,7 +156,7 @@ namespace MorsePreferences
   extern  prefPos extTrxOptions[];
   extern  prefPos decoderOptions[];
   extern  prefPos allOptions[];
-  
+
   extern prefPos *currentOptions;
 
   extern int keyerOptionsSize;
@@ -157,9 +171,9 @@ namespace MorsePreferences
   extern int extTrxOptionsSize;
   extern int decoderOptionsSize;
   extern int allOptionsSize;
-  
- 
-    
+
+
+
   void updateMemory(uint8_t);
   void clearMemory(uint8_t);
   String doClearMemory(uint8_t);
@@ -220,7 +234,7 @@ class Koch {
   public:
     const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAEB@:";
     const String licwAllKochChars =   "reatinpgslcdhofuwbkmy59,qxv73?+K=16.zj/28B40-ASNE@:";
-    
+
     Koch();
     void setup();
     String getNewChar();
@@ -246,4 +260,4 @@ class Koch {
 
 extern Koch koch;
 
-#endif
+#endif /* #ifndef MORSEPREFERENCES_H_ */
