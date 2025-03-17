@@ -15,6 +15,7 @@
 #include "MorseMenu.h"
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
+#include "MorseJSON.h"
 
 #ifdef LORA_RADIOLIB
 #include <RadioLib.h>
@@ -176,7 +177,7 @@ void MorseMenu::menu_() {
             command = 1;
             delay(250);
             if (m32protocol)
-              jsonCreate("message", "Quick Start", "");
+              MorseJSON::jsonCreate("message", "Quick Start", "");
             MorseOutput::printOnScroll(2, REGULAR, 1, "QUICK START");
             MorseOutput::refreshDisplay();
             delay(600);
@@ -274,7 +275,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
   }
   if (m32protocol) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
-      jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));
+      MorseJSON::jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));
   }
 
 }
@@ -305,7 +306,7 @@ boolean MorseMenu::menuExec() {                                          // retu
   String s;
 
   if (m32protocol && (MorsePreferences::menuPtr != _kochSel))
-      jsonActivate(ACT_ON);
+      MorseJSON::jsonActivate(ACT_ON);
 
   m32state = active_loop;
 
@@ -457,7 +458,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
                 if (m32protocol)
-                  jsonCreate("message", "Connecting...", "");
+                  MorseJSON::jsonCreate("message", "Connecting...", "");
 
                 if (!setupWifi())
                   return false;
@@ -479,7 +480,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(1, REGULAR, 0, "Start CW Trx" );
                 if (m32protocol)
-                  jsonCreate("message", "Start CW Transceiver", "");
+                  MorseJSON::jsonCreate("message", "Start CW Transceiver", "");
                 clearPaddleLatches();
                 goto setupDecoder;
 
@@ -491,7 +492,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(1, REGULAR, 0, "Start Decoder" );
                 if (m32protocol)
-                  jsonCreate("message", "Start Decoder", "");
+                  MorseJSON::jsonCreate("message", "Start Decoder", "");
       setupDecoder:
                 speedChanged = true;
                 delay(650);
@@ -565,7 +566,7 @@ void MorseMenu::showStartDisplay(String l0, String l1, String l2, int pause) {
     if (l2.length())
         MorseOutput::printOnScroll(2, REGULAR, 0, l2);
     if (m32protocol)
-        jsonCreate("message", l0  + l1 + l2, "");
+        MorseJSON::jsonCreate("message", l0  + l1 + l2, "");
     delay(pause);
     cleanupScreen();
 }

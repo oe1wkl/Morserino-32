@@ -15,6 +15,7 @@
 #include <Preferences.h>   // ESP 32 library for storing things in non-volatile storage
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
+#include "MorseJSON.h"
 #include "abbrev.h"
 #include "english_words.h"
 #include "ClickButton.h"   // button control library
@@ -551,7 +552,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
   while (true) {                            // we wait for single click = selection or long click = exit - or single or long click or RED button, or for a serial event
         serialEvent();
         if (goToMenu) {
-            jsonActivate(ACT_EXIT);
+            MorseJSON::jsonActivate(ACT_EXIT);
             goToMenu = false;
             goto exitFromHere;
         }
@@ -565,7 +566,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
           exitFromHere: if (MorsePreferences::useCustomChars)
                             koch.setCustomChars(getCustomChars()); //// get custom characters
                         if (m32protocol && posPtr < posKochFilter)
-                            jsonActivate(ACT_EXIT);
+                            MorseJSON::jsonActivate(ACT_EXIT);
                         writePreferences("morserino");
                         MorseOutput::clearDisplay();
                         //delay(200);
@@ -579,10 +580,10 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                         if (MorsePreferences::recallSnapshot()) {
                           writePreferences("morserino");
                           if (m32protocol)
-                              jsonActivate(ACT_RECALLED);
+                              MorseJSON::jsonActivate(ACT_RECALLED);
                         }
                         else if(m32protocol)
-                          jsonActivate(ACT_CANCELLED);
+                          MorseJSON::jsonActivate(ACT_CANCELLED);
                         return true;
                         break;
             case 2:     MorseOutput::decreaseBrightness();
@@ -592,10 +593,10 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                         if (MorsePreferences::storeSnapshot(atMenu)) {
                           // writePreferences("morserino"); now in writePreferences()
                           if (m32protocol)
-                              jsonActivate(ACT_SET);
+                              MorseJSON::jsonActivate(ACT_SET);
                         }
                         else if (m32protocol)
-                          jsonActivate(ACT_CANCELLED);
+                          MorseJSON::jsonActivate(ACT_CANCELLED);
                         while(Buttons:: volButton.clicks)
                           Buttons:: volButton.Update();
                         return false;
@@ -691,10 +692,10 @@ void MorsePreferences::displayValueLine(prefPos pos, String itemText, boolean js
                 break;
       }
       if (pos < posKochFilter || pos == posSnapRecall || pos == posSnapStore) {
-          jsonConfigShort(item, value, jsonValueLine);
+          MorseJSON::jsonConfigShort(item, value, jsonValueLine);
       }
       else if (pos == posKochFilter)
-          jsonMenu(MorseMenu::getMenuPath(MorsePreferences::menuPtr) + "/" + jsonValueLine, (unsigned int) MorsePreferences::menuPtr,
+          MorseJSON::jsonMenu(MorseMenu::getMenuPath(MorsePreferences::menuPtr) + "/" + jsonValueLine, (unsigned int) MorsePreferences::menuPtr,
               (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr));
     }
     if (! jsonOnly) {
@@ -822,7 +823,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
     while (true) {                            // we wait for single click = selection or long click = exit
         serialEvent();
         if (goToMenu) {
-            jsonActivate(ACT_EXIT);
+            MorseJSON::jsonActivate(ACT_EXIT);
             goToMenu = false;
             return true;
         }
@@ -847,7 +848,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
             if (MorsePreferences::memCounter) {
               clearMemory(MorsePreferences::memPtr);
               if (m32protocol)
-                jsonActivate(ACT_CLEARED);
+                MorseJSON::jsonActivate(ACT_CLEARED);
             }
             return true;
           }
@@ -1247,7 +1248,7 @@ boolean  MorsePreferences::recallSnapshot() {         // return true if we selec
             doReadSnapshot(MorsePreferences::memPtr);
             MorseOutput::printOnScroll(2, BOLD, 0, text);
             if (m32protocol)
-              jsonCreate("message", text, "");
+              MorseJSON::jsonCreate("message", text, "");
             delay(1000);
             return true;
           }
@@ -1277,7 +1278,7 @@ boolean MorsePreferences::storeSnapshot(uint8_t menu) {        // return true if
         doWriteSnapshot(memPtr, menu);
         text = "Snap " + String(MorsePreferences::memPtr+1) + " STORED ";
         if (m32protocol)
-          jsonCreate("message", text, "");
+          MorseJSON::jsonCreate("message", text, "");
         MorseOutput::printOnScroll(2, BOLD, 0, text);
         delay(1000);
         return true;
@@ -1321,7 +1322,7 @@ void MorsePreferences::clearMemory(uint8_t ptr) {
   text = doClearMemory(ptr);
 
   if (m32protocol)                                                            // output to m32protocol and screen
-      jsonCreate("message", text, "");
+      MorseJSON::jsonCreate("message", text, "");
   MorseOutput::printOnScroll(2, BOLD, 0, text);
   delay(900);
 }

@@ -27,13 +27,13 @@
 
 
 #include "morsedefs.h"
-#include "MorserinoJson.h"
 
 #include "wklfonts.h"         // monospaced fonts in size 12 (regular and bold) for smaller text and 15 for larger text (regular and bold), called :
                               // DialogInput_plain_12, DialogInput_bold_12 & DialogInput_plain_15, DialogInput_bold_15
                               // these fonts were created with this tool: http://oledHeltec.display -> squix.ch/#/home
 #include "abbrev.h"           // common CW abbreviations
 #include "english_words.h"    // common English words
+#include "MorseJSON.h"
 #include "MorseOutput.h"      // display and sound functions
 #include "MorsePreferences.h" // preferences and persistent storage, snapshots
 #include "MorseMenu.h"        // main menu
@@ -62,8 +62,9 @@ void packetReceived() {
 
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"
-using namespace MorseBluetooth;
 #endif
+using namespace Buttons;
+
 
 // define the buttons for the clickbutton library, & other classes that we need
 
@@ -75,8 +76,6 @@ int leftPin, rightPin; /// where are the external paddles?
 /// variables for battery measurement
 uint16_t volt;              // store measure battery voltage here
 double voltage_raw;         // raw measurement
-
-using namespace Buttons;
 
 ClickButton Buttons::modeButton(modeButtonPin);              // activeHigh must be set in board version 4
 ClickButton Buttons::volButton(volButtonPin);               // external pullup for this one
@@ -807,7 +806,7 @@ void loop() {
                                   keyOut(false, true, 0, 0);
                                   MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
                                   if (m32protocol)
-                                    jsonCreate("message", continueMsg4Json, "");
+                                    MorseJSON::jsonCreate("message", continueMsg4Json, "");
                               }
                           } else {                  /// no paddle pressed - check stop flag
                               checkStopFlag();
@@ -856,7 +855,7 @@ void loop() {
   // check serial input
     serialEvent();
     if (goToMenu) {
-        jsonActivate(ACT_EXIT);
+        MorseJSON::jsonActivate(ACT_EXIT);
         goToMenu = false;
         MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
         return;
@@ -907,14 +906,14 @@ void loop() {
 
     switch (Buttons::modeButton.clicks) {                                // actions based on encoder button
        case -1:   if (m32protocol)
-                      jsonActivate(ACT_EXIT);
+                      MorseJSON::jsonActivate(ACT_EXIT);
                   MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
                   return;
        case 1:    if (encoderState == memSelMode) {
                     if (ptr != 0) {
                       preparePlay(memList[ptr]);
                       if (m32protocol)
-                        jsonOK();
+                        MorseJSON::jsonOK();
                     }
                     encoderState = speedSettingMode;
                     updateTopLine();
@@ -925,7 +924,7 @@ void loop() {
                         keyOut(false, true, 0, 0);
                         MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
                         if (m32protocol)
-                            jsonCreate("message", continueMsg4Json, "");
+                            MorseJSON::jsonCreate("message", continueMsg4Json, "");
                   }
                   else {
                     cleanStartSettings();
@@ -933,7 +932,7 @@ void loop() {
 
               } else if (morseState == morseKeyer || morseState == morseTrx) {  // when Keyer is active, we select a keyer memory
                     if (m32protocol)
-                        jsonCreate("message", "Select Memory", "");
+                        MorseJSON::jsonCreate("message", "Select Memory", "");
                     memoryKeyer();
               }
               break;
@@ -1054,7 +1053,7 @@ void checkStopFlag() {
       //  --MorsePreferences::fileWordPointer;          // avoid that a word is being skipped after interruption
       MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
       if (m32protocol)
-        jsonCreate("message", continueMsg4Json, "");
+        MorseJSON::jsonCreate("message", continueMsg4Json, "");
     }
 }
 
@@ -2199,7 +2198,7 @@ void changeSpeed( int t) {
       displayCWspeed();                     // update display of CW speed
   charCounter = 0;                                    // reset character counter
   if (m32protocol)
-      jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, false);
+      MorseJSON::jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, false);
 }
 
 
@@ -2210,7 +2209,7 @@ void changeVolume( int t) {
     if (m32state != menu_loop)
         MorseOutput::displayVolume((encoderState == volumeSettingMode ? false : true), MorsePreferences::sidetoneVolume);      // sidetone volume;
     if (m32protocol)
-      jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, false);
+      MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, false);
 }
 
 void keyTransmitter(boolean noTx) {
@@ -2325,7 +2324,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
           MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Power OFF...");
           MorseOutput::printOnScroll(2, REGULAR, 0, "RED to turn ON");
           if (m32protocol)
-                  jsonCreate("message", "Power off", "");
+                  MorseJSON::jsonCreate("message", "Power off", "");
           MorseOutput::refreshDisplay();
           delay (1500);
           shutMeDown();
@@ -2336,7 +2335,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 void shutMeDown() {
   MorseOutput::sleep();     /// shut down Heltec display
   if (m32protocol)
-    jsonError("M32 SLEEP SHUTDOWN BY USER");
+    MorseJSON::jsonError("M32 SLEEP SHUTDOWN BY USER");
 
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0); //1 = High, 0 = Low
 #ifdef LORA_RADIOLIB
@@ -2792,7 +2791,7 @@ void memoryKeyer() {
     if (maxMemCount == 0) {                   // no memories have been set
       MorseOutput::printOnStatusLine(true, 0, "No memories stored");
       if (m32protocol)
-          jsonCreate("message", "No memories stored!", "");
+          MorseJSON::jsonCreate("message", "No memories stored!", "");
       delay(500);
       updateTopLine();
       return;
@@ -2803,20 +2802,22 @@ void memoryKeyer() {
     }
 }
 
+
 void dispMem(int8_t memNo) {
   MorseOutput::clearStatusLine();
   if (memNo == 0)   {    // exit
     MorseOutput::printOnStatusLine(true, 0, "EXIT");
-    if (m32protocol) jsonCreate("message", "Click to Exit", "");
+    if (m32protocol) MorseJSON::jsonCreate("message", "Click to Exit", "");
   }
   else {
     String Number = (memNo < 3 ? "R" : "_") + String(memNo) + ": " ;
     String Value = Number + String(MorsePreferences::cwMem[memNo-1]);
     Value = Value.substring(0,18);
     MorseOutput::printOnStatusLine(false, 0, Value);
-    if (m32protocol) jsonCreate("message", "Memory " + Value, "");
+    if (m32protocol) MorseJSON::jsonCreate("message", "Memory " + Value, "");
     }
 }
+
 
 void preparePlay(int8_t memNo) {
     playCWBuffer = String(MorsePreferences::cwMem[memNo-1]);
@@ -2970,13 +2971,13 @@ String utf8umlaut(String s) { /// replace umtf umlauts with digraphs, and interp
       return s;
 }
 
+
 void skipWords(uint32_t count) {             /// just skip count words in open file fn
   while (count > 0) {
     getWord();
     --count;
   }
 }
-
 
 
 /*
@@ -3007,7 +3008,7 @@ void serialEvent() {
                 inputString.toLowerCase();
                 if (inputString  == "put device/protocol/on")  {  /// client wants to switch m32 Protocol on
                   m32protocol = true;
-                  jsonDevice();
+                  MorseJSON::jsonDevice(brd,vsn);
                 }
               }
           // clear the string:
@@ -3066,7 +3067,7 @@ thirdArg.reserve(20);
   //DEBUG("command: " + command + " arg1: " + firstArg + " arg2: " + secondArg + " arg3: " + thirdArg);
   }                                                         // no args
   else {     /// we have no arguments!
-    jsonError("MISSING ARGUMENT");
+    MorseJSON::jsonError("MISSING ARGUMENT");
     return;
   }
   ////////////// evaluate commands, call appropriate subroutine
@@ -3076,7 +3077,7 @@ thirdArg.reserve(20);
   else if (command == "put")
     m32Put(firstArg, secondArg, thirdArg);
   else
-    jsonError("COMMAND NOT RECOGNIZED");
+    MorseJSON::jsonError("COMMAND NOT RECOGNIZED");
 }
 
 
@@ -3084,60 +3085,60 @@ void m32Get(String type, String token, String value) {                    /// GE
     // the external party wants some data from us
     //check if we have at least 1 agument
     if (type == "") {
-        jsonError("ARGUMENT(S) MISSING");
+        MorseJSON::jsonError("ARGUMENT(S) MISSING");
         return;
     }
     if (type == "control") {
         if (token == "speed")
-          jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, true);
+          MorseJSON::jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, true);
         else if (token == "volume")
-          jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, true);
+          MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, true);
         else /// invalid argument {
-          jsonError("INVALID ARGUMENT");
+          MorseJSON::jsonError("INVALID ARGUMENT");
     }
     else if (type == "controls")
-        jsonControls();
+        MorseJSON::jsonControls();
     else if (type == "device")
-        jsonDevice();
+        MorseJSON::jsonDevice(brd,vsn);
     else if (type == "menu")
         //jsonCreate("menu", MorseMenu::cmdPath, state);
-        jsonMenu(MorseMenu::getMenuPath(MorsePreferences::newMenuPtr), (int)MorsePreferences::newMenuPtr,
+        MorseJSON::jsonMenu(MorseMenu::getMenuPath(MorsePreferences::newMenuPtr), (int)MorsePreferences::newMenuPtr,
               (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::newMenuPtr));
     else if (type == "menus")
-        jsonMenuList();
+        MorseJSON::jsonMenuList();
     else if (type == "config")
-        jsonParameter(token);
+        MorseJSON::jsonParameter(token);
     else if (type == "configs")
-        jsonParameterList();
+        MorseJSON::jsonParameterList();
     else if (type == "snapshots")
-        jsonSnapshots();
+        MorseJSON::jsonSnapshots();
     else if (type == "file") {
             if (token == "size")
-                jsonFileStats();
+                MorseJSON::jsonFileStats();
             else if (token == "text")
-                jsonFileText();
+                MorseJSON::jsonFileText();
             else if (token == "first line" || token == "")
-                jsonFileFirstLine();
+                MorseJSON::jsonFileFirstLine();
     }
     else if (type == "wifi") {
-      jsonGetWifi();
+      MorseJSON::jsonGetWifi();
     }
     else if (type == "kochlesson") {
-      jsonGetKoch();
+      MorseJSON::jsonGetKoch();
     }
     else if (type == "cw") {
       if (token == "memories") {
-        jsonGetCwStores();
+        MorseJSON::jsonGetCwStores();
       }
       else if (token == "memory") {
-        jsonGetCwStore(value);
+        MorseJSON::jsonGetCwStore(value);
       }
       else
-        jsonError("GET CW " + token + ": INVALID ARGUMENT");
+        MorseJSON::jsonError("GET CW " + token + ": INVALID ARGUMENT");
     }
     else
     /// no recognizable type for the get command
-        jsonError("GET " + type + ": UNKNOWN COMMAND");
+        MorseJSON::jsonError("GET " + type + ": UNKNOWN COMMAND");
 }
 
 
@@ -3146,7 +3147,7 @@ void m32Put(String type, String token, String value) {                    /// PU
     // check if we have three args
     uint8_t number;
     if (token == "" || type == "") {
-          jsonError("NOT ENOUGH ARGUMENTS");
+          MorseJSON::jsonError("NOT ENOUGH ARGUMENTS");
           return;
     }
     /////////////////// CONTROL /////////////////////
@@ -3158,28 +3159,28 @@ void m32Put(String type, String token, String value) {                    /// PU
             int i = value.toInt() - MorsePreferences::sidetoneVolume;  // changeVolume() expects an increment/decrement value
             changeVolume(i);
          } else     /// invalid argument for type == control
-            jsonError("INVALID NAME " + token);
+            MorseJSON::jsonError("INVALID NAME " + token);
     }
     ////////////////// DEVICE ///////////////////////
     else if (type == "device") {
       if (token == "protocol") {
         if (value == "off") {
-            jsonCreate("end m32protocol", "Goodbye!", "");
+            MorseJSON::jsonCreate("end m32protocol", "Goodbye!", "");
             m32protocol = false;
         }
         else if (value == "on")
-            jsonDevice();             // even when we are on, we send the device info, so that the client is getting some positive feedback
+            MorseJSON::jsonDevice(brd,vsn);             // even when we are on, we send the device info, so that the client is getting some positive feedback
         else
-            jsonError("INVALID Value " + value);
+            MorseJSON::jsonError("INVALID Value " + value);
       }
-      else jsonError("INVALID NAME " + token);
+      else MorseJSON::jsonError("INVALID NAME " + token);
     }
     ////////////////// CONFIG //////////////////////////
     else if (type == "config") {
       if (setParameter(token, value))   // true: error setting the paramter!
-        jsonError("ERROR setting parameter " + token);
+        MorseJSON::jsonError("ERROR setting parameter " + token);
       else
-        jsonOK();
+        MorseJSON::jsonOK();
     }
     ////////////////// SNAPSHOT ///////////////////////
     else if (type == "snapshot") {
@@ -3187,10 +3188,10 @@ void m32Put(String type, String token, String value) {                    /// PU
         int i = value.toInt() -1;
         if (i >= 0 && i <= 7 )  {
             MorsePreferences::doWriteSnapshot(i, MorsePreferences::menuPtr);      /// has to be a value 0 .. 7, therefore i-1
-            jsonOK();
+            MorseJSON::jsonOK();
         }
         else {
-            jsonError("INVALID SNAPSHOT NUMBER");
+            MorseJSON::jsonError("INVALID SNAPSHOT NUMBER");
             // return;
         }
       }
@@ -3205,16 +3206,16 @@ void m32Put(String type, String token, String value) {                    /// PU
                     MorsePreferences::doReadSnapshot(y);                              // or recall the snapshot, and
                     MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
                 }
-                jsonOK();
+                MorseJSON::jsonOK();
                 return;                                                               // we are done here, and return
               }                                                                       // otherwise:
             }                                                                         /// not found
-            jsonError("NO SUCH SNAPSHOT");
+            MorseJSON::jsonError("NO SUCH SNAPSHOT");
          } else
-            jsonError("NO SUCH SNAPSHOT");
+            MorseJSON::jsonError("NO SUCH SNAPSHOT");
       }
       else
-        jsonError("INVALID ACTION snapshot " + token);
+        MorseJSON::jsonError("INVALID ACTION snapshot " + token);
     } // end type == ""snapshot
     //////////////////// FILE //////////////////////
     else if (type == "file") {
@@ -3224,7 +3225,7 @@ void m32Put(String type, String token, String value) {                    /// PU
         file.close();
         MorsePreferences::fileWordPointer = 0;                              // reset word counter for file player
         MorsePreferences::writeWordPointer();
-        jsonOK();
+        MorseJSON::jsonOK();
       }
       else if (token == "append") {
         File file = SPIFFS.open("/player.txt", "a");            // Open the file for appending in SPIFFS
@@ -3232,17 +3233,17 @@ void m32Put(String type, String token, String value) {                    /// PU
         file.close();
         MorsePreferences::fileWordPointer = 0;                              // reset word counter for file player
         MorsePreferences::writeWordPointer();
-        jsonOK();
+        MorseJSON::jsonOK();
       }
       else
-        jsonError("INVALID ACTION file " + token);
+        MorseJSON::jsonError("INVALID ACTION file " + token);
     }  // end type == "file"
     //////////////////////// WIFI ///////////////////
     else if (type == "wifi") {
       String n = value.substring(0,1);
       int nr = n.toInt();
       if (nr < 1 || nr > 3)
-        return (jsonError("INVALID WIFI NUMBER"));
+        return (MorseJSON::jsonError("INVALID WIFI NUMBER"));
       if (value.indexOf("/") == 1)
         value = value.substring(2);
       else value == "";
@@ -3256,13 +3257,13 @@ void m32Put(String type, String token, String value) {                    /// PU
       else if (token == "trxpeer")
         setTrxPeer(nr, value);
       else
-        jsonError("INVALID PROPERTY " + token);
+        MorseJSON::jsonError("INVALID PROPERTY " + token);
     } // end type == "wifi"
     ////////////////////////// MENU /////////////////////
     else if (type == "menu") {
       if (token == "stop") {
         goToMenu = true;
-        jsonOK();
+        MorseJSON::jsonOK();
       }
       else if (token == "start" || token == "start now") {
         if (value =="") {
@@ -3271,7 +3272,7 @@ void m32Put(String type, String token, String value) {                    /// PU
               executeMenu = true;
               if (token == "start now" && MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr))
                 executeNow = true;
-              jsonOK();
+              MorseJSON::jsonOK();
           }
         }
         else {
@@ -3283,11 +3284,11 @@ void m32Put(String type, String token, String value) {                    /// PU
                   executeMenu = true;
                   if (token == "start now")
                     executeNow = true;
-                  jsonOK();
+                  MorseJSON::jsonOK();
               }
           }
           else
-            jsonError("NOT EXECUTABLE - Menu No " + value);
+            MorseJSON::jsonError("NOT EXECUTABLE - Menu No " + value);
         }
       }
       else if (token == "set") {
@@ -3296,23 +3297,23 @@ void m32Put(String type, String token, String value) {                    /// PU
             goToMenu = true;
             MorsePreferences::menuPtr = nr;
             MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
-            jsonOK();
+            MorseJSON::jsonOK();
         }
         else
-            jsonError("INVALID argument " + value);
+            MorseJSON::jsonError("INVALID argument " + value);
       }
       else
-         jsonError("INVALID ACTION menu " + token);
+         MorseJSON::jsonError("INVALID ACTION menu " + token);
     }
     /////////////////////// KOCHLESSON //////////////////////////
     else if (type == "kochlesson") {
         uint8_t nr = (char) token.toInt();
         if (nr >= MorsePreferences::kochMinimum && nr <= MorsePreferences::kochMaximum) {
           MorsePreferences::kochFilter = nr;
-          jsonOK();
+          MorseJSON::jsonOK();
         }
         else
-          jsonError("INVALID KOCH LESSON " + token);
+          MorseJSON::jsonError("INVALID KOCH LESSON " + token);
     }
     ////////////////////// CW/PLAY/CWMEMORY /////////////////////////////
     else if (type == "cw") {
@@ -3323,7 +3324,7 @@ void m32Put(String type, String token, String value) {                    /// PU
             number = value.toInt();
 ;
             if (number < 1 || number > 8 || (MorsePreferences::cwMemMask & 1 << (number-1)) == 0)
-              return (jsonError("INVALID CW MEMORY NUMBER"));
+              return (MorseJSON::jsonError("INVALID CW MEMORY NUMBER"));
 
             playCWBuffer = String(MorsePreferences::cwMem[number-1]);
             //DEBUG("@2968: playCWBuffer: " + playCWBuffer);
@@ -3337,11 +3338,11 @@ void m32Put(String type, String token, String value) {                    /// PU
           playCW = true;
           if ((token == "repeat") || (token == "recall" && number < 3))
             repeatPlayCW = true;
-          jsonOK();
+          MorseJSON::jsonOK();
 
         }
         else
-          jsonError("CW/PLAY: Keyer not active");
+          MorseJSON::jsonError("CW/PLAY: Keyer not active");
       }
       else if (token == "stop")
         stopPlayCw();
@@ -3351,12 +3352,12 @@ void m32Put(String type, String token, String value) {                    /// PU
           //DEBUG("value: " + value);
           int number = value.toInt();
           if (number < 1 || number > 8)
-            return (jsonError("INVALID CW MEMORY NUMBER"));
+            return (MorseJSON::jsonError("INVALID CW MEMORY NUMBER"));
           //DEBUG("indexOf: " + String(value.indexOf("/")) );
           if (value.indexOf("/") == 1)
             value = value.substring(2);
           else if (value.length() != 0)
-            return (jsonError("INVALID CW MEMORY ARGUMENT"));
+            return (MorseJSON::jsonError("INVALID CW MEMORY ARGUMENT"));
           else value = "";
 
           // store it, or erase it if empty
@@ -3368,106 +3369,15 @@ void m32Put(String type, String token, String value) {                    /// PU
             MorsePreferences::cwMemMask |= 1 << (number-1);
           // make it permanent
           MorsePreferences::setCwMem(number, value);
-          jsonOK();
+          MorseJSON::jsonOK();
         }
         else
-        jsonError("CW: INVALID ARGUMENT " + token);
+        MorseJSON::jsonError("CW: INVALID ARGUMENT " + token);
     }
     else
-       jsonError("COMMAND " + type + " NOT YET IMPLEMENTED");
+       MorseJSON::jsonError("COMMAND " + type + " NOT YET IMPLEMENTED");
 }
 
-
-
-///// create json output for serial port
-
-void jsonDevice() {
-  DynamicJsonDocument doc(256);
-  JsonObject device  = doc.createNestedObject("device");
-  device["hardware"] = brd;
-  device["firmware"] = vsn;
-  device["protocol"] = M32P_VERSION ;
-  serializeJson(doc, Serial);
-}
-
-void jsonError(String errormessage) {
-  jsonCreate("error", errormessage, "");
-}
-
-void jsonOK() {
-  jsonCreate("ok", "OK", "");
-}
-
-void jsonMenu(String path, unsigned int number, boolean active, boolean exec) {
-  DynamicJsonDocument doc(256);
-  JsonObject obj = doc.createNestedObject("menu");
-  obj["content"] = path;
-  obj["menu number"] = number;
-  obj["executable"] = exec;
-  obj["active"] = active;
-
-  serializeJson(doc, Serial);
-}
-
-
-void jsonMenuList() {                        // get all parameter names and their values, and send them as json object
-    DynamicJsonDocument doc(4000);
-    DynamicJsonDocument doc2(4000);
-    StaticJsonDocument <3000> arr;
-    JsonArray array = arr.to<JsonArray>();
-
-    for (uint8_t i = 1; i < menuN; ++i) {   // menu numbers start at 1
-      JsonObject obj = doc.createNestedObject();
-      obj["content"] = MorseMenu::getMenuPath(i);
-      obj["menu number"] = i;
-      obj["executable"] = MorseMenu::isRemotelyExecutable(i);
-      array.add(obj);
-    }
-    doc["menus"] = array;
-    doc2["menus"] = doc;
-    serializeJson(doc2, Serial);
-}
-
-
-void jsonParameter(String token) {                  /// find parameter "token" and create json object for it
-    String pname; pname.reserve(20);
-    bool found = false;
-    for (uint8_t i = 0; i <= posSerialOut; ++i) {
-      pname = MorsePreferences::pliste[i].parName;
-      pname.toLowerCase();
-      if (token != pname)
-        continue;
-      jsonConfigLong(MorsePreferences::pliste[i]);
-      found = true;
-      break;
-    }
-    // not found
-    if (!found)
-      jsonError("INVALID PARAMETER");
-}
-
-void jsonParameterList() {                        // get all parameter names and their values, and send them as json object
-    DynamicJsonDocument doc(5200);
-    DynamicJsonDocument doc2(5200);
-    StaticJsonDocument <4096> arr;
-    JsonArray array = arr.to<JsonArray>();
-
-    for (uint8_t i = 0; i <= posSerialOut; ++i) {
-      JsonObject obj = doc.createNestedObject();
-      obj["name"] = MorsePreferences::pliste[i].parName;
-      obj["value"] = (int) MorsePreferences::pliste[i].value;
-      if (MorsePreferences::pliste[i].isMapped)
-          obj["displayed"] = MorsePreferences::pliste[i].mapping[MorsePreferences::pliste[i].value];
-      else if (i == posMaxSequence && MorsePreferences::pliste[i].value == 0)
-          obj["displayed"] = "Unlimited";
-      else
-          obj["displayed"] = String(MorsePreferences::pliste[i].value);
-      array.add(obj);
-    }
-    doc["configs"] = array;
-    doc2["configs"] = doc;
-    serializeJson(doc2, Serial);
-}
 
 boolean setParameter(String token, String value) {      // change a parameter, return true if error, false if successful
     String pname; pname.reserve(20);
@@ -3512,185 +3422,6 @@ boolean setParameter(String token, String value) {      // change a parameter, r
       return true;
 }
 
-void jsonGetKoch() {                                    // get current Koch lesson setting, and associated values
-  DynamicJsonDocument doc(1536);
-  StaticJsonDocument <1024> arr;
-  JsonObject kochlesson = doc.createNestedObject("kochlesson");
-  kochlesson["value"] = MorsePreferences::kochFilter;
-  kochlesson["minimum"] = MorsePreferences::kochMinimum;
-  kochlesson["maximum"] = MorsePreferences::kochMaximum;
-  //int diff = MorsePreferences::kochMaximum - MorsePreferences::kochMinimum;
-  JsonArray array = arr.to<JsonArray>();
-  for (int i = MorsePreferences::kochMinimum-1; i < MorsePreferences::kochMaximum; ++i) {
-    String s = koch.getKochChar(i);
-    array.add(cleanUpProSigns(s));
-  }
-  kochlesson["characters"] = array;
-  serializeJson(doc, Serial);
-}
-
-void jsonConfigLong(MorsePreferences::parameter p) {
-  DynamicJsonDocument doc(512);
-  StaticJsonDocument <256> arr;
-  JsonObject conf = doc.createNestedObject("config");
-  conf["name"] = p.parName;
-  conf["value"] = p.value;
-  conf["description"] = p.parDescript;
-  conf["minimum"] = p.minimum;
-  conf["maximum"] = p.maximum;
-  conf["step"] = p.stepValue;
-  conf["isMapped"] = p.isMapped ; //? "true" : "false";
-  if (p.isMapped) {
-      JsonArray array = arr.to<JsonArray>();
-      for (int i = 0; i <= p.maximum; ++i) {
-        array.add(p.mapping[i]);
-      }
-      conf["mapped values"] = array;
-  }
-  serializeJson(doc, Serial);
-}
-
-void jsonConfigShort(String item, int value, String displayed) {
-  DynamicJsonDocument doc(128);
-  JsonObject conf = doc.createNestedObject("config");
-  conf["name"] = item;
-  conf["value"] = value;
-  conf["displayed"] = displayed;
-  serializeJson(doc, Serial);
-}
-
-void jsonCreate(String objName, String path, String state) {
-  DynamicJsonDocument doc(256);
-  JsonObject obj = doc.createNestedObject(objName);
-  obj["content"] = path;
-  if (state != "")
-    obj["status"] = state;
-  serializeJson(doc, Serial);
-}
-
-void jsonActivate(actMessage active) {                     /// if active == 1: we are LEAVING a mode
-  const char* message[] = {"EXIT", "ON", "SET", "CANCELLED", "RECALLED", "CLEARED"};
-  DynamicJsonDocument doc(32);
-  JsonObject activate = doc.createNestedObject("activate");
-  if (active > 5) active = (actMessage) 0;
-  activate["state"] = message[active];
-  serializeJson(doc, Serial);
-}
-
-void jsonControl(String item, uint8_t value, uint8_t mini, uint8_t maxi, boolean detailed) {
-  DynamicJsonDocument doc(256);
-  JsonObject control = doc.createNestedObject("control");
-  control["name"] = item;
-  control["value"] = value;
-  if (detailed) {
-    control["minimum"] = mini;
-    control["maximum"] = maxi;
-  }
-  serializeJson(doc, Serial);
-}
-
-void jsonControls() {
-  DynamicJsonDocument liste(128);
-
-  JsonObject speedo = liste.createNestedObject();
-  speedo["name"] = "speed";
-  speedo["value"] = MorsePreferences::wpm;
-  JsonObject volumeo = liste.createNestedObject();
-  volumeo["name"] = "volume";
-  volumeo["value"] = MorsePreferences::sidetoneVolume;
-
-  DynamicJsonDocument doc(256);
-  doc["controls"] = liste;
-  serializeJson(doc,Serial);
-}
-
-
-void jsonSnapshots() {
-  DynamicJsonDocument doc(164);
-  StaticJsonDocument <164> arr;
-  JsonObject conf = doc.createNestedObject("snapshots");
-  JsonArray array = arr.to<JsonArray>();
-
-  //DEBUG("memCounter: " + String(MorsePreferences::memCounter));
-  for (int i = 0; i < MorsePreferences::memCounter; ++i) {
-    array.add((int) MorsePreferences::memories[i] +1 );
-   }
-   conf["existing snapshots"] = array;
-   serializeJson(doc, Serial);
-}
-
-void jsonFileStats() {                                            // get info about SPIFFS file system
-  long unsigned int total, used;
-
-  DynamicJsonDocument doc(128);
-  JsonObject conf = doc.createNestedObject("file");
-  File file = SPIFFS.open("/player.txt", "r");
-  conf["size"] = file.size();
-  file.close();
-  used = SPIFFS.usedBytes();
-  total = SPIFFS.totalBytes();
-  conf["free"] = total - used;
-  serializeJson(doc, Serial);
-}
-
-void jsonFileFirstLine() {
-  File file = SPIFFS.open("/player.txt", "r");                  // Open the file for reading in SPIFFS - no error handling, file must exist
-  Serial.print("{\"file\":{\"first line\":\"");
-  while (file.available()){
-      char c = file.read();
-      if (c == '{' || c == '}')
-        continue;
-      if (c == '\n')
-        break;
-      else
-        Serial.write(c);
-  }
-  Serial.print("\"}}");
-  file.close();
-}
-
-
-
-
-void jsonFileText() {                                           // get file content as json object (file should not contain curly braces!)
-  File file = SPIFFS.open("/player.txt", "r");                  // Open the file for reading in SPIFFS - no error handling, file must exist
-  Serial.print("{\"file\":{\"text\":\"");
-  while (file.available()){
-      char c = file.read();
-      if (c == '{' || c == '}')
-        continue;
-      Serial.write(c);
-   }
-  Serial.print("\"}}");
-  file.close();
-}
-
-
-void jsonGetWifi() {
-  DynamicJsonDocument liste(512);
-  String activeWiFiConf = MorsePreferences::wlanSSID == "" ? "INVALID" : MorsePreferences::wlanSSID + MorsePreferences::wlanTRXPeer;
-
-  JsonObject entry1 = liste.createNestedObject();
-  entry1["ssid"] = MorsePreferences::wlanSSID1;
-  entry1["trxpeer"] = MorsePreferences::wlanTRXPeer1;
-  entry1["selected"] = (MorsePreferences::wlanSSID1 + MorsePreferences::wlanTRXPeer1 == activeWiFiConf ? true : false);
-
-
-  JsonObject entry2 = liste.createNestedObject();
-  entry2["ssid"] = MorsePreferences::wlanSSID2;
-  entry2["trxpeer"] = MorsePreferences::wlanTRXPeer2;
-  entry2["selected"] = (MorsePreferences::wlanSSID2 + MorsePreferences::wlanTRXPeer2 == activeWiFiConf ? true : false);
-
-  JsonObject entry3 = liste.createNestedObject();
-  entry3["ssid"] = MorsePreferences::wlanSSID3;
-  entry3["trxpeer"] = MorsePreferences::wlanTRXPeer3;
-  entry3["selected"] = (MorsePreferences::wlanSSID3 + MorsePreferences::wlanTRXPeer2 == activeWiFiConf ? true : false);
-
- DynamicJsonDocument doc(512);
-  doc["wifi"] = liste;
-  serializeJson(doc,Serial);
-}
-
 
 void setSsid(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument
   switch (i) {
@@ -3708,8 +3439,9 @@ void setSsid(int i, String str) {                                       // parse
         break;
   }
   MorsePreferences::writePreferences("morserino");
-  jsonOK();
+  MorseJSON::jsonOK();
 }
+
 
 void setPassword(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument
   switch (i) {
@@ -3727,8 +3459,9 @@ void setPassword(int i, String str) {                                       // p
         break;
   }
   MorsePreferences::writePreferences("morserino");
-  jsonOK();
+  MorseJSON::jsonOK();
 }
+
 
 void setTrxPeer(int i, String str) {                                       // parse str first to get 1, 2 or 3 as argument
   switch (i) {
@@ -3746,8 +3479,9 @@ void setTrxPeer(int i, String str) {                                       // pa
         break;
   }
   MorsePreferences::writePreferences("morserino");
-  jsonOK();
+  MorseJSON::jsonOK();
 }
+
 
 void selectWifi(int i) {
     switch(i) {
@@ -3758,8 +3492,9 @@ void selectWifi(int i) {
       case 3: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID3, MorsePreferences::wlanPassword3, MorsePreferences::wlanTRXPeer3);
         break;
   }
-  jsonOK();
+  MorseJSON::jsonOK();
 }
+
 
 void stopPlayCw() {     /// sort of emergency stop for M32p cw/play
             keyOut(false,true,0,0);
@@ -3768,40 +3503,5 @@ void stopPlayCw() {     /// sort of emergency stop for M32p cw/play
             playCWBuffer = clearText = CWword = "";
             playCWMaxIndex = 0;
             startFirst = true;
-            jsonOK();
-}
-
-
-
-void jsonGetCwStores() {
-  DynamicJsonDocument doc(164);
-  StaticJsonDocument <164> arr;
-  JsonObject conf = doc.createNestedObject("CW Memories");
-  JsonArray array = arr.to<JsonArray>();
-
-  for (int i = 0; i <8 ; ++i) {
-    if (MorsePreferences::cwMemMask & 1 << i)
-      array.add(i+1);
-  }
-
-   conf["cw memories in use"] = array;
-   serializeJson(doc, Serial);
-}
-
-void jsonGetCwStore(String value) {
-
-    int number =  value.toInt();
-    if (number < 1 || number > 8 )
-      return (jsonError("INVALID CW MEMORY NUMBER"));
-    // check cwMemMask if this memory number is active
-    if ((MorsePreferences::cwMemMask & 1 << (number-1)) == 0b0)     // empty memory
-      jsonError("CW MEMORY " + value + " IS EMPTY");
-    else {
-        DynamicJsonDocument doc(256);
-        JsonObject obj  = doc.createNestedObject("CW Memory");
-        obj["number"] = number;
-        obj["content"] = String(MorsePreferences::cwMem[number-1]);
-        serializeJson(doc, Serial);
-    }
-
+            MorseJSON::jsonOK();
 }
