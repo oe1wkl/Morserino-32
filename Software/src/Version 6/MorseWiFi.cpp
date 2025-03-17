@@ -16,6 +16,7 @@
 #include "MorseWiFi.h"
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
+#include "MorseJSON.h"
 
 ////////////////// Variables for file handling and WiFi functions
 
@@ -272,8 +273,8 @@ void MorseWiFi::menuNetSelect() {
       MorseOutput::printOnScroll(0, REGULAR, 0, names[choice] );
       MorseOutput::printOnScroll(1, REGULAR, 0, peers[choice] );
       if (m32protocol) {
-                  jsonCreate("message", names[choice], "");
-                  jsonCreate("message", peers[choice], "");
+                  MorseJSON::jsonCreate("message", names[choice], "");
+                  MorseJSON::jsonCreate("message", peers[choice], "");
       }
       previousChoice = choice;
     }
@@ -325,7 +326,7 @@ void MorseWiFi::menuExec(uint8_t command) {
 
                   delay(1000);
                   if (m32protocol) {
-                     jsonCreate("message", msg, "");
+                     MorseJSON::jsonCreate("message", msg, "");
                      WiFi.disconnect(true,false);
                      return;
                   }
@@ -349,7 +350,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                   msg = "Connecting... ";
                   MorseOutput::printOnStatusLine( true, 0,  msg);
                   if (m32protocol)
-                    jsonCreate("message", msg + "Please wait", "");
+                    MorseJSON::jsonCreate("message", msg + "Please wait", "");
                   if (! MorseWiFi::wifiConnect())
                       msg = ""; //return false;
                   else {
@@ -362,7 +363,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                   delay(1000);
                   if (m32protocol) {
                       if (msg != "")
-                          jsonCreate("message", msg, "");
+                          MorseJSON::jsonCreate("message", msg, "");
                       WiFi.disconnect(true,false);
                       return;
                   }
@@ -528,7 +529,7 @@ boolean internal::errorConnect(String msg) {
   MorseOutput::printOnScroll(1, REGULAR, 0, MorsePreferences::wlanSSID);
   delay(3500);
   if (m32protocol) {
-    jsonCreate("message", "Not connected " + msg, "");
+    MorseJSON::jsonCreate("message", "Not connected " + msg, "");
   }
   return false;
 }
