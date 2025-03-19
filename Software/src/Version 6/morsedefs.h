@@ -22,6 +22,11 @@
 #include "WiFi.h"
 #include <WiFiUdp.h>       // UDP lib for WiFi TRX
 #include <AsyncUDP.h>      // UDP lib for WiFi TRX
+#include <esp_now.h>       // EspNow will use the next few libs
+#include <QuickEspNow.h>
+#include <Comms_hal.h>
+#include <QuickEspNow_esp32.h>
+#include <RingBuffer.h>
 #include <Preferences.h>   // ESP 32 library for storing things in non-volatile storage
 #include <WebServer.h>     // simple web sever
 #include <ESPmDNS.h>       // DNS functionality
@@ -33,9 +38,9 @@
 
 const String PROJECTNAME = "Morserino-32";
 
-#define VERSION_MAJOR 6
+#define VERSION_MAJOR 7
 #define VERSION_MINOR 0
-#define VERSION_PATCH 2
+#define VERSION_PATCH 0
 
 #define BETA true
 
@@ -53,7 +58,8 @@ const String PROJECTNAME = "Morserino-32";
 /////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
 #define CW_TRX_PROTO_VERSION B01
 
-
+//// WiFi Channel used for ESPNOW (might make this configurable later ?)
+#define ESPNOW_CH 6
 
 namespace Buttons
 {

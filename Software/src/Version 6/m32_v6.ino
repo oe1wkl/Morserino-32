@@ -554,6 +554,11 @@ void setup()
 
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
 
+  //ESPNOW setup
+  if (MorsePreferences::useEspNow) {
+    quickEspNow.onDataRcvd (onEspnowRecv);
+      MorseMenu::setupESPNow();
+  }
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
   if (SPIFFS.begin(false))  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
@@ -2427,19 +2432,25 @@ void sendWithLora() {           // hand this string over as payload to the LoRA 
 
 void sendWithWifi() {           // hand this string over as payload to the WiFi transceiver
   // send packet
-//      const char* peerHost = MorsePreferences::wlanTRXPeer.c_str();
-//      IPAddress peerIP;
-//      if (MorsePreferences::wlanTRXPeer.length() == 0) {
-//          peerHost = "255.255.255.255"; // send to local broadcast IP if not set
-//      }
-//      if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
-//          WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
-//      }
+  //      const char* peerHost = MorsePreferences::wlanTRXPeer.c_str();
+  //      IPAddress peerIP;
+  //      if (MorsePreferences::wlanTRXPeer.length() == 0) {
+  //          peerHost = "255.255.255.255"; // send to local broadcast IP if not set
+  //      }
+  //      if (!peerIP.fromString(peerHost)) {    // try to interpret the peer as an ip address...
+  //          WiFi.hostByName(peerHost, peerIP); // ...and resolve peer into ip address if that fails
+  //      }
   //DEBUG("Send with WiFi! " + String(cwTxBuffer));
-  MorseWiFi::audp.writeTo((uint8_t*)cwTxBuffer, strlen(cwTxBuffer), peerIP, MORSERINOPORT);
-  //MorseWiFi::udp.beginPacket(peerIP, MORSERINOPORT);
-  //MorseWiFi::udp.print(cwTxBuffer);
-  //MorseWiFi::udp.endPacket();
+
+  if (!MorsePreferences::useEspNow) {
+    MorseWiFi::audp.writeTo((uint8_t*)cwTxBuffer, strlen(cwTxBuffer), peerIP, MORSERINOPORT);
+      //MorseWiFi::udp.beginPacket(peerIP, MORSERINOPORT);
+      //MorseWiFi::udp.print(cwTxBuffer);
+      //MorseWiFi::udp.endPacket();
+  }
+  else {
+      quickEspNow.send (ESPNOW_BROADCAST_ADDRESS, (uint8_t*)cwTxBuffer, strlen(cwTxBuffer));
+  }
 }
 
 void onLoraReceive(){
@@ -2502,6 +2513,28 @@ void onWifiReceive(AsyncUDPPacket packet) {
       DEBUG("UDP Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
 }
 
+void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed int rssi, bool broadcast)
+{
+    if (morseState != wifiTrx)
+    return;
+  u_int maxl = sizeof(cwTxBuffer) < len ? sizeof(cwTxBuffer) : len;
+  String result;
+  
+  result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
+  result = "";
+
+  if (len == 0 || !broadcast)             // empty (= keepalive) packet, or not broadcast
+    return;
+  for (int i = 0; i < maxl; i++) {
+    result += (char)data[i];
+  }
+  //DEBUG("@2178: protocol version = " + String((result.charAt(1) & 0b11000000)));
+
+  if (len <= sizeof(cwTxBuffer))
+      storePacket(rssi, result);     
+  else
+      DEBUG("ESPNOW Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
+}
 
 String CWwordToClearText(String cwword) {             // decode the Morse code character in cwword to clear text
   int ptr = 0;

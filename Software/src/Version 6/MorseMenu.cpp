@@ -152,7 +152,10 @@ void MorseMenu::menu_() {
 #ifdef LORA_RADIOLIB
     radio.standby();
 #endif
-    WiFi.disconnect(true, false);
+    if (!MorsePreferences::useEspNow) {
+      WiFi.disconnect(true, false);
+      WiFi.mode(WIFI_STA);
+    }
     genIsActive = false;
     cleanStartSettings();
     MorseOutput::clearScroll();                  // clear the buffer
@@ -346,8 +349,10 @@ boolean MorseMenu::menuExec() {                                          // retu
                 morseState = morseGenerator;
                 showStartDisplay("Generator     ", "Start / Stop  ", "press Paddle  ", 1250);
                 if (MorsePreferences::pliste[posLoraCwTransmit].value == 2)
+                if (!MorsePreferences::useEspNow) 
                   if (!setupWifi())
-                    return false;
+                  return false;
+
                 return true;
                 break;
       case  _echoRand:
@@ -455,19 +460,24 @@ boolean MorseMenu::menuExec() {                                          // retu
                 generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions, MorsePreferences::wifiTrxOptionsSize);
                 morseState = wifiTrx;
-                MorseOutput::clearDisplay();
-                MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
-                if (m32protocol)
-                  MorseJSON::jsonCreate("message", "Connecting...", "");
+                if (MorsePreferences::useEspNow) {
+                    showStartDisplay("", "Start  Wifi Trx", "EspNow", 1500);
+                }
+                else {
+                    MorseOutput::clearDisplay();
+                    MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
+                    if (m32protocol)
+                      MorseJSON::jsonCreate("message", "Connecting...", "");
 
-                if (!setupWifi())
-                  return false;
-                //DEBUG("Peer IP: " + peerIP.toString());
-                s = peerIP.toString();
-                showStartDisplay("", "Start Wifi Trx", s  == "255.255.255.255" ?"IP Broadcast" : s, 1500);
+                    if (!setupWifi())
+                      return false;
+                    //DEBUG("Peer IP: " + peerIP.toString());
+                    s = peerIP.toString();
+                    showStartDisplay("", "Start Wifi Trx", s  == "255.255.255.255" ?"IP Broadcast" : s, 1500);
 
-                MorseWiFi::audp.listen(MORSERINOPORT); // listen on port 7373
-                MorseWiFi::audp.onPacket(onWifiReceive);
+                    MorseWiFi::audp.listen(MORSERINOPORT); // listen on port 7373
+                    MorseWiFi::audp.onPacket(onWifiReceive);
+                }
                 clearPaddleLatches();
                 //keyTx = false;
                 clearText = "";
@@ -550,7 +560,16 @@ boolean MorseMenu::setupWifi() {
   return true;
 }
 
-
+void MorseMenu::setupESPNow() {
+  // init wifi for espnow
+      WiFi.mode(WIFI_STA);
+      WiFi.disconnect (false, true);
+      quickEspNow.begin (ESPNOW_CH); // If you use no connected WiFi channel needs to be specified
+      delay(100);
+      //DEBUG("setupESPNow");
+  
+  }
+  
 void MorseMenu::cleanupScreen() {
     MorseOutput::clearDisplay();
     updateTopLine();

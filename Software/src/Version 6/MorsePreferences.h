@@ -104,6 +104,8 @@ namespace MorsePreferences
   extern String  wlanPassword3;
   extern String  wlanTRXPeer3;
 
+  extern boolean useEspNow;
+
   extern uint32_t fileWordPointer;
   extern uint8_t promptPause;
   extern touch_value_t tLeft;

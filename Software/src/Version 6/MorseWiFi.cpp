@@ -251,14 +251,16 @@ void internal::handleNotFound() {
 }
 
 void MorseWiFi::menuNetSelect() {
-  const int numNetworks = 3;
+  const int numNetworks = 4;
   String names[numNetworks]; String peers[numNetworks];
-  names[0] = "1: " + MorsePreferences::wlanSSID1;
-  peers[0] = "/ " + MorsePreferences::wlanTRXPeer1;
-  names[1] = "2: " + MorsePreferences::wlanSSID2;
-  peers[1] = "/ " + MorsePreferences::wlanTRXPeer2;
-  names[2] = "3: " + MorsePreferences::wlanSSID3;
-  peers[2] = "/ " + MorsePreferences::wlanTRXPeer3;
+  names[0] = "0: EspNow";
+  peers[0] = "Broadcast";
+  names[1] = "1: " + MorsePreferences::wlanSSID1;
+  peers[1] = "/ " + MorsePreferences::wlanTRXPeer1;
+  names[2] = "2: " + MorsePreferences::wlanSSID2;
+  peers[2] = "/ " + MorsePreferences::wlanTRXPeer2;
+  names[3] = "3: " + MorsePreferences::wlanSSID3;
+  peers[3] = "/ " + MorsePreferences::wlanTRXPeer3;
 
   MorseOutput::clearDisplay();
   MorseOutput::printOnStatusLine( true, 0,  "Select Wifi");
@@ -303,90 +305,106 @@ void MorseWiFi::menuNetSelect() {
   }
 
   switch(choice) {
-    case 0: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID1, MorsePreferences::wlanPassword1, MorsePreferences::wlanTRXPeer1);
+    case 0: MorsePreferences::useEspNow = true;
       break;
-    case 1: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID2, MorsePreferences::wlanPassword2, MorsePreferences::wlanTRXPeer2);
+    case 1: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID1, MorsePreferences::wlanPassword1, MorsePreferences::wlanTRXPeer1);
+            MorsePreferences::useEspNow = false;
       break;
-    case 2: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID3, MorsePreferences::wlanPassword3, MorsePreferences::wlanTRXPeer3);
+    case 2: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID2, MorsePreferences::wlanPassword2, MorsePreferences::wlanTRXPeer2);
+            MorsePreferences::useEspNow = false;
+      break;
+    case 3: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID3, MorsePreferences::wlanPassword3, MorsePreferences::wlanTRXPeer3);
+            MorsePreferences::useEspNow = false;
       break;
     case -1: // long (?) click pressed to exit menu
+      return;
       break;
   }
-
+  MorsePreferences::writePreferences("morserino");
+  ESP.restart();
 }
 
 void MorseWiFi::menuExec(uint8_t command) {
   String msg; msg.reserve(120);
-  switch (command) {
-    case  _wifi_mac:
-                  WiFi.mode(WIFI_MODE_STA);               // init WiFi as client
-                  MorseOutput::clearDisplay();
-                  msg = "MAC Address is " + WiFi.macAddress();
-                  MorseOutput::printOnStatusLine( true, 0,  WiFi.macAddress());
+  if (!MorsePreferences::useEspNow) {
+      switch (command) {
+        case  _wifi_mac:
+                      WiFi.mode(WIFI_MODE_STA);               // init WiFi as client
+                      MorseOutput::clearDisplay();
+                      msg = "MAC Address is " + WiFi.macAddress();
+                      MorseOutput::printOnStatusLine( true, 0,  WiFi.macAddress());
 
-                  delay(1000);
-                  if (m32protocol) {
-                     MorseJSON::jsonCreate("message", msg, "");
-                     WiFi.disconnect(true,false);
-                     return;
-                  }
-                  else {
-                    delay(2000);
-                    MorseOutput::printOnScroll(0, REGULAR, 0, "RED: return" );
-                    while (true) {  // wait
-                          checkShutDown(false);  // possibly time-out: go to sleep
-                          if (digitalRead(volButtonPin) == LOW) {
-                            WiFi.disconnect(true,false);
-                            return;
+                      delay(1000);
+                      if (m32protocol) {
+                        MorseJSON::jsonCreate("message", msg, "");
+                        WiFi.disconnect(true,false);
+                        return;
+                      }
+                      else {
+                        delay(2000);
+                        MorseOutput::printOnScroll(0, REGULAR, 0, "RED: return" );
+                        while (true) {  // wait
+                              checkShutDown(false);  // possibly time-out: go to sleep
+                              if (digitalRead(volButtonPin) == LOW) {
+                                WiFi.disconnect(true,false);
+                                return;
+                            }
+                        } // end wait
+                      }
+                      break;
+            case  _wifi_config:
+                      MorseWiFi::startAP();          // run as AP to get WiFi credentials from user
+                      break;
+            case _wifi_check:
+                      MorseOutput::clearDisplay();
+                      msg = "Connecting... ";
+                      MorseOutput::printOnStatusLine( true, 0,  msg);
+                      if (m32protocol)
+                        MorseJSON::jsonCreate("message", msg + "Please wait", "");
+                      if (! MorseWiFi::wifiConnect())
+                          msg = ""; //return false;
+                      else {
+                          msg = "Connected! " + MorsePreferences::wlanSSID + " - " + WiFi.localIP().toString();
+                          MorseOutput::printOnStatusLine( true, 0,  "Connected!    ");
+                          MorseOutput::printOnScroll(0, REGULAR, 0, MorsePreferences::wlanSSID);
+                          MorseOutput::printOnScroll(1, REGULAR, 0, WiFi.localIP().toString(), true);
+                      }
+                      //WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi
+                      delay(1000);
+                      if (m32protocol) {
+                          if (msg != "")
+                              MorseJSON::jsonCreate("message", msg, "");
+                          WiFi.disconnect(true,false);
+                          return;
+                      }
+                      else {
+                        delay(1000);
+                        MorseOutput::printOnScroll(2, REGULAR, 0, "RED: return" );
+                        while (true) {
+                              checkShutDown(false);  // possibly time-out: go to sleep
+                              if (digitalRead(volButtonPin) == LOW) {
+                                WiFi.disconnect(true,false);
+                                MorseOutput::clearDisplay();
+                                return;
+                              }
                         }
-                    } // end wait
-                  }
-                  break;
-        case  _wifi_config:
-                  MorseWiFi::startAP();          // run as AP to get WiFi credentials from user
-                  break;
-        case _wifi_check:
-                  MorseOutput::clearDisplay();
-                  msg = "Connecting... ";
-                  MorseOutput::printOnStatusLine( true, 0,  msg);
-                  if (m32protocol)
-                    MorseJSON::jsonCreate("message", msg + "Please wait", "");
-                  if (! MorseWiFi::wifiConnect())
-                      msg = ""; //return false;
-                  else {
-                      msg = "Connected! " + MorsePreferences::wlanSSID + " - " + WiFi.localIP().toString();
-                      MorseOutput::printOnStatusLine( true, 0,  "Connected!    ");
-                      MorseOutput::printOnScroll(0, REGULAR, 0, MorsePreferences::wlanSSID);
-                      MorseOutput::printOnScroll(1, REGULAR, 0, WiFi.localIP().toString(), true);
-                  }
-                  //WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi
-                  delay(1000);
-                  if (m32protocol) {
-                      if (msg != "")
-                          MorseJSON::jsonCreate("message", msg, "");
-                      WiFi.disconnect(true,false);
-                      return;
-                  }
-                  else {
-                    delay(1000);
-                    MorseOutput::printOnScroll(2, REGULAR, 0, "RED: return" );
-                    while (true) {
-                          checkShutDown(false);  // possibly time-out: go to sleep
-                          if (digitalRead(volButtonPin) == LOW) {
-                            WiFi.disconnect(true,false);
-                            MorseOutput::clearDisplay();
-                            return;
-                          }
-                    }
-                  }
-                  break;
-        case _wifi_upload:
-                  MorseWiFi::uploadFile();       // upload a text file
-                  break;
-        case _wifi_update:
-                  MorseWiFi::updateFirmware();   // run OTA update
-                  break;
-  }
+                      }
+                      break;
+            case _wifi_upload:
+                      MorseWiFi::uploadFile();       // upload a text file
+                      break;
+            case _wifi_update:
+                      MorseWiFi::updateFirmware();   // run OTA update
+                      break;
+      }
+    } else {
+      MorseOutput::clearDisplay();
+      MorseOutput::printOnScroll(0, REGULAR, 0, "Not Available" ); 
+      MorseOutput::printOnScroll(1, REGULAR, 0, "Using EspNow" ); 
+      if (m32protocol)
+          MorseJSON::jsonCreate("message", "Not available when using ESPNOW", "");
+      delay(1800);                   
+    }
 }
 
 void MorseWiFi::startAP() {

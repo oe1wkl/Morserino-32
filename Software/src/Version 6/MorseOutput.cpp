@@ -668,7 +668,7 @@ void MorseOutput::resetTOT() {       //// reset the Time Out Timer - we do this 
 void soundEnableHeadphone(void) {
     codec.enableHeadphoneAmp();
     codec.setHeadphoneVolume(-10.0f,-10.0f); // unmute
-    codec.setHeadphoneGain(0.0f,0.0f);
+    codec.setHeadphoneGain(-12.0f,-12.0f);
     codec.setHeadphoneMute(false); // unmute hp
     codec.setSpeakerMute(true); // unmute class d speaker amp
 }

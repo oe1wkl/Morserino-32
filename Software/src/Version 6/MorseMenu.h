@@ -51,6 +51,7 @@ extern void displayCWspeed();
 extern void skipWords(uint32_t );
 extern void audioLevelAdjust();
 extern void onWifiReceive(AsyncUDPPacket);
+extern void onEspnowRecv(const uint8_t*, const uint8_t*, uint8_t, signed int, boolean);
 extern void serialEvent();
 extern void jsonCreate(String,String,String);
 extern void jsonMenu(String,unsigned int,bool,bool);
@@ -61,6 +62,7 @@ namespace MorseMenu
 void menu_();
 boolean menuExec();
 boolean setupWifi();
+void setupESPNow();
 String getMenuPath(uint8_t);
 void menuDisplay(uint8_t);
 void cleanupScreen();
