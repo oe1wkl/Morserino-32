@@ -45,7 +45,7 @@ Preferences pref;               // use the Preferences library for storing and r
       posGeneratorDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,            // 16
       posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, posSpeedAdapt,                     // 21
       posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut,     // 25
-      posQuickStart, posAutoStop, posMaxSequence, posLoraChannel,   posSerialOut,                   // 31
+      posQuickStart, posOutputCase, posAutoStop, posMaxSequence, posLoraChannel,   posSerialOut,    // 31
       // to be treated differently:
       posKochFilter,                                                                                // 36
       posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf, posScreen                  // 37
@@ -59,7 +59,7 @@ const char * prefName[] = {"encoderClicks", "sidetoneFreq", "useExtPaddle", "did
                       "GeneratorDispl", "wordDoubler", "echoDisplay", "echoRepeats", "echoConf",
                       "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt",
                       "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
-                      "quickStart", "autoStop", "maxSequence", "LoraChannel",
+                      "quickStart", "outputCase", "autoStop", "maxSequence", "LoraChannel"
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 					  "bluetoothOut",
 #endif
@@ -310,6 +310,13 @@ parameter MorsePreferences::pliste[] = {
     {"OFF", "ON"}
   },
   {
+    0, 0, 1, 1,                                                 // What character case should decoded output be printed
+    "Output Case",
+    "Upper or lower case Decoded Morse output",
+    true,
+    {"lower", "UPPER"}
+  },
+  {
     0, 0, 1, 1,                                                 // Stop after each word in CW generator modes?
     "Stop<Next>Rep",
     "Stop after each word; choose repeat or next word with paddle",
@@ -428,9 +435,9 @@ uint8_t MorsePreferences::memCounter;
 uint8_t MorsePreferences::memPtr = 0;
 
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posBluetoothOut, posSerialOut, posPolarity, posExtPddlPolarity
+#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, posBluetoothOut, posSerialOut, posPolarity, posExtPddlPolarity
 #else
-#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity
+#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, posSerialOut, posPolarity, posExtPddlPolarity
 #endif
   prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency
@@ -485,7 +492,7 @@ uint8_t MorsePreferences::memPtr = 0;
                                                    posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::decoderOptions[] =    { posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut,
+ prefPos MorsePreferences::decoderOptions[] =    { posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, posSerialOut,
                                                    posCurtisMode, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 

@@ -356,7 +356,7 @@ enum prefPos : uint8_t {
                 posGeneratorDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,            // 16
                 posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, posSpeedAdapt,                     // 21
                 posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut,     // 25
-                posQuickStart, posAutoStop,posMaxSequence, posLoraChannel,                                    // 31
+                posQuickStart, posOutputCase, posAutoStop, posMaxSequence, posLoraChannel,                    // 31
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 				posBluetoothOut,
 #endif

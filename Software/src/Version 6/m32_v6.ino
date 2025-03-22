@@ -2033,14 +2033,18 @@ void fetchNewWord() {
 /// the next function is used to display KEYED and DECODED characters
 
 void displayDecodedMorse(String symbol, boolean keyed) {
-
+  String tmp_str = symbol;
+  if (MorsePreferences::pliste[posOutputCase].value) {
+    tmp_str.toUpperCase();
+  }
   // output  the symbol; flush if not morseGenerator, otherwise if not autostop
-  MorseOutput::printToScroll( REGULAR, symbol, true, encoderState == scrollMode);
+  MorseOutput::printToScroll( REGULAR, tmp_str, true, encoderState == scrollMode);
 
-  SerialOutMorse(symbol, keyed ? 0b001 : 0b010);
+  SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);
+
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
-    MorseBluetooth::bluetoothTypeString(symbol);
+    MorseBluetooth::bluetoothTypeString(tmp_str);
 #endif
 
   if (morseState == echoTrainer) {                /// store the character in the response string
@@ -2058,7 +2062,6 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     else if (symbol != " ")
       echoResponse.concat(symbol);
      //DEBUG("@1795: echoResponse: " + echoResponse);
-
   }
 }   /// end of displayDecodedMorse()
 
@@ -2066,15 +2069,18 @@ void displayDecodedMorse(String symbol, boolean keyed) {
 
 //// the next function is used to display GENERATED characters
 
-void displayGeneratedMorse(FONT_ATTRIB style, String s) {
-   MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
-   SerialOutMorse(s, 0b100); // dec 4
+void displayGeneratedMorse(FONT_ATTRIB style, String s)
+{
+	if (MorsePreferences::pliste[posOutputCase].value) {
+		s.toUpperCase();
+	}
+	MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
+	SerialOutMorse(s, 0b100); // dec 4
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
+	if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
 		MorseBluetooth::bluetoothTypeString(s);
 #endif
 }
-
 
 /// send chars to serial port, if appropriate
 
@@ -2519,7 +2525,7 @@ void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed i
     return;
   u_int maxl = sizeof(cwTxBuffer) < len ? sizeof(cwTxBuffer) : len;
   String result;
-  
+
   result.reserve(sizeof(cwTxBuffer));   // we should never receive a packet longer than the sender is allowed to send!
   result = "";
 
@@ -2531,7 +2537,7 @@ void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed i
   //DEBUG("@2178: protocol version = " + String((result.charAt(1) & 0b11000000)));
 
   if (len <= sizeof(cwTxBuffer))
-      storePacket(rssi, result);     
+      storePacket(rssi, result);
   else
       DEBUG("ESPNOW Packet longer than sizeof(cwTxBuffer) bytes! Discarded...");
 }
