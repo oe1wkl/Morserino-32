@@ -72,6 +72,8 @@ uint8_t bottomLine = 0;
 const int8_t MorseOutput::maxPos = NoOfLines - 3;
 int8_t MorseOutput::relPos = MorseOutput::maxPos;
 
+#ifndef CONFIG_DISPLAYWRAPPER
+
 #define lora_width 6        /// a simple logo that shows when we operate with loRa, stored in XBM format
 #define lora_height 11
 static unsigned char lora_bits[] = {
@@ -81,7 +83,29 @@ static unsigned char lora_bits[] = {
 #define wifi_width 6        /// a simple logo that shows when we operate with WiFi, stored in XBM format
 #define wifi_height 11
 static unsigned char wifi_bits[] = {
-   0x00, 0x08, 0x10, 0x24, 0x29, 0x2b, 0x29, 0x24, 0x10, 0x08, 0x00 };
+  0xc0,0xc8,0xd0,0xe4,0xe8,0xeb,0xe8,0xe4,0xd0,0xc8,0xc0 };
+
+#else
+
+#define lora_width 13        /// a simple logo that shows when we operate with loRa, stored in XBM format
+#define lora_height 24
+static unsigned char lora_bits[] = {
+  0x88,0xe0,0x11,0xe1,0x22,0xe2,0x44,0xe2,0x44,0xe4,0x8b,0xe4,
+ 0x93,0xe8,0x13,0xe9,0x27,0xe9,0x27,0xf2,0x4b,0xf2,0x5f,0xf2,
+ 0x5f,0xf2,0x44,0xf2,0x24,0xf2,0x22,0xe9,0x11,0xe9,0x90,0xe8,
+ 0x88,0xe4,0x44,0xe4,0x44,0xe2,0x22,0xe2,0x11,0xe1,0x88,0xe0
+};
+
+#define wifi_width 13        /// a simple logo that shows when we operate with WiFi, stored in XBM format
+#define wifi_height 24
+static unsigned char wifi_bits[] = {
+  0x00,0xe0,0x00,0xe0,0x00,0xe1,0x00,0xe2,0x40,0xe4,0x80,0xe4,
+ 0x90,0xe8,0x10,0xe9,0x24,0xe9,0x24,0xf2,0x48,0xf2,0x4b,0xf2,
+ 0x48,0xf2,0x24,0xf2,0x24,0xf2,0x10,0xe9,0x10,0xe9,0x80,0xe8,
+ 0x80,0xe4,0x40,0xe4,0x00,0xe2,0x00,0xe1,0x00,0xe0,0x00,0xe0 
+};
+
+#endif
 
 volatile uint64_t MorseOutput::TOTcounter;                       // holds millis for Time-Out Timer
 
@@ -447,7 +471,7 @@ void MorseOutput::clearScroll() {
 
 void MorseOutput::drawVolumeCtrl (boolean inverse, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t volume) { // volume = 0-19
   int i = (width - 4) * volume / 19;
-//DEBUG(String(i));
+DEBUG("volCtrl: " + String(i));
   if (inverse)
     display.setColor(BLACK);
   else
@@ -460,7 +484,7 @@ void MorseOutput::drawVolumeCtrl (boolean inverse, uint16_t x, uint16_t y, uint1
   else
     display.setColor(WHITE);
 
-  display.fillRect(x + 2, y + 4, (width - 4) * volume / 19, height - 8);
+  display.fillRect(x + 2, y + 4, i, height - 8);
   display.drawHorizontalLine(x + 2, y + height / 2, width - 4);
   display.display();
   resetTOT();
@@ -552,10 +576,19 @@ void MorseOutput::displayEmptyBattery(void (*f)()) {                            
   (*f)();
 }
 
+#ifdef CONFIG_DISPLAYWRAPPER
+#define leftBoundary 56
+#define logoWidth 14
+#else
+#define leftBoundary 35
+#define logoWidth 7
+#endif
+#define meterWidth (leftBoundary - logoWidth)
 
-/// display volume as a progress bar: vol = 1-100
+/// display volume as a progress bar: vol = 1 - 20
 void MorseOutput::displayVolume (boolean speedsetting, uint8_t volume) {
-  drawVolumeCtrl(speedsetting ? false : true, display.getWidth()-35, 0, 28, SCROLL_TOP, volume);
+  DEBUG("Volume: " + String(volume));
+  drawVolumeCtrl(speedsetting ? false : true, display.getWidth()-leftBoundary, 0, meterWidth, SCROLL_TOP, volume);
   display.display();
 }
 
@@ -570,11 +603,14 @@ void MorseOutput::updateSMeter(int rssi) {
     if (wasZero)
       return;
     else {
-      drawVolumeCtrl( false, display.getWidth()-35, 0, 28, 15, 0);
+      drawVolumeCtrl( false, display.getWidth()-leftBoundary, 0, meterWidth, SCROLL_TOP, 0);
       wasZero = true;
     }
   else {
-    drawVolumeCtrl( false, display.getWidth()-35, 0, 28, 15, constrain(map(rssi, -150, -20, 0, 100), 0, 100));
+    DEBUG ("RSSI: " + String(rssi));
+    uint8_t s_v = constrain(map(rssi, -150, -20, 0, 20), 0, 20);
+    DEBUG ("Value: " + String(s_v));
+    drawVolumeCtrl( false, display.getWidth()-leftBoundary, 0, meterWidth, SCROLL_TOP, s_v);
     wasZero = false;
   }
   display.display();
@@ -594,14 +630,14 @@ void MorseOutput::drawInputStatus( boolean on) {
 
 void MorseOutput::dispLoraLogo() {                     /// display a small logo in the top right corner to indicate we operate with LoRa
   display.setColor(BLACK);
-  display.drawXbm(display.getWidth()-7, 2, lora_width, lora_height, lora_bits);
+  display.drawXbm(display.getWidth()-logoWidth, 2, lora_width, lora_height, lora_bits);
   display.setColor(WHITE);
   display.display();
 }
 
 void MorseOutput::dispWifiLogo() {     // display a small logo in the top right corner to indicate we operate with WiFi
   display.setColor(BLACK);
-  display.drawXbm(display.getWidth()-7, 2, wifi_width, wifi_height, wifi_bits);
+  display.drawXbm(display.getWidth()-logoWidth, 2, wifi_width, wifi_height, wifi_bits);
   display.setColor(WHITE);
   display.display();
 }
@@ -613,6 +649,7 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
 
 
 void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string) {    // place a string onto the status line; chars are 7px wide = 18 chars per line
+  //DEBUG ("LINE_HEIGHT: " + LINE_HEIGHT);
   if (strong)
     display.setFont(DialogInput_bold_12);
   else

@@ -241,7 +241,7 @@ parameter MorsePreferences::pliste[] = {
     "Generator Tx",
     "Generated CW to be sent by LoRa or WiFi?",
     true,
-    {"Tx OFF", "LoRa Tx ON", "WiFi Tx ON"}
+    {"Tx OFF", "WiFi Tx ON", "LoRa Tx ON" }
   },
 #endif
   {

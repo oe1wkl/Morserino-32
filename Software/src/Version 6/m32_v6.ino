@@ -225,8 +225,13 @@ unsigned long genTimer;                           // timer used for generating m
 enum MORSE_TYPE {KEY_DOWN, KEY_UP };              //   State Machine Defines
 unsigned char generatorState;
 
-const String continueMsg4Disp = "Continue w/ Paddle";
 const String continueMsg4Json = "Continue with paddle";
+
+#ifndef CONFIG_DISPLAYWRAPPER
+const String continueMsg4Disp = "Continue w/ Paddle";
+#else
+const String continueMsg4Disp = continueMsg4Json+ " ";
+#endif
 
 // for each character:
 // byte length// byte morse encoding as binary value, beginning with most significant bit
@@ -1770,9 +1775,10 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1) {                                   // in generator mode and we want to send with LoRa
                           cwForTx(0);
                           cwForTx(3);                           // as we have just finished a word
-                          if (MorsePreferences::pliste[posLoraCwTransmit].value == 1)
-                            sendWithLora();                         // finalise the string and send it to LoRA
-                          else sendWithWifi();                      // or WiFi
+//DEBUG ("1773: value = " + String(MorsePreferences::pliste[posLoraCwTransmit].value));                          
+                      if (MorsePreferences::pliste[posLoraCwTransmit].value == 1)
+                          sendWithWifi();                         // finalise the string and send it to WiFi
+                          else  sendWithLora();                       // or LoRa
                           delay(interCharacterSpace+ditLength);             // we need a slightly longer pause otherwise the receiving end might fall too far behind...
                       }
                 }
@@ -2139,9 +2145,9 @@ void updateTopLine() {
     MorseOutput::printOnStatusLine(false, 2,  getKeyerModeSymbol() + " ");
 
   displayCWspeed();                                     // update display of CW speed
-  if ((morseState == loraTrx ) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 1))
+  if ((morseState == loraTrx ) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 2))
     MorseOutput::dispLoraLogo();
-  else if ((morseState == wifiTrx) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 2))
+  else if ((morseState == wifiTrx) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 1))
       MorseOutput::dispWifiLogo();
 
   MorseOutput::displayVolume(encoderState == speedSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
