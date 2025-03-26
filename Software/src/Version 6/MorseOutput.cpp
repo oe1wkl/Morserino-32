@@ -23,10 +23,11 @@
 #define NoOfCharsPerLine 14
 #define SCROLL_TOP 15
 #define LINE_HEIGHT 16
+#define DESCENDER_LENGTH 0
 #define C_WIDTH 9
 #else
 #define NoOfCharsPerLine 512
-#define LINE_HEIGHT display.getStringHeight("A")
+#define LINE_HEIGHT (display.getStringHeight("j")) 
 #define C_WIDTH display.getStringWidth("A")
 #define SCROLL_TOP display.getHeight()==64 ? 15 : 31
 #endif
@@ -383,7 +384,8 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
 uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring, boolean small) {
   uint8_t w;
-// DEBUG("pos: " + String(xpos) + " >" + mystring + "<");
+  int x, y;
+
   if (how > BOLD)
     display.setColor(WHITE);
   else
@@ -404,61 +406,25 @@ if (how & BOLD)
 
   // convert the array characters into a String object
   w = display.getStringWidth(mystring);
-  display.fillRect(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT , w, LINE_HEIGHT + 1);
+
+  x = xpos * C_WIDTH;
+  y = SCROLL_TOP + line * LINE_HEIGHT;
+ 
+  // clear the print area
+  display.fillRect(x,  y, w, LINE_HEIGHT);
 
   if (how > BOLD)
     display.setColor(BLACK);
   else
     display.setColor(WHITE);
 
-  display.drawString(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT, mystring);
+  display.drawString(x, y, mystring);
   display.display();
   resetTOT();
   return w;         // we return the actual width of the output, in case of converted UTF8 characters
 }
 
-/*
-uint8_t MorseOutput::printOnScrollSmall(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring) {
-  uint8_t w;
-// DEBUG("pos: " + String(xpos) + " >" + mystring + "<");
-  if (how > BOLD)
-    display.setColor(WHITE);
-  else
-    display.setColor(BLACK);
 
-  if (how & BOLD)
-    display.setFont(DialogInput_bold_12);
-  else
-    display.setFont(DialogInput_plain_12);
-
-  display.setTextAlignment(TEXT_ALIGN_LEFT);
-
-  // convert the array characters into a String object
-  w = display.getStringWidth(mystring);
-  display.fillRect(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT , w, LINE_HEIGHT + 1);
-
-  if (how > BOLD)
-    display.setColor(BLACK);
-  else
-    display.setColor(WHITE);
-
-  display.drawString(xpos * C_WIDTH, SCROLL_TOP + line * LINE_HEIGHT, mystring);
-  display.display();
-  resetTOT();
-  return w;         // we return the actual width of the output, in case of converted UTF8 characters
-}
-*/
-
-
-/// clear the three lines of the display area
-
-void MorseOutput::clearThreeLines() {
-  for (int i = 0; i < 3; ++i) {
-    display.setColor(BLACK);
-    display.fillRect(0, SCROLL_TOP + i * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT + 1);
-    display.setColor(WHITE);
-  }
-}
 
 
 void MorseOutput::clearScroll() {
@@ -471,7 +437,7 @@ void MorseOutput::clearScroll() {
 
 void MorseOutput::drawVolumeCtrl (boolean inverse, uint16_t x, uint16_t y, uint16_t width, uint16_t height, uint8_t volume) { // volume = 0-19
   int i = (width - 4) * volume / 19;
-DEBUG("volCtrl: " + String(i));
+// DEBUG("volCtrl: " + String(i));
   if (inverse)
     display.setColor(BLACK);
   else
@@ -587,13 +553,13 @@ void MorseOutput::displayEmptyBattery(void (*f)()) {                            
 
 /// display volume as a progress bar: vol = 1 - 20
 void MorseOutput::displayVolume (boolean speedsetting, uint8_t volume) {
-  DEBUG("Volume: " + String(volume));
+  //DEBUG("Volume: " + String(volume));
   drawVolumeCtrl(speedsetting ? false : true, display.getWidth()-leftBoundary, 0, meterWidth, SCROLL_TOP, volume);
   display.display();
 }
 
 
-////// S Meter for Trx modus
+////// S Meter for Trx mode
 
 void MorseOutput::updateSMeter(int rssi) {
 
@@ -607,9 +573,9 @@ void MorseOutput::updateSMeter(int rssi) {
       wasZero = true;
     }
   else {
-    DEBUG ("RSSI: " + String(rssi));
+    //DEBUG ("RSSI: " + String(rssi));
     uint8_t s_v = constrain(map(rssi, -150, -20, 0, 20), 0, 20);
-    DEBUG ("Value: " + String(s_v));
+    //DEBUG ("Value: " + String(s_v));
     drawVolumeCtrl( false, display.getWidth()-leftBoundary, 0, meterWidth, SCROLL_TOP, s_v);
     wasZero = false;
   }
@@ -666,6 +632,7 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string)
 }
 
 void MorseOutput::clearStatusLine() {              // the status line is at the top, and inverted!
+  display.setFont(DialogInput_plain_12);
   display.setColor(WHITE);
   display.fillRect(0, 0, display.getWidth(), LINE_HEIGHT-1);
   display.setColor(BLACK);
@@ -673,9 +640,24 @@ void MorseOutput::clearStatusLine() {              // the status line is at the 
   display.display();
 }
 
+/// clear the three lines of the display area
+
+void MorseOutput::clearThreeLines() {
+  display.setFont(DialogInput_plain_15);
+  for (int i = 0; i < 3; ++i) {
+    //display.setColor(BLACK);
+    //display.fillRect(0, SCROLL_TOP + i * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT + 1);
+    //display.setColor(WHITE);
+    MorseOutput::clearLine(i);
+  }
+}
+
 void MorseOutput::clearLine(uint8_t line) {                                              /// clear a line - display is done somewhere else!
+  int y, l;
+  y = SCROLL_TOP + line * LINE_HEIGHT;
+  l = display.getWidth()-1;
   display.setColor(BLACK);
-  display.fillRect(0, SCROLL_TOP + line * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT+1);
+  display.fillRect(0, y, l, LINE_HEIGHT);
   display.setColor(WHITE);
 }
 

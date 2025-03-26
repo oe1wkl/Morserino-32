@@ -128,7 +128,7 @@ const int modeButtonPin = PIN_ROT_BTN;
 const int modeButtonPin = 37;
 #endif
 
-/// 2nd switch button - toggles between Speed control and Volume control (RED button)
+/// 2nd switch button - toggles between Speed control and Volume control (RED / FN button)
 #ifdef PIN_VOL_BTN
 const int volButtonPin = PIN_VOL_BTN;
 #else

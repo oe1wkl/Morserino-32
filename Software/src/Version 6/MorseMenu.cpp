@@ -24,7 +24,7 @@ extern RADIO radio;
 
 using namespace MorseMenu;
 
-//////// variables and constants for the modus menu
+//////// variables and constants for the modes menu
 
 //boolean MorseMenu::inMenuLoop = false;
 
@@ -250,7 +250,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
   uint8_t oneDown = menuNav[ptr][naviDown];
 
 
-  MorseOutput::printOnStatusLine( true, 0,  "Select Modus:     ");
+  MorseOutput::printOnStatusLine( true, 0,  "Select Mode:      ");
 
   // delete previous content
   MorseOutput::clearThreeLines();

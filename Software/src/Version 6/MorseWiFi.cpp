@@ -342,7 +342,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       }
                       else {
                         delay(2000);
-                        MorseOutput::printOnScroll(0, REGULAR, 0, "RED: return" );
+                        MorseOutput::printOnScroll(0, REGULAR, 0, "FN: return" );
                         while (true) {  // wait
                               checkShutDown(false);  // possibly time-out: go to sleep
                               if (digitalRead(volButtonPin) == LOW) {
@@ -379,7 +379,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       }
                       else {
                         delay(1000);
-                        MorseOutput::printOnScroll(2, REGULAR, 0, "RED: return" );
+                        MorseOutput::printOnScroll(2, REGULAR, 0, "FN: return" );
                         while (true) {
                               checkShutDown(false);  // possibly time-out: go to sleep
                               if (digitalRead(volButtonPin) == LOW) {
@@ -416,7 +416,7 @@ void MorseWiFi::startAP() {
   MorseOutput::printOnStatusLine( true, 0,    "Enter Wifi Info @");
   MorseOutput::printOnScroll(0, REGULAR, 0,  "AP: morserino");
   MorseOutput::printOnScroll(1, REGULAR, 0,  "URL: m32.local");
-  MorseOutput::printOnScroll(2, REGULAR, 0,  "RED to abort");
+  MorseOutput::printOnScroll(2, REGULAR, 0,  "FN to abort");
   internal::startMDNS();
 
   server.on("/", HTTP_GET, []() {

@@ -472,6 +472,7 @@ void setup()
   batteryPin = PIN_BATTERY;
 #endif
 
+
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
@@ -480,20 +481,7 @@ void setup()
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
-#ifdef INTERNAL_PULLUP
-  pinMode(modeButtonPin, INPUT_PULLUP);
-#else
-  pinMode(modeButtonPin, INPUT);
-#endif
 
-#ifndef VEXT_ON_VALUE
-#define VEXT_ON_VALUE LOW
-#endif
-
-#ifdef PIN_VEXT
-  pinMode(PIN_VEXT, OUTPUT);
-  digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
-#endif
 
  //DEBUG("Volt: " + String(volt));
 
@@ -510,6 +498,22 @@ void setup()
 #endif
 
   analogSetAttenuation(ADC_0db);
+
+
+#ifdef INTERNAL_PULLUP
+pinMode(modeButtonPin, INPUT_PULLUP);
+#else
+pinMode(modeButtonPin, INPUT);
+#endif
+
+#ifndef VEXT_ON_VALUE
+#define VEXT_ON_VALUE LOW
+#endif
+
+#ifdef PIN_VEXT
+pinMode(PIN_VEXT, OUTPUT);
+digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
+#endif
 
   // init display
   MorseOutput::initDisplay();
@@ -2339,7 +2343,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
       if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {
           MorseOutput::clearDisplay();
           MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Power OFF...");
-          MorseOutput::printOnScroll(2, REGULAR, 0, "RED to turn ON");
+          MorseOutput::printOnScroll(2, REGULAR, 0, "FN to turn ON");
           if (m32protocol)
                   MorseJSON::jsonCreate("message", "Power off", "");
           MorseOutput::refreshDisplay();
@@ -2793,7 +2797,7 @@ void audioLevelAdjust() {
 
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, BOLD, 0, "Audio In Adj.");
-    MorseOutput::printOnScroll(1, REGULAR, 0, "End with RED");
+    MorseOutput::printOnScroll(1, REGULAR, 0, "End with FN");
     //keyTx = true;
     keyOut(true,  true, 698, 0);                                  /// we generate a side tone, f=698 Hz, also on line-out, but with vol down on speaker
     while (true) {                                                       // we also key the transmitter (can be used for tuning the Tx...)

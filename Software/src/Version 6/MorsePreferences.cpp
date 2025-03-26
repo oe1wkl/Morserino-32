@@ -557,7 +557,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
   displayKeyerPreferencesMenu(posPtr);
   MorseOutput::printOnScroll(2, REGULAR, 0,  " ");
 
-  while (true) {                            // we wait for single click = selection or long click = exit - or single or long click or RED button, or for a serial event
+  while (true) {                            // we wait for single click = selection or long click = exit - or single or long click or FN button, or for a serial event
         serialEvent();
         if (goToMenu) {
             MorseJSON::jsonActivate(ACT_EXIT);
@@ -582,7 +582,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                         break;
           }
 
-          Buttons:: volButton.Update();                 // RED button
+          Buttons:: volButton.Update();                 // FN button
           switch (Buttons:: volButton.clicks) {         // was clicked
             case 1:     // recall snapshot
                         if (MorsePreferences::recallSnapshot()) {
