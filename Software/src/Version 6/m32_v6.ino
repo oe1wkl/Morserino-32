@@ -348,6 +348,8 @@ void IRAM_ATTR powerpath_isr() {
 }
 #endif
 
+uint8_t scrollTop;
+
 /*
 ////////////////////////////////////////////////////////////////////
 // encoder subroutines
@@ -520,6 +522,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   MorseOutput::setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
+  scrollTop = MorseOutput::getScrollTop();
   MorseOutput::soundSetup();
 
 #ifdef CONFIG_TLV320AIC3100_INT
@@ -565,7 +568,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   //ESPNOW setup
   if (MorsePreferences::useEspNow) {
-    quickEspNow.onDataRcvd (onEspnowRecv);
+      quickEspNow.onDataRcvd (onEspnowRecv);
       MorseMenu::setupESPNow();
   }
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
@@ -720,17 +723,29 @@ void displayStartUp(uint16_t volt) {
 #endif
 #endif
     MorseOutput::displayBatteryStatus(volt);
+
+
   //prepare board version, just in case we want to switch to M32protocol later on
-#ifdef ARDUINO_heltec_wifi_kit_32_V3
-    brd = "M32Pocket";
+
+#define ST(A) #A
+#define STR(A) ST(A)
+#ifdef HW_NAME
+
+  if (STR(HW_NAME) == "original") {
+      if (MorsePreferences::boardVersion == 3)
+          brd = "M32 1st edition";
+      else if (MorsePreferences::boardVersion == 4)
+          brd = "M32 2nd edition";
+      else
+          brd = "unknown";
+    }
+    else
+      brd = STR(HW_NAME);
+
 #else
-  if (MorsePreferences::boardVersion == 3)
-    brd = "1st edition";
-  else if (MorsePreferences::boardVersion == 4)
-    brd = "2nd edition";
-  else
-    brd = "unknown";
+    brd = "Unknown Device";
 #endif
+
   delay(2000);
 
 }
@@ -3291,18 +3306,22 @@ void m32Put(String type, String token, String value) {                    /// PU
     else if (type == "wifi") {
       String n = value.substring(0,1);
       int nr = n.toInt();
-      if (nr < 1 || nr > 3)
+
+      if (nr < 0 || nr > 3)
         return (MorseJSON::jsonError("INVALID WIFI NUMBER"));
+      if (nr == 0 && token != "select")
+        return (MorseJSON::jsonError("INVALID WIFI NUMBER"));
+
       if (value.indexOf("/") == 1)
         value = value.substring(2);
       else value == "";
 
-      if (token == "select")
+      if (token == "select") 
         selectWifi(nr);
       else if (token == "ssid")
         setSsid(nr, value);
       else if (token == "password")
-        setPassword(number, value);
+        setPassword(nr, value); 
       else if (token == "trxpeer")
         setTrxPeer(nr, value);
       else
@@ -3509,6 +3528,7 @@ void setPassword(int i, String str) {                                       // p
   }
   MorsePreferences::writePreferences("morserino");
   MorseJSON::jsonOK();
+
 }
 
 
@@ -3534,14 +3554,20 @@ void setTrxPeer(int i, String str) {                                       // pa
 
 void selectWifi(int i) {
     switch(i) {
+      case 0: MorsePreferences::useEspNow = true;
+        break;
       case 1: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID1, MorsePreferences::wlanPassword1, MorsePreferences::wlanTRXPeer1);
+              MorsePreferences::useEspNow = false;
         break;
       case 2: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID2, MorsePreferences::wlanPassword2, MorsePreferences::wlanTRXPeer2);
-        break;
+              MorsePreferences::useEspNow = false;
+      break;
       case 3: MorsePreferences::writeWifiInfo(MorsePreferences::wlanSSID3, MorsePreferences::wlanPassword3, MorsePreferences::wlanTRXPeer3);
+               MorsePreferences::useEspNow = false;
         break;
   }
   MorseJSON::jsonOK();
+  ESP.restart();
 }
 
 

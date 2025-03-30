@@ -167,7 +167,7 @@ void MorseJSON::jsonCreate(String objName, String path, String state) {
 }
 
 void MorseJSON::jsonActivate(actMessage active) { /// if active == 1: we are LEAVING a mode
-	const char *message[] = {"EXIT", "ON", "SET", "CANCELLED", "RECALLED", "CLEARED"};
+	const char *message[] = {"EXIT", "ON", "SET", "CANCELLED", "RECALLED", "CLEAjsonDevice"};
 	DynamicJsonDocument doc(32);
 	JsonObject activate = doc.createNestedObject("activate");
 	if (active > 5)

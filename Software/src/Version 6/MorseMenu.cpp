@@ -348,7 +348,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 firstTime = true;
                 morseState = morseGenerator;
                 showStartDisplay("Generator     ", "Start / Stop  ", "press Paddle  ", 1250);
-                if (MorsePreferences::pliste[posLoraCwTransmit].value == 2)
+                if (MorsePreferences::pliste[posLoraCwTransmit].value == 1)
                 if (!MorsePreferences::useEspNow) 
                   if (!setupWifi())
                   return false;

@@ -17,11 +17,11 @@
 
 ////////////////////////////// New scrolling display
 
+
 #ifndef CONFIG_DISPLAYWRAPPER
 /// circular buffer: 14 chars by NoOfLines lines (bottom 3 are visible)
 #define NoOfLines 15
 #define NoOfCharsPerLine 14
-#define SCROLL_TOP 15
 #define LINE_HEIGHT 16
 #define DESCENDER_LENGTH 0
 #define C_WIDTH 9
@@ -29,13 +29,14 @@
 #define NoOfCharsPerLine 512
 #define LINE_HEIGHT (display.getStringHeight("j")) 
 #define C_WIDTH display.getStringWidth("A")
-#define SCROLL_TOP display.getHeight()==64 ? 15 : 31
 #endif
 
 #include <Arduino.h>
 #include "MorseOutput.h"
 #include "morsedefs.h"
 #include "MorsePreferences.h"
+
+#define SCROLL_TOP scrollTop
 
 #ifndef CONFIG_DISPLAYWRAPPER
 #include "wklfonts.h"
@@ -62,6 +63,8 @@ TLV320AIC31xx codec(&Wire);
 #endif
 
 using namespace MorseOutput;
+
+
 
 char textBuffer[NoOfLines][2 * NoOfCharsPerLine + 1]; /// we need extra room for style markers (FONT_ATTRIB stored as characters to toggle on/off the style within a line)
 /// and 0 terminator
@@ -152,6 +155,18 @@ void MorseOutput::refreshDisplay()
 {
   display.display();
 }
+
+uint8_t MorseOutput::getScrollTop() {
+#ifndef CONFIG_DISPLAYWRAPPER
+  return 15;
+#else
+  display.setFont(DialogInput_plain_12);
+  uint8_t top =  display.getStringHeight("j");
+  // display.setFont(DialogInput_plain_15);
+  return top ;
+#endif
+}
+
 
 void MorseOutput::sleep()
 {
@@ -342,7 +357,12 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   uint8_t charsPrinted;
 
   display.setColor(BLACK);
-  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT + 1); // black out the line on screen
+  #ifdef CONFIG_DISPLAYWRAPPER
+  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT); // black out the line on screen
+  #else
+  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT+1); // black out the line on screen
+
+  #endif
   for (int i = 0; (c = textBuffer[bufferLine][i]) ; ++i) {
     // if (c == ' ') DEBUG("Blank!");
     if (c < 5)   {         /// a flag
@@ -411,7 +431,11 @@ if (how & BOLD)
   y = SCROLL_TOP + line * LINE_HEIGHT;
  
   // clear the print area
+  #ifdef CONFIG_DISPLAYWRAPPER
   display.fillRect(x,  y, w, LINE_HEIGHT);
+  #else
+  display.fillRect(x,  y, w, LINE_HEIGHT+1);
+  #endif
 
   if (how > BOLD)
     display.setColor(BLACK);
@@ -623,7 +647,7 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string)
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   uint8_t w = display.getStringWidth(string);
   display.setColor(WHITE);
-  display.fillRect(xpos * display.getStringWidth("A"), 0 , w, LINE_HEIGHT-1);
+  display.fillRect(xpos * display.getStringWidth("A"), 0 , w, SCROLL_TOP);
   display.setColor(BLACK);
   display.drawString(xpos * display.getStringWidth("A"), 0, string);
   display.setColor(WHITE);
@@ -631,10 +655,12 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string)
   resetTOT();
 }
 
+
+
 void MorseOutput::clearStatusLine() {              // the status line is at the top, and inverted!
   display.setFont(DialogInput_plain_12);
   display.setColor(WHITE);
-  display.fillRect(0, 0, display.getWidth(), LINE_HEIGHT-1);
+  display.fillRect(0, 0, display.getWidth(), LINE_HEIGHT);
   display.setColor(BLACK);
 
   display.display();
@@ -657,7 +683,11 @@ void MorseOutput::clearLine(uint8_t line) {                                     
   y = SCROLL_TOP + line * LINE_HEIGHT;
   l = display.getWidth()-1;
   display.setColor(BLACK);
+  #ifdef CONFIG_DISPLAYWRAPPER
   display.fillRect(0, y, l, LINE_HEIGHT);
+  #else
+  display.fillRect(0, y, l, LINE_HEIGHT+1);
+  #endif
   display.setColor(WHITE);
 }
 

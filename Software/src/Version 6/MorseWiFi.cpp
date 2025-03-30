@@ -524,7 +524,7 @@ boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Connect to WiFi network
   if (MorsePreferences::wlanSSID == "")
       return internal::errorConnect(String("WiFi Not Conf"));
-
+  //DEBUG("SSID: " + MorsePreferences::wlanSSID + " PW: >" +  MorsePreferences::wlanPassword + "<");
   WiFi.begin(MorsePreferences::wlanSSID.c_str(), MorsePreferences::wlanPassword.c_str());
   // Wait for connection
   long unsigned int wait = millis();
@@ -534,7 +534,7 @@ boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
       return internal::errorConnect(String("No WiFi:"));
   }
   //DEBUG("Connected to " + String(p_wlanSSID));
-  //DEBUG("IP address: " + String(WiFi.localIP());
+  //DEBUG("IP address: " + String(WiFi.localIP()));
   internal::startMDNS();
   return true;
 }

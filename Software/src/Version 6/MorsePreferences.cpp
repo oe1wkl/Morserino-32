@@ -1149,15 +1149,19 @@ void MorsePreferences::writePreferences(String repository) {
 
      if (MorsePreferences::wlanSSID1 != pref.getString("wlanSSID1"))
          pref.putString("wlanSSID1", MorsePreferences::wlanSSID1);
-     if (MorsePreferences::wlanPassword1 != pref.getString("wlanPassword1"))
+     if (MorsePreferences::wlanPassword1 != pref.getString("wlanPassword1")){
+         pref.remove("wlanPassword1");
          pref.putString("wlanPassword1", MorsePreferences::wlanPassword1);
+     }
      if (MorsePreferences::wlanTRXPeer1 != pref.getString("wlanTRXPeer1"))
          pref.putString("wlanTRXPeer1", MorsePreferences::wlanTRXPeer1);
 
      if (MorsePreferences::wlanSSID2 != pref.getString("wlanSSID2"))
          pref.putString("wlanSSID2", MorsePreferences::wlanSSID2);
-     if (MorsePreferences::wlanPassword2 != pref.getString("wlanPassword2"))
+     if (MorsePreferences::wlanPassword2 != pref.getString("wlanPassword2")){
+         pref.remove("wlanPassword2");
          pref.putString("wlanPassword2", MorsePreferences::wlanPassword2);
+     }
      if (MorsePreferences::wlanTRXPeer2 != pref.getString("wlanTRXPeer2"))
          pref.putString("wlanTRXPeer2", MorsePreferences::wlanTRXPeer2);
 
