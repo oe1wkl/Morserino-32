@@ -340,10 +340,10 @@ parameter MorsePreferences::pliste[] = {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   {
     0, 0, 4, 1,                                                 // output via Bluetooth? 0 = none, 1= keyed sends CTRL key, 2 = decoded chars are sent as keystrokes, 3=both
-    "BLT Kbrd Output",
+    "BLT Kbd Output",
     "Select what is sent to the Bluetooth Keyboard output",
     true,
-    {"Nothing", "Vband Keying", "Decoded", "Keyed+Decoded", "Generic Kbd"}
+    {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"}
   },
 #endif
   {
