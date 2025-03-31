@@ -2068,7 +2068,7 @@ void displayDecodedMorse(String symbol, boolean keyed) {
   SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);
 
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-  if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
+  if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
     MorseBluetooth::bluetoothTypeString(tmp_str);
 #endif
 
@@ -2102,7 +2102,7 @@ void displayGeneratedMorse(FONT_ATTRIB style, String s)
 	MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
 	SerialOutMorse(s, 0b100); // dec 4
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-	if ((MorsePreferences::pliste[posBluetoothOut].value & 0x2) == 0x2)
+	if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
 		MorseBluetooth::bluetoothTypeString(s);
 #endif
 }
