@@ -1021,7 +1021,13 @@ void MorseOutput::soundSignalOK() {
 
 
 void MorseOutput::soundSignalERR() {
-    pwmTone(311, MorsePreferences::sidetoneVolume, false);
+  pwmTone(366, MorsePreferences::sidetoneVolume, false);
+  delay(97);
+  pwmNoTone(MorsePreferences::sidetoneVolume);
+#ifdef CONFIG_SOUND_I2S
+  delay(20);
+#endif
+    pwmTone(330, MorsePreferences::sidetoneVolume, false);
     delay(193);
     pwmNoTone(MorsePreferences::sidetoneVolume);
 }

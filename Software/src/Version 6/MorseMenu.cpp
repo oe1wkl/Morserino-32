@@ -564,7 +564,7 @@ void MorseMenu::setupESPNow() {
   // init wifi for espnow
       WiFi.mode(WIFI_STA);
       WiFi.disconnect (false, true);
-      quickEspNow.begin (ESPNOW_CH); // If you use no connected WiFi channel needs to be specified
+      quickEspNow.begin (MorsePreferences::pliste[posLoraChannel].value ? ESPNOW_CH_ALT : ESPNOW_CH); // If you don't use an AP channel needs to be specified
       delay(100);
       //DEBUG("setupESPNow");
   

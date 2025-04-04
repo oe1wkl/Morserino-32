@@ -58,8 +58,9 @@ const String PROJECTNAME = "Morserino-32";
 /////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
 #define CW_TRX_PROTO_VERSION B01
 
-//// WiFi Channel used for ESPNOW (might make this configurable later ?)
+//// WiFi Channel used for ESPNOW (might make this configurable later ?), and alternative channel
 #define ESPNOW_CH 6
+#define ESPNOW_CH_ALT 1
 
 namespace Buttons
 {

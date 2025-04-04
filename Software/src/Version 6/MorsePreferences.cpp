@@ -332,8 +332,8 @@ parameter MorsePreferences::pliste[] = {
   },
   {
     0, 0, 1,  1,                                                // allows to set different LoRa sync words, and so creating virtual "channels"; 0 = 0x27, 1 = 0x66
-    "LoRa Channel",
-    "Which virtual channel is used by LoRa",
+    "Trx Channel",
+    "Which virtual channel is used by LoRa or EspNow Trx",
     true,
     {"Standard", "Secondary"}
   },
@@ -484,7 +484,7 @@ uint8_t MorsePreferences::memPtr = 0;
 
  prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posGeneratorDisplay, posEchoToneShift,
-                                                   posKeyExternalTx,  posExtAudioOnDecode
+                                                   posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
  prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE,
@@ -502,9 +502,7 @@ uint8_t MorsePreferences::memPtr = 0;
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
                                                    posKeyExternalTx, posLoraCwTransmit,
-                                              #ifndef LORA_DISABLED
                                                    posLoraChannel,
-                                              #endif
                                                    posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
