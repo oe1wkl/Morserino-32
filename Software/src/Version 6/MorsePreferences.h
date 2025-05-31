@@ -105,6 +105,13 @@ namespace MorsePreferences
   extern String  wlanTRXPeer3;
 
   extern boolean useEspNow;
+  #ifdef CONFIG_DISPLAYWRAPPER
+  struct themes {
+    uint16_t foreground;
+    uint16_t background;
+  };
+  extern themes themeList[];                 // theme for display wrapper
+  #endif
 
   extern uint32_t fileWordPointer;
   extern uint8_t promptPause;
@@ -173,8 +180,6 @@ namespace MorsePreferences
   extern int extTrxOptionsSize;
   extern int decoderOptionsSize;
   extern int allOptionsSize;
-
-
 
   void updateMemory(uint8_t);
   void clearMemory(uint8_t);

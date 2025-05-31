@@ -66,6 +66,7 @@ void packetReceived() {
 using namespace Buttons;
 
 
+
 // define the buttons for the clickbutton library, & other classes that we need
 
 /// variables, value defined at setup()
@@ -519,6 +520,9 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   // init display
   MorseOutput::initDisplay();
+  #ifdef CONFIG_DISPLAYWRAPPER
+  MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
+  #endif
 
   MorseOutput::setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
@@ -694,6 +698,12 @@ void displayStartUp(uint16_t volt) {
   s.reserve(18);
   s = PROJECTNAME + String(" ");
   MorseOutput::clearDisplay();
+  #ifdef CONFIG_DISPLAYWRAPPER
+  MorseOutput::dispM32Logo();
+  delay(1800);
+  MorseOutput::clearDisplay();
+  #endif
+
 #ifndef LORA_DISABLED
   s += String(MorsePreferences::loraQRG / 10000);
 #endif
@@ -1308,7 +1318,8 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    if (MorsePreferences::pliste[posACS].value > 0)
                                         acsTimer = millis() + (MorsePreferences::pliste[posACS].value + 1) * ditLength; // prime the ACS timer
                                    if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx)
-                                      interWordTimer = millis() + 5*ditLength;
+                                      // interWordTimer = millis() + 5*ditLength;
+                                      interWordTimer = millis() + ditLength * (MorsePreferences::pliste[posInterWordSpace].value -1);
                                    else if (morseState == echoTrainer)
                                        interWordTimer = millis() + 2*interCharacterSpace + ditLength + interWordSpace/8;   // waiting for end of word in echo trainer
                                    else
@@ -1452,7 +1463,7 @@ uint8_t readSensors(int left, int right, boolean init) {
   } else {
     //DEBUG("@1332: tLeft: " + String(MorsePreferences::tLeft));
     //lValue -=25; rValue -=25;
-    DEBUG("@1334: lValue, rValue: " + String (lValue) + " " + String(rValue));
+    //DEBUG("@1334: lValue, rValue: " + String (lValue) + " " + String(rValue));
     if (sizeof(touch_value_t) < 4) {
         if (lValue < 32 || rValue < 32)
           return 3;
@@ -1460,7 +1471,7 @@ uint8_t readSensors(int left, int right, boolean init) {
           return 0;
           }
     else {
-        if (lValue > 85000 || rValue > 85000)
+        if (lValue > 45000 || rValue > 45000) // TOUCH SENSITIVITY for S3 - was 85000
           return 3;
         else
           return 0;
@@ -1490,8 +1501,10 @@ void initSensors() {
     MorsePreferences::tLeft = lUntouched - 9;
     MorsePreferences::tRight = rUntouched - 9;
   } else { // fixed threshold works fine on ESP32 S2&S3 due to 32 bit value ranges
-    MorsePreferences::tLeft = lUntouched + 10000;
-    MorsePreferences::tRight = rUntouched + 10000;
+   // MorsePreferences::tLeft = lUntouched + 10000;
+   //MorsePreferences::tRight = rUntouched + 10000;
+    MorsePreferences::tLeft = lUntouched + 3000;
+    MorsePreferences::tRight = rUntouched + 3000;
   }
 #endif
 }

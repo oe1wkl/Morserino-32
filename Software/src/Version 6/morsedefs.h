@@ -34,6 +34,7 @@
 #include "FS.h"
 #include "SPIFFS.h"
 
+
 /////// Program Name & Version
 
 const String PROJECTNAME = "Morserino-32";
@@ -361,10 +362,13 @@ enum prefPos : uint8_t {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 				posBluetoothOut,
 #endif
+#ifdef CONFIG_DISPLAYWRAPPER
+        posTheme,
+#endif
                 posSerialOut,
                 // to be treated differently:
                 posKochFilter,                                                                                // 36
-                posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf    // 37
+                posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf,    // 37
 };
 
 enum actMessage : int {

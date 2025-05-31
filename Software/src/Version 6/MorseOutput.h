@@ -69,6 +69,11 @@ namespace MorseOutput
   void showVolumeScope(uint16_t mini, uint16_t maxi);
   void dispLoraLogo();
   void dispWifiLogo();
+  
+  #ifdef CONFIG_DISPLAYWRAPPER
+  void dispM32Logo();
+  void setTheme (uint8_t theme);
+  #endif
 
   void resetTOT();
 
