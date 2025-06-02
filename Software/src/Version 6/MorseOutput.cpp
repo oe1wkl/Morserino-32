@@ -665,6 +665,8 @@ void MorseOutput::decreaseBrightness() {
                 break;
     }
     display.setBrightness(MorsePreferences::oledBrightness);
+    MorsePreferences::writeBrightnessPreference(MorsePreferences::oledBrightness);
+
 }
 
 void MorseOutput::setBrightness(uint8_t brightness) {

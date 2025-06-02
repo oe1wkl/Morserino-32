@@ -473,8 +473,7 @@ uint8_t MorsePreferences::memCounter;
 uint8_t MorsePreferences::memPtr = 0;
 
 
-#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, posSerialOut, posPolarity, posExtPddlPolarity,
-
+#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, 
 #ifdef CONFIG_DISPLAYWRAPPER
 #define THEME posTheme,
 #else
@@ -487,64 +486,76 @@ uint8_t MorsePreferences::memPtr = 0;
 #endif
 
 
-  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE THEME BLUE
+  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency
                                                  };
-  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME BLUE
+  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
- prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE THEME BLUE
+ prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
 
- prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE THEME BLUE
+ prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
                                                  };
 
- prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE THEME BLUE
+ prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
                                                  };
 
- prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE THEME BLUE
+ prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posKochSeq, posCarouselStart, posInterCharSpace,  posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
 
- prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE THEME BLUE
+ prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
                                                  };
 
- prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  THEME BLUE
+ prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
                                                    posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  THEME BLUE
+ prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
                                                    posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  THEME BLUE
+ prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  THEME BLUE
+ prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE THEME BLUE 
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
@@ -1456,6 +1467,12 @@ void MorsePreferences::determineBoardVersion() {
     pref.end();
 }
 
+void MorsePreferences::writeBrightnessPreference(uint8_t val) {
+ 
+    pref.begin("morserino", false);             // open the namespace as read/write
+    pref.putUChar("brightness", val);          // store the new value
+    pref.end();
+}
 
 //////// System Setup / LoRa Setup ///// Called when BALCK knob is pressed @ startup
 

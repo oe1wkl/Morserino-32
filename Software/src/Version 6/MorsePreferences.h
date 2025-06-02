@@ -212,6 +212,7 @@ namespace MorsePreferences
   void writeLastExecuted(uint8_t menuPtr);
   void writeWifiInfo(String, String, String);
   void writeWifiInfoMultiple(String, String, String, String, String, String, String, String, String);
+  void writeBrightnessPreference(uint8_t);
   void fireCharSeen(boolean wpmOnly);
   void setCurrentOptions(prefPos *current, int size);
   void setCwMem(uint8_t, String);

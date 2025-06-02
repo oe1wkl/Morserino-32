@@ -414,6 +414,7 @@ int checkEncoder()
         //  Serial.println ("newPos: " + String(newPosition));
         diff = newPosition - oldPosition;
         oldPosition = newPosition;
+        delay (10); // debounce delay, seems to be necessary for the encoder to work properly
         if (diff > 0)
             return 1;
         else
