@@ -2174,8 +2174,12 @@ void updateTopLine() {
       symbol = "   ";
     MorseOutput::printOnStatusLine(true, 1,  symbol);
   }
-  else
+  else if (morseState != morseDecoder) 
     MorseOutput::printOnStatusLine(false, 2,  getKeyerModeSymbol() + " ");
+  else 
+    MorseOutput::printOnStatusLine(false, 2,  "d  ");
+  
+  MorseOutput::printOnStatusLine(false, 3,  MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY ? "SK" : "CK");
 
   displayCWspeed();                                     // update display of CW speed
   if ((morseState == loraTrx ) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 2))
