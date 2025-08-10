@@ -1492,26 +1492,44 @@ void MorseOutput::pwmClick(unsigned int volume) {                        /// gen
 }
 
 void MorseOutput::soundSignalOK() {
+#ifndef CONFIG_SOUND_I2S
     pwmTone(440, MorsePreferences::sidetoneVolume, false);
     delay(97);
     pwmNoTone(MorsePreferences::sidetoneVolume);
-#ifdef CONFIG_SOUND_I2S
-    delay(20);
-#endif
     pwmTone(587, MorsePreferences::sidetoneVolume, false);
     delay(193);
     pwmNoTone(MorsePreferences::sidetoneVolume);
+#else
+    if (! sidetone.playSPIFFSFile("/sounds/success.mp3")) {
+        pwmTone(440, MorsePreferences::sidetoneVolume, false);
+        delay(97);
+        pwmNoTone(MorsePreferences::sidetoneVolume);
+        delay(20);
+        pwmTone(587, MorsePreferences::sidetoneVolume, false);
+        delay(193);
+        pwmNoTone(MorsePreferences::sidetoneVolume);
+    }
+#endif
 }
 
 
 void MorseOutput::soundSignalERR() {
+#ifndef CONFIG_SOUND_I2S
   pwmTone(366, MorsePreferences::sidetoneVolume, false);
   delay(97);
   pwmNoTone(MorsePreferences::sidetoneVolume);
-#ifdef CONFIG_SOUND_I2S
-  delay(20);
+  pwmTone(330, MorsePreferences::sidetoneVolume, false);
+  delay(193);
+  pwmNoTone(MorsePreferences::sidetoneVolume);
+#else
+  if (! sidetone.playSPIFFSFile("/sounds/error.mp3")) {
+     pwmTone(311, MorsePreferences::sidetoneVolume, false);
+     delay(193);
+     pwmNoTone(MorsePreferences::sidetoneVolume);
+     delay(20);
+     pwmTone(330, MorsePreferences::sidetoneVolume, false);
+     delay(193);
+     pwmNoTone(MorsePreferences::sidetoneVolume);
+  }
 #endif
-    pwmTone(330, MorsePreferences::sidetoneVolume, false);
-    delay(193);
-    pwmNoTone(MorsePreferences::sidetoneVolume);
 }
