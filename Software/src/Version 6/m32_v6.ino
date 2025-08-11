@@ -2072,6 +2072,10 @@ void fetchNewWord() {
 /// the next function is used to display KEYED and DECODED characters
 
 void displayDecodedMorse(String symbol, boolean keyed) {
+  // check for "eeee" as alternative variant to repeat entry in echo trainer (<hh>)
+  if (symbol == "e" &&  echoResponse.endsWith("eee")) {
+    symbol="<err>";
+  }
   String tmp_str = symbol;
   if (MorsePreferences::pliste[posOutputCase].value) {
     tmp_str.toUpperCase();
