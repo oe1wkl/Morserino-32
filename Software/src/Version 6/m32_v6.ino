@@ -596,8 +596,11 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
          }
       }
   }
+
+#ifndef CONFIG_I2S_DATA_IN_PIN
   analogSetAttenuation(ADC_0db);
   adcAttachPin(audioInPin);
+#endif
 
   // to calibrate sensors, we record the values in untouched state; need to do this after checking for system config
   initSensors();
