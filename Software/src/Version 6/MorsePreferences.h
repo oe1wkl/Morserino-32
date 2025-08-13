@@ -207,6 +207,7 @@ namespace MorsePreferences
   void flipScreen();
   void determineBoardVersion();
   void calibrateVoltageMeasurement();
+  void setVoltageAdjust(uint8_t);
   void writeWordPointer();
   void writeVolume();
   void writeLastExecuted(uint8_t menuPtr);

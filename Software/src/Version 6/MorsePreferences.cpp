@@ -1503,6 +1503,13 @@ void MorsePreferences::calibrateVoltageMeasurement() {
   pref.end();
 }
 
+void MorsePreferences::setVoltageAdjust(uint8_t newVAdjust) {
+  MorsePreferences::vAdjust = newVAdjust;
+  pref.begin("morserino", false);             // open the namespace as read/write
+  pref.putUChar("vAdjust", newVAdjust);
+  pref.end();
+}
+
 void MorsePreferences::flipScreen() {
   MorsePreferences::leftHanded = ! MorsePreferences::leftHanded;
   pref.begin("morserino", false);

@@ -998,19 +998,19 @@ void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
   uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
   switch (powerpath_state) {
       case 0:
-        s = "Charger Fault!";
+        s = "Fault!";
         break;
       case 2:
-        s = "Charging";
+        s = "Charge";
         break;
       case 3:
-        s = "Low Battery!";
+        s = "Low!";
         break;
       case 4:
-        s = "Charge complete";
+        s = "Full";
         break;
       case 6:
-        s = "No Battery!";
+        s = "No Bat!";
         break;
       case 7:
         // Serial.println("Shutdown No Input Power Present");
@@ -1019,6 +1019,10 @@ void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
         //Serial.print("Unknown State: ");
         break;
     }
+#ifdef CONFIG_BATMEAS_PIN
+// pocketwroom with voltage reading
+  s+= " " + String(v/1000.0);
+#endif
 #endif
   printOnScroll(2, REGULAR, 0, s);
 #ifndef CONFIG_MCP73871

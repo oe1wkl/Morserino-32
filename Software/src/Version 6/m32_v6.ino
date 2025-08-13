@@ -596,8 +596,11 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
          }
       }
   }
+
+#ifndef CONFIG_I2S_DATA_IN_PIN
   analogSetAttenuation(ADC_0db);
   adcAttachPin(audioInPin);
+#endif
 
   // to calibrate sensors, we record the values in untouched state; need to do this after checking for system config
   initSensors();
@@ -1054,6 +1057,7 @@ void loop() {
         break;
       case 4:
         Serial.println("Charge complete standby");
+        batteryVoltage(); // measure battery and eventually tweak vAdjust
         break;
       case 6:
         Serial.println("Shutdown No Battery Present");
@@ -2298,6 +2302,7 @@ String cleanUpProSigns( String &input ) {
 //// measure battery voltage in mV
 
 int16_t batteryVoltage() {      /// measure battery voltage and return result in milliVolts
+#ifndef CONFIG_MCP73871
 #ifdef PIN_ADC_CTRL
   #define	ADC_Ctrl  PIN_ADC_CTRL
   pinMode(ADC_Ctrl,OUTPUT);
@@ -2338,6 +2343,40 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   #endif
       return (int16_t) v;
 
+
+#else
+// CONFIG_MCP73871
+#ifdef CONFIG_BATMEAS_PIN
+  adcAttachPin(CONFIG_BATMEAS_PIN);
+  analogReadResolution(12);
+  analogSetPinAttenuation(CONFIG_BATMEAS_PIN,ADC_6db); // 6db is a good fit with the used voltage divider, ~1.3V for a full 4.2V battery
+  float reading = 0.0;
+  for (int i = 0; i<10; i++) {
+    reading += analogRead(CONFIG_BATMEAS_PIN) / 4095.0 * 1750; // 6 db atten = 1750mV max
+    delay(20);
+  }
+  reading /= 10.0;
+  int16_t mvolt = (reading  * (MorsePreferences::vAdjust * 1.0) / 180.0) * 3.1277; // 470k/1000k voltage divider
+  DEBUG("ReadVoltage mv:" + String(mvolt));
+  uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
+  if (powerpath_state == 4) {
+    uint8_t newVAdjust = 180 *  4200 / mvolt; // 180 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
+    if (abs(newVAdjust - MorsePreferences::vAdjust) >= 3) {
+      // enough delta to qualify for storing new vAdjust
+      MorsePreferences::vAdjust = newVAdjust;
+      MorsePreferences::setVoltageAdjust(newVAdjust);
+
+      // TODO: Store value in MorsePreferences
+    }
+
+    int16_t corrected_mvolt = (newVAdjust / 180.0) * mvolt;
+    return corrected_mvolt;
+  }
+  return mvolt;
+#else
+  return 0; // no battery measurement in pocketwroom PCB < 4.1
+#endif
+#endif
 }
 
 
