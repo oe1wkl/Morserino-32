@@ -848,11 +848,16 @@ String MorsePreferences::getValueLine(prefPos pos) {
       }
       break;
     case posVAdjust:
+    #ifdef CONFIG_BATMEAS_PIN
+      // (reading - 200 + MorsePreferences::vAdjust)
+      volt = (int16_t)(voltage_raw * MorsePreferences::vAdjust) / 180 * 2.4  ;  
+    #else
     #ifndef ARDUINO_heltec_wifi_kit_32_V3
       volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * VOLT_CALIBRATE));   // recalculate millivolts for new adjustment
     #else
       // (reading - 200 + MorsePreferences::vAdjust)
-      volt = (voltage_raw - 200 + MorsePreferences::vAdjust) * VOLT_CALIBRATE;
+      volt = (int16_t) (voltage_raw - 200 + MorsePreferences::vAdjust) * VOLT_CALIBRATE;
+     #endif
     #endif
       sprintf(numBuffer, "%4d mV", volt);
       str = String(numBuffer);

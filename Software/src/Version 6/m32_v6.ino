@@ -2356,8 +2356,12 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
     delay(20);
   }
   reading /= 10.0;
-  int16_t mvolt = (reading  * (MorsePreferences::vAdjust * 1.0) / 180.0) * 3.1277; // 470k/1000k voltage divider
-  DEBUG("ReadVoltage mv:" + String(mvolt));
+  int16_t mvolt = (reading  * (MorsePreferences::vAdjust * 1.0) / 180.0) * 2.4; // 470k/1000k voltage divider
+  voltage_raw = reading; // store raw voltage reading for later use
+  //delay(1000);
+  //DEBUG("Reading: " + String(reading) );
+  //DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
+  //DEBUG("ReadVoltage mv:" + String(mvolt));
   uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
   if (powerpath_state == 4) {
     uint8_t newVAdjust = 180 *  4200 / mvolt; // 180 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
@@ -2365,8 +2369,6 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
       // enough delta to qualify for storing new vAdjust
       MorsePreferences::vAdjust = newVAdjust;
       MorsePreferences::setVoltageAdjust(newVAdjust);
-
-      // TODO: Store value in MorsePreferences
     }
 
     int16_t corrected_mvolt = (newVAdjust / 180.0) * mvolt;
@@ -2867,11 +2869,21 @@ void audioLevelAdjust() {
     uint16_t dataSize = 1216;
     uint16_t testData[dataSize];
 
-  #ifdef CONFIG_SOUND_I2S
-    return;
-  #endif
+     MorseOutput::clearDisplay();
 
-    MorseOutput::clearDisplay();
+  #ifdef CONFIG_SOUND_I2S
+    MorseOutput::printOnScroll(0, BOLD, 0, "Key ON");
+    MorseOutput::printOnScroll(1, REGULAR, 0, "End with FN");
+    //keyTx = true;
+    keyOut(true,  true, 698, MorsePreferences::sidetoneVolume);                                  /// we generate a side tone, f=698 Hz, also on line-out, but with vol down on speaker
+    while (true) {                                                       // we also key the transmitter (can be used for tuning the Tx...)
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks)
+            break; 
+    } // end while
+    keyOut(false,  true, 698, 0);      
+  #else
+
     MorseOutput::printOnScroll(0, BOLD, 0, "Audio In Adj.");
     MorseOutput::printOnScroll(1, REGULAR, 0, "End with FN");
     //keyTx = true;
@@ -2894,6 +2906,7 @@ void audioLevelAdjust() {
     } // end while
     keyOut(false,  true, 698, 0);                                  /// stop keying
     //keyTx = true;
+  #endif
 }
 
 ////////////////////////// memoryKeyer /////////////////

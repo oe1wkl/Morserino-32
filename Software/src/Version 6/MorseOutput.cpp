@@ -1021,18 +1021,33 @@ void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
     }
 #ifdef CONFIG_BATMEAS_PIN
 // pocketwroom with voltage reading
-  s+= " " + String(v/1000.0);
+//  s+= " " + String(v/1000.0);
 #endif
 #endif
   printOnScroll(2, REGULAR, 0, s);
-#ifndef CONFIG_MCP73871
-  int w = constrain(v, 3100, 4100);
-  w = map(w, 3100, 4100, 0, 31);
-  display.drawRect(75, SCROLL_TOP + 2 * LINE_HEIGHT + 3, 35, LINE_HEIGHT - 4);
-  display.drawRect(110, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 4, LINE_HEIGHT - 8);
+#ifdef CONFIG_DISPLAYWRAPPER
+    #define batt_x 220
+    #define batt_width 70
+    #define batt_h (LINE_HEIGHT - 4)
+    #define butt_width 12
+    #define butt_h (LINE_HEIGHT - 16)
+#else
+    #define batt_x 75
+    #define batt_width 35
+    #define batt_h (LINE_HEIGHT - 4)
+    #define butt_width 4
+    #define butt_h (LINE_HEIGHT - 8)
+#endif 
+#define butt_x (batt_x + batt_width )
+
+//#ifndef CONFIG_MCP73871
+  int w = constrain(v, 3100, 4200);
+  w = map(w, 3100, 4200, 0, batt_width - 4);
+  display.drawRect(batt_x, SCROLL_TOP + 2 * LINE_HEIGHT + 3, batt_width, batt_h);
+  display.drawRect(butt_x, SCROLL_TOP + 2 * LINE_HEIGHT + (3 + (batt_h - butt_h)/2), butt_width, butt_h);
   if (v > 1000)
-    display.fillRect(77, SCROLL_TOP + 2 * LINE_HEIGHT + 5 , w, LINE_HEIGHT - 8);
-#endif
+    display.fillRect(batt_x+2, SCROLL_TOP + 2 * LINE_HEIGHT + 5 , w, LINE_HEIGHT - 8);
+//#endif
   display.display();
 }
 
@@ -1204,18 +1219,31 @@ void MorseOutput::resetTOT() {       //// reset the Time Out Timer - we do this 
 #ifdef CONFIG_TLV320AIC3100
 void soundEnableHeadphone(void) {
     codec.enableHeadphoneAmp();
-    codec.setHeadphoneVolume(-10.0f,-10.0f); // unmute
-    codec.setHeadphoneGain(-12.0f,-12.0f);
+    codec.setHeadphoneVolume(-30.0f,-30.0f); // unmute
+    codec.setHeadphoneGain(-63.0f,-63.0f);
     codec.setHeadphoneMute(false); // unmute hp
-    codec.setSpeakerMute(true); // unmute class d speaker amp
+    codec.setSpeakerMute(true); // mute class d speaker amp
 }
 
 void soundEnableSpeaker(void) {
     codec.enableSpeakerAmp();
     codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
-    codec.setSpeakerVolume(-10.0f); // unmute
+    codec.setSpeakerVolume(-13.0f); // unmute
     codec.setSpeakerMute(false); // unmute class d speaker amp
     codec.setHeadphoneMute(true); // mute hp
+}
+
+void soundEnableLineOut(void) {
+    codec.enableHeadphoneAmp();
+    //codec.setHeadphoneVolume(-10.0f,-10.0f); // unmute
+    //codec.setHeadphoneGain(-12.0f,-12.0f);
+    codec.setHeadphoneMute(false); // unmute hp
+    codec.setHeadphoneLineMode(true); // enable line-out mode and loudsoeake
+    codec.enableSpeakerAmp();
+    codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
+    codec.setSpeakerVolume(-10.0f); // unmute
+    codec.setSpeakerMute(false); // unmute class d speaker amp
+  
 }
 
 void MorseOutput::soundEventHandler() {
@@ -1227,8 +1255,9 @@ void MorseOutput::soundEventHandler() {
     Serial.println("AIC31XX: Headset detected");
 	soundEnableHeadphone();
   } else {
-    Serial.println("AIC31XX: Headset not plugged");
-	soundEnableSpeaker();
+    Serial.println("AIC31XX: Not a headset but LineOut");
+	soundEnableLineOut();
+       // enable speaker AND line-out!
   }
 }
 #endif
