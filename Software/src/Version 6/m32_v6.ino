@@ -528,6 +528,13 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   MorseOutput::setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
   scrollTop = MorseOutput::getScrollTop();
+#ifdef CONFIG_TLV320AIC3100_RST
+  pinMode(CONFIG_TLV320AIC3100_RST, OUTPUT);
+  digitalWrite(CONFIG_TLV320AIC3100_RST, LOW);
+  delay(100);
+  digitalWrite(CONFIG_TLV320AIC3100_RST, HIGH);
+  delay(100);
+#endif
   MorseOutput::soundSetup();
 
 #ifdef CONFIG_TLV320AIC3100_INT
