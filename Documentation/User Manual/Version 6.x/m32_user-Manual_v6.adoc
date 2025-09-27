@@ -136,7 +136,7 @@ You can also output keyed or decoded characters on the USB serial device to use 
 Either connect a USB power supply, or, if you have a battery installed, turn the battery switch ON (I).
 
 A start-up screen will appear momentarily, showing firmware version and battery status, and then you will be
-::	in the Main Menu (“Select Modus:“), unless you selected the quick start parameter, then the last modus you had chosen will be started automatically.
+in the Main Menu (“Select Modus:“), unless you selected the quick start parameter, then the last modus you had chosen will be started automatically.
 
 When the M32 is turned on, but there is no change in the display for a longer period of time, the M32 will go into sleep mode. You can wake it up by clicking RED.
 
@@ -455,7 +455,7 @@ Pro signs can be in the file, they need to be written as 2 character representat
 
 
 ===== Pro Signs
-The following pro signs are recognized:
+The following pro signs are recognized (see further down in "Koch Trainer" about the meaning of pro signs):
 ====
 ** `<ar>` : will be shown on display as + (plus sign)
 ** `<bt>` : will be shown on display as = (equal sign)
@@ -552,7 +552,7 @@ Select a "Koch lesson" between 1 and 50 (you will learn 50 characters in total t
 
 The order of the characters learned has not been strictly defined by Koch, and therefore different learning courses use slightly different orders. Here we use the same order of characters as defined by the program "Just Lean Morse Code", which again is almost identical to  the order used by the "SuperMorse" software package (see http://www.qsl.net/kb5wck/super.html). The order is as follows:
 
-[cols=">.3,3,>.3,3",options=header,width=88%,stripes=odd]
+[cols=">.2,5,>.2,8",options=header,width=88%,stripes=odd]
 |===
 | Lesson # | Character | Lesson # | Character
 | 1 | m | 26 | 9
@@ -571,21 +571,23 @@ The order of the characters learned has not been strictly defined by Koch, and t
 | 14 | n | 39 | 6
 | 15 | j | 40 | x
 | 16 | e | 41 | - (minus)
-| 17 | f | 42 | =
-| 18 | 0 (zero) | 43 | SK (Pro Sign)
-| 19 | y | 44 | AR (Pro Sign, also +)
-| 20 | v | 45 | AS  (Pro Sign)
-| 21 | , (comma) | 46 | KN  (Pro Sign)
-| 22 | g | 47 | KA (Pro Sign)
-| 23 | 5 | 48 | VE (Pro Sign)
-| 24 | / | 49 | BK (Pro Sign)
+| 17 | f | 42 | = (also used as Pro Sign BT indicating white space or a paragraph / new section of message)
+| 18 | 0 (zero) | 43 | SK (Pro Sign: OUT / end of contact / end of work)
+| 19 | y | 44 | AR (+, also Pro Sign: OUT / end of message)
+| 20 | v | 45 | AS  (Pro Sign: WAIT)
+| 21 | , (comma) | 46 | KN  (Pro Sign: OVER / go ahead, specific named station)
+| 22 | g | 47 | KA (Pro Sign: ATTENTION / new message)
+| 23 | 5 | 48 | VE (Pro Sign: VERIFIED / understood)
+| 24 | / | 49 | BK (Pro Sign: BREAK-IN / let me interrupt)
 | 25 | q | 50 | @
 |   |  | 51 | : (Colon)
 |===
 
-::	There is also an option to select the sequence of characters. In addition to the native sequence of characters, you can choose  the sequence that is used by the popular on-line training tool "Learn CW On-line" (LCWO), or the sequence the CW Ops CW Academy courses are using, or the order of "Carousel" curriculum of the Long Island CW (LICW) Club. This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
+* There is another Pro Sign, not covered in the Koch lessons as such: this is the sign HH (eight consecutive dits), which indicates an error (the receiver should disregard the previouscharacter(s)).
 
-::	In the case of attending a course with LICW, you should also set the parameter "LICW Carousel" according to your entry point into their curriculum (eg. if you start a course within BC1 - Basic Course 1 - with the characters p, g and s, set this pareameter to "BC1: p g s". All further characters you are going to learn in BC1 will be reflected in the same order as your Koch lessons in the Morserino. Once you have finished BC1, you will enroll in BC2, say beginning with characters 7, 3 and ?, and so you should now set this parameter to "BC2: 7 3 ?".)
+*	There is also an option to select the sequence of characters. In addition to the native sequence of characters, you can choose  the sequence that is used by the popular on-line training tool "Learn CW On-line" (LCWO), or the sequence the CW Ops CW Academy courses are using, or the order of "Carousel" curriculum of the Long Island CW (LICW) Club. This can be set in the parameters menu of the Morserino-32, under "Koch Sequence".
+
+*	In the case of attending a course with LICW, you should also set the parameter "LICW Carousel" according to your entry point into their curriculum (eg. if you start a course within BC1 - Basic Course 1 - with the characters p, g and s, set this pareameter to "BC1: p g s". All further characters you are going to learn in BC1 will be reflected in the same order as your Koch lessons in the Morserino. Once you have finished BC1, you will enroll in BC2, say beginning with characters 7, 3 and ?, and so you should now set this parameter to "BC2: 7 3 ?".)
 
 The sequence of characters when "LCWO" is chosen is as follows:
 
@@ -643,11 +645,13 @@ To start the adaptive mode start: Koch Trainer > Echo Trainer > Adapt. Rand.
 
 === Transceiver
 
-There are three transceiver modi in the Morserino-32. The first one is a self contained transceiver for communication with Morse code, using LoRa spread spectrum radio technology (in the standard version on the 433 MHz band, but versions  for 868 and 920 MHz bands are available).  The next one uses the Internet Protocol (specifically UDP on port 7373) for communicating across an IP network (using WiFi). The third one is a transceiver mode that can be used either with an external transceiver (e.g. a shortwave amateur radio transceiver) or with a protocol like iCW (CW over Internet). In all three cases the CW Keyer and a CW Decoder are active at the same time.
+There are two or three transceiver modi in the Morserino-32, depending on the availability of LoRa with your M32. If yes, the first one is a self contained transceiver for communication with Morse code, using LoRa spread spectrum radio technology (in the standard version on the 433 MHz band, but versions  for 868 and 920 MHz bands are available).  The next one uses the Internet Protocol (specifically UDP on port 7373) for communicating across an IP network (using WiFi). The last one is a transceiver mode that can be used either with an external transceiver (e.g. a shortwave amateur radio transceiver) or with a protocol like iCW (CW over Internet). In all three cases the CW Keyer and a CW Decoder are active at the same time.
 
 
 
 ==== LoRa Trx
+
+IMPORTANT: This is only available if your Morserino includes a hardware LoRa transceiver!
 
 As stated above, this is a Morse code transceiver, using LoRa for transmitting Morse code to other Morserino-32s.
 In addition to the functionality of the CW keyer, this sends out whatever you key through the LoRa transceiver
@@ -1032,9 +1036,9 @@ These Parameters control some functions available for transmitting (either direc
 |Key ext TX        | Here you determine, if a connected Transmitter will be keyed when you use the device. Gen = generator modi, RX = LoRa or Internet Receiver modi. The option "Keyer & Gen." makes the morserino key an external transmitter also form a generator mode, useful for training transmissions, for example. The option "Keyer&Gen.&RX" is useful if you want to transmit on your transmitter what the Morserino received through LoRa or WiFi (for remote operations). | Never / **CW Keyer only** (and also for Transceiver modes)/ Keyer & Gen. / Keyer&Gen.&RX
 
 | Generator Tx (used to be called "Send via LoRa") | This allows the CW Generator to send, what it generates, eiher via LoRa or via WiFi - so you can have one device generating something, and several others receiving the same sequence. This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server, or via LoRa when all participants are close enough together.
-Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed! | **„Tx OFF“** (= do not transmit generated CW), „LoRa Tx ON“ (transmit generated code through LoRa) and „WiFi Tx ON“ (transmit generated code through WiFi).
+Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed! On Systems without LoRa you can obviously only select to transmit by WiFi. | **„Tx OFF“** (= do not transmit generated CW), „LoRa Tx ON“ (transmit generated code through LoRa) and „WiFi Tx ON“ (transmit generated code through WiFi).
 
-| LoRa Channel | Selects which virtual channel LoRa is using. | **Standard Ch** / Secondary Ch
+| LoRa Channel | Selects which virtual channel LoRa is using. Not selectable on systems without LoRa. | **Standard Ch** / Secondary Ch
 
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).  (Wide = ca. 600 Hz, Narrow = ca. 150 Hz; center frequency = ca 700 Hz) | **Wide** / Narrow
 
@@ -1060,9 +1064,9 @@ IMPORTANT: If you have to change either the frequency within the standard band, 
 The following bands and frequency ranges can be configured in the Morserino-32 for Heltec modules supporting the upper UHF LoRa modules:
 
 * 868 MHz band:
-::	::	866.25 to 869.45 MHz in steps of 100 kHz (default: 869.15 MHz)
+		866.25 to 869.45 MHz in steps of 100 kHz (default: 869.15 MHz)
 * 920 MHz band:
-::	::	920.25 to 923.15 MHz in steps of 100 kHz (default: 920.55 MHz)
+		920.25 to 923.15 MHz in steps of 100 kHz (default: 920.55 MHz)
 
 The default Heltec modules supports the 433 MHz band only, and the Morserino-32 can be configured to use 433.65 to 434.55 MHz in steps of 100 kHz (default: 434.15 MHz).
 
@@ -1094,6 +1098,8 @@ This is probably only relevant for the M32 Pocket!
 With the M32 Pocket, if you want to key with your left hand, the normal display would be upsode down; with this configuration option the display is rotated by 180° to allow lef-thand use.
 
 === Appendix 2: Adjusting Audio Input Level [[app2]]
+
+IMPORTANT: This function is NOT available for Morserino versions that use a digital audio chip.
 
 You can also reach one **other function** while you are positioned within the Start Menu - not through a menu selection, but through **a long press on the RED button**:
 

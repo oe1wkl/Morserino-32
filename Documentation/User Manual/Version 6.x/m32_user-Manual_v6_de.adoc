@@ -451,7 +451,7 @@ Betriebsabkürzungen (pro signs) dürfen vorhanden sein, sie müssen als 2-Zeich
 
 ===== Betriebsabkürzungen
 
-Die folgenden Betriebsabkürzungen werden erkannt:
+Die folgenden Betriebsabkürzungen werden erkannt (die Bedeutung der Betriebsabkürzungen wird weiter unten unter "Koch Trainer" erläutert):
 ====
 ** `<ar>` : wird auf dem Display als + (Pluszeichen) angezeigt.
 ** `<bt>` : wird auf dem Display angezeigt als = (Gleichheitszeichen)
@@ -550,7 +550,7 @@ Wähle  eine "Koch-Lektion" zwischen 1 und 50 (Man lernt insgesamt 50 Zeichen na
 Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden, so dass verschiedene Lernkurse leicht unterschiedliche Ordnungen verwenden. Hier verwenden wir die gleiche Zeichenfolge wie beim Programm "Just Learn Morse Code", das wiederum fast identisch ist mit der Reihenfolge des Softwarepakets "SuperMorse" (siehe http://www.qsl.net/kb5wck/super.html). Die Reihenfolge ist wie folgt:
 
 
-[cols=">.3,3,>.3,3",options=header,stripes=odd]
+[cols=">.2,5,>.2,8",options=header,stripes=odd]
 |===
 | Lektion Nr | Zeichen | Lektion nr | Zeichen
 | 1 | m | 26 | 9
@@ -569,21 +569,23 @@ Die Reihenfolge der gelernten Zeichen ist von Koch nicht streng definiert worden
 | 14 | n | 39 | 6
 | 15 | j | 40 | x
 | 16 | e | 41 | - (minus)
-| 17 | f | 42 | =
-| 18 | 0 (zero) | 43 | SK (Betriebsabkürzung)
-| 19 | y | 44 | AR (Betriebsabkürzung, auch +)
-| 20 | v | 45 | AS  (Betriebsabkürzung)
-| 21 | , (Comma) | 46 | KN  (Betriebsabkürzung)
-| 22 | g | 47 | KA (Betriebsabkürzung)
-| 23 | 5 | 48 | VE (Betriebsabkürzung)
-| 24 | / | 49 | BK (Betriebsabkürzung)
+| 17 | f | 42 | = (auch als Betriebsabk. BT für extra Leerzeichen oder Absatz / neuen Abschnitt)
+| 18 | 0 (zero) | 43 | SK (Betriebsabkürzung: ENDE / Ende QSO)
+| 19 | y | 44 | AR (+. auch Betriebsabkürzung: ENDE / Ende der Nachricht)
+| 20 | v | 45 | AS  (Betriebsabkürzung: WARTE)
+| 21 | , (Comma) | 46 | KN  (Betriebsabkürzung: OVER / genannte Station soll nun senden)
+| 22 | g | 47 | KA (Betriebsabkürzung: ACHTUNG / neue Nachricht beginnt)
+| 23 | 5 | 48 | VE (Betriebsabkürzung: VERIFIZIERT / verstanden)
+| 24 | / | 49 | BK (Betriebsabkürzung: BREAK-IN / ich möchte unterbrechen)
 | 25 | q | 50 | @
 |   |  | 51 | : (Colon)
 |===
 
-Es besteht auch die Möglichkeit, die Reihenfolge der zu lernenden Zeichen auszuwählen. Neben der nativen Zeichenfolge kann man die Reihenfolge wählen, die vom beliebten Online-Trainingstool "Learn CW Online" (LCWO) verwendet wird, oder die Reihenfolge, welche die CW Ops CW Academy-Kurse benutzen, oder auch die Reihenfolge entsprechend dem "Carousel" Curriculum des Long Island CW (LICW) Clubs. Dies kann im Parametermenü des Morserino-32 unter "Koch Sequence" eingestellt werden.
+* Es ginbt ncoh eine weitere betriebsabkürzung, die in den eigentlichen Koch Lektionen nicht behandelt wird: HH (eine Folge von acht Dits), dies bedeutet "Fehlerhafte Eingabe" (der Empfänger soll das oder die vorhergehende Zeichen ignorieren).
 
-Falls du einen Kurses bei LICW machst, solltest du zusätzlich den Parameter „LICW Carousel“ entsprechend deinem Einstiegspunkt in deren Curriculum einstellen (zB. wenn du innerhalb von BC1 – Basic Course 1 – einen Kurs mit den Buchstaben p, g und s beginnst, setze diesen Parameter auf "BC1: p g s". Alle weiteren Zeichen, die du in BC1 lernen wirst, werden in der gleichen Reihenfolge in den Morserino Koch-Lektionen widergespiegelt. Wenn du BC1 absolviert hast, steigst du in BC2 ein, zB. beginnend mit Zeichen 7, 3 und ?, also solltest du nun diesen Parameter jetzt auf "BC2: 7 3 ?" setzen.)
+* Es besteht auch die Möglichkeit, die Reihenfolge der zu lernenden Zeichen auszuwählen. Neben der nativen Zeichenfolge kann man die Reihenfolge wählen, die vom beliebten Online-Trainingstool "Learn CW Online" (LCWO) verwendet wird, oder die Reihenfolge, welche die CW Ops CW Academy-Kurse benutzen, oder auch die Reihenfolge entsprechend dem "Carousel" Curriculum des Long Island CW (LICW) Clubs. Dies kann im Parametermenü des Morserino-32 unter "Koch Sequence" eingestellt werden.
+
+* Falls du einen Kurses bei LICW machst, solltest du zusätzlich den Parameter „LICW Carousel“ entsprechend deinem Einstiegspunkt in deren Curriculum einstellen (zB. wenn du innerhalb von BC1 – Basic Course 1 – einen Kurs mit den Buchstaben p, g und s beginnst, setze diesen Parameter auf "BC1: p g s". Alle weiteren Zeichen, die du in BC1 lernen wirst, werden in der gleichen Reihenfolge in den Morserino Koch-Lektionen widergespiegelt. Wenn du BC1 absolviert hast, steigst du in BC2 ein, zB. beginnend mit Zeichen 7, 3 und ?, also solltest du nun diesen Parameter jetzt auf "BC2: 7 3 ?" setzen.)
 
 Die Zeichenfolge bei der Auswahl von "LCWO" ist wie folgt:
 
@@ -642,11 +644,12 @@ Um den adaptiven Modus zu starten, starte: Koch Trainer > Echo Trainer > Adapt. 
 
 === Transceiver
 
-Es gibt drei Transceiver-Modi im Morserino-32. Der erste ist ein eigenständiger Sender-Empfänger für die Morse-Kommunikation unter Verwendung der LoRa Spread Spectrum Funktechnologie (in der Standardversion im 433-MHz-Band, aber es sind Versionen für die 868- und 920-MHz-Bänder erhältlich). Der zweite Transceiver Modus benutzt das Internet Protokoll (UDP auf Port 7373) zur Kommunikation über ein IP Netzwerk (über WLAN). Der dritte ist ein Transceiver-Modus, der entweder mit einem externen Transceiver (z.B. einem Kurzwellen-Amateurfunkgerät) oder mit einem Protokoll wie iCW (CW over Internet) verwendet werden kann. In allen drei Fällen sind der CW Keyer und der CW Decoder gleichzeitig aktiv.
+Es gibt zwei oder drei Transceiver-Modi im Morserino-32, anhängig davon, ob das System über einen LoRa-Transceiver verfügt. Falls ja, ist der erste Modus ein eigenständiger Sender-Empfänger für die Morse-Kommunikation unter Verwendung der LoRa Spread Spectrum Funktechnologie (in der Standardversion im 433-MHz-Band, aber es sind Versionen für die 868- und 920-MHz-Bänder erhältlich). Der nächste Transceiver Modus benutzt das Internet Protokoll (UDP auf Port 7373) zur Kommunikation über ein IP Netzwerk (über WLAN). Der letzte ist schließlich ein Transceiver-Modus, der entweder mit einem externen Transceiver (z.B. einem Kurzwellen-Amateurfunkgerät) oder mit einem Protokoll wie iCW (CW over Internet) verwendet werden kann. In allen drei Fällen sind der CW Keyer und der CW Decoder gleichzeitig aktiv.
 
 
 
 ==== LoRa Trx
+IMPORTANT: Nur verfügbar wenn auch hardwaremäßig ein LoRa-Transceiver vorhanden ist!
 
 Wie bereits erwähnt, handelt es sich hierbei um einen Morse-Code-Sender-Empfänger, der LoRa zur Übertragung von Morse-Code an andere Morserino-32s verwendet.
 Zusätzlich zur Funktionalität des CW-Keyers sendet er alles, was über den Keyer eingegeben wird, über den LoRa-Transceiver aus
@@ -1034,9 +1037,10 @@ Diese Parameter steuern einige Funktionen, die für die Übertragung (entweder d
 |Key ext TX        | Hier legt man fest, ob ein angeschlossener Sender bei der Verwendung des Gerätes getastet wird. Gen = Generator modi, RX = LoRa und Internet Empfänger. Die Option "Keyer & Gen." tastet den Sender auch in den Generator Modi, eventuell nützlich für Trainingsaussendungen.  Die Option "Keyer&Gen.&RX" ist nützlich, wenn man über den Sender ausstrahlen will, was der Morserino über LoRa oder WiFi empfangen hat - zB. im Remote-Betrieb. | Never (niemals) / **CW Keyer only** (nur beim CW Keyer und den Transceiver Modi) / Keyer & Gen. / Keyer&Gen.&RX
 
 | Generator Tx (früher "Send via LoRa" genannt) | Damit kann der CW-Generator senden, was er generiert, entweder über LoRa oder über WLAN. Auf diese Weise kann ein M32 etwas generieren und mehrere andere die gleiche Sequenz empfangen. Dies kann in allen Modi CW Generator und Koch / CW Generator verwendet werden, einschließlich File Player. Könnte für Gruppen von Lernenden nützlich sein, da man z.B. den Inhalt einer Datei an eine Gruppe von Personen übermitteln kann. Dies sollte natürlich nur mit Vorsicht (und nicht über einen längeren Zeitraum) auf öffentlichen M32-Chat-Servern verwendet werden, kann jedoch für eine Gruppe im selben Netzwerksegment, die Broadcast als TrX-Peer verwendet, oder einen privat eingerichteten Chat-Server sehr nützlich sein, oder über LoRa, wenn alle Teilnehmer nahe genug beieinander sind.
-Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da sonst der LoRa-Transceiver möglicherweise zerstört wird! | ** „Tx OFF“ ** (= generiertes CW nicht übertragen), „LoRa Tx ON“ (generiertes CW über LoRa übertragen) und „WiFi Tx ON“ (generiertes CQ über WiFi übertragen).
+Beachte, dass beim Senden über LoRa eine Antenne angeschlossen sein muss, da sonst der LoRa-Transceiver möglicherweise zerstört wird!
+Bei Systemen ohne LoRa kann man natürlich nur auswählen, ob man über WiFi senden will. | ** „Tx OFF“ ** (= generiertes CW nicht übertragen), „LoRa Tx ON“ (generiertes CW über LoRa übertragen) und „WiFi Tx ON“ (generiertes CQ über WiFi übertragen).
 
-| LoRa Channel | Wählt aus, welchen virtuellen Kanal LoRa verwendet. | **Standard Ch** / Secondary Ch
+| LoRa Channel | Wählt aus, welchen virtuellen Kanal LoRa verwendet. Bei Systemen ohne LoRa ist der Parameter nicht auswählbar. | **Standard Ch** / Secondary Ch
 
 | Bandwidth | Definiert die Bandbreite, die der CW-Decoder verwendet (dies ist in Software mit einem so genannten Goertzel-Filter implementiert).  (Wide (breit) = ca. 600 Hz, Narrow (schmal) = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz) | **Wide** / Narrow
 
@@ -1096,6 +1100,8 @@ Dies ist vermutlich nur für das M32 Pocket relevant!
 Würde man beim M32 Pocket mit der linken Hand die Paddles betätigen, würde die Anzeige auf dem Kopf stehen; mit dieser Konfigurationsoption wird die Anzeige um 180° gedreht, um eine linkshändige Bedienung zu ermöglichen.
 
 === Anhang 2: Einstellen des Audioeingangspegels [[appendix2]]
+
+IMPORTANT: Diese Funktion ist NICHT verfügbar bei Morserinoversionen, die über einen digitalen Audiochip verfügen.
 
 Man kann noch eine **andere Funktion** erreichen, während man sich innerhalb des Startmenüs befinden - nicht durch eine Menüauswahl, sondern durch **einen langen Druck auf die rote Taste**:
 
