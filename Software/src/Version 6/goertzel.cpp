@@ -78,7 +78,7 @@ void Goertzel::setup() {                 /// pre-compute some values (sine, cosi
   //const int goertzel_n = 304; //// you can use:         152, 304, 456 or 608 - thats the max buffer reserved in checktone() 
   #ifdef CONFIG_DECODER_I2S
       goertzel_n = ( MorsePreferences::pliste[posGoertzelBandwidth].value == 0 ? 63 : 252);  
-      magnitudelimit_low = ( MorsePreferences::pliste[posGoertzelBandwidth].value? 80000 : 20000);          // values found by experimenting
+      magnitudelimit_low = ( MorsePreferences::pliste[posGoertzelBandwidth].value? 15000 : 3800);          // values found by experimenting
   #else
       goertzel_n = ( MorsePreferences::pliste[posGoertzelBandwidth].value == 0 ? 17 : 68);  
       magnitudelimit_low = ( MorsePreferences::pliste[posGoertzelBandwidth].value? 20000 : 5000);          // values found by experimenting
@@ -140,7 +140,7 @@ unsigned long zeit;
     ///////////////////////////////////////////////////////////
 
     if (magnitude > magnitudelimit_low) {
-      magnitudelimit = (magnitudelimit + ((magnitude - magnitudelimit) / 6)); /// moving average filter
+      magnitudelimit = (magnitudelimit *0.95  + ((magnitude - magnitudelimit) / 4)); /// moving average filter
     }
 
     if (magnitudelimit < magnitudelimit_low)

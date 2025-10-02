@@ -487,7 +487,7 @@ void setup()
   volt = batteryVoltage();
 
 
- //DEBUG("Volt: " + String(volt));
+// DEBUG("Volt: " + String(volt));
 
   // set up the encoder - we need external pull-ups as the pins used do not have built-in pull-ups!
   pinMode(PinCLK,INPUT_PULLUP);
@@ -695,6 +695,18 @@ boolean checkKey () {
         return false;
 }
 
+
+// shorter date format
+String  shortDate(char const *date) { 
+    int month, day, year;
+    char buff[7]; // buffer for everything we need to print
+    static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
+    sscanf(date, "%s %d %d", buff, &day, &year);
+    month = (strstr(month_names, buff)-month_names)/3+1;
+    year -= 2000; // convert to 2 digit year
+    sprintf(buff, "%02d%02d%02d", day, month, year);
+    return String (buff);
+}
 // display startup screen and check battery status, also send device information if M32 serial protocol is being used
 
 void displayStartUp(uint16_t volt) {
@@ -712,12 +724,12 @@ void displayStartUp(uint16_t volt) {
   s += String(MorsePreferences::loraQRG / 10000);
 #endif
   MorseOutput::printOnStatusLine( true, 0, s);
-  s = "V." ;
+  s = "V" ;
   vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR) ;
   if (VERSION_PATCH != 0)
     vsn = vsn + "." + String(VERSION_PATCH);
-  if (BETA)
-    vsn += " beta";
+  if (BETA) 
+    vsn = vsn + " beta " + shortDate(COMPILEDATE);
   s += vsn;
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
   MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2025");
@@ -729,9 +741,9 @@ void displayStartUp(uint16_t volt) {
   uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
   if (powerpath_state == 3) // low battery
     MorseOutput::displayEmptyBattery(shutMeDown);
-  else
+  //else
 #else
-  if (volt > 1000 && volt < 2800)
+  if (volt > 1000 && volt < 3320)
     MorseOutput::displayEmptyBattery(shutMeDown);
   else
 #endif
@@ -921,6 +933,9 @@ void loop() {
                 else if (encoderState == volumeSettingMode && morseState != morseDecoder) {          //  single click toggles encoder between speed and volume
                   encoderState = speedSettingMode;
                   MorsePreferences::writeVolume();
+                  #ifdef CONFIG_TLV320AIC3100
+                  MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
+                  #endif
                   displayCWspeed();
                   MorseOutput::displayVolume(true, MorsePreferences::sidetoneVolume);
 
@@ -2268,6 +2283,9 @@ void changeVolume( int t) {
     MorsePreferences::sidetoneVolume += t+1;
     MorsePreferences::sidetoneVolume = constrain(MorsePreferences::sidetoneVolume, 1, 20) -1;
     //DEBUG(String(MorsePreferences::sidetoneVolume));
+    #ifdef CONFIG_TLV320AIC3100
+      MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
+    #endif
     if (m32state != menu_loop)
         MorseOutput::displayVolume((encoderState == volumeSettingMode ? false : true), MorsePreferences::sidetoneVolume);      // sidetone volume;
     if (m32protocol)
@@ -2349,10 +2367,11 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 #ifdef CONFIG_BATMEAS_PIN
   adcAttachPin(CONFIG_BATMEAS_PIN);
   analogReadResolution(12);
-  analogSetPinAttenuation(CONFIG_BATMEAS_PIN,ADC_6db); // 6db is a good fit with the used voltage divider, ~1.3V for a full 4.2V battery
+  analogSetPinAttenuation(CONFIG_BATMEAS_PIN,ADC_11db); // 6db is a good fit with the used voltage divider, ~1.3V for a full 4.2V battery
   float reading = 0.0;
   for (int i = 0; i<10; i++) {
     reading += analogRead(CONFIG_BATMEAS_PIN) / 4095.0 * 1750; // 6 db atten = 1750mV max
+      // DEBUG("Reading: " + String(reading) );
     delay(20);
   }
   reading /= 10.0;

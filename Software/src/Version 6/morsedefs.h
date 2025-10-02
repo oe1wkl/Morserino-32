@@ -44,6 +44,7 @@ const String PROJECTNAME = "Morserino-32";
 #define VERSION_PATCH 0
 
 #define BETA true
+#define COMPILEDATE __DATE__
 
 
 #define IGNORE_SERIALOUT true
