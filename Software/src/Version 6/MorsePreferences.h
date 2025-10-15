@@ -193,7 +193,9 @@ namespace MorsePreferences
   int getValue(prefPos);
   boolean adjustKeyerPreference(prefPos);
   void readPreferences(String repository);
+  void readScreenPref();
   void writePreferences(String repository);
+  void resetDefaults();                                // reset all preferences to default values
   void doWriteSnapshot(uint8_t, uint8_t);
   void doReadSnapshot(uint8_t);
   void createKochWords(uint8_t maxl, uint8_t koch);

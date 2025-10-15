@@ -872,8 +872,10 @@ String MorsePreferences::getValueLine(prefPos pos) {
                   break;
         case 2:   str = "Flip Screen";
                   break;
+        case 3:   str = "Reset Deflts";
+                  break;
 #ifndef LORA_DISABLED
-        case 3:   str = "LoRa Config.";
+        case 4:   str = "LoRa Config.";
                   break;
 #endif
         default:  str = "Cancel";
@@ -1006,13 +1008,13 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                   break;
                       case posHwConf:
                       #ifndef LORA_DISABLED
+                                  hwConf += (t+5);
+                                  hwConf = hwConf % 5;
+                      #else
                                   hwConf += (t+4);
                                   hwConf = hwConf % 4;
-                      #else
-                                  hwConf += (t+3);
-                                  hwConf = hwConf % 3;
-                                  break;
                       #endif
+                                  break;
                       case posLoraPower:
                                   MorsePreferences::loraPower += t;                              // set the LoRa band
                                   MorsePreferences::loraPower = constrain(MorsePreferences::loraPower, 10, 20);
@@ -1188,6 +1190,17 @@ void MorsePreferences::readPreferences(String repository) {
    updateTimings();
 }
 
+void MorsePreferences::readScreenPref() {
+  bool temp;
+  // we read only the leftHanded preference here
+  pref.begin("morserino", true);                 // read only in all other cases
+  if (temp = pref.getBool("leftHanded"))
+          MorsePreferences::leftHanded = temp;
+      else
+          MorsePreferences::leftHanded = false;
+  pref.end();
+}
+
 void MorsePreferences::writePreferences(String repository) {
   unsigned int l = 15;
   char repName[l];
@@ -1327,6 +1340,34 @@ void MorsePreferences::writePreferences(String repository) {
       }           // end of "stored value is different"
   }               // end of "for all these preferences"
   updateTimings();
+
+  pref.end();
+}
+
+
+
+
+void MorsePreferences::resetDefaults() {
+  unsigned int l = 15;
+  char repName[l];
+  uint8_t temp;
+  uint32_t tempInt;
+
+  boolean morserino = false;
+  String repository = "morserino";
+
+  repository.toCharArray(repName, l);
+
+  pref.begin(repName, false);                // open namespace in read/write mode                                                                      //only in the ""Morserino" permanent memory
+ 
+  // now we write all other preferences into the respective repository
+
+  for (uint8_t i = 0; i <= posSerialOut; ++i) {                                       // for all these preferences
+        if (MorsePreferences::pliste[i].value != pref.getUChar(prefName[i],255) ) {     // stored value is different,
+            pref.putUChar(prefName[i], MorsePreferences::pliste[i].value);            // so we need to store new value
+      }           // end of "stored value is different"
+  }               // end of "for all these preferences"
+  // updateTimings();
 
   pref.end();
 }

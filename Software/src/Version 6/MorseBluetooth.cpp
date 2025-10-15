@@ -182,7 +182,7 @@ void bluetoothTask(void*) {
     advertising->addServiceUUID(hid->batteryService()->getUUID());
     advertising->start();
 
-    DEBUG("BLE ready");
+    // DEBUG("BLE ready");
     delay(portMAX_DELAY);
 };
 
@@ -252,13 +252,14 @@ void MorseBluetooth::bluetoothTypeCharacter(const char chr)
 
 void MorseBluetooth::bluetoothTypeString(String str)
 {
-    if (MorsePreferences::pliste[posBluetoothOut].value == 0x4) {  // replacements for generic keyboard
+    if (MorsePreferences::pliste[posBluetoothOut].value >= 0x4) {  // replacements for generic keyboard
         str.replace("<ERR>", "\b");
         str.replace("<err>", "\b");
         str.replace("<KA>", "\n");
         str.replace("<ka>", "\n");
     }
 	for (int i = 0; i < str.length(); i++) {
+        //DEBUG("type: " + String(str[i]));
         bluetoothTypeCharacter(str[i]);
 	}
 }

@@ -476,12 +476,35 @@ void setup()
   batteryPin = PIN_BATTERY;
 #endif
 
+/*
+/// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
+  if (SPIFFS.begin(false))  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
+      if (key_was_pressed_at_start()) {
+         MorsePreferences::displayKeyerPreferencesMenu(posHwConf);
+         MorsePreferences::adjustKeyerPreference(posHwConf);
+
+         switch (hwConf) {
+            case 1:
+                    MorsePreferences::calibrateVoltageMeasurement();
+                    break;
+            case 2: MorsePreferences::flipScreen();
+                    ESP.restart();
+                    break;
+            case 3: MorsePreferences::resetDefaults();
+                    ESP.restart();
+                    break;
+            case 4: MorsePreferences::loraSystemSetup();
+                    break;
+            default: break;
+         }
+      }
+  }
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
-
-  MorsePreferences::readPreferences("morserino");
-  koch.setup();
+*/
+//  MorsePreferences::readPreferences("morserino");
+//  koch.setup();
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
@@ -520,6 +543,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 #endif
 
   // init display
+  MorsePreferences::readScreenPref();
   MorseOutput::initDisplay();
   #ifdef CONFIG_DISPLAYWRAPPER
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
@@ -578,11 +602,8 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
 
-  //ESPNOW setup
-  if (MorsePreferences::useEspNow) {
-      quickEspNow.onDataRcvd (onEspnowRecv);
-      MorseMenu::setupESPNow();
-  }
+  
+  
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
   if (SPIFFS.begin(false))  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
@@ -597,17 +618,39 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
             case 2: MorsePreferences::flipScreen();
                     ESP.restart();
                     break;
-            case 3: MorsePreferences::loraSystemSetup();
+            case 3: MorsePreferences::resetDefaults();
+                    ESP.restart();
+                    break;
+            case 4: MorsePreferences::loraSystemSetup();
                     break;
             default: break;
          }
       }
-  }
+  } 
 
 #ifndef CONFIG_I2S_DATA_IN_PIN
   analogSetAttenuation(ADC_0db);
   adcAttachPin(audioInPin);
 #endif
+
+  // read preferences from non-volatile storage
+  // if version cannot be read, we have a new ESP32 and need to write the preferences first
+
+  MorsePreferences::readPreferences("morserino");
+  koch.setup();
+
+
+//ESPNOW setup
+  if (MorsePreferences::useEspNow) {
+      quickEspNow.onDataRcvd (onEspnowRecv);
+      MorseMenu::setupESPNow();
+  }
+  
+  #ifdef CONFIG_DISPLAYWRAPPER
+  MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
+  #endif
+
+  MorseOutput::setBrightness(MorsePreferences::oledBrightness);
 
   // to calibrate sensors, we record the values in untouched state; need to do this after checking for system config
   initSensors();
