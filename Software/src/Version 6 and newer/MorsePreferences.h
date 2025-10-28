@@ -194,6 +194,7 @@ namespace MorsePreferences
   boolean adjustKeyerPreference(prefPos);
   void readPreferences(String repository);
   void readScreenPref();
+  void readVoltagePref();
   void writePreferences(String repository);
   void resetDefaults();                                // reset all preferences to default values
   void doWriteSnapshot(uint8_t, uint8_t);

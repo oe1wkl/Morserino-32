@@ -476,12 +476,17 @@ void setup()
   batteryPin = PIN_BATTERY;
 #endif
 
+#ifndef VEXT_ON_VALUE
+#define VEXT_ON_VALUE LOW
+#endif
+
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
+  MorsePreferences::readVoltagePref() ;
   volt = batteryVoltage();
 
 
-// DEBUG("Volt: " + String(volt));
+//DEBUG("Volt measured: " + String(volt));
 
   // set up the encoder - we need external pull-ups as the pins used do not have built-in pull-ups!
   pinMode(PinCLK,INPUT_PULLUP);
@@ -504,9 +509,6 @@ pinMode(modeButtonPin, INPUT_PULLUP);
 pinMode(modeButtonPin, INPUT);
 #endif
 
-#ifndef VEXT_ON_VALUE
-#define VEXT_ON_VALUE LOW
-#endif
 
 #ifdef PIN_VEXT
 pinMode(PIN_VEXT, OUTPUT);
@@ -2348,12 +2350,13 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   pinMode(ADC_Ctrl,OUTPUT);
 #endif
 #ifdef PIN_VEXT
+//DEBUG("Board version: " + String(MorsePreferences::boardVersion));
       // board version 3 requires Vext being on for reading the battery voltage
       if (MorsePreferences::boardVersion == 3)
-         digitalWrite(PIN_VEXT,VEXT_ON_VALUE);
+         digitalWrite(PIN_VEXT,LOW);
       // board version 4 requires Vext being off for reading the battery voltage
       else if (MorsePreferences::boardVersion == 4)
-         digitalWrite(PIN_VEXT,! VEXT_ON_VALUE);
+         digitalWrite(PIN_VEXT, HIGH);
 #endif
 #ifdef ARDUINO_heltec_wifi_kit_32_V3
       digitalWrite(ADC_Ctrl,LOW);
@@ -2381,6 +2384,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
       v = v - 200 + MorsePreferences::vAdjust;
       v *= VOLT_CALIBRATE;
   #endif
+  //DEBUG("Battery Voltage Raw mV: " + String((int16_t)v) );
       return (int16_t) v;
 
 
@@ -2425,9 +2429,9 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 
 
 double ReadVoltage(byte pin){
-  adcAttachPin(batteryPin);
+  adcAttachPin(pin);
   analogSetClockDiv(128);           //  this value was found by experimenting - no clue what it really does :-(
-  analogSetPinAttenuation(batteryPin,ADC_11db);
+  analogSetPinAttenuation(pin,ADC_11db);
   double reading = analogRead(pin); // Reference voltage is 3v3 so maximum reading is 3v3 = 4095 in range 0 to 4095
   analogSetClockDiv(1); // 5ms
 

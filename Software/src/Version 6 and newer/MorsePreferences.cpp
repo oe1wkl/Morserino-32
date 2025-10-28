@@ -856,7 +856,8 @@ String MorsePreferences::getValueLine(prefPos pos) {
     #else
     #ifndef ARDUINO_heltec_wifi_kit_32_V3
       volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * VOLT_CALIBRATE));   // recalculate millivolts for new adjustment
-    #else
+    //DEBUG("Volt: " + String(volt));
+      #else
       // (reading - 200 + MorsePreferences::vAdjust)
       volt = (int16_t) (voltage_raw - 200 + MorsePreferences::vAdjust) * VOLT_CALIBRATE;
      #endif
@@ -1202,6 +1203,15 @@ void MorsePreferences::readScreenPref() {
       else
           MorsePreferences::leftHanded = false;
   }       
+  pref.end();
+}
+
+void MorsePreferences::readVoltagePref() {
+  uint8_t temp;
+  // we read only the vAdjust preference here
+  pref.begin("morserino", true);                 // read only 
+  if (temp = pref.getUChar("vAdjust"))
+        MorsePreferences::vAdjust = temp;
   pref.end();
 }
 
