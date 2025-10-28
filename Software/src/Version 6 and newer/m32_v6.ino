@@ -423,7 +423,7 @@ int checkEncoder()
 }
 
 //////////////////////// Function for generating DEBUG and ERROR messages on USB, ONLY IF USB is not used for outputting characters
-//////////////////////// Argumenbt to DEBUG has to be a String object
+//////////////////////// Argument to DEBUG has to be a String object
 
 void DEBUG (String s) {
   if (!MorsePreferences::pliste[posSerialOut].value || IGNORE_SERIALOUT)
@@ -476,35 +476,6 @@ void setup()
   batteryPin = PIN_BATTERY;
 #endif
 
-/*
-/// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
-
-  if (SPIFFS.begin(false))  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
-      if (key_was_pressed_at_start()) {
-         MorsePreferences::displayKeyerPreferencesMenu(posHwConf);
-         MorsePreferences::adjustKeyerPreference(posHwConf);
-
-         switch (hwConf) {
-            case 1:
-                    MorsePreferences::calibrateVoltageMeasurement();
-                    break;
-            case 2: MorsePreferences::flipScreen();
-                    ESP.restart();
-                    break;
-            case 3: MorsePreferences::resetDefaults();
-                    ESP.restart();
-                    break;
-            case 4: MorsePreferences::loraSystemSetup();
-                    break;
-            default: break;
-         }
-      }
-  }
-  // read preferences from non-volatile storage
-  // if version cannot be read, we have a new ESP32 and need to write the preferences first
-*/
-//  MorsePreferences::readPreferences("morserino");
-//  koch.setup();
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   volt = batteryVoltage();
@@ -637,6 +608,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
   MorsePreferences::readPreferences("morserino");
+  
   koch.setup();
 
 

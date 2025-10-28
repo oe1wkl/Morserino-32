@@ -604,10 +604,16 @@ void MorseOutput::initDisplay()
   digitalWrite(OLED_RST, HIGH);
 #endif
   display.init();
-  if (! MorsePreferences::leftHanded)
+#ifdef CONFIG_DISPLAYWRAPPER
+  if (MorsePreferences::leftHanded)
+#else
+  if (!MorsePreferences::leftHanded)
+#endif
     display.flipScreenVertically();
   display.clear();
 }
+
+
 
 #ifdef CONFIG_DISPLAYWRAPPER
 void MorseOutput::setTheme (uint8_t theme) {

@@ -403,13 +403,12 @@ uint32_t MorsePreferences::loraQRG = QRG433;                // for 70 cm band
 uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 25 mW
 boolean MorsePreferences::leftHanded = false;               // to flip screen for left-handed use in Pocket
 
-
   ///// stored in preferences, but not adjustable through preferences menu:
 
   uint8_t MorsePreferences::version_major = VERSION_MAJOR;
   uint8_t MorsePreferences::version_minor = VERSION_MINOR;
 
-  uint8_t MorsePreferences::sidetoneVolume = 16;              // side tone volume, as a value between 0 and 19   0 -19
+  uint8_t MorsePreferences::sidetoneVolume = 14;              // side tone volume, as a value between 0 and 19   0 -19
   extern const uint8_t MorsePreferences::volumeMin = 0;
   extern const uint8_t MorsePreferences::volumeMax = 19;
 
@@ -1140,11 +1139,14 @@ void MorsePreferences::readPreferences(String repository) {
       else
           MorsePreferences::loraPower = 14;
 
-      if (temp = pref.getBool("leftHanded"))
-          MorsePreferences::leftHanded = temp;
-      else
-          MorsePreferences::leftHanded = false;
-
+      if (!pref.isKey("leftHanded")) { // has this been set yet?
+          pref.putBool("leftHanded", MorsePreferences::leftHanded);// if not, set it to default value
+      } else {
+          if (temp = pref.getBool("leftHanded"))
+              MorsePreferences::leftHanded = temp;
+          else
+              MorsePreferences::leftHanded = false;
+      }
       MorsePreferences::snapShots = pref.getUChar("snapShots",0);
       updateMemory(MorsePreferences::snapShots);
 
@@ -1193,11 +1195,13 @@ void MorsePreferences::readPreferences(String repository) {
 void MorsePreferences::readScreenPref() {
   bool temp;
   // we read only the leftHanded preference here
-  pref.begin("morserino", true);                 // read only in all other cases
+  pref.begin("morserino", true);                 // read only 
+  if (pref.isKey("leftHanded")) { // has this been set yet?
   if (temp = pref.getBool("leftHanded"))
-          MorsePreferences::leftHanded = temp;
+          MorsePreferences::leftHanded = temp;  
       else
           MorsePreferences::leftHanded = false;
+  }       
   pref.end();
 }
 

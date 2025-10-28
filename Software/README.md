@@ -14,20 +14,45 @@
 
 5. Load the .ino file into the IDE (the other source files will be loaded automatically as well), and compile (and upload).
 
+***It is recommended to use platform.io for building the Morserino firmware, not the Arduino IDE!***
+
 ## Change History
+
+### Changes V.7.0
+
+#### Bug Fixes
+* As of V6, due to a change in the underlying libraries, the audio CW decoder stopped working. Fixed.
+* In CW Decoder mode, the top line was showing the CW Keyer mode, which of course is nonsense in decoder mode. This has been fixed, and is showing now a „d“ (for decoding) in its place.
+
+#### New Feature(s)
+* ESPNOW: as a WiFi option (you choose it through the menu WiFi functions / Select WiFi) to use the espnow Wifi protocol, allowing peer to peer communication without an access point.
+
+ When used for "WiFi Transceiver" this is being used, creating a similar functionality like "Lora Transceiver".
+* Option to output characters in UPPER CASE.
+*  Bluetooth keyboard  output with various options (e.g. VBand support) - there is apreference for selecting this.
+* You can rain now with 5000 English words, weighted for frequency of occurrence.
+* Option to flip the display (useful for left-handed usewof M32Pocket; to be found in Hardware Config).
+* Option to reset most preferences to their default value (to be found in Hardware Config).
+* For M32 Pocket only: As the Pocket has a color TFT display, color „themes“ have been included, for some nice combinations of foreground and background colors (to be found in preferences).
+
+#### Feature Modifications
+* The Preference „Send with LoRa“ is now called „Generator TX“
+* The decoder now respects the setting of „Interword Space“ when it decides when to insert a blank after a word.
+* Instead of the <err> code (8 dits) you can also use „e e e e“ as a code for input error in Echo Trainer.
+
 
 ### Changes V.6.0
 
-#### Bug Fixes:
+#### Bug Fixes
 * There were some parsing errors in the M32 protocol Handel for storing and showing CW memories. Fixed.
 * Dits and dahs were 6ms too long (that bug was introduced in 5.1.x). Fixed.
 
-#### Feature Modifications:
+#### Feature Modifications
 * Perhaps the most significant change is that - as a result of moving to a more up-to-date platform - firmware update via the browser based method is now working without any strange side-effects!
 * Improved Echo Trainer timings: the setting of inter-character space had not been considered when calculating the maximum waiting time for a response, or between characters of the response. This has been improved now.
 * Ultimatic mode did not have a memory (remembering the opposite entry while the original is still activated); this has been changed (and reacts similar to the Iambic B timing, i.e. you can also modify the timing by modifying the parameters ‚CurtisB DahT%‘ and ‚CurtisB DitT%’.
 
-#### Other Changes (no functional impact):
+#### Other Changes (no functional impact)
 * Changed IDE from Arduino to PlatformIO (thanks Hari, OE6HKE, for his help; Framework is still Arduino, and the main file still called .ino, so compilation using Arduino IDE will still work).
 * This included changing words and abbreviations from being represented as String objects to arrays, solving a segment size problem that occurred in the PlatformIO IDE.
 * Replaced the home-brewed encoder interrupt routine with a standard library, so this should be more stable and have less missing steps (the existing routines worked ok, but there were more missed steps when compiled in notes PlatformIO IDE).
