@@ -11,8 +11,7 @@ For general information and FAQ go to http://morserino.info
 Announcements via Email (through Mailchimp): http://eepurl.com/dwEVkz
 
 User Group (Email, through groups.io): https://groups.io/g/morserino
-
-![M32 Pocket Image](https://raw.githubusercontent.com/oe1wkl/Morserino-32/master/M32P.png)
+<img width="3636" height="3024" alt="M32P" src="https://github.com/user-attachments/assets/3c87ce30-28b5-44fa-b803-c715406c0308" />
 
 ![Morserino Image](https://raw.githubusercontent.com/oe1wkl/Morserino-32/master/Documentation/User%20Manual/Version%204.x/Morserino.jpg)
 
