@@ -110,8 +110,8 @@ boolean Goertzel::checkInput() {                  // check the audio input for a
     int bytes_read = sidetone.readBytes((uint8_t *)testData, goertzel_n*4);
     for (int index = 0; index < 2*goertzel_n ; index+=2) {  // every 2nd value, so ignoring one channel
 #else
-unsigned long zeit;
-    zeit = micros();
+    //unsigned long zeit;
+    //zeit = micros();
     //DEBUG("Start: " + String(zeit));
     for (int index = 0; index < goertzel_n ; index++)
             testData[index] = analogRead(audioInPin);

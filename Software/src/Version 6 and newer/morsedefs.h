@@ -41,13 +41,13 @@ const String PROJECTNAME = "Morserino-32";
 
 #define VERSION_MAJOR 7
 #define VERSION_MINOR 0
-#define VERSION_PATCH 1
+#define VERSION_PATCH 2
 
-#define BETA false
+#define BETA true
 #define COMPILEDATE __DATE__
 
 
-#define IGNORE_SERIALOUT false
+#define IGNORE_SERIALOUT true
 
 // if IGNORE_SERIALOUT is true, alle DEBUG messages are on serial out, even when Serial Out is active outputting characters from Keyer, Decoder etc
 

@@ -36,9 +36,13 @@ using namespace MorseBluetooth;
 // Forward declarations
 void bluetoothTask(void*);
 void bluetoothTypeLCTRL(bool ctrl);
+static bool isBLErunning = false;
+
+BaseType_t xReturned;
 
 bool isBleConnected = false;
 
+TaskHandle_t taskHandle;    //
 
 // Message (report) sent when a key is pressed or released
 struct InputReport {
@@ -110,7 +114,7 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
         cccDesc->setNotifications(true);
 
-        DEBUG("Client has connected");
+        //DEBUG("Client has connected");
     }
 
     void onDisconnect(BLEServer* server) {
@@ -120,9 +124,9 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
         cccDesc->setNotifications(false);
 
-        DEBUG("Client has disconnected");
+        //DEBUG("Client has disconnected");
 		delay(5000);
-		DEBUG("Restarting advertising...");
+		// DEBUG("Restarting advertising...");
 		//server->getAdvertising()->start();
 		server->startAdvertising();
     }
@@ -188,9 +192,31 @@ void bluetoothTask(void*) {
 
 void MorseBluetooth::initializeBluetooth(void)
 {
-	// start Bluetooth task
-	xTaskCreate(bluetoothTask, "bluetooth", 20000, NULL, 5, NULL);
+	// start Bluetooth task - stack size was originally 20000m prio was 5
+    if (!isBLErunning) {
+	    xReturned = xTaskCreate(bluetoothTask, "bluetooth", 10000, NULL, 3, &taskHandle);
+        if (xReturned == pdPASS)
+            isBLErunning = true;
+    delay(100);
+    DEBUG("BLE running?: " + String(isBLErunning));
+    }
 }
+
+void MorseBluetooth::stopBluetooth(void)
+{
+    volatile UBaseType_t uxArraySize;
+    if (isBLErunning) {
+        DEBUG("Stopping BLE");
+        uxArraySize = uxTaskGetNumberOfTasks();
+        //DEBUG("Number of tasks before deleting BLE task: " + String(uxArraySize));
+        vTaskDelete(taskHandle);
+        uxArraySize = uxTaskGetNumberOfTasks();
+        //DEBUG("Number of tasks after deleting BLE task: " + String(uxArraySize));
+        isBLErunning = false;
+        delay(40);
+    }
+}
+
 
 void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 {

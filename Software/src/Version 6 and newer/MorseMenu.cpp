@@ -22,6 +22,9 @@
 extern RADIO radio;
 #endif
 
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+#include "MorseBluetooth.h"
+#endif
 
 using namespace MorseMenu;
 
@@ -85,6 +88,7 @@ const String menuText [menuN] = {
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
 
+bool EspNowIsActive = false;
 
 const uint8_t menuNav [menuN] [5] = {                   // { level, left, right, up, down}
   { 0,0,0,0,0},                                         // 0 = dummy
@@ -153,10 +157,32 @@ void MorseMenu::menu_() {
 #ifdef LORA_RADIOLIB
     radio.standby();
 #endif
-    if (!MorsePreferences::useEspNow) {
-      WiFi.disconnect(true, false);
-      WiFi.mode(WIFI_STA);
+    if (EspNowIsActive) {
+      quickEspNow.stop();
+      EspNowIsActive = false;
     }
+    else {
+      WiFi.disconnect(true, false);
+    }
+    //DEBUG("All WiFi Disconnected");  
+    delay(50);
+    WiFi.mode(WIFI_OFF);
+    //DEBUG("WiFi Mode OFF");
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+    if (MorseBluetooth::isBLErunning) {
+      MorseOutput::clearDisplay();
+      MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Stop BT Kbd");
+      MorseOutput::printOnScroll(2, REGULAR, 0, "Needs Reboot");
+      if (m32protocol)
+              MorseJSON::jsonCreate("message", "Stop BT KbdReboot Required", "");
+      MorseOutput::refreshDisplay();
+      delay (1400);
+      MorseBluetooth::stopBluetooth();
+
+//DEBUG("Bluetooth Stopped");
+      ESP.restart();
+    }
+#endif
     genIsActive = false;
     cleanStartSettings();
     MorseOutput::clearScroll();                  // clear the buffer
@@ -320,6 +346,12 @@ boolean MorseMenu::menuExec() {                                          // retu
 
   switch (MorsePreferences::menuPtr) {
     case  _keyer:  /// keyer
+                #ifdef CONFIG_BLUETOOTH_KEYBOARD
+                  if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
+                    // Initialize Bluetooth System
+                    MorseBluetooth::initializeBluetooth();
+                  }
+                #endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::keyerOptions, MorsePreferences::keyerOptionsSize);
                 morseState = morseKeyer;
                 showStartDisplay("CW Keyer Start", "", "", 400);
@@ -351,9 +383,16 @@ boolean MorseMenu::menuExec() {                                          // retu
                 morseState = morseGenerator;
                 showStartDisplay("Generator     ", "Start / Stop  ", "press Paddle  ", 1250);
                 if (MorsePreferences::pliste[posLoraCwTransmit].value == 1)
-                if (!MorsePreferences::useEspNow) 
-                  if (!setupWifi())
-                  return false;
+                  {
+                    if (MorsePreferences::useEspNow) 
+                      MorseMenu::setupESPNow();
+                    else
+                      if (!setupWifi())
+                        return false; 
+                  }
+                //  if (!MorsePreferences::useEspNow) 
+                //    if (!setupWifi())
+                //      return false;
 
                 return true;
                 break;
@@ -464,6 +503,7 @@ boolean MorseMenu::menuExec() {                                          // retu
                 morseState = wifiTrx;
                 if (MorsePreferences::useEspNow) {
                     showStartDisplay("", "Start  Wifi Trx", "EspNow", 1500);
+                    MorseMenu::setupESPNow(); 
                 }
                 else {
                     MorseOutput::clearDisplay();
@@ -564,11 +604,14 @@ boolean MorseMenu::setupWifi() {
 
 void MorseMenu::setupESPNow() {
   // init wifi for espnow
+      //WiFi.useStaticBuffers(true);
       WiFi.mode(WIFI_STA);
       WiFi.disconnect (false, true);
+      EspNowIsActive = true;
+      quickEspNow.onDataRcvd (onEspnowRecv);
       quickEspNow.begin (MorsePreferences::pliste[posLoraChannel].value ? ESPNOW_CH_ALT : ESPNOW_CH); // If you don't use an AP channel needs to be specified
       delay(100);
-      //DEBUG("setupESPNow");
+      //DEBUG("setupESPNow has been performed.");
   
   }
   

@@ -417,6 +417,7 @@ void MorseWiFi::startAP() {
   MorseOutput::printOnScroll(0, REGULAR, 0,  "AP: morserino");
   MorseOutput::printOnScroll(1, REGULAR, 0,  "URL: m32.local");
   MorseOutput::printOnScroll(2, REGULAR, 0,  "FN to abort");
+  delay(200);
   internal::startMDNS();
 
   server.on("/", HTTP_GET, []() {
@@ -555,14 +556,17 @@ boolean internal::errorConnect(String msg) {
 void internal::startMDNS() {
   /*use mdns for host name resolution*/
   if (!MDNS.begin(MorseWiFi::host)) {         //http://m32.local
-    DEBUG("Error setting up MDNS responder!");
-    while (1) {
-      delay(1000);
+    //DEBUG("Error setting up MDNS responder!");
+    int i = 5;
+    while (i) {
+        i--;
+        delay(1000);
+        //DEBUG("mDNS responder retry");
+
       if (MDNS.begin(MorseWiFi::host))
         break;
     }
   }
-  //DEBUG("mDNS responder started");
 }
 
 

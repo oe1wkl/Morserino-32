@@ -351,55 +351,7 @@ void IRAM_ATTR powerpath_isr() {
 
 uint8_t scrollTop;
 
-/*
-////////////////////////////////////////////////////////////////////
-// encoder subroutines
-/// interrupt service routine - needs to be positioned BEFORE all other functions, including setup() and loop()
-/// interrupt service routine
 
-void IRAM_ATTR isr ()  {                    // Interrupt service routine is executed when a HIGH to LOW transition is detected on CLK
-//if (micros()  > (IRTime + 1000) ) {
-portENTER_CRITICAL_ISR(&mux);
-
-    int sig2 = digitalRead(PinDT); //MSB = most significant bit
-    int sig1 = digitalRead(PinCLK); //LSB = least significant bit
-    // delayMicroseconds(144);                 // this seems to improve the responsiveness of the encoder and avoid any bouncing
-
-    int8_t thisState = sig1 | (sig2 << 1);
-    if (_oldState != thisState) {
-      stateRegister = (stateRegister << 2) | thisState;
-      if (thisState == LATCHSTATE) {
-
-          if (stateRegister == 135 )
-            encoderPos = 1;
-          else if (stateRegister == 75)
-            encoderPos = -1;
-          else
-            encoderPos = 0;
-        }
-    _oldState = thisState;
-    }
-portEXIT_CRITICAL_ISR(&mux);
-}
-
-
-
-int IRAM_ATTR checkEncoder() {
-  int t;
-
-  portENTER_CRITICAL(&mux);
-
-  t = encoderPos;
-  if (encoderPos) {
-    encoderPos = 0;
-    portEXIT_CRITICAL(&mux);
-    return t;
-  } else {
-    portEXIT_CRITICAL(&mux);
-    return 0;
-  }
-}
-*/
 
 int checkEncoder()
 {
@@ -437,7 +389,7 @@ void setup()
    //// the order of the following steps is important:
    //// 1. determine board version
    //// 2. configure batteryPin and modeButtonPin (clickbutton), depending on board version
-   //// 3. read preferences form NVS
+   //// 3. read preferences from NVS
    //// 4. enable Vext (a must for board v3)
    //// 5. measure battery voltage (cannot do this later...)
    //// 6. initialoze display, configure interrupts for encoder
@@ -449,7 +401,7 @@ void setup()
   // reserve 200 bytes for the serial inputString variable defiend above:
   inputString.reserve(255);
 
-
+#ifdef ORIGINAL_M32
   MorsePreferences::determineBoardVersion();
   // now set pins according to board version
   if (MorsePreferences::boardVersion == 3) {
@@ -464,6 +416,7 @@ void setup()
     leftPin = 32;
     rightPin = 33;
   }
+#endif
 
 #ifdef PIN_PADDLE_LEFT
   leftPin = PIN_PADDLE_LEFT;
@@ -480,6 +433,9 @@ void setup()
 #define VEXT_ON_VALUE LOW
 #endif
 
+#ifdef PIN_VEXT
+pinMode(PIN_VEXT, OUTPUT);
+#endif
 
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   MorsePreferences::readVoltagePref() ;
@@ -511,10 +467,10 @@ pinMode(modeButtonPin, INPUT);
 
 
 #ifdef PIN_VEXT
-pinMode(PIN_VEXT, OUTPUT);
+// pinMode(PIN_VEXT, OUTPUT); // done earlier
 digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 #endif
-
+//DEBUG("Init display");
   // init display
   MorsePreferences::readScreenPref();
   MorseOutput::initDisplay();
@@ -532,6 +488,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   digitalWrite(CONFIG_TLV320AIC3100_RST, HIGH);
   delay(100);
 #endif
+//DEBUG("Init sound");
   MorseOutput::soundSetup();
 
 #ifdef CONFIG_TLV320AIC3100_INT
@@ -575,7 +532,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
 
-  
+  //DEBUG("Check for key press at startup");
   
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
@@ -608,18 +565,13 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
-
+//DEBUG("Read preferences");
   MorsePreferences::readPreferences("morserino");
   
   koch.setup();
 
+/// esp  now setup was here ...
 
-//ESPNOW setup
-  if (MorsePreferences::useEspNow) {
-      quickEspNow.onDataRcvd (onEspnowRecv);
-      MorseMenu::setupESPNow();
-  }
-  
   #ifdef CONFIG_DISPLAYWRAPPER
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
   #endif
@@ -635,7 +587,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   quickStart = MorsePreferences::pliste[posQuickStart].value;
 
 ////////////  Setup for LoRa
-
+//DEBUG("LoRa setup");
 #ifdef LORA_RADIOLIB
   SPI.begin(LoRa_SCK, LoRa_MISO, LoRa_MOSI, LoRa_nss);
   Serial.print(F("[SX12xx] Initializing ... "));
@@ -650,12 +602,6 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   radio.setPacketReceivedAction(packetReceived);
 #endif
 
-#ifdef CONFIG_BLUETOOTH_KEYBOARD
-  if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
-    // Initialize Bluetooth System
-    MorseBluetooth::initializeBluetooth();
-  }
-#endif
 
   /// initialise the serial number
   cwTxSerial = random(64);
@@ -685,13 +631,18 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
         }
         file.close();
     }
+    //DEBUG("SPIFFS ready");
+    
     displayStartUp(volt);
+   // DEBUG("Startup display done");
     while (Serial.available())        // remove spurious input from Serial port
       Serial.read();
+    //DEBUG("Clear serial input buffer");
     inputString = "";
+
+    //WiFi.useStaticBuffers(true);
+    
     MorseMenu::menu_();
-
-
   } /////////// END setup()
 
 
@@ -776,28 +727,26 @@ void displayStartUp(uint16_t volt) {
 
 
   //prepare board version, just in case we want to switch to M32protocol later on
-
 #define ST(A) #A
 #define STR(A) ST(A)
+
 #ifdef HW_NAME
-
-  if (STR(HW_NAME) == "original") {
-      if (MorsePreferences::boardVersion == 3)
-          brd = "M32 1st edition";
-      else if (MorsePreferences::boardVersion == 4)
-          brd = "M32 2nd edition";
-      else
-          brd = "unknown";
-    }
-    else
-      brd = STR(HW_NAME);
-
+    brd = STR(HW_NAME);
 #else
     brd = "Unknown Device";
 #endif
+#ifdef ORIGINAL_M32
+    if (MorsePreferences::boardVersion == 3)
+        brd = "M32 1st edition";
+    else if (MorsePreferences::boardVersion == 4)
+        brd = "M32 2nd edition";
+    else
+        brd = "unknown M32 board";
+#endif
 
-  delay(2000);
-
+//DEBUG("Display done, delay");
+delay(1800);
+//DEBUG("Display startup complete");
 }
 
 ///////////////////////// THE MAIN LOOP - do this OFTEN! /////////////////////////////////
@@ -928,7 +877,15 @@ void loop() {
 
 
   } // end switch and code depending on state of metaMorserino
-
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+// we check here if bluetooth should be started
+if (morseState == morseKeyer && 
+      MorsePreferences::pliste[posBluetoothOut].value != 0 && 
+      !MorseBluetooth::isBLErunning) {
+    // Initialize Bluetooth System
+    MorseBluetooth::initializeBluetooth();
+}
+#endif
 /// if we have time check for serial input and for button presses
 
   // check serial input
@@ -1465,10 +1422,10 @@ void setDAHstate() {
 
 
 // toggle polarity of paddles
-void togglePolarity () {
-      MorsePreferences::pliste[posPolarity].value = MorsePreferences::pliste[posPolarity].value ? 0 : 1;
-     //displayPolarity();
-}
+//void togglePolarity () {
+//      MorsePreferences::pliste[posPolarity].value = MorsePreferences::pliste[posPolarity].value ? 0 : 1;
+//     //displayPolarity();
+//}
 
 
 /// function to read sensors:
@@ -2246,7 +2203,7 @@ String getKeyerModeSymbol() {             /// symbol to be displayed on status l
 
 ///////// evaluate the response in Echo Trainer Mode
 void echoTrainerEval() {
-    int i;
+    // int i;
     delay(interCharacterSpace / 2);
 
     if (echoResponse == echoTrainerWord) {
@@ -2358,6 +2315,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
       else if (MorsePreferences::boardVersion == 4)
          digitalWrite(PIN_VEXT, HIGH);
 #endif
+//DEBUG("Battery Pin: " + String(batteryPin));
 #ifdef ARDUINO_heltec_wifi_kit_32_V3
       digitalWrite(ADC_Ctrl,LOW);
         delay(100);
@@ -2391,22 +2349,31 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 #else
 // CONFIG_MCP73871
 #ifdef CONFIG_BATMEAS_PIN
+//delay(1000);
+//DEBUG("Measuring battery voltage...");
+    //pinMode(CONFIG_BATMEAS_PIN, OUTPUT);
+    //digitalWrite(CONFIG_BATMEAS_PIN, LOW); // 
+    //delay(10);
+//delay(200);
+  //pinMode(CONFIG_BATMEAS_PIN, INPUT);
   adcAttachPin(CONFIG_BATMEAS_PIN);
   analogReadResolution(12);
-  analogSetPinAttenuation(CONFIG_BATMEAS_PIN,ADC_11db); // 6db is a good fit with the used voltage divider, ~1.3V for a full 4.2V battery
+  //analogSetAttenuation(ADC_11db);
+  analogSetPinAttenuation(CONFIG_BATMEAS_PIN,ADC_6db); // 6db is a good fit with the used voltage divider, ~1.3V for a full 4.2V battery
   float reading = 0.0;
+  
   for (int i = 0; i<10; i++) {
-    reading += analogRead(CONFIG_BATMEAS_PIN) / 4095.0 * 1750; // 6 db atten = 1750mV max
-      // DEBUG("Reading: " + String(reading) );
+    reading += (1750.0 * (analogRead(CONFIG_BATMEAS_PIN) / 4095.0)) ; // 6 db atten = 1750mV max
+     //DEBUG("Reading " + String(i) + ": " + String(reading) );
     delay(20);
   }
   reading /= 10.0;
-  int16_t mvolt = (reading  * (MorsePreferences::vAdjust * 1.0) / 180.0) * 2.4; // 470k/1000k voltage divider
+  int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / 200.0) * 2.4; // 470k/1000k voltage divider
   voltage_raw = reading; // store raw voltage reading for later use
-  //delay(1000);
-  //DEBUG("Reading: " + String(reading) );
-  //DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
-  //DEBUG("ReadVoltage mv:" + String(mvolt));
+  delay(1000);
+  DEBUG("Reading average: " + String(voltage_raw) );
+  DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
+  DEBUG("ReadVoltage mv:" + String(mvolt));
   uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
   if (powerpath_state == 4) {
     uint8_t newVAdjust = 180 *  4200 / mvolt; // 180 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
@@ -2485,8 +2452,10 @@ void shutMeDown() {
 #ifdef LORA_RADIOLIB
   radio.sleep();
 #endif
-  WiFi.disconnect(true, false);
+  
+WiFi.disconnect(true, false);
   delay(100);
+  WiFi.mode(WIFI_OFF);
   MorseOutput::soundSuspend();
 #ifdef PIN_VEXT
   digitalWrite(PIN_VEXT, ! VEXT_ON_VALUE);

@@ -15,6 +15,7 @@
 #include <Preferences.h>   // ESP 32 library for storing things in non-volatile storage
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
+#include "MorseBluetooth.h"
 #include "MorseJSON.h"
 #include "abbrev.h"
 #include "english_words.h"
@@ -443,7 +444,7 @@ boolean MorsePreferences::leftHanded = false;               // to flip screen fo
   touch_value_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
   touch_value_t MorsePreferences::tRight = 20;                      // threshold for right paddle
 
-  uint8_t MorsePreferences::vAdjust = 180;                    // correction value: 155 - 250
+  uint8_t MorsePreferences::vAdjust = 210;                    // correction value: 155 - 250
 
 
   uint8_t MorsePreferences::snapShots = 0;                    // keep track which snapshots are being used ( 0 .. 7, called 1 to 8)
@@ -631,8 +632,15 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                             koch.setCustomChars(getCustomChars()); //// get custom characters
                         if (m32protocol && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
+            //#ifdef CONFIG_BLUETOOTH_KEYBOARD       
+            //            if (MorsePreferences::pliste[posBluetoothOut].value == 0)
+            //                  MorseBluetooth::stopBluetooth();
+            //            else 
+            //                MorseBluetooth::initializeBluetooth();
+            //#endif
                         writePreferences("morserino");
                         MorseOutput::clearDisplay();
+                        //DEBUG("Exiting preferences menu\n");
                         //delay(200);
                         return false;
                         break;
@@ -851,12 +859,14 @@ String MorsePreferences::getValueLine(prefPos pos) {
       // (reading - 200 + MorsePreferences::vAdjust)
       //DEBUG("Voltage raw: " + String(voltage_raw));
       //DEBUG("VAdjust: " + String(MorsePreferences::vAdjust));
-      volt = (int16_t)((voltage_raw * MorsePreferences::vAdjust) / 180) * 2.4  ; 
+      volt = (int16_t)((voltage_raw * MorsePreferences::vAdjust) / 200.0) * 2.4 ; 
       //DEBUG("Volt: " + String(volt));
     #else
     #ifndef ARDUINO_heltec_wifi_kit_32_V3
       volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * VOLT_CALIBRATE));   // recalculate millivolts for new adjustment
-    //DEBUG("Volt: " + String(volt));
+      DEBUG("Voltage raw: " + String(voltage_raw));
+      DEBUG("VAdjust: " + String(MorsePreferences::vAdjust));
+      DEBUG("Volt: " + String(volt));
       #else
       // (reading - 200 + MorsePreferences::vAdjust)
       volt = (int16_t) (voltage_raw - 200 + MorsePreferences::vAdjust) * VOLT_CALIBRATE;
@@ -967,6 +977,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                       MorsePreferences::handleKochSequence();
                   else if (pos == posCarouselStart && pliste[posKochSeq].value == 3)
                       MorsePreferences::handleCarouselChange();
+            
             } else {                                                        /// "strange" way of adjusting, outside preferences menu
                   switch (pos) {
                       case  posKochFilter:
@@ -1507,18 +1518,20 @@ String MorsePreferences::doClearMemory(uint8_t ptr) {
 }
 
 ///////// read & write board version into NVS memory
-
+#ifdef ORIGINAL_M32
 void MorsePreferences::determineBoardVersion() {
     pref.begin("morserino", false);             // open the namespace as read/write
     MorsePreferences::boardVersion = pref.getUChar("boardVersion");
-    delay(1000);
+    MorsePreferences::boardVersion = 0;
+    delay(100);
     if (MorsePreferences::boardVersion == 0) {                    // no board version had been set previously, so we determine and set it here
-        const int oldbatt = 13;                                     // we measure voltage at pin 13; if V close to zero we have a 2.1 Heltec, so board 4
-
-        analogSetAttenuation(ADC_0db);
-        adcAttachPin(oldbatt);
-        analogSetClockDiv(128);           //  this value was found by experimenting - no clue what it really does :-(
-        analogSetPinAttenuation(oldbatt,ADC_11db);
+        const uint8_t oldbatt = 13; 
+        // we measure voltage at pin 13; if V close to zero we have a 2.1 Heltec, so board 4
+        //analogSetAttenuation(ADC_0db);
+        //adcAttachPin(oldbatt);
+        //analogSetClockDiv(128);           //  this value was found by experimenting - no clue what it really does :-(
+        //analogSetPinAttenuation(oldbatt,ADC_11db);
+        //DEBUG("Measuring: " + String(analogRead(oldbatt)));
         if(analogRead(oldbatt) > 1023) {
           MorsePreferences::boardVersion = 3;
           // DEBUG("boardV: 3");
@@ -1529,7 +1542,9 @@ void MorsePreferences::determineBoardVersion() {
     }
     pref.end();
 }
+#endif
 
+///////// write brightness preference into NVS memory
 void MorsePreferences::writeBrightnessPreference(uint8_t val) {
  
     pref.begin("morserino", false);             // open the namespace as read/write
