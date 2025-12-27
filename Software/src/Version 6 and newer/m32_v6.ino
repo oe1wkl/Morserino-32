@@ -2368,22 +2368,22 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
     delay(20);
   }
   reading /= 10.0;
-  int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / 200.0) * 2.4; // 470k/1000k voltage divider
+  int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 2.4; // 470k/1000k voltage divider
   voltage_raw = reading; // store raw voltage reading for later use
-  delay(1000);
-  DEBUG("Reading average: " + String(voltage_raw) );
-  DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
-  DEBUG("ReadVoltage mv:" + String(mvolt));
+  //delay(1000);
+  //DEBUG("Reading average: " + String(voltage_raw) );
+  //DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
+  //DEBUG("ReadVoltage mv:" + String(mvolt));
   uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
   if (powerpath_state == 4) {
-    uint8_t newVAdjust = 180 *  4200 / mvolt; // 180 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
+    uint8_t newVAdjust = DEFAULT_VADJUST *  4200 / mvolt; // 210 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
     if (abs(newVAdjust - MorsePreferences::vAdjust) >= 3) {
       // enough delta to qualify for storing new vAdjust
       MorsePreferences::vAdjust = newVAdjust;
       MorsePreferences::setVoltageAdjust(newVAdjust);
     }
 
-    int16_t corrected_mvolt = (newVAdjust / 180.0) * mvolt;
+    int16_t corrected_mvolt = (newVAdjust / DEFAULT_VADJUST) * mvolt;
     return corrected_mvolt;
   }
   return mvolt;

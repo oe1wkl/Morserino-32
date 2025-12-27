@@ -444,7 +444,7 @@ boolean MorsePreferences::leftHanded = false;               // to flip screen fo
   touch_value_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
   touch_value_t MorsePreferences::tRight = 20;                      // threshold for right paddle
 
-  uint8_t MorsePreferences::vAdjust = 210;                    // correction value: 155 - 250
+  uint8_t MorsePreferences::vAdjust = DEFAULT_VADJUST;                    // correction value: 155 - 250
 
 
   uint8_t MorsePreferences::snapShots = 0;                    // keep track which snapshots are being used ( 0 .. 7, called 1 to 8)
@@ -864,9 +864,9 @@ String MorsePreferences::getValueLine(prefPos pos) {
     #else
     #ifndef ARDUINO_heltec_wifi_kit_32_V3
       volt = (int16_t) (voltage_raw *  (MorsePreferences::vAdjust * VOLT_CALIBRATE));   // recalculate millivolts for new adjustment
-      DEBUG("Voltage raw: " + String(voltage_raw));
-      DEBUG("VAdjust: " + String(MorsePreferences::vAdjust));
-      DEBUG("Volt: " + String(volt));
+      //DEBUG("Voltage raw: " + String(voltage_raw));
+      //DEBUG("VAdjust: " + String(MorsePreferences::vAdjust));
+      //DEBUG("Volt: " + String(volt));
       #else
       // (reading - 200 + MorsePreferences::vAdjust)
       volt = (int16_t) (voltage_raw - 200 + MorsePreferences::vAdjust) * VOLT_CALIBRATE;

@@ -137,7 +137,8 @@ namespace MorsePreferences
 
 
   #define MAX_MAP_ELEMENTS 15
-
+  #define DEFAULT_VADJUST 210
+  
   struct parameter {
      uint8_t value;
      const uint8_t minimum;
