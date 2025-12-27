@@ -21,4 +21,4 @@ jobs:
         run: pip install --upgrade platformio
 
       - name: Build PlatformIO
-        run: pio ci Software/src/Version\ 6 -c Software/src/platformio.ini -e heltec_wifi_lora_32_V2
+        run: pio ci Software/src/Version\ 6\ and\ newer -c Software/src/platformio.ini -e heltec_wifi_lora_32_V2
