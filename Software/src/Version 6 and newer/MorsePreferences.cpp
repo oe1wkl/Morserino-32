@@ -859,7 +859,7 @@ String MorsePreferences::getValueLine(prefPos pos) {
       // (reading - 200 + MorsePreferences::vAdjust)
       //DEBUG("Voltage raw: " + String(voltage_raw));
       //DEBUG("VAdjust: " + String(MorsePreferences::vAdjust));
-      volt = (int16_t)((voltage_raw * MorsePreferences::vAdjust) / 200.0) * 2.4 ; 
+      volt = (int16_t)((voltage_raw * MorsePreferences::vAdjust) / DEFAULT_VADJUST) * 3.43 ; 
       //DEBUG("Volt: " + String(volt));
     #else
     #ifndef ARDUINO_heltec_wifi_kit_32_V3

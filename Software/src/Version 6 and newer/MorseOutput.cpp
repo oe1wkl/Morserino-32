@@ -1476,8 +1476,8 @@ void MorseOutput::soundSetup()
       codec.setADCGain(-12.0f);
       // Enable the speaker and then run soundEventHandler once to mute/unmute HP/Spk depending on HS plug state
 	  soundEnableSpeaker();
-      soundEventHandler();
-
+    delay(5);
+    soundEventHandler();
       // codec.dumpRegisters(); // nifty when debugging codec issues
     }
 #endif
@@ -1531,6 +1531,7 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
 #else
   sidetone.setFrequency(frequency);
   //sidetone.setVolume(float(volume) / 19.0);
+  //soundSetVolume(MorsePreferences::sidetoneVolume);
   sidetone.setVolume(0.7);
   sidetone.on();
 #endif

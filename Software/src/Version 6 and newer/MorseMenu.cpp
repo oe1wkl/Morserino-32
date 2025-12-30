@@ -195,6 +195,9 @@ void MorseMenu::menu_() {
     file.close();                               // just in case it is still open....
     MorseOutput::clearDisplay();
 
+#ifdef CONFIG_TLV320AIC3100
+    MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
+#endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
         serialEvent();
 
