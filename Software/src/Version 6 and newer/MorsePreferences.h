@@ -105,6 +105,8 @@ namespace MorsePreferences
   extern String  wlanTRXPeer3;
 
   extern boolean useEspNow;
+  extern uint8_t wlanChoice;
+  
   #ifdef CONFIG_DISPLAYWRAPPER
   struct themes {
     uint16_t foreground;

@@ -266,8 +266,8 @@ void MorseWiFi::menuNetSelect() {
   MorseOutput::printOnStatusLine( true, 0,  "Select Wifi");
 
   int btnClicks;
-  int choice = 0;
-  int previousChoice = -1;
+  int8_t choice = MorsePreferences::wlanChoice;  // start with last used network
+  int8_t previousChoice = -1;
   while (true) {
     checkShutDown(false);  // possibly time-out: go to sleep
     if(choice!=previousChoice) {
@@ -320,8 +320,9 @@ void MorseWiFi::menuNetSelect() {
       return;
       break;
   }
+  MorsePreferences::wlanChoice = choice;
   MorsePreferences::writePreferences("morserino");
-  ESP.restart();
+  ESP.restart();  // is this really necessary??
 }
 
 void MorseWiFi::menuExec(uint8_t command) {

@@ -439,6 +439,7 @@ boolean MorsePreferences::leftHanded = false;               // to flip screen fo
   String  MorsePreferences::wlanPassword3 = "";                // password for connecting to WiFi router
   String  MorsePreferences::wlanTRXPeer3 = "";                 // peer Morserino for WiFI TRX
   boolean MorsePreferences::useEspNow = false;                 // use Wifi for ESPNow broadcast mode?
+  uint8_t MorsePreferences::wlanChoice = 0;                    // which of the 4 stored WLAN settings to use
 
   uint32_t MorsePreferences::fileWordPointer = 0;             // remember how far we have read the file in player mode / reset when loading new file
   touch_value_t MorsePreferences::tLeft = 20;                       // threshold for left paddle
@@ -1108,6 +1109,7 @@ void MorsePreferences::readPreferences(String repository) {
       MorsePreferences::wlanPassword3 = pref.getString("wlanPassword3");
       MorsePreferences::wlanTRXPeer3 = pref.getString("wlanTRXPeer3", "");
       MorsePreferences::useEspNow = pref.getBool("useEspNow");
+      MorsePreferences::wlanChoice = pref.getUChar("wlanChoice", 0);
       MorsePreferences::getCwMem();
 
       if ((temp = pref.getUChar("brightness")))
@@ -1289,6 +1291,10 @@ void MorsePreferences::writePreferences(String repository) {
      if (MorsePreferences::wlanTRXPeer3 != pref.getString("wlanTRXPeer3"))
          pref.putString("wlanTRXPeer3", MorsePreferences::wlanTRXPeer3);
      pref.putBool("useEspNow", MorsePreferences::useEspNow);
+     if (MorsePreferences::wlanChoice != pref.getUChar("wlanChoice", 0)) {
+         pref.remove("wlanChoice");
+         pref.putUChar("wlanChoice", MorsePreferences::wlanChoice);
+     }
 #ifdef CONFIG_DISPLAYWRAPPER
       if (MorsePreferences::pliste[posTheme].value != pref.getUChar("theme")) {
           pref.putUChar("theme", MorsePreferences::pliste[posTheme].value); // store the theme
