@@ -1530,9 +1530,12 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
 
 #else
   sidetone.setFrequency(frequency);
-  //sidetone.setVolume(float(volume) / 19.0);
   //soundSetVolume(MorsePreferences::sidetoneVolume);
+#ifdef CONFIG_TLV320AIC3100
   sidetone.setVolume(0.7);
+#else
+  sidetone.setVolume(float(volume) / 19.0);
+#endif
   sidetone.on();
 #endif
 }
@@ -1575,7 +1578,9 @@ void MorseOutput::pwmClick(unsigned int volume) {                        /// gen
         v = MorsePreferences::sidetoneVolume -2;
       else
         v = MorsePreferences::sidetoneVolume +2;
+#ifdef CONFIG_TLV320AIC3100
       soundSetVolume(v);
+#endif
       pwmTone(572,v,false);
       delay(3);
       pwmNoTone(v);
@@ -1583,7 +1588,9 @@ void MorseOutput::pwmClick(unsigned int volume) {                        /// gen
       pwmTone(1144,v,false);
       delay(6);
       pwmNoTone(v);
+#ifdef CONFIG_TLV320AIC3100
       soundSetVolume(MorsePreferences::sidetoneVolume);
+#endif
     #else
     pwmTone(572,volume > 4 ? volume-4 : volume, false);
     delay(3);
