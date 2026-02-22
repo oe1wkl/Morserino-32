@@ -1352,7 +1352,12 @@ boolean checkPaddles() {
   static boolean oldL = false, newL, oldR = false, newR;
   int left, right;
   static long lTimer = 0, rTimer = 0;
+#ifndef INTERNAL_PULLUP
   const int debDelay = 512;       // debounce time = 0,512  ms
+#else
+  #pragma message ("using higher debounce time")
+  const int debDelay = 2048;       // higher debounce time for pocket (with internal pullups)
+#endif
 
   /* internal and external paddles are now working in parallel - the parameter p_useExtPaddle is used to indicate reverse polarity of external paddle
   */
@@ -1750,7 +1755,11 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             if (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value == DISP_ONLY)
                 genTimer = millis() + 2;      // very short timing
             else if (morseState != loraTrx && morseState != wifiTrx)
+#ifndef CONFIG_SOUND_I2S
                 genTimer = millis() + (c == '1' ? ditLength-6 : dahLength-6);           // start a dit or a dah, acording to the next element, correct for slightly loner dit and dah, see output routine
+#else
+                genTimer = millis() + (c == '1' ? ditLength : dahLength);           // start a dit or a dah, acording to the next element
+#endif
             else
                 genTimer = millis() + (c == '1' ? rxDitLength : rxDahLength);
             if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1)             // send the element to transmit buffer
