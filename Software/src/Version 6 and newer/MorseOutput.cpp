@@ -1537,6 +1537,7 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
   sidetone.setVolume(float(volume) / 19.0);
 #endif
   sidetone.on();
+  delay(6);
 #endif
 }
 
@@ -1561,6 +1562,7 @@ void MorseOutput::pwmNoTone(unsigned int volume) {      // stop playing a tone b
   ledcWrite(lineOutChannel, dutyCycleZero);
 
 #else
+  delay(6);
   sidetone.off();
 #endif
 }
