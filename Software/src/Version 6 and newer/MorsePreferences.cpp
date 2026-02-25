@@ -1702,7 +1702,8 @@ void MorsePreferences::writeWifiInfo(String ssid, String passwd, String trxpeer)
       MorsePreferences::wlanPassword = passwd;
     //if (trxpeer != "")
       MorsePreferences::wlanTRXPeer = trxpeer;
-    pref.begin("morserino", false);             // open the namespace as read/write
+    
+      pref.begin("morserino", false);             // open the namespace as read/write
     if (MorsePreferences::wlanSSID != pref.getString("wlanSSID"))
         pref.putString("wlanSSID", MorsePreferences::wlanSSID);
     if (MorsePreferences::wlanPassword != pref.getString("wlanPassword"))

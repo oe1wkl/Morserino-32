@@ -322,7 +322,7 @@ void MorseWiFi::menuNetSelect() {
   }
   MorsePreferences::wlanChoice = choice;
   MorsePreferences::writePreferences("morserino");
-  ESP.restart();  // is this really necessary??
+  ESP.restart();  // is this really necessary?? Probably yes, because of ESPnow?
 }
 
 void MorseWiFi::menuExec(uint8_t command) {
