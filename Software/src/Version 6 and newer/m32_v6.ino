@@ -707,7 +707,7 @@ void displayStartUp(uint16_t volt) {
     vsn = vsn + " beta " + shortDate(COMPILEDATE);
   s += vsn;
   MorseOutput::printOnScroll(0, REGULAR, 0, s );
-  MorseOutput::printOnScroll(1, REGULAR, 0, "© 2018-2026");
+  MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT);
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
 
@@ -1448,9 +1448,8 @@ uint8_t readSensors(int left, int right, boolean init) {
    while ( !(v=touchRead(right)) )
     ;                                       // ignore readings with value 0
   rValue = v;
-
   if (init == false) {
-    if (sizeof(touch_value_t) < 4) { // pre ESP32-S2/S3 chips use touch values below 32bit so calibration is needed
+    if (sizeof(touch_value_t) < 4) {     // pre ESP32-S2/S3 chips use touch values below 32bit so calibration is needed
       if (lValue < (MorsePreferences::tLeft+10))     {           //adaptive calibration
           MorsePreferences::tLeft = ( 7*MorsePreferences::tLeft +  ((lValue+lUntouched) / SENS_FACTOR) ) / 8;
       }
@@ -1462,9 +1461,9 @@ uint8_t readSensors(int left, int right, boolean init) {
       return ( lValue > MorsePreferences::tLeft ? 2 : 0 ) + (rValue > MorsePreferences::tRight ? 1 : 0 );
     }
   } else {
-    //DEBUG("@1332: tLeft: " + String(MorsePreferences::tLeft));
+    //DEBUG("@1464: tLeft: " + String(MorsePreferences::tLeft));
     //lValue -=25; rValue -=25;
-    //DEBUG("@1334: lValue, rValue: " + String (lValue) + " " + String(rValue));
+    //DEBUG("@1466: lValue, rValue: " + String (lValue) + " " + String(rValue));
     if (sizeof(touch_value_t) < 4) {
         if (lValue < 32 || rValue < 32)
           return 3;
@@ -1472,7 +1471,7 @@ uint8_t readSensors(int left, int right, boolean init) {
           return 0;
           }
     else {
-        if (lValue > 45000 || rValue > 45000) // TOUCH SENSITIVITY for S3 - was 85000
+        if (lValue > 40000 || rValue > 40000) // TOUCH SENSITIVITY for S3 - was 85000
           return 3;
         else
           return 0;

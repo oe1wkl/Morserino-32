@@ -1266,29 +1266,78 @@ void soundEnableSpeaker(void) {
     codec.setHeadphoneMute(true); // mute hp
 }
 
-void soundEnableLineOut(void) {
+void soundEnableLineOut(bool muted = false, bool variable = false) {
+  // this has now to parameters: whether we want to mute the speaker and whether we want to use variable gain on the line-out
     codec.enableHeadphoneAmp();
     //codec.setHeadphoneVolume(-10.0f,-10.0f); // unmute
     //codec.setHeadphoneGain(-12.0f,-12.0f);
     codec.setHeadphoneMute(false); // unmute hp
-    codec.setHeadphoneLineMode(true); // enable line-out mode and loudspeaker
-    codec.enableSpeakerAmp();
-    codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
-    // codec.setSpeakerVolume(-10.0f); // volume set by encoder
-    codec.setHeadphoneVolume(0.0, 0.0); // volume 0db on line-out
-    codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume));
-    codec.setSpeakerMute(false); // unmute class d speaker amp
-  
+    codec.setHeadphoneLineMode(true); // enable line-out mode
+
+    if (!variable) {
+      DEBUG("Fixed gain!");
+      codec.setHeadphoneVolume(0.0, 0.0); // volume 0db on line-out
+    }
+    else
+      codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-12.0,calcVolume(MorsePreferences::sidetoneVolume)-12.0);
+
+    if (muted)
+          codec.setSpeakerMute(true); // mute class d speaker amp
+      else
+      {
+        DEBUG ("Not muted!");
+        codec.enableSpeakerAmp();
+        codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
+        // codec.setSpeakerVolume(-10.0f); // volume set by encoder
+        codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume));
+        codec.setSpeakerMute(false); // unmute class d speaker amp
+      }
 }
+
 
 void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
   if (codec.isHeadsetDetected()) {
+    switch (MorsePreferences::pliste[posLineOut].value)
+    {
+      case 0: // headphones, speaker muted 
+        if (v==0)
+            codec.setHeadphoneMute(true); // mute hp
+        else  
+            codec.setHeadphoneMute(false);
+        codec.setHeadphoneVolume(calcVolume(v)-12.0, calcVolume(v)-12.0); // reduce headphone volume by 6dB to match speaker volume
+        break;
+      case 1: // line-out, speaker not muted, fixed l-o gain
+        if (v==0)
+            codec.setSpeakerMute(true); // mute class d speaker amp
+        else  
+            codec.setSpeakerMute(false);
+        codec.setSpeakerVolume(calcVolume(v));
+        break;
+      case 2: // line-out, speaker not muted, variable l-o gain
+        if (v==0) {
+            codec.setSpeakerMute(true); // mute class d speaker amp
+            codec.setHeadphoneMute(true); // mute hp
+        }
+        else  
+        {
+            codec.setSpeakerMute(false);
+            codec.setHeadphoneMute(false);
+        }
+        codec.setSpeakerVolume(calcVolume(v));
+        codec.setHeadphoneVolume(calcVolume(v)-12.0, calcVolume(v)-12.0); // reduce headphone volume by 6dB to match speaker volume
+        break;
+      case 3: // line-out, speaker muted, fixed l-o gain
+        break;
+    }
+  }
+  /* {
     if (v==0)
       codec.setHeadphoneMute(true); // mute hp
     else  
       codec.setHeadphoneMute(false);
     codec.setHeadphoneVolume(calcVolume(v)-12.0, calcVolume(v)-12.0); // reduce headphone volume by 6dB to match speaker volume
-  } else {
+  } */ 
+  else {
     if (v==0)
       codec.setSpeakerMute(true); // mute class d speaker amp
     else  
@@ -1297,19 +1346,50 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
   }
 }
 
+/* old and faulty event handler
 void MorseOutput::soundEventHandler() {
   // interrupt reason needs to be read, otherwise the codec won't send any further interrupts
   if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
-    Serial.println("AIC31XX: Headset plug interrupt triggered");
+    DEBUG("AIC31XX: Headset plug interrupt triggered");
   }
   if (codec.isHeadsetDetected()) {
-    Serial.println("AIC31XX: Headset detected");
+    DEBUG("AIC31XX: Headset detected");
 	soundEnableHeadphone();
   } else {
-    Serial.println("AIC31XX: Not a headset but LineOut");
+    DEBUG("AIC31XX: Not a headset but LineOut");
 	soundEnableLineOut();
        // enable speaker AND line-out!
   }
+}
+*/
+
+void MorseOutput::soundEventHandler() {
+  // interrupt reason needs to be read, otherwise the codec won't send any further interrupts
+  if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
+    DEBUG("AIC31XX: Headset plug interrupt triggered");
+  }
+if (codec.isHeadsetDetected()) { 
+    DEBUG("AIC31XX: Headset interrupt: plugged-in");
+    switch (MorsePreferences::pliste[posLineOut].value)
+    {
+      case 0: // headphones, speaker muted 
+        soundEnableHeadphone();
+        break;
+      case 1: // line-out, speaker not muted, fixed gain
+        soundEnableLineOut(false, false);
+        break;
+      case 2: // line-out, speaker not muted, variable gain
+        soundEnableLineOut(false, true);
+        break;
+      case 3: // line-out, speaker muted, fixed gain
+        soundEnableLineOut(true, false);
+        break;
+    }
+} else {
+    DEBUG("AIC31XX: Headset interrupt: unplugged");
+    soundEnableSpeaker();
+       // enable speaker, mute headphones
+  }   
 }
 #endif
 

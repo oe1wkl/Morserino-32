@@ -1,22 +1,20 @@
-# Build Instructions & Change History
-
-## Build Instructions (for Arduino IDE)
+# Change History
 
 
-1. Set up the Arduino IDE from <https://www.arduino.cc/en/Main/Software>.
+### Changes V.7.1
 
-2. Install on your computer the USB driver for the SiLabs CP2104 chip, used in the Heltec board for USB communication. Follow these instructions: <https://heltecdocs-fock.readthedocs.io/general/establish_serial_connection.html>.
+#### Feature Modifications:
 
-3. Using the Arduino Board Manager install Esspressif esp32 2.0.11 for board support, and choose the Board "Heltec WiFi Lora 32 (V2)". With the Arduino Library Manager install the library "Heltec ESP32 Dev Boards" Version 1.1.5. You also have to install the libraries "ESP32Encoder" (by Kevin Harrington), Version 0.11.7, and ArduinoJson (By Benoit Blanchon), Version 6.20.1.
+* In WiFi Select, the selection starts now with the currently selected network, so you can use this to check what is currently selected. If you are happy with the selection just exit the function with a long press of the encoder knob.
+* The way headphone / line-out detection was set up for the M32 Pocket did not work correctly (based on wrong assumptions on my side). There is now an additional preference (for the M32 Pocket only), called Headphone Output, with the following options: „Phones“ (= default; speaker will be muted), „line-out“ (fixed volume on line-out, speaker not muted), „l-o: Var. Vol.“ (like line-out, but with variable volume), and „l-o: Lsp Muted“ (like line-out, but with loudspeaker muted). 
+**Warning: Never plug in headphones when you are using one of the line-out options - as output might be at full volume, this could damage your hearing and/or your headphones!**
+
+#### Bug Fixes:
+* The dit/dah length for non-PWM audio (i.e. M32 Pocket) wa off by 6 ms. Fixed (thanks Hari, OE6HKE).
+* M32Pocket: The sensitivity of the touch paddles at start was too low to detect a touch at power up, so it was not possible to enter the hardware config menu with touch paddles. Fixed.
+* The option „Serial Output“ was not properly stored when changed. Fixed (This bug might actually have created corruption of permanent memories in certain cases - if you observe strange behaviour, update with the -erase option!)
 
 
-4. Get the source for the latest Morserino-32 firmware from GitHub (<https://github.com/oe1wkl/Morserino-32/releases>).
-
-5. Load the .ino file into the IDE (the other source files will be loaded automatically as well), and compile (and upload).
-
-***It is recommended to use platform.io for building the Morserino firmware, not the Arduino IDE!***
-
-## Change History
 
 ### Changes V.7.0
 

@@ -198,7 +198,7 @@ void MorseBluetooth::initializeBluetooth(void)
         if (xReturned == pdPASS)
             isBLErunning = true;
     delay(100);
-    DEBUG("BLE running?: " + String(isBLErunning));
+    //DEBUG("BLE running?: " + String(isBLErunning));
     }
 }
 
