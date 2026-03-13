@@ -199,10 +199,11 @@ const char CWchars[] = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäö�
 
 
 ///// variables for generating CW
-
+int CWwordPos = 0;    // read position within CWword (replaces remove(0,1))
 String CWword = "";
 String clearText = "";
 
+ 
 int repeats = 0;
 
 int rxDitLength = 0;                    // set new value for length of dits and dahs and other timings
@@ -1104,7 +1105,7 @@ void cleanStartSettings() {
         MorseOutput::relPos = MorseOutput::maxPos;
     }
     clearText = "";
-    CWword = "";
+    CWword = ""; CWwordPos = 0;
     echoTrainerState = START_ECHO;
     generatorState = KEY_UP;
     keyerState = IDLE_STATE;
@@ -1661,7 +1662,48 @@ String getRandomCall(int maxLength) {            // random call-sign like patter
 /////// generate CW representations from its input string
 /////// CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEäöüH";
 
+// Since CWword is still a global String, we still return a String. But we
+// build it in a static char[] first — one final String construction instead
+// of dozens of += reallocations.
+ 
 String generateCWword(String symbols) {
+    // Max CW word: 14 chars × (7 elements + 1 separator) + margin = ~128 bytes
+    static char buf[160];
+    int pos = 0;
+ 
+    int l = symbols.length();
+ 
+    for (int i = 0; i < l; ++i) {
+        char c = symbols.charAt(i);
+ 
+        int pointer = indexOfConstStr(CWchars, c);
+        if (pointer < 0) continue;                   // skip unknown chars (safety)
+ 
+        byte NoE     = pool[pointer][1];             // number of elements
+        byte bitMask = pool[pointer][0];             // dit/dah bitmask
+ 
+        for (int j = 0; j < NoE; ++j) {
+            if (pos >= (int)sizeof(buf) - 2) goto done;  // overflow protection
+            buf[pos++] = (bitMask & B10000000) ? '2' : '1';
+            bitMask <<= 1;
+        }
+        buf[pos++] = '0';                            // inter-character separator
+    }
+    if (pos > 0) --pos;                              // remove trailing '0'
+done:
+    buf[pos] = '\0';
+ 
+    return String(buf);    // one heap allocation for the final result
+}
+ 
+// WHY THIS IS BETTER:
+//   Old code: for a 5-letter word with average 3 elements each, that's
+//   5×3 = 15 calls to result += "1"/"2" plus 5 calls to result += "0".
+//   Each += may realloc. That's up to 20 heap operations.
+//   New code: zero heap operations during the loop, one String construction
+//   at the end.
+ 
+/* String generateCWword(String symbols) {
   int pointer;
   byte bitMask, NoE;
   //byte nextElement[8];      // the list of elements; 0 = dit, 1 = dah
@@ -1687,7 +1729,7 @@ String generateCWword(String symbols) {
   result.remove(result.length()-1);
   return result;
 }
-
+*/
 //Returns the index of the first occurence of char c in char* string. If not found -1 is returned. sort of equiv to String.indexOf()
 int indexOfConstStr(const char* string, char c) {
     char *e = strchr(string, c);
@@ -1709,9 +1751,9 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 return;                                                 // therefore we return to loop()
              // here we continue if the pause has been long enough
             if (startFirst == true) {
-                CWword = "";
+                CWword = ""; CWwordPos = 0;
             }
-            l = CWword.length();
+            l = CWword.length() - CWwordPos;
 
             if (l==0)  {                                               // fetch a new word if we have an empty word
                 if (clearText.length() > 0) {                          // this should not be reached at all.... except when display word by word
@@ -1732,12 +1774,10 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                   displayGeneratedMorse(REGULAR, "\n");
                 }
             }
-            c = CWword[0];                                            // retrieve next element from CWword; if 0, we were at end of character
-            CWword.remove(0,1);
+            c = CWword[CWwordPos++];                                            // retrieve next element from CWword; if 0, we were at end of character
             if (c == '0' || !CWword.length())  {                      // a character just had been finished //// is there an error here?
                    if (c == '0') {
-                      c = CWword[0];                                  // retrieve next element from CWword;
-                      CWword.remove(0,1);
+                      c = CWword[CWwordPos++];                                 // retrieve next element from CWword;
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1)
                           cwForTx(0);                             // send end of character to transmit buffer
                       }
@@ -1773,7 +1813,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             //// otherwise we continue here; stop keying,  and determine the length of the following pause: inter Element, interCharacter or InterWord?
 
            keyOut(false, (morseState != loraTrx && morseState != wifiTrx), 0, 0);
-            if (! CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode or autoStop mode
+            if (CWwordPos >= (int)CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode or autoStop mode
                 if (morseState == morseGenerator)
                     autoStop = MorsePreferences::pliste[posAutoStop].value ? halt : nextword;
                 dispGeneratedChar();
@@ -1815,7 +1855,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                       }
                 }
              }
-             else if ((c = CWword[0]) == '0') {                                                                        // we are at end of character
+             else if ((c = CWword[CWwordPos]) == '0') {                                                                        // we are at end of character
 //              // display last character
 //              // genTimer small if in echo mode and no code!
                 dispGeneratedChar();
@@ -1902,7 +1942,7 @@ void fetchNewWord() {
        startFirst = false;
        ////// from here: retrieve next CWword from buffer!
         if (cwBuReady()) {
-            uint8_t header = decodePacket(&rssi, &rxWpm, &CWword);
+            uint8_t header = decodePacket(&rssi, &rxWpm, &CWword); CWwordPos = 0;
             if (header == 0)  {                                   // invalid packet
               DEBUG("Invalid LoRa packet: EOW within packet!");
               return;
@@ -1937,7 +1977,7 @@ void fetchNewWord() {
             genTimer = 3 * interWordSpace + millis();
             clearText = "";
         }
-        CWword = generateCWword(clearText);
+        CWword = generateCWword(clearText); CWwordPos = 0;  
         displayGeneratedMorse(REGULAR, " ");
         return;
     }
@@ -2062,7 +2102,7 @@ void fetchNewWord() {
         clearText = "";
         //return;
       }
-      CWword = generateCWword(clearText);
+      CWword = generateCWword(clearText); CWwordPos = 0;
       echoTrainerWord = clearText;
     } /// else (= not in loraTrx or wifiTrx mode, or in PlayCW, or other generator modes)
 } // end of fetchNewWord()
@@ -2282,7 +2322,7 @@ void keyTransmitter(boolean noTx) {
 #endif
 }
 
-String cleanUpProSigns( String &input ) {
+/* String cleanUpProSigns( String &input ) {
     /// clean up clearText   -   S <as>,  - A <ka> - N <kn> - K <sk> - H ch etc;
     input.replace("S", "<as>");
     input.replace("A", "<ka>");
@@ -2294,8 +2334,66 @@ String cleanUpProSigns( String &input ) {
     input.replace("R", "<err>");
     input.replace("U", "*");
     //DEBUG(input);
+    return input; 
+
+} */
+
+
+String cleanUpProSigns( String &input ) {
+    /// Expand single-char prosign codes to their display forms.
+    /// S→<as>, A→<ka>, N→<kn>, K→<sk>, E→<ve>, B→<bk>, H→ch, R→<err>, U→*
+    /// Uses a static char buffer internally — no heap allocations in the loop.
+ 
+    static const struct { char code; const char* expansion; uint8_t expLen; } table[] = {
+        { 'S', "<as>",  4 },
+        { 'A', "<ka>",  4 },
+        { 'N', "<kn>",  4 },
+        { 'K', "<sk>",  4 },
+        { 'E', "<ve>",  4 },
+        { 'B', "<bk>",  4 },
+        { 'H', "ch",    2 },
+        { 'R', "<err>", 5 },
+        { 'U', "*",     1 },
+    };
+    static const int tableSize = sizeof(table) / sizeof(table[0]);
+ 
+    // Worst case: every char is 'R' expanding to 5 chars = 5× input length.
+    // Input is at most ~14 chars (one CW word), so 128 bytes is more than enough.
+    static char buf[128];
+    int out = 0;
+    int len = input.length();
+    const char* src = input.c_str();
+ 
+    for (int i = 0; i < len && out < (int)sizeof(buf) - 6; ++i) {
+        bool found = false;
+        for (int t = 0; t < tableSize; ++t) {
+            if (src[i] == table[t].code) {
+                memcpy(&buf[out], table[t].expansion, table[t].expLen);
+                out += table[t].expLen;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            buf[out++] = src[i];
+        }
+    }
+    buf[out] = '\0';
+ 
+    // Write the result back into the String reference (one allocation, no chained replaces)
+    input = buf;
     return input;
 }
+ 
+// WHY THIS IS BETTER:
+//   Old code: 9× String::replace(), each scanning the full string and
+//   potentially reallocating the heap buffer when expansion is longer
+//   than the search term (which it is for 8 of 9 entries).
+//   New code: one linear scan, one static stack buffer, one final String
+//   assignment. The String assignment at the end still touches the heap,
+//   but it's ONE allocation instead of up to 9.
+ 
+
 
 //// measure battery voltage in mV
 
@@ -2670,7 +2768,7 @@ String CWwordToClearText(String cwword) {             // decode the Morse code c
 }
 
 
-String encodeProSigns( String &input ) {
+/* String encodeProSigns( String &input ) {
     /// clean up clearText   -   S <as>,  - A <ka> - N <kn> - K <sk> - H ch - E <ve> etc;
     input.replace("<as>","S");
     input.replace("<ka>","A");
@@ -2684,8 +2782,51 @@ String encodeProSigns( String &input ) {
     //DEBUG(input);
     return input;
 }
+*/
 
-
+String encodeProSigns( String &input ) {
+    /// Compress prosign display forms to single-char codes.
+    /// <as>→S, <ka>→A, <kn>→N, <sk>→K, <ve>→E, <bk>→B, <ch>→H, <err>→R, *→U
+ 
+    static const struct { const char* seq; uint8_t seqLen; char code; } table[] = {
+        { "<as>",  4, 'S' },
+        { "<ka>",  4, 'A' },
+        { "<kn>",  4, 'N' },
+        { "<sk>",  4, 'K' },
+        { "<ve>",  4, 'E' },
+        { "<bk>",  4, 'B' },
+        { "<ch>",  4, 'H' },
+        { "<err>", 5, 'R' },
+        { "*",     1, 'U' },
+    };
+    static const int tableSize = sizeof(table) / sizeof(table[0]);
+ 
+    static char buf[64];
+    int out = 0;
+    int len = input.length();
+    const char* src = input.c_str();
+ 
+    for (int i = 0; i < len && out < (int)sizeof(buf) - 2; ) {
+        bool found = false;
+        for (int t = 0; t < tableSize; ++t) {
+            if (i + table[t].seqLen <= len &&
+                memcmp(&src[i], table[t].seq, table[t].seqLen) == 0) {
+                buf[out++] = table[t].code;
+                i += table[t].seqLen;
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            buf[out++] = src[i++];
+        }
+    }
+    buf[out] = '\0';
+ 
+    input = buf;
+    return input;
+}
+ 
 //// new buffer code: unpack when needed, to save buffer space. We just use 1024 bytes of buffer, instead of 32k!
 //// in addition to the received packet, we need to store the RSSI as 8 bit positive number
 //// (it is always between -20 and -150, so an 8bit integer is fine as long as we store it without sign as an unsigned number)
@@ -3664,7 +3805,7 @@ void stopPlayCw() {     /// sort of emergency stop for M32p cw/play
             keyOut(false,true,0,0);
             playCW = false;
             repeatPlayCW = false;
-            playCWBuffer = clearText = CWword = "";
+            playCWBuffer = clearText = CWword = ""; CWwordPos = 0;
             playCWMaxIndex = 0;
             startFirst = true;
             MorseJSON::jsonOK();

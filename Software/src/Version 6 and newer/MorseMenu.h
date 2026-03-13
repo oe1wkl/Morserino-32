@@ -27,7 +27,7 @@ extern boolean kochActive;
 extern boolean filteredState, filteredStateBefore, speedChanged;
 extern boolean quickStart;
 extern unsigned long ditAvg, dahAvg;
-extern String clearText;
+extern String clearText ;
 extern File file;
 extern IPAddress peerIP;
 extern morserinoMode morseState;

@@ -36,7 +36,6 @@ extern String cleanUpProSigns( String &input );
 //extern int16_t batteryVoltage();
 //extern int16_t volt;
 extern void updateTimings();
-extern String cleanUpProSigns( String &input );
 
 extern int IRAM_ATTR checkEncoder();
 
