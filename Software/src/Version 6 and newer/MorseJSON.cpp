@@ -281,7 +281,7 @@ void MorseJSON::jsonGetWifi(void) {
 	JsonObject entry3 = liste.createNestedObject();
 	entry3["ssid"] = MorsePreferences::wlanSSID3;
 	entry3["trxpeer"] = MorsePreferences::wlanTRXPeer3;
-	entry3["selected"] = (MorsePreferences::wlanSSID3 + MorsePreferences::wlanTRXPeer2 == activeWiFiConf ? true : false);
+	entry3["selected"] = (MorsePreferences::wlanSSID3 + MorsePreferences::wlanTRXPeer3 == activeWiFiConf ? true : false);
 
 	DynamicJsonDocument doc(512);
 	doc["wifi"] = liste;

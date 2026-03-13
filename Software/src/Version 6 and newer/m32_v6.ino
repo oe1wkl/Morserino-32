@@ -296,10 +296,10 @@ const byte pool[][2]  = {
                {B00010000, 5},  // <ve> 49    E
                {B10001010, 7},  // <bk> 50    B
 // German characters
-               {B01010000, 4},  // ä    50
-               {B11100000, 4},  // ö    51
-               {B00110000, 4},  // ü    52
-               {B11110000, 4}   // ch   53    H
+               {B01010000, 4},  // ä    51
+               {B11100000, 4},  // ö    52
+               {B00110000, 4},  // ü    53
+               {B11110000, 4}   // ch   54    H
 
             };
 
@@ -1625,7 +1625,7 @@ String getRandomCall(int maxLength) {            // random call-sign like patter
               call += CWchars[random(26,36)];     // CWchars.charAt(random(26,36));
               l = 2;
               break;
-      case 3: call += CWchars[random(26,23)];     // CWchars.charAt(random(26,36));
+      case 3: call += CWchars[random(26,36)];     // CWchars.charAt(random(26,36));
               call += CWchars[random(0,26)];     // CWchars.charAt(random(0,26));
               l = 2;
               break;
@@ -3570,9 +3570,11 @@ boolean setParameter(String token, String value) {      // change a parameter, r
       break;
     }
 
-    MorsePreferences::writePreferences("morserino");    // store the new value
-    if (found)
+    
+    if (found) {
+      MorsePreferences::writePreferences("morserino");    // store the new value
       return false;
+    }
     else // not found
       return true;
 }

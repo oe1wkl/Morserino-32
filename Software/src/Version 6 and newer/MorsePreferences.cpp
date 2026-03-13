@@ -1072,7 +1072,7 @@ void MorsePreferences::handleKochSequence() {
               break;
       case 4:                                                 // Custom Chars
               MorsePreferences::useCustomChars = true;
-      default:
+      default:                                                // all others are treated the same
               MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = 51;
               MorsePreferences::kochMinimum = 1;
               MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
