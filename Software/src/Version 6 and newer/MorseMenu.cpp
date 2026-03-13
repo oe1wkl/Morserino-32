@@ -33,7 +33,7 @@ using namespace MorseMenu;
 //boolean MorseMenu::inMenuLoop = false;
 
 
-const String menuText [menuN] = {
+const char* const menuText[menuN]  = {
   "",
   "CW Keyer", // 1
 
@@ -321,11 +321,11 @@ String MorseMenu::getMenuPath(uint8_t ptr) {
     String cmdPath; cmdPath.reserve(80);
 
     switch (menuNav [ptr][naviLevel]) {
-      case 2: cmdPath = menuText[twoUp] + "/" + menuText[oneUp] + "/" + menuText[ptr];
+      case 2: cmdPath = String(menuText[twoUp]) + "/" + menuText[oneUp] + "/" + menuText[ptr];
               break;
-      case 1: cmdPath = menuText[oneUp] + "/" + menuText[ptr] + (oneDown ? ("/..") : "");
+      case 1: cmdPath = String(menuText[oneUp]) + "/" + menuText[ptr] + (oneDown ? "/.." : "");
               break;
-      case 0: cmdPath = menuText[ptr] + (oneDown ? ("/..") : "");
+      case 0: cmdPath = String(menuText[ptr]) + (oneDown ? "/.." : "");
               break;
   }
   return cmdPath;

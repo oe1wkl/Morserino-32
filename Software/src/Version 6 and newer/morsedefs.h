@@ -37,8 +37,8 @@
 
 /////// Program Name & Version
 
-const String PROJECTNAME = "Morserino-32";
-const String COPYRIGHT = "© 2018-2026";
+const char* const PROJECTNAME = "Morserino-32";
+const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 
 #define VERSION_MAJOR 7
 #define VERSION_MINOR 2

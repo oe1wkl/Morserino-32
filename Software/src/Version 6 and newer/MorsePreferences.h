@@ -234,8 +234,8 @@ class Koch {
     uint16_t numberOfAbbr;
     String kochCharSet;
     String licwKochChars;
-    const String lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNEB@:";
-    const String cwacKochChars =      "teanois14rhdl25ucmw36?fy,pgq79/bv+kj80=xzBK.-ASNE@:";
+    const char* const lcwoKochChars =      "kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNEB@:";
+    const char* const cwacKochChars =      "teanois14rhdl25ucmw36?fy,pgq79/bv+kj80=xzBK.-ASNE@:";
     //uint8_t kochCharsLength;
     void createWords(uint8_t, uint8_t);
     void createAbbr(uint8_t, uint8_t);
@@ -246,8 +246,8 @@ class Koch {
     uint8_t initSequenceIndex;
 
   public:
-    const String morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAEB@:";
-    const String licwAllKochChars =   "reatinpgslcdhofuwbkmy59,qxv73?+K=16.zj/28B40-ASNE@:";
+    const char* const morserinoKochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=K+SNAEB@:";
+    const char* const licwAllKochChars =   "reatinpgslcdhofuwbkmy59,qxv73?+K=16.zj/28B40-ASNE@:";
 
     Koch();
     void setup();

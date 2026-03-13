@@ -1858,7 +1858,7 @@ void Koch::setKochChars(uint8_t sequence) { // define the demanded Koch characte
 
 
 
-uint8_t Koch::setupLICWkochChars(uint8_t start) {                              // set up the string of characters used for LICW carousel Koch training, return length
+/* uint8_t Koch::setupLICWkochChars(uint8_t start) {                              // set up the string of characters used for LICW carousel Koch training, return length
     // depends on: carouselStart
     //uint8_t start = MorsePreferences::pliste[posCarouselStart].value;
     uint8_t l;
@@ -1879,7 +1879,42 @@ uint8_t Koch::setupLICWkochChars(uint8_t start) {                              /
     licwKochChars = temp;
     return l;
 }
+*/
 
+uint8_t Koch::setupLICWkochChars(uint8_t start) {  // set up the string of characters used for LICW carousel Koch training, return length
+    // depends on: carouselStart
+    uint8_t l;
+    char temp[48];
+    int pos = 0;
+ 
+    if (start < 6) {    // BC 1
+        int segLen = 18 - 3 * start;
+        memcpy(&temp[pos], &licwAllKochChars[3 * start], segLen);
+        pos += segLen;
+        if (start > 0) {
+            memcpy(&temp[pos], licwAllKochChars, 3 * start);
+            pos += 3 * start;
+        }
+        l = 18;
+    } else {          // BC 2
+        memcpy(&temp[pos], licwAllKochChars, 18);               // first 18 chars
+        pos += 18;
+        int segLen = 44 - 3 * start;
+        memcpy(&temp[pos], &licwAllKochChars[3 * start], segLen);
+        pos += segLen;
+        if (start > 6) {
+            int seg2 = 3 * start - 18;
+            memcpy(&temp[pos], &licwAllKochChars[18], seg2);
+            pos += seg2;
+        }
+        l = 44;
+    }
+    temp[pos] = '\0';
+ 
+    licwKochChars = temp;   // licwKochChars is a String member — this works
+    return l;
+}
+ 
 void Koch::setCustomChars(String chars) {          // define the custom character set
    MorsePreferences::customCharSet = chars;
 }

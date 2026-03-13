@@ -577,7 +577,13 @@ static unsigned char M32c_bits[] = {
 
 volatile uint64_t MorseOutput::TOTcounter;                       // holds millis for Time-Out Timer
 
-String printToScroll_buffer = "";
+char printToScroll_buf[16] = "";       // replaces String printToScroll_buffer
+int  printToScroll_bufLen = 0;         // tracks current length
+// IMPROVEMENT: the old printToScroll_buffer was a global String that did
+// a heap realloc on every "+= text" call (multiple times per CW element).
+// New code: zero heap operations during accumulation. One String construction
+// at flush time (every ~10 chars), which is ~10× fewer allocations.
+ 
 FONT_ATTRIB printToScroll_lastStyle = REGULAR;
 
 /////////////////////// parameters for LF tone generation and  HF (= vol ctrl) PWM
@@ -679,7 +685,7 @@ void MorseOutput::setBrightness(uint8_t brightness) {
   display.setBrightness(brightness);
 }
 
-void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {
+/* void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {
   boolean styleChanged = (style != printToScroll_lastStyle);
   boolean lengthExceeded = printToScroll_buffer.length() + text.length() > 10;
   // DEBUG("printToScroll String: >" + text + "<");
@@ -695,20 +701,54 @@ void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflus
     MorseOutput::flushScroll(scroll);
   }
 }
+*/
 
+void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {
+    boolean styleChanged = (style != printToScroll_lastStyle);
+    int textLen = text.length();
+    boolean lengthExceeded = (printToScroll_bufLen + textLen) > 10;
+ 
+    if (styleChanged || lengthExceeded) {
+        MorseOutput::flushScroll(scroll);
+    }
+ 
+    // Append text to buffer (safely)
+    const char* src = text.c_str();
+    int copyLen = textLen;
+    if (printToScroll_bufLen + copyLen > (int)sizeof(printToScroll_buf) - 1)
+        copyLen = sizeof(printToScroll_buf) - 1 - printToScroll_bufLen;
+    if (copyLen > 0) {
+        memcpy(&printToScroll_buf[printToScroll_bufLen], src, copyLen);
+        printToScroll_bufLen += copyLen;
+        printToScroll_buf[printToScroll_bufLen] = '\0';
+    }
+ 
+    printToScroll_lastStyle = style;
+ 
+    if (autoflush || (textLen > 0 && src[textLen - 1] == '\n')) {
+        MorseOutput::flushScroll(scroll);
+    }
+}
 
 void MorseOutput::clearBuffer() {
   MorseOutput::printToScroll(REGULAR, "", false, false);                     // clear the buffer first
 }
 
 
-void MorseOutput::clearScrollBuffer() {
+/* void MorseOutput::clearScrollBuffer() {
   printToScroll_buffer = "";
   printToScroll_lastStyle = REGULAR;
 }
+*/
+
+void MorseOutput::clearScrollBuffer() {
+    printToScroll_buf[0] = '\0';
+    printToScroll_bufLen = 0;
+    printToScroll_lastStyle = REGULAR;
+}
 
 
-void MorseOutput::flushScroll(boolean scroll) {
+/* void MorseOutput::flushScroll(boolean scroll) {
   uint8_t len = printToScroll_buffer.length();
   if (len != 0) {
     MorseOutput::printToScroll_internal(printToScroll_lastStyle, printToScroll_buffer, scroll);
@@ -716,8 +756,19 @@ void MorseOutput::flushScroll(boolean scroll) {
     clearScrollBuffer();
   }
 }
+*/
 
-
+void MorseOutput::flushScroll(boolean scroll) {
+    if (printToScroll_bufLen != 0) {
+        // printToScroll_internal still takes String — we construct one here.
+        // This is only called when the buffer is flushed (every ~1-10 chars),
+        // so one String construction per flush is acceptable.
+        MorseOutput::printToScroll_internal(printToScroll_lastStyle,
+                                            String(printToScroll_buf), scroll);
+        clearScrollBuffer();
+    }
+}
+ 
 /// store text in textBuffer, if it fits the screen line; otherwise scroll up, clear bottom buffer, store in new buffer, print on new line
 
 void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean scroll) {

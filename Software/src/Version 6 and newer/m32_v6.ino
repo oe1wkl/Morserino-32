@@ -227,13 +227,14 @@ unsigned long genTimer;                           // timer used for generating m
 enum MORSE_TYPE {KEY_DOWN, KEY_UP };              //   State Machine Defines
 unsigned char generatorState;
 
-const String continueMsg4Json = "Continue with paddle";
-
+const char* const continueMsg4Json = "Continue with paddle";
 #ifndef CONFIG_DISPLAYWRAPPER
-const String continueMsg4Disp = "Continue w/ Paddle";
+const char* const continueMsg4Disp = "Continue w/ Paddle";
 #else
-const String continueMsg4Disp = continueMsg4Json+ " ";
+const char* const continueMsg4Disp = "Continue with paddle ";
 #endif
+// NOTE for the #else case: the original was continueMsg4Json + " " which
+// is a runtime String concatenation. Since these are constants, we just hardcode it
 
 // for each character:
 // byte length// byte morse encoding as binary value, beginning with most significant bit
@@ -688,7 +689,8 @@ String  shortDate(char const *date) {
 void displayStartUp(uint16_t volt) {
   String s;
   s.reserve(18);
-  s = PROJECTNAME + String(" ");
+  s = PROJECTNAME;
+  s += " ";
   MorseOutput::clearDisplay();
   #ifdef CONFIG_DISPLAYWRAPPER
   MorseOutput::dispM32Logo();
@@ -1868,7 +1870,7 @@ int pitch() {                 // find out which pitch to use for the generated C
 /// add code to display in echo mode when parameter is so set
 /// p_echoDisplay 1 = CODE_ONLY 2 = DISP_ONLY 3 = CODE_AND_DISP
 
-void dispGeneratedChar() {
+/* void dispGeneratedChar() {
   static String charString;
   charString.reserve(10);
 
@@ -1901,7 +1903,56 @@ void dispGeneratedChar() {
         MorsePreferences::fireCharSeen(true);
      }
 }
+*/
 
+void dispGeneratedChar() {
+    static char charBuf[6];   // max 2 UTF-8 bytes + null (prosign expansion happens later)
+    int charBufLen = 0;
+ 
+    if (generatorMode == KOCH_LEARN ||
+            (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_CHAR &&
+            (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
+            (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY))
+    {
+        if (clearText.charAt(0) == (char)0xC3) {           // UTF-8 two-byte char
+            charBuf[0] = clearText.charAt(0);
+            charBuf[1] = clearText.charAt(1);
+            charBuf[2] = '\0';
+            charBufLen = 2;
+            clearText.remove(0, 2);
+        }
+        else {
+            charBuf[0] = clearText.charAt(0);
+            charBuf[1] = '\0';
+            charBufLen = 1;
+            clearText.remove(0, 1);
+        }
+ 
+        if (generatorMode == KOCH_LEARN) {
+            displayGeneratedMorse(REGULAR, " ");
+        }
+        // cleanUpProSigns takes String& — construct one from our char buffer
+        String charString(charBuf);
+        displayGeneratedMorse(
+            (morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN)
+                ? BOLD : REGULAR,
+            cleanUpProSigns(charString));
+        if (generatorMode == KOCH_LEARN) {
+            displayGeneratedMorse(REGULAR, " ");
+        }
+    }
+ 
+    ++charCounter;
+    if (charCounter == 12) {
+        MorsePreferences::fireCharSeen(true);
+    }
+}
+ 
+// IMPROVEMENT: eliminated the static String charString and its .reserve(10)
+// permanent heap allocation. The String construction at the call boundary
+// is a short-lived temporary — much better than a persistent heap object
+// that gets reassigned repeatedly.
+ 
 void fetchNewWord() {
   int rssi, rxWpm, rv;
   char numBuffer[16];                // for number to string conversion with sprintf()
@@ -3161,7 +3212,7 @@ String cleanUpText(String text) {
     const char* src = text.c_str();
     int len = text.length();
     // Get a C-string pointer to the Koch chars for fast lookup via strchr
-    const char* kochChars = koch.morserinoKochChars.c_str();
+    const char* kochChars = koch.morserinoKochChars; 
  
     for (int i = 0; i < len && out < (int)sizeof(buf) - 1; ++i) {
         char c = src[i];
