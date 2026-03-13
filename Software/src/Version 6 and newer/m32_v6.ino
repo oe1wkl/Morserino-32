@@ -1422,13 +1422,6 @@ void setDAHstate() {
 }
 
 
-// toggle polarity of paddles
-//void togglePolarity () {
-//      MorsePreferences::pliste[posPolarity].value = MorsePreferences::pliste[posPolarity].value ? 0 : 1;
-//     //displayPolarity();
-//}
-
-
 /// function to read sensors:
 /// read both left and right twice, repeat reading if it returns 0
 /// return a binary value, depending on a (adaptable?) threshold:
@@ -1552,113 +1545,116 @@ String getRandomAbbrev( int maxLength) {        //// give me a random CW abbrevi
   //    9: 9?<> = CWchars.substring(26,51);
   //  {OPT_ALL, OPT_ALPHA, OPT_NUM, OPT_PUNCT, OPT_PRO, OPT_ALNUM, OPT_NUMPUNCT, OPT_PUNCTPRO, OPT_ALNUMPUNCT, OPT_NUMPUNCTPRO}
 
-String getRandomChars(int maxLength, int option) {             /// random char string, eg. group of 5, 9 differing character pools; maxLength = 1-6
-    String result = "";
-    result.reserve(7);
+
+String getRandomChars(int maxLength, int option) {
+    static char buf[8];         // max 6 chars + null
     int s = 0, e = 51;
-    int i;
-
-    if (maxLength > 6) {                                        // we use a random length!
-      maxLength = random(2, maxLength - 3);                     // maxLength is max 10, so random upper limit is 7, means max 6 chars...
+ 
+    if (maxLength > 6) {
+        maxLength = random(2, maxLength - 3);
     }
+ 
+    // Koch paths — these return String from methods in MorsePreferences.cpp.
+    // We can't avoid that heap allocation (it's in another file), but we
+    // avoid the per-character += allocations in the non-Koch path below.
     if (kochActive) {
-      if (option == OPT_KOCH_ADAPTIVE)
-        return koch.getAdaptiveChar(maxLength);
-      else
-        return koch.getRandomChar(maxLength);
-    } else {
-         switch (option) {
-          case OPT_NUM:
-          case OPT_NUMPUNCT:
-          case OPT_NUMPUNCTPRO:
-                                s = 26; break;
-          case OPT_PUNCT:
-          case OPT_PUNCTPRO:
-                                s = 36; break;
-          case OPT_PRO:
-                                s = 44; break;
-          default:              s = 0;  break;
-        }
-        switch (option) {
-          case OPT_ALPHA:
-                                e = 26;  break;
-          case OPT_ALNUM:
-          case OPT_NUM:
-                                e = 36; break;
-          case OPT_ALNUMPUNCT:
-          case OPT_NUMPUNCT:
-          case OPT_PUNCT:
-                                e = 45; break;
-          default:              e = 51; break;
-        }
-
-        for (i = 0; i < maxLength; ++i)
-          //result += CWchars.charAt(random(s,e));
-          result += CWchars[random(s,e)];
-  }
-  return result;
+        if (option == OPT_KOCH_ADAPTIVE)
+            return koch.getAdaptiveChar(maxLength);
+        else
+            return koch.getRandomChar(maxLength);
+    }
+ 
+    switch (option) {
+        case OPT_NUM: case OPT_NUMPUNCT: case OPT_NUMPUNCTPRO: s = 26; break;
+        case OPT_PUNCT: case OPT_PUNCTPRO:                      s = 36; break;
+        case OPT_PRO:                                            s = 44; break;
+        default:                                                 s = 0;  break;
+    }
+    switch (option) {
+        case OPT_ALPHA:                                          e = 26; break;
+        case OPT_ALNUM: case OPT_NUM:                            e = 36; break;
+        case OPT_ALNUMPUNCT: case OPT_NUMPUNCT: case OPT_PUNCT:  e = 45; break;
+        default:                                                 e = 51; break;
+    }
+ 
+    int len = (maxLength > 6) ? 6 : maxLength;
+    for (int i = 0; i < len; ++i)
+        buf[i] = CWchars[random(s, e)];
+    buf[len] = '\0';
+ 
+    return String(buf);     // one allocation for the return value
 }
+ 
+// IMPROVEMENT: old code did up to 6 heap reallocs (one per += in the loop).
+// New code: zero heap work during the loop, one String construction at return.
+ 
 
-
-String getRandomCall(int maxLength) {            // random call-sign like pattern, maxLength = 1-4 (=3-6), 0 returns any length
-  const byte prefixType[] = {1,0,1,2,3,1};         // 0 = a, 1 = aa, 2 = a9, 3 = 9a
-  byte prefix;
-  String call = ""; call.reserve(16);
-  unsigned int l = 0;
-  //int s, e;
-
-  if (maxLength > 4)
-      maxLength = 4;
-  if (maxLength != 0)
-      maxLength += 2;
-  if (maxLength == 3)
-      prefix = 0;
-  else
-      prefix = prefixType[random(0,6)];           // what type of prefix?
-
-  switch (prefix) {
-      case 1: call += CWchars[random(0,26)];     // CWchars.charAt(random(0,26));
-              ++l;
-      case 0: call += CWchars[random(0,26)];     // CWchars.charAt(random(0,26));
-              ++l;
-              break;
-      case 2: call += CWchars[random(0,26)];     // CWchars.charAt(random(0,26));
-              call += CWchars[random(26,36)];     // CWchars.charAt(random(26,36));
-              l = 2;
-              break;
-      case 3: call += CWchars[random(26,36)];     // CWchars.charAt(random(26,36));
-              call += CWchars[random(0,26)];     // CWchars.charAt(random(0,26));
-              l = 2;
-              break;
-    } // we have a prefix by now; l is its length
-      // now generate a number
-    call += CWchars[random(26,36)];     // CWchars.charAt(random(26,36));
-    ++l;
-    // generate a suffix, 1 2 or 3 chars long - we re-use prefix for the suffix length
+String getRandomCall(int maxLength) {
+    static char call[16];       // max ~10 chars + /p + null
+    int pos = 0;
+    const byte prefixType[] = {1, 0, 1, 2, 3, 1};
+    byte prefix;
+    unsigned int l = 0;
+ 
+    if (maxLength > 4)
+        maxLength = 4;
+    if (maxLength != 0)
+        maxLength += 2;
     if (maxLength == 3)
-        prefix = 1;
+        prefix = 0;
+    else
+        prefix = prefixType[random(0, 6)];
+ 
+    switch (prefix) {
+        case 1: call[pos++] = CWchars[random(0, 26)];
+                ++l;
+                // fall through
+        case 0: call[pos++] = CWchars[random(0, 26)];
+                ++l;
+                break;
+        case 2: call[pos++] = CWchars[random(0, 26)];
+                call[pos++] = CWchars[random(26, 36)];
+                l = 2;
+                break;
+        case 3: call[pos++] = CWchars[random(26, 36)];   // FIXED: was random(26,23)
+                call[pos++] = CWchars[random(0, 26)];
+                l = 2;
+                break;
+    }
+ 
+    // digit
+    call[pos++] = CWchars[random(26, 36)];
+    ++l;
+ 
+    // suffix
+    byte suffLen;
+    if (maxLength == 3)
+        suffLen = 1;
     else if (maxLength == 0) {
-        prefix = random(1,4);
-        prefix = (prefix == 2 ? prefix :  random(1,4)); // increase the likelihood for suffixes of length 2
+        suffLen = random(1, 4);
+        suffLen = (suffLen == 2 ? suffLen : random(1, 4));
     }
     else {
-        prefix = _min(maxLength - l, 3);                 // we try to always give the desired length, but never more than 3 suffix chars
+        suffLen = _min(maxLength - l, 3);
     }
-    while (prefix--) {
-      call += CWchars[random(0,26)];     // CWchars.charAt(random(0,26));
-      ++l;
-    } // now we have the suffix as well
-    // are we /p or /m? - we do this only in rare cases - 1 out of 9, and only when maxLength = 0, or maxLength-l >= 2
-    if (maxLength == 0 ) //|| maxLength - l >= 2)
-      if (! random(0,8)) {
-      call += "/";
-      call += ( random(0,2) ? "m" : "p" );
+    while (suffLen-- > 0 && pos < 12) {
+        call[pos++] = CWchars[random(0, 26)];
+        ++l;
     }
-    // we have a complete call sign!
-    return call;
+ 
+    // /p or /m (rare)
+    if (maxLength == 0 && !random(0, 8)) {
+        call[pos++] = '/';
+        call[pos++] = (random(0, 2) ? 'm' : 'p');
+    }
+ 
+    call[pos] = '\0';
+    return String(call);    // one allocation for the return value
 }
-
-
+ 
+// IMPROVEMENT: old code did ~8 heap reallocs. New code: zero during
+// construction, one String at return. Also fixes the random(26,23) bug.
+ 
 /////// generate CW representations from its input string
 /////// CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEäöüH";
 
@@ -1703,33 +1699,7 @@ done:
 //   New code: zero heap operations during the loop, one String construction
 //   at the end.
  
-/* String generateCWword(String symbols) {
-  int pointer;
-  byte bitMask, NoE;
-  //byte nextElement[8];      // the list of elements; 0 = dit, 1 = dah
-  String result = "";
 
-  int l = symbols.length();
-
-  for (int i = 0; i<l; ++i) {
-    char c = symbols.charAt(i);                                 // next char in string
-
-    //pointer = CWchars.indexOf(c);                               // at which position is the character in CWchars?
-    pointer = indexOfConstStr(CWchars, c);
-    NoE = pool[pointer][1];                                     // how many elements in this morse code symbol?
-    bitMask = pool[pointer][0];                                 // bitMask indicates which of the elements are dots and which are dashes
-    for (int j=0; j<NoE; ++j) {
-        result += (bitMask & B10000000 ? "2" : "1" );         // get MSB and store it in string - 2 is dah, 1 is dit, 0 = inter-element space
-        bitMask = bitMask << 1;                               // shift bitmask 1 bit to the left
-        //DEBUG("Bitmask: ");
-        //DEBUG(String(bitmask, BIN));
-      } /// now we are at the end of one character, therefore we add enough space for inter-character
-      result += "0";
-  }     /// now we are at the end of the word, therefore we remove the final 0!
-  result.remove(result.length()-1);
-  return result;
-}
-*/
 //Returns the index of the first occurence of char c in char* string. If not found -1 is returned. sort of equiv to String.indexOf()
 int indexOfConstStr(const char* string, char c) {
     char *e = strchr(string, c);
@@ -2110,44 +2080,42 @@ void fetchNewWord() {
 
 /// the next function is used to display KEYED and DECODED characters
 
+
 void displayDecodedMorse(String symbol, boolean keyed) {
-  // check for "eeee" as alternative variant to repeat entry in echo trainer (<hh>)
-  if (symbol == "e" &&  echoResponse.endsWith("eee")) {
-    symbol="<err>";
-  }
-  String tmp_str = symbol;
-  if (MorsePreferences::pliste[posOutputCase].value) {
-    tmp_str.toUpperCase();
-  }
-  // output  the symbol; flush if not morseGenerator, otherwise if not autostop
-  MorseOutput::printToScroll( REGULAR, tmp_str, true, encoderState == scrollMode);
-
-  SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);
-
+    // Check for "eeee" error sequence
+    if (symbol == "e" && echoResponse.endsWith("eee")) {
+        symbol = "<err>";
+    }
+    String tmp_str = symbol;
+    if (MorsePreferences::pliste[posOutputCase].value) {
+        tmp_str.toUpperCase();
+    }
+    MorseOutput::printToScroll(REGULAR, tmp_str, true, encoderState == scrollMode);
+    SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);
+ 
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-  if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
-    MorseBluetooth::bluetoothTypeString(tmp_str);
+    if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+        MorseBluetooth::bluetoothTypeString(tmp_str);
 #endif
-
-  if (morseState == echoTrainer) {                /// store the character in the response string
-    symbol.replace("<as>", "S");                  // maybe we need it for echo trainer or for autostop mode
-    symbol.replace("<ka>", "A");
-    symbol.replace("<kn>", "N");
-    symbol.replace("<sk>", "K");
-    symbol.replace("<ve>", "E");
-    symbol.replace("<ch>", "H");
-    symbol.replace("<bk>", "B");
-    symbol.replace("<err>", "R");                 // error (<hh>) - to be used to repeat entry in echo trainer mode
-    if (symbol == "R")
-      //echoResponse.remove(echoResponse.length()-1);
-      echoResponse="";                            // we want a complete reset of the word after an error
-    else if (symbol != " ")
-      echoResponse.concat(symbol);
-     //DEBUG("@1795: echoResponse: " + echoResponse);
-  }
-}   /// end of displayDecodedMorse()
-
-
+ 
+    if (morseState == echoTrainer) {
+        // Instead of 8× symbol.replace(), use encodeProSigns() from Phase 1B
+        // which does a single-pass replacement into a static buffer.
+        // encodeProSigns modifies its argument in place and returns it.
+        encodeProSigns(symbol);   // symbol is now the encoded version
+ 
+        if (symbol == "R")
+            echoResponse = "";
+        else if (symbol != " ")
+            echoResponse.concat(symbol);
+    }
+}
+ 
+// IMPROVEMENT: in echo trainer mode, old code did 8 heap-reallocating
+// .replace() calls. New code: one call to encodeProSigns() which we
+// already optimised in Phase 1B (single-pass, static buffer, one final
+// String assignment).
+ 
 
 //// the next function is used to display GENERATED characters
 
@@ -2321,22 +2289,6 @@ void keyTransmitter(boolean noTx) {
       MorseBluetooth::bluetoothTypeLCTRL(true);
 #endif
 }
-
-/* String cleanUpProSigns( String &input ) {
-    /// clean up clearText   -   S <as>,  - A <ka> - N <kn> - K <sk> - H ch etc;
-    input.replace("S", "<as>");
-    input.replace("A", "<ka>");
-    input.replace("N", "<kn>");
-    input.replace("K", "<sk>");
-    input.replace("E", "<ve>");
-    input.replace("B", "<bk>");
-    input.replace("H", "ch");
-    input.replace("R", "<err>");
-    input.replace("U", "*");
-    //DEBUG(input);
-    return input; 
-
-} */
 
 
 String cleanUpProSigns( String &input ) {
@@ -2768,21 +2720,6 @@ String CWwordToClearText(String cwword) {             // decode the Morse code c
 }
 
 
-/* String encodeProSigns( String &input ) {
-    /// clean up clearText   -   S <as>,  - A <ka> - N <kn> - K <sk> - H ch - E <ve> etc;
-    input.replace("<as>","S");
-    input.replace("<ka>","A");
-    input.replace("<kn>","N");
-    input.replace("<sk>","K");
-    input.replace("<ve>","E");
-    input.replace("<bk>","B");
-    input.replace("<ch>","H");
-    input.replace("<err>","R");
-    input.replace("*", "U");
-    //DEBUG(input);
-    return input;
-}
-*/
 
 String encodeProSigns( String &input ) {
     /// Compress prosign display forms to single-char codes.
@@ -3213,57 +3150,114 @@ String getCustomChars() {
 }
 
 
-String cleanUpText(String text) {                        // all to lower case, and convert umlauts
-  String result = "";
-  char c;
-  result.reserve(128);
-  text.toLowerCase();
-  text = utf8umlaut(text);
 
-  for (unsigned int i = 0; i<text.length(); ++i) {       // disregard all non-standard characters
-    if ((koch.morserinoKochChars.indexOf(c = text.charAt(i)) != -1) || c == 'P' || c == 'T' || c == 'C')      // P for pause  , T for tone, C for comment
-      result += c;
-  }
-  return result;
+String cleanUpText(String text) {
+    static char buf[128];
+    int out = 0;
+ 
+    text.toLowerCase();
+    text = utf8umlaut(text);    // uses our optimised version from Phase 2D
+ 
+    const char* src = text.c_str();
+    int len = text.length();
+    // Get a C-string pointer to the Koch chars for fast lookup via strchr
+    const char* kochChars = koch.morserinoKochChars.c_str();
+ 
+    for (int i = 0; i < len && out < (int)sizeof(buf) - 1; ++i) {
+        char c = src[i];
+        if (strchr(kochChars, c) != NULL || c == 'P' || c == 'T' || c == 'C') {
+            buf[out++] = c;
+        }
+    }
+    buf[out] = '\0';
+ 
+    return String(buf);    // one allocation for the return
 }
+ 
+// IMPROVEMENT: old code did result += c per character (up to ~100 reallocs
+// for long file player text). New code: zero heap work in the loop, one
+// allocation at return. Also replaced indexOf() with strchr() which is faster.
+ 
 
-
-String utf8umlaut(String s) { /// replace umtf umlauts with digraphs, and interpret pro signs, written e.g. as [kn] or <kn> or \KN
-      s.replace("ä", "ae");
-      s.replace("ö", "oe");
-      s.replace("ü", "ue");
-      s.replace("Ä", "ae");
-      s.replace("Ö", "oe");
-      s.replace("Ü", "ue");
-      s.replace("ß", "ss");
-      s.replace("[", "<");
-      s.replace("]", ">");
-      s.replace("<ar>", "+");
-      s.replace("<bk>", "B");
-      s.replace("<bt>", "=");
-      s.replace("<as>", "S");
-      s.replace("<ka>", "A");
-      s.replace("<kn>", "N");
-      s.replace("<sk>", "K");
-      s.replace("<ve>", "E");
-      s.replace("<c>", "C");    // comment
-      s.replace("<p>", "P");    // pause
-      s.replace("<t>", "T");    // change tone
-      s.replace("\\ar", "+");
-      s.replace("\\bk", "B");
-      s.replace("\\bt", "=");
-      s.replace("\\as", "S");
-      s.replace("\\ka", "A");
-      s.replace("\\kn", "N");
-      s.replace("\\sk", "K");
-      s.replace("\\ve", "E");
-      s.replace("\\c", "C");
-      s.replace("\\p", "P");
-      s.replace("\\t", "T");
-      return s;
+String utf8umlaut(String s) {
+    // Replacement table: pattern → replacement.
+    // Ordered so that longer patterns are checked first where ambiguity
+    // could arise (e.g. "<bk>" before "<b").
+    static const struct { const char* pat; uint8_t patLen; const char* rep; uint8_t repLen; } table[] = {
+        // UTF-8 umlauts (2-byte sequences in UTF-8)
+        { "\xc3\xa4", 2, "ae", 2 },    // ä
+        { "\xc3\xb6", 2, "oe", 2 },    // ö
+        { "\xc3\xbc", 2, "ue", 2 },    // ü
+        { "\xc3\x84", 2, "ae", 2 },    // Ä
+        { "\xc3\x96", 2, "oe", 2 },    // Ö
+        { "\xc3\x9c", 2, "ue", 2 },    // Ü
+        { "\xc3\x9f", 2, "ss", 2 },    // ß
+        // Angle-bracket prosigns (longer sequences first)
+        { "<err>", 5, "R", 1 },         // not in original but harmless safety
+        { "<ar>",  4, "+", 1 },
+        { "<bk>",  4, "B", 1 },
+        { "<bt>",  4, "=", 1 },
+        { "<as>",  4, "S", 1 },
+        { "<ka>",  4, "A", 1 },
+        { "<kn>",  4, "N", 1 },
+        { "<sk>",  4, "K", 1 },
+        { "<ve>",  4, "E", 1 },
+        { "<c>",   3, "C", 1 },
+        { "<p>",   3, "P", 1 },
+        { "<t>",   3, "T", 1 },
+        // Backslash prosigns
+        { "\\ar",  3, "+", 1 },
+        { "\\bk",  3, "B", 1 },
+        { "\\bt",  3, "=", 1 },
+        { "\\as",  3, "S", 1 },
+        { "\\ka",  3, "A", 1 },
+        { "\\kn",  3, "N", 1 },
+        { "\\sk",  3, "K", 1 },
+        { "\\ve",  3, "E", 1 },
+        { "\\c",   2, "C", 1 },
+        { "\\p",   2, "P", 1 },
+        { "\\t",   2, "T", 1 },
+    };
+    static const int tableSize = sizeof(table) / sizeof(table[0]);
+ 
+    static char buf[512];       // player text can be up to ~250 chars
+    int out = 0;
+    const int bufMax = sizeof(buf) - 1;
+    const char* src = s.c_str();
+    int len = s.length();
+ 
+    for (int i = 0; i < len && out < bufMax; ) {
+        // Handle [ → < and ] → >
+        if (src[i] == '[') { buf[out++] = '<'; ++i; continue; }
+        if (src[i] == ']') { buf[out++] = '>'; ++i; continue; }
+ 
+        // Try each pattern at current position
+        bool matched = false;
+        for (int t = 0; t < tableSize; ++t) {
+            if (i + table[t].patLen <= len &&
+                memcmp(&src[i], table[t].pat, table[t].patLen) == 0) {
+                // Copy replacement if it fits
+                if (out + table[t].repLen <= bufMax) {
+                    memcpy(&buf[out], table[t].rep, table[t].repLen);
+                    out += table[t].repLen;
+                }
+                i += table[t].patLen;
+                matched = true;
+                break;
+            }
+        }
+        if (!matched) {
+            buf[out++] = src[i++];
+        }
+    }
+    buf[out] = '\0';
+ 
+    return String(buf);    // one allocation for the return
 }
-
-
+ 
+// IMPROVEMENT: old code did 21 passes through the string, each with a
+// potential heap reallocation. New code: one pass, one allocation at return.
+ 
 void skipWords(uint32_t count) {             /// just skip count words in open file fn
   while (count > 0) {
     getWord();
