@@ -380,8 +380,7 @@ enum actMessage : int {
   ACT_EXIT, ACT_ON, ACT_SET, ACT_CANCELLED, ACT_RECALLED, ACT_CLEARED
 };
 
-extern void DEBUG (String s);
-
+extern void DEBUG (const String& s);
 
 // we need this for some strange reason: the min definition breaks with WiFi
 #define _min(a,b) ((a)<(b)?(a):(b))

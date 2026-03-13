@@ -685,25 +685,8 @@ void MorseOutput::setBrightness(uint8_t brightness) {
   display.setBrightness(brightness);
 }
 
-/* void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {
-  boolean styleChanged = (style != printToScroll_lastStyle);
-  boolean lengthExceeded = printToScroll_buffer.length() + text.length() > 10;
-  // DEBUG("printToScroll String: >" + text + "<");
-  if (styleChanged || lengthExceeded) {
-    // DEBUG("FLUSH!");
-    MorseOutput::flushScroll(scroll);
-  }
 
-  printToScroll_buffer += text;
-  printToScroll_lastStyle = style;
-  // DEBUG("printToScroll_buffer: >" + printToScroll_buffer + "<");
-  if (autoflush || text.endsWith("\n")) {
-    MorseOutput::flushScroll(scroll);
-  }
-}
-*/
-
-void MorseOutput::printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll) {
+void MorseOutput::printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll) {
     boolean styleChanged = (style != printToScroll_lastStyle);
     int textLen = text.length();
     boolean lengthExceeded = (printToScroll_bufLen + textLen) > 10;
@@ -735,12 +718,6 @@ void MorseOutput::clearBuffer() {
 }
 
 
-/* void MorseOutput::clearScrollBuffer() {
-  printToScroll_buffer = "";
-  printToScroll_lastStyle = REGULAR;
-}
-*/
-
 void MorseOutput::clearScrollBuffer() {
     printToScroll_buf[0] = '\0';
     printToScroll_bufLen = 0;
@@ -748,15 +725,7 @@ void MorseOutput::clearScrollBuffer() {
 }
 
 
-/* void MorseOutput::flushScroll(boolean scroll) {
-  uint8_t len = printToScroll_buffer.length();
-  if (len != 0) {
-    MorseOutput::printToScroll_internal(printToScroll_lastStyle, printToScroll_buffer, scroll);
-    //DEBUG("printToScroll_buffer: " + printToScroll_buffer);
-    clearScrollBuffer();
-  }
-}
-*/
+
 
 void MorseOutput::flushScroll(boolean scroll) {
     if (printToScroll_bufLen != 0) {
@@ -771,7 +740,7 @@ void MorseOutput::flushScroll(boolean scroll) {
  
 /// store text in textBuffer, if it fits the screen line; otherwise scroll up, clear bottom buffer, store in new buffer, print on new line
 
-void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean scroll) {
+void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, boolean scroll) {
 
   // for DEBUG
   //char c;
@@ -791,10 +760,13 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
   }
 
   int linebreak = text.endsWith("\n");
+  String stripped;
   if (linebreak) {
-    text.replace("\n", "");
-    l = text.length();
+    stripped = text.substring(0, l - 1);
+    l = stripped.length();
   }
+  const String& t = linebreak ? stripped : text;
+
 #ifdef CONFIG_DISPLAYWRAPPER
   int textTooLong = (screenPos + l > display.getWidth()/display.getStringWidth("A"));
 #else
@@ -808,21 +780,21 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
 
   /// store text in buffer
   if (style == REGULAR) {
-    memcpy(&textBuffer[bottomLine][pos], text.c_str(), l);  // copy the string of characters
+    memcpy(&textBuffer[bottomLine][pos], t.c_str(), l);  // copy the string of characters
     pos += l;
     textBuffer[bottomLine][pos] = (char) 0;                 // add 0 character
   } else {
     if (style == lastStyle)  {                                // not regular, but we have no change in style!
-      ///DEBUG("lastStyle :" + text);
+      ///DEBUG("lastStyle :" + t);
       //pos -= 1;                                               // go one pos back to overwrite style marker
-      memcpy(&textBuffer[bottomLine][pos], text.c_str(), l);  // copy the string of characters
+      memcpy(&textBuffer[bottomLine][pos], t.c_str(), l);  // copy the string of characters
       pos += l;
       textBuffer[bottomLine][pos++] = (char) style;           // add the style marker
       textBuffer[bottomLine][pos] = (char) 0;                 // add 0 character
     } else {
-      //DEBUG("NOTlastStyle :" + text);
+      //DEBUG("NOTlastStyle :" + t);
       textBuffer[bottomLine][pos++] = (char) style;           // add the style marker at the beginning
-      memcpy(&textBuffer[bottomLine][pos], text.c_str(), l);  // copy the string of characters
+      memcpy(&textBuffer[bottomLine][pos], t.c_str(), l);  // copy the string of characters
       pos += l;
       textBuffer[bottomLine][pos++] = (char) style;           // add the style marker at the end
       textBuffer[bottomLine][pos] = (char) 0;                 // add 0 character
@@ -839,10 +811,10 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, String text, boolean
   if (relPos == maxPos) {                                     // we show the bottom lines on the screen, therefore we add the new stuff  immediately
     /// and send string to screen, avoiding refresh of complete line
     //DEBUG("relPos: " + String(relPos));
-    MorseOutput::printOnScroll(2, style, screenPos, text);               // these characters are 9 pixels wide,
+    MorseOutput::printOnScroll(2, style, screenPos, t);               // these characters are 9 pixels wide,
   }
   display.setFont(DialogInput_plain_15);;
-  screenPos += (display.getStringWidth(text) / C_WIDTH);
+  screenPos += (display.getStringWidth(t) / C_WIDTH);
   if (linebreak) {
     MorseOutput::newLine(scroll);
     pos = 0;  screenPos = 0; lastStyle = REGULAR;
@@ -934,7 +906,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
 /// place a string onto the scroll area; line = 0, 1 or 2
 
-uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring, boolean small) {
+uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small) {
   uint8_t w;
   int x, y;
 
@@ -1205,7 +1177,7 @@ void MorseOutput::dispM32Logo() {
 //////// 0    5    0
 
 
-void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, String string) {    // place a string onto the status line; chars are 7px wide = 18 chars per line
+void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& string) {    // place a string onto the status line; chars are 7px wide = 18 chars per line
   //DEBUG ("LINE_HEIGHT: " + LINE_HEIGHT);
   if (strong)
     display.setFont(DialogInput_bold_12);

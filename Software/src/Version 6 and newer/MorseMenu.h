@@ -53,9 +53,7 @@ extern void audioLevelAdjust();
 extern void onWifiReceive(AsyncUDPPacket);
 extern void onEspnowRecv(const uint8_t*, const uint8_t*, uint8_t, signed int, boolean);
 extern void serialEvent();
-extern void jsonCreate(String,String,String);
-extern void jsonMenu(String,unsigned int,bool,bool);
-extern void jsonActivate(actMessage);
+
 
 namespace MorseMenu
 {
@@ -66,7 +64,7 @@ void setupESPNow();
 String getMenuPath(uint8_t);
 void menuDisplay(uint8_t);
 void cleanupScreen();
-void showStartDisplay(String, String, String, int);
+void showStartDisplay(const String&, const String&, const String&, int);
 boolean isRemotelyExecutable(uint8_t);
 }
 

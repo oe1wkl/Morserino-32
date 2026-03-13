@@ -17,8 +17,8 @@
 ///// create json output for serial port
 using namespace MorseJSON;
 
-void MorseJSON::jsonDevice(String brd, String vsn) {
-	DynamicJsonDocument doc(256);
+void MorseJSON::jsonDevice(const String& brd, const String& vsn) { // create json object with device information, and send it to the serial output
+	StaticJsonDocument<256> doc;
 	JsonObject device = doc.createNestedObject("device");
 	device["hardware"] = brd;
 	device["firmware"] = vsn;
@@ -26,7 +26,7 @@ void MorseJSON::jsonDevice(String brd, String vsn) {
 	serializeJson(doc, Serial);
 }
 
-void MorseJSON::jsonError(String errormessage) {
+void MorseJSON::jsonError(const String& errormessage) { // create json object with error message, and send it to the serial output
 	MorseJSON::jsonCreate("error", errormessage, "");
 }
 
@@ -34,8 +34,8 @@ void MorseJSON::jsonOK(void) {
 	MorseJSON::jsonCreate("ok", "OK", "");
 }
 
-void MorseJSON::jsonMenu(String path, unsigned int number, boolean active, boolean exec) {
-	DynamicJsonDocument doc(256);
+void MorseJSON::jsonMenu(const String& path, unsigned int number, boolean active, boolean exec) { // create json object for a menu item, and send it to the serial output
+	StaticJsonDocument<256> doc;
 	JsonObject obj = doc.createNestedObject("menu");
 	obj["content"] = path;
 	obj["menu number"] = number;
@@ -46,25 +46,18 @@ void MorseJSON::jsonMenu(String path, unsigned int number, boolean active, boole
 }
 
 void MorseJSON::jsonMenuList(void) { // get all parameter names and their values, and send them as json object
-	DynamicJsonDocument doc(4000);
-	DynamicJsonDocument doc2(4000);
-	StaticJsonDocument<3000> arr;
-	JsonArray array = arr.to<JsonArray>();
-
-	for (uint8_t i = 1; i < menuN; ++i)
-	{ // menu numbers start at 1
-		JsonObject obj = doc.createNestedObject();
-		obj["content"] = MorseMenu::getMenuPath(i);
-		obj["menu number"] = i;
-		obj["executable"] = MorseMenu::isRemotelyExecutable(i);
-		array.add(obj);
-	}
-	doc["menus"] = array;
-	doc2["menus"] = doc;
-	serializeJson(doc2, Serial);
+	DynamicJsonDocument doc(3072);   // one doc instead of two
+    JsonArray array = doc.createNestedArray("menus");
+      for (uint8_t i = 1; i < menuN; ++i) {
+          JsonObject obj = array.createNestedObject();
+          obj["content"] = MorseMenu::getMenuPath(i);
+          obj["menu number"] = i;
+          obj["executable"] = MorseMenu::isRemotelyExecutable(i);
+      }
+    serializeJson(doc, Serial);
 }
 
-void MorseJSON::jsonParameter(String token) { /// find parameter "token" and create json object for it
+void MorseJSON::jsonParameter(const String& token) { /// find parameter "token" and create json object for it
 	String pname;
 	pname.reserve(20);
 	bool found = false;
@@ -84,31 +77,24 @@ void MorseJSON::jsonParameter(String token) { /// find parameter "token" and cre
 }
 
 void MorseJSON::jsonParameterList(void) { // get all parameter names and their values, and send them as json object
-	DynamicJsonDocument doc(5200);
-	DynamicJsonDocument doc2(5200);
-	StaticJsonDocument<4096> arr;
-	JsonArray array = arr.to<JsonArray>();
-
-	for (uint8_t i = 0; i <= posSerialOut; ++i)
-	{
-		JsonObject obj = doc.createNestedObject();
-		obj["name"] = MorsePreferences::pliste[i].parName;
-		obj["value"] = (int)MorsePreferences::pliste[i].value;
-		if (MorsePreferences::pliste[i].isMapped)
-			obj["displayed"] = MorsePreferences::pliste[i].mapping[MorsePreferences::pliste[i].value];
-		else if (i == posMaxSequence && MorsePreferences::pliste[i].value == 0)
-			obj["displayed"] = "Unlimited";
-		else
-			obj["displayed"] = String(MorsePreferences::pliste[i].value);
-		array.add(obj);
-	}
-	doc["configs"] = array;
-	doc2["configs"] = doc;
-	serializeJson(doc2, Serial);
+	DynamicJsonDocument doc(4096);
+    JsonArray array = doc.createNestedArray("configs");
+       for (uint8_t i = 0; i <= posSerialOut; ++i) {
+           JsonObject obj = array.createNestedObject();
+           obj["name"] = MorsePreferences::pliste[i].parName;
+           obj["value"] = (int)MorsePreferences::pliste[i].value;
+           if (MorsePreferences::pliste[i].isMapped)
+               obj["displayed"] = MorsePreferences::pliste[i].mapping[MorsePreferences::pliste[i].value];
+           else if (i == posMaxSequence && MorsePreferences::pliste[i].value == 0)
+               obj["displayed"] = "Unlimited";
+           else
+               obj["displayed"] = String(MorsePreferences::pliste[i].value);
+       }
+       serializeJson(doc, Serial);
 }
 
 void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and associated values
-	DynamicJsonDocument doc(1536);
+	StaticJsonDocument<1536> doc;
 	StaticJsonDocument<1024> arr;
 	JsonObject kochlesson = doc.createNestedObject("kochlesson");
 	kochlesson["value"] = MorsePreferences::kochFilter;
@@ -126,7 +112,7 @@ void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and asso
 }
 
 void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
-	DynamicJsonDocument doc(512);
+	StaticJsonDocument<512> doc;
 	StaticJsonDocument<256> arr;
 	JsonObject conf = doc.createNestedObject("config");
 	conf["name"] = p.parName;
@@ -148,8 +134,8 @@ void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
 	serializeJson(doc, Serial);
 }
 
-void MorseJSON::jsonConfigShort(String item, int value, String displayed) {
-	DynamicJsonDocument doc(128);
+void MorseJSON::jsonConfigShort(const String& item, int value, const String& displayed) { // create json object for a parameter with its value, and send it to the serial output
+	StaticJsonDocument<128> doc;
 	JsonObject conf = doc.createNestedObject("config");
 	conf["name"] = item;
 	conf["value"] = value;
@@ -157,8 +143,8 @@ void MorseJSON::jsonConfigShort(String item, int value, String displayed) {
 	serializeJson(doc, Serial);
 }
 
-void MorseJSON::jsonCreate(String objName, String path, String state) {
-	DynamicJsonDocument doc(256);
+void MorseJSON::jsonCreate(const String& objName, const String& path, const String& state) { // create json object with name "objName", and two properties "content" and "state", and send it to the serial output
+	StaticJsonDocument<256> doc;
 	JsonObject obj = doc.createNestedObject(objName);
 	obj["content"] = path;
 	if (state != "")
@@ -168,7 +154,7 @@ void MorseJSON::jsonCreate(String objName, String path, String state) {
 
 void MorseJSON::jsonActivate(actMessage active) { /// if active == 1: we are LEAVING a mode
 	const char *message[] = {"EXIT", "ON", "SET", "CANCELLED", "RECALLED", "CLEAjsonDevice"};
-	DynamicJsonDocument doc(32);
+	StaticJsonDocument<64> doc;  // 32 is too small for ArduinoJson overhead
 	JsonObject activate = doc.createNestedObject("activate");
 	if (active > 5)
 		active = (actMessage)0;
@@ -176,8 +162,8 @@ void MorseJSON::jsonActivate(actMessage active) { /// if active == 1: we are LEA
 	serializeJson(doc, Serial);
 }
 
-void MorseJSON::jsonControl(String item, uint8_t value, uint8_t mini, uint8_t maxi, boolean detailed) {
-	DynamicJsonDocument doc(256);
+void MorseJSON::jsonControl(const String& item, uint8_t value, uint8_t mini, uint8_t maxi, boolean detailed) { /// create json object for a control item with its value, and send it to the serial output; if detailed == true, also include minimum and maximum values
+	StaticJsonDocument<256> doc;
 	JsonObject control = doc.createNestedObject("control");
 	control["name"] = item;
 	control["value"] = value;
@@ -190,7 +176,7 @@ void MorseJSON::jsonControl(String item, uint8_t value, uint8_t mini, uint8_t ma
 }
 
 void MorseJSON::jsonControls(void) {
-	DynamicJsonDocument liste(128);
+	StaticJsonDocument<128> liste;
 
 	JsonObject speedo = liste.createNestedObject();
 	speedo["name"] = "speed";
@@ -199,13 +185,13 @@ void MorseJSON::jsonControls(void) {
 	volumeo["name"] = "volume";
 	volumeo["value"] = MorsePreferences::sidetoneVolume;
 
-	DynamicJsonDocument doc(256);
+	StaticJsonDocument<256> doc;
 	doc["controls"] = liste;
 	serializeJson(doc, Serial);
 }
 
 void MorseJSON::jsonSnapshots(void) {
-	DynamicJsonDocument doc(164);
+	StaticJsonDocument<192> doc;
 	StaticJsonDocument<164> arr;
 	JsonObject conf = doc.createNestedObject("snapshots");
 	JsonArray array = arr.to<JsonArray>();
@@ -222,7 +208,7 @@ void MorseJSON::jsonSnapshots(void) {
 void MorseJSON::jsonFileStats(void) { // get info about SPIFFS file system
 	long unsigned int total, used;
 
-	DynamicJsonDocument doc(128);
+	StaticJsonDocument<128> doc;
 	JsonObject conf = doc.createNestedObject("file");
 	File file = SPIFFS.open("/player.txt", "r");
 	conf["size"] = file.size();
@@ -265,7 +251,7 @@ void MorseJSON::jsonFileText(void) {												 // get file content as json obj
 }
 
 void MorseJSON::jsonGetWifi(void) {
-	DynamicJsonDocument liste(512);
+	StaticJsonDocument<512> liste;
 	String activeWiFiConf = MorsePreferences::wlanSSID == "" ? "INVALID" : MorsePreferences::wlanSSID + MorsePreferences::wlanTRXPeer;
 
 	JsonObject entry1 = liste.createNestedObject();
@@ -283,13 +269,13 @@ void MorseJSON::jsonGetWifi(void) {
 	entry3["trxpeer"] = MorsePreferences::wlanTRXPeer3;
 	entry3["selected"] = (MorsePreferences::wlanSSID3 + MorsePreferences::wlanTRXPeer3 == activeWiFiConf ? true : false);
 
-	DynamicJsonDocument doc(512);
+	StaticJsonDocument<512> doc;
 	doc["wifi"] = liste;
 	serializeJson(doc, Serial);
 }
 
 void MorseJSON::jsonGetCwStores(void) {
-	DynamicJsonDocument doc(164);
+	StaticJsonDocument<192> doc;
 	StaticJsonDocument<164> arr;
 	JsonObject conf = doc.createNestedObject("CW Memories");
 	JsonArray array = arr.to<JsonArray>();
@@ -304,7 +290,7 @@ void MorseJSON::jsonGetCwStores(void) {
 	serializeJson(doc, Serial);
 }
 
-void MorseJSON::jsonGetCwStore(String value) {
+void MorseJSON::jsonGetCwStore(const String& value) { // get content of CW memory "value" (number between 1 and 8), and send it as json object; if value is invalid, send json object with error message
 	int number = value.toInt();
 	if (number < 1 || number > 8)
 		return (MorseJSON::jsonError("INVALID CW MEMORY NUMBER"));
@@ -313,7 +299,7 @@ void MorseJSON::jsonGetCwStore(String value) {
 		MorseJSON::jsonError("CW MEMORY " + value + " IS EMPTY");
 	else
 	{
-		DynamicJsonDocument doc(256);
+		StaticJsonDocument<256> doc;
 		JsonObject obj = doc.createNestedObject("CW Memory");
 		obj["number"] = number;
 		obj["content"] = String(MorsePreferences::cwMem[number - 1]);

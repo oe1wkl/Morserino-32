@@ -43,13 +43,13 @@ namespace MorseOutput
   void decreaseBrightness();
   void setBrightness(uint8_t brightness);
   void sleep();
-  void printOnStatusLine(boolean strong, uint8_t xpos, String string);
+  void printOnStatusLine(boolean strong, uint8_t xpos, const String& string);
   void clearBuffer();
   void refreshScrollArea(int relPos);
   void refreshScrollLine(int bufferLine, int displayLine);
-  uint8_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, String mystring, boolean small = false);
-  void printToScroll(FONT_ATTRIB style, String text, boolean autoflush, boolean scroll);
-  void printToScroll_internal(FONT_ATTRIB style, String text, boolean scroll);
+  uint8_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false);
+  void printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll);
+  void printToScroll_internal(FONT_ATTRIB style, const String& text, boolean scroll);
   void clearThreeLines();
   void clearLine(uint8_t line);
   void clearScrollBuffer();

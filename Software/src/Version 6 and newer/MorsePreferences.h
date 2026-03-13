@@ -43,12 +43,7 @@ extern void keyOut(boolean,  boolean, int, int);
 extern void checkShutDown(boolean);
 extern void cleanStartSettings();
 extern void serialEvent();
-extern void jsonCreate(String, String,String);
-extern void jsonConfigShort(String,int, String);
 
-extern void jsonError(String);
-extern void jsonActivate(actMessage);
-extern void jsonMenu(String,unsigned int,bool,bool);
 extern String getCustomChars();
 
 
@@ -153,8 +148,6 @@ namespace MorsePreferences
 
   extern parameter pliste[];
 
-  extern const String prefOption[];
-  extern const String prefDescript[];
   extern  prefPos keyerOptions[];
   extern  prefPos generatorOptions[];
   extern  prefPos playerOptions[];
@@ -194,10 +187,10 @@ namespace MorsePreferences
   String getValueLine(prefPos);
   int getValue(prefPos);
   boolean adjustKeyerPreference(prefPos);
-  void readPreferences(String repository);
+  void readPreferences(const char* repository);
   void readScreenPref();
   void readVoltagePref();
-  void writePreferences(String repository);
+  void writePreferences(const char* repository);
   void resetDefaults();                                // reset all preferences to default values
   void doWriteSnapshot(uint8_t, uint8_t);
   void doReadSnapshot(uint8_t);
@@ -262,7 +255,7 @@ class Koch {
     String getInitChar(int);
     void setKochChars(uint8_t);
     uint8_t setupLICWkochChars(uint8_t);
-    void setCustomChars(String chars);
+    void setCustomChars(const String& chars);
     int16_t getProbabilitySum();
     void increaseWordProbability(String& expected, String& received);
     int getFailedCharIndex(String& expected, String& received);

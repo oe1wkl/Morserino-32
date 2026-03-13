@@ -391,7 +391,7 @@ parameter MorsePreferences::pliste[] = {
   }
 };
 
-String extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf" };
+const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf" };
 
 #ifdef CONFIG_DISPLAYWRAPPER
 themes MorsePreferences::themeList[] = {
@@ -824,7 +824,7 @@ String MorsePreferences::getValueLine(prefPos pos) {
   const int a = (int) QRG433;
   const int b = (int) QRG866;
   const int c = (int) QRG920;
-  String milliWatt[] = {"10", "12.5", "16", "20", "25", "32", "40", "50", "63", "80", "100"};
+  const char* const milliWatt[] = {"10", "12.5", "16", "20", "25", "32", "40", "50", "63", "80", "100"};
 
   switch (pos) {
     case posKochFilter:
@@ -912,7 +912,8 @@ String MorsePreferences::getValueLine(prefPos pos) {
         }
       break;
     case posLoraPower:
-      str = milliWatt[MorsePreferences::loraPower - 10] + " mW";
+      str = milliWatt[MorsePreferences::loraPower - 10];
+      str += " mW";
   }
   return str;
 }
@@ -1091,27 +1092,13 @@ void MorsePreferences::handleCarouselChange() {
 
 /////////////// READING and WRITING parameters from / into Non Volatile Storage, using ESP32 preferences
 
-void MorsePreferences::readPreferences(String repository) {
-  unsigned int l = 15;
-  char repName[l];
-  uint8_t temp;
-  uint32_t tempInt;
+void MorsePreferences::readPreferences(const char* repository) {
+      uint8_t temp, tempInt;
+      boolean morserino = (strcmp(repository, "morserino") == 0);
+      pref.begin(repository, morserino ? false : true);
+      // ... rest of function unchanged, just remove repName references
+      // and use 'repository' directly wherever repName was used
 
-  boolean morserino = false;
-
-  if (repository == "morserino")
-    morserino = true;
-  repository.toCharArray(repName, l);
-  // DEBUG("@851 Reading from repository: " + String(repName));
-  // read preferences from non-volatile storage
-  // if version cannot be read, we have a new ESP32 and need to write the preferences first
-
-  if (morserino)
-    pref.begin(repName, false);                // open namespace in read/write mode
-  else
-    pref.begin(repName, true);                 // read only in all other cases
-
-  // DEBUG("@ l.861 Free entries: " + String(pref.freeEntries()));
     /// new code for reading preferences values - we check if we have a value, and if yes, we use it; if no, we use and write a default value
     /// some things we get from permanent memory, only when NOT restoring from a snapshot
 
@@ -1249,21 +1236,10 @@ void MorsePreferences::readVoltagePref() {
   pref.end();
 }
 
-void MorsePreferences::writePreferences(String repository) {
-  unsigned int l = 15;
-  char repName[l];
-  uint8_t temp;
-  uint32_t tempInt;
-
-  boolean morserino = false;
-
-  if (repository == "morserino")
-    morserino = true;
-//DEBUG("Writing to repository: " + repository);
-  repository.toCharArray(repName, l);
-
-  pref.begin(repName, false);                // open namespace in read/write mode
-  //DEBUG("@ l.1178 Free entries: " + String(pref.freeEntries()));
+void MorsePreferences::writePreferences(const char* repository) {
+  boolean morserino = (strcmp(repository, "morserino") == 0);
+  pref.begin(repository, false);
+  // ... rest unchanged, remove repName, use repository directly
   if (morserino) {                                                    // the following things are not stored in snapshots anymore,
                                                                       //only in the ""Morserino" permanent memory
      pref.putUChar("brightness", MorsePreferences::oledBrightness);  // if not snapshots, store current screen brightness
@@ -1396,33 +1372,17 @@ void MorsePreferences::writePreferences(String repository) {
 }
 
 
-
-
 void MorsePreferences::resetDefaults() {
-  unsigned int l = 15;
-  char repName[l];
-  uint8_t temp;
-  uint32_t tempInt;
+  pref.begin("morserino", false);                // open namespace in read/write mode
 
-  boolean morserino = false;
-  String repository = "morserino";
-
-  repository.toCharArray(repName, l);
-
-  pref.begin(repName, false);                // open namespace in read/write mode                                                                      //only in the ""Morserino" permanent memory
- 
-  // now we write all other preferences into the respective repository
-
-  for (uint8_t i = 0; i <= posSerialOut; ++i) {                                       // for all these preferences
-        if (MorsePreferences::pliste[i].value != pref.getUChar(prefName[i],255) ) {     // stored value is different,
-            pref.putUChar(prefName[i], MorsePreferences::pliste[i].value);            // so we need to store new value
-      }           // end of "stored value is different"
-  }               // end of "for all these preferences"
-  // updateTimings();
+  for (uint8_t i = 0; i <= posSerialOut; ++i) {
+        if (MorsePreferences::pliste[i].value != pref.getUChar(prefName[i], 255)) {
+            pref.putUChar(prefName[i], MorsePreferences::pliste[i].value);
+        }
+  }
 
   pref.end();
 }
-
 
 boolean  MorsePreferences::recallSnapshot() {         // return true if we selected a real recall, false when it was cancelled
     //String snapname;
@@ -1451,7 +1411,7 @@ boolean  MorsePreferences::recallSnapshot() {         // return true if we selec
 void MorsePreferences::doReadSnapshot(uint8_t storePos) {
     String snapname; snapname.reserve(8);
     snapname = "snap" + String(MorsePreferences::memories[storePos]);
-    readPreferences(snapname);
+    readPreferences(snapname.c_str());
 }
 
 
@@ -1481,7 +1441,7 @@ void MorsePreferences::doWriteSnapshot(uint8_t storePos, uint8_t menuPos) {
 
       MorsePreferences::menuPtr = menuPos;     // also store last menu selection
       snapname = "snap" + String(storePos);
-      writePreferences(snapname);
+      writePreferences(snapname.c_str());
       /// insert the correct bit into p_snapShots & update memory variables
       mask = mask << storePos;
       MorsePreferences::snapShots = MorsePreferences::snapShots | mask;
@@ -1857,30 +1817,6 @@ void Koch::setKochChars(uint8_t sequence) { // define the demanded Koch characte
 }
 
 
-
-/* uint8_t Koch::setupLICWkochChars(uint8_t start) {                              // set up the string of characters used for LICW carousel Koch training, return length
-    // depends on: carouselStart
-    //uint8_t start = MorsePreferences::pliste[posCarouselStart].value;
-    uint8_t l;
-    String temp;
-    temp.reserve(45);
-    if (start < 6)      // BC 1
-      {
-        temp = licwAllKochChars.substring(3*start,18) + (start > 0 ? licwAllKochChars.substring(0, 3*start) : "");
-        l = 18;
-      }
-      else              // BC 2
-      {
-        temp = licwAllKochChars.substring(0,18) + licwAllKochChars.substring(3*start,44) +
-                        (start > 6 ? licwAllKochChars.substring(18, 3*start) : "");
-        l = 44;
-      }
-    // DEBUG("Start: " + String(start) + "licwKochChars: " + temp);
-    licwKochChars = temp;
-    return l;
-}
-*/
-
 uint8_t Koch::setupLICWkochChars(uint8_t start) {  // set up the string of characters used for LICW carousel Koch training, return length
     // depends on: carouselStart
     uint8_t l;
@@ -1915,7 +1851,7 @@ uint8_t Koch::setupLICWkochChars(uint8_t start) {  // set up the string of chara
     return l;
 }
  
-void Koch::setCustomChars(String chars) {          // define the custom character set
+void Koch::setCustomChars(const String& chars) {          // define the custom character set
    MorsePreferences::customCharSet = chars;
 }
 

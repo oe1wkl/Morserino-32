@@ -19,19 +19,19 @@
 
 namespace MorseJSON
 {
-	void jsonDevice(String brd, String vsn);
-	void jsonError(String errormessage);
+	void jsonDevice(const String& brd, const String& vsn);
+	void jsonError(const String& errormessage);
 	void jsonOK(void);
-	void jsonMenu(String path, unsigned int number, boolean active, boolean exec);
+	void jsonMenu(const String& path, unsigned int number, boolean active, boolean exec);
 	void jsonMenuList(void);
-	void jsonParameter(String token);
+	void jsonParameter(const String& token);
 	void jsonParameterList(void);
 	void jsonGetKoch(void);
 	void jsonConfigLong(MorsePreferences::parameter p);
-	void jsonConfigShort(String item, int value, String displayed);
-	void jsonCreate(String objName, String path, String state);
+	void jsonConfigShort(const String& item, int value, const String& displayed);
+	void jsonCreate(const String& objName, const String& path, const String& state);
 	void jsonActivate(actMessage active);
-	void jsonControl(String item, uint8_t value, uint8_t mini, uint8_t maxi, boolean detailed);
+	void jsonControl(const String& item, uint8_t value, uint8_t mini, uint8_t maxi, boolean detailed);
 	void jsonControls(void);
 	void jsonSnapshots(void);
 	void jsonFileStats(void);
@@ -39,7 +39,7 @@ namespace MorseJSON
 	void jsonFileText(void);
 	void jsonGetWifi(void);
 	void jsonGetCwStores(void);
-	void jsonGetCwStore(String value);
+	void jsonGetCwStore(const String& value);
 };
 
 #endif /* #ifndef MORSEJSON_H_ */

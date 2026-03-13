@@ -379,7 +379,7 @@ int checkEncoder()
 //////////////////////// Function for generating DEBUG and ERROR messages on USB, ONLY IF USB is not used for outputting characters
 //////////////////////// Argument to DEBUG has to be a String object
 
-void DEBUG (String s) {
+void DEBUG (const String& s) {
   if (!MorsePreferences::pliste[posSerialOut].value || IGNORE_SERIALOUT)
     Serial.println(s);
 }

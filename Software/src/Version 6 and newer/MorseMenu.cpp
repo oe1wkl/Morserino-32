@@ -624,7 +624,7 @@ void MorseMenu::cleanupScreen() {
     MorseOutput::clearScroll();      // clear the buffer}
 }
 
-void MorseMenu::showStartDisplay(String l0, String l1, String l2, int pause) {
+void MorseMenu::showStartDisplay(const String& l0, const String& l1, const String& l2, int pause) {
     MorseOutput::clearDisplay();
     if (l0.length())
         MorseOutput::printOnScroll(0, REGULAR, 0, l0);
