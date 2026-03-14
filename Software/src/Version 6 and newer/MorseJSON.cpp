@@ -306,3 +306,29 @@ void MorseJSON::jsonGetCwStore(const String& value) { // get content of CW memor
 		serializeJson(doc, Serial);
 	}
 }
+
+void MorseJSON::jsonFileList(void) {
+    DynamicJsonDocument doc(2048);
+    JsonArray array = doc.createNestedArray("files");
+
+    File root = SPIFFS.open("/");
+    File f = root.openNextFile();
+    while (f) {
+        JsonObject entry = array.createNestedObject();
+        entry["name"] = String(f.path());    // ← was f.name(), which strips the directory
+        entry["size"] = f.size();
+        f = root.openNextFile();
+    }
+    doc["total"] = SPIFFS.totalBytes();
+    doc["used"] = SPIFFS.usedBytes();
+    doc["free"] = SPIFFS.totalBytes() - SPIFFS.usedBytes();
+    serializeJson(doc, Serial);
+}
+
+void MorseJSON::jsonUploadComplete(const String& filename, uint32_t size) {
+    StaticJsonDocument<128> doc;
+    JsonObject obj = doc.createNestedObject("upload");
+    obj["file"] = filename;    // this one is fine — we pass the filename ourselves
+    obj["size"] = size;
+    serializeJson(doc, Serial);
+}

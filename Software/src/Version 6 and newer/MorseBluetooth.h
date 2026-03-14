@@ -25,7 +25,7 @@ namespace MorseBluetooth
 	void stopBluetooth(void);
 	void bluetoothTypeLCTRL(bool ctrl);
 	void bluetoothTypeCharacter(const char chr);
-	void bluetoothTypeString(const String str);
+	void bluetoothTypeString(const String& str);
 };
 
 #endif /* #ifdef CONFIG_BLUETOOTH_KEYBOARD */

@@ -36,7 +36,7 @@ using namespace MorseBluetooth;
 // Forward declarations
 void bluetoothTask(void*);
 void bluetoothTypeLCTRL(bool ctrl);
-static bool isBLErunning = false;
+// static bool isBLErunning = false;
 
 BaseType_t xReturned;
 
@@ -202,7 +202,7 @@ void MorseBluetooth::initializeBluetooth(void)
     }
 }
 
-void MorseBluetooth::stopBluetooth(void)
+/* void MorseBluetooth::stopBluetooth(void)
 {
     volatile UBaseType_t uxArraySize;
     if (isBLErunning) {
@@ -215,8 +215,19 @@ void MorseBluetooth::stopBluetooth(void)
         isBLErunning = false;
         delay(40);
     }
-}
+} */
 
+void MorseBluetooth::stopBluetooth(void)
+{
+    if (MorseBluetooth::isBLErunning) {
+        DEBUG("Stopping BLE");
+        vTaskDelete(taskHandle);
+        delay(100);
+        BLEDevice::deinit(true);    // release ALL BLE memory
+        delay(100);
+        MorseBluetooth::isBLErunning = false;
+    }
+}
 
 void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 {
@@ -276,17 +287,21 @@ void MorseBluetooth::bluetoothTypeCharacter(const char chr)
 	}
 }
 
-void MorseBluetooth::bluetoothTypeString(String str)
-{
-    if (MorsePreferences::pliste[posBluetoothOut].value >= 0x4) {  // replacements for generic keyboard
-        str.replace("<ERR>", "\b");
-        str.replace("<err>", "\b");
-        str.replace("<KA>", "\n");
-        str.replace("<ka>", "\n");
+void MorseBluetooth::bluetoothTypeString(const String& str) {
+    // Build a local modified copy only when needed
+    String modified;
+    const String* toSend = &str;
+    
+    if (MorsePreferences::pliste[posBluetoothOut].value >= 0x4) {
+        modified = str;
+        modified.replace("<ERR>", "\b");
+        modified.replace("<err>", "\b");
+        modified.replace("<KA>", "\n");
+        modified.replace("<ka>", "\n");
+        toSend = &modified;
     }
-	for (int i = 0; i < str.length(); i++) {
-        //DEBUG("type: " + String(str[i]));
-        bluetoothTypeCharacter(str[i]);
-	}
+    for (int i = 0; i < toSend->length(); i++) {
+        bluetoothTypeCharacter((*toSend)[i]);
+    }
 }
 #endif //#ifdef CONFIG_BLUETOOTH_KEYBOARD

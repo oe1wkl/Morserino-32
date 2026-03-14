@@ -40,6 +40,8 @@
 #include "MorseWiFi.h"        // WiFi functions
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
+#include <mbedtls/base64.h>     // for base64 decoding (built into ESP32)
+
 
 #ifdef LORA_RADIOLIB
 #include <RadioLib.h>
@@ -186,6 +188,10 @@ boolean leftKey, rightKey;
 unsigned long interWordTimer = 0;      // timer to detect interword spaces
 unsigned long acsTimer = 0;            // timer to use for automatic character spacing (ACS)
 
+// Variables used for file upload via webserial
+File uploadFile;                        // file handle for chunked upload
+bool uploadActive = false;              // true while a chunked upload is in progress
+uint32_t uploadBytesWritten = 0;        // total bytes written in current upload
 
 //const String CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH";
 const char CWchars[] = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH";
@@ -400,8 +406,8 @@ void setup()
 
   Serial.begin(115200);
   delay(50); // give me time to bring up serial monitor
-  // reserve 200 bytes for the serial inputString variable defiend above:
-  inputString.reserve(255);
+  // reserve 400 bytes for the serial inputString variable defiend above:
+  inputString.reserve(400);
 
 #ifdef ORIGINAL_M32
   MorsePreferences::determineBoardVersion();
@@ -633,8 +639,9 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
         }
         file.close();
     }
-    //DEBUG("SPIFFS ready");
-    
+    DEBUG("SPIFFS ready");
+    listFiles();      //// for debugging purposes only!
+
     displayStartUp(volt);
    // DEBUG("Startup display done");
     while (Serial.available())        // remove spurious input from Serial port
@@ -1131,7 +1138,16 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   static long latencytimer;                // timer for "muting" paddles for some time in state INTER_ELEMENT
   static long corrTime;
   unsigned int pitch;
-
+#ifdef CONFIG_BLUETOOTH_KEYBOARD  // only when BLE is compiled in (biggest heap user) we check heap size here, and only every 10 seconds, to avoid too much overhead
+    static unsigned long lastHeapCheck = 0;
+    if (millis() - lastHeapCheck > 10000) {
+        lastHeapCheck = millis();
+        uint32_t freeHeap = ESP.getFreeHeap();
+        if (freeHeap < 20000) {
+            DEBUG("LOW HEAP: " + String(freeHeap) + " bytes free");
+        }
+    }
+#endif
   if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) {
     keyDecoder.decode();
     updateManualSpeed();
@@ -1664,13 +1680,12 @@ String getRandomCall(int maxLength) {
 // build it in a static char[] first — one final String construction instead
 // of dozens of += reallocations.
  
-String generateCWword(String symbols) {
-    // Max CW word: 14 chars × (7 elements + 1 separator) + margin = ~128 bytes
+String generateCWword(const String& symbols) {    // Max CW word: 14 chars × (7 elements + 1 separator) + margin = ~128 bytes
     static char buf[160];
     int pos = 0;
  
     int l = symbols.length();
- 
+ // DEBUG("@1673: symbols: " + symbols);
     for (int i = 0; i < l; ++i) {
         char c = symbols.charAt(i);
  
@@ -1690,7 +1705,7 @@ String generateCWword(String symbols) {
     if (pos > 0) --pos;                              // remove trailing '0'
 done:
     buf[pos] = '\0';
- 
+ // DEBUG("@1693: generated CW: " + String(buf));
     return String(buf);    // one heap allocation for the final result
 }
  
@@ -1726,28 +1741,26 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 CWword = ""; CWwordPos = 0;
             }
             l = CWword.length() - CWwordPos;
-
-            if (l==0)  {                                               // fetch a new word if we have an empty word
+            if (l<=0)  {                                               // fetch a new word if we have an empty word
                 if (clearText.length() > 0) {                          // this should not be reached at all.... except when display word by word
-                  //DEBUG("Text left: " + clearText);
+                  DEBUG("Text left: " + clearText);
 
                 if (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_WORD &&
                     (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW == true))
                   {
-                      displayGeneratedMorse(morseState == morseGenerator ? REGULAR : BOLD,cleanUpProSigns(clearText));
+                      displayGeneratedMorse(morseState == morseGenerator ? REGULAR : BOLD, cleanUpProSigns(clearText));
                       //clearText = "";
                   }
                 }
                 fetchNewWord();
-                //DEBUG("New Word: " + CWword);
-                if (CWword.length() == 0)                         // we really should have something here - unless in trx mode or in a pause; in this case return
+                if (CWword.length() - CWwordPos <= 0)                         // we really should have something here - unless in trx mode or in a pause; in this case return
                   return;
                 if ((morseState == echoTrainer)) {
                   displayGeneratedMorse(REGULAR, "\n");
                 }
             }
             c = CWword[CWwordPos++];                                            // retrieve next element from CWword; if 0, we were at end of character
-            if (c == '0' || !CWword.length())  {                      // a character just had been finished //// is there an error here?
+            if (c == '0' || CWwordPos >= (int)CWword.length())    {                      // a character just had been finished //// is there an error here?
                    if (c == '0') {
                       c = CWword[CWwordPos++];                                 // retrieve next element from CWword;
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1)
@@ -1786,7 +1799,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
 
            keyOut(false, (morseState != loraTrx && morseState != wifiTrx), 0, 0);
             if (CWwordPos >= (int)CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode or autoStop mode
-                if (morseState == morseGenerator)
+              if (morseState == morseGenerator)
                     autoStop = MorsePreferences::pliste[posAutoStop].value ? halt : nextword;
                 dispGeneratedChar();
                 if (morseState == echoTrainer) {
@@ -1962,7 +1975,7 @@ void fetchNewWord() {
        MorseOutput::updateSMeter(0);                                         // at end of word we set S-meter to 0 until we receive something again
        startFirst = false;
        ////// from here: retrieve next CWword from buffer!
-        if (cwBuReady()) {
+       if (cwBuReady()) {
             uint8_t header = decodePacket(&rssi, &rxWpm, &CWword); CWwordPos = 0;
             if (header == 0)  {                                   // invalid packet
               DEBUG("Invalid LoRa packet: EOW within packet!");
@@ -1975,6 +1988,7 @@ void fetchNewWord() {
 
             displayGeneratedMorse(BOLD, " ");
             clearText = CWwordToClearText(CWword);
+            // DEBUG("@1978: Received clearText: " + clearText);
             rxDitLength = 1200 /   rxWpm ;                      // set new value for length of dits and dahs and other timings
             rxDahLength = 3* rxDitLength ;                      // calculate the other timing values
             rxInterCharacterSpace = 3 * rxDitLength;
@@ -2170,22 +2184,29 @@ void displayDecodedMorse(String symbol, boolean keyed) {
 
 //// the next function is used to display GENERATED characters
 
-void displayGeneratedMorse(FONT_ATTRIB style, String s)
-{
-	if (MorsePreferences::pliste[posOutputCase].value) {
-		s.toUpperCase();
-	}
-	MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
-	SerialOutMorse(s, 0b100); // dec 4
+void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
+    if (MorsePreferences::pliste[posOutputCase].value) {
+        String upper = s;
+        upper.toUpperCase();
+        MorseOutput::printToScroll(style, upper, true, encoderState == scrollMode);
+        SerialOutMorse(upper, 0b100);
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-	if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
-		MorseBluetooth::bluetoothTypeString(s);
+        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+            MorseBluetooth::bluetoothTypeString(upper);
 #endif
+    } else {
+        MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
+        SerialOutMorse(s, 0b100);
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+            MorseBluetooth::bluetoothTypeString(s);
+#endif
+    }
 }
 
 /// send chars to serial port, if appropriate
 
-void SerialOutMorse(String s, uint8_t origin) {
+void SerialOutMorse(const String& s, uint8_t origin) {
   uint8_t bitmap = (MorsePreferences::pliste[posSerialOut].value < 5 ? MorsePreferences::pliste[posSerialOut].value : 7);
   if (origin & bitmap)
       Serial.print(s);
@@ -2567,8 +2588,8 @@ WiFi.disconnect(true, false);
     esp_sleep_pd_config(ESP_PD_DOMAIN_XTAL,         ESP_PD_OPTION_ON);*/
 
   esp_deep_sleep_start();         // go to deep sleep
-  esp_restart();
-return;
+  //esp_restart();
+  //return;
 }
 
 
@@ -2883,6 +2904,7 @@ uint8_t cwBuRead(uint8_t* buIndex) {
     *buIndex = nextBuRead;
     byteBuFree += l;
     --l;
+    DEBUG("@2887: cwBuRead: length: " + String(l) + " bytes, free buffer: " + String(byteBuFree));
     nextBuRead += l;
     return l;
   }
@@ -3230,8 +3252,7 @@ String cleanUpText(String text) {
 // allocation at return. Also replaced indexOf() with strchr() which is faster.
  
 
-String utf8umlaut(String s) {
-    // Replacement table: pattern → replacement.
+String utf8umlaut(const String& s) {    // Replacement table: pattern → replacement.
     // Ordered so that longer patterns are checked first where ambiguity
     // could arise (e.g. "<bk>" before "<b").
     static const struct { const char* pat; uint8_t patLen; const char* rep; uint8_t repLen; } table[] = {
@@ -3456,7 +3477,9 @@ void m32Get(String type, String token, String value) {                    /// GE
                 MorseJSON::jsonFileText();
             else if (token == "first line" || token == "")
                 MorseJSON::jsonFileFirstLine();
-    }
+          else if (token == "list")
+                MorseJSON::jsonFileList();                               /// end file manager
+                }
     else if (type == "wifi") {
       MorseJSON::jsonGetWifi();
     }
@@ -3557,20 +3580,93 @@ void m32Put(String type, String token, String value) {                    /// PU
     //////////////////// FILE //////////////////////
     else if (type == "file") {
       if (token == "new") {
-        File file = SPIFFS.open("/player.txt", "w");            // Open the file for writing in SPIFFS
-        file.println(value);
-        file.close();
-        MorsePreferences::fileWordPointer = 0;                              // reset word counter for file player
+        // Create/overwrite player.txt with text (existing command)
+        File f = SPIFFS.open("/player.txt", "w");
+        f.println(value);
+        f.close();
+        MorsePreferences::fileWordPointer = 0;
         MorsePreferences::writeWordPointer();
         MorseJSON::jsonOK();
       }
       else if (token == "append") {
-        File file = SPIFFS.open("/player.txt", "a");            // Open the file for appending in SPIFFS
-        file.println(value);
-        file.close();
-        MorsePreferences::fileWordPointer = 0;                              // reset word counter for file player
+        // Append text line to player.txt (existing command)
+        File f = SPIFFS.open("/player.txt", "a");
+        f.println(value);
+        f.close();
+        MorsePreferences::fileWordPointer = 0;
         MorsePreferences::writeWordPointer();
         MorseJSON::jsonOK();
+      }
+      else if (token == "begin") {
+        // Begin chunked upload — value is the filename
+        if (uploadActive) {
+          uploadFile.close();   // close any previous incomplete upload
+        }
+        String filename = value;
+        if (!filename.startsWith("/"))
+            filename = "/" + filename;
+        uploadFile = SPIFFS.open(filename, "w");
+        if (!uploadFile) {
+          MorseJSON::jsonError("Cannot open file: " + filename);
+          uploadActive = false;
+        } else {
+          uploadActive = true;
+          uploadBytesWritten = 0;
+          MorseJSON::jsonOK();
+        }
+      }
+      else if (token == "data") {
+        // Receive a base64-encoded chunk and write decoded bytes to file
+        if (!uploadActive) {
+          MorseJSON::jsonError("No upload in progress");
+        } else {
+          // Decode base64
+          size_t inputLen = value.length();
+          size_t outputLen = 0;
+          // First call to get required output size
+          mbedtls_base64_decode(NULL, 0, &outputLen, 
+                                (const unsigned char*)value.c_str(), inputLen);
+          // Allocate buffer on stack (max ~172 bytes for 230 chars of base64)
+          unsigned char decoded[256];
+          int ret = mbedtls_base64_decode(decoded, sizeof(decoded), &outputLen,
+                                (const unsigned char*)value.c_str(), inputLen);
+          if (ret == 0 && outputLen > 0) {
+            uploadFile.write(decoded, outputLen);
+            uploadBytesWritten += outputLen;
+            MorseJSON::jsonOK();
+          } else {
+            MorseJSON::jsonError("Base64 decode error");
+          }
+        }
+      }
+      else if (token == "end") {
+        // Finish chunked upload
+        if (uploadActive) {
+          String name = String(uploadFile.path());   // ← was uploadFile.name()
+          uploadFile.close();
+          uploadActive = false;
+          // If we uploaded player.txt, reset the word pointer
+          if (name == "/player.txt" || name == "player.txt") {
+            MorsePreferences::fileWordPointer = 0;
+            MorsePreferences::writeWordPointer();
+          }
+          // Report success with size
+          MorseJSON::jsonUploadComplete(name, uploadBytesWritten);
+        } else {
+          MorseJSON::jsonError("No upload in progress");
+        }
+      }
+      else if (token == "delete") {
+        // Delete a file from SPIFFS
+        String filename = value;
+        if (!filename.startsWith("/"))
+            filename = "/" + filename;
+        if (SPIFFS.exists(filename)) {
+          SPIFFS.remove(filename);
+          MorseJSON::jsonOK();
+        } else {
+          MorseJSON::jsonError("File not found: " + filename);
+        }
       }
       else
         MorseJSON::jsonError("INVALID ACTION file " + token);
@@ -3855,3 +3951,23 @@ void stopPlayCw() {     /// sort of emergency stop for M32p cw/play
             startFirst = true;
             MorseJSON::jsonOK();
 }
+
+
+//// for testing only
+
+void listFiles() {
+  delay(500);
+  Serial.println("Listing files on SPIFFS:");
+  delay(100);
+  File root = SPIFFS.open("/");
+  File file = root.openNextFile();
+  
+  while(file) {
+    Serial.print("FILE: ");
+    Serial.print(file.name());
+    Serial.print("\tSIZE: ");
+    Serial.println(file.size());
+    file = root.openNextFile();
+  }
+}
+

@@ -183,7 +183,7 @@ namespace MorsePreferences
   boolean storeSnapshot(uint8_t);
   boolean setupPreferences(uint8_t);
   void displayKeyerPreferencesMenu(prefPos);
-  void displayValueLine(prefPos, String, bool);
+  void displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly);
   String getValueLine(prefPos);
   int getValue(prefPos);
   boolean adjustKeyerPreference(prefPos);
@@ -209,8 +209,8 @@ namespace MorsePreferences
   void writeWordPointer();
   void writeVolume();
   void writeLastExecuted(uint8_t menuPtr);
-  void writeWifiInfo(String, String, String);
-  void writeWifiInfoMultiple(String, String, String, String, String, String, String, String, String);
+  void writeWifiInfo(const String&, const String&, const String&);
+  void writeWifiInfoMultiple(const String&, const String&, const String&, const String&, const String&, const String&, const String&, const String&, const String&);
   void writeBrightnessPreference(uint8_t);
   void fireCharSeen(boolean wpmOnly);
   void setCurrentOptions(prefPos *current, int size);

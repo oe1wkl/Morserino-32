@@ -40,6 +40,8 @@ namespace MorseJSON
 	void jsonGetWifi(void);
 	void jsonGetCwStores(void);
 	void jsonGetCwStore(const String& value);
+	void jsonFileList(void);
+	void jsonUploadComplete(const String& filename, uint32_t size);
 };
 
 #endif /* #ifndef MORSEJSON_H_ */

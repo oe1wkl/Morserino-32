@@ -515,10 +515,22 @@ void MorseWiFi::updateFirmware()   {                   /// start wifi client, we
   MorseOutput::printOnScroll(0, REGULAR, 0,  "URL: m32.local");
   MorseOutput::printOnScroll(1, REGULAR, 0,  "IP:");
   MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString(), true);
+  unsigned long wifiTimeout = millis() + 300000UL;  // 5 minute timeout
   while(true) {
-    server.handleClient();
-    delay(10);
-  }
+       server.handleClient();
+       delay(10);
+       Buttons::volButton.Update();
+       if (Buttons::volButton.clicks) {
+           break;
+       }
+       if (millis() > wifiTimeout) {
+           MorseOutput::printOnScroll(1, BOLD, 0, "Timeout!");
+           delay(1000);
+           break;
+       }
+   }
+   WiFi.disconnect(true, false);
+   WiFi.mode(WIFI_OFF);
 }
 
 
@@ -602,10 +614,22 @@ server.on("/update", HTTP_POST, [](){                  // if the client posts to
   MorseOutput::printOnScroll(0, REGULAR, 0,  "URL: m32.local");
   MorseOutput::printOnScroll(1, REGULAR, 0,  "IP:");
   MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString());
+  unsigned long wifiTimeout = millis() + 300000UL;  // 5 minute timeout
   while(true) {
-    server.handleClient();
-    //delay(5);
-  }
+       server.handleClient();
+       delay(5);
+       Buttons::volButton.Update();
+       if (Buttons::volButton.clicks) {
+           break;
+       }
+       if (millis() > wifiTimeout) {
+           MorseOutput::printOnScroll(1, BOLD, 0, "Timeout!");
+           delay(1000);
+           break;
+       }
+   }
+   WiFi.disconnect(true, false);
+   WiFi.mode(WIFI_OFF);
 }
 
 

@@ -750,7 +750,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
 
 
 
-void MorsePreferences::displayValueLine(prefPos pos, String itemText, boolean jsonOnly) {
+void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly) {
     String valueLine; valueLine.reserve(20);
     const String emptyLine = "                    ";
     const int maxLength = 14;
@@ -1144,11 +1144,11 @@ void MorsePreferences::readPreferences(const char* repository) {
       else if (morserino)
         pref.putUChar("sidetoneVolume", MorsePreferences::sidetoneVolume);
 
-      if (temp = pref.getUChar("vAdjust"))
-        MorsePreferences::vAdjust = temp;
+      if (pref.isKey("vAdjust"))
+        MorsePreferences::vAdjust = pref.getUChar("vAdjust");
 
-      if (temp = pref.getUChar("loraBand"))
-          MorsePreferences::loraBand = temp;
+      if (pref.isKey("loraBand"))
+        MorsePreferences::loraBand = pref.getUChar("loraBand");      
       else
         MorsePreferences::loraBand = 0;
 
@@ -1157,18 +1157,15 @@ void MorsePreferences::readPreferences(const char* repository) {
       else
         MorsePreferences::loraQRG = QRG433;
 
-      if (temp = pref.getUChar("loraPower"))
-          MorsePreferences::loraPower = temp;
+      if (pref.isKey("loraPower"))
+          MorsePreferences::loraPower = pref.getUChar("loraPower");
       else
           MorsePreferences::loraPower = 14;
 
       if (!pref.isKey("leftHanded")) { // has this been set yet?
           pref.putBool("leftHanded", MorsePreferences::leftHanded);// if not, set it to default value
-      } else {
-          if (temp = pref.getBool("leftHanded"))
-              MorsePreferences::leftHanded = temp;
-          else
-              MorsePreferences::leftHanded = false;
+      } else { // it exists already, so read it and set it in memory
+          MorsePreferences::leftHanded = pref.getBool("leftHanded");
       }
       MorsePreferences::snapShots = pref.getUChar("snapShots",0);
       updateMemory(MorsePreferences::snapShots);
@@ -1219,11 +1216,9 @@ void MorsePreferences::readScreenPref() {
   // we read only the leftHanded preference here
   pref.begin("morserino", true);                 // read only 
   if (pref.isKey("leftHanded")) { // has this been set yet?
-  if (temp = pref.getBool("leftHanded"))
-          MorsePreferences::leftHanded = temp;  
-      else
-          MorsePreferences::leftHanded = false;
-  }       
+    MorsePreferences::leftHanded = pref.getBool("leftHanded");
+  }   else
+    MorsePreferences::leftHanded = false;  
   pref.end();
 }
 
@@ -1620,9 +1615,9 @@ void MorsePreferences::writeLastExecuted(uint8_t menuPtr)
 }
 
 void MorsePreferences::writeWifiInfoMultiple(
-  String ssid1, String passwd1, String trxpeer1,
-  String ssid2, String passwd2, String trxpeer2,
-  String ssid3, String passwd3, String trxpeer3
+  const String& ssid1, const String& passwd1, const String& trxpeer1,
+  const String& ssid2, const String& passwd2, const String& trxpeer2,
+  const String& ssid3, const String& passwd3, const String& trxpeer3
   )
 {
     pref.begin("morserino", false);             // open the namespace as read/write
@@ -1674,7 +1669,7 @@ void MorsePreferences::writeWifiInfoMultiple(
     writeWifiInfo(ssid1, passwd1, trxpeer1);
 }
 
-void MorsePreferences::writeWifiInfo(String ssid, String passwd, String trxpeer)
+void MorsePreferences::writeWifiInfo(const String& ssid, const String& passwd, const String& trxpeer)
 {
     if (ssid != "")
       MorsePreferences::wlanSSID = ssid;

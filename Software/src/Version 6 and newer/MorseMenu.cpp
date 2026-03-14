@@ -172,15 +172,15 @@ void MorseMenu::menu_() {
     if (MorseBluetooth::isBLErunning) {
       MorseOutput::clearDisplay();
       MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Stop BT Kbd");
-      MorseOutput::printOnScroll(2, REGULAR, 0, "Needs Reboot");
+      //MorseOutput::printOnScroll(2, REGULAR, 0, "Needs Reboot");
       if (m32protocol)
-              MorseJSON::jsonCreate("message", "Stop BT KbdReboot Required", "");
+              MorseJSON::jsonCreate("message", "Stop BT Kbd", "");
       MorseOutput::refreshDisplay();
       delay (1400);
       MorseBluetooth::stopBluetooth();
 
-//DEBUG("Bluetooth Stopped");
-      ESP.restart();
+      DEBUG("Bluetooth Stopped");
+      //ESP.restart(); // not needed anymore
     }
 #endif
     genIsActive = false;
