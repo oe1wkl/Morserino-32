@@ -1,10 +1,27 @@
 # The M32 Serial Protocol
 
-	Date: November 28, 2023
-	Version: 1.1
+	Date: March 14, 2026 (Pi Day)
+	Version: 1.2
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
 The USB bus can be used for two-way communication with a connected computer. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
+
+	Changes in protocol version 1.2 from version 1.1
+	   (see section "Other files"):
+	   
+	Three new serial protocol commands for binary-safe chunked 
+	upload (filenames can contain paths):
+
+	put file/begin/<filename> — opens the file for writing 
+	put file/data/<base64chunk> — decodes and writes a chunk of data
+	put file/end — closes the file, reports the final size
+
+	Plus two utility commands:
+
+	get file/list — returns JSON with all files, their sizes, and space info
+	put file/delete/<filename> — deletes a file
+
+
 
 
 ## Receiving information from Morserino
@@ -353,6 +370,30 @@ This command replaces an existing existing file with a new file, and place a lin
 
 This will append a line of text to the existing file. By using `PUT file/new/<line of text>` and then a series of `PUT file/append/<line of text>` commands you can upload a text file with many lines of text.
 
+### Other files
+
+The protocol now also supports file upload of arbitrary files into the SPIFFS file system, also binary files, encoded as base64. This can be used, for example to upload mp3 files as replacements for the success and error sounds of the Echo Trainer.
+All file names can contain a preceding path.
+
+`PUT file/begin/<filename>`
+
+This opens the file for writing (any filename, including a path).
+
+`PUT file/data/<base64chunk>`
+
+This decodes and writes a chunk of a base64-encoded data. The chunks can be up to around 200 bytes of binary data.
+
+`PUT file/end`
+
+This closes the file, and reports the final size.
+
+`GET file/list` 
+
+This command returns a JSON with all files, their sizes, and SPIFFS space info.
+
+`PUT file/delete/<filename>`
+
+This command deletes a file from the SPIFFS file system.
 
 ### WiFi Configuration
 
