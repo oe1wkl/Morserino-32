@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Morserino-32 File Manager</title>
+  <style>
+    @font-face { font-family: Lato; src: url('css/Lato-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; }
+    @font-face { font-family: Lato; src: url('css/Lato-Italic.woff2') format('woff2'); font-weight: 400; font-style: italic; }
+    @font-face { font-family: Lato; src: url('css/Lato-Bold.woff2') format('woff2'); font-weight: 700; font-style: normal; }
+    @font-face { font-family: Lato; src: url('css/Lato-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; }
+    @font-face { font-family: Lato; src: url('css/Lato-Black.woff2') format('woff2'); font-weight: 900; font-style: normal; }
+    :root {
+      --text:#404040; --accent:#cb4b16; --accent2:#c02713; --link:#268bd2; --muted:#808080;
+      --box-bg:#ddedf7; --box-border:#677a85; --box-shadow:8px 10px 4px rgba(0,0,0,0.4); --radius:7px;
+      --green:#256535; --green-bg:#d4edda; --green-bdr:#9dcc9d; --red-bg:#f8d7da; --red-bdr:#e4a0a8;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#fff;color:var(--text);font-family:Lato,Arial,sans-serif;font-size:18px;line-height:1.65;-webkit-font-smoothing:antialiased}
+    .page{max-width:860px;margin:0 auto;padding:36px 24px 60px}
+    .box{border:2px solid var(--box-border);border-radius:var(--radius);background:var(--box-bg);box-shadow:var(--box-shadow);padding:22px 28px;margin-bottom:28px}
+    .morse-header{display:flex;align-items:center;justify-content:center;gap:22px;margin-bottom:18px}
+    .morse-letter{display:flex;align-items:center;gap:5px}
+    .md{width:10px;height:10px;border-radius:50%;background:var(--accent);flex-shrink:0;animation:mpulse 2.4s ease-in-out infinite}
+    .mx{width:26px;height:10px;border-radius:5px;background:var(--accent);flex-shrink:0;animation:mpulse 2.4s ease-in-out infinite}
+    .morse-header *:nth-child(1){animation-delay:0s}.morse-header *:nth-child(2){animation-delay:.15s}
+    .morse-header *:nth-child(3){animation-delay:.3s}.morse-header *:nth-child(4){animation-delay:.45s}
+    .morse-header *:nth-child(5){animation-delay:.6s}.morse-header *:nth-child(6){animation-delay:.75s}
+    .morse-header *:nth-child(7){animation-delay:.9s}.morse-header *:nth-child(8){animation-delay:1.05s}
+    .morse-header *:nth-child(9){animation-delay:1.2s}.morse-header *:nth-child(10){animation-delay:1.35s}
+    .morse-header *:nth-child(11){animation-delay:1.5s}.morse-header *:nth-child(12){animation-delay:1.65s}
+    @keyframes mpulse{0%,100%{opacity:1}50%{opacity:.18}}
+    .page-title{text-align:center;font-size:26px;font-weight:400;color:var(--text);margin-bottom:28px}
+    .section-title{font-size:26px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:6px}
+    .section-sub{font-size:18px;font-weight:700;text-align:center;color:var(--text);margin-bottom:20px}
+    hr.section-rule{border:none;border-top:2px solid var(--box-border);margin:32px 0;opacity:.35}
+    .field-label{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--box-border);margin-bottom:6px}
+    .btn{display:inline-block;border:none;border-radius:var(--radius);padding:11px 22px;font-family:Lato,Arial,sans-serif;font-size:16px;font-weight:700;letter-spacing:.04em;cursor:pointer;transition:background .2s,box-shadow .2s;box-shadow:3px 4px 3px rgba(0,0,0,.3);color:#fff}
+    .btn:hover:not(:disabled){box-shadow:4px 5px 5px rgba(0,0,0,.35)}.btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-accent{background:var(--accent)}.btn-accent:hover:not(:disabled){background:var(--accent2)}
+    .btn-green{background:#3a8a4a}.btn-green:hover:not(:disabled){background:var(--green)}
+    .btn-red{background:#c02713}.btn-red:hover:not(:disabled){background:#a01e0e}
+    .btn-outline{background:#fff;color:var(--text);border:2px solid var(--box-border);box-shadow:2px 3px 2px rgba(0,0,0,.15)}
+    .btn-outline:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+    .btn-sm{padding:5px 12px;font-size:13px;box-shadow:2px 2px 2px rgba(0,0,0,.2)}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+    .status-badge{display:inline-block;padding:6px 16px;border-radius:var(--radius);font-size:15px;font-weight:700;margin-bottom:20px;border:2px solid}
+    .status-connected{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr)}
+    .status-disconnected{background:var(--red-bg);color:var(--accent2);border-color:var(--red-bdr)}
+    .status-working{background:#e3f2fd;color:#1565c0;border-color:#90caf9}
+    .file-table{width:100%;border-collapse:collapse;margin:10px 0 16px}
+    .file-table th{text-align:left;padding:8px 12px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--box-border);border-bottom:2px solid var(--box-border)}
+    .file-table td{padding:8px 12px;font-size:15px;border-bottom:1px solid #d0dce3}
+    .file-table tr:last-child td{border-bottom:none}
+    .file-table .col-size{text-align:right;color:var(--muted)}.file-table .col-action{text-align:right;width:80px}
+    .file-table .empty-msg{color:var(--muted);font-style:italic}
+    .space-info{font-size:14px;color:var(--muted);margin-bottom:4px}
+    .mode-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;padding:9px 14px;background:#fff;border:2px solid var(--box-border);border-radius:var(--radius);cursor:pointer;user-select:none;transition:border-color .2s}
+    .mode-row:hover{border-color:var(--accent)}.mode-row.active{border-color:var(--accent);background:#fff8f5}
+    .mode-row input[type="radio"]{appearance:none;width:16px;height:16px;border:2px solid var(--box-border);border-radius:50%;background:#fff;cursor:pointer;flex-shrink:0;position:relative;transition:border-color .15s}
+    .mode-row input[type="radio"]:checked{border-color:var(--accent)}
+    .mode-row input[type="radio"]:checked::after{content:'';position:absolute;left:3px;top:3px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+    .mode-label{font-size:15px;color:var(--text);flex:1}.mode-label strong{font-weight:700}
+    .file-input-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;background:#fff;border:2px solid var(--box-border);border-radius:var(--radius);margin-bottom:16px}
+    .file-input-row input[type="file"]{flex:1;min-width:200px;font-family:Lato,Arial,sans-serif;font-size:15px}
+    .path-input{flex:1;min-width:200px;font-family:Lato,Arial,sans-serif;font-size:15px;padding:6px 10px;border:1px solid #aab;border-radius:4px;color:var(--text);outline:none;transition:border-color .2s}
+    .path-input:focus{border-color:var(--accent)}
+    .path-input:disabled{background:#eee;color:#999}
+    .path-input[readonly]{background:#f5f5f5;color:#666}
+    .path-hint{font-size:13px;color:var(--muted);font-style:italic;margin-top:-10px;margin-bottom:12px}
+    .progress-bar{width:100%;height:24px;background:#e0e0e0;border-radius:12px;overflow:hidden;margin:12px 0;display:none;border:1px solid #bbb}
+    .progress-fill{height:100%;background:var(--accent);transition:width .2s;border-radius:12px;text-align:center;color:#fff;font-size:12px;font-weight:700;line-height:24px}
+    .log-console{font-family:'Courier New',monospace;font-size:12px;background:#1e2a30;color:#a8d870;padding:12px 14px;border-radius:var(--radius);max-height:180px;overflow-y:auto;white-space:pre-wrap;border:2px solid var(--box-border)}
+    .steps{display:flex;flex-direction:column;gap:10px;margin-top:6px}
+    .step{display:flex;gap:14px;align-items:flex-start}
+    .step-num{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:2px solid var(--accent);color:var(--accent);font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+    .step-text{font-size:16px;color:var(--text);line-height:1.55}.step-text strong{font-weight:700}
+    .footer-line{margin-top:32px;text-align:center;font-size:16px;color:var(--muted)}
+    .footer-line a{font-weight:900;font-style:italic;text-decoration:underline;color:var(--link)}
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="morse-header">
+    <div class="morse-letter"><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div><div class="mx"></div></div>
+  </div>
+  <p class="page-title">Morserino-32 File Manager</p>
+  <div class="box">
+    <p>Upload and manage files on your Morserino's internal storage via <strong>USB</strong> — no WiFi needed.</p>
+    <p style="margin-top:8px">You need <strong>Chrome</strong> or <strong>Edge</strong> and a <strong>USB data cable</strong> (not a charge-only cable).</p>
+  </div>
+  <div class="box">
+    <h2 class="section-title">Connection</h2>
+    <p class="section-sub">Connect your Morserino via USB, then click Connect.</p>
+    <div style="text-align:center;margin-bottom:12px"><span class="status-badge status-disconnected" id="statusBadge">Not connected</span></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-accent" id="connectBtn" onclick="connect()">Connect</button>
+      <button class="btn btn-red" id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
+    </div>
+  </div>
+  <hr class="section-rule">
+  <div class="box">
+    <h2 class="section-title">Files on Morserino</h2>
+    <p class="section-sub"><button class="btn btn-outline btn-sm" id="refreshBtn" onclick="listFiles()" disabled>Refresh</button></p>
+    <table class="file-table">
+      <thead><tr><th>Filename</th><th class="col-size">Size</th><th class="col-action"></th></tr></thead>
+      <tbody id="fileList"><tr><td colspan="3" class="empty-msg">Connect to see files</td></tr></tbody>
+    </table>
+    <div class="space-info" id="spaceInfo"></div>
+  </div>
+  <hr class="section-rule">
+  <div class="box">
+    <h2 class="section-title">Upload File</h2>
+    <p class="section-sub">Select a target, choose a file, then click Upload.</p>
+
+    <div class="field-label">Upload Target</div>
+
+    <label class="mode-row active" id="modePlayer" onclick="setMode('player')">
+      <input type="radio" name="mode" value="player" checked>
+      <span class="mode-label"><strong>CW Player text</strong> — saved as <em>/player.txt</em> (text files only)</span>
+    </label>
+
+    <label class="mode-row" id="modeSuccess" onclick="setMode('success')">
+      <input type="radio" name="mode" value="success">
+      <span class="mode-label"><strong>Success sound</strong> — saved as <em>/sounds/success.mp3</em> (MP3 files only)</span>
+    </label>
+
+    <label class="mode-row" id="modeError" onclick="setMode('error')">
+      <input type="radio" name="mode" value="error">
+      <span class="mode-label"><strong>Error sound</strong> — saved as <em>/sounds/error.mp3</em> (MP3 files only)</span>
+    </label>
+
+    <label class="mode-row" id="modeCustom" onclick="setMode('custom')">
+      <input type="radio" name="mode" value="custom">
+      <span class="mode-label"><strong>Custom file</strong> — edit path below (any file type)</span>
+    </label>
+
+    <div class="field-label" style="margin-top:16px">Select File</div>
+    <div class="file-input-row">
+      <input type="file" id="fileInput" accept=".txt,.text" disabled onchange="onFileSelected()">
+    </div>
+
+    <div class="field-label">Target Path on Morserino</div>
+    <div class="file-input-row">
+      <input type="text" class="path-input" id="targetPath" value="/player.txt" readonly disabled>
+      <button class="btn btn-green" id="uploadBtn" onclick="uploadFile()" disabled>Upload</button>
+    </div>
+    <p class="path-hint" id="pathHint">Path is fixed for this upload target.</p>
+
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill">0%</div></div>
+  </div>
+  <hr class="section-rule">
+  <div class="field-label">How It Works</div>
+  <div class="steps">
+    <div class="step"><div class="step-num">1</div><div class="step-text">Connect your <strong>Morserino</strong> to this computer via USB.</div></div>
+    <div class="step"><div class="step-num">2</div><div class="step-text">Click <strong>Connect</strong> and select the serial port from the pop-up.</div></div>
+    <div class="step"><div class="step-num">3</div><div class="step-text">The file list loads automatically. You can <strong>upload</strong> or <strong>delete</strong> files.</div></div>
+    <div class="step"><div class="step-num">4</div><div class="step-text">Select an <strong>upload target</strong>: CW Player text, success/error sounds, or a custom path.</div></div>
+    <div class="step"><div class="step-num">5</div><div class="step-text">For <strong>Custom</strong> mode, edit the target path to include folders, e.g. <em>/sounds/alert.mp3</em>.</div></div>
+  </div>
+  <hr class="section-rule">
+  <div class="field-label">Activity Log</div>
+  <div class="log-console" id="log"></div>
+  <p class="footer-line">
+    <a href="https://www.morserino.info">morserino.info</a> &middot; <a href="https://github.com/oe1wkl/Morserino-32">GitHub</a>
+  </p>
+</div>
+<script>
+var port=null,reader=null,writer=null,readBuffer='';
+var abortController=null,readableStreamClosed=null,writableStreamClosed=null;
+var CHUNK_SIZE=180;
+
+// Preset targets: mode → { path, accept, typeName }
+var PRESETS={
+  player:  {path:'/player.txt',          accept:'.txt,.text', typeName:'text'},
+  success: {path:'/sounds/success.mp3',  accept:'.mp3',       typeName:'MP3'},
+  error:   {path:'/sounds/error.mp3',    accept:'.mp3',       typeName:'MP3'},
+  custom:  {path:'',                     accept:'',           typeName:'any'}
+};
+
+function log(msg){var el=document.getElementById('log');el.textContent+='['+new Date().toLocaleTimeString()+'] '+msg+'\n';el.scrollTop=el.scrollHeight}
+function setStatus(t,c){var el=document.getElementById('statusBadge');el.textContent=t;el.className='status-badge status-'+c}
+function setProgress(p){var b=document.getElementById('progressBar'),f=document.getElementById('progressFill');b.style.display='block';f.style.width=p+'%';f.textContent=Math.round(p)+'%'}
+function hideProgress(){document.getElementById('progressBar').style.display='none'}
+function formatSize(b){return b<1024?b+' B':(b/1024).toFixed(1)+' KB'}
+
+function currentMode(){return document.querySelector('input[name="mode"]:checked').value}
+
+function setMode(m){
+  // Update active styling on all mode rows
+  var modes=['Player','Success','Error','Custom'];
+  var keys=['player','success','error','custom'];
+  for(var i=0;i<keys.length;i++){
+    document.getElementById('mode'+modes[i]).classList.toggle('active',keys[i]===m);
+  }
+
+  var tp=document.getElementById('targetPath');
+  var fi=document.getElementById('fileInput');
+  var hint=document.getElementById('pathHint');
+  var preset=PRESETS[m];
+
+  // Set file input accept filter
+  fi.accept=preset.accept;
+
+  if(m==='custom'){
+    // Custom mode: editable path
+    tp.readOnly=false;
+    if(fi.files.length){
+      tp.value='/'+fi.files[0].name;
+    }else{
+      tp.value='';
+    }
+    hint.textContent='Edit this path to include folders, e.g. /sounds/alert.mp3';
+  }else{
+    // Preset mode: fixed path
+    tp.value=preset.path;
+    tp.readOnly=true;
+    hint.textContent='Path is fixed for this upload target.';
+  }
+
+  // Clear file input if current file doesn't match the new accept filter
+  if(fi.files.length && preset.accept){
+    var name=fi.files[0].name.toLowerCase();
+    var exts=preset.accept.split(',');
+    var ok=false;
+    for(var j=0;j<exts.length;j++){
+      if(name.endsWith(exts[j].trim().replace('*','')))ok=true;
+    }
+    if(!ok){
+      fi.value='';
+      log('Cleared file selection (wrong type for this target)');
+    }
+  }
+}
+
+function onFileSelected(){
+  var fi=document.getElementById('fileInput'),tp=document.getElementById('targetPath');
+  if(!fi.files.length)return;
+  var m=currentMode();
+  var file=fi.files[0];
+
+  // Validate file type for preset modes
+  var preset=PRESETS[m];
+  if(preset.accept){
+    var name=file.name.toLowerCase();
+    var exts=preset.accept.split(',');
+    var ok=false;
+    for(var j=0;j<exts.length;j++){
+      if(name.endsWith(exts[j].trim().replace('*','')))ok=true;
+    }
+    if(!ok){
+      log('Wrong file type! Expected '+preset.typeName+' file for this target.');
+      fi.value='';
+      return;
+    }
+  }
+
+  // Set target path
+  if(m==='custom'){
+    tp.value='/'+file.name;
+  }
+  // For preset modes, path stays fixed
+
+  log('Selected: '+file.name+' ('+formatSize(file.size)+')');
+}
+
+function setButtons(c){
+  document.getElementById('connectBtn').disabled=c;
+  document.getElementById('disconnectBtn').disabled=!c;
+  document.getElementById('refreshBtn').disabled=!c;
+  document.getElementById('fileInput').disabled=!c;
+  document.getElementById('targetPath').disabled=!c;
+  document.getElementById('uploadBtn').disabled=!c;
+  if(c){
+    document.getElementById('targetPath').readOnly=(currentMode()!=='custom');
+  }
+}
+
+function sendLine(t){if(!writer)throw new Error('Not connected');return writer.write(t+'\n')}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+
+async function connect(){
+  try{
+    port=await navigator.serial.requestPort();
+    await port.open({baudRate:115200});
+    abortController=new AbortController();
+    var dec=new TextDecoderStream();
+    readableStreamClosed=port.readable.pipeTo(dec.writable,{signal:abortController.signal});
+    reader=dec.readable.getReader();
+    var enc=new TextEncoderStream();
+    writableStreamClosed=enc.readable.pipeTo(port.writable);
+    writer=enc.writable.getWriter();
+    setButtons(true);readLoop();
+    setStatus('Activating...','working');
+    await sendLine('put device/protocol/on');await sleep(600);
+    log('Connected — M32 protocol activated');
+    setStatus('Connected','connected');
+    await listFiles();
+  }catch(err){log('Connection error: '+err.message);setStatus('Failed','disconnected')}
+}
+
+async function disconnect(){
+  // Send protocol off before closing
+  try{
+    if(writer){
+      await sendLine('put device/protocol/off');
+      await sleep(300);
+      log('M32 protocol deactivated');
+    }
+  }catch(e){}
+
+  try{
+    if(reader){await reader.cancel();reader.releaseLock();reader=null}
+    if(abortController){abortController.abort();abortController=null}
+    if(readableStreamClosed){await readableStreamClosed.catch(function(){});readableStreamClosed=null}
+    if(writer){await writer.close().catch(function(){});writer=null}
+    if(writableStreamClosed){await writableStreamClosed.catch(function(){});writableStreamClosed=null}
+    if(port){await port.close();port=null}
+  }catch(e){reader=null;writer=null;abortController=null;readableStreamClosed=null;writableStreamClosed=null;port=null}
+  readBuffer='';setStatus('Disconnected','disconnected');setButtons(false);
+  document.getElementById('fileList').innerHTML='<tr><td colspan="3" class="empty-msg">Connect to see files</td></tr>';
+  document.getElementById('spaceInfo').textContent='';log('Disconnected');
+}
+
+async function readLoop(){try{while(true){var r=await reader.read();if(r.done)break;if(r.value)readBuffer+=r.value}}catch(e){}}
+
+async function waitForResponse(timeoutMs){
+  timeoutMs=timeoutMs||3000;
+  var start=Date.now();
+  while(Date.now()-start<timeoutMs){
+    var bc=0,js=-1;
+    for(var i=0;i<readBuffer.length;i++){
+      if(readBuffer[i]==='{'){if(js<0)js=i;bc++}
+      else if(readBuffer[i]==='}'){bc--;if(bc===0&&js>=0){var resp=readBuffer.substring(js,i+1);readBuffer=readBuffer.substring(i+1);return resp}}
+    }
+    await sleep(15);
+  }
+  var p=readBuffer.substring(0,100);readBuffer='';throw new Error('Timeout (partial: '+p+')');
+}
+
+async function listFiles(){
+  readBuffer='';await sendLine('get file/list');
+  try{
+    var resp=await waitForResponse(4000);
+    var data=JSON.parse(resp);
+    var tbody=document.getElementById('fileList');tbody.innerHTML='';
+    if(data.files&&data.files.length>0){
+      for(var k=0;k<data.files.length;k++){
+        var f=data.files[k],tr=document.createElement('tr'),esc=f.name.replace(/'/g,"\\'");
+        tr.innerHTML='<td>'+f.name+'</td><td class="col-size">'+formatSize(f.size)+'</td><td class="col-action"><button class="btn btn-red btn-sm" onclick="deleteFile(\''+esc+'\')">Delete</button></td>';
+        tbody.appendChild(tr);
+      }
+    }else tbody.innerHTML='<tr><td colspan="3" class="empty-msg">No files found</td></tr>';
+    if(data.total!==undefined)document.getElementById('spaceInfo').textContent='Storage: '+formatSize(data.used)+' used / '+formatSize(data.total)+' total ('+formatSize(data.free)+' free)';
+    log('File list loaded ('+(data.files?data.files.length:0)+' files)');
+  }catch(e){log('Error listing files: '+e.message)}
+}
+
+async function deleteFile(name){
+  if(!confirm('Delete '+name+'?'))return;
+  readBuffer='';await sendLine('put file/delete/'+name);
+  try{await waitForResponse(2000);log('Deleted: '+name)}catch(e){log('Delete sent (no ack)')}
+  await listFiles();
+}
+
+async function uploadFile(){
+  var fi=document.getElementById('fileInput');
+  if(!fi.files.length){log('No file selected');return}
+  var file=fi.files[0];
+  var m=currentMode();
+  var preset=PRESETS[m];
+
+  // Final file type validation
+  if(preset.accept){
+    var name=file.name.toLowerCase();
+    var exts=preset.accept.split(',');
+    var ok=false;
+    for(var j=0;j<exts.length;j++){
+      if(name.endsWith(exts[j].trim().replace('*','')))ok=true;
+    }
+    if(!ok){
+      log('Error: wrong file type. Expected '+preset.typeName+' file.');
+      return;
+    }
+  }
+
+  // Get target path
+  var target=document.getElementById('targetPath').value.trim();
+  if(!target){log('Error: no target path specified');return}
+  if(!target.startsWith('/'))target='/'+target;
+
+  log('Uploading: '+file.name+' → '+target+' ('+formatSize(file.size)+')');
+  setStatus('Uploading...','working');document.getElementById('uploadBtn').disabled=true;
+  try{
+    var bytes=new Uint8Array(await file.arrayBuffer());
+    var total=Math.ceil(bytes.length/CHUNK_SIZE);
+    if(total===0)total=1;
+    readBuffer='';
+
+    await sendLine('put file/begin/'+target);
+    await sleep(100);
+    try{var br=await waitForResponse(2000);log('Begin: '+br)}catch(e){log('Warning: no ack for begin')}
+
+    if(bytes.length>0){
+      for(var i=0;i<total;i++){
+        var chunk=bytes.slice(i*CHUNK_SIZE,(i+1)*CHUNK_SIZE);
+        var bin='';for(var j=0;j<chunk.length;j++)bin+=String.fromCharCode(chunk[j]);
+        await sendLine('put file/data/'+btoa(bin));
+        try{await waitForResponse(2000)}catch(e){await sleep(50)}
+        setProgress((i+1)/total*100);
+      }
+    }
+
+    await sendLine('put file/end');
+    await sleep(100);
+    try{var er=await waitForResponse(3000);log('Upload complete: '+er)}catch(e){log('Upload finished')}
+
+    setStatus('Connected','connected');hideProgress();
+    await sleep(300);
+    await listFiles();
+  }catch(err){
+    log('Upload error: '+err.message);setStatus('Error','disconnected');
+    try{await sendLine('put file/end')}catch(e){}
+  }
+  document.getElementById('uploadBtn').disabled=false;
+}
+</script>
+</body>
+</html>
