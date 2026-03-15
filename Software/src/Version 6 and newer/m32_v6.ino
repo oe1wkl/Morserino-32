@@ -33,13 +33,14 @@
                               // these fonts were created with this tool: http://oledHeltec.display -> squix.ch/#/home
 #include "abbrev.h"           // common CW abbreviations
 #include "english_words.h"    // common English words
-#include "MorseJSON.h"
+#include "callsign_prefixes.h" // list of callsign prefixes and their continent
 #include "MorseOutput.h"      // display and sound functions
 #include "MorsePreferences.h" // preferences and persistent storage, snapshots
 #include "MorseMenu.h"        // main menu
 #include "MorseWiFi.h"        // WiFi functions
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
+#include "MorseJSON.h"        // JSON handling for file upload and serial communication
 #include <mbedtls/base64.h>     // for base64 decoding (built into ESP32)
 
 
@@ -319,6 +320,7 @@ String echoResponse = "";
 //enum echoStates { START_ECHO, SEND_WORD, REPEAT_WORD, GET_ANSWER, COMPLETE_ANSWER, EVAL_ANSWER };
 echoStates echoTrainerState = START_ECHO;
 String echoTrainerPrompt, echoTrainerWord;
+uint8_t echoPromptSpeed = 0;     // stores the prompt WPM while response is speed-limited
 
 
 ////// variables for CW decoder
@@ -639,9 +641,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
         }
         file.close();
     }
-    DEBUG("SPIFFS ready");
-    listFiles();      //// for debugging purposes only!
-
+ 
     displayStartUp(volt);
    // DEBUG("Startup display done");
     while (Serial.available())        // remove spurious input from Serial port
@@ -1115,6 +1115,7 @@ void cleanStartSettings() {
     }
     clearText = "";
     CWword = ""; CWwordPos = 0;
+    echoPromptSpeed = 0;
     echoTrainerState = START_ECHO;
     generatorState = KEY_UP;
     keyerState = IDLE_STATE;
@@ -1607,72 +1608,136 @@ String getRandomChars(int maxLength, int option) {
 // New code: zero heap work during the loop, one String construction at return.
  
 
+// Helper: read a PrefixEntry from PROGMEM
+static void readPrefix(int index, char* buf, uint8_t* cont, uint8_t* weight) {
+    memcpy_P(buf, prefixTable[index].prefix, 5);
+    *cont   = pgm_read_byte(&prefixTable[index].continent);
+    *weight = pgm_read_byte(&prefixTable[index].weight);
+}
+ 
+// Check if the last character of a string is a digit
+static bool endsWithDigit(const char* s) {
+    char last = 0;
+    while (*s) { last = *s; s++; }
+    return (last >= '0' && last <= '9');
+}
+ 
+// Map preference value (0-6) to continent bitmask
+static uint8_t getContinentMask(uint8_t prefValue) {
+    static const uint8_t masks[] = {
+        CONT_ALL, CONT_EU, CONT_NA, CONT_SA, CONT_AF, CONT_AS, CONT_OC
+    };
+    return (prefValue <= 6) ? masks[prefValue] : CONT_ALL;
+}
+ 
 String getRandomCall(int maxLength) {
-    static char call[16];       // max ~10 chars + /p + null
+    static char call[16];
     int pos = 0;
-    const byte prefixType[] = {1, 0, 1, 2, 3, 1};
-    byte prefix;
-    unsigned int l = 0;
  
-    if (maxLength > 4)
-        maxLength = 4;
-    if (maxLength != 0)
-        maxLength += 2;
-    if (maxLength == 3)
-        prefix = 0;
-    else
-        prefix = prefixType[random(0, 6)];
+    // Get filter settings
+    uint8_t contMask = getContinentMask(MorsePreferences::pliste[posCallContinent].value);
+    bool commonOnly  = (MorsePreferences::pliste[posCallCommon].value == 1);
+    // "Common" threshold: weight >= 2 means the prefix was seen in real call data
+    // (weight 1 = unseen/theoretical prefix)
+    uint8_t minWeight = commonOnly ? 2 : 0;
  
-    switch (prefix) {
-        case 1: call[pos++] = CWchars[random(0, 26)];
-                ++l;
-                // fall through
-        case 0: call[pos++] = CWchars[random(0, 26)];
-                ++l;
-                break;
-        case 2: call[pos++] = CWchars[random(0, 26)];
-                call[pos++] = CWchars[random(26, 36)];
-                l = 2;
-                break;
-        case 3: call[pos++] = CWchars[random(26, 36)];   // FIXED: was random(26,23)
-                call[pos++] = CWchars[random(0, 26)];
-                l = 2;
-                break;
+    // --- Weighted random prefix selection (two-pass) ---
+ 
+    // Pass 1: sum weights of matching entries
+    uint32_t totalWeight = 0;
+    char pfxBuf[5];
+    uint8_t cont, weight;
+ 
+    for (int i = 0; i < PREFIX_COUNT; i++) {
+        readPrefix(i, pfxBuf, &cont, &weight);
+        if (!(cont & contMask)) continue;
+        if (weight < minWeight) continue;
+        totalWeight += weight;
     }
  
-    // digit
-    call[pos++] = CWchars[random(26, 36)];
-    ++l;
+    // Fallback if no matching prefixes (e.g., AN with common filter)
+    if (totalWeight == 0) {
+        // Generate old-style random call
+        call[0] = 'a' + random(0, 26);
+        call[1] = '0' + random(0, 10);
+        call[2] = 'a' + random(0, 26);
+        call[3] = 'a' + random(0, 26);
+        call[4] = 'a' + random(0, 26);
+        call[5] = '\0';
+        return String(call);
+    }
  
-    // suffix
-    byte suffLen;
-    if (maxLength == 3)
-        suffLen = 1;
-    else if (maxLength == 0) {
+    // Pass 2: weighted random selection
+    uint32_t pick = random(0, totalWeight);
+    uint32_t cumulative = 0;
+    int chosen = 0;
+ 
+    for (int i = 0; i < PREFIX_COUNT; i++) {
+        readPrefix(i, pfxBuf, &cont, &weight);
+        if (!(cont & contMask)) continue;
+        if (weight < minWeight) continue;
+        cumulative += weight;
+        if (cumulative > pick) {
+            chosen = i;
+            break;
+        }
+    }
+ 
+    // Read chosen prefix
+    readPrefix(chosen, pfxBuf, &cont, &weight);
+ 
+    // --- Build the call sign ---
+ 
+    // Copy prefix (lowercase for consistency with CW generator)
+    for (int i = 0; pfxBuf[i]; i++) {
+        char c = pfxBuf[i];
+        if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';  // lowercase
+        call[pos++] = c;
+    }
+ 
+  // A call sign always needs a digit between prefix letters and suffix letters.
+    // If the prefix already ends with a digit (e.g. "8Z4"), no extra digit needed.
+    // If it ends with a letter (e.g. "DL", "9A", "3DA"), we must add one.
+    if (!endsWithDigit(pfxBuf)) {
+        call[pos++] = '0' + random(0, 10);
+    }
+ 
+    // Determine max total length
+    int maxTotal;
+    if (maxLength == 0)       maxTotal = 10;    // unlimited
+    else if (maxLength > 4)   maxTotal = 6;
+    else                      maxTotal = maxLength + 2;  // same mapping as before
+ 
+    // Calculate suffix length (1-3 letters)
+    int suffixSpace = maxTotal - pos;
+    if (suffixSpace < 1) suffixSpace = 1;
+    if (suffixSpace > 3) suffixSpace = 3;
+ 
+    int suffLen;
+    if (maxLength == 0) {
+        // Unlimited: weighted random, prefer 2-3 letters
         suffLen = random(1, 4);
-        suffLen = (suffLen == 2 ? suffLen : random(1, 4));
-    }
-    else {
-        suffLen = _min(maxLength - l, 3);
-    }
-    while (suffLen-- > 0 && pos < 12) {
-        call[pos++] = CWchars[random(0, 26)];
-        ++l;
+        if (suffLen == 1 && random(0, 3) != 0)
+            suffLen = random(2, 4);
+    } else {
+        suffLen = suffixSpace;
     }
  
-    // /p or /m (rare)
-    if (maxLength == 0 && !random(0, 8)) {
+    // Generate random suffix letters
+    while (suffLen-- > 0 && pos < 12) {
+        call[pos++] = 'a' + random(0, 26);
+    }
+ 
+    // Rare /p or /m (only in unlimited mode)
+    if (maxLength == 0 && random(0, 8) == 0) {
         call[pos++] = '/';
         call[pos++] = (random(0, 2) ? 'm' : 'p');
     }
  
     call[pos] = '\0';
-    return String(call);    // one allocation for the return value
+    return String(call);
 }
- 
-// IMPROVEMENT: old code did ~8 heap reallocs. New code: zero during
-// construction, one String at return. Also fixes the random(26,23) bug.
- 
+  
 /////// generate CW representations from its input string
 /////// CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEäöüH";
 
@@ -1817,12 +1882,20 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                                                 echoTrainerState = GET_ANSWER;
                                                 if (MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY) {
                                                     displayGeneratedMorse(REGULAR, " ");
-                                                    displayGeneratedMorse(INVERSE_REGULAR, ">");    /// add a blank after the word on the display
+                                                    displayGeneratedMorse(INVERSE_REGULAR, ">");
                                                 }
                                                 ++repeats;
-                                                //genTimer = millis() + MorsePreferences::responsePause * interWordSpace;
                                                 genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 3;
-                                                //DEBUG("@1567: wait_time_2: " + String (genTimer - millis()));
+ 
+                                                // Apply response speed limit
+                                                uint8_t speedMaxIdx = MorsePreferences::pliste[posEchoSpeedMax].value;
+                                                uint8_t speedMax = speedMaxIdx * 5;  // 0=disabled, 5, 10, 15, ...
+                                                if (speedMax > 0 && MorsePreferences::wpm > speedMax) {
+                                                    echoPromptSpeed = MorsePreferences::wpm;  // remember prompt speed
+                                                    MorsePreferences::wpm = speedMax;
+                                                    updateTimings();
+                                                    displayCWspeed();
+                                                }
                                           }
                         default:          break;
                     }
@@ -2282,7 +2355,14 @@ String getKeyerModeSymbol() {             /// symbol to be displayed on status l
 
 ///////// evaluate the response in Echo Trainer Mode
 void echoTrainerEval() {
-    // int i;
+    // Restore prompt speed if it was limited for response
+    if (echoPromptSpeed > 0) {
+        MorsePreferences::wpm = echoPromptSpeed;
+        echoPromptSpeed = 0;
+        updateTimings();
+        displayCWspeed();
+    }
+ 
     delay(interCharacterSpace / 2);
 
     if (echoResponse == echoTrainerWord) {
@@ -3951,23 +4031,3 @@ void stopPlayCw() {     /// sort of emergency stop for M32p cw/play
             startFirst = true;
             MorseJSON::jsonOK();
 }
-
-
-//// for testing only
-
-void listFiles() {
-  delay(500);
-  Serial.println("Listing files on SPIFFS:");
-  delay(100);
-  File root = SPIFFS.open("/");
-  File file = root.openNextFile();
-  
-  while(file) {
-    Serial.print("FILE: ");
-    Serial.print(file.name());
-    Serial.print("\tSIZE: ");
-    Serial.println(file.size());
-    file = root.openNextFile();
-  }
-}
-

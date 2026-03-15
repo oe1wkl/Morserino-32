@@ -463,7 +463,7 @@ Note: you can use "\<p>" or "\p" within `<text to be played>` to generate a shor
 
 `PUT cw/store/<n>/<content>`
 
-Store `<content>` in permanent memory number `<n>` (n is 1 .. 8); if `<content>` is an empty string, this memory is deleted. `<content>` can be normal Morse code characters, pro signs, e.g. "\<bk>", and also "[p]" or  "\p"  for a pause.
+Store `<content>` in permanent memory number `<n>` (n is 1 .. 8); if `<content>` is an empty string, this memory is deleted.`<content>` can be normal Morse code characters, pro signs, e.g. "\<bk>", and also "[p]" or  "\p"  for a pause.
 
 `PUT cw/recall/<n>`
 

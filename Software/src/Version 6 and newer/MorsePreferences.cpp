@@ -43,7 +43,7 @@ enum prefPos : uint8_t
 {
   posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posEchoToneShift, posInterWordSpace, 
-  posInterCharSpace, posRandomOption, posRandomLength, posCallLength, posAbbrevLength, posWordLength, posGeneratorDisplay,
+  posInterCharSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength, posWordLength, posGeneratorDisplay,
   posWordDoubler,  posEchoDisplay, posEchoRepeats, posEchoConf, posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, 
   posSpeedAdapt, posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, posQuickStart,
   posOutputCase, posAutoStop, posMaxSequence, posLoraChannel,
@@ -67,9 +67,9 @@ const char * prefName[] = {
                       "encoderClicks", "sidetoneFreq", "useExtPaddle", "didah",
                       "keyermode", "curtisBTiming", "curtisBDotT", "ACSlength",
                       "echoToneShift", "interWordSpace", "farnsworthMode", "randomOption",
-                      "randomLength", "callLength", "abbrevLength", "wordLength",
+                      "randomLength", "callLength", "callContinent", "callCommon","abbrevLength", "wordLength",
                       "GeneratorDispl", "wordDoubler", "echoDisplay", "echoRepeats", "echoConf",
-                      "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt",
+                      "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt", "echoSpeedMax",
                       "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
                       "quickStart", "outputCase", "autoStop", "maxSequence", "LoraChannel",
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
@@ -199,6 +199,20 @@ parameter MorsePreferences::pliste[] = {
     {"Unlimited", "3", "4", "5", "6"}
   },
   {
+    0, 0, 6, 1,                                                 // Generators: continent for generated call signs   0 = all, 1-6 = specific continents
+    "Calls Region",
+    "Continent(s) for generated call signs",
+    true,
+    {"All", "Europe", "N America", "S America", "Africa", "Asia", "Oceania" }
+  },
+  {
+    1, 0, 1, 1,                                                 // Generators: only generate common call signs?   0 = no, 1 = yes
+    "Common Calls only",
+    "Only generate call signs with common prefixes?",
+    true,
+    {"All", "Common only"}
+  },
+  {
     0, 0, 5,  1,                                                // Generators: max length of abbreviations generated (0 = unlimited) 0, 1-5 = 2-6
     "Length Abbrev",
     "Maximum length of generated common CW abbreviations",
@@ -284,6 +298,13 @@ parameter MorsePreferences::pliste[] = {
     "Adaptive Speed of Echo Trainer?",
     true,
     {"OFF", "ON"}
+  },
+  {
+    0, 0, 10, 1,                                                // Echo trainer: max response speed (0 = no limit, 5-60 wpm)
+    "Echo Speed Max",
+    "Maximum response speed in echo trainer (0=no limit)",
+    true,
+    {"No limit", "5 wpm", "10 wpm", "15 wpm", "20 wpm", "25 wpm", "30 wpm", "35 wpm", "40 wpm", "45 wpm", "50 wpm"}
   },
   {
     0, 0, 4, 1,                                                 // select Koch sequence: 0 = native/JLMC, 1 = LCWO, 2 = CW Academy, 3 = LICW, 4 = Custom
@@ -512,7 +533,7 @@ uint8_t MorsePreferences::memPtr = 0;
   prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterCharSpace, posInterWordSpace,
-                                                   posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength,
+                                                   posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
@@ -526,14 +547,14 @@ uint8_t MorsePreferences::memPtr = 0;
  prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
-                                                   posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
+                                                   posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
  prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
-                                                   posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength,
-                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
+                                                   posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
+                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
  prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
@@ -547,7 +568,7 @@ uint8_t MorsePreferences::memPtr = 0;
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
-                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
+                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
  prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
@@ -576,9 +597,9 @@ uint8_t MorsePreferences::memPtr = 0;
  prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
-                                                   posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posAbbrevLength,  posWordLength,
+                                                   posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
-                                                   posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt,
+                                                   posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                    posKeyExternalTx, posLoraCwTransmit,
                                                    posLoraChannel,
                                                    posGoertzelBandwidth, posExtAudioOnDecode
