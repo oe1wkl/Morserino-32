@@ -207,7 +207,7 @@ parameter MorsePreferences::pliste[] = {
   },
   {
     1, 0, 1, 1,                                                 // Generators: only generate common call signs?   0 = no, 1 = yes
-    "Common Calls only",
+    "Call Prefixes",
     "Only generate call signs with common prefixes?",
     true,
     {"All", "Common only"}

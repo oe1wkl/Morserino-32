@@ -26,6 +26,12 @@ extern RADIO radio;
 #include "MorseBluetooth.h"
 #endif
 
+#ifdef CONFIG_MCP73871
+extern volatile bool powerpath_event;
+extern uint16_t volt;
+extern int16_t batteryVoltage();
+#endif
+
 using namespace MorseMenu;
 
 //////// variables and constants for the modes menu
@@ -179,7 +185,7 @@ void MorseMenu::menu_() {
       delay (1400);
       MorseBluetooth::stopBluetooth();
 
-      DEBUG("Bluetooth Stopped");
+      //DEBUG("Bluetooth Stopped");
       //ESP.restart(); // not needed anymore
     }
 #endif
@@ -267,7 +273,17 @@ void MorseMenu::menu_() {
                     MorseMenu::menuDisplay(disp);
                     break;
        }
-       checkShutDown(false);                  // check for time out
+
+#ifdef CONFIG_MCP73871
+      if (powerpath_event) {
+        powerpath_event = false;
+        //volt = batteryVoltage();
+        MorseOutput::resetPowerpathDisplay();   // force redraw
+        // The next menuDisplay() or printOnScroll will show it
+      }
+#endif
+
+checkShutDown(false);                  // check for time out
   } // end while - we leave as soon as the button has been pressed
   // MorseMenu::inMenuLoop = false;
 } // end menu_()

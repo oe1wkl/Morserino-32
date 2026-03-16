@@ -64,7 +64,7 @@ TLV320AIC31xx codec(&Wire);
 
 using namespace MorseOutput;
 
-
+extern uint16_t volt;
 
 char textBuffer[NoOfLines][2 * NoOfCharsPerLine + 1]; /// we need extra room for style markers (FONT_ATTRIB stored as characters to toggle on/off the style within a line)
 /// and 0 terminator
@@ -634,6 +634,9 @@ void MorseOutput::clearDisplay()
 {
   display.clear();
   display.display();
+  #ifdef CONFIG_MCP73871
+    resetPowerpathDisplay();
+  #endif
 }
 
 void MorseOutput::refreshDisplay()
@@ -947,6 +950,9 @@ if (how & BOLD)
     display.setColor(WHITE);
 
   display.drawString(x, y, mystring);
+  #ifdef CONFIG_MCP73871
+    displayPowerpathStatus(volt);    // volt is the global battery voltage
+  #endif
   display.display();
   resetTOT();
   return w;         // we return the actual width of the output, in case of converted UTF8 characters
@@ -959,6 +965,9 @@ void MorseOutput::clearScroll() {
   MorseOutput::printToScroll_internal(REGULAR, "", false);
   clearScrollBuffer();
   clearThreeLines();
+  #ifdef CONFIG_MCP73871
+    resetPowerpathDisplay();
+  #endif
 }
 
 
@@ -1010,7 +1019,7 @@ void MorseOutput::displayScrollBar(boolean visible) {          /// display a scr
 
 
 ///// display battery status as text and icon, parameter v: Voltage in mV
-
+/*
 void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
   int a, b, c; String s; double d;
   s.reserve(20);
@@ -1078,8 +1087,187 @@ void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
     display.fillRect(batt_x+2, SCROLL_TOP + 2 * LINE_HEIGHT + 5 , w, LINE_HEIGHT - 8);
 //#endif
   display.display();
+} */
+
+void MorseOutput::displayBatteryStatus(int v) {
+  int a, b, c; String s; double d;
+  s.reserve(20);
+  d = v / 50;
+  c = round(d) * 50;
+  a = c / 1000;
+  b = (c - 1000 * a) / 100;
+  if (v > 1000)
+    s = "U: " + String(a) + "." + String(b) + " V";
+  else
+    s = "";
+ 
+  printOnScroll(2, REGULAR, 0, s);
+ 
+#ifdef CONFIG_MCP73871
+  // Show powerpath status at the bottom of the screen (separate from menu)
+  displayPowerpathStatus(v);
+#else
+  // Non-MCP builds: show voltage-based battery icon on line 2
+  #define BATT_X       75
+  #define BATT_W       35
+  #define BATT_H       (LINE_HEIGHT - 4)
+  #define BATT_NUB_W   4
+  #define BATT_NUB_H   (LINE_HEIGHT - 8)
+  #define BATT_PAD     2
+  #define BATT_NUB_X   (BATT_X + BATT_W)
+ 
+  int batt_y = SCROLL_TOP + 2 * LINE_HEIGHT + 3;
+  int nub_y  = batt_y + (BATT_H - BATT_NUB_H) / 2;
+  int fill_x = BATT_X + BATT_PAD;
+  int fill_y = batt_y + BATT_PAD;
+  int fill_max_w = BATT_W - 2 * BATT_PAD;
+  int fill_h = BATT_H - 2 * BATT_PAD;
+ 
+  display.setColor(BLACK);
+  display.fillRect(BATT_X, batt_y, BATT_W + BATT_NUB_W + 1, BATT_H);
+  display.setColor(WHITE);
+  display.drawRect(BATT_X, batt_y, BATT_W, BATT_H);
+  display.drawRect(BATT_NUB_X, nub_y, BATT_NUB_W, BATT_NUB_H);
+ 
+  if (v > 1000) {
+    int w = constrain(v, 3300, 4200);
+    w = map(w, 3300, 4200, 0, fill_max_w);
+    display.fillRect(fill_x, fill_y, w, fill_h);
+  }
+#endif
+#ifdef CONFIG_MCP73871
+  displayPowerpathStatus(v);
+#endif
+// 
+  display.display();
+}
+   
+#ifdef CONFIG_MCP73871
+ 
+static uint8_t lastPPS = 255;      // last drawn powerpath state
+static uint8_t lastBars = 255;     // last drawn bar count
+ 
+// Map voltage to 0-4 bars
+static uint8_t voltageToBars(int v) {
+    if (v < 3400) return 0;
+    if (v < 3600) return 1;
+    if (v < 3800) return 2;
+    if (v < 4000) return 3;
+    return 4;
 }
 
+uint8_t MorseOutput::getPowerpathState() {
+    static uint8_t lastStat = 255;
+    uint8_t v;
+    uint8_t stat = (digitalRead(CONFIG_MCP_STAT1_PIN) << 2)
+                 | (digitalRead(CONFIG_MCP_STAT2_PIN) << 1)
+                 |  digitalRead(CONFIG_MCP_PG_PIN);
+    if (stat != lastStat) {
+        //DEBUG("Powerpath state: " + String(stat));
+        //printOnStatusLine(true,0, String(stat));
+        if (lastStat == 2 && stat == 4) // Transition from CHARGING to FULL
+            v = 8;
+        else v = stat;
+        lastStat = stat;
+        return v;
+    } 
+    return stat;
+}
+
+void MorseOutput::displayPowerpathStatus(int v) {
+    uint8_t pps = MorseOutput::getPowerpathState();
+    uint8_t bars = voltageToBars(v);
+ 
+    // Only redraw if something changed
+    if (pps == lastPPS && bars == lastBars)
+        return;
+    lastPPS = pps;
+    lastBars = bars;
+ 
+    // Icon position: bottom-right corner
+    // Battery body: 14×8, nub: 2×4, total: 16×8
+    /*const int iconW = 16;
+    const int iconH = 8;
+    const int bodyW = 14;
+    const int margin = 4;*/
+    const int iconW = 19;
+    const int iconH = 10;
+    const int bodyW = 17;
+    const int margin = 4;
+    int ix = display.getWidth() - iconW - margin;
+    int iy = display.getHeight() - iconH - margin;
+ 
+    // Clear the icon area (black background)
+    display.setColor(BLACK);
+    display.fillRect(ix - 1, iy - 1, iconW + 2, iconH + 2);
+ 
+    // Draw battery outline in white
+    display.setColor(WHITE);
+    display.drawRect(ix, iy, bodyW, iconH);                    // body
+    display.fillRect(ix + bodyW, iy + 2, 2, iconH - 4);       // nub
+ //DEBUG("PPS: " + String(pps) + " Bars: " + String(bars));
+    // Draw contents based on state
+    switch (pps) {
+        case 2: {
+            // CHARGING: empty battery with lightning bolt inside
+            // Bolt shape using 1×1 and 1×2 fillRects, centered in body
+            int cx = ix + 7;      // center x of battery body
+            int cy = iy + 4;      // center y of battery body
+            display.fillRect(cx + 1, iy + 1, 2, 1);     //   ##
+            display.fillRect(cx,     iy + 2, 2, 1);      //  ##
+            display.fillRect(cx - 1, iy + 3, 4, 1);      // ####
+            display.fillRect(cx + 1, iy + 4, 2, 1);      //   ##
+            display.fillRect(cx,     iy + 5, 2, 1);      //  ##
+            break;
+        }
+        case 4:
+        case 8:
+            // FULL (charge complete): all 4 bars
+            for (uint8_t i = 0; i < 4; i++) {
+                display.fillRect(ix + 2 + i * 3, iy + 2, 2, iconH - 4);
+            }
+            break;
+        case 0:
+        case 6:
+            // FAULT / NO BATTERY: draw X inside
+            // Two small diagonals using 1×1 fillRects
+            for (int i = 0; i < 4; i++) {
+                display.fillRect(ix + 3 + i, iy + 2 + i, 1, 1);
+                display.fillRect(ix + 9 - i, iy + 2 + i, 1, 1);
+            }
+            break;
+        case 3:
+        case 7:
+        default:
+            // ON BATTERY / LOW / other: show voltage bars
+            for (uint8_t i = 0; i < bars; i++) {
+                display.fillRect(ix + 2 + i * 3, iy + 2, 2, iconH - 4);
+            }
+            // If zero bars (critically low), blink the outline
+            if (bars == 0) {
+                static bool lowBlink = false;
+                lowBlink = !lowBlink;
+                if (lowBlink) {
+                    display.setColor(BLACK);
+                    display.drawRect(ix, iy, bodyW, iconH);
+                    display.setColor(WHITE);
+                }
+            }
+            break;
+    }
+ 
+    display.setColor(WHITE);
+    // NO display.display() — let the next regular update show it
+}
+ 
+ 
+void MorseOutput::resetPowerpathDisplay() {
+    lastPPS = 255;
+    lastBars = 255;
+}
+ 
+#endif  // CONFIG_MCP73871
+ 
 void MorseOutput::displayEmptyBattery(void (*f)()) {                                /// display a warning and go to (return to) deep sleep
   display.clear();
   display.drawRect(10, 11, 95, 50);
@@ -1190,6 +1378,9 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   display.setColor(BLACK);
   display.drawString(xpos * display.getStringWidth("A"), 0, string);
   display.setColor(WHITE);
+  #ifdef CONFIG_MCP73871
+    displayPowerpathStatus(volt);
+  #endif
   display.display();
   resetTOT();
 }
@@ -1298,7 +1489,7 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
     codec.setHeadphoneLineMode(true); // enable line-out mode
 
     if (!variable) {
-      DEBUG("Fixed gain!");
+      //DEBUG("Fixed gain!");
       codec.setHeadphoneVolume(0.0, 0.0); // volume 0db on line-out
     }
     else
@@ -1308,7 +1499,7 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
           codec.setSpeakerMute(true); // mute class d speaker amp
       else
       {
-        DEBUG ("Not muted!");
+        //DEBUG ("Not muted!");
         codec.enableSpeakerAmp();
         codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
         // codec.setSpeakerVolume(-10.0f); // volume set by encoder
@@ -1389,10 +1580,10 @@ void MorseOutput::soundEventHandler() {
 void MorseOutput::soundEventHandler() {
   // interrupt reason needs to be read, otherwise the codec won't send any further interrupts
   if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
-    DEBUG("AIC31XX: Headset plug interrupt triggered");
+    //DEBUG("AIC31XX: Headset plug interrupt triggered");
   }
 if (codec.isHeadsetDetected()) { 
-    DEBUG("AIC31XX: Headset interrupt: plugged-in");
+    //DEBUG("AIC31XX: Headset interrupt: plugged-in");
     switch (MorsePreferences::pliste[posLineOut].value)
     {
       case 0: // headphones, speaker muted 
@@ -1409,7 +1600,7 @@ if (codec.isHeadsetDetected()) {
         break;
     }
 } else {
-    DEBUG("AIC31XX: Headset interrupt: unplugged");
+    //DEBUG("AIC31XX: Headset interrupt: unplugged");
     soundEnableSpeaker();
        // enable speaker, mute headphones
   }   

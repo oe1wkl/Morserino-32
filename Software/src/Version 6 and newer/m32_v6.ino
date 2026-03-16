@@ -1047,37 +1047,13 @@ if (morseState == morseKeyer &&
 #endif
 
 #ifdef CONFIG_MCP73871
-  if (powerpath_event) {
-    powerpath_event = false;
-    uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
-    Serial.print("Powerpath state change:");
-    switch (powerpath_state) {
-      case 0:
-        Serial.println("FAULT");
-        break;
-      case 2:
-        Serial.println("Charging");
-        break;
-      case 3:
-        Serial.println("Low Battery");
-        break;
-      case 4:
-        Serial.println("Charge complete standby");
-        batteryVoltage(); // measure battery and eventually tweak vAdjust
-        break;
-      case 6:
-        Serial.println("Shutdown No Battery Present");
-        break;
-      case 7:
-        Serial.println("Shutdown No Input Power Present");
-        break;
-      default:
-        Serial.print("Unknown State: ");
-        Serial.println(powerpath_state);
-        break;
-      }
-    }
+       if (powerpath_event) {
+           powerpath_event = false;
+           //volt = batteryVoltage();
+           MorseOutput::resetPowerpathDisplay();
+       }
 #endif
+
 }     /////////////////////// end of loop() /////////
 
 
@@ -1639,7 +1615,7 @@ String getRandomCall(int maxLength) {
     bool commonOnly  = (MorsePreferences::pliste[posCallCommon].value == 1);
     // "Common" threshold: weight >= 2 means the prefix was seen in real call data
     // (weight 1 = unseen/theoretical prefix)
-    uint8_t minWeight = commonOnly ? 2 : 0;
+    uint8_t minWeight = commonOnly ? 81 : 0;  // Claude recommended 2 but that gave way too many rare prefixes.
  
     // --- Weighted random prefix selection (two-pass) ---
  
@@ -1698,7 +1674,11 @@ String getRandomCall(int maxLength) {
   // A call sign always needs a digit between prefix letters and suffix letters.
     // If the prefix already ends with a digit (e.g. "8Z4"), no extra digit needed.
     // If it ends with a letter (e.g. "DL", "9A", "3DA"), we must add one.
-    if (!endsWithDigit(pfxBuf)) {
+    // A call sign needs a digit between prefix and suffix.
+    // Add a digit unless the prefix is longer than 2 chars AND ends with one
+    // (e.g. "8Z4" doesn't need another digit, but "9A" does → "9A1xyz")
+    int pfxLen = strlen(pfxBuf);
+    if (!endsWithDigit(pfxBuf) || pfxLen <= 2) {
         call[pos++] = '0' + random(0, 10);
     }
  
@@ -1808,7 +1788,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             l = CWword.length() - CWwordPos;
             if (l<=0)  {                                               // fetch a new word if we have an empty word
                 if (clearText.length() > 0) {                          // this should not be reached at all.... except when display word by word
-                  DEBUG("Text left: " + clearText);
+                  //DEBUG("Text left: " + clearText);
 
                 if (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_WORD &&
                     (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW == true))
@@ -2566,21 +2546,23 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   for (int i = 0; i<10; i++) {
     reading += (1750.0 * (analogRead(CONFIG_BATMEAS_PIN) / 4095.0)) ; // 6 db atten = 1750mV max
      //DEBUG("Reading " + String(i) + ": " + String(reading) );
-    delay(20);
+    delay(10);
   }
   reading /= 10.0;
-  int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 3.43; // 470k/1000k voltage divider
+  int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 3.6; // 470k/1000k voltage divider was 3.43
   voltage_raw = reading; // store raw voltage reading for later use
-  //delay(1000);
+  delay(1000);
   //DEBUG("Reading average: " + String(voltage_raw) );
   //DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
   //DEBUG("ReadVoltage mv:" + String(mvolt));
-  uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
-  if (powerpath_state == 4) {
+  uint8_t powerpath_state = MorseOutput::getPowerpathState();
+  if (powerpath_state == 8) { // this means we had a transition from charging to full
+    DEBUG("Powerpath transition to full detected, adjusting vAdjust...");
     uint8_t newVAdjust = (DEFAULT_VADJUST *  4200) / mvolt; // 210 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
     if (abs(newVAdjust - MorsePreferences::vAdjust) >= 3) {
       // enough delta to qualify for storing new vAdjust
       MorsePreferences::vAdjust = newVAdjust;
+      DEBUG("New vAdjust: " + String(newVAdjust) + " stored in preferences");
       MorsePreferences::setVoltageAdjust(newVAdjust);
     }
 
@@ -2626,12 +2608,29 @@ double ReadVoltage(byte pin){
 
 
 void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw even if there was no time-out
+#ifdef CONFIG_MCP73871
+  static unsigned long lastBattMeasure = 0;
+#endif
+
   unsigned long timeOut;
-  if (m32protocol && !enforce)                          /// no time-out while m32protocol is active unless forced
-    return;
+
   if (MorsePreferences::pliste[posTimeOut].value || enforce) {
       timeOut = 300000UL * MorsePreferences::pliste[posTimeOut].value;
-      if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {
+#ifdef CONFIG_MCP73871
+      if ((millis() - MorseOutput::TOTcounter) > 1000) {
+            MorseOutput::displayPowerpathStatus(volt);
+        // Periodic battery measurement — every 5 minutes
+        if (millis() - lastBattMeasure > 300000) {
+            lastBattMeasure = millis();
+            volt = batteryVoltage();
+            MorseOutput::resetPowerpathDisplay();   // force icon redraw on next screen update
+            MorseOutput::displayPowerpathStatus(volt);
+        }
+      }
+#endif
+    if (m32protocol && !enforce)                          /// no time-out while m32protocol is active unless forced
+      return;
+    if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {
           MorseOutput::clearDisplay();
           MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Power OFF...");
           MorseOutput::printOnScroll(2, REGULAR, 0, "FN to turn ON");
