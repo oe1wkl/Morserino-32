@@ -507,6 +507,12 @@ uint8_t MorsePreferences::memories[8];
 uint8_t MorsePreferences::memCounter;
 uint8_t MorsePreferences::memPtr = 0;
 
+/// variables for managing multi-part file player
+uint8_t  MorsePreferences::filePartCount = 0;
+uint8_t  MorsePreferences::filePartSelected = 0;
+FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
+ 
+
 
 #define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, 
 #ifdef CONFIG_SOUND_I2S
@@ -1609,17 +1615,25 @@ void MorsePreferences::fireCharSeen(boolean wpmOnly)
     pref.end();
 }
 
-void MorsePreferences::writeWordPointer()
-{
-    pref.begin("morserino", false);              // open the namespace as read/write
+
+void MorsePreferences::writeWordPointer() {
+    pref.begin("morserino", false);
+    
     if ((MorsePreferences::fileWordPointer != pref.getUInt("fileWordPtr")))
-    {   // update word pointer if necessary (if we ran player before)
-        pref.putUInt("fileWordPtr", MorsePreferences::fileWordPointer);
+        pref.putUInt("fileWordPtr", MorsePreferences::fileWordPointer); // update word pointer if necessary (if we ran player before)
+    
+    // Also persist the current part's word pointer
+    if (filePartCount >= 2) {
+        fileParts[filePartSelected].wordPointer = fileWordPointer;
+        char key[12];
+        snprintf(key, sizeof(key), "fPartWP%d", filePartSelected);
+        if (fileWordPointer != pref.getUInt(key, 0))
+            pref.putUInt(key, fileWordPointer);
     }
+    
     pref.end();
-
 }
-
+ 
 void MorsePreferences::writeVolume()
 {
     pref.begin("morserino", false);                     // open the namespace as read/write
@@ -1741,6 +1755,183 @@ void MorsePreferences::getCwMem() {
         MorsePreferences::cwMemMask |= 1 << (i-1);
   }
 }
+
+// File Part Handling for player.txt multipart files
+// Scan player.txt for multipart separators.
+// Called after file upload and on startup (readFilePartData).
+//
+// A separator line starts with <c> or \c, followed by optional spaces,
+// then $, then optional spaces, then the chapter name until EOL.
+// The first line of the file must be a separator for multipart to activate.
+ 
+void MorsePreferences::scanFileParts() {
+    File f = SPIFFS.open("/player.txt", "r");
+    if (!f) {
+        filePartCount = 0;
+        return;
+    }
+ 
+    uint8_t partCount = 0;
+    uint32_t fileSize = f.size();
+    bool firstLine = true;
+    bool isMultipart = false;
+ 
+    // Read file line by line, looking for separator lines
+    while (f.available() && partCount < MAX_FILE_PARTS) {
+        uint32_t lineStart = f.position();
+        
+        // Read one line into a buffer
+        char lineBuf[80];
+        int lineLen = 0;
+        while (f.available() && lineLen < (int)sizeof(lineBuf) - 1) {
+            char c = f.read();
+            if (c == '\n') break;
+            if (c == '\r') continue;
+            lineBuf[lineLen++] = c;
+        }
+        lineBuf[lineLen] = '\0';
+        
+        // Skip to end of line if it was longer than our buffer
+        if (lineLen == sizeof(lineBuf) - 1) {
+            while (f.available()) {
+                if (f.read() == '\n') break;
+            }
+        }
+ 
+        // Check if this line is a separator: starts with <c> or \c
+        int pos = 0;
+        // Skip leading whitespace
+        while (pos < lineLen && lineBuf[pos] == ' ') pos++;
+        
+        bool isSeparator = false;
+        if (pos + 3 <= lineLen && lineBuf[pos] == '<' && 
+            lineBuf[pos+1] == 'c' && lineBuf[pos+2] == '>') {
+            pos += 3;
+            isSeparator = true;
+        }
+        else if (pos + 2 <= lineLen && lineBuf[pos] == '\\' && lineBuf[pos+1] == 'c') {
+            pos += 2;
+            isSeparator = true;
+        }
+ 
+        if (!isSeparator) {
+            if (firstLine) {
+                // First line is not a separator → not a multipart file
+                break;
+            }
+            firstLine = false;
+            continue;
+        }
+        firstLine = false;
+ 
+        // Found a separator line. Look for $ sign
+        while (pos < lineLen && lineBuf[pos] == ' ') pos++;  // skip spaces
+        
+        if (pos < lineLen && lineBuf[pos] == '$') {
+            pos++;  // skip $
+            while (pos < lineLen && lineBuf[pos] == ' ') pos++;  // skip spaces after $
+            
+            if (!isMultipart && partCount == 0) {
+                isMultipart = true;   // first separator found on first line
+            }
+            
+            if (isMultipart) {
+                // Close the previous part's endOffset
+                if (partCount > 0) {
+                    fileParts[partCount - 1].endOffset = lineStart;
+                }
+                
+                // Record this part
+                FilePart& part = fileParts[partCount];
+                // startOffset = position AFTER the separator line
+                part.startOffset = f.position();   // current position is right after this line
+                part.endOffset = fileSize;          // will be updated when next separator is found
+                part.wordPointer = 0;
+                
+                // Copy chapter name
+                int nameLen = lineLen - pos;
+                if (nameLen > 23) nameLen = 23;
+                memcpy(part.name, &lineBuf[pos], nameLen);
+                part.name[nameLen] = '\0';
+                // Trim trailing spaces
+                while (nameLen > 0 && part.name[nameLen - 1] == ' ') {
+                    part.name[--nameLen] = '\0';
+                }
+                
+                partCount++;
+            }
+        }
+    }
+ 
+    f.close();
+    
+    if (partCount < 2) {
+        // Need at least 2 parts for multipart mode
+        // (1 separator on the first line alone doesn't make sense)
+        filePartCount = 0;
+    } else {
+        filePartCount = partCount;
+    }
+    
+    // Reset selection if out of range
+    if (filePartSelected >= filePartCount)
+        filePartSelected = 0;
+}
+ 
+ 
+// Persist part data to NVS preferences
+void MorsePreferences::writeFilePartData() {
+    pref.begin("morserino", false);
+    pref.putUChar("fPartCount", filePartCount);
+    pref.putUChar("fPartSel", filePartSelected);
+    
+    // Store word pointers for each part
+    for (int i = 0; i < filePartCount && i < MAX_FILE_PARTS; i++) {
+        char key[12];
+        snprintf(key, sizeof(key), "fPartWP%d", i);
+        pref.putUInt(key, fileParts[i].wordPointer);
+    }
+    
+    // Store part offsets and names (needed to avoid re-scanning)
+    for (int i = 0; i < filePartCount && i < MAX_FILE_PARTS; i++) {
+        char key[12];
+        snprintf(key, sizeof(key), "fPartS%d", i);
+        pref.putUInt(key, fileParts[i].startOffset);
+        snprintf(key, sizeof(key), "fPartE%d", i);
+        pref.putUInt(key, fileParts[i].endOffset);
+        snprintf(key, sizeof(key), "fPartN%d", i);
+        pref.putString(key, fileParts[i].name);
+    }
+    
+    pref.end();
+}
+ 
+// Load part data from NVS
+void MorsePreferences::readFilePartData() {
+    pref.begin("morserino", true);   // read-only
+    filePartCount = pref.getUChar("fPartCount", 0);
+    filePartSelected = pref.getUChar("fPartSel", 0);
+    
+    if (filePartCount > MAX_FILE_PARTS) filePartCount = MAX_FILE_PARTS;
+    if (filePartSelected >= filePartCount && filePartCount > 0) filePartSelected = 0;
+    
+    for (int i = 0; i < filePartCount; i++) {
+        char key[12];
+        snprintf(key, sizeof(key), "fPartWP%d", i);
+        fileParts[i].wordPointer = pref.getUInt(key, 0);
+        snprintf(key, sizeof(key), "fPartS%d", i);
+        fileParts[i].startOffset = pref.getUInt(key, 0);
+        snprintf(key, sizeof(key), "fPartE%d", i);
+        fileParts[i].endOffset = pref.getUInt(key, 0);
+        snprintf(key, sizeof(key), "fPartN%d", i);
+        String name = pref.getString(key, "");
+        strncpy(fileParts[i].name, name.c_str(), 23);
+        fileParts[i].name[23] = '\0';
+    }
+    
+    pref.end();
+}
+ 
 
 //////// methods for class Koch ///////////////////////////////////////////////////////
 

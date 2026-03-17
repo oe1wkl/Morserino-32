@@ -66,6 +66,7 @@ void menuDisplay(uint8_t);
 void cleanupScreen();
 void showStartDisplay(const String&, const String&, const String&, int);
 boolean isRemotelyExecutable(uint8_t);
+int8_t selectFilePart();
 }
 
 #endif /* #ifndef MORSEMENU_H_ */

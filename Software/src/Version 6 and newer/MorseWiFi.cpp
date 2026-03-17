@@ -667,20 +667,20 @@ void internal::handleFileUpload(){ // upload a new file to the SPIFFS
     String filename = upload.filename;
     if(!filename.startsWith("/")) filename = "/"+filename;
     //DEBUG("handleFileUpload Name: " + filename);
-    MorseWiFi::fsUploadFile = SPIFFS.open("/player.txt", "w");            // Open the file for writing in SPIFFS (create if it doesn't exist)
-    filename = String();
-  } else if(upload.status == UPLOAD_FILE_WRITE){
-    if(MorseWiFi::fsUploadFile)
-      MorseWiFi::fsUploadFile.write(upload.buf, upload.currentSize); // Write the received bytes to the file
-  } else if(upload.status == UPLOAD_FILE_END){
-    if(MorseWiFi::fsUploadFile) {                                    // If the file was successfully created
-      MorseWiFi::fsUploadFile.close();                               // Close the file again
-      MorsePreferences::fileWordPointer = 0;                              // reset word counter for file player
+        MorseWiFi::fsUploadFile = SPIFFS.open("/player.txt", "w");     // Open the file for writing in SPIFFS (create if it doesn't exist)
+        filename = String();
+    } else if(upload.status == UPLOAD_FILE_WRITE){
+      if(MorseWiFi::fsUploadFile)
+        MorseWiFi::fsUploadFile.write(upload.buf, upload.currentSize); // Write the received bytes to the file
+    } else if(upload.status == UPLOAD_FILE_END){
+      if(MorseWiFi::fsUploadFile) {                                    // If the file was successfully created
+        MorseWiFi::fsUploadFile.close();                               // Close the file again
+        MorsePreferences::fileWordPointer = 0;                         // reset word counter for file player
 //DEBUG("fileWordPointer @ file upload: " + String(MorsePreferences::fileWordPointer));
-      MorsePreferences::writeWordPointer();
-      //DEBUG("handleFileUpload Size: " + String(upload.totalSize));
-      //server.sendHeader("Location","/success.html");      // Redirect the client to the success page
-      //server.send(303);
+        MorsePreferences::writeWordPointer();
+        MorsePreferences::scanFileParts();          // ADD: detect multipart
+        MorsePreferences::writeFilePartData();      // ADD: persist to NVS
+//DEBUG("handleFileUpload Size: " + String(upload.totalSize));
     } else {
       MorseWiFi::server.send(500, "text/plain", "500: couldn't create file");
     }

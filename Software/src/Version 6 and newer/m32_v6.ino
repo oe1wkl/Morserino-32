@@ -575,12 +575,10 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
-//DEBUG("Read preferences");
-  MorsePreferences::readPreferences("morserino");
-  
-  koch.setup();
 
-/// esp  now setup was here ...
+  MorsePreferences::readPreferences("morserino");
+  MorsePreferences::readFilePartData();
+  koch.setup();
 
   #ifdef CONFIG_DISPLAYWRAPPER
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
@@ -590,8 +588,6 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
 
   // to calibrate sensors, we record the values in untouched state; need to do this after checking for system config
   initSensors();
-
-
 
   /// set up quickstart - this should only be done once at startup - after successful quickstart we disable it to allow normal menu operation
   quickStart = MorsePreferences::pliste[posQuickStart].value;
@@ -2171,8 +2167,6 @@ void fetchNewWord() {
                                                           clearText = lastWord;
                                                           lastWord = "";
                                                       }
-                                                      //clearText = cleanUpText(getWord());
-                                                      //clearText = cleanUpText(clearText);
                                                       break;
                                     }   // end switch (generatorMode)
                             }
@@ -3236,46 +3230,75 @@ String getM32PWord() {
 
 
 //////////////////////// getWord()  //////// from file. will also do necessary cleanups!
+// getWord() used to wrap at EOF by reopening the file.
+// For multipart, it must wrap at the part's endOffset back to startOffset.
 
 String getWord() {
-  String result = "";
-  result.reserve(250);
-  byte c;
-  static boolean eof = false;
-
-  if (eof) {          // at eof return empty string
-    eof = false;
-    //DEBUG("return empty");
-    return result;
-  }
-  while (file.available()) {
-      c=file.read();
-      if (!isSpace(c))
-        result += (char) c;
-      else if (result.length() > 0)    {              // end of word
-        ++MorsePreferences::fileWordPointer;
-        result = cleanUpText(result);
-        if (result.indexOf('C') != -1) {              // a comment starts here - ignore everything until end of line
-          result = "";
-          while (file.available()) {
-            char c = file.read();
-            if (c  == '\n') {
-              break;
+    String result = "";
+    result.reserve(250);
+    byte c;
+    static boolean eof = false;
+ 
+    if (eof) {
+        eof = false;
+        return result;
+    }
+ 
+    // Determine boundaries for current part
+    uint32_t partStart = 0;
+    uint32_t partEnd = 0;   // 0 = no limit (single file mode)
+    
+    if (MorsePreferences::filePartCount >= 2) {
+        uint8_t p = MorsePreferences::filePartSelected;
+        partStart = MorsePreferences::fileParts[p].startOffset;
+        partEnd   = MorsePreferences::fileParts[p].endOffset;
+    }
+ 
+    while (file.available()) {
+        // Check if we've reached the end of the current part
+        if (partEnd > 0 && file.position() >= partEnd) {
+            break;   // treat as EOF for this part
+        }
+        
+        c = file.read();
+        if (!isSpace(c))
+            result += (char) c;
+        else if (result.length() > 0) {
+            ++MorsePreferences::fileWordPointer;
+            result = cleanUpText(result);
+            if (result.indexOf('C') != -1) {
+                // Comment — skip rest of line
+                result = "";
+                while (file.available()) {
+                    char c = file.read();
+                    if (c == '\n') break;
+                }
             }
-          }                                           // now we are at EOL or EOF
-        }                                             // we had a comment
-        else return result;                           // no comment, so return result
-      }                                               //else not end of word
-    } // here eof
+            else return result;
+        }
+    }
+    
+    // End of part (or end of file): wrap around
     eof = true;
-    //DEBUG("EOF!");
-    file.close(); file = SPIFFS.open("/player.txt");
-    MorsePreferences::fileWordPointer = 0;
+    
+    if (MorsePreferences::filePartCount >= 2) {
+        // Multipart: seek back to start of current part
+        uint8_t p = MorsePreferences::filePartSelected;
+        file.seek(MorsePreferences::fileParts[p].startOffset);
+        MorsePreferences::fileParts[p].wordPointer = 0;
+        MorsePreferences::fileWordPointer = 0;
+    } else {
+        // Single file: reopen from beginning (as before)
+        file.close();
+        file = SPIFFS.open("/player.txt");
+        MorsePreferences::fileWordPointer = 0;
+    }
+    
     while (!file.available())
-      ;
+        ;
     return result;
 }
-
+ 
 //// get a string containing all different characters found in a file; used for training with custiomized character set
 
 String getCustomChars() {
@@ -3665,15 +3688,14 @@ void m32Put(String type, String token, String value) {                    /// PU
         f.close();
         MorsePreferences::fileWordPointer = 0;
         MorsePreferences::writeWordPointer();
+        // DON'T scan here — wait for explicit scan or file/end
         MorseJSON::jsonOK();
       }
       else if (token == "append") {
-        // Append text line to player.txt (existing command)
         File f = SPIFFS.open("/player.txt", "a");
         f.println(value);
         f.close();
-        MorsePreferences::fileWordPointer = 0;
-        MorsePreferences::writeWordPointer();
+        // DON'T scan here — called many times during upload
         MorseJSON::jsonOK();
       }
       else if (token == "begin") {
@@ -3723,6 +3745,8 @@ void m32Put(String type, String token, String value) {                    /// PU
         if (uploadActive) {
           String name = String(uploadFile.path());   // ← was uploadFile.name()
           uploadFile.close();
+          MorsePreferences::scanFileParts();
+          MorsePreferences::writeFilePartData();
           uploadActive = false;
           // If we uploaded player.txt, reset the word pointer
           if (name == "/player.txt" || name == "player.txt") {

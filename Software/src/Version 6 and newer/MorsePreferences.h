@@ -46,6 +46,15 @@ extern void serialEvent();
 
 extern String getCustomChars();
 
+#define MAX_FILE_PARTS 16
+ 
+struct FilePart {
+    uint32_t  startOffset;               // byte offset in file where this part begins
+    uint32_t  endOffset;                 // byte offset where this part ends (= next part's start or EOF)
+    uint32_t  wordPointer;               // persistent word pointer for this part
+    char      name[24];                  // chapter name (truncated to 23 chars + null)
+};
+ 
 
 namespace MorsePreferences
 {
@@ -69,6 +78,16 @@ namespace MorsePreferences
   extern uint8_t kochCharsLength;
   extern uint8_t kochMinimum;
   extern uint8_t kochMaximum;
+
+  /// variables for managing file parts in player mode
+  extern uint8_t  filePartCount;       // 0 = single file (no parts), 1+ = number of parts
+  extern uint8_t  filePartSelected;    // currently selected part index (0-based)
+  extern FilePart fileParts[MAX_FILE_PARTS];
+
+  void scanFileParts();                // scan player.txt for part separators
+  void writeFilePartData();            // persist part data to NVS
+  void readFilePartData();             // load part data from NVS
+ 
 
 /// variables for managing snapshots
   extern uint8_t memories[8];           // contains snapshot numbers 0..7 for each stored snapshot

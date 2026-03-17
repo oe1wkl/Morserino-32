@@ -389,13 +389,31 @@ boolean MorseMenu::menuExec() {                                          // retu
                 MorsePreferences::setCurrentOptions(MorsePreferences::generatorOptions, MorsePreferences::generatorOptionsSize);
                 goto startGenerator;
      case _genPlayer:
-                generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 3);                   /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
+                generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 3);
                 MorsePreferences::setCurrentOptions(MorsePreferences::playerOptions, MorsePreferences::playerOptionsSize);
-                file = SPIFFS.open("/player.txt");                            // open file
-                //skip p_fileWordPointer words, as they have been played before
-                wcount = MorsePreferences::fileWordPointer > 1 ? MorsePreferences::fileWordPointer-1  : 0;
-                MorsePreferences::fileWordPointer = 0;
-                skipWords(wcount);
+                file = SPIFFS.open("/player.txt");
+                MorsePreferences::scanFileParts();       // ADD: always scan on start
+              
+                // Multipart: let user select a chapter
+                if (MorsePreferences::filePartCount >= 2) {
+                    int8_t partChoice = MorseMenu::selectFilePart();
+                    if (partChoice < 0) {
+                        file.close();
+                        return false;   // user cancelled
+                    }
+                    // Seek to start of selected part
+                    file.seek(MorsePreferences::fileParts[partChoice].startOffset);
+                    // Skip to saved word pointer for this part
+                    wcount = MorsePreferences::fileParts[partChoice].wordPointer;
+                    if (wcount > 0) wcount--;
+                    MorsePreferences::fileWordPointer = 0;
+                    skipWords(wcount);
+                } else {
+                    // Single file mode (as before)
+                    wcount = MorsePreferences::fileWordPointer > 1 ? MorsePreferences::fileWordPointer - 1 : 0;
+                    MorsePreferences::fileWordPointer = 0;
+                    skipWords(wcount);
+                }
      startGenerator:
                 startFirst = true;
                 firstTime = true;
@@ -424,14 +442,28 @@ boolean MorseMenu::menuExec() {                                          // retu
 
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 10);                /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
                 goto startEcho;
-      case  _echoPlayer:    /// echo trainer
-                generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 10);                /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
+            case  _echoPlayer:
+                generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 10);
                 MorsePreferences::setCurrentOptions(MorsePreferences::echoPlayerOptions, MorsePreferences::echoPlayerOptionsSize);
-                file = SPIFFS.open("/player.txt");                            // open file
-                //skip p_fileWordPointer words, as they have been played before
-                wcount = MorsePreferences::fileWordPointer > 1 ? MorsePreferences::fileWordPointer-1  : 0;
-                MorsePreferences::fileWordPointer = 0;
-                skipWords(wcount);
+                file = SPIFFS.open("/player.txt");
+                MorsePreferences::scanFileParts();       // ADD: always scan on start
+             
+                if (MorsePreferences::filePartCount >= 2) {
+                    int8_t partChoice = MorseMenu::selectFilePart();
+                    if (partChoice < 0) {
+                        file.close();
+                        return false;
+                    }
+                    file.seek(MorsePreferences::fileParts[partChoice].startOffset);
+                    wcount = MorsePreferences::fileParts[partChoice].wordPointer;
+                    if (wcount > 0) wcount--;
+                    MorsePreferences::fileWordPointer = 0;
+                    skipWords(wcount);
+                } else {
+                    wcount = MorsePreferences::fileWordPointer > 1 ? MorsePreferences::fileWordPointer - 1 : 0;
+                    MorsePreferences::fileWordPointer = 0;
+                    skipWords(wcount);
+                }
        startEcho:
                 startFirst = true;
                 morseState = echoTrainer;
@@ -667,4 +699,74 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
   }
   else
     return false;
+}
+
+// This function is called from the file player mode when a multipart file is selected. 
+// When the file player is selected and the file is multipart, show a
+// scrollable list of part names. The user selects with encoder + click.
+//
+// Returns the selected part index (0-based), or -1 if cancelled.
+// This follows the same pattern as the existing menu navigation.
+ 
+int8_t MorseMenu::selectFilePart() {
+    if (MorsePreferences::filePartCount < 2)
+        return 0;   // not multipart, just use the whole file
+    
+    int8_t selected = MorsePreferences::filePartSelected;
+    int8_t count = MorsePreferences::filePartCount;
+    
+    MorseOutput::clearDisplay();
+    MorseOutput::printOnStatusLine(true, 0, "Select Chapter:   ");
+    
+    int8_t lastDisplayed = -1;
+    
+    while (true) {
+        // Display current selection
+        if (selected != lastDisplayed) {
+            lastDisplayed = selected;
+            MorseOutput::clearThreeLines();
+            
+            // Show previous, current (bold), and next
+            if (selected > 0)
+                MorseOutput::printOnScroll(0, REGULAR, 0, 
+                    String(MorsePreferences::fileParts[selected - 1].name));
+            
+            MorseOutput::printOnScroll(1, BOLD, 0,
+                String(MorsePreferences::fileParts[selected].name));
+            
+            if (selected < count - 1)
+                MorseOutput::printOnScroll(2, REGULAR, 0,
+                    String(MorsePreferences::fileParts[selected + 1].name));
+        }
+        
+        // Check encoder
+        int t = checkEncoder();
+        if (t) {
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+            selected += t;
+            if (selected < 0) selected = 0;
+            if (selected >= count) selected = count - 1;
+        }
+        
+        // Check buttons
+        Buttons::modeButton.Update();
+        switch (Buttons::modeButton.clicks) {
+            case 1:
+                // Select this part
+                MorsePreferences::filePartSelected = selected;
+                MorsePreferences::writeFilePartData();
+                return selected;
+            case -1:
+                // Cancel — go back to menu
+                return -1;
+        }
+        
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks == -1) {
+            return -1;   // long press vol = cancel
+        }
+        
+        checkShutDown(false);
+        serialEvent();
+    }
 }
