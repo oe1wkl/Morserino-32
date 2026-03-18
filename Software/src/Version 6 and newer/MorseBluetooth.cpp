@@ -202,20 +202,6 @@ void MorseBluetooth::initializeBluetooth(void)
     }
 }
 
-/* void MorseBluetooth::stopBluetooth(void)
-{
-    volatile UBaseType_t uxArraySize;
-    if (isBLErunning) {
-        DEBUG("Stopping BLE");
-        uxArraySize = uxTaskGetNumberOfTasks();
-        //DEBUG("Number of tasks before deleting BLE task: " + String(uxArraySize));
-        vTaskDelete(taskHandle);
-        uxArraySize = uxTaskGetNumberOfTasks();
-        //DEBUG("Number of tasks after deleting BLE task: " + String(uxArraySize));
-        isBLErunning = false;
-        delay(40);
-    }
-} */
 
 void MorseBluetooth::stopBluetooth(void)
 {

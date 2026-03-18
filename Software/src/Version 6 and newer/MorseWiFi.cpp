@@ -322,7 +322,7 @@ void MorseWiFi::menuNetSelect() {
   }
   MorsePreferences::wlanChoice = choice;
   MorsePreferences::writePreferences("morserino");
-  ESP.restart();  // is this really necessary?? Probably yes, because of ESPnow?
+  // No restart needed — menu_() will clean up WiFi state on return
 }
 
 void MorseWiFi::menuExec(uint8_t command) {
@@ -408,8 +408,19 @@ void MorseWiFi::menuExec(uint8_t command) {
     }
 }
 
-void MorseWiFi::startAP() {
+static void shutdownWiFi() {
+    MorseWiFi::server.stop();
+    MorseWiFi::server.close();
+    delay(100);
+    WiFi.disconnect(true, false);
+    delay(100);
+    WiFi.mode(WIFI_OFF);
+    delay(100);
+}
 
+void MorseWiFi::startAP() {
+  volatile bool configDone = false;   // flag to exit the server loop
+ 
   WiFi.mode(WIFI_AP);
   WiFi.setHostname(ssid);
   WiFi.softAP(ssid);
@@ -420,55 +431,61 @@ void MorseWiFi::startAP() {
   MorseOutput::printOnScroll(2, REGULAR, 0,  "FN to abort");
   delay(200);
   internal::startMDNS();
-
+ 
   server.on("/", HTTP_GET, []() {
     String formular;
     formular.reserve(1024);
     formular = myForm;
-
     formular.replace("SSIDV1", MorsePreferences::wlanSSID1);
     formular.replace("PEERIPV1", MorsePreferences::wlanTRXPeer1);
-
     formular.replace("SSIDV2", MorsePreferences::wlanSSID2);
     formular.replace("PEERIPV2", MorsePreferences::wlanTRXPeer2);
-
     formular.replace("SSIDV3", MorsePreferences::wlanSSID3);
     formular.replace("PEERIPV3", MorsePreferences::wlanTRXPeer3);
-
     server.sendHeader("Connection", "close");
     server.send(200, "text/html", formular);
   });
-
-  server.on("/set", HTTP_GET, []() {
+ 
+  server.on("/set", HTTP_GET, [&configDone]() {
     server.sendHeader("Connection", "close");
-    server.send(200, "text/html", "Wifi Info updated - now restarting Morserino-32...");
-
+    server.send(200, "text/html",
+        "Wifi Info updated. You can close this page.");
+ 
     MorsePreferences::writeWifiInfoMultiple(
       String(server.arg("ssid1")), String(server.arg("pw1")), String(server.arg("trxpeer1")),
       String(server.arg("ssid2")), String(server.arg("pw2")), String(server.arg("trxpeer2")),
       String(server.arg("ssid3")), String(server.arg("pw3")), String(server.arg("trxpeer3"))
     );
-
-    //DEBUG("SSID: " + String(MorsePreferences::wlanSSID) + " Password: " + String(MorsePreferences::wlanPassword) + " Peer. " + String(MorsePreferences::wlanTRXPeer));
-    ESP.restart();
+    configDone = true;    // signal the loop to exit
   });
-
+ 
   server.onNotFound(internal::handleNotFound);
-
+ 
   server.begin();
-  while (true) {
+  while (!configDone) {
       server.handleClient();
       delay(20);
       Buttons::volButton.Update();
       if (Buttons::volButton.clicks) {
-        MorseOutput::clearDisplay();
-        MorseOutput::printOnStatusLine( true, 0, "Resetting now...");
-        delay(2000);
-        ESP.restart();
+          break;                      // user pressed button to abort
       }
+      checkShutDown(false);
   }
+ 
+  // Clean shutdown — no restart needed
+  shutdownWiFi();
+ 
+  // Show brief confirmation
+  MorseOutput::clearDisplay();
+  if (configDone) {
+      MorseOutput::printOnScroll(1, BOLD, 0, "WiFi Updated");
+  } else {
+      MorseOutput::printOnScroll(1, BOLD, 0, "Cancelled");
+  }
+  delay(1000);
+  // Function returns to menuExec() → menu_() which reinitialises display
 }
-
+ 
 
 void MorseWiFi::updateFirmware()   {                   /// start wifi client, web server and upload new binary from a local computer
   if (! wifiConnect())
@@ -584,6 +601,7 @@ void internal::startMDNS() {
 
 
 void MorseWiFi::uploadFile() {
+  volatile bool uploadDone = false;
   if (! wifiConnect())
     return;
   server.on("/", HTTP_GET, []() {
@@ -595,11 +613,12 @@ void MorseWiFi::uploadFile() {
     server.send(200, "text/html", serverIndex);
   });
 
-server.on("/update", HTTP_POST, [](){                  // if the client posts to the upload page
+server.on("/update", HTTP_POST, [&uploadDone](){
     server.sendHeader("Connection", "close");
     server.send(200, "text/plain", "OK");
-    ESP.restart();},                                  // Send status 200 (OK) to tell the client we are ready to receive; when done, restart the ESP32
-    internal::handleFileUpload                                    // Receive and save the file
+    uploadDone = true;                          // signal the loop to exit
+    },
+    internal::handleFileUpload
   );
 
   server.onNotFound([]() {                              // If the client requests any URI
@@ -615,7 +634,7 @@ server.on("/update", HTTP_POST, [](){                  // if the client posts to
   MorseOutput::printOnScroll(1, REGULAR, 0,  "IP:");
   MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString());
   unsigned long wifiTimeout = millis() + 300000UL;  // 5 minute timeout
-  while(true) {
+  while (!uploadDone) {
        server.handleClient();
        delay(5);
        Buttons::volButton.Update();
@@ -628,8 +647,7 @@ server.on("/update", HTTP_POST, [](){                  // if the client posts to
            break;
        }
    }
-   WiFi.disconnect(true, false);
-   WiFi.mode(WIFI_OFF);
+   shutdownWiFi();
 }
 
 

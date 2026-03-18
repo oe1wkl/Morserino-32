@@ -8,19 +8,24 @@ The USB bus can be used for two-way communication with a connected computer. Apa
 
 	Changes in protocol version 1.2 from version 1.1
 	   (see section "Other files"):
-	   
-	Three new serial protocol commands for binary-safe chunked 
+
+	Three new serial protocol "put" commands for binary-safe chunked
 	upload (filenames can contain paths):
 
-	put file/begin/<filename> — opens the file for writing 
+	put file/begin/<filename> — opens the file for writing
 	put file/data/<base64chunk> — decodes and writes a chunk of data
 	put file/end — closes the file, reports the final size
 
-	Plus two utility commands:
+
+	Plus two utility commands to get information about  or delete a file:
 
 	get file/list — returns JSON with all files, their sizes, and space info
 	put file/delete/<filename> — deletes a file
 
+	And two command for handling multi-part text files:
+
+	put file/part/<number> — select a part
+	get file/parts — list available parts
 
 
 
@@ -370,6 +375,15 @@ This command replaces an existing existing file with a new file, and place a lin
 
 This will append a line of text to the existing file. By using `PUT file/new/<line of text>` and then a series of `PUT file/append/<line of text>` commands you can upload a text file with many lines of text.
 
+`GET file/parts`
+
+This command will list available parts within the text file (see the User Manual how multi-part text files are defined how to create them).
+
+`PUT file/part/<number>`
+
+With this command you can select a part of a multi-part file to be used by the file player.
+
+
 ### Other files
 
 The protocol now also supports file upload of arbitrary files into the SPIFFS file system, also binary files, encoded as base64. This can be used, for example to upload mp3 files as replacements for the success and error sounds of the Echo Trainer.
@@ -387,7 +401,7 @@ This decodes and writes a chunk of a base64-encoded data. The chunks can be up t
 
 This closes the file, and reports the final size.
 
-`GET file/list` 
+`GET file/list`
 
 This command returns a JSON with all files, their sizes, and SPIFFS space info.
 

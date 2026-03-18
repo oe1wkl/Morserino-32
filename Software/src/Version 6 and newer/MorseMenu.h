@@ -40,7 +40,7 @@ extern GEN_TYPE generatorMode;
 extern KEYERSTATES keyerState;
 extern Decoder keyDecoder;
 extern Decoder audioDecoder;
-
+extern volatile int8_t remoteFilePartSelect;
 
 extern void keyOut(boolean,  boolean, int, int);
 extern void cleanStartSettings();

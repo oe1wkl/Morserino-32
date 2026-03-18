@@ -57,5 +57,4 @@ namespace MorseWiFi
     bool handleFileRead(String path);       // send the right file to the client (if it exists)
     void handleFileUpload();                // upload a new file to the SPIFFS
 }
-
 #endif /* MORSEWIFI_H_ */

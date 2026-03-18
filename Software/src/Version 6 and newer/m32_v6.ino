@@ -112,7 +112,7 @@ boolean repeatPlayCW = false;
 String playCWBuffer;
 uint8_t playCWIndex = 0;
 uint8_t playCWMaxIndex = 0;
-
+volatile int8_t remoteFilePartSelect = -1;   // -1 = no remote selection pending
 
 
 
@@ -2543,7 +2543,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
     delay(10);
   }
   reading /= 10.0;
-  int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 3.6; // 470k/1000k voltage divider was 3.43
+  int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 3.5; // 470k/1000k voltage divider was 3.43
   voltage_raw = reading; // store raw voltage reading for later use
   delay(1000);
   //DEBUG("Reading average: " + String(voltage_raw) );
@@ -3579,9 +3579,24 @@ void m32Get(String type, String token, String value) {                    /// GE
                 MorseJSON::jsonFileText();
             else if (token == "first line" || token == "")
                 MorseJSON::jsonFileFirstLine();
-          else if (token == "list")
+            else if (token == "list")
                 MorseJSON::jsonFileList();                               /// end file manager
-                }
+            else if (token == "parts") {
+          // List all file parts
+          if (MorsePreferences::filePartCount < 2) {
+              MorseJSON::jsonCreate("fileparts", "Single file (not multipart)", "");
+          } else {
+              StaticJsonDocument<512> doc;
+              JsonObject obj = doc.createNestedObject("fileparts");
+              obj["count"] = MorsePreferences::filePartCount;
+              obj["selected"] = MorsePreferences::filePartSelected + 1;
+              JsonArray arr = obj.createNestedArray("parts");
+              for (int i = 0; i < MorsePreferences::filePartCount; i++) {
+                  arr.add(MorsePreferences::fileParts[i].name);
+              }
+              serializeJson(doc, Serial);
+          }
+      }    }
     else if (type == "wifi") {
       MorseJSON::jsonGetWifi();
     }
@@ -3769,6 +3784,23 @@ void m32Put(String type, String token, String value) {                    /// PU
           MorseJSON::jsonOK();
         } else {
           MorseJSON::jsonError("File not found: " + filename);
+        }
+      }
+      else if (token == "part") {
+        uint8_t nr = value.toInt();
+        if (nr >= 1 && nr <= MorsePreferences::filePartCount) {
+            MorsePreferences::filePartSelected = nr - 1;
+            MorsePreferences::writeFilePartData();
+            remoteFilePartSelect = nr - 1;   // signal the selection loop
+            MorseJSON::jsonFilePart(
+                String(MorsePreferences::fileParts[nr - 1].name),
+                nr - 1,
+                MorsePreferences::filePartCount);
+        } else if (MorsePreferences::filePartCount == 0) {
+            MorseJSON::jsonError("File is not multipart");
+        } else {
+            MorseJSON::jsonError("Part number out of range (1-" +
+                String(MorsePreferences::filePartCount) + ")");
         }
       }
       else
@@ -4041,7 +4073,7 @@ void selectWifi(int i) {
         break;
   }
   MorseJSON::jsonOK();
-  ESP.restart();
+  /// ESP.restart(); should not be necessry anymore
 }
 
 

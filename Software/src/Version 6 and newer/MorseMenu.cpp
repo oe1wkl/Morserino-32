@@ -707,38 +707,54 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
 //
 // Returns the selected part index (0-based), or -1 if cancelled.
 // This follows the same pattern as the existing menu navigation.
- 
 int8_t MorseMenu::selectFilePart() {
     if (MorsePreferences::filePartCount < 2)
-        return 0;   // not multipart, just use the whole file
-    
+        return 0;
+ 
     int8_t selected = MorsePreferences::filePartSelected;
     int8_t count = MorsePreferences::filePartCount;
-    
+ 
     MorseOutput::clearDisplay();
     MorseOutput::printOnStatusLine(true, 0, "Select Chapter:   ");
-    
+ 
     int8_t lastDisplayed = -1;
-    
+    remoteFilePartSelect = -1;   // reset remote selection flag
+ 
     while (true) {
-        // Display current selection
+        // Check for remote selection via serial protocol
+        if (remoteFilePartSelect >= 0) {
+            selected = remoteFilePartSelect;
+            remoteFilePartSelect = -1;
+            MorsePreferences::filePartSelected = selected;
+            MorsePreferences::writeFilePartData();
+            return selected;
+        }
+ 
+        // Display current selection and report to serial client
         if (selected != lastDisplayed) {
             lastDisplayed = selected;
             MorseOutput::clearThreeLines();
-            
-            // Show previous, current (bold), and next
+ 
             if (selected > 0)
-                MorseOutput::printOnScroll(0, REGULAR, 0, 
+                MorseOutput::printOnScroll(0, REGULAR, 0,
                     String(MorsePreferences::fileParts[selected - 1].name));
-            
+ 
             MorseOutput::printOnScroll(1, BOLD, 0,
                 String(MorsePreferences::fileParts[selected].name));
-            
+ 
             if (selected < count - 1)
                 MorseOutput::printOnScroll(2, REGULAR, 0,
                     String(MorsePreferences::fileParts[selected + 1].name));
+ 
+            // Report to serial client (like menuDisplay does)
+            if (m32protocol) {
+                MorseJSON::jsonFilePart(
+                    String(MorsePreferences::fileParts[selected].name),
+                    selected,
+                    count);
+            }
         }
-        
+ 
         // Check encoder
         int t = checkEncoder();
         if (t) {
@@ -747,26 +763,31 @@ int8_t MorseMenu::selectFilePart() {
             if (selected < 0) selected = 0;
             if (selected >= count) selected = count - 1;
         }
-        
+ 
         // Check buttons
         Buttons::modeButton.Update();
         switch (Buttons::modeButton.clicks) {
             case 1:
-                // Select this part
                 MorsePreferences::filePartSelected = selected;
                 MorsePreferences::writeFilePartData();
+                if (m32protocol)
+                    MorseJSON::jsonActivate(ACT_SET);
                 return selected;
             case -1:
-                // Cancel — go back to menu
+                if (m32protocol)
+                    MorseJSON::jsonActivate(ACT_CANCELLED);
                 return -1;
         }
-        
+ 
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks == -1) {
-            return -1;   // long press vol = cancel
+            if (m32protocol)
+                MorseJSON::jsonActivate(ACT_CANCELLED);
+            return -1;
         }
-        
+ 
         checkShutDown(false);
         serialEvent();
     }
 }
+ 
