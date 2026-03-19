@@ -275,12 +275,8 @@ void MorseMenu::menu_() {
        }
 
 #ifdef CONFIG_MCP73871
-      if (powerpath_event) {
-        powerpath_event = false;
-        //volt = batteryVoltage();
-        MorseOutput::resetPowerpathDisplay();   // force redraw
-        // The next menuDisplay() or printOnScroll will show it
-      }
+       MorseOutput::checkPowerpathState();
+       MorseOutput::updateBatteryDisplay();
 #endif
 
 checkShutDown(false);                  // check for time out
@@ -362,6 +358,10 @@ boolean MorseMenu::menuExec() {                                          // retu
 
   kochActive = false;
   keyerState = IDLE_STATE;
+
+#ifdef CONFIG_MCP73871
+    MorseOutput::clearBatteryIcon();
+#endif
 
   switch (MorsePreferences::menuPtr) {
     case  _keyer:  /// keyer

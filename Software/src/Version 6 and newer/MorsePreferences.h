@@ -31,6 +31,9 @@ extern boolean m32protocol;
 extern int8_t hwConf;
 extern loops m32state;
 extern boolean goToMenu;
+extern volatile bool powerpath_event;
+//extern uint16_t volt;
+extern int16_t batteryVoltage();
 
 extern String cleanUpProSigns( String &input );
 //extern int16_t batteryVoltage();

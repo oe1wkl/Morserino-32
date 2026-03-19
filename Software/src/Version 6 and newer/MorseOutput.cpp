@@ -65,6 +65,7 @@ TLV320AIC31xx codec(&Wire);
 using namespace MorseOutput;
 
 extern uint16_t volt;
+extern double voltage_raw;
 
 char textBuffer[NoOfLines][2 * NoOfCharsPerLine + 1]; /// we need extra room for style markers (FONT_ATTRIB stored as characters to toggle on/off the style within a line)
 /// and 0 terminator
@@ -634,9 +635,6 @@ void MorseOutput::clearDisplay()
 {
   display.clear();
   display.display();
-  #ifdef CONFIG_MCP73871
-    resetPowerpathDisplay();
-  #endif
 }
 
 void MorseOutput::refreshDisplay()
@@ -950,9 +948,6 @@ if (how & BOLD)
     display.setColor(WHITE);
 
   display.drawString(x, y, mystring);
-  #ifdef CONFIG_MCP73871
-    displayPowerpathStatus(volt);    // volt is the global battery voltage
-  #endif
   display.display();
   resetTOT();
   return w;         // we return the actual width of the output, in case of converted UTF8 characters
@@ -965,9 +960,6 @@ void MorseOutput::clearScroll() {
   MorseOutput::printToScroll_internal(REGULAR, "", false);
   clearScrollBuffer();
   clearThreeLines();
-  #ifdef CONFIG_MCP73871
-    resetPowerpathDisplay();
-  #endif
 }
 
 
@@ -1103,10 +1095,8 @@ void MorseOutput::displayBatteryStatus(int v) {
  
   printOnScroll(2, REGULAR, 0, s);
  
-#ifdef CONFIG_MCP73871
-  // Show powerpath status at the bottom of the screen (separate from menu)
-  displayPowerpathStatus(v);
-#else
+#ifndef CONFIG_MCP73871
+  
   // Non-MCP builds: show voltage-based battery icon on line 2
   #define BATT_X       75
   #define BATT_W       35
@@ -1135,19 +1125,31 @@ void MorseOutput::displayBatteryStatus(int v) {
     display.fillRect(fill_x, fill_y, w, fill_h);
   }
 #endif
-#ifdef CONFIG_MCP73871
-  displayPowerpathStatus(v);
-#endif
+
 // 
   display.display();
 }
    
 #ifdef CONFIG_MCP73871
  
-static uint8_t lastPPS = 255;      // last drawn powerpath state
-static uint8_t lastBars = 255;     // last drawn bar count
  
-// Map voltage to 0-4 bars
+// ---- State variables ----
+uint8_t  MorseOutput::ppCurrentState = 255;
+uint8_t  MorseOutput::ppPreviousState = 255;
+bool     MorseOutput::batteryDisplayDirty = true;
+bool     MorseOutput::batteryIconVisible = false;
+ 
+static uint8_t lastDrawnPPS = 255;
+static uint8_t lastDrawnBars = 255;
+ 
+// ---- Read raw powerpath state from pins ----
+uint8_t MorseOutput::getPowerpathState() {
+    return (digitalRead(CONFIG_MCP_STAT1_PIN) << 2)
+         | (digitalRead(CONFIG_MCP_STAT2_PIN) << 1)
+         |  digitalRead(CONFIG_MCP_PG_PIN);
+}
+ 
+// ---- Map voltage to 0-4 bars ----
 static uint8_t voltageToBars(int v) {
     if (v < 3400) return 0;
     if (v < 3600) return 1;
@@ -1155,117 +1157,173 @@ static uint8_t voltageToBars(int v) {
     if (v < 4000) return 3;
     return 4;
 }
-
-uint8_t MorseOutput::getPowerpathState() {
-    static uint8_t lastStat = 255;
-    uint8_t v;
-    uint8_t stat = (digitalRead(CONFIG_MCP_STAT1_PIN) << 2)
-                 | (digitalRead(CONFIG_MCP_STAT2_PIN) << 1)
-                 |  digitalRead(CONFIG_MCP_PG_PIN);
-    if (stat != lastStat) {
-        //DEBUG("Powerpath state: " + String(stat));
-        //printOnStatusLine(true,0, String(stat));
-        if (lastStat == 2 && stat == 4) // Transition from CHARGING to FULL
-            v = 8;
-        else v = stat;
-        lastStat = stat;
-        return v;
-    } 
-    return stat;
+ 
+// ---- Fast state check — called in ALL three loops ----
+// Checks the ISR flag. If set, reads pins and compares with previous.
+// If state changed, sets batteryDisplayDirty.
+// If transition was charging→full, recalibrates vAdjust.
+// Takes microseconds (no ADC, no display).
+void MorseOutput::checkPowerpathState() {
+    if (!powerpath_event)
+        return;
+    powerpath_event = false;
+ 
+    uint8_t state = getPowerpathState();
+    if (state != ppCurrentState) {
+        ppPreviousState = ppCurrentState;
+        ppCurrentState = state;
+        batteryDisplayDirty = true;
+ 
+        // Recalibrate on charging→full transition
+        // At this moment the battery is exactly 4.2V
+        if (ppPreviousState == 2 && state == 4) {
+            // voltage_raw holds the last raw ADC reading (set by batteryVoltage())
+            // Compute what vAdjust should be so that the reported voltage = 4200mV
+            if (voltage_raw > 100) {    // sanity check
+                int16_t mvolt = ((voltage_raw * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 3.6;
+                if (mvolt > 3000) {
+                    uint8_t newVAdjust = (DEFAULT_VADJUST * 4200) / mvolt;
+                    if (abs(newVAdjust - MorsePreferences::vAdjust) >= 3) {
+                        MorsePreferences::vAdjust = newVAdjust;
+                        MorsePreferences::setVoltageAdjust(newVAdjust);
+                    }
+                }
+            }
+        }
+    }
 }
-
-void MorseOutput::displayPowerpathStatus(int v) {
-    uint8_t pps = MorseOutput::getPowerpathState();
-    uint8_t bars = voltageToBars(v);
+ 
+// ---- Slow display update — called in menu and preferences loops ONLY ----
+// Measures battery voltage (~50ms), redraws icon if needed.
+// Also does periodic re-measurement every 60 seconds.
+void MorseOutput::updateBatteryDisplay() {
+    static unsigned long lastMeasurement = 0;
+ 
+    // Periodic measurement every 60 seconds, or on state change
+    if (batteryDisplayDirty || millis() - lastMeasurement > 60000) {
+        lastMeasurement = millis();
+        volt = batteryVoltage();
+    }
+ 
+    // Read current state if not yet known
+    if (ppCurrentState == 255) {
+        ppCurrentState = getPowerpathState();
+    }
+ 
+    uint8_t pps = ppCurrentState;
+    uint8_t bars = voltageToBars(volt);
  
     // Only redraw if something changed
-    if (pps == lastPPS && bars == lastBars)
+    if (pps == lastDrawnPPS && bars == lastDrawnBars && !batteryDisplayDirty)
         return;
-    lastPPS = pps;
-    lastBars = bars;
  
-    // Icon position: bottom-right corner
-    // Battery body: 14×8, nub: 2×4, total: 16×8
-    /*const int iconW = 16;
-    const int iconH = 8;
-    const int bodyW = 14;
-    const int margin = 4;*/
-    const int iconW = 19;
-    const int iconH = 10;
-    const int bodyW = 17;
+    lastDrawnPPS = pps;
+    lastDrawnBars = bars;
+    batteryDisplayDirty = false;
+ 
+    drawBatteryIcon(pps, bars);
+    batteryIconVisible = true;
+    // No display.display() here — the loop's next screen update will flush it
+}
+ 
+// ---- Erase the battery icon ----
+void MorseOutput::clearBatteryIcon() {
+    if (!batteryIconVisible)
+        return;
+ 
+    const int bodyW = 26;
+    const int iconH = 16;
+    const int nubW = 4;
     const int margin = 4;
-    int ix = display.getWidth() - iconW - margin;
+    int ix = display.getWidth() - bodyW - nubW - margin;
     int iy = display.getHeight() - iconH - margin;
  
-    // Clear the icon area (black background)
     display.setColor(BLACK);
-    display.fillRect(ix - 1, iy - 1, iconW + 2, iconH + 2);
- 
-    // Draw battery outline in white
+    display.fillRect(ix - 1, iy - 1, bodyW + nubW + 3, iconH + 2);
     display.setColor(WHITE);
-    display.drawRect(ix, iy, bodyW, iconH);                    // body
-    display.fillRect(ix + bodyW, iy + 2, 2, iconH - 4);       // nub
- //DEBUG("PPS: " + String(pps) + " Bars: " + String(bars));
-    // Draw contents based on state
+ 
+    batteryIconVisible = false;
+    lastDrawnPPS = 255;     // force redraw when icon becomes visible again
+    lastDrawnBars = 255;
+}
+ 
+// ---- Draw the battery icon ----
+// Size: body 20×12 + nub 3×6 = total 23×12 pixels
+// Position: bottom-right corner of screen
+// Well below the scroll area (scroll ends at ~114px, icon at ~304px)
+void MorseOutput::drawBatteryIcon(uint8_t pps, uint8_t bars) {
+    const int bodyW = 26;
+    const int iconH = 16;
+    const int nubW = 4;
+    const int nubH = 8;
+    const int pad = 2;
+    const int margin = 4;
+ 
+    int ix = display.getWidth() - bodyW - nubW - margin;
+    int iy = display.getHeight() - iconH - margin;
+ 
+    // Clear icon area
+    display.setColor(BLACK);
+    display.fillRect(ix - 1, iy - 1, bodyW + nubW + 3, iconH + 2);
+ 
+    // Draw outline
+    display.setColor(WHITE);
+    display.drawRect(ix, iy, bodyW, iconH);
+    display.fillRect(ix + bodyW, iy + (iconH - nubH) / 2, nubW, nubH);
+ 
+    // Fill area dimensions
+    int fillX = ix + pad;
+    int fillY = iy + pad;
+    int fillMaxW = bodyW - 2 * pad;
+    int fillH = iconH - 2 * pad;
+ 
     switch (pps) {
-        case 2: {
-            // CHARGING: empty battery with lightning bolt inside
-            // Bolt shape using 1×1 and 1×2 fillRects, centered in body
-            int cx = ix + 7;      // center x of battery body
-            int cy = iy + 4;      // center y of battery body
-            display.fillRect(cx + 1, iy + 1, 2, 1);     //   ##
-            display.fillRect(cx,     iy + 2, 2, 1);      //  ##
-            display.fillRect(cx - 1, iy + 3, 4, 1);      // ####
-            display.fillRect(cx + 1, iy + 4, 2, 1);      //   ##
-            display.fillRect(cx,     iy + 5, 2, 1);      //  ##
+        case 2:  { // lightning bolt: charging
+            int cx = ix + bodyW / 2;
+            display.fillRect(cx + 1, iy + 2, 3, 2);
+            display.fillRect(cx - 1, iy + 4, 3, 2);
+            display.fillRect(cx - 3, iy + 6, 7, 2);
+            display.fillRect(cx + 1, iy + 8, 3, 2);
+            display.fillRect(cx - 1, iy + 10, 3, 2);
+            display.fillRect(cx - 2, iy + 12, 3, 2);
             break;
         }
         case 4:
-        case 8:
-            // FULL (charge complete): all 4 bars
+            // FULL: all 4 bars
             for (uint8_t i = 0; i < 4; i++) {
-                display.fillRect(ix + 2 + i * 3, iy + 2, 2, iconH - 4);
+                display.fillRect(fillX + i * 5, fillY, 4, fillH);
             }
             break;
         case 0:
-        case 6:
-            // FAULT / NO BATTERY: draw X inside
-            // Two small diagonals using 1×1 fillRects
-            for (int i = 0; i < 4; i++) {
-                display.fillRect(ix + 3 + i, iy + 2 + i, 1, 1);
-                display.fillRect(ix + 9 - i, iy + 2 + i, 1, 1);
+        case 6: {
+            // FAULT / NO BATTERY: X inside
+            for (int i = 0; i < fillH; i++) {
+                int x1 = fillX + (i * fillMaxW / fillH);
+                int x2 = fillX + fillMaxW - 1 - (i * fillMaxW / fillH);
+                display.fillRect(x1, fillY + i, 1, 1);
+                display.fillRect(x2, fillY + i, 1, 1);
             }
             break;
+        }
         case 3:
         case 7:
         default:
-            // ON BATTERY / LOW / other: show voltage bars
+            // ON BATTERY: voltage bars
             for (uint8_t i = 0; i < bars; i++) {
-                display.fillRect(ix + 2 + i * 3, iy + 2, 2, iconH - 4);
-            }
-            // If zero bars (critically low), blink the outline
-            if (bars == 0) {
-                static bool lowBlink = false;
-                lowBlink = !lowBlink;
-                if (lowBlink) {
-                    display.setColor(BLACK);
-                    display.drawRect(ix, iy, bodyW, iconH);
-                    display.setColor(WHITE);
-                }
+                display.fillRect(fillX + i * 5, fillY, 4, fillH);
             }
             break;
     }
  
     display.setColor(WHITE);
-    // NO display.display() — let the next regular update show it
 }
- 
  
 void MorseOutput::resetPowerpathDisplay() {
-    lastPPS = 255;
-    lastBars = 255;
+    batteryDisplayDirty = true;
+    lastDrawnPPS = 255;
+    lastDrawnBars = 255;
 }
- 
+  
 #endif  // CONFIG_MCP73871
  
 void MorseOutput::displayEmptyBattery(void (*f)()) {                                /// display a warning and go to (return to) deep sleep
@@ -1378,9 +1436,6 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   display.setColor(BLACK);
   display.drawString(xpos * display.getStringWidth("A"), 0, string);
   display.setColor(WHITE);
-  #ifdef CONFIG_MCP73871
-    displayPowerpathStatus(volt);
-  #endif
   display.display();
   resetTOT();
 }

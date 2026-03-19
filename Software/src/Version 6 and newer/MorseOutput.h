@@ -70,10 +70,19 @@ namespace MorseOutput
   void dispLoraLogo();
   void dispWifiLogo();
 #ifdef CONFIG_MCP73871
-  void displayPowerpathStatus(int v);
+  extern uint8_t  ppCurrentState;
+  extern uint8_t  ppPreviousState;
+  extern bool     batteryDisplayDirty;
+  extern bool     batteryIconVisible;
+ 
+  uint8_t getPowerpathState();          // read raw pin state
+  void checkPowerpathState();           // fast: check ISR flag, update state
+  void updateBatteryDisplay();          // slow: measure + redraw (menu/prefs only)
+  void drawBatteryIcon(uint8_t pps, uint8_t bars);
+  void clearBatteryIcon();
   void resetPowerpathDisplay();
-  uint8_t getPowerpathState();
 #endif
+
 #ifdef CONFIG_DISPLAYWRAPPER
   void dispM32Logo();
   void setTheme (uint8_t theme);

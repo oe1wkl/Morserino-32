@@ -735,8 +735,12 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             MorseOutput::printOnScroll(2, REGULAR, 0, " ");
 
             MorseOutput::refreshDisplay();
-         }    // end if (encoderPos)
-         checkShutDown(false);         // check for time out
+          }    // end if (encoderPos)
+#ifdef CONFIG_MCP73871
+          MorseOutput::checkPowerpathState();
+          MorseOutput::updateBatteryDisplay();
+#endif
+          checkShutDown(false);         // check for time out
   } // end while - we leave as soon as the button has been pressed long
 }   // end function setupKeyerPreferences()
 
@@ -1087,6 +1091,10 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
             displayValueLine(pos, itemLine, false);          /// now display the value
 	          MorseOutput::refreshDisplay(); // update the display
          }      // end if     (checkEncoder)
+        #ifdef CONFIG_MCP73871
+         MorseOutput::checkPowerpathState();
+         MorseOutput::updateBatteryDisplay();
+        #endif
          checkShutDown(false);         // check for time out
     }    // end while(true)
 }   // end of function adjustKeyerPreference

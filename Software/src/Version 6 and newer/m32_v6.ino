@@ -1043,11 +1043,7 @@ if (morseState == morseKeyer &&
 #endif
 
 #ifdef CONFIG_MCP73871
-       if (powerpath_event) {
-           powerpath_event = false;
-           //volt = batteryVoltage();
-           MorseOutput::resetPowerpathDisplay();
-       }
+    MorseOutput::checkPowerpathState();
 #endif
 
 }     /////////////////////// end of loop() /////////
@@ -2540,7 +2536,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   for (int i = 0; i<10; i++) {
     reading += (1750.0 * (analogRead(CONFIG_BATMEAS_PIN) / 4095.0)) ; // 6 db atten = 1750mV max
      //DEBUG("Reading " + String(i) + ": " + String(reading) );
-    delay(10);
+    delay(5);
   }
   reading /= 10.0;
   int16_t mvolt = ((reading  * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 3.5; // 470k/1000k voltage divider was 3.43
@@ -2549,7 +2545,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   //DEBUG("Reading average: " + String(voltage_raw) );
   //DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
   //DEBUG("ReadVoltage mv:" + String(mvolt));
-  uint8_t powerpath_state = MorseOutput::getPowerpathState();
+  /* uint8_t powerpath_state = MorseOutput::getPowerpathState();
   if (powerpath_state == 8) { // this means we had a transition from charging to full
     DEBUG("Powerpath transition to full detected, adjusting vAdjust...");
     uint8_t newVAdjust = (DEFAULT_VADJUST *  4200) / mvolt; // 210 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
@@ -2562,7 +2558,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 
     int16_t corrected_mvolt = (newVAdjust / DEFAULT_VADJUST) * mvolt;
     return corrected_mvolt;
-  }
+  } */
   return mvolt;
 #else
   return 0; // no battery measurement in pocketwroom PCB < 4.1
@@ -2602,26 +2598,10 @@ double ReadVoltage(byte pin){
 
 
 void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw even if there was no time-out
-#ifdef CONFIG_MCP73871
-  static unsigned long lastBattMeasure = 0;
-#endif
-
   unsigned long timeOut;
 
   if (MorsePreferences::pliste[posTimeOut].value || enforce) {
       timeOut = 300000UL * MorsePreferences::pliste[posTimeOut].value;
-#ifdef CONFIG_MCP73871
-      if ((millis() - MorseOutput::TOTcounter) > 1000) {
-            MorseOutput::displayPowerpathStatus(volt);
-        // Periodic battery measurement — every 5 minutes
-        if (millis() - lastBattMeasure > 300000) {
-            lastBattMeasure = millis();
-            volt = batteryVoltage();
-            MorseOutput::resetPowerpathDisplay();   // force icon redraw on next screen update
-            MorseOutput::displayPowerpathStatus(volt);
-        }
-      }
-#endif
     if (m32protocol && !enforce)                          /// no time-out while m32protocol is active unless forced
       return;
     if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {
