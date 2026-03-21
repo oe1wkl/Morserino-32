@@ -16,6 +16,9 @@
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
+#ifdef CONFIG_CW_GAME
+  #include "MorseGame.h"
+#endif
 
 #ifdef LORA_RADIOLIB
 #include <RadioLib.h>
@@ -30,6 +33,10 @@ extern RADIO radio;
 extern volatile bool powerpath_event;
 extern uint16_t volt;
 extern int16_t batteryVoltage();
+#endif
+
+#ifdef CONFIG_CW_GAME
+#include "MorseGame.h"
 #endif
 
 using namespace MorseMenu;
@@ -79,18 +86,21 @@ const char* const menuText[menuN]  = {
     "WiFi Trx",
     "iCW/Ext Trx",
 
-  "CW Decoder",     // 34
+  "CW Decoder",
+#ifdef CONFIG_CW_GAME
+  "Games",
+    "Morse Invaders",
+#endif
 
-  "WiFi Functions", // 35
+  "WiFi Functions",
     "Disp MAC Addr",
     "Config WiFi",
     "Check WiFi",
     "Upload File",
-    "Update Firmw", //40
-    "Wifi Select", //41
+    "Update Firmw", 
+    "Wifi Select", 
 
-
-  "Go To Sleep" } ; // 42
+  "Go To Sleep" } ; 
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
 
@@ -138,9 +148,16 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_trxLora,_trxIcw,_trx,0},                          // 32 wifi  -e
   {1,_trxWifi,_trxLora,_trx,0},                         // 33 icw  -e
  #endif
-  {0,_trx,_wifi,_dummy,0},                              // 34 decoder  -e
-  {0,_decode,_goToSleep,_dummy,_wifi_mac},              // 35 WiFi
-  {1,_wifi_select,_wifi_config,_wifi,0},                // 36 Disp Mac  -e!!
+#ifdef CONFIG_CW_GAME
+  {0,_trx,_games,_dummy,0},                               // decoder  -e
+  {0,_decode,_wifi,_dummy,_morseInvaders},                 // games
+  {1,_morseInvaders,_morseInvaders,_games,0},              // morse invaders  -e
+  {0,_games,_goToSleep,_dummy,_wifi_mac},                  // WiFi
+#else
+  {0,_trx,_wifi,_dummy,0},                                // decoder  -e
+  {0,_decode,_goToSleep,_dummy,_wifi_mac},                 // WiFi
+#endif
+   {1,_wifi_select,_wifi_config,_wifi,0},                // 36 Disp Mac  -e!!
   {1,_wifi_mac,_wifi_check,_wifi,0},                    // 37 Config Wifi    --NE!
   {1,_wifi_config,_wifi_upload,_wifi,0},                // 38 Check WiFi  -e!!
   {1,_wifi_check,_wifi_update,_wifi,0},                 // 39 Upload File    --NE!
@@ -238,7 +255,6 @@ void MorseMenu::menu_() {
                   m32state = menu_loop;
                   break;
           case 1: // check if we have a submenu or if we execute the selection
-                  //DEBUG("newMP: " + String(MorsePreferences::newMenuPtr) + " navi: " + String(menuNav[MorsePreferences::newMenuPtr][naviDown]));
                   if (menuNav[MorsePreferences::newMenuPtr][naviDown] == 0) {
                       MorsePreferences::menuPtr = MorsePreferences::newMenuPtr;
                       disp = 0;
@@ -256,11 +272,12 @@ void MorseMenu::menu_() {
                       MorsePreferences::newMenuPtr = menuNav[MorsePreferences::newMenuPtr][naviUp];
           default: break;
         }
-
        if ((t=checkEncoder())) {
           MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);         /// click
           MorsePreferences::newMenuPtr =  menuNav [MorsePreferences::newMenuPtr][(t == -1) ? naviLeft : naviRight];
-       }
+          MorseMenu::menuDisplay(MorsePreferences::newMenuPtr);
+          m32state = menu_loop;       
+        }
 
        Buttons::volButton.Update();
 
@@ -344,7 +361,7 @@ String MorseMenu::getMenuPath(uint8_t ptr) {
 }
 
 
-boolean MorseMenu::menuExec() {                                          // return true if we should  leave menu after execution, true if we should stay in menu
+boolean MorseMenu::menuExec() {       // return true if we should  leave menu after execution, false if we should stay in menu
 
   uint32_t wcount = 0;
 //  String peer;
@@ -427,10 +444,6 @@ boolean MorseMenu::menuExec() {                                          // retu
                       if (!setupWifi())
                         return false; 
                   }
-                //  if (!MorsePreferences::useEspNow) 
-                //    if (!setupWifi())
-                //      return false;
-
                 return true;
                 break;
       case  _echoRand:
@@ -586,7 +599,13 @@ boolean MorseMenu::menuExec() {                                          // retu
                   MorseJSON::jsonCreate("message", "Start CW Transceiver", "");
                 clearPaddleLatches();
                 goto setupDecoder;
-
+#ifdef CONFIG_CW_GAME
+      case _morseInvaders:
+                MorseGame::run();
+                m32state = menu_loop;
+                Buttons::modeButton.clicks = 0;
+                return false;
+#endif
       case  _decode: /// decoder
                 MorsePreferences::setCurrentOptions(MorsePreferences::decoderOptions, MorsePreferences::decoderOptionsSize);
                 morseState = morseDecoder;
@@ -689,18 +708,19 @@ void MorseMenu::showStartDisplay(const String& l0, const String& l1, const Strin
 boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
   if (menuNav[ptr][naviDown] == 0) {
     switch (ptr) {
-      case 37:                                        // these WIFi related functions cannot be executed remotely, but must be done directly on the device
-      case 39:
-      case 40:
-      case 41:
-        return false;
+      case _wifi_config:      // these WiFi functions cannot be executed remotely
+      case _wifi_upload:
+      case _wifi_update:
+      case _wifi_select:
+      case _games:            // nor the games that depend on visual clues
+      case _morseInvaders:
+                          return false;
     }
     return true;
   }
   else
     return false;
 }
-
 // This function is called from the file player mode when a multipart file is selected. 
 // When the file player is selected and the file is multipart, show a
 // scrollable list of part names. The user selects with encoder + click.

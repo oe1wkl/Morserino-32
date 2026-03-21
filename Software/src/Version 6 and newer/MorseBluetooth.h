@@ -20,7 +20,7 @@
 namespace MorseBluetooth
 {
 	// Forward declarations
-	inline boolean isBLErunning = false;
+	extern boolean isBLErunning;
 	void initializeBluetooth(void);
 	void stopBluetooth(void);
 	void bluetoothTypeLCTRL(bool ctrl);

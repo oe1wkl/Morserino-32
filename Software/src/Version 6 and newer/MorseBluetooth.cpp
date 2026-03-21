@@ -31,6 +31,8 @@
 #define CTRL_KEY_MODIFIER	0x1
 #define US_KEYBOARD
 
+boolean MorseBluetooth::isBLErunning = false;
+
 using namespace MorseBluetooth;
 
 // Forward declarations

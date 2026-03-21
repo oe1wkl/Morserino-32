@@ -67,6 +67,10 @@ void cleanupScreen();
 void showStartDisplay(const String&, const String&, const String&, int);
 boolean isRemotelyExecutable(uint8_t);
 int8_t selectFilePart();
+#ifdef CONFIG_CW_GAME
+ void startGame();
+#endif
+ 
 }
 
 #endif /* #ifndef MORSEMENU_H_ */

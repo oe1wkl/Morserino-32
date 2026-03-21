@@ -43,6 +43,9 @@
 #include "MorseJSON.h"        // JSON handling for file upload and serial communication
 #include <mbedtls/base64.h>     // for base64 decoding (built into ESP32)
 
+#ifdef CONFIG_CW_GAME
+#include "MorseGame.h"
+#endif
 
 #ifdef LORA_RADIOLIB
 #include <RadioLib.h>
@@ -2190,7 +2193,19 @@ void fetchNewWord() {
 
 
 void displayDecodedMorse(String symbol, boolean keyed) {
-    // Check for "eeee" error sequence
+#ifdef CONFIG_CW_GAME
+    // In game mode, redirect the decoded character to the game buffer
+    // instead of writing to the scroll display
+
+    if (gameMode) {
+        if (symbol.length() == 1) {
+            gameCharBuffer = symbol.charAt(0);
+        }
+        // Don't write to display, don't accumulate echoResponse
+        return;
+    }
+#endif
+    // Check for "eeee" error sequence    
     if (symbol == "e" && echoResponse.endsWith("eee")) {
         symbol = "<err>";
     }
