@@ -752,7 +752,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   const int maxLength = 14;
 
-  MorseOutput::clearDisplay();
+  // MorseOutput::clearDisplay();
 
   if (pos < posKochFilter)
     topLine = "Set Preferences:";
@@ -769,6 +769,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
 
   topLine += emptyLine.substring(0,topMax - topLine.length());
   MorseOutput::clearStatusLine();
+  MorseOutput::clearThreeLines();
   MorseOutput::printOnStatusLine( true, 0, topLine);
 
   itemLine = (pos <= posSerialOut ? MorsePreferences::pliste[pos].parName : extraItems[pos-posKochFilter]);

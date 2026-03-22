@@ -631,10 +631,13 @@ void MorseOutput::setTheme (uint8_t theme) {
 
 #endif
 
-void MorseOutput::clearDisplay()
-{
-  display.clear();
-  display.display();
+void MorseOutput::clearDisplay() {
+    display.clear();
+    display.display();
+#ifdef CONFIG_MCP73871
+    batteryDisplayDirty = true;
+    batteryIconVisible = false;
+#endif
 }
 
 void MorseOutput::refreshDisplay()
@@ -1198,87 +1201,73 @@ void MorseOutput::checkPowerpathState() {
 // Also does periodic re-measurement every 60 seconds.
 void MorseOutput::updateBatteryDisplay() {
     static unsigned long lastMeasurement = 0;
- 
-    // Periodic measurement every 60 seconds, or on state change
-    if (batteryDisplayDirty || millis() - lastMeasurement > 60000) {
+
+    if (millis() - lastMeasurement > 60000) {
         lastMeasurement = millis();
         volt = batteryVoltage();
     }
- 
-    // Read current state if not yet known
-    if (ppCurrentState == 255) {
+
+    if (ppCurrentState == 255)
         ppCurrentState = getPowerpathState();
-    }
- 
+
     uint8_t pps = ppCurrentState;
     uint8_t bars = voltageToBars(volt);
- 
-    // Only redraw if something changed
+
     if (pps == lastDrawnPPS && bars == lastDrawnBars && !batteryDisplayDirty)
         return;
- 
+
     lastDrawnPPS = pps;
     lastDrawnBars = bars;
     batteryDisplayDirty = false;
- 
+
     drawBatteryIcon(pps, bars);
     batteryIconVisible = true;
-    // No display.display() here — the loop's next screen update will flush it
 }
  
 // ---- Erase the battery icon ----
 void MorseOutput::clearBatteryIcon() {
-    if (!batteryIconVisible)
-        return;
- 
-    const int bodyW = 26;
-    const int iconH = 16;
-    const int nubW = 4;
-    const int margin = 4;
-    int ix = display.getWidth() - bodyW - nubW - margin;
-    int iy = display.getHeight() - iconH - margin;
- 
-    display.setColor(BLACK);
-    display.fillRect(ix - 1, iy - 1, bodyW + nubW + 3, iconH + 2);
-    display.setColor(WHITE);
- 
+    if (!batteryIconVisible) return;
+
+    lgfx::LGFX_Device* lcd = display.getLGFX();
+    if (!lcd) return;
+
+    const int bodyW = 26, iconH = 16, nubW = 4, margin = 2;
+    int ix = lcd->width() - bodyW - nubW - margin;
+    int iy = (SCROLL_TOP - iconH) / 2;
+
+    lcd->startWrite();
+    lcd->fillRect(ix - 1, iy - 1, bodyW + nubW + 3, iconH + 2, TFT_WHITE);
+    lcd->endWrite();
+
     batteryIconVisible = false;
-    lastDrawnPPS = 255;     // force redraw when icon becomes visible again
+    lastDrawnPPS = 255;
     lastDrawnBars = 255;
 }
  
 // ---- Draw the battery icon ----
 // Size: body 20×12 + nub 3×6 = total 23×12 pixels
-// Position: bottom-right corner of screen
+// Position: top-right corner of screen
 // Well below the scroll area (scroll ends at ~114px, icon at ~304px)
+
 void MorseOutput::drawBatteryIcon(uint8_t pps, uint8_t bars) {
-    const int bodyW = 26;
-    const int iconH = 16;
-    const int nubW = 4;
-    const int nubH = 8;
-    const int pad = 2;
-    const int margin = 4;
- 
+    const int bodyW = 26, iconH = 16, nubW = 4, nubH = 8, pad = 2, margin = 2;
     int ix = display.getWidth() - bodyW - nubW - margin;
-    int iy = display.getHeight() - iconH - margin;
- 
-    // Clear icon area
-    display.setColor(BLACK);
-    display.fillRect(ix - 1, iy - 1, bodyW + nubW + 3, iconH + 2);
- 
-    // Draw outline
+    int iy = (SCROLL_TOP - iconH) / 2;
+    // Clear icon area with status line background colour
     display.setColor(WHITE);
+    display.fillRect(ix - 1, iy, bodyW + nubW + 3, iconH + 1);
+
+    // Draw in status line text colour
+    display.setColor(BLACK);
     display.drawRect(ix, iy, bodyW, iconH);
     display.fillRect(ix + bodyW, iy + (iconH - nubH) / 2, nubW, nubH);
- 
-    // Fill area dimensions
+
     int fillX = ix + pad;
     int fillY = iy + pad;
-    int fillMaxW = bodyW - 2 * pad;
     int fillH = iconH - 2 * pad;
- 
+
     switch (pps) {
-        case 2:  { // lightning bolt: charging
+        case 2: {
             int cx = ix + bodyW / 2;
             display.fillRect(cx + 1, iy + 2, 3, 2);
             display.fillRect(cx - 1, iy + 4, 3, 2);
@@ -1289,33 +1278,23 @@ void MorseOutput::drawBatteryIcon(uint8_t pps, uint8_t bars) {
             break;
         }
         case 4:
-            // FULL: all 4 bars
-            for (uint8_t i = 0; i < 4; i++) {
+            for (uint8_t i = 0; i < 4; i++)
                 display.fillRect(fillX + i * 5, fillY, 4, fillH);
-            }
             break;
         case 0:
-        case 6: {
-            // FAULT / NO BATTERY: X inside
+        case 6:
             for (int i = 0; i < fillH; i++) {
-                int x1 = fillX + (i * fillMaxW / fillH);
-                int x2 = fillX + fillMaxW - 1 - (i * fillMaxW / fillH);
-                display.fillRect(x1, fillY + i, 1, 1);
-                display.fillRect(x2, fillY + i, 1, 1);
+                display.fillRect(fillX + (i * (bodyW - 2*pad) / fillH), fillY + i, 1, 1);
+                display.fillRect(fillX + (bodyW - 2*pad) - 1 - (i * (bodyW - 2*pad) / fillH), fillY + i, 1, 1);
             }
             break;
-        }
-        case 3:
-        case 7:
         default:
-            // ON BATTERY: voltage bars
-            for (uint8_t i = 0; i < bars; i++) {
+            for (uint8_t i = 0; i < bars; i++)
                 display.fillRect(fillX + i * 5, fillY, 4, fillH);
-            }
             break;
     }
- 
-    display.setColor(WHITE);
+
+    display.setColor(WHITE);  // restore
 }
  
 void MorseOutput::resetPowerpathDisplay() {
@@ -1438,17 +1417,24 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   display.setColor(WHITE);
   display.display();
   resetTOT();
+  #ifdef CONFIG_MCP73871
+  //  batteryDisplayDirty = true;    // redraw icon on next updateBatteryDisplay
+  #endif
 }
 
 
 
-void MorseOutput::clearStatusLine() {              // the status line is at the top, and inverted!
-  display.setFont(DialogInput_plain_12);
-  display.setColor(WHITE);
-  display.fillRect(0, 0, display.getWidth(), LINE_HEIGHT);
-  display.setColor(BLACK);
-
-  display.display();
+void MorseOutput::clearStatusLine() {
+    display.setFont(DialogInput_plain_12);
+    display.setColor(WHITE);
+#ifdef CONFIG_MCP73871
+    if (batteryIconVisible)
+        display.fillRect(0, 0, display.getWidth() - 34, SCROLL_TOP);
+    else
+#endif
+        display.fillRect(0, 0, display.getWidth(), SCROLL_TOP);
+    display.setColor(BLACK);
+    display.display();
 }
 
 /// clear the three lines of the display area
