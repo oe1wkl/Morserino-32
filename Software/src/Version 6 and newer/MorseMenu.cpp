@@ -712,9 +712,11 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
       case _wifi_upload:
       case _wifi_update:
       case _wifi_select:
+#ifdef CONFIG_CW_GAME
       case _games:            // nor the games that depend on visual clues
       case _morseInvaders:
-                          return false;
+#endif
+      return false;
     }
     return true;
   }
