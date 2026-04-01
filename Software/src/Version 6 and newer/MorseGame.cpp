@@ -704,6 +704,7 @@ static void stateMenu() {
         if (Buttons::volButton.clicks == -1) { game.state = GAME_EXIT; return; }
 
         serialEvent();
+        checkShutDown(false);
         delay(10);
     }
 }
@@ -760,6 +761,7 @@ static void statePlaying() {
         // Keyer input
         char decoded = pollKeyedChar();
         if (decoded) {
+            MorseOutput::resetTOT();
             lastDecodedChar = decoded;
             int match = findMatchingInvader(decoded);
             if (match >= 0) {
@@ -851,6 +853,7 @@ static void statePaused() {
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks == -1) { game.state = GAME_EXIT; return; }
         serialEvent();
+        checkShutDown(false);
         delay(20);
     }
 }
