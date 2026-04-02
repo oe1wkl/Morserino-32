@@ -326,14 +326,26 @@ enum morserinoMode              // the states the morserino can be in - selected
       morseKeyer, loraTrx, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid
   };
 
-const uint8_t menuN = 46;     // was 43, now +3 (Games ...) - needs to be adapted when adding new menu items
+// Base menu count: 43 entries (indices 0..42, classic M32 with LoRa, no Games)
+const uint8_t menuN = 43
+#ifdef LORA_DISABLED
+    - 1    // no LoRa Trx entry
+#endif
+#ifdef CONFIG_CW_GAME
+    + 3    // Games, Morse Invaders, Fight the Pileup
+#endif
+    ;
 
 enum menuNo
   {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords, _genCalls, _genMixed, _genPlayer,
         _echo, _echoRand, _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
         _koch, _kochSel, _kochLearn, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
         _kochGenMixed, _kochEcho, _kochEchoRand, _kochEchoAbb, _kochEchoWords, _kochEchoMixed, _kochEchoAdaptive,
-        _trx, _trxLora, _trxWifi, _trxIcw, _decode,
+        _trx,
+#ifndef LORA_DISABLED
+        _trxLora,
+#endif
+        _trxWifi, _trxIcw, _decode,
 #ifdef CONFIG_CW_GAME
         _games, _morseInvaders, _fightPileup,
 #endif

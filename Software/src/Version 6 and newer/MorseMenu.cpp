@@ -84,7 +84,9 @@ const char* const menuText[menuN]  = {
       "Adapt. Rand.",
 
   "Transceiver",    // 30
+#ifndef LORA_DISABLED
     "LoRa Trx",
+#endif
     "WiFi Trx",
     "iCW/Ext Trx",
 
@@ -140,16 +142,15 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed  -e
   {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive  -e
 #ifdef LORA_DISABLED
-  {0,_koch,_decode,_dummy,_trxWifi},                    // 30 transceiver
-  {1,_trxIcw,_trxWifi,_trx,0},                          // 31 lora  -e
-  {1,_trxIcw,_trxIcw,_trx,0},                          // 32 wifi  -e
-  {1,_trxWifi,_trxWifi,_trx,0},                         // 33 icw  -e
+  {0,_koch,_decode,_dummy,_trxWifi},                     // transceiver (no LoRa, first child is WiFi)
+  {1,_trxIcw,_trxIcw,_trx,0},                           // wifi trx  -e  (2-item wrap)
+  {1,_trxWifi,_trxWifi,_trx,0},                          // icw/ext trx  -e  (2-item wrap)
 #else
-  {0,_koch,_decode,_dummy,_trxLora},                    // 30 transceiver
-  {1,_trxIcw,_trxWifi,_trx,0},                          // 31 lora  -e
-  {1,_trxLora,_trxIcw,_trx,0},                          // 32 wifi  -e
-  {1,_trxWifi,_trxLora,_trx,0},                         // 33 icw  -e
- #endif
+  {0,_koch,_decode,_dummy,_trxLora},                     // transceiver (has LoRa)
+  {1,_trxIcw,_trxWifi,_trx,0},                           // lora trx  -e
+  {1,_trxLora,_trxIcw,_trx,0},                           // wifi trx  -e
+  {1,_trxWifi,_trxLora,_trx,0},                          // icw/ext trx  -e
+#endif
 #ifdef CONFIG_CW_GAME
   {0,_trx,_games,_dummy,0},                               // decoder  -e
   {0,_decode,_wifi,_dummy,_morseInvaders},                 // games
@@ -551,6 +552,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 // re-run the setup, this will reset the character probabilities
                 koch.setup();
                 goto startEcho;
+#ifndef LORA_DISABLED
       case  _trxLora: // LoRa Transceiver
                 generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::loraTrxOptions, MorsePreferences::loraTrxOptionsSize);
@@ -564,6 +566,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 executeNow = false;
                 return true;
                 break;
+#endif
       case  _trxWifi: // Wifi Transceiver
                 generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions, MorsePreferences::wifiTrxOptionsSize);
@@ -821,4 +824,3 @@ int8_t MorseMenu::selectFilePart() {
         serialEvent();
     }
 }
- 

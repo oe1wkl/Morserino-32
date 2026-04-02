@@ -3864,7 +3864,7 @@ void m32Put(String type, String token, String value) {                    /// PU
         }
         else {
           uint8_t nr = (char) value.toInt();
-          if (nr > 0 && nr <= 42 && MorseMenu::isRemotelyExecutable(nr)) {
+          if (nr > 0 && nr < menuN && MorseMenu::isRemotelyExecutable(nr)) {
               MorsePreferences::newMenuPtr = nr;
               goToMenu = false;
               if (m32state == menu_loop) {
@@ -3880,7 +3880,7 @@ void m32Put(String type, String token, String value) {                    /// PU
       }
       else if (token == "set") {
         uint8_t nr = (char) value.toInt();
-        if (nr > 0 && nr <= 42) {
+        if (nr > 0 && nr < menuN) {
             goToMenu = true;
             MorsePreferences::menuPtr = nr;
             MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
