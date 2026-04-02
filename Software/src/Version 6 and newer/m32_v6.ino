@@ -45,6 +45,7 @@
 
 #ifdef CONFIG_CW_GAME
 #include "MorseGame.h"
+#include "MorsePileup.h"
 #endif
 
 #ifdef LORA_RADIOLIB
@@ -2812,6 +2813,25 @@ void onWifiReceive(AsyncUDPPacket packet) {
 
 void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed int rssi, bool broadcast)
 {
+    // Pileup game: intercept and decode MOPP packet to text
+    if (pileupMode && len > 2 && broadcast) {
+        // Decode MOPP elements from packet
+        String elements = "";
+        for (int i = 2; i < len; i++) {
+            uint8_t c = data[i];
+            int startBit = (i == 2) ? 2 : 0;  // byte 2 has 2 bits used by WPM
+            for (int j = startBit; j < 4; j++) {
+                uint8_t elem = (c >> (2 * (3 - j))) & 0x03;
+                if (elem == 3) goto pileup_eow;  // end of word
+                elements += (char)(elem + '0');
+            }
+        }
+        pileup_eow:
+        pileupRxText = CWwordToClearText(elements);
+        pileupRxReady = true;
+        return;
+    }
+
     if (morseState != wifiTrx)
     return;
   u_int maxl = sizeof(cwTxBuffer) < len ? sizeof(cwTxBuffer) : len;
@@ -3813,7 +3833,7 @@ void m32Put(String type, String token, String value) {                    /// PU
 
       if (value.indexOf("/") == 1)
         value = value.substring(2);
-      else value == "";
+      else value = "";
 
       if (token == "select") 
         selectWifi(nr);
@@ -4067,8 +4087,9 @@ void selectWifi(int i) {
                MorsePreferences::useEspNow = false;
         break;
   }
+  MorsePreferences::wlanChoice = i;
+  MorsePreferences::writePreferences("morserino");
   MorseJSON::jsonOK();
-  /// ESP.restart(); should not be necessry anymore
 }
 
 

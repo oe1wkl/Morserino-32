@@ -18,6 +18,8 @@
 #include "MorseJSON.h"
 #ifdef CONFIG_CW_GAME
   #include "MorseGame.h"
+  #include "MorsePileup.h"
+
 #endif
 
 #ifdef LORA_RADIOLIB
@@ -89,7 +91,7 @@ const char* const menuText[menuN]  = {
   "CW Decoder",
 #ifdef CONFIG_CW_GAME
   "Games",
-    "Morse Invaders",
+    "Morse Invaders", "Fight Pileup",
 #endif
 
   "WiFi Functions",
@@ -151,8 +153,9 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #ifdef CONFIG_CW_GAME
   {0,_trx,_games,_dummy,0},                               // decoder  -e
   {0,_decode,_wifi,_dummy,_morseInvaders},                 // games
-  {1,_morseInvaders,_morseInvaders,_games,0},              // morse invaders  -e
-  {0,_games,_goToSleep,_dummy,_wifi_mac},                  // WiFi
+  {1,_fightPileup,_fightPileup,_games,0},                  // morse invaders  -e
+  {1,_morseInvaders,_morseInvaders,_games,0},               // fight pileup  -e
+  {0,_games,_goToSleep,_dummy,_wifi_mac},                   // WiFi
 #else
   {0,_trx,_wifi,_dummy,0},                                // decoder  -e
   {0,_decode,_goToSleep,_dummy,_wifi_mac},                 // WiFi
@@ -605,6 +608,11 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
                 return false;
+            case _fightPileup:
+                MorsePileup::run();
+                m32state = menu_loop;
+                Buttons::modeButton.clicks = 0;
+                return false;
 #endif
       case  _decode: /// decoder
                 MorsePreferences::setCurrentOptions(MorsePreferences::decoderOptions, MorsePreferences::decoderOptionsSize);
@@ -715,6 +723,7 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
 #ifdef CONFIG_CW_GAME
       case _games:            // nor the games that depend on visual clues
       case _morseInvaders:
+      case _fightPileup:
 #endif
       return false;
     }

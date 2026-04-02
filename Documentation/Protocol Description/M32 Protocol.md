@@ -413,7 +413,9 @@ This command deletes a file from the SPIFFS file system.
 
 `GET wifi`				
 
-This command will return the currently defined wifi entries (the properties "ssid" and "trxpeer", but NOT "password" (!), and if the property "selected" (type Boolean) is true, this entry will be used selected for connection.
+This command will return the currently defined wifi entries (the properties "ssid" and "trxpeer", but NOT "password" (!), and if the property "selected" (type Boolean) is true, this entry will be used selected for connection. There is now also a field that indicates if EspNow is selected for WiFi (this is only true when selected is false for all other WiFi options):
+
+	{"wifi":[{"ssid":"...","trxpeer":"...","selected":false}, ...], "espnow":true, "wlanChoice":0}
 
 Example:
 

@@ -326,7 +326,7 @@ enum morserinoMode              // the states the morserino can be in - selected
       morseKeyer, loraTrx, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid
   };
 
-const uint8_t menuN = 45;     // was 43, now +2 (Games + Morse Invaders)
+const uint8_t menuN = 46;     // was 43, now +3 (Games ...) - needs to be adapted when adding new menu items
 
 enum menuNo
   {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords, _genCalls, _genMixed, _genPlayer,
@@ -335,7 +335,7 @@ enum menuNo
         _kochGenMixed, _kochEcho, _kochEchoRand, _kochEchoAbb, _kochEchoWords, _kochEchoMixed, _kochEchoAdaptive,
         _trx, _trxLora, _trxWifi, _trxIcw, _decode,
 #ifdef CONFIG_CW_GAME
-        _games, _morseInvaders,
+        _games, _morseInvaders, _fightPileup,
 #endif
         _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload,
         _wifi_update, _wifi_select, _goToSleep

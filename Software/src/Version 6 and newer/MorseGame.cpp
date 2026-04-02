@@ -46,7 +46,6 @@ extern unsigned int ditLength;
 // Module-level variables
 //=============================================================================
 
-static lgfx::LGFX_Device* tft = nullptr;
 static LGFX_Sprite*       canvas = nullptr;
 static GameData            game;
 static char                lastDecodedChar = 0;
@@ -247,49 +246,6 @@ static void   drawCentredText(int y, const char* text, uint16_t color,
                               const lgfx::IFont* font = nullptr);
 
 
-//=============================================================================
-// Display init / deinit
-//=============================================================================
-
-static bool initDisplay() {
-    tft = display.getLGFX();
-    if (!tft) return false;
-    tft->setRotation(2);
-    tft->fillScreen(GC_BG);
-
-    if (!canvas) {
-        canvas = new LGFX_Sprite(tft);
-        if (!canvas) return false;
-        canvas->setPsram(false);
-        canvas->setColorDepth(16);
-        if (!canvas->createSprite(GAME_SCREEN_W, GAME_SCREEN_H)) {
-            delete canvas;
-            canvas = nullptr;
-            tft = nullptr;
-            return false;
-        }
-    }
-    canvas->fillSprite(GC_BG);
-    return true;
-}
-
-static void deinitDisplay() {
-    tft = nullptr;
-
-    MorsePreferences::wpm = game.wpm;
-    MorsePreferences::writePreferences("morserino");
-
-    MorseOutput::initDisplay();
-    #ifdef CONFIG_DISPLAYWRAPPER
-    MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-    #endif
-
-    pinMode(PinCLK, INPUT_PULLUP);
-    pinMode(PinDT, INPUT_PULLUP);
-    rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
-    rotaryEncoder.setCount(0);
-}
-
 
 //=============================================================================
 // Game data init
@@ -484,7 +440,7 @@ static char pollKeyedChar() {
 // Drawing
 //=============================================================================
 
-static void pushFrame() { canvas->pushSprite(0, 0); }
+static void pushFrame() { display.pushGameFrame(); }
 
 static void drawCentredText(int y, const char* text, uint16_t color,
                             const lgfx::IFont* font) {
@@ -968,13 +924,8 @@ static void stateGameOver() {
 //=============================================================================
 
 void MorseGame::run() {
-    if (!initDisplay()) {
-        MorseOutput::initDisplay();
-        #ifdef CONFIG_DISPLAYWRAPPER
-        MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-        #endif
-        return;
-    }
+    canvas = display.enterGameMode(MorsePreferences::leftHanded);
+    if (!canvas) return;
 
     initGameData();
     loadHighScores();
@@ -993,7 +944,17 @@ void MorseGame::run() {
 
     gameMode = false;
     MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
-    deinitDisplay();
-}
+    display.exitGameMode();
+
+    // Restore normal display for menu
+    MorseOutput::initDisplay();
+    #ifdef CONFIG_DISPLAYWRAPPER
+    MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
+    #endif
+    // Restore encoder pins after MorseOutput::initDisplay() claimed SPI
+    pinMode(PinCLK, INPUT_PULLUP);
+    pinMode(PinDT, INPUT_PULLUP);
+    rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
+    rotaryEncoder.setCount(0);}
 
 #endif  // CONFIG_CW_GAME

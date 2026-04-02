@@ -286,26 +286,29 @@ void MorseJSON::jsonUploadComplete(const String& filename, uint32_t size) {
 }
 
 void MorseJSON::jsonGetWifi(void) {
-	StaticJsonDocument<512> liste;
+	StaticJsonDocument<640> doc;
+	JsonArray liste = doc.createNestedArray("wifi");
+
 	String activeWiFiConf = MorsePreferences::wlanSSID == "" ? "INVALID" : MorsePreferences::wlanSSID + MorsePreferences::wlanTRXPeer;
 
 	JsonObject entry1 = liste.createNestedObject();
 	entry1["ssid"] = MorsePreferences::wlanSSID1;
 	entry1["trxpeer"] = MorsePreferences::wlanTRXPeer1;
-	entry1["selected"] = (MorsePreferences::wlanSSID1 + MorsePreferences::wlanTRXPeer1 == activeWiFiConf ? true : false);
+	entry1["selected"] = (!MorsePreferences::useEspNow && MorsePreferences::wlanSSID1 + MorsePreferences::wlanTRXPeer1 == activeWiFiConf);
 
 	JsonObject entry2 = liste.createNestedObject();
 	entry2["ssid"] = MorsePreferences::wlanSSID2;
 	entry2["trxpeer"] = MorsePreferences::wlanTRXPeer2;
-	entry2["selected"] = (MorsePreferences::wlanSSID2 + MorsePreferences::wlanTRXPeer2 == activeWiFiConf ? true : false);
+	entry2["selected"] = (!MorsePreferences::useEspNow && MorsePreferences::wlanSSID2 + MorsePreferences::wlanTRXPeer2 == activeWiFiConf);
 
 	JsonObject entry3 = liste.createNestedObject();
 	entry3["ssid"] = MorsePreferences::wlanSSID3;
 	entry3["trxpeer"] = MorsePreferences::wlanTRXPeer3;
-	entry3["selected"] = (MorsePreferences::wlanSSID3 + MorsePreferences::wlanTRXPeer3 == activeWiFiConf ? true : false);
+	entry3["selected"] = (!MorsePreferences::useEspNow && MorsePreferences::wlanSSID3 + MorsePreferences::wlanTRXPeer3 == activeWiFiConf);
 
-	StaticJsonDocument<512> doc;
-	doc["wifi"] = liste;
+	doc["espnow"] = MorsePreferences::useEspNow;
+	doc["wlanChoice"] = MorsePreferences::wlanChoice;
+
 	serializeJson(doc, Serial);
 }
 
