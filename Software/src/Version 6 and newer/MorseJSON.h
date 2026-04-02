@@ -43,6 +43,12 @@ namespace MorseJSON
 	void jsonGetWifi(void);
 	void jsonGetCwStores(void);
 	void jsonGetCwStore(const String& value);
+	// Protocol v1.3 extensions
+	void jsonGetSnapshot(uint8_t snapNumber);
+	void jsonGetPlayer(void);
+	void jsonGetCustomChars(void);
+	void jsonGetHardware(void);
+	void jsonGetBattery(void);
 };
 
 #endif /* #ifndef MORSEJSON_H_ */

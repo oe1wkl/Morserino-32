@@ -13,6 +13,7 @@
  *****************************************************************************************************************************/
 
 #include "MorseJSON.h"
+#include "MorseMenu.h"
 
 ///// create json output for serial port
 using namespace MorseJSON;
@@ -343,4 +344,106 @@ void MorseJSON::jsonGetCwStore(const String& value) { // get content of CW memor
 		obj["content"] = String(MorsePreferences::cwMem[number - 1]);
 		serializeJson(doc, Serial);
 	}
+}
+
+// ============================================================================
+// Protocol v1.3 extensions
+// ============================================================================
+
+void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
+    // Read snapshot contents without recalling (non-destructive read)
+    // snapNumber is 0-based (0..7), corresponding to snap0..snap7
+    String snapname = "snap" + String(snapNumber);
+    Preferences snapPref;
+    if (!snapPref.begin(snapname.c_str(), true)) {  // open read-only
+        MorseJSON::jsonError("Cannot open snapshot " + String(snapNumber + 1));
+        return;
+    }
+
+    DynamicJsonDocument doc(3072);
+    JsonObject snap = doc.createNestedObject("snapshot");
+    snap["number"] = snapNumber + 1;  // report as 1-based to match user-facing numbering
+
+    uint8_t lastExec = snapPref.getUChar("lastExecuted", 0);
+    snap["lastExecuted"] = lastExec;
+    if (lastExec > 0 && lastExec < menuN)
+        snap["menuName"] = MorseMenu::getMenuPath(lastExec);
+    else
+        snap["menuName"] = "—";
+
+    // Koch and custom chars stored in snapshots
+    snap["kochFilter"] = snapPref.getUChar("kochFilter", 1);
+
+    JsonObject custom = snap.createNestedObject("customChars");
+    custom["active"] = snapPref.getBool("useCustomChar", false);
+    custom["characters"] = snapPref.getString("customCharSet", "");
+
+    // All pliste[] parameters (except posTimeOut and posSerialOut which are excluded from snapshots)
+    JsonArray configs = snap.createNestedArray("configs");
+    for (uint8_t i = 0; i < posSerialOut; ++i) {
+        if (i == posTimeOut)
+            continue;  // not stored in snapshots
+        uint8_t val = snapPref.getUChar(prefName[i], 255);
+        if (val == 255)
+            continue;  // not present in this snapshot
+        JsonObject entry = configs.createNestedObject();
+        entry["name"] = MorsePreferences::pliste[i].parName;
+        entry["value"] = val;
+        if (MorsePreferences::pliste[i].isMapped && val <= MorsePreferences::pliste[i].maximum)
+            entry["displayed"] = MorsePreferences::pliste[i].mapping[val];
+        else
+            entry["displayed"] = String(val);
+    }
+
+    snapPref.end();
+    serializeJson(doc, Serial);
+}
+
+void MorseJSON::jsonGetPlayer(void) {
+    Preferences playerPref;
+    playerPref.begin("morserino", true);  // read-only
+    String call = playerPref.getString("playerCall", "");
+    String name = playerPref.getString("playerName", "");
+    playerPref.end();
+
+    StaticJsonDocument<192> doc;
+    JsonObject player = doc.createNestedObject("player");
+    player["call"] = call;
+    player["name"] = name;
+    serializeJson(doc, Serial);
+}
+
+void MorseJSON::jsonGetCustomChars(void) {
+    StaticJsonDocument<256> doc;
+    JsonObject obj = doc.createNestedObject("customchars");
+    obj["active"] = MorsePreferences::useCustomChars;
+    obj["characters"] = MorsePreferences::customCharSet;
+    serializeJson(doc, Serial);
+}
+
+void MorseJSON::jsonGetHardware(void) {
+    StaticJsonDocument<256> doc;
+    JsonObject hw = doc.createNestedObject("hardware");
+    hw["brightness"] = MorsePreferences::oledBrightness;
+    hw["leftHanded"] = MorsePreferences::leftHanded;
+    hw["vAdjust"] = MorsePreferences::vAdjust;
+#ifndef LORA_DISABLED
+    hw["loraBand"] = MorsePreferences::loraBand;
+    hw["loraFrequency"] = MorsePreferences::loraQRG;
+    hw["loraPower"] = MorsePreferences::loraPower;
+#endif
+    serializeJson(doc, Serial);
+}
+
+void MorseJSON::jsonGetBattery(void) {
+    StaticJsonDocument<128> doc;
+    JsonObject bat = doc.createNestedObject("battery");
+#ifdef CONFIG_MCP73871
+    int16_t v = batteryVoltage();
+    bat["voltage"] = v;
+    bat["status"] = (v > 4100) ? "full" : "charging";
+#else
+    bat["status"] = "usb powered";
+#endif
+    serializeJson(doc, Serial);
 }

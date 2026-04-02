@@ -55,7 +55,7 @@ const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 
 // using the M32 serial protocol
 //define M32Protocol version 1.1 updateTimings(), 1.2 add bulk file upload file list and delete
-#define M32P_VERSION "1.2"
+#define M32P_VERSION "1.3"
 
 /////// protocol version for IP (and LoRa) - for the time being this is B01
 /////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)

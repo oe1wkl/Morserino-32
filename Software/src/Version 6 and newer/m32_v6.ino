@@ -3587,6 +3587,26 @@ void m32Get(String type, String token, String value) {                    /// GE
         MorseJSON::jsonParameterList();
     else if (type == "snapshots")
         MorseJSON::jsonSnapshots();
+    else if (type == "snapshot") {
+        // GET snapshot/<n> — read snapshot contents without recall (v1.3)
+        int n = token.toInt() - 1;  // convert 1-based to 0-based
+        if (n >= 0 && n <= 7 && (MorsePreferences::snapShots & (1 << n)))
+            MorseJSON::jsonGetSnapshot(n);
+        else
+            MorseJSON::jsonError("NO SUCH SNAPSHOT");
+    }
+    else if (type == "player") {
+        MorseJSON::jsonGetPlayer();
+    }
+    else if (type == "customchars") {
+        MorseJSON::jsonGetCustomChars();
+    }
+    else if (type == "hardware") {
+        MorseJSON::jsonGetHardware();
+    }
+    else if (type == "battery") {
+        MorseJSON::jsonGetBattery();
+    }
     else if (type == "file") {
             if (token == "size")
                 MorseJSON::jsonFileStats();
@@ -3665,7 +3685,59 @@ void m32Put(String type, String token, String value) {                    /// PU
         else
             MorseJSON::jsonError("INVALID Value " + value);
       }
+      else if (token == "reset" && value == "defaults") {
+        MorsePreferences::resetDefaults();
+        MorseJSON::jsonOK();
+      }
       else MorseJSON::jsonError("INVALID NAME " + token);
+    }
+    ////////////////// PLAYER (v1.3) /////////////////
+    else if (type == "player") {
+      if (token == "call") {
+        value = value.substring(0, 8);  // max 8 chars (FTP_MAX_IDENT_LEN)
+        value.toUpperCase();
+        Preferences playerPref;
+        playerPref.begin("morserino", false);
+        playerPref.putString("playerCall", value);
+        playerPref.end();
+        MorseJSON::jsonOK();
+      }
+      else if (token == "name") {
+        value = value.substring(0, 8);  // max 8 chars
+        value.toUpperCase();
+        Preferences playerPref;
+        playerPref.begin("morserino", false);
+        playerPref.putString("playerName", value);
+        playerPref.end();
+        MorseJSON::jsonOK();
+      }
+      else
+        MorseJSON::jsonError("INVALID PROPERTY player " + token);
+    }
+    ////////////////// CUSTOMCHARS (v1.3) ////////////
+    else if (type == "customchars") {
+      if (token == "set") {
+        // PUT customchars/set/<character string>   — value is case-sensitive
+        if (value.length() == 0) {
+          MorsePreferences::useCustomChars = false;
+          MorsePreferences::customCharSet = "";
+        } else {
+          MorsePreferences::useCustomChars = true;
+          MorsePreferences::customCharSet = value;
+        }
+        MorsePreferences::writePreferences("morserino");
+        koch.setup();
+        MorseJSON::jsonOK();
+      }
+      else if (token == "clear") {
+        MorsePreferences::useCustomChars = false;
+        MorsePreferences::customCharSet = "";
+        MorsePreferences::writePreferences("morserino");
+        koch.setup();
+        MorseJSON::jsonOK();
+      }
+      else
+        MorseJSON::jsonError("INVALID ACTION customchars " + token);
     }
     ////////////////// CONFIG //////////////////////////
     else if (type == "config") {

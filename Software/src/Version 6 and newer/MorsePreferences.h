@@ -288,5 +288,6 @@ class Koch {
 };
 
 extern Koch koch;
+extern const char * prefName[];
 
 #endif /* #ifndef MORSEPREFERENCES_H_ */
