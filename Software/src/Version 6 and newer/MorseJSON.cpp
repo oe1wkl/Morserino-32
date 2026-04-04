@@ -371,9 +371,7 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     else
         snap["menuName"] = "—";
 
-    // Koch and custom chars stored in snapshots
-    snap["kochFilter"] = snapPref.getUChar("kochFilter", 1);
-
+    // Custom chars stored in snapshots
     JsonObject custom = snap.createNestedObject("customChars");
     custom["active"] = snapPref.getBool("useCustomChar", false);
     custom["characters"] = snapPref.getString("customCharSet", "");
@@ -391,6 +389,8 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
         entry["value"] = val;
         if (MorsePreferences::pliste[i].isMapped && val <= MorsePreferences::pliste[i].maximum)
             entry["displayed"] = MorsePreferences::pliste[i].mapping[val];
+        else if (i == posMaxSequence && val == 0)
+            entry["displayed"] = "Unlimited";
         else
             entry["displayed"] = String(val);
     }
