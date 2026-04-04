@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M32 Configuration Tool</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
+    :root {
+      --text:#333;--accent:#cb4b16;--accent2:#b03e10;--link:#268bd2;--muted:#666;
+      --box-bg:#e8f0f6;--box-border:#5a7080;--box-shadow:6px 8px 4px rgba(0,0,0,0.25);--radius:7px;
+      --green:#1d6030;--green-bg:#d4edda;--green-bdr:#7dbb7d;--red-bg:#f8d7da;--red-bdr:#e4a0a8;
+      --tab-bg:#f4f7fa;--tab-active:#fff;--tab-hover:#e0eaf2;--icon-color:#3a5060;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#fff;color:var(--text);font-family:Lato,Arial,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    .banner{background:linear-gradient(135deg,#1a2e3e 0%,#2c4a5e 100%);padding:18px 24px 14px;text-align:center;color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 3px 12px rgba(0,0,0,0.35)}
+    .morse-header{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:6px}
+    .morse-letter{display:flex;align-items:center;gap:4px}
+    .morse-gap{width:10px}
+    .md{width:10px;height:10px;border-radius:50%;background:#e8a040;flex-shrink:0;animation:mpulse 2.6s ease-in-out infinite}
+    .mx{width:26px;height:10px;border-radius:5px;background:#e8a040;flex-shrink:0;animation:mpulse 2.6s ease-in-out infinite}
+    @keyframes mpulse{0%,100%{opacity:1}50%{opacity:.15}}
+    .morse-header .morse-letter:nth-child(1) .mx:nth-child(1){animation-delay:0s}
+    .morse-header .morse-letter:nth-child(1) .mx:nth-child(2){animation-delay:.12s}
+    .morse-header .morse-letter:nth-child(3) .md:nth-child(1){animation-delay:.36s}
+    .morse-header .morse-letter:nth-child(3) .md:nth-child(2){animation-delay:.48s}
+    .morse-header .morse-letter:nth-child(3) .md:nth-child(3){animation-delay:.60s}
+    .morse-header .morse-letter:nth-child(3) .mx:nth-child(4){animation-delay:.72s}
+    .morse-header .morse-letter:nth-child(3) .mx:nth-child(5){animation-delay:.84s}
+    .morse-header .morse-letter:nth-child(5) .md:nth-child(1){animation-delay:1.08s}
+    .morse-header .morse-letter:nth-child(5) .md:nth-child(2){animation-delay:1.20s}
+    .morse-header .morse-letter:nth-child(5) .mx:nth-child(3){animation-delay:1.32s}
+    .morse-header .morse-letter:nth-child(5) .mx:nth-child(4){animation-delay:1.44s}
+    .morse-header .morse-letter:nth-child(5) .mx:nth-child(5){animation-delay:1.56s}
+    .banner-title{font-size:28px;font-weight:900;letter-spacing:.03em}
+    .banner-sub{font-size:15px;opacity:.7;margin-top:2px}
+    .page{max-width:900px;margin:0 auto;padding:0 20px 60px}
+    .tab-bar{display:flex;flex-wrap:wrap;gap:0;border-bottom:3px solid var(--box-border);margin-top:0;background:var(--tab-bg);border-radius:var(--radius) var(--radius) 0 0;overflow:hidden}
+    .tab-btn{flex:0 0 auto;padding:12px 16px;font-family:Lato,Arial,sans-serif;font-size:14px;font-weight:700;color:var(--icon-color);background:transparent;border:none;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all .2s;border-bottom:3px solid transparent;margin-bottom:-3px;white-space:nowrap}
+    .tab-btn:hover{background:var(--tab-hover);color:var(--accent)}
+    .tab-btn.active{background:var(--tab-active);color:var(--accent);border-bottom-color:var(--accent)}
+    .tab-btn svg{width:18px;height:18px;flex-shrink:0;stroke:currentColor}
+    .tab-content{display:none;padding:24px 0}
+    .tab-content.active{display:block}
+    .box{border:2px solid var(--box-border);border-radius:var(--radius);background:var(--box-bg);box-shadow:var(--box-shadow);padding:20px 24px;margin-bottom:22px}
+    .section-title{font-size:24px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:6px}
+    .section-sub{font-size:17px;font-weight:700;text-align:center;color:var(--text);margin-bottom:18px}
+    .field-label{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--box-border);margin-bottom:6px}
+    .btn{display:inline-block;border:none;border-radius:var(--radius);padding:10px 20px;font-family:Lato,Arial,sans-serif;font-size:16px;font-weight:700;letter-spacing:.03em;cursor:pointer;transition:background .2s,box-shadow .2s;box-shadow:3px 4px 3px rgba(0,0,0,.25);color:#fff}
+    .btn:hover:not(:disabled){box-shadow:4px 5px 5px rgba(0,0,0,.3)}.btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-accent{background:var(--accent)}.btn-accent:hover:not(:disabled){background:var(--accent2)}
+    .btn-green{background:#3a8a4a}.btn-green:hover:not(:disabled){background:var(--green)}
+    .btn-red{background:#c02713}.btn-red:hover:not(:disabled){background:#a01e0e}
+    .btn-outline{background:#fff;color:var(--text);border:2px solid var(--box-border);box-shadow:2px 3px 2px rgba(0,0,0,.12)}
+    .btn-outline:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+    .btn-sm{padding:5px 12px;font-size:13px;box-shadow:2px 2px 2px rgba(0,0,0,.15)}
+    .btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+    .status-badge{display:inline-block;padding:6px 16px;border-radius:var(--radius);font-size:16px;font-weight:700;margin-bottom:18px;border:2px solid}
+    .status-connected{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr)}
+    .status-disconnected{background:var(--red-bg);color:var(--accent2);border-color:var(--red-bdr)}
+    .status-working{background:#e3f2fd;color:#1565c0;border-color:#90caf9}
+    .info-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:14px}
+    .info-card{background:#fff;border:1px solid #c8d8e4;border-radius:6px;padding:12px 16px}
+    .info-card-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
+    .info-card-value{font-size:18px;font-weight:700;color:var(--text)}
+    .control-row{display:flex;align-items:center;gap:16px;padding:14px 18px;background:#fff;border:1px solid #c8d8e4;border-radius:6px;margin-bottom:12px}
+    .control-label{font-size:16px;font-weight:700;color:var(--text);min-width:90px}
+    .control-slider{flex:1;-webkit-appearance:none;appearance:none;height:8px;background:#ddd;border-radius:4px;outline:none}
+    .control-slider::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,.3)}
+    .control-value{font-size:18px;font-weight:900;color:var(--accent);min-width:55px;text-align:right}
+    .control-unit{font-size:14px;color:var(--muted);min-width:30px}
+    /* Menu selector */
+    .menu-select{font-family:Lato,Arial,sans-serif;font-size:15px;padding:8px 12px;border:1px solid #b0c0cc;border-radius:4px;background:#fff;color:var(--text);flex:1;cursor:pointer;min-width:200px}
+    .menu-select:focus{border-color:var(--accent);outline:none}
+    /* Preferences */
+    .pref-group{margin-bottom:4px;position:relative}
+    .pref-group-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(90deg,#2c4a5e,#3d6478);color:#fff;border-radius:6px;cursor:pointer;user-select:none;font-size:16px;font-weight:700;transition:border-radius .2s}
+    .pref-group-header.open{border-radius:6px 6px 0 0}
+    .pref-group-header svg{width:16px;height:16px;transition:transform .2s;stroke:#fff;fill:none}
+    .pref-group-header.open svg{transform:rotate(90deg)}
+    .pref-group-header .pref-count{margin-left:auto;font-size:13px;font-weight:400;opacity:.7}
+    .pref-group-body{border:1px solid #c8d8e4;border-top:none;border-radius:0 0 6px 6px;display:none}
+    .pref-group-body.open{display:block}
+    .pref-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #e8eff4;background:#fff;transition:background .15s}
+    .pref-row:last-child{border-bottom:none}
+    .pref-row:hover{background:#f8fbfd;position:relative;z-index:50}
+    .pref-name{font-size:15px;font-weight:700;color:var(--text);min-width:150px;flex-shrink:0;display:flex;align-items:center;gap:6px}
+    .pref-control{flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end}
+    .pref-select{font-family:Lato,Arial,sans-serif;font-size:15px;padding:6px 10px;border:1px solid #b0c0cc;border-radius:4px;background:#fff;color:var(--text);min-width:160px;cursor:pointer}
+    .pref-select:focus{border-color:var(--accent);outline:none}
+    .pref-slider-wrap{display:flex;align-items:center;gap:8px;flex:1;max-width:320px}
+    .pref-slider{flex:1;-webkit-appearance:none;appearance:none;height:6px;background:#ddd;border-radius:3px;outline:none}
+    .pref-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:var(--accent);cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .pref-slider-val{font-size:15px;font-weight:700;color:var(--accent);min-width:40px;text-align:right}
+    .pref-modified{background:#fff8f0 !important}
+    /* Help icon */
+    .help-icon{width:16px;height:16px;border-radius:50%;background:#6a8a9e;color:#fff;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;position:relative;line-height:1;z-index:1}
+    .help-balloon{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#2c3e50;color:#fff;font-size:13px;font-weight:400;padding:10px 14px;border-radius:8px;width:300px;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,.35);line-height:1.5;text-align:left;pointer-events:none}
+    .help-balloon::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#2c3e50}
+    .help-icon:hover{z-index:201}
+    .help-icon:hover .help-balloon{display:block}
+    .pref-note{font-size:13px;color:var(--muted);font-style:italic;padding:6px 16px;background:#f8f8f0;border:1px solid #e8e0c8;border-radius:4px;margin-bottom:12px}
+    /* Snapshots */
+    .snap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
+    .snap-card{background:#fff;border:2px solid #c8d8e4;border-radius:8px;padding:16px;text-align:center;transition:border-color .2s}
+    .snap-card.active{border-color:var(--accent);background:#fff8f2}
+    .snap-card.empty{opacity:.5}
+    .snap-num{font-size:28px;font-weight:900;color:var(--accent)}
+    .snap-label{font-size:13px;color:var(--muted);margin:4px 0 10px}
+    .snap-actions{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+    /* CW Memories */
+    .mem-table{width:100%;border-collapse:collapse}
+    .mem-table th{text-align:left;padding:8px 12px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--box-border);border-bottom:2px solid var(--box-border)}
+    .mem-table td{padding:8px 12px;font-size:15px;border-bottom:1px solid #e0e8ee}
+    .mem-table tr:last-child td{border-bottom:none}
+    .mem-input{font-family:'Courier New',monospace;font-size:15px;padding:6px 10px;border:1px solid #b0c0cc;border-radius:4px;width:100%;background:#fff}
+    .mem-input:focus{border-color:var(--accent);outline:none}
+    .mem-mode{font-size:11px;color:var(--muted);font-weight:700;display:block;margin-top:2px}
+    .play-btn{position:relative;padding-right:20px !important}
+    .play-badge{font-size:9px;font-weight:900;position:absolute;top:-2px;right:2px;color:var(--accent)}
+    /* WiFi */
+    .wifi-card{background:#fff;border:2px solid #c8d8e4;border-radius:8px;padding:16px 20px;margin-bottom:14px;transition:border-color .2s}
+    .wifi-card.selected{border-color:var(--green);background:#f2faf5}
+    .wifi-card-header{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+    .wifi-card-num{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:14px;font-weight:900;display:flex;align-items:center;justify-content:center}
+    .wifi-card-title{font-size:17px;font-weight:700}
+    .wifi-field{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+    .wifi-label{font-size:14px;font-weight:700;color:var(--muted);min-width:80px}
+    .wifi-input{font-family:Lato,Arial,sans-serif;font-size:15px;padding:6px 10px;border:1px solid #b0c0cc;border-radius:4px;flex:1;background:#fff}
+    .wifi-input:focus{border-color:var(--accent);outline:none}
+    /* Files */
+    .file-table{width:100%;border-collapse:collapse;margin:10px 0 16px}
+    .file-table th{text-align:left;padding:8px 12px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--box-border);border-bottom:2px solid var(--box-border)}
+    .file-table td{padding:8px 12px;font-size:15px;border-bottom:1px solid #e0e8ee}
+    .file-table tr:last-child td{border-bottom:none}
+    .file-table .col-size{text-align:right;color:var(--muted)}.file-table .col-action{text-align:right;width:80px}
+    .file-table .empty-msg{color:var(--muted);font-style:italic}
+    .space-info{font-size:14px;color:var(--muted);margin-bottom:4px}
+    .upload-target{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:9px 14px;background:#fff;border:2px solid #c8d8e4;border-radius:var(--radius);cursor:pointer;user-select:none;transition:border-color .2s}
+    .upload-target:hover{border-color:var(--accent)}.upload-target.active{border-color:var(--accent);background:#fff8f5}
+    .upload-target input[type="radio"]{appearance:none;width:16px;height:16px;border:2px solid var(--box-border);border-radius:50%;background:#fff;cursor:pointer;flex-shrink:0;position:relative}
+    .upload-target input[type="radio"]:checked{border-color:var(--accent)}
+    .upload-target input[type="radio"]:checked::after{content:'';position:absolute;left:3px;top:3px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+    .upload-target span{font-size:15px}
+    .file-input-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 14px;background:#fff;border:1px solid #c8d8e4;border-radius:var(--radius);margin-bottom:12px}
+    .file-input-row input[type="file"]{flex:1;min-width:200px;font-family:Lato,Arial,sans-serif;font-size:15px}
+    .path-input{flex:1;min-width:200px;font-family:Lato,Arial,sans-serif;font-size:15px;padding:6px 10px;border:1px solid #b0c0cc;border-radius:4px;color:var(--text)}
+    .path-input:focus{border-color:var(--accent);outline:none}
+    .path-input:disabled{background:#eee;color:#999}
+    .path-input[readonly]{background:#f5f5f5;color:#666}
+    .progress-bar{width:100%;height:24px;background:#e0e0e0;border-radius:12px;overflow:hidden;margin:12px 0;display:none;border:1px solid #bbb}
+    .progress-fill{height:100%;background:var(--accent);transition:width .2s;border-radius:12px;text-align:center;color:#fff;font-size:12px;font-weight:700;line-height:24px}
+    .log-toggle{display:flex;align-items:center;gap:8px;padding:10px 16px;background:var(--tab-bg);border:2px solid var(--box-border);border-radius:var(--radius);cursor:pointer;user-select:none;font-size:15px;font-weight:700;color:var(--text);margin-top:24px;transition:background .2s}
+    .log-toggle:hover{background:var(--tab-hover)}
+    .log-toggle svg{width:16px;height:16px;transition:transform .2s}
+    .log-toggle.open svg{transform:rotate(90deg)}
+    .log-console{font-family:'Courier New',monospace;font-size:13px;background:#1a2832;color:#a8d870;padding:12px 14px;border-radius:0 0 var(--radius) var(--radius);max-height:200px;overflow-y:auto;white-space:pre-wrap;border:2px solid var(--box-border);border-top:none;display:none}
+    .log-console.open{display:block}
+    .footer-line{margin-top:28px;text-align:center;font-size:15px;color:var(--muted)}
+    .footer-line a{font-weight:900;font-style:italic;text-decoration:underline;color:var(--link)}
+    .koch-chars{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px}
+    .koch-char{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px;font-size:16px;font-weight:700;font-family:'Courier New',monospace}
+    .koch-char.learned{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr)}
+    .koch-char.unlearned{background:#f0f0f0;color:#bbb;border:1px solid #ddd}
+    .identity-field{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:14px 18px;background:#fff;border:1px solid #c8d8e4;border-radius:6px}
+    .identity-label{font-size:16px;font-weight:700;color:var(--text);min-width:100px}
+    .identity-input{font-family:'Courier New',monospace;font-size:18px;font-weight:700;padding:8px 12px;border:1px solid #b0c0cc;border-radius:4px;flex:1;text-transform:uppercase;background:#fff}
+    .identity-input:focus{border-color:var(--accent);outline:none}
+    .identity-note{font-size:13px;color:var(--muted);font-style:italic}
+    /* Loading overlay */
+    .loading-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.25);z-index:300;align-items:center;justify-content:center}
+    .loading-overlay.active{display:flex}
+    .loading-box{background:#fff;border-radius:12px;padding:24px 36px;box-shadow:0 8px 32px rgba(0,0,0,0.3);text-align:center;font-size:16px;font-weight:700;color:var(--text)}
+    .loading-spinner{width:32px;height:32px;border:4px solid #ddd;border-top:4px solid var(--accent);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    /* Snapshot comparison */
+    .snap-diff{font-weight:900;color:var(--accent)}
+    .snap-same{color:var(--muted)}
+    @media(max-width:700px){
+      .tab-btn{padding:8px 10px;font-size:12px}
+      .tab-btn span.tab-label{display:none}
+      .pref-name{min-width:120px;font-size:14px}
+      .pref-row{flex-wrap:wrap}
+      .pref-control{min-width:100%;justify-content:flex-start}
+      .info-grid{grid-template-columns:1fr 1fr}
+      .help-balloon{left:0;transform:none;width:250px}
+    }
+  </style>
+</head>
+<body>
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-box"><div class="loading-spinner"></div><span id="loadingText">Loading...</span></div></div>
+<div class="banner">
+  <div class="morse-header">
+    <div class="morse-letter"><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-gap"></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-gap"></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div><div class="mx"></div></div>
+  </div>
+  <div class="banner-title">M32 Configuration Tool</div>
+  <div class="banner-sub">Morserino-32 · Device Management via USB</div>
+</div>
+<div class="page">
+<div class="tab-bar" id="tabBar">
+  <button class="tab-btn active" onclick="switchTab('connection')" data-tab="connection">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M12 2a4 4 0 014 4v1h2a2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V9a2 2 0 012-2h2V6a4 4 0 014-4z"/><circle cx="12" cy="15" r="1.5"/></svg>
+    <span class="tab-label">Connection</span></button>
+  <button class="tab-btn" onclick="switchTab('dashboard')" data-tab="dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+    <span class="tab-label">Dashboard</span></button>
+  <button class="tab-btn" onclick="switchTab('preferences')" data-tab="preferences">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+    <span class="tab-label">Preferences</span></button>
+  <button class="tab-btn" onclick="switchTab('snapshots')" data-tab="snapshots">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M2 8h20M8 3v18"/></svg>
+    <span class="tab-label">Snapshots</span></button>
+  <button class="tab-btn" onclick="switchTab('cwmemories')" data-tab="cwmemories">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M4 7V4a2 2 0 012-2h8.5L20 7.5V20a2 2 0 01-2 2H6a2 2 0 01-2-2v-3"/><polyline points="14 2 14 8 20 8"/><line x1="2" y1="13" x2="12" y2="13"/><polyline points="9 10 12 13 9 16"/></svg>
+    <span class="tab-label">CW Memories</span></button>
+  <button class="tab-btn" onclick="switchTab('wifi')" data-tab="wifi">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M5 12.55a11 11 0 0114.08 0M1.42 9a16 16 0 0121.16 0M8.53 16.11a6 6 0 016.95 0"/><circle cx="12" cy="20" r="1"/></svg>
+    <span class="tab-label">WiFi</span></button>
+  <button class="tab-btn" onclick="switchTab('player')" data-tab="player">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span class="tab-label">User</span></button>
+  <button class="tab-btn" onclick="switchTab('koch')" data-tab="koch">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+    <span class="tab-label">Koch</span></button>
+  <button class="tab-btn" onclick="switchTab('files')" data-tab="files">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
+    <span class="tab-label">Files</span></button>
+</div>
+
+<!-- CONNECTION -->
+<div class="tab-content active" id="tab-connection">
+  <div class="box">
+    <h2 class="section-title">Connection</h2>
+    <p class="section-sub">Connect your Morserino-32 via USB data cable</p>
+    <div style="text-align:center;margin-bottom:14px"><span class="status-badge status-disconnected" id="statusBadge">Not connected</span></div>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-accent" id="connectBtn" onclick="doConnect()">Connect</button>
+      <button class="btn btn-red" id="disconnectBtn" onclick="doDisconnect()" disabled>Disconnect</button>
+    </div>
+    <p style="text-align:center;font-size:14px;color:var(--muted);margin-top:8px">Requires <strong>Chrome</strong> or <strong>Edge</strong> with WebSerial support.</p>
+  </div>
+  <div class="box" id="deviceInfoBox" style="display:none">
+    <h2 class="section-title">Device Information</h2>
+    <div class="info-grid" id="deviceInfoGrid"></div>
+  </div>
+  <div class="box" id="hardwareInfoBox" style="display:none">
+    <h2 class="section-title">Hardware &amp; Status</h2>
+    <div class="info-grid" id="hardwareInfoGrid"></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="tab-content" id="tab-dashboard">
+  <div class="box">
+    <h2 class="section-title">Dashboard</h2>
+    <p class="section-sub">Quick controls and mode selection</p>
+    <div class="control-row">
+      <span class="control-label">Speed</span>
+      <input type="range" class="control-slider" id="speedSlider" min="5" max="60" value="20" oninput="onSpeedChange(this.value)" disabled>
+      <span class="control-value" id="speedValue">—</span>
+      <span class="control-unit">wpm</span>
+    </div>
+    <div class="control-row">
+      <span class="control-label">Volume</span>
+      <input type="range" class="control-slider" id="volumeSlider" min="0" max="19" value="10" oninput="onVolumeChange(this.value)" disabled>
+      <span class="control-value" id="volumeValue">—</span>
+      <span class="control-unit">/19</span>
+    </div>
+  </div>
+  <div class="box">
+    <div class="field-label">Current Mode</div>
+    <div class="control-row">
+      <span class="control-label" style="min-width:auto;flex:1" id="currentMenu">—</span>
+      <span class="status-badge status-connected" id="menuActive" style="display:none;margin:0;padding:3px 10px;font-size:12px">Active</span>
+      <button class="btn btn-red btn-sm" onclick="menuStop()" id="stopBtn" disabled>Stop</button>
+    </div>
+    <div class="field-label" style="margin-top:14px">Select &amp; Start Menu</div>
+    <div class="control-row" style="flex-wrap:wrap">
+      <select class="menu-select" id="menuSelect" disabled><option value="">— load menus first —</option></select>
+      <button class="btn btn-green btn-sm" onclick="menuStart()" id="menuStartBtn" disabled>Start</button>
+      <button class="btn btn-accent btn-sm" onclick="menuStartNow()" id="menuStartNowBtn" disabled title="Start immediately (no paddle press needed for CW Generator)">Start Now</button>
+    </div>
+  </div>
+</div>
+
+<!-- PREFERENCES -->
+<div class="tab-content" id="tab-preferences">
+  <div class="box">
+    <h2 class="section-title">Preferences</h2>
+    <p class="section-sub">All configurable parameters — organized by function</p>
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-outline btn-sm" onclick="forceReloadPreferences()" id="prefRefreshBtn">↻ Reload from Device</button>
+      <button class="btn btn-outline btn-sm" onclick="prefExpandAll()" id="prefExpandBtn">Expand All</button>
+    </div>
+  </div>
+  <div id="prefContainer"><p style="text-align:center;color:var(--muted);font-style:italic;padding:20px">Connect to load preferences</p></div>
+  <div class="box" id="resetDefaultsBox" style="display:none;margin-top:18px">
+    <div class="btn-row" style="justify-content:center">
+      <button class="btn btn-red btn-sm" onclick="resetDefaults()" id="resetDefaultsBtn" disabled>Reset All Parameters to Defaults</button>
+    </div>
+    <p style="text-align:center;font-size:13px;color:var(--muted);margin-top:6px">Resets configurable parameters only. Snapshots, WiFi, CW memories, and player identity are preserved.</p>
+  </div>
+</div>
+
+<!-- SNAPSHOTS -->
+<div class="tab-content" id="tab-snapshots">
+  <div class="box">
+    <h2 class="section-title">Snapshots</h2>
+    <p class="section-sub">Save and recall complete configuration sets (1–8)</p>
+  </div>
+  <div class="snap-grid" id="snapGrid"></div>
+  <p style="text-align:center;color:var(--muted);font-style:italic;padding:20px" id="snapPlaceholder">Connect to view snapshots</p>
+  <div class="box" id="snapDetailBox" style="display:none">
+    <h2 class="section-title" id="snapDetailTitle">Snapshot Details</h2>
+    <div id="snapDetailMeta" style="margin-bottom:12px"></div>
+    <table class="mem-table" id="snapDetailTable">
+      <thead><tr><th>Parameter</th><th style="text-align:right">Snapshot</th><th style="text-align:right">Current</th></tr></thead>
+      <tbody id="snapDetailBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- CW MEMORIES -->
+<div class="tab-content" id="tab-cwmemories">
+  <div class="box">
+    <h2 class="section-title">CW Memories</h2>
+    <p class="section-sub">Edit and manage 8 memory keyer slots</p>
+    <table class="mem-table" id="cwmTable">
+      <thead><tr><th style="width:40px">#</th><th>Content</th><th style="width:50px">Mode</th><th style="width:200px">Actions</th></tr></thead>
+      <tbody id="cwmBody"><tr><td colspan="4" class="empty-msg" style="text-align:center">Connect to view memories</td></tr></tbody>
+    </table>
+    <div style="margin-top:14px;padding:12px;background:#fff;border:1px solid #c8d8e4;border-radius:6px">
+      <div class="field-label">Pro-sign Reference</div>
+      <p style="font-size:14px;color:var(--muted);line-height:1.8;margin-top:4px">
+        <code>&lt;ar&gt;</code> + (end of message) · 
+        <code>&lt;as&gt;</code> wait · 
+        <code>&lt;bt&gt;</code> = (new section) · 
+        <code>&lt;bk&gt;</code> break · 
+        <code>&lt;ka&gt;</code> starting signal · 
+        <code>&lt;kn&gt;</code> go ahead · 
+        <code>&lt;sk&gt;</code> end of contact · 
+        <code>&lt;ve&gt;</code> understood · 
+        <code>[p]</code> or <code>\p</code> pause
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- WIFI -->
+<div class="tab-content" id="tab-wifi">
+  <div class="box">
+    <h2 class="section-title">WiFi &amp; Network</h2>
+    <p class="section-sub">Configure WiFi access points and network mode</p>
+  </div>
+  <div id="wifiContainer"><p style="text-align:center;color:var(--muted);font-style:italic;padding:20px">Connect to view network settings</p></div>
+</div>
+
+<!-- USER IDENTITY -->
+<div class="tab-content" id="tab-player">
+  <div class="box">
+    <h2 class="section-title">User Identity</h2>
+    <p class="section-sub">Your call sign and name</p>
+    <div class="identity-field">
+      <span class="identity-label">Callsign</span>
+      <input type="text" class="identity-input" id="playerCall" placeholder="e.g. OE1WKL" maxlength="8" disabled>
+      <button class="btn btn-green btn-sm" onclick="setPlayerCall()" id="playerCallBtn" disabled>Set</button>
+    </div>
+    <div class="identity-field">
+      <span class="identity-label">Name</span>
+      <input type="text" class="identity-input" id="playerName" placeholder="e.g. WILLI" maxlength="8" disabled>
+      <button class="btn btn-green btn-sm" onclick="setPlayerName()" id="playerNameBtn" disabled>Set</button>
+    </div>
+    <p class="identity-note" style="text-align:center;margin-top:8px">Maximum 8 characters. Stored as uppercase.</p>
+  </div>
+</div>
+
+<!-- KOCH -->
+<div class="tab-content" id="tab-koch">
+  <div class="box">
+    <h2 class="section-title">Koch Trainer</h2>
+    <p class="section-sub">Lesson progress, character sequence, and Koch preferences</p>
+  </div>
+  <div class="box" id="kochBox" style="display:none">
+    <div class="control-row">
+      <span class="control-label">Lesson</span>
+      <input type="range" class="control-slider" id="kochSlider" min="1" max="51" value="1" oninput="onKochSliderChange(this.value)" disabled>
+      <span class="control-value" id="kochValue">—</span>
+      <span class="control-unit" id="kochMax">/51</span>
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:10px">
+      <button class="btn btn-green btn-sm" onclick="setKochLesson()" id="kochSetBtn" disabled>Set Lesson</button>
+    </div>
+    <div class="field-label" style="margin-top:16px">Character Sequence</div>
+    <div class="koch-chars" id="kochChars"></div>
+  </div>
+  <div id="kochPrefsContainer"></div>
+  <div class="box" id="customCharsBox" style="display:none">
+    <div class="field-label">Custom Character Set</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:10px">Define your own character sequence for Koch training (used when Koch Sequence is set to "Custom Chars").</p>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span class="status-badge" id="customCharsStatus" style="margin:0;padding:3px 10px;font-size:12px">—</span>
+    </div>
+    <div class="identity-field">
+      <span class="identity-label" style="min-width:80px">Characters</span>
+      <input type="text" class="mem-input" id="customCharsInput" placeholder="e.g. mkrsuaptlowi" style="font-size:16px;letter-spacing:2px" disabled>
+    </div>
+    <div class="btn-row" style="justify-content:center;margin-top:10px">
+      <button class="btn btn-green btn-sm" onclick="setCustomChars()" id="customCharsSetBtn" disabled>Set &amp; Enable</button>
+      <button class="btn btn-red btn-sm" onclick="clearCustomChars()" id="customCharsClearBtn" disabled>Clear &amp; Disable</button>
+    </div>
+  </div>
+</div>
+
+<!-- FILES -->
+<div class="tab-content" id="tab-files">
+  <div class="box">
+    <h2 class="section-title">File Manager</h2>
+    <p class="section-sub">Manage files on the Morserino's internal storage</p>
+    <table class="file-table">
+      <thead><tr><th>Filename</th><th class="col-size">Size</th><th class="col-action"></th></tr></thead>
+      <tbody id="fileList"><tr><td colspan="3" class="empty-msg">Connect to see files</td></tr></tbody>
+    </table>
+    <div class="space-info" id="spaceInfo"></div>
+  </div>
+  <div class="box">
+    <div class="field-label">Upload File</div>
+    <label class="upload-target active" id="modePlayer" onclick="setUploadMode('player')"><input type="radio" name="uploadMode" value="player" checked><span><strong>CW Player text</strong> → /player.txt (text only)</span></label>
+    <label class="upload-target" id="modeSuccess" onclick="setUploadMode('success')"><input type="radio" name="uploadMode" value="success"><span><strong>Success sound</strong> → /sounds/success.mp3</span></label>
+    <label class="upload-target" id="modeError" onclick="setUploadMode('error')"><input type="radio" name="uploadMode" value="error"><span><strong>Error sound</strong> → /sounds/error.mp3</span></label>
+    <label class="upload-target" id="modeCustom" onclick="setUploadMode('custom')"><input type="radio" name="uploadMode" value="custom"><span><strong>Custom file</strong> — edit path below</span></label>
+    <div class="file-input-row" style="margin-top:12px"><input type="file" id="fileInput" accept=".txt,.text" disabled onchange="onFileSelected()"></div>
+    <div class="file-input-row"><span class="wifi-label">Path:</span><input type="text" class="path-input" id="targetPath" value="/player.txt" readonly disabled><button class="btn btn-green btn-sm" id="uploadBtn" onclick="uploadFile()" disabled>Upload</button></div>
+    <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill">0%</div></div>
+  </div>
+</div>
+
+<!-- ACTIVITY LOG -->
+<div class="log-toggle" id="logToggle" onclick="toggleLog()">
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+  Activity Log
+</div>
+<div class="log-console" id="log"></div>
+<p class="footer-line"><a href="https://www.morserino.info">morserino.info</a> · <a href="https://github.com/oe1wkl/Morserino-32">GitHub</a> · Protocol v1.3</p>
+</div>
+
+<script>
+// ============================================================================
+// STATE
+// ============================================================================
+var port=null, reader=null, writer=null, readBuffer='';
+var abortController=null, readableStreamClosed=null, writableStreamClosed=null;
+var connected=false;
+var CHUNK_SIZE=180;
+var deviceInfo={};
+var allPrefs=[];
+var prefDetails={};
+var allMenus=[];
+var prefHelpTexts={};
+var prefAllExpanded=false;
+
+var PREF_GROUPS=[
+  {name:'General',icon:'⚙',params:['Encoder Click','Tone Pitch','Time-out','Quick Start','Output Case','Headphone Output','Theme','BLT Kbd Output','Serial Output']},
+  {name:'Key, Paddles & Keyer',icon:'🔑',params:['Paddle Polar.','External Pol.','Keyer Mode','CurtisB DahT%','CurtisB DitT%','AutoChar Spc','Latency']},
+  {name:'CW Generation',icon:'📡',params:['Interchar Spc','InterWord Spc','Random Groups','Length Rnd Gr','Length Calls','Calls Region','Call Prefixes','Length Abbrev','Length Words','Max # of Words','Stop<Next>Rep','CW Gen Displ','Randomize File','Each Word 2x']},
+  {name:'Echo Trainer',icon:'🔊',params:['Echo Prompt','Echo Repeats','Confrm. Tone','Tone Shift','Adaptv. Speed','Echo Speed Max']},
+  {name:'Transmitting & Decoding',icon:'📻',params:['Key ext TX','Generator Tx','Trx Channel','Bandwidth','Decoded on IO']}
+];
+var KOCH_PREF_GROUP={name:'Koch Character Sequence',icon:'📖',params:['Koch Sequence','LICW Carousel']};
+var UPLOAD_PRESETS={player:{path:'/player.txt',accept:'.txt,.text',typeName:'text'},success:{path:'/sounds/success.mp3',accept:'.mp3',typeName:'MP3'},error:{path:'/sounds/error.mp3',accept:'.mp3',typeName:'MP3'},custom:{path:'',accept:'',typeName:'any'}};
+
+// ============================================================================
+// UTILITIES
+// ============================================================================
+function log(msg){var el=document.getElementById('log');el.textContent+='['+new Date().toLocaleTimeString()+'] '+msg+'\n';el.scrollTop=el.scrollHeight}
+function setStatus(t,c){var el=document.getElementById('statusBadge');el.textContent=t;el.className='status-badge status-'+c}
+function setProgress(p){var b=document.getElementById('progressBar'),f=document.getElementById('progressFill');b.style.display='block';f.style.width=p+'%';f.textContent=Math.round(p)+'%'}
+function hideProgress(){document.getElementById('progressBar').style.display='none'}
+function formatSize(b){return b<1024?b+' B':(b/1024).toFixed(1)+' KB'}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+function sendLine(t){if(!writer)throw new Error('Not connected');return writer.write(t+'\n')}
+function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function showLoading(msg){document.getElementById('loadingText').textContent=msg||'Loading...';document.getElementById('loadingOverlay').classList.add('active')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('active')}
+
+function enableUI(c){
+  connected=c;
+  document.getElementById('connectBtn').disabled=c;
+  document.getElementById('disconnectBtn').disabled=!c;
+  // Enable/disable every interactive element by class or id
+  document.querySelectorAll('.btn-sm, .control-slider, .menu-select, .mem-input, .wifi-input, .identity-input, .pref-select, .pref-slider, #fileInput, #uploadBtn, #targetPath').forEach(function(el){
+    // Don't touch connect/disconnect buttons
+    if(el.id==='connectBtn'||el.id==='disconnectBtn') return;
+    el.disabled=!c;
+  });
+  if(c){
+    if(currentUploadMode()!=='custom') document.getElementById('targetPath').readOnly=true;
+  }
+}
+
+// ============================================================================
+// TAB SWITCHING — always loads data when switching
+// ============================================================================
+function switchTab(tabId){
+  document.querySelectorAll('.tab-btn').forEach(function(b){b.classList.remove('active')});
+  document.querySelectorAll('.tab-content').forEach(function(t){t.classList.remove('active')});
+  document.querySelector('[data-tab="'+tabId+'"]').classList.add('active');
+  document.getElementById('tab-'+tabId).classList.add('active');
+  // Always attempt to load data for this tab
+  loadTabData(tabId);
+}
+
+function loadTabData(tabId){
+  if(!connected) return;
+  console.log('loadTabData: '+tabId+', connected='+connected);
+  switch(tabId){
+    case 'connection': loadHardwareInfo(); break;
+    case 'dashboard': loadDashboard(); break;
+    case 'preferences': loadPreferences(); break;
+    case 'snapshots': loadSnapshots(); break;
+    case 'cwmemories': loadCwMemories(); break;
+    case 'wifi': loadWifi(); break;
+    case 'player': loadPlayer(); break;
+    case 'koch': loadKoch(); break;
+    case 'files': listFiles(); break;
+  }
+}
+
+function toggleLog(){document.getElementById('logToggle').classList.toggle('open');document.getElementById('log').classList.toggle('open')}
+
+// ============================================================================
+// SERIAL COMMUNICATION
+// ============================================================================
+async function readLoop(){try{while(true){var r=await reader.read();if(r.done)break;if(r.value)readBuffer+=r.value}}catch(e){}}
+
+async function waitForResponse(timeoutMs){
+  timeoutMs=timeoutMs||3000; var start=Date.now();
+  while(Date.now()-start<timeoutMs){
+    var bc=0,js=-1;
+    for(var i=0;i<readBuffer.length;i++){
+      if(readBuffer[i]==='{'){if(js<0)js=i;bc++}
+      else if(readBuffer[i]==='}'){bc--;if(bc===0&&js>=0){var resp=readBuffer.substring(js,i+1);readBuffer=readBuffer.substring(i+1);return resp}}
+    }
+    await sleep(15);
+  }
+  var p=readBuffer.substring(0,100); readBuffer='';
+  throw new Error('Timeout (partial: '+p+')');
+}
+
+async function sendAndParse(cmd,timeout){
+  readBuffer=''; await sendLine(cmd);
+  var resp=await waitForResponse(timeout||3000);
+  return JSON.parse(resp);
+}
+
+// ============================================================================
+// CONNECT / DISCONNECT
+// ============================================================================
+async function doConnect(){
+  try{
+    port=await navigator.serial.requestPort();
+    await port.open({baudRate:115200});
+    abortController=new AbortController();
+    var dec=new TextDecoderStream();
+    readableStreamClosed=port.readable.pipeTo(dec.writable,{signal:abortController.signal});
+    reader=dec.readable.getReader();
+    var enc=new TextEncoderStream();
+    writableStreamClosed=enc.readable.pipeTo(port.writable);
+    writer=enc.writable.getWriter();
+    readLoop();
+    setStatus('Activating...','working');
+    log('USB connected — activating M32 protocol...');
+
+    await sendLine('put device/protocol/on');
+    await sleep(600);
+
+    // Parse device info
+    try{
+      var devResp=await waitForResponse(2000);
+      var devData=JSON.parse(devResp);
+      if(devData.device){
+        deviceInfo=devData.device;
+        showDeviceInfo(devData.device);
+      }
+    }catch(e){ log('Device info: '+e.message); }
+
+    // NOW set connected=true and enable UI
+    enableUI(true);
+    setStatus('Connected','connected');
+    log('M32 protocol active — connected=true');
+
+    // Load hardware and battery info now that connected=true
+    await loadHardwareInfo();
+
+  }catch(err){
+    log('Connection error: '+err.message);
+    setStatus('Failed','disconnected');
+  }
+}
+
+async function doDisconnect(){
+  try{if(writer){await sendLine('put device/protocol/off');await sleep(300);log('M32 protocol deactivated')}}catch(e){}
+  try{
+    if(reader){await reader.cancel();reader.releaseLock();reader=null}
+    if(abortController){abortController.abort();abortController=null}
+    if(readableStreamClosed){await readableStreamClosed.catch(function(){});readableStreamClosed=null}
+    if(writer){await writer.close().catch(function(){});writer=null}
+    if(writableStreamClosed){await writableStreamClosed.catch(function(){});writableStreamClosed=null}
+    if(port){await port.close();port=null}
+  }catch(e){reader=null;writer=null;abortController=null;readableStreamClosed=null;writableStreamClosed=null;port=null}
+  readBuffer='';
+  enableUI(false);
+  setStatus('Disconnected','disconnected');
+  document.getElementById('deviceInfoBox').style.display='none';
+  document.getElementById('hardwareInfoBox').style.display='none';
+  document.getElementById('resetDefaultsBox').style.display='none';
+  document.getElementById('snapDetailBox').style.display='none';
+  document.getElementById('customCharsBox').style.display='none';
+  document.getElementById('speedValue').textContent='—';
+  document.getElementById('volumeValue').textContent='—';
+  document.getElementById('currentMenu').textContent='—';
+  document.getElementById('menuSelect').innerHTML='<option value="">—</option>';
+  document.getElementById('playerCall').value='';
+  document.getElementById('playerName').value='';
+  allMenus=[];
+  log('Disconnected');
+}
+
+function showDeviceInfo(dev){
+  var box=document.getElementById('deviceInfoBox'), grid=document.getElementById('deviceInfoGrid');
+  grid.innerHTML='';
+  [{label:'Hardware',value:dev.hardware||'—'},{label:'Firmware',value:dev.firmware||'—'},{label:'Protocol',value:dev.protocol||'—'}].forEach(function(item){
+    var card=document.createElement('div');card.className='info-card';
+    card.innerHTML='<div class="info-card-label">'+item.label+'</div><div class="info-card-value">'+item.value+'</div>';
+    grid.appendChild(card);
+  });
+  box.style.display='';
+}
+
+async function loadHardwareInfo(){
+  if(!connected) return;
+  var grid=document.getElementById('hardwareInfoGrid');
+  var items=[];
+  try{
+    var hw=await sendAndParse('get hardware',3000);
+    if(hw.hardware){
+      items.push({label:'Brightness',value:hw.hardware.brightness});
+      items.push({label:'Left-Handed',value:hw.hardware.leftHanded?'Yes':'No'});
+      items.push({label:'V Adjust',value:hw.hardware.vAdjust});
+      if(hw.hardware.loraBand!==undefined){
+        var bands=['433 MHz','868 MHz','920 MHz'];
+        items.push({label:'LoRa Band',value:bands[hw.hardware.loraBand]||hw.hardware.loraBand});
+        if(hw.hardware.loraFrequency) items.push({label:'LoRa Freq',value:(hw.hardware.loraFrequency/1000000).toFixed(3)+' MHz'});
+        items.push({label:'LoRa Power',value:hw.hardware.loraPower+' dBm'});
+      }
+    }
+  }catch(e){log('Hardware: '+e.message)}
+  await sleep(100);
+  try{
+    var bat=await sendAndParse('get battery',2000);
+    if(bat.battery){
+      var status=bat.battery.status||'—';
+      if(bat.battery.voltage) status+=' ('+bat.battery.voltage+' mV)';
+      items.push({label:'Power',value:status});
+    }
+  }catch(e){log('Battery: '+e.message)}
+  if(items.length>0){
+    grid.innerHTML='';
+    items.forEach(function(item){
+      var card=document.createElement('div');card.className='info-card';
+      card.innerHTML='<div class="info-card-label">'+item.label+'</div><div class="info-card-value">'+item.value+'</div>';
+      grid.appendChild(card);
+    });
+    document.getElementById('hardwareInfoBox').style.display='';
+  }
+}
+
+async function resetDefaults(){
+  if(!confirm('Reset all parameters to factory defaults?\n\nSnapshots, WiFi, CW memories, and player identity will be preserved.')) return;
+  try{
+    readBuffer=''; await sendLine('put device/reset/defaults');
+    try{await waitForResponse(3000)}catch(e){}
+    log('Parameters reset to defaults');
+    prefDetails={}; // force reload on next Preferences tab visit
+  }catch(e){log('Reset: '+e.message)}
+}
+
+// ============================================================================
+// DASHBOARD
+// ============================================================================
+async function loadDashboard(){
+  if(!connected) return;
+  showLoading('Loading dashboard...');
+  try{
+    var sp=await sendAndParse('get control/speed');
+    if(sp.control){
+      var sl=document.getElementById('speedSlider');
+      sl.min=sp.control.minimum||5; sl.max=sp.control.maximum||60; sl.value=sp.control.value;
+      document.getElementById('speedValue').textContent=sp.control.value;
+    }
+  }catch(e){ log('Speed: '+e.message); }
+  await sleep(100);
+  try{
+    var vol=await sendAndParse('get control/volume');
+    if(vol.control){
+      document.getElementById('volumeSlider').value=vol.control.value;
+      document.getElementById('volumeValue').textContent=vol.control.value;
+    }
+  }catch(e){ log('Volume: '+e.message); }
+  await sleep(100);
+  try{
+    var menu=await sendAndParse('get menu');
+    if(menu.menu){
+      document.getElementById('currentMenu').textContent=menu.menu.content||'—';
+      document.getElementById('menuActive').style.display=menu.menu.active?'':'none';
+    }
+  }catch(e){ log('Menu: '+e.message); }
+  // Load menus for selector if not yet loaded
+  if(allMenus.length===0){
+    await sleep(100);
+    try{
+      var md=await sendAndParse('get menus',5000);
+      if(md.menus){ allMenus=md.menus; renderMenuSelect(); log('Loaded '+allMenus.length+' menu items'); }
+    }catch(e){ log('Load menus: '+e.message); }
+  }
+  hideLoading();
+}
+
+function renderMenuSelect(){
+  var sel=document.getElementById('menuSelect'); sel.innerHTML='';
+  allMenus.forEach(function(m){
+    if(!m.executable) return;
+    var opt=document.createElement('option');
+    opt.value=m['menu number']; opt.textContent=m.content;
+    sel.appendChild(opt);
+  });
+}
+
+var speedTimeout=null;
+function onSpeedChange(val){
+  document.getElementById('speedValue').textContent=val;
+  clearTimeout(speedTimeout);
+  speedTimeout=setTimeout(function(){
+    sendLine('put control/speed/'+val).then(function(){log('Speed → '+val+' wpm')}).catch(function(e){log('Speed: '+e.message)});
+  },200);
+}
+var volumeTimeout=null;
+function onVolumeChange(val){
+  document.getElementById('volumeValue').textContent=val;
+  clearTimeout(volumeTimeout);
+  volumeTimeout=setTimeout(function(){
+    sendLine('put control/volume/'+val).then(function(){log('Volume → '+val)}).catch(function(e){log('Volume: '+e.message)});
+  },200);
+}
+
+async function menuStop(){
+  try{ await sendLine('put menu/stop'); log('Stopped'); await sleep(500); loadDashboard(); }
+  catch(e){ log('Stop: '+e.message); }
+}
+async function menuStart(){
+  var sel=document.getElementById('menuSelect'); var num=sel.value; if(!num) return;
+  try{ await sendLine('put menu/start/'+num); log('Started: '+sel.options[sel.selectedIndex].text); await sleep(500); loadDashboard(); }
+  catch(e){ log('Start: '+e.message); }
+}
+async function menuStartNow(){
+  var sel=document.getElementById('menuSelect'); var num=sel.value; if(!num) return;
+  try{ await sendLine('put menu/start now/'+num); log('Started now: '+sel.options[sel.selectedIndex].text); await sleep(500); loadDashboard(); }
+  catch(e){ log('Start now: '+e.message); }
+}
+
+// ============================================================================
+// PREFERENCES
+// ============================================================================
+async function loadPreferences(){
+  if(!connected) return;
+  // Skip if already loaded (re-load only on explicit Reload button)
+  if(Object.keys(prefDetails).length>0){ renderPreferences(); return; }
+  showLoading('Loading preferences...');
+  log('Loading preferences...');
+  try{
+    var data=await sendAndParse('get configs',5000);
+    if(!data.configs){log('No configs data');hideLoading();return}
+    allPrefs=data.configs;
+    log('Loaded '+allPrefs.length+' parameters. Fetching details...');
+    prefDetails={};
+    for(var i=0;i<allPrefs.length;i++){
+      await sleep(50);
+      try{
+        var detail=await sendAndParse('get config/'+allPrefs[i].name,3000);
+        if(detail.config) prefDetails[detail.config.name]=detail.config;
+      }catch(e){ prefDetails[allPrefs[i].name]=allPrefs[i]; }
+    }
+    log('All preference details loaded');
+    renderPreferences();
+    renderKochPrefs();
+  }catch(e){log('Preferences error: '+e.message)}
+  hideLoading();
+}
+
+function forceReloadPreferences(){
+  prefDetails={};
+  allPrefs=[];
+  loadPreferences();
+}
+
+function renderPreferences(){
+  var container=document.getElementById('prefContainer'); container.innerHTML='';
+  if(Object.keys(prefDetails).length===0){
+    container.innerHTML='<p style="text-align:center;color:var(--muted);font-style:italic;padding:20px">Connect to load preferences</p>';
+    return;
+  }
+  var note=document.createElement('div'); note.className='pref-note';
+  note.innerHTML='💡 Koch Character Sequence settings (Koch Sequence, LICW Carousel) are in the <strong>Koch</strong> tab.';
+  container.appendChild(note);
+  var usedNames={};
+  KOCH_PREF_GROUP.params.forEach(function(n){usedNames[n]=true});
+  PREF_GROUPS.forEach(function(group){
+    var groupParams=group.params.filter(function(name){return !!prefDetails[name]});
+    if(groupParams.length===0)return;
+    container.appendChild(createPrefGroupEl(group,groupParams));
+    groupParams.forEach(function(n){usedNames[n]=true});
+  });
+  var ungrouped=[];
+  Object.keys(prefDetails).forEach(function(name){if(!usedNames[name])ungrouped.push(name)});
+  if(ungrouped.length>0) container.appendChild(createPrefGroupEl({name:'Other',icon:'📋',params:ungrouped},ungrouped));
+  document.getElementById('resetDefaultsBox').style.display='';
+}
+
+function renderKochPrefs(){
+  var container=document.getElementById('kochPrefsContainer'); container.innerHTML='';
+  var groupParams=KOCH_PREF_GROUP.params.filter(function(name){return !!prefDetails[name]});
+  if(groupParams.length===0) return;
+  var el=createPrefGroupEl(KOCH_PREF_GROUP,groupParams);
+  el.querySelector('.pref-group-header').classList.add('open');
+  el.querySelector('.pref-group-body').classList.add('open');
+  container.appendChild(el);
+}
+
+function createPrefGroupEl(group,params){
+  var groupDiv=document.createElement('div'); groupDiv.className='pref-group';
+  var header=document.createElement('div'); header.className='pref-group-header';
+  header.innerHTML='<svg viewBox="0 0 24 24" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg><span>'+group.icon+' '+group.name+'</span><span class="pref-count">'+params.length+'</span>';
+  var body=document.createElement('div'); body.className='pref-group-body';
+  header.onclick=function(){
+    if(!prefAllExpanded){
+      // Accordion: close all others
+      document.querySelectorAll('#prefContainer .pref-group-header.open').forEach(function(h){
+        if(h!==header){h.classList.remove('open');h.nextElementSibling.classList.remove('open')}
+      });
+    }
+    header.classList.toggle('open'); body.classList.toggle('open');
+  };
+  params.forEach(function(name){if(prefDetails[name]) body.appendChild(createPrefRow(prefDetails[name]))});
+  groupDiv.appendChild(header); groupDiv.appendChild(body); return groupDiv;
+}
+
+function prefExpandAll(){
+  prefAllExpanded=!prefAllExpanded;
+  document.getElementById('prefExpandBtn').textContent=prefAllExpanded?'Collapse All':'Expand All';
+  document.querySelectorAll('.pref-group-header').forEach(function(h){
+    if(prefAllExpanded){h.classList.add('open');h.nextElementSibling.classList.add('open')}
+    else{h.classList.remove('open');h.nextElementSibling.classList.remove('open')}
+  });
+}
+
+function createPrefRow(p){
+  var row=document.createElement('div'); row.className='pref-row';
+  row.id='pref-row-'+p.name.replace(/[^a-zA-Z0-9]/g,'_');
+  var nameEl=document.createElement('span'); nameEl.className='pref-name';
+  nameEl.textContent=p.name;
+  var helpText=prefHelpTexts[p.name]||p.description||'';
+  if(helpText){
+    var helpIcon=document.createElement('span'); helpIcon.className='help-icon'; helpIcon.textContent='?';
+    var balloon=document.createElement('span'); balloon.className='help-balloon'; balloon.textContent=helpText;
+    helpIcon.appendChild(balloon); nameEl.appendChild(helpIcon);
+  }
+  row.appendChild(nameEl);
+  var controlEl=document.createElement('span'); controlEl.className='pref-control';
+  if(p.isMapped&&p['mapped values']&&p['mapped values'].length>0){
+    var sel=document.createElement('select'); sel.className='pref-select';
+    var mappings=p['mapped values'];
+    for(var i=0;i<mappings.length;i++){
+      if(mappings[i]===''&&i<(p.minimum||0)) continue;
+      var opt=document.createElement('option'); opt.value=i;
+      opt.textContent=mappings[i]||'('+i+')';
+      if(i===p.value) opt.selected=true;
+      sel.appendChild(opt);
+    }
+    sel.onchange=(function(name){return function(){setPref(name,parseInt(this.value))}})(p.name);
+    controlEl.appendChild(sel);
+  }else{
+    var wrap=document.createElement('span'); wrap.className='pref-slider-wrap';
+    var slider=document.createElement('input'); slider.type='range'; slider.className='pref-slider';
+    slider.min=p.minimum!==undefined?p.minimum:0;
+    slider.max=p.maximum!==undefined?p.maximum:100;
+    slider.step=p.step||p.stepValue||1; slider.value=p.value;
+    var valSpan=document.createElement('span'); valSpan.className='pref-slider-val'; valSpan.textContent=p.value;
+    slider.oninput=function(){valSpan.textContent=slider.value};
+    slider.onchange=(function(name){return function(){setPref(name,parseInt(this.value))}})(p.name);
+    wrap.appendChild(slider); wrap.appendChild(valSpan); controlEl.appendChild(wrap);
+  }
+  row.appendChild(controlEl); return row;
+}
+
+async function setPref(name,value){
+  try{
+    readBuffer=''; await sendLine('put config/'+name+'/'+value);
+    try{await waitForResponse(2000)}catch(e){}
+    log('"'+name+'" → '+value);
+    // Update the cached prefDetails so the UI stays in sync
+    if(prefDetails[name]) prefDetails[name].value=value;
+    var row=document.getElementById('pref-row-'+name.replace(/[^a-zA-Z0-9]/g,'_'));
+    if(row) row.classList.add('pref-modified');
+    // Koch Sequence or LICW Carousel change affects the character chart and preference metadata
+    if(name==='Koch Sequence'||name==='LICW Carousel'){
+      await sleep(300);
+      // Re-fetch the detail for this pref since min/max/mappings may have changed
+      try{
+        var detail=await sendAndParse('get config/'+name,3000);
+        if(detail.config) prefDetails[detail.config.name]=detail.config;
+      }catch(e){}
+      loadKoch();
+    }
+  }catch(e){log('Error "'+name+'": '+e.message)}
+}
+
+// ============================================================================
+// SNAPSHOTS
+// ============================================================================
+async function loadSnapshots(){
+  if(!connected) return;
+  try{
+    var data=await sendAndParse('get snapshots',3000);
+    var existing=(data.snapshots&&data.snapshots['existing snapshots'])?data.snapshots['existing snapshots']:[];
+    renderSnapshots(existing);
+    log('Snapshots: '+(existing.length>0?existing.join(', '):'none'));
+  }catch(e){log('Snapshots: '+e.message)}
+}
+function renderSnapshots(existing){
+  document.getElementById('snapPlaceholder').style.display='none';
+  var grid=document.getElementById('snapGrid'); grid.innerHTML='';
+  for(var i=1;i<=8;i++){
+    var exists=existing.indexOf(i)!==-1;
+    var card=document.createElement('div');
+    card.className='snap-card'+(exists?' active':' empty');
+    card.innerHTML='<div class="snap-num">'+i+'</div><div class="snap-label">'+(exists?'Stored':'Empty')+'</div><div class="snap-actions"><button class="btn btn-green btn-sm" onclick="snapStore('+i+')">Store</button>'+(exists?'<button class="btn btn-outline btn-sm" onclick="snapInspect('+i+')">Inspect</button><button class="btn btn-accent btn-sm" onclick="snapRecall('+i+')">Recall</button><button class="btn btn-red btn-sm" onclick="snapClear('+i+')">Clear</button>':'')+'</div>';
+    grid.appendChild(card);
+  }
+}
+async function snapStore(n){try{await sendLine('put snapshot/store/'+n);try{await waitForResponse(2000)}catch(e){}log('Stored snapshot '+n);await sleep(300);loadSnapshots()}catch(e){log('Snapshot: '+e.message)}}
+async function snapRecall(n){if(!confirm('Recall snapshot '+n+'? Overwrites current settings.'))return;try{await sendLine('put snapshot/recall/'+n);try{await waitForResponse(2000)}catch(e){}log('Recalled snapshot '+n);prefDetails={}}catch(e){log('Snapshot: '+e.message)}}
+async function snapClear(n){if(!confirm('Clear snapshot '+n+'?'))return;try{await sendLine('put snapshot/clear/'+n);try{await waitForResponse(2000)}catch(e){}log('Cleared snapshot '+n);await sleep(300);loadSnapshots();document.getElementById('snapDetailBox').style.display='none'}catch(e){log('Snapshot: '+e.message)}}
+
+async function snapInspect(n){
+  showLoading('Loading snapshot '+n+'...');
+  try{
+    // Fetch snapshot contents
+    var data=await sendAndParse('get snapshot/'+n,5000);
+    if(!data.snapshot){log('No snapshot data');hideLoading();return}
+    var snap=data.snapshot;
+    // Fetch current settings for comparison
+    await sleep(100);
+    var currentConfigs={};
+    try{
+      var cur=await sendAndParse('get configs',5000);
+      if(cur.configs){
+        cur.configs.forEach(function(c){ currentConfigs[c.name]={value:c.value, displayed:c.displayed}; });
+      }
+    }catch(e){log('Could not load current configs for comparison')}
+
+    document.getElementById('snapDetailTitle').textContent='Snapshot '+snap.number+' — Comparison with Current Settings';
+    var meta='<div class="info-grid" style="margin-bottom:12px">';
+    meta+='<div class="info-card"><div class="info-card-label">Stored Menu</div><div class="info-card-value" style="font-size:15px">'+escHtml(snap.menuName||'—')+'</div></div>';
+    if(snap.customChars){
+      meta+='<div class="info-card"><div class="info-card-label">Custom Chars</div><div class="info-card-value" style="font-size:15px">'+(snap.customChars.active?escHtml(snap.customChars.characters):'Off')+'</div></div>';
+    }
+    meta+='</div>';
+    document.getElementById('snapDetailMeta').innerHTML=meta;
+    var tbody=document.getElementById('snapDetailBody'); tbody.innerHTML='';
+    var diffCount=0;
+    if(snap.configs){
+      snap.configs.forEach(function(c){
+        var cur=currentConfigs[c.name];
+        var isDiff=cur&&cur.value!==c.value;
+        if(isDiff) diffCount++;
+        var tr=document.createElement('tr');
+        var cls=isDiff?'snap-diff':'snap-same';
+        tr.innerHTML='<td class="'+cls+'">'+escHtml(c.name)+'</td>'+
+          '<td style="text-align:right" class="'+cls+'">'+escHtml(c.displayed)+'</td>'+
+          '<td style="text-align:right" class="'+cls+'">'+(cur?escHtml(cur.displayed):'—')+'</td>';
+        tbody.appendChild(tr);
+      });
+    }
+    document.getElementById('snapDetailBox').style.display='';
+    document.getElementById('snapDetailBox').scrollIntoView({behavior:'smooth'});
+    log('Inspected snapshot '+n+': '+(snap.configs?snap.configs.length:0)+' parameters, '+diffCount+' differences');
+  }catch(e){log('Inspect snapshot: '+e.message)}
+  hideLoading();
+}
+
+// ============================================================================
+// CW MEMORIES
+// ============================================================================
+async function loadCwMemories(){
+  if(!connected) return;
+  showLoading('Loading CW memories...');
+  try{
+    var data=await sendAndParse('get cw/memories',3000);
+    var inUse=(data['CW Memories']&&data['CW Memories']['cw memories in use'])?data['CW Memories']['cw memories in use']:[];
+    log('CW Memories in use: '+(inUse.length>0?inUse.join(', '):'none'));
+    var tbody=document.getElementById('cwmBody'); tbody.innerHTML='';
+    for(var i=1;i<=8;i++){
+      var content='';
+      if(inUse.indexOf(i)!==-1){
+        await sleep(50);
+        try{var memData=await sendAndParse('get cw/memory/'+i,3000);if(memData['CW Memory'])content=memData['CW Memory'].content||''}catch(e){}
+      }
+      var tr=document.createElement('tr');
+      var isRepeat=(i<=2);
+      var modeLabel=isRepeat?'∞ repeat':'1× once';
+      var playLabel=isRepeat?'▶∞':'▶1';
+      tr.innerHTML='<td style="text-align:center;font-weight:700;color:var(--accent)">'+i+'</td>'+
+        '<td><input type="text" class="mem-input" id="cwm'+i+'" value="'+escHtml(content)+'" placeholder="(empty)"></td>'+
+        '<td style="text-align:center"><span class="mem-mode" title="'+(isRepeat?'Plays repeatedly until stopped':'Plays once')+'">'+modeLabel+'</span></td>'+
+        '<td style="text-align:right">'+
+          '<button class="btn btn-green btn-sm" onclick="cwmStore('+i+')">Save</button> '+
+          '<button class="btn btn-accent btn-sm" onclick="cwmPlay('+i+')" title="'+(isRepeat?'Play repeatedly until stopped':'Play once')+'">'+playLabel+'</button> '+
+          '<button class="btn btn-red btn-sm" onclick="cwmClear('+i+')">×</button></td>';
+      tbody.appendChild(tr);
+    }
+  }catch(e){log('CW memories: '+e.message)}
+  hideLoading();
+}
+async function cwmStore(n){var c=document.getElementById('cwm'+n).value;try{await sendLine('put cw/store/'+n+'/'+c);try{await waitForResponse(2000)}catch(e){}log('CW Memory '+n+' saved')}catch(e){log('Error: '+e.message)}}
+async function cwmPlay(n){try{await sendLine('put cw/recall/'+n);log('Playing CW Memory '+n+(n<=2?' (repeat)':' (once)'))}catch(e){log('Error: '+e.message)}}
+async function cwmClear(n){if(!confirm('Clear CW Memory '+n+'?'))return;document.getElementById('cwm'+n).value='';try{await sendLine('put cw/store/'+n+'/');try{await waitForResponse(2000)}catch(e){}log('CW Memory '+n+' cleared')}catch(e){log('Error: '+e.message)}}
+
+// ============================================================================
+// WIFI
+// ============================================================================
+async function loadWifi(){
+  if(!connected) return;
+  showLoading('Loading WiFi settings...');
+  try{
+    var data=await sendAndParse('get wifi',4000);
+    var wifiArr=data.wifi||[]; var espnow=data.espnow||false;
+    var wlanChoice=data.wlanChoice!==undefined?data.wlanChoice:-1;
+    renderWifi(wifiArr,espnow,wlanChoice);
+    log('WiFi loaded');
+  }catch(e){log('WiFi: '+e.message)}
+  hideLoading();
+}
+function renderWifi(wifiArr,espnow,wlanChoice){
+  var container=document.getElementById('wifiContainer'); container.innerHTML='';
+  var espCard=document.createElement('div');
+  espCard.className='wifi-card'+(espnow||wlanChoice===0?' selected':'');
+  espCard.innerHTML='<div class="wifi-card-header"><div class="wifi-card-num">0</div><span class="wifi-card-title">ESPNow (Peer-to-Peer)</span>'+(espnow||wlanChoice===0?'<span class="status-badge status-connected" style="margin:0;padding:3px 10px;font-size:12px">Selected</span>':'')+'</div><p style="font-size:14px;color:var(--muted)">Direct WiFi peer-to-peer — no access point needed.</p><div style="margin-top:10px"><button class="btn btn-green btn-sm" onclick="selectWifi(0)">Select ESPNow</button></div>';
+  container.appendChild(espCard);
+  for(var i=0;i<3;i++){
+    var w=wifiArr[i]||{ssid:'',trxpeer:'',selected:false};
+    var isSelected=w.selected||wlanChoice===(i+1); var sn=i+1;
+    var card=document.createElement('div');
+    card.className='wifi-card'+(isSelected?' selected':'');
+    card.innerHTML='<div class="wifi-card-header"><div class="wifi-card-num">'+sn+'</div><span class="wifi-card-title">WiFi Slot '+sn+'</span>'+(isSelected?'<span class="status-badge status-connected" style="margin:0;padding:3px 10px;font-size:12px">Selected</span>':'')+'</div>'+
+      '<div class="wifi-field"><span class="wifi-label">SSID</span><input type="text" class="wifi-input" id="wifiSsid'+sn+'" value="'+escHtml(w.ssid)+'"><button class="btn btn-green btn-sm" onclick="setWifiSsid('+sn+')">Set</button></div>'+
+      '<div class="wifi-field"><span class="wifi-label">Password</span><input type="password" class="wifi-input" id="wifiPass'+sn+'" placeholder="(write-only — enter new)"><button class="btn btn-green btn-sm" onclick="setWifiPass('+sn+')">Set</button></div>'+
+      '<div class="wifi-field"><span class="wifi-label">TRX Peer</span><input type="text" class="wifi-input" id="wifiPeer'+sn+'" value="'+escHtml(w.trxpeer)+'"><button class="btn btn-green btn-sm" onclick="setWifiPeer('+sn+')">Set</button></div>'+
+      '<div style="margin-top:8px"><button class="btn btn-accent btn-sm" onclick="selectWifi('+sn+')">Select This Slot</button></div>';
+    container.appendChild(card);
+  }
+}
+async function setWifiSsid(n){var val=document.getElementById('wifiSsid'+n).value;try{await sendLine('put wifi/ssid/'+n+'/'+val);try{await waitForResponse(2000)}catch(e){}log('WiFi '+n+' SSID → '+val)}catch(e){log('Error: '+e.message)}}
+async function setWifiPass(n){var val=document.getElementById('wifiPass'+n).value;if(!val){log('No password');return}try{await sendLine('put wifi/password/'+n+'/'+val);try{await waitForResponse(2000)}catch(e){}log('WiFi '+n+' password set');document.getElementById('wifiPass'+n).value=''}catch(e){log('Error: '+e.message)}}
+async function setWifiPeer(n){var val=document.getElementById('wifiPeer'+n).value;try{await sendLine('put wifi/trxpeer/'+n+'/'+val);try{await waitForResponse(2000)}catch(e){}log('WiFi '+n+' TRX Peer → '+val)}catch(e){log('Error: '+e.message)}}
+async function selectWifi(n){try{await sendLine('put wifi/select/'+n);try{await waitForResponse(2000)}catch(e){}log('Selected WiFi '+n);await sleep(300);loadWifi()}catch(e){log('Error: '+e.message)}}
+
+// ============================================================================
+// KOCH
+// ============================================================================
+async function loadKoch(){
+  if(!connected) return;
+  showLoading('Loading Koch data...');
+  try{
+    var data=await sendAndParse('get kochlesson',3000);
+    if(data.kochlesson){
+      var k=data.kochlesson;
+      document.getElementById('kochBox').style.display='';
+      var sl=document.getElementById('kochSlider');
+      sl.min=k.minimum||1; sl.max=k.maximum||51; sl.value=k.value; sl.disabled=false;
+      document.getElementById('kochSetBtn').disabled=false;
+      document.getElementById('kochValue').textContent=k.value;
+      document.getElementById('kochMax').textContent='/'+(k.maximum||51);
+      if(k.characters){
+        var cd=document.getElementById('kochChars'); cd.innerHTML='';
+        for(var i=0;i<k.characters.length;i++){
+          var sp=document.createElement('span');
+          sp.className='koch-char '+(i<k.value?'learned':'unlearned');
+          sp.textContent=k.characters[i]; sp.title='Position '+(i+1);
+          cd.appendChild(sp);
+        }
+      }
+      log('Koch lesson: '+k.value);
+    }
+  }catch(e){log('Koch: '+e.message)}
+  // Load custom character set
+  await sleep(100);
+  await loadCustomChars();
+  // Also render Koch prefs if already loaded
+  if(Object.keys(prefDetails).length>0) renderKochPrefs();
+  hideLoading();
+}
+function onKochSliderChange(val){document.getElementById('kochValue').textContent=val;document.querySelectorAll('.koch-char').forEach(function(ch,i){ch.className='koch-char '+(i<parseInt(val)?'learned':'unlearned')})}
+async function setKochLesson(){var val=document.getElementById('kochSlider').value;try{await sendLine('put kochlesson/'+val);try{await waitForResponse(2000)}catch(e){}log('Koch lesson → '+val)}catch(e){log('Error: '+e.message)}}
+
+async function loadCustomChars(){
+  try{
+    var data=await sendAndParse('get customchars',3000);
+    if(data.customchars){
+      var cc=data.customchars;
+      document.getElementById('customCharsBox').style.display='';
+      document.getElementById('customCharsInput').value=cc.characters||'';
+      var badge=document.getElementById('customCharsStatus');
+      if(cc.active){badge.textContent='Active';badge.className='status-badge status-connected';badge.style.margin='0';badge.style.padding='3px 10px';badge.style.fontSize='12px'}
+      else{badge.textContent='Inactive';badge.className='status-badge status-disconnected';badge.style.margin='0';badge.style.padding='3px 10px';badge.style.fontSize='12px'}
+      log('Custom chars: '+(cc.active?'"'+cc.characters+'"':'inactive'));
+    }
+  }catch(e){log('Custom chars: '+e.message)}
+}
+async function setCustomChars(){
+  var val=document.getElementById('customCharsInput').value.trim();
+  if(!val){log('No characters entered');return}
+  try{
+    readBuffer=''; await sendLine('put customchars/set/'+val);
+    try{await waitForResponse(2000)}catch(e){}
+    log('Custom chars set: "'+val+'"');
+    await sleep(200); await loadCustomChars();
+  }catch(e){log('Error: '+e.message)}
+}
+async function clearCustomChars(){
+  if(!confirm('Clear and disable custom character set?')) return;
+  try{
+    readBuffer=''; await sendLine('put customchars/clear');
+    try{await waitForResponse(2000)}catch(e){}
+    log('Custom chars cleared');
+    document.getElementById('customCharsInput').value='';
+    await sleep(200); await loadCustomChars();
+  }catch(e){log('Error: '+e.message)}
+}
+
+// ============================================================================
+// FILE MANAGER
+// ============================================================================
+async function listFiles(){
+  if(!connected) return;
+  showLoading('Loading files...');
+  readBuffer=''; await sendLine('get file/list');
+  try{
+    var resp=await waitForResponse(4000); var data=JSON.parse(resp);
+    var tbody=document.getElementById('fileList'); tbody.innerHTML='';
+    if(data.files&&data.files.length>0){
+      for(var k=0;k<data.files.length;k++){
+        var f=data.files[k], tr=document.createElement('tr'), esc=f.name.replace(/'/g,"\\'");
+        tr.innerHTML='<td>'+f.name+'</td><td class="col-size">'+formatSize(f.size)+'</td><td class="col-action"><button class="btn btn-red btn-sm" onclick="deleteFile(\''+esc+'\')">Delete</button></td>';
+        tbody.appendChild(tr);
+      }
+    } else tbody.innerHTML='<tr><td colspan="3" class="empty-msg">No files found</td></tr>';
+    if(data.total!==undefined) document.getElementById('spaceInfo').textContent='Storage: '+formatSize(data.used)+' used / '+formatSize(data.total)+' total ('+formatSize(data.free)+' free)';
+    log('Files: '+(data.files?data.files.length:0));
+  }catch(e){log('Files: '+e.message)}
+  hideLoading();
+}
+async function deleteFile(name){if(!confirm('Delete '+name+'?'))return;readBuffer='';await sendLine('put file/delete/'+name);try{await waitForResponse(2000);log('Deleted: '+name)}catch(e){log('Delete sent')}await listFiles()}
+
+function currentUploadMode(){return document.querySelector('input[name="uploadMode"]:checked').value}
+function setUploadMode(m){
+  ['Player','Success','Error','Custom'].forEach(function(k,i){document.getElementById('mode'+k).classList.toggle('active',['player','success','error','custom'][i]===m)});
+  var tp=document.getElementById('targetPath'), fi=document.getElementById('fileInput'), preset=UPLOAD_PRESETS[m];
+  fi.accept=preset.accept;
+  if(m==='custom'){tp.readOnly=false;tp.value=fi.files.length?'/'+fi.files[0].name:''}
+  else{tp.value=preset.path;tp.readOnly=true}
+  if(fi.files.length&&preset.accept){
+    var name=fi.files[0].name.toLowerCase(),exts=preset.accept.split(','),ok=false;
+    for(var j=0;j<exts.length;j++){if(name.endsWith(exts[j].trim().replace('*','')))ok=true}
+    if(!ok){fi.value='';log('Cleared file (wrong type)')}
+  }
+}
+function onFileSelected(){
+  var fi=document.getElementById('fileInput'),tp=document.getElementById('targetPath');
+  if(!fi.files.length) return;
+  var m=currentUploadMode(),file=fi.files[0],preset=UPLOAD_PRESETS[m];
+  if(preset.accept){
+    var name=file.name.toLowerCase(),exts=preset.accept.split(','),ok=false;
+    for(var j=0;j<exts.length;j++){if(name.endsWith(exts[j].trim().replace('*','')))ok=true}
+    if(!ok){log('Wrong file type!');fi.value='';return}
+  }
+  if(m==='custom') tp.value='/'+file.name;
+  log('Selected: '+file.name+' ('+formatSize(file.size)+')');
+}
+async function uploadFile(){
+  var fi=document.getElementById('fileInput'); if(!fi.files.length){log('No file');return}
+  var file=fi.files[0], target=document.getElementById('targetPath').value.trim();
+  if(!target){log('No path');return} if(!target.startsWith('/'))target='/'+target;
+  log('Uploading: '+file.name+' → '+target+' ('+formatSize(file.size)+')');
+  setStatus('Uploading...','working'); document.getElementById('uploadBtn').disabled=true;
+  try{
+    var bytes=new Uint8Array(await file.arrayBuffer()), total=Math.ceil(bytes.length/CHUNK_SIZE);
+    if(total===0) total=1; readBuffer='';
+    await sendLine('put file/begin/'+target); await sleep(100);
+    try{await waitForResponse(2000)}catch(e){}
+    if(bytes.length>0){
+      for(var i=0;i<total;i++){
+        var chunk=bytes.slice(i*CHUNK_SIZE,(i+1)*CHUNK_SIZE);
+        var bin='';for(var j=0;j<chunk.length;j++)bin+=String.fromCharCode(chunk[j]);
+        await sendLine('put file/data/'+btoa(bin));
+        try{await waitForResponse(2000)}catch(e){await sleep(50)}
+        setProgress((i+1)/total*100);
+      }
+    }
+    await sendLine('put file/end'); await sleep(100);
+    try{await waitForResponse(3000)}catch(e){}
+    log('Upload complete'); setStatus('Connected','connected'); hideProgress();
+    await sleep(300); await listFiles();
+  }catch(err){
+    log('Upload error: '+err.message); setStatus('Error','disconnected');
+    try{await sendLine('put file/end')}catch(e){}
+  }
+  document.getElementById('uploadBtn').disabled=false;
+}
+
+// === PLAYER IDENTITY (v1.3) ===
+async function loadPlayer(){
+  if(!connected) return;
+  showLoading('Loading user identity...');
+  try{
+    var data=await sendAndParse('get player',3000);
+    if(data.player){
+      document.getElementById('playerCall').value=data.player.call||'';
+      document.getElementById('playerName').value=data.player.name||'';
+      log('Player: '+(data.player.call||'(none)')+' / '+(data.player.name||'(none)'));
+    }
+  }catch(e){log('Player: '+e.message)}
+  hideLoading();
+}
+async function setPlayerCall(){var val=document.getElementById('playerCall').value.trim().toUpperCase();if(!val)return;document.getElementById('playerCall').value=val;try{await sendLine('put player/call/'+val);try{await waitForResponse(2000)}catch(e){}log('Callsign → '+val)}catch(e){log('Error: '+e.message)}}
+async function setPlayerName(){var val=document.getElementById('playerName').value.trim().toUpperCase();if(!val)return;document.getElementById('playerName').value=val;try{await sendLine('put player/name/'+val);try{await waitForResponse(2000)}catch(e){}log('Name → '+val)}catch(e){log('Error: '+e.message)}}
+
+// ============================================================================
+// LOAD OPTIONAL HELP TEXTS
+// ============================================================================
+(function(){
+  fetch('m32_pref_help.json').then(function(r){if(r.ok)return r.json();throw new Error('not found')}).then(function(data){
+    prefHelpTexts=data; log('Loaded preference help texts ('+Object.keys(data).length+' entries)');
+  }).catch(function(){});
+})();
+
+// ============================================================================
+// INIT
+// ============================================================================
+if(!('serial' in navigator)){document.getElementById('connectBtn').disabled=true;log('WebSerial not supported. Use Chrome or Edge.')}
+</script>
+</body>
+</html>

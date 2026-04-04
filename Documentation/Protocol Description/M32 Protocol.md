@@ -1,10 +1,28 @@
 # The M32 Serial Protocol
 
-	Date: March 14, 2026 (Pi Day)
-	Version: 1.2
+	Date: April 3, 2026
+	Version: 1.3
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
 The USB bus can be used for two-way communication with a connected computer. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
+
+	Changes in protocol version 1.3 from version 1.2:
+
+	New GET commands for reading device state:
+
+	GET snapshot/<n> — read the contents of a snapshot without recalling it
+	GET player — read player callsign and name (Fight the Pileup identity)
+	GET customchars — read the custom Koch character set and its active state
+	GET hardware — read hardware settings (brightness, left-handed mode, etc.)
+	GET battery — read battery / power status
+
+	New PUT commands for configuration:
+
+	PUT player/call/<callsign> — set the player callsign (stored uppercase)
+	PUT player/name/<name> — set the player name (stored uppercase)
+	PUT customchars/set/<characters> — set and enable a custom Koch character set
+	PUT customchars/clear — disable and clear the custom Koch character set
+	PUT device/reset/defaults — reset all parameters to factory defaults
 
 	Changes in protocol version 1.2 from version 1.1
 	   (see section "Other files"):
@@ -176,6 +194,9 @@ while this is on, there will  be no time-outs, whatever the parameter says!
 `PUT device/protocol/off` 	
 This switches the M32 Protocol off (time-out as defined in its parameter will be in effect again).
 
+`PUT device/reset/defaults`
+This resets all configurable parameters to their factory default values. Snapshots, WiFi configuration, CW memories, and player identity are not affected.
+
 
 
 
@@ -334,6 +355,23 @@ Recall parameters (and menu selection) from snapshot n.
 
 Clear (i.e., delete) snapshot n (n = 1..8).
 
+`GET snapshot/<n>`
+
+This command returns the full contents of snapshot n (n = 1..8) without recalling it — the current device settings are not modified. This is useful for inspecting or comparing snapshot contents. The snapshot must exist (see `GET snapshots` to check which snapshots are stored).
+
+The response includes the stored menu selection, custom character set, and all parameter values with their display representations.
+
+Example:
+
+	{"snapshot":{"number":3,"lastExecuted":1,"menuName":"CW Keyer",
+	"customChars":{"active":false,"characters":""},
+	"configs":[
+	{"name":"Encoder Click","value":1,"displayed":"On"},
+	{"name":"Tone Pitch","value":10,"displayed":"622 Hz e2"},
+	{"name":"External Pol.","value":0,"displayed":"Normal"},
+	...
+	]}}
+
 
 
 ### Stored Text File
@@ -460,6 +498,93 @@ Example:
 `PUT kochlesson/<n>`					
 
 This sets Koch lesson to lesson number <n>.
+
+
+### Custom Character Set
+
+`GET customchars`
+
+This returns the current state of the custom Koch character set, with properties "active" (type Boolean; whether custom characters are enabled) and "characters" (type String; the character set, empty if not defined).
+
+Example:
+
+	{"customchars":{"active":true,"characters":"mkrsuaptl"}}
+
+`PUT customchars/set/<characters>`
+
+This sets and enables a custom Koch character set. The `<characters>` string contains the characters to be used, in the desired order. Note: `<characters>` is case-sensitive in the protocol (it is the third argument, which is not lowercased by the command parser).
+
+Example:
+
+	PUT customchars/set/mkrsuaptlowi
+
+`PUT customchars/clear`
+
+This disables and clears the custom Koch character set. The Koch trainer will revert to the sequence selected by the "Koch Sequence" parameter.
+
+
+### Player Identity
+
+These commands read and set the player callsign and name used in the "Fight the Pileup" game. Both callsign and name are stored as uppercase, with a maximum length of 8 characters.
+
+`GET player`
+
+This returns the stored player callsign and name.
+
+Example:
+
+	{"player":{"call":"OE1WKL","name":"WILLI"}}
+
+`PUT player/call/<callsign>`
+
+This sets the player callsign. The value is converted to uppercase and truncated to 8 characters.
+
+Example:
+
+	PUT player/call/OE1WKL
+
+`PUT player/name/<name>`
+
+This sets the player name. The value is converted to uppercase and truncated to 8 characters.
+
+Example:
+
+	PUT player/name/Willi
+
+
+### Hardware Information
+
+`GET hardware`
+
+This returns read-only information about hardware settings. These values are displayed for informational purposes and cannot be changed via the serial protocol.
+
+The properties are: "brightness" (type Number; OLED brightness level), "leftHanded" (type Boolean; whether screen is flipped for left-handed use), and "vAdjust" (type Number; battery voltage calibration value). On devices with LoRa hardware, the response also includes "loraBand" (type Number; 0=433, 1=868, 2=920 MHz), "loraFrequency" (type Number; exact frequency in Hz), and "loraPower" (type Number; transmit power in dBm).
+
+Example (M32 with LoRa):
+
+	{"hardware":{"brightness":255,"leftHanded":false,"vAdjust":210,
+	"loraBand":0,"loraFrequency":434150000,"loraPower":14}}
+
+Example (M32 Pocket, no LoRa):
+
+	{"hardware":{"brightness":255,"leftHanded":false,"vAdjust":210}}
+
+
+### Battery Status
+
+`GET battery`
+
+This returns information about the power / battery status. Note that when connected via USB (which is required for the serial protocol), the battery is typically being charged, so the voltage reading reflects charging voltage rather than actual battery level.
+
+On devices with battery monitoring hardware (e.g. M32 Pocket), the response includes "voltage" (type Number; millivolts) and "status" (type String; "charging" or "full"). On other devices, the status is "usb powered".
+
+Example (M32 Pocket):
+
+	{"battery":{"voltage":4050,"status":"charging"}}
+
+Example (classic M32):
+
+	{"battery":{"status":"usb powered"}}
 
 ### Automated CW Keyer and Memory Keyer
 
