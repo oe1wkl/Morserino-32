@@ -2814,6 +2814,7 @@ void onWifiReceive(AsyncUDPPacket packet) {
 void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed int rssi, bool broadcast)
 {
     // Pileup game: intercept and decode MOPP packet to text
+    #ifdef CONFIG_CW_GAME
     if (pileupMode && len > 2 && broadcast) {
         // Decode MOPP elements from packet
         String elements = "";
@@ -2831,7 +2832,7 @@ void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed i
         pileupRxReady = true;
         return;
     }
-
+    #endif
     if (morseState != wifiTrx)
     return;
   u_int maxl = sizeof(cwTxBuffer) < len ? sizeof(cwTxBuffer) : len;
