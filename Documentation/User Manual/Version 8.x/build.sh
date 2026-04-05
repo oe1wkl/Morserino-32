@@ -24,14 +24,14 @@ build_pdf() {
     local input="manual_${lang}.md"
     local html_output="manual_${lang}.html"
     local pdf_output="m32UserManual_v8_${lang}.pdf"
-    
+
     if [ ! -f "$input" ]; then
         echo "Error: $input not found"
         exit 1
     fi
-    
+
     echo "Building HTML from $input..."
-    
+
     pandoc "$input" \
         -o "$html_output" \
         --standalone \
@@ -45,23 +45,23 @@ build_pdf() {
         --from markdown+fenced_divs \
         --include-before-body="$TITLE" \
         2>&1
-    
+
     if [ $? -ne 0 ]; then
         echo "Error generating HTML"
         exit 1
     fi
-    
+
     echo "Created $html_output"
-    
+
     if [ "$format" = "html" ]; then
         echo "Done (HTML only)"
         return
     fi
-    
+
     echo "Converting to PDF with weasyprint..."
-    
+
     weasyprint "$html_output" "$pdf_output" 2>&1
-    
+
     if [ $? -eq 0 ]; then
         echo "Successfully created $pdf_output"
     else

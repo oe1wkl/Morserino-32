@@ -2433,8 +2433,10 @@ page for firmware updates **and follow the instructions there**.
 
 ## Appendix 7: Using a Browser to set up M32 Preferences, and upload Text Files
 
-There are currently two sites that enable you to set up M32 preferences
+There are currently three sites that enable you to set up M32 preferences
 through a browser on your computer, and another one that implements an M32 File Manager.
+
+* There is the "official" morserino.info website which hosts a comprehensive configuration tool at [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html). It allows to view and set all preferences, and also to set, delete, view and compare snapshots. In addition it contains file utilities, see below.
 
 * Christof, **OE6CHD**, wrote a Javascript program that makes it very easy
 to set preferences, WiFi access point credentials, and keyer memories,
@@ -2446,13 +2448,24 @@ as well as to upload text file for the File Player.
 The quickest way to do all that is to connect your Morserino via USB to
 a computer running Chrome, Edge or Opera (or any other browser that
 supports the Webserial protocol), and going to either
-[https://tegmento.org/](https://tegmento.org/) (for the application
-by OE6CHD) or to
-[https://morsetrainerpro.com/morserino-config.html](https://morsetrainerpro.com/morserino-config.html)
+
+* [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html) (for the "official" configuration tool),
+
+* [`https://tegmento.org/`](https://tegmento.org/) (for the application
+by OE6CHD),
+ or 
+* [`https://morsetrainerpro.com/morserino-config.html`](https://morsetrainerpro.com/morserino-config.html)
 (for the application by OM0RX) .
 
-(You can also run Christof's javascript program locally, the source code
-is available at *https://github.com/cdaller/morserino32-trainer*.)
+::: note
+
+* The "official" tool is a simple html/javascript program that can also run locally. The source is also available at the Morserino GitHub site. There you will also find a help file in JSON format which enables tool tips within the application (explainign the purpose of the various preferences). 
+
+* This tool also contains a **file manager** for uploading text and sound files, and for viewing the standard text file, as well as a **file builder**, which allows to combine several files into a mulit-part file that can be used with the M32 file player; **this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player**.
+
+* You can also run Christof's javascript program locally, the source code
+is available at *https://github.com/cdaller/morserino32-trainer*.
+:::
 
 ::: important
 If you are using a M32Pocket, the device must be turned on and must not
@@ -2473,7 +2486,6 @@ Also Oliver implemented a lot of additional training features on his
 site, to be found at
 [https://morsetrainerpro.com/index.html](https://morsetrainerpro.com/index.html).
 
-* On the Morserino home page ([www.morserino.info](https://www.morserino.info/)) there is also a link to a simple **M32 file manager**, that also uses the serial protocol for uploading text and sound files to a Morserino; the html file that implements this functionality is also available on the Morserino GitHub site; you can store this html file locally on your machine and use it from there, so there is no need to be online for file uploads.
 
   This utility also gives information about free space for files, and you can also delete files on the M32.
 
