@@ -237,15 +237,25 @@ void MorseJSON::jsonFileFirstLine(void) {
 	file.close();
 }
 
-void MorseJSON::jsonFileText(void) {												 // get file content as json object (file should not contain curly braces!)
-	File file = SPIFFS.open("/player.txt", "r"); // Open the file for reading in SPIFFS - no error handling, file must exist
+void MorseJSON::jsonFileText(void) {
+	File file = SPIFFS.open("/player.txt", "r");
 	Serial.print("{\"file\":{\"text\":\"");
 	while (file.available())
 	{
 		char c = file.read();
-		if (c == '{' || c == '}')
-			continue;
-		Serial.write(c);
+		switch (c) {
+			case '"':  Serial.print("\\\""); break;
+			case '\\': Serial.print("\\\\"); break;
+			case '\n': Serial.print("\\n");  break;
+			case '\r': Serial.print("\\r");  break;
+			case '\t': Serial.print("\\t");  break;
+			case '{':  break;  // skip curly braces
+			case '}':  break;
+			default:
+				if (c >= 0x20)   // skip other control characters
+					Serial.write(c);
+				break;
+		}
 	}
 	Serial.print("\"}}");
 	file.close();
