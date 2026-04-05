@@ -4,6 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>M32 Configuration Tool</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -134,7 +137,7 @@
     .file-table th{text-align:left;padding:8px 12px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--box-border);border-bottom:2px solid var(--box-border)}
     .file-table td{padding:8px 12px;font-size:15px;border-bottom:1px solid #e0e8ee}
     .file-table tr:last-child td{border-bottom:none}
-    .file-table .col-size{text-align:right;color:var(--muted)}.file-table .col-action{text-align:right;width:80px}
+    .file-table .col-size{text-align:right;color:var(--muted)}.file-table .col-action{text-align:right;width:160px}
     .file-table .empty-msg{color:var(--muted);font-style:italic}
     .space-info{font-size:14px;color:var(--muted);margin-bottom:4px}
     .upload-target{display:flex;align-items:center;gap:10px;margin-bottom:10px;padding:9px 14px;background:#fff;border:2px solid #c8d8e4;border-radius:var(--radius);cursor:pointer;user-select:none;transition:border-color .2s}
@@ -177,6 +180,67 @@
     /* Snapshot comparison */
     .snap-diff{font-weight:900;color:var(--accent)}
     .snap-same{color:var(--muted)}
+    /* Global Connection Bar */
+    .conn-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 16px;background:#f4f7fa;border-bottom:1px solid #c8d8e4;margin-bottom:0}
+    .conn-bar .status-badge{margin:0;padding:4px 12px;font-size:13px}
+    .conn-bar .btn{padding:6px 14px;font-size:13px;box-shadow:2px 2px 2px rgba(0,0,0,.15)}
+    .conn-bar .conn-hint{font-size:12px;color:var(--muted)}
+    /* Player Text Modal */
+    .pt-modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:400;align-items:center;justify-content:center;padding:20px}
+    .pt-modal-overlay.active{display:flex}
+    .pt-modal{background:#fff;border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,0.35);width:100%;max-width:700px;max-height:80vh;display:flex;flex-direction:column;overflow:hidden}
+    .pt-modal-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:2px solid var(--box-border);background:var(--tab-bg)}
+    .pt-modal-title{font-size:17px;font-weight:900;color:var(--text);font-family:'Courier New',monospace}
+    .pt-modal-close{background:none;border:none;font-size:20px;color:var(--muted);cursor:pointer;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:4px;transition:all .15s}
+    .pt-modal-close:hover{background:var(--red-bg);color:var(--accent)}
+    .pt-modal-body{padding:20px;overflow-y:auto;font-family:'Courier New',monospace;font-size:14px;font-weight:600;line-height:1.6;color:#000;white-space:pre-wrap;word-break:break-word;flex:1}
+    .pt-modal-body .fb-sep{color:var(--accent);font-weight:700}
+    .pt-modal-body .fb-txt{color:#333 !important}
+    /* File Builder */
+    .fb-dropzone{border:2px dashed #b0c0cc;border-radius:var(--radius);padding:36px 20px;text-align:center;cursor:pointer;transition:all .25s;background:#fff;position:relative;margin-bottom:16px}
+    .fb-dropzone:hover,.fb-dropzone.drag-over{border-color:var(--accent);background:#fff8f5}
+    .fb-dropzone input[type="file"]{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .fb-dropzone .fb-icon{font-size:36px;margin-bottom:8px;opacity:.5}
+    .fb-dropzone p{font-size:15px;color:var(--muted);line-height:1.5}
+    .fb-formats{font-family:'Courier New',monospace;font-size:12px;color:var(--muted);margin-top:8px;opacity:.6}
+    .fb-parts{display:flex;flex-direction:column;gap:6px;margin:14px 0}
+    .fb-card{background:#fff;border:1px solid #c8d8e4;border-radius:6px;padding:12px 16px;display:grid;grid-template-columns:28px 1fr auto;gap:12px;align-items:center;cursor:grab;transition:all .2s}
+    .fb-card:active{cursor:grabbing}
+    .fb-card:hover{border-color:var(--accent);background:#fffaf8}
+    .fb-card.dragging{opacity:.35;border-color:var(--accent)}
+    .fb-card.drag-target{border-top:3px solid var(--accent)}
+    .fb-grip{display:flex;flex-direction:column;gap:2px;align-items:center}
+    .fb-grip span{display:block;width:14px;height:2px;background:#b0c0cc;border-radius:1px}
+    .fb-part-info{display:flex;flex-direction:column;gap:6px;min-width:0}
+    .fb-name-input{font-family:Lato,Arial,sans-serif;font-size:15px;font-weight:700;background:transparent;border:none;border-bottom:1px solid #c8d8e4;color:var(--text);padding:2px 6px;width:100%;transition:border-color .2s}
+    .fb-name-input:focus{outline:none;border-color:var(--accent)}
+    .fb-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .fb-badge{font-family:'Courier New',monospace;font-size:11px;font-weight:700;padding:1px 7px;border-radius:3px;text-transform:uppercase}
+    .fb-badge-txt{background:var(--green-bg);color:var(--green)}
+    .fb-badge-pdf{background:var(--red-bg);color:var(--accent)}
+    .fb-badge-docx{background:#dbeafe;color:#2563eb}
+    .fb-badge-odt{background:#fef3c7;color:#b45309}
+    .fb-badge-rtf{background:#ede9fe;color:#7c3aed}
+    .fb-badge-md{background:#d1fae5;color:#047857}
+    .fb-badge-epub{background:#ffe4c9;color:#b45309}
+    .fb-filename{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .fb-chars{font-family:'Courier New',monospace;font-size:11px;color:var(--muted);opacity:.7}
+    .fb-actions{display:flex;gap:4px}
+    .fb-btn-icon{background:#fff;border:1px solid #c8d8e4;color:var(--muted);width:30px;height:30px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
+    .fb-btn-icon:hover{border-color:var(--accent);color:var(--accent)}
+    .fb-preview{background:#f8fafb;border:1px solid #c8d8e4;border-radius:var(--radius);padding:16px;font-family:'Courier New',monospace;font-size:13px;line-height:1.6;color:var(--text);max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;margin-bottom:16px}
+    .fb-sep{color:var(--accent);font-weight:700}
+    .fb-txt{color:var(--muted)}
+    .fb-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #c8d8e4;border-radius:6px;margin-bottom:14px;cursor:pointer;user-select:none;font-size:14px;color:var(--text)}
+    .fb-toggle input{display:none}
+    .fb-switch{width:34px;height:18px;background:#c8d8e4;border-radius:9px;position:relative;transition:background .2s;flex-shrink:0}
+    .fb-switch::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:all .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+    .fb-toggle input:checked+.fb-switch{background:var(--accent)}
+    .fb-toggle input:checked+.fb-switch::after{left:18px}
+    .fb-action-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .fb-output-name{font-family:'Courier New',monospace;font-size:14px;padding:8px 12px;border:1px solid #b0c0cc;border-radius:4px;flex:1;min-width:180px;background:#fff;color:var(--text)}
+    .fb-output-name:focus{border-color:var(--accent);outline:none}
+    .fb-spinner{display:inline-block;width:14px;height:14px;border:2px solid #c8d8e4;border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle}
     @media(max-width:700px){
       .tab-btn{padding:8px 10px;font-size:12px}
       .tab-btn span.tab-label{display:none}
@@ -189,6 +253,18 @@
   </style>
 </head>
 <body>
+<!-- PLAYER TEXT MODAL (top-level to avoid any inherited styles) -->
+<div class="pt-modal-overlay" id="ptModal" onclick="ptCloseModal(event)">
+  <div class="pt-modal">
+    <div class="pt-modal-header">
+      <span class="pt-modal-title">/player.txt</span>
+      <button class="pt-modal-close" onclick="document.getElementById('ptModal').classList.remove('active')" title="Close">✕</button>
+    </div>
+    <div class="pt-modal-body" id="ptModalBody">
+      <p style="color:#666;font-style:italic">Loading...</p>
+    </div>
+  </div>
+</div>
 <div class="loading-overlay" id="loadingOverlay"><div class="loading-box"><div class="loading-spinner"></div><span id="loadingText">Loading...</span></div></div>
 <div class="banner">
   <div class="morse-header">
@@ -227,23 +303,23 @@
   <button class="tab-btn" onclick="switchTab('koch')" data-tab="koch">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/><path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
     <span class="tab-label">Koch</span></button>
+  <button class="tab-btn" onclick="switchTab('filebuilder')" data-tab="filebuilder">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+    <span class="tab-label">File Builder</span></button>
   <button class="tab-btn" onclick="switchTab('files')" data-tab="files">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
     <span class="tab-label">Files</span></button>
 </div>
 
+<div class="conn-bar" id="connBar">
+  <span class="status-badge status-disconnected" id="statusBadge">Not connected</span>
+  <button class="btn btn-accent" id="connectBtn" onclick="doConnect()">Connect</button>
+  <button class="btn btn-red" id="disconnectBtn" onclick="doDisconnect()" disabled>Disconnect</button>
+  <span class="conn-hint">USB · Chrome/Edge</span>
+</div>
+
 <!-- CONNECTION -->
 <div class="tab-content active" id="tab-connection">
-  <div class="box">
-    <h2 class="section-title">Connection</h2>
-    <p class="section-sub">Connect your Morserino-32 via USB data cable</p>
-    <div style="text-align:center;margin-bottom:14px"><span class="status-badge status-disconnected" id="statusBadge">Not connected</span></div>
-    <div class="btn-row" style="justify-content:center">
-      <button class="btn btn-accent" id="connectBtn" onclick="doConnect()">Connect</button>
-      <button class="btn btn-red" id="disconnectBtn" onclick="doDisconnect()" disabled>Disconnect</button>
-    </div>
-    <p style="text-align:center;font-size:14px;color:var(--muted);margin-top:8px">Requires <strong>Chrome</strong> or <strong>Edge</strong> with WebSerial support.</p>
-  </div>
   <div class="box" id="deviceInfoBox" style="display:none">
     <h2 class="section-title">Device Information</h2>
     <div class="info-grid" id="deviceInfoGrid"></div>
@@ -252,6 +328,7 @@
     <h2 class="section-title">Hardware &amp; Status</h2>
     <div class="info-grid" id="hardwareInfoGrid"></div>
   </div>
+  <p style="text-align:center;color:var(--muted);font-style:italic;padding:30px 20px" id="connPlaceholder">Connect your Morserino-32 via USB to view device details</p>
 </div>
 
 <!-- DASHBOARD -->
@@ -416,6 +493,39 @@
   </div>
 </div>
 
+<!-- FILE BUILDER -->
+<div class="tab-content" id="tab-filebuilder">
+  <div class="box">
+    <h2 class="section-title">Multi-Part File Builder</h2>
+    <p class="section-sub">Combine text files into a multi-part file for the CW player</p>
+    <div class="fb-dropzone" id="fbDropZone">
+      <input type="file" id="fbFileInput" multiple accept=".txt,.text,.pdf,.doc,.docx,.odt,.rtf,.md,.markdown,.epub" />
+      <div class="fb-icon">📂</div>
+      <p>Drop files here or click to browse</p>
+      <div class="fb-formats">.txt · .md · .pdf · .docx · .odt · .rtf · .epub</div>
+    </div>
+    <label class="fb-toggle" id="fbUmlautToggle">
+      <input type="checkbox" id="fbUmlautCb" onchange="fbReprocessAll()" />
+      <span class="fb-switch"></span>
+      <span>Convert German umlauts (ä→ae, ö→oe, ü→ue, ß→ss)</span>
+    </label>
+    <div id="fbPartsContainer" style="display:none">
+      <div class="field-label">Parts <span id="fbPartsCount" style="font-weight:400"></span></div>
+      <div class="fb-parts" id="fbPartsList"></div>
+    </div>
+  </div>
+  <div class="box" id="fbPreviewBox" style="display:none">
+    <div class="field-label">Preview</div>
+    <div class="fb-preview" id="fbPreview"></div>
+    <div class="fb-action-row">
+      <input type="text" class="fb-output-name" id="fbOutputName" value="multipart.txt" placeholder="filename for download" />
+      <button class="btn btn-outline btn-sm" onclick="fbDownload()">Save to Computer</button>
+      <button class="btn btn-green btn-sm" onclick="fbUploadToM32()" id="fbUploadBtn" disabled>Upload to M32 as /player.txt</button>
+    </div>
+    <div class="progress-bar" id="fbProgressBar"><div class="progress-fill" id="fbProgressFill">0%</div></div>
+  </div>
+</div>
+
 <!-- FILES -->
 <div class="tab-content" id="tab-files">
   <div class="box">
@@ -500,6 +610,9 @@ function enableUI(c){
   if(c){
     if(currentUploadMode()!=='custom') document.getElementById('targetPath').readOnly=true;
   }
+  // Connection tab placeholder
+  var cp=document.getElementById('connPlaceholder');
+  if(cp) cp.style.display=c?'none':'';
 }
 
 // ============================================================================
@@ -526,6 +639,7 @@ function loadTabData(tabId){
     case 'wifi': loadWifi(); break;
     case 'player': loadPlayer(); break;
     case 'koch': loadKoch(); break;
+    case 'filebuilder': fbRender(); break;
     case 'files': listFiles(); break;
   }
 }
@@ -1164,7 +1278,10 @@ async function listFiles(){
     if(data.files&&data.files.length>0){
       for(var k=0;k<data.files.length;k++){
         var f=data.files[k], tr=document.createElement('tr'), esc=f.name.replace(/'/g,"\\'");
-        tr.innerHTML='<td>'+f.name+'</td><td class="col-size">'+formatSize(f.size)+'</td><td class="col-action"><button class="btn btn-red btn-sm" onclick="deleteFile(\''+esc+'\')">Delete</button></td>';
+        var actions='';
+        if(f.name==='/player.txt'||f.name==='player.txt') actions='<button class="btn btn-outline btn-sm" onclick="viewPlayerText()" style="margin-right:6px">View</button>';
+        actions+='<button class="btn btn-red btn-sm" onclick="deleteFile(\''+esc+'\')">Delete</button>';
+        tr.innerHTML='<td>'+f.name+'</td><td class="col-size">'+formatSize(f.size)+'</td><td class="col-action" style="white-space:nowrap">'+actions+'</td>';
         tbody.appendChild(tr);
       }
     } else tbody.innerHTML='<tr><td colspan="3" class="empty-msg">No files found</td></tr>';
@@ -1174,6 +1291,40 @@ async function listFiles(){
   hideLoading();
 }
 async function deleteFile(name){if(!confirm('Delete '+name+'?'))return;readBuffer='';await sendLine('put file/delete/'+name);try{await waitForResponse(2000);log('Deleted: '+name)}catch(e){log('Delete sent')}await listFiles()}
+
+async function viewPlayerText(){
+  if(!connected) return;
+  // Show modal immediately with loading state
+  var modal=document.getElementById('ptModal'),body=document.getElementById('ptModalBody');
+  body.innerHTML='<p style="color:var(--muted);font-style:italic">Loading...</p>';
+  modal.classList.add('active');
+  try{
+    var data=await sendAndParse('get file/text',5000);
+    var content='';
+    // Try various response shapes
+    if(typeof data.text==='string') content=data.text;
+    else if(data.file&&typeof data.file.content==='string') content=data.file.content;
+    else if(data.file&&typeof data.file.text==='string') content=data.file.text;
+    else{
+      log('Player text: unexpected response: '+JSON.stringify(data).substring(0,200));
+      body.innerHTML='<p style="color:var(--accent)">Unexpected response format. Check Activity Log.</p>';
+      return;
+    }
+    if(!content){body.innerHTML='<p style="color:var(--muted);font-style:italic">(empty file)</p>';log('Player text: empty');return}
+    // Render with part separators highlighted
+    var lines=content.split('\n'),html='';
+    for(var i=0;i<lines.length;i++){
+      if(lines[i].indexOf('<c>$')===0) html+='<span style="color:#b03e10">'+escHtml(lines[i])+'</span>\n';
+      else html+=escHtml(lines[i])+'\n';
+    }
+    body.innerHTML=html;
+    log('Player text: '+content.length+' chars');
+  }catch(e){
+    body.innerHTML='<p style="color:var(--accent)">Error: '+escHtml(e.message)+'</p>';
+    log('Player text: '+e.message);
+  }
+}
+function ptCloseModal(e){if(e.target===document.getElementById('ptModal'))document.getElementById('ptModal').classList.remove('active')}
 
 function currentUploadMode(){return document.querySelector('input[name="uploadMode"]:checked').value}
 function setUploadMode(m){
@@ -1247,6 +1398,236 @@ async function loadPlayer(){
 }
 async function setPlayerCall(){var val=document.getElementById('playerCall').value.trim().toUpperCase();if(!val)return;document.getElementById('playerCall').value=val;try{await sendLine('put player/call/'+val);try{await waitForResponse(2000)}catch(e){}log('Callsign → '+val)}catch(e){log('Error: '+e.message)}}
 async function setPlayerName(){var val=document.getElementById('playerName').value.trim().toUpperCase();if(!val)return;document.getElementById('playerName').value=val;try{await sendLine('put player/name/'+val);try{await waitForResponse(2000)}catch(e){}log('Name → '+val)}catch(e){log('Error: '+e.message)}}
+
+// ============================================================================
+// FILE BUILDER
+// ============================================================================
+var fbParts=[]; // {id,name,rawText,text,fileName,fileType,loading}
+var fbDragSrc=null;
+
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+(function(){
+  var dz=document.getElementById('fbDropZone'),fi=document.getElementById('fbFileInput');
+  dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over')});
+  dz.addEventListener('dragleave',function(){dz.classList.remove('drag-over')});
+  dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag-over');fbHandleFiles(e.dataTransfer.files)});
+  fi.addEventListener('change',function(e){fbHandleFiles(e.target.files);e.target.value=''});
+})();
+
+function fbDetectType(ext){
+  if(ext==='pdf')return 'pdf';if(ext==='docx'||ext==='doc')return 'docx';if(ext==='odt')return 'odt';
+  if(ext==='rtf')return 'rtf';if(ext==='md'||ext==='markdown')return 'md';if(ext==='epub')return 'epub';return 'txt';
+}
+
+async function fbHandleFiles(fileList){
+  for(var f of fileList){
+    var ext=f.name.split('.').pop().toLowerCase();
+    var base=f.name.replace(/\.[^.]+$/,'');
+    var id=Date.now()+'_'+Math.random().toString(36).slice(2,8);
+    var ft=fbDetectType(ext);
+    var part={id:id,name:base,rawText:'',text:'',fileName:f.name,fileType:ft,loading:true};
+    fbParts.push(part);fbRender();
+    try{
+      var txt='';
+      if(ft==='pdf') txt=await fbExtractPdf(f);
+      else if(ft==='docx') txt=await fbExtractDocx(f);
+      else if(ft==='odt') txt=await fbExtractOdt(f);
+      else if(ft==='rtf') txt=await fbExtractRtf(f);
+      else if(ft==='md') txt=fbStripMd(await f.text());
+      else if(ft==='epub') txt=await fbExtractEpub(f);
+      else txt=await f.text();
+      part.rawText=txt;part.text=fbSanitize(txt);
+    }catch(err){part.rawText='';part.text='[Error: '+err.message+']';log('File Builder: error reading '+f.name+': '+err.message)}
+    part.loading=false;fbRender();
+  }
+}
+
+// --- Extractors (self-contained for File Builder) ---
+async function fbExtractPdf(file){
+  var ab=await file.arrayBuffer(),pdf=await pdfjsLib.getDocument({data:ab}).promise,pages=[];
+  for(var i=1;i<=pdf.numPages;i++){var pg=await pdf.getPage(i),c=await pg.getTextContent();pages.push(c.items.map(function(it){return it.str}).join(' '))}
+  return pages.join('\n\n');
+}
+async function fbExtractDocx(file){var ab=await file.arrayBuffer(),r=await mammoth.extractRawText({arrayBuffer:ab});return r.value}
+async function fbExtractOdt(file){
+  var ab=await file.arrayBuffer(),zip=await JSZip.loadAsync(ab),xml=await zip.file('content.xml')?.async('string');
+  if(!xml)throw new Error('No content.xml');
+  var parser=new DOMParser(),doc=parser.parseFromString(xml,'application/xml');
+  var body=doc.getElementsByTagNameNS('urn:oasis:names:tc:opendocument:xmlns:office:1.0','body')[0];
+  if(!body)throw new Error('No body');var texts=[];
+  (function walk(n){var ns='urn:oasis:names:tc:opendocument:xmlns:text:1.0';
+    if(n.namespaceURI===ns&&(n.localName==='p'||n.localName==='h')){var t=n.textContent.trim();if(t)texts.push(t)}
+    for(var c of n.children)walk(c)})(body);
+  return texts.join('\n');
+}
+async function fbExtractRtf(file){
+  var raw=await file.text(),s=raw,annotations=[];
+  function extractGroup(src,kw){
+    var results=[],needle='{\\*\\'+kw,pos=0;
+    while((pos=src.indexOf(needle,pos))!==-1){
+      var depth=0,start=pos,i=pos;
+      while(i<src.length){if(src[i]==='{')depth++;else if(src[i]==='}'){depth--;if(depth===0)break}i++}
+      var content=src.substring(start+needle.length,i);
+      content=content.replace(/\\'([0-9a-fA-F]{2})/g,function(_,h){return String.fromCharCode(parseInt(h,16))});
+      content=content.replace(/\\[a-zA-Z]+[-]?\d*\s?/g,'').replace(/[{}]/g,'').trim();
+      if(content)results.push({text:content});
+      src=src.substring(0,start)+'\x00ANN'+(results.length)+'\x00'+src.substring(i+1);pos=start+1;
+    }
+    return{results:results,modified:src};
+  }
+  var ex=extractGroup(s,'annotation');s=ex.modified;var anns=ex.results;
+  ex=extractGroup(s,'atnid');s=ex.modified;
+  s=s.replace(/\\'([0-9a-fA-F]{2})/g,function(_,h){return String.fromCharCode(parseInt(h,16))});
+  s=s.replace(/\{\\(?:fonttbl|colortbl|stylesheet|info|pict|object|header|footer)\b[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g,'');
+  s=s.replace(/\{\\\*\\[a-zA-Z]+[^{}]*(?:\{[^{}]*\}[^{}]*)*\}/g,'');
+  s=s.replace(/\\par\b\s*/g,'\n').replace(/\\line\b\s*/g,'\n').replace(/\\tab\b\s*/g,' ');
+  s=s.replace(/\\[a-zA-Z]+[-]?\d*\s?/g,'').replace(/[{}]/g,'');
+  for(var i=0;i<anns.length;i++)s=s.replace('\x00ANN'+(i+1)+'\x00','\n<c> '+anns[i].text+'\n');
+  return s.replace(/\r\n/g,'\n').replace(/\r/g,'\n').replace(/\n{3,}/g,'\n\n').trim();
+}
+function fbStripMd(text){
+  var s=text;s=s.replace(/^#{1,6}\s+/gm,'');s=s.replace(/\*{1,3}([^*]+)\*{1,3}/g,'$1');
+  s=s.replace(/_{1,3}([^_]+)_{1,3}/g,'$1');s=s.replace(/~~([^~]+)~~/g,'$1');s=s.replace(/`([^`]+)`/g,'$1');
+  s=s.replace(/```[\s\S]*?```/g,'');s=s.replace(/\[([^\]]+)\]\([^)]+\)/g,'$1');s=s.replace(/!\[([^\]]*)\]\([^)]+\)/g,'$1');
+  s=s.replace(/^[-*_]{3,}\s*$/gm,'');s=s.replace(/^>\s*/gm,'');s=s.replace(/^[\s]*[-*+]\s+/gm,'');
+  s=s.replace(/^[\s]*\d+\.\s+/gm,'');s=s.replace(/<[^>]+>/g,'');return s.trim();
+}
+async function fbExtractEpub(file){
+  var ab=await file.arrayBuffer(),zip=await JSZip.loadAsync(ab);
+  var cxml=await zip.file('META-INF/container.xml')?.async('string'),opfPath='';
+  if(cxml){var m=cxml.match(/full-path="([^"]+\.opf)"/);if(m)opfPath=m[1]}
+  var htmlFiles=[];
+  if(opfPath){
+    var opfDir=opfPath.includes('/')?opfPath.substring(0,opfPath.lastIndexOf('/')+1):'';
+    var opfContent=await zip.file(opfPath)?.async('string');
+    if(opfContent){
+      var parser=new DOMParser(),opfDoc=parser.parseFromString(opfContent,'application/xml'),manifest={};
+      opfDoc.querySelectorAll('item').forEach(function(it){manifest[it.getAttribute('id')]=opfDir+it.getAttribute('href')});
+      opfDoc.querySelectorAll('itemref').forEach(function(ref){var id=ref.getAttribute('idref');if(manifest[id])htmlFiles.push(manifest[id])});
+    }
+  }
+  if(!htmlFiles.length){zip.forEach(function(path){if(/\.(xhtml|html|htm)$/i.test(path)&&!path.startsWith('META-INF'))htmlFiles.push(path)});htmlFiles.sort()}
+  var texts=[];
+  for(var p of htmlFiles){var c=await zip.file(p)?.async('string');if(!c)continue;var parser=new DOMParser(),doc=parser.parseFromString(c,'application/xhtml+xml'),body=doc.querySelector('body');if(body)texts.push(body.textContent.trim())}
+  return texts.join('\n\n');
+}
+
+// --- ASCII sanitization ---
+function fbConvertUmlauts(s){return s.replace(/\u00e4/g,'ae').replace(/\u00c4/g,'Ae').replace(/\u00f6/g,'oe').replace(/\u00d6/g,'Oe').replace(/\u00fc/g,'ue').replace(/\u00dc/g,'Ue').replace(/\u00df/g,'ss')}
+function fbSanitize(text){
+  var s=text;
+  if(document.getElementById('fbUmlautCb').checked) s=fbConvertUmlauts(s);
+  s=s.replace(/[\u2018\u2019\u201A\u2039\u203A]/g,"'");s=s.replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g,'"');
+  s=s.replace(/[\u2013\u2014]/g,'-');s=s.replace(/\u2026/g,'...');s=s.replace(/\u00A0/g,' ');
+  s=s.replace(/[^\x0A\x0D\x20-\x7E]/g,'');s=s.replace(/\n{3,}/g,'\n\n');return s.trim();
+}
+function fbReprocessAll(){for(var p of fbParts){if(!p.loading&&p.rawText)p.text=fbSanitize(p.rawText)};fbRender()}
+
+// --- Build output ---
+function fbBuildOutput(){
+  var active=fbParts.filter(function(p){return !p.loading});
+  if(!active.length)return '';
+  return active.map(function(p){return '<c>$ '+p.name+'\n'+p.text}).join('\n\n');
+}
+
+// --- Render ---
+function fbRender(){
+  var has=fbParts.length>0;
+  document.getElementById('fbPartsContainer').style.display=has?'':'none';
+  document.getElementById('fbPreviewBox').style.display=has?'':'none';
+  document.getElementById('fbPartsCount').textContent='('+fbParts.length+')';
+  document.getElementById('fbUploadBtn').disabled=!connected||!has;
+
+  var list=document.getElementById('fbPartsList');list.innerHTML='';
+  fbParts.forEach(function(part,idx){
+    var card=document.createElement('div');card.className='fb-card';card.draggable=true;
+    card.addEventListener('dragstart',function(e){fbDragSrc=idx;card.classList.add('dragging');e.dataTransfer.effectAllowed='move'});
+    card.addEventListener('dragend',function(){card.classList.remove('dragging');fbDragSrc=null;document.querySelectorAll('.fb-card').forEach(function(c){c.classList.remove('drag-target')})});
+    card.addEventListener('dragover',function(e){e.preventDefault();if(fbDragSrc===null||fbDragSrc===idx)return;card.classList.add('drag-target')});
+    card.addEventListener('dragleave',function(){card.classList.remove('drag-target')});
+    card.addEventListener('drop',function(e){e.preventDefault();e.stopPropagation();card.classList.remove('drag-target');if(fbDragSrc===null||fbDragSrc===idx)return;var mv=fbParts.splice(fbDragSrc,1)[0];fbParts.splice(idx,0,mv);fbDragSrc=null;fbRender()});
+
+    var badgeMap={pdf:'fb-badge-pdf',docx:'fb-badge-docx',odt:'fb-badge-odt',rtf:'fb-badge-rtf',md:'fb-badge-md',epub:'fb-badge-epub'};
+    var bc=badgeMap[part.fileType]||'fb-badge-txt';
+    card.innerHTML='<div class="fb-grip"><span></span><span></span><span></span></div>'
+      +'<div class="fb-part-info"><input class="fb-name-input" type="text" value="'+escHtml(part.name)+'" data-id="'+part.id+'" />'
+      +'<div class="fb-meta"><span class="fb-badge '+bc+'">'+part.fileType+'</span>'
+      +'<span class="fb-filename">'+escHtml(part.fileName)+'</span>'
+      +(part.loading?'<span class="fb-spinner"></span>':'<span class="fb-chars">'+part.text.length.toLocaleString()+' chars</span>')
+      +'</div></div>'
+      +'<div class="fb-actions"><button class="fb-btn-icon" title="Preview" onclick="fbPreviewPart(\''+part.id+'\')">👁</button>'
+      +'<button class="fb-btn-icon" title="Remove" onclick="fbRemove(\''+part.id+'\')">✕</button></div>';
+
+    var ni=card.querySelector('.fb-name-input');
+    ni.addEventListener('input',function(e){var p=fbParts.find(function(x){return x.id===e.target.dataset.id});if(p){p.name=e.target.value;fbUpdatePreview()}});
+    ni.addEventListener('mousedown',function(e){e.stopPropagation()});
+    ni.addEventListener('dragstart',function(e){e.preventDefault()});
+    list.appendChild(card);
+  });
+  fbUpdatePreview();
+}
+
+function fbUpdatePreview(){
+  var output=fbBuildOutput(),box=document.getElementById('fbPreview');
+  if(!output){box.textContent='';return}
+  var lines=output.split('\n'),html='';
+  for(var i=0;i<lines.length;i++){
+    if(lines[i].indexOf('<c>$')===0) html+='<span class="fb-sep">'+escHtml(lines[i])+'</span>\n';
+    else html+='<span class="fb-txt">'+escHtml(lines[i])+'</span>\n';
+  }
+  box.innerHTML=html;
+}
+function fbRemove(id){var idx=fbParts.findIndex(function(p){return p.id===id});if(idx>=0){fbParts.splice(idx,1);fbRender()}}
+function fbPreviewPart(id){
+  var part=fbParts.find(function(p){return p.id===id});if(!part)return;
+  var box=document.getElementById('fbPreview');
+  box.innerHTML='<span class="fb-sep">&lt;c&gt;$ '+escHtml(part.name)+'</span>\n<span class="fb-txt">'+escHtml(part.text.slice(0,3000))+(part.text.length>3000?'\n\n[... truncated ...]':'')+'</span>';
+}
+
+// --- Download ---
+function fbDownload(){
+  var output=fbBuildOutput();if(!output)return;
+  var fn=document.getElementById('fbOutputName').value.trim()||'multipart.txt';
+  var blob=new Blob([output],{type:'text/plain;charset=ascii'}),url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=fn;a.click();URL.revokeObjectURL(url);
+  log('File Builder: saved "'+fn+'" ('+output.length+' bytes)');
+}
+
+// --- Upload to M32 ---
+async function fbUploadToM32(){
+  var output=fbBuildOutput();if(!output){log('File Builder: nothing to upload');return}
+  if(!connected){log('File Builder: not connected');return}
+  var target='/player.txt';
+  var bytes=new TextEncoder().encode(output);
+  log('File Builder: uploading '+bytes.length+' bytes → '+target);
+  setStatus('Uploading...','working');
+  document.getElementById('fbUploadBtn').disabled=true;
+  var pb=document.getElementById('fbProgressBar'),pf=document.getElementById('fbProgressFill');
+  pb.style.display='block';
+  try{
+    var total=Math.ceil(bytes.length/CHUNK_SIZE);if(total===0)total=1;
+    readBuffer='';await sendLine('put file/begin/'+target);await sleep(100);
+    try{await waitForResponse(2000)}catch(e){}
+    if(bytes.length>0){
+      for(var i=0;i<total;i++){
+        var chunk=bytes.slice(i*CHUNK_SIZE,(i+1)*CHUNK_SIZE);
+        var bin='';for(var j=0;j<chunk.length;j++)bin+=String.fromCharCode(chunk[j]);
+        await sendLine('put file/data/'+btoa(bin));
+        try{await waitForResponse(2000)}catch(e){await sleep(50)}
+        var pct=(i+1)/total*100;pf.style.width=pct+'%';pf.textContent=Math.round(pct)+'%';
+      }
+    }
+    await sendLine('put file/end');await sleep(100);
+    try{await waitForResponse(3000)}catch(e){}
+    log('File Builder: upload complete');setStatus('Connected','connected');
+  }catch(err){
+    log('File Builder: upload error: '+err.message);setStatus('Error','disconnected');
+    try{await sendLine('put file/end')}catch(e){}
+  }
+  pb.style.display='none';pf.style.width='0%';pf.textContent='0%';
+  document.getElementById('fbUploadBtn').disabled=false;
+}
 
 // ============================================================================
 // LOAD OPTIONAL HELP TEXTS
