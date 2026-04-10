@@ -1,6 +1,7 @@
-# Morserino-32 Pocket FAQ
+## Morserino-32 Pocket 
+# Frequently Asked Questions - FAQ
 
-This FAQ is compiled from the official user manual and recent community discussions on groups.io.
+This FAQ document is compiled from the official user manual and recent community discussions on groups.io.
 
 ## 1. Power Supply, Battery, and Charging
 * **What type of battery should I use?**
