@@ -1090,7 +1090,7 @@ void MorseOutput::displayBatteryStatus(int v) {
   d = v / 50;
   c = round(d) * 50;
   a = c / 1000;
-  b = (c - 1000 * a) / 100;
+  b = (int) (((c - 1000 * a) / 100) + 0.5);  // add 0.5 to round to nearest 100mV
   if (v > 1000)
     s = "U: " + String(a) + "." + String(b) + " V";
   else
@@ -1154,10 +1154,10 @@ uint8_t MorseOutput::getPowerpathState() {
  
 // ---- Map voltage to 0-4 bars ----
 static uint8_t voltageToBars(int v) {
-    if (v < 3400) return 0;
-    if (v < 3600) return 1;
-    if (v < 3800) return 2;
-    if (v < 4000) return 3;
+    if (v < 3300) return 0;
+    if (v < 3500) return 1;
+    if (v < 3700) return 2;
+    if (v < 3860) return 3;
     return 4;
 }
  
@@ -1176,7 +1176,7 @@ void MorseOutput::checkPowerpathState() {
         ppPreviousState = ppCurrentState;
         ppCurrentState = state;
         batteryDisplayDirty = true;
- 
+      /*
         // Recalibrate on charging→full transition
         // At this moment the battery is exactly 4.2V
         if (ppPreviousState == 2 && state == 4) {
@@ -1193,6 +1193,7 @@ void MorseOutput::checkPowerpathState() {
                 }
             }
         }
+        */
     }
 }
  

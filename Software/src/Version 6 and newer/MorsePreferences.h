@@ -49,6 +49,7 @@ extern void serialEvent();
 
 extern String getCustomChars();
 
+
 #define MAX_FILE_PARTS 16
  
 struct FilePart {
@@ -90,7 +91,8 @@ namespace MorsePreferences
   void scanFileParts();                // scan player.txt for part separators
   void writeFilePartData();            // persist part data to NVS
   void readFilePartData();             // load part data from NVS
- 
+  static boolean confirmDelete(uint8_t);
+
 
 /// variables for managing snapshots
   extern uint8_t memories[8];           // contains snapshot numbers 0..7 for each stored snapshot

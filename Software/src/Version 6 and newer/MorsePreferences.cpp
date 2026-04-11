@@ -78,7 +78,10 @@ const char * prefName[] = {
 #ifdef CONFIG_DISPLAYWRAPPER
             "theme",
 #endif
-					  "serialOut"
+#ifdef CONFIG_CW_GAME
+            "invaderOrient",
+#endif
+            "serialOut"
 					};
 
 
@@ -402,9 +405,18 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"Plain", "Blues", "ePaper", "Mandarin", "Darkroom", "Veggie", "Garnet", "Lemonade", "Complements"}
   },
+#endif   // CONFIG_DISPLAYWRAPPER (closes the Theme entry)
+#ifdef CONFIG_CW_GAME
+  {
+    0, 0, 1, 1,
+    "Invader Orient.",
+    "Invader character orientation",
+    true,
+    {"Portrait", "Landscape"}
+  },
 #endif
   {
-    5, 0, 5, 1,                                                 // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
+    5, 0, 5, 1,        // Serial Output entry (unchanged)                                                // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
     "Serial Output",
     "Select what is sent to the serial (USB) port",
     true,
@@ -525,6 +537,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define THEME 
 #endif 
+#ifdef CONFIG_CW_GAME
+#define INVORIENT posInvaderOrient,
+#else
+#define INVORIENT
+#endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #define BLUE posBluetoothOut,
 #else
@@ -600,7 +617,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
@@ -697,11 +714,13 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             case 1:     // recall snapshot
                         if (MorsePreferences::recallSnapshot()) {
                           writePreferences("morserino");
-                          if (m32protocol)
+                          if (m32protocol) {
                               MorseJSON::jsonActivate(ACT_RECALLED);
+                              //delay(1000);     // to allow the user to see/hear the "recalled" message on the display before we switch back to the main menu
+                          }
                         }
-                        else if(m32protocol)
-                          MorseJSON::jsonActivate(ACT_CANCELLED);
+                        //else if(m32protocol)
+                        //  MorseJSON::jsonActivate(ACT_CANCELLED);
                         return true;
                         break;
             case 2:     MorseOutput::decreaseBrightness();
@@ -910,7 +929,7 @@ String MorsePreferences::getValueLine(prefPos pos) {
       // (reading - 200 + MorsePreferences::vAdjust)
       //DEBUG("Voltage raw: " + String(voltage_raw));
       //DEBUG("VAdjust: " + String(MorsePreferences::vAdjust));
-      volt = (int16_t)((voltage_raw * MorsePreferences::vAdjust) / DEFAULT_VADJUST) * 3.43 ; 
+      //volt = (int16_t)((voltage_raw * MorsePreferences::vAdjust) / DEFAULT_VADJUST) * 3.43 ; 
       //DEBUG("Volt: " + String(volt));
     #else
     #ifndef ARDUINO_heltec_wifi_kit_32_V3
@@ -950,6 +969,62 @@ String MorsePreferences::getValueLine(prefPos pos) {
   return str;
 }
 
+//// confirmation dialog for deleting a snapshot – mimics the normal preference UI
+boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
+    const String emptyLine = "                    ";
+    const int maxLength = 18;
+    String valueLine;
+    int8_t t;
+    uint8_t choice = 0;                     // 0 = No, 1 = Yes
+    const char* options[] = {"No", "Yes"};
+
+    // set up the display just like displayKeyerPreferencesMenu does
+    MorseOutput::clearStatusLine();
+    MorseOutput::clearThreeLines();
+    MorseOutput::printOnStatusLine(true, 0, "Manage Snapshots:");
+    uint8_t snapNumber = MorsePreferences::memories[ptr];
+    String itemLine = "Delete Snapshot" + String(snapNumber +1) + "?";
+    itemLine += emptyLine.substring(0, maxLength - itemLine.length());
+    MorseOutput::printOnScroll(1, BOLD, 0, itemLine);
+
+    // show initial value with ">" cursor
+    valueLine = String(options[choice]);
+    valueLine += emptyLine.substring(0, maxLength - valueLine.length());
+    MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
+    MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
+    MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
+
+    while (true) {
+        serialEvent();
+        if (goToMenu) {
+            MorseJSON::jsonActivate(ACT_EXIT);
+            goToMenu = false;
+            return false;
+        }
+//#ifdef INTERNAL_PULLUP
+//        pinMode(modeButtonPin, INPUT_PULLUP);
+//#else
+//        pinMode(modeButtonPin, INPUT);
+//#endif
+        Buttons::modeButton.Update();
+        switch (Buttons::modeButton.clicks) {
+          case -1 : // long press = cancel
+                    return false;
+          case  1 : // short press = confirm current selection
+                    return (choice == 1);
+        }
+
+        if ((t = checkEncoder())) {
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+            choice = (choice + 1) % 2;      // toggle between 0 and 1
+            valueLine = String(options[choice]);
+            valueLine += emptyLine.substring(0, maxLength - valueLine.length());
+            MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
+            MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
+
+        }
+    }
+}
 //// function to adjust the selected preference
 
 boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotating the encoder changes the value, click returns to preferences menu
@@ -985,10 +1060,15 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
         if (pos == posSnapRecall) {         // here we can delete a memory....
           Buttons:: volButton.Update();
           if (Buttons:: volButton.clicks) {
-            if (MorsePreferences::memCounter) {
-              clearMemory(MorsePreferences::memPtr);
-              if (m32protocol)
-                MorseJSON::jsonActivate(ACT_CLEARED);
+            if (MorsePreferences::memCounter && MorsePreferences::memPtr != MorsePreferences::memCounter) {
+              // show a confirmation dialog, styled like a normal preference
+              if (confirmDelete(MorsePreferences::memPtr)) {
+                clearMemory(MorsePreferences::memPtr);
+                //if (m32protocol) {
+                //  MorseJSON::jsonActivate(ACT_CLEARED);
+                //  delay(200);
+                //}
+              }
             }
             return true;
           }
@@ -1081,6 +1161,10 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                       #else
                                   hwConf += (t+4);
                                   hwConf = hwConf % 4;
+                      #endif
+                      #ifdef CONFIG_MCP73871
+                                  if (hwConf == 1)      // no voltage calibration with M32Pocket
+                                      hwConf = 2;
                       #endif
                                   break;
                       case posLoraPower:
@@ -1429,7 +1513,7 @@ boolean  MorsePreferences::recallSnapshot() {         // return true if we selec
             MorseOutput::printOnScroll(2, BOLD, 0, text);
             if (m32protocol)
               MorseJSON::jsonCreate("message", text, "");
-            delay(1000);
+            delay(1500);
             return true;
           }
           return false;

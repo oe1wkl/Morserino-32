@@ -19,15 +19,15 @@ extern char gameCharBuffer;
 #include <Preferences.h>
 
 // ---- Game constants ----
-#define GAME_MAX_INVADERS   8
-#define GAME_NUM_LANES      6
+#define GAME_MAX_INVADERS   6
+#define GAME_NUM_LANES      4
 #define GAME_FIELD_TOP      24
 #define GAME_FIELD_BOTTOM   278
 #define GAME_KEYING_Y       280
-#define GAME_INVADER_W      22
-#define GAME_INVADER_H      26
-#define GAME_LANE_W         26
-#define GAME_LANE_MARGIN    7
+#define GAME_INVADER_W      38
+#define GAME_INVADER_H      32
+#define GAME_LANE_W         42
+#define GAME_LANE_MARGIN    1
 #define GAME_HIGH_SCORES    5
 #define GAME_DESTROYS_PER_LEVEL 10
 

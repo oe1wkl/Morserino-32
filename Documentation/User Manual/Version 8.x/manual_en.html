@@ -89,6 +89,7 @@ The font family used is Lato.</p>
 <li><a href="#games" id="toc-games"><span class="toc-section-number">5.7</span> Games</a>
 <ul>
 <li><a href="#morse-invaders" id="toc-morse-invaders"><span class="toc-section-number">5.7.1</span> Morse Invaders</a></li>
+<li><a href="#fight-the-pileup" id="toc-fight-the-pileup"><span class="toc-section-number">5.7.2</span> Fight the Pileup</a></li>
 </ul></li>
 <li><a href="#wifi-functions" id="toc-wifi-functions"><span class="toc-section-number">5.8</span> WiFi Functions</a>
 <ul>
@@ -126,6 +127,7 @@ The font family used is Lato.</p>
 <li><a href="#flipping-the-display-screen-for-left-hand-use" id="toc-flipping-the-display-screen-for-left-hand-use"><span class="toc-section-number">7.1.1</span> Flipping the display screen for left-hand use</a></li>
 <li><a href="#calibration-of-battery-measurement" id="toc-calibration-of-battery-measurement"><span class="toc-section-number">7.1.2</span> Calibration of Battery Measurement</a></li>
 <li><a href="#configuring-lora-band-frequency-and-output-power" id="toc-configuring-lora-band-frequency-and-output-power"><span class="toc-section-number">7.1.3</span> Configuring LoRa Band, Frequency and Output Power</a></li>
+<li><a href="#resetting-preferences-to-their-factory-defaults" id="toc-resetting-preferences-to-their-factory-defaults"><span class="toc-section-number">7.1.4</span> Resetting Preferences to their Factory Defaults</a></li>
 </ul></li>
 <li><a href="#appendix-2-more-information-about-lora" id="toc-appendix-2-more-information-about-lora"><span class="toc-section-number">7.2</span> Appendix 2: More information about LoRa</a></li>
 <li><a href="#appendix-3-adjusting-audio-level" id="toc-appendix-3-adjusting-audio-level"><span class="toc-section-number">7.3</span> Appendix 3: Adjusting Audio Level</a></li>
@@ -502,7 +504,7 @@ The font family used is Lato.</p>
 <li>An indicator symbolizing radio transmission will appear on the far right end of the status line whenever a wireless mode is active (if the device is in LoRa or Wi-Fi transceiver mode or if you have set a preference to transmit LoRa or Wi-Fi while in one of the CW generator modes). The WiFi symbol looks similar to the usual WiFi logo (a 90-degree sector of concentric circles), and the LoRa symbol consists of concentric half circles.</li>
 </ul>
 <h2 data-number="4.4" id="hardware-settings"><span class="header-section-number">4.4</span> Hardware settings</h2>
-<p>You might need to change certain hardware settings, e.g. the screen orientation, or the calibration of the battery measurement. All these settings are covered in <strong>Appendix 1 Hardware Configuration Menu</strong>.</p>
+<p>You might need to change certain hardware settings, e.g. the screen orientation, or the calibration of the battery measurement. Or you might want to reset (almost) all preferences to their factory value. All these settings are covered in <strong>Appendix 1 Hardware Configuration Menu</strong>.</p>
 <h1 data-number="5" id="top-menu-and-morserino-modes"><span class="header-section-number">5</span> Top Menu and Morserino Modes</h1>
 <p>You select the operational mode of your Morserino-32 by rotating the ENCODER knob, and quickly pressing (“clicking”) that knob to select that mode (or, in several cases, a sub-menu for a more detailed selection), when you see the menu on the display.</p>
 <h2 data-number="5.1" id="cw-keyer"><span class="header-section-number">5.1</span> CW Keyer</h2>
@@ -1361,7 +1363,10 @@ The font family used is Lato.</p>
 <p>Rotate the ENCODER to change the starting sub-level. Press the FN button to toggle the encoder between changing the sub-level and changing the speed (a “&lt;” marker indicates which value the encoder currently controls). Touch a paddle to start the game. A long press of the ENCODER exits back to the Morserino menu.</p>
 <p>After touching a paddle, a short countdown (“3… 2… 1… GO!”) leads into the game.</p>
 <h4 class="unnumbered" id="playing-the-game">Playing the Game</h4>
-<p>Characters appear at the top of the screen and fall downward in one of six lanes. Each character is shown as a coloured rectangle: green for letters, yellow for numbers, orange for punctuation, and magenta for pro signs. Pro signs are displayed as their two-letter abbreviation with a bar above (e.g., ka with an overline for ).</p>
+<p>Characters appear at the top of the screen and fall downward in one of six lanes. Each character is shown as a coloured rectangle: green for letters, yellow for numbers, orange for punctuation, and magenta for pro signs. Pro signs are displayed as their two-letter abbreviation with a bar above.</p>
+<div class="note">
+<p>The default for the game is portrait orientation, with the touch paddles at the bottom. You can change this to landscape with the Preference “Invader Orient.”, and the landscape orientation will acknowledge your setting of “left-handed” (see Appendix 1: Hardware Configuration Menu).</p>
+</div>
 <p>To destroy a falling character, key its Morse code using the paddles (or an external key). The game automatically targets the lowest – and therefore most urgent – character that matches what you keyed. A correct match destroys the character with a brief animation and awards points. If no falling character matches the character you keyed, this counts as a miss and your streak is reset, but you do not lose a life.</p>
 <p>If a character reaches the bottom of the screen without being destroyed, you lose one of your three lives. The game ends when all lives are lost.</p>
 <h4 class="unnumbered" id="display-layout">Display Layout</h4>
@@ -1373,6 +1378,7 @@ The font family used is Lato.</p>
 <p>ENCODER: Change your keying speed (WPM). The speed is adjusted immediately and is also stored when you exit the game.</p>
 <p>ENCODER click (short press): Pause the game. Click again to resume.</p>
 <p>ENCODER long press: Exit the game and return to the Morserino menu.</p>
+<p>FN short press: Toggle between speed and volume control.</p>
 <p>FN long press: Also exits the game.</p>
 <h4 class="unnumbered" id="scoring">Scoring</h4>
 <p>Base points per destroyed character are 10, multiplied by several factors:</p>
@@ -1392,6 +1398,167 @@ The font family used is Lato.</p>
 <p>From the game over screen, click the ENCODER to play again (starting from the same sub-level you chose at the beginning), or long press the ENCODER to exit to the Morserino menu.</p>
 <h4 class="unnumbered" id="tips-for-beginners">Tips for Beginners</h4>
 <p>Start with a lower Koch lesson (fewer characters) and a comfortable speed. The game is most effective as a training tool when you are challenged but not overwhelmed. If characters reach the bottom too quickly, reduce your starting sub-level or lower the WPM. As your recognition improves, increase the Koch lesson to add more characters to the pool.</p>
+<h3 data-number="5.7.2" id="fight-the-pileup"><span class="header-section-number">5.7.2</span> Fight the Pileup</h3>
+<p><strong>Fight the Pileup</strong> is a CW training game where you practice copying and keying callsigns under time pressure — just like working a real pileup on the bands. The game plays random callsigns as CW audio, and you must decode them by ear and key them back correctly before time runs out.</p>
+<h4 class="unnumbered" id="starting-the-game-1">Starting the Game</h4>
+<p>From the main menu, navigate to <strong>Games → Fight Pileup</strong>. If this is your first time playing, you will be asked to enter your callsign and name using the encoder and buttons:</p>
+<ul>
+<li><strong>Encoder:</strong> Select a character</li>
+<li><strong>Click:</strong> Add the character</li>
+<li><strong>FN (short click):</strong> Delete last character</li>
+<li><strong>Long press:</strong> Confirm (minimum 2 characters required)</li>
+</ul>
+<p>Your callsign and name are saved and remembered for future sessions.</p>
+<h4 class="unnumbered" id="the-lobby">The Lobby</h4>
+<p>After entering your identity, you arrive at the lobby screen. Here you can configure the game before entering the pileup:</p>
+<ul>
+<li><strong>Encoder:</strong> Select difficulty level (EASY, NORMAL, HARD, EXPERT)</li>
+<li><strong>Click:</strong> Toggle between Single Player and Multiplayer mode</li>
+<li><strong>FN (short click):</strong> Toggle between callsign and name display (if both are set)</li>
+<li><strong>Paddles:</strong> Enter the pileup (starts the code challenge)</li>
+<li><strong>Long press:</strong> Exit to menu</li>
+</ul>
+<p>The difficulty level controls how much time you have to respond, how many timeouts before you lose a life, and how quickly new challenges appear:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Timeout</th>
+<th>Drops per Life</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>EASY</td>
+<td>45 sec</td>
+<td>5</td>
+</tr>
+<tr>
+<td>NORMAL</td>
+<td>30 sec</td>
+<td>4</td>
+</tr>
+<tr>
+<td>HARD</td>
+<td>20 sec</td>
+<td>3</td>
+</tr>
+<tr>
+<td>EXPERT</td>
+<td>12 sec</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="code-challenge-entry-gate">Code Challenge (Entry Gate)</h4>
+<p>Before entering the pileup, you must key a short random code (4 characters) on your paddles. This serves as a warm-up and confirms that your paddles are working. Each correctly keyed character lights up in green. If you make a mistake, the sequence resets — just try again.</p>
+<p>Long press to cancel and return to the lobby.</p>
+<h4 class="unnumbered" id="gameplay">Gameplay</h4>
+<p>Once you pass the code challenge, the pileup begins. The game presents you with a continuous stream of random callsigns to decode and key back.</p>
+<h4 class="unnumbered" id="how-it-works">How It Works</h4>
+<ol type="1">
+<li><p><strong>Listen:</strong> A callsign is played as CW audio at a different pitch from your sidetone, so you can distinguish it from your own keying. The callsign repeats automatically.</p></li>
+<li><p><strong>Decode:</strong> Try to identify the callsign by ear. After the 3rd play, a text hint appears on screen — but try to get it before that!</p></li>
+<li><p><strong>Key your response:</strong> Use your paddles to key the callsign you heard. Your keyed characters appear on screen as they are decoded.</p></li>
+<li><p><strong>Automatic submission:</strong> Your response is automatically submitted after a word-length pause (about 1 second of silence). You can also click the encoder to submit immediately.</p></li>
+<li><p><strong>Result:</strong></p>
+<ul>
+<li><strong>Correct:</strong> A brief “OK!” flash with your score bonus, then the next challenge starts automatically.</li>
+<li><strong>Wrong:</strong> A “WRONG” flash. The CW plays again so you can retry with the same callsign.</li>
+<li><strong>Timeout:</strong> If the progress bar runs out before you respond correctly, you lose points and a new challenge begins.</li>
+</ul></li>
+</ol>
+<h4 class="unnumbered" id="screen-layout">Screen Layout</h4>
+<p>From top to bottom:</p>
+<ul>
+<li><strong>HUD bar:</strong> Lives (red dots), your callsign/name, current score, streak multiplier</li>
+<li><strong>Progress bar:</strong> Time remaining for the current challenge (green → yellow → red)</li>
+<li><strong>Challenge area:</strong> Play counter and hint (after 3 plays)</li>
+<li><strong>Input area:</strong> Your keyed response</li>
+<li><strong>Stats:</strong> Correct and missed counts</li>
+<li><strong>Status bar:</strong> Current WPM and volume level</li>
+</ul>
+<h4 class="unnumbered" id="scoring-1">Scoring</h4>
+<table>
+<thead>
+<tr>
+<th>Event</th>
+<th>Points</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Correct answer</td>
+<td>+100 base + 10 × streak bonus</td>
+</tr>
+<tr>
+<td>Wrong answer</td>
+<td>−50</td>
+</tr>
+<tr>
+<td>Timeout</td>
+<td>−25</td>
+</tr>
+</tbody>
+</table>
+<p>The streak counter increases with each consecutive correct answer and resets on any wrong answer or timeout. A higher streak means more bonus points per correct answer.</p>
+<h4 class="unnumbered" id="lives">Lives</h4>
+<p>You start with 3 lives. Every N timeouts costs you a life (N depends on the difficulty level). When all lives are lost, the game ends and your final score is displayed.</p>
+<h4 class="unnumbered" id="controls-during-play">Controls During Play</h4>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Key your response</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>Adjust WPM speed or volume (see FN toggle)</td>
+</tr>
+<tr>
+<td><strong>Click</strong> (encoder)</td>
+<td>Submit your response immediately</td>
+</tr>
+<tr>
+<td><strong>FN short click</strong></td>
+<td>Toggle encoder between WPM and volume</td>
+</tr>
+<tr>
+<td><strong>Long press</strong> (encoder or FN)</td>
+<td>Exit game</td>
+</tr>
+</tbody>
+</table>
+<p>The status bar shows which parameter the encoder controls, indicated by a <code>&lt;</code> arrow:</p>
+<pre><code>15 wpm &lt;      ← encoder adjusts speed
+Vol 12
+
+15 wpm
+&lt; Vol 12      ← encoder adjusts volume</code></pre>
+<h4 class="unnumbered" id="tips-for-beginners-1">Tips for Beginners</h4>
+<ul>
+<li><p><strong>Start on EASY difficulty.</strong> The 45-second timeout gives you plenty of time to listen to the callsign multiple times before attempting to key it.</p></li>
+<li><p><strong>Don’t rush.</strong> Wait for the text hint to appear after 3 plays if you’re not sure. There’s no penalty for waiting — only for timeouts.</p></li>
+<li><p><strong>Lower the WPM.</strong> Use the encoder to reduce the speed if the CW is too fast. The challenge plays at the same WPM as your keying speed.</p></li>
+<li><p><strong>Listen for the structure.</strong> Callsigns follow patterns: usually a 1-3 letter prefix, a digit, then 1-3 letter suffix (e.g., DL1ABC, W3XY, VK2GR).</p></li>
+<li><p><strong>Wrong answers let you retry.</strong> If you make a mistake, the same callsign replays — you get unlimited attempts within the timeout period.</p></li>
+</ul>
+<h4 class="unnumbered" id="game-over-1">Game Over</h4>
+<p>When all lives are lost, the game over screen shows your final statistics:</p>
+<ul>
+<li><strong>Score:</strong> Your total points</li>
+<li><strong>Defended / Dropped:</strong> How many callsigns you got right vs. timed out</li>
+<li><strong>Accuracy:</strong> Percentage of correct answers</li>
+<li><strong>Best streak:</strong> Longest run of consecutive correct answers</li>
+<li><strong>WPM / Difficulty:</strong> The settings you played with</li>
+</ul>
+<p>Press <strong>Click</strong> to play again (returns to lobby) or <strong>Long press</strong> to exit to the main menu.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two important functions of the device, when you are using WiFi through an access point:</p>
 <ul>
@@ -1469,7 +1636,7 @@ The font family used is Lato.</p>
 </div>
 <h3 data-number="5.8.6" id="wifi-select"><span class="header-section-number">5.8.6</span> WiFi Select</h3>
 <p>Here you can select which network configurations should be used. SSID and Peer Host are being displayed, and you use the encoder to go through the available network configurations.</p>
-<p>The item shown when you start this is the currently selected network configuration. If that is what you want, just go back to teh menu with a long press of teh ENCODER.</p>
+<p>The item shown when you start this is the currently selected network configuration. If that is what you want, just go back to the menu with a long press of the ENCODER.</p>
 <p>The first entry (numbered 0) lets you choose EspNow (WiFi peer-to-peer communication) instead of using an access point.</p>
 <h2 data-number="5.9" id="go-to-sleep"><span class="header-section-number">5.9</span> Go To Sleep</h2>
 <p>This menu item, when selected, puts the Morserino-32 into a deep sleep mode, where it will consume considerable less power than when operating normally. But it will still drain the battery within a certain number of days, so this is only meant for shorter breaks between your training sessions. See the section <strong>4.1 Powering On and Off / Charging the Battery</strong> further up in this manual.</p>
@@ -1477,6 +1644,9 @@ The font family used is Lato.</p>
 <p>You always reach the preferences menu by <strong>double clicking</strong> the rotary ENCODER button. This provides you with a menu of settings (you will see a <em>&gt;</em> character in front the of the current preference, and the line underneath shows the current value). Rotate the encoder to lead you through the available preferences. If you want to leave the preference setting menu, just press the encoder button a bit longer, and you will be back in the operational mode from which you called the preference setting menu (or back in the menu, if you entered a double click from the menu).</p>
 <p>When you have reached the preference you want to change, click once. Now the “<em>&gt;</em>” character will be at the bottom line in front of the preference value, indicating that rotating the encoder will change this value. Once you are satisfied with the value, <strong>click once</strong> to return to the selection of preferences, or <strong>press the button a bit longer</strong> to leave the preference menu.</p>
 <p>Obviously the preferences that can be set vary depending on the mode you are in: <strong>When you double click while in a particular mode, you will only get to those preferences that are relevant for the current mode.</strong> Did you double click from the Start Menu, you will be presented the complete range of preferences.</p>
+<div class="note">
+<p>Almost all preferences can be reset to their factoy value through the Hardware Configuration Menu. See Appendix 1 for further information.</p>
+</div>
 <h2 data-number="6.1" id="snapshots"><span class="header-section-number">6.1</span> Snapshots</h2>
 <p>For different types of training you usually need different settings of the preferences – you might want to change the intercharacter- or interword spaces, or the length of character groups or words, etc. So going from one type of training to the next would require you to change various settings every time.</p>
 <p>In order to make this easier, you can use “<strong>snapshots</strong>” of the settings: once you have changed everything for your first mode of training, you store all current preferences in one of eight snapshots; then you do the same with your other training modes. You can then quickly recall the settings by recalling a particular snapshot.</p>
@@ -1486,7 +1656,7 @@ The font family used is Lato.</p>
 <h3 data-number="6.1.2" id="recalling-a-snapshot"><span class="header-section-number">6.1.2</span> Recalling a snapshot</h3>
 <p>Again, you double click the ENCODER knob first to get into the preferences menu. Now <strong>a short click on the FN button</strong> lets you select with the ENCODER which of the stored snapshots you want to recall, and you recall it by clicking the ENCODER button; again, there is an option that reads <strong>Cancel Recall</strong>, which allows you to get out without recalling a snapshot. If there are no snapshots stored, you get a message “NO SNAPSHOTS” and you can leave by clicking any of the buttons.</p>
 <h3 data-number="6.1.3" id="deleting-a-snapshot"><span class="header-section-number">6.1.3</span> Deleting a snapshot</h3>
-<p>You can also delete a snapshot that is no longer needed, or that was created in error. Proceed as if you wanted to recall a snapshot, select the one you want to delete, and then <strong>click the FN button</strong> for deleting it. Like with storing and recalling snapshots, a short message will indicate that the action was successful.</p>
+<p>You can also delete a snapshot that is no longer needed, or that was created in error. Proceed as if you wanted to recall a snapshot, select the one you want to delete, and then <strong>click the FN button</strong> for deleting it. There will be a confirmation dialog to make sure you really want to delete that snapshot. If you rotete the ENCODER to “Yes” and click it, that snapshot will be deleted, and, like with storing and recalling snapshots, a short message will indicate that the action was successful.</p>
 <p>The easiest way to configure your preferences and snapshots is to connect your Morserino via USB to a computer running Chrome, Edge or Opera and using the instructions in <strong>Appendix 7</strong>Using a Browser to set up M32 Preferences**.</p>
 <h2 data-number="6.2" id="list-of-all-morserino-32-preferences"><span class="header-section-number">6.2</span> List of All Morserino-32 preferences</h2>
 <p>Bold values are default or recommended ones. When called from the start menu, all preferences are available for modification, when called from a running mode, only those that are relevant for this mode are available.</p>
@@ -1540,6 +1710,11 @@ The font family used is Lato.</p>
 <td>Theme</td>
 <td>(For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black.</td>
 <td><strong>Plain</strong> (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements</td>
+</tr>
+<tr>
+<td>Invader Orient.</td>
+<td>(For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration.</td>
+<td><strong>Portrait</strong> / Landscape</td>
 </tr>
 <tr>
 <td>BLT Kbd Output</td>
@@ -1677,7 +1852,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Calls Region</td>
-<td>Select if you want to see call signs from around the world, or just from a certain continent.</td>
+<td>Select if you want to see call signs from around the world, or just from a certain continent. <strong>This parameter is ignored when the call length has been set to a maximum of 3 characters.</strong></td>
 <td><strong>All</strong> / Europe / N America / S America / Africa / Asia / Oceania</td>
 </tr>
 <tr>
@@ -1826,8 +2001,10 @@ The font family used is Lato.</p>
 </ol>
 <p>The M32 will re-boot, with the display now rotated 180°.</p>
 <h3 data-number="7.1.2" id="calibration-of-battery-measurement"><span class="header-section-number">7.1.2</span> Calibration of Battery Measurement</h3>
-<p>For the M32Pocket, calibrating battery measurement is usually not necessary!</p>
-<p>This applies to 1st and 2nd edition Morserinos only: The built-in capability of Heltec modules to measure battery voltage unfortunately is not very reliable. Various factors apparently contribute to the problem: a measurement error within the ESP32 processor due to a slight variation of the reference voltage for each chip (leading to a relatively small error), and problems with the voltage divider circuit on the Heltec module (leading to pretty big variations among the modules). Although measuring the battery is not very crucial for the operation of the Morserino-32, it is nevertheless a nuisance, and can also lead to the situation that the M32 cannot be switched on, as the firmware thinks that the voltage is too low, when in reality it would still be sufficient.</p>
+<div class="note">
+<p>For the M32Pocket, calibrating battery measurement is not necessary, and therefore this item is only available on 1st and 2nd edition Morserinos.</p>
+</div>
+<p>The built-in capability of Heltec modules to measure battery voltage unfortunately is not very reliable. Various factors apparently contribute to the problem: a measurement error within the ESP32 processor due to a slight variation of the reference voltage for each chip (leading to a relatively small error), and problems with the voltage divider circuit on the Heltec module (leading to pretty big variations among the modules). Although measuring the battery is not very crucial for the operation of the Morserino-32, it is nevertheless a nuisance, and can also lead to the situation that the M32 cannot be switched on, as the firmware thinks that the voltage is too low, when in reality it would still be sufficient.</p>
 <p>In order to calibrate the voltage measurement, you have to measure the actual battery voltage of your Morserino-32 with the help of a multimeter. Once you know this value, you perform the following steps:</p>
 <ol type="1">
 <li>Start your M32 while holding the touch paddles (or external paddles, or straight key) pressed.</li>
@@ -1860,6 +2037,8 @@ The font family used is Lato.</p>
 <p><em>Be aware of applicable regulations in your jurisdiction, there might be a legal limit regarding output power! Be also aware that the higher the output power, the higher the risk of destroying the LoRa transceiver when used without proper termination (a suitable antenna or a dummy load).</em></p>
 </div>
 <p>Immediately after that the Morserino-32 will start normally, with the now selected LoRa settings in effect. On the top line of the Startup Screen you will see the configured QRG for LoRa as a 5-digit number (e.g. 43415 for the default in the 433 MHz band).</p>
+<h3 data-number="7.1.4" id="resetting-preferences-to-their-factory-defaults"><span class="header-section-number">7.1.4</span> Resetting Preferences to their Factory Defaults</h3>
+<p>This item resets all preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.</p>
 <h2 data-number="7.2" id="appendix-2-more-information-about-lora"><span class="header-section-number">7.2</span> Appendix 2: More information about LoRa</h2>
 <p>When morse code is packed into a LoRa data packet, dots, dashes and pauses are encoded; it is not so that the clear text would be sent as ASCII characters. Therefore it is possible to send “illegal” morse code characters, or characters that might only be used in certain languages. They will be transmitted correctly (but shown on the display as non-decodable).</p>
 <p>Sending the code word by word means there is a significant delay between sender and receiver, and the delay depends to a large degree on the length of the words being sent, and on the speed that is being used. As most words in a typical CW conversation are rather short (7 characters or more already constitutes a very long word), this is nothing to worry about (unless you are sitting both in the same room using no headphones – then it will be really confusing). But try sending really long words, say 10 or more character long, at really low speed (5 WpM), and you will see what I am talking about!</p>
@@ -1894,7 +2073,7 @@ The font family used is Lato.</p>
 <p>Only while you are in the <strong>menu</strong> will the <strong>FN button long press</strong> activate the level adjustment function.<br> While you are executing one of the Morserino modes (Keyer, Generator, Echo Trainer, Transceiver etc.) a long press of the FN button activates the <strong>scroll mode of the display</strong> to enable you to read text that has already scrolled away…​</p>
 </div>
 <h2 data-number="7.4" id="appendix-4-updating-the-firmware-via-wifi-for-versions-2.0"><span class="header-section-number">7.4</span> Appendix 4: Updating the Firmware via WiFi for Versions &lt; 2.0</h2>
-<p>With firmware versions <strong>1.x</strong> the WiFi functions were not accessible directly from the main menu, but <strong>by quickly pressing the FN button three times</strong>. Once you are in teh WiFi menu, the process is the same for the various WiFi functions as described in section <strong>5.8 WiFi Functions</strong>!</p>
+<p>With firmware versions <strong>1.x</strong> the WiFi functions were not accessible directly from the main menu, but <strong>by quickly pressing the FN button three times</strong>. Once you are in the WiFi menu, the process is the same for the various WiFi functions as described in section <strong>5.8 WiFi Functions</strong>!</p>
 <p>Of course you can also <strong>update through USB</strong> when you are still on an older software version (see next 2 appendices).</p>
 <div class="important">
 <p>If you are still on version 1.x, you really should update to a newer firmware - otherwise you are missing out on many new features (and bug fixes, too).</p>
@@ -1959,9 +2138,9 @@ The font family used is Lato.</p>
 <div class="important">
 <p>If you are using a M32Pocket, the device must be turned on and must not be in sleep mode when you are connecting the USB cable!</p>
 </div>
-<p>On these website you need to click a “Connect” button (in a pop-up window you need to tell the browser which port to use); otherwise these web sites explain everything you need to know to use their functionality.</p>
-<p>In addition to the setup functionality, Christof also implemented a few nice training features, a QSO bot, and voice output for all menu items and preferences settings, to assist vision impaired operators, all to be found on <a href="https://tegmento.org/">https://tegmento.org</a>.</p>
-<p>Also Oliver implemented a lot of additional training features on his site, to be found at <a href="https://morsetrainerpro.com/index.html">https://morsetrainerpro.com/index.html</a>.</p>
+<p>On these websites, you need to click a “Connect” button (in a pop-up window, you need to tell the browser which port to use); otherwise, these websites explain everything you need to know to use their functionality.</p>
+<p>In addition to the setup functionality, Christof also implemented a few nice training features, a QSO bot, and voice output for all menu items and preferences settings, to assist vision-impaired operators, all to be found on <a href="https://tegmento.org/">https://tegmento.org</a>.</p>
+<p>Also, Oliver implemented a lot of additional training features on his site, to be found at <a href="https://morsetrainerpro.com/index.html">https://morsetrainerpro.com/index.html</a>.</p>
 <p>This utility also gives information about free space for files, and you can also delete files on the M32.</p>
 <p>These feature were made possible by implementing a serial protocol into the Morserino; see the next appendix for more information.</p>
 <h2 data-number="7.8" id="appendix-8-using-the-serial-output-of-the-m32"><span class="header-section-number">7.8</span> Appendix 8: Using the Serial Output of the M32</h2>

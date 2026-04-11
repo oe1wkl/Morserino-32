@@ -385,9 +385,12 @@ enum prefPos : uint8_t {
 				posBluetoothOut,
 #endif
 #ifdef CONFIG_DISPLAYWRAPPER
-        posTheme,
+        posTheme, 
 #endif
-                posSerialOut,
+#ifdef CONFIG_CW_GAME
+        posInvaderOrient,
+#endif
+  posSerialOut,
                 // to be treated differently:
                 posKochFilter,                                                                                // 36
                 posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf,    // 37

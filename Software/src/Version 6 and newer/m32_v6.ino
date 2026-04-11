@@ -48,6 +48,10 @@
 #include "MorsePileup.h"
 #endif
 
+#ifdef CONFIG_MCP73871
+#include "analog.h"
+#endif
+
 #ifdef LORA_RADIOLIB
 #include <RadioLib.h>
 #ifdef RADIO_SX1262
@@ -82,7 +86,7 @@ int leftPin, rightPin; /// where are the external paddles?
 
 
 /// variables for battery measurement
-uint16_t volt;              // store measure battery voltage here
+uint16_t volt;              // store measured battery voltage here
 double voltage_raw;         // raw measurement
 
 ClickButton Buttons::modeButton(modeButtonPin);              // activeHigh must be set in board version 4
@@ -165,8 +169,11 @@ GEN_TYPE generatorMode = RANDOMS;          // trainer: what symbol (groups) are 
 File file;
 
 /// variable for selecting a hardware configuration menu option
+#ifndef CONFIG_MCP73871
 int8_t hwConf = 1;                            // 0 = cancel hw config, 1 = battery measurement calibration, 2 = flip screen, 3 = lora config
-
+#else
+int8_t hwConf = 2;                            // 0 = cancel hw config,
+#endif
 boolean kochActive = false;                   // set to true when in Koch trainer mode
 
 //  keyerControl bit definitions
@@ -450,13 +457,9 @@ void setup()
 #ifdef PIN_VEXT
 pinMode(PIN_VEXT, OUTPUT);
 #endif
-
   // measure battery voltage, then set pinMode (important for board 4, as the same pin is used for battery measurement
   MorsePreferences::readVoltagePref() ;
   volt = batteryVoltage();
-
-
-//DEBUG("Volt measured: " + String(volt));
 
   // set up the encoder - we need external pull-ups as the pins used do not have built-in pull-ups!
   pinMode(PinCLK,INPUT_PULLUP);
@@ -1605,9 +1608,12 @@ static uint8_t getContinentMask(uint8_t prefValue) {
 String getRandomCall(int maxLength) {
     static char call[16];
     int pos = 0;
- 
+    uint8_t contMask;
     // Get filter settings
-    uint8_t contMask = getContinentMask(MorsePreferences::pliste[posCallContinent].value);
+    if (maxLength != 1)     /// means the max call length is not 3 
+        contMask = getContinentMask(MorsePreferences::pliste[posCallContinent].value);
+    else                    /// maxLength == 1 means we want a 3-character call; these only exist in NA and EU, so we include those two.
+        contMask = CONT_ALL;
     bool commonOnly  = (MorsePreferences::pliste[posCallCommon].value == 1);
     // "Common" threshold: weight >= 2 means the prefix was seen in real call data
     // (weight 1 = unseen/theoretical prefix)
@@ -1619,11 +1625,13 @@ String getRandomCall(int maxLength) {
     uint32_t totalWeight = 0;
     char pfxBuf[5];
     uint8_t cont, weight;
+    int maxPfxLen = (maxLength > 0) ? maxLength : 99;
  
     for (int i = 0; i < PREFIX_COUNT; i++) {
         readPrefix(i, pfxBuf, &cont, &weight);
         if (!(cont & contMask)) continue;
         if (weight < minWeight) continue;
+        if ((int)strlen(pfxBuf) > maxPfxLen) continue;
         totalWeight += weight;
     }
  
@@ -1648,6 +1656,7 @@ String getRandomCall(int maxLength) {
         readPrefix(i, pfxBuf, &cont, &weight);
         if (!(cont & contMask)) continue;
         if (weight < minWeight) continue;
+        if ((int)strlen(pfxBuf) > maxPfxLen) continue;
         cumulative += weight;
         if (cumulative > pick) {
             chosen = i;
@@ -1932,40 +1941,7 @@ int pitch() {                 // find out which pitch to use for the generated C
 /// add code to display in echo mode when parameter is so set
 /// p_echoDisplay 1 = CODE_ONLY 2 = DISP_ONLY 3 = CODE_AND_DISP
 
-/* void dispGeneratedChar() {
-  static String charString;
-  charString.reserve(10);
 
-  if (generatorMode == KOCH_LEARN ||
-          (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_CHAR &&
-          (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
-          (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY ))
-      {       /// we need to output the character on the display now
-        if (clearText.charAt(0) == 0xC3) {            //UTF-8!
-          charString = String(clearText.charAt(0)) + String(clearText.charAt(1));                   /// store first 2 chars of clearText in charString
-          clearText.remove(0,2);                                                    /// and remove them from clearText
-        }
-        else {
-          charString = clearText.charAt(0);
-          clearText.remove(0,1);
-        }
-        if (generatorMode == KOCH_LEARN) {
-            displayGeneratedMorse(REGULAR," ");                      // output a space
-            //MorseOutput::clearBuffer();                      // clear the buffer first (why??)
-        }
-        displayGeneratedMorse((morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN) ? BOLD : REGULAR, cleanUpProSigns(charString));
-        if (generatorMode == KOCH_LEARN)
-            displayGeneratedMorse(REGULAR," ");                      // output a space
-      }   //// end display_by_char
-
-      ++charCounter;                         // count this character
-
-     // if we have seen 12 chars since changing speed, we write the config to Preferences
-     if (charCounter == 12) {
-        MorsePreferences::fireCharSeen(true);
-     }
-}
-*/
 
 void dispGeneratedChar() {
     static char charBuf[6];   // max 2 UTF-8 bytes + null (prosign expansion happens later)
@@ -2199,10 +2175,11 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     // instead of writing to the scroll display
 
     if (gameMode) {
-        if (symbol.length() == 1) {
-            gameCharBuffer = symbol.charAt(0);
+        String encoded = symbol;
+        encodeProSigns(encoded);
+        if (encoded.length() >= 1) {
+            gameCharBuffer = encoded.charAt(0);
         }
-        // Don't write to display, don't accumulate echoResponse
         return;
     }
 #endif
@@ -2534,8 +2511,9 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
 
 
 #else
-// CONFIG_MCP73871
+// CONFIG_MCP73871  OLD VERSION!
 #ifdef CONFIG_BATMEAS_PIN
+/*
 //delay(1000);
 //DEBUG("Measuring battery voltage...");
     //pinMode(CONFIG_BATMEAS_PIN, OUTPUT);
@@ -2547,7 +2525,7 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   analogReadResolution(12);
   //analogSetAttenuation(ADC_11db);
   analogSetPinAttenuation(CONFIG_BATMEAS_PIN,ADC_6db); // 6db is a good fit with the used voltage divider, ~1.3V for a full 4.2V battery
-  float reading = 0.0;
+  double reading = 0.0;
   
   for (int i = 0; i<10; i++) {
     reading += (1750.0 * (analogRead(CONFIG_BATMEAS_PIN) / 4095.0)) ; // 6 db atten = 1750mV max
@@ -2561,25 +2539,19 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   //DEBUG("Reading average: " + String(voltage_raw) );
   //DEBUG("vAdjust: " + String(MorsePreferences::vAdjust) );
   //DEBUG("ReadVoltage mv:" + String(mvolt));
-  /* uint8_t powerpath_state = MorseOutput::getPowerpathState();
-  if (powerpath_state == 8) { // this means we had a transition from charging to full
-    DEBUG("Powerpath transition to full detected, adjusting vAdjust...");
-    uint8_t newVAdjust = (DEFAULT_VADJUST *  4200) / mvolt; // 210 is the default vAdjust value in MorsePreferences, that assumes 1:1 voltage
-    if (abs(newVAdjust - MorsePreferences::vAdjust) >= 3) {
-      // enough delta to qualify for storing new vAdjust
-      MorsePreferences::vAdjust = newVAdjust;
-      DEBUG("New vAdjust: " + String(newVAdjust) + " stored in preferences");
-      MorsePreferences::setVoltageAdjust(newVAdjust);
-    }
-
-    int16_t corrected_mvolt = (newVAdjust / DEFAULT_VADJUST) * mvolt;
-    return corrected_mvolt;
-  } */
+  
   return mvolt;
+  */
+  fadcInit(1, CONFIG_BATMEAS_PIN);
+  int16_t mvolt = analogReadMilliVoltsFast(CONFIG_BATMEAS_PIN-1); //channels start at 0, pins at 1
+  DEBUG("ReadVoltage mv:" + String(mvolt));
+  return (int) mvolt * 3.275; // adjust for voltage divider
 #else
   return 0; // no battery measurement in pocketwroom PCB < 4.1
 #endif
+///// CONFIG_MCP73871  
 #endif
+///// #ifndef CONFIG_MCP73871
 }
 
 

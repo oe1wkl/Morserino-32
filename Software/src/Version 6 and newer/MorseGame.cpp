@@ -25,6 +25,9 @@ char gameCharBuffer = 0;
 #include <ESP32Encoder.h>
 #include <Preferences.h>
 
+#include "DejaVuSansMono_Bold15pt7b.h"
+#include "DejaVuSansMono_Bold11pt7b.h"
+
 // ---- External references ----
 extern int checkEncoder();
 extern void checkShutDown(boolean);
@@ -50,6 +53,9 @@ static LGFX_Sprite*       canvas = nullptr;
 static GameData            game;
 static char                lastDecodedChar = 0;
 static GameHighScore       highScores[GAME_HIGH_SCORES];
+static bool                encoderIsVolume = false;   // FN toggles encoder: speed <-> volume
+static int16_t             charRotation = 0;          // 0, 90 or -90 for invader text
+static LGFX_Sprite*        tileSprite = nullptr;      // temp sprite for rotated text
 
 
 //=============================================================================
@@ -70,6 +76,11 @@ static unsigned long soundNoteStart = 0;
 static bool          soundPlaying = false;
 
 static void startSound(const SoundNote* notes, uint8_t count) {
+    // Never start a sound effect while the keyer is actively keying —
+    // the keyer owns the audio channel and we must not interfere with
+    // its timing, or dit/dah durations get corrupted.
+    if (keyerState != IDLE_STATE) return;
+
     for (int i = 0; i < count && i < MAX_SOUND_NOTES; i++)
         soundSequence[i] = notes[i];
     soundNoteCount = count;
@@ -112,9 +123,11 @@ static void playSoundGameOver() {
 static void updateSound() {
     if (!soundPlaying) return;
 
-    // Stop sound effect if keyer becomes active (CW sidetone takes priority)
+    // Stop sound effect immediately if keyer becomes active.
+    // Do NOT call pwmNoTone here — the keyer's keyOut() is already
+    // managing the audio channel, and calling pwmNoTone would corrupt
+    // the keyer's intTone/extTone state and timing.
     if (keyerState != IDLE_STATE) {
-        MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
         soundPlaying = false;
         return;
     }
@@ -282,7 +295,7 @@ static void updateLevelParams() {
     game.baseSpeed = 0.8f + (game.subLevel - 1) * 0.15f;
     game.spawnInterval = max(20, 120 - (game.subLevel - 1) * 8);
     game.spawnCounter = game.spawnInterval / 2;
-    game.maxInvaders = constrain(3 + (game.subLevel - 1) / 2, 3, GAME_MAX_INVADERS);
+    game.maxInvaders = constrain(2 + (game.subLevel - 1) / 2, 2, GAME_MAX_INVADERS);
 }
 
 
@@ -456,15 +469,15 @@ static void drawInvader(GameInvader& inv) {
     int y = (int)inv.y;
 
     if (inv.explodeFrame > 0) {
-        int shrink = inv.explodeFrame * 3;
+        int shrink = inv.explodeFrame * 4;
         if (inv.explodeFrame <= 2) {
             canvas->fillRoundRect(x + shrink, y + shrink,
-                GAME_INVADER_W - shrink * 2, GAME_INVADER_H - shrink * 2, 3, GC_HUD_TEXT);
+                GAME_INVADER_W - shrink * 2, GAME_INVADER_H - shrink * 2, 4, GC_HUD_TEXT);
         } else if (inv.explodeFrame <= 4) {
-            for (int p = 0; p < 4; p++) {
-                int px = x + GAME_INVADER_W / 2 + random(-12, 12);
-                int py = y + GAME_INVADER_H / 2 + random(-12, 12);
-                canvas->fillRect(px, py, 2, 2, inv.color);
+            for (int p = 0; p < 5; p++) {
+                int px = x + GAME_INVADER_W / 2 + random(-16, 16);
+                int py = y + GAME_INVADER_H / 2 + random(-16, 16);
+                canvas->fillRect(px, py, 3, 3, inv.color);
             }
         }
         inv.explodeFrame++;
@@ -473,8 +486,8 @@ static void drawInvader(GameInvader& inv) {
     }
     if (!inv.active) return;
 
-    canvas->fillRoundRect(x, y, GAME_INVADER_W, GAME_INVADER_H, 3, inv.color);
-    canvas->drawRoundRect(x, y, GAME_INVADER_W, GAME_INVADER_H, 3,
+    canvas->fillRoundRect(x, y, GAME_INVADER_W, GAME_INVADER_H, 4, inv.color);
+    canvas->drawRoundRect(x, y, GAME_INVADER_W, GAME_INVADER_H, 4,
         canvas->color565(
             ((inv.color >> 11) & 0x1F) * 4,
             ((inv.color >> 5) & 0x3F) * 2,
@@ -483,18 +496,40 @@ static void drawInvader(GameInvader& inv) {
     char dispBuf[4];
     getDisplayStr(inv.character, dispBuf);
 
-    if (strlen(dispBuf) > 1) {
-        canvas->setFont(&fonts::Font0);
+    bool isProsign = (strlen(dispBuf) > 1);
+    const lgfx::GFXfont* font = isProsign ? &DejaVuSansMono_Bold11pt7b
+                                          : &DejaVuSansMono_Bold15pt7b;
+
+    if (charRotation == 0 || !tileSprite) {
+        // No rotation — draw directly onto canvas
+        canvas->setFont(font);
         canvas->setTextColor(GC_HUD_TEXT, inv.color);
         canvas->setTextDatum(lgfx::middle_center);
-        canvas->drawString(dispBuf, x + GAME_INVADER_W / 2, y + GAME_INVADER_H / 2 + 2);
-        int tw = canvas->textWidth(dispBuf);
-        canvas->drawFastHLine(x + (GAME_INVADER_W - tw) / 2, y + 4, tw, GC_HUD_TEXT);
+        canvas->drawString(dispBuf, x + GAME_INVADER_W / 2,
+                           y + GAME_INVADER_H / 2 + (isProsign ? 2 : 0));
+        if (isProsign) {
+            int tw = canvas->textWidth(dispBuf);
+            canvas->drawFastHLine(x + (GAME_INVADER_W - tw) / 2, y + 5, tw, GC_HUD_TEXT);
+        }
     } else {
-        canvas->setFont(&fonts::FreeSansBold9pt7b);
-        canvas->setTextColor(GC_HUD_TEXT, inv.color);
-        canvas->setTextDatum(lgfx::middle_center);
-        canvas->drawString(dispBuf, x + GAME_INVADER_W / 2, y + GAME_INVADER_H / 2);
+        // Draw text into tile sprite, then push rotated onto canvas.
+        // When rotated ±90°, the tile dimensions swap: we draw into a
+        // H×W sprite (so after rotation it fills the W×H tile area).
+        tileSprite->fillSprite(inv.color);
+        tileSprite->setFont(font);
+        tileSprite->setTextColor(GC_HUD_TEXT, inv.color);
+        tileSprite->setTextDatum(lgfx::middle_center);
+        // tileSprite is GAME_INVADER_H wide × GAME_INVADER_W tall (swapped)
+        tileSprite->drawString(dispBuf, GAME_INVADER_H / 2,
+                               GAME_INVADER_W / 2 + (isProsign ? 2 : 0));
+        if (isProsign) {
+            int tw = tileSprite->textWidth(dispBuf);
+            tileSprite->drawFastHLine((GAME_INVADER_H - tw) / 2, 5, tw, GC_HUD_TEXT);
+        }
+        // pushRotateZoom onto canvas at tile center
+        tileSprite->pushRotateZoom(canvas,
+            x + GAME_INVADER_W / 2, y + GAME_INVADER_H / 2,
+            charRotation, 1.0f, 1.0f, -1);
     }
     canvas->setTextDatum(lgfx::top_left);
 }
@@ -533,16 +568,33 @@ static void drawKeyingZone() {
     canvas->fillRect(0, GAME_KEYING_Y, GAME_SCREEN_W, GAME_SCREEN_H - GAME_KEYING_Y, 0x2104);
 
     canvas->setFont(&fonts::Font0);
-    char wpmBuf[12];
-    snprintf(wpmBuf, sizeof(wpmBuf), "%d wpm", game.wpm);
-    canvas->setTextColor(GC_HUD_TEXT, 0x2104);
-    canvas->drawString(wpmBuf, 4, GAME_KEYING_Y + 4);
+    char infoBuf[16];
+    if (encoderIsVolume) {
+        snprintf(infoBuf, sizeof(infoBuf), "Vol:%d <", MorsePreferences::sidetoneVolume);
+        canvas->setTextColor(GC_LEVELUP, 0x2104);
+    } else {
+        snprintf(infoBuf, sizeof(infoBuf), "%d wpm <", game.wpm);
+        canvas->setTextColor(GC_HUD_TEXT, 0x2104);
+    }
+    canvas->drawString(infoBuf, 4, GAME_KEYING_Y + 4);
+
+    // Show the other value (without <) on the second line
+    if (encoderIsVolume) {
+        snprintf(infoBuf, sizeof(infoBuf), "%d wpm", game.wpm);
+        canvas->setTextColor(GC_HUD_TEXT, 0x2104);
+    } else {
+        snprintf(infoBuf, sizeof(infoBuf), "Vol:%d", MorsePreferences::sidetoneVolume);
+        canvas->setTextColor(GC_HUD_TEXT, 0x2104);
+    }
+    canvas->drawString(infoBuf, 4, GAME_KEYING_Y + 18);
 
     if (game.streak >= 5) {
         char streakBuf[12];
         snprintf(streakBuf, sizeof(streakBuf), "x%d", game.streak);
         canvas->setTextColor(GC_LEVELUP, 0x2104);
-        canvas->drawString(streakBuf, 4, GAME_KEYING_Y + 18);
+        canvas->setTextDatum(lgfx::top_right);
+        canvas->drawString(streakBuf, GAME_SCREEN_W - 4, GAME_KEYING_Y + 4);
+        canvas->setTextDatum(lgfx::top_left);
     }
 
     if (lastDecodedChar != 0) {
@@ -571,65 +623,68 @@ static void stateMenu() {
     canvas->setFont(&fonts::FreeSans9pt7b);
     char buf[40];
 
-    snprintf(buf, sizeof(buf), "Koch Lesson: %d", game.kochLesson);
+    snprintf(buf, sizeof(buf), "Koch: %d (%d ch)",
+             game.kochLesson, game.kochPoolSize);
     drawCentredText(90, buf, GC_HUD_TEXT);
 
-    int poolSize = game.kochPoolSize;
-    if (poolSize > 14) poolSize = 14;
-    char poolBuf[16];
-    strncpy(poolBuf, game.kochSequence, poolSize);
-    poolBuf[poolSize] = '\0';
-    snprintf(buf, sizeof(buf), "Chars: %s%s", poolBuf,
-             game.kochPoolSize > 14 ? "..." : "");
-    drawCentredText(112, buf, GC_LETTERS);
+    snprintf(buf, sizeof(buf), "%d WPM", game.wpm);
+    drawCentredText(120, buf, GC_HUD_TEXT);
 
-    snprintf(buf, sizeof(buf), "Speed: %d WPM", game.wpm);
+    snprintf(buf, sizeof(buf), "Vol: %d", MorsePreferences::sidetoneVolume);
     drawCentredText(140, buf, GC_HUD_TEXT);
 
-    snprintf(buf, sizeof(buf), "Start Level: %d-%d <",
+    snprintf(buf, sizeof(buf), "Level: %d-%d <",
              game.kochLesson, game.startSubLevel);
-    drawCentredText(168, buf, GC_LEVELUP);
+    drawCentredText(160, buf, GC_LEVELUP);
 
     // High scores
     if (highScores[0].score > 0) {
         canvas->setFont(&fonts::Font0);
         canvas->setTextColor(GC_HUD_TEXT, GC_BG);
         canvas->setTextDatum(lgfx::top_center);
-        canvas->drawString("- HIGH SCORES -", GAME_SCREEN_W / 2, 198);
+        canvas->drawString("- HIGH SCORES -", GAME_SCREEN_W / 2, 190);
         canvas->setTextDatum(lgfx::top_left);
-        drawHighScores(212, -1);
+        drawHighScores(204, -1);
     }
 
     canvas->setFont(&fonts::Font0);
-    drawCentredText(286, "Paddle: start  FN: toggle enc", GC_HUD_TEXT);
+    drawCentredText(286, "Touch:start FN:spd/lvl/vol", GC_HUD_TEXT);
     drawCentredText(300, "Long press: exit", GC_HUD_TEXT);
 
     pushFrame();
 
-    bool menuEncoderIsLevel = true;
+    // 0=level, 1=speed, 2=volume
+    uint8_t menuEncMode = 0;
 
     while (game.state == GAME_MENU) {
         int enc = checkEncoder();
         if (enc) {
-            if (menuEncoderIsLevel) {
+            if (menuEncMode == 0) {
                 game.startSubLevel += enc;
                 if (game.startSubLevel < 1) game.startSubLevel = 1;
                 if (game.startSubLevel > 50) game.startSubLevel = 50;
-            } else {
+            } else if (menuEncMode == 1) {
                 game.wpm = constrain(game.wpm + enc, 5, 60);
                 MorsePreferences::wpm = game.wpm;
                 updateTimings();
+            } else {
+                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 20);
+                MorsePreferences::sidetoneVolume = newVol;
             }
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
-            canvas->fillRect(0, 135, GAME_SCREEN_W, 50, GC_BG);
+            // Redraw all three lines
+            canvas->fillRect(0, 115, GAME_SCREEN_W, 60, GC_BG);
             canvas->setFont(&fonts::FreeSans9pt7b);
-            snprintf(buf, sizeof(buf), "Speed: %d WPM %s",
-                     game.wpm, !menuEncoderIsLevel ? "<" : "");
+            snprintf(buf, sizeof(buf), "%d WPM %s",
+                     game.wpm, menuEncMode == 1 ? "<" : "");
+            drawCentredText(120, buf, GC_HUD_TEXT);
+            snprintf(buf, sizeof(buf), "Vol: %d %s",
+                     MorsePreferences::sidetoneVolume, menuEncMode == 2 ? "<" : "");
             drawCentredText(140, buf, GC_HUD_TEXT);
-            snprintf(buf, sizeof(buf), "Start Level: %d-%d %s",
+            snprintf(buf, sizeof(buf), "Level: %d-%d %s",
                      game.kochLesson, game.startSubLevel,
-                     menuEncoderIsLevel ? "<" : "");
-            drawCentredText(168, buf, GC_LEVELUP);
+                     menuEncMode == 0 ? "<" : "");
+            drawCentredText(160, buf, GC_LEVELUP);
             pushFrame();
         }
 
@@ -645,16 +700,21 @@ static void stateMenu() {
 
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks == 1) {
-            menuEncoderIsLevel = !menuEncoderIsLevel;
-            canvas->fillRect(0, 135, GAME_SCREEN_W, 50, GC_BG);
+            menuEncMode = (menuEncMode + 1) % 3;
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+            // Redraw all three lines
+            canvas->fillRect(0, 115, GAME_SCREEN_W, 60, GC_BG);
             canvas->setFont(&fonts::FreeSans9pt7b);
-            snprintf(buf, sizeof(buf), "Speed: %d WPM %s",
-                     game.wpm, !menuEncoderIsLevel ? "<" : "");
+            snprintf(buf, sizeof(buf), "%d WPM %s",
+                     game.wpm, menuEncMode == 1 ? "<" : "");
+            drawCentredText(120, buf, GC_HUD_TEXT);
+            snprintf(buf, sizeof(buf), "Vol: %d %s",
+                     MorsePreferences::sidetoneVolume, menuEncMode == 2 ? "<" : "");
             drawCentredText(140, buf, GC_HUD_TEXT);
-            snprintf(buf, sizeof(buf), "Start Level: %d-%d %s",
+            snprintf(buf, sizeof(buf), "Level: %d-%d %s",
                      game.kochLesson, game.startSubLevel,
-                     menuEncoderIsLevel ? "<" : "");
-            drawCentredText(168, buf, GC_LEVELUP);
+                     menuEncMode == 0 ? "<" : "");
+            drawCentredText(160, buf, GC_LEVELUP);
             pushFrame();
         }
         if (Buttons::volButton.clicks == -1) { game.state = GAME_EXIT; return; }
@@ -699,15 +759,40 @@ static void stateCountdown() {
 // STATE: Playing
 //=============================================================================
 
+// Clean up keyer and audio when leaving the playing state
+static void leavePlayingState() {
+    gameMode = false;
+    soundPlaying = false;
+    keyerState = IDLE_STATE;
+    clearPaddleLatches();
+    keyOut(false, true, 0, 0);
+    MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
+}
+
 static void statePlaying() {
     gameMode = true;
+    encoderIsVolume = false;   // always start with encoder controlling speed
 
     unsigned long lastFrame = millis();
+    unsigned long lastIdleTime = millis();  // track when keyer was last idle
+
     while (game.state == GAME_PLAYING) {
         if (millis() - lastFrame < 33) {
             checkPaddles();
             doPaddleIambic(leftKey, rightKey);
             updateSound();
+
+            // Track keyer idle state for stuck detection
+            if (keyerState == IDLE_STATE) {
+                lastIdleTime = millis();
+            } else if (!leftKey && !rightKey && millis() - lastIdleTime > 2000) {
+                // Keyer has been running for >2s with no paddles pressed — stuck.
+                // Force reset to prevent runaway dit/dah stream.
+                keyerState = IDLE_STATE;
+                clearPaddleLatches();
+                lastIdleTime = millis();
+            }
+
             delay(1);
             continue;
         }
@@ -729,26 +814,33 @@ static void statePlaying() {
             }
         }
 
-        // Encoder: speed
+        // Encoder: speed or volume (toggled by FN click)
         int enc = checkEncoder();
         if (enc) {
-            game.wpm = constrain(game.wpm + enc, 5, 60);
-            MorsePreferences::wpm = game.wpm;
-            updateTimings();
+            if (encoderIsVolume) {
+                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 20);
+                MorsePreferences::sidetoneVolume = newVol;
+                MorseOutput::pwmClick(newVol);
+            } else {
+                game.wpm = constrain(game.wpm + enc, 5, 60);
+                MorsePreferences::wpm = game.wpm;
+                updateTimings();
+            }
         }
 
         // Buttons
         Buttons::modeButton.Update();
         switch (Buttons::modeButton.clicks) {
-            case 1:  game.state = GAME_PAUSED; gameMode = false; return;
-            case -1: game.state = GAME_EXIT;   gameMode = false; return;
+            case 1:  game.state = GAME_PAUSED; leavePlayingState(); return;
+            case -1: game.state = GAME_EXIT;   leavePlayingState(); return;
         }
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks == 1) {
-            game.lives = 0; game.state = GAME_OVER; gameMode = false; return;  // test trigger
+            encoderIsVolume = !encoderIsVolume;
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
         }
         if (Buttons::volButton.clicks == -1) {
-            game.state = GAME_EXIT; gameMode = false; return;
+            game.lives = 0; game.state = GAME_OVER; leavePlayingState(); return;
         }
 
         // Spawn
@@ -762,7 +854,7 @@ static void statePlaying() {
 
         // Game over?
         if (game.lives <= 0) {
-            game.lives = 0; game.state = GAME_OVER; gameMode = false; return;
+            game.lives = 0; game.state = GAME_OVER; leavePlayingState(); return;
         }
 
         // Level up?
@@ -770,7 +862,7 @@ static void statePlaying() {
             game.subLevel++;
             game.destroysThisLevel = 0;
             updateLevelParams();
-            game.state = GAME_LEVEL_UP; gameMode = false; return;
+            game.state = GAME_LEVEL_UP; leavePlayingState(); return;
         }
 
         // Draw
@@ -783,7 +875,7 @@ static void statePlaying() {
 
         serialEvent();
     }
-    gameMode = false;
+    leavePlayingState();
 }
 
 
@@ -854,38 +946,35 @@ static void stateGameOver() {
     canvas->fillSprite(GC_BG);
     playSoundGameOver();
 
-    canvas->setFont(&fonts::FreeSansBold18pt7b);
-    drawCentredText(20, "GAME", GC_GAMEOVER);
-    drawCentredText(55, "OVER", GC_GAMEOVER);
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentredText(12, "GAME OVER", GC_GAMEOVER);
 
     canvas->setFont(&fonts::FreeSans9pt7b);
     char buf[40];
 
     snprintf(buf, sizeof(buf), "Score: %lu", (unsigned long)game.score);
-    drawCentredText(105, buf, GC_SCORE);
-    snprintf(buf, sizeof(buf), "Level: %d-%d", game.kochLesson, game.subLevel);
-    drawCentredText(128, buf, GC_HUD_TEXT);
-    snprintf(buf, sizeof(buf), "Speed: %d WPM", game.wpm);
-    drawCentredText(148, buf, GC_HUD_TEXT);
+    drawCentredText(52, buf, GC_SCORE);
+    snprintf(buf, sizeof(buf), "%d-%d  %d WPM", game.kochLesson, game.subLevel, game.wpm);
+    drawCentredText(74, buf, GC_HUD_TEXT);
 
     uint16_t total = game.totalHits + game.totalMisses + game.totalDropped;
     if (total > 0) {
         snprintf(buf, sizeof(buf), "Accuracy: %d%%",
                  (int)(game.totalHits * 100 / total));
-        drawCentredText(168, buf, GC_HUD_TEXT);
+        drawCentredText(94, buf, GC_HUD_TEXT);
     }
-    snprintf(buf, sizeof(buf), "Hits: %d  Missed: %d", game.totalHits, game.totalMisses);
-    drawCentredText(188, buf, GC_HUD_TEXT);
-    snprintf(buf, sizeof(buf), "Dropped: %d", game.totalDropped);
-    drawCentredText(204, buf, GC_HUD_TEXT);
+    canvas->setFont(&fonts::Font0);
+    snprintf(buf, sizeof(buf), "Hit:%d Miss:%d Drop:%d",
+             game.totalHits, game.totalMisses, game.totalDropped);
+    drawCentredText(116, buf, GC_HUD_TEXT);
 
     // High score check
     int8_t rank = insertHighScore();
     if (rank >= 0) {
         canvas->setFont(&fonts::FreeSans9pt7b);
-        drawCentredText(224, "NEW HIGH SCORE!", GC_LEVELUP);
+        drawCentredText(140, "NEW HIGH SCORE!", GC_LEVELUP);
     }
-    drawHighScores(242, rank);
+    drawHighScores(158, rank);
 
     canvas->setFont(&fonts::Font0);
     drawCentredText(316 - 24, "Click: Play Again", GC_HUD_TEXT);
@@ -927,8 +1016,32 @@ static void stateGameOver() {
 //=============================================================================
 
 void MorseGame::run() {
-    canvas = display.enterGameMode(MorsePreferences::leftHanded);
-    if (!canvas) return;
+    canvas = display.enterGameMode(false);    if (!canvas) return;
+    // Determine character rotation from preference
+    // posInvaderOrient: 0 = game native (no rotation), 1 = reading orientation
+    #ifdef CONFIG_DISPLAYWRAPPER
+    if (MorsePreferences::pliste[posInvaderOrient].value == 1) {
+        charRotation = MorsePreferences::leftHanded ? -90 : 90;
+    } else {
+        charRotation = 0;
+    }
+    #else
+    charRotation = 0;
+    #endif
+
+    // Allocate tile sprite for rotated drawing (H×W — swapped dimensions)
+    if (charRotation != 0) {
+        tileSprite = new LGFX_Sprite(canvas);
+        if (tileSprite) {
+            tileSprite->setPsram(false);
+            tileSprite->setColorDepth(16);
+            if (!tileSprite->createSprite(GAME_INVADER_H, GAME_INVADER_W)) {
+                delete tileSprite;
+                tileSprite = nullptr;
+                charRotation = 0;  // fall back to no rotation
+            }
+        }
+    }
 
     initGameData();
     loadHighScores();
@@ -947,6 +1060,14 @@ void MorseGame::run() {
 
     gameMode = false;
     MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
+
+    // Free tile sprite
+    if (tileSprite) {
+        tileSprite->deleteSprite();
+        delete tileSprite;
+        tileSprite = nullptr;
+    }
+
     display.exitGameMode();
 
     // Restore normal display for menu

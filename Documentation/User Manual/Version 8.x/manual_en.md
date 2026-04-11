@@ -445,7 +445,7 @@ normal characters, turning the rotary encoder changes the volume.
 ## Hardware settings
 
 You might need to change certain hardware settings, e.g. the screen
-orientation, or the calibration of the battery measurement. All these
+orientation, or the calibration of the battery measurement. Or you might want to reset (almost) all preferences to their factory value. All these
 settings are covered in **Appendix 1 Hardware Configuration
 Menu**.
 
@@ -1463,7 +1463,11 @@ Characters appear at the top of the screen and fall downward in one of
 six lanes. Each character is shown as a coloured rectangle: green for
 letters, yellow for numbers, orange for punctuation, and magenta for pro
 signs. Pro signs are displayed as their two-letter abbreviation with a
-bar above (e.g., ka with an overline for ).
+bar above.
+
+::: note
+The default for the game is portrait orientation, with the touch paddles at the bottom. You can change this to landscape with the Preference "Invader Orient.", and the landscape orientation will acknowledge your setting of "left-handed" (see Appendix 1: Hardware Configuration Menu).
+:::
 
 To destroy a falling character, key its Morse code using the paddles (or
 an external key). The game automatically targets the lowest – and
@@ -1497,6 +1501,8 @@ immediately and is also stored when you exit the game.
 ENCODER click (short press): Pause the game. Click again to resume.
 
 ENCODER long press: Exit the game and return to the Morserino menu.
+
+FN short press: Toggle between speed and volume control.
 
 FN long press: Also exits the game.
 
@@ -1551,6 +1557,138 @@ challenged but not overwhelmed. If characters reach the bottom too
 quickly, reduce your starting sub-level or lower the WPM. As your
 recognition improves, increase the Koch lesson to add more characters to
 the pool.
+
+### Fight the Pileup
+
+**Fight the Pileup** is a CW training game where you practice copying and keying callsigns under time pressure — just like working a real pileup on the bands. The game plays random callsigns as CW audio, and you must decode them by ear and key them back correctly before time runs out.
+
+#### Starting the Game {-}
+
+From the main menu, navigate to **Games → Fight Pileup**. If this is your first time playing, you will be asked to enter your callsign and name using the encoder and buttons:
+
+- **Encoder:** Select a character
+- **Click:** Add the character
+- **FN (short click):** Delete last character
+- **Long press:** Confirm (minimum 2 characters required)
+
+Your callsign and name are saved and remembered for future sessions.
+
+#### The Lobby {-}
+
+After entering your identity, you arrive at the lobby screen. Here you can configure the game before entering the pileup:
+
+- **Encoder:** Select difficulty level (EASY, NORMAL, HARD, EXPERT)
+- **Click:** Toggle between Single Player and Multiplayer mode
+- **FN (short click):** Toggle between callsign and name display (if both are set)
+- **Paddles:** Enter the pileup (starts the code challenge)
+- **Long press:** Exit to menu
+
+The difficulty level controls how much time you have to respond, how many timeouts before you lose a life, and how quickly new challenges appear:
+
+| Level  | Timeout | Drops per Life |
+|--------|---------|----------------|
+| EASY   | 45 sec  | 5              |
+| NORMAL | 30 sec  | 4              |
+| HARD   | 20 sec  | 3              |
+| EXPERT | 12 sec  | 2              |
+
+#### Code Challenge (Entry Gate) {-}
+
+Before entering the pileup, you must key a short random code (4 characters) on your paddles. This serves as a warm-up and confirms that your paddles are working. Each correctly keyed character lights up in green. If you make a mistake, the sequence resets — just try again.
+
+Long press to cancel and return to the lobby.
+
+#### Gameplay {-}
+
+Once you pass the code challenge, the pileup begins. The game presents you with a continuous stream of random callsigns to decode and key back.
+
+#### How It Works {-}
+
+1. **Listen:** A callsign is played as CW audio at a different pitch from your sidetone, so you can distinguish it from your own keying. The callsign repeats automatically.
+
+2. **Decode:** Try to identify the callsign by ear. After the 3rd play, a text hint appears on screen — but try to get it before that!
+
+3. **Key your response:** Use your paddles to key the callsign you heard. Your keyed characters appear on screen as they are decoded.
+
+4. **Automatic submission:** Your response is automatically submitted after a word-length pause (about 1 second of silence). You can also click the encoder to submit immediately.
+
+5. **Result:**
+   - **Correct:** A brief "OK!" flash with your score bonus, then the next challenge starts automatically.
+   - **Wrong:** A "WRONG" flash. The CW plays again so you can retry with the same callsign.
+   - **Timeout:** If the progress bar runs out before you respond correctly, you lose points and a new challenge begins.
+
+#### Screen Layout {-}
+
+From top to bottom:
+
+- **HUD bar:** Lives (red dots), your callsign/name, current score, streak multiplier
+- **Progress bar:** Time remaining for the current challenge (green → yellow → red)
+- **Challenge area:** Play counter and hint (after 3 plays)
+- **Input area:** Your keyed response
+- **Stats:** Correct and missed counts
+- **Status bar:** Current WPM and volume level
+
+#### Scoring {-}
+
+| Event | Points |
+|-------|--------|
+| Correct answer | +100 base + 10 × streak bonus |
+| Wrong answer | −50 |
+| Timeout | −25 |
+
+The streak counter increases with each consecutive correct answer and resets on any wrong answer or timeout. A higher streak means more bonus points per correct answer.
+
+#### Lives {-}
+
+You start with 3 lives. Every N timeouts costs you a life (N depends on the difficulty level). When all lives are lost, the game ends and your final score is displayed.
+
+#### Controls During Play {-}
+
+| Control | Action |
+|---------|--------|
+| **Paddles** | Key your response |
+| **Encoder** | Adjust WPM speed or volume (see FN toggle) |
+| **Click** (encoder) | Submit your response immediately |
+| **FN short click** | Toggle encoder between WPM and volume |
+| **Long press** (encoder or FN) | Exit game |
+
+The status bar shows which parameter the encoder controls, indicated by a `<` arrow:
+
+```
+15 wpm <      ← encoder adjusts speed
+Vol 12
+
+15 wpm
+< Vol 12      ← encoder adjusts volume
+```
+
+#### Tips for Beginners {-}
+
+- **Start on EASY difficulty.** The 45-second timeout gives you plenty of time to listen to the callsign multiple times before attempting to key it.
+
+- **Don't rush.** Wait for the text hint to appear after 3 plays if you're not sure. There's no penalty for waiting — only for timeouts.
+
+- **Lower the WPM.** Use the encoder to reduce the speed if the CW is too fast. The challenge plays at the same WPM as your keying speed.
+
+- **Listen for the structure.** Callsigns follow patterns: usually a 1-3 letter prefix, a digit, then 1-3 letter suffix (e.g., DL1ABC, W3XY, VK2GR).
+
+- **Wrong answers let you retry.** If you make a mistake, the same callsign replays — you get unlimited attempts within the timeout period.
+
+#### Game Over {-}
+
+When all lives are lost, the game over screen shows your final statistics:
+
+- **Score:** Your total points
+- **Defended / Dropped:** How many callsigns you got right vs. timed out
+- **Accuracy:** Percentage of correct answers
+- **Best streak:** Longest run of consecutive correct answers
+- **WPM / Difficulty:** The settings you played with
+
+Press **Click** to play again (returns to lobby) or **Long press** to exit to the main menu.
+
+
+
+
 
 ## WiFi Functions
 
@@ -1841,7 +1979,7 @@ Here you can select which network configurations should be used. SSID and
 Peer Host are being displayed, and you use the encoder to go through the
 available network configurations.
 
-The item shown when you start this is the currently selected network configuration. If that is what you want, just go back to teh menu with a long press of teh ENCODER.
+The item shown when you start this is the currently selected network configuration. If that is what you want, just go back to the menu with a long press of the ENCODER.
 
 The first entry (numbered 0) lets you choose EspNow (WiFi peer-to-peer
 communication) instead of using an access point.
@@ -1879,6 +2017,10 @@ are in: **When you double click while in a particular mode, you will
 only get to those preferences that are relevant for the current mode.**
 Did you double click from the Start Menu, you will be presented the
 complete range of preferences.
+
+::: note
+Almost all preferences can be reset to their factoy value through the Hardware Configuration Menu. See Appendix 1 for further information.
+:::
 
 ## Snapshots
 
@@ -1928,7 +2070,7 @@ buttons.
 You can also delete a snapshot that is no longer needed, or that was
 created in error. Proceed as if you wanted to recall a snapshot, select
 the one you want to delete, and then **click the FN button** for
-deleting it. Like with storing and recalling snapshots, a short message
+deleting it. There will be a confirmation dialog to make sure you really want to delete that snapshot. If you rotete the ENCODER to "Yes" and click it, that snapshot will be deleted, and, like with storing and recalling snapshots, a short message
 will indicate that the action was successful.
 
 The easiest way to configure your preferences and snapshots is to
@@ -1956,6 +2098,7 @@ to all modes of the Morserino-32.
 | Output Case | This changes the case of decoded characters on the display (and also on serial output via USB, and on Bluetooth keyboard output!) from lower case to UPPER CASE. | **lower** / UPPER |
 | Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
 | Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
+| Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
 | BLT Kbd Output | Defines what is being sent via Bluetooth (Bluetooth keyboard functionality). The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamrad io.solutions/vband/*), **Decoded** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic** Keyboard option does more or less the same as **Decoded**, but it sends the code for the "**Enter**" Key (New Line) when you key \ (new message), and for the "**Backspace**" key when you key \ (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
 | Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 
@@ -2011,7 +2154,7 @@ Echo Trainer!
 | Random Groups | For the output of groups of random characters, determine which character subsets should be included | Alpha / Numerals / Interpunct. / Pro Signs / Alpha+Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / **All Chars** |
 | Length Rnd Gr | Here you select how many characters there should be in each group of random characters; traditionally this is 5, but for training it might make sense to start with a smaller number. | Fixed lengths 1 – 6, and 2 to 3 – 2 to 6 (length chosen randomly within these limits) \[**5**\] |
 | Length Calls | Select the maximum length of generated call signs | **Unlimited** / max. 3 – max. 6 |
-| Calls Region | Select if you want to see call signs from around the world, or just from a certain continent. | **All** / Europe / N America / S America / Africa / Asia / Oceania |
+| Calls Region | Select if you want to see call signs from around the world, or just from a certain continent. **This parameter is ignored when the call length has been set to a maximum of 3 characters.** | **All** / Europe / N America / S America / Africa / Asia / Oceania |
 | Call Prefixes | You can use this setting to filter out very rare prefixes, and get only call signs with more common prefixes. | **Common only** / All |
 | Length Abbrev | Select the maximum length of the randomly generated common CW abbreviations and Q groups | **Unlimited** / max. 2 – max. 6 |
 | Length Words | Select the maximum length of the randomly generated common English words | **Unlimited** / max. 2 – max. 6 |
@@ -2091,11 +2234,12 @@ The M32 will re-boot, with the display now rotated 180°.
 
 ### Calibration of Battery Measurement
 
-For the M32Pocket, calibrating battery measurement is usually not
-necessary!
+::: note
+For the M32Pocket, calibrating battery measurement is not
+necessary, and therefore this item is only available on 1st and 2nd edition Morserinos.
+:::
 
-This applies to 1st and 2nd edition
-Morserinos only: The built-in capability of Heltec modules to
+The built-in capability of Heltec modules to
 measure battery voltage unfortunately is not very reliable. Various
 factors apparently contribute to the problem: a measurement error within
 the ESP32 processor due to a slight variation of the reference voltage
@@ -2183,6 +2327,9 @@ Immediately after that the Morserino-32 will start normally, with the
 now selected LoRa settings in effect. On the top line of the Startup
 Screen you will see the configured QRG for LoRa as a 5-digit number
 (e.g. 43415 for the default in the 433 MHz band).
+
+### Resetting Preferences to their Factory Defaults
+This item resets all preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.
 
 ## Appendix 2: More information about LoRa
 
@@ -2311,7 +2458,7 @@ already scrolled away...​
 
 With firmware versions **1.x** the WiFi functions were not accessible
 directly from the main menu, but **by quickly pressing the FN button three
-times**. Once you are in teh WiFi menu, the process is the same for the various WiFi functions as described in section **5.8
+times**. Once you are in the WiFi menu, the process is the same for the various WiFi functions as described in section **5.8
 WiFi Functions**!
 
 Of course you can also **update through USB** when you are still on an older
@@ -2472,17 +2619,17 @@ If you are using a M32Pocket, the device must be turned on and must not
 be in sleep mode when you are connecting the USB cable!
 :::
 
-On these website you need to click a "Connect" button (in a pop-up
-window you need to tell the browser which port to use); otherwise these
-web sites explain everything you need to know to use their
+On these websites, you need to click a "Connect" button (in a pop-up
+window, you need to tell the browser which port to use); otherwise, these
+websites explain everything you need to know to use their
 functionality.
 
 In addition to the setup functionality, Christof also implemented a few
 nice training features, a QSO bot, and voice output for all menu items
-and preferences settings, to assist vision impaired operators, all to be
+and preferences settings, to assist vision-impaired operators, all to be
 found on [https://tegmento.org](https://tegmento.org/).
 
-Also Oliver implemented a lot of additional training features on his
+Also, Oliver implemented a lot of additional training features on his
 site, to be found at
 [https://morsetrainerpro.com/index.html](https://morsetrainerpro.com/index.html).
 

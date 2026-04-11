@@ -200,26 +200,26 @@ static void stopFtpSound() {
 
 static void playSoundCorrect() {
     if (keyerState != IDLE_STATE) return;
-    static const FtpSoundNote s[] = {{880, 40}, {1320, 40}};
+    static const FtpSoundNote s[] = {{1200, 15}, {1600, 15}};
     startFtpSound(s, 2);
 }
 static void playSoundWrong() {
     if (keyerState != IDLE_STATE) return;
-    static const FtpSoundNote s[] = {{330, 60}};
+    static const FtpSoundNote s[] = {{300, 25}};
     startFtpSound(s, 1);
 }
 static void playSoundTimeout() {
     if (keyerState != IDLE_STATE) return;
-    static const FtpSoundNote s[] = {{440, 80}, {330, 80}};
+    static const FtpSoundNote s[] = {{400, 30}, {300, 30}};
     startFtpSound(s, 2);
 }
 static void playSoundLifeLost() {
     if (keyerState != IDLE_STATE) return;
-    static const FtpSoundNote s[] = {{660, 80}, {440, 80}, {330, 120}};
+    static const FtpSoundNote s[] = {{600, 30}, {400, 30}, {300, 40}};
     startFtpSound(s, 3);
 }
 static void playSoundLevelUp() {
-    static const FtpSoundNote s[] = {{523, 60}, {659, 60}, {784, 60}, {1047, 100}};
+    static const FtpSoundNote s[] = {{523, 30}, {659, 30}, {784, 30}, {1047, 40}};
     startFtpSound(s, 4);
 }
 
@@ -312,7 +312,7 @@ static void cwPlayerUpdate() {
     if (cwPlayer.toneOn) {
         MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
         cwPlayer.toneOn = false;
-        cwPlayer.timer = millis() + ditLength;  // inter-element space
+        cwPlayer.timer = millis() + ditLength - 7;  // inter-element space, compensate for pwmNoTone delay
         return;
     }
 
@@ -332,12 +332,12 @@ static void cwPlayerUpdate() {
         case '1':  // dit
             MorseOutput::pwmTone(cwPlayer.pitch, MorsePreferences::sidetoneVolume, false);
             cwPlayer.toneOn = true;
-            cwPlayer.timer = millis() + ditLength;
+            cwPlayer.timer = millis() + ditLength - 7;  // compensate for pwmTone delay
             break;
         case '2':  // dah
             MorseOutput::pwmTone(cwPlayer.pitch, MorsePreferences::sidetoneVolume, false);
             cwPlayer.toneOn = true;
-            cwPlayer.timer = millis() + dahLength;
+            cwPlayer.timer = millis() + dahLength - 7;  // compensate for pwmTone delay
             break;
         case '0':  // inter-character space (3 dit-lengths total, 1 already from inter-element)
             cwPlayer.timer = millis() + interCharacterSpace;
@@ -884,10 +884,9 @@ static void stateCodeChallenge() {
         playSoundLevelUp();
         for (int i = 0; i < 3; i++) {
             canvas->fillSprite(FTP_BG);
-            canvas->setFont(&fonts::FreeSansBold18pt7b);
-            drawCentredText(100, "ENTERING", FTP_OK);
-            drawCentredText(145, "THE", FTP_OK);
-            drawCentredText(190, "PILEUP!", FTP_OK);
+            canvas->setFont(&fonts::FreeSansBold12pt7b);
+            drawCentredText(110, "ENTERING", FTP_OK);
+            drawCentredText(140, "THE PILEUP!", FTP_OK);
             pushFrame();
             delay(500);
             updateFtpSound();
@@ -1143,6 +1142,7 @@ static void handleAttackSubmit() {
     clearInput();
 }
 
+
 static void statePileup() {
     pileupMode = true;
     gameMode = true;
@@ -1151,22 +1151,17 @@ static void statePileup() {
     gameCharBuffer = 0;
     updateTimings();
 
-    // --- Simple test loop ---
-    // Generate a callsign, play it, show it, let player key, compare.
-
     char challenge[FTP_MAX_CALL_LEN + 1];
     challenge[0] = '\0';
     bool needNewChallenge = true;
-    bool waitingForResult = false;   // showing result screen, waiting for click
+    bool waitingForResult = false;
     char resultExpected[FTP_MAX_CALL_LEN + 1] = "";
     char resultGot[FTP_MAX_CALL_LEN + 1] = "";
-    uint16_t correctCount = 0;
-    uint16_t wrongCount = 0;
-    uint16_t timeoutCount = 0;
     unsigned long correctFlashTime = 0;
     bool lastWasTimeout = false;
     unsigned long lastSubmitTime = 0;
     unsigned long challengeStartTime = 0;
+    bool encoderIsVolume = false;
 
     clearInput();
     unsigned long lastFrame = millis();
@@ -1176,11 +1171,8 @@ static void statePileup() {
         // --- Tight keyer polling loop ---
         if (millis() - lastFrame < 33) {
             if (!waitingForResult) {
-                // Match main keyer loop: only check paddles when not mid-element
                 switch (keyerState) {
-                    case DIT:
-                    case DAH:
-                    case KEY_START:
+                    case DIT: case DAH: case KEY_START:
                         break;
                     default:
                         checkPaddles();
@@ -1190,8 +1182,6 @@ static void statePileup() {
                     continue;
                 }
 
-                // Keyer is idle — safe to do lightweight housekeeping
-                // Collect decoded characters
                 char c = gameCharBuffer;
                 if (c != 0) {
                     gameCharBuffer = 0;
@@ -1210,7 +1200,6 @@ static void statePileup() {
                     }
                 }
 
-                // Word-gap detection
                 if (ftp.inputPos >= 2 && ftp.lastCharTime > 0 &&
                     keyerState == IDLE_STATE && !leftKey && !rightKey) {
                     unsigned long wordGap = interWordSpace + ditLength;
@@ -1220,42 +1209,52 @@ static void statePileup() {
                         ftp.challengePos = 1;
                     }
                 }
+
+                if (keyerState == IDLE_STATE && ftp.inputPos == 0 &&
+                    !leftKey && !rightKey &&
+                    millis() - lastSubmitTime > 2000) {
+                    cwPlayerUpdate();
+                }
+                if (keyerState == IDLE_STATE) {
+                    updateFtpSound();
+                }
             }
             continue;
         }
         lastFrame = millis();
 
-        // --- Poll paddles at start of frame section ---
         checkPaddles();
         doPaddleIambic(leftKey, rightKey);
 
-        // --- If keyer is active, skip ALL frame work and get back to tight loop ---
         if (keyerState != IDLE_STATE || leftKey || rightKey) {
             serialEvent();
             continue;
         }
 
-        // --- CW player & sound effects ---
-        // When player starts keying, STOP the CW player completely
-        // (not just pause — full stop so I2S sidetone state is clean for the keyer)
-        if (ftp.inputPos > 0 || leftKey || rightKey || keyerState != IDLE_STATE) {
-            if (cwPlayer.playing) {
-                cwPlayerStop();
-            }
+        if (cwPlayer.toneOn) {
+            cwPlayerUpdate();
+            serialEvent();
+            continue;
         }
-        // Only run CW player when fully idle and cooldown elapsed
+
+        // --- CW player management ---
+        if (ftp.inputPos > 0 || leftKey || rightKey || keyerState != IDLE_STATE) {
+            if (cwPlayer.playing) cwPlayerStop();
+        }
         if (keyerState == IDLE_STATE && ftp.inputPos == 0 &&
             !leftKey && !rightKey &&
             millis() - lastSubmitTime > 2000) {
-            // Restart CW player if it was stopped and we still have an active challenge
-            if (!cwPlayer.playing && challenge[0] != '\0' && correctFlashTime == 0) {
+            if (!cwPlayer.playing && challenge[0] != '\0' &&
+                correctFlashTime == 0) {
+                uint8_t saved = cwPlayer.playCount;
                 cwPlayerStart(challenge);
+                cwPlayer.playCount = saved;
             }
             cwPlayerUpdate();
             updateFtpSound();
         }
 
-        // --- Generate new challenge ---
+        // --- New challenge ---
         if (needNewChallenge) {
             String call = getRandomCall(0);
             call.toUpperCase();
@@ -1269,12 +1268,11 @@ static void statePileup() {
             challengeStartTime = millis();
         }
 
-        // --- Handle submission (from word-gap, space, or click) ---
+        // --- Submission ---
         if (ftp.challengePos == 1 && !waitingForResult) {
             ftp.challengePos = 0;
             cwPlayerStop();
 
-            // Prepare result comparison
             ftp.inputBuf[ftp.inputPos] = '\0';
             strncpy(resultGot, ftp.inputBuf, FTP_MAX_CALL_LEN);
             resultGot[FTP_MAX_CALL_LEN] = '\0';
@@ -1286,224 +1284,219 @@ static void statePileup() {
                     resultExpected[i] = resultExpected[i] - 'a' + 'A';
 
             if (strcmp(resultGot, resultExpected) == 0) {
-                // Correct — brief flash, then auto-advance
-                correctCount++;
+                ftp.streak++;
+                if (ftp.streak > ftp.bestStreak) ftp.bestStreak = ftp.streak;
+                int bonus = FTP_SCORE_CORRECT + (ftp.streak * FTP_SCORE_STREAK_BONUS);
+                addScore(bonus);
+                ftp.totalBlocked++;
                 playSoundCorrect();
                 correctFlashTime = millis();
                 lastWasTimeout = false;
             } else {
-                // Wrong — restart CW player, let player try again
-                wrongCount++;
+                ftp.streak = 0;
+                addScore(FTP_SCORE_WRONG);
                 playSoundWrong();
-                char tryBuf[40];
-                snprintf(tryBuf, sizeof(tryBuf), "%s!=%s", resultGot, resultExpected);
-                triggerFlash(FTP_WARN, tryBuf);
-                // Restart CW player from beginning for retry
+                triggerFlash(FTP_WARN, "WRONG");
+                uint8_t saved = cwPlayer.playCount;
                 cwPlayerStart(challenge);
+                cwPlayer.playCount = saved;
             }
             clearInput();
             lastSubmitTime = millis();
         }
 
-        // --- Auto-advance after correct (1 second flash) ---
+        // --- Auto-advance after correct ---
         if (correctFlashTime > 0 && millis() - correctFlashTime > 1000) {
             correctFlashTime = 0;
             needNewChallenge = true;
         }
 
-        // --- Timeout check ---
+        // --- Timeout ---
         if (challengeStartTime > 0 && correctFlashTime == 0 &&
             millis() - challengeStartTime > diff().callerTimeout) {
             cwPlayerStop();
-            timeoutCount++;
+            ftp.totalDropped++;
+            ftp.streak = 0;
+            addScore(FTP_SCORE_TIMEOUT);
             playSoundTimeout();
-            triggerFlash(FTP_TITLE, "TIMEOUT!");
-            clearInput();
-            lastSubmitTime = millis();
             challengeStartTime = 0;
             lastWasTimeout = true;
-            correctFlashTime = millis();  // reuse the 1-second auto-advance timer
+            correctFlashTime = millis();
+            clearInput();
+            lastSubmitTime = millis();
+        }
+
+        // --- Life loss ---
+        {
+            uint8_t dpl = diff().dropsPerLife;
+            uint8_t threshold = ftp.totalDropped / dpl;
+            if (threshold > ftp.eliminationCount) {
+                ftp.eliminationCount = threshold;
+                if (ftp.lives > 0) {
+                    ftp.lives--;
+                    playSoundLifeLost();
+                    triggerFlash(FTP_WARN, "LIFE LOST!");
+                }
+            }
+        }
+
+        if (ftp.lives == 0) {
+            cleanupKeyer();
+            ftp.state = FTP_GAME_OVER;
+            pileupMode = false;
+            return;
         }
 
         // --- Draw ---
         canvas->fillSprite(FTP_BG);
 
-        if (waitingForResult) {
-            // Wrong result screen — stays until click
-            canvas->setFont(&fonts::FreeSansBold12pt7b);
-            drawCentredText(30, "WRONG", FTP_WARN);
+        // HUD: lives | ident | score
+        for (int i = 0; i < ftp.lives; i++)
+            canvas->fillCircle(10 + i * 14, 10, 5, FTP_WARN);
 
-            canvas->setFont(&fonts::Font0);
-            drawCentredText(75, "Expected:", FTP_DIM);
-            canvas->setFont(&fonts::FreeSansBold12pt7b);
-            drawCentredText(92, resultExpected, FTP_TITLE);
-
-            canvas->setFont(&fonts::Font0);
-            drawCentredText(130, "You sent:", FTP_DIM);
-            canvas->setFont(&fonts::FreeSansBold12pt7b);
-            drawCentredText(147, resultGot, FTP_INPUT);
-
-            // Char-by-char comparison
-            canvas->setFont(&fonts::Font0);
-            int elen = strlen(resultExpected);
-            int glen = strlen(resultGot);
-            int maxLen = elen > glen ? elen : glen;
-            char detailBuf[50];
-            int dpos = 0;
-            for (int i = 0; i < maxLen && dpos < 45; i++) {
-                char ec = (i < elen) ? resultExpected[i] : '_';
-                char gc = (i < glen) ? resultGot[i] : '_';
-                if (ec == gc)
-                    dpos += snprintf(detailBuf + dpos, 45 - dpos, "%c", ec);
-                else
-                    dpos += snprintf(detailBuf + dpos, 45 - dpos, "[%c/%c]", ec, gc);
-            }
-            drawCentredText(185, detailBuf, FTP_TEXT);
-
-            snprintf(detailBuf, sizeof(detailBuf), "len: %d vs %d", elen, glen);
-            drawCentredText(205, detailBuf, FTP_DIM);
-
-            snprintf(detailBuf, sizeof(detailBuf), "OK:%d  ERR:%d", correctCount, wrongCount);
-            drawCentredText(230, detailBuf, FTP_DIM);
-
-            canvas->setFont(&fonts::Font0);
-            drawCentredText(260, "Click: retry same", FTP_TEXT);
-            drawCentredText(276, "Long press: exit", FTP_TEXT);
-
-        } else {
-            // Active challenge screen
-            canvas->setFont(&fonts::FreeSansBold12pt7b);
-            drawCentredText(15, "PILEUP TEST", FTP_ACCENT);
-
-            // Time remaining progress bar
-            if (challengeStartTime > 0 && correctFlashTime == 0) {
-                unsigned long elapsed = millis() - challengeStartTime;
-                unsigned long timeout = diff().callerTimeout;
-                float remaining = 1.0f - (float)elapsed / (float)timeout;
-                if (remaining < 0.0f) remaining = 0.0f;
-                int barW = FTP_W - 20;
-                int barH = 4;
-                int barX = 10;
-                int barY = 36;
-                int fillW = (int)(barW * remaining);
-                uint16_t barColor = remaining > 0.5f ? FTP_OK :
-                                    remaining > 0.25f ? FTP_TITLE : FTP_WARN;
-                canvas->drawRect(barX, barY, barW, barH, FTP_DIM);
-                if (fillW > 0)
-                    canvas->fillRect(barX, barY, fillW, barH, barColor);
-            }
-
-            // Show correct/timeout flash if active
-            if (correctFlashTime > 0) {
-                canvas->setFont(&fonts::FreeSansBold18pt7b);
-                if (lastWasTimeout) {
-                    drawCentredText(50, "TIMEOUT", FTP_WARN);
-                    canvas->setFont(&fonts::FreeSans9pt7b);
-                    drawCentredText(90, challenge, FTP_TITLE);
-                } else {
-                    drawCentredText(50, "OK!", FTP_OK);
-                    char cntBuf[16];
-                    snprintf(cntBuf, sizeof(cntBuf), "%d correct", correctCount);
-                    canvas->setFont(&fonts::FreeSans9pt7b);
-                    drawCentredText(90, cntBuf, FTP_OK);
-                }
-            } else {
-                // CW player status
-                canvas->setFont(&fonts::Font0);
-                char pbuf[24];
-                snprintf(pbuf, sizeof(pbuf), "Play #%d",
-                         cwPlayer.playCount + 1);
-                drawCentredText(50, pbuf, FTP_DIM);
-
-                // Show callsign only after enough plays
-                if (cwPlayer.playCount >= FTP_PLAYS_BEFORE_REVEAL) {
-                    canvas->setFont(&fonts::Font0);
-                    drawCentredText(68, "Hint:", FTP_DIM);
-                    canvas->setFont(&fonts::FreeSansBold12pt7b);
-                    drawCentredText(82, challenge, FTP_TITLE);
-                } else {
-                    canvas->setFont(&fonts::FreeSans9pt7b);
-                    drawCentredText(75, "Listen...", FTP_TEXT);
-                    // Show dots for each play completed
-                    char dots[8] = "";
-                    for (int i = 0; i < FTP_PLAYS_BEFORE_REVEAL; i++)
-                        dots[i] = (i < cwPlayer.playCount) ? '*' : '.';
-                    dots[FTP_PLAYS_BEFORE_REVEAL] = '\0';
-                    canvas->setFont(&fonts::FreeSans9pt7b);
-                    drawCentredText(98, dots, FTP_ACCENT);
-                }
-            }
-
-            // Separator
-            int inputY = 140;
-            canvas->drawFastHLine(0, inputY, FTP_W, FTP_DIM);
-
-            // Player input
-            canvas->setFont(&fonts::Font0);
-            drawCentredText(inputY + 4, "YOUR RESPONSE:", FTP_DIM);
-
-            canvas->setFont(&fonts::FreeSansBold12pt7b);
-            if (ftp.inputPos > 0) {
-                drawCentredText(inputY + 20, ftp.inputBuf, FTP_INPUT);
-            } else {
-                canvas->setFont(&fonts::Font0);
-                drawCentredText(inputY + 26, "Key the callsign...", FTP_DIM);
-            }
-
-            // Counter and hints
-            canvas->setFont(&fonts::Font0);
-            char cntBuf[32];
-            snprintf(cntBuf, sizeof(cntBuf), "OK:%d ERR:%d TO:%d",
-                     correctCount, wrongCount, timeoutCount);
-            drawCentredText(210, cntBuf, FTP_DIM);
-            drawCentredText(228, "Click: submit", FTP_TEXT);
-
-            // Status bar
-            canvas->fillRect(0, 290, FTP_W, 30, 0x2104);
-            canvas->setFont(&fonts::Font0);
-            char buf[16];
-            snprintf(buf, sizeof(buf), "%d wpm", ftp.wpm);
-            canvas->setTextColor(FTP_TEXT, 0x2104);
-            canvas->drawString(buf, 4, 298);
-            canvas->setTextColor(FTP_TITLE, 0x2104);
+        canvas->setFont(&fonts::FreeSans9pt7b);
+        canvas->setTextColor(FTP_TEXT, FTP_BG);
+        canvas->setTextDatum(lgfx::top_center);
+        canvas->drawString(getPlayerIdent(), FTP_W / 2, 2);
+        {
+            char sbuf[16];
+            snprintf(sbuf, sizeof(sbuf), "%lu", (unsigned long)ftp.score);
+            canvas->setTextColor(FTP_ACCENT, FTP_BG);
             canvas->setTextDatum(lgfx::top_right);
-            canvas->drawString("TEST", FTP_W - 4, 298);
+            canvas->drawString(sbuf, FTP_W - 4, 2);
             canvas->setTextDatum(lgfx::top_left);
+        }
+        canvas->drawFastHLine(0, 21, FTP_W, FTP_TEXT);
+
+        if (ftp.streak > 0) {
+            char stbuf[8];
+            snprintf(stbuf, sizeof(stbuf), "x%d", ftp.streak);
+            canvas->setFont(&fonts::Font0);
+            canvas->setTextColor(FTP_TITLE, FTP_BG);
+            canvas->setTextDatum(lgfx::top_right);
+            canvas->drawString(stbuf, FTP_W - 4, 24);
+            canvas->setTextDatum(lgfx::top_left);
+        }
+
+        // Progress bar
+        if (challengeStartTime > 0 && correctFlashTime == 0) {
+            unsigned long elapsed = millis() - challengeStartTime;
+            float remaining = 1.0f - (float)elapsed / (float)diff().callerTimeout;
+            if (remaining < 0.0f) remaining = 0.0f;
+            int barW = FTP_W - 20, barX = 10, barY = 34, barH = 4;
+            int fillW = (int)(barW * remaining);
+            uint16_t barColor = remaining > 0.5f ? FTP_OK :
+                                remaining > 0.25f ? FTP_TITLE : FTP_WARN;
+            canvas->drawRect(barX, barY, barW, barH, FTP_DIM);
+            if (fillW > 0) canvas->fillRect(barX, barY, fillW, barH, barColor);
+        }
+
+        // Challenge area
+        if (correctFlashTime > 0) {
+            canvas->setFont(&fonts::FreeSansBold12pt7b);
+            if (lastWasTimeout) {
+                drawCentredText(50, "TIMEOUT", FTP_WARN);
+                canvas->setFont(&fonts::FreeSans9pt7b);
+                drawCentredText(80, challenge, FTP_TITLE);
+            } else {
+                drawCentredText(50, "OK!", FTP_OK);
+                char cbuf[16];
+                snprintf(cbuf, sizeof(cbuf), "+%d",
+                    FTP_SCORE_CORRECT + ftp.streak * FTP_SCORE_STREAK_BONUS);
+                canvas->setFont(&fonts::FreeSans9pt7b);
+                drawCentredText(80, cbuf, FTP_OK);
+            }
+        } else {
+            canvas->setFont(&fonts::Font0);
+            char pbuf[20];
+            snprintf(pbuf, sizeof(pbuf), "Play #%d", cwPlayer.playCount + 1);
+            drawCentredText(44, pbuf, FTP_DIM);
+
+            if (cwPlayer.playCount >= FTP_PLAYS_BEFORE_REVEAL) {
+                canvas->setFont(&fonts::Font0);
+                drawCentredText(60, "Hint:", FTP_DIM);
+                canvas->setFont(&fonts::FreeSansBold12pt7b);
+                drawCentredText(74, challenge, FTP_TITLE);
+            } else {
+                canvas->setFont(&fonts::FreeSans9pt7b);
+                drawCentredText(66, "Listen...", FTP_TEXT);
+                char dots[8] = "";
+                for (int i = 0; i < FTP_PLAYS_BEFORE_REVEAL; i++)
+                    dots[i] = (i < cwPlayer.playCount) ? '*' : '.';
+                dots[FTP_PLAYS_BEFORE_REVEAL] = '\0';
+                drawCentredText(86, dots, FTP_ACCENT);
+            }
+        }
+
+        drawFlash();
+
+        // Input area
+        int inputY = 130;
+        canvas->drawFastHLine(0, inputY, FTP_W, FTP_DIM);
+        canvas->setFont(&fonts::Font0);
+        drawCentredText(inputY + 4, "YOUR RESPONSE:", FTP_DIM);
+        canvas->setFont(&fonts::FreeSansBold12pt7b);
+        if (ftp.inputPos > 0) {
+            drawCentredText(inputY + 20, ftp.inputBuf, FTP_INPUT);
+        } else {
+            canvas->setFont(&fonts::Font0);
+            drawCentredText(inputY + 26, "Key the callsign...", FTP_DIM);
+        }
+
+        // Stats
+        canvas->setFont(&fonts::Font0);
+        {
+            char statBuf[32];
+            snprintf(statBuf, sizeof(statBuf), "OK:%d  Miss:%d",
+                     ftp.totalBlocked, ftp.totalDropped);
+            drawCentredText(200, statBuf, FTP_DIM);
+        }
+        drawCentredText(218, "Click:submit FN:spd/vol", FTP_DIM);
+
+        // Status bar
+        canvas->fillRect(0, 290, FTP_W, 30, 0x2104);
+        canvas->setFont(&fonts::Font0);
+        {
+            char buf[20];
+            snprintf(buf, sizeof(buf), "%d wpm%s", ftp.wpm,
+                     encoderIsVolume ? "" : " <");
+            canvas->setTextColor(encoderIsVolume ? FTP_DIM : FTP_TEXT, 0x2104);
+            canvas->drawString(buf, 4, 294);
+            snprintf(buf, sizeof(buf), "%sVol %d",
+                     encoderIsVolume ? "< " : "",
+                     MorsePreferences::sidetoneVolume);
+            canvas->setTextColor(encoderIsVolume ? FTP_TEXT : FTP_DIM, 0x2104);
+            canvas->drawString(buf, 4, 306);
         }
 
         pushFrame();
 
-        // --- Poll paddles after frame push ---
         checkPaddles();
         doPaddleIambic(leftKey, rightKey);
 
-        // --- Encoder: adjust WPM (skip during active keying) ---
+        // --- Encoder ---
         if (!waitingForResult && keyerState == IDLE_STATE) {
             int enc = checkEncoder();
             if (enc) {
-                ftp.wpm = constrain(ftp.wpm + enc, 5, 60);
-                MorsePreferences::wpm = ftp.wpm;
-                updateTimings();
+                if (encoderIsVolume) {
+                    int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
+                    MorsePreferences::sidetoneVolume = newVol;
+                    #ifdef CONFIG_TLV320AIC3100
+                    MorseOutput::soundSetVolume(newVol);
+                    #endif
+                    MorseOutput::pwmClick(newVol);
+                } else {
+                    ftp.wpm = constrain(ftp.wpm + enc, 5, 60);
+                    MorsePreferences::wpm = ftp.wpm;
+                    updateTimings();
+                }
             }
         }
 
         // --- Buttons ---
         Buttons::modeButton.Update();
-        if (Buttons::modeButton.clicks == 1) {
-            if (waitingForResult) {
-                // Click on wrong result screen → retry same challenge
-                cwPlayerStart(challenge);
-                clearInput();
-                ftp.challengePos = 0;
-                waitingForResult = false;
-                gameMode = true;
-                keyerState = IDLE_STATE;
-                clearPaddleLatches();
-                gameCharBuffer = 0;
-            } else if (ftp.inputPos >= 1) {
-                // Manual submit during keying
-                ftp.challengePos = 1;
-            }
+        if (Buttons::modeButton.clicks == 1 && ftp.inputPos >= 1) {
+            ftp.challengePos = 1;
         }
         if (Buttons::modeButton.clicks == -1) {
             cleanupKeyer();
@@ -1512,6 +1505,10 @@ static void statePileup() {
             return;
         }
         Buttons::volButton.Update();
+        if (Buttons::volButton.clicks == 1) {
+            encoderIsVolume = !encoderIsVolume;
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+        }
         if (Buttons::volButton.clicks == -1) {
             cleanupKeyer();
             ftp.state = FTP_EXIT;
@@ -1525,7 +1522,6 @@ static void statePileup() {
     cleanupKeyer();
     pileupMode = false;
 }
-
 
 //=== STATE: Game Over ===
 
@@ -1554,12 +1550,8 @@ static void stateGameOver() {
     snprintf(buf, sizeof(buf), "Best streak: %d", ftp.bestStreak);
     drawCentredText(176, buf, FTP_TEXT);
 
-    snprintf(buf, sizeof(buf), "Attacks sent: %d", ftp.totalAttacksSent);
-    drawCentredText(194, buf, FTP_TEXT);
-
-    snprintf(buf, sizeof(buf), "%d wpm / %s%s", ftp.wpm, diff().label,
-             ftp.singlePlayer ? " / SOLO" : "");
-    drawCentredText(218, buf, FTP_DIM);
+    snprintf(buf, sizeof(buf), "%d wpm / %s", ftp.wpm, diff().label);
+    drawCentredText(200, buf, FTP_DIM);
 
     drawCentredText(260, "Click: play again", FTP_TEXT);
     drawCentredText(276, "Long press: exit", FTP_TEXT);
