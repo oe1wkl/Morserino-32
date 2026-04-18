@@ -400,6 +400,9 @@ The font family used is Lato.</p>
 <div class="important">
 <p><strong>This is for the impatient, but is not a replacement for reading the whole manual!</strong></p>
 </div>
+<div class="important">
+<p>Make sure you have a suitable battery for your Morserino: M32 1st and 2nd generation use a 3.7 V LiPo battery, the M32Pocket uses a 14500 type Li-Ion cell of 3.7 V.</p>
+</div>
 <p><strong>Controls</strong> to be used:</p>
 <p>• ON/OFF (Battery): Sliding switch located on the back near the loudspeaker. Connects/disconnects battery.</p>
 <p>• ENCODER: The black knob that you can rotate and press.</p>
@@ -438,13 +441,15 @@ The font family used is Lato.</p>
 <h2 data-number="4.1" id="powering-on-and-off-charging-the-battery"><span class="header-section-number">4.1</span> Powering On and Off / Charging the Battery</h2>
 <p>If you want to use the device with USB power, just plug a USB cable in from virtually any USB charger (it consumes a max of 200 mA, or 500 mA for the M32Pocket, when charging the battery), so any 5V charger will do).</p>
 <p>If you run it from battery power, slide the sliding switch to the ON position.</p>
+<div class="important">
 <p>Make sure you install the battery with the correct polarity before turning the switch to the ON position. Reversing the polarity could destroy your Morserino! For the M32Pocket, it is advisable to use a 14500 LiIon cell (3.7 V) with protection against deep discharge.</p>
+</div>
 <p>When the device is off but with the battery connected (sliding power switch is on), it is in deep sleep – in reality: almost all functions of the microcontroller are turned off, and power consumption is minimal (less than 5% of normal operation with M32 1st or 2nd edition, around 1% with M32Pocket).</p>
 <p><strong>To turn the device on from deep sleep</strong>, press the FN button briefly.</p>
 <p>When the Morserino-32 boots up, a startup screen will appear for a few seconds. The top line shows the LoRa frequency that the M32 is configured to use (as a five-digit number; not on the M32Pocket). At the bottom of the display, you will see an indication of how much battery power is left (not on the M32 Pocket). If the battery is low, connect your device to a USB power source. The battery will drain even if you never turn the device on. Although the drain is minimal in deep sleep mode, the battery will be empty after a few days. Therefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the power switch at the back.</p>
 <p>If the battery voltage is dangerously low when you try to turn on the device, an empty battery symbol will appear on the screen, and the device will not boot up. If you see this symbol, begin charging your battery as soon as possible.</p>
 <p>First edition of M32 only: After using any of the WiFi functions, battery measurement does not work correctly until the Morserino-32 is powered down and up again (or a reset with the Reset button has been performed). This is due to a hardware problem on the Heltec board V2.0. In such cases the Morserino-32 displays “Unknown” instead of the battery voltage, and the battery symbol is shown with an inscribed question mark. After a power cycle everything should work OK again.</p>
-<p>If the display shows the empty battery symbol although sufficient power should still be available, it is advisable to perform a battery measurement calibration. Usually not necessary on the M32Pocket. See <strong>Appendix 7.1.2: Calibration of Battery Measurement</strong>.</p>
+<p>If the display shows the empty battery symbol although sufficient power should still be available, it is advisable to perform a battery measurement calibration. This is not necessary and hence not available on the M32Pocket. See <strong>Appendix 7.1.2: Calibration of Battery Measurement</strong>.</p>
 <p>To disconnect the device from the battery (turning it off, unless you are USB powered), slide the sliding switch to the OFF position.</p>
 <p>To put the device into deep sleep, you have two options:</p>
 <ul>

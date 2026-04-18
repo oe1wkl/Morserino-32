@@ -1164,46 +1164,51 @@ static uint8_t voltageToBars(int v) {
 // ---- Fast state check — called in ALL three loops ----
 // Checks the ISR flag. If set, reads pins and compares with previous.
 // If state changed, sets batteryDisplayDirty.
-// If transition was charging→full, recalibrates vAdjust.
+// If transition was charging→full, recalibrates vAdjust. (this has been scrapped)
 // Takes microseconds (no ADC, no display).
-void MorseOutput::checkPowerpathState() {
+/* void MorseOutput::checkPowerpathState() {
     if (!powerpath_event)
         return;
     powerpath_event = false;
  
     uint8_t state = getPowerpathState();
     if (state != ppCurrentState) {
+        if (state == 6 && ppCurrentState != 6)  { // transition from battery to connected
+          delay(1);
+          //state = getPowerpathState();
+        }
         ppPreviousState = ppCurrentState;
         ppCurrentState = state;
         batteryDisplayDirty = true;
-      /*
-        // Recalibrate on charging→full transition
-        // At this moment the battery is exactly 4.2V
-        if (ppPreviousState == 2 && state == 4) {
-            // voltage_raw holds the last raw ADC reading (set by batteryVoltage())
-            // Compute what vAdjust should be so that the reported voltage = 4200mV
-            if (voltage_raw > 100) {    // sanity check
-                int16_t mvolt = ((voltage_raw * MorsePreferences::vAdjust * 1.0) / DEFAULT_VADJUST) * 3.6;
-                if (mvolt > 3000) {
-                    uint8_t newVAdjust = (DEFAULT_VADJUST * 4200) / mvolt;
-                    if (abs(newVAdjust - MorsePreferences::vAdjust) >= 3) {
-                        MorsePreferences::vAdjust = newVAdjust;
-                        MorsePreferences::setVoltageAdjust(newVAdjust);
-                    }
-                }
-            }
-        }
-        */
+        DEBUG ("Powerpath state changed: " + String(ppPreviousState) + " -> " + String(ppCurrentState));
     }
+} */
+ void MorseOutput::checkPowerpathState() {
+    static unsigned long lastMeasurement = 0;
+    if (millis() - lastMeasurement > 2400) { // check
+      lastMeasurement = millis();
+      uint8_t state = getPowerpathState();
+
+      //DEBUG ("Powerpath state: " + String(state));
+      //DEBUG ("Volt: " + String(batteryVoltage()));
+
+     if (state == 4 && volt > 4290) // we seem to run on USB without a battery connected
+        state = 6;
+      if (state != ppCurrentState) {
+        ppPreviousState = ppCurrentState;
+        ppCurrentState = state;
+        batteryDisplayDirty = true;
+      }
+    } else return;
 }
- 
+
 // ---- Slow display update — called in menu and preferences loops ONLY ----
 // Measures battery voltage (~50ms), redraws icon if needed.
 // Also does periodic re-measurement every 60 seconds.
 void MorseOutput::updateBatteryDisplay() {
     static unsigned long lastMeasurement = 0;
 
-    if (millis() - lastMeasurement > 60000) {
+    if ((millis() - lastMeasurement > 20000) || batteryDisplayDirty) {  // periodic update every 10s, or if flagged dirty by state change
         lastMeasurement = millis();
         volt = batteryVoltage();
     }
@@ -1266,9 +1271,10 @@ void MorseOutput::drawBatteryIcon(uint8_t pps, uint8_t bars) {
     int fillX = ix + pad;
     int fillY = iy + pad;
     int fillH = iconH - 2 * pad;
+    // DEBUG("PPS: " + String(pps));
 
     switch (pps) {
-        case 2: {
+        case 2: {                                       // charging
             int cx = ix + bodyW / 2;
             display.fillRect(cx + 1, iy + 2, 3, 2);
             display.fillRect(cx - 1, iy + 4, 3, 2);
@@ -1278,12 +1284,12 @@ void MorseOutput::drawBatteryIcon(uint8_t pps, uint8_t bars) {
             display.fillRect(cx - 2, iy + 12, 3, 2);
             break;
         }
-        case 4:
+        /* case 4:                                         // full  
             for (uint8_t i = 0; i < 4; i++)
                 display.fillRect(fillX + i * 5, fillY, 4, fillH);
-            break;
-        case 0:
-        case 6:
+            break; */
+       // case 0:
+        case 6:                                         // no battery connected
             for (int i = 0; i < fillH; i++) {
                 display.fillRect(fillX + (i * (bodyW - 2*pad) / fillH), fillY + i, 1, 1);
                 display.fillRect(fillX + (bodyW - 2*pad) - 1 - (i * (bodyW - 2*pad) / fillH), fillY + i, 1, 1);
@@ -1602,22 +1608,7 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
   }
 }
 
-/* old and faulty event handler
-void MorseOutput::soundEventHandler() {
-  // interrupt reason needs to be read, otherwise the codec won't send any further interrupts
-  if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
-    DEBUG("AIC31XX: Headset plug interrupt triggered");
-  }
-  if (codec.isHeadsetDetected()) {
-    DEBUG("AIC31XX: Headset detected");
-	soundEnableHeadphone();
-  } else {
-    DEBUG("AIC31XX: Not a headset but LineOut");
-	soundEnableLineOut();
-       // enable speaker AND line-out!
-  }
-}
-*/
+
 
 void MorseOutput::soundEventHandler() {
   // interrupt reason needs to be read, otherwise the codec won't send any further interrupts

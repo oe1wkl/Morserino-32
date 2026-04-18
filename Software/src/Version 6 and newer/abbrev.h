@@ -1,6 +1,5 @@
 #ifndef ABBREV_H_
 #define ABBREV_H_
-
 /// ABBREVIATIONS in various lengths for CW Trainer
 ///////////////////////////////////////////////////
 

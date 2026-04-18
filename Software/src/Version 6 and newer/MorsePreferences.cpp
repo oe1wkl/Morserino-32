@@ -695,12 +695,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                             koch.setCustomChars(getCustomChars()); //// get custom characters
                         if (m32protocol && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
-            //#ifdef CONFIG_BLUETOOTH_KEYBOARD       
-            //            if (MorsePreferences::pliste[posBluetoothOut].value == 0)
-            //                  MorseBluetooth::stopBluetooth();
-            //            else 
-            //                MorseBluetooth::initializeBluetooth();
-            //#endif
+
                         writePreferences("morserino");
                         MorseOutput::clearDisplay();
                         //DEBUG("Exiting preferences menu\n");
@@ -952,7 +947,7 @@ String MorsePreferences::getValueLine(prefPos pos) {
                   break;
         case 2:   str = "Flip Screen";
                   break;
-        case 3:   str = "Reset Deflts";
+        case 3:   str = "Reset Defaults";
                   break;
 #ifndef LORA_DISABLED
         case 4:   str = "LoRa Config.";

@@ -1,5 +1,7 @@
 #ifndef _ANALOGREADFAST_H_
 #define _ANALOGREADFAST_H_
+#ifdef CONFIG_MCP73871
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -29,6 +31,8 @@ extern "C" {
  * fadcApply(<value>)
  * Apply calibration and conversion to millivolts
  * Takes a value in the range 0-2**FADC_CAL_RESOLUTION (typically 0-4095)
+ * 
+ * This code is from https://github.com/stg/ESP32-S3-FastAnalogRead
  */
 
 #include <stdint.h>
@@ -86,5 +90,6 @@ static inline uint16_t __attribute__((always_inline)) analogReadMilliVoltsFast(u
 
 #ifdef __cplusplus
 }
+#endif
 #endif
 #endif

@@ -112,6 +112,11 @@ What is new in Version 8?
 whole manual!**
 :::
 
+::: important
+Make sure you have a suitable battery for your Morserino: M32 1st and 2nd generation use a 3.7 V LiPo battery, the M32Pocket uses a 14500 type Li-Ion cell of 3.7 V.
+:::
+
+
 **Controls** to be used:
 
 • ON/OFF (Battery): Sliding switch located on the back near the
@@ -219,10 +224,12 @@ from virtually any USB charger (it consumes a max of 200 mA, or 500 mA for the M
 If you run it from battery power, slide the sliding switch to the ON
 position.
 
+::: important
 Make sure you install the battery with the correct polarity before
 turning the switch to the ON position. Reversing the polarity could
 destroy your Morserino! For the M32Pocket, it is advisable to use a
 14500 LiIon cell (3.7 V) with protection against deep discharge.
+:::
 
 When the device is off but with the battery connected (sliding power
 switch is on), it is in deep sleep – in reality: almost all functions
@@ -258,7 +265,7 @@ question mark. After a power cycle everything should work OK again.
 
 If the display shows the empty battery symbol although sufficient power
 should still be available, it is advisable to perform a battery
-measurement calibration. Usually not necessary on the M32Pocket. See
+measurement calibration. This is not necessary and hence not available on the M32Pocket. See
 **Appendix 7.1.2: Calibration of Battery Measurement**.
 
 To disconnect the device from the battery (turning it off, unless you

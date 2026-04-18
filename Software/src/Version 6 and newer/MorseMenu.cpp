@@ -32,7 +32,7 @@ extern RADIO radio;
 #endif
 
 #ifdef CONFIG_MCP73871
-extern volatile bool powerpath_event;
+//extern volatile bool powerpath_event;
 extern uint16_t volt;
 extern int16_t batteryVoltage();
 #endif

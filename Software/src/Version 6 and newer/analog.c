@@ -1,4 +1,5 @@
 #include "analog.h"
+#ifdef CONFIG_MCP73871
 
 #include <stdint.h>
 #include <stdarg.h>
@@ -122,3 +123,4 @@ void fadcInit(uint8_t pins, ...) {
   periph_module_enable(PERIPH_SARADC_MODULE);
   adc_power_acquire();
 }
+#endif

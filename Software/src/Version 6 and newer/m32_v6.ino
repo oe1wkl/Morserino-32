@@ -50,6 +50,7 @@
 
 #ifdef CONFIG_MCP73871
 #include "analog.h"
+#include "esp_timer.h" 
 #endif
 
 #ifdef LORA_RADIOLIB
@@ -363,13 +364,22 @@ void IRAM_ATTR codec_isr() {
 }
 #endif
 
+/*
 #ifdef CONFIG_MCP73871
+#define LOCKOUT_TIME_US 500 // time in microseconds to ignore changes of powerpath status after an interrupt
+static int64_t last_interrupt_time = 0;
 volatile bool powerpath_event = true; // read powerpath state once during startup
+
+
 void IRAM_ATTR powerpath_isr() {
-  powerpath_event = true;
+  int64_t now = esp_timer_get_time();
+  if (now - last_interrupt_time > LOCKOUT_TIME_US) {
+    last_interrupt_time = now;
+    powerpath_event = true;
+  }
 }
 #endif
-
+*/
 uint8_t scrollTop;
 
 
@@ -517,9 +527,9 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   pinMode(CONFIG_MCP_PG_PIN, INPUT_PULLUP);
   pinMode(CONFIG_MCP_STAT1_PIN, INPUT_PULLUP);
   pinMode(CONFIG_MCP_STAT2_PIN, INPUT_PULLUP);
-  attachInterrupt(CONFIG_MCP_PG_PIN, powerpath_isr, CHANGE);
-  attachInterrupt(CONFIG_MCP_STAT1_PIN, powerpath_isr, CHANGE);
-  attachInterrupt(CONFIG_MCP_STAT2_PIN, powerpath_isr, CHANGE);
+  //attachInterrupt(CONFIG_MCP_PG_PIN, powerpath_isr, CHANGE);
+  //attachInterrupt(CONFIG_MCP_STAT1_PIN, powerpath_isr, CHANGE);
+  //attachInterrupt(CONFIG_MCP_STAT2_PIN, powerpath_isr, CHANGE);
 #endif
 
   rotaryEncoder.attachHalfQuad ( PinDT, PinCLK );
@@ -1049,9 +1059,11 @@ if (morseState == morseKeyer &&
     }
 #endif
 
+/*
 #ifdef CONFIG_MCP73871
     MorseOutput::checkPowerpathState();
 #endif
+*/
 
 }     /////////////////////// end of loop() /////////
 
@@ -2543,9 +2555,14 @@ int16_t batteryVoltage() {      /// measure battery voltage and return result in
   return mvolt;
   */
   fadcInit(1, CONFIG_BATMEAS_PIN);
-  int16_t mvolt = analogReadMilliVoltsFast(CONFIG_BATMEAS_PIN-1); //channels start at 0, pins at 1
-  DEBUG("ReadVoltage mv:" + String(mvolt));
-  return (int) mvolt * 3.275; // adjust for voltage divider
+  int16_t mvolt = 0;
+  for (int i = 0; i < 4; ++i) { // 4 measurements to achieve higher quality
+      mvolt += analogReadMilliVoltsFast(CONFIG_BATMEAS_PIN-1); //channels start at 0, pins at 1
+//delay(5);
+    }
+    //    DEBUG("ReadVoltage mvolt:" + String(mvolt));
+    //  int16_t mvolt = analogReadMilliVoltsFast(CONFIG_BATMEAS_PIN-1); 
+  return ((int) (mvolt * 3.275) / 4); // adjust for voltage divider, divide by four for averaging
 #else
   return 0; // no battery measurement in pocketwroom PCB < 4.1
 #endif
