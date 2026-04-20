@@ -52,11 +52,15 @@ boolean Decoder::checkInput() {         /// check if we have a tone signal at A6
 ///// straight key is connected to external paddle connector (tip), i.e. the same as the left pin (dit normally)
 
 if (fromKey) {
-// we also check the paddles - you can use them like a cootie key / sideswiper
-//    if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY)          // we only check the "tip" of the external straight key jack
-//        realstate =  !digitalRead(straightPin);
-//    else
-        realstate =  ((!digitalRead(straightPin)) || leftKey || rightKey) ; // we also check the paddles (also the capacitive ones)
+    // Use the external key mode preference to determine how to read the external jack
+    uint8_t extMode = MorsePreferences::pliste[posCurtisMode].value;
+    if (extMode == STRAIGHTKEY) {
+        // Straight key: only read the tip (leftPin) of the external jack
+        realstate = !digitalRead(straightPin);
+    } else {
+        // Iambic external key: read both external paddles and touch paddles
+        realstate = ((!digitalRead(straightPin)) || leftKey || rightKey);
+    }
 }
 else
     realstate = Goertzel::checkInput();
