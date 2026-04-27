@@ -19,7 +19,7 @@
 #ifdef CONFIG_CW_GAME
   #include "MorseGame.h"
   #include "MorsePileup.h"
-
+  #include "MorseRadioCave.h"
 #endif
 
 #ifdef LORA_RADIOLIB
@@ -92,8 +92,8 @@ const char* const menuText[menuN]  = {
 
   "CW Decoder",
 #ifdef CONFIG_CW_GAME
-  "Games",
-    "Morse Invaders", "Fight Pileup",
+"Games",
+    "Morse Invaders", "Fight Pileup", "Radio Cave",
 #endif
 
   "WiFi Functions",
@@ -154,8 +154,9 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #ifdef CONFIG_CW_GAME
   {0,_trx,_games,_dummy,0},                               // decoder  -e
   {0,_decode,_wifi,_dummy,_morseInvaders},                 // games
-  {1,_fightPileup,_fightPileup,_games,0},                  // morse invaders  -e
-  {1,_morseInvaders,_morseInvaders,_games,0},               // fight pileup  -e
+  {1,_radioCave,_fightPileup,_games,0},                     // morse invaders  -e
+  {1,_morseInvaders,_radioCave,_games,0},                    // fight pileup  -e
+  {1,_fightPileup,_morseInvaders,_games,0},                  // radio cave  -e
   {0,_games,_goToSleep,_dummy,_wifi_mac},                   // WiFi
 #else
   {0,_trx,_wifi,_dummy,0},                                // decoder  -e
@@ -611,12 +612,17 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
                 return false;
-            case _fightPileup:
+      case _fightPileup:
                 MorsePileup::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
                 return false;
-#endif
+      case _radioCave:
+                MorseRadioCave::run();
+                m32state = menu_loop;
+                Buttons::modeButton.clicks = 0;
+                return false;
+#endif  
       case  _decode: /// decoder
                 MorsePreferences::setCurrentOptions(MorsePreferences::decoderOptions, MorsePreferences::decoderOptionsSize);
                 morseState = morseDecoder;

@@ -1,6 +1,7 @@
 /******************************************************************************************************************************
  *  Fight the Pileup — Multiplayer CW game for Morserino-32 Pocket
  *  Copyright (C) 2025  Willi Kraml, OE1WKL
+ *  Programmed with assistance by Claude (Opus 4.x)
  *
  *  Part of the Morserino-32 firmware. See main license.
  *****************************************************************************************************************************/

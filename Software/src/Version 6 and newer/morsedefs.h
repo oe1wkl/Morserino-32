@@ -332,7 +332,7 @@ const uint8_t menuN = 43
     - 1    // no LoRa Trx entry
 #endif
 #ifdef CONFIG_CW_GAME
-    + 3    // Games, Morse Invaders, Fight the Pileup
+    + 4    // Games, Morse Invaders, Fight the Pileup, Radio Cave
 #endif
     ;
 
@@ -347,7 +347,7 @@ enum menuNo
 #endif
         _trxWifi, _trxIcw, _decode,
 #ifdef CONFIG_CW_GAME
-        _games, _morseInvaders, _fightPileup,
+        _games, _morseInvaders, _fightPileup, _radioCave,
 #endif
         _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload,
         _wifi_update, _wifi_select, _goToSleep
