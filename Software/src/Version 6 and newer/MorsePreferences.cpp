@@ -37,53 +37,36 @@ Preferences pref;               // use the Preferences library for storing and r
 
 #define SizeOfArray(x)       (sizeof(x) / sizeof(x[0]))
 
-  /* ////////////////// order of preferences //////////// make sure the next twom items are in sync with the following, up to posSerislOut:
-  / this has been moved to morsedefs.h
-enum prefPos : uint8_t
-{
-  posClicks, posPitch, posTimeOut, posQuickStart, posSerialOut, posPolarity, posExtPddlPolarity, 
-  posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posEchoToneShift, posInterWordSpace, 
-  posInterCharSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength, posWordLength, posGeneratorDisplay,
-  posWordDoubler,  posEchoDisplay, posEchoRepeats, posEchoConf, posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, 
-  posSpeedAdapt, posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut, posQuickStart,
-  posOutputCase, posAutoStop, posMaxSequence, posLoraChannel,
-#ifdef CONFIG_BLUETOOTH_KEYBOARD
-  posBluetoothOut,
-#endif
-#ifdef CONFIG_DISPLAYWRAPPER
-  posTheme, 
-#endif
-  posSerialOut, 
-  /// special cases follow here
-  posKochFilter, posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posHwConf, posScreen 
-}
-  /
-  /*/
+/* order of preferences
+
+   make sure the next two items are in sync with the prefPos enum in morsedefs.h
+*/
 
 const char * prefName[] = {
-  #ifdef CONFIG_SOUND_I2S
-            "lineOut",
-  #endif
-                      "encoderClicks", "sidetoneFreq", "useExtPaddle", "didah",
-                      "keyermode", "curtisBTiming", "curtisBDotT", "ACSlength",
-                      "echoToneShift", "interWordSpace", "farnsworthMode", "randomOption",
-                      "randomLength", "callLength", "callContinent", "callCommon","abbrevLength", "wordLength",
-                      "GeneratorDispl", "wordDoubler", "echoDisplay", "echoRepeats", "echoConf",
-                      "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt", "echoSpeedMax",
-                      "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
-                      "quickStart", "outputCase", "autoStop", "maxSequence", "LoraChannel",
+#ifdef CONFIG_SOUND_I2S
+  "lineOut",
+#endif
+  "encoderClicks", "sidetoneFreq",    "useExtPaddle",   "didah",
+  "keyermode",     "paddleMode",      "curtisBTiming",  "curtisBDotT",
+  "ACSlength",     "echoToneShift",   "interWordSpace", "farnsworthMode",
+  "randomOption",  "randomLength",    "callLength",     "callContinent",
+  "callCommon",    "abbrevLength",    "wordLength",     "GeneratorDispl",
+  "wordDoubler",   "echoDisplay",     "echoRepeats",    "echoConf",
+  "KeyExternalTx", "LoraCwTransmit",  "goertzelBW",     "speedAdapt",
+  "echoSpeedMax",  "KochSeq",         "carouselStart",  "latency",
+  "randomFile",    "extAudioOnDecod", "timeOut",        "quickStart",
+  "outputCase",    "autoStop",        "maxSequence",    "LoraChannel",
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-					  "bluetoothOut",
+	"bluetoothOut",
 #endif
 #ifdef CONFIG_DISPLAYWRAPPER
-            "theme",
+  "theme",
 #endif
 #ifdef CONFIG_CW_GAME
             "invaderOrient",
 #endif
-            "serialOut"
-					};
-
+  "serialOut"
+};
 
 
 /* parameter:
@@ -137,6 +120,13 @@ parameter MorsePreferences::pliste[] = {
     "Iambic Modes, Non-squeeze Mode, Straight Key Mode",
     true,
     {"", "Iambic A", "Iambic B", "Ultimatic", "Non-Squeeze", "Straight Key" }
+  },
+  {
+    2, 1, 4, 1,                                                 // keyer modes for internal paddle
+    "Paddle Mode",
+    "Mode for the built-in touch paddles",
+    true,
+    {"", "Iambic A", "Iambic B", "Ultimatic", "Non-Squeeze"}
   },
   {
     45, 0, 100, 5,
@@ -551,7 +541,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
   prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency
                                                  };
   prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
@@ -569,13 +559,13 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
  prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posLatency, posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
  prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posLatency, posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
@@ -589,37 +579,37 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
  prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
  prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay,
                                                    posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
  prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
                                                    posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
  prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
  prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
+                                                   posCurtisMode, posPaddleMode, posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
  prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
+                                                   posCurtisMode, posPaddleMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
@@ -791,9 +781,6 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   MorseOutput::printOnScroll(1, BOLD, 0, itemLine);
   displayValueLine(pos, itemLine, false);
 }
-
-/// posKochFilter, posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posScreen, posHwConf
-
 
 
 void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly) {

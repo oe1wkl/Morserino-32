@@ -196,6 +196,7 @@ KEYERSTATES keyerState;
 unsigned long charCounter = 25; // we use this to count characters after changing speed - after n characters we decide to write the config into NVS
 uint8_t sensor;                 // what we read from checking the touch sensors
 boolean leftKey, rightKey;
+unsigned long lastInternalTouchTime = 0;  // tracks when internal paddle was last touched for mode switching
 
 
 unsigned long interWordTimer = 0;      // timer to detect interword spaces
@@ -1125,6 +1126,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   static long curtistimer;                 // timer for early paddle latch in Curtis mode B+
   static long latencytimer;                // timer for "muting" paddles for some time in state INTER_ELEMENT
   static long corrTime;
+  static bool paddleTouched = false;
   unsigned int pitch;
 #ifdef CONFIG_BLUETOOTH_KEYBOARD  // only when BLE is compiled in (biggest heap user) we check heap size here, and only every 10 seconds, to avoid too much overhead
     static unsigned long lastHeapCheck = 0;
@@ -1136,10 +1138,55 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
         }
     }
 #endif
-  if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) {
+  uint8_t keyerMode;
+  uint8_t curtisMode = MorsePreferences::pliste[posCurtisMode].value;
+
+  // Determine keyer mode similar to checkPaddles()
+  bool usePaddleMode = false;
+  if (curtisMode == STRAIGHTKEY) {
+    // Check if internal paddle is currently or recently touched
+    if ((sensor & 0x03) || (millis() - lastInternalTouchTime < 2000)) {
+      usePaddleMode = true;
+    }
+    // External key press takes precedence
+    if (!digitalRead(MorsePreferences::pliste[posExtPddlPolarity].value ? rightPin : leftPin)) {
+      usePaddleMode = false;
+      lastInternalTouchTime = 0;
+    }
+  }
+
+  if (usePaddleMode) {
+    // Using paddle mode (even though config is STRAIGHTKEY)
+    if (!paddleTouched) {
+        // first touch after straight key mode
+        keyerState = IDLE_STATE;
+        clearPaddleLatches();
+        keyerControl = 0;
+        ktimer = 0;
+        curtistimer = 0;
+        latencytimer = 0;
+        keyOut(false, true, 0, 0);   // turn off internal tone
+        keyOut(false, false, 0, 0);  // turn off external/decoder tone
+        keyDecoder.setup();          // reset decoder state
+        // update speed to match what was being used with straight key
+        uint8_t decodedWpm = keyDecoder.getWpm();
+        if (decodedWpm >= MorsePreferences::wpmMin && decodedWpm <= MorsePreferences::wpmMax) {
+            MorsePreferences::wpm = decodedWpm;
+        }
+        updateTimings();             // ensure ditLength/dahLength are valid
+        paddleTouched = true;
+    }
+    keyerMode = MorsePreferences::pliste[posPaddleMode].value;
+  } else if (curtisMode == STRAIGHTKEY) {
+    // External straight key only
+    paddleTouched = false;
     keyDecoder.decode();
     updateManualSpeed();
     return false;
+  } else {
+    // Not in straight key mode (normal paddle mode)
+    paddleTouched = false;
+    keyerMode = curtisMode;
   }
   if (MorsePreferences::pliste[posPolarity].value == 0)   {              // swap left and right values if necessary!
       paddleSwap = dit; dit = dah; dah = paddleSwap;
@@ -1199,7 +1246,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             keyerControl |= DIT_LAST;                        // remember that we process a DIT
 
             ktimer = ditLength;                              // prime timer for dit
-            switch ( MorsePreferences::pliste[posCurtisMode].value ) {
+             switch ( keyerMode ) {
               case ULTIMATIC:                                // we check early in Ultimatic mode too, to get a dah memory
               case IAMBICB:  curtistimer = 2 + (ditLength * MorsePreferences::pliste[posCurtisBDotTiming].value / 100);
                              break;                         // enhanced Curtis mode B starts checking after some time
@@ -1220,7 +1267,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             keyerControl &= ~(DIT_LAST);                    // clear 'dit last' latch  - we are not processing a DIT
 
             ktimer = dahLength;
-            switch (MorsePreferences::pliste[posCurtisMode].value) {
+             switch (keyerMode) {
               case ULTIMATIC:                              // we check early in Ultimatic mode too, to get a dit memory
               case IAMBICB:  curtistimer = 2 + (dahLength * MorsePreferences::pliste[posCurtisBDahTiming].value / 100);    // enhanced Curtis mode B starts checking after some time
                              break;
@@ -1244,28 +1291,32 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
           }
 
            keyOut(true, true, pitch, MorsePreferences::sidetoneVolume);
-           corrTime = millis() - 6;           // need to correct for longer dit and dah time (see output routine)
+           corrTime = (millis() >= 6) ? millis() - 6 : 0;           // need to correct for longer dit and dah time (see output routine)
            ktimer +=corrTime;                     // set ktimer to interval end time
            curtistimer += corrTime;                // set curtistimer to curtis end time
            keyerState = KEYED;                     // next state
            break;
 
-    case KEYED:
-                                                   // Wait for timers to expire
-           if (millis() >= ktimer) {                // are we at end of key down ?
-               keyOut(false, true, 0, 0);
-               ktimer = millis() + ditLength -1;    // inter-element time
-               latencytimer = millis() + ((MorsePreferences::pliste[posLatency].value) * ditLength / 8);
-               keyerState = INTER_ELEMENT;       // next state
-            }
-            else if (millis() >= curtistimer ) {     // in Curtis mode we check paddle as soon as Curtis time is off
-                 if (keyerControl & DIT_LAST)       // last element was a dit
-                    updatePaddleLatch(false, dah);  // not sure here: we only check the opposite paddle - should be ok for Curtis B
-                 else
-                    updatePaddleLatch(dit, false);
-                 // updatePaddleLatch(dit, dah);       // but we remain in the same state until element time is off!
-            }
-            break;
+     case KEYED:
+         // Wait for timers to expire
+         // Safety check: if ktimer is stuck far in the future, reset it
+         if (ktimer > millis() + 5000) {  // more than 5 seconds in future is bug
+             ktimer = millis() + ditLength;
+         }
+         if (millis() >= ktimer) {                // are we at end of key down ?
+             keyOut(false, true, 0, 0);
+             ktimer = millis() + ditLength -1;    // inter-element time
+             latencytimer = millis() + ((MorsePreferences::pliste[posLatency].value) * ditLength / 8);
+             keyerState = INTER_ELEMENT;       // next state
+         }
+         else if (millis() >= curtistimer ) {     // in Curtis mode we check paddle as soon as Curtis time is off
+             if (keyerControl & DIT_LAST)       // last element was a dit
+                 updatePaddleLatch(false, dah);  // not sure here: we only check the opposite paddle - should be ok for Curtis B
+             else
+                 updatePaddleLatch(dit, false);
+             //  updatePaddleLatch(dit, dah);       // but we remain in the same state until element time is off!
+         }
+         break;
 
     case INTER_ELEMENT:
             //if ((p_keyermode != NONSQUEEZE) && (millis() < latencytimer)) {     // or should it be p_keyermode > 2 ? Latency for Ultimatic mode?
@@ -1281,7 +1332,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                     switch(keyerControl) {
                           case 3:                                         // both paddles are latched
                           case 7:
-                                  switch (MorsePreferences::pliste[posCurtisMode].value) {
+                                  switch (keyerMode) {
                                       case STRAIGHTKEY: break;
                                       case NONSQUEEZE:  if (DIT_FIRST)                      // when first element was a DIT
                                                                setDITstate();            // next element is a DIT again
@@ -1368,13 +1419,36 @@ boolean checkPaddles() {
   sensor = readSensors(LEFT, RIGHT, false);
   newL = (sensor >> 1);
   newR = (sensor & 0x01);
-                                                          // read external paddle presses
+
+  // Determine actual keyer mode considering internal paddle touch in straight key mode
+  uint8_t actualMode = MorsePreferences::pliste[posCurtisMode].value;
+
+  if (sensor & 0x03) {
+    // Internal paddle is currently touched
+    lastInternalTouchTime = millis();
+  }
+
+  // If we're in straight key mode but internal paddle was recently touched (within 2 seconds),
+  // or is currently touched, use paddle mode
+  if (actualMode == STRAIGHTKEY &&
+      ((sensor & 0x03) || (millis() - lastInternalTouchTime < 2000))) {
+    actualMode = MorsePreferences::pliste[posPaddleMode].value;
+  }
+
+  // If external straight key is pressed, switch back to straight key mode immediately
+  if (!digitalRead(left)) {
+    lastInternalTouchTime = 0;  // Reset, external key takes precedence
+    if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) {
+      actualMode = STRAIGHTKEY;
+    }
+  }
+                                                           // read external paddle presses
   newL = newL | (!digitalRead(left)) ;                    // tip (=left) always, to be able to use straight key to initiate echo trainer etc
-  if (MorsePreferences::pliste[posCurtisMode].value != STRAIGHTKEY) {
-      newR = newR | (!digitalRead(right)) ;               // ring (=right) only when in straight key mode, to prevent continuous activation
+  if (actualMode != STRAIGHTKEY) {
+      newR = newR | (!digitalRead(right)) ;               // ring (=right) only when NOT in straight key mode, to prevent continuous activation
   }                                                       // when used with a 2-pole jack on the straight key
 
-  if ((MorsePreferences::pliste[posCurtisMode].value == NONSQUEEZE) && newL && newR)
+  if ((actualMode == NONSQUEEZE) && newL && newR)
     return (leftKey || rightKey);
 
   if (newL != oldL)
