@@ -1694,6 +1694,121 @@ When all lives are lost, the game over screen shows your final statistics:
 Press **Click** to play again (returns to lobby) or **Long press** to exit to the main menu.
 
 
+### Radio Cave
+
+**Radio Cave** is a text-based adventure game inspired by the classic *Colossal Cave Adventure*. You play as a ham radio operator who discovers an abandoned Cold War-era radio station hidden inside a mountain cave. Your mission: explore the station, repair the equipment, and complete a QSO with a remote station that has been calling for over 50 years.
+
+Unlike the other games, Radio Cave does not use scoring or time pressure. Instead, it is a puzzle-based exploration game where you navigate rooms, collect items, and solve challenges — all by keying commands as Morse code. CW clues are woven into the game world: some information is only revealed as Morse audio, and the final challenge requires you to key a real QSO exchange on your paddles.
+
+Radio Cave is only available on the M32Pocket.
+
+#### Starting the Game {-}
+
+From the main menu, navigate to **Games → Radio Cave**. After a brief lobby screen, key any letter on the paddles or click the encoder to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.
+
+#### How to Play {-}
+
+The game displays text descriptions on the TFT screen. You explore by keying short commands as Morse code using the paddles. The game understands full words, abbreviations, and even single-letter shortcuts — whatever is fastest on the key. There is no time pressure, so take whatever speed feels comfortable.
+
+#### Display Layout {-}
+
+The screen is divided into four zones:
+
+The **top bar** shows the current room name (and a small icon placeholder showing the room number).
+
+The **main area** shows the room description, action results, examined-object text, and the help screen. Use the encoder in scroll mode (FN long-press) to scroll if the text exceeds the visible area.
+
+The **input line** shows what you are currently keying or, after a command dispatches, the result message.
+
+The **bottom bar** shows the available exits (e.g. `N E W`), your inventory count and step counter (e.g. `1/2 • 12`), and the current encoder mode along with its live value (e.g. `17 wpm` or `vol 7` or `scroll`).
+
+#### Commands {-}
+
+All commands are keyed as Morse code. You can use full words or abbreviations — the shortest unambiguous prefix is always sufficient (e.g. `T F` instead of `TAKE FUEL`). When the prefix is unique in the current context, the command dispatches without asking for clarification; only genuinely ambiguous prefixes prompt "Which one?".
+
+| Command | Action |
+|---------|--------|
+| `N`, `S`, `E`, `W` | Move north, south, east, or west |
+| `L` / `LOOK` | Redisplay the full room description |
+| `LOOK [object]` | Examine an item or feature in the current room |
+| `I` / `INV` | Show your inventory |
+| `T [item]` / `TAKE` | Pick up an item |
+| `D [item]` / `DROP` | Drop a carried item |
+| `U [item]` / `USE` | Use an item or interact with something (e.g. `U FUEL`, `U SWITCH`, `U TX`, `U RX`) |
+| `FIX [item]` / `SOLDER` | Repair an item — synonym for USE in repair contexts |
+| `R [item]` / `READ` | Read a document or inscription |
+| `KEY [phrase]` | Key a CW phrase at a puzzle lock |
+| `QRS` | Replay the most recent CW clue at half speed |
+| `H` / `HELP` | Show a command summary in the main area |
+| `NEW` | Start a new game (asks `Y` to confirm) |
+
+CW phrases that are ecognized in teh game can also be keyed bare, without the `KEY` prefix — just key the phrase on its own and the game will treat it as if you keyed at the appropriate target.
+
+#### Error Conventions {-}
+
+Two real CW conventions are accepted to clear the input buffer mid-command:
+
+- **`<hh>`** — eight dits keyed as one letter (the standard "error, please resend" prosign).
+- **`eeee`** — four consecutive E's keyed as separate letters.
+
+Either clears the buffer so you can start your command over.
+
+#### Inventory {-}
+
+You can carry up to **two items** at a time. If your hands are full, you must drop something before picking up a new item. The inventory is tight on purpose — you will need to plan which items go where. Choose carefully: not everything you find is useful for every situation.
+
+#### CW Clues {-}
+
+Some information in the game is delivered as CW audio rather than screen text. These clues play at various speeds, just as different operators would send at different speeds in real life. The game ignores your Koch lesson settings — all characters and prosigns may appear, including `<sk>`.
+
+If a CW clue is too fast, key `QRS` (or `PSE QRS`) to request a slower repetition — just as you would on the air. There is no limit on how many times you can use QRS.
+
+#### Controls {-}
+
+| Control | Action |
+|---------|--------|
+| **Paddles** | Key your Morse commands |
+| **Encoder** | In default mode, adjusts your keying WPM. After FN short press, adjusts volume. After FN long press, scrolls the main text area. |
+| **FN short press** | Toggle encoder between speed (WPM) and volume |
+| **FN long press** | Toggle scroll mode on/off |
+| **Encoder click** | (In the lobby only) Enter the game without keying |
+| **Encoder long press** | Exit Radio Cave back to the main menu |
+
+Your keying speed (WPM) remains adjustable during the game and is independent of the CW clue speeds.
+
+*Scroll mode is important, as some descriptions do not fit the screen and you need to scroll inorder to read everything!*
+
+#### Save and Resume {-}
+
+The game saves your progress automatically after every command. You can turn off the Morserino at any time and resume exactly where you left off — including the case where the device's idle timeout shuts the unit down mid-game.
+
+The save is cleared automatically when you complete the game (victory) or die. The next time you enter Radio Cave you will start fresh.
+
+To start a completely new game while a save exists, key `NEW` and confirm with `Y`. Any other response cancels.
+
+#### The Step Counter {-}
+
+Every command you enter adds to a step counter, displayed in the bottom bar. The step counter persists across save and resume. When you complete the game, your total step count is shown — a personal benchmark if you want to try for a more efficient run next time.
+
+#### A Few Hints {-}
+
+- Explore thoroughly. Look at things. Read things. Not everything is obvious at first glance.
+
+- Pay attention to CW clues — they contain information you may not get any other way.
+
+- If something doesn't work, there may be a step you haven't completed yet. Think about what a real radio operator would need to do.
+
+- There is one fatal mistake possible in this game. The station has a warning about it. Read the manual — the one in the game, that is.
+
+- The game can be completed, and every puzzle has a logical solution rooted in real radio practice and CW conventions.
+
+#### Game Over {-}
+
+There is exactly one fatal mistake in Radio Cave. If it happens, a death screen appears; key any letter or click the encoder to restart from the beginning. Your save is wiped and your step counter resets.
+
+There is also one situation where the game can become unwinnable through repeated mistakes (you will know when it happens). In that case, key `NEW` and confirm with `Y` to start over.
+
+When you successfully complete the game, a victory screen shows your total step count. Congratulations — the message has finally been received.
 
 
 

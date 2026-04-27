@@ -90,6 +90,7 @@ The font family used is Lato.</p>
 <ul>
 <li><a href="#morse-invaders" id="toc-morse-invaders"><span class="toc-section-number">5.7.1</span> Morse Invaders</a></li>
 <li><a href="#fight-the-pileup" id="toc-fight-the-pileup"><span class="toc-section-number">5.7.2</span> Fight the Pileup</a></li>
+<li><a href="#radio-cave" id="toc-radio-cave"><span class="toc-section-number">5.7.3</span> Radio Cave</a></li>
 </ul></li>
 <li><a href="#wifi-functions" id="toc-wifi-functions"><span class="toc-section-number">5.8</span> WiFi Functions</a>
 <ul>
@@ -1564,6 +1565,160 @@ Vol 12
 <li><strong>WPM / Difficulty:</strong> The settings you played with</li>
 </ul>
 <p>Press <strong>Click</strong> to play again (returns to lobby) or <strong>Long press</strong> to exit to the main menu.</p>
+<h3 data-number="5.7.3" id="radio-cave"><span class="header-section-number">5.7.3</span> Radio Cave</h3>
+<p><strong>Radio Cave</strong> is a text-based adventure game inspired by the classic <em>Colossal Cave Adventure</em>. You play as a ham radio operator who discovers an abandoned Cold War-era radio station hidden inside a mountain cave. Your mission: explore the station, repair the equipment, and complete a QSO with a remote station that has been calling for over 50 years.</p>
+<p>Unlike the other games, Radio Cave does not use scoring or time pressure. Instead, it is a puzzle-based exploration game where you navigate rooms, collect items, and solve challenges — all by keying commands as Morse code. CW clues are woven into the game world: some information is only revealed as Morse audio, and the final challenge requires you to key a real QSO exchange on your paddles.</p>
+<p>Radio Cave is only available on the M32Pocket.</p>
+<h4 class="unnumbered" id="starting-the-game-2">Starting the Game</h4>
+<p>From the main menu, navigate to <strong>Games → Radio Cave</strong>. After a brief lobby screen, key any letter on the paddles or click the encoder to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.</p>
+<h4 class="unnumbered" id="how-to-play">How to Play</h4>
+<p>The game displays text descriptions on the TFT screen. You explore by keying short commands as Morse code using the paddles. The game understands full words, abbreviations, and even single-letter shortcuts — whatever is fastest on the key. There is no time pressure, so take whatever speed feels comfortable.</p>
+<h4 class="unnumbered" id="display-layout-1">Display Layout</h4>
+<p>The screen is divided into four zones:</p>
+<p>The <strong>top bar</strong> shows the current room name (and a small icon placeholder showing the room number).</p>
+<p>The <strong>main area</strong> shows the room description, action results, examined-object text, and the help screen. Use the encoder in scroll mode (FN long-press) to scroll if the text exceeds the visible area.</p>
+<p>The <strong>input line</strong> shows what you are currently keying or, after a command dispatches, the result message.</p>
+<p>The <strong>bottom bar</strong> shows the available exits (e.g. <code>N E W</code>), your inventory count and step counter (e.g. <code>1/2 • 12</code>), and the current encoder mode along with its live value (e.g. <code>17 wpm</code> or <code>vol 7</code> or <code>scroll</code>).</p>
+<h4 class="unnumbered" id="commands">Commands</h4>
+<p>All commands are keyed as Morse code. You can use full words or abbreviations — the shortest unambiguous prefix is always sufficient (e.g. <code>T F</code> instead of <code>TAKE FUEL</code>). When the prefix is unique in the current context, the command dispatches without asking for clarification; only genuinely ambiguous prefixes prompt “Which one?”.</p>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Command</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>N</code>, <code>S</code>, <code>E</code>, <code>W</code></td>
+<td>Move north, south, east, or west</td>
+</tr>
+<tr>
+<td><code>L</code> / <code>LOOK</code></td>
+<td>Redisplay the full room description</td>
+</tr>
+<tr>
+<td><code>LOOK [object]</code></td>
+<td>Examine an item or feature in the current room</td>
+</tr>
+<tr>
+<td><code>I</code> / <code>INV</code></td>
+<td>Show your inventory</td>
+</tr>
+<tr>
+<td><code>T [item]</code> / <code>TAKE</code></td>
+<td>Pick up an item</td>
+</tr>
+<tr>
+<td><code>D [item]</code> / <code>DROP</code></td>
+<td>Drop a carried item</td>
+</tr>
+<tr>
+<td><code>U [item]</code> / <code>USE</code></td>
+<td>Use an item or interact with something (e.g. <code>U FUEL</code>, <code>U SWITCH</code>, <code>U TX</code>, <code>U RX</code>)</td>
+</tr>
+<tr>
+<td><code>FIX [item]</code> / <code>SOLDER</code></td>
+<td>Repair an item — synonym for USE in repair contexts</td>
+</tr>
+<tr>
+<td><code>R [item]</code> / <code>READ</code></td>
+<td>Read a document or inscription</td>
+</tr>
+<tr>
+<td><code>KEY [phrase]</code></td>
+<td>Key a CW phrase at a puzzle lock</td>
+</tr>
+<tr>
+<td><code>QRS</code></td>
+<td>Replay the most recent CW clue at half speed</td>
+</tr>
+<tr>
+<td><code>H</code> / <code>HELP</code></td>
+<td>Show a command summary in the main area</td>
+</tr>
+<tr>
+<td><code>NEW</code></td>
+<td>Start a new game (asks <code>Y</code> to confirm)</td>
+</tr>
+</tbody>
+</table>
+<p>CW phrases that are ecognized in teh game can also be keyed bare, without the <code>KEY</code> prefix — just key the phrase on its own and the game will treat it as if you keyed at the appropriate target.</p>
+<h4 class="unnumbered" id="error-conventions">Error Conventions</h4>
+<p>Two real CW conventions are accepted to clear the input buffer mid-command:</p>
+<ul>
+<li><strong><code>&lt;hh&gt;</code></strong> — eight dits keyed as one letter (the standard “error, please resend” prosign).</li>
+<li><strong><code>eeee</code></strong> — four consecutive E’s keyed as separate letters.</li>
+</ul>
+<p>Either clears the buffer so you can start your command over.</p>
+<h4 class="unnumbered" id="inventory">Inventory</h4>
+<p>You can carry up to <strong>two items</strong> at a time. If your hands are full, you must drop something before picking up a new item. The inventory is tight on purpose — you will need to plan which items go where. Choose carefully: not everything you find is useful for every situation.</p>
+<h4 class="unnumbered" id="cw-clues">CW Clues</h4>
+<p>Some information in the game is delivered as CW audio rather than screen text. These clues play at various speeds, just as different operators would send at different speeds in real life. The game ignores your Koch lesson settings — all characters and prosigns may appear, including <code>&lt;sk&gt;</code>.</p>
+<p>If a CW clue is too fast, key <code>QRS</code> (or <code>PSE QRS</code>) to request a slower repetition — just as you would on the air. There is no limit on how many times you can use QRS.</p>
+<h4 class="unnumbered" id="controls">Controls</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Key your Morse commands</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>In default mode, adjusts your keying WPM. After FN short press, adjusts volume. After FN long press, scrolls the main text area.</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Toggle encoder between speed (WPM) and volume</td>
+</tr>
+<tr>
+<td><strong>FN long press</strong></td>
+<td>Toggle scroll mode on/off</td>
+</tr>
+<tr>
+<td><strong>Encoder click</strong></td>
+<td>(In the lobby only) Enter the game without keying</td>
+</tr>
+<tr>
+<td><strong>Encoder long press</strong></td>
+<td>Exit Radio Cave back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<p>Your keying speed (WPM) remains adjustable during the game and is independent of the CW clue speeds.</p>
+<p><em>Scroll mode is important, as some descriptions do not fit the screen and you need to scroll inorder to read everything!</em></p>
+<h4 class="unnumbered" id="save-and-resume">Save and Resume</h4>
+<p>The game saves your progress automatically after every command. You can turn off the Morserino at any time and resume exactly where you left off — including the case where the device’s idle timeout shuts the unit down mid-game.</p>
+<p>The save is cleared automatically when you complete the game (victory) or die. The next time you enter Radio Cave you will start fresh.</p>
+<p>To start a completely new game while a save exists, key <code>NEW</code> and confirm with <code>Y</code>. Any other response cancels.</p>
+<h4 class="unnumbered" id="the-step-counter">The Step Counter</h4>
+<p>Every command you enter adds to a step counter, displayed in the bottom bar. The step counter persists across save and resume. When you complete the game, your total step count is shown — a personal benchmark if you want to try for a more efficient run next time.</p>
+<h4 class="unnumbered" id="a-few-hints">A Few Hints</h4>
+<ul>
+<li><p>Explore thoroughly. Look at things. Read things. Not everything is obvious at first glance.</p></li>
+<li><p>Pay attention to CW clues — they contain information you may not get any other way.</p></li>
+<li><p>If something doesn’t work, there may be a step you haven’t completed yet. Think about what a real radio operator would need to do.</p></li>
+<li><p>There is one fatal mistake possible in this game. The station has a warning about it. Read the manual — the one in the game, that is.</p></li>
+<li><p>The game can be completed, and every puzzle has a logical solution rooted in real radio practice and CW conventions.</p></li>
+</ul>
+<h4 class="unnumbered" id="game-over-2">Game Over</h4>
+<p>There is exactly one fatal mistake in Radio Cave. If it happens, a death screen appears; key any letter or click the encoder to restart from the beginning. Your save is wiped and your step counter resets.</p>
+<p>There is also one situation where the game can become unwinnable through repeated mistakes (you will know when it happens). In that case, key <code>NEW</code> and confirm with <code>Y</code> to start over.</p>
+<p>When you successfully complete the game, a victory screen shows your total step count. Congratulations — the message has finally been received.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two important functions of the device, when you are using WiFi through an access point:</p>
 <ul>
