@@ -40,16 +40,21 @@ This FAQ document is compiled from the official user manual and recent community
     * **M32 Pocket Pinout**: Tip and 1st Ring = Audio/Headphones Out; 2nd Ring = Ground; **Sleeve = Audio In**.
     * **Note**: This is different from the 1st/2nd edition Morserinos where the sleeve was audio out.
 
+* Can I use a simple audio cable from my receiver / transceiver to the M32Pocket? 
+	* **Do not just use a simple two or 3-pole audio cable to connect a tranesceiver to your m32Pocket! The audio voltage of your receiver would be routed to the audio out of the M32Pocket and probably destroy it!**
+
 * **How to get an audio signal from a transceiver into the M32Pocket for CW decoding?**
 	* First of all, you need a splitter audio jack Y Adapter Cable Stereo - **1x 3.5 mm Plug CTIA 4-Pin TRRS to 2x 3.5 mm Female**. 
 	* Plug in the 4-male plug into the M32/P  headset socket
-and plug your headphones into the green socket of your splitter cable.
+and plug your headphones into the green (or headphone symbol) socket of your splitter cable.
 Turn on your Receiver and tune in a good, clean CW station. Turn the volume down to very low! It is crucial not to override the M32/p input when decoding.
-	* Now connect your TRX output (for headphones or external speaker) with a 3,5mm cable to the pink female socket of the splitter cable.  The TRX will silence now (of course).
+	* Now connect your TRX output (for headphones or external speaker) with a 3,5mm cable to the pink (or microphone symbol) female socket of the splitter cable.  The TRX will silence now (of course).
 	* 
-Set M32/p to decoder-mode. You will hear *nothing* in your headphone. WSte teh volume on the M32  1/3 approx. 
+Set M32/p to decoder-mode. You will hear *nothing* in your headphone. Set the volume on the M32  1/3 approx. 
 	* Slowly turn the TRX volume up. When M32/p detects a decodable audiosignal it will begin to work. With every detected dit or dah you will hear a beep. And simultaneously the M32Pocket will show a little black square in the upper left corner of the display (blinking).
 	* Be careful not to overload the input, as in that case decoding stops and no sound is sent to your headset. 
+	* Unfortunately you now cannot use your headset when tuning into another TRX frequency. The headphone  is silenced while no decoding is done.
+Simply unplug the TRX so you can hear and tune and then replug this cable.
  
 * **How do I adjust audio input levels?**
     * Use the **FN button** to toggle between speed and volume control while a mode is active.
