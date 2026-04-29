@@ -693,15 +693,15 @@ boolean checkKey () {
 }
 
 
-// shorter date format
-String  shortDate(char const *date) { 
-    int month, day, year;
-    char buff[7]; // buffer for everything we need to print
+// shorter date format "Mmm dd yyyy" "Oct 21 2027" -> "YYMMDD"
+String  shortDate(char const *date) {
     static const char month_names[] = "JanFebMarAprMayJunJulAugSepOctNovDec";
-    sscanf(date, "%s %d %d", buff, &day, &year);
-    month = (strstr(month_names, buff)-month_names)/3+1;
-    year -= 2000; // convert to 2 digit year
-    sprintf(buff, "%02d%02d%02d", day, month, year);
+    int day, year, month = 0;
+    char buff[7]; // buffer for YYMMDD + \0
+    if (sscanf(date, "%3s %d %d", buff, &day, &year) != 3) return "000000";
+    char *p = strstr(month_names, buff);
+    if (p) month = (p - month_names) / 3 + 1;
+    snprintf(buff, sizeof(buff), "%02d%02d%02d", year % 100, month, day);
     return String (buff);
 }
 // display startup screen and check battery status, also send device information if M32 serial protocol is being used
@@ -723,13 +723,21 @@ void displayStartUp(uint16_t volt) {
 #endif
   MorseOutput::printOnStatusLine( true, 0, s);
   s = "V" ;
-  vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR) ;
-  if (VERSION_PATCH != 0)
-    vsn = vsn + "." + String(VERSION_PATCH);
-  if (BETA) 
-    vsn = vsn + " beta " + shortDate(COMPILEDATE);
-  s += vsn;
-  MorseOutput::printOnScroll(0, REGULAR, 0, s );
+  s += VERSION_MAJOR;
+  s += ".";
+  s += VERSION_MINOR;
+
+  if (VERSION_PATCH != 0) {
+    s += ".";
+    s += VERSION_PATCH;
+  }
+
+  if (BETA) {
+    s += " beta ";
+    s += shortDate(COMPILEDATE);
+  }
+
+  MorseOutput::printOnScroll(0, REGULAR, 0, s);
   MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT);
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
