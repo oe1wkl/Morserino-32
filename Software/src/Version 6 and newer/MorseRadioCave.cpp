@@ -1937,11 +1937,14 @@ static void parserTick() {
     doPaddleIambic(leftKey, rightKey);
 
     // Stuck-keyer protection (same as Morse Invaders).
-    // Long idle periods between commands make this more likely here.
+    // Threshold scales with ditLength: long characters at slow speeds
+    // (e.g. '0' = ----- at 12 wpm = ~2 s) must not trip a false reset,
+    // which would silently drop the character and leave the sidetone on.
     static unsigned long lastIdleTime = 0;
+    unsigned long stuckThreshold = max(3000UL, 30UL * (unsigned long)ditLength);
     if (keyerState == IDLE_STATE) {
         lastIdleTime = millis();
-    } else if (!leftKey && !rightKey && millis() - lastIdleTime > 2000) {
+    } else if (!leftKey && !rightKey && millis() - lastIdleTime > stuckThreshold) {
         keyerState = IDLE_STATE;
         clearPaddleLatches();
         lastIdleTime = millis();
