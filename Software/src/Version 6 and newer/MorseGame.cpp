@@ -783,12 +783,16 @@ static void statePlaying() {
             doPaddleIambic(leftKey, rightKey);
             updateSound();
 
-            // Track keyer idle state for stuck detection
+            // Track keyer idle state for stuck detection.
+            // Threshold scales with ditLength: long characters at slow speeds
+            // (e.g. '0' = ----- at 12 wpm = ~2 s) must not trip a false reset,
+            // which would silently drop the character and leave the sidetone on.
+            unsigned long stuckThreshold = max(3000UL, 30UL * (unsigned long)ditLength);
             if (keyerState == IDLE_STATE) {
                 lastIdleTime = millis();
-            } else if (!leftKey && !rightKey && millis() - lastIdleTime > 2000) {
-                // Keyer has been running for >2s with no paddles pressed — stuck.
-                // Force reset to prevent runaway dit/dah stream.
+            } else if (!leftKey && !rightKey && millis() - lastIdleTime > stuckThreshold) {
+                // Keyer has been running with no paddles pressed for far longer
+                // than any legal character — genuinely stuck. Force reset.
                 keyerState = IDLE_STATE;
                 clearPaddleLatches();
                 lastIdleTime = millis();
