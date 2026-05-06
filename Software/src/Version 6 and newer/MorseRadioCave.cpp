@@ -11,7 +11,7 @@
  *  a final QSO with a remote station — all by keying commands as Morse.
  *
  *  The game runs in landscape orientation on a 320×170 sprite (provided
- *  by DisplayWrapper::enterGameModeLandscape). Twelve rooms, six items,
+ *  by MorseGameMode::enterLandscape). Twelve rooms, six items,
  *  state-dependent room descriptions, CW clues delivered as audio, full
  *  inventory and puzzle logic, victory and death screens, and NVS-backed
  *  save/resume across reboots.
@@ -48,6 +48,7 @@
  *****************************************************************************************************************************/
 
 #include "MorseRadioCave.h"
+#include "MorseGameMode.h"
 
 #ifdef CONFIG_CW_GAME
 
@@ -663,7 +664,7 @@ static bool          cwToneOn      = false;     // true when we're currently sou
 // Drawing helpers
 //=============================================================================
 
-static void pushFrame() { display.pushGameFrame(); }
+static void pushFrame() { MorseGameMode::pushFrame(); }
 
 static void drawCentred(int y, const char* text, uint16_t color,
                         const lgfx::IFont* font = nullptr) {
@@ -2706,27 +2707,10 @@ static void playLoop() {
 //=============================================================================
 
 void MorseRadioCave::run() {
-    canvas = display.enterGameModeLandscape(MorsePreferences::leftHanded);
+    canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded);
     if (!canvas) {
-        // Sprite allocation failed. Most common cause: the portrait sprite
-        // from a previous Invaders/Pileup session is still holding ~100 KB
-        // of internal SRAM, leaving no contiguous block for the ~100 KB
-        // landscape sprite. enterGameModeLandscape already changed the
-        // panel rotation before the allocation attempt, so we have to
-        // restore the menu's orientation — otherwise the Morserino menu
-        // ends up displayed rotated 90°.
-        //
-        // Use the same restore sequence as the normal exit path below.
-        DisplayWrapper::getLGFX()->setRotation(MorsePreferences::leftHanded ? 0 : 2);
-        MorseOutput::initDisplay();
-        #ifdef CONFIG_DISPLAYWRAPPER
-        MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-        #endif
-        pinMode(PinCLK, INPUT_PULLUP);
-        pinMode(PinDT,  INPUT_PULLUP);
-        rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
-        rotaryEncoder.setCount(0);
-
+        // Sprite allocation failed. MorseGameMode has already restored the
+        // menu's display state, so all that's left is to tell the user.
         MorseOutput::clearDisplay();
         MorseOutput::printOnScroll(0, BOLD,    0, "Radio Cave");
         MorseOutput::printOnScroll(1, REGULAR, 0, "Out of memory.");
@@ -2755,29 +2739,7 @@ void MorseRadioCave::run() {
     gameMode = false;
     clearPaddleLatches();
 
-    display.exitGameMode();
-
-    // exitGameMode() calls setRotation(3) — that's landscape, correct for
-    // Radio Cave on re-entry but WRONG for the Morserino menu which expects
-    // portrait. When a portrait-mode game (Invaders/Pileup) exits, the
-    // rotation change to 3 coincidentally doesn't matter because... [historical
-    // reason]. Coming out of landscape, the menu stays landscape and looks
-    // 90°-rotated after the first encoder turn.
-    //
-    // Fix: explicitly restore the menu's portrait rotation. The menu uses
-    // rotation 2 normally, or 0 for left-handed users.
-    DisplayWrapper::getLGFX()->setRotation(MorsePreferences::leftHanded ? 0 : 2);
-
-    // Restore normal display for menu (same sequence as MorseGame::run)
-    MorseOutput::initDisplay();
-    #ifdef CONFIG_DISPLAYWRAPPER
-    MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-    #endif
-
-    pinMode(PinCLK, INPUT_PULLUP);
-    pinMode(PinDT,  INPUT_PULLUP);
-    rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
-    rotaryEncoder.setCount(0);
+    MorseGameMode::exit();
 }
 
 #endif  // CONFIG_CW_GAME
