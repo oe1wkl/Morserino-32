@@ -610,17 +610,22 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       case _morseInvaders:
                 MorseGame::run();
                 m32state = menu_loop;
+                // Clear both buttons: a long-press exit leaves clicks == -1, which
+                // would trigger an immediate exit in the next game's lobby guard.
                 Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
                 return false;
       case _fightPileup:
                 MorsePileup::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
                 return false;
       case _radioCave:
                 MorseRadioCave::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
                 return false;
 #endif  
       case  _decode: /// decoder
