@@ -19,13 +19,13 @@
 
 
 #ifndef CONFIG_DISPLAYWRAPPER
-/// circular buffer: 14 chars by NoOfLines lines (bottom 3 are visible)
-#define NoOfLines 15
+/// circular buffer: 14 chars by NoOfLines lines (bottom NoOfVisibleLines are visible)
 #define NoOfCharsPerLine 14
 #define LINE_HEIGHT 16
 #define DESCENDER_LENGTH 0
 #define C_WIDTH 9
 #else
+/// circular buffer: LCD uses 4 visible lines; keep scroll-back proportional
 #define NoOfCharsPerLine 512
 #define LINE_HEIGHT (display.getStringHeight("j"))
 #define C_WIDTH display.getStringWidth("A")
@@ -74,7 +74,7 @@ char textBuffer[NoOfLines][2 * NoOfCharsPerLine + 1]; /// we need extra room for
 uint8_t linePointer = 0;    /// defines the current bottom line
 uint8_t bottomLine = 0;
 
-const int8_t MorseOutput::maxPos = NoOfLines - 3;
+const int8_t MorseOutput::maxPos = NoOfLines - NoOfVisibleLines;
 int8_t MorseOutput::relPos = MorseOutput::maxPos;
 
 #ifndef CONFIG_DISPLAYWRAPPER
@@ -758,7 +758,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     for (int i = 0; i < NoOfLines; ++i) {
       textBuffer[i][0] = (char) 0;                    /// empty this line
     }
-    refreshScrollArea((NoOfLines + bottomLine - 2) % NoOfLines);
+    refreshScrollArea((NoOfLines + bottomLine - (NoOfVisibleLines - 1)) % NoOfLines);
     pos = screenPos = 0;                                // reset the position pointers
     return;
   }
@@ -768,8 +768,9 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
   if (linebreak) {
     stripped = text.substring(0, l - 1);
     l = stripped.length();
+  } else {
+    stripped = text;   // stripped always holds the working copy
   }
-  const String& t = linebreak ? stripped : text;
 
 #ifdef CONFIG_DISPLAYWRAPPER
   int textTooLong = (screenPos + l > display.getWidth()/display.getStringWidth("A"));
@@ -781,6 +782,16 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     MorseOutput::newLine(scroll);
     pos = 0;  screenPos = 0; lastStyle = REGULAR;
   }
+
+#ifdef CONFIG_DISPLAYWRAPPER
+  // After a wrap to a new line, discard a leading space (word-wrap artefact, LCD only)
+  if (screenPos == 0 && l > 0 && stripped[0] == ' ') {
+    stripped.remove(0, 1);
+    l = stripped.length();
+  }
+#endif
+
+  const String& t = stripped;   // always use stripped from here on
 
   /// store text in buffer
   if (style == REGULAR) {
@@ -815,7 +826,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
   if (relPos == maxPos) {                                     // we show the bottom lines on the screen, therefore we add the new stuff  immediately
     /// and send string to screen, avoiding refresh of complete line
     //DEBUG("relPos: " + String(relPos));
-    MorseOutput::printOnScroll(2, style, screenPos, t);               // these characters are 9 pixels wide,
+    MorseOutput::printOnScroll(NoOfVisibleLines - 1, style, screenPos, t);               // these characters are 9 pixels wide,
   }
   display.setFont(DialogInput_plain_15);;
   screenPos += (display.getStringWidth(t) / C_WIDTH);
@@ -841,13 +852,11 @@ void MorseOutput::newLine(boolean scroll) {
 
 }
 
-/// refresh all three lines from buffer in scroll area;
+/// refresh all visible lines from buffer in scroll area;
 
 void MorseOutput::refreshScrollArea(int relPos) {
-  //int pos = ((bottomLine + relPos +1) % NoOfLines);
-  refreshScrollLine(((bottomLine + relPos + 1) % NoOfLines), 0);          /// refresh all three lines
-  refreshScrollLine(((bottomLine + relPos + 2) % NoOfLines), 1);
-  refreshScrollLine(((bottomLine + relPos + 3) % NoOfLines), 2);
+  for (int i = 0; i < NoOfVisibleLines; ++i)
+    refreshScrollLine((bottomLine + relPos + 1 + i) % NoOfLines, i);
   display.display();
 }
 
@@ -908,7 +917,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 }
 
 
-/// place a string onto the scroll area; line = 0, 1 or 2
+/// place a string onto the scroll area; line = 0 .. NoOfVisibleLines-1
 
 uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small) {
   uint8_t w;
@@ -962,7 +971,7 @@ if (how & BOLD)
 void MorseOutput::clearScroll() {
   MorseOutput::printToScroll_internal(REGULAR, "", false);
   clearScrollBuffer();
-  clearThreeLines();
+  clearScrollLines();
 }
 
 
@@ -997,7 +1006,7 @@ void MorseOutput::displayScrollBar(boolean visible) {          /// display a scr
     const int bar_total = 49 ;      // for the old Heltec display
     const int v_start = 15;
   #endif
-  const int l_bar = 3 * bar_total / NoOfLines;
+  const int l_bar = NoOfVisibleLines * bar_total / NoOfLines;
 
   if (visible) {
     display.setColor(WHITE);
@@ -1096,7 +1105,7 @@ void MorseOutput::displayBatteryStatus(int v) {
   else
     s = "";
  
-  printOnScroll(2, REGULAR, 0, s);
+  printOnScroll(NoOfVisibleLines - 1, REGULAR, 0, s);
  
 #ifndef CONFIG_MCP73871
   
@@ -1109,7 +1118,7 @@ void MorseOutput::displayBatteryStatus(int v) {
   #define BATT_PAD     2
   #define BATT_NUB_X   (BATT_X + BATT_W)
  
-  int batt_y = SCROLL_TOP + 2 * LINE_HEIGHT + 3;
+  int batt_y = SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 3;
   int nub_y  = batt_y + (BATT_H - BATT_NUB_H) / 2;
   int fill_x = BATT_X + BATT_PAD;
   int fill_y = batt_y + BATT_PAD;
@@ -1444,14 +1453,11 @@ void MorseOutput::clearStatusLine() {
     display.display();
 }
 
-/// clear the three lines of the display area
+/// clear all visible lines of the scroll area
 
-void MorseOutput::clearThreeLines() {
+void MorseOutput::clearScrollLines() {
   display.setFont(DialogInput_plain_15);
-  for (int i = 0; i < 3; ++i) {
-    //display.setColor(BLACK);
-    //display.fillRect(0, SCROLL_TOP + i * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT + 1);
-    //display.setColor(WHITE);
+  for (int i = 0; i < NoOfVisibleLines; ++i) {
     MorseOutput::clearLine(i);
   }
 }
@@ -1476,10 +1482,10 @@ void MorseOutput::showVolumeScope(uint16_t mini, uint16_t maxi)
   a = map(mini, 0, 4096, 0, 125);
   b = map(maxi, 0, 4000, 0, 125);
   c = b - a;
-  MorseOutput::clearLine(2);
-  display.drawRect(5, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 102, LINE_HEIGHT - 8);
-  display.drawRect(30, SCROLL_TOP + 2 * LINE_HEIGHT + 5, 52, LINE_HEIGHT - 8);
-  display.fillRect(a, SCROLL_TOP + 2 * LINE_HEIGHT + 7, c, LINE_HEIGHT - 11);
+  MorseOutput::clearLine(NoOfVisibleLines - 1);
+  display.drawRect(5, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 5, 102, LINE_HEIGHT - 8);
+  display.drawRect(30, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 5, 52, LINE_HEIGHT - 8);
+  display.fillRect(a, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 7, c, LINE_HEIGHT - 11);
   display.display();
 }
 

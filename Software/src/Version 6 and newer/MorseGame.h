@@ -29,7 +29,7 @@ extern char gameCharBuffer;
 #define GAME_LANE_W         42
 #define GAME_LANE_MARGIN    1
 #define GAME_HIGH_SCORES    5
-#define GAME_DESTROYS_PER_LEVEL 10
+#define GAME_DESTROYS_PER_LEVEL 10  // might increase this for finmal release
 
 #define GAME_SCREEN_W       170
 #define GAME_SCREEN_H       320

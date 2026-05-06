@@ -271,7 +271,7 @@ void MorseWiFi::menuNetSelect() {
   while (true) {
     checkShutDown(false);  // possibly time-out: go to sleep
     if(choice!=previousChoice) {
-      MorseOutput::clearThreeLines();
+      MorseOutput::clearScrollLines();
       MorseOutput::printOnScroll(0, REGULAR, 0, names[choice] );
       MorseOutput::printOnScroll(1, REGULAR, 0, peers[choice] );
       if (m32protocol) {

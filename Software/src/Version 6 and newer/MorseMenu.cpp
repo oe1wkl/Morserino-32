@@ -318,7 +318,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
   MorseOutput::printOnStatusLine( true, 0,  "Select Mode:      ");
 
   // delete previous content
-  MorseOutput::clearThreeLines();
+  MorseOutput::clearScrollLines();
 
   /// level 0: top line, possibly ".." on line 1
   /// level 1: higher level on 0, item on 1, possibly ".." on 2
@@ -773,7 +773,7 @@ int8_t MorseMenu::selectFilePart() {
         // Display current selection and report to serial client
         if (selected != lastDisplayed) {
             lastDisplayed = selected;
-            MorseOutput::clearThreeLines();
+            MorseOutput::clearScrollLines();
  
             if (selected > 0)
                 MorseOutput::printOnScroll(0, REGULAR, 0,

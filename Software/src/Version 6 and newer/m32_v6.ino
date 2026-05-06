@@ -502,6 +502,14 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   MorsePreferences::readScreenPref();
   MorseOutput::initDisplay();
   #ifdef CONFIG_DISPLAYWRAPPER
+/* // first just a test re fonts and sizes
+delay(2000);  
+MorseOutput::testFontLayout();
+
+while (true)
+    ;
+// end test
+*/
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
   #endif
 
@@ -2982,7 +2990,7 @@ uint8_t cwBuRead(uint8_t* buIndex) {
     *buIndex = nextBuRead;
     byteBuFree += l;
     --l;
-    DEBUG("@2887: cwBuRead: length: " + String(l) + " bytes, free buffer: " + String(byteBuFree));
+    //DEBUG("@2887: cwBuRead: length: " + String(l) + " bytes, free buffer: " + String(byteBuFree));
     nextBuRead += l;
     return l;
   }

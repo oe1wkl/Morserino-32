@@ -783,7 +783,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
 
   topLine += emptyLine.substring(0,topMax - topLine.length());
   MorseOutput::clearStatusLine();
-  MorseOutput::clearThreeLines();
+  MorseOutput::clearScrollLines();
   MorseOutput::printOnStatusLine( true, 0, topLine);
 
   itemLine = (pos <= posSerialOut ? MorsePreferences::pliste[pos].parName : extraItems[pos-posKochFilter]);
@@ -975,7 +975,7 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
 
     // set up the display just like displayKeyerPreferencesMenu does
     MorseOutput::clearStatusLine();
-    MorseOutput::clearThreeLines();
+    MorseOutput::clearScrollLines();
     MorseOutput::printOnStatusLine(true, 0, "Manage Snapshots:");
     uint8_t snapNumber = MorsePreferences::memories[ptr];
     String itemLine = "Delete Snapshot" + String(snapNumber +1) + "?";
