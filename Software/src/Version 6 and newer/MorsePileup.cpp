@@ -7,6 +7,7 @@
  *****************************************************************************************************************************/
 
 #include "MorsePileup.h"
+#include "MorseGameMode.h"
 
 bool pileupMode = false;
 String pileupRxText = "";
@@ -352,7 +353,7 @@ static void cwPlayerUpdate() {
 //=== Drawing helpers ===
 
 static void pushFrame() {
-    display.pushGameFrame();
+    MorseGameMode::pushFrame();
 }
 
 static void drawCentredText(int y, const char* text, uint16_t color,
@@ -1576,7 +1577,7 @@ static void stateGameOver() {
 //=== Main entry point ===
 
 void MorsePileup::run() {
-    canvas = display.enterGameMode(MorsePreferences::leftHanded);
+    canvas = MorseGameMode::enterPortrait(MorsePreferences::leftHanded);
     if (!canvas) return;
 
     loadPlayerIdentity();
@@ -1601,16 +1602,7 @@ void MorsePileup::run() {
     cleanupKeyer();
     MorsePreferences::wpm = ftp.wpm;
     MorsePreferences::writePreferences("morserino");
-    display.exitGameMode();
-
-    MorseOutput::initDisplay();
-    #ifdef CONFIG_DISPLAYWRAPPER
-    MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-    #endif
-    pinMode(PinCLK, INPUT_PULLUP);
-    pinMode(PinDT, INPUT_PULLUP);
-    rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
-    rotaryEncoder.setCount(0);
+    MorseGameMode::exit();
     Buttons::modeButton.clicks = 0;
     Buttons::volButton.clicks = 0;
 }

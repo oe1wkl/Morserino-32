@@ -7,6 +7,7 @@
  *****************************************************************************************************************************/
 
 #include "MorseGame.h"
+#include "MorseGameMode.h"
 
 // Always defined (even without CONFIG_CW_GAME)
 bool gameMode = false;
@@ -454,7 +455,7 @@ static char pollKeyedChar() {
 // Drawing
 //=============================================================================
 
-static void pushFrame() { display.pushGameFrame(); }
+static void pushFrame() { MorseGameMode::pushFrame(); }
 
 static void drawCentredText(int y, const char* text, uint16_t color,
                             const lgfx::IFont* font) {
@@ -1021,7 +1022,8 @@ static void stateGameOver() {
 //=============================================================================
 
 void MorseGame::run() {
-    canvas = display.enterGameMode(false);    if (!canvas) return;
+    canvas = MorseGameMode::enterPortrait(false);
+    if (!canvas) return;
     // Determine character rotation from preference
     // posInvaderOrient: 0 = game native (no rotation), 1 = reading orientation
     #ifdef CONFIG_DISPLAYWRAPPER
@@ -1073,17 +1075,7 @@ void MorseGame::run() {
         tileSprite = nullptr;
     }
 
-    display.exitGameMode();
-
-    // Restore normal display for menu
-    MorseOutput::initDisplay();
-    #ifdef CONFIG_DISPLAYWRAPPER
-    MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-    #endif
-    // Restore encoder pins after MorseOutput::initDisplay() claimed SPI
-    pinMode(PinCLK, INPUT_PULLUP);
-    pinMode(PinDT, INPUT_PULLUP);
-    rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
-    rotaryEncoder.setCount(0);}
+    MorseGameMode::exit();
+}
 
 #endif  // CONFIG_CW_GAME
