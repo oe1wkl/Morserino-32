@@ -2707,7 +2707,35 @@ static void playLoop() {
 
 void MorseRadioCave::run() {
     canvas = display.enterGameModeLandscape(MorsePreferences::leftHanded);
-    if (!canvas) return;
+    if (!canvas) {
+        // Sprite allocation failed. Most common cause: the portrait sprite
+        // from a previous Invaders/Pileup session is still holding ~100 KB
+        // of internal SRAM, leaving no contiguous block for the ~100 KB
+        // landscape sprite. enterGameModeLandscape already changed the
+        // panel rotation before the allocation attempt, so we have to
+        // restore the menu's orientation — otherwise the Morserino menu
+        // ends up displayed rotated 90°.
+        //
+        // Use the same restore sequence as the normal exit path below.
+        DisplayWrapper::getLGFX()->setRotation(MorsePreferences::leftHanded ? 0 : 2);
+        MorseOutput::initDisplay();
+        #ifdef CONFIG_DISPLAYWRAPPER
+        MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
+        #endif
+        pinMode(PinCLK, INPUT_PULLUP);
+        pinMode(PinDT,  INPUT_PULLUP);
+        rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
+        rotaryEncoder.setCount(0);
+
+        MorseOutput::clearDisplay();
+        MorseOutput::printOnScroll(0, BOLD,    0, "Radio Cave");
+        MorseOutput::printOnScroll(1, REGULAR, 0, "Out of memory.");
+        MorseOutput::printOnScroll(2, REGULAR, 0, "Reboot to play.");
+        MorseOutput::refreshDisplay();
+        delay(2500);
+        MorseOutput::clearDisplay();
+        return;
+    }
 
     rcState = RC_LOBBY;
 
