@@ -32,7 +32,11 @@ extern char gameCharBuffer;
 #define GAME_DESTROYS_PER_LEVEL 10  // might increase this for finmal release
 
 #define GAME_SCREEN_W       170
-#define GAME_SCREEN_H       320
+// 320 panel rows, but the sprite is trimmed by MORSE_GAMEMODE_SPRITE_TRIM
+// (see MorseGameMode.cpp) to leave heap headroom for ESP-NOW/BT/WiFi.
+// The bottom 16 px of the panel are not drawn (stay the black fill from
+// game-mode entry); UI must lay out within GAME_SCREEN_H.
+#define GAME_SCREEN_H       304
 
 // ---- Colour palette (RGB565) ----
 #define GC_BG           0x0841
