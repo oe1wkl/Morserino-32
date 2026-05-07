@@ -112,6 +112,13 @@ enum RcState : uint8_t {
 // ---- Public interface ----
 namespace MorseRadioCave {
     void run();
+
+    // Call once at boot, after MorseOutput::initDisplay() and
+    // MorseGameMode::warmup(). Pre-grows the module's static Arduino String
+    // buffers (wrappedLines, lastCommand, lastClue, cwElements) so that
+    // their first use during gameplay doesn't allocate small persistent
+    // buffers next to the freshly-allocated game sprite.
+    void warmup();
 }
 
 #endif  // CONFIG_CW_GAME

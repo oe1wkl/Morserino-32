@@ -650,8 +650,10 @@ static void stateMenu() {
     }
 
     canvas->setFont(&fonts::Font0);
-    drawCentredText(286, "Touch:start FN:spd/lvl/vol", GC_HUD_TEXT);
-    drawCentredText(300, "Long press: exit", GC_HUD_TEXT);
+    // Footer lines shifted up to fit inside the trimmed 304-px sprite
+    // (was 286 / 300 when GAME_SCREEN_H was 320).
+    drawCentredText(270, "Touch:start FN:spd/lvl/vol", GC_HUD_TEXT);
+    drawCentredText(284, "Long press: exit", GC_HUD_TEXT);
 
     pushFrame();
 
@@ -983,8 +985,10 @@ static void stateGameOver() {
     drawHighScores(158, rank);
 
     canvas->setFont(&fonts::Font0);
-    drawCentredText(316 - 24, "Click: Play Again", GC_HUD_TEXT);
-    drawCentredText(316 - 10, "Long press: Exit", GC_HUD_TEXT);
+    // Anchored to GAME_SCREEN_H (304) instead of the original 316
+    // so the prompts fit inside the trimmed sprite.
+    drawCentredText(GAME_SCREEN_H - 28, "Click: Play Again", GC_HUD_TEXT);
+    drawCentredText(GAME_SCREEN_H - 14, "Long press: Exit", GC_HUD_TEXT);
 
     pushFrame();
 
