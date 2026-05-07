@@ -62,7 +62,10 @@ static const char CODE_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 static const int  CODE_CHARS_LEN = 36;
 
 #define FTP_W  170
-#define FTP_H  320
+// 320 panel rows, but the sprite is trimmed by MORSE_GAMEMODE_SPRITE_TRIM
+// (see MorseGameMode.cpp) to leave heap headroom for ESP-NOW/BT/WiFi.
+// The bottom 16 px of the panel are not drawn; UI must lay out within FTP_H.
+#define FTP_H  304
 #define FTP_BG     0x0841
 #define FTP_TEXT   0xFFFF
 #define FTP_ACCENT 0x07FF

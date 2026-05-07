@@ -3,28 +3,23 @@
  *
  *  Sprite buffer strategy
  *  ----------------------
- *  The sprite pixel buffer (~108 KB at 170×320 / 320×170, 16-bit) is a
- *  static array in BSS, declared at compile time and never touched by the
- *  heap allocator. Both portrait and landscape game modes share the same
- *  buffer — they have identical pixel counts on the M32 Pocket panel; only
- *  the W×H interpretation handed to LGFX differs, and `fillSprite(BLACK)`
- *  at game entry resets layout state.
+ *  Allocated dynamically from the heap on game enter and freed on game
+ *  exit. (An earlier version of this module reserved the buffer in BSS,
+ *  which fixed an OOM at the cost of permanently consuming ~108 KB of
+ *  internal SRAM. That broke ESP-NOW and BT, which need the same
+ *  internal-SRAM pool — those are time-multiplexed with games, so dynamic
+ *  allocation is the right policy: heap full when WiFi/BT/ESP-NOW need
+ *  it, sprite-sized only while a game is actually running.)
  *
- *  This is what fixes the Radio-Cave-after-Invaders OOM. Heap-based
- *  allocation strategies (whether kept-alive or freed-on-exit) all failed
- *  in practice: a separate persistent ~48 KB allocation made during the
- *  first game session permanently fragmented the largest contiguous free
- *  block, leaving it ~2 KB short of what the next 108,800-byte sprite
- *  needed. Putting the buffer in BSS sidesteps the heap entirely.
- *
- *  We use `LGFX_Sprite::setBuffer()` instead of `createSprite()` to hand
- *  LGFX our static buffer. setBuffer() marks the SpriteBuffer's source as
- *  Preallocated, which makes its release() skip the heap_free() — so
- *  ~LGFX_Sprite() is safe and the static buffer is undisturbed across
- *  game sessions.
- *
- *  Trade-off: ~108 KB of internal SRAM (~21% of the chip's 512 KB)
- *  permanently reserved.
+ *  Sprite size
+ *  -----------
+ *  We allocate slightly less than the full panel — the long side is
+ *  reduced by SPRITE_TRIM pixels — so the sprite always fits inside the
+ *  largest contiguous heap block we observe after a game session has
+ *  fragmented the heap (~106 KB on the M32 Pocket). The trimmed strip at
+ *  the bottom (portrait) or right (landscape) of the panel stays the
+ *  black `lcd.fillScreen` painted at game enter; games are responsible
+ *  for laying out their UI within the sprite area.
  *****************************************************************************************************************************/
 
 #include "MorseGameMode.h"
@@ -43,13 +38,17 @@ extern ESP32Encoder rotaryEncoder;
 extern const int    PinCLK;
 extern const int    PinDT;
 
-namespace {
+// Pixels removed from the long side of the panel when sizing the sprite.
+// At 170×320, trimming 16 from the long side gives a 170×304 / 304×170
+// sprite (= 103,360 bytes), comfortably under the ~106 KB largest free
+// block we observe after one game session. Decrease this only after
+// re-running the heap diagnostics on the heap-diagnostics branch and
+// confirming there's enough headroom.
+#ifndef MORSE_GAMEMODE_SPRITE_TRIM
+#define MORSE_GAMEMODE_SPRITE_TRIM 16
+#endif
 
-  // Static sprite buffer. Lives in BSS — allocated at compile time, never
-  // freed at runtime, immune to heap fragmentation. Sized for the panel's
-  // pixel count at 16-bit colour. Portrait and landscape modes share it;
-  // both have the same total pixel count.
-  alignas(4) uint16_t spriteBuffer[TFT_WIDTH * TFT_HEIGHT];
+namespace {
 
   LGFX_Sprite *sprite         = nullptr;
   bool         lastLeftHanded = false;
@@ -74,12 +73,21 @@ namespace {
     lcd->setRotation(rotation);
     lcd->fillScreen(TFT_BLACK);
 
-    // Defensive: dispose of any previous sprite wrapper. The static buffer
-    // is shared and remains intact; only the small LGFX_Sprite object is
-    // freed.
+    // Defensive: free any prior sprite buffer. Normal flow always calls
+    // exit() first, so this should be a no-op in practice.
     if (sprite) {
+      sprite->deleteSprite();
       delete sprite;
       sprite = nullptr;
+    }
+
+    // Trim the long side; keep the short side at the panel's full width.
+    int spriteW = lcd->width();
+    int spriteH = lcd->height();
+    if (spriteW >= spriteH) {
+      spriteW -= MORSE_GAMEMODE_SPRITE_TRIM;
+    } else {
+      spriteH -= MORSE_GAMEMODE_SPRITE_TRIM;
     }
 
     sprite = new LGFX_Sprite(lcd);
@@ -87,8 +95,14 @@ namespace {
       restoreMenuDisplay(leftHanded);
       return nullptr;
     }
+    sprite->setPsram(false);
     sprite->setColorDepth(16);
-    sprite->setBuffer(spriteBuffer, lcd->width(), lcd->height(), 16);
+    if (!sprite->createSprite(spriteW, spriteH)) {
+      delete sprite;
+      sprite = nullptr;
+      restoreMenuDisplay(leftHanded);
+      return nullptr;
+    }
     sprite->fillSprite(TFT_BLACK);
     return sprite;
   }
@@ -112,11 +126,11 @@ void MorseGameMode::pushFrame() {
 }
 
 void MorseGameMode::exit() {
-  // Dispose of the small LGFX_Sprite wrapper. The underlying buffer is
-  // Preallocated (static), so SpriteBuffer::release() inside ~LGFX_Sprite()
-  // skips the heap_free(), leaving the static buffer untouched and ready
-  // for the next game session.
+  // Free the sprite immediately so the heap is released back to the
+  // pool the moment the game exits — important so that re-entering the
+  // menu (or starting WiFi/BT) sees a heap unencumbered by the sprite.
   if (sprite) {
+    sprite->deleteSprite();
     delete sprite;
     sprite = nullptr;
   }
