@@ -61,6 +61,12 @@ void menu_();
 boolean menuExec();
 boolean setupWifi();
 void setupESPNow();
+// Boot-time warmup: cycles WiFi/ESP-NOW once so ESP-IDF's lazy persistent
+// allocations happen now (when the heap is empty) instead of inside the
+// first WiFi Trx session. ~17 KB stays allocated permanently after this;
+// without it, that 17 KB lands at runtime adjacent to game allocations
+// and fragments the heap (post-WiFi-Trx OOM when entering a game).
+void wifiWarmup();
 String getMenuPath(uint8_t);
 void menuDisplay(uint8_t);
 void cleanupScreen();

@@ -22,8 +22,12 @@ extern char gameCharBuffer;
 #define GAME_MAX_INVADERS   6
 #define GAME_NUM_LANES      4
 #define GAME_FIELD_TOP      24
-#define GAME_FIELD_BOTTOM   278
-#define GAME_KEYING_Y       280
+// Field bottom and keying strip both shifted up by 16 px (previously 278/280)
+// so the keying display has its full 40 px height inside the trimmed sprite
+// (304 px tall instead of the panel's native 320 — see GAME_SCREEN_H below).
+// The playfield is 16 px shorter as a result.
+#define GAME_FIELD_BOTTOM   262
+#define GAME_KEYING_Y       264
 #define GAME_INVADER_W      38
 #define GAME_INVADER_H      32
 #define GAME_LANE_W         42

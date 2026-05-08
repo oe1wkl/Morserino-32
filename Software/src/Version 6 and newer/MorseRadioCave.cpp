@@ -2707,19 +2707,10 @@ static void playLoop() {
 //=============================================================================
 
 void MorseRadioCave::run() {
+    // MorseGameMode::enterLandscape() doesn't return on allocation failure
+    // — it triggers a memory-clearing reboot and resumes directly into
+    // this game on the next boot. So canvas is always non-null here.
     canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded);
-    if (!canvas) {
-        // Sprite allocation failed. MorseGameMode has already restored the
-        // menu's display state, so all that's left is to tell the user.
-        MorseOutput::clearDisplay();
-        MorseOutput::printOnScroll(0, BOLD,    0, "Radio Cave");
-        MorseOutput::printOnScroll(1, REGULAR, 0, "Out of memory.");
-        MorseOutput::printOnScroll(2, REGULAR, 0, "Reboot to play.");
-        MorseOutput::refreshDisplay();
-        delay(2500);
-        MorseOutput::clearDisplay();
-        return;
-    }
 
     rcState = RC_LOBBY;
 
@@ -2740,6 +2731,30 @@ void MorseRadioCave::run() {
     clearPaddleLatches();
 
     MorseGameMode::exit();
+}
+
+
+//=============================================================================
+// Boot-time warmup
+//=============================================================================
+//
+// Pre-grow the module's static Arduino String buffers so the first use
+// inside a game session doesn't allocate small persistent buffers next to
+// the freshly-allocated game sprite. (When small allocations land in the
+// sprite's tail region, they prevent the freed sprite from merging back
+// when the sprite is released — the heap fragments by ~4 KB per session
+// otherwise.)
+//
+// The reserved sizes are estimates of typical line / command / clue
+// lengths; if a real game string grows beyond them, Arduino's String
+// will reallocate, but only if necessary.
+void MorseRadioCave::warmup() {
+    for (int i = 0; i < RC_MAX_WRAP_LINES; i++) {
+        wrappedLines[i].reserve(64);
+    }
+    lastCommand.reserve(32);
+    lastClue.reserve(32);
+    cwElements.reserve(128);
 }
 
 #endif  // CONFIG_CW_GAME

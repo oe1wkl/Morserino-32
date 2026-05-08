@@ -38,6 +38,13 @@ extern ESP32Encoder rotaryEncoder;
 extern const int    PinCLK;
 extern const int    PinDT;
 
+// RTC-resident state for the memory-clearing reboot path. Defined in
+// m32_v6.ino; we set them and call ESP.restart() if sprite allocation
+// fails. The values survive the software reset and tell setup() to
+// auto-resume into the same menu item the user just clicked.
+extern uint32_t rebootMagic;
+extern uint8_t  rebootMenuPtr;
+
 // Pixels removed from the long side of the panel when sizing the sprite.
 // At 170×320, trimming 16 from the long side gives a 170×304 / 304×170
 // sprite (= 103,360 bytes), comfortably under the ~106 KB largest free
@@ -92,22 +99,43 @@ namespace {
 
     sprite = new LGFX_Sprite(lcd);
     if (!sprite) {
-      restoreMenuDisplay(leftHanded);
-      return nullptr;
+      // Couldn't even allocate the small wrapper. Fall back to the
+      // memory-clearing reboot — the heap is in a bad state.
+      MorseGameMode::triggerMemoryClearingReboot();
     }
     sprite->setPsram(false);
     sprite->setColorDepth(16);
     if (!sprite->createSprite(spriteW, spriteH)) {
+      // Sprite buffer allocation failed — heap is fragmented (typically
+      // after a WiFi Trx session). Reboot to clear, then resume directly
+      // into the menu item the user just clicked.
       delete sprite;
       sprite = nullptr;
-      restoreMenuDisplay(leftHanded);
-      return nullptr;
+      MorseGameMode::triggerMemoryClearingReboot();
     }
     sprite->fillSprite(TFT_BLACK);
     return sprite;
   }
 
 } // namespace
+
+void MorseGameMode::warmup() {
+  // Allocate a real panel-sized sprite, push it once, free. This forces
+  // LovyanGFX to provision its DMA descriptor list / SPI transaction
+  // state — about 300+ bytes the first time — at boot rather than later
+  // inside a game session. (See module header comment for why timing
+  // matters: the lazy alloc otherwise lands inside what would become the
+  // game sprite's tail region.)
+  auto *lcd = DisplayWrapper::getLGFX();
+  LGFX_Sprite tmp(lcd);
+  tmp.setColorDepth(16);
+  if (!tmp.createSprite(lcd->width(), lcd->height())) return;
+  tmp.fillSprite(TFT_BLACK);
+  lcd->startWrite();
+  tmp.pushSprite(lcd, 0, 0);
+  lcd->endWrite();
+  tmp.deleteSprite();
+}
 
 LGFX_Sprite *MorseGameMode::enterPortrait(bool leftHanded) {
   return allocate(leftHanded ? 0 : 2, leftHanded);
@@ -139,6 +167,22 @@ void MorseGameMode::exit() {
 
 LGFX_Sprite *MorseGameMode::getSprite() {
   return sprite;
+}
+
+[[noreturn]] void MorseGameMode::triggerMemoryClearingReboot() {
+  rebootMenuPtr = MorsePreferences::menuPtr;
+  rebootMagic   = 0xC0FFEE42u;
+
+  // Restore portrait rotation so the overlay is readable.
+  DisplayWrapper::getLGFX()->setRotation(MorsePreferences::leftHanded ? 0 : 2);
+  MorseOutput::initDisplay();
+  MorseOutput::clearDisplay();
+  MorseOutput::printOnScroll(0, BOLD,    0, "Clearing");
+  MorseOutput::printOnScroll(1, BOLD,    0, "memory...");
+  MorseOutput::refreshDisplay();
+  delay(400);
+  ESP.restart();
+  while (true) ;  // unreachable; placates [[noreturn]]
 }
 
 #endif // CONFIG_DISPLAYWRAPPER
