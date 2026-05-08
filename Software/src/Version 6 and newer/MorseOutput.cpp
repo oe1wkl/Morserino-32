@@ -1268,9 +1268,15 @@ void MorseOutput::drawBatteryIcon(uint8_t pps, uint8_t bars) {
     const int bodyW = 26, iconH = 16, nubW = 4, nubH = 8, pad = 2, margin = 2;
     int ix = display.getWidth() - bodyW - nubW - margin;
     int iy = (SCROLL_TOP - iconH) / 2;
-    // Clear icon area with status line background colour
+    // Paint the FULL status-line-height column behind the icon with the
+    // status-line background colour. clearStatusLine skips this 34-px
+    // column when the icon is visible (to avoid overdrawing the icon),
+    // so we have to fill the full column ourselves — otherwise the
+    // strips above and below the icon end up showing whatever was
+    // there before (e.g. the blue background painted by display.clear()
+    // on game exit), creating a visible gap.
     display.setColor(WHITE);
-    display.fillRect(ix - 1, iy, bodyW + nubW + 3, iconH + 1);
+    display.fillRect(display.getWidth() - 34, 0, 34, SCROLL_TOP);
 
     // Draw in status line text colour
     display.setColor(BLACK);
