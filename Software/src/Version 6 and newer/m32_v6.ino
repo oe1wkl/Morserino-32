@@ -824,7 +824,7 @@ void displayStartUp(uint16_t volt) {
   }
 
   if (BETA) {
-    s += " beta ";
+    s += "b ";
     s += shortDate(COMPILEDATE);
   }
 
