@@ -11,7 +11,7 @@
  *  a final QSO with a remote station — all by keying commands as Morse.
  *
  *  The game runs in landscape orientation on a 320×170 sprite (provided
- *  by DisplayWrapper::enterGameModeLandscape). Twelve rooms, six items,
+ *  by MorseGameMode::enterLandscape). Twelve rooms, six items,
  *  state-dependent room descriptions, CW clues delivered as audio, full
  *  inventory and puzzle logic, victory and death screens, and NVS-backed
  *  save/resume across reboots.
@@ -48,6 +48,7 @@
  *****************************************************************************************************************************/
 
 #include "MorseRadioCave.h"
+#include "MorseGameMode.h"
 
 #ifdef CONFIG_CW_GAME
 
@@ -663,7 +664,7 @@ static bool          cwToneOn      = false;     // true when we're currently sou
 // Drawing helpers
 //=============================================================================
 
-static void pushFrame() { display.pushGameFrame(); }
+static void pushFrame() { MorseGameMode::pushFrame(); }
 
 static void drawCentred(int y, const char* text, uint16_t color,
                         const lgfx::IFont* font = nullptr) {
@@ -1937,11 +1938,14 @@ static void parserTick() {
     doPaddleIambic(leftKey, rightKey);
 
     // Stuck-keyer protection (same as Morse Invaders).
-    // Long idle periods between commands make this more likely here.
+    // Threshold scales with ditLength: long characters at slow speeds
+    // (e.g. '0' = ----- at 12 wpm = ~2 s) must not trip a false reset,
+    // which would silently drop the character and leave the sidetone on.
     static unsigned long lastIdleTime = 0;
+    unsigned long stuckThreshold = max(3000UL, 30UL * (unsigned long)ditLength);
     if (keyerState == IDLE_STATE) {
         lastIdleTime = millis();
-    } else if (!leftKey && !rightKey && millis() - lastIdleTime > 2000) {
+    } else if (!leftKey && !rightKey && millis() - lastIdleTime > stuckThreshold) {
         keyerState = IDLE_STATE;
         clearPaddleLatches();
         lastIdleTime = millis();
@@ -2703,8 +2707,10 @@ static void playLoop() {
 //=============================================================================
 
 void MorseRadioCave::run() {
-    canvas = display.enterGameModeLandscape(MorsePreferences::leftHanded);
-    if (!canvas) return;
+    // MorseGameMode::enterLandscape() doesn't return on allocation failure
+    // — it triggers a memory-clearing reboot and resumes directly into
+    // this game on the next boot. So canvas is always non-null here.
+    canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded);
 
     rcState = RC_LOBBY;
 
@@ -2724,29 +2730,31 @@ void MorseRadioCave::run() {
     gameMode = false;
     clearPaddleLatches();
 
-    display.exitGameMode();
+    MorseGameMode::exit();
+}
 
-    // exitGameMode() calls setRotation(3) — that's landscape, correct for
-    // Radio Cave on re-entry but WRONG for the Morserino menu which expects
-    // portrait. When a portrait-mode game (Invaders/Pileup) exits, the
-    // rotation change to 3 coincidentally doesn't matter because... [historical
-    // reason]. Coming out of landscape, the menu stays landscape and looks
-    // 90°-rotated after the first encoder turn.
-    //
-    // Fix: explicitly restore the menu's portrait rotation. The menu uses
-    // rotation 2 normally, or 0 for left-handed users.
-    DisplayWrapper::getLGFX()->setRotation(MorsePreferences::leftHanded ? 0 : 2);
 
-    // Restore normal display for menu (same sequence as MorseGame::run)
-    MorseOutput::initDisplay();
-    #ifdef CONFIG_DISPLAYWRAPPER
-    MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-    #endif
-
-    pinMode(PinCLK, INPUT_PULLUP);
-    pinMode(PinDT,  INPUT_PULLUP);
-    rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
-    rotaryEncoder.setCount(0);
+//=============================================================================
+// Boot-time warmup
+//=============================================================================
+//
+// Pre-grow the module's static Arduino String buffers so the first use
+// inside a game session doesn't allocate small persistent buffers next to
+// the freshly-allocated game sprite. (When small allocations land in the
+// sprite's tail region, they prevent the freed sprite from merging back
+// when the sprite is released — the heap fragments by ~4 KB per session
+// otherwise.)
+//
+// The reserved sizes are estimates of typical line / command / clue
+// lengths; if a real game string grows beyond them, Arduino's String
+// will reallocate, but only if necessary.
+void MorseRadioCave::warmup() {
+    for (int i = 0; i < RC_MAX_WRAP_LINES; i++) {
+        wrappedLines[i].reserve(64);
+    }
+    lastCommand.reserve(32);
+    lastClue.reserve(32);
+    cwElements.reserve(128);
 }
 
 #endif  // CONFIG_CW_GAME

@@ -22,17 +22,25 @@ extern char gameCharBuffer;
 #define GAME_MAX_INVADERS   6
 #define GAME_NUM_LANES      4
 #define GAME_FIELD_TOP      24
-#define GAME_FIELD_BOTTOM   278
-#define GAME_KEYING_Y       280
+// Field bottom and keying strip both shifted up by 16 px (previously 278/280)
+// so the keying display has its full 40 px height inside the trimmed sprite
+// (304 px tall instead of the panel's native 320 — see GAME_SCREEN_H below).
+// The playfield is 16 px shorter as a result.
+#define GAME_FIELD_BOTTOM   262
+#define GAME_KEYING_Y       264
 #define GAME_INVADER_W      38
 #define GAME_INVADER_H      32
 #define GAME_LANE_W         42
 #define GAME_LANE_MARGIN    1
 #define GAME_HIGH_SCORES    5
-#define GAME_DESTROYS_PER_LEVEL 10
+#define GAME_DESTROYS_PER_LEVEL 10  // might increase this for finmal release
 
 #define GAME_SCREEN_W       170
-#define GAME_SCREEN_H       320
+// 320 panel rows, but the sprite is trimmed by MORSE_GAMEMODE_SPRITE_TRIM
+// (see MorseGameMode.cpp) to leave heap headroom for ESP-NOW/BT/WiFi.
+// The bottom 16 px of the panel are not drawn (stay the black fill from
+// game-mode entry); UI must lay out within GAME_SCREEN_H.
+#define GAME_SCREEN_H       304
 
 // ---- Colour palette (RGB565) ----
 #define GC_BG           0x0841

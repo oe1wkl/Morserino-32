@@ -16,6 +16,42 @@
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
+
+#ifdef CONFIG_DISPLAYWRAPPER
+#include "MorseGameMode.h"
+
+// Defined in m32_v6.ino at global scope. True for the FIRST menu_()
+// invocation after a memory-clearing reboot triggered by sprite-allocation
+// failure. We use it to suppress the "QUICK START" overlay so the
+// post-reboot resume into the game looks silent.
+extern bool memoryReboot;
+
+// Tracks whether the user has already entered a WiFi-using mode in
+// this boot session. QuickEspNow's internal state can't survive multiple
+// WiFi.mode(STA) → WIFI_OFF cycles cleanly — the second begin() crashes
+// inside QuickEspNow::addPeer (esp_now_get_peer returns NOT_FOUND, which
+// the library promotes to abort()). Workaround: detect the 2nd-or-later
+// entry and trigger a memory-clearing reboot first; the auto-resume
+// drops the user back into the same menu item with fresh ESP-NOW state
+// and a defragmented heap.
+//
+// Single owner of the flag: it's set at the end of setupESPNow()/
+// setupWifi() — i.e. only after a WiFi mode actually came up. Callers
+// check via rebootIfWifiAlreadyUsed() BEFORE showing any "Start Wifi
+// Trx..."-style splash, so the splash shows exactly once per session
+// (once before the reboot would be wasted, since the user only sees
+// "Clearing memory..." anyway).
+static bool wifiUsedThisSession = false;
+
+static void rebootIfWifiAlreadyUsed() {
+    if (wifiUsedThisSession) {
+        MorseGameMode::triggerMemoryClearingReboot();
+    }
+}
+#else
+static inline void rebootIfWifiAlreadyUsed() {}
+#endif
+
 #ifdef CONFIG_CW_GAME
   #include "MorseGame.h"
   #include "MorsePileup.h"
@@ -177,6 +213,11 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 
 
 void MorseMenu::menu_() {
+   // Memory-clearing reboot is now reactive (see MorseGameMode::allocate)
+   // rather than preemptive on WiFi Trx exit. The heap stays fragmented
+   // after WiFi Trx, but that only matters if the user immediately starts
+   // a game — in which case sprite allocation will fail and we reboot
+   // then, resuming directly into the requested game.
    MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
    uint8_t disp = 0;
    int t, command;
@@ -192,7 +233,7 @@ void MorseMenu::menu_() {
     else {
       WiFi.disconnect(true, false);
     }
-    //DEBUG("All WiFi Disconnected");  
+    //DEBUG("All WiFi Disconnected");
     delay(50);
     WiFi.mode(WIFI_OFF);
     //DEBUG("WiFi Mode OFF");
@@ -237,12 +278,24 @@ void MorseMenu::menu_() {
             quickStart = false;
             command = 1;
             delay(250);
-            if (m32protocol)
-              MorseJSON::jsonCreate("message", "Quick Start", "");
-            MorseOutput::printOnScroll(2, REGULAR, 1, "QUICK START");
-            MorseOutput::refreshDisplay();
-            delay(600);
-            MorseOutput::clearDisplay();
+#ifdef CONFIG_DISPLAYWRAPPER
+            // After a memory-clearing reboot, auto-resume into the saved
+            // menu item silently — the user just clicked it a second ago,
+            // they don't need a "QUICK START" splash announcing the same
+            // action. memoryReboot is one-shot: clear it after consuming.
+            const bool announceQuickStart = !memoryReboot;
+            memoryReboot = false;
+#else
+            const bool announceQuickStart = true;
+#endif
+            if (announceQuickStart) {
+              if (m32protocol)
+                MorseJSON::jsonCreate("message", "Quick Start", "");
+              MorseOutput::printOnScroll(2, REGULAR, 1, "QUICK START");
+              MorseOutput::refreshDisplay();
+              delay(600);
+              MorseOutput::clearDisplay();
+            }
         }
         else if (executeMenu) {
             executeMenu = false;
@@ -318,7 +371,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
   MorseOutput::printOnStatusLine( true, 0,  "Select Mode:      ");
 
   // delete previous content
-  MorseOutput::clearThreeLines();
+  MorseOutput::clearScrollLines();
 
   /// level 0: top line, possibly ".." on line 1
   /// level 1: higher level on 0, item on 1, possibly ".." on 2
@@ -437,17 +490,23 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                     skipWords(wcount);
                 }
      startGenerator:
+                // If we'll be using WiFi for CW transmit, reboot first
+                // when WiFi was already used this session (see _trxWifi
+                // case for rationale). Done before the splash so we
+                // don't show the Generator splash twice across the reboot.
+                if (MorsePreferences::pliste[posLoraCwTransmit].value == 1)
+                  rebootIfWifiAlreadyUsed();
                 startFirst = true;
                 firstTime = true;
                 morseState = morseGenerator;
                 showStartDisplay("Generator     ", "Start / Stop  ", "press Paddle  ", 1250);
                 if (MorsePreferences::pliste[posLoraCwTransmit].value == 1)
                   {
-                    if (MorsePreferences::useEspNow) 
+                    if (MorsePreferences::useEspNow)
                       MorseMenu::setupESPNow();
                     else
                       if (!setupWifi())
-                        return false; 
+                        return false;
                   }
                 return true;
                 break;
@@ -569,12 +628,18 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 break;
 #endif
       case  _trxWifi: // Wifi Transceiver
+                // Reboot first if WiFi was already used this session
+                // (QuickEspNow can't survive multiple cycles cleanly).
+                // Done here, BEFORE any "Start Wifi Trx..." splash, so the
+                // splash isn't shown twice across the reboot. Flag is set
+                // by setupESPNow()/setupWifi() themselves, not here.
+                rebootIfWifiAlreadyUsed();
                 generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions, MorsePreferences::wifiTrxOptionsSize);
                 morseState = wifiTrx;
                 if (MorsePreferences::useEspNow) {
                     showStartDisplay("", "Start  Wifi Trx", "EspNow", 1500);
-                    MorseMenu::setupESPNow(); 
+                    MorseMenu::setupESPNow();
                 }
                 else {
                     MorseOutput::clearDisplay();
@@ -610,17 +675,22 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       case _morseInvaders:
                 MorseGame::run();
                 m32state = menu_loop;
+                // Clear both buttons: a long-press exit leaves clicks == -1, which
+                // would trigger an immediate exit in the next game's lobby guard.
                 Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
                 return false;
       case _fightPileup:
                 MorsePileup::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
                 return false;
       case _radioCave:
                 MorseRadioCave::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
                 return false;
 #endif  
       case  _decode: /// decoder
@@ -686,12 +756,30 @@ boolean MorseMenu::setupWifi() {
       if (err != 1)                       // if that fails too, use broadcast
         peerIP.fromString("255.255.255.255");
   }
+#ifdef CONFIG_DISPLAYWRAPPER
+  // Mark WiFi as used so the next call to rebootIfWifiAlreadyUsed()
+  // triggers a memory-clearing reboot before re-entering a WiFi mode.
+  wifiUsedThisSession = true;
+#endif
   return true;
+}
+
+void MorseMenu::wifiWarmup() {
+  // Force ESP-IDF WiFi+ESP-NOW lazy allocations to happen now. WiFi.mode(STA)
+  // allocates ~51 KB of which ~36 KB is freed by WiFi.mode(OFF); the
+  // remaining ~16 KB stays allocated for the device's lifetime. Doing this
+  // cycle at boot makes that 16 KB land predictably here rather than in
+  // the middle of game-allocated memory later.
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect(false, true);
+  quickEspNow.begin(MorsePreferences::pliste[posLoraChannel].value ? ESPNOW_CH_ALT : ESPNOW_CH);
+  delay(50);
+  quickEspNow.stop();
+  WiFi.mode(WIFI_OFF);
 }
 
 void MorseMenu::setupESPNow() {
   // init wifi for espnow
-      //WiFi.useStaticBuffers(true);
       WiFi.mode(WIFI_STA);
       WiFi.disconnect (false, true);
       EspNowIsActive = true;
@@ -699,7 +787,11 @@ void MorseMenu::setupESPNow() {
       quickEspNow.begin (MorsePreferences::pliste[posLoraChannel].value ? ESPNOW_CH_ALT : ESPNOW_CH); // If you don't use an AP channel needs to be specified
       delay(100);
       //DEBUG("setupESPNow has been performed.");
-  
+#ifdef CONFIG_DISPLAYWRAPPER
+      // Mark WiFi as used so the next call to rebootIfWifiAlreadyUsed()
+      // triggers a memory-clearing reboot before re-entering a WiFi mode.
+      wifiUsedThisSession = true;
+#endif
   }
   
 void MorseMenu::cleanupScreen() {
@@ -773,7 +865,7 @@ int8_t MorseMenu::selectFilePart() {
         // Display current selection and report to serial client
         if (selected != lastDisplayed) {
             lastDisplayed = selected;
-            MorseOutput::clearThreeLines();
+            MorseOutput::clearScrollLines();
  
             if (selected > 0)
                 MorseOutput::printOnScroll(0, REGULAR, 0,

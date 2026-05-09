@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
   <meta name="generator" content="pandoc" />
@@ -28,13 +28,13 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>User Manual</p></div>
-<div class="title-version">Version 8.x<br>April 2026</div>
+<div class="title-version">Version 8.x<br>May 2026</div>
 <div class="title-logo"><img src="images/m32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — User Manual</strong></p>
-<p>Edition V 8.x, April, 2026</p>
+<p>Edition V 8.x, May, 2026</p>
 <p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -192,7 +192,7 @@ The font family used is Lato.</p>
 <tr>
 <td style="text-align: center;">4</td>
 <td>3.5mm Phone Jack (4 poles): Headphones / Audio In / Line Out</td>
-<td>Connect your headphones (with 3-pol or 4-pole plug) here. Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (for external amplifiers or PC etc.). The assignments to the jack are as follows: Tip and 1st ring – audio or headphones out; 2nd ring: ground; sleeve: audio in. See also section <strong>6.2.1 General Preferences</strong> for available settings regarding this connector!</td>
+<td>Connect your headphones (with 3-pol or 4-pole plug) here. Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (for external amplifiers or PC etc.). The assignments to the jack are as follows: Tip and 1st ring – audio or headphones out; 2nd ring: ground; sleeve: audio in. See also section <strong>6.2.1 General Preferences</strong> for available settings regarding this connector! <strong>Do not connect this to a transceiver with a simple 3- or 4-pole audio cable - high voltages form the audio output of the transceiver might destroy your M32Pocket! See FAQ on morserino.info how to feed audio into the M32Pocket!</strong></td>
 </tr>
 <tr>
 <td style="text-align: center;">5</td>
@@ -1720,12 +1720,15 @@ Vol 12
 <p>There is also one situation where the game can become unwinnable through repeated mistakes (you will know when it happens). In that case, key <code>NEW</code> and confirm with <code>Y</code> to start over.</p>
 <p>When you successfully complete the game, a victory screen shows your total step count. Congratulations — the message has finally been received.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
-<p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two important functions of the device, when you are using WiFi through an access point:</p>
+<p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two functions of the device, when you are using WiFi through an access point, that were of high importance in teh past:</p>
 <ul>
 <li>Uploading a text file to the Morserino-32 that can then be played in CW Generator mode or Echo Trainer mode.</li>
 <li>Uploading the binary file of a new firmware version to do a firmware update.</li>
 </ul>
 <p>For both of these functionalities the file to be uploaded (be it a text file or the compiled binary file for the software update) must be on your computer (even a tablet or smartphone will work, as you only need basic web-browser functionality on that device), and your Morserino must be connected to the same WiFi network as your computer.</p>
+<div class="note">
+<p>Both these functions can now be accomplished much easier by connecting your Morserino to a computer that runs Chrome, Edge or Opera - see appendices 6 and 7 of this manual!</p>
+</div>
 <p>In order to connect your Morserino-32 to your local WiFi network, you usually need to know the SSID (the “name”) of the network, and the password to connect to it, known also as the “credentials”. And you must enter these two items into your Morserino-32. As it does not have a keyboard for convenient entry of this information, we use another way of doing it, and for this end another WiFi function has been implemented: <strong>network configuration</strong> (Config WiFi), which is the first you have to use before you can use the upload or update functions.</p>
 <p>For home networks that use a list of allowed MAC addresses (for security reasons), you have to configure your router and enter the M32’s MAC address before you can connect your M32 to the network. In order to be able to do so, there is also a function implemented to show the MAC address on the display.</p>
 <p>All network related functions can be found under the menu entry <strong>WiFi Functions</strong>.</p>

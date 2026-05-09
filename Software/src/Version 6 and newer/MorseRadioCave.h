@@ -17,11 +17,16 @@
 
 #ifdef CONFIG_CW_GAME
 
-// ---- Screen layout (320x170 landscape) ----
+// ---- Screen layout (304x170 landscape) ----
 // Radio Cave runs in landscape because text adventures need wide lines more
 // than tall columns. The layout is: top bar (icon + room name, 30 px), main
 // text area (120 px, scrollable), bottom bar (exits + steps + inventory, 20 px).
-#define RC_SCREEN_W       320
+//
+// 320 panel cols, but the sprite is trimmed by MORSE_GAMEMODE_SPRITE_TRIM
+// (see MorseGameMode.cpp) to leave heap headroom for ESP-NOW/BT/WiFi.
+// The right-most 16 px of the panel are not drawn; UI must lay out within
+// RC_SCREEN_W.
+#define RC_SCREEN_W       304
 #define RC_SCREEN_H       170
 
 #define RC_TOPBAR_H        30          // icon + room name
@@ -107,6 +112,13 @@ enum RcState : uint8_t {
 // ---- Public interface ----
 namespace MorseRadioCave {
     void run();
+
+    // Call once at boot, after MorseOutput::initDisplay() and
+    // MorseGameMode::warmup(). Pre-grows the module's static Arduino String
+    // buffers (wrappedLines, lastCommand, lastClue, cwElements) so that
+    // their first use during gameplay doesn't allocate small persistent
+    // buffers next to the freshly-allocated game sprite.
+    void warmup();
 }
 
 #endif  // CONFIG_CW_GAME

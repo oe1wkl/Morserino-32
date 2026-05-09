@@ -1,5 +1,31 @@
 # Change History
 
+### Changes V. 8.0
+
+#### New Features:
+* File Player can do multi-part files now (a poor man’s way of supporting several files ;-) - see the user manual how multi-part files are defined and created. If an uploaded text file is recognised as multipart, you will be asked which part you want to use when you start file player. A file can have up to 16 parts.
+* For M32Pocket only: There is now a new „Games“ menu. Currently there are three games included: „Morse Invaders“. „Fight the Pileup“ (currently just an incomplete draft, and in single user mode only; this is expected to be a multi-user game), and „Radio Cave“, a text based adventure game inspired by „Colossal Cave“, but with a radio based theme. 
+
+#### Feature Modifications:
+* Added a number of commands to the serial protocol to enable a simple file manager for SPIFFS (you need some javascript on the browser side to make use of it - on Github, under Software/Utilities you can find an html file to use in any  browser that supports web serial and which implements the browser side of the file manager.
+* The generation of random calls has been improved, to generate more realistic call signs. There are also two new preferences for that, one to select either a single continent, or all, the other to restrict the selection to the more frequent prefixes, or to all.
+* In Echo Trainer modes you can now set a limit (in 5 wpm increments) in the preferences menu for the speed of your response; so even if the prompt is set to a faster speed, your response is expected at the capped speed. This also works when you set Adaptive Speed to ON - the prompt will get faster and faster with correct answers, but your response speed will be capped (useful to train copying at higher speed, even when you are not capable to match that speed when you are keying).
+* Before you can delete a snapshot, you have to confirm that in a dialog, in order to prevent involuntary deletions.
+* The Serial protocol has been extended, and is now at version 1.3, allowing even more configuration and control via a connected computer. 
+* For M32Pocket only: the scrolling text areas has now four lines, so we make better use of the screen estate.
+* For M32 Pocket only: Improved battery voltage measurement and display (a battery icon which indicates battery status is now visible in the upper right corner whenever you are in main or preferences menu).
+
+#### Bug Fixes:
+* After using Bluetooth keyboard, a re-boot had ben forced - the reason was that the Bluetooth heap memory was not completely cleared, and so prevented the use of WiFi. This has been fixed now, and so no re-start is necessary after Bluetooth use.
+* Fixed a bug in the JSON implementation of the Get file/text command: this did not escape special characters like newlines, and hence created invalid JSON responses.
+* M32Pocket only: fixed a scrolling bug where a character would be scrolled to a line below the bottom line.
+
+#### Other Changes:
+* A lot of code clean-up, Main target was to improve heap handling (less heap usage and churning), in order to improve efficiency and stability. The introduction of games for the M32Pocket introduced more memory-based challenges that needed a fix.
+
+#### Notes:
+* As far as possible, new features and feature improvements are being brought also to older Morserino generations, and  code clean-up is of benefit for them, too, and results in better stability. But some new features are only made possible with the new and much more capable hardware of the M32Pocket, this is particularly true for the games.
+* The code clean-up, bug hunting and designing as well as programming of the games would have been nearly impossible without the assistance of AI, namely Claude by Anthropic.
 
 ### Changes V.7.1
 

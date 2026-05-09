@@ -17,7 +17,13 @@
 
 #include "Arduino.h"
 
-#define NoOfLines 15
+#ifndef CONFIG_DISPLAYWRAPPER
+  #define NoOfLines 15
+  #define NoOfVisibleLines 3
+#else
+  #define NoOfLines 18
+  #define NoOfVisibleLines 4
+#endif
 
 enum FONT_ATTRIB
 {
@@ -50,7 +56,7 @@ namespace MorseOutput
   uint8_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false);
   void printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll);
   void printToScroll_internal(FONT_ATTRIB style, const String& text, boolean scroll);
-  void clearThreeLines();
+  void clearScrollLines();
   void clearLine(uint8_t line);
   void clearScrollBuffer();
   void clearScroll();
@@ -86,6 +92,7 @@ namespace MorseOutput
 #ifdef CONFIG_DISPLAYWRAPPER
   void dispM32Logo();
   void setTheme (uint8_t theme);
+  void testFontLayout();
 #endif
 
   void resetTOT();

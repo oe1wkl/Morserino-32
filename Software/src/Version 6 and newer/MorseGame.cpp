@@ -7,6 +7,7 @@
  *****************************************************************************************************************************/
 
 #include "MorseGame.h"
+#include "MorseGameMode.h"
 
 // Always defined (even without CONFIG_CW_GAME)
 bool gameMode = false;
@@ -454,7 +455,7 @@ static char pollKeyedChar() {
 // Drawing
 //=============================================================================
 
-static void pushFrame() { display.pushGameFrame(); }
+static void pushFrame() { MorseGameMode::pushFrame(); }
 
 static void drawCentredText(int y, const char* text, uint16_t color,
                             const lgfx::IFont* font) {
@@ -649,8 +650,10 @@ static void stateMenu() {
     }
 
     canvas->setFont(&fonts::Font0);
-    drawCentredText(286, "Touch:start FN:spd/lvl/vol", GC_HUD_TEXT);
-    drawCentredText(300, "Long press: exit", GC_HUD_TEXT);
+    // Footer lines shifted up to fit inside the trimmed 304-px sprite
+    // (was 286 / 300 when GAME_SCREEN_H was 320).
+    drawCentredText(270, "Touch:start FN:spd/lvl/vol", GC_HUD_TEXT);
+    drawCentredText(284, "Long press: exit", GC_HUD_TEXT);
 
     pushFrame();
 
@@ -783,12 +786,16 @@ static void statePlaying() {
             doPaddleIambic(leftKey, rightKey);
             updateSound();
 
-            // Track keyer idle state for stuck detection
+            // Track keyer idle state for stuck detection.
+            // Threshold scales with ditLength: long characters at slow speeds
+            // (e.g. '0' = ----- at 12 wpm = ~2 s) must not trip a false reset,
+            // which would silently drop the character and leave the sidetone on.
+            unsigned long stuckThreshold = max(3000UL, 30UL * (unsigned long)ditLength);
             if (keyerState == IDLE_STATE) {
                 lastIdleTime = millis();
-            } else if (!leftKey && !rightKey && millis() - lastIdleTime > 2000) {
-                // Keyer has been running for >2s with no paddles pressed — stuck.
-                // Force reset to prevent runaway dit/dah stream.
+            } else if (!leftKey && !rightKey && millis() - lastIdleTime > stuckThreshold) {
+                // Keyer has been running with no paddles pressed for far longer
+                // than any legal character — genuinely stuck. Force reset.
                 keyerState = IDLE_STATE;
                 clearPaddleLatches();
                 lastIdleTime = millis();
@@ -978,8 +985,10 @@ static void stateGameOver() {
     drawHighScores(158, rank);
 
     canvas->setFont(&fonts::Font0);
-    drawCentredText(316 - 24, "Click: Play Again", GC_HUD_TEXT);
-    drawCentredText(316 - 10, "Long press: Exit", GC_HUD_TEXT);
+    // Anchored to GAME_SCREEN_H (304) instead of the original 316
+    // so the prompts fit inside the trimmed sprite.
+    drawCentredText(GAME_SCREEN_H - 28, "Click: Play Again", GC_HUD_TEXT);
+    drawCentredText(GAME_SCREEN_H - 14, "Long press: Exit", GC_HUD_TEXT);
 
     pushFrame();
 
@@ -1017,7 +1026,8 @@ static void stateGameOver() {
 //=============================================================================
 
 void MorseGame::run() {
-    canvas = display.enterGameMode(false);    if (!canvas) return;
+    canvas = MorseGameMode::enterPortrait(false);
+    if (!canvas) return;
     // Determine character rotation from preference
     // posInvaderOrient: 0 = game native (no rotation), 1 = reading orientation
     #ifdef CONFIG_DISPLAYWRAPPER
@@ -1069,17 +1079,7 @@ void MorseGame::run() {
         tileSprite = nullptr;
     }
 
-    display.exitGameMode();
-
-    // Restore normal display for menu
-    MorseOutput::initDisplay();
-    #ifdef CONFIG_DISPLAYWRAPPER
-    MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
-    #endif
-    // Restore encoder pins after MorseOutput::initDisplay() claimed SPI
-    pinMode(PinCLK, INPUT_PULLUP);
-    pinMode(PinDT, INPUT_PULLUP);
-    rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
-    rotaryEncoder.setCount(0);}
+    MorseGameMode::exit();
+}
 
 #endif  // CONFIG_CW_GAME

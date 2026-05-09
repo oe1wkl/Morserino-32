@@ -22,7 +22,7 @@
  *  For volume control of NF output: I used a similar principle as  Connor Nishijima, see
  *                                   https://hackaday.io/project/11957-10-bit-component-less-volume-control-for-arduino
  *                                   but actually using two PWM outputs, connected with an AND gate
- *
+ *                                   (only for 1st & 2nd generation M32).
  ****************************************************************************************************************************/
 
 
@@ -46,6 +46,11 @@
 #ifdef CONFIG_CW_GAME
 #include "MorseGame.h"
 #include "MorsePileup.h"
+#include "MorseRadioCave.h"
+#endif
+
+#ifdef CONFIG_DISPLAYWRAPPER
+#include "MorseGameMode.h"
 #endif
 
 #ifdef CONFIG_MCP73871
@@ -126,6 +131,33 @@ volatile int8_t remoteFilePartSelect = -1;   // -1 = no remote selection pending
 
 
 boolean quickStart;                                     // should we execute menu item immediately?
+
+#ifdef CONFIG_DISPLAYWRAPPER
+// Reboot-magic flag — written by MorseGameMode (or any code that needs a
+// fresh heap and can't recover from fragmentation in software) before
+// ESP.restart(). Tells setup() this is a memory-clearing reboot, which
+// should skip the splash and resume directly into whichever menu item
+// the user was trying to execute when allocation failed.
+//
+// `rebootMenuPtr` carries that target through the reset. We use this
+// instead of the user's normal `quickStart` preference so the resume is
+// silent (no "QUICK START" splash) and we never accidentally land back
+// in WiFi Trx after a memory reboot.
+//
+// Only used on TFT/sprite-using boards (CONFIG_DISPLAYWRAPPER): the OLED
+// boards don't allocate large sprites and never hit the OOM that motivates
+// this whole machinery.
+//
+// RTC_NOINIT_ATTR (NOT RTC_DATA_ATTR): the latter is treated like .data
+// and gets zero-initialised by the C runtime on every boot, defeating
+// the whole point. RTC_NOINIT_ATTR retains its value across software
+// reset, which is exactly what we want. On cold-boot the RAM contents
+// are random; the magic-value comparison filters that out.
+#define REBOOT_MAGIC_MEMORY  0xC0FFEE42u
+RTC_NOINIT_ATTR uint32_t rebootMagic;
+RTC_NOINIT_ATTR uint8_t  rebootMenuPtr;
+bool memoryReboot = false;                              // set in setup() if we just rebooted to clear memory
+#endif
 
 
 
@@ -417,6 +449,18 @@ void DEBUG (const String& s) {
 
 void setup()
 {
+#ifdef CONFIG_DISPLAYWRAPPER
+   // Detect a memory-clearing reboot (set by MorseGameMode when sprite
+   // allocation fails due to heap fragmentation). One-shot — clear
+   // immediately so any subsequent crash-and-restart behaves as a fresh
+   // boot. The saved menu pointer, if valid, will be used later in setup
+   // to auto-resume into the game the user was trying to start.
+   memoryReboot = (rebootMagic == REBOOT_MAGIC_MEMORY);
+   uint8_t resumeMenuPtr = memoryReboot ? rebootMenuPtr : 0;
+   rebootMagic   = 0;
+   rebootMenuPtr = 0;
+#endif
+
    //// the order of the following steps is important:
    //// 1. determine board version
    //// 2. configure batteryPin and modeButtonPin (clickbutton), depending on board version
@@ -428,8 +472,8 @@ void setup()
    //// 8. do the remaining initialisations
 
   Serial.begin(115200);
-  delay(50); // give me time to bring up serial monitor
-  // reserve 400 bytes for the serial inputString variable defiend above:
+  delay(30); // give me time to bring up serial monitor
+  // reserve 400 bytes for the serial inputString variable defined above:
   inputString.reserve(400);
 
 #ifdef ORIGINAL_M32
@@ -501,19 +545,41 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   // init display
   MorsePreferences::readScreenPref();
   MorseOutput::initDisplay();
-  #ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_DISPLAYWRAPPER
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
-  #endif
+#endif
 
   MorseOutput::setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
   scrollTop = MorseOutput::getScrollTop();
+
+#ifdef CONFIG_DISPLAYWRAPPER
+  // Force LovyanGFX's first-time SPI/DMA allocation to happen at boot
+  // rather than inside the first game session (where it would land
+  // adjacent to the game sprite and prevent the sprite-region from
+  // merging back when the sprite is freed).
+  MorseGameMode::warmup();
+
+#ifdef CONFIG_CW_GAME
+  // Pre-grow each game module's static Arduino String buffers so their
+  // first use during gameplay doesn't allocate small persistent buffers
+  // next to the game sprite.
+  MorseRadioCave::warmup();
+#endif
+#endif
+
+  // Cycle WiFi+ESP-NOW once at boot so ESP-IDF's lazy persistent
+  // allocations (~16 KB of netif / event loop / task structures) happen
+  // here, before any user-initiated WiFi Trx session. Without this the
+  // 16 KB lands at runtime in fragments of free heap that later block
+  // game-sprite allocation when the user goes WiFi Trx → game.
+  MorseMenu::wifiWarmup();
 #ifdef CONFIG_TLV320AIC3100_RST
   pinMode(CONFIG_TLV320AIC3100_RST, OUTPUT);
   digitalWrite(CONFIG_TLV320AIC3100_RST, LOW);
-  delay(100);
+  delay(50);
   digitalWrite(CONFIG_TLV320AIC3100_RST, HIGH);
-  delay(100);
+  delay(50);
 #endif
 //DEBUG("Init sound");
   MorseOutput::soundSetup();
@@ -556,10 +622,9 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   Buttons::volButton.debounceTime   = 11;   // Debounce timer in ms
   Buttons::volButton.multiclickTime = 220;  // Time limit for multi clicks
   Buttons::volButton.longClickTime  = 350; // time until "held-down clicks" register
-
+#ifndef CONFIG_DISPLAYWRAPPER
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
-
-  //DEBUG("Check for key press at startup");
+#endif
   
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
@@ -607,7 +672,23 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   initSensors();
 
   /// set up quickstart - this should only be done once at startup - after successful quickstart we disable it to allow normal menu operation
+#ifdef CONFIG_DISPLAYWRAPPER
+  // On a memory-clearing reboot: hijack quickStart to auto-resume the
+  // saved menu pointer, regardless of the user's normal quickStart
+  // preference. This makes the reboot silent from the user's perspective —
+  // they clicked a game, the device disappeared for ~1 second, and the
+  // game starts. The user's preferred quickStart item is preserved in NVS
+  // and will be honoured on the next cold boot.
+  if (memoryReboot && resumeMenuPtr != 0) {
+    MorsePreferences::menuPtr    = resumeMenuPtr;
+    MorsePreferences::newMenuPtr = resumeMenuPtr;
+    quickStart = true;
+  } else {
+    quickStart = MorsePreferences::pliste[posQuickStart].value;
+  }
+#else
   quickStart = MorsePreferences::pliste[posQuickStart].value;
+#endif
 
 ////////////  Setup for LoRa
 //DEBUG("LoRa setup");
@@ -655,7 +736,17 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
         file.close();
     }
  
+#ifdef CONFIG_DISPLAYWRAPPER
+    // Skip the boot splash on a memory-clearing reboot — the user just
+    // exited WiFi Trx a heartbeat ago, they don't want to see the logo
+    // and version screen again. (memoryReboot is only set on sprite-using
+    // boards.)
+    if (!memoryReboot) {
+      displayStartUp(volt);
+    }
+#else
     displayStartUp(volt);
+#endif
    // DEBUG("Startup display done");
     while (Serial.available())        // remove spurious input from Serial port
       Serial.read();
@@ -2990,7 +3081,7 @@ uint8_t cwBuRead(uint8_t* buIndex) {
     *buIndex = nextBuRead;
     byteBuFree += l;
     --l;
-    DEBUG("@2887: cwBuRead: length: " + String(l) + " bytes, free buffer: " + String(byteBuFree));
+    //DEBUG("@2887: cwBuRead: length: " + String(l) + " bytes, free buffer: " + String(byteBuFree));
     nextBuRead += l;
     return l;
   }
