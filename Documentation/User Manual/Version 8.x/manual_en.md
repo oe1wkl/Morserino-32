@@ -1816,8 +1816,8 @@ When you successfully complete the game, a victory screen shows your total step 
 
 Apart from the functionality of WiFi Transceiver, you can use the WiFi
 feature of the ESP32 processor used in the Morserino-32 for two
-important functions of the device, when you are using WiFi through an
-access point:
+functions of the device, when you are using WiFi through an
+access point, that were of high importance in teh past:
 
 -   Uploading a text file to the Morserino-32 that can then be played in
     CW Generator mode or Echo Trainer mode.
@@ -1829,6 +1829,10 @@ file or the compiled binary file for the software update) must be on
 your computer (even a tablet or smartphone will work, as you only need
 basic web-browser functionality on that device), and your Morserino must
 be connected to the same WiFi network as your computer.
+
+::: note
+Both these functions can now be accomplished much easier by connecting your Morserino to a computer that runs Chrome, Edge or Opera - see appendices 6 and 7 of this manual!
+:::
 
 In order to connect your Morserino-32 to your local WiFi network, you
 usually need to know the SSID (the "name") of the network, and the

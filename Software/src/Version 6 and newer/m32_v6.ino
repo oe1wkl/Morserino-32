@@ -22,7 +22,7 @@
  *  For volume control of NF output: I used a similar principle as  Connor Nishijima, see
  *                                   https://hackaday.io/project/11957-10-bit-component-less-volume-control-for-arduino
  *                                   but actually using two PWM outputs, connected with an AND gate
- *
+ *                                   (only for 1st & 2nd generation M32).
  ****************************************************************************************************************************/
 
 
@@ -472,8 +472,8 @@ void setup()
    //// 8. do the remaining initialisations
 
   Serial.begin(115200);
-  delay(50); // give me time to bring up serial monitor
-  // reserve 400 bytes for the serial inputString variable defiend above:
+  delay(30); // give me time to bring up serial monitor
+  // reserve 400 bytes for the serial inputString variable defined above:
   inputString.reserve(400);
 
 #ifdef ORIGINAL_M32
@@ -545,17 +545,9 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   // init display
   MorsePreferences::readScreenPref();
   MorseOutput::initDisplay();
-  #ifdef CONFIG_DISPLAYWRAPPER
-/* // first just a test re fonts and sizes
-delay(2000);  
-MorseOutput::testFontLayout();
-
-while (true)
-    ;
-// end test
-*/
+#ifdef CONFIG_DISPLAYWRAPPER
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
-  #endif
+#endif
 
   MorseOutput::setBrightness(MorsePreferences::oledBrightness);
   MorseOutput::clearDisplay();
@@ -585,9 +577,9 @@ while (true)
 #ifdef CONFIG_TLV320AIC3100_RST
   pinMode(CONFIG_TLV320AIC3100_RST, OUTPUT);
   digitalWrite(CONFIG_TLV320AIC3100_RST, LOW);
-  delay(100);
+  delay(50);
   digitalWrite(CONFIG_TLV320AIC3100_RST, HIGH);
-  delay(100);
+  delay(50);
 #endif
 //DEBUG("Init sound");
   MorseOutput::soundSetup();
@@ -630,10 +622,9 @@ while (true)
   Buttons::volButton.debounceTime   = 11;   // Debounce timer in ms
   Buttons::volButton.multiclickTime = 220;  // Time limit for multi clicks
   Buttons::volButton.longClickTime  = 350; // time until "held-down clicks" register
-
+#ifndef CONFIG_DISPLAYWRAPPER
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
-
-  //DEBUG("Check for key press at startup");
+#endif
   
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
