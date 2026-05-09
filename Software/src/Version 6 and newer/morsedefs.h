@@ -370,30 +370,32 @@ enum KEYERSTATES
 
 
 enum prefPos : uint8_t {
-  #ifdef CONFIG_SOUND_I2S
-        posLineOut,
-  #endif
-                posClicks, posPitch, posExtPddlPolarity, posPolarity,                                         // 0
-                posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,                              // 4
-                posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption,                      // 8
-                posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength, posWordLength,                               // 12
-                posGeneratorDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,            // 16
-                posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, posSpeedAdapt, posEchoSpeedMax,                    // 21
-                posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut,     // 25
-                posQuickStart, posOutputCase, posAutoStop, posMaxSequence, posLoraChannel,                    // 31
+#ifdef CONFIG_SOUND_I2S
+  posLineOut,
+#endif
+  posClicks,        posPitch,            posExtPddlPolarity,   posPolarity,
+  posCurtisMode,    posPaddleMode,       posCurtisBDahTiming,  posCurtisBDotTiming,
+  posACS,           posEchoToneShift,    posInterWordSpace,    posInterCharSpace,
+  posRandomOption,  posRandomLength,     posCallLength,        posCallContinent,
+  posCallCommon,    posAbbrevLength,     posWordLength,        posGeneratorDisplay,
+  posWordDoubler,   posEchoDisplay,      posEchoRepeats,       posEchoConf,
+  posKeyExternalTx, posLoraCwTransmit,   posGoertzelBandwidth, posSpeedAdapt,
+  posEchoSpeedMax,  posKochSeq,          posCarouselStart,     posLatency,
+  posRandomFile,    posExtAudioOnDecode, posTimeOut,           posQuickStart,
+  posOutputCase,    posAutoStop,         posMaxSequence,       posLoraChannel,
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-				posBluetoothOut,
+  posBluetoothOut,
 #endif
 #ifdef CONFIG_DISPLAYWRAPPER
-        posTheme, 
+  posTheme,
 #endif
 #ifdef CONFIG_CW_GAME
-        posInvaderOrient,
+  posInvaderOrient,
 #endif
   posSerialOut,
-                // to be treated differently:
-                posKochFilter,                                                                                // 36
-                posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf,    // 37
+  // to be treated differently:
+  posKochFilter, posLoraBand,  posLoraQRG, posLoraPower,
+  posSnapRecall, posSnapStore, posVAdjust, posHwConf,
 };
 
 enum actMessage : int {
