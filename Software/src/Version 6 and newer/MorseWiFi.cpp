@@ -696,6 +696,9 @@ void internal::handleFileUpload(){ // upload a new file to the SPIFFS
         MorsePreferences::fileWordPointer = 0;                         // reset word counter for file player
 //DEBUG("fileWordPointer @ file upload: " + String(MorsePreferences::fileWordPointer));
         MorsePreferences::writeWordPointer();
+        // Fresh file invalidates prior progress in every chapter
+        for (int i = 0; i < MAX_FILE_PARTS; i++)
+          MorsePreferences::fileParts[i].wordPointer = 0;
         MorsePreferences::scanFileParts();          // ADD: detect multipart
         MorsePreferences::writeFilePartData();      // ADD: persist to NVS
 //DEBUG("handleFileUpload Size: " + String(upload.totalSize));

@@ -3936,10 +3936,15 @@ void m32Put(String type, String token, String value) {                    /// PU
         if (uploadActive) {
           String name = String(uploadFile.path());   // ← was uploadFile.name()
           uploadFile.close();
+          // If we uploaded player.txt, reset all per-part word pointers
+          // before scanning — a fresh file invalidates prior progress.
+          if (name == "/player.txt" || name == "player.txt") {
+            for (int i = 0; i < MAX_FILE_PARTS; i++)
+              MorsePreferences::fileParts[i].wordPointer = 0;
+          }
           MorsePreferences::scanFileParts();
           MorsePreferences::writeFilePartData();
           uploadActive = false;
-          // If we uploaded player.txt, reset the word pointer
           if (name == "/player.txt" || name == "player.txt") {
             MorsePreferences::fileWordPointer = 0;
             MorsePreferences::writeWordPointer();

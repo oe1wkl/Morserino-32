@@ -1929,12 +1929,13 @@ void MorsePreferences::scanFileParts() {
                     fileParts[partCount - 1].endOffset = lineStart;
                 }
                 
-                // Record this part
+                // Record this part. Preserve wordPointer — that is playback
+                // state (loaded from NVS at boot, updated during play), not
+                // file structure. The upload path resets it explicitly.
                 FilePart& part = fileParts[partCount];
                 // startOffset = position AFTER the separator line
                 part.startOffset = f.position();   // current position is right after this line
                 part.endOffset = fileSize;          // will be updated when next separator is found
-                part.wordPointer = 0;
                 
                 // Copy chapter name
                 int nameLen = lineLen - pos;
