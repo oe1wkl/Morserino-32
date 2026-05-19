@@ -2820,9 +2820,15 @@ To do this, the "**BLT Kbd Output**" setting must be set accordingly
 (for more information on the available options, see section  **6.2.1
 General Preferences**.
 
-Please note that the Morserino works like a keyboard with a US key
+::: note
+This feature is only active in CW Keyer mode! The keyboard will only become visible on your PC, tablet, etc. once CW Keyer has been launched!
+:::
+
+::: note
+The Morserino works like a keyboard with a US key
 layout – this may need to be set accordingly on the computer you are
 using.
+:::
 
 
 

@@ -2182,7 +2182,6 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Unmittelbar danach startet der Morserino-32 normal mit den neu gewählten LoRa-Einstellungen. In der obersten Zeile des Startbildschirms siehst du die konfigurierte QRG für LoRa als fünfstellige Zahl (z.B. 43415 für den Standard im 433-MHz-Band).</p>
 <h3 data-number="7.1.4" id="zuruecksetzen-der-einstellungen-auf-werksstandard"><span class="header-section-number">7.1.4</span> Zurücksetzen der Einstellungen auf Werksstandard</h3>
 <p>Dieser Menüpunkt setzt alle Einstellungen auf die Werkseinstellungen zurück, ändert aber keine Hardware-Konfigurationseinstellungen und löscht oder verändert keine in Schnappschüssen gespeicherten Einstellungen.</p>
-<hr />
 <h2 data-number="7.2" id="anhang-2-weitere-informationen-ueber-lora"><span class="header-section-number">7.2</span> Anhang 2: Weitere Informationen über LoRa</h2>
 <p>Wenn der Morsecode in ein LoRa-Datenpaket verpackt wird, werden Punkte, Striche und Pausen kodiert – es wird nicht der Klartext als ASCII-Zeichen gesendet. Daher ist es möglich, „illegale” Morsezeichen oder Zeichen zu senden, die nur in bestimmten Sprachen verwendet werden. Sie werden korrekt übertragen (erscheinen aber auf dem Display als nicht dekodierbar).</p>
 <p>Das Senden des Codes Wort für Wort bedeutet, dass es eine erhebliche Verzögerung zwischen Sender und Empfänger gibt, die stark von der Länge der gesendeten Wörter und der verwendeten Geschwindigkeit abhängt. Da die meisten Wörter in einem typischen CW-Gespräch eher kurz sind (7 Zeichen oder mehr sind bereits ein sehr langes Wort), ist das kein Grund zur Sorge – es sei denn, ihr sitzt beide im selben Raum und verwendet keine Kopfhörer, dann wird es wirklich verwirrend. Aber versuche einmal, wirklich lange Wörter (10 oder mehr Zeichen) bei wirklich niedriger Geschwindigkeit (5 WpM) zu senden, dann siehst du, was ich meine!</p>
@@ -2204,7 +2203,6 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li>LoRa Sync Word: 0x27 (= dezimal 39) für den Standardkanal, 0x66 (= dezimal 102) für den Sekundärkanal</li>
 <li>HF-Ausgangsleistung: standardmäßig 14 dBm (= 25 mW), kann auf 20 dBm (100 mW) erhöht werden</li>
 </ul>
-<hr />
 <h2 data-number="7.3" id="anhang-3-einstellen-des-audiopegels"><span class="header-section-number">7.3</span> Anhang 3: Einstellen des Audiopegels</h2>
 <p>Du kannst <strong>eine weitere Funktion</strong> erreichen, während du dich im Startmenü befindest – nicht durch eine Menüauswahl, sondern durch einen <strong>langen Druck auf die FN-Taste</strong>:</p>
 <div class="important">
@@ -2216,14 +2214,12 @@ aus dem englischsprachigen Original übersetzt.</p>
 <div class="note">
 <p>Nur wenn du dich <strong>im Menü</strong> befindest, aktiviert ein langer Druck auf die FN-Taste die Pegeleinstellungsfunktion.<br> Während du einen der Morserino-Modi ausführst (Keyer, Generator, Echo Trainer, Transceiver usw.), aktiviert ein langer Druck auf die FN-Taste den <strong>Scroll-Modus des Displays</strong>, damit du bereits weggeschrollten Text lesen kannst.</p>
 </div>
-<hr />
 <h2 data-number="7.4" id="anhang-4-aktualisieren-der-firmware-ueber-wlan-fuer-versionen-2.0"><span class="header-section-number">7.4</span> Anhang 4: Aktualisieren der Firmware über WLAN für Versionen &lt; 2.0</h2>
 <p>Bei den Firmware-Versionen <strong>1.x</strong> waren die WLAN-Funktionen nicht direkt über das Hauptmenü zugänglich, sondern <strong>durch dreimaliges schnelles Drücken der FN-Taste</strong>. Sobald du im WLAN-Menü bist, ist der Ablauf für die verschiedenen WLAN-Funktionen derselbe wie in Abschnitt <strong>5.8 WiFi Functions</strong> beschrieben.</p>
 <p>Natürlich kannst du auch <strong>über USB aktualisieren</strong>, wenn du noch eine ältere Softwareversion verwendest (siehe nächste zwei Anhänge).</p>
 <div class="important">
 <p>Wenn du noch Version 1.x verwendest, solltest du wirklich auf eine neuere Firmware aktualisieren – sonst entgehen dir viele neue Funktionen (und Fehlerbehebungen).</p>
 </div>
-<hr />
 <h2 data-number="7.5" id="anhang-5-aktualisieren-der-firmware-ueber-usb-und-ein-update-programm"><span class="header-section-number">7.5</span> Anhang 5: Aktualisieren der Firmware über USB und ein Update-Programm</h2>
 <p>Dieses einfache Aktualisierungsverfahren für Morserinos wurde durch die Arbeit von Matthias Jordan und Joe Wittmer möglich.</p>
 <p>Für einen M32 der 1st oder 2nd Edition stelle sicher, dass du einen <strong>Treiber</strong> für den Silicon Labs CP210x USB-zu-Seriell-Chip hast, den das Heltec-Modul für seine USB-Schnittstelle verwendet. Aktuelle Versionen von Windows 10 installieren diesen automatisch; falls nicht, findest du den Treiber hier:<br> <em>https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers</em></p>
@@ -2252,7 +2248,6 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Nach kurzer Zeit sollte dein Morserino neu starten und die aktualisierte Versionsnummer anzeigen.</p>
 <p>Es gibt auch die Möglichkeit, den permanenten Speicher des M32 vor der erneuten Firmware-Installation vollständig zu löschen; das kann nützlich sein, wenn der permanente Speicher beschädigt wurde. Dazu fügst du den optionalen Löschparameter <code>-e</code> hinzu. Beispiel (hier für OSX oder Linux):</p>
 <p><code>./update_m32 -p /dev/tty[...] -f m32_V8.0.bin -e</code></p>
-<hr />
 <h2 data-number="7.6" id="anhang-6-aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial"><span class="header-section-number">7.6</span> Anhang 6: Aktualisieren der Firmware über USB und einen Browser (Webserial)</h2>
 <p>Einige Browser unterstützen die Webserial-Erweiterung, mit der man direkt vom Browser aus auf eine serielle Schnittstelle zugreifen kann. Derzeit sind das <strong>Google Chrome</strong> und <strong>Microsoft Edge</strong>, und zumindest auf einigen Plattformen auch <strong>Opera</strong>. Mit einem solchen Browser wird das Aktualisieren der Firmware auf die neueste Version sehr einfach – kein Firmware-Download notwendig, keine Befehlszeilen.</p>
 <p>Stelle sicher, dass du ein USB-Kabel hast, das Datenübertragung ermöglicht.</p>
@@ -2262,7 +2257,6 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Diese Methode funktioniert <strong>NICHT</strong> mit Firefox oder Safari!</p>
 </div>
 <p>Um die Firmware zu aktualisieren, schließe deinen Morserino-32 über USB an deinen Computer an, gehe zu <em>https://www.morserino.info</em>, suche die Seite für Firmware-Updates und <strong>folge den Anweisungen dort</strong>.</p>
-<hr />
 <h2 data-number="7.7" id="anhang-7-einrichten-von-m32-einstellungen-ueber-einen-browser-und-hochladen-von-textdateien"><span class="header-section-number">7.7</span> Anhang 7: Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien</h2>
 <p>Es gibt derzeit drei Websites, auf denen du M32-Einstellungen über einen Browser auf deinem Computer vornehmen kannst, sowie eine weitere, die einen M32-Dateimanager implementiert.</p>
 <ul>
@@ -2291,7 +2285,6 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Auch Oliver hat auf seiner Website viele zusätzliche Trainingsfunktionen implementiert, zu finden unter <a href="https://morsetrainerpro.com/index.html">https://morsetrainerpro.com/index.html</a>.</p>
 <p>Das Datei-Tool gibt auch Informationen über den freien Speicherplatz für Dateien aus, und du kannst damit auch Dateien auf dem M32 löschen.</p>
 <p>Diese Funktionen wurden durch die Implementierung eines seriellen Protokolls im Morserino ermöglicht; weitere Informationen findest du im nächsten Anhang.</p>
-<hr />
 <h2 data-number="7.8" id="anhang-8-nutzung-des-seriellen-ausgangs-des-m32"><span class="header-section-number">7.8</span> Anhang 8: Nutzung des seriellen Ausgangs des M32</h2>
 <p>Der Morserino-32 ist in der Lage, Daten über die serielle USB-Schnittstelle auszugeben. Damit kannst du z.B. die Zeichen, die auf dem Display angezeigt werden, in einem Computerterminalfenster darstellen. Auf diese Weise kannst du die Morserino-Ausgabe auf einer großen Leinwand oder einem Projektor anzeigen – nützlich für Präsentationen oder im Unterricht.</p>
 <p>In Version 5 wurde ein vollständiges Zwei-Wege-Protokoll namens „M32 Serial Protocol” eingeführt. Es ermöglicht (über Software auf einem per USB angeschlossenen Computer) Bildschirm- oder Sprachausgabe von Menüs und Einstellungen (z.B. um den M32 für blinde oder sehbehinderte Menschen nutzbar zu machen) und erlaubt außerdem die Fernsteuerung aller Morserino-Funktionen vom Computer aus (Einstellungen ändern, Geschwindigkeit und Lautstärke anpassen, Menüs aufrufen und verlassen, automatische CW-Erzeugung). Das Protokoll ist in einem separaten Dokument beschrieben, das auf GitHub verfügbar ist.</p>
@@ -2307,12 +2300,15 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><strong>Morserino Phrases Trainer</strong> von Tommy, OZ1THC (siehe <em>https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer</em>).</li>
 </ul>
 <p>Siehe auch die Beschreibung der Einstellung <strong>Serial Output</strong> im Abschnitt <strong>6.2.1 Allgemeine Einstellungen</strong>.</p>
-<hr />
 <h2 data-number="7.9" id="anhang-9-benutzung-der-bluetooth-tastatur-funktion"><span class="header-section-number">7.9</span> Anhang 9: Benutzung der Bluetooth-Tastatur-Funktion</h2>
 <p>Im Modus CW Keyer kann der M32 die getasteten Morsezeichen als Tastaturcodes über Bluetooth an einen Computer (einschließlich Mobiltelefone und Tablets) senden.</p>
 <p>Dazu muss die Einstellung <strong>BLT Kbd Output</strong> entsprechend gesetzt werden (nähere Informationen zu den verfügbaren Optionen findest du im Abschnitt <strong>6.2.1 Allgemeine Einstellungen</strong>).</p>
+<div class="note">
+<p>Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird die Tastatur für PC und Tablett etc. sichtbar!</p>
+</div>
+<div class="note">
 <p>Beachte, dass der Morserino wie eine Tastatur mit US-Tastenlayout arbeitet – dies ist ggf. auf dem verwendeten Computer entsprechend einzustellen.</p>
-<hr />
+</div>
 <h2 data-number="7.10" id="anhang-10-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.10</span> Anhang 10: Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
 <p>Die Liste enthält Definitionen auf Englisch und Deutsch, getrennt durch einen Schrägstrich. Nicht alle Abkürzungen sind in allen Sprachen sehr gebräuchlich; im Englischen ungewöhnliche Abkürzungen stehen in eckigen Klammern [].</p>
 <p><strong>A</strong></p>

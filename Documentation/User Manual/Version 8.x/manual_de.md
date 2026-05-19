@@ -2555,8 +2555,6 @@ Dieser Menüpunkt setzt alle Einstellungen auf die Werkseinstellungen
 zurück, ändert aber keine Hardware-Konfigurationseinstellungen und löscht
 oder verändert keine in Schnappschüssen gespeicherten Einstellungen.
 
----
-
 ## Anhang 2: Weitere Informationen über LoRa
 
 Wenn der Morsecode in ein LoRa-Datenpaket verpackt wird, werden Punkte,
@@ -2627,7 +2625,6 @@ die Änderung der LoRa-Frequenzeinstellungen.
 -   HF-Ausgangsleistung: standardmäßig 14 dBm (= 25 mW), kann auf
     20 dBm (100 mW) erhöht werden
 
----
 
 ## Anhang 3: Einstellen des Audiopegels
 
@@ -2679,7 +2676,6 @@ den **Scroll-Modus des Displays**, damit du bereits weggeschrollten Text
 lesen kannst.
 :::
 
----
 
 ## Anhang 4: Aktualisieren der Firmware über WLAN für Versionen < 2.0
 
@@ -2698,7 +2694,6 @@ neuere Firmware aktualisieren – sonst entgehen dir viele neue Funktionen
 (und Fehlerbehebungen).
 :::
 
----
 
 ## Anhang 5: Aktualisieren der Firmware über USB und ein Update-Programm
 
@@ -2783,7 +2778,6 @@ Linux):
 
 `./update_m32 -p /dev/tty[...] -f m32_V8.0.bin -e`
 
----
 
 ## Anhang 6: Aktualisieren der Firmware über USB und einen Browser (Webserial)
 
@@ -2812,7 +2806,6 @@ Um die Firmware zu aktualisieren, schließe deinen Morserino-32 über USB
 an deinen Computer an, gehe zu *https://www.morserino.info*, suche die
 Seite für Firmware-Updates und **folge den Anweisungen dort**.
 
----
 
 ## Anhang 7: Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien
 
@@ -2897,7 +2890,6 @@ Diese Funktionen wurden durch die Implementierung eines seriellen
 Protokolls im Morserino ermöglicht; weitere Informationen findest du im
 nächsten Anhang.
 
----
 
 ## Anhang 8: Nutzung des seriellen Ausgangs des M32
 
@@ -2947,7 +2939,6 @@ zu verbessern. Derzeit gibt es vier Softwareprodukte für diesen Zweck:
 Siehe auch die Beschreibung der Einstellung **Serial Output** im
 Abschnitt **6.2.1 Allgemeine Einstellungen**.
 
----
 
 ## Anhang 9: Benutzung der Bluetooth-Tastatur-Funktion
 
@@ -2959,11 +2950,16 @@ Dazu muss die Einstellung **BLT Kbd Output** entsprechend gesetzt werden
 (nähere Informationen zu den verfügbaren Optionen findest du im Abschnitt
 **6.2.1 Allgemeine Einstellungen**).
 
+::: note
+Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird die Tastatur für PC und Tablett etc. sichtbar!
+:::
+
+::: note
 Beachte, dass der Morserino wie eine Tastatur mit US-Tastenlayout
 arbeitet – dies ist ggf. auf dem verwendeten Computer entsprechend
 einzustellen.
+:::
 
----
 
 ## Anhang 10: Gängige CW-Abkürzungen, verwendet vom Morserino-32
 
