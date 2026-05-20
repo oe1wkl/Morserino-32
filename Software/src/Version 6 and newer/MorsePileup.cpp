@@ -20,7 +20,7 @@ volatile bool pileupRxReady = false;
 #include "MorseMenu.h"
 #include "morsedefs.h"
 #include "ClickButton.h"
-#include "DisplayWrapper.h"
+#include "M32PocketLGFX.h"
 #include <LovyanGFX.hpp>
 #include <ESP32Encoder.h>
 #include <Preferences.h>
@@ -30,7 +30,7 @@ extern void serialEvent();
 extern boolean checkPaddles();
 extern boolean doPaddleIambic(boolean, boolean);
 extern boolean leftKey, rightKey;
-extern DisplayWrapper display;
+extern LGFX display;
 extern ESP32Encoder rotaryEncoder;
 extern const int PinCLK;
 extern const int PinDT;
