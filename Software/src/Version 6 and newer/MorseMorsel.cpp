@@ -1,0 +1,1039 @@
+/******************************************************************************************************************************
+ *  Morsel — Word-guessing game for Morserino-32 Pocket
+ *  Copyright (C) 2026  Willi Kraml, OE1WKL
+ *
+ *  Part of the Morserino-32 firmware. See main license.
+ *
+ *  Milestone S1: the core single-word loop.
+ *   - Combined dictionary + ham-abbreviation pool, filtered by length and the
+ *     current Koch lesson (every letter must be in koch.getCharSet()).
+ *   - One random letter position revealed in clear text, persists for the word.
+ *   - The word is played once in CW at a fixed clue speed (independent of the
+ *     player's own keyer speed).
+ *   - The player keys the whole word; a long inter-word pause submits the
+ *     guess; the <err> prosign (8 dits) deletes the last entered character.
+ *   - Letter boxes colour after each guess: green = right letter & position,
+ *     red = wrong, grey = revealed slot keyed wrong.
+ *   - Wrong guess replays the word (same speed in S1) and lets the player
+ *     try again. Correct guess advances to a new word.
+ *
+ *  No speed schedule, scoring, skip or high scores yet — those are S2..S4.
+ *****************************************************************************************************************************/
+
+#include "MorseMorsel.h"
+#include "MorseGameMode.h"
+
+#ifdef CONFIG_CW_GAME
+
+#include "MorseOutput.h"
+#include "MorsePreferences.h"
+#include "MorseMenu.h"
+#include "MorseGame.h"           // gameMode, gameCharBuffer
+#include "morsedefs.h"
+#include "ClickButton.h"
+#include "DisplayWrapper.h"
+#include "english_words.h"
+#include "abbrev.h"
+#include "DejaVuSansMono_Bold15pt7b.h"
+
+#include <Preferences.h>
+
+#include <LovyanGFX.hpp>
+
+// ---- External references ----
+extern int        checkEncoder();
+extern void       checkShutDown(boolean);
+extern void       serialEvent();
+extern boolean    checkPaddles();
+extern boolean    doPaddleIambic(boolean, boolean);
+extern boolean    leftKey, rightKey;
+extern void       clearPaddleLatches();
+extern void       keyOut(boolean, boolean, int, int);
+extern String     generateCWword(const String& symbols);   // m32_v6.ino — pure
+extern KEYERSTATES keyerState;
+extern unsigned int ditLength;          // player's own keyer timing (for submit gap)
+extern unsigned int interWordSpace;
+
+//=============================================================================
+// S1 tunables — kept here so playtesting can tweak the feel quickly
+//=============================================================================
+
+#define MSL_START_WPM       48      // clue speed in round 1
+#define MSL_WPM_STEP         5      // clue slows this much per round
+#define MSL_MIN_WPM         18      // clue speed floor (round 7+)
+#define MSL_MIN_POOL         6      // minimum eligible words to start
+#define MSL_HI_N             7      // high-score table size (fits the screen)
+#define MSL_MAX_WORD_LEN     6      // longest word Morsel ever handles
+#define MSL_FEEDBACK_MS   1500      // how long the coloured result is shown
+#define MSL_CORRECT_MS    1100      // how long the all-green "solved" is shown
+#define MSL_IDLE_REPLAY_MS 12000UL  // no input this long -> auto-replay the clue
+#define MSL_IDLE_EXIT_MS   60000UL  // total idle this long -> back to lobby
+#define MSL_GAME_WORDS      10      // words per single-player game
+#define MSL_GUESS_PENALTY_S  5      // seconds added per guess (from guess #1)
+#define MSL_SKIP_PENALTY_S  60      // flat seconds added when a word is skipped
+#define MSL_SKIP_MS        900      // how long the "Skipped" notice is shown
+
+//=============================================================================
+// Module-level state
+//=============================================================================
+
+static LGFX_Sprite* canvas   = nullptr;
+static MslState     mslState = MSL_INIT;
+
+// What the rotary encoder controls during play (mirrors the other games).
+enum MslEnc : uint8_t { MSL_ENC_SPEED, MSL_ENC_VOLUME };
+static MslEnc   mslEnc = MSL_ENC_SPEED;
+
+// The Koch lesson can be changed temporarily in the lobby for this game
+// session only; the user's real setting is restored on exit.
+static uint8_t  savedKochFilter = 0;
+
+// Combined word pool: lightweight references into the two static lists.
+struct MslPoolEntry { uint16_t idx; bool isAbbr; };
+static MslPoolEntry mslPool[EnglishWords::WORDS_NUMBER_OF_ELEMENTS +
+                            Abbrev::ABBREV_NUMBER_OF_ELEMENTS];
+static int          mslPoolN = 0;
+
+// The 10 words selected for the current game (no repetition).
+static MslPoolEntry  gameSel[MSL_GAME_WORDS];
+static int           gameWords;          // = min(MSL_GAME_WORDS, mslPoolN)
+static int           wordIndex;          // 0-based: which game word we're on
+static unsigned long totalAdjMs;         // accumulated adjusted time
+static int           totalGuesses;
+static int           solvedCount;
+static int           skippedCount;
+static uint8_t       gameKoch;           // Koch lesson this game was played at
+static uint8_t       gameWlen;           // word-length option this game used
+
+// Word-length setting: 7 options (GDD: 3,4,max4,5,max5,6,max6). "max N"
+// means any length from 3..N; an exact option means only that length.
+#define MSL_WLEN_OPTS 7
+static const uint8_t wlenMin[MSL_WLEN_OPTS] = { 3, 4, 3, 5, 3, 6, 3 };
+static const uint8_t wlenMax[MSL_WLEN_OPTS] = { 3, 4, 4, 5, 5, 6, 6 };
+static const char*  wlenLabel[MSL_WLEN_OPTS] =
+    { "3", "4", "max 4", "5", "max 5", "6", "max 6" };
+static uint8_t       wlenOpt = 1;        // default: exactly 4 (persisted)
+
+// Suggested minimum Koch lesson per word length for a viable pool
+// (computed offline against the default Morserino sequence; index by len).
+static const uint8_t recKoch[7] = { 0, 0, 0, 8, 10, 14, 16 };
+
+// Persistent high-score table (unified across settings).
+struct MslScore {
+    uint32_t adjMs;      // total adjusted time
+    uint16_t guesses;    // total guesses
+    uint8_t  wlen;       // word-length option index
+    uint8_t  koch;       // Koch lesson played at
+    uint8_t  solved;     // words solved
+    uint8_t  total;      // words in that game
+};
+static MslScore hiTable[MSL_HI_N];
+static int      lastRank = -1;           // 0-based rank just achieved, or -1
+
+#define MSL_NVS_NS   "morsel"
+#define MSL_HI_VER   2          // bumped: table size changed (old blob ignored)
+
+// Current round
+static char          target[MSL_MAX_WORD_LEN + 1];
+static int           wordLen;
+static int           revealPos;
+static char          guess[MSL_MAX_WORD_LEN + 1];
+static int           guessLen;
+static bool          evaluated;          // true while showing coloured result
+static unsigned long lastCharTime;
+static unsigned long idleSince;          // last real player activity
+static unsigned long nextReplayAt;       // when to auto-replay the clue
+static int           roundNo;            // 1-based attempt count for this word
+static int           clueWpm;            // current clue speed (per schedule)
+static unsigned long wordStartMs;        // when the clue first began this word
+static unsigned long lastWordMs;         // solve time of the last solved word
+
+// Per-position result for drawing (after a submit)
+enum MslCell : uint8_t { CELL_NEUTRAL, CELL_GREEN, CELL_RED, CELL_GREY };
+static MslCell cellState[MSL_MAX_WORD_LEN];
+
+// Non-blocking CW clue player (own timing — independent of keyer speed)
+struct MslCwPlayer {
+    char          elements[128];
+    int           pos, len;
+    bool          playing, toneOn;
+    bool          done;            // finished its single play-through
+    unsigned long timer;
+    int           pitch;
+    unsigned int  ditMs, dahMs, charMs;
+};
+static MslCwPlayer cw;
+
+//=============================================================================
+// Word pool
+//=============================================================================
+
+static const char* poolWord(const MslPoolEntry& e) {
+    return e.isAbbr ? Abbrev::abbreviations[e.idx] : EnglishWords::words[e.idx];
+}
+
+// All letters of `w` must be within the currently-learned Koch set.
+static bool isKochEligible(const char* w, const String& kochSet) {
+    for (const char* p = w; *p; ++p)
+        if (kochSet.indexOf(*p) < 0)
+            return false;
+    return true;
+}
+
+// Append all exactly-`len`-letter Koch-eligible words/abbrevs to the pool.
+// Both lists are length-indexed: entries of length L occupy
+// [POINTER[L], POINTER[L-1]) (the arrays are ordered longest-first).
+static void addLenToPool(int len, const String& kochSet) {
+    if (len < 1 || len > 6) return;
+    for (int i = EnglishWords::WORDS_POINTER[len];
+             i < EnglishWords::WORDS_POINTER[len - 1]; ++i)
+        if (isKochEligible(EnglishWords::words[i], kochSet))
+            mslPool[mslPoolN++] = { (uint16_t)i, false };
+    for (int i = Abbrev::ABBREV_POINTER[len];
+             i < Abbrev::ABBREV_POINTER[len - 1]; ++i)
+        if (isKochEligible(Abbrev::abbreviations[i], kochSet))
+            mslPool[mslPoolN++] = { (uint16_t)i, true };
+}
+
+// Build the combined pool for the current word-length setting and Koch
+// lesson. Returns the pool size.
+static int buildPool() {
+    mslPoolN = 0;
+    String kochSet = koch.getCharSet();
+    for (int len = wlenMin[wlenOpt]; len <= wlenMax[wlenOpt]; ++len)
+        addLenToPool(len, kochSet);
+    return mslPoolN;
+}
+
+//=============================================================================
+// Persistence (NVS namespace "morsel")
+//=============================================================================
+
+static void hiClear() {
+    for (int i = 0; i < MSL_HI_N; ++i)
+        hiTable[i] = { 0xFFFFFFFFUL, 0, 0, 0, 0, 0 };   // empty = max time
+}
+
+static void mslLoadPrefs() {
+    Preferences p;
+    p.begin(MSL_NVS_NS, true);
+    wlenOpt = p.getUChar("wlen", 1);
+    if (wlenOpt >= MSL_WLEN_OPTS) wlenOpt = 1;
+    hiClear();
+    if (p.getUChar("hv", 0) == MSL_HI_VER)
+        p.getBytes("hi", hiTable, sizeof(hiTable));
+    p.end();
+}
+
+static void mslSaveWlen() {
+    Preferences p;
+    p.begin(MSL_NVS_NS, false);
+    p.putUChar("wlen", wlenOpt);
+    p.end();
+}
+
+static void mslSaveHi() {
+    Preferences p;
+    p.begin(MSL_NVS_NS, false);
+    p.putBytes("hi", hiTable, sizeof(hiTable));
+    p.putUChar("hv", MSL_HI_VER);
+    p.end();
+}
+
+// Insert the just-finished game into the table if it qualifies; sets
+// lastRank to the 0-based rank, or -1. Persists on qualification.
+static void mslRecordScore() {
+    MslScore s = { (uint32_t)totalAdjMs, (uint16_t)totalGuesses,
+                   gameWlen, gameKoch,
+                   (uint8_t)solvedCount, (uint8_t)gameWords };
+    lastRank = -1;
+    for (int i = 0; i < MSL_HI_N; ++i) {
+        if (s.adjMs < hiTable[i].adjMs) {
+            for (int j = MSL_HI_N - 1; j > i; --j) hiTable[j] = hiTable[j - 1];
+            hiTable[i] = s;
+            lastRank = i;
+            mslSaveHi();
+            return;
+        }
+    }
+}
+
+//=============================================================================
+// Drawing helpers
+//=============================================================================
+
+static void pushFrame() { MorseGameMode::pushFrame(); }
+
+static void drawCentred(int y, const char* text, uint16_t color,
+                         const lgfx::IFont* font = nullptr) {
+    if (font) canvas->setFont(font);
+    canvas->setTextColor(color, MSL_BG);
+    canvas->setTextDatum(lgfx::top_center);
+    canvas->drawString(text, MSL_SCREEN_W / 2, y);
+    canvas->setTextDatum(lgfx::top_left);
+}
+
+// Draw the row of letter boxes for the current round state.
+static void drawBoard(const char* status) {
+    canvas->fillSprite(MSL_BG);
+
+    // --- Top bar: round (left) and clue speed (right). No big title here:
+    // it crowded the corners; the game name lives in the lobby. ---
+    char rb[16];
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    snprintf(rb, sizeof(rb), "Round %d", roundNo);
+    canvas->setTextColor(MSL_TEXT, MSL_BG);
+    canvas->setTextDatum(lgfx::top_left);
+    canvas->drawString(rb, 8, 6);
+    snprintf(rb, sizeof(rb), "Clue %d", clueWpm);
+    canvas->setTextColor(clueWpm <= MSL_MIN_WPM ? MSL_HIGHLIGHT : MSL_ACCENT, MSL_BG);
+    canvas->setTextDatum(lgfx::top_right);
+    canvas->drawString(rb, MSL_SCREEN_W - 8, 6);
+
+    snprintf(rb, sizeof(rb), "%d/%d", wordIndex + 1, gameWords);
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    canvas->setTextColor(MSL_DIM, MSL_BG);
+    canvas->setTextDatum(lgfx::top_center);
+    canvas->drawString(rb, MSL_SCREEN_W / 2, 9);
+    canvas->setTextDatum(lgfx::top_left);
+
+    // --- Letter boxes: snug around the glyph, sized to fit up to 6 cells ---
+    const int marginX = 8, gap = 6, boxH = 44;
+    int avail = MSL_SCREEN_W - 2 * marginX;
+    int boxW  = (avail - (wordLen - 1) * gap) / wordLen;
+    if (boxW > 46) boxW = 46;
+    int totalW = wordLen * boxW + (wordLen - 1) * gap;
+    int x0 = (MSL_SCREEN_W - totalW) / 2;
+    int y0 = 46;
+
+    for (int i = 0; i < wordLen; ++i) {
+        int bx = x0 + i * (boxW + gap);
+        uint16_t border = MSL_DIM, fill = MSL_BG, fg = MSL_TEXT;
+        char ch = 0;
+        bool isReveal = (i == revealPos);
+
+        if (!evaluated) {
+            // The revealed slot keeps its cyan border so the hint position is
+            // always identifiable. Show what the player keyed wherever the
+            // cursor has passed (so corrections are visible); fall back to the
+            // clue letter only at the revealed slot before the cursor reaches it.
+            if (isReveal) border = MSL_ACCENT;
+            if (i < guessLen)      { ch = guess[i];  fg = MSL_TEXT; }
+            else if (isReveal)     { ch = target[i]; fg = MSL_ACCENT; }
+        } else {
+            switch (cellState[i]) {
+                case CELL_GREEN: fill = MSL_GREEN; fg = MSL_BG;
+                                 ch = target[i]; break;
+                case CELL_RED:   fill = MSL_RED;   fg = MSL_TEXT;
+                                 ch = (i < guessLen ? guess[i] : 0); break;
+                case CELL_GREY:  fill = MSL_GREY;  fg = MSL_TEXT;
+                                 ch = target[i]; break;   // revealed slot kept
+                default: break;
+            }
+        }
+
+        canvas->fillRect(bx, y0, boxW, boxH, fill);
+        // 2-px border so it reads at normal viewing distance.
+        canvas->drawRect(bx,     y0,     boxW,     boxH,     border);
+        canvas->drawRect(bx + 1, y0 + 1, boxW - 2, boxH - 2, border);
+
+        if (ch) {
+            char s[2] = { (char)toupper(ch), 0 };
+            canvas->setFont(&DejaVuSansMono_Bold15pt7b);
+            canvas->setTextColor(fg, fill);
+            canvas->setTextDatum(lgfx::middle_center);
+            canvas->drawString(s, bx + boxW / 2, y0 + boxH / 2);
+            canvas->setTextDatum(lgfx::top_left);
+        }
+
+        // Position number under each box (1-based); the revealed slot's
+        // number is cyan so the hint's position is instantly clear.
+        char pn[3];
+        snprintf(pn, sizeof(pn), "%d", i + 1);
+        canvas->setFont(&fonts::FreeSans9pt7b);
+        canvas->setTextColor(isReveal ? MSL_ACCENT : MSL_DIM, MSL_BG);
+        canvas->setTextDatum(lgfx::top_center);
+        canvas->drawString(pn, bx + boxW / 2, y0 + boxH + 4);
+        canvas->setTextDatum(lgfx::top_left);
+    }
+
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(110, status, MSL_TEXT);
+    drawCentred(128, "click = skip   hold = quit", MSL_DIM);
+
+    // HUD: Koch lesson, player keyer speed, volume. The encoder target
+    // (speed or volume) is highlighted; FN/vol-button short-press toggles it.
+    char hud[24];
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    canvas->setTextDatum(lgfx::top_left);
+
+    snprintf(hud, sizeof(hud), "Koch %d", MorsePreferences::kochFilter);
+    canvas->setTextColor(MSL_DIM, MSL_BG);
+    canvas->drawString(hud, 8, 148);
+
+    snprintf(hud, sizeof(hud), "key %d wpm", MorsePreferences::wpm);
+    canvas->setTextColor(mslEnc == MSL_ENC_SPEED ? MSL_HIGHLIGHT : MSL_DIM, MSL_BG);
+    canvas->setTextDatum(lgfx::top_center);
+    canvas->drawString(hud, MSL_SCREEN_W / 2, 148);
+
+    snprintf(hud, sizeof(hud), "vol %d", MorsePreferences::sidetoneVolume);
+    canvas->setTextColor(mslEnc == MSL_ENC_VOLUME ? MSL_HIGHLIGHT : MSL_DIM, MSL_BG);
+    canvas->setTextDatum(lgfx::top_right);
+    canvas->drawString(hud, MSL_SCREEN_W - 8, 148);
+    canvas->setTextDatum(lgfx::top_left);
+
+    pushFrame();
+}
+
+//=============================================================================
+// CW clue player — non-blocking, plays the word ONCE
+//=============================================================================
+
+static void cwStart(const char* word, int clueWpm) {
+    String lower = word;
+    lower.toLowerCase();
+    String el = generateCWword(lower);
+    strncpy(cw.elements, el.c_str(), sizeof(cw.elements) - 1);
+    cw.elements[sizeof(cw.elements) - 1] = '\0';
+    cw.len     = strlen(cw.elements);
+    cw.pos     = 0;
+    cw.playing = true;
+    cw.toneOn  = false;
+    cw.done    = false;
+    cw.timer   = millis();
+    cw.pitch   = MorseOutput::notes[MorsePreferences::pliste[posPitch].value];
+    cw.ditMs   = 1200 / clueWpm;
+    cw.dahMs   = 3 * cw.ditMs;
+    cw.charMs  = 3 * cw.ditMs;
+}
+
+static void cwStop() {
+    if (cw.toneOn) {
+        MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
+        cw.toneOn = false;
+    }
+    cw.playing = false;
+}
+
+static void cwUpdate() {
+    if (!cw.playing) return;
+
+    // Mute while the player is keying or has started entering a guess.
+    if (keyerState != IDLE_STATE || guessLen > 0) {
+        if (cw.toneOn) {
+            MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
+            cw.toneOn = false;
+        }
+        return;
+    }
+
+    if (millis() < cw.timer) return;
+
+    if (cw.toneOn) {
+        MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
+        cw.toneOn = false;
+        cw.timer  = millis() + cw.ditMs - 7;     // inter-element gap
+        return;
+    }
+
+    if (cw.pos >= cw.len) {                       // one play-through done
+        cw.playing = false;
+        cw.done    = true;
+        return;
+    }
+
+    char e = cw.elements[cw.pos++];
+    switch (e) {
+        case '1':
+            MorseOutput::pwmTone(cw.pitch, MorsePreferences::sidetoneVolume, false);
+            cw.toneOn = true;
+            cw.timer  = millis() + cw.ditMs - 7;
+            break;
+        case '2':
+            MorseOutput::pwmTone(cw.pitch, MorsePreferences::sidetoneVolume, false);
+            cw.toneOn = true;
+            cw.timer  = millis() + cw.dahMs - 7;
+            break;
+        case '0':
+            cw.timer = millis() + cw.charMs;
+            break;
+        default:
+            break;
+    }
+}
+
+//=============================================================================
+// Round logic
+//=============================================================================
+
+// GDD speed schedule: 48,43,38,33,28,23 then 18 WPM floor.
+static int clueWpmForRound(int r) {
+    int w = MSL_START_WPM - (r - 1) * MSL_WPM_STEP;
+    return w < MSL_MIN_WPM ? MSL_MIN_WPM : w;
+}
+
+// Player did something — reset the idle clocks (replay + exit) AND the
+// global power-off Time-Out, so an active player is never kicked out.
+static void noteActivity() {
+    idleSince    = millis();
+    nextReplayAt = millis() + MSL_IDLE_REPLAY_MS;
+    MorseOutput::resetTOT();
+}
+
+// Pick the game's words (no repetition) and reset the running score.
+static void startGame() {
+    gameWords = mslPoolN < MSL_GAME_WORDS ? mslPoolN : MSL_GAME_WORDS;
+    // Partial Fisher-Yates: shuffle the first gameWords entries of the pool.
+    for (int i = 0; i < gameWords; ++i) {
+        int j = i + random(mslPoolN - i);
+        MslPoolEntry t = mslPool[i];
+        mslPool[i] = mslPool[j];
+        mslPool[j] = t;
+        gameSel[i] = mslPool[i];
+    }
+    wordIndex    = 0;
+    totalAdjMs   = 0;
+    totalGuesses = 0;
+    solvedCount  = 0;
+    skippedCount = 0;
+    gameKoch     = MorsePreferences::kochFilter;   // record for high scores
+    gameWlen     = wlenOpt;
+    lastRank     = -1;
+}
+
+static void startRound() {
+    const char* w = poolWord(gameSel[wordIndex]);
+    strncpy(target, w, MSL_MAX_WORD_LEN);
+    target[MSL_MAX_WORD_LEN] = '\0';
+    for (char* p = target; *p; ++p) *p = tolower(*p);
+    wordLen = strlen(target);
+
+    revealPos = random(wordLen);
+    guess[0]  = '\0';
+    guessLen  = 0;
+    evaluated = false;
+    lastCharTime = 0;
+    for (int i = 0; i < wordLen; ++i) cellState[i] = CELL_NEUTRAL;
+
+    roundNo     = 1;
+    clueWpm     = clueWpmForRound(roundNo);
+    wordStartMs = millis();              // GDD: time from first clue play
+
+    gameMode = true;
+    clearPaddleLatches();
+    cwStart(target, clueWpm);
+    noteActivity();
+}
+
+// Compare the keyed guess to the target and fill cellState[].
+// Returns true if the whole word is correct.
+static bool evaluateGuess() {
+    bool allRight = (guessLen == wordLen);
+    for (int i = 0; i < wordLen; ++i) {
+        bool right = (i < guessLen && guess[i] == target[i]);
+        if (right) {
+            cellState[i] = CELL_GREEN;
+        } else if (i == revealPos) {
+            cellState[i] = CELL_GREY;     // revealed slot keyed wrong/missing
+            allRight = false;
+        } else {
+            cellState[i] = CELL_RED;
+            allRight = false;
+        }
+    }
+    return allRight;
+}
+
+// Record the just-finished word into the running score, then advance to the
+// next word or to the results screen. `skipped` => add the flat skip penalty
+// and count only the guesses actually submitted (roundNo-1).
+static void finishWord(bool skipped) {
+    unsigned long raw = millis() - wordStartMs;
+    int guesses = skipped ? (roundNo - 1) : roundNo;
+    unsigned long adj = raw
+                      + (unsigned long)guesses * MSL_GUESS_PENALTY_S * 1000UL
+                      + (skipped ? MSL_SKIP_PENALTY_S * 1000UL : 0UL);
+    totalAdjMs   += adj;
+    totalGuesses += guesses;
+    if (skipped) skippedCount++; else solvedCount++;
+
+    wordIndex++;
+    if (wordIndex >= gameWords) {
+        cwStop();
+        mslRecordScore();              // insert into NVS high-score table
+        mslState = MSL_RESULTS;
+    } else {
+        startRound();
+    }
+}
+
+//=============================================================================
+// LOBBY
+//=============================================================================
+
+static void drawLobby() {
+    canvas->fillSprite(MSL_BG);
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(8, "MORSEL", MSL_ACCENT);
+    canvas->drawFastHLine(20, 34, MSL_SCREEN_W - 40, MSL_FRAME);
+
+    char buf[28];
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    snprintf(buf, sizeof(buf), "Koch lesson:  %d", MorsePreferences::kochFilter);
+    drawCentred(44, buf, MSL_HIGHLIGHT);
+    snprintf(buf, sizeof(buf), "Word length:  %s", wlenLabel[wlenOpt]);
+    drawCentred(70, buf, MSL_ACCENT);
+
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(96, "knob = Koch    FN = length", MSL_DIM);
+
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(116, "Click or key to start", MSL_GREEN);
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(142, "FN-hold = high scores", MSL_DIM);
+    pushFrame();
+}
+
+static void drawPoolWarning() {
+    int maxLen = wlenMax[wlenOpt];
+    canvas->fillSprite(MSL_BG);
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(20, "MORSEL", MSL_ACCENT);
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(52, "Word pool too small", MSL_RED);
+    char buf[40];
+    snprintf(buf, sizeof(buf), "Length %s needs Koch >= %d",
+             wlenLabel[wlenOpt], recKoch[maxLen]);
+    drawCentred(78, buf, MSL_TEXT);
+    snprintf(buf, sizeof(buf), "(now Koch %d)", MorsePreferences::kochFilter);
+    drawCentred(100, buf, MSL_DIM);
+    drawCentred(134, "Press to return", MSL_DIM);
+    pushFrame();
+}
+
+static void lobbyLoop() {
+    gameMode = false;
+    gameCharBuffer = 0;
+    clearPaddleLatches();
+    drawLobby();
+
+    while (mslState == MSL_LOBBY) {
+        if (checkPaddles()) {
+            MorseOutput::resetTOT();
+            while (checkPaddles()) delay(5);
+            clearPaddleLatches();
+            gameCharBuffer = 0;
+            mslState = MSL_PLAYING;
+            return;
+        }
+        int enc = checkEncoder();
+        if (enc != 0) {
+            MorseOutput::resetTOT();
+            int v = constrain((int)MorsePreferences::kochFilter + enc,
+                              (int)MorsePreferences::kochMinimum,
+                              (int)MorsePreferences::kochMaximum);
+            MorsePreferences::kochFilter = v;
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+            drawLobby();
+        }
+
+        Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::modeButton.clicks == 1) {
+            clearPaddleLatches();
+            gameCharBuffer = 0;
+            mslState = MSL_PLAYING;
+            return;
+        }
+        if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
+
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::volButton.clicks == 1) {        // short press: word length
+            wlenOpt = (wlenOpt + 1) % MSL_WLEN_OPTS;
+            mslSaveWlen();
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+            drawLobby();
+        }
+        if (Buttons::volButton.clicks == -1) {       // long press: high scores
+            mslState = MSL_HISCORES;
+            return;
+        }
+
+        serialEvent();
+        checkShutDown(false);
+        delay(10);
+    }
+}
+
+//=============================================================================
+// PLAY
+//=============================================================================
+
+static void playLoop() {
+    if (buildPool() < MSL_MIN_POOL) {
+        drawPoolWarning();
+        while (mslState == MSL_PLAYING) {
+            // Any press returns to the lobby so the player can raise the
+            // Koch lesson or pick a shorter word length.
+            if (checkPaddles()) { while (checkPaddles()) delay(5); mslState = MSL_LOBBY; return; }
+            Buttons::modeButton.Update();
+            if (Buttons::modeButton.clicks != 0) { mslState = MSL_LOBBY; return; }
+            Buttons::volButton.Update();
+            if (Buttons::volButton.clicks != 0) { mslState = MSL_LOBBY; return; }
+            serialEvent();
+            checkShutDown(false);
+            delay(10);
+        }
+        return;
+    }
+
+    startGame();
+    startRound();
+    drawBoard("Listen and key the word");
+    unsigned long lastFrame = millis();
+
+    while (mslState == MSL_PLAYING) {
+        // --- tight keyer poll ---
+        switch (keyerState) {
+            case DIT: case DAH: case KEY_START: break;
+            default: checkPaddles(); break;
+        }
+        if (doPaddleIambic(leftKey, rightKey)) { noteActivity(); continue; }
+        if (keyerState != IDLE_STATE || leftKey || rightKey) noteActivity();
+
+        if (!evaluated) {
+            char c = gameCharBuffer;
+            if (c != 0) {
+                gameCharBuffer = 0;
+                if (c == 'R') {                       // <err> prosign = backspace
+                    if (guessLen > 0) guess[--guessLen] = '\0';
+                    lastCharTime = millis();
+                } else if ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')) {
+                    if (guessLen < wordLen) {
+                        guess[guessLen++] = c;
+                        guess[guessLen]   = '\0';
+                    }
+                    lastCharTime = millis();
+                }
+                // other prosigns (uppercase) are ignored
+                noteActivity();
+                drawBoard("Listen and key the word");
+            }
+
+            // Inter-word pause submits the guess — but only once a FULL-length
+            // entry exists. Backspacing for error correction drops below full
+            // length, disarming submit, so the player can pause and think
+            // freely while correcting without an accidental early submit.
+            if (guessLen == wordLen && lastCharTime > 0 &&
+                keyerState == IDLE_STATE && !leftKey && !rightKey) {
+                unsigned long wordGap = interWordSpace + ditLength;
+                if (wordGap < 1200) wordGap = 1200;
+                if (millis() - lastCharTime > wordGap) {
+                    cwStop();
+                    bool correct = evaluateGuess();
+                    evaluated = true;
+                    char msg[40];
+                    if (correct) {
+                        lastWordMs = millis() - wordStartMs;
+                        snprintf(msg, sizeof(msg), "Correct!  %.1fs  %d %s",
+                                 lastWordMs / 1000.0, roundNo,
+                                 roundNo == 1 ? "try" : "tries");
+                    } else {
+                        snprintf(msg, sizeof(msg), "Try again");
+                    }
+                    drawBoard(msg);
+                    delay(correct ? MSL_CORRECT_MS : MSL_FEEDBACK_MS);
+                    if (correct) {
+                        finishWord(false);          // score + advance / results
+                        if (mslState == MSL_RESULTS) return;
+                    } else {
+                        // Same word: next round, replay the clue slower.
+                        roundNo++;
+                        clueWpm = clueWpmForRound(roundNo);
+                        guess[0] = '\0';
+                        guessLen = 0;
+                        evaluated = false;
+                        lastCharTime = 0;
+                        for (int i = 0; i < wordLen; ++i) cellState[i] = CELL_NEUTRAL;
+                        gameMode = true;
+                        clearPaddleLatches();
+                        cwStart(target, clueWpm);
+                        noteActivity();
+                    }
+                    drawBoard("Listen and key the word");
+                    lastFrame = millis();
+                    continue;
+                }
+            }
+
+            // Drive the clue (only before the player starts keying).
+            if (keyerState == IDLE_STATE && guessLen == 0 &&
+                !leftKey && !rightKey) {
+                cwUpdate();
+            }
+        }
+
+        // Exit / housekeeping at a relaxed cadence.
+        if (millis() - lastFrame >= 33) {
+            lastFrame = millis();
+
+            // Encoder adjusts player keyer speed or volume (per mslEnc).
+            int enc = checkEncoder();
+            if (enc != 0) {
+                MorseOutput::resetTOT();
+                if (mslEnc == MSL_ENC_SPEED) {
+                    int w = constrain((int)MorsePreferences::wpm + enc,
+                                      (int)MorsePreferences::wpmMin,
+                                      (int)MorsePreferences::wpmMax);
+                    MorsePreferences::wpm = w;
+                    updateTimings();
+                } else {
+                    int vol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 20);
+                    MorsePreferences::sidetoneVolume = vol;
+                }
+                MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+                noteActivity();
+                drawBoard("Listen and key the word");
+            }
+
+            Buttons::modeButton.Update();
+            if (Buttons::modeButton.clicks != 0) { MorseOutput::resetTOT(); noteActivity(); }
+            if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
+            if (Buttons::modeButton.clicks == 1) {       // short press: skip word
+                cwStop();
+                evaluated = true;
+                char sm[24];
+                snprintf(sm, sizeof(sm), "Skipped  (-%ds)", MSL_SKIP_PENALTY_S);
+                drawBoard(sm);
+                delay(MSL_SKIP_MS);
+                finishWord(true);                        // score + advance / results
+                if (mslState == MSL_RESULTS) return;
+                drawBoard("Listen and key the word");
+                lastFrame = millis();
+                continue;
+            }
+
+            Buttons::volButton.Update();
+            if (Buttons::volButton.clicks != 0) { MorseOutput::resetTOT(); noteActivity(); }
+            if (Buttons::volButton.clicks == 1) {        // short press: toggle target
+                mslEnc = (mslEnc == MSL_ENC_SPEED) ? MSL_ENC_VOLUME : MSL_ENC_SPEED;
+                MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+                drawBoard("Listen and key the word");
+            }
+            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+
+            // Idle handling (single-player quality of life, not a penalty):
+            // after a spell of no input, replay the clue; after a long total
+            // idle, return gracefully to the lobby.
+            if (!evaluated && guessLen == 0 && cw.done && !cw.playing) {
+                if (millis() - idleSince > MSL_IDLE_EXIT_MS) {
+                    cwStop();
+                    mslState = MSL_LOBBY;
+                    return;
+                }
+                if (millis() >= nextReplayAt) {
+                    cwStart(target, clueWpm);                      // same round/speed
+                    nextReplayAt = millis() + MSL_IDLE_REPLAY_MS;  // keep idleSince
+                    drawBoard("Listen and key the word");
+                }
+            }
+
+            serialEvent();
+            checkShutDown(false);
+        }
+    }
+}
+
+//=============================================================================
+// RESULTS
+//=============================================================================
+
+static void drawResults() {
+    canvas->fillSprite(MSL_BG);
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(8, "GAME OVER", MSL_ACCENT);
+    canvas->drawFastHLine(20, 34, MSL_SCREEN_W - 40, MSL_FRAME);
+
+    unsigned long secs = (totalAdjMs + 500) / 1000;
+    char line[40];
+
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    snprintf(line, sizeof(line), "Time  %lu:%02lu", secs / 60, secs % 60);
+    drawCentred(46, line, MSL_TEXT);
+
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    snprintf(line, sizeof(line), "Solved %d / %d     Skipped %d",
+             solvedCount, gameWords, skippedCount);
+    drawCentred(76, line, MSL_TEXT);
+    snprintf(line, sizeof(line), "Total guesses: %d   (+%ds each)",
+             totalGuesses, MSL_GUESS_PENALTY_S);
+    drawCentred(98, line, MSL_DIM);
+
+    if (lastRank >= 0) {
+        snprintf(line, sizeof(line), "NEW HIGH SCORE  -  rank %d", lastRank + 1);
+        drawCentred(118, line, MSL_GREEN);
+    }
+    drawCentred(140, "click = high scores   hold = quit", MSL_DIM);
+    pushFrame();
+}
+
+static void resultsLoop() {
+    cwStop();
+    gameMode = false;
+    clearPaddleLatches();
+    MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
+    drawResults();
+
+    while (mslState == MSL_RESULTS) {
+        if (checkPaddles()) {
+            MorseOutput::resetTOT();
+            while (checkPaddles()) delay(5);
+            clearPaddleLatches();
+            mslState = MSL_HISCORES;
+            return;
+        }
+        if (checkEncoder() != 0) MorseOutput::resetTOT();
+
+        Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::modeButton.clicks == 1)  { mslState = MSL_HISCORES; return; }
+        if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT;     return; }
+
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+
+        serialEvent();
+        checkShutDown(false);
+        delay(10);
+    }
+}
+
+//=============================================================================
+// HIGH SCORES
+//=============================================================================
+
+// Column geometry shared by header and data rows.
+#define HS_X_RANK   30      // right-aligned
+#define HS_X_TIME   96      // right-aligned
+#define HS_X_LEN   108      // left-aligned
+#define HS_X_KOCH  186      // left-aligned
+#define HS_X_SOLV  298      // right-aligned
+
+static void hsRow(int y, const char* rk, const char* tm, const char* ln,
+                   const char* kc, const char* sv, uint16_t col) {
+    canvas->setTextColor(col, MSL_BG);
+    canvas->setTextDatum(lgfx::top_right);
+    canvas->drawString(rk, HS_X_RANK, y);
+    canvas->drawString(tm, HS_X_TIME, y);
+    canvas->drawString(sv, HS_X_SOLV, y);
+    canvas->setTextDatum(lgfx::top_left);
+    canvas->drawString(ln, HS_X_LEN,  y);
+    canvas->drawString(kc, HS_X_KOCH, y);
+}
+
+static void drawHiscores() {
+    canvas->fillSprite(MSL_BG);
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(2, "HIGH SCORES", MSL_ACCENT);
+
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    hsRow(28, "#", "Time", "Length", "Koch", "Solved", MSL_DIM);
+    canvas->drawFastHLine(8, 45, MSL_SCREEN_W - 16, MSL_FRAME);
+
+    bool any = false;
+    int y = 49;
+    for (int i = 0; i < MSL_HI_N; ++i) {
+        if (hiTable[i].adjMs == 0xFFFFFFFFUL) continue;
+        any = true;
+        unsigned long s = (hiTable[i].adjMs + 500) / 1000;
+        char rk[4], tm[8], ln[8], kc[6], sv[8];
+        snprintf(rk, sizeof(rk), "%d", i + 1);
+        snprintf(tm, sizeof(tm), "%lu:%02lu", s / 60, s % 60);
+        snprintf(ln, sizeof(ln), "%s", wlenLabel[hiTable[i].wlen]);
+        snprintf(kc, sizeof(kc), "K%d", hiTable[i].koch);
+        snprintf(sv, sizeof(sv), "%d/%d", hiTable[i].solved, hiTable[i].total);
+        hsRow(y, rk, tm, ln, kc, sv, i == lastRank ? MSL_GREEN : MSL_TEXT);
+        y += 16;
+    }
+    if (!any) {
+        canvas->setTextDatum(lgfx::top_center);
+        canvas->setTextColor(MSL_DIM, MSL_BG);
+        canvas->drawString("No scores yet", MSL_SCREEN_W / 2, 80);
+    }
+    canvas->setFont(&fonts::Font0);
+    canvas->setTextDatum(lgfx::top_center);
+    canvas->setTextColor(MSL_DIM, MSL_BG);
+    canvas->drawString("press to continue", MSL_SCREEN_W / 2, 161);
+    canvas->setTextDatum(lgfx::top_left);
+    pushFrame();
+}
+
+static void hiscoresLoop() {
+    cwStop();
+    gameMode = false;
+    clearPaddleLatches();
+    drawHiscores();
+
+    while (mslState == MSL_HISCORES) {
+        if (checkPaddles()) {
+            MorseOutput::resetTOT();
+            while (checkPaddles()) delay(5);
+            clearPaddleLatches();
+            mslState = MSL_LOBBY;
+            return;
+        }
+        if (checkEncoder() != 0) MorseOutput::resetTOT();
+
+        Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::modeButton.clicks == 1)  { mslState = MSL_LOBBY; return; }
+        if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT;  return; }
+
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::volButton.clicks != 0)  { mslState = MSL_LOBBY; return; }
+
+        serialEvent();
+        checkShutDown(false);
+        delay(10);
+    }
+}
+
+
+//=============================================================================
+// Public entry point
+//=============================================================================
+
+void MorseMorsel::run() {
+    canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded);
+    savedKochFilter = MorsePreferences::kochFilter;   // restored on exit
+    mslEnc = MSL_ENC_SPEED;
+    mslLoadPrefs();                                   // word length + scores
+    mslState = MSL_LOBBY;
+
+    while (mslState != MSL_EXIT) {
+        switch (mslState) {
+            case MSL_LOBBY:    lobbyLoop();    break;
+            case MSL_PLAYING:  playLoop();     break;
+            case MSL_RESULTS:  resultsLoop();  break;
+            case MSL_HISCORES: hiscoresLoop(); break;
+            default:           mslState = MSL_EXIT; break;
+        }
+    }
+
+    cwStop();
+    keyOut(false, true, 0, 0);
+    MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
+    gameMode = false;
+    clearPaddleLatches();
+    MorsePreferences::kochFilter = savedKochFilter;   // restore user's lesson
+    MorseGameMode::exit();
+}
+
+void MorseMorsel::warmup() {
+    // No persistent String buffers yet.
+}
+
+#endif  // CONFIG_CW_GAME
