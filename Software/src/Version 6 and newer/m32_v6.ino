@@ -47,6 +47,7 @@
 #include "MorseGame.h"
 #include "MorsePileup.h"
 #include "MorseRadioCave.h"
+#include "MorseMorsel.h"
 #endif
 
 #ifdef CONFIG_DISPLAYWRAPPER
@@ -565,6 +566,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   // first use during gameplay doesn't allocate small persistent buffers
   // next to the game sprite.
   MorseRadioCave::warmup();
+  MorseMorsel::warmup();
 #endif
 #endif
 

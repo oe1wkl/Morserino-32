@@ -56,6 +56,7 @@ static inline void rebootIfWifiAlreadyUsed() {}
   #include "MorseGame.h"
   #include "MorsePileup.h"
   #include "MorseRadioCave.h"
+  #include "MorseMorsel.h"
 #endif
 
 #ifdef LORA_RADIOLIB
@@ -129,7 +130,7 @@ const char* const menuText[menuN]  = {
   "CW Decoder",
 #ifdef CONFIG_CW_GAME
 "Games",
-    "Morse Invaders", "Fight Pileup", "Radio Cave",
+    "Morse Invaders", "Fight Pileup", "Radio Cave", "Morsel",
 #endif
 
   "WiFi Functions",
@@ -190,9 +191,10 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #ifdef CONFIG_CW_GAME
   {0,_trx,_games,_dummy,0},                               // decoder  -e
   {0,_decode,_wifi,_dummy,_morseInvaders},                 // games
-  {1,_radioCave,_fightPileup,_games,0},                     // morse invaders  -e
+  {1,_morsel,_fightPileup,_games,0},                        // morse invaders  -e
   {1,_morseInvaders,_radioCave,_games,0},                    // fight pileup  -e
-  {1,_fightPileup,_morseInvaders,_games,0},                  // radio cave  -e
+  {1,_fightPileup,_morsel,_games,0},                         // radio cave  -e
+  {1,_radioCave,_morseInvaders,_games,0},                    // morsel  -e
   {0,_games,_goToSleep,_dummy,_wifi_mac},                   // WiFi
 #else
   {0,_trx,_wifi,_dummy,0},                                // decoder  -e
@@ -692,7 +694,13 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
                 return false;
-#endif  
+      case _morsel:
+                MorseMorsel::run();
+                m32state = menu_loop;
+                Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
+                return false;
+#endif
       case  _decode: /// decoder
                 MorsePreferences::setCurrentOptions(MorsePreferences::decoderOptions, MorsePreferences::decoderOptionsSize);
                 morseState = morseDecoder;
@@ -825,6 +833,7 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
       case _games:            // nor the games that depend on visual clues
       case _morseInvaders:
       case _fightPileup:
+      case _morsel:
 #endif
       return false;
     }
