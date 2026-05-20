@@ -25,8 +25,12 @@
 #define DESCENDER_LENGTH 0
 #define C_WIDTH 9
 #else
-/// circular buffer: LCD uses 4 visible lines; keep scroll-back proportional
-#define NoOfCharsPerLine 512
+/// circular buffer: LCD uses 4 visible lines; 24 chars/line is well above
+/// the longest static printOnScroll() text (~14 chars at the largest fonts).
+/// Earlier value 512 reserved ~17 KB persistent RAM with no callers writing
+/// anywhere near that much; longer dynamic strings are still gracefully
+/// wrapped by the existing screenPos+l > NoOfCharsPerLine check.
+#define NoOfCharsPerLine 24
 #define LINE_HEIGHT (display.getStringHeight("j"))
 #define C_WIDTH display.getStringWidth("A")
 #endif
