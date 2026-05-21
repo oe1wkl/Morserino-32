@@ -47,8 +47,8 @@
 #include  "SSD1306Wire.h"
 SSD1306Wire display(0x3c, OLED_SDA, OLED_SCL, GEOMETRY_128_64, I2C_TWO, 700000);
 #else
-#include "DisplayWrapper.h"
-DisplayWrapper display;
+#include "M32PocketLGFX.h"
+LGFX display;
 #endif
 
 #ifdef CONFIG_SOUND_I2S
@@ -1247,8 +1247,7 @@ void MorseOutput::updateBatteryDisplay() {
 void MorseOutput::clearBatteryIcon() {
     if (!batteryIconVisible) return;
 
-    lgfx::LGFX_Device* lcd = display.getLGFX();
-    if (!lcd) return;
+    lgfx::LGFX_Device* lcd = &display;
 
     const int bodyW = 26, iconH = 16, nubW = 4, margin = 2;
     int ix = lcd->width() - bodyW - nubW - margin;

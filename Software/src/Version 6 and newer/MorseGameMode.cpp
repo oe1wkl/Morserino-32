@@ -29,7 +29,7 @@
 #include <Arduino.h>
 #include <ESP32Encoder.h>
 
-#include "DisplayWrapper.h"
+#include "M32PocketLGFX.h"
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
 #include "morsedefs.h"
@@ -64,7 +64,7 @@ namespace {
   // the failure path of allocate() so that callers see a coherent menu
   // regardless of whether enter*() succeeded.
   void restoreMenuDisplay(bool leftHanded) {
-    DisplayWrapper::getLGFX()->setRotation(leftHanded ? 0 : 2);
+    (&display)->setRotation(leftHanded ? 0 : 2);
     MorseOutput::initDisplay();
     MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
     pinMode(PinCLK, INPUT_PULLUP);
@@ -76,7 +76,7 @@ namespace {
   LGFX_Sprite *allocate(int rotation, bool leftHanded) {
     lastLeftHanded = leftHanded;
 
-    auto *lcd = DisplayWrapper::getLGFX();
+    auto *lcd = (&display);
     lcd->setRotation(rotation);
     lcd->fillScreen(TFT_BLACK);
 
@@ -126,7 +126,7 @@ void MorseGameMode::warmup() {
   // inside a game session. (See module header comment for why timing
   // matters: the lazy alloc otherwise lands inside what would become the
   // game sprite's tail region.)
-  auto *lcd = DisplayWrapper::getLGFX();
+  auto *lcd = (&display);
   LGFX_Sprite tmp(lcd);
   tmp.setColorDepth(16);
   if (!tmp.createSprite(lcd->width(), lcd->height())) return;
@@ -147,7 +147,7 @@ LGFX_Sprite *MorseGameMode::enterLandscape(bool leftHanded) {
 
 void MorseGameMode::pushFrame() {
   if (!sprite) return;
-  auto *lcd = DisplayWrapper::getLGFX();
+  auto *lcd = (&display);
   lcd->startWrite();
   sprite->pushSprite(lcd, 0, 0);
   lcd->endWrite();
@@ -174,7 +174,7 @@ LGFX_Sprite *MorseGameMode::getSprite() {
   rebootMagic   = 0xC0FFEE42u;
 
   // Restore portrait rotation so the overlay is readable.
-  DisplayWrapper::getLGFX()->setRotation(MorsePreferences::leftHanded ? 0 : 2);
+  (&display)->setRotation(MorsePreferences::leftHanded ? 0 : 2);
   MorseOutput::initDisplay();
   MorseOutput::clearDisplay();
   MorseOutput::printOnScroll(0, BOLD,    0, "Clearing");

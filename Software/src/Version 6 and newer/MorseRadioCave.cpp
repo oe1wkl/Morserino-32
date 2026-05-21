@@ -58,7 +58,7 @@
 #include "MorseGame.h"           // gameMode, gameCharBuffer
 #include "morsedefs.h"
 #include "ClickButton.h"
-#include "DisplayWrapper.h"
+#include "M32PocketLGFX.h"
 
 #include <LovyanGFX.hpp>
 #include <ESP32Encoder.h>
@@ -79,7 +79,7 @@ extern unsigned int interWordSpace;
 extern void     updateTimings();
 extern void     keyOut(boolean, boolean, int, int);
 extern String   generateCWword(const String& symbols);   // m32_v6.ino — pure function
-extern DisplayWrapper display;
+extern LGFX display;
 extern ESP32Encoder   rotaryEncoder;
 extern const int      PinCLK;
 extern const int      PinDT;
