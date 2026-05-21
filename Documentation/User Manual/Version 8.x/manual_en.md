@@ -1428,7 +1428,8 @@ close to 700 Hz.
 
 The Morserino Pocket features now CW-based games that make learning and
 practicing Morse code more engaging. Games are found under the "Games"
-menu entry. Currently, the "Morse Invaders" game is the first that is available.
+menu entry. Four games are currently available: **Morse Invaders**,
+**Fight the Pileup**, **Radio Cave**, and **Morsel**.
 
 ### Morse Invaders
 
@@ -1810,7 +1811,122 @@ There is also one situation where the game can become unwinnable through repeate
 
 When you successfully complete the game, a victory screen shows your total step count. Congratulations — the message has finally been received.
 
+### Morsel
 
+**Morsel** is a word-guessing game in which you identify a hidden word from two clues: one randomly chosen letter of the word shown in clear text on the display, and the whole word played in Morse code. The CW clue starts fast — 48 WPM — and slows by 5 WPM each round you don't solve it, down to a floor of 18 WPM. Solving in fewer guesses is rewarded; finishing the 10-word match in the lowest total adjusted time wins.
+
+Morsel is only available on the M32Pocket.
+
+#### Starting the Game {-}
+
+From the main menu, navigate to **Games → Morsel**. The lobby shows the current **Koch lesson** and **Word length** settings, along with the controls available. Touch a paddle or click the encoder to begin.
+
+#### Lobby Settings {-}
+
+Two settings can be adjusted directly in the lobby:
+
+| Control | Effect |
+|---------|--------|
+| **Encoder (knob)** | Change Koch lesson — temporary for this game session; your training setting is restored on exit |
+| **FN short press** | Cycle the word length: `3`, `4`, `max 4`, `5`, `max 5`, `6`, `max 6`. Persisted across power cycles. `max N` means any length from 3 to N. |
+| **FN long press** | View the persistent high-score table |
+| **Encoder click or paddle touch** | Start the game |
+| **Encoder long press** | Quit back to the main menu |
+
+Words are drawn from the combined Morserino dictionary and the ham-abbreviation list, filtered by length and by the current Koch lesson (every letter of every candidate word must be within the characters you have learned). If too few candidate words are available, Morsel shows a "Word pool too small" screen with a suggested minimum Koch lesson and returns you to the lobby.
+
+#### Display Layout {-}
+
+During play the landscape screen shows:
+
+- **Top left:** the current round number (1, 2, 3 …) for the current word.
+- **Top center:** word progress, e.g. `3/10`.
+- **Top right:** the current CW clue speed in WPM (highlighted yellow when at the 18 WPM floor).
+- **Center:** a row of letter boxes, one per position. The revealed letter is shown in cyan with a cyan border so you can see which position is hinted.
+- **Bottom center status line:** the current message ("Listen and key the word", "Correct!", "Try again", "Skipped"…).
+- **Bottom hint line:** `click = skip   hold = quit`.
+- **Bottom HUD:** Koch lesson · your **key** WPM · volume. The active encoder target (key WPM or volume) is highlighted yellow.
+
+#### Playing a Word {-}
+
+A new word picks a random letter to reveal and plays the whole word once at the current round's speed. You then **key the complete word** on your paddles, including the revealed letter. As you key, each decoded character appears in its box. The CW clue is muted as soon as you start keying.
+
+A long inter-word pause — once your entry has reached the full word length — submits the guess. Each box is then colored:
+
+| Color | Meaning |
+|-------|---------|
+| **Green** | Right letter, right position |
+| **Red** | Wrong letter |
+| **Grey** | Revealed slot keyed wrong (the originally revealed letter is shown for reference) |
+
+If you key fewer than the full word length, the pause does **not** submit — this is intentional so you can pause mid-word to think or correct, without an accidental early submit.
+
+If any box is not green, the same word is replayed at the next slower speed (5 WPM less), and you try again. When all boxes are green, the word is solved; the screen briefly shows the solve time and number of tries, then a new word starts at 48 WPM.
+
+#### Error Correction {-}
+
+The `<err>` prosign (8 consecutive dits, also written `<hh>`) deletes the last entered character — the same convention used on the air to abort and re-send. Backspacing drops your entry below the full word length and disarms auto-submit, so you can pause and think before re-keying.
+
+#### Skipping a Hard Word {-}
+
+If a word genuinely won't yield even at 18 WPM, press the **encoder (mode) button** briefly to skip. The current word ends, a `Skipped (-60s)` notice appears, and the game moves on. The skip adds a fixed **60-second penalty** to your total time plus 5 seconds for every guess you had already submitted.
+
+#### Idle Handling {-}
+
+While a clue has finished playing and you have not started keying:
+
+- After about **12 seconds** of no input, Morsel replays the CW clue automatically (same speed — the round does not advance).
+- After about **60 seconds** of total inactivity, Morsel returns to its lobby gracefully (the game is abandoned, no score recorded).
+
+Any keying, encoder turn, or button press resets both timers, including the global power-off Time-Out — so an actively playing user is never kicked out mid-game.
+
+#### Controls During the Game {-}
+
+| Control | Action |
+|---------|--------|
+| **Paddles** | Key your guess |
+| **Encoder** | Adjust your **keying** WPM (independent of the clue speed) |
+| **FN short press** | Toggle the encoder between key WPM and volume |
+| **FN long press** | Quit back to the main menu |
+| **Mode button short press** | Skip the current word (60 s penalty) |
+| **Mode button long press** | Quit back to the main menu |
+
+The CW clue is always played at the round's scheduled speed regardless of your keying speed — the two are independent.
+
+#### Scoring {-}
+
+For each word:
+
+- **Time** is measured from the first CW play to the correct guess.
+- **+5 seconds penalty per guess submitted** (from the very first guess). Solving in fewer guesses is rewarded.
+- A **skipped** word contributes its elapsed time plus the 60-second skip penalty plus 5 s for each guess already made before the skip.
+
+The game total is the sum of all 10 words' adjusted times. Lower is better.
+
+#### Game End and High Scores {-}
+
+After 10 words, a **GAME OVER** screen shows:
+
+- Your total adjusted time as `M:SS`.
+- Words solved vs. skipped.
+- Total number of guesses.
+- If your total qualifies for the persistent top-7 list, a `NEW HIGH SCORE — rank N` banner.
+
+Clicking the encoder opens the **high-score table**: the top 7 results, sorted by total adjusted time, persisted in non-volatile storage. Each row shows the rank, time, word-length setting (`max 4`, `5`, …), the Koch lesson played at (e.g. `K12`), and the solved/total count. Your latest qualifying entry is shown in green.
+
+You can also reach the high-score table from the lobby at any time with a long press of the **FN** button.
+
+#### Tips {-}
+
+- 48 WPM is fast on purpose — it's there to reward decoders who can copy at speed. If you can't catch it on the first round, just wait for the next replay (it will be 5 WPM slower each round).
+
+- The revealed letter is a strong anchor — once you know its position you have already constrained the word a lot. Pay attention to its cyan position number under the box.
+
+- Solving on the **first try** is worth a lot more than solving fast at slower speeds — the +5 s/guess penalty stacks quickly.
+
+- Raise your Koch lesson if you keep getting the pool-too-small warning: 3-letter words need lesson 8, 4-letter words lesson 10, 5-letter words lesson 14, 6-letter words lesson 16 (using the default Morserino character order).
+
+- Backspace freely (`<err>` = 8 dits) — the timer keeps running, but a wrong submitted guess costs you 5 s, so it's almost always cheaper to fix the mistake than to submit and try again.
 
 ## WiFi Functions
 
