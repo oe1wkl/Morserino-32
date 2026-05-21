@@ -17,7 +17,7 @@
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 #include "MorseGameMode.h"
 
 // Defined in m32_v6.ino at global scope. True for the FIRST menu_()
@@ -280,7 +280,7 @@ void MorseMenu::menu_() {
             quickStart = false;
             command = 1;
             delay(250);
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
             // After a memory-clearing reboot, auto-resume into the saved
             // menu item silently — the user just clicked it a second ago,
             // they don't need a "QUICK START" splash announcing the same
@@ -775,7 +775,7 @@ boolean MorseMenu::setupWifi() {
       if (err != 1)                       // if that fails too, use broadcast
         peerIP.fromString("255.255.255.255");
   }
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   // Mark WiFi as used so the next call to rebootIfWifiAlreadyUsed()
   // triggers a memory-clearing reboot before re-entering a WiFi mode.
   wifiUsedThisSession = true;
@@ -806,7 +806,7 @@ void MorseMenu::setupESPNow() {
       quickEspNow.begin (MorsePreferences::pliste[posLoraChannel].value ? ESPNOW_CH_ALT : ESPNOW_CH); // If you don't use an AP channel needs to be specified
       delay(100);
       //DEBUG("setupESPNow has been performed.");
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
       // Mark WiFi as used so the next call to rebootIfWifiAlreadyUsed()
       // triggers a memory-clearing reboot before re-entering a WiFi mode.
       wifiUsedThisSession = true;

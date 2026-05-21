@@ -17,7 +17,7 @@
 
 #include "Arduino.h"
 
-#ifndef CONFIG_DISPLAYWRAPPER
+#ifndef CONFIG_TFT
   #define NoOfLines 15
   #define NoOfVisibleLines 3
 #else
@@ -89,7 +89,7 @@ namespace MorseOutput
   void resetPowerpathDisplay();
 #endif
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   void dispM32Logo();
   void setTheme (uint8_t theme);
   void testFontLayout();

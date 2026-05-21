@@ -6,12 +6,12 @@
  *  Morse Invaders or Fight the Pileup. This module allocates the sprite fresh on game entry and
  *  frees it on exit, so the heap stays clean during menu time.
  *
- *  Only built when CONFIG_DISPLAYWRAPPER is defined (M32 Pocket / TFT boards).
+ *  Only built when CONFIG_TFT is defined (M32 Pocket / TFT boards).
  *****************************************************************************************************************************/
 
 #pragma once
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 
 #include <LovyanGFX.hpp>
 
@@ -66,4 +66,4 @@ namespace MorseGameMode {
 
 } // namespace MorseGameMode
 
-#endif // CONFIG_DISPLAYWRAPPER
+#endif // CONFIG_TFT

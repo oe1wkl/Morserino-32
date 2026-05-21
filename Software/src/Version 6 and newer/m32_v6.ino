@@ -50,7 +50,7 @@
 #include "MorseMorsel.h"
 #endif
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 #include "MorseGameMode.h"
 #endif
 
@@ -133,7 +133,7 @@ volatile int8_t remoteFilePartSelect = -1;   // -1 = no remote selection pending
 
 boolean quickStart;                                     // should we execute menu item immediately?
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 // Reboot-magic flag — written by MorseGameMode (or any code that needs a
 // fresh heap and can't recover from fragmentation in software) before
 // ESP.restart(). Tells setup() this is a memory-clearing reboot, which
@@ -145,7 +145,7 @@ boolean quickStart;                                     // should we execute men
 // silent (no "QUICK START" splash) and we never accidentally land back
 // in WiFi Trx after a memory reboot.
 //
-// Only used on TFT/sprite-using boards (CONFIG_DISPLAYWRAPPER): the OLED
+// Only used on TFT/sprite-using boards (CONFIG_TFT): the OLED
 // boards don't allocate large sprites and never hit the OOM that motivates
 // this whole machinery.
 //
@@ -280,7 +280,7 @@ enum MORSE_TYPE {KEY_DOWN, KEY_UP };              //   State Machine Defines
 unsigned char generatorState;
 
 const char* const continueMsg4Json = "Continue with paddle";
-#ifndef CONFIG_DISPLAYWRAPPER
+#ifndef CONFIG_TFT
 const char* const continueMsg4Disp = "Continue w/ Paddle";
 #else
 const char* const continueMsg4Disp = "Continue with paddle ";
@@ -450,7 +450,7 @@ void DEBUG (const String& s) {
 
 void setup()
 {
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
    // Detect a memory-clearing reboot (set by MorseGameMode when sprite
    // allocation fails due to heap fragmentation). One-shot — clear
    // immediately so any subsequent crash-and-restart behaves as a fresh
@@ -546,7 +546,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   // init display
   MorsePreferences::readScreenPref();
   MorseOutput::initDisplay();
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
 #endif
 
@@ -554,7 +554,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   MorseOutput::clearDisplay();
   scrollTop = MorseOutput::getScrollTop();
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   // Force LovyanGFX's first-time SPI/DMA allocation to happen at boot
   // rather than inside the first game session (where it would land
   // adjacent to the game sprite and prevent the sprite-region from
@@ -624,7 +624,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   Buttons::volButton.debounceTime   = 11;   // Debounce timer in ms
   Buttons::volButton.multiclickTime = 220;  // Time limit for multi clicks
   Buttons::volButton.longClickTime  = 350; // time until "held-down clicks" register
-#ifndef CONFIG_DISPLAYWRAPPER
+#ifndef CONFIG_TFT
   MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");   /// gives us something to watch while SPIFFS is created at very first start
 #endif
   
@@ -664,7 +664,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   MorsePreferences::readFilePartData();
   koch.setup();
 
-  #ifdef CONFIG_DISPLAYWRAPPER
+  #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
   #endif
 
@@ -674,7 +674,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   initSensors();
 
   /// set up quickstart - this should only be done once at startup - after successful quickstart we disable it to allow normal menu operation
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   // On a memory-clearing reboot: hijack quickStart to auto-resume the
   // saved menu pointer, regardless of the user's normal quickStart
   // preference. This makes the reboot silent from the user's perspective —
@@ -738,7 +738,7 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
         file.close();
     }
  
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
     // Skip the boot splash on a memory-clearing reboot — the user just
     // exited WiFi Trx a heartbeat ago, they don't want to see the logo
     // and version screen again. (memoryReboot is only set on sprite-using
@@ -805,7 +805,7 @@ void displayStartUp(uint16_t volt) {
   s = PROJECTNAME;
   s += " ";
   MorseOutput::clearDisplay();
-  #ifdef CONFIG_DISPLAYWRAPPER
+  #ifdef CONFIG_TFT
   MorseOutput::dispM32Logo();
   delay(1800);
   MorseOutput::clearDisplay();

@@ -125,7 +125,7 @@ namespace MorsePreferences
   extern boolean useEspNow;
   extern uint8_t wlanChoice;
   
-  #ifdef CONFIG_DISPLAYWRAPPER
+  #ifdef CONFIG_TFT
   struct themes {
     uint16_t foreground;
     uint16_t background;

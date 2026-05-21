@@ -50,7 +50,7 @@ enum prefPos : uint8_t
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   posBluetoothOut,
 #endif
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   posTheme, 
 #endif
   posSerialOut, 
@@ -75,7 +75,7 @@ const char * prefName[] = {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 					  "bluetoothOut",
 #endif
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
             "theme",
 #endif
 #ifdef CONFIG_CW_GAME
@@ -397,7 +397,7 @@ parameter MorsePreferences::pliste[] = {
     {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"}
   },
 #endif
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   {
     0, 0, 8, 1,
     "Theme",
@@ -405,7 +405,7 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"Plain", "Blues", "ePaper", "Mandarin", "Darkroom", "Veggie", "Garnet", "Lemonade", "Complements"}
   },
-#endif   // CONFIG_DISPLAYWRAPPER (closes the Theme entry)
+#endif   // CONFIG_TFT (closes the Theme entry)
 #ifdef CONFIG_CW_GAME
   {
     0, 0, 1, 1,
@@ -426,7 +426,7 @@ parameter MorsePreferences::pliste[] = {
 
 const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf" };
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 themes MorsePreferences::themeList[] = {
   {0, 0},                     // 0: Plain - a special case, we turn themes off
   {0xFFFF, 0x09f3},                     // 1: Blues
@@ -532,7 +532,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define LINEOUT
 #endif
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 #define THEME posTheme,
 #else
 #define THEME 
@@ -1080,7 +1080,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                   if (mini == 0) {
                       temp = val + maxi + vstep + t*vstep;
                       pliste[pos].value = temp % (maxi + vstep);
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
                       if (pos == posTheme) {
                            MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value); 
                             MorseOutput::refreshDisplay();
@@ -1402,7 +1402,7 @@ void MorsePreferences::writePreferences(const char* repository) {
          pref.remove("wlanChoice");
          pref.putUChar("wlanChoice", MorsePreferences::wlanChoice);
      }
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
       if (MorsePreferences::pliste[posTheme].value != pref.getUChar("theme")) {
           pref.putUChar("theme", MorsePreferences::pliste[posTheme].value); // store the theme
           MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
