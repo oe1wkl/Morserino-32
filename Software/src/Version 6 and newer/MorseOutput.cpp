@@ -18,7 +18,7 @@
 ////////////////////////////// New scrolling display
 
 
-#ifndef CONFIG_DISPLAYWRAPPER
+#ifndef CONFIG_TFT
 /// circular buffer: 14 chars by NoOfLines lines (bottom NoOfVisibleLines are visible)
 #define NoOfCharsPerLine 14
 #define LINE_HEIGHT 16
@@ -42,7 +42,7 @@
 
 #define SCROLL_TOP scrollTop
 
-#ifndef CONFIG_DISPLAYWRAPPER
+#ifndef CONFIG_TFT
 #include "wklfonts.h"            // legacy DialogInput byte-array fonts
 #include "M32OledLGFX.h"
 LGFX display;
@@ -81,7 +81,7 @@ uint8_t bottomLine = 0;
 const int8_t MorseOutput::maxPos = NoOfLines - NoOfVisibleLines;
 int8_t MorseOutput::relPos = MorseOutput::maxPos;
 
-#ifndef CONFIG_DISPLAYWRAPPER
+#ifndef CONFIG_TFT
 
 #define lora_width 6        /// a simple logo that shows when we operate with loRa, stored in XBM format
 #define lora_height 11
@@ -642,7 +642,7 @@ void MorseOutput::initDisplay()
   digitalWrite(OLED_RST, HIGH);
 #endif
   display.init();
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   if (MorsePreferences::leftHanded)
 #else
   if (!MorsePreferences::leftHanded)
@@ -658,7 +658,7 @@ void MorseOutput::initDisplay()
 
 
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 void MorseOutput::setTheme (uint8_t theme) {
   //DEBUG("Theme: " + String(theme));
   display.setTheme(MorsePreferences::themeList[theme].foreground,
@@ -687,7 +687,7 @@ void MorseOutput::refreshDisplay()
 }
 
 uint8_t MorseOutput::getScrollTop() {
-#ifndef CONFIG_DISPLAYWRAPPER
+#ifndef CONFIG_TFT
   return 15;
 #else
   display.setFont(DialogInput_plain_12);
@@ -813,7 +813,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     stripped = text;   // stripped always holds the working copy
   }
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   int textTooLong = (screenPos + l > display.getWidth()/display.getStringWidth("A"));
 #else
   int textTooLong = (screenPos + l > NoOfCharsPerLine);
@@ -824,7 +824,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     pos = 0;  screenPos = 0; lastStyle = REGULAR;
   }
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
   // After a wrap to a new line, discard a leading space (word-wrap artefact, LCD only)
   if (screenPos == 0 && l > 0 && stripped[0] == ' ') {
     stripped.remove(0, 1);
@@ -915,7 +915,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   uint8_t charsPrinted;
 
   display.setColor(BLACK);
-  #ifdef CONFIG_DISPLAYWRAPPER
+  #ifdef CONFIG_TFT
   display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT); // black out the line on screen
   #else
   display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT+1); // black out the line on screen
@@ -989,7 +989,7 @@ if (how & BOLD)
   y = SCROLL_TOP + line * LINE_HEIGHT;
 
   // clear the print area
-  #ifdef CONFIG_DISPLAYWRAPPER
+  #ifdef CONFIG_TFT
   display.fillRect(x,  y, w, LINE_HEIGHT);
   #else
   display.fillRect(x,  y, w, LINE_HEIGHT+1);
@@ -1108,7 +1108,7 @@ void MorseOutput::displayBatteryStatus(int v) {    /// v in millivolts!
 #endif
 #endif
   printOnScroll(2, REGULAR, 0, s);
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
     #define batt_x 220
     #define batt_width 70
     #define batt_h (LINE_HEIGHT - 4)
@@ -1383,7 +1383,7 @@ void MorseOutput::displayEmptyBattery(void (*f)()) {                            
   }
 }
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 #define leftBoundary 56
 #define logoWidth 14
 #else
@@ -1449,7 +1449,7 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
   display.display();
 }
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 void MorseOutput::dispM32Logo() {
   display.setColor(BLACK);
   display.drawXbm(1, 30, M32c_width, M32c_height, M32c_bits);
@@ -1533,7 +1533,7 @@ void MorseOutput::clearLine(uint8_t line) {                                     
   y = SCROLL_TOP + line * LINE_HEIGHT;
   l = display.getWidth()-1;
   display.setColor(BLACK);
-  #ifdef CONFIG_DISPLAYWRAPPER
+  #ifdef CONFIG_TFT
   display.fillRect(0, y, l, LINE_HEIGHT);
   #else
   display.fillRect(0, y, l, LINE_HEIGHT+1);

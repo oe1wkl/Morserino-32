@@ -1030,7 +1030,7 @@ void MorseGame::run() {
     if (!canvas) return;
     // Determine character rotation from preference
     // posInvaderOrient: 0 = game native (no rotation), 1 = reading orientation
-    #ifdef CONFIG_DISPLAYWRAPPER
+    #ifdef CONFIG_TFT
     if (MorsePreferences::pliste[posInvaderOrient].value == 1) {
         charRotation = MorsePreferences::leftHanded ? -90 : 90;
     } else {

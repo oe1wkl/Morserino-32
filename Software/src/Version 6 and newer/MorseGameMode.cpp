@@ -24,7 +24,7 @@
 
 #include "MorseGameMode.h"
 
-#ifdef CONFIG_DISPLAYWRAPPER
+#ifdef CONFIG_TFT
 
 #include <Arduino.h>
 #include <ESP32Encoder.h>
@@ -196,4 +196,4 @@ LGFX_Sprite *MorseGameMode::getSprite() {
   while (true) ;  // unreachable; placates [[noreturn]]
 }
 
-#endif // CONFIG_DISPLAYWRAPPER
+#endif // CONFIG_TFT
