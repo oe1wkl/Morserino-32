@@ -335,15 +335,9 @@ static void getDisplayStr(char c, char* buf) {
 
 static char chooseCharacter() {
     int pool = game.kochPoolSize;
-    if (pool < 2) pool = 2;
-    int idx;
-    int r = random(100);
-    if (r < 40 && pool >= 3)
-        idx = random(pool * 2 / 3, pool);
-    else if (r < 75 && pool >= 3)
-        idx = random(pool / 3, pool * 2 / 3);
-    else
-        idx = random(0, max(1, pool / 3));
+    if (pool < 1) pool = 1; // Safety floor to prevent division/range errors if the pool is empty
+    
+    int idx = random(0, pool); 
     return game.kochSequence[idx];
 }
 
