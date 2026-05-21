@@ -91,6 +91,7 @@ The font family used is Lato.</p>
 <li><a href="#morse-invaders" id="toc-morse-invaders"><span class="toc-section-number">5.7.1</span> Morse Invaders</a></li>
 <li><a href="#fight-the-pileup" id="toc-fight-the-pileup"><span class="toc-section-number">5.7.2</span> Fight the Pileup</a></li>
 <li><a href="#radio-cave" id="toc-radio-cave"><span class="toc-section-number">5.7.3</span> Radio Cave</a></li>
+<li><a href="#morsel" id="toc-morsel"><span class="toc-section-number">5.7.4</span> Morsel</a></li>
 </ul></li>
 <li><a href="#wifi-functions" id="toc-wifi-functions"><span class="toc-section-number">5.8</span> WiFi Functions</a>
 <ul>
@@ -1358,7 +1359,7 @@ The font family used is Lato.</p>
 <p>The current speed as detected by the decoder is displayed as WpM on the status line.</p>
 <p>This mode does not have many preferences (see the section <strong>6.2.6 Preferences regarding Transmitting and Decoding</strong>); maybe the most important is the ability to switch the filter bandwidth of the audio decoder between narrow (ca 150 Hz) and wide (ca 600 Hz). For decoding signals from a transceiver (where there might be other signals in the vicinity), it is usually best to set the bandwidth to <strong>Narrow</strong> and tune the signal to 700 Hz (± 5%). For decoding signals from an FM transceiver, or from iCW or other environments with little interference, it is better to use the <strong>Wide</strong> setting – in that case the audio frequency does not need to be very close to 700 Hz.</p>
 <h2 data-number="5.7" id="games"><span class="header-section-number">5.7</span> Games</h2>
-<p>The Morserino Pocket features now CW-based games that make learning and practicing Morse code more engaging. Games are found under the “Games” menu entry. Currently, the “Morse Invaders” game is the first that is available.</p>
+<p>The Morserino Pocket features now CW-based games that make learning and practicing Morse code more engaging. Games are found under the “Games” menu entry. Four games are currently available: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong>, and <strong>Morsel</strong>.</p>
 <h3 data-number="5.7.1" id="morse-invaders"><span class="header-section-number">5.7.1</span> Morse Invaders</h3>
 <p>Morse Invaders is a game where characters fall down the color display, and you must key the correct Morse code to destroy them before they reach the bottom. It combines the fun of a classic arcade game with effective CW training.</p>
 <p>The character pool is determined by your current Koch lesson setting – the game uses exactly the characters you have been learning. This means the game adapts to your level automatically. Each Koch lesson forms a “stratum” within which sub-levels of increasing difficulty are formed by raising the speed at which characters fall and how often new ones appear.</p>
@@ -1719,6 +1720,167 @@ Vol 12
 <p>There is exactly one fatal mistake in Radio Cave. If it happens, a death screen appears; key any letter or click the encoder to restart from the beginning. Your save is wiped and your step counter resets.</p>
 <p>There is also one situation where the game can become unwinnable through repeated mistakes (you will know when it happens). In that case, key <code>NEW</code> and confirm with <code>Y</code> to start over.</p>
 <p>When you successfully complete the game, a victory screen shows your total step count. Congratulations — the message has finally been received.</p>
+<h3 data-number="5.7.4" id="morsel"><span class="header-section-number">5.7.4</span> Morsel</h3>
+<p><strong>Morsel</strong> is a word-guessing game in which you identify a hidden word from two clues: one randomly chosen letter of the word shown in clear text on the display, and the whole word played in Morse code. The CW clue starts fast — 48 WPM — and slows by 5 WPM each round you don’t solve it, down to a floor of 18 WPM. Solving in fewer guesses is rewarded; finishing the 10-word match in the lowest total adjusted time wins.</p>
+<p>Morsel is only available on the M32Pocket.</p>
+<h4 class="unnumbered" id="starting-the-game-3">Starting the Game</h4>
+<p>From the main menu, navigate to <strong>Games → Morsel</strong>. The lobby shows the current <strong>Koch lesson</strong> and <strong>Word length</strong> settings, along with the controls available. Touch a paddle or click the encoder to begin.</p>
+<h4 class="unnumbered" id="lobby-settings">Lobby Settings</h4>
+<p>Two settings can be adjusted directly in the lobby:</p>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Encoder (knob)</strong></td>
+<td>Change Koch lesson — temporary for this game session; your training setting is restored on exit</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Cycle the word length: <code>3</code>, <code>4</code>, <code>max 4</code>, <code>5</code>, <code>max 5</code>, <code>6</code>, <code>max 6</code>. Persisted across power cycles. <code>max N</code> means any length from 3 to N.</td>
+</tr>
+<tr>
+<td><strong>FN long press</strong></td>
+<td>View the persistent high-score table</td>
+</tr>
+<tr>
+<td><strong>Encoder click or paddle touch</strong></td>
+<td>Start the game</td>
+</tr>
+<tr>
+<td><strong>Encoder long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<p>Words are drawn from the combined Morserino dictionary and the ham-abbreviation list, filtered by length and by the current Koch lesson (every letter of every candidate word must be within the characters you have learned). If too few candidate words are available, Morsel shows a “Word pool too small” screen with a suggested minimum Koch lesson and returns you to the lobby.</p>
+<h4 class="unnumbered" id="display-layout-2">Display Layout</h4>
+<p>During play the landscape screen shows:</p>
+<ul>
+<li><strong>Top left:</strong> the current round number (1, 2, 3 …) for the current word.</li>
+<li><strong>Top center:</strong> word progress, e.g. <code>3/10</code>.</li>
+<li><strong>Top right:</strong> the current CW clue speed in WPM (highlighted yellow when at the 18 WPM floor).</li>
+<li><strong>Center:</strong> a row of letter boxes, one per position. The revealed letter is shown in cyan with a cyan border so you can see which position is hinted.</li>
+<li><strong>Bottom center status line:</strong> the current message (“Listen and key the word”, “Correct!”, “Try again”, “Skipped”…).</li>
+<li><strong>Bottom hint line:</strong> <code>click = skip   hold = quit</code>.</li>
+<li><strong>Bottom HUD:</strong> Koch lesson · your <strong>key</strong> WPM · volume. The active encoder target (key WPM or volume) is highlighted yellow.</li>
+</ul>
+<h4 class="unnumbered" id="playing-a-word">Playing a Word</h4>
+<p>A new word picks a random letter to reveal and plays the whole word once at the current round’s speed. You then <strong>key the complete word</strong> on your paddles, including the revealed letter. As you key, each decoded character appears in its box. The CW clue is muted as soon as you start keying.</p>
+<p>A long inter-word pause — once your entry has reached the full word length — submits the guess. Each box is then colored:</p>
+<table>
+<colgroup>
+<col style="width: 43%" />
+<col style="width: 56%" />
+</colgroup>
+<thead>
+<tr>
+<th>Color</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Green</strong></td>
+<td>Right letter, right position</td>
+</tr>
+<tr>
+<td><strong>Red</strong></td>
+<td>Wrong letter</td>
+</tr>
+<tr>
+<td><strong>Grey</strong></td>
+<td>Revealed slot keyed wrong (the originally revealed letter is shown for reference)</td>
+</tr>
+</tbody>
+</table>
+<p>If you key fewer than the full word length, the pause does <strong>not</strong> submit — this is intentional so you can pause mid-word to think or correct, without an accidental early submit.</p>
+<p>If any box is not green, the same word is replayed at the next slower speed (5 WPM less), and you try again. When all boxes are green, the word is solved; the screen briefly shows the solve time and number of tries, then a new word starts at 48 WPM.</p>
+<h4 class="unnumbered" id="error-correction">Error Correction</h4>
+<p>The <code>&lt;err&gt;</code> prosign (8 consecutive dits, also written <code>&lt;hh&gt;</code>) deletes the last entered character — the same convention used on the air to abort and re-send. Backspacing drops your entry below the full word length and disarms auto-submit, so you can pause and think before re-keying.</p>
+<h4 class="unnumbered" id="skipping-a-hard-word">Skipping a Hard Word</h4>
+<p>If a word genuinely won’t yield even at 18 WPM, press the <strong>encoder (mode) button</strong> briefly to skip. The current word ends, a <code>Skipped (-60s)</code> notice appears, and the game moves on. The skip adds a fixed <strong>60-second penalty</strong> to your total time plus 5 seconds for every guess you had already submitted.</p>
+<h4 class="unnumbered" id="idle-handling">Idle Handling</h4>
+<p>While a clue has finished playing and you have not started keying:</p>
+<ul>
+<li>After about <strong>12 seconds</strong> of no input, Morsel replays the CW clue automatically (same speed — the round does not advance).</li>
+<li>After about <strong>60 seconds</strong> of total inactivity, Morsel returns to its lobby gracefully (the game is abandoned, no score recorded).</li>
+</ul>
+<p>Any keying, encoder turn, or button press resets both timers, including the global power-off Time-Out — so an actively playing user is never kicked out mid-game.</p>
+<h4 class="unnumbered" id="controls-during-the-game-1">Controls During the Game</h4>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Key your guess</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>Adjust your <strong>keying</strong> WPM (independent of the clue speed)</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Toggle the encoder between key WPM and volume</td>
+</tr>
+<tr>
+<td><strong>FN long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+<tr>
+<td><strong>Mode button short press</strong></td>
+<td>Skip the current word (60 s penalty)</td>
+</tr>
+<tr>
+<td><strong>Mode button long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<p>The CW clue is always played at the round’s scheduled speed regardless of your keying speed — the two are independent.</p>
+<h4 class="unnumbered" id="scoring-2">Scoring</h4>
+<p>For each word:</p>
+<ul>
+<li><strong>Time</strong> is measured from the first CW play to the correct guess.</li>
+<li><strong>+5 seconds penalty per guess submitted</strong> (from the very first guess). Solving in fewer guesses is rewarded.</li>
+<li>A <strong>skipped</strong> word contributes its elapsed time plus the 60-second skip penalty plus 5 s for each guess already made before the skip.</li>
+</ul>
+<p>The game total is the sum of all 10 words’ adjusted times. Lower is better.</p>
+<h4 class="unnumbered" id="game-end-and-high-scores">Game End and High Scores</h4>
+<p>After 10 words, a <strong>GAME OVER</strong> screen shows:</p>
+<ul>
+<li>Your total adjusted time as <code>M:SS</code>.</li>
+<li>Words solved vs. skipped.</li>
+<li>Total number of guesses.</li>
+<li>If your total qualifies for the persistent top-7 list, a <code>NEW HIGH SCORE — rank N</code> banner.</li>
+</ul>
+<p>Clicking the encoder opens the <strong>high-score table</strong>: the top 7 results, sorted by total adjusted time, persisted in non-volatile storage. Each row shows the rank, time, word-length setting (<code>max 4</code>, <code>5</code>, …), the Koch lesson played at (e.g. <code>K12</code>), and the solved/total count. Your latest qualifying entry is shown in green.</p>
+<p>You can also reach the high-score table from the lobby at any time with a long press of the <strong>FN</strong> button.</p>
+<h4 class="unnumbered" id="tips">Tips</h4>
+<ul>
+<li><p>48 WPM is fast on purpose — it’s there to reward decoders who can copy at speed. If you can’t catch it on the first round, just wait for the next replay (it will be 5 WPM slower each round).</p></li>
+<li><p>The revealed letter is a strong anchor — once you know its position you have already constrained the word a lot. Pay attention to its cyan position number under the box.</p></li>
+<li><p>Solving on the <strong>first try</strong> is worth a lot more than solving fast at slower speeds — the +5 s/guess penalty stacks quickly.</p></li>
+<li><p>Raise your Koch lesson if you keep getting the pool-too-small warning: 3-letter words need lesson 8, 4-letter words lesson 10, 5-letter words lesson 14, 6-letter words lesson 16 (using the default Morserino character order).</p></li>
+<li><p>Backspace freely (<code>&lt;err&gt;</code> = 8 dits) — the timer keeps running, but a wrong submitted guess costs you 5 s, so it’s almost always cheaper to fix the mistake than to submit and try again.</p></li>
+</ul>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two functions of the device, when you are using WiFi through an access point, that were of high importance in teh past:</p>
 <ul>
