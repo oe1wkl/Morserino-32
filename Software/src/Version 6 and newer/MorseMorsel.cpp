@@ -31,7 +31,7 @@
 #include "MorseGame.h"           // gameMode, gameCharBuffer
 #include "morsedefs.h"
 #include "ClickButton.h"
-#include "DisplayWrapper.h"
+#include "M32PocketLGFX.h"
 #include "english_words.h"
 #include "abbrev.h"
 #include "DejaVuSansMono_Bold15pt7b.h"
