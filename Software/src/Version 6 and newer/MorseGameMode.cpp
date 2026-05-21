@@ -37,6 +37,7 @@
 extern ESP32Encoder rotaryEncoder;
 extern const int    PinCLK;
 extern const int    PinDT;
+extern int          checkEncoder();
 
 // RTC-resident state for the memory-clearing reboot path. Defined in
 // m32_v6.ino; we set them and call ESP.restart() if sprite allocation
@@ -46,13 +47,18 @@ extern uint32_t rebootMagic;
 extern uint8_t  rebootMenuPtr;
 
 // Pixels removed from the long side of the panel when sizing the sprite.
-// At 170×320, trimming 16 from the long side gives a 170×304 / 304×170
-// sprite (= 103,360 bytes), comfortably under the ~106 KB largest free
-// block we observe after one game session. Decrease this only after
-// re-running the heap diagnostics on the heap-diagnostics branch and
-// confirming there's enough headroom.
+// At 170×320, trimming 28 from the long side gives a 170×292 / 292×170
+// sprite (= 99,280 bytes), ~4 KB smaller than the 16-px-trim version.
+// Bumped from 16 to 28 to leave a comfortable margin between the sprite
+// and the largest free contiguous heap block after a setupESPNow /
+// setupWifi cycle. Heap probes measured (free / largest contiguous):
+//   clean boot     163 KB / 106 KB    sprite + 7 KB margin
+//   after WiFi     120 KB / 106 KB    sprite + 7 KB margin
+//   after ESP-NOW  113 KB / 102 KB    sprite + 3 KB margin
+// Decrease only after re-running the heap diagnostics and confirming
+// there's still headroom.
 #ifndef MORSE_GAMEMODE_SPRITE_TRIM
-#define MORSE_GAMEMODE_SPRITE_TRIM 16
+#define MORSE_GAMEMODE_SPRITE_TRIM 28
 #endif
 
 namespace {
@@ -71,6 +77,11 @@ namespace {
     pinMode(PinDT,  INPUT_PULLUP);
     rotaryEncoder.attachHalfQuad(PinDT, PinCLK);
     rotaryEncoder.setCount(0);
+    // Resync checkEncoder()'s static oldPosition: setCount(0) zeroes the
+    // hardware, but the cached old position is whatever it was during the
+    // game. Without this, the menu's first checkEncoder() call after game
+    // exit sees a phantom step and shifts the cursor to a neighbour game.
+    (void) checkEncoder();
   }
 
   LGFX_Sprite *allocate(int rotation, bool leftHanded) {

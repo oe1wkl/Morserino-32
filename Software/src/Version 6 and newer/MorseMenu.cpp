@@ -674,7 +674,15 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 clearPaddleLatches();
                 goto setupDecoder;
 #ifdef CONFIG_CW_GAME
+      // After a WiFi/ESP-NOW session, the QuickEspNow library leaves
+      // callbacks and tasks behind that can fire during game play and
+      // corrupt unrelated state — see the comment on
+      // rebootIfWifiAlreadyUsed() above. Heap probes confirm this is
+      // not a memory-shortage issue (heap is fully restored before the
+      // game starts), so the only safe recovery is a clean reboot that
+      // auto-resumes into the same menu item.
       case _morseInvaders:
+                rebootIfWifiAlreadyUsed();
                 MorseGame::run();
                 m32state = menu_loop;
                 // Clear both buttons: a long-press exit leaves clicks == -1, which
@@ -683,18 +691,21 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::volButton.clicks  = 0;
                 return false;
       case _fightPileup:
+                rebootIfWifiAlreadyUsed();
                 MorsePileup::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
                 return false;
       case _radioCave:
+                rebootIfWifiAlreadyUsed();
                 MorseRadioCave::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
                 return false;
       case _morsel:
+                rebootIfWifiAlreadyUsed();
                 MorseMorsel::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;

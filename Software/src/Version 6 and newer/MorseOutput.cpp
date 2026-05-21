@@ -606,6 +606,33 @@ const int  dutyCycleZero = 0;
 
 ////// Display functions
 
+// Idempotency cache for the very common "clearStatusLine() followed by
+// printOnStatusLine(true, 0, str)" pattern used by the main menu and the
+// preferences menu on every encoder click. Without this, the white flash
+// between the clear and the reprint is visible as a flicker. We defer the
+// actual clear until the next printOnStatusLine call: if it would
+// reproduce the currently-visible text at xpos=0, we skip both ops.
+namespace {
+    bool   statusClearPending = false;   // clearStatusLine was called, not yet flushed
+    String statusLineCache;              // text last drawn via printOnStatusLine at xpos=0
+    bool   statusLineStrong  = false;    // strong flag for that cached text
+
+    // Paint the full-width white background, respecting the battery icon's
+    // right-side reserved area. Extracted so clearStatusLine() and the
+    // deferred-clear path inside printOnStatusLine() stay in sync.
+    void paintStatusBackground() {
+        display.setFont(DialogInput_plain_12);
+        display.setColor(WHITE);
+#ifdef CONFIG_MCP73871
+        if (MorseOutput::batteryIconVisible)
+            display.fillRect(0, 0, display.getWidth() - 34, SCROLL_TOP);
+        else
+#endif
+            display.fillRect(0, 0, display.getWidth(), SCROLL_TOP);
+        display.setColor(BLACK);
+    }
+}
+
 void MorseOutput::initDisplay()
 {
 #ifdef OLED_RST
@@ -622,6 +649,11 @@ void MorseOutput::initDisplay()
 #endif
     display.flipScreenVertically();
   display.clear();
+  // Screen was just wiped (e.g. by MorseGameMode::exit reinitialising the
+  // panel after a game). Drop any cached status-line state so the next
+  // printOnStatusLine actually repaints rather than short-circuiting.
+  statusClearPending = true;
+  statusLineCache    = "";
 }
 
 
@@ -638,6 +670,11 @@ void MorseOutput::setTheme (uint8_t theme) {
 void MorseOutput::clearDisplay() {
     display.clear();
     display.display();
+    // Whole screen was wiped; the status-line cache no longer reflects
+    // what's on screen. Force the next printOnStatusLine to repaint its
+    // full background by treating it as if clearStatusLine was just called.
+    statusClearPending = true;
+    statusLineCache    = "";
 #ifdef CONFIG_MCP73871
     batteryDisplayDirty = true;
     batteryIconVisible = false;
@@ -1428,7 +1465,21 @@ void MorseOutput::dispM32Logo() {
 
 
 void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& string) {    // place a string onto the status line; chars are 7px wide = 18 chars per line
-  //DEBUG ("LINE_HEIGHT: " + LINE_HEIGHT);
+  // Fast path: deferred clear + identical full-line text → already on
+  // screen, skip both operations entirely.
+  if (xpos == 0 && statusClearPending &&
+      statusLineCache == string && statusLineStrong == strong) {
+    statusClearPending = false;
+    resetTOT();
+    return;
+  }
+
+  // Honour any pending clearStatusLine before drawing.
+  if (statusClearPending) {
+    paintStatusBackground();
+    statusClearPending = false;
+  }
+
   if (strong)
     display.setFont(DialogInput_bold_12);
   else
@@ -1441,6 +1492,17 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   display.drawString(xpos * display.getStringWidth("A"), 0, string);
   display.setColor(WHITE);
   display.display();
+
+  // Only full-line writes (xpos==0) become the cached value; partial
+  // updates (WPM digits, keyer mode, etc.) invalidate the cache since
+  // the visible text is no longer a single known string.
+  if (xpos == 0) {
+    statusLineCache  = string;
+    statusLineStrong = strong;
+  } else {
+    statusLineCache = "";
+  }
+
   resetTOT();
   #ifdef CONFIG_MCP73871
   //  batteryDisplayDirty = true;    // redraw icon on next updateBatteryDisplay
@@ -1450,16 +1512,11 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
 
 
 void MorseOutput::clearStatusLine() {
-    display.setFont(DialogInput_plain_12);
-    display.setColor(WHITE);
-#ifdef CONFIG_MCP73871
-    if (batteryIconVisible)
-        display.fillRect(0, 0, display.getWidth() - 34, SCROLL_TOP);
-    else
-#endif
-        display.fillRect(0, 0, display.getWidth(), SCROLL_TOP);
-    display.setColor(BLACK);
-    display.display();
+    // Defer the actual paint to the next printOnStatusLine. If that call
+    // reprints the same text, both ops collapse to a no-op (no flicker).
+    // All in-tree clearStatusLine callers immediately follow with a
+    // printOnStatusLine, so the deferral is always honoured.
+    statusClearPending = true;
 }
 
 /// clear all visible lines of the scroll area
