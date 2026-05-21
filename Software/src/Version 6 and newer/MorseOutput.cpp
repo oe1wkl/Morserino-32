@@ -43,9 +43,9 @@
 #define SCROLL_TOP scrollTop
 
 #ifndef CONFIG_DISPLAYWRAPPER
-#include "wklfonts.h"
-#include  "SSD1306Wire.h"
-SSD1306Wire display(0x3c, OLED_SDA, OLED_SCL, GEOMETRY_128_64, I2C_TWO, 700000);
+#include "wklfonts.h"            // legacy DialogInput byte-array fonts
+#include "M32OledLGFX.h"
+LGFX display;
 #else
 #include "M32PocketLGFX.h"
 LGFX display;
