@@ -1431,8 +1431,8 @@ Tonfrequenz nicht so nahe an 700 Hz liegen.
 
 Der Morserino Pocket bietet jetzt CW-basierte Spiele, die das Lernen
 und Üben des Morsecodes unterhaltsamer gestalten. Die Spiele sind unter
-dem Menüpunkt „**Games**" zu finden. Derzeit ist „Morse Invaders" das
-erste verfügbare Spiel.
+dem Menüpunkt „**Games**" zu finden. Derzeit sind vier Spiele verfügbar:
+**Morse Invaders**, **Fight the Pileup**, **Radio Cave** und **Morsel**.
 
 ### Morse Invaders
 
@@ -1916,6 +1916,204 @@ ein und bestätige mit `Y`, um neu zu starten.
 Wenn du das Spiel erfolgreich abschließt, zeigt ein Siegesbildschirm
 deine Gesamtschrittanzahl. Herzlichen Glückwunsch – die Nachricht wurde
 endlich empfangen.
+
+### Morsel
+
+**Morsel** ist ein Worträtsel-Spiel: Du musst ein verborgenes Wort
+erraten, mit zwei Hinweisen — ein zufällig gewählter Buchstabe des
+Wortes wird im Klartext am Display angezeigt, und das ganze Wort wird
+in Morsecode wiedergegeben. Der CW-Hinweis beginnt schnell — 48 WpM —
+und wird mit jedem nicht gelösten Versuch um 5 WpM langsamer, bis
+hinunter auf 18 WpM. Wer mit weniger Versuchen löst, wird belohnt; das
+Spiel umfasst 10 Wörter, gewertet wird die niedrigste angepasste
+Gesamtzeit.
+
+Morsel ist nur am M32Pocket verfügbar.
+
+#### Starten des Spiels {-}
+
+Navigiere im Hauptmenü zu **Games → Morsel**. Die Lobby zeigt die
+aktuell eingestellte **Koch-Lektion** und **Wortlänge** sowie die
+verfügbaren Bedienelemente. Berühre ein Paddle oder klicke den Encoder,
+um zu starten.
+
+#### Einstellungen in der Lobby {-}
+
+Zwei Einstellungen können direkt in der Lobby geändert werden:
+
+| Bedienelement | Wirkung |
+|---------------|---------|
+| **Encoder (Drehknopf)** | Koch-Lektion ändern — nur für diese Spielsitzung; deine Trainingseinstellung wird beim Verlassen wiederhergestellt |
+| **FN kurz drücken** | Wortlänge durchschalten: `3`, `4`, `max 4`, `5`, `max 5`, `6`, `max 6`. Über Stromzyklen hinweg gespeichert. `max N` bedeutet beliebige Länge von 3 bis N. |
+| **FN lang drücken** | Persistente Highscore-Tabelle anzeigen |
+| **Encoder-Klick oder Paddle-Berührung** | Spiel starten |
+| **Encoder lang drücken** | Zurück zum Hauptmenü |
+
+Wörter werden aus der kombinierten Morserino-Wortliste und der
+Liste der Amateurfunk-Abkürzungen gezogen, gefiltert nach Länge und
+aktueller Koch-Lektion (jeder Buchstabe jedes Kandidatenwortes muss
+sich unter den bereits gelernten Zeichen befinden). Sind zu wenige
+Kandidaten verfügbar, zeigt Morsel den Hinweis „Word pool too small"
+mit einer empfohlenen Mindest-Koch-Lektion und kehrt zur Lobby zurück.
+
+#### Bildschirmlayout {-}
+
+Während des Spiels zeigt der Querformat-Bildschirm:
+
+- **Oben links:** die aktuelle Rundennummer (1, 2, 3 …) für das
+  aktuelle Wort.
+- **Oben Mitte:** Spielfortschritt, z. B. `3/10`.
+- **Oben rechts:** die aktuelle CW-Hinweisgeschwindigkeit in WpM
+  (gelb hervorgehoben, sobald die 18-WpM-Untergrenze erreicht ist).
+- **Mitte:** eine Reihe von Buchstabenfeldern, eines pro Position.
+  Der enthüllte Buchstabe wird in Cyan mit cyanfarbenem Rahmen
+  gezeigt, sodass die Position des Hinweises auf einen Blick
+  erkennbar ist.
+- **Statuszeile unten:** die aktuelle Nachricht („Listen and key
+  the word", „Correct!", „Try again", „Skipped" …).
+- **Hinweiszeile unten:** `click = skip   hold = quit`.
+- **Untere HUD-Zeile:** Koch-Lektion · deine **key**-WpM ·
+  Lautstärke. Das aktive Encoder-Ziel (key WpM oder Lautstärke) ist
+  gelb hervorgehoben.
+
+#### Spielablauf pro Wort {-}
+
+Ein neues Wort wählt zufällig einen Buchstaben zur Enthüllung und
+spielt das ganze Wort einmal mit der aktuellen Rundengeschwindigkeit
+ab. Anschließend gibst du **das vollständige Wort mit den Paddles ein**,
+einschließlich des enthüllten Buchstabens. Während du gibst, erscheint
+jeder dekodierte Buchstabe in seinem Feld. Der CW-Hinweis wird
+stummgeschaltet, sobald du mit dem Geben beginnst.
+
+Eine lange Pause zwischen den Wörtern — sobald deine Eingabe die volle
+Wortlänge erreicht hat — bestätigt die Eingabe. Jedes Feld wird dann
+gefärbt:
+
+| Farbe | Bedeutung |
+|-------|-----------|
+| **Grün** | Richtiger Buchstabe an richtiger Position |
+| **Rot** | Falscher Buchstabe |
+| **Grau** | Position des enthüllten Buchstabens falsch gegeben (zur Erinnerung wird der ursprünglich enthüllte Buchstabe gezeigt) |
+
+Hast du weniger als die volle Wortlänge eingegeben, **löst die Pause
+nicht aus** — das ist beabsichtigt, damit du mitten im Wort denken
+oder korrigieren kannst, ohne dass die Eingabe ungewollt vorzeitig
+abgeschickt wird.
+
+Ist nicht jedes Feld grün, wird dasselbe Wort in der nächsten Runde
+um 5 WpM langsamer abgespielt und du versuchst es erneut. Sind alle
+Felder grün, ist das Wort gelöst; der Bildschirm zeigt kurz die
+Lösungszeit und die Anzahl der Versuche, dann startet ein neues Wort
+wieder bei 48 WpM.
+
+#### Fehlerkorrektur {-}
+
+Das Prosign `<err>` (8 Punkte hintereinander, auch als `<hh>` notiert)
+löscht das zuletzt eingegebene Zeichen — die übliche Konvention auf
+dem Band, eine Eingabe abzubrechen und neu zu senden. Durch das Löschen
+fällt deine Eingabe wieder unter die volle Wortlänge und die
+automatische Bestätigung wird deaktiviert, sodass du in Ruhe denken
+und neu eingeben kannst.
+
+#### Schwieriges Wort überspringen {-}
+
+Wenn ein Wort selbst bei 18 WpM partout nicht erkennbar ist, drücke
+den **Encoder-Knopf (Mode-Taste)** kurz, um es zu überspringen. Das
+aktuelle Wort wird beendet, ein Hinweis `Skipped (-60s)` erscheint,
+und das Spiel geht weiter. Der Skip fügt einen festen **60-Sekunden-
+Aufschlag** zur Gesamtzeit hinzu, plus 5 Sekunden für jeden Versuch,
+den du vor dem Skip bereits abgegeben hattest.
+
+#### Verhalten bei Inaktivität {-}
+
+Wenn ein CW-Hinweis abgespielt ist und du noch nicht zu geben begonnen
+hast:
+
+- Nach etwa **12 Sekunden** ohne Eingabe wiederholt Morsel den
+  CW-Hinweis automatisch (mit derselben Geschwindigkeit — die Runde
+  zählt **nicht** weiter).
+- Nach etwa **60 Sekunden** Gesamtinaktivität kehrt Morsel
+  schonend zur eigenen Lobby zurück (das Spiel wird abgebrochen, es
+  wird keine Wertung gespeichert).
+
+Jede Eingabe, Encoder-Drehung oder Tastenbetätigung setzt beide
+Zeitgeber zurück, ebenso wie den globalen Abschalt-Timeout — eine
+aktiv spielende Person wird also nie aus dem laufenden Spiel
+geworfen.
+
+#### Bedienelemente im Spiel {-}
+
+| Bedienelement | Aktion |
+|---------------|--------|
+| **Paddles** | Eingabe der Vermutung |
+| **Encoder** | Eigene **Gebegeschwindigkeit** (key-WpM) einstellen — unabhängig von der Hinweisgeschwindigkeit |
+| **FN kurz drücken** | Encoder zwischen key-WpM und Lautstärke umschalten |
+| **FN lang drücken** | Zurück zum Hauptmenü |
+| **Mode-Taste kurz drücken** | Aktuelles Wort überspringen (60 s Strafzeit) |
+| **Mode-Taste lang drücken** | Zurück zum Hauptmenü |
+
+Der CW-Hinweis wird stets in der für die Runde vorgesehenen
+Geschwindigkeit gespielt, unabhängig von deiner Gebegeschwindigkeit —
+die beiden sind voneinander unabhängig.
+
+#### Bewertung {-}
+
+Für jedes Wort:
+
+- Die **Zeit** wird vom ersten CW-Abspielen bis zur korrekten Eingabe
+  gemessen.
+- **+5 Sekunden Aufschlag pro abgegebener Eingabe** (ab dem ersten
+  Versuch). Wer mit weniger Versuchen löst, wird belohnt.
+- Ein **übersprungenes** Wort fließt mit der bis dahin verstrichenen
+  Zeit zuzüglich der 60-Sekunden-Strafe und 5 Sekunden pro vorher
+  bereits abgegebenen Versuch in die Wertung ein.
+
+Die Gesamtbewertung ist die Summe der angepassten Zeiten aller 10
+Wörter. Niedriger ist besser.
+
+#### Spielende und Highscores {-}
+
+Nach 10 Wörtern erscheint ein **GAME OVER**-Bildschirm mit:
+
+- der angepassten Gesamtzeit im Format `M:SS`,
+- gelösten vs. übersprungenen Wörtern,
+- der Gesamtzahl der Versuche,
+- und — falls deine Gesamtzeit eine Position in der persistenten
+  Top-7-Liste belegt — einem Banner `NEW HIGH SCORE — rank N`.
+
+Ein Klick auf den Encoder öffnet die **Highscore-Tabelle**: die
+sieben besten Ergebnisse, sortiert nach angepasster Gesamtzeit,
+gespeichert im nichtflüchtigen Speicher. Jede Zeile zeigt Rang, Zeit,
+Wortlängeneinstellung (`max 4`, `5`, …), die Koch-Lektion (z. B.
+`K12`) sowie das Verhältnis gelöst/gesamt. Dein letzter qualifizierter
+Eintrag wird grün hervorgehoben.
+
+Die Highscore-Tabelle kann jederzeit auch aus der Lobby aufgerufen
+werden — mit einem langen Druck auf die **FN**-Taste.
+
+#### Tipps {-}
+
+- 48 WpM sind bewusst schnell — sie belohnen Decoder, die schnelles
+  CW kopieren können. Schaffst du es in der ersten Runde nicht, warte
+  auf die nächste Wiedergabe; sie ist 5 WpM langsamer.
+
+- Der enthüllte Buchstabe ist ein starker Anker — sobald seine
+  Position bekannt ist, ist das Wort schon stark eingegrenzt. Achte
+  auf seine cyanfarbene Positionsnummer unter dem Feld.
+
+- Lösen im **ersten Versuch** ist deutlich wertvoller als langsames
+  Lösen über mehrere Runden — der Aufschlag von 5 s pro Versuch
+  summiert sich schnell.
+
+- Höhere Koch-Lektion einstellen, falls du wiederholt die Meldung
+  „Pool zu klein" siehst: 3-stellige Wörter brauchen Lektion 8,
+  4-stellige Lektion 10, 5-stellige Lektion 14, 6-stellige Lektion 16
+  (bei der Standard-Morserino-Zeichenreihenfolge).
+
+- Korrigiere ruhig (`<err>` = 8 Punkte) — die Zeit läuft zwar weiter,
+  aber eine falsch abgegebene Eingabe kostet 5 s; meist ist es
+  günstiger, den Fehler zu beheben als die Eingabe abzuschicken und
+  es erneut zu versuchen.
 
 ## WiFi Functions
 
