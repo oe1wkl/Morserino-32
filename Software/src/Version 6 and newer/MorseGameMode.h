@@ -47,6 +47,12 @@ namespace MorseGameMode {
   // enterPortrait — reboots on allocation failure.
   LGFX_Sprite *enterLandscape(bool leftHanded, uint8_t colorDepth = 16);
 
+  // Load the shared 8-bpp game palette (GamePalette.h) into a
+  // caller-owned sprite. Used by games that allocate their own secondary
+  // 8-bpp sprite (e.g. Invaders' rotated-text tile) and need it to share
+  // the main sprite's palette so blits between the two stay colour-correct.
+  void applyGamePalette(LGFX_Sprite *s);
+
   // Push the sprite to the panel.
   void pushFrame();
 
