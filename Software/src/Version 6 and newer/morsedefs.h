@@ -323,7 +323,11 @@ enum encoderMode                // define modes for state machine of the various
 
 enum morserinoMode              // the states the morserino can be in - selected in top level menu
   {
-      morseKeyer, loraTrx, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder, shutDown, measureNF, invalid
+      morseKeyer, loraTrx, wifiTrx, morseTrx, morseGenerator, echoTrainer, morseDecoder,
+      morseGame,                  // a Pocket TFT game owns the keyer: local sidetone only,
+                                  // never transmits (LoRa/WiFi/ESP-NOW) and never keys the
+                                  // external TX. Set on game entry; reset by the next menu mode.
+      shutDown, measureNF, invalid
   };
 
 // Base menu count: 43 entries (indices 0..42, classic M32 with LoRa, no Games)
