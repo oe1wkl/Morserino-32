@@ -42,18 +42,23 @@ extern char gameCharBuffer;
 // game-mode entry); UI must lay out within GAME_SCREEN_H.
 #define GAME_SCREEN_H       304
 
-// ---- Colour palette (RGB565) ----
-#define GC_BG           0x0841
-#define GC_LETTERS      0x0400    // dark green
-#define GC_NUMBERS      0x8400    // dark yellow
-#define GC_PUNCT        0x8200    // dark orange
-#define GC_PROSIGN      0x8010    // dark magenta
-#define GC_HUD_TEXT     0xFFFF
-#define GC_LIVES        0xF800
-#define GC_SCORE        0x07FF
-#define GC_LEVELUP      0xFFE0
-#define GC_GAMEOVER     0xF800
-#define GC_MISS         0x7BEF
+// ---- Colour palette ----
+// The game sprite is 8-bpp indexed (see GamePalette.h): these names map to
+// shared palette indices, not RGB565 values. The palette entries hold the
+// exact RGB565 colours used before, so the on-screen result is unchanged.
+#include "GamePalette.h"
+#define GC_BG           PAL_BG            // 0x0841
+#define GC_LETTERS      PAL_INV_LETTERS   // 0x0400 dark green
+#define GC_NUMBERS      PAL_INV_NUMBERS   // 0x8400 dark yellow
+#define GC_PUNCT        PAL_INV_PUNCT     // 0x8200 dark orange
+#define GC_PROSIGN      PAL_INV_PROSIGN   // 0x8010 dark magenta
+#define GC_HUD_TEXT     PAL_WHITE         // 0xFFFF
+#define GC_LIVES        PAL_RED           // 0xF800
+#define GC_SCORE        PAL_CYAN          // 0x07FF
+#define GC_LEVELUP      PAL_YELLOW        // 0xFFE0
+#define GC_GAMEOVER     PAL_RED           // 0xF800
+#define GC_MISS         PAL_GREY          // 0x7BEF
+#define GC_BAND         PAL_DARKGREY      // 0x2104 HUD / keying-zone band
 
 // ---- Game states ----
 enum GameStateEnum : uint8_t {
@@ -67,7 +72,8 @@ struct GameInvader {
     uint8_t  lane;
     float    y;
     float    speed;
-    uint16_t color;
+    uint16_t color;        // fill palette index (PAL_INV_*)
+    uint16_t borderColor;  // dimmed outline palette index (PAL_INV_*_B)
     bool     active;
     uint8_t  explodeFrame;
 };

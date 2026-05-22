@@ -83,6 +83,14 @@ namespace {
     0x001F,  // PAL_BLUE
     0xF81F,  // PAL_MAGENTA
     0x2104,  // PAL_DARKGREY
+    0x0400,  // PAL_INV_LETTERS
+    0x8400,  // PAL_INV_NUMBERS
+    0x8200,  // PAL_INV_PUNCT
+    0x8010,  // PAL_INV_PROSIGN
+    0x0200,  // PAL_INV_LETTERS_B
+    0x4200,  // PAL_INV_NUMBERS_B
+    0x4100,  // PAL_INV_PUNCT_B
+    0x4008,  // PAL_INV_PROSIGN_B
   };
 
   // Restore the Morserino menu's display state. Used both by exit() and by
@@ -175,6 +183,14 @@ void MorseGameMode::warmup() {
   tmp.pushSprite(lcd, 0, 0);
   lcd->endWrite();
   tmp.deleteSprite();
+}
+
+void MorseGameMode::applyGamePalette(LGFX_Sprite *s) {
+  // Load the shared 8-bpp game palette into a caller-owned sprite (e.g.
+  // Invaders' rotated-text tile sprite) so it matches the main game
+  // sprite's palette — index-for-index — and blits between them stay
+  // colour-correct. Single source of truth for the palette table.
+  if (s) s->createPalette(kGamePalette, PAL_COUNT);
 }
 
 LGFX_Sprite *MorseGameMode::enterPortrait(bool leftHanded, uint8_t colorDepth) {

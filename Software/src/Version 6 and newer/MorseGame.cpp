@@ -250,6 +250,7 @@ static char   pollKeyedChar();
 static int    findMatchingInvader(char c);
 static void   destroyInvader(int idx);
 static uint16_t getCharColor(char c);
+static uint16_t getCharBorderColor(char c);
 static void   getDisplayStr(char c, char* buf);
 
 static void   drawGameField();
@@ -314,6 +315,19 @@ static uint16_t getCharColor(char c) {
     return GC_LETTERS;
 }
 
+// Dimmed outline colour for an invader, matching its fill category. Under
+// the 8-bpp palette the old runtime brightening (color565 on the fill's
+// RGB components) can't be done on an index, so the four results are
+// precomputed as their own palette entries (PAL_INV_*_B).
+static uint16_t getCharBorderColor(char c) {
+    if (c >= '0' && c <= '9') return PAL_INV_NUMBERS_B;
+    if (c == '.' || c == ',' || c == '?' || c == '/' || c == '-' || c == '=' || c == ':')
+        return PAL_INV_PUNCT_B;
+    if (c == 'S' || c == 'A' || c == 'N' || c == 'K' || c == 'E' || c == 'B' || c == '+')
+        return PAL_INV_PROSIGN_B;
+    return PAL_INV_LETTERS_B;
+}
+
 static void getDisplayStr(char c, char* buf) {
     bool upper = (MorsePreferences::pliste[posOutputCase].value != 0);
     switch (c) {
@@ -374,6 +388,7 @@ static void spawnInvader() {
     inv.y = GAME_FIELD_TOP;
     inv.speed = game.baseSpeed + random(0, 30) / 100.0f;
     inv.color = getCharColor(inv.character);
+    inv.borderColor = getCharBorderColor(inv.character);
     inv.active = true;
     inv.explodeFrame = 0;
 }
@@ -483,11 +498,7 @@ static void drawInvader(GameInvader& inv) {
     if (!inv.active) return;
 
     canvas->fillRoundRect(x, y, GAME_INVADER_W, GAME_INVADER_H, 4, inv.color);
-    canvas->drawRoundRect(x, y, GAME_INVADER_W, GAME_INVADER_H, 4,
-        canvas->color565(
-            ((inv.color >> 11) & 0x1F) * 4,
-            ((inv.color >> 5) & 0x3F) * 2,
-            (inv.color & 0x1F) * 4));
+    canvas->drawRoundRect(x, y, GAME_INVADER_W, GAME_INVADER_H, 4, inv.borderColor);
 
     char dispBuf[4];
     getDisplayStr(inv.character, dispBuf);
@@ -533,7 +544,7 @@ static void drawInvader(GameInvader& inv) {
 static void drawGameField() {
     for (int i = 0; i <= GAME_NUM_LANES; i++) {
         int x = GAME_LANE_MARGIN + i * GAME_LANE_W;
-        canvas->drawFastVLine(x, GAME_FIELD_TOP, GAME_FIELD_BOTTOM - GAME_FIELD_TOP, 0x2104);
+        canvas->drawFastVLine(x, GAME_FIELD_TOP, GAME_FIELD_BOTTOM - GAME_FIELD_TOP, GC_BAND);
     }
     for (int i = 0; i < GAME_MAX_INVADERS; i++)
         if (game.invaders[i].active || game.invaders[i].explodeFrame > 0)
@@ -561,33 +572,33 @@ static void drawHUD() {
 }
 
 static void drawKeyingZone() {
-    canvas->fillRect(0, GAME_KEYING_Y, GAME_SCREEN_W, GAME_SCREEN_H - GAME_KEYING_Y, 0x2104);
+    canvas->fillRect(0, GAME_KEYING_Y, GAME_SCREEN_W, GAME_SCREEN_H - GAME_KEYING_Y, GC_BAND);
 
     canvas->setFont(&fonts::Font0);
     char infoBuf[16];
     if (encoderIsVolume) {
         snprintf(infoBuf, sizeof(infoBuf), "Vol:%d <", MorsePreferences::sidetoneVolume);
-        canvas->setTextColor(GC_LEVELUP, 0x2104);
+        canvas->setTextColor(GC_LEVELUP, GC_BAND);
     } else {
         snprintf(infoBuf, sizeof(infoBuf), "%d wpm <", game.wpm);
-        canvas->setTextColor(GC_HUD_TEXT, 0x2104);
+        canvas->setTextColor(GC_HUD_TEXT, GC_BAND);
     }
     canvas->drawString(infoBuf, 4, GAME_KEYING_Y + 4);
 
     // Show the other value (without <) on the second line
     if (encoderIsVolume) {
         snprintf(infoBuf, sizeof(infoBuf), "%d wpm", game.wpm);
-        canvas->setTextColor(GC_HUD_TEXT, 0x2104);
+        canvas->setTextColor(GC_HUD_TEXT, GC_BAND);
     } else {
         snprintf(infoBuf, sizeof(infoBuf), "Vol:%d", MorsePreferences::sidetoneVolume);
-        canvas->setTextColor(GC_HUD_TEXT, 0x2104);
+        canvas->setTextColor(GC_HUD_TEXT, GC_BAND);
     }
     canvas->drawString(infoBuf, 4, GAME_KEYING_Y + 18);
 
     if (game.streak >= 5) {
         char streakBuf[12];
         snprintf(streakBuf, sizeof(streakBuf), "x%d", game.streak);
-        canvas->setTextColor(GC_LEVELUP, 0x2104);
+        canvas->setTextColor(GC_LEVELUP, GC_BAND);
         canvas->setTextDatum(lgfx::top_right);
         canvas->drawString(streakBuf, GAME_SCREEN_W - 4, GAME_KEYING_Y + 4);
         canvas->setTextDatum(lgfx::top_left);
@@ -597,7 +608,7 @@ static void drawKeyingZone() {
         char dispBuf[4];
         getDisplayStr(lastDecodedChar, dispBuf);
         canvas->setFont(&fonts::FreeSansBold12pt7b);
-        canvas->setTextColor(GC_HUD_TEXT, 0x2104);
+        canvas->setTextColor(GC_HUD_TEXT, GC_BAND);
         canvas->setTextDatum(lgfx::middle_center);
         canvas->drawString(dispBuf, GAME_SCREEN_W / 2, GAME_KEYING_Y + 21);
         canvas->setTextDatum(lgfx::top_left);
@@ -1020,7 +1031,7 @@ static void stateGameOver() {
 //=============================================================================
 
 void MorseGame::run() {
-    canvas = MorseGameMode::enterPortrait(false);
+    canvas = MorseGameMode::enterPortrait(false, 8);
     if (!canvas) return;
     // Determine character rotation from preference
     // posInvaderOrient: 0 = game native (no rotation), 1 = reading orientation
@@ -1039,11 +1050,15 @@ void MorseGame::run() {
         tileSprite = new LGFX_Sprite(canvas);
         if (tileSprite) {
             tileSprite->setPsram(false);
-            tileSprite->setColorDepth(16);
+            tileSprite->setColorDepth(8);
             if (!tileSprite->createSprite(GAME_INVADER_H, GAME_INVADER_W)) {
                 delete tileSprite;
                 tileSprite = nullptr;
                 charRotation = 0;  // fall back to no rotation
+            } else {
+                // Share the main sprite's palette so index values blit
+                // unchanged between tileSprite and canvas (pushRotateZoom).
+                MorseGameMode::applyGamePalette(tileSprite);
             }
         }
     }
