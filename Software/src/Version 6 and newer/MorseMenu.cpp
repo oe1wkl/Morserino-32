@@ -25,31 +25,6 @@
 // failure. We use it to suppress the "QUICK START" overlay so the
 // post-reboot resume into the game looks silent.
 extern bool memoryReboot;
-
-// Tracks whether the user has already entered a WiFi-using mode in
-// this boot session. QuickEspNow's internal state can't survive multiple
-// WiFi.mode(STA) → WIFI_OFF cycles cleanly — the second begin() crashes
-// inside QuickEspNow::addPeer (esp_now_get_peer returns NOT_FOUND, which
-// the library promotes to abort()). Workaround: detect the 2nd-or-later
-// entry and trigger a memory-clearing reboot first; the auto-resume
-// drops the user back into the same menu item with fresh ESP-NOW state
-// and a defragmented heap.
-//
-// Single owner of the flag: it's set at the end of setupESPNow()/
-// setupWifi() — i.e. only after a WiFi mode actually came up. Callers
-// check via rebootIfWifiAlreadyUsed() BEFORE showing any "Start Wifi
-// Trx..."-style splash, so the splash shows exactly once per session
-// (once before the reboot would be wasted, since the user only sees
-// "Clearing memory..." anyway).
-static bool wifiUsedThisSession = false;
-
-static void rebootIfWifiAlreadyUsed() {
-    if (wifiUsedThisSession) {
-        MorseGameMode::triggerMemoryClearingReboot();
-    }
-}
-#else
-static inline void rebootIfWifiAlreadyUsed() {}
 #endif
 
 #ifdef CONFIG_CW_GAME
@@ -492,12 +467,6 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                     skipWords(wcount);
                 }
      startGenerator:
-                // If we'll be using WiFi for CW transmit, reboot first
-                // when WiFi was already used this session (see _trxWifi
-                // case for rationale). Done before the splash so we
-                // don't show the Generator splash twice across the reboot.
-                if (MorsePreferences::pliste[posLoraCwTransmit].value == 1)
-                  rebootIfWifiAlreadyUsed();
                 startFirst = true;
                 firstTime = true;
                 morseState = morseGenerator;
@@ -630,12 +599,6 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 break;
 #endif
       case  _trxWifi: // Wifi Transceiver
-                // Reboot first if WiFi was already used this session
-                // (QuickEspNow can't survive multiple cycles cleanly).
-                // Done here, BEFORE any "Start Wifi Trx..." splash, so the
-                // splash isn't shown twice across the reboot. Flag is set
-                // by setupESPNow()/setupWifi() themselves, not here.
-                rebootIfWifiAlreadyUsed();
                 generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions, MorsePreferences::wifiTrxOptionsSize);
                 morseState = wifiTrx;
@@ -674,15 +637,17 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 clearPaddleLatches();
                 goto setupDecoder;
 #ifdef CONFIG_CW_GAME
-      // After a WiFi/ESP-NOW session, the QuickEspNow library leaves
-      // callbacks and tasks behind that can fire during game play and
-      // corrupt unrelated state — see the comment on
-      // rebootIfWifiAlreadyUsed() above. Heap probes confirm this is
-      // not a memory-shortage issue (heap is fully restored before the
-      // game starts), so the only safe recovery is a clean reboot that
-      // auto-resumes into the same menu item.
+      // Games manage their own CW and must not inherit a transmit mode
+      // (loraTrx/wifiTrx) from a previous menu session, or the shared keyer
+      // (doPaddleIambic) would try to send keyed characters over
+      // LoRa/WiFi/ESP-NOW — which, after that subsystem was torn down on
+      // menu entry, dereferences freed state and crashes. The dedicated
+      // morseGame state gives local-sidetone-only keying: the keyer's
+      // transmit gates (== loraTrx/wifiTrx) and keyOut()'s external-TX
+      // gates (== morseKeyer/morseTrx/morseGenerator) all exclude it, so a
+      // game never transmits nor keys a real rig. Reset by the next menu mode.
       case _morseInvaders:
-                rebootIfWifiAlreadyUsed();
+                morseState = morseGame;
                 MorseGame::run();
                 m32state = menu_loop;
                 // Clear both buttons: a long-press exit leaves clicks == -1, which
@@ -691,21 +656,21 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::volButton.clicks  = 0;
                 return false;
       case _fightPileup:
-                rebootIfWifiAlreadyUsed();
+                morseState = morseGame;
                 MorsePileup::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
                 return false;
       case _radioCave:
-                rebootIfWifiAlreadyUsed();
+                morseState = morseGame;
                 MorseRadioCave::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
                 return false;
       case _morsel:
-                rebootIfWifiAlreadyUsed();
+                morseState = morseGame;
                 MorseMorsel::run();
                 m32state = menu_loop;
                 Buttons::modeButton.clicks = 0;
@@ -775,11 +740,6 @@ boolean MorseMenu::setupWifi() {
       if (err != 1)                       // if that fails too, use broadcast
         peerIP.fromString("255.255.255.255");
   }
-#ifdef CONFIG_TFT
-  // Mark WiFi as used so the next call to rebootIfWifiAlreadyUsed()
-  // triggers a memory-clearing reboot before re-entering a WiFi mode.
-  wifiUsedThisSession = true;
-#endif
   return true;
 }
 
@@ -806,11 +766,6 @@ void MorseMenu::setupESPNow() {
       quickEspNow.begin (MorsePreferences::pliste[posLoraChannel].value ? ESPNOW_CH_ALT : ESPNOW_CH); // If you don't use an AP channel needs to be specified
       delay(100);
       //DEBUG("setupESPNow has been performed.");
-#ifdef CONFIG_TFT
-      // Mark WiFi as used so the next call to rebootIfWifiAlreadyUsed()
-      // triggers a memory-clearing reboot before re-entering a WiFi mode.
-      wifiUsedThisSession = true;
-#endif
   }
   
 void MorseMenu::cleanupScreen() {
