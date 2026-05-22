@@ -40,6 +40,21 @@ enum GamePaletteIndex : uint8_t {
   PAL_BLUE,         // 0x001F  blue — input text
   PAL_MAGENTA,      // 0xF81F  magenta — attack prompt
   PAL_DARKGREY,     // 0x2104  dark grey — status/footer band
+
+  // Morse Invaders character-category colours: each invader is filled in a
+  // category colour and outlined in a dimmed version of it. The border
+  // values are the exact result of the old runtime brightening
+  // (color565(R5*4, G6*2, B5*4)) precomputed, since palette indices can't
+  // be brightened arithmetically.
+  PAL_INV_LETTERS,    // 0x0400  dark green   (fill)
+  PAL_INV_NUMBERS,    // 0x8400  dark yellow  (fill)
+  PAL_INV_PUNCT,      // 0x8200  dark orange  (fill)
+  PAL_INV_PROSIGN,    // 0x8010  dark magenta (fill)
+  PAL_INV_LETTERS_B,  // 0x0200  letters border
+  PAL_INV_NUMBERS_B,  // 0x4200  numbers border
+  PAL_INV_PUNCT_B,    // 0x4100  punct border
+  PAL_INV_PROSIGN_B,  // 0x4008  prosign border
+
   PAL_COUNT         // number of palette entries in use
 };
 
