@@ -47,16 +47,30 @@
 // ---- Game states ----
 enum MslState : uint8_t {
     MSL_INIT,
-    MSL_LOBBY,          // entry screen — press/key to start
+    MSL_MODESEL,        // choose single-player vs multiplayer
+    MSL_LOBBY,          // single-player entry screen — press/key to start
     MSL_PLAYING,        // the game proper
     MSL_RESULTS,        // end-of-game score screen
     MSL_HISCORES,       // persistent high-score table
+    MSL_MP_LOBBY,       // multiplayer: server/join role pick + roster
+    MSL_MP_WAIT,        // multiplayer: armed / waiting (synced play lands in P2.2)
     MSL_EXIT
 };
 
 // ---- Public interface ----
 namespace MorseMorsel {
     void run();
+
+    // True only while Morsel multiplayer networking is active. Gates the
+    // Morsel branch of the global ESP-NOW receive callback (m32_v6.ino) so
+    // its broadcast packets are only inspected when a Morsel MP session is up.
+    extern bool morselNetMode;
+
+    // Called from onEspnowRecv() for broadcast packets while morselNetMode is
+    // set. Copies the packet into Morsel's lock-free receive ring; the game
+    // loop drains it. Runs in the ESP-NOW RX task context, so it only does a
+    // bounded memcpy and never touches game/UI state directly.
+    void mslNetOnRecv(const uint8_t* mac, const uint8_t* data, uint8_t len);
 
     // Call once at boot, after MorseOutput::initDisplay() and
     // MorseGameMode::warmup(). Pre-grows the module's static Arduino String

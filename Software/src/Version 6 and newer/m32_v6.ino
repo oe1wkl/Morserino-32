@@ -2903,6 +2903,15 @@ void onWifiReceive(AsyncUDPPacket packet) {
 
 void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed int rssi, bool broadcast)
 {
+    // Morsel multiplayer: intercept its own protocol packets (magic "MSL").
+    #ifdef CONFIG_CW_GAME
+    if (MorseMorsel::morselNetMode && broadcast && len >= 5 &&
+        data[0] == 'M' && data[1] == 'S' && data[2] == 'L') {
+        MorseMorsel::mslNetOnRecv(mac, data, len);
+        return;
+    }
+    #endif
+
     // Pileup game: intercept and decode MOPP packet to text
     #ifdef CONFIG_CW_GAME
     if (pileupMode && len > 2 && broadcast) {

@@ -37,6 +37,7 @@
 #include "DejaVuSansMono_Bold15pt7b.h"
 
 #include <Preferences.h>
+#include <WiFi.h>                 // WiFi.macAddress() for the MP identity fallback
 
 #include <LovyanGFX.hpp>
 
@@ -53,6 +54,7 @@ extern String     generateCWword(const String& symbols);   // m32_v6.ino — pur
 extern KEYERSTATES keyerState;
 extern unsigned int ditLength;          // player's own keyer timing (for submit gap)
 extern unsigned int interWordSpace;
+extern bool       EspNowIsActive;       // owned by MorseMenu; ESP-NOW is up when true
 
 //=============================================================================
 // S1 tunables — kept here so playtesting can tweak the feel quickly
@@ -1003,6 +1005,438 @@ static void hiscoresLoop() {
 
 
 //=============================================================================
+// Multiplayer networking (ESP-NOW broadcast — protocol magic "MSL")
+//=============================================================================
+//
+// Pure broadcast, no pairing. The sender MAC from the receive callback is the
+// stable key for a client. Packet layout:
+//   [0..2] 'M''S''L'   [3] proto ver   [4] type   [5..] payload
+
+#define MSL_PROTO_VER   1
+#define MSL_PKT_BEACON  1     // server -> all: settings + state
+#define MSL_PKT_JOIN    2     // client -> server: presence + identity
+#define MSL_PKT_START   3     // server -> all: begin (P2.2 will carry words)
+
+#define MSL_IDENT_LEN   8
+#define MSL_PKTMAX     64
+#define MSL_RING        8
+#define MSL_MAXPEERS   20     // GDD soft cap
+#define MSL_PEER_TTL  8000UL  // drop a peer not heard from in this long
+#define MSL_BEACON_MS  700UL  // server beacon interval
+#define MSL_JOIN_MS   1000UL  // client join/keepalive interval
+
+namespace MorseMorsel { bool morselNetMode = false; }
+
+enum MslRole : uint8_t { MP_NONE, MP_SERVER, MP_CLIENT };
+static MslRole       mpRole = MP_NONE;
+static uint8_t       mpMenuSel = 0;            // shared two-item picker index
+
+static char          myIdent[MSL_IDENT_LEN + 1];
+
+// Lock-free-ish receive ring: producer = ESP-NOW RX task, consumer = game loop.
+struct MslRx { uint8_t mac[6]; uint8_t len; uint8_t d[MSL_PKTMAX]; };
+static volatile MslRx   mslRing[MSL_RING];
+static volatile uint8_t mslRingHead = 0, mslRingTail = 0;
+
+// Server-side roster of joined clients (keyed by MAC).
+struct MslPeer { uint8_t mac[6]; char ident[MSL_IDENT_LEN + 1];
+                 unsigned long lastHeard; bool used; };
+static MslPeer       mslPeers[MSL_MAXPEERS];
+
+// Client-side view of the server's broadcast settings.
+static bool          mpSrvSeen = false;
+static unsigned long mpSrvLast = 0;
+static uint8_t       mpSrvWlen = 0, mpSrvKoch = 0, mpSrvWords = 0, mpSrvState = 0;
+static char          mpSrvIdent[MSL_IDENT_LEN + 1] = "";
+
+void MorseMorsel::mslNetOnRecv(const uint8_t* mac, const uint8_t* data,
+                               uint8_t len) {
+    uint8_t h = mslRingHead;
+    uint8_t nxt = (h + 1) % MSL_RING;
+    if (nxt == mslRingTail) return;            // ring full: drop
+    memcpy((void*)mslRing[h].mac, mac, 6);
+    uint8_t n = len > MSL_PKTMAX ? MSL_PKTMAX : len;
+    mslRing[h].len = n;
+    memcpy((void*)mslRing[h].d, data, n);
+    mslRingHead = nxt;
+}
+
+static void mslLoadIdent() {
+    Preferences p;
+    p.begin("morserino", true);
+    String call = p.getString("playerCall", "");
+    String name = p.getString("playerName", "");
+    p.end();
+    String id = call.length() ? call : name;
+    if (!id.length()) {                        // fall back to a MAC tag
+        uint8_t m[6]; WiFi.macAddress(m);
+        char t[10];
+        snprintf(t, sizeof(t), "M-%02X%02X", m[4], m[5]);
+        id = t;
+    }
+    id.toUpperCase();
+    strncpy(myIdent, id.c_str(), MSL_IDENT_LEN);
+    myIdent[MSL_IDENT_LEN] = '\0';
+}
+
+static void mslNetReset() {
+    mslRingHead = mslRingTail = 0;
+    for (int i = 0; i < MSL_MAXPEERS; ++i) mslPeers[i].used = false;
+    mpSrvSeen = false;
+}
+
+static void mslSend(uint8_t type, const uint8_t* payload, uint8_t plen) {
+    uint8_t buf[MSL_PKTMAX];
+    buf[0] = 'M'; buf[1] = 'S'; buf[2] = 'L';
+    buf[3] = MSL_PROTO_VER;
+    buf[4] = type;
+    uint8_t n = plen > (MSL_PKTMAX - 5) ? (MSL_PKTMAX - 5) : plen;
+    if (n) memcpy(buf + 5, payload, n);
+    quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, buf, 5 + n);
+}
+
+static void mslSendBeacon(uint8_t state) {
+    uint8_t pl[4 + MSL_IDENT_LEN + 1];
+    pl[0] = wlenOpt;
+    pl[1] = MorsePreferences::kochFilter;
+    pl[2] = (uint8_t)(mslPoolN < MSL_GAME_WORDS ? mslPoolN : MSL_GAME_WORDS);
+    pl[3] = state;
+    memcpy(pl + 4, myIdent, MSL_IDENT_LEN + 1);
+    mslSend(MSL_PKT_BEACON, pl, sizeof(pl));
+}
+
+static void mslSendJoin() {
+    uint8_t pl[MSL_IDENT_LEN + 1];
+    memcpy(pl, myIdent, MSL_IDENT_LEN + 1);
+    mslSend(MSL_PKT_JOIN, pl, sizeof(pl));
+}
+
+static void mslSendStart() {
+    mslSend(MSL_PKT_START, nullptr, 0);   // P2.2 will carry the word list
+}
+
+static void mslRosterAdd(const uint8_t* mac, const char* ident) {
+    for (int i = 0; i < MSL_MAXPEERS; ++i)
+        if (mslPeers[i].used && memcmp(mslPeers[i].mac, mac, 6) == 0) {
+            mslPeers[i].lastHeard = millis();
+            strncpy(mslPeers[i].ident, ident, MSL_IDENT_LEN);
+            mslPeers[i].ident[MSL_IDENT_LEN] = '\0';
+            return;
+        }
+    for (int i = 0; i < MSL_MAXPEERS; ++i)
+        if (!mslPeers[i].used) {
+            mslPeers[i].used = true;
+            memcpy(mslPeers[i].mac, mac, 6);
+            strncpy(mslPeers[i].ident, ident, MSL_IDENT_LEN);
+            mslPeers[i].ident[MSL_IDENT_LEN] = '\0';
+            mslPeers[i].lastHeard = millis();
+            return;                            // (silently ignore > cap)
+        }
+}
+
+static void mslRosterAge() {
+    for (int i = 0; i < MSL_MAXPEERS; ++i)
+        if (mslPeers[i].used && millis() - mslPeers[i].lastHeard > MSL_PEER_TTL)
+            mslPeers[i].used = false;
+}
+
+static int mslRosterCount() {
+    int n = 0;
+    for (int i = 0; i < MSL_MAXPEERS; ++i) if (mslPeers[i].used) ++n;
+    return n;
+}
+
+// Drain the receive ring and update server roster / client server-view.
+// Returns true if a START packet was seen (client side).
+static bool mslNetPump() {
+    bool started = false;
+    while (mslRingTail != mslRingHead) {
+        uint8_t t = mslRingTail;
+        uint8_t  len = mslRing[t].len;
+        uint8_t  d[MSL_PKTMAX];
+        uint8_t  mac[6];
+        memcpy(mac, (const void*)mslRing[t].mac, 6);
+        memcpy(d,   (const void*)mslRing[t].d, len);
+        mslRingTail = (t + 1) % MSL_RING;
+
+        if (len < 5 || d[0] != 'M' || d[1] != 'S' || d[2] != 'L') continue;
+        if (d[3] != MSL_PROTO_VER) continue;
+        uint8_t type = d[4];
+        const uint8_t* pl = d + 5;
+        uint8_t pn = len - 5;
+
+        if (mpRole == MP_SERVER && type == MSL_PKT_JOIN && pn >= 1) {
+            char id[MSL_IDENT_LEN + 1];
+            strncpy(id, (const char*)pl, MSL_IDENT_LEN);
+            id[MSL_IDENT_LEN] = '\0';
+            mslRosterAdd(mac, id);
+        } else if (mpRole == MP_CLIENT && type == MSL_PKT_BEACON && pn >= 4) {
+            mpSrvSeen  = true;
+            mpSrvLast  = millis();
+            mpSrvWlen  = pl[0];
+            mpSrvKoch  = pl[1];
+            mpSrvWords = pl[2];
+            mpSrvState = pl[3];
+            if (pn >= 5) {
+                strncpy(mpSrvIdent, (const char*)(pl + 4), MSL_IDENT_LEN);
+                mpSrvIdent[MSL_IDENT_LEN] = '\0';
+            }
+        } else if (mpRole == MP_CLIENT && type == MSL_PKT_START) {
+            started = true;
+        }
+    }
+    return started;
+}
+
+//=============================================================================
+// MODE SELECT  (single-player vs multiplayer)
+//=============================================================================
+
+static void drawMenuList(const char* title, const char* a, const char* b,
+                         uint8_t sel) {
+    canvas->fillSprite(MSL_BG);
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(16, title, MSL_ACCENT);
+    canvas->setFont(&fonts::FreeSans12pt7b);
+    drawCentred(64,  a, sel == 0 ? MSL_HIGHLIGHT : MSL_DIM);
+    drawCentred(98,  b, sel == 1 ? MSL_HIGHLIGHT : MSL_DIM);
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(140, "turn=move  click=ok  hold=back", MSL_DIM);
+    pushFrame();
+}
+
+static void modeSelLoop() {
+    gameMode = false;
+    clearPaddleLatches();
+    bool dirty = true;
+    while (mslState == MSL_MODESEL) {
+        if (dirty) { drawMenuList("Morsel", "Single player", "Multiplayer", mpMenuSel);
+                     dirty = false; }
+        int e = checkEncoder();
+        if (e != 0) { MorseOutput::resetTOT(); mpMenuSel ^= 1; dirty = true;
+                      MorseOutput::pwmClick(MorsePreferences::sidetoneVolume); }
+        Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::modeButton.clicks == 1) {
+            if (mpMenuSel == 0) { mslState = MSL_LOBBY; return; }   // single player
+            // Multiplayer: bring ESP-NOW up (the reboot guard is gone — the
+            // QuickEspNow fork survives repeated cycles). The 8-bpp sprite
+            // (~52 KB) and ESP-NOW now coexist with comfortable headroom, so
+            // the sprite stays allocated and the MP lobby is drawn normally.
+            if (!EspNowIsActive) MorseMenu::setupESPNow();
+            MorseMorsel::morselNetMode = true;
+            mslLoadIdent();
+            mslNetReset();
+            mpRole = MP_NONE;
+            mpMenuSel = 0;
+            mslState = MSL_MP_LOBBY;
+            return;
+        }
+        if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+        serialEvent();
+        checkShutDown(false);
+        delay(10);
+    }
+}
+
+//=============================================================================
+// MULTIPLAYER LOBBY  (role pick -> server roster / client wait)
+//=============================================================================
+
+static void drawMpServer() {
+    canvas->fillSprite(MSL_BG);
+    char b[28];
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    snprintf(b, sizeof(b), "Server  L%s  K%d",
+             wlenLabel[wlenOpt], MorsePreferences::kochFilter);
+    drawCentred(8, b, MSL_ACCENT);
+
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    int n = mslRosterCount();
+    snprintf(b, sizeof(b), "Joined: %d", n);
+    canvas->setTextColor(n ? MSL_GREEN : MSL_DIM, MSL_BG);
+    canvas->setTextDatum(lgfx::top_left);
+    canvas->drawString(b, 10, 40);
+
+    // Roster idents, two columns.
+    int shown = 0;
+    for (int i = 0; i < MSL_MAXPEERS && shown < 10; ++i) {
+        if (!mslPeers[i].used) continue;
+        int col = shown % 2, row = shown / 2;
+        canvas->setTextColor(MSL_TEXT, MSL_BG);
+        canvas->drawString(mslPeers[i].ident, 14 + col * 150, 62 + row * 18);
+        ++shown;
+    }
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(150, "click=START  vol=len  hold=back", MSL_DIM);
+    pushFrame();
+}
+
+static void drawMpClient() {
+    canvas->fillSprite(MSL_BG);
+    char b[32];
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(12, "Client", MSL_ACCENT);
+    canvas->setFont(&fonts::FreeSans12pt7b);
+    if (!mpSrvSeen || millis() - mpSrvLast > MSL_PEER_TTL) {
+        drawCentred(60, "Searching for server...", MSL_DIM);
+    } else {
+        snprintf(b, sizeof(b), "Server: %s", mpSrvIdent);
+        drawCentred(54, b, MSL_GREEN);
+        canvas->setFont(&fonts::FreeSans9pt7b);
+        snprintf(b, sizeof(b), "Length %s   Koch %d   %d words",
+                 wlenLabel[mpSrvWlen % MSL_WLEN_OPTS], mpSrvKoch, mpSrvWords);
+        drawCentred(90, b, MSL_TEXT);
+        drawCentred(112, "waiting for server to start", MSL_DIM);
+    }
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(150, "hold = back", MSL_DIM);
+    pushFrame();
+}
+
+static void mpLobbyLoop() {
+    gameMode = false;
+    clearPaddleLatches();
+    unsigned long lastBeacon = 0, lastJoin = 0, lastDraw = 0;
+    bool dirty = true;
+
+    while (mslState == MSL_MP_LOBBY) {
+        // ---- role not chosen yet ----
+        if (mpRole == MP_NONE) {
+            if (dirty) { drawMenuList("Multiplayer", "Start as Server",
+                                      "Join a game", mpMenuSel); dirty = false; }
+            int e = checkEncoder();
+            if (e != 0) { MorseOutput::resetTOT(); mpMenuSel ^= 1; dirty = true;
+                          MorseOutput::pwmClick(MorsePreferences::sidetoneVolume); }
+            Buttons::modeButton.Update();
+            if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+            if (Buttons::modeButton.clicks == 1) {
+                if (mpMenuSel == 0) {
+                    mpRole = MP_SERVER;
+                    // A server session starts at a full-alphabet default
+                    // (Koch 41) regardless of the operator's personal lesson,
+                    // so a multiplayer game uses the whole character set by
+                    // default; the operator can still dial it back with the
+                    // encoder. (Single-player keeps the user's current lesson.)
+                    // savedKochFilter restores the real value on Morsel exit.
+                    MorsePreferences::kochFilter =
+                        constrain(41, (int)MorsePreferences::kochMinimum,
+                                      (int)MorsePreferences::kochMaximum);
+                    buildPool();
+                } else {
+                    mpRole = MP_CLIENT;
+                }
+                mslNetReset();
+                lastBeacon = lastJoin = 0; dirty = true;
+            }
+            if (Buttons::modeButton.clicks == -1) { mslState = MSL_MODESEL; return; }
+            Buttons::volButton.Update();
+            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+            serialEvent(); checkShutDown(false); delay(10);
+            continue;
+        }
+
+        // ---- active role ----
+        bool started = mslNetPump();
+
+        if (mpRole == MP_SERVER) {
+            mslRosterAge();
+            if (millis() - lastBeacon > MSL_BEACON_MS) {
+                mslSendBeacon(0);
+                lastBeacon = millis();
+            }
+            int e = checkEncoder();
+            if (e != 0) {
+                MorseOutput::resetTOT();
+                int v = constrain((int)MorsePreferences::kochFilter + e,
+                                  (int)MorsePreferences::kochMinimum,
+                                  (int)MorsePreferences::kochMaximum);
+                MorsePreferences::kochFilter = v;
+                buildPool();
+                MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+                dirty = true;
+            }
+            Buttons::modeButton.Update();
+            if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+            if (Buttons::modeButton.clicks == 1) {       // START
+                mslSendStart();
+                mslState = MSL_MP_WAIT; return;
+            }
+            if (Buttons::modeButton.clicks == -1) {      // back to role pick
+                mpRole = MP_NONE; mpMenuSel = 0; dirty = true; continue;
+            }
+            Buttons::volButton.Update();
+            if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
+            if (Buttons::volButton.clicks == 1) {        // word length
+                wlenOpt = (wlenOpt + 1) % MSL_WLEN_OPTS;
+                mslSaveWlen(); buildPool();
+                MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+                dirty = true;
+            }
+            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+            if (dirty || millis() - lastDraw > 500) {
+                drawMpServer(); dirty = false; lastDraw = millis();
+            }
+        } else {  // MP_CLIENT
+            if (millis() - lastJoin > MSL_JOIN_MS) {
+                mslSendJoin();
+                lastJoin = millis();
+            }
+            if (started) { mslState = MSL_MP_WAIT; return; }
+            Buttons::modeButton.Update();
+            if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+            if (Buttons::modeButton.clicks == -1) {
+                mpRole = MP_NONE; mpMenuSel = 0; dirty = true; continue;
+            }
+            Buttons::volButton.Update();
+            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+            if (dirty || millis() - lastDraw > 400) {
+                drawMpClient(); dirty = false; lastDraw = millis();
+            }
+        }
+        serialEvent();
+        checkShutDown(false);
+        delay(8);
+    }
+}
+
+//=============================================================================
+// MULTIPLAYER WAIT  (P2.1 placeholder — synced game lands in P2.2)
+//=============================================================================
+
+static void mpWaitLoop() {
+    canvas->fillSprite(MSL_BG);
+    canvas->setFont(&fonts::FreeSansBold12pt7b);
+    drawCentred(20, mpRole == MP_SERVER ? "Armed (server)" : "Armed (client)",
+                MSL_HIGHLIGHT);
+    canvas->setFont(&fonts::FreeSans12pt7b);
+    drawCentred(64, "Synced play: P2.2", MSL_TEXT);
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(140, "click=back  hold=quit", MSL_DIM);
+    pushFrame();
+
+    unsigned long lastBeacon = 0;
+    while (mslState == MSL_MP_WAIT) {
+        mslNetPump();
+        if (mpRole == MP_SERVER && millis() - lastBeacon > MSL_BEACON_MS) {
+            mslSendBeacon(1);            // state 1 = armed
+            lastBeacon = millis();
+        }
+        Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::modeButton.clicks == 1)  { mslState = MSL_MP_LOBBY; return; }
+        if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks == -1)  { mslState = MSL_EXIT; return; }
+        serialEvent();
+        checkShutDown(false);
+        delay(10);
+    }
+}
+
+//=============================================================================
 // Public entry point
 //=============================================================================
 
@@ -1011,17 +1445,26 @@ void MorseMorsel::run() {
     savedKochFilter = MorsePreferences::kochFilter;   // restored on exit
     mslEnc = MSL_ENC_SPEED;
     mslLoadPrefs();                                   // word length + scores
-    mslState = MSL_LOBBY;
+    mpMenuSel = 0;
+    mslState  = MSL_MODESEL;                           // pick single vs multiplayer
 
     while (mslState != MSL_EXIT) {
         switch (mslState) {
+            case MSL_MODESEL:  modeSelLoop();  break;
             case MSL_LOBBY:    lobbyLoop();    break;
             case MSL_PLAYING:  playLoop();     break;
             case MSL_RESULTS:  resultsLoop();  break;
             case MSL_HISCORES: hiscoresLoop(); break;
+            case MSL_MP_LOBBY: mpLobbyLoop();  break;
+            case MSL_MP_WAIT:  mpWaitLoop();   break;
             default:           mslState = MSL_EXIT; break;
         }
     }
+
+    // Stop routing ESP-NOW packets to Morsel. The WiFi/ESP-NOW stack itself
+    // is torn down by MorseMenu::menu_() on return (it owns EspNowIsActive).
+    MorseMorsel::morselNetMode = false;
+    mpRole = MP_NONE;
 
     cwStop();
     keyOut(false, true, 0, 0);
