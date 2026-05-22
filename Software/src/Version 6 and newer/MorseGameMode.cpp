@@ -48,18 +48,19 @@ extern uint32_t rebootMagic;
 extern uint8_t  rebootMenuPtr;
 
 // Pixels removed from the long side of the panel when sizing the sprite.
-// At 170×320, trimming 28 from the long side gives a 170×292 / 292×170
-// sprite (= 99,280 bytes), ~4 KB smaller than the 16-px-trim version.
-// Bumped from 16 to 28 to leave a comfortable margin between the sprite
-// and the largest free contiguous heap block after a setupESPNow /
-// setupWifi cycle. Heap probes measured (free / largest contiguous):
-//   clean boot     163 KB / 106 KB    sprite + 7 KB margin
-//   after WiFi     120 KB / 106 KB    sprite + 7 KB margin
-//   after ESP-NOW  113 KB / 102 KB    sprite + 3 KB margin
-// Decrease only after re-running the heap diagnostics and confirming
-// there's still headroom.
+// At 170×320 and 8-bpp (1 byte/pixel, see GamePalette.h), trimming 16
+// gives a 304×170 sprite (= 51,680 bytes + palette). 304 matches the
+// games' layout width exactly, so nothing is clipped on the long edge.
+//
+// This was 28 while the sprite was 16-bpp (~99 KB), needed to keep a
+// thin ~3 KB margin against the largest free block after ESP-NOW. The
+// 8-bpp conversion halved the sprite, so we restored the full layout
+// width. Heap probes after the conversion (free / largest contiguous):
+//   clean boot          163 KB / 106 KB
+//   after sprite alloc  110 KB /  55 KB   (sprite ~52 KB)
+//   after setupESPNow   110 KB /  98 KB   → sprite + ESP-NOW: ~46 KB margin
 #ifndef MORSE_GAMEMODE_SPRITE_TRIM
-#define MORSE_GAMEMODE_SPRITE_TRIM 28
+#define MORSE_GAMEMODE_SPRITE_TRIM 16
 #endif
 
 namespace {
