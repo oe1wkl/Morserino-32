@@ -1461,10 +1461,21 @@ void MorseMorsel::run() {
         }
     }
 
-    // Stop routing ESP-NOW packets to Morsel. The WiFi/ESP-NOW stack itself
-    // is torn down by MorseMenu::menu_() on return (it owns EspNowIsActive).
+    // Stop routing ESP-NOW packets to Morsel, and tear down the radio we
+    // brought up for multiplayer. This must happen here, not lean on
+    // menu_()'s teardown: returning from a game keeps us inside the still-
+    // running menu_() loop, so its entry-time WiFi/ESP-NOW teardown does NOT
+    // re-run between two game launches. If ESP-NOW were left up, re-entering
+    // Morsel would allocate the 52 KB sprite against a heap still fragmented
+    // by ESP-NOW (free is ample, but the largest contiguous block drops just
+    // below the sprite size) and the allocation would fail into a reboot.
     MorseMorsel::morselNetMode = false;
     mpRole = MP_NONE;
+    if (EspNowIsActive) {
+        quickEspNow.stop();
+        EspNowIsActive = false;
+        WiFi.mode(WIFI_OFF);
+    }
 
     cwStop();
     keyOut(false, true, 0, 0);
