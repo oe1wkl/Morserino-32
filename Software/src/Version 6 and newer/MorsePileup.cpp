@@ -66,15 +66,20 @@ static const int  CODE_CHARS_LEN = 36;
 // (see MorseGameMode.cpp) to leave heap headroom for ESP-NOW/BT/WiFi.
 // The bottom 16 px of the panel are not drawn; UI must lay out within FTP_H.
 #define FTP_H  304
-#define FTP_BG     0x0841
-#define FTP_TEXT   0xFFFF
-#define FTP_ACCENT 0x07FF
-#define FTP_OK     0x07E0
-#define FTP_WARN   0xF800
-#define FTP_TITLE  0xFFE0
-#define FTP_DIM    0x7BEF
-#define FTP_INPUT  0x001F      // blue for input text
-#define FTP_ATTACK 0xF81F      // magenta for attack prompt
+// The game sprite is 8-bpp indexed (see GamePalette.h): these names map to
+// shared palette indices, not RGB565 values. The palette entries hold the
+// exact RGB565 colours used before, so the on-screen result is unchanged.
+#include "GamePalette.h"
+#define FTP_BG     PAL_BG        // 0x0841
+#define FTP_TEXT   PAL_WHITE     // 0xFFFF
+#define FTP_ACCENT PAL_CYAN      // 0x07FF
+#define FTP_OK     PAL_GREEN     // 0x07E0
+#define FTP_WARN   PAL_RED       // 0xF800
+#define FTP_TITLE  PAL_YELLOW    // 0xFFE0
+#define FTP_DIM    PAL_GREY      // 0x7BEF
+#define FTP_INPUT  PAL_BLUE      // 0x001F blue for input text
+#define FTP_ATTACK PAL_MAGENTA   // 0xF81F magenta for attack prompt
+#define FTP_BAND   PAL_DARKGREY  // 0x2104 dark grey status/footer band
 
 // Difficulty presets
 //                              label       timeout  spawnMax spawnMin initCal dropsPerLife
@@ -1050,15 +1055,15 @@ static void drawInputArea() {
     }
 
     // Bottom status bar
-    canvas->fillRect(0, 290, FTP_W, 30, 0x2104);
+    canvas->fillRect(0, 290, FTP_W, 30, FTP_BAND);
     canvas->setFont(&fonts::Font0);
     char buf[32];
     snprintf(buf, sizeof(buf), "%d wpm", ftp.wpm);
-    canvas->setTextColor(FTP_TEXT, 0x2104);
+    canvas->setTextColor(FTP_TEXT, FTP_BAND);
     canvas->drawString(buf, 4, 298);
 
     if (ftp.singlePlayer) {
-        canvas->setTextColor(FTP_TITLE, 0x2104);
+        canvas->setTextColor(FTP_TITLE, FTP_BAND);
         canvas->setTextDatum(lgfx::top_right);
         canvas->drawString("SOLO", FTP_W - 4, 298);
         canvas->setTextDatum(lgfx::top_left);
@@ -1459,18 +1464,18 @@ static void statePileup() {
         drawCentredText(218, "Click:submit FN:spd/vol", FTP_DIM);
 
         // Status bar
-        canvas->fillRect(0, 290, FTP_W, 30, 0x2104);
+        canvas->fillRect(0, 290, FTP_W, 30, FTP_BAND);
         canvas->setFont(&fonts::Font0);
         {
             char buf[20];
             snprintf(buf, sizeof(buf), "%d wpm%s", ftp.wpm,
                      encoderIsVolume ? "" : " <");
-            canvas->setTextColor(encoderIsVolume ? FTP_DIM : FTP_TEXT, 0x2104);
+            canvas->setTextColor(encoderIsVolume ? FTP_DIM : FTP_TEXT, FTP_BAND);
             canvas->drawString(buf, 4, 294);
             snprintf(buf, sizeof(buf), "%sVol %d",
                      encoderIsVolume ? "< " : "",
                      MorsePreferences::sidetoneVolume);
-            canvas->setTextColor(encoderIsVolume ? FTP_TEXT : FTP_DIM, 0x2104);
+            canvas->setTextColor(encoderIsVolume ? FTP_TEXT : FTP_DIM, FTP_BAND);
             canvas->drawString(buf, 4, 306);
         }
 
@@ -1580,7 +1585,7 @@ static void stateGameOver() {
 //=== Main entry point ===
 
 void MorsePileup::run() {
-    canvas = MorseGameMode::enterPortrait(MorsePreferences::leftHanded);
+    canvas = MorseGameMode::enterPortrait(MorsePreferences::leftHanded, 8);
     if (!canvas) return;
 
     loadPlayerIdentity();

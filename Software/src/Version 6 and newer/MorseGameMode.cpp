@@ -33,6 +33,7 @@
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
 #include "morsedefs.h"
+#include "GamePalette.h"
 
 extern ESP32Encoder rotaryEncoder;
 extern const int    PinCLK;
@@ -66,6 +67,24 @@ namespace {
   LGFX_Sprite *sprite         = nullptr;
   bool         lastLeftHanded = false;
 
+  // RGB565 colour for each GamePaletteIndex. Order MUST match the enum in
+  // GamePalette.h. Loaded into an 8-bpp sprite's palette by allocate().
+  const uint16_t kGamePalette[PAL_COUNT] = {
+    0x0000,  // PAL_BLACK
+    0x0841,  // PAL_BG
+    0xFFFF,  // PAL_WHITE
+    0xF800,  // PAL_RED
+    0x07FF,  // PAL_CYAN
+    0xFFE0,  // PAL_YELLOW
+    0x07E0,  // PAL_GREEN
+    0x7BEF,  // PAL_GREY
+    0xBDF7,  // PAL_LIGHTGREY
+    0x528A,  // PAL_MIDBLUE
+    0x001F,  // PAL_BLUE
+    0xF81F,  // PAL_MAGENTA
+    0x2104,  // PAL_DARKGREY
+  };
+
   // Restore the Morserino menu's display state. Used both by exit() and by
   // the failure path of allocate() so that callers see a coherent menu
   // regardless of whether enter*() succeeded.
@@ -84,7 +103,7 @@ namespace {
     (void) checkEncoder();
   }
 
-  LGFX_Sprite *allocate(int rotation, bool leftHanded) {
+  LGFX_Sprite *allocate(int rotation, bool leftHanded, uint8_t colorDepth) {
     lastLeftHanded = leftHanded;
 
     auto *lcd = (&display);
@@ -115,7 +134,7 @@ namespace {
       MorseGameMode::triggerMemoryClearingReboot();
     }
     sprite->setPsram(false);
-    sprite->setColorDepth(16);
+    sprite->setColorDepth(colorDepth == 8 ? 8 : 16);
     if (!sprite->createSprite(spriteW, spriteH)) {
       // Sprite buffer allocation failed — heap is fragmented (typically
       // after a WiFi Trx session). Reboot to clear, then resume directly
@@ -124,7 +143,17 @@ namespace {
       sprite = nullptr;
       MorseGameMode::triggerMemoryClearingReboot();
     }
-    sprite->fillSprite(TFT_BLACK);
+    if (colorDepth == 8) {
+      // Load the shared game palette. createSprite() auto-creates a default
+      // grayscale palette for 8-bpp; this replaces it (create_palette frees
+      // the old one first, so no leak). PAL_BLACK is index 0, so a sprite
+      // cleared to index 0 reads as true black — consistent with the
+      // TFT_BLACK clear used by the 16-bpp path.
+      sprite->createPalette(kGamePalette, PAL_COUNT);
+      sprite->fillSprite(PAL_BLACK);
+    } else {
+      sprite->fillSprite(TFT_BLACK);
+    }
     return sprite;
   }
 
@@ -148,12 +177,12 @@ void MorseGameMode::warmup() {
   tmp.deleteSprite();
 }
 
-LGFX_Sprite *MorseGameMode::enterPortrait(bool leftHanded) {
-  return allocate(leftHanded ? 0 : 2, leftHanded);
+LGFX_Sprite *MorseGameMode::enterPortrait(bool leftHanded, uint8_t colorDepth) {
+  return allocate(leftHanded ? 0 : 2, leftHanded, colorDepth);
 }
 
-LGFX_Sprite *MorseGameMode::enterLandscape(bool leftHanded) {
-  return allocate(leftHanded ? 1 : 3, leftHanded);
+LGFX_Sprite *MorseGameMode::enterLandscape(bool leftHanded, uint8_t colorDepth) {
+  return allocate(leftHanded ? 1 : 3, leftHanded, colorDepth);
 }
 
 void MorseGameMode::pushFrame() {

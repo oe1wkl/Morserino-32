@@ -1007,7 +1007,7 @@ static void hiscoresLoop() {
 //=============================================================================
 
 void MorseMorsel::run() {
-    canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded);
+    canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded, 8);
     savedKochFilter = MorsePreferences::kochFilter;   // restored on exit
     mslEnc = MSL_ENC_SPEED;
     mslLoadPrefs();                                   // word length + scores

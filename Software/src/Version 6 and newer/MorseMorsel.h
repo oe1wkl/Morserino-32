@@ -29,16 +29,20 @@
 #define MSL_SCREEN_W       304
 #define MSL_SCREEN_H       170
 
-// ---- Colour palette (RGB565) ----
-#define MSL_BG             0x0841       // dark near-black
-#define MSL_TEXT           0xFFFF       // white — body text
-#define MSL_DIM            0xBDF7       // light grey — secondary/hints
-#define MSL_ACCENT         0x07FF       // cyan — headings
-#define MSL_HIGHLIGHT      0xFFE0       // yellow — CW playing, warnings
-#define MSL_RED            0xF800       // red — wrong letter
-#define MSL_GREEN          0x07E0       // green — correct letter/position
-#define MSL_GREY           0x528A       // grey — revealed slot keyed wrong
-#define MSL_FRAME          0x528A       // mid-blue — decorative frames
+// ---- Colour palette ----
+// The game sprite is 8-bpp indexed (see GamePalette.h): these names map to
+// shared palette indices, not RGB565 values. The palette entries hold the
+// exact RGB565 colours used before, so the on-screen result is unchanged.
+#include "GamePalette.h"
+#define MSL_BG             PAL_BG          // 0x0841 dark near-black
+#define MSL_TEXT           PAL_WHITE       // 0xFFFF white — body text
+#define MSL_DIM            PAL_LIGHTGREY   // 0xBDF7 light grey — secondary/hints
+#define MSL_ACCENT         PAL_CYAN        // 0x07FF cyan — headings
+#define MSL_HIGHLIGHT      PAL_YELLOW      // 0xFFE0 yellow — CW playing, warnings
+#define MSL_RED            PAL_RED         // 0xF800 red — wrong letter
+#define MSL_GREEN          PAL_GREEN       // 0x07E0 green — correct letter/position
+#define MSL_GREY           PAL_MIDBLUE     // 0x528A grey — revealed slot keyed wrong
+#define MSL_FRAME          PAL_MIDBLUE     // 0x528A mid-blue — decorative frames
 
 // ---- Game states ----
 enum MslState : uint8_t {
