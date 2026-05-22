@@ -2710,7 +2710,7 @@ void MorseRadioCave::run() {
     // MorseGameMode::enterLandscape() doesn't return on allocation failure
     // — it triggers a memory-clearing reboot and resumes directly into
     // this game on the next boot. So canvas is always non-null here.
-    canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded);
+    canvas = MorseGameMode::enterLandscape(MorsePreferences::leftHanded, 8);
 
     rcState = RC_LOBBY;
 

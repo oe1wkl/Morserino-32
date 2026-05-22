@@ -35,16 +35,20 @@
 #define RC_MAIN_BOTTOM    (RC_SCREEN_H - RC_BOTBAR_H - 2)
 #define RC_MAIN_H         (RC_MAIN_BOTTOM - RC_MAIN_TOP)
 
-// ---- Colour palette (RGB565) ----
+// ---- Colour palette ----
+// The game sprite is 8-bpp indexed (see GamePalette.h): these names map to
+// shared palette indices, not RGB565 values. The palette entries hold the
+// exact RGB565 colours used before, so the on-screen result is unchanged.
 // All foreground colors tested for readability on near-black background.
-#define RC_BG             0x0841       // dark near-black
-#define RC_TEXT           0xFFFF       // white — body text
-#define RC_DIM            0xBDF7       // light grey — secondary/hints
-#define RC_ACCENT         0x07FF       // cyan — headings, room names
-#define RC_HIGHLIGHT      0xFFE0       // yellow — CW playing, warnings
-#define RC_DANGER         0xF800       // red — death, errors
-#define RC_OK             0x07E0       // green — success feedback
-#define RC_FRAME          0x528A       // mid-blue — decorative frames (visible on black)
+#include "GamePalette.h"
+#define RC_BG             PAL_BG          // 0x0841 dark near-black
+#define RC_TEXT           PAL_WHITE       // 0xFFFF white — body text
+#define RC_DIM            PAL_LIGHTGREY   // 0xBDF7 light grey — secondary/hints
+#define RC_ACCENT         PAL_CYAN        // 0x07FF cyan — headings, room names
+#define RC_HIGHLIGHT      PAL_YELLOW      // 0xFFE0 yellow — CW playing, warnings
+#define RC_DANGER         PAL_RED         // 0xF800 red — death, errors
+#define RC_OK             PAL_GREEN       // 0x07E0 green — success feedback
+#define RC_FRAME          PAL_MIDBLUE     // 0x528A mid-blue — decorative frames
 
 // ---- Save format ----
 #define RC_SAVE_VERSION   1            // bump if save-blob layout changes

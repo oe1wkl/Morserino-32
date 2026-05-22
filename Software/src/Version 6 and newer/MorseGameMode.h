@@ -36,11 +36,16 @@ namespace MorseGameMode {
   // setup() then auto-resumes into the same menu item with a defragmented
   // heap. Callers may still keep a defensive `if (!canvas) return;` for
   // robustness, but it should never fire.
-  LGFX_Sprite *enterPortrait(bool leftHanded);
+  //
+  // colorDepth selects the sprite's bits-per-pixel: 16 (RGB565, the
+  // default) or 8 (indexed palette — see GamePalette.h). An 8-bpp sprite
+  // is half the size; games that opt in must draw using PAL_* palette
+  // indices instead of RGB565 values.
+  LGFX_Sprite *enterPortrait(bool leftHanded, uint8_t colorDepth = 16);
 
   // Allocate a fresh landscape-orientation game sprite. Same semantics as
   // enterPortrait — reboots on allocation failure.
-  LGFX_Sprite *enterLandscape(bool leftHanded);
+  LGFX_Sprite *enterLandscape(bool leftHanded, uint8_t colorDepth = 16);
 
   // Push the sprite to the panel.
   void pushFrame();
