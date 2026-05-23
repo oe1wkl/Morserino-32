@@ -53,7 +53,7 @@ enum MslState : uint8_t {
     MSL_RESULTS,        // end-of-game score screen
     MSL_HISCORES,       // persistent high-score table
     MSL_MP_LOBBY,       // multiplayer: server/join role pick + roster
-    MSL_MP_WAIT,        // multiplayer: armed / waiting (synced play lands in P2.2)
+    MSL_MP_RESULTS,     // multiplayer: end-of-game scores (own + collected)
     MSL_EXIT
 };
 
