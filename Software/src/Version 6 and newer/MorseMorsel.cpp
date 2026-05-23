@@ -98,7 +98,19 @@ static int          mslPoolN = 0;
 
 // The 10 words selected for the current game (no repetition).
 static MslPoolEntry  gameSel[MSL_GAME_WORDS];
+// Resolved word strings for the current game. Single-player and the MP
+// server fill these from gameSel (the pool selection); an MP client fills
+// them from the word list the server broadcasts. startRound() always reads
+// the word from here, so the play engine is identical in all three cases.
+static char          gameWordStr[MSL_GAME_WORDS][MSL_MAX_WORD_LEN + 1];
 static int           gameWords;          // = min(MSL_GAME_WORDS, mslPoolN)
+
+// True while playing a multiplayer synced game (vs single-player). Gates the
+// MP per-word timeout and end-of-game result reporting in the play loop.
+// Declared up here because the shared play engine (startRound/finishWord/
+// playLoop) reads it, but it's driven by the multiplayer code further down.
+static bool          mpGame = false;
+static void          mslSendResult();    // defined in the multiplayer section
 static int           wordIndex;          // 0-based: which game word we're on
 static unsigned long totalAdjMs;         // accumulated adjusted time
 static int           totalGuesses;
@@ -145,6 +157,7 @@ static bool          evaluated;          // true while showing coloured result
 static unsigned long lastCharTime;
 static unsigned long idleSince;          // last real player activity
 static unsigned long nextReplayAt;       // when to auto-replay the clue
+static unsigned long mpWordDeadline;     // MP: hard per-word skip deadline
 static int           roundNo;            // 1-based attempt count for this word
 static int           clueWpm;            // current clue speed (per schedule)
 static unsigned long wordStartMs;        // when the clue first began this word
@@ -483,16 +496,8 @@ static void noteActivity() {
 }
 
 // Pick the game's words (no repetition) and reset the running score.
-static void startGame() {
-    gameWords = mslPoolN < MSL_GAME_WORDS ? mslPoolN : MSL_GAME_WORDS;
-    // Partial Fisher-Yates: shuffle the first gameWords entries of the pool.
-    for (int i = 0; i < gameWords; ++i) {
-        int j = i + random(mslPoolN - i);
-        MslPoolEntry t = mslPool[i];
-        mslPool[i] = mslPool[j];
-        mslPool[j] = t;
-        gameSel[i] = mslPool[i];
-    }
+// Reset per-game counters shared by single-player and multiplayer.
+static void resetGameCounters() {
     wordIndex    = 0;
     totalAdjMs   = 0;
     totalGuesses = 0;
@@ -503,8 +508,35 @@ static void startGame() {
     lastRank     = -1;
 }
 
+static void startGame() {
+    gameWords = mslPoolN < MSL_GAME_WORDS ? mslPoolN : MSL_GAME_WORDS;
+    // Partial Fisher-Yates: shuffle the first gameWords entries of the pool.
+    for (int i = 0; i < gameWords; ++i) {
+        int j = i + random(mslPoolN - i);
+        MslPoolEntry t = mslPool[i];
+        mslPool[i] = mslPool[j];
+        mslPool[j] = t;
+        gameSel[i] = mslPool[i];
+        strncpy(gameWordStr[i], poolWord(gameSel[i]), MSL_MAX_WORD_LEN);
+        gameWordStr[i][MSL_MAX_WORD_LEN] = '\0';
+    }
+    resetGameCounters();
+}
+
+// MP client entry: play a fixed list of words supplied by the server,
+// bypassing the local pool selection.
+static void startGameFromWords(const char words[][MSL_MAX_WORD_LEN + 1],
+                               int count) {
+    gameWords = count > MSL_GAME_WORDS ? MSL_GAME_WORDS : count;
+    for (int i = 0; i < gameWords; ++i) {
+        strncpy(gameWordStr[i], words[i], MSL_MAX_WORD_LEN);
+        gameWordStr[i][MSL_MAX_WORD_LEN] = '\0';
+    }
+    resetGameCounters();
+}
+
 static void startRound() {
-    const char* w = poolWord(gameSel[wordIndex]);
+    const char* w = gameWordStr[wordIndex];
     strncpy(target, w, MSL_MAX_WORD_LEN);
     target[MSL_MAX_WORD_LEN] = '\0';
     for (char* p = target; *p; ++p) *p = tolower(*p);
@@ -520,6 +552,16 @@ static void startRound() {
     roundNo     = 1;
     clueWpm     = clueWpmForRound(roundNo);
     wordStartMs = millis();              // GDD: time from first clue play
+
+    if (mpGame) {
+        // GDD multiplayer per-word timeout: 20 x (play time at 18 WPM) + 10 s.
+        // Approximate the CW play time as wordLen chars x ~10 dit-units/char
+        // at 18 WPM (dit ~ 1200/18 ms). Generous on purpose — it's a stall
+        // guard, not the expected solve time.
+        unsigned long ditMs  = 1200UL / 18;
+        unsigned long playMs = (unsigned long)wordLen * 10UL * ditMs;
+        mpWordDeadline = millis() + 20UL * playMs + 10000UL;
+    }
 
     gameMode = true;
     clearPaddleLatches();
@@ -562,8 +604,15 @@ static void finishWord(bool skipped) {
     wordIndex++;
     if (wordIndex >= gameWords) {
         cwStop();
-        mslRecordScore();              // insert into NVS high-score table
-        mslState = MSL_RESULTS;
+        if (mpGame) {
+            // Multiplayer: report our final score to the server and show the
+            // MP results screen. No NVS high score for MP games.
+            mslSendResult();
+            mslState = MSL_MP_RESULTS;
+        } else {
+            mslRecordScore();          // insert into NVS high-score table
+            mslState = MSL_RESULTS;
+        }
     } else {
         startRound();
     }
@@ -673,24 +722,28 @@ static void lobbyLoop() {
 //=============================================================================
 
 static void playLoop() {
-    if (buildPool() < MSL_MIN_POOL) {
-        drawPoolWarning();
-        while (mslState == MSL_PLAYING) {
-            // Any press returns to the lobby so the player can raise the
-            // Koch lesson or pick a shorter word length.
-            if (checkPaddles()) { while (checkPaddles()) delay(5); mslState = MSL_LOBBY; return; }
-            Buttons::modeButton.Update();
-            if (Buttons::modeButton.clicks != 0) { mslState = MSL_LOBBY; return; }
-            Buttons::volButton.Update();
-            if (Buttons::volButton.clicks != 0) { mslState = MSL_LOBBY; return; }
-            serialEvent();
-            checkShutDown(false);
-            delay(10);
+    // Single-player builds the pool and picks words here. In multiplayer the
+    // word list is already set (server picked it in the lobby and broadcast
+    // it; the client received it), so skip straight to the first round.
+    if (!mpGame) {
+        if (buildPool() < MSL_MIN_POOL) {
+            drawPoolWarning();
+            while (mslState == MSL_PLAYING) {
+                // Any press returns to the lobby so the player can raise the
+                // Koch lesson or pick a shorter word length.
+                if (checkPaddles()) { while (checkPaddles()) delay(5); mslState = MSL_LOBBY; return; }
+                Buttons::modeButton.Update();
+                if (Buttons::modeButton.clicks != 0) { mslState = MSL_LOBBY; return; }
+                Buttons::volButton.Update();
+                if (Buttons::volButton.clicks != 0) { mslState = MSL_LOBBY; return; }
+                serialEvent();
+                checkShutDown(false);
+                delay(10);
+            }
+            return;
         }
-        return;
+        startGame();
     }
-
-    startGame();
     startRound();
     drawBoard("Listen and key the word");
     unsigned long lastFrame = millis();
@@ -825,11 +878,22 @@ static void playLoop() {
             }
             if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
 
+            // Multiplayer hard per-word deadline (GDD): if the word isn't
+            // solved in time, skip it (penalty) and move on, so a stuck
+            // player can't stall their own game.
+            if (mpGame && millis() > mpWordDeadline) {
+                finishWord(true);                 // skip -> advance or end
+                if (mslState != MSL_PLAYING) return;
+                drawBoard("Time! Next word");
+                continue;
+            }
+
             // Idle handling (single-player quality of life, not a penalty):
             // after a spell of no input, replay the clue; after a long total
-            // idle, return gracefully to the lobby.
+            // idle, return gracefully to the lobby. (MP uses the deadline
+            // above instead of the idle-exit.)
             if (!evaluated && guessLen == 0 && cw.done && !cw.playing) {
-                if (millis() - idleSince > MSL_IDLE_EXIT_MS) {
+                if (!mpGame && millis() - idleSince > MSL_IDLE_EXIT_MS) {
                     cwStop();
                     mslState = MSL_LOBBY;
                     return;
@@ -1017,8 +1081,10 @@ static void hiscoresLoop() {
 #define MSL_PKT_JOIN    2     // client -> server: presence + identity
 #define MSL_PKT_START   3     // server -> all: begin (P2.2 will carry words)
 
+#define MSL_PKT_RESULT  4     // client -> server: final score for this game
+
 #define MSL_IDENT_LEN   8
-#define MSL_PKTMAX     64
+#define MSL_PKTMAX     200    // must fit the START word list (count + ~10 words)
 #define MSL_RING        8
 #define MSL_MAXPEERS   20     // GDD soft cap
 #define MSL_PEER_TTL  8000UL  // drop a peer not heard from in this long
@@ -1033,14 +1099,21 @@ static uint8_t       mpMenuSel = 0;            // shared two-item picker index
 
 static char          myIdent[MSL_IDENT_LEN + 1];
 
+// Word list received from the server's START packet (client side).
+static char          mpWords[MSL_GAME_WORDS][MSL_MAX_WORD_LEN + 1];
+static int           mpWordCount = 0;
+
 // Lock-free-ish receive ring: producer = ESP-NOW RX task, consumer = game loop.
 struct MslRx { uint8_t mac[6]; uint8_t len; uint8_t d[MSL_PKTMAX]; };
 static volatile MslRx   mslRing[MSL_RING];
 static volatile uint8_t mslRingHead = 0, mslRingTail = 0;
 
-// Server-side roster of joined clients (keyed by MAC).
+// Server-side roster of joined clients (keyed by MAC), plus the final result
+// each client reports at game end (P2.2 collects; P2.3 ranks/broadcasts).
 struct MslPeer { uint8_t mac[6]; char ident[MSL_IDENT_LEN + 1];
-                 unsigned long lastHeard; bool used; };
+                 unsigned long lastHeard; bool used;
+                 bool reported; uint32_t resAdjMs; uint16_t resGuesses;
+                 uint8_t resSolved; };
 static MslPeer       mslPeers[MSL_MAXPEERS];
 
 // Client-side view of the server's broadcast settings.
@@ -1111,8 +1184,36 @@ static void mslSendJoin() {
     mslSend(MSL_PKT_JOIN, pl, sizeof(pl));
 }
 
+// START carries the word list the clients will play:
+//   [0] count   then per word: [len][chars...]
 static void mslSendStart() {
-    mslSend(MSL_PKT_START, nullptr, 0);   // P2.2 will carry the word list
+    uint8_t pl[MSL_PKTMAX - 5];
+    uint8_t n = 0;
+    pl[n++] = (uint8_t)gameWords;
+    for (int i = 0; i < gameWords; ++i) {
+        uint8_t wl = strlen(gameWordStr[i]);
+        if (wl > MSL_MAX_WORD_LEN) wl = MSL_MAX_WORD_LEN;
+        if ((int)(n + 1 + wl) > (int)sizeof(pl)) break;
+        pl[n++] = wl;
+        memcpy(pl + n, gameWordStr[i], wl);
+        n += wl;
+    }
+    mslSend(MSL_PKT_START, pl, n);
+}
+
+// Client -> server final score: adjMs(4) guesses(2) solved(1) ident.
+static void mslSendResult() {
+    uint8_t pl[7 + MSL_IDENT_LEN + 1];
+    uint8_t n = 0;
+    uint32_t adj = (uint32_t)totalAdjMs;
+    pl[n++] = adj & 0xFF;  pl[n++] = (adj >> 8) & 0xFF;
+    pl[n++] = (adj >> 16) & 0xFF;  pl[n++] = (adj >> 24) & 0xFF;
+    pl[n++] = (uint16_t)totalGuesses & 0xFF;
+    pl[n++] = ((uint16_t)totalGuesses >> 8) & 0xFF;
+    pl[n++] = (uint8_t)solvedCount;
+    memcpy(pl + n, myIdent, MSL_IDENT_LEN + 1);
+    n += MSL_IDENT_LEN + 1;
+    mslSend(MSL_PKT_RESULT, pl, n);
 }
 
 static void mslRosterAdd(const uint8_t* mac, const char* ident) {
@@ -1131,6 +1232,20 @@ static void mslRosterAdd(const uint8_t* mac, const char* ident) {
             mslPeers[i].ident[MSL_IDENT_LEN] = '\0';
             mslPeers[i].lastHeard = millis();
             return;                            // (silently ignore > cap)
+        }
+}
+
+static void mslRosterRecordResult(const uint8_t* mac, const char* ident,
+                                  uint32_t adjMs, uint16_t guesses,
+                                  uint8_t solved) {
+    mslRosterAdd(mac, ident);              // ensure peer exists + refresh
+    for (int i = 0; i < MSL_MAXPEERS; ++i)
+        if (mslPeers[i].used && memcmp(mslPeers[i].mac, mac, 6) == 0) {
+            mslPeers[i].reported   = true;
+            mslPeers[i].resAdjMs   = adjMs;
+            mslPeers[i].resGuesses = guesses;
+            mslPeers[i].resSolved  = solved;
+            return;
         }
 }
 
@@ -1182,7 +1297,33 @@ static bool mslNetPump() {
                 mpSrvIdent[MSL_IDENT_LEN] = '\0';
             }
         } else if (mpRole == MP_CLIENT && type == MSL_PKT_START) {
+            // Parse the word list: [count] then [len][chars]...
+            mpWordCount = 0;
+            if (pn >= 1) {
+                uint8_t cnt = pl[0];
+                uint8_t off = 1;
+                for (uint8_t i = 0; i < cnt && mpWordCount < MSL_GAME_WORDS; ++i) {
+                    if (off >= pn) break;
+                    uint8_t wl = pl[off++];
+                    if (wl > MSL_MAX_WORD_LEN || (uint16_t)off + wl > pn) break;
+                    memcpy(mpWords[mpWordCount], pl + off, wl);
+                    mpWords[mpWordCount][wl] = '\0';
+                    off += wl;
+                    mpWordCount++;
+                }
+            }
             started = true;
+        } else if (mpRole == MP_SERVER && type == MSL_PKT_RESULT && pn >= 7) {
+            uint32_t adj = (uint32_t)pl[0] | ((uint32_t)pl[1] << 8) |
+                           ((uint32_t)pl[2] << 16) | ((uint32_t)pl[3] << 24);
+            uint16_t g  = (uint16_t)pl[4] | ((uint16_t)pl[5] << 8);
+            uint8_t  sv = pl[6];
+            char id[MSL_IDENT_LEN + 1] = "";
+            if (pn >= 8) {
+                strncpy(id, (const char*)(pl + 7), MSL_IDENT_LEN);
+                id[MSL_IDENT_LEN] = '\0';
+            }
+            mslRosterRecordResult(mac, id, adj, g, sv);
         }
     }
     return started;
@@ -1218,7 +1359,7 @@ static void modeSelLoop() {
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == 1) {
-            if (mpMenuSel == 0) { mslState = MSL_LOBBY; return; }   // single player
+            if (mpMenuSel == 0) { mpGame = false; mslState = MSL_LOBBY; return; }  // single player
             // Multiplayer: bring ESP-NOW up (the reboot guard is gone — the
             // QuickEspNow fork survives repeated cycles). The 8-bpp sprite
             // (~52 KB) and ESP-NOW now coexist with comfortable headroom, so
@@ -1361,8 +1502,12 @@ static void mpLobbyLoop() {
             Buttons::modeButton.Update();
             if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
             if (Buttons::modeButton.clicks == 1) {       // START
-                mslSendStart();
-                mslState = MSL_MP_WAIT; return;
+                for (int i = 0; i < MSL_MAXPEERS; ++i)   // clear last game's scores
+                    mslPeers[i].reported = false;
+                startGame();          // pick the words (fills gameWordStr)
+                mslSendStart();        // broadcast the word list to clients
+                mpGame = true;
+                mslState = MSL_PLAYING; return;
             }
             if (Buttons::modeButton.clicks == -1) {      // back to role pick
                 mpRole = MP_NONE; mpMenuSel = 0; dirty = true; continue;
@@ -1384,7 +1529,11 @@ static void mpLobbyLoop() {
                 mslSendJoin();
                 lastJoin = millis();
             }
-            if (started) { mslState = MSL_MP_WAIT; return; }
+            if (started && mpWordCount > 0) {       // server began the game
+                startGameFromWords(mpWords, mpWordCount);
+                mpGame = true;
+                mslState = MSL_PLAYING; return;
+            }
             Buttons::modeButton.Update();
             if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
             if (Buttons::modeButton.clicks == -1) {
@@ -1403,33 +1552,67 @@ static void mpLobbyLoop() {
 }
 
 //=============================================================================
-// MULTIPLAYER WAIT  (P2.1 placeholder — synced game lands in P2.2)
+// MULTIPLAYER RESULTS  (own score + scores collected from clients)
 //=============================================================================
 
-static void mpWaitLoop() {
+static void drawMpResults() {
     canvas->fillSprite(MSL_BG);
     canvas->setFont(&fonts::FreeSansBold12pt7b);
-    drawCentred(20, mpRole == MP_SERVER ? "Armed (server)" : "Armed (client)",
-                MSL_HIGHLIGHT);
-    canvas->setFont(&fonts::FreeSans12pt7b);
-    drawCentred(64, "Synced play: P2.2", MSL_TEXT);
-    canvas->setFont(&fonts::FreeSans9pt7b);
-    drawCentred(140, "click=back  hold=quit", MSL_DIM);
-    pushFrame();
+    drawCentred(6, "Results", MSL_ACCENT);
 
-    unsigned long lastBeacon = 0;
-    while (mslState == MSL_MP_WAIT) {
-        mslNetPump();
-        if (mpRole == MP_SERVER && millis() - lastBeacon > MSL_BEACON_MS) {
-            mslSendBeacon(1);            // state 1 = armed
-            lastBeacon = millis();
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    canvas->setTextDatum(lgfx::top_left);
+    char b[40];
+    unsigned long secs = (totalAdjMs + 500) / 1000;
+    snprintf(b, sizeof(b), "You: %lus  %d/%d  %dg",
+             secs, solvedCount, gameWords, totalGuesses);
+    canvas->setTextColor(MSL_HIGHLIGHT, MSL_BG);
+    canvas->drawString(b, 10, 34);
+
+    if (mpRole == MP_SERVER) {
+        int y = 56, shown = 0;
+        for (int i = 0; i < MSL_MAXPEERS && shown < 6; ++i) {
+            if (!mslPeers[i].used || !mslPeers[i].reported) continue;
+            unsigned long s = (mslPeers[i].resAdjMs + 500) / 1000;
+            snprintf(b, sizeof(b), "%s: %lus  %d  %dg", mslPeers[i].ident,
+                     s, mslPeers[i].resSolved, mslPeers[i].resGuesses);
+            canvas->setTextColor(MSL_TEXT, MSL_BG);
+            canvas->drawString(b, 10, y);
+            y += 18; shown++;
+        }
+        if (shown == 0) {
+            canvas->setTextColor(MSL_DIM, MSL_BG);
+            canvas->drawString("waiting for players...", 10, 56);
+        }
+    } else {
+        canvas->setTextColor(MSL_DIM, MSL_BG);
+        canvas->drawString("score sent to server", 10, 56);
+    }
+    canvas->setFont(&fonts::FreeSans9pt7b);
+    drawCentred(150, "click=lobby  hold=quit", MSL_DIM);
+    pushFrame();
+}
+
+static void mpResultsLoop() {
+    cwStop();
+    gameMode = false;
+    clearPaddleLatches();
+    unsigned long lastDraw = 0, lastResend = 0;
+    drawMpResults();
+    while (mslState == MSL_MP_RESULTS) {
+        mslNetPump();                       // server collects client RESULTs
+        // Client resends its result periodically in case the first was lost.
+        if (mpRole == MP_CLIENT && millis() - lastResend > 1000) {
+            mslSendResult();
+            lastResend = millis();
         }
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
-        if (Buttons::modeButton.clicks == 1)  { mslState = MSL_MP_LOBBY; return; }
+        if (Buttons::modeButton.clicks == 1)  { mpGame = false; mslState = MSL_MP_LOBBY; return; }
         if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks == -1)  { mslState = MSL_EXIT; return; }
+        if (millis() - lastDraw > 400) { drawMpResults(); lastDraw = millis(); }
         serialEvent();
         checkShutDown(false);
         delay(10);
@@ -1446,6 +1629,7 @@ void MorseMorsel::run() {
     mslEnc = MSL_ENC_SPEED;
     mslLoadPrefs();                                   // word length + scores
     mpMenuSel = 0;
+    mpGame    = false;
     mslState  = MSL_MODESEL;                           // pick single vs multiplayer
 
     while (mslState != MSL_EXIT) {
@@ -1455,9 +1639,9 @@ void MorseMorsel::run() {
             case MSL_PLAYING:  playLoop();     break;
             case MSL_RESULTS:  resultsLoop();  break;
             case MSL_HISCORES: hiscoresLoop(); break;
-            case MSL_MP_LOBBY: mpLobbyLoop();  break;
-            case MSL_MP_WAIT:  mpWaitLoop();   break;
-            default:           mslState = MSL_EXIT; break;
+            case MSL_MP_LOBBY:   mpLobbyLoop();   break;
+            case MSL_MP_RESULTS: mpResultsLoop(); break;
+            default:             mslState = MSL_EXIT; break;
         }
     }
 
