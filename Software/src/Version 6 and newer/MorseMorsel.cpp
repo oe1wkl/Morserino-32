@@ -1082,11 +1082,15 @@ static void hiscoresLoop() {
 #define MSL_PKT_START   3     // server -> all: begin (P2.2 will carry words)
 
 #define MSL_PKT_RESULT  4     // client -> server: final score for this game
+#define MSL_PKT_SCORES  5     // server -> all: ranked score table
 
 #define MSL_IDENT_LEN   8
 #define MSL_PKTMAX     200    // must fit the START word list (count + ~10 words)
 #define MSL_RING        8
 #define MSL_MAXPEERS   20     // GDD soft cap
+#define MSL_RANK_BCAST 12     // max ranked entries we broadcast (limited by packet size)
+#define MSL_RANK_SHOW   6     // max ranked entries we render on screen
+#define MSL_SCORES_MS 1000UL  // server rebroadcast interval for the score table
 #define MSL_PEER_TTL  8000UL  // drop a peer not heard from in this long
 #define MSL_BEACON_MS  700UL  // server beacon interval
 #define MSL_JOIN_MS   1000UL  // client join/keepalive interval
@@ -1122,6 +1126,17 @@ static unsigned long mpSrvLast = 0;
 static uint8_t       mpSrvWlen = 0, mpSrvKoch = 0, mpSrvWords = 0, mpSrvState = 0;
 static char          mpSrvIdent[MSL_IDENT_LEN + 1] = "";
 
+// Ranked score table. Filled by the server from its own result + every
+// reported peer, then broadcast as MSL_PKT_SCORES. Clients store the
+// last received broadcast here. Both sides render from the same array.
+struct MslRank { uint32_t adjMs; uint16_t guesses; uint8_t solved;
+                 char ident[MSL_IDENT_LEN + 1]; };
+static MslRank       mpRank[MSL_RANK_BCAST];
+static uint8_t       mpRankN = 0;
+static bool          mpRankSeen = false;        // any ranking shown yet?
+static bool          mpRankDirty = false;       // server: rebroadcast pending
+static unsigned long mpRankLastBcast = 0;       // server: last SCORES tx
+
 void MorseMorsel::mslNetOnRecv(const uint8_t* mac, const uint8_t* data,
                                uint8_t len) {
     uint8_t h = mslRingHead;
@@ -1156,6 +1171,10 @@ static void mslNetReset() {
     mslRingHead = mslRingTail = 0;
     for (int i = 0; i < MSL_MAXPEERS; ++i) mslPeers[i].used = false;
     mpSrvSeen = false;
+    mpRankN = 0;
+    mpRankSeen = false;
+    mpRankDirty = false;
+    mpRankLastBcast = 0;
 }
 
 static void mslSend(uint8_t type, const uint8_t* payload, uint8_t plen) {
@@ -1216,6 +1235,59 @@ static void mslSendResult() {
     mslSend(MSL_PKT_RESULT, pl, n);
 }
 
+// Server: gather own result + all reported peers, sort by adjMs ascending,
+// keep at most MSL_RANK_BCAST entries. Writes into mpRank[]/mpRankN.
+static void mslServerBuildRank() {
+    MslRank tmp[1 + MSL_MAXPEERS];
+    int n = 0;
+    // Self entry first (server competes as a regular client per GDD §9 #8).
+    tmp[n].adjMs   = (uint32_t)totalAdjMs;
+    tmp[n].guesses = (uint16_t)totalGuesses;
+    tmp[n].solved  = (uint8_t)solvedCount;
+    strncpy(tmp[n].ident, myIdent, MSL_IDENT_LEN);
+    tmp[n].ident[MSL_IDENT_LEN] = '\0';
+    ++n;
+    for (int i = 0; i < MSL_MAXPEERS; ++i) {
+        if (!mslPeers[i].used || !mslPeers[i].reported) continue;
+        tmp[n].adjMs   = mslPeers[i].resAdjMs;
+        tmp[n].guesses = mslPeers[i].resGuesses;
+        tmp[n].solved  = mslPeers[i].resSolved;
+        strncpy(tmp[n].ident, mslPeers[i].ident, MSL_IDENT_LEN);
+        tmp[n].ident[MSL_IDENT_LEN] = '\0';
+        ++n;
+    }
+    // Simple insertion sort: n is tiny (<= 21) and the array is mostly small.
+    for (int i = 1; i < n; ++i) {
+        MslRank k = tmp[i]; int j = i - 1;
+        while (j >= 0 && tmp[j].adjMs > k.adjMs) { tmp[j + 1] = tmp[j]; --j; }
+        tmp[j + 1] = k;
+    }
+    int keep = n < MSL_RANK_BCAST ? n : MSL_RANK_BCAST;
+    for (int i = 0; i < keep; ++i) mpRank[i] = tmp[i];
+    mpRankN = (uint8_t)keep;
+    mpRankSeen = true;
+}
+
+// Server -> all: ranked score table. Payload layout:
+//   [0] count, then per entry: adjMs(4) guesses(2) solved(1) ident(9, NUL-term).
+// Each entry is 16 bytes; with count=1 + 12*16 = 193 bytes <= MSL_PKTMAX-5.
+static void mslSendScores() {
+    uint8_t pl[1 + MSL_RANK_BCAST * (4 + 2 + 1 + MSL_IDENT_LEN + 1)];
+    uint8_t n = 0;
+    pl[n++] = mpRankN;
+    for (int i = 0; i < mpRankN; ++i) {
+        uint32_t a = mpRank[i].adjMs;
+        pl[n++] = a & 0xFF;  pl[n++] = (a >> 8) & 0xFF;
+        pl[n++] = (a >> 16) & 0xFF; pl[n++] = (a >> 24) & 0xFF;
+        pl[n++] = mpRank[i].guesses & 0xFF;
+        pl[n++] = (mpRank[i].guesses >> 8) & 0xFF;
+        pl[n++] = mpRank[i].solved;
+        memcpy(pl + n, mpRank[i].ident, MSL_IDENT_LEN + 1);
+        n += MSL_IDENT_LEN + 1;
+    }
+    mslSend(MSL_PKT_SCORES, pl, n);
+}
+
 static void mslRosterAdd(const uint8_t* mac, const char* ident) {
     for (int i = 0; i < MSL_MAXPEERS; ++i)
         if (mslPeers[i].used && memcmp(mslPeers[i].mac, mac, 6) == 0) {
@@ -1245,6 +1317,7 @@ static void mslRosterRecordResult(const uint8_t* mac, const char* ident,
             mslPeers[i].resAdjMs   = adjMs;
             mslPeers[i].resGuesses = guesses;
             mslPeers[i].resSolved  = solved;
+            mpRankDirty = true;            // ranking needs a refresh
             return;
         }
 }
@@ -1313,6 +1386,29 @@ static bool mslNetPump() {
                 }
             }
             started = true;
+        } else if (mpRole == MP_CLIENT && type == MSL_PKT_SCORES && pn >= 1) {
+            uint8_t cnt = pl[0];
+            if (cnt > MSL_RANK_BCAST) cnt = MSL_RANK_BCAST;
+            uint16_t off = 1;
+            uint8_t k = 0;
+            for (uint8_t i = 0; i < cnt; ++i) {
+                if ((uint16_t)off + 7 + MSL_IDENT_LEN + 1 > pn) break;
+                uint32_t a = (uint32_t)pl[off] | ((uint32_t)pl[off+1] << 8) |
+                             ((uint32_t)pl[off+2] << 16) | ((uint32_t)pl[off+3] << 24);
+                off += 4;
+                uint16_t g = (uint16_t)pl[off] | ((uint16_t)pl[off+1] << 8);
+                off += 2;
+                uint8_t  s = pl[off++];
+                mpRank[k].adjMs   = a;
+                mpRank[k].guesses = g;
+                mpRank[k].solved  = s;
+                memcpy(mpRank[k].ident, pl + off, MSL_IDENT_LEN);
+                mpRank[k].ident[MSL_IDENT_LEN] = '\0';
+                off += MSL_IDENT_LEN + 1;
+                ++k;
+            }
+            mpRankN = k;
+            mpRankSeen = true;
         } else if (mpRole == MP_SERVER && type == MSL_PKT_RESULT && pn >= 7) {
             uint32_t adj = (uint32_t)pl[0] | ((uint32_t)pl[1] << 8) |
                            ((uint32_t)pl[2] << 16) | ((uint32_t)pl[3] << 24);
@@ -1558,35 +1654,35 @@ static void mpLobbyLoop() {
 static void drawMpResults() {
     canvas->fillSprite(MSL_BG);
     canvas->setFont(&fonts::FreeSansBold12pt7b);
-    drawCentred(6, "Results", MSL_ACCENT);
+    drawCentred(6, "Ranking", MSL_ACCENT);
 
     canvas->setFont(&fonts::FreeSans9pt7b);
     canvas->setTextDatum(lgfx::top_left);
-    char b[40];
-    unsigned long secs = (totalAdjMs + 500) / 1000;
-    snprintf(b, sizeof(b), "You: %lus  %d/%d  %dg",
-             secs, solvedCount, gameWords, totalGuesses);
-    canvas->setTextColor(MSL_HIGHLIGHT, MSL_BG);
-    canvas->drawString(b, 10, 34);
 
-    if (mpRole == MP_SERVER) {
-        int y = 56, shown = 0;
-        for (int i = 0; i < MSL_MAXPEERS && shown < 6; ++i) {
-            if (!mslPeers[i].used || !mslPeers[i].reported) continue;
-            unsigned long s = (mslPeers[i].resAdjMs + 500) / 1000;
-            snprintf(b, sizeof(b), "%s: %lus  %d  %dg", mslPeers[i].ident,
-                     s, mslPeers[i].resSolved, mslPeers[i].resGuesses);
-            canvas->setTextColor(MSL_TEXT, MSL_BG);
-            canvas->drawString(b, 10, y);
-            y += 18; shown++;
-        }
-        if (shown == 0) {
-            canvas->setTextColor(MSL_DIM, MSL_BG);
-            canvas->drawString("waiting for players...", 10, 56);
-        }
+    if (!mpRankSeen) {
+        drawCentred(80, mpRole == MP_SERVER ? "waiting for players..."
+                                            : "waiting for ranking...",
+                    MSL_DIM);
     } else {
-        canvas->setTextColor(MSL_DIM, MSL_BG);
-        canvas->drawString("score sent to server", 10, 56);
+        int shown = mpRankN < MSL_RANK_SHOW ? mpRankN : MSL_RANK_SHOW;
+        int y = 34;
+        char b[48];
+        for (int i = 0; i < shown; ++i) {
+            bool isSelf = strncmp(mpRank[i].ident, myIdent,
+                                  MSL_IDENT_LEN) == 0;
+            unsigned long s = (mpRank[i].adjMs + 500) / 1000;
+            snprintf(b, sizeof(b), "%2d  %-8s  %4lus  %d/%d  %dg",
+                     i + 1, mpRank[i].ident, s,
+                     mpRank[i].solved, gameWords, mpRank[i].guesses);
+            canvas->setTextColor(isSelf ? MSL_HIGHLIGHT : MSL_TEXT, MSL_BG);
+            canvas->drawString(b, 10, y);
+            y += 18;
+        }
+        if (mpRankN > shown) {
+            snprintf(b, sizeof(b), "+%d more", mpRankN - shown);
+            canvas->setTextColor(MSL_DIM, MSL_BG);
+            canvas->drawString(b, 10, y);
+        }
     }
     canvas->setFont(&fonts::FreeSans9pt7b);
     drawCentred(150, "click=lobby  hold=quit", MSL_DIM);
@@ -1598,6 +1694,15 @@ static void mpResultsLoop() {
     gameMode = false;
     clearPaddleLatches();
     unsigned long lastDraw = 0, lastResend = 0;
+
+    // Server seeds an initial ranking containing only its own result so
+    // something is shown immediately; gets enriched as RESULTs trickle in.
+    if (mpRole == MP_SERVER) {
+        mslServerBuildRank();
+        mslSendScores();
+        mpRankLastBcast = millis();
+        mpRankDirty = false;
+    }
     drawMpResults();
     while (mslState == MSL_MP_RESULTS) {
         mslNetPump();                       // server collects client RESULTs
@@ -1605,6 +1710,17 @@ static void mpResultsLoop() {
         if (mpRole == MP_CLIENT && millis() - lastResend > 1000) {
             mslSendResult();
             lastResend = millis();
+        }
+        // Server: rebuild + rebroadcast on new arrivals (dirty) or
+        // periodically as a keepalive in case the last broadcast was lost.
+        if (mpRole == MP_SERVER &&
+            (mpRankDirty || millis() - mpRankLastBcast > MSL_SCORES_MS)) {
+            if (mpRankDirty) mslServerBuildRank();
+            mslSendScores();
+            mpRankLastBcast = millis();
+            mpRankDirty = false;
+            drawMpResults();                // reflect the new ranking now
+            lastDraw = millis();
         }
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
