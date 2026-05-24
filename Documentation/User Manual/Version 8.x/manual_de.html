@@ -1861,6 +1861,72 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><p>Höhere Koch-Lektion einstellen, falls du wiederholt die Meldung „Pool zu klein” siehst: 3-stellige Wörter brauchen Lektion 8, 4-stellige Lektion 10, 5-stellige Lektion 14, 6-stellige Lektion 16 (bei der Standard-Morserino-Zeichenreihenfolge).</p></li>
 <li><p>Korrigiere ruhig (<code>&lt;err&gt;</code> = 8 Punkte) — die Zeit läuft zwar weiter, aber eine falsch abgegebene Eingabe kostet 5 s; meist ist es günstiger, den Fehler zu beheben als die Eingabe abzuschicken und es erneut zu versuchen.</p></li>
 </ul>
+<h4 class="unnumbered" id="multiplayer">Multiplayer</h4>
+<p>Morsel kann auch als synchrones Mehrspieler-Match gegen andere M32 Pockets im gleichen Raum gespielt werden: Ein Gerät übernimmt die Rolle des <strong>Servers</strong>, beliebig viele weitere die der <strong>Clients</strong>. Alle Spieler geben dieselben 10 Wörter zeitgleich ein; am Ende verteilt der Server eine sortierte Rangliste, die auf allen Geräten zugleich erscheint.</p>
+<h5 class="unnumbered" id="mehrspieler-spiel-starten">Mehrspieler-Spiel starten</h5>
+<p>Wähle nach <strong>Games → Morsel</strong> im ersten Bildschirm <strong>Multiplayer</strong>. Anschließend stehen zwei Rollen zur Wahl:</p>
+<table>
+<colgroup>
+<col style="width: 46%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr>
+<th>Rolle</th>
+<th>Aktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Start as Server</strong></td>
+<td>Öffnet die Server-Lobby. Stelle die Koch-Lektion mit dem Encoder und die Wortlänge mit kurzem FN-Druck ein; in der Liste erscheinen die beigetretenen Spieler, sobald sie sich verbinden. Ein Klick auf den Encoder startet das Spiel.</td>
+</tr>
+<tr>
+<td><strong>Join a game</strong></td>
+<td>Öffnet die Client-Lobby. Sucht den Beacon eines Servers und zeigt dessen Einstellungen (Länge, Koch-Lektion, Wortanzahl), sobald einer gefunden ist. Warte, bis der Server-Bediener startet.</td>
+</tr>
+</tbody>
+</table>
+<p>Ein kurzer Encoder-Druck führt zurück zur Rollenauswahl; FN lang beendet Morsel vollständig.</p>
+<p>Deine Kennung im Netz wird aus dem mit „Fight the Pileup” geteilten <strong>Rufzeichen / Spielernamen</strong> übernommen. Ist nichts gesetzt, wird automatisch eine kurze MAC-basierte Kennung verwendet — setze dein Rufzeichen (<code>playerCall</code>) einmalig über das M32 Configuration Tool, um in der Rangliste unter diesem Namen aufzuscheinen.</p>
+<h5 class="unnumbered" id="ablauf">Ablauf</h5>
+<p>Der Server wählt 10 Wörter aus dem Pool und überträgt sie an alle Clients; anschließend spielt jedes Gerät jedes Wort lokal mit der gewohnten Einzelspieler-Mechanik durch (CW-Hinweis, Paddle-Eingabe, farbcodiertes Ergebnis). Geschwindigkeits-Schema, Bewertung, Fehlerkorrektur, Inaktivitätsverhalten und Überspringen funktionieren identisch wie im Einzelspieler.</p>
+<p>Sobald ein Spieler die 10 Wörter abgeschlossen hat, sendet sein Gerät das Endergebnis (angepasste Zeit, Versuchszahl, gelöste Wörter) an den Server. Der Server spielt selbst als gleichberechtigter Teilnehmer mit — kein Host-Vorteil — und nimmt sein eigenes Ergebnis in die Rangliste auf.</p>
+<h5 class="unnumbered" id="ranglisten-bildschirm">Ranglisten-Bildschirm</h5>
+<p>Sobald irgendein Spieler fertig ist, sendet der Server fortlaufend einen sortierten <strong>Ranking</strong>-Bildschirm, den alle Geräte identisch darstellen:</p>
+<table>
+<thead>
+<tr>
+<th>Spalte</th>
+<th>Bedeutung</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rang</td>
+<td>Platz in der Wertung (1 ist am besten)</td>
+</tr>
+<tr>
+<td>Spieler</td>
+<td>Rufzeichen oder Name</td>
+</tr>
+<tr>
+<td>Zeit</td>
+<td>Angepasste Gesamtzeit in Sekunden</td>
+</tr>
+<tr>
+<td>Gelöst</td>
+<td>Gelöste Wörter von 10</td>
+</tr>
+<tr>
+<td>Versuche</td>
+<td>Gesamtzahl der Versuche im Match</td>
+</tr>
+</tbody>
+</table>
+<p>Deine eigene Zeile ist gelb hervorgehoben. Die Anzeige aktualisiert sich laufend, sobald weitere Spieler fertig werden; bis zu sechs Spitzeneinträge werden gleichzeitig angezeigt, ein <code>+N more</code>-Hinweis erscheint, wenn mehr Spieler ihr Ergebnis gemeldet haben. Ein Encoder-Klick führt zurück in die Multiplayer-Lobby; ein langer Druck verlässt Morsel.</p>
+<h5 class="unnumbered" id="hinweise-zum-funkverkehr">Hinweise zum Funkverkehr</h5>
+<p>Das Protokoll ist <strong>ESP-NOW-Broadcast</strong> auf einem festen Kanal — weder ein Router noch Internet oder ein Pairing-Vorgang sind nötig; alle Geräte in Funkreichweite empfangen einander direkt. Die weiche Obergrenze liegt bei <strong>20 Spielern</strong> pro Match. Ein Client, der die Verbindung zum Server verliert, wird nach etwa 8 Sekunden aus der angezeigten Rangliste entfernt.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Neben der WiFi-Transceiver-Funktionalität kannst du die WLAN-Funktion des im Morserino-32 verwendeten ESP32-Prozessors für zwei weitere Aufgaben nutzen, wenn du WLAN über einen Access Point verwendest:</p>
 <ul>

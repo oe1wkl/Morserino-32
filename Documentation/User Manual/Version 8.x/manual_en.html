@@ -1881,6 +1881,72 @@ Vol 12
 <li><p>Raise your Koch lesson if you keep getting the pool-too-small warning: 3-letter words need lesson 8, 4-letter words lesson 10, 5-letter words lesson 14, 6-letter words lesson 16 (using the default Morserino character order).</p></li>
 <li><p>Backspace freely (<code>&lt;err&gt;</code> = 8 dits) — the timer keeps running, but a wrong submitted guess costs you 5 s, so it’s almost always cheaper to fix the mistake than to submit and try again.</p></li>
 </ul>
+<h4 class="unnumbered" id="multiplayer">Multiplayer</h4>
+<p>Morsel can also be played as a synchronised multi-player match against other M32 Pockets in the same room, with one device acting as the <strong>server</strong> and any number of others as <strong>clients</strong>. Every player keys the same 10 words at the same time, and at the end the server broadcasts a ranked score table that every device shows simultaneously.</p>
+<h5 class="unnumbered" id="starting-a-multiplayer-game">Starting a Multiplayer Game</h5>
+<p>After choosing <strong>Games → Morsel</strong>, pick <strong>Multiplayer</strong> at the first screen. You can then choose:</p>
+<table>
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr>
+<th>Role</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Start as Server</strong></td>
+<td>Opens the server lobby. Adjust the Koch lesson with the encoder and the word length with FN short press; the displayed list shows joined players as they connect. Click the encoder to start the game.</td>
+</tr>
+<tr>
+<td><strong>Join a game</strong></td>
+<td>Opens the client lobby. Searches for a server’s broadcast and shows its settings (length, Koch lesson, word count) once one is found. Wait for the server operator to start.</td>
+</tr>
+</tbody>
+</table>
+<p>A short press of the encoder returns to the role picker; FN long press exits Morsel.</p>
+<p>Your identity on the network is taken from the <strong>call sign / player name</strong> shared with Fight the Pileup. If neither is set yet, a short MAC-derived tag is used automatically — set your call sign (<code>playerCall</code>) once via the M32 Configuration Tool to appear under it in the ranking.</p>
+<h5 class="unnumbered" id="playing">Playing</h5>
+<p>The server picks 10 words from the pool and broadcasts them to all clients; every device then plays each word locally with the normal single-player engine (CW clue, paddle entry, colour-coded result). The clue speed schedule, scoring rules, error correction, idle handling and skip behaviour are all identical to single-player.</p>
+<p>When a player finishes the 10-word match, their device sends its final score (adjusted time, guess count, words solved) to the server. The server competes as a regular player — no host advantage — and includes its own score in the ranking.</p>
+<h5 class="unnumbered" id="ranking-screen">Ranking Screen</h5>
+<p>Once any player has finished, the server starts broadcasting a sorted <strong>Ranking</strong> screen which all devices render identically:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rank</td>
+<td>Position in the standings (1 is best)</td>
+</tr>
+<tr>
+<td>Player</td>
+<td>Call sign or name</td>
+</tr>
+<tr>
+<td>Time</td>
+<td>Total adjusted time in seconds</td>
+</tr>
+<tr>
+<td>Solved</td>
+<td>Words solved out of 10</td>
+</tr>
+<tr>
+<td>Guesses</td>
+<td>Total guesses across the match</td>
+</tr>
+</tbody>
+</table>
+<p>Your own row is highlighted in yellow. The screen updates live as more players finish; up to six top entries are shown on screen and a <code>+N more</code> indicator appears if more players have reported. Click the encoder to return to the multiplayer lobby; a long press exits Morsel.</p>
+<h5 class="unnumbered" id="networking-notes">Networking Notes</h5>
+<p>The protocol is <strong>ESP-NOW broadcast</strong> on a fixed channel — no router, internet, or pairing is needed; all devices in radio range simply hear each other. The soft cap is <strong>20 players</strong> per match. A device that loses contact with the server is dropped from the displayed ranking after about 8 seconds.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two functions of the device, when you are using WiFi through an access point, that were of high importance in teh past:</p>
 <ul>
