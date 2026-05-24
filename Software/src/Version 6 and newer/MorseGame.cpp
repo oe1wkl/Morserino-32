@@ -21,7 +21,7 @@ char gameCharBuffer = 0;
 #include "MorseMenu.h"
 #include "morsedefs.h"
 #include "ClickButton.h"
-#include "M32PocketLGFX.h"
+#include "DisplayWrapper.h"
 
 #include <LovyanGFX.hpp>
 #include <ESP32Encoder.h>
@@ -37,7 +37,7 @@ extern void serialEvent();
 extern boolean checkPaddles();
 extern boolean doPaddleIambic(boolean, boolean);
 extern boolean leftKey, rightKey;
-extern LGFX display;
+extern DisplayWrapper display;
 extern ESP32Encoder rotaryEncoder;
 extern const int PinCLK;
 extern const int PinDT;
