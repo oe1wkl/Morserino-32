@@ -29,7 +29,7 @@
 #include <Arduino.h>
 #include <ESP32Encoder.h>
 
-#include "M32PocketLGFX.h"
+#include "DisplayWrapper.h"
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
 #include "morsedefs.h"
@@ -98,7 +98,7 @@ namespace {
   // the failure path of allocate() so that callers see a coherent menu
   // regardless of whether enter*() succeeded.
   void restoreMenuDisplay(bool leftHanded) {
-    (&display)->setRotation(leftHanded ? 0 : 2);
+    DisplayWrapper::getLGFX()->setRotation(leftHanded ? 0 : 2);
     MorseOutput::initDisplay();
     MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
     pinMode(PinCLK, INPUT_PULLUP);
@@ -115,7 +115,7 @@ namespace {
   LGFX_Sprite *allocate(int rotation, bool leftHanded, uint8_t colorDepth) {
     lastLeftHanded = leftHanded;
 
-    auto *lcd = (&display);
+    auto *lcd = DisplayWrapper::getLGFX();
     lcd->setRotation(rotation);
     lcd->fillScreen(TFT_BLACK);
 
@@ -175,7 +175,7 @@ void MorseGameMode::warmup() {
   // inside a game session. (See module header comment for why timing
   // matters: the lazy alloc otherwise lands inside what would become the
   // game sprite's tail region.)
-  auto *lcd = (&display);
+  auto *lcd = DisplayWrapper::getLGFX();
   LGFX_Sprite tmp(lcd);
   tmp.setColorDepth(16);
   if (!tmp.createSprite(lcd->width(), lcd->height())) return;
@@ -204,7 +204,7 @@ LGFX_Sprite *MorseGameMode::enterLandscape(bool leftHanded, uint8_t colorDepth) 
 
 void MorseGameMode::pushFrame() {
   if (!sprite) return;
-  auto *lcd = (&display);
+  auto *lcd = DisplayWrapper::getLGFX();
   lcd->startWrite();
   sprite->pushSprite(lcd, 0, 0);
   lcd->endWrite();
@@ -231,7 +231,7 @@ LGFX_Sprite *MorseGameMode::getSprite() {
   rebootMagic   = 0xC0FFEE42u;
 
   // Restore portrait rotation so the overlay is readable.
-  (&display)->setRotation(MorsePreferences::leftHanded ? 0 : 2);
+  DisplayWrapper::getLGFX()->setRotation(MorsePreferences::leftHanded ? 0 : 2);
   MorseOutput::initDisplay();
   MorseOutput::clearDisplay();
   MorseOutput::printOnScroll(0, BOLD,    0, "Clearing");

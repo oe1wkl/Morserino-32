@@ -47,8 +47,12 @@
 #include "M32OledLGFX.h"
 LGFX display;
 #else
-#include "M32PocketLGFX.h"
-LGFX display;
+// TFT path — using DisplayWrapper (the V8.0 path). The in-tree LGFX
+// wrapper introduced in #157 left the TFT dark on USB-only-powered
+// Pockets (root cause not yet pinned down); the DisplayWrapper library
+// path is the only one that keeps the panel alive.
+#include "DisplayWrapper.h"
+DisplayWrapper display;
 #endif
 
 #ifdef CONFIG_SOUND_I2S
@@ -1284,7 +1288,7 @@ void MorseOutput::updateBatteryDisplay() {
 void MorseOutput::clearBatteryIcon() {
     if (!batteryIconVisible) return;
 
-    lgfx::LGFX_Device* lcd = &display;
+    lgfx::LGFX_Device* lcd = DisplayWrapper::getLGFX();
 
     const int bodyW = 26, iconH = 16, nubW = 4, margin = 2;
     int ix = lcd->width() - bodyW - nubW - margin;
