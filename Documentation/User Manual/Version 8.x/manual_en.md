@@ -1928,6 +1928,47 @@ You can also reach the high-score table from the lobby at any time with a long p
 
 - Backspace freely (`<err>` = 8 dits) — the timer keeps running, but a wrong submitted guess costs you 5 s, so it's almost always cheaper to fix the mistake than to submit and try again.
 
+#### Multiplayer {-}
+
+Morsel can also be played as a synchronised multi-player match against other M32 Pockets in the same room, with one device acting as the **server** and any number of others as **clients**. Every player keys the same 10 words at the same time, and at the end the server broadcasts a ranked score table that every device shows simultaneously.
+
+##### Starting a Multiplayer Game {-}
+
+After choosing **Games → Morsel**, pick **Multiplayer** at the first screen. You can then choose:
+
+| Role | Action |
+|------|--------|
+| **Start as Server** | Opens the server lobby. Adjust the Koch lesson with the encoder and the word length with FN short press; the displayed list shows joined players as they connect. Click the encoder to start the game. |
+| **Join a game** | Opens the client lobby. Searches for a server's broadcast and shows its settings (length, Koch lesson, word count) once one is found. Wait for the server operator to start. |
+
+A short press of the encoder returns to the role picker; FN long press exits Morsel.
+
+Your identity on the network is taken from the **call sign / player name** shared with Fight the Pileup. If neither is set yet, a short MAC-derived tag is used automatically — set your call sign (`playerCall`) once via the M32 Configuration Tool to appear under it in the ranking.
+
+##### Playing {-}
+
+The server picks 10 words from the pool and broadcasts them to all clients; every device then plays each word locally with the normal single-player engine (CW clue, paddle entry, colour-coded result). The clue speed schedule, scoring rules, error correction, idle handling and skip behaviour are all identical to single-player.
+
+When a player finishes the 10-word match, their device sends its final score (adjusted time, guess count, words solved) to the server. The server competes as a regular player — no host advantage — and includes its own score in the ranking.
+
+##### Ranking Screen {-}
+
+Once any player has finished, the server starts broadcasting a sorted **Ranking** screen which all devices render identically:
+
+| Column | Meaning |
+|--------|---------|
+| Rank | Position in the standings (1 is best) |
+| Player | Call sign or name |
+| Time | Total adjusted time in seconds |
+| Solved | Words solved out of 10 |
+| Guesses | Total guesses across the match |
+
+Your own row is highlighted in yellow. The screen updates live as more players finish; up to six top entries are shown on screen and a `+N more` indicator appears if more players have reported. Click the encoder to return to the multiplayer lobby; a long press exits Morsel.
+
+##### Networking Notes {-}
+
+The protocol is **ESP-NOW broadcast** on a fixed channel — no router, internet, or pairing is needed; all devices in radio range simply hear each other. The soft cap is **20 players** per match. A device that loses contact with the server is dropped from the displayed ranking after about 8 seconds.
+
 ## WiFi Functions
 
 Apart from the functionality of WiFi Transceiver, you can use the WiFi
