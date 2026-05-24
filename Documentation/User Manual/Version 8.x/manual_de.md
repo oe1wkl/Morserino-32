@@ -2115,6 +2115,79 @@ werden — mit einem langen Druck auf die **FN**-Taste.
   günstiger, den Fehler zu beheben als die Eingabe abzuschicken und
   es erneut zu versuchen.
 
+#### Multiplayer {-}
+
+Morsel kann auch als synchrones Mehrspieler-Match gegen andere
+M32 Pockets im gleichen Raum gespielt werden: Ein Gerät übernimmt die
+Rolle des **Servers**, beliebig viele weitere die der **Clients**.
+Alle Spieler geben dieselben 10 Wörter zeitgleich ein; am Ende
+verteilt der Server eine sortierte Rangliste, die auf allen Geräten
+zugleich erscheint.
+
+##### Mehrspieler-Spiel starten {-}
+
+Wähle nach **Games → Morsel** im ersten Bildschirm **Multiplayer**.
+Anschließend stehen zwei Rollen zur Wahl:
+
+| Rolle | Aktion |
+|-------|--------|
+| **Start as Server** | Öffnet die Server-Lobby. Stelle die Koch-Lektion mit dem Encoder und die Wortlänge mit kurzem FN-Druck ein; in der Liste erscheinen die beigetretenen Spieler, sobald sie sich verbinden. Ein Klick auf den Encoder startet das Spiel. |
+| **Join a game** | Öffnet die Client-Lobby. Sucht den Beacon eines Servers und zeigt dessen Einstellungen (Länge, Koch-Lektion, Wortanzahl), sobald einer gefunden ist. Warte, bis der Server-Bediener startet. |
+
+Ein kurzer Encoder-Druck führt zurück zur Rollenauswahl; FN lang
+beendet Morsel vollständig.
+
+Deine Kennung im Netz wird aus dem mit „Fight the Pileup" geteilten
+**Rufzeichen / Spielernamen** übernommen. Ist nichts gesetzt, wird
+automatisch eine kurze MAC-basierte Kennung verwendet — setze dein
+Rufzeichen (`playerCall`) einmalig über das M32 Configuration Tool,
+um in der Rangliste unter diesem Namen aufzuscheinen.
+
+##### Ablauf {-}
+
+Der Server wählt 10 Wörter aus dem Pool und überträgt sie an alle
+Clients; anschließend spielt jedes Gerät jedes Wort lokal mit der
+gewohnten Einzelspieler-Mechanik durch (CW-Hinweis, Paddle-Eingabe,
+farbcodiertes Ergebnis). Geschwindigkeits-Schema, Bewertung,
+Fehlerkorrektur, Inaktivitätsverhalten und Überspringen funktionieren
+identisch wie im Einzelspieler.
+
+Sobald ein Spieler die 10 Wörter abgeschlossen hat, sendet sein Gerät
+das Endergebnis (angepasste Zeit, Versuchszahl, gelöste Wörter) an
+den Server. Der Server spielt selbst als gleichberechtigter Teilnehmer
+mit — kein Host-Vorteil — und nimmt sein eigenes Ergebnis in die
+Rangliste auf.
+
+##### Ranglisten-Bildschirm {-}
+
+Sobald irgendein Spieler fertig ist, sendet der Server fortlaufend
+einen sortierten **Ranking**-Bildschirm, den alle Geräte identisch
+darstellen:
+
+| Spalte | Bedeutung |
+|--------|-----------|
+| Rang | Platz in der Wertung (1 ist am besten) |
+| Spieler | Rufzeichen oder Name |
+| Zeit | Angepasste Gesamtzeit in Sekunden |
+| Gelöst | Gelöste Wörter von 10 |
+| Versuche | Gesamtzahl der Versuche im Match |
+
+Deine eigene Zeile ist gelb hervorgehoben. Die Anzeige aktualisiert
+sich laufend, sobald weitere Spieler fertig werden; bis zu sechs
+Spitzeneinträge werden gleichzeitig angezeigt, ein `+N more`-Hinweis
+erscheint, wenn mehr Spieler ihr Ergebnis gemeldet haben. Ein
+Encoder-Klick führt zurück in die Multiplayer-Lobby; ein langer Druck
+verlässt Morsel.
+
+##### Hinweise zum Funkverkehr {-}
+
+Das Protokoll ist **ESP-NOW-Broadcast** auf einem festen Kanal —
+weder ein Router noch Internet oder ein Pairing-Vorgang sind nötig;
+alle Geräte in Funkreichweite empfangen einander direkt. Die weiche
+Obergrenze liegt bei **20 Spielern** pro Match. Ein Client, der die
+Verbindung zum Server verliert, wird nach etwa 8 Sekunden aus der
+angezeigten Rangliste entfernt.
+
 ## WiFi Functions
 
 Neben der WiFi-Transceiver-Funktionalität kannst du die WLAN-Funktion
