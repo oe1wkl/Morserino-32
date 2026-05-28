@@ -76,11 +76,21 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          msg=$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}" | sed '/^-----BEGIN PGP/,$d')
-          # Trim trailing newlines
-          msg=$(printf '%s' "$msg")
+          # 'git tag -l --format=%(contents)' returns the annotation message
+          # for ANNOTATED tags, but for LIGHTWEIGHT tags it returns the
+          # COMMIT MESSAGE of the tagged commit (not empty as one might
+          # expect). Distinguish by tag object type: annotated tags are git
+          # objects of type 'tag'; lightweight tags resolve directly to a
+          # 'commit'.
+          tag_type=$(git cat-file -t "${GITHUB_REF_NAME}")
+          echo "Tag type: $tag_type"
+          if [[ "$tag_type" = "tag" ]]; then
+              msg=$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}" | sed '/^-----BEGIN PGP/,$d')
+              msg=$(printf '%s' "$msg")
+          else
+              msg=""
+          fi
           echo "Annotation message: ${msg:-(none — lightweight tag, will use template)}"
-          # Persist for later steps via the runner's env file
           {
             echo "TAG_NOTES<<__EOF__"
             printf '%s\n' "$msg"
@@ -214,12 +224,26 @@ jobs:
               /tmp/release-stage/Morserino-32.Pocket.FAQ.pdf
           )
 
+          # Two-step (create then upload) instead of a single 'gh release
+          # create ... <assets>'. The single-call form races against
+          # GitHub's release-indexing: one of the parallel asset POSTs hits
+          # the upload endpoint before the release object is queryable and
+          # returns HTTP 404, even though the upload eventually completes
+          # server-side. The 'gh' CLI returns exit 1 anyway, failing the
+          # workflow despite the assets actually being attached. Splitting
+          # the operations avoids the race.
           gh release create "${GITHUB_REF_NAME}" \
               --draft \
               $PRERELEASE_FLAG \
               --title "$TITLE" \
-              --notes-file /tmp/release-body.md \
-              "${ASSETS[@]}"
+              --notes-file /tmp/release-body.md
+
+          # Tiny pause to let GitHub finish indexing before we upload.
+          sleep 3
+
+          # --clobber lets a re-run overwrite previously-uploaded assets if
+          # the workflow is replayed for the same tag.
+          gh release upload "${GITHUB_REF_NAME}" "${ASSETS[@]}" --clobber
 
       # ──────────────────────────────────────────────────────────────────
       # 11. Publish to Dropbox (copy binaries + prepend manifest entries)
