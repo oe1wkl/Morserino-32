@@ -224,26 +224,42 @@ jobs:
               /tmp/release-stage/Morserino-32.Pocket.FAQ.pdf
           )
 
-          # Two-step (create then upload) instead of a single 'gh release
-          # create ... <assets>'. The single-call form races against
-          # GitHub's release-indexing: one of the parallel asset POSTs hits
-          # the upload endpoint before the release object is queryable and
-          # returns HTTP 404, even though the upload eventually completes
-          # server-side. The 'gh' CLI returns exit 1 anyway, failing the
-          # workflow despite the assets actually being attached. Splitting
-          # the operations avoids the race.
+          # Create the release first (just metadata), then upload assets
+          # SERIALLY with per-file retries. Two reasons:
+          #   1. The single-call form 'gh release create ... <assets>'
+          #      races against GitHub's release-indexing: parallel asset
+          #      POSTs land before the release object is fully queryable
+          #      and return HTTP 404.
+          #   2. Even after split, 'gh release upload TAG file1 file2 ...'
+          #      uploads in parallel and hits the same race — most files
+          #      land but one or two fail with 404.
+          # Uploading one-at-a-time with retries makes the step robust
+          # against the transient API condition.
           gh release create "${GITHUB_REF_NAME}" \
               --draft \
               $PRERELEASE_FLAG \
               --title "$TITLE" \
               --notes-file /tmp/release-body.md
 
-          # Tiny pause to let GitHub finish indexing before we upload.
-          sleep 3
+          sleep 3   # let GitHub finish indexing before the first upload
 
-          # --clobber lets a re-run overwrite previously-uploaded assets if
-          # the workflow is replayed for the same tag.
-          gh release upload "${GITHUB_REF_NAME}" "${ASSETS[@]}" --clobber
+          for asset in "${ASSETS[@]}"; do
+              echo "::group::Upload $(basename "$asset")"
+              for attempt in 1 2 3; do
+                  if gh release upload "${GITHUB_REF_NAME}" "$asset" --clobber; then
+                      echo "  ✓ uploaded on attempt $attempt"
+                      break
+                  fi
+                  if [[ $attempt -lt 3 ]]; then
+                      echo "  attempt $attempt failed; retrying in 5s..."
+                      sleep 5
+                  else
+                      echo "::error::Upload of $asset failed after 3 attempts"
+                      exit 1
+                  fi
+              done
+              echo "::endgroup::"
+          done
 
       # ──────────────────────────────────────────────────────────────────
       # 11. Publish to Dropbox (copy binaries + prepend manifest entries)
