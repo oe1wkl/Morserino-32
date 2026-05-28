@@ -33,7 +33,7 @@ jobs:
 
     steps:
       - name: Checkout (full history + tags)
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           # Need full history so 'git tag -l --format=%(contents)' can read
           # an annotated tag's message.
