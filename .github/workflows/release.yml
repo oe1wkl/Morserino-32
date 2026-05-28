@@ -1,0 +1,315 @@
+name: Release
+
+# Tag-triggered release pipeline. See RELEASE_AUTOMATION_DESIGN.md for
+# the full design. Builds firmware for the two distributed platforms,
+# rebuilds the user manuals, creates a draft GitHub Release, copies the
+# new firmware to the Dropbox folder that backs the web installer, and
+# prepends entries to each platform's versions.json manifest.
+#
+# Runs on the developer's Mac via a self-hosted runner labelled
+# 'macos-morserino'. See RUNNER_SETUP.md for one-time setup.
+#
+# Lightweight tag → parse_tag.py applies templated notes.
+# Annotated tag with -m "..." → tag message is used as the manifest 'notes'.
+
+on:
+  push:
+    tags:
+      - 'V*'
+
+concurrency:
+  # One release at a time per tag; do not cancel in-progress runs.
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write   # gh release create needs this
+
+jobs:
+  release:
+    runs-on: [self-hosted, macos-morserino]
+    # Stop early on any step failure; no half-released states.
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout (full history + tags)
+        uses: actions/checkout@v4
+        with:
+          # Need full history so 'git tag -l --format=%(contents)' can read
+          # an annotated tag's message.
+          fetch-depth: 0
+
+      # ──────────────────────────────────────────────────────────────────
+      # 1. Parse tag → version / channel / date / counter
+      # ──────────────────────────────────────────────────────────────────
+      - name: Parse tag
+        id: parse
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/release/parse_tag.py "${GITHUB_REF_NAME}" > /tmp/tag.json
+          cat /tmp/tag.json
+          for k in channel version major counter date; do
+            v=$(python3 -c "import json;d=json.load(open('/tmp/tag.json'));print('' if d['$k'] is None else d['$k'])")
+            echo "$k=$v" >> "$GITHUB_OUTPUT"
+          done
+
+      # ──────────────────────────────────────────────────────────────────
+      # 2. Verify changelog section exists (fail fast — no point building)
+      # ──────────────────────────────────────────────────────────────────
+      - name: Verify and extract changelog
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 scripts/release/extract_changelog.py \
+              --version "${{ steps.parse.outputs.version }}" \
+              > /tmp/changelog.md
+          echo "--- changelog preview ---"
+          head -20 /tmp/changelog.md
+          echo "--- (truncated) ---"
+
+      # ──────────────────────────────────────────────────────────────────
+      # 3. Read annotated-tag message (empty for lightweight tags)
+      # ──────────────────────────────────────────────────────────────────
+      - name: Capture tag annotation
+        id: tagmsg
+        shell: bash
+        run: |
+          set -euo pipefail
+          msg=$(git tag -l --format='%(contents)' "${GITHUB_REF_NAME}" | sed '/^-----BEGIN PGP/,$d')
+          # Trim trailing newlines
+          msg=$(printf '%s' "$msg")
+          echo "Annotation message: ${msg:-(none — lightweight tag, will use template)}"
+          # Persist for later steps via the runner's env file
+          {
+            echo "TAG_NOTES<<__EOF__"
+            printf '%s\n' "$msg"
+            echo "__EOF__"
+          } >> "$GITHUB_ENV"
+
+      # ──────────────────────────────────────────────────────────────────
+      # 4 & 5. Build the two release environments
+      # ──────────────────────────────────────────────────────────────────
+      - name: Build heltec_wifi_lora_32_V2 (original M32)
+        run: pio run -d Software/src -e heltec_wifi_lora_32_V2
+
+      - name: Build pocketwroom (M32 Pocket)
+        run: pio run -d Software/src -e pocketwroom
+
+      # ──────────────────────────────────────────────────────────────────
+      # 6. Rename + xattr-strip binaries into a staging dir
+      # ──────────────────────────────────────────────────────────────────
+      - name: Stage renamed binaries
+        id: stage
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf /tmp/release-stage
+          mkdir -p /tmp/release-stage
+
+          ARGS=(
+              --channel "${{ steps.parse.outputs.channel }}"
+              --version "${{ steps.parse.outputs.version }}"
+              --build-root Software/src/.pio/build
+              --dropbox-root "$MORSERINO_DROPBOX_ROOT"
+              --staging-dir /tmp/release-stage
+          )
+          if [[ "${{ steps.parse.outputs.channel }}" = "beta" ]]; then
+              ARGS+=(--date "${{ steps.parse.outputs.date }}")
+              ARGS+=(--counter "${{ steps.parse.outputs.counter }}")
+          fi
+
+          python3 scripts/release/rename_binaries.py "${ARGS[@]}" > /tmp/rename.json
+          echo "--- rename.json ---"
+          cat /tmp/rename.json
+          echo "--- staged ---"
+          ls -la /tmp/release-stage
+
+      # ──────────────────────────────────────────────────────────────────
+      # 7. Rebuild PDFs (User Manual EN + DE) for the major version
+      # ──────────────────────────────────────────────────────────────────
+      - name: Rebuild User Manual PDFs
+        shell: bash
+        run: |
+          set -euo pipefail
+          MANUAL_DIR="Documentation/User Manual/Version ${{ steps.parse.outputs.major }}.x"
+          if [[ ! -d "$MANUAL_DIR" ]]; then
+              echo "User manual directory not found: $MANUAL_DIR" >&2
+              echo "Add the per-major-version folder before tagging." >&2
+              exit 1
+          fi
+          (cd "$MANUAL_DIR" && ./build.sh)
+          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_en.pdf" /tmp/release-stage/
+          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_de.pdf" /tmp/release-stage/
+
+      # ──────────────────────────────────────────────────────────────────
+      # 8. Stage Pocket FAQ PDF (copy-as, per §6 Phase 1)
+      # ──────────────────────────────────────────────────────────────────
+      - name: Stage Pocket FAQ
+        shell: bash
+        run: |
+          set -euo pipefail
+          src="Documentation/FAQ/Morserino-32 Pocket FAQ.pdf"
+          src_md="Documentation/FAQ/Morserino-32 Pocket FAQ.md"
+          # Warn if the .md is newer than the .pdf — content drift signal.
+          if [[ -f "$src_md" && "$src_md" -nt "$src" ]]; then
+              echo "::warning::Pocket FAQ .md is newer than .pdf — consider rebuilding by hand"
+          fi
+          # Rename to dotted form to match existing release-asset convention
+          # (V8.0 used 'Morserino-32.Pocket.FAQ.pdf').
+          cp "$src" "/tmp/release-stage/Morserino-32.Pocket.FAQ.pdf"
+
+      # ──────────────────────────────────────────────────────────────────
+      # 9. Compose release body (changelog + optional beta banner)
+      # ──────────────────────────────────────────────────────────────────
+      - name: Compose release body
+        id: body
+        shell: bash
+        run: |
+          set -euo pipefail
+          {
+            if [[ "${{ steps.parse.outputs.channel }}" = "beta" ]]; then
+                echo "> **Beta build — for testing.** See V${{ steps.parse.outputs.version }} section below for cumulative changes."
+                echo ""
+            fi
+            cat /tmp/changelog.md
+          } > /tmp/release-body.md
+          echo "--- body preview ---"
+          head -30 /tmp/release-body.md
+
+      # ──────────────────────────────────────────────────────────────────
+      # 10. Create the GitHub Release as a DRAFT with all assets
+      # ──────────────────────────────────────────────────────────────────
+      - name: Create draft GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Title: derive from the m32 manifest_version produced by
+          # rename_binaries.py, so the same-day collision suffix (#N) is
+          # reflected in the release title.
+          TITLE_SUFFIX=$(python3 -c "import json; print(json.load(open('/tmp/rename.json'))['m32']['manifest_version'])")
+          TITLE="Version $TITLE_SUFFIX"
+          echo "Release title: $TITLE"
+
+          PRERELEASE_FLAG=""
+          if [[ "${{ steps.parse.outputs.channel }}" = "beta" ]]; then
+              PRERELEASE_FLAG="--prerelease"
+          fi
+
+          # Refuse to overwrite if a release for this tag already exists.
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+              echo "A release for ${GITHUB_REF_NAME} already exists. Refusing to overwrite." >&2
+              exit 1
+          fi
+
+          # Collect assets explicitly so spaces in filenames are safe.
+          ASSETS=(
+              /tmp/release-stage/fw_m32*.bin
+              /tmp/release-stage/fw_m32p*.bin
+              /tmp/release-stage/m32UserManual_v*_en.pdf
+              /tmp/release-stage/m32UserManual_v*_de.pdf
+              /tmp/release-stage/Morserino-32.Pocket.FAQ.pdf
+          )
+
+          gh release create "${GITHUB_REF_NAME}" \
+              --draft \
+              $PRERELEASE_FLAG \
+              --title "$TITLE" \
+              --notes-file /tmp/release-body.md \
+              "${ASSETS[@]}"
+
+      # ──────────────────────────────────────────────────────────────────
+      # 11. Publish to Dropbox (copy binaries + prepend manifest entries)
+      # ──────────────────────────────────────────────────────────────────
+      - name: Publish to Dropbox
+        shell: bash
+        run: |
+          set -euo pipefail
+          ARGS=(
+              --rename-info /tmp/rename.json
+              --channel "${{ steps.parse.outputs.channel }}"
+          )
+          if [[ -n "$TAG_NOTES" ]]; then
+              ARGS+=(--notes "$TAG_NOTES")
+          fi
+          bash scripts/release/dropbox_publish.sh "${ARGS[@]}"
+
+      # ──────────────────────────────────────────────────────────────────
+      # 12. STABLE ONLY: commit binaries to the in-repo archive on master
+      # ──────────────────────────────────────────────────────────────────
+      - name: Archive binaries in repo (stable only)
+        if: steps.parse.outputs.channel == 'stable'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          M32_FILE=$(python3 -c "import json; print(json.load(open('/tmp/rename.json'))['m32']['filename'])")
+          M32P_FILE=$(python3 -c "import json; print(json.load(open('/tmp/rename.json'))['m32p']['filename'])")
+          M32_DIR="Software/binary/From Version 7 onwards/M32 1st & 2nd edition"
+          M32P_DIR="Software/binary/From Version 7 onwards/M32 Pocket"
+
+          if [[ ! -d "$M32_DIR" || ! -d "$M32P_DIR" ]]; then
+              echo "::error::in-repo archive directories not found. Expected:" >&2
+              echo "  $M32_DIR" >&2
+              echo "  $M32P_DIR" >&2
+              exit 1
+          fi
+
+          # Determine the default branch dynamically so we don't hardcode 'master'.
+          DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+          echo "Default branch: $DEFAULT_BRANCH"
+
+          # actions/checkout left us on a detached HEAD at the tag's commit.
+          # Switch to the default branch tip for the archive commit. We
+          # don't merge the tag — we just want the binary files added on top
+          # of master HEAD.
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout "$DEFAULT_BRANCH"
+          git pull --ff-only origin "$DEFAULT_BRANCH"
+
+          cp "/tmp/release-stage/$M32_FILE"  "$M32_DIR/$M32_FILE"
+          cp "/tmp/release-stage/$M32P_FILE" "$M32P_DIR/$M32P_FILE"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$M32_DIR/$M32_FILE" "$M32P_DIR/$M32P_FILE"
+
+          if git diff --cached --quiet; then
+              echo "Nothing to commit — binaries already present at $DEFAULT_BRANCH HEAD."
+              exit 0
+          fi
+
+          git commit -m "Add V${{ steps.parse.outputs.version }} binaries to archive [skip ci]"
+          # Single push attempt. If it's rejected, the run fails — re-run
+          # picks up the new tip and tries again (intentional: don't mask
+          # races silently).
+          git push origin "$DEFAULT_BRANCH"
+
+      # ──────────────────────────────────────────────────────────────────
+      # 13. Summary
+      # ──────────────────────────────────────────────────────────────────
+      - name: Summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Morserino-32 release — \`${GITHUB_REF_NAME}\`"
+            echo ""
+            echo "- channel: \`${{ steps.parse.outputs.channel }}\`"
+            echo "- version: \`${{ steps.parse.outputs.version }}\`"
+            if [[ -f /tmp/rename.json ]]; then
+                echo ""
+                echo "**Staged binaries:**"
+                echo '```json'
+                cat /tmp/rename.json
+                echo '```'
+            fi
+            echo ""
+            echo "Draft release created. Review and publish at:"
+            echo "https://github.com/${GITHUB_REPOSITORY}/releases"
+          } >> "$GITHUB_STEP_SUMMARY"

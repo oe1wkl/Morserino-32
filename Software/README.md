@@ -1,5 +1,16 @@
 # Change History
 
+### CHANGES V. 8.1
+
+#### New Features:
+* Added another game (currently only in single user mode): Morsel. Loosely based on Wold and Morse, it is a word guessing game that gives clues in high speed morse, getting slower over time if you guessed wrong. Goal is to find the right word sa quickly as possible.
+
+#### Bug Fixes:
+* There was a bug in the multi-part file player code, which prevented that the device correctly re-starte where you had stopped playing a part. Fixed.
+* Morse invaders: character chosen randomly was not chosen fairly. The distribution is now better.
+* Some minor nuisances in the user interface have been fixed.
+* Sorted some heap memory issues that prevented the implementation of multi-user games.
+
 ### Changes V. 8.0
 
 #### New Features:
