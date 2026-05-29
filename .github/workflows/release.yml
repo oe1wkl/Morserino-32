@@ -305,9 +305,14 @@ jobs:
           echo "Default branch: $DEFAULT_BRANCH"
 
           # Identify the last commit that touched the EN PDF on the
-          # default branch (use --first-parent to ignore merge-commit
-          # noise).
-          last_pdf_commit=$(git log "$DEFAULT_BRANCH" -1 --pretty=%H -- "$PDF_EN" 2>/dev/null || true)
+          # default branch. Use the remote-tracking ref 'origin/<branch>'
+          # — actions/checkout with fetch-depth:0 populates origin/* but
+          # does NOT create a local branch matching the default branch
+          # (HEAD is detached at the tag's commit). Using just
+          # '$DEFAULT_BRANCH' would fail to resolve and silently fall
+          # into the 'first build' path, committing metadata-only doc
+          # changes on every release.
+          last_pdf_commit=$(git log "origin/$DEFAULT_BRANCH" -1 --pretty=%H -- "$PDF_EN" 2>/dev/null || true)
           if [[ -z "$last_pdf_commit" ]]; then
               echo "No prior commit found for $PDF_EN — first build for this major version."
               sources_changed=1
