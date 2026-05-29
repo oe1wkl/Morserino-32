@@ -73,7 +73,7 @@ const char * prefName[] = {
                       "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
                       "quickStart", "outputCase", "autoStop", "maxSequence", "LoraChannel",
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-					  "bluetoothOut",
+					  "bluetoothOut", "btARkey",
 #endif
 #ifdef CONFIG_TFT
             "theme",
@@ -396,6 +396,13 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"}
   },
+  {
+    0, 0, 1, 1,                                                 // in Generic Kbd mode: 0=send '+', 1=send Shift+Enter (soft return)
+    "BLT <AR>",
+    "Generic Kbd: send <AR> as '+' or as Linefeed (Shift+Enter)",
+    true,
+    {"+", "Linefeed"}
+  },
 #endif
 #ifdef CONFIG_TFT
   {
@@ -543,7 +550,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #define INVORIENT
 #endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-#define BLUE posBluetoothOut,
+#define BLUE posBluetoothOut, posBluetoothARkey,
 #else
 #define BLUE
 #endif

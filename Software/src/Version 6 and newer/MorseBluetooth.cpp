@@ -275,21 +275,58 @@ void MorseBluetooth::bluetoothTypeCharacter(const char chr)
 	}
 }
 
+// Emit a Shift+Enter HID report (soft return in word processors / chat apps).
+// Reuses the active keymap's Return entry so we honour whatever HID layout
+// the build was compiled with, just OR-ing in Left Shift.
+static void bluetoothTypeShiftReturn(void)
+{
+    if (isBleConnected) {
+        KEYMAP map = keymap[(uint8_t)'\n'];
+        InputReport report = {
+            .modifiers = (uint8_t)(map.modifier | 0x02),  // Left Shift
+            .reserved = 0,
+            .pressedKeys = { map.usage, 0, 0, 0, 0, 0 }
+        };
+        input->setValue((uint8_t*)&report, sizeof(report));
+        input->notify();
+        delay(5);
+        input->setValue((uint8_t*)&NO_KEY_PRESSED, sizeof(NO_KEY_PRESSED));
+        input->notify();
+    }
+}
+
 void MorseBluetooth::bluetoothTypeString(const String& str) {
     // Build a local modified copy only when needed
     String modified;
     const String* toSend = &str;
-    
+
     if (MorsePreferences::pliste[posBluetoothOut].value >= 0x4) {
         modified = str;
         modified.replace("<ERR>", "\b");
         modified.replace("<err>", "\b");
         modified.replace("<KA>", "\n");
         modified.replace("<ka>", "\n");
+        if (MorsePreferences::pliste[posBluetoothARkey].value) {
+            // \v is a sentinel: nothing else in the morse stream produces it,
+            // and the main loop below intercepts it before bluetoothTypeCharacter.
+            // The decoder emits '+' for .-.-. (same code as <AR>), so the
+            // '+' replace is the one that actually fires in practice; the
+            // <AR>/<ar> entries are belt-and-braces for any path that might
+            // emit them literally.
+            modified.replace("+", "\v");
+            modified.replace("<AR>", "\v");
+            modified.replace("<ar>", "\v");
+        }
+        // '+' default behaviour needs no replacement — the keymap already
+        // types '+' from the literal character the decoder emits.
         toSend = &modified;
     }
     for (int i = 0; i < toSend->length(); i++) {
-        bluetoothTypeCharacter((*toSend)[i]);
+        char c = (*toSend)[i];
+        if (c == '\v')
+            bluetoothTypeShiftReturn();
+        else
+            bluetoothTypeCharacter(c);
     }
 }
 #endif //#ifdef CONFIG_BLUETOOTH_KEYBOARD
