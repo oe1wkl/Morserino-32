@@ -278,7 +278,84 @@ jobs:
           bash scripts/release/dropbox_publish.sh "${ARGS[@]}"
 
       # ──────────────────────────────────────────────────────────────────
-      # 12. STABLE ONLY: commit binaries to the in-repo archive on master
+      # 12. Sync rebuilt docs (.pdf + .html, EN+DE) to default branch
+      #     IF the manual_*.md sources changed since the last PDF commit.
+      #     Runs for both beta and stable so the repo never lags the
+      #     release. Skips silently when sources are unchanged — avoids
+      #     metadata-only churn (pandoc/weasyprint embed a unique
+      #     document ID and build timestamp, so output bytes always
+      #     differ even when content is identical).
+      # ──────────────────────────────────────────────────────────────────
+      - name: Sync rebuilt docs to repo (if sources changed)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          MAJOR="${{ steps.parse.outputs.major }}"
+          MANUAL_DIR="Documentation/User Manual/Version ${MAJOR}.x"
+          PDF_EN="$MANUAL_DIR/m32UserManual_v${MAJOR}_en.pdf"
+          PDF_DE="$MANUAL_DIR/m32UserManual_v${MAJOR}_de.pdf"
+          HTML_EN="$MANUAL_DIR/manual_en.html"
+          HTML_DE="$MANUAL_DIR/manual_de.html"
+          MD_EN="$MANUAL_DIR/manual_en.md"
+          MD_DE="$MANUAL_DIR/manual_de.md"
+
+          DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
+          echo "Default branch: $DEFAULT_BRANCH"
+
+          # Identify the last commit that touched the EN PDF on the
+          # default branch (use --first-parent to ignore merge-commit
+          # noise).
+          last_pdf_commit=$(git log "$DEFAULT_BRANCH" -1 --pretty=%H -- "$PDF_EN" 2>/dev/null || true)
+          if [[ -z "$last_pdf_commit" ]]; then
+              echo "No prior commit found for $PDF_EN — first build for this major version."
+              sources_changed=1
+          elif git diff --quiet "$last_pdf_commit" HEAD -- "$MD_EN" "$MD_DE"; then
+              echo "Manual sources unchanged since $last_pdf_commit — skipping doc commit."
+              echo "(Rebuilt PDFs differ only in embedded build metadata, not content.)"
+              exit 0
+          else
+              echo "Manual sources changed since $last_pdf_commit — committing rebuilt docs."
+              sources_changed=1
+          fi
+
+          # Stash the freshly-built outputs outside the working tree so
+          # the upcoming 'git checkout' doesn't clobber them.
+          mkdir -p /tmp/docs-stash
+          cp "$PDF_EN"  /tmp/docs-stash/
+          cp "$PDF_DE"  /tmp/docs-stash/
+          cp "$HTML_EN" /tmp/docs-stash/
+          cp "$HTML_DE" /tmp/docs-stash/
+
+          # Switch to the default branch.
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout "$DEFAULT_BRANCH"
+          git pull --ff-only origin "$DEFAULT_BRANCH"
+
+          # Copy the stashed outputs into their tracked locations.
+          cp "/tmp/docs-stash/$(basename "$PDF_EN")"  "$PDF_EN"
+          cp "/tmp/docs-stash/$(basename "$PDF_DE")"  "$PDF_DE"
+          cp "/tmp/docs-stash/$(basename "$HTML_EN")" "$HTML_EN"
+          cp "/tmp/docs-stash/$(basename "$HTML_DE")" "$HTML_DE"
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "$PDF_EN" "$PDF_DE" "$HTML_EN" "$HTML_DE"
+
+          if git diff --cached --quiet; then
+              # Defensive: shouldn't happen because we already detected
+              # source changes, but possible if .md edits didn't affect
+              # the rendered output at all.
+              echo "Source diff exists but rebuilt outputs match repo — nothing to commit."
+              exit 0
+          fi
+
+          git commit -m "Update V${{ steps.parse.outputs.version }} docs (rebuilt from sources) [skip ci]"
+          git push origin "$DEFAULT_BRANCH"
+
+      # ──────────────────────────────────────────────────────────────────
+      # 13. STABLE ONLY: commit binaries to the in-repo archive on master
       # ──────────────────────────────────────────────────────────────────
       - name: Archive binaries in repo (stable only)
         if: steps.parse.outputs.channel == 'stable'
@@ -331,7 +408,7 @@ jobs:
           git push origin "$DEFAULT_BRANCH"
 
       # ──────────────────────────────────────────────────────────────────
-      # 13. Summary
+      # 14. Summary
       # ──────────────────────────────────────────────────────────────────
       - name: Summary
         if: always()

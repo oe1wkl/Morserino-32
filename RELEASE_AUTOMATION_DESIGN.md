@@ -14,7 +14,8 @@ Replace the current manual, multi-step release process with a tag-triggered GitH
 4. Attaches all assets (firmware binaries, English/German manuals, Pocket FAQ).
 5. Copies firmware into the local Dropbox folder that backs the web installer.
 6. Prepends a new entry to each platform's `versions.json` manifest.
-7. For **stable** releases only: commits the new binaries to the in-repo archive at `Software/binary/From Version 7 onwards/…` on the default branch (`master`), so users with scripted retrieval from the repo continue to find them there.
+7. For **every release (stable + beta)**: if the manual `.md` sources changed since the last PDF commit, commits the freshly-built `.pdf` and `.html` files to `Documentation/User Manual/Version <major>.x/` on the default branch (`master`), so anyone pulling docs from the repo gets the same content as the release.
+8. For **stable** releases only: commits the new binaries to the in-repo archive at `Software/binary/From Version 7 onwards/…` on the default branch (`master`), so users with scripted retrieval from the repo continue to find them there.
 
 The developer's only manual steps after this is in place:
 
@@ -308,16 +309,37 @@ The same `notes` value is used in both `firmware/versions.json` and `firmware/m3
 ├─────────────────────────────────────────────────────────────────┤
 │ 12. Update versions.json for each platform (atomic prepend)     │
 ├─────────────────────────────────────────────────────────────────┤
-│ 13. STABLE ONLY: copy binaries to in-repo archive, commit to    │
+│ 13. Sync rebuilt docs (.pdf + .html, EN+DE) to default branch   │
+│     if manual_*.md changed since last PDF commit. Skip silently │
+│     when sources unchanged (avoid metadata-only churn).         │
+├─────────────────────────────────────────────────────────────────┤
+│ 14. STABLE ONLY: copy binaries to in-repo archive, commit to    │
 │     default branch, push (with [skip ci])                       │
 ├─────────────────────────────────────────────────────────────────┤
-│ 14. Summary comment posted on the workflow run                  │
+│ 15. Summary comment posted on the workflow run                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 Any failure short-circuits and leaves the system in a clean state (no partial uploads, no partial manifest edits — the GitHub Release is created late in the sequence so Dropbox-side problems can't leave dangling release artifacts).
 
-### In-repo binary archive (stage 13)
+### Doc sync (stage 13)
+
+`build.sh` always produces fresh PDFs because pandoc+weasyprint embed a per-build document ID and timestamp — even with unchanged `.md` sources, the resulting PDF differs from the previous PDF by a handful of bytes. Naively committing the rebuilt PDFs on every release would create constant noise commits (each ~8 MB) for no real content change.
+
+The doc-sync step decides whether to commit by inspecting the **`.md` source files**, not the rebuilt outputs:
+
+1. Find the last commit that touched `m32UserManual_v<major>_en.pdf` on the default branch.
+2. Compare `manual_en.md` and `manual_de.md` between that commit and `HEAD` (the tagged commit).
+3. **If identical** → the rebuilt PDFs are content-equivalent to what's already in the repo; skip the commit (no churn).
+4. **If different** → the sources changed since the last PDF commit, so the new build genuinely contains different content. Stash the rebuilt files, switch to the default branch, copy them in, commit, push.
+
+What gets committed:
+- `Documentation/User Manual/Version <major>.x/m32UserManual_v<major>_{en,de}.pdf`
+- `Documentation/User Manual/Version <major>.x/manual_{en,de}.html` (intermediate output, also tracked in the repo today)
+
+Commit message: `Update V<ver> docs (rebuilt from sources) [skip ci]`. Runs for both stable and beta — the repo should be at-or-ahead-of the release at all times, and a beta release that includes doc changes shouldn't leave the repo's docs stale.
+
+### In-repo binary archive (stage 14)
 
 For stable releases the workflow commits the freshly-built binaries into the long-standing in-repo archive so users who pull from git keep finding them:
 
