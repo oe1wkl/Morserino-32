@@ -1722,9 +1722,11 @@ String getRandomCall(int maxLength) {
     static char call[16];
     int pos = 0;
     uint8_t contMask;
+    uint8_t contPref = MorsePreferences::pliste[posCallContinent].value;
+    bool vkzlOnly = (contPref == 7);
     // Get filter settings
     if (maxLength != 1)     /// means the max call length is not 3 
-        contMask = getContinentMask(MorsePreferences::pliste[posCallContinent].value);
+        contMask = vkzlOnly ? CONT_OC : getContinentMask(contPref);
     else                    /// maxLength == 1 means we want a 3-character call; these only exist in NA and EU, so we include those two.
         contMask = CONT_ALL;
     bool commonOnly  = (MorsePreferences::pliste[posCallCommon].value == 1);
@@ -1745,6 +1747,7 @@ String getRandomCall(int maxLength) {
         if (!(cont & contMask)) continue;
         if (weight < minWeight) continue;
         if ((int)strlen(pfxBuf) > maxPfxLen) continue;
+        if (vkzlOnly && strncmp(pfxBuf, "VK", 2) != 0 && strncmp(pfxBuf, "ZL", 2) != 0) continue;
         totalWeight += weight;
     }
  
@@ -1770,6 +1773,7 @@ String getRandomCall(int maxLength) {
         if (!(cont & contMask)) continue;
         if (weight < minWeight) continue;
         if ((int)strlen(pfxBuf) > maxPfxLen) continue;
+        if (vkzlOnly && strncmp(pfxBuf, "VK", 2) != 0 && strncmp(pfxBuf, "ZL", 2) != 0) continue;
         cumulative += weight;
         if (cumulative > pick) {
             chosen = i;
