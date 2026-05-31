@@ -56,6 +56,7 @@
 #include "MorsePreferences.h"
 #include "MorseMenu.h"
 #include "MorseGame.h"           // gameMode, gameCharBuffer
+#include "MorseCwEngine.h"       // shared non-blocking CW player
 #include "morsedefs.h"
 #include "ClickButton.h"
 #include "DisplayWrapper.h"
@@ -650,14 +651,13 @@ static String        lastClue       = "";       // for QRS replay
 static uint8_t       lastClueWpm    = RC_CLUE_WPM;
 static bool          pendingNewConfirm = false; // NEW asks for Y to confirm wipe
 
-// --- CW player state (non-blocking) ---
-static String        cwElements    = "";        // '1','2','0' stream (plus ' ' for word-gap we insert)
-static int           cwPos         = 0;
-static uint8_t       cwWpm         = RC_CLUE_WPM;
-static unsigned int  cwDitMs       = 40;        // 1200 / wpm, computed on play
-static unsigned long cwNextEventMs = 0;
-static bool          cwPlaying     = false;     // true while the player runs (mutes input parsing)
-static bool          cwToneOn      = false;     // true when we're currently sounding a tone
+// --- CW player ---
+// The element timing, tone keying and auto-mute state machine live in
+// MorseCwEngine. We keep only the per-clue context RC needs locally: the
+// last clue text + WPM (for the QRS replay command), and an extra mute
+// predicate that silences playback while a paddle is held (the engine
+// already mutes on keyerState != IDLE_STATE).
+static bool rcExtraMute() { return leftKey || rightKey; }
 
 
 //=============================================================================
@@ -785,140 +785,34 @@ static void lobbyLoop() {
 
 
 //=============================================================================
-// CW PLAYER — non-blocking, driven from the main loop
+// CW PLAYER — thin wrappers around MorseCwEngine
 //=============================================================================
-
-//=============================================================================
-// CW PLAYER — non-blocking, driven from the main loop.
 //
-// Modeled on MorsePileup.cpp's cwPlayer (a known-working implementation).
-// Key design points:
+// The element timing / tone keying / auto-mute machinery lives in
+// MorseCwEngine. RC's call-site convention here is: fixed per-clue WPM
+// (RC plays each clue at a clue-specific speed), fixed pitch
+// (RC_CLUE_PITCH_HZ — distinct from the player's sidetone), no looping
+// (each clue plays once), and no resume-settling pause (the historical
+// behaviour — preserved exactly via resumeGapDits = 0).
 //
-// 1. Uses MorseOutput::pwmTone / pwmNoTone DIRECTLY, not keyOut(). keyOut()
-//    is tangled with the keyer's intTone/extTone state and transmitter
-//    gating, which is wrong for game-internal playback.
-//
-// 2. Pauses while the keyer is active or a paddle is held, so the player's
-//    own sidetone isn't clipped by our playback.
-//
-// 3. Element gaps are timed directly (no separate KEY_DOWN / KEY_UP state).
-//    On each tick: if tone is on → turn it off, schedule inter-element gap.
-//    Otherwise → fetch next element, start tone (or schedule larger gap).
-//=============================================================================
-
-// Build a CW element stream for a multi-word text. Each word gets
-// Build a CW element stream for a multi-word text.
-//
-// Case convention (matches the firmware's CWchars table in m32_v6.ino):
-//   lowercase a-z → regular letters  (e.g. 'k' = K = dah-dit-dah)
-//   uppercase letters in SANKEBH → prosigns:
-//       S = <as>   A = <ka>   N = <kn>   K = <sk>
-//       E = <ve>   B = <bk>   H = <ch>
-//   Digits 0-9, punctuation .,:-/=?@+ also supported.
-//
-// So to key the final QSO phrase "DE RC0 QSL <SK>", callers should pass
-// the string literal  "de rc0 qsl K"  (lowercase letters, uppercase K
-// for the <sk> prosign). Mixed-case inputs are preserved.
-//
-// Output alphabet:
-//   '1' = dit,  '2' = dah,  '0' = char-gap,  ' ' = word-gap
-static String buildCwStream(const String& text) {
-    String out;
-    out.reserve(text.length() * 8);
-    int start = 0;
-    while (start < (int)text.length()) {
-        int sp = text.indexOf(' ', start);
-        String word = (sp < 0) ? text.substring(start) : text.substring(start, sp);
-        // Do NOT lowercase — the caller has chosen case deliberately so that
-        // uppercase SANKEBH characters map to prosigns. generateCWword()
-        // looks up each character against CWchars, which contains lowercase
-        // letters AND the uppercase prosign codes, side by side.
-        String elems = generateCWword(word);
-        out += elems;
-        if (sp < 0) break;
-        out += ' ';                                  // word-gap marker
-        start = sp + 1;
-    }
-    return out;
-}
+// Case convention is unchanged: lowercase = letters, uppercase SANKEBH =
+// prosigns. The engine's buildStream feeds generateCWword verbatim.
 
 static void cwPlayerStart(const String& text, uint8_t wpm) {
-    cwElements     = buildCwStream(text);
-    cwPos          = 0;
-    cwWpm          = wpm;
-    cwDitMs        = 1200 / wpm;
-    cwToneOn       = false;
-    cwNextEventMs  = millis();
-    cwPlaying      = true;
-    lastClue       = text;
-    lastClueWpm    = wpm;
+    lastClue    = text;          // for QRS replay (RC-specific)
+    lastClueWpm = wpm;
+    MorseCwEngine::PlayOpts opts = {
+        /*pitchHz       */ RC_CLUE_PITCH_HZ,
+        /*wpm           */ wpm,
+        /*loop          */ false,
+        /*resumeGapDits */ 0,
+        /*extraMute     */ rcExtraMute,
+    };
+    MorseCwEngine::playStart(text, opts);
 }
 
-static void cwPlayerStop() {
-    if (cwToneOn) {
-        MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
-        cwToneOn = false;
-    }
-    cwPlaying = false;
-}
-
-// Service the CW player. Call every loop iteration.
-static void cwPlayerTick() {
-    if (!cwPlaying) return;
-
-    // Mute while the keyer is active or a paddle is held (same as Pileup's
-    // cwPlayer). This prevents our playback from colliding with the player's
-    // own keying sidetone.
-    bool shouldMute = (keyerState != IDLE_STATE) || leftKey || rightKey;
-    if (shouldMute) {
-        if (cwToneOn) {
-            MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
-            cwToneOn = false;
-        }
-        cwNextEventMs = millis() + 100;              // recheck shortly
-        return;
-    }
-
-    if ((long)(millis() - cwNextEventMs) < 0) return;    // waiting
-
-    // If tone is on, turn it off (end of dit/dah)
-    if (cwToneOn) {
-        MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
-        cwToneOn = false;
-        cwNextEventMs = millis() + cwDitMs - 7;       // inter-element gap
-        return;
-    }
-
-    // Advance to next element
-    if (cwPos >= (int)cwElements.length()) {
-        cwPlayerStop();
-        return;
-    }
-
-    char c = cwElements[cwPos++];
-    switch (c) {
-        case '1':   // dit
-            MorseOutput::pwmTone(RC_CLUE_PITCH_HZ,
-                                 MorsePreferences::sidetoneVolume, false);
-            cwToneOn = true;
-            cwNextEventMs = millis() + cwDitMs - 7;
-            break;
-        case '2':   // dah
-            MorseOutput::pwmTone(RC_CLUE_PITCH_HZ,
-                                 MorsePreferences::sidetoneVolume, false);
-            cwToneOn = true;
-            cwNextEventMs = millis() + (cwDitMs * 3) - 7;
-            break;
-        case '0':   // char-gap (already had 1 dit inter-element, need 2 more)
-            cwNextEventMs = millis() + cwDitMs * 2;
-            break;
-        case ' ':   // word-gap (already had 1 dit inter-element, need 6 more)
-            cwNextEventMs = millis() + cwDitMs * 6;
-            break;
-        default:
-            break;                                    // unknown — skip
-    }
-}
+static void cwPlayerStop() { MorseCwEngine::playStop(); }
+static void cwPlayerTick() { MorseCwEngine::playTick(); }
 
 
 //=============================================================================
@@ -1929,7 +1823,7 @@ static bool isInstantCommand(const char* buf) {
 //     <hh> as a single 'R' character — indistinguishable from a normal R
 //     keyed in words like QRS, DROP, READ. Only eeee is unambiguous.
 static void parserTick() {
-    if (cwPlaying) return;                           // mute parser while CW plays
+    if (MorseCwEngine::isPlaying()) return;          // mute parser while CW plays
 
     // Drive the keyer — we re-use the existing Morse Invaders plumbing.
     // gameMode = true tells doPaddleIambic to deposit the decoded char
@@ -2275,7 +2169,7 @@ static void drawHintLine() {
     canvas->setFont(&fonts::FreeSans9pt7b);
     canvas->setTextDatum(lgfx::top_left);
 
-    if (cwPlaying) {
+    if (MorseCwEngine::isPlaying()) {
         canvas->setTextColor(RC_HIGHLIGHT, RC_BG);
         canvas->drawString("CW playing...", 6, HINT_Y);
         return;
@@ -2346,7 +2240,10 @@ static void redrawAsNeeded() {
 
     bool needFull = false;
     if (inputDirty) { needFull = true; inputDirty = false; }
-    if (cwPlaying != cwWasPlaying) { needFull = true; cwWasPlaying = cwPlaying; }
+    {
+        const bool cwPlayingNow = MorseCwEngine::isPlaying();
+        if (cwPlayingNow != cwWasPlaying) { needFull = true; cwWasPlaying = cwPlayingNow; }
+    }
     if (now - lastFullRedraw > 250) needFull = true;    // periodic refresh
     if (!needFull && now - lastCursorBlink > 200 && inputLen > 0) {
         // Cheap: just the input line, for the cursor blink
@@ -2754,7 +2651,8 @@ void MorseRadioCave::warmup() {
     }
     lastCommand.reserve(32);
     lastClue.reserve(32);
-    cwElements.reserve(128);
+    // (former cwElements String now lives in MorseCwEngine as a fixed-size
+    // char buffer — no String warmup needed.)
 }
 
 #endif  // CONFIG_CW_GAME

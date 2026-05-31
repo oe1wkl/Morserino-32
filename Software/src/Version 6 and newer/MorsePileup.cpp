@@ -18,6 +18,7 @@ volatile bool pileupRxReady = false;
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
 #include "MorseMenu.h"
+#include "MorseCwEngine.h"      // shared non-blocking CW player
 #include "morsedefs.h"
 #include "ClickButton.h"
 #include "DisplayWrapper.h"
@@ -236,126 +237,42 @@ static void playSoundLevelUp() {
 
 //=== Non-blocking CW player for attack playback ===
 //
-// Plays a CW element string ("1201200120...") at a different pitch from the
-// sidetone. Uses pwmTone/pwmNoTone directly — pauses automatically when the
-// keyer is active (keyerState != IDLE_STATE) so the player's sidetone takes
-// priority.
-
-struct FtpCwPlayer {
-    char     elements[128];     // dit/dah/space element string from generateCWword
-    int      pos;               // current position in elements
-    int      len;               // total length
-    bool     playing;           // currently active
-    bool     toneOn;            // is our tone currently sounding
-    bool     paused;            // paused because keyer is active
-    unsigned long timer;        // next state transition time
-    int      pitch;             // our playback pitch (Hz)
-    uint8_t  playCount;         // how many times we've played through
-};
-
-static FtpCwPlayer cwPlayer;
+// Thin wrappers around MorseCwEngine. Pileup's call-site convention:
+// pitch derived from the player's pitch pref (offset by
+// FTP_ATTACK_PITCH_RATIO so the attack is distinguishable from the
+// sidetone); WPM = 0 means the engine uses live keyer timings
+// (ditLength/dahLength/interCharacterSpace), so the attack tracks the
+// player's speed changes mid-game. The challenge loops with an inter-loop
+// gap, and the engine settles for 2 dits after the mute predicate
+// releases — both preserve the original cwPlayerUpdate behaviour.
 
 static int getAttackPitch() {
     int basePitch = MorseOutput::notes[MorsePreferences::pliste[posPitch].value];
     return basePitch * FTP_ATTACK_PITCH_RATIO_NUM / FTP_ATTACK_PITCH_RATIO_DEN;
 }
 
+// Mute predicate: silence playback whenever the user is typing a response
+// or a Pileup sound effect is sounding. (keyerState != IDLE is handled
+// by the engine itself.)
+static bool pileupExtraMute() {
+    return (ftp.inputPos > 0) || ftpSoundPlaying;
+}
+
 static void cwPlayerStart(const char* callsign) {
-    // Convert callsign to lowercase for generateCWword
     String lower = callsign;
-    lower.toLowerCase();
-    String cw = generateCWword(lower);
-
-    strncpy(cwPlayer.elements, cw.c_str(), sizeof(cwPlayer.elements) - 1);
-    cwPlayer.elements[sizeof(cwPlayer.elements) - 1] = '\0';
-    cwPlayer.len = strlen(cwPlayer.elements);
-    cwPlayer.pos = 0;
-    cwPlayer.playing = true;
-    cwPlayer.toneOn = false;
-    cwPlayer.paused = false;
-    cwPlayer.timer = millis();
-    cwPlayer.pitch = getAttackPitch();
-    cwPlayer.playCount = 0;
+    lower.toLowerCase();                                 // generateCWword expects lowercase
+    MorseCwEngine::PlayOpts opts = {
+        /*pitchHz       */ (uint16_t) getAttackPitch(),
+        /*wpm           */ 0,                            // use live ditLength globals
+        /*loop          */ true,
+        /*resumeGapDits */ 2,
+        /*extraMute     */ pileupExtraMute,
+    };
+    MorseCwEngine::playStart(lower, opts);
 }
 
-static void cwPlayerStop() {
-    if (cwPlayer.toneOn) {
-        MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
-        cwPlayer.toneOn = false;
-    }
-    cwPlayer.playing = false;
-}
-
-// Call from tight loop. Non-blocking.
-static void cwPlayerUpdate() {
-    if (!cwPlayer.playing) return;
-
-    // Mute while:
-    // - keyer is producing a dit/dah (keyerState != IDLE_STATE)
-    // - player has started typing a response (inputPos > 0)
-    // - sound effects are playing
-    bool shouldMute = (keyerState != IDLE_STATE) ||
-                      (ftp.inputPos > 0) ||
-                      ftpSoundPlaying;
-
-    if (shouldMute) {
-        if (cwPlayer.toneOn) {
-            // Stop our tone ONCE when transitioning to muted state
-            MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
-            cwPlayer.toneOn = false;
-        }
-        cwPlayer.paused = true;
-        cwPlayer.timer = millis() + 100;
-        return;
-    }
-
-    // Resume from pause — add a gap so tones don't collide
-    if (cwPlayer.paused) {
-        cwPlayer.paused = false;
-        cwPlayer.timer = millis() + ditLength * 2;  // comfortable gap
-        return;
-    }
-
-    if (millis() < cwPlayer.timer) return;  // waiting
-
-    // If tone is on, turn it off (end of dit/dah)
-    if (cwPlayer.toneOn) {
-        MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
-        cwPlayer.toneOn = false;
-        cwPlayer.timer = millis() + ditLength - 7;  // inter-element space, compensate for pwmNoTone delay
-        return;
-    }
-
-    // Advance to next element
-    if (cwPlayer.pos >= cwPlayer.len) {
-        // Finished one play-through
-        cwPlayer.playCount++;
-        cwPlayer.pos = 0;
-        // Inter-word gap before replay
-        cwPlayer.timer = millis() + interWordSpace + ditLength * 3;
-        return;
-    }
-
-    char elem = cwPlayer.elements[cwPlayer.pos++];
-
-    switch (elem) {
-        case '1':  // dit
-            MorseOutput::pwmTone(cwPlayer.pitch, MorsePreferences::sidetoneVolume, false);
-            cwPlayer.toneOn = true;
-            cwPlayer.timer = millis() + ditLength - 7;  // compensate for pwmTone delay
-            break;
-        case '2':  // dah
-            MorseOutput::pwmTone(cwPlayer.pitch, MorsePreferences::sidetoneVolume, false);
-            cwPlayer.toneOn = true;
-            cwPlayer.timer = millis() + dahLength - 7;  // compensate for pwmTone delay
-            break;
-        case '0':  // inter-character space (3 dit-lengths total, 1 already from inter-element)
-            cwPlayer.timer = millis() + interCharacterSpace;
-            break;
-        default:
-            break;
-    }
-}
+static void cwPlayerStop()    { MorseCwEngine::playStop(); }
+static void cwPlayerUpdate()  { MorseCwEngine::playTick(); }
 
 
 //=== Drawing helpers ===
@@ -603,8 +520,7 @@ static void initGameData() {
         ftp.players[i].active = false;
     clearAllCallers();
     attackPromptActive = false;
-    cwPlayer.playing = false;
-    cwPlayer.toneOn = false;
+    MorseCwEngine::playStop();
 }
 
 
@@ -1006,14 +922,14 @@ static void drawDefendArea() {
         canvas->fillRect(barX, barY, fillW, barH, barColor);
 
     // Show callsign text only after enough plays
-    if (cwPlayer.playCount >= FTP_PLAYS_BEFORE_REVEAL) {
+    if (MorseCwEngine::getPlayCount() >= FTP_PLAYS_BEFORE_REVEAL) {
         canvas->setFont(&fonts::FreeSansBold12pt7b);
         drawCentredText(y + 30, atk.call, FTP_TEXT);
     } else {
         // Show play count
         char pbuf[20];
         snprintf(pbuf, sizeof(pbuf), "Listen... (%d/%d)",
-                 cwPlayer.playCount + 1, FTP_PLAYS_BEFORE_REVEAL);
+                 MorseCwEngine::getPlayCount() + 1, FTP_PLAYS_BEFORE_REVEAL);
         canvas->setFont(&fonts::Font0);
         drawCentredText(y + 34, pbuf, FTP_DIM);
     }
@@ -1241,7 +1157,7 @@ static void statePileup() {
             continue;
         }
 
-        if (cwPlayer.toneOn) {
+        if (MorseCwEngine::isToneOn()) {
             cwPlayerUpdate();
             serialEvent();
             continue;
@@ -1249,16 +1165,16 @@ static void statePileup() {
 
         // --- CW player management ---
         if (ftp.inputPos > 0 || leftKey || rightKey || keyerState != IDLE_STATE) {
-            if (cwPlayer.playing) cwPlayerStop();
+            if (MorseCwEngine::isPlaying()) cwPlayerStop();
         }
         if (keyerState == IDLE_STATE && ftp.inputPos == 0 &&
             !leftKey && !rightKey &&
             millis() - lastSubmitTime > 2000) {
-            if (!cwPlayer.playing && challenge[0] != '\0' &&
+            if (!MorseCwEngine::isPlaying() && challenge[0] != '\0' &&
                 correctFlashTime == 0) {
-                uint8_t saved = cwPlayer.playCount;
+                uint8_t saved = MorseCwEngine::getPlayCount();
                 cwPlayerStart(challenge);
-                cwPlayer.playCount = saved;
+                MorseCwEngine::setPlayCount(saved);
             }
             cwPlayerUpdate();
             updateFtpSound();
@@ -1307,9 +1223,9 @@ static void statePileup() {
                 addScore(FTP_SCORE_WRONG);
                 playSoundWrong();
                 triggerFlash(FTP_WARN, "WRONG");
-                uint8_t saved = cwPlayer.playCount;
+                uint8_t saved = MorseCwEngine::getPlayCount();
                 cwPlayerStart(challenge);
-                cwPlayer.playCount = saved;
+                MorseCwEngine::setPlayCount(saved);
             }
             clearInput();
             lastSubmitTime = millis();
@@ -1419,10 +1335,10 @@ static void statePileup() {
         } else {
             canvas->setFont(&fonts::Font0);
             char pbuf[20];
-            snprintf(pbuf, sizeof(pbuf), "Play #%d", cwPlayer.playCount + 1);
+            snprintf(pbuf, sizeof(pbuf), "Play #%d", MorseCwEngine::getPlayCount() + 1);
             drawCentredText(44, pbuf, FTP_DIM);
 
-            if (cwPlayer.playCount >= FTP_PLAYS_BEFORE_REVEAL) {
+            if (MorseCwEngine::getPlayCount() >= FTP_PLAYS_BEFORE_REVEAL) {
                 canvas->setFont(&fonts::Font0);
                 drawCentredText(60, "Hint:", FTP_DIM);
                 canvas->setFont(&fonts::FreeSansBold12pt7b);
@@ -1432,7 +1348,7 @@ static void statePileup() {
                 drawCentredText(66, "Listen...", FTP_TEXT);
                 char dots[8] = "";
                 for (int i = 0; i < FTP_PLAYS_BEFORE_REVEAL; i++)
-                    dots[i] = (i < cwPlayer.playCount) ? '*' : '.';
+                    dots[i] = (i < MorseCwEngine::getPlayCount()) ? '*' : '.';
                 dots[FTP_PLAYS_BEFORE_REVEAL] = '\0';
                 drawCentredText(86, dots, FTP_ACCENT);
             }

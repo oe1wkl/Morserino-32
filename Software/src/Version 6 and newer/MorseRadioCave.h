@@ -119,9 +119,9 @@ namespace MorseRadioCave {
 
     // Call once at boot, after MorseOutput::initDisplay() and
     // MorseGameMode::warmup(). Pre-grows the module's static Arduino String
-    // buffers (wrappedLines, lastCommand, lastClue, cwElements) so that
-    // their first use during gameplay doesn't allocate small persistent
-    // buffers next to the freshly-allocated game sprite.
+    // buffers (wrappedLines, lastCommand, lastClue) so that their first use
+    // during gameplay doesn't allocate small persistent buffers next to the
+    // freshly-allocated game sprite.
     void warmup();
 }
 
