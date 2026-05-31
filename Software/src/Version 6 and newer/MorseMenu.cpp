@@ -34,6 +34,10 @@ extern bool memoryReboot;
   #include "MorseMorsel.h"
 #endif
 
+#ifdef CONFIG_QSO_BOT
+  #include "MorseQsoBot.h"
+#endif
+
 #ifdef LORA_RADIOLIB
 #include <RadioLib.h>
 extern RADIO radio;
@@ -101,6 +105,10 @@ const char* const menuText[menuN]  = {
 #endif
     "WiFi Trx",
     "iCW/Ext Trx",
+#ifdef CONFIG_QSO_BOT
+    "QSO Bot",
+        "SOTA", "POTA", "Standard", "Contest",
+#endif
 
   "CW Decoder",
 #ifdef CONFIG_CW_GAME
@@ -154,14 +162,37 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed  -e
   {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive  -e
 #ifdef LORA_DISABLED
-  {0,_koch,_decode,_dummy,_trxWifi},                     // transceiver (no LoRa, first child is WiFi)
-  {1,_trxIcw,_trxIcw,_trx,0},                           // wifi trx  -e  (2-item wrap)
-  {1,_trxWifi,_trxWifi,_trx,0},                          // icw/ext trx  -e  (2-item wrap)
+  #ifdef CONFIG_QSO_BOT
+    {0,_koch,_decode,_dummy,_trxWifi},                  // _trx
+    {1,_qsoBot,_trxIcw,_trx,0},                         // _trxWifi  (left wraps via _qsoBot)
+    {1,_trxWifi,_qsoBot,_trx,0},                        // _trxIcw   (right wraps to _qsoBot)
+    {1,_trxIcw,_trxWifi,_trx,_qsoSota},                 // _qsoBot   (level 1; descends to _qsoSota)
+    {2,_qsoContest,_qsoPota,_qsoBot,0},                 // _qsoSota
+    {2,_qsoSota,_qsoStandard,_qsoBot,0},                // _qsoPota
+    {2,_qsoPota,_qsoContest,_qsoBot,0},                 // _qsoStandard
+    {2,_qsoStandard,_qsoSota,_qsoBot,0},                // _qsoContest
+  #else
+    {0,_koch,_decode,_dummy,_trxWifi},                  // _trx (no LoRa, first child is WiFi)
+    {1,_trxIcw,_trxIcw,_trx,0},                         // _trxWifi  (2-item wrap)
+    {1,_trxWifi,_trxWifi,_trx,0},                       // _trxIcw   (2-item wrap)
+  #endif
 #else
-  {0,_koch,_decode,_dummy,_trxLora},                     // transceiver (has LoRa)
-  {1,_trxIcw,_trxWifi,_trx,0},                           // lora trx  -e
-  {1,_trxLora,_trxIcw,_trx,0},                           // wifi trx  -e
-  {1,_trxWifi,_trxLora,_trx,0},                          // icw/ext trx  -e
+  #ifdef CONFIG_QSO_BOT
+    {0,_koch,_decode,_dummy,_trxLora},                  // _trx
+    {1,_qsoBot,_trxWifi,_trx,0},                        // _trxLora  (left wraps via _qsoBot)
+    {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
+    {1,_trxWifi,_qsoBot,_trx,0},                        // _trxIcw   (right wraps to _qsoBot)
+    {1,_trxIcw,_trxLora,_trx,_qsoSota},                 // _qsoBot   (level 1; descends to _qsoSota)
+    {2,_qsoContest,_qsoPota,_qsoBot,0},                 // _qsoSota
+    {2,_qsoSota,_qsoStandard,_qsoBot,0},                // _qsoPota
+    {2,_qsoPota,_qsoContest,_qsoBot,0},                 // _qsoStandard
+    {2,_qsoStandard,_qsoSota,_qsoBot,0},                // _qsoContest
+  #else
+    {0,_koch,_decode,_dummy,_trxLora},                  // _trx (has LoRa)
+    {1,_trxIcw,_trxWifi,_trx,0},                        // _trxLora
+    {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
+    {1,_trxWifi,_trxLora,_trx,0},                       // _trxIcw
+  #endif
 #endif
 #ifdef CONFIG_CW_GAME
   {0,_trx,_games,_dummy,0},                               // decoder  -e
@@ -636,6 +667,23 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                   MorseJSON::jsonCreate("message", "Start CW Transceiver", "");
                 clearPaddleLatches();
                 goto setupDecoder;
+#ifdef CONFIG_QSO_BOT
+      // QSO Bot — simulated CW QSO partner. Uses the same safety story as
+      // the games (morseQsoBot is local-sidetone-only; never appears in
+      // the LoRa/WiFi/external-TX gates in m32_v6.ino, so RF stays off).
+      case _qsoSota:
+      case _qsoPota:
+      case _qsoStandard:
+      case _qsoContest:
+                MorsePreferences::setCurrentOptions(MorsePreferences::qsoBotOptions,
+                                                    MorsePreferences::qsoBotOptionsSize);
+                morseState = morseQsoBot;
+                Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
+                MorseQsoBot::run((menuNo) MorsePreferences::menuPtr);
+                m32state = menu_loop;
+                return false;
+#endif
 #ifdef CONFIG_CW_GAME
       // Games manage their own CW and must not inherit a transmit mode
       // (loraTrx/wifiTrx) from a previous menu session, or the shared keyer

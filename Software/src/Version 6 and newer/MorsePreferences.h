@@ -182,6 +182,9 @@ namespace MorsePreferences
   extern  prefPos loraTrxOptions[];
   extern  prefPos wifiTrxOptions[];
   extern  prefPos extTrxOptions[];
+#ifdef CONFIG_QSO_BOT
+  extern  prefPos qsoBotOptions[];
+#endif
   extern  prefPos decoderOptions[];
   extern  prefPos allOptions[];
 
@@ -197,6 +200,9 @@ namespace MorsePreferences
   extern int loraTrxOptionsSize;
   extern int wifiTrxOptionsSize;
   extern int extTrxOptionsSize;
+#ifdef CONFIG_QSO_BOT
+  extern int qsoBotOptionsSize;
+#endif
   extern int decoderOptionsSize;
   extern int allOptionsSize;
 

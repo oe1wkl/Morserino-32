@@ -81,6 +81,9 @@ const char * prefName[] = {
 #ifdef CONFIG_CW_GAME
             "invaderOrient",
 #endif
+#ifdef CONFIG_QSO_BOT
+            "qsoBotRole", "qsoBotContestType",
+#endif
             "serialOut"
 					};
 
@@ -422,6 +425,22 @@ parameter MorsePreferences::pliste[] = {
     {"Portrait", "Landscape"}
   },
 #endif
+#ifdef CONFIG_QSO_BOT
+  {
+    0, 0, 2, 1,                                                 // Bot role: 0=Activator, 1=Chaser, 2=S2S/P2P
+    "Bot Role",
+    "Role the QSO Bot plays in the simulated QSO",
+    true,
+    {"Activator", "Chaser", "S2S/P2P"}
+  },
+  {
+    0, 0, 1, 1,                                                 // Contest type: 0=CQ WW, 1=WPX/Sprint
+    "Contest Type",
+    "Which contest exchange the bot uses when Contest is selected",
+    true,
+    {"CQ WW", "WPX/Sprint"}
+  },
+#endif
   {
     5, 0, 5, 1,        // Serial Output entry (unchanged)                                                // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
     "Serial Output",
@@ -554,6 +573,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define BLUE
 #endif
+#ifdef CONFIG_QSO_BOT
+#define QSOBOT posQsoBotRole, posQsoBotContestType,
+#else
+#define QSOBOT
+#endif
 
 
   prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
@@ -619,12 +643,21 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
+#ifdef CONFIG_QSO_BOT
+ prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
+                                                   posGoertzelBandwidth,
+                                                   posQsoBotRole, posQsoBotContestType
+                                                 };
+#endif
+
  prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT QSOBOT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
@@ -647,6 +680,9 @@ int MorsePreferences::kochEchoOptionsSize = SizeOfArray(MorsePreferences::kochEc
 int MorsePreferences::loraTrxOptionsSize = SizeOfArray(MorsePreferences::loraTrxOptions);
 int MorsePreferences::wifiTrxOptionsSize = SizeOfArray(MorsePreferences::wifiTrxOptions);
 int MorsePreferences::extTrxOptionsSize = SizeOfArray(MorsePreferences::extTrxOptions);
+#ifdef CONFIG_QSO_BOT
+int MorsePreferences::qsoBotOptionsSize = SizeOfArray(MorsePreferences::qsoBotOptions);
+#endif
 int MorsePreferences::decoderOptionsSize = SizeOfArray(MorsePreferences::decoderOptions);
 int MorsePreferences::allOptionsSize = SizeOfArray(MorsePreferences::allOptions);
 

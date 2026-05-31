@@ -327,16 +327,23 @@ enum morserinoMode              // the states the morserino can be in - selected
       morseGame,                  // a Pocket TFT game owns the keyer: local sidetone only,
                                   // never transmits (LoRa/WiFi/ESP-NOW) and never keys the
                                   // external TX. Set on game entry; reset by the next menu mode.
+      morseQsoBot,                // QSO-Bot simulator: same safety property as morseGame
+                                  // (local sidetone only, never RF, never external TX). Kept
+                                  // semantically distinct so future bot-specific gating
+                                  // doesn't have to ride on morseGame.
       shutDown, measureNF, invalid
   };
 
-// Base menu count: 43 entries (indices 0..42, classic M32 with LoRa, no Games)
+// Base menu count: 43 entries (indices 0..42, classic M32 with LoRa, no Games, no QSO Bot)
 const uint8_t menuN = 43
 #ifdef LORA_DISABLED
     - 1    // no LoRa Trx entry
 #endif
 #ifdef CONFIG_CW_GAME
     + 5    // Games, Morse Invaders, Fight the Pileup, Radio Cave, Morsel
+#endif
+#ifdef CONFIG_QSO_BOT
+    + 5    // QSO Bot, SOTA, POTA, Standard, Contest
 #endif
     ;
 
@@ -349,7 +356,11 @@ enum menuNo
 #ifndef LORA_DISABLED
         _trxLora,
 #endif
-        _trxWifi, _trxIcw, _decode,
+        _trxWifi, _trxIcw,
+#ifdef CONFIG_QSO_BOT
+        _qsoBot, _qsoSota, _qsoPota, _qsoStandard, _qsoContest,
+#endif
+        _decode,
 #ifdef CONFIG_CW_GAME
         _games, _morseInvaders, _fightPileup, _radioCave, _morsel,
 #endif
@@ -393,6 +404,9 @@ enum prefPos : uint8_t {
 #endif
 #ifdef CONFIG_CW_GAME
         posInvaderOrient,
+#endif
+#ifdef CONFIG_QSO_BOT
+        posQsoBotRole, posQsoBotContestType,
 #endif
   posSerialOut,
                 // to be treated differently:
