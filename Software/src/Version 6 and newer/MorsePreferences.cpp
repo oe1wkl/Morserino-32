@@ -202,11 +202,11 @@ parameter MorsePreferences::pliste[] = {
     {"Unlimited", "3", "4", "5", "6"}
   },
   {
-    0, 0, 6, 1,                                                 // Generators: continent for generated call signs   0 = all, 1-6 = specific continents
+    0, 0, 7, 1,                                                 // Generators: continent for generated call signs   0 = all, 1-6 = specific continents, 7 = VK/ZL only
     "Calls Region",
     "Continent(s) for generated call signs",
     true,
-    {"All", "Europe", "N America", "S America", "Africa", "Asia", "Oceania" }
+    {"All", "Europe", "N America", "S America", "Africa", "Asia", "Oceania", "VK/ZL" }
   },
   {
     1, 0, 1, 1,                                                 // Generators: only generate common call signs?   0 = no, 1 = yes
