@@ -657,15 +657,24 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT QSOBOT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ // The order here is the order the user sees in the "All" preferences view
+ // (i.e. when entering preferences from the start menu). Grouped per the
+ // user manual's section structure: General -> Key/Paddles/Keyer -> Koch
+ // sequence -> CW Generation -> Echo Trainer -> Transmitting/Decoding/QSO
+ // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
+ // BLUE, QSOBOT) are macro-expanded into their groups so the order stays
+ // stable across build configurations.
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLUE
+                                                   posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                    posKeyExternalTx, posLoraCwTransmit,
                                                    posLoraChannel,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode
+                                                   posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   QSOBOT
                                                  };
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;

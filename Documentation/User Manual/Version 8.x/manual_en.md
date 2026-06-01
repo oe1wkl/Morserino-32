@@ -1316,8 +1316,7 @@ environments suffering from very high WiFi "noise" - when the primary
 channel does not work properly, try the secondary channel.
 
 The channels are selected through the preference **Trx Channel**, see
-section **6.2.6 Preferences regarding Transmitting and
-Decoding**.
+section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**.
 
 #### Using standard WiFi with an access point (WiFi router) {-}
 
@@ -1371,14 +1370,51 @@ or you can use the line-out audio to either key for example an FM
 transceiver, or use CW over the Internet (iCW – this uses Mumble as an
 audio exchange protocol). Using Bluetooth, you can also connect to a
 computer and through that computer to VBand, another Internet-based CW
-facility (see the section **6.2.1 General
-Preferences** for choosing the VBand bluetooth setting).
+facility (see the section **6.2.2 Preferences regarding Key, Paddles
+and Keyer** for choosing the VBand bluetooth setting).
 
 Any CW signals coming in as audio through the audio-in port are being
 decoded and displayed on the screen. An external transceiver connected
 through the connector "to Tx" will be keyed by the keyer, or you can
 use the audio output on the Line-Out connector to feed it into a
 computer, or into an FM transceiver.
+
+### QSO Bot
+
+::: note
+**Preview — v1 work in progress.** Only the menu entries and a
+placeholder screen are wired up at the moment; the full state machine
+and matcher are under development. This section will be expanded as the
+feature is completed.
+:::
+
+The QSO Bot is a simulated CW QSO partner that lets you practise
+realistic radio contacts off-air. The bot transmits in Morse code and
+listens to your keyed replies, walking through one of four QSO types
+selectable from the menu:
+
+-   **SOTA** — a Summits On The Air contact (callsign, RST, summit
+    reference, brief pleasantries).
+-   **POTA** — a Parks On The Air contact (callsign, RST, optional park
+    reference). Effectively SOTA-lite.
+-   **Standard** — a classic "rubber-stamp" QSO (RST / name / QTH, then
+    rig / antenna / weather / age, then sign-off).
+-   **Contest** — a contest exchange. The exact format is selectable
+    through the **Contest Type** preference: **CQ WW** (5NN + CQ zone)
+    or **WPX/Sprint** (5NN + an incrementing serial number, with
+    optional cut numbers).
+
+The bot's role in the QSO is controlled by the **Bot Role** preference
+(**Activator**, **Chaser**, or **S2S/P2P**); the contest exchange is
+controlled by **Contest Type**. Both preferences are documented in
+section **6.2.6 Preferences regarding Transmitting, Decoding and QSO
+Bot**.
+
+The QSO Bot never transmits over LoRa, WiFi or the external transmitter
+— it only sounds on the local sidetone, so it is safe to use at any
+time. The keyer and the CW decoder behave as in the other transceiver
+modes, so all your usual keyer preferences (speed, Curtis mode,
+inter-character spacing, etc.) apply.
 
 ## CW Decoder
 
@@ -1395,8 +1431,7 @@ example from a receiver. The tone should be at around 700 Hz. Optionally
 there is a pretty sharp filter (implemented in software) that detects
 just tones in a very narrow range around 700 Hz, and disregards all
 others. This is being used by selecting the preference "Narrow" (see
-the section **6.2.6 Preferences regarding Transmitting and
-Decoding**).
+the section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**).
 
 The status line is slightly different from the other modes. First of
 all, the rotary encoder is always in the volume setting mode – speed is
@@ -1413,8 +1448,7 @@ modes.
 The current speed as detected by the decoder is displayed as WpM on the
 status line.
 
-This mode does not have many preferences (see the section **6.2.6
-Preferences regarding Transmitting and Decoding**); maybe the most important is the ability to
+This mode does not have many preferences (see the section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**); maybe the most important is the ability to
 switch the filter bandwidth of the audio decoder between narrow (ca 150
 Hz) and wide (ca 600 Hz). For decoding signals from a transceiver (where
 there might be other signals in the vicinity), it is usually best to set
@@ -2382,7 +2416,6 @@ to all modes of the Morserino-32.
 | Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
 | Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
 | Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
-| BLT Kbd Output | Defines what is being sent via Bluetooth (Bluetooth keyboard functionality). The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamrad io.solutions/vband/*), **Decoded** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic** Keyboard option does more or less the same as **Decoded**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
 | Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 
 
@@ -2403,6 +2436,8 @@ to **Straight Key** in order to use a straight key).
 | CurtisB DitT% | Timing in Curtis B mode for dits; see the section **5.1 CW Keyer** Also influences the behavior in Ultimatic mode!                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
 | AutoChar Spce | Minimum spacing between characters | Off / min. 2 / **3** / 4 dots |
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
+| BLT Kbd Output | Defines what is being sent via Bluetooth (Bluetooth keyboard functionality). The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
+| BLT \<AR> | Only relevant in **Generic Kbd** mode (see **BLT Kbd Output** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
 
 
 
@@ -2471,11 +2506,12 @@ time" after the prompt before you must begin keying your response!
 
 
 
-### Preferences regarding Transmitting and Decoding
+### Preferences regarding Transmitting, Decoding and QSO Bot
 
 These preferences control some functions available for transmitting
 (either directly through LoRa or Wifi, or through keying an external
-transmitter), or for decoding Morse code characters.
+transmitter), for decoding Morse code characters, and for the QSO Bot
+(see section **5.5.4 QSO Bot**).
 
 | Preference Name | Description | Values |
 |---|---|---|
@@ -2484,6 +2520,8 @@ transmitter), or for decoding Morse code characters.
 | Trx Channel | Selects which (virtual) channel LoRa or EspNow (a peer to peer Wifi mode, not using access points) will be used. For LoRa this is a virtual channel, for EspNow it actually changes the QRG between WiFi channel 6 (**Standard Ch**) and 1 (**Secondary Ch**). More infos on EspNow can be found in the section **5.5.2 Wifi Trx.** | **Standard Ch** / Secondary Ch |
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).<br> **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; center frequency = ca 700 Hz. | **Wide** / Narrow |
 | Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON", the audio is also sent to the external audio I/O port.<br> **On the M32Pocket, this setting is ignored!** | On / **Off** |
+| Bot Role | In the QSO Bot mode (section **5.5.4 QSO Bot**): which role the bot plays in the simulated QSO. **Activator** means the bot makes contacts from a SOTA summit or POTA park, and you play the chaser/hunter calling in. **Chaser** means the bot calls in to your CQ, and you play the activator. **S2S/P2P** means both ends are activators (Summit-to-Summit or Park-to-Park). | **Activator** / Chaser / S2S/P2P |
+| Contest Type | Only relevant when the QSO Bot is set to Contest mode: which contest exchange the bot uses. **CQ WW** uses 5NN + CQ zone; **WPX/Sprint** uses 5NN + an incrementing serial number. | **CQ WW** / WPX/Sprint |
 
 
 
@@ -2649,8 +2687,7 @@ channel), but through the setting LoRa Channel in the preferences menu
 can be switched to 0x66 (called "Secondary" channel).
 
 The channels are selected through the preference **Trx Channel**, see
-section **6.2.6 Preferences regarding Transmitting and
-Decoding**.
+section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**.
 
 #### Using different LoRa frequency bands and/or frequencies {-}
 
@@ -2974,8 +3011,8 @@ In "CW Keyer" mode, the M32 can send the keyed Morse code as keyboard
 codes via Bluetooth to a computer (including cell phones and tablets).
 
 To do this, the "**BLT Kbd Output**" setting must be set accordingly
-(for more information on the available options, see section  **6.2.1
-General Preferences**.
+(for more information on the available options, see section  **6.2.2
+Preferences regarding Key, Paddles and Keyer**).
 
 ::: note
 This feature is only active in CW Keyer mode! The keyboard will only become visible on your PC, tablet, etc. once CW Keyer has been launched!

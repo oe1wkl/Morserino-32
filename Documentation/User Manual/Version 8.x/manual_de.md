@@ -1318,7 +1318,7 @@ hohem WLAN-„Rauschen" – wenn der primäre Kanal nicht korrekt
 funktioniert, versuche es mit dem sekundären Kanal.
 
 Die Kanäle werden über die Einstellung **Trx Channel** ausgewählt, siehe
-Abschnitt **6.2.6 Einstellungen für das Senden und Dekodieren**.
+Abschnitt **6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot**.
 
 #### Verwendung von WLAN mit einem Access Point (WLAN-Router) {-}
 
@@ -1374,14 +1374,53 @@ einen FM-Transceiver zu tasten oder CW über das Internet zu verwenden
 (iCW – dieses Protokoll verwendet Mumble als Audioaustauschprotokoll).
 Über Bluetooth kannst du dich auch mit einem Computer verbinden und
 über diesen mit VBand, einem weiteren internetbasierten CW-Dienst
-(siehe Abschnitt **6.2.1 Allgemeine Einstellungen** für die
-VBand-Bluetooth-Einstellung).
+(siehe Abschnitt **6.2.2 Einstellungen zu Key, Paddles und Keyer** für
+die VBand-Bluetooth-Einstellung).
 
 Alle CW-Signale, die als Audio über den Audioeingang eingehen, werden
 dekodiert und auf dem Display angezeigt. Ein externer Transceiver, der
 über den Anschluss „to Tx" angeschlossen ist, wird vom Keyer getastet;
 alternativ kann der Audioausgang am Line-Out-Anschluss in einen Computer
 oder FM-Transceiver eingespeist werden.
+
+### QSO Bot
+
+::: note
+**Vorabversion – v1 in Entwicklung.** Derzeit sind nur die Menüeinträge
+und ein Platzhalterbildschirm implementiert; der vollständige
+Zustandsautomat und der Matcher befinden sich in Arbeit. Dieser
+Abschnitt wird erweitert, sobald die Funktion fertig ist.
+:::
+
+Der QSO Bot ist ein simulierter CW-QSO-Partner, mit dem du realistische
+Funkverbindungen ohne Sender üben kannst. Der Bot sendet in Morsecode
+und hört auf deine getasteten Antworten; er durchläuft einen von vier
+QSO-Typen, die im Menü wählbar sind:
+
+-   **SOTA** – eine Verbindung im Rahmen von „Summits On The Air"
+    (Rufzeichen, RST, Gipfelreferenz, kurze Höflichkeiten).
+-   **POTA** – eine Verbindung im Rahmen von „Parks On The Air"
+    (Rufzeichen, RST, optional Parkreferenz). Im Wesentlichen
+    SOTA-light.
+-   **Standard** – ein klassisches „Rubber-Stamp"-QSO (RST / Name /
+    QTH, dann Rig / Antenne / Wetter / Alter, dann Verabschiedung).
+-   **Contest** – ein Contest-Austausch. Das genaue Format ist über die
+    Einstellung **Contest Type** wählbar: **CQ WW** (5NN + CQ-Zone)
+    oder **WPX/Sprint** (5NN + fortlaufende Seriennummer, optional mit
+    Cut Numbers).
+
+Die Rolle des Bots in der Verbindung wird über die Einstellung **Bot
+Role** gesteuert (**Activator**, **Chaser** oder **S2S/P2P**); der
+Contest-Austausch über **Contest Type**. Beide Einstellungen sind im
+Abschnitt **6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot**
+beschrieben.
+
+Der QSO Bot sendet niemals über LoRa, WLAN oder den externen Sender –
+er ertönt nur über den lokalen Mithörton, sodass das Üben jederzeit
+gefahrlos möglich ist. Keyer und CW-Decoder verhalten sich wie in den
+anderen Transceiver-Modi, daher gelten alle gewohnten
+Keyer-Einstellungen (Geschwindigkeit, Curtis-Modus, Zeichenabstand
+usw.).
 
 ## CW Decoder
 
@@ -1399,8 +1438,7 @@ Empfänger stammen. Der Ton sollte bei ca. 700 Hz liegen. Optional gibt
 es einen recht scharfen Filter (in Software implementiert), der nur
 Töne in einem engen Bereich um 700 Hz erkennt und alle anderen
 ignoriert. Dieser wird durch Auswahl der Einstellung **Narrow**
-aktiviert (siehe Abschnitt **6.2.6 Einstellungen für das Senden und
-Dekodieren**).
+aktiviert (siehe Abschnitt **6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot**).
 
 Die Statuszeile unterscheidet sich etwas von den anderen Modi. Der
 Drehgeber befindet sich immer im Lautstärke-Einstellmodus – die
@@ -1416,8 +1454,7 @@ Keyer-Modus-Anzeige der anderen Modi.
 Die aktuell erkannte Geschwindigkeit wird in der Statuszeile als WpM
 angezeigt.
 
-Dieser Modus hat wenige Einstellungen (siehe Abschnitt **6.2.6
-Einstellungen für das Senden und Dekodieren**); die wichtigste ist
+Dieser Modus hat wenige Einstellungen (siehe Abschnitt **6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot**); die wichtigste ist
 vielleicht die Möglichkeit, die Filterbandbreite des Audio-Decoders
 zwischen schmal (ca. 150 Hz) und breit (ca. 600 Hz) umzuschalten. Für
 Signale aus einem Transceiver (wo andere Signale in der Nähe sein
@@ -2598,7 +2635,6 @@ daher für alle Modi des Morserino-32.
 | **Headphone Output** | (Nur für M32Pocket) Legt fest, was passiert, wenn Kopfhörer oder ein anderes Gerät an den Kopfhörerausgang angeschlossen werden. Mit der Standardeinstellung erfolgt die Ausgabe über den Kopfhörer und der Lautsprecher wird stummgeschaltet. Mit „*line-out*" erfolgt die Ausgabe mit voller Lautstärke über den Kopfhörerausgang und normal über den Lautsprecher. Mit „*l-o: Var. Vol.*" ähnlich, aber die Ausgabe über den Stecker erfolgt mit der eingestellten Lautstärke. Mit „*l-o: Lsp Muted*" erfolgt die Ausgabe über den Stecker mit voller Lautstärke und der Lautsprecher wird stummgeschaltet. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted **Achtung: Bei Verwendung der line-out-Optionen niemals Kopfhörer anstecken! Da die Wiedergabe mit voller Lautstärke erfolgen kann, könnte dies das Gehör oder die Kopfhörer beschädigen!** |
 | **Theme** | (Nur für Geräte mit Farbbildschirm, z.B. M32Pocket) Du kannst ein Farbthema für das Display einstellen, sodass du nicht auf „Weiß auf Schwarz" beschränkt bist. | **Plain** (= Weiß auf Schwarz) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
 | **Invader Orient.** | (Nur für M32Pocket) Du kannst die bevorzugte Displayausrichtung für Spiele wie Morse Invaders wählen: Hochformat (Standard) oder Querformat. Bei Auswahl von Querformat wird die Linkshänder-Ausrichtung verwendet, wenn diese in der Hardware-Konfiguration eingestellt ist. | **Portrait** / Landscape |
-| **BLT Kbd Output** | Legt fest, was über Bluetooth gesendet wird (Bluetooth-Tastaturfunktion). Die Option **VBand** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Keyboard** macht im Wesentlichen dasselbe wie **Decoded**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen! | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
 | **Serial Output** | Legt fest, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; unterschieden wird zwischen getasteten Zeichen (**Keyer** – Ausgabe des iambischen Keyers), dekodierten Zeichen (**Decoded** – vom CW-Decoder oder einer Handtaste) und „generierten" Zeichen (**Generated** – vom CW-Generator usw., auch von der Empfangsseite der LoRa- oder WiFi-Transceiver-Modi). **Nothing** sendet keines dieser Zeichen (bestimmte System- oder Fehlermeldungen können aber trotzdem erscheinen), **All** sendet alles. Über das M32-Serielle-Protokoll können zudem weitere Informationen gesendet und empfangen werden, wenn die angeschlossene Computersoftware dies unterstützt. Siehe auch **Anhang 8 Nutzung des seriellen Ausgangs des M32**. | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (Standard seit V. 4.3) |
 
 ### Einstellungen zu Key, Paddles und Keyer
@@ -2617,6 +2653,8 @@ oder die Verwendung einer externen Handtaste relevant sind (stelle
 | **CurtisB DitT%** | Timing im Curtis-B-Modus für Dits; siehe Abschnitt **5.1 CW Keyer**. Beeinflusst auch das Verhalten im Ultimatic-Modus! | 0–100, in 5er-Schritten [**55–95**] |
 | **AutoChar Spce** | Mindestabstand zwischen den Zeichen. | Off / min. 2 / **3** / 4 dots |
 | **Latency** | Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub" sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an" ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. | Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: **50 %**, d.h. eine halbe Punktlänge). |
+| **BLT Kbd Output** | Legt fest, was über Bluetooth gesendet wird (Bluetooth-Tastaturfunktion). Die Option **VBand** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Anhang 9**).* | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
+| **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **BLT Kbd Output** oben). Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
 
 ### Einstellungen bezüglich der Koch-Zeichenfolge
 
@@ -2675,11 +2713,12 @@ beginnen musst!
 | **Adaptv. Speed** | Wenn auf ON gesetzt, wird die Geschwindigkeit im Modus Echo Trainer bei jeder richtigen Antwort um 1 WpM erhöht und bei jedem Fehler um 1 WpM verringert. | ON / **OFF** |
 | **Echo Speed Max** | Legt die maximale Keying-Geschwindigkeit im Modus Echo Trainer fest. Wenn du die Geschwindigkeit mit dem ENCODER über diesen Wert hinaus erhöhst oder sie durch Adaptive Speed schneller wird, bleibt die Eingabegeschwindigkeit bei diesem Maximum (so kannst du bei höheren Geschwindigkeiten kopieren als du comfortabel geben kannst). | **No limit** / 5–50 WpM (in 5-WpM-Schritten) |
 
-### Einstellungen für das Senden und Dekodieren
+### Einstellungen zum Senden, Dekodieren und QSO Bot
 
 Diese Einstellungen steuern einige Funktionen, die für das Senden
 (entweder direkt über LoRa oder WLAN oder durch Tastung eines externen
-Senders) oder für das Dekodieren von Morsezeichen verfügbar sind.
+Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot
+(siehe Abschnitt **5.5.4 QSO Bot**) verfügbar sind.
 
 | Einstellung | Beschreibung | Werte |
 |---|---|---|
@@ -2688,6 +2727,8 @@ Senders) oder für das Dekodieren von Morsezeichen verfügbar sind.
 | **Trx Channel** | Wählt den (virtuellen) Kanal für LoRa oder EspNow (ein WLAN-Peer-to-Peer-Modus ohne Access Point). Bei LoRa ist dies ein virtueller Kanal; bei EspNow wird die Frequenz tatsächlich zwischen WLAN-Kanal 6 (**Standard Ch**) und 1 (**Secondary Ch**) gewechselt. Weitere Informationen zu EspNow findest du in Abschnitt **5.5.2 WiFi Trx**. | **Standard Ch** / Secondary Ch |
 | **Bandwidth** | Legt die Bandbreite fest, die der CW-Decoder verwendet (implementiert in Software als sogenannter Goertzel-Filter). **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz. | **Wide** / Narrow |
 | **Decoded on I/O** | Normalerweise wird dekodiertes CW von einer externen Quelle (bei Verwendung eines der Transceiver-Modi oder des Decoders für Audiodekodierung) über den Lautsprecher (oder Kopfhörer) abgespielt, aber nicht an den externen Audio-E/A-Anschluss gesendet. Bei Einstellung auf „ON" wird der Ton auch an den externen Audio-E/A-Anschluss gesendet. **Beim M32Pocket wird diese Einstellung ignoriert!** | On / **Off** |
+| **Bot Role** | Im QSO-Bot-Modus (Abschnitt **5.5.4 QSO Bot**): welche Rolle der Bot in der simulierten Funkverbindung spielt. **Activator** bedeutet, der Bot funkt von einem SOTA-Gipfel oder POTA-Park, und du spielst den Chaser/Jäger, der ruft. **Chaser** bedeutet, der Bot ruft auf deinen CQ-Ruf, und du spielst den Aktivierer. **S2S/P2P** bedeutet, dass beide Seiten Aktivierer sind (Gipfel-zu-Gipfel oder Park-zu-Park). | **Activator** / Chaser / S2S/P2P |
+| **Contest Type** | Nur relevant, wenn der QSO Bot auf Contest-Modus eingestellt ist: welcher Contest-Austausch verwendet wird. **CQ WW** verwendet 5NN + CQ-Zone; **WPX/Sprint** verwendet 5NN + eine fortlaufende Seriennummer. | **CQ WW** / WPX/Sprint |
 
 # Anhänge
 
@@ -2859,8 +2900,7 @@ sich nicht gegenseitig stören.
 Normalerweise arbeitet der M32 LoRa mit dem Sync Word 0x27 (wir nennen
 es den „Standard"-Kanal), kann aber über die Einstellung **Trx Channel**
 im Einstellungsmenü auf 0x66 (genannt „Secondary"-Kanal) umgeschaltet
-werden. Siehe Abschnitt **6.2.6 Einstellungen für das Senden und
-Dekodieren**.
+werden. Siehe Abschnitt **6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot**.
 
 #### Verwendung anderer LoRa-Frequenzbänder und/oder Frequenzen {-}
 
@@ -3219,7 +3259,7 @@ Mobiltelefone und Tablets) senden.
 
 Dazu muss die Einstellung **BLT Kbd Output** entsprechend gesetzt werden
 (nähere Informationen zu den verfügbaren Optionen findest du im Abschnitt
-**6.2.1 Allgemeine Einstellungen**).
+**6.2.2 Einstellungen zu Key, Paddles und Keyer**).
 
 ::: note
 Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird die Tastatur für PC und Tablett etc. sichtbar!
