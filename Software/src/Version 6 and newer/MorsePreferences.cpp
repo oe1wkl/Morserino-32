@@ -82,7 +82,7 @@ const char * prefName[] = {
             "invaderOrient",
 #endif
 #ifdef CONFIG_QSO_BOT
-            "qsoBotRole", "qsoBotContestType",
+            "qsoBotContestType",
 #endif
             "serialOut"
 					};
@@ -427,13 +427,6 @@ parameter MorsePreferences::pliste[] = {
 #endif
 #ifdef CONFIG_QSO_BOT
   {
-    0, 0, 2, 1,                                                 // Bot role: 0=Activator, 1=Chaser, 2=S2S/P2P
-    "Bot Role",
-    "Role the QSO Bot plays in the simulated QSO",
-    true,
-    {"Activator", "Chaser", "S2S/P2P"}
-  },
-  {
     0, 0, 1, 1,                                                 // Contest type: 0=CQ WW, 1=WPX/Sprint
     "Contest Type",
     "Which contest exchange the bot uses when Contest is selected",
@@ -574,7 +567,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #define BLUE
 #endif
 #ifdef CONFIG_QSO_BOT
-#define QSOBOT posQsoBotRole, posQsoBotContestType,
+#define QSOBOT posQsoBotContestType,
 #else
 #define QSOBOT
 #endif
@@ -648,7 +641,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth,
-                                                   posQsoBotRole, posQsoBotContestType
+                                                   posQsoBotContestType
                                                  };
 #endif
 

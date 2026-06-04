@@ -25,9 +25,11 @@ namespace {
 
 // Element stream encoding (from generateCWword + our inter-word ' ' markers):
 //   '1' dit, '2' dah, '0' inter-character gap, ' ' inter-word gap.
-// Sized to fit RC's longest known clue ("rc0 rc0 de ir7 ir7 k" ~ 80 elements);
-// Pileup's callsigns fit in ~50. 192 leaves comfortable headroom.
-constexpr int kMaxElements = 192;
+// Sized to fit a typical QSO Bot transmission, e.g.
+// "cq sota cq sota de [BOTCALL] [BOTCALL] K" — about 35 source chars,
+// ~280 elements. RC's longest known clue ("rc0 rc0 de ir7 ir7 k") and
+// Pileup callsigns both fit comfortably.
+constexpr int kMaxElements = 384;
 
 char           elements[kMaxElements + 1];
 int            elementLen   = 0;
@@ -137,6 +139,10 @@ bool playTick() {
 
     // End of stream.
     if (elementPos >= elementLen) {
+        // The last source character has no trailing '0' marker — fire
+        // the char callback here so callers get one tick per char,
+        // including the final one.
+        if (opts.onCharComplete) opts.onCharComplete();
         if (opts.loop) {
             playCount++;
             elementPos  = 0;
@@ -163,9 +169,11 @@ bool playTick() {
             break;
         case '0':                                       // inter-character gap
             nextEventMs = millis() + charGapMs();
+            if (opts.onCharComplete) opts.onCharComplete();
             break;
         case ' ':                                       // inter-word gap
             nextEventMs = millis() + wordGapMs();
+            if (opts.onCharComplete) opts.onCharComplete();
             break;
         default:
             break;                                      // unknown — skip

@@ -844,13 +844,30 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     pos += l;
     textBuffer[bottomLine][pos] = (char) 0;                 // add 0 character
   } else {
-    if (style == lastStyle)  {                                // not regular, but we have no change in style!
-      ///DEBUG("lastStyle :" + t);
-      //pos -= 1;                                               // go one pos back to overwrite style marker
-      memcpy(&textBuffer[bottomLine][pos], t.c_str(), l);  // copy the string of characters
+    if (style == lastStyle)  {                                // not regular, but we have no change in style
+      // The previous emphasized chunk in this same style ended with a
+      // trailing style marker. To MERGE this new chunk with that one
+      // (so the renderer sees a single emphasized region rather than
+      // toggling style off-then-on between them) we overwrite that
+      // trailing marker with our new text and emit a fresh trailing
+      // marker after it. Without this, callers that write same-styled
+      // text in many small chunks — e.g. the QSO Bot's char-by-char
+      // display — end up with markers between every chunk, which the
+      // renderer interprets as alternating style toggles (every other
+      // char flips back to REGULAR).
+      if (pos > 0 && textBuffer[bottomLine][pos - 1] == (char) style) {
+        --pos;                                                // erase previous closing marker
+      } else {
+        // Defensive fallback: REGULAR text was inserted after the
+        // previous emphasized chunk (which doesn't update lastStyle),
+        // so the buffer doesn't end with our marker. Open a fresh
+        // emphasized region.
+        textBuffer[bottomLine][pos++] = (char) style;
+      }
+      memcpy(&textBuffer[bottomLine][pos], t.c_str(), l);
       pos += l;
-      textBuffer[bottomLine][pos++] = (char) style;           // add the style marker
-      textBuffer[bottomLine][pos] = (char) 0;                 // add 0 character
+      textBuffer[bottomLine][pos++] = (char) style;           // new closing marker
+      textBuffer[bottomLine][pos] = (char) 0;
     } else {
       //DEBUG("NOTlastStyle :" + t);
       textBuffer[bottomLine][pos++] = (char) style;           // add the style marker at the beginning

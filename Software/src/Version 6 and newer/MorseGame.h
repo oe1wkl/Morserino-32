@@ -14,6 +14,13 @@
 extern bool gameMode;
 extern char gameCharBuffer;
 
+// QSO-Bot character intercept. When true, the firmware decoder still
+// writes the decoded char to the standard scroll display (so the user
+// sees what they keyed), AND copies it into gameCharBuffer for the bot
+// to consume. gameMode (used by the Pocket games) bypasses the display
+// entirely; qsoBotMode does not. The two are mutually exclusive.
+extern bool qsoBotMode;
+
 #ifdef CONFIG_CW_GAME
 
 #include <Preferences.h>

@@ -343,7 +343,7 @@ const uint8_t menuN = 43
     + 5    // Games, Morse Invaders, Fight the Pileup, Radio Cave, Morsel
 #endif
 #ifdef CONFIG_QSO_BOT
-    + 5    // QSO Bot, SOTA, POTA, Standard, Contest
+    + 4    // QSO Bot, SOTA/POTA, Standard, Contest
 #endif
     ;
 
@@ -358,7 +358,7 @@ enum menuNo
 #endif
         _trxWifi, _trxIcw,
 #ifdef CONFIG_QSO_BOT
-        _qsoBot, _qsoSota, _qsoPota, _qsoStandard, _qsoContest,
+        _qsoBot, _qsoSotaPota, _qsoStandard, _qsoContest,
 #endif
         _decode,
 #ifdef CONFIG_CW_GAME
@@ -406,7 +406,7 @@ enum prefPos : uint8_t {
         posInvaderOrient,
 #endif
 #ifdef CONFIG_QSO_BOT
-        posQsoBotRole, posQsoBotContestType,
+        posQsoBotContestType,
 #endif
   posSerialOut,
                 // to be treated differently:

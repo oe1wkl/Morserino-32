@@ -23,6 +23,8 @@
 namespace MorseCwEngine {
 
 typedef bool (*MutePredicate)();
+typedef void (*CharCallback)();   // notification only — caller maintains
+                                  // its own pointer into the source text
 
 struct PlayOpts {
     uint16_t      pitchHz;        // playback pitch (Hz), required
@@ -33,6 +35,10 @@ struct PlayOpts {
     uint8_t       resumeGapDits;  // 0 = no settling pause when mute clears;
                                   // N = N×ditMs() pause (Pileup uses 2)
     MutePredicate extraMute;      // nullptr OK; OR'd with keyerState != IDLE
+    CharCallback  onCharComplete; // nullptr OK; fires at each '0'
+                                  // (inter-char gap), each ' ' (inter-word
+                                  // gap), and once at end-of-stream.
+                                  // Caller advances its own char pointer.
 };
 
 void  playStart(const String& text, const PlayOpts& opts);

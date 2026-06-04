@@ -12,6 +12,7 @@
 // Always defined (even without CONFIG_CW_GAME)
 bool gameMode = false;
 char gameCharBuffer = 0;
+bool qsoBotMode = false;
 
 
 #ifdef CONFIG_CW_GAME

@@ -43,8 +43,14 @@
 #include "MorseJSON.h"        // JSON handling for file upload and serial communication
 #include <mbedtls/base64.h>     // for base64 decoding (built into ESP32)
 
-#ifdef CONFIG_CW_GAME
+// MorseGame.h is needed even on QSO-Bot-only builds: it carries the
+// gameMode / gameCharBuffer externs that displayDecodedMorse uses to
+// route keyer input into our buffer. The header gates its game-only
+// declarations on CONFIG_CW_GAME internally.
+#if defined(CONFIG_CW_GAME) || defined(CONFIG_QSO_BOT)
 #include "MorseGame.h"
+#endif
+#ifdef CONFIG_CW_GAME
 #include "MorsePileup.h"
 #include "MorseRadioCave.h"
 #include "MorseMorsel.h"
@@ -1718,6 +1724,12 @@ static uint8_t getContinentMask(uint8_t prefValue) {
     return (prefValue <= 6) ? masks[prefValue] : CONT_ALL;
 }
  
+// Continent (CONT_* bitmask) of the prefix chosen by the most recent
+// getRandomCall(). The QSO Bot reads this to pick a summit reference on
+// the same continent as the bot's generated callsign. Defaults to
+// CONT_ALL for the fallback (no-matching-prefix) path.
+uint8_t lastGeneratedCallContinent = CONT_ALL;
+
 String getRandomCall(int maxLength) {
     static char call[16];
     int pos = 0;
@@ -1753,6 +1765,7 @@ String getRandomCall(int maxLength) {
  
     // Fallback if no matching prefixes (e.g., AN with common filter)
     if (totalWeight == 0) {
+        lastGeneratedCallContinent = CONT_ALL;
         // Generate old-style random call
         call[0] = 'a' + random(0, 26);
         call[1] = '0' + random(0, 10);
@@ -1783,7 +1796,8 @@ String getRandomCall(int maxLength) {
  
     // Read chosen prefix
     readPrefix(chosen, pfxBuf, &cont, &weight);
- 
+    lastGeneratedCallContinent = cont;
+
     // --- Build the call sign ---
  
     // Copy prefix (lowercase for consistency with CW generator)
@@ -2287,10 +2301,12 @@ void fetchNewWord() {
 
 
 void displayDecodedMorse(String symbol, boolean keyed) {
-#ifdef CONFIG_CW_GAME
-    // In game mode, redirect the decoded character to the game buffer
-    // instead of writing to the scroll display
-
+#if defined(CONFIG_CW_GAME) || defined(CONFIG_QSO_BOT)
+    // In game mode (Pocket TFT games), redirect the decoded character
+    // to the game buffer and bypass the scroll display entirely — the
+    // games draw their own canvas. gameMode + gameCharBuffer are
+    // declared unconditionally in MorseGame.{h,cpp} so this works on
+    // the classic build too.
     if (gameMode) {
         String encoded = symbol;
         encodeProSigns(encoded);
@@ -2298,6 +2314,21 @@ void displayDecodedMorse(String symbol, boolean keyed) {
             gameCharBuffer = encoded.charAt(0);
         }
         return;
+    }
+#endif
+#ifdef CONFIG_QSO_BOT
+    // In QSO-Bot mode, ALSO copy the decoded character into the game
+    // buffer (so the bot's matcher sees it), but DO NOT bypass the
+    // scroll display — the bot uses the same status-line + scroll
+    // buffer layout as the CW Keyer / transceiver modes, and the user
+    // should see what they keyed naturally.
+    if (qsoBotMode) {
+        String encoded = symbol;
+        encodeProSigns(encoded);
+        if (encoded.length() >= 1) {
+            gameCharBuffer = encoded.charAt(0);
+        }
+        // fall through to the standard scroll display
     }
 #endif
     // Check for "eeee" error sequence    
