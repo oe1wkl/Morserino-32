@@ -1385,42 +1385,116 @@ oder FM-Transceiver eingespeist werden.
 
 ### QSO Bot
 
-::: note
-**Vorabversion – v1 in Entwicklung.** Derzeit sind nur die Menüeinträge
-und ein Platzhalterbildschirm implementiert; der vollständige
-Zustandsautomat und der Matcher befinden sich in Arbeit. Dieser
-Abschnitt wird erweitert, sobald die Funktion fertig ist.
-:::
+Der QSO Bot ist ein simulierter CW-QSO-Partner, mit dem du vollständige,
+realistische Funkverbindungen ohne Sender üben kannst. Der Bot sendet in
+Morsecode und liest mit, was du zurücktastest, und reagiert „in character" –
+so kannst du das Hin und Her einer echten Verbindung in deinem eigenen Tempo
+einüben, ohne auf Sendung zu gehen. Es handelt sich ausschließlich um einen
+Übungspartner: Der Bot **sendet niemals über LoRa, WLAN oder den externen
+Sender** – er ertönt nur über den lokalen Mithörton und kann daher jederzeit
+gefahrlos verwendet werden.
 
-Der QSO Bot ist ein simulierter CW-QSO-Partner, mit dem du realistische
-Funkverbindungen ohne Sender üben kannst. Der Bot sendet in Morsecode
-und hört auf deine getasteten Antworten; er durchläuft einen von vier
-QSO-Typen, die im Menü wählbar sind:
+Es gibt drei QSO-Typen, wählbar im Menü unter **Transceiver → QSO Bot**:
 
--   **SOTA** – eine Verbindung im Rahmen von „Summits On The Air"
-    (Rufzeichen, RST, Gipfelreferenz, kurze Höflichkeiten).
--   **POTA** – eine Verbindung im Rahmen von „Parks On The Air"
-    (Rufzeichen, RST, optional Parkreferenz). Im Wesentlichen
-    SOTA-light.
--   **Standard** – ein klassisches „Rubber-Stamp"-QSO (RST / Name /
-    QTH, dann Rig / Antenne / Wetter / Alter, dann Verabschiedung).
--   **Contest** – ein Contest-Austausch. Das genaue Format ist über die
-    Einstellung **Contest Type** wählbar: **CQ WW** (5NN + CQ-Zone)
-    oder **WPX/Sprint** (5NN + fortlaufende Seriennummer, optional mit
-    Cut Numbers).
+-   **SOTA/POTA** – eine Verbindung im Rahmen von „Summits On The Air" oder
+    „Parks On The Air" (Rufzeichen, Rapport, Gipfel-/Parkreferenz). Der Bot
+    wählt zufällig SOTA oder POTA und teilt dies in seinem CQ-Ruf mit.
+-   **Standard** – ein klassisches „Rubber-Stamp"-QSO: Rapport, Name und
+    QTH, dann Stationsangaben (Rig, Antenne, Wetter, Alter), dann die
+    Verabschiedung.
+-   **Contest** – eine fortlaufende Folge sehr kurzer Contest-QSOs. Das
+    Austauschformat wird mit der Einstellung **Contest Type** festgelegt
+    (siehe **6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot**):
+    **CQ WW** (Rapport + CQ-Zone) oder **WPX/Sprint** (Rapport +
+    Seriennummer).
 
-Die Rolle des Bots in der Verbindung wird über die Einstellung **Bot
-Role** gesteuert (**Activator**, **Chaser** oder **S2S/P2P**); der
-Contest-Austausch über **Contest Type**. Beide Einstellungen sind im
-Abschnitt **6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot**
-beschrieben.
+#### Anzeige und Bedienung {-}
 
-Der QSO Bot sendet niemals über LoRa, WLAN oder den externen Sender –
-er ertönt nur über den lokalen Mithörton, sodass das Üben jederzeit
-gefahrlos möglich ist. Keyer und CW-Decoder verhalten sich wie in den
-anderen Transceiver-Modi, daher gelten alle gewohnten
-Keyer-Einstellungen (Geschwindigkeit, Curtis-Modus, Zeichenabstand
-usw.).
+Der QSO Bot verwendet dieselbe Bildschirmdarstellung und Bedienung wie der
+CW Keyer und die Transceiver-Modi. Was der Bot sendet, erscheint in
+**Fettschrift**; was du tastest, wird dekodiert angezeigt. Die obere
+Statuszeile zeigt den Keyer-Modus und deine Geschwindigkeit. Durch Drehen des
+ENCODERs änderst du die Geschwindigkeit (oder die Lautstärke, nach einem
+kurzen Druck auf die FN-Taste); ein langer Druck auf FN wechselt in den
+Scroll-Modus, um den bisherigen Verlauf nachzulesen; ein Doppelklick auf den
+ENCODER-Knopf öffnet die Einstellungen; ein langer Druck auf den
+ENCODER-Knopf verlässt den QSO Bot.
+
+#### Wer ruft CQ {-}
+
+Wenn du einen QSO-Typ startest, hört der Bot einige Sekunden lang zu. **Rufst
+du CQ**, antwortet dir der Bot – du bist der Aktivierer (SOTA/POTA) bzw. die
+rufende Station (Contest). **Bleibst du still**, ruft der Bot CQ und du
+antwortest ihm. Dafür gibt es keine Einstellung; wie auf dem Band übernimmt
+derjenige die Führung, der CQ ruft. Der Bot verwendet für jede Verbindung ein
+neues Rufzeichen, sodass du viele verschiedene Rufzeichen zum Mitschreiben
+bekommst.
+
+#### Tasten zum Bot {-}
+
+Der Bot ist bewusst tolerant, damit sich das Üben natürlich anfühlt und nicht
+wie ein Diktat:
+
+-   Er erkennt deine Informationen innerhalb der üblichen
+    Gesprächsfüllwörter – `de oe1wkl k`, `r ur 599 599 bk`, `qth vienna
+    vienna` funktionieren alle; die Füllwörter werden ignoriert.
+-   Rapporte können als volle Zahlen oder als **Cut Numbers** gesendet werden
+    (`5nn` für 599, `t` für 0, `a` für 1, `n` für 9).
+-   **Der Bot wartet, bis du fertig bist.** Er antwortet erst, wenn du ein
+    Ende-der-Übergabe-Zeichen sendest (`k`, `<sk>`, `<ar>`, `bk`, `73`) oder
+    einige Sekunden pausierst – er tastet dir nicht dazwischen, während du
+    noch sendest.
+-   **Um einen Fehler zu korrigieren**, sende `<err>` (eine Reihe von Dits)
+    oder `eeee` und danach die korrigierte Information; der Bot verwirft das
+    Zurückgenommene und übernimmt die neue Fassung.
+-   **Um eine Wiederholung zu erbitten**, sende `agn` oder `rpt`; der Bot
+    wiederholt seine letzte Übergabe. Du kannst auch nach einem einzelnen
+    Punkt fragen – `rpt rst`, `rpt call`, `rpt qth` – und der Bot wiederholt
+    nur diesen.
+
+Tastest du etwas, das der Bot nicht zuordnen kann, oder verstummst du
+mittendrin, reagiert er wie ein echter Operator – `agn agn`, `qrz?` oder
+durch Wiederholung seiner letzten Übergabe – statt einfach stehen zu bleiben.
+
+#### SOTA / POTA {-}
+
+Der Bot spielt eine Gipfel- oder Parkaktivierung. Ruft er CQ, ist er der
+Aktivierer und sendet eine Gipfel-/Parkreferenz, die zum Land seines
+Rufzeichens passt (`oe/st-002` für ein österreichisches Rufzeichen,
+`w6/ss-001` für ein US-Rufzeichen usw.); du rufst als Jäger (Chaser) an und
+tauschst Rapporte aus. Rufst **du** CQ, bist du der Aktivierer und der Bot
+jagt dich. Gelegentlich entpuppt sich die Station, die auf deinen CQ-Ruf
+antwortet, ebenfalls als Aktivierer und sendet ihre eigene Referenz – eine
+Summit-to-Summit- bzw. Park-to-Park-Verbindung (sie kann sogar SOTA-zu-POTA
+sein). Eine SOTA/POTA-Sitzung ist eine einzelne Verbindung; der Bot
+verabschiedet sich, wenn sie beendet ist.
+
+#### Standard {-}
+
+Dies ist ein vollständiges „Rubber-Stamp"-QSO im Plauderstil, in drei Runden:
+zuerst Rapport, Name und QTH; dann Stationsangaben (Rig, Antenne, Wetter,
+Alter); dann die Verabschiedung. Der Bot sendet realistische eigene Angaben
+und schreibt deine mit. Er erkennt deine Informationen an den
+**Feld-Schlüsselwörtern** – `name`, `qth`, `rig`, `ant`, `wx`, `age` – sodass
+es egal ist, ob du sie mit `=`, mit `es` oder gar nicht trennst, und Werte
+dürfen aus mehreren Wörtern bestehen (`rig icom 7300`). Er merkt sich deinen
+Namen und verwendet ihn, wenn er zu dir zurückkommt (`fb dr willi`). Eine
+gültige Verbindung braucht einen Rapport; enthält deine erste Übergabe also
+Name und QTH, aber keinen RST, fragt der Bot `pse ur rst?`, bevor er
+fortfährt.
+
+#### Contest {-}
+
+Contest-Übung ist eine fortlaufende Folge sehr kurzer QSOs. Stelle zuerst
+**Contest Type** ein: **CQ WW** tauscht Rapport plus CQ-Zone aus (der Bot
+verwendet die echte Zone für das Land seines Rufzeichens), **WPX/Sprint**
+tauscht Rapport plus Seriennummer aus. Sobald ein QSO beendet ist, ruft die
+rufende Station erneut CQ – ruft der Bot, tut er dies mit einem neuen
+Rufzeichen; rufst du, antwortet eine neue Station auf deinen nächsten CQ-Ruf.
+Die Sitzung läuft weiter, solange du Stationen arbeitest, und endet
+automatisch nach etwa fünfzehn Sekunden ohne Antwort (niemand antwortet auf
+den CQ-Ruf des Bots, oder du rufst nicht erneut CQ). Drücke eine Taste, um
+nach dem Ende der Sitzung zum Menü zurückzukehren.
 
 ## CW Decoder
 
@@ -2727,8 +2801,7 @@ Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot
 | **Trx Channel** | Wählt den (virtuellen) Kanal für LoRa oder EspNow (ein WLAN-Peer-to-Peer-Modus ohne Access Point). Bei LoRa ist dies ein virtueller Kanal; bei EspNow wird die Frequenz tatsächlich zwischen WLAN-Kanal 6 (**Standard Ch**) und 1 (**Secondary Ch**) gewechselt. Weitere Informationen zu EspNow findest du in Abschnitt **5.5.2 WiFi Trx**. | **Standard Ch** / Secondary Ch |
 | **Bandwidth** | Legt die Bandbreite fest, die der CW-Decoder verwendet (implementiert in Software als sogenannter Goertzel-Filter). **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz. | **Wide** / Narrow |
 | **Decoded on I/O** | Normalerweise wird dekodiertes CW von einer externen Quelle (bei Verwendung eines der Transceiver-Modi oder des Decoders für Audiodekodierung) über den Lautsprecher (oder Kopfhörer) abgespielt, aber nicht an den externen Audio-E/A-Anschluss gesendet. Bei Einstellung auf „ON" wird der Ton auch an den externen Audio-E/A-Anschluss gesendet. **Beim M32Pocket wird diese Einstellung ignoriert!** | On / **Off** |
-| **Bot Role** | Im QSO-Bot-Modus (Abschnitt **5.5.4 QSO Bot**): welche Rolle der Bot in der simulierten Funkverbindung spielt. **Activator** bedeutet, der Bot funkt von einem SOTA-Gipfel oder POTA-Park, und du spielst den Chaser/Jäger, der ruft. **Chaser** bedeutet, der Bot ruft auf deinen CQ-Ruf, und du spielst den Aktivierer. **S2S/P2P** bedeutet, dass beide Seiten Aktivierer sind (Gipfel-zu-Gipfel oder Park-zu-Park). | **Activator** / Chaser / S2S/P2P |
-| **Contest Type** | Nur relevant, wenn der QSO Bot auf Contest-Modus eingestellt ist: welcher Contest-Austausch verwendet wird. **CQ WW** verwendet 5NN + CQ-Zone; **WPX/Sprint** verwendet 5NN + eine fortlaufende Seriennummer. | **CQ WW** / WPX/Sprint |
+| **Contest Type** | Nur relevant im **Contest**-Modus des QSO Bots (Abschnitt **5.5.4 QSO Bot**): welcher Contest-Austausch verwendet wird. **CQ WW** sendet 5NN + die CQ-Zone des Bot-Rufzeichens; **WPX/Sprint** sendet 5NN + eine Seriennummer. | **CQ WW** / WPX/Sprint |
 
 # Anhänge
 

@@ -86,6 +86,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#lora-trx" id="toc-lora-trx"><span class="toc-section-number">5.5.1</span> LoRa Trx</a></li>
 <li><a href="#wifi-trx" id="toc-wifi-trx"><span class="toc-section-number">5.5.2</span> WiFi Trx</a></li>
 <li><a href="#icwext-trx" id="toc-icwext-trx"><span class="toc-section-number">5.5.3</span> iCW/Ext Trx</a></li>
+<li><a href="#qso-bot" id="toc-qso-bot"><span class="toc-section-number">5.5.4</span> QSO Bot</a></li>
 </ul></li>
 <li><a href="#cw-decoder" id="toc-cw-decoder"><span class="toc-section-number">5.6</span> CW Decoder</a></li>
 <li><a href="#spiele" id="toc-spiele"><span class="toc-section-number">5.7</span> Spiele</a>
@@ -121,7 +122,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#einstellungen-bezueglich-der-koch-zeichenfolge" id="toc-einstellungen-bezueglich-der-koch-zeichenfolge"><span class="toc-section-number">6.2.3</span> Einstellungen bezüglich der Koch-Zeichenfolge</a></li>
 <li><a href="#einstellungen-zur-cw-generierung" id="toc-einstellungen-zur-cw-generierung"><span class="toc-section-number">6.2.4</span> Einstellungen zur CW-Generierung</a></li>
 <li><a href="#einstellungen-zum-echo-trainer" id="toc-einstellungen-zum-echo-trainer"><span class="toc-section-number">6.2.5</span> Einstellungen zum Echo Trainer</a></li>
-<li><a href="#einstellungen-fuer-das-senden-und-dekodieren" id="toc-einstellungen-fuer-das-senden-und-dekodieren"><span class="toc-section-number">6.2.6</span> Einstellungen für das Senden und Dekodieren</a></li>
+<li><a href="#einstellungen-zum-senden-dekodieren-und-qso-bot" id="toc-einstellungen-zum-senden-dekodieren-und-qso-bot"><span class="toc-section-number">6.2.6</span> Einstellungen zum Senden, Dekodieren und QSO Bot</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#anhaenge" id="toc-anhaenge"><span class="toc-section-number">7</span> Anhänge</a>
@@ -1324,7 +1325,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Du kannst diesen Transceiver-Modus verwenden, um mit deinem CW-Buddy über WLAN zu kommunizieren – entweder im lokalen Netzwerk, über das Internet oder sogar Peer-to-Peer ohne Access Point. Diese Methode heißt <em>EspNow</em>; der Morserino nutzt dabei seine Broadcast-Funktionalität. Die Reichweite ist naturgemäß begrenzt (je nach Umgebung einige Meter bis ca. 50 Meter bei freier Sicht). Wie du im Modus WiFi Trx zwischen Access Point und EspNow umschaltest, erfährst du im Abschnitt <strong>5.8.6 WiFi Select</strong>.</p>
 <h4 class="unnumbered" id="verwendung-von-zwei-verschiedenen-espnow-kanaelen">Verwendung von zwei verschiedenen EspNow-Kanälen</h4>
 <p>Der Morserino-32 kann im EspNow-Modus zwei Kanäle nutzen. Dies kann z.B. in einem Klassenzimmer verwendet werden, um zwei unabhängige Gruppen zu bilden, die sich nicht gegenseitig stören, oder in Umgebungen mit sehr hohem WLAN-„Rauschen” – wenn der primäre Kanal nicht korrekt funktioniert, versuche es mit dem sekundären Kanal.</p>
-<p>Die Kanäle werden über die Einstellung <strong>Trx Channel</strong> ausgewählt, siehe Abschnitt <strong>6.2.6 Einstellungen für das Senden und Dekodieren</strong>.</p>
+<p>Die Kanäle werden über die Einstellung <strong>Trx Channel</strong> ausgewählt, siehe Abschnitt <strong>6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot</strong>.</p>
 <h4 class="unnumbered" id="verwendung-von-wlan-mit-einem-access-point-wlan-router">Verwendung von WLAN mit einem Access Point (WLAN-Router)</h4>
 <p>Um herkömmliches WLAN zu nutzen, musst du mit einem WLAN-Access-Point verbunden sein. Das bedeutet, dass du zuvor die Funktion <strong>WiFi Config</strong> ausgeführt haben musst. Im lokalen Netzwerk ist die Verwendung des Transceiver-Modus sehr einfach: Wähle ihn im Menü aus, ohne eine Peer-Adresse zu konfigurieren. Er sendet an die Broadcast-Adresse 255.255.255.255, die von allen Geräten im Netzwerk empfangen werden kann. Der Morserino-32 verwendet UDP-Port 7373 für die asynchrone Kommunikation.</p>
 <p>Beim Start von WiFi Trx wird die IP-Adresse des Peers (oder „IP Broadcast”) kurz auf dem Display angezeigt. Bei Verwendung von EspNow erscheint „EspNow”.</p>
@@ -1333,15 +1334,43 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Wenn die IP-Adresse nicht im lokalen Netzwerk liegt und du hinter einer Firewall oder einem Router steckst, kann der Morserino Pakete ins Internet senden (sofern keine Firewall-Regeln UDP-Ports sperren), aber Pakete von der Gegenstelle hinter einer anderen Firewall werden vom Router blockiert. In diesem Fall musst du „Portweiterleitung” konfigurieren, damit der Router alle UDP-Pakete auf Port 7373 an deinen Morserino sendet. Gleichzeitig teilst du deinem Buddy deine externe IP-Adresse mit (die IP-Adresse deines Routers zum Internetanbieter hin), und er tut das Gleiche.</p>
 <p>Eine weitere, etwas aufwändigere Möglichkeit wäre die Einrichtung eines VPN (Virtual Private Network), sodass sich beide Morserinos im selben „virtuellen Netzwerk” befinden und ohne Firewall-Blockierung miteinander kommunizieren können. Wie das geht, sprengt den Rahmen dieses Handbuchs – frag einen Internet-Experten!</p>
 <h3 data-number="5.5.3" id="icwext-trx"><span class="header-section-number">5.5.3</span> iCW/Ext Trx</h3>
-<p>In diesem Modus wird ein am Morserino-32 angeschlossener Transceiver getastet, oder du kannst den Line-Out-Audioausgang verwenden, um z.B. einen FM-Transceiver zu tasten oder CW über das Internet zu verwenden (iCW – dieses Protokoll verwendet Mumble als Audioaustauschprotokoll). Über Bluetooth kannst du dich auch mit einem Computer verbinden und über diesen mit VBand, einem weiteren internetbasierten CW-Dienst (siehe Abschnitt <strong>6.2.1 Allgemeine Einstellungen</strong> für die VBand-Bluetooth-Einstellung).</p>
+<p>In diesem Modus wird ein am Morserino-32 angeschlossener Transceiver getastet, oder du kannst den Line-Out-Audioausgang verwenden, um z.B. einen FM-Transceiver zu tasten oder CW über das Internet zu verwenden (iCW – dieses Protokoll verwendet Mumble als Audioaustauschprotokoll). Über Bluetooth kannst du dich auch mit einem Computer verbinden und über diesen mit VBand, einem weiteren internetbasierten CW-Dienst (siehe Abschnitt <strong>6.2.2 Einstellungen zu Key, Paddles und Keyer</strong> für die VBand-Bluetooth-Einstellung).</p>
 <p>Alle CW-Signale, die als Audio über den Audioeingang eingehen, werden dekodiert und auf dem Display angezeigt. Ein externer Transceiver, der über den Anschluss „to Tx” angeschlossen ist, wird vom Keyer getastet; alternativ kann der Audioausgang am Line-Out-Anschluss in einen Computer oder FM-Transceiver eingespeist werden.</p>
+<h3 data-number="5.5.4" id="qso-bot"><span class="header-section-number">5.5.4</span> QSO Bot</h3>
+<p>Der QSO Bot ist ein simulierter CW-QSO-Partner, mit dem du vollständige, realistische Funkverbindungen ohne Sender üben kannst. Der Bot sendet in Morsecode und liest mit, was du zurücktastest, und reagiert „in character” – so kannst du das Hin und Her einer echten Verbindung in deinem eigenen Tempo einüben, ohne auf Sendung zu gehen. Es handelt sich ausschließlich um einen Übungspartner: Der Bot <strong>sendet niemals über LoRa, WLAN oder den externen Sender</strong> – er ertönt nur über den lokalen Mithörton und kann daher jederzeit gefahrlos verwendet werden.</p>
+<p>Es gibt drei QSO-Typen, wählbar im Menü unter <strong>Transceiver → QSO Bot</strong>:</p>
+<ul>
+<li><strong>SOTA/POTA</strong> – eine Verbindung im Rahmen von „Summits On The Air” oder „Parks On The Air” (Rufzeichen, Rapport, Gipfel-/Parkreferenz). Der Bot wählt zufällig SOTA oder POTA und teilt dies in seinem CQ-Ruf mit.</li>
+<li><strong>Standard</strong> – ein klassisches „Rubber-Stamp”-QSO: Rapport, Name und QTH, dann Stationsangaben (Rig, Antenne, Wetter, Alter), dann die Verabschiedung.</li>
+<li><strong>Contest</strong> – eine fortlaufende Folge sehr kurzer Contest-QSOs. Das Austauschformat wird mit der Einstellung <strong>Contest Type</strong> festgelegt (siehe <strong>6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot</strong>): <strong>CQ WW</strong> (Rapport + CQ-Zone) oder <strong>WPX/Sprint</strong> (Rapport + Seriennummer).</li>
+</ul>
+<h4 class="unnumbered" id="anzeige-und-bedienung">Anzeige und Bedienung</h4>
+<p>Der QSO Bot verwendet dieselbe Bildschirmdarstellung und Bedienung wie der CW Keyer und die Transceiver-Modi. Was der Bot sendet, erscheint in <strong>Fettschrift</strong>; was du tastest, wird dekodiert angezeigt. Die obere Statuszeile zeigt den Keyer-Modus und deine Geschwindigkeit. Durch Drehen des ENCODERs änderst du die Geschwindigkeit (oder die Lautstärke, nach einem kurzen Druck auf die FN-Taste); ein langer Druck auf FN wechselt in den Scroll-Modus, um den bisherigen Verlauf nachzulesen; ein Doppelklick auf den ENCODER-Knopf öffnet die Einstellungen; ein langer Druck auf den ENCODER-Knopf verlässt den QSO Bot.</p>
+<h4 class="unnumbered" id="wer-ruft-cq">Wer ruft CQ</h4>
+<p>Wenn du einen QSO-Typ startest, hört der Bot einige Sekunden lang zu. <strong>Rufst du CQ</strong>, antwortet dir der Bot – du bist der Aktivierer (SOTA/POTA) bzw. die rufende Station (Contest). <strong>Bleibst du still</strong>, ruft der Bot CQ und du antwortest ihm. Dafür gibt es keine Einstellung; wie auf dem Band übernimmt derjenige die Führung, der CQ ruft. Der Bot verwendet für jede Verbindung ein neues Rufzeichen, sodass du viele verschiedene Rufzeichen zum Mitschreiben bekommst.</p>
+<h4 class="unnumbered" id="tasten-zum-bot">Tasten zum Bot</h4>
+<p>Der Bot ist bewusst tolerant, damit sich das Üben natürlich anfühlt und nicht wie ein Diktat:</p>
+<ul>
+<li>Er erkennt deine Informationen innerhalb der üblichen Gesprächsfüllwörter – <code>de oe1wkl k</code>, <code>r ur 599 599 bk</code>, <code>qth vienna vienna</code> funktionieren alle; die Füllwörter werden ignoriert.</li>
+<li>Rapporte können als volle Zahlen oder als <strong>Cut Numbers</strong> gesendet werden (<code>5nn</code> für 599, <code>t</code> für 0, <code>a</code> für 1, <code>n</code> für 9).</li>
+<li><strong>Der Bot wartet, bis du fertig bist.</strong> Er antwortet erst, wenn du ein Ende-der-Übergabe-Zeichen sendest (<code>k</code>, <code>&lt;sk&gt;</code>, <code>&lt;ar&gt;</code>, <code>bk</code>, <code>73</code>) oder einige Sekunden pausierst – er tastet dir nicht dazwischen, während du noch sendest.</li>
+<li><strong>Um einen Fehler zu korrigieren</strong>, sende <code>&lt;err&gt;</code> (eine Reihe von Dits) oder <code>eeee</code> und danach die korrigierte Information; der Bot verwirft das Zurückgenommene und übernimmt die neue Fassung.</li>
+<li><strong>Um eine Wiederholung zu erbitten</strong>, sende <code>agn</code> oder <code>rpt</code>; der Bot wiederholt seine letzte Übergabe. Du kannst auch nach einem einzelnen Punkt fragen – <code>rpt rst</code>, <code>rpt call</code>, <code>rpt qth</code> – und der Bot wiederholt nur diesen.</li>
+</ul>
+<p>Tastest du etwas, das der Bot nicht zuordnen kann, oder verstummst du mittendrin, reagiert er wie ein echter Operator – <code>agn agn</code>, <code>qrz?</code> oder durch Wiederholung seiner letzten Übergabe – statt einfach stehen zu bleiben.</p>
+<h4 class="unnumbered" id="sota-pota">SOTA / POTA</h4>
+<p>Der Bot spielt eine Gipfel- oder Parkaktivierung. Ruft er CQ, ist er der Aktivierer und sendet eine Gipfel-/Parkreferenz, die zum Land seines Rufzeichens passt (<code>oe/st-002</code> für ein österreichisches Rufzeichen, <code>w6/ss-001</code> für ein US-Rufzeichen usw.); du rufst als Jäger (Chaser) an und tauschst Rapporte aus. Rufst <strong>du</strong> CQ, bist du der Aktivierer und der Bot jagt dich. Gelegentlich entpuppt sich die Station, die auf deinen CQ-Ruf antwortet, ebenfalls als Aktivierer und sendet ihre eigene Referenz – eine Summit-to-Summit- bzw. Park-to-Park-Verbindung (sie kann sogar SOTA-zu-POTA sein). Eine SOTA/POTA-Sitzung ist eine einzelne Verbindung; der Bot verabschiedet sich, wenn sie beendet ist.</p>
+<h4 class="unnumbered" id="standard">Standard</h4>
+<p>Dies ist ein vollständiges „Rubber-Stamp”-QSO im Plauderstil, in drei Runden: zuerst Rapport, Name und QTH; dann Stationsangaben (Rig, Antenne, Wetter, Alter); dann die Verabschiedung. Der Bot sendet realistische eigene Angaben und schreibt deine mit. Er erkennt deine Informationen an den <strong>Feld-Schlüsselwörtern</strong> – <code>name</code>, <code>qth</code>, <code>rig</code>, <code>ant</code>, <code>wx</code>, <code>age</code> – sodass es egal ist, ob du sie mit <code>=</code>, mit <code>es</code> oder gar nicht trennst, und Werte dürfen aus mehreren Wörtern bestehen (<code>rig icom 7300</code>). Er merkt sich deinen Namen und verwendet ihn, wenn er zu dir zurückkommt (<code>fb dr willi</code>). Eine gültige Verbindung braucht einen Rapport; enthält deine erste Übergabe also Name und QTH, aber keinen RST, fragt der Bot <code>pse ur rst?</code>, bevor er fortfährt.</p>
+<h4 class="unnumbered" id="contest">Contest</h4>
+<p>Contest-Übung ist eine fortlaufende Folge sehr kurzer QSOs. Stelle zuerst <strong>Contest Type</strong> ein: <strong>CQ WW</strong> tauscht Rapport plus CQ-Zone aus (der Bot verwendet die echte Zone für das Land seines Rufzeichens), <strong>WPX/Sprint</strong> tauscht Rapport plus Seriennummer aus. Sobald ein QSO beendet ist, ruft die rufende Station erneut CQ – ruft der Bot, tut er dies mit einem neuen Rufzeichen; rufst du, antwortet eine neue Station auf deinen nächsten CQ-Ruf. Die Sitzung läuft weiter, solange du Stationen arbeitest, und endet automatisch nach etwa fünfzehn Sekunden ohne Antwort (niemand antwortet auf den CQ-Ruf des Bots, oder du rufst nicht erneut CQ). Drücke eine Taste, um nach dem Ende der Sitzung zum Menü zurückzukehren.</p>
 <h2 data-number="5.6" id="cw-decoder"><span class="header-section-number">5.6</span> CW Decoder</h2>
 <p>In diesem Modus werden Morsezeichen dekodiert und auf dem Display angezeigt. Der Morsecode kann entweder über eine Morsetaste eingegeben werden (Handtaste – angeschlossen an die Buchse, an der normalerweise ein externes Paddle angeschlossen wird; du kannst auch eines oder beide der Touchpaddles zum manuellen Tasten des Decoders verwenden). Mit dem Decoder auf diese Weise kannst du deinen Geberhythmus mit einer Handtaste kontrollieren und verbessern, indem du prüfst, ob das Gesendete korrekt dekodiert wird.</p>
-<p>Du kannst auch Töne (am Audioeingang) dekodieren, die z.B. von einem Empfänger stammen. Der Ton sollte bei ca. 700 Hz liegen. Optional gibt es einen recht scharfen Filter (in Software implementiert), der nur Töne in einem engen Bereich um 700 Hz erkennt und alle anderen ignoriert. Dieser wird durch Auswahl der Einstellung <strong>Narrow</strong> aktiviert (siehe Abschnitt <strong>6.2.6 Einstellungen für das Senden und Dekodieren</strong>).</p>
+<p>Du kannst auch Töne (am Audioeingang) dekodieren, die z.B. von einem Empfänger stammen. Der Ton sollte bei ca. 700 Hz liegen. Optional gibt es einen recht scharfen Filter (in Software implementiert), der nur Töne in einem engen Bereich um 700 Hz erkennt und alle anderen ignoriert. Dieser wird durch Auswahl der Einstellung <strong>Narrow</strong> aktiviert (siehe Abschnitt <strong>6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot</strong>).</p>
 <p>Die Statuszeile unterscheidet sich etwas von den anderen Modi. Der Drehgeber befindet sich immer im Lautstärke-Einstellmodus – die Geschwindigkeit wird durch den dekodierten Morsecode bestimmt und kann nicht manuell eingestellt werden. Durch Drücken des ENCODER-Knopfs wird der Decoder-Modus beendet und du gelangst zurück zum Startmenü.</p>
 <p>Oben links in der Statuszeile siehst du ein kleines Quadrat oder Rechteck, wenn die Taste gedrückt wird (oder ein 700-Hz-Ton erkannt wird), und rechts davon den Buchstaben <strong>d</strong> – dieser ersetzt die Keyer-Modus-Anzeige der anderen Modi.</p>
 <p>Die aktuell erkannte Geschwindigkeit wird in der Statuszeile als WpM angezeigt.</p>
-<p>Dieser Modus hat wenige Einstellungen (siehe Abschnitt <strong>6.2.6 Einstellungen für das Senden und Dekodieren</strong>); die wichtigste ist vielleicht die Möglichkeit, die Filterbandbreite des Audio-Decoders zwischen schmal (ca. 150 Hz) und breit (ca. 600 Hz) umzuschalten. Für Signale aus einem Transceiver (wo andere Signale in der Nähe sein könnten) ist es in der Regel am besten, die Bandbreite auf <strong>Narrow</strong> zu setzen und das Signal auf 700 Hz (± 5 %) abzustimmen. Für Signale von einem FM-Transceiver, iCW oder anderen Umgebungen mit wenig Störungen empfiehlt sich die Einstellung <strong>Wide</strong> – in diesem Fall muss die Tonfrequenz nicht so nahe an 700 Hz liegen.</p>
+<p>Dieser Modus hat wenige Einstellungen (siehe Abschnitt <strong>6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot</strong>); die wichtigste ist vielleicht die Möglichkeit, die Filterbandbreite des Audio-Decoders zwischen schmal (ca. 150 Hz) und breit (ca. 600 Hz) umzuschalten. Für Signale aus einem Transceiver (wo andere Signale in der Nähe sein könnten) ist es in der Regel am besten, die Bandbreite auf <strong>Narrow</strong> zu setzen und das Signal auf 700 Hz (± 5 %) abzustimmen. Für Signale von einem FM-Transceiver, iCW oder anderen Umgebungen mit wenig Störungen empfiehlt sich die Einstellung <strong>Wide</strong> – in diesem Fall muss die Tonfrequenz nicht so nahe an 700 Hz liegen.</p>
 <h2 data-number="5.7" id="spiele"><span class="header-section-number">5.7</span> Spiele</h2>
 <p>Der Morserino Pocket bietet jetzt CW-basierte Spiele, die das Lernen und Üben des Morsecodes unterhaltsamer gestalten. Die Spiele sind unter dem Menüpunkt „<strong>Games</strong>” zu finden. Derzeit sind vier Spiele verfügbar: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong> und <strong>Morsel</strong>.</p>
 <h3 data-number="5.7.1" id="morse-invaders"><span class="header-section-number">5.7.1</span> Morse Invaders</h3>
@@ -2088,11 +2117,6 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td><strong>Portrait</strong> / Landscape</td>
 </tr>
 <tr>
-<td><strong>BLT Kbd Output</strong></td>
-<td>Legt fest, was über Bluetooth gesendet wird (Bluetooth-Tastaturfunktion). Die Option <strong>VBand</strong> ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe <em>https://hamradio.solutions/vband/</em>). <strong>Decoded</strong> sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option <strong>Generic Keyboard</strong> macht im Wesentlichen dasselbe wie <strong>Decoded</strong>, sendet aber zusätzlich den Code für die „<strong>Enter</strong>”-Taste (neue Zeile), wenn du &lt;KA&gt; (neue Nachricht) eingibst, und für die „<strong>Backspace</strong>”-Taste, wenn du &lt;ERR&gt; eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen!</td>
-<td><strong>Nothing</strong> / Vband Keying / Decoded / Vband+Decoded / Generic Kbd</td>
-</tr>
-<tr>
 <td><strong>Serial Output</strong></td>
 <td>Legt fest, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; unterschieden wird zwischen getasteten Zeichen (<strong>Keyer</strong> – Ausgabe des iambischen Keyers), dekodierten Zeichen (<strong>Decoded</strong> – vom CW-Decoder oder einer Handtaste) und „generierten” Zeichen (<strong>Generated</strong> – vom CW-Generator usw., auch von der Empfangsseite der LoRa- oder WiFi-Transceiver-Modi). <strong>Nothing</strong> sendet keines dieser Zeichen (bestimmte System- oder Fehlermeldungen können aber trotzdem erscheinen), <strong>All</strong> sendet alles. Über das M32-Serielle-Protokoll können zudem weitere Informationen gesendet und empfangen werden, wenn die angeschlossene Computersoftware dies unterstützt. Siehe auch <strong>Anhang 8 Nutzung des seriellen Ausgangs des M32</strong>.</td>
 <td>Nothing / Keyer / Decoded / Keyed+Decoded / Generated / <strong>All</strong> (Standard seit V. 4.3)</td>
@@ -2149,6 +2173,16 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td><strong>Latency</strong></td>
 <td>Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub” sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an” ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck.</td>
 <td>Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: <strong>50 %</strong>, d.h. eine halbe Punktlänge).</td>
+</tr>
+<tr>
+<td><strong>BLT Kbd Output</strong></td>
+<td>Legt fest, was über Bluetooth gesendet wird (Bluetooth-Tastaturfunktion). Die Option <strong>VBand</strong> ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe <em>https://hamradio.solutions/vband/</em>). <strong>Decoded</strong> sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option <strong>Generic Kbd</strong> macht im Wesentlichen dasselbe wie <strong>Decoded</strong>, sendet aber zusätzlich den Code für die „<strong>Enter</strong>”-Taste (neue Zeile), wenn du &lt;KA&gt; (neue Nachricht) eingibst, und für die „<strong>Backspace</strong>”-Taste, wenn du &lt;HH&gt; eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. <em>Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch <strong>Anhang 9</strong>).</em></td>
+<td><strong>Nothing</strong> / Vband Keying / Decoded / Vband+Decoded / Generic Kbd</td>
+</tr>
+<tr>
+<td><strong>BLT &lt;AR&gt;</strong></td>
+<td>Nur im Modus <strong>Generic Kbd</strong> relevant (siehe <strong>BLT Kbd Output</strong> oben). Legt fest, wie das &lt;AR&gt;-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „<strong>+</strong>” oder als weicher Zeilenumbruch (Shift+Enter).</td>
+<td><strong>+</strong> / Linefeed</td>
 </tr>
 </tbody>
 </table>
@@ -2317,8 +2351,8 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.2.6" id="einstellungen-fuer-das-senden-und-dekodieren"><span class="header-section-number">6.2.6</span> Einstellungen für das Senden und Dekodieren</h3>
-<p>Diese Einstellungen steuern einige Funktionen, die für das Senden (entweder direkt über LoRa oder WLAN oder durch Tastung eines externen Senders) oder für das Dekodieren von Morsezeichen verfügbar sind.</p>
+<h3 data-number="6.2.6" id="einstellungen-zum-senden-dekodieren-und-qso-bot"><span class="header-section-number">6.2.6</span> Einstellungen zum Senden, Dekodieren und QSO Bot</h3>
+<p>Diese Einstellungen steuern einige Funktionen, die für das Senden (entweder direkt über LoRa oder WLAN oder durch Tastung eines externen Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot (siehe Abschnitt <strong>5.5.4 QSO Bot</strong>) verfügbar sind.</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2357,6 +2391,11 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td><strong>Decoded on I/O</strong></td>
 <td>Normalerweise wird dekodiertes CW von einer externen Quelle (bei Verwendung eines der Transceiver-Modi oder des Decoders für Audiodekodierung) über den Lautsprecher (oder Kopfhörer) abgespielt, aber nicht an den externen Audio-E/A-Anschluss gesendet. Bei Einstellung auf „ON” wird der Ton auch an den externen Audio-E/A-Anschluss gesendet. <strong>Beim M32Pocket wird diese Einstellung ignoriert!</strong></td>
 <td>On / <strong>Off</strong></td>
+</tr>
+<tr>
+<td><strong>Contest Type</strong></td>
+<td>Nur relevant im <strong>Contest</strong>-Modus des QSO Bots (Abschnitt <strong>5.5.4 QSO Bot</strong>): welcher Contest-Austausch verwendet wird. <strong>CQ WW</strong> sendet 5NN + die CQ-Zone des Bot-Rufzeichens; <strong>WPX/Sprint</strong> sendet 5NN + eine Seriennummer.</td>
+<td><strong>CQ WW</strong> / WPX/Sprint</td>
 </tr>
 </tbody>
 </table>
@@ -2416,7 +2455,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <h4 class="unnumbered" id="verwendung-von-zwei-verschiedenen-lora-kanaelen">Verwendung von zwei verschiedenen LoRa-„Kanälen”</h4>
 <p>LoRa-Datenpakete werden mit einem sogenannten „Sync Word” adressiert – Empfänger verwerfen Pakete, die nicht das erwartete Sync Word enthalten.</p>
 <p>Der Morserino-32 kann zwei verschiedene Sync Words verwenden und damit effektiv zwei verschiedene „Kanäle” schaffen. Dies kann z.B. in einem Klassenzimmer genutzt werden, um zwei unabhängige Gruppen zu bilden, die sich nicht gegenseitig stören.</p>
-<p>Normalerweise arbeitet der M32 LoRa mit dem Sync Word 0x27 (wir nennen es den „Standard”-Kanal), kann aber über die Einstellung <strong>Trx Channel</strong> im Einstellungsmenü auf 0x66 (genannt „Secondary”-Kanal) umgeschaltet werden. Siehe Abschnitt <strong>6.2.6 Einstellungen für das Senden und Dekodieren</strong>.</p>
+<p>Normalerweise arbeitet der M32 LoRa mit dem Sync Word 0x27 (wir nennen es den „Standard”-Kanal), kann aber über die Einstellung <strong>Trx Channel</strong> im Einstellungsmenü auf 0x66 (genannt „Secondary”-Kanal) umgeschaltet werden. Siehe Abschnitt <strong>6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot</strong>.</p>
 <h4 class="unnumbered" id="verwendung-anderer-lora-frequenzbaender-undoder-frequenzen">Verwendung anderer LoRa-Frequenzbänder und/oder Frequenzen</h4>
 <p>Standardmäßig werden die Morserino-32-Bausätze mit einem LoRa-Modul ausgeliefert, das im 70-cm-Band arbeitet, mit der Standardfrequenz 434,150 MHz (innerhalb des 70-cm-Amateurbandes und eines ISM-Bandes der Region 1).</p>
 <p>Wenn du diese Frequenz aus irgendeinem Grund nicht nutzen kannst (z.B. aufgrund von Bandplänen oder regulatorischen Gründen), kannst du die Frequenz auf dem Standard-LoRa-Modul in 100-kHz-Schritten zwischen 433,65 und 434,55 MHz ändern.</p>
@@ -2530,7 +2569,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Siehe auch die Beschreibung der Einstellung <strong>Serial Output</strong> im Abschnitt <strong>6.2.1 Allgemeine Einstellungen</strong>.</p>
 <h2 data-number="7.9" id="anhang-9-benutzung-der-bluetooth-tastatur-funktion"><span class="header-section-number">7.9</span> Anhang 9: Benutzung der Bluetooth-Tastatur-Funktion</h2>
 <p>Im Modus CW Keyer kann der M32 die getasteten Morsezeichen als Tastaturcodes über Bluetooth an einen Computer (einschließlich Mobiltelefone und Tablets) senden.</p>
-<p>Dazu muss die Einstellung <strong>BLT Kbd Output</strong> entsprechend gesetzt werden (nähere Informationen zu den verfügbaren Optionen findest du im Abschnitt <strong>6.2.1 Allgemeine Einstellungen</strong>).</p>
+<p>Dazu muss die Einstellung <strong>BLT Kbd Output</strong> entsprechend gesetzt werden (nähere Informationen zu den verfügbaren Optionen findest du im Abschnitt <strong>6.2.2 Einstellungen zu Key, Paddles und Keyer</strong>).</p>
 <div class="note">
 <p>Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird die Tastatur für PC und Tablett etc. sichtbar!</p>
 </div>
