@@ -35,6 +35,12 @@ enum QsoStepKind : uint8_t {
                             // through to the next step (the "user initiated"
                             // branch). If silence, jump to step `arg` (the
                             // "bot calls CQ" branch).
+    STEP_WAIT_CQ_LOOP,      // contest: wait for the user's NEXT CQ. On a CQ,
+                            // re-init the bot's identity and jump to step
+                            // `arg`; on timeout (~15 s) end the session.
+    STEP_LOOP,              // contest: re-init the bot's identity (new call,
+                            // zone, serial) and jump to step `arg` to start
+                            // the next QSO.
     STEP_PAUSE_MS,          // small inter-step pause (PR-5 jitter target)
 };
 
@@ -47,6 +53,12 @@ enum QsoSlotKind : uint8_t {
     SLOT_RST,               // three digits (first 3..5), or literal "5NN"
     SLOT_REF,               // SOTA summit ref or POTA park ref, literal match
     SLOT_PROSIGN,           // BK / AR / KN / SK / K / R / 73 / 72 / TU / ...
+    SLOT_EXCHANGE,          // contest: CQ zone (CQ WW) or serial (WPX/Sprint),
+                            // resolved at runtime by the Contest Type pref
+    SLOT_INFO,              // Standard QSO: a whole over of keyword-delimited
+                            // fields (rst + name + qth [+ rig/ant/wx/age]).
+                            // Parsed by a within-over keyword scanner; the
+                            // RST is required, NAME/QTH are captured.
 };
 
 struct QsoStep {

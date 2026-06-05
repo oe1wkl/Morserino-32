@@ -36,6 +36,37 @@ static const char* const kNames[] = {
 };
 constexpr int kNamesCount = sizeof(kNames) / sizeof(kNames[0]);
 
+// Standard-QSO content pools. Single-token values keep the bot's keyed
+// over unambiguous; the matcher accepts multi-word values from the user.
+static const char* const kQths[] = {
+    "VIENNA", "LONDON", "BERLIN", "ROME", "MADRID", "OSLO", "PRAGUE",
+    "PARIS", "BERN", "WARSAW", "DENVER", "BOSTON", "TOKYO", "SYDNEY",
+};
+constexpr int kQthsCount = sizeof(kQths) / sizeof(kQths[0]);
+
+static const char* const kRigs[] = {
+    "IC7300", "FT991", "K3", "KX3", "KX2", "TS590", "FT817", "IC705",
+    "FTDX10", "K4", "ELECRAFT", "FT710",
+};
+constexpr int kRigsCount = sizeof(kRigs) / sizeof(kRigs[0]);
+
+static const char* const kAnts[] = {
+    "DIPOLE", "EFHW", "VERT", "BEAM", "HEXBEAM", "GP", "G5RV", "LOOP",
+    "ENDFED", "INVV",
+};
+constexpr int kAntsCount = sizeof(kAnts) / sizeof(kAnts[0]);
+
+static const char* const kWxs[] = {
+    "SUNNY", "CLOUDY", "RAIN", "SNOW", "CLEAR", "FOG", "WINDY", "COLD",
+    "WARM", "HOT", "MILD",
+};
+constexpr int kWxsCount = sizeof(kWxs) / sizeof(kWxs[0]);
+
+static const char* const kAges[] = {
+    "25", "32", "41", "55", "63", "70", "45", "38", "52", "29", "47", "60",
+};
+constexpr int kAgesCount = sizeof(kAges) / sizeof(kAges[0]);
+
 // SOTA summit references, each tagged with the continent of its
 // association so the bot can pick a summit consistent with the
 // continent of its (randomly generated) callsign. Pattern:

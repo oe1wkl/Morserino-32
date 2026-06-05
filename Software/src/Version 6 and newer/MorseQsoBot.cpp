@@ -56,6 +56,7 @@ extern void         updateTopLine();
 extern boolean      speedChanged;
 extern encoderMode  encoderState;
 extern uint8_t      lastGeneratedCallContinent;   // set by getRandomCall
+extern uint8_t      lastGeneratedCallCqZone;       // set by getRandomCall
 
 namespace {
 
@@ -138,24 +139,49 @@ struct QsoActors {
     String botCall;
     String botRef;
     String botName;
+    String botQth;
+    String botRig;
+    String botAnt;
+    String botWx;
+    String botAge;
     String userCall;
+    String userName;        // parsed from the user's Standard-QSO over (for echo)
 };
 
 QsoActors gActors;
 uint8_t   gActivity         = 0;       // 0 = SOTA, 1 = POTA (bot-as-activator)
 bool      gBotAlsoActivator = false;   // S2S/P2P: bot answers AND sends a ref
+uint8_t   gContestType      = 0;       // 0 = CQ WW (zone), 1 = WPX/Sprint (serial)
+uint8_t   gBotZone          = 14;      // bot's CQ zone (CQ WW exchange)
+uint16_t  gBotSerial        = 1;       // bot's serial (WPX/Sprint exchange)
+
+// (Re)pick the bot's per-QSO identity: a fresh callsign and everything
+// derived from it (continent-matched ref, CQ zone), a name, the S2S
+// chance, and — for contests — a fresh random serial (each CQ is a
+// different station). Called at session start and at every contest QSO
+// loop so the user works/copies a new station each time.
+void pickBotIdentity() {
+    String call = getRandomCall(0);                    // sets lastGeneratedCall*
+    const uint8_t cont = lastGeneratedCallContinent;
+    gBotZone = lastGeneratedCallCqZone;
+    if (gBotZone < 1 || gBotZone > 40) gBotZone = random(1, 41);
+    call.toUpperCase();
+    gActors.botCall  = call;
+    gActivity        = random(2);
+    gActors.botRef   = String(gActivity == 0 ? QsoContent::pickSotaRef(cont)
+                                             : QsoContent::pickPotaRef(cont));
+    gActors.botName  = String(QsoContent::kNames[random(QsoContent::kNamesCount)]);
+    gActors.botQth   = String(QsoContent::kQths[random(QsoContent::kQthsCount)]);
+    gActors.botRig   = String(QsoContent::kRigs[random(QsoContent::kRigsCount)]);
+    gActors.botAnt   = String(QsoContent::kAnts[random(QsoContent::kAntsCount)]);
+    gActors.botWx    = String(QsoContent::kWxs[random(QsoContent::kWxsCount)]);
+    gActors.botAge   = String(QsoContent::kAges[random(QsoContent::kAgesCount)]);
+    gBotAlsoActivator = (random(100) < 15);
+    gBotSerial       = random(1, 600);                 // random per station
+}
 
 void initActors() {
-    String call = getRandomCall(0);
-    const uint8_t cont = lastGeneratedCallContinent;   // side effect of getRandomCall
-    call.toUpperCase();
-    gActors.botCall = call;
-
-    gActivity = random(2);             // bot randomly does SOTA or POTA
-    gActors.botRef = String(gActivity == 0 ? QsoContent::pickSotaRef(cont)
-                                           : QsoContent::pickPotaRef(cont));
-    gActors.botName = String(QsoContent::kNames[random(QsoContent::kNamesCount)]);
-    gBotAlsoActivator = (random(100) < 15);   // ~15% of answered CQs are S2S/P2P
+    pickBotIdentity();
 
     Preferences pref;
     pref.begin("morserino", true);
@@ -173,14 +199,34 @@ String expand(const char* tmpl) {
     String out(tmpl);
     out.replace("[ACT]",    gActivity == 0 ? "sota" : "pota");
     out.replace("[S2SREF]", gBotAlsoActivator ? " = qth [BOTREF] [BOTREF]" : "");
+    // Contest exchange: CQ zone (CQ WW) or 3-digit serial (WPX/Sprint).
+    {
+        String exch;
+        if (gContestType == 0) { exch = String((int) gBotZone); }
+        else { char b[8]; snprintf(b, sizeof(b), "%03u", (unsigned) gBotSerial); exch = b; }
+        out.replace("[BOTEXCH]", exch);
+    }
     String call(gActors.botCall);  call.toLowerCase();
     String ref(gActors.botRef);    ref.toLowerCase();
     String name(gActors.botName);  name.toLowerCase();
     String user(gActors.userCall); user.toLowerCase();
+    String uname(gActors.userName.length() ? gActors.userName : String("om"));
+    uname.toLowerCase();
+    String qth(gActors.botQth);  qth.toLowerCase();
+    String rig(gActors.botRig);  rig.toLowerCase();
+    String ant(gActors.botAnt);  ant.toLowerCase();
+    String wx(gActors.botWx);    wx.toLowerCase();
+    String age(gActors.botAge);  age.toLowerCase();
     out.replace("[BOTCALL]",  call);
     out.replace("[BOTREF]",   ref);
     out.replace("[BOTNAME]",  name);
+    out.replace("[BOTQTH]",   qth);
+    out.replace("[BOTRIG]",   rig);
+    out.replace("[BOTANT]",   ant);
+    out.replace("[BOTWX]",    wx);
+    out.replace("[BOTAGE]",   age);
     out.replace("[USERCALL]", user);
+    out.replace("[USERNAME]", uname);
     return out;
 }
 
@@ -203,6 +249,18 @@ unsigned long        gOpeningActivity    = 0;
 constexpr unsigned long kOpeningWaitMs    = 5000;
 constexpr unsigned long kCallEndSilenceMs = 1800;
 
+// Contest session state. A contest is a continuous run of short QSOs:
+// whoever calls CQ keeps running, the bot uses a fresh identity each QSO,
+// and the session ends only on ~15 s of inactivity.
+bool                 gSessionMode = false;      // true for the Contest descriptor
+constexpr unsigned long kSessionIdleMs = 15000; // CQ/answer inactivity -> end
+
+// Per-WAIT behaviour (set by enterStep before entering RT_OPENING):
+bool                 gWaitTimeoutEndsSession = false;  // timeout ends session?
+uint8_t              gWaitTimeoutTarget      = 0;       // else jump here on timeout
+uint8_t              gWaitUserCqTarget       = 0xFF;    // 0xFF = advance(pc+1);
+                                                        // else re-init identity + jump here
+
 // Per-over accumulators (EXPECT). The bot collects the user's whole over
 // and only acts at end-of-over (explicit marker or silence), so it never
 // cuts in while the user is still keying.
@@ -212,7 +270,7 @@ String        gOverMatchedValue;
 bool          gOverRepeat      = false;    // "agn"/"rpt" seen this over
 String        gOverRepeatSlot;             // optional slot after "rpt"
 unsigned long gOverActivity    = 0;        // last keying time this over
-constexpr unsigned long kOverEndSilenceMs = 4000;   // user finished (no marker)
+constexpr unsigned long kOverEndSilenceMs = 2500;   // user finished (no marker)
 constexpr unsigned long kNoReplyMs        = 12000;  // user never replied
 constexpr unsigned long kOptNoReplyMs     = 4000;   // optional ack, no reply
 
@@ -329,6 +387,87 @@ bool matchRef(const char* tok) {
     return t == r;
 }
 
+bool allDigits(const String& s) {
+    if (s.length() == 0) return false;
+    for (unsigned i = 0; i < s.length(); i++)
+        if (!isdigit((unsigned char) s[i])) return false;
+    return true;
+}
+
+// CQ WW zone: 1-2 digits, value 1..40 (cut numbers allowed).
+bool matchZone(const char* tok) {
+    String n = normalizeCutNumbers(String(tok));
+    if (!allDigits(n) || n.length() < 1 || n.length() > 2) return false;
+    int v = n.toInt();
+    return v >= 1 && v <= 40;
+}
+
+// WPX/Sprint serial: 1-4 digits (cut numbers allowed). The bot can't
+// validate the user's own serial, so any plausible number is accepted.
+bool matchSerial(const char* tok) {
+    String n = normalizeCutNumbers(String(tok));
+    return allDigits(n) && n.length() >= 1 && n.length() <= 4;
+}
+
+bool matchExchange(const char* tok) {
+    return (gContestType == 0) ? matchZone(tok) : matchSerial(tok);
+}
+
+// ---- Standard-QSO keyword-field parser (SLOT_INFO) --------------------
+//
+// A Standard over carries several keyword-delimited fields with no fixed
+// separator: "name willi willi qth vienna = rig ic7300 ant efhw". The
+// parser tracks the "current field" (switched by a keyword), captures the
+// value tokens that follow (NAME/QTH only; deduping the conventional
+// doubling), notes whether RST and the layer-2 fields were present, and
+// treats =, es, bt, hw and prosigns as boundaries.
+
+enum FieldCur : uint8_t { F_NONE, F_NAME, F_QTH, F_RST, F_OTHER };
+FieldCur gFieldCur   = F_NONE;
+bool     gFieldRst   = false;
+bool     gFieldOther = false;      // rig/ant/wx/age seen (acknowledged generically)
+String   gFieldName;
+String   gFieldQth;
+
+void appendDedup(String& field, const String& tok) {
+    int sp = field.lastIndexOf(' ');
+    String last = (sp < 0) ? field : field.substring(sp + 1);
+    if (last.equalsIgnoreCase(tok)) return;            // dedupe "willi willi"
+    if (field.length()) field += " ";
+    field += tok;
+}
+
+void parseInfoToken(const String& token) {
+    String low(token); low.toLowerCase();
+    // field keywords
+    if (low == "name" || low == "op"  || low == "nm")    { gFieldCur = F_NAME;  return; }
+    if (low == "qth"  || low == "loc" || low == "qra")   { gFieldCur = F_QTH;   return; }
+    if (low == "rig"  || low == "tcvr"|| low == "radio" || low == "trx")
+                                                         { gFieldCur = F_OTHER; gFieldOther = true; return; }
+    if (low == "ant"  || low == "antenna" || low == "aerial")
+                                                         { gFieldCur = F_OTHER; gFieldOther = true; return; }
+    if (low == "wx"   || low == "temp")                  { gFieldCur = F_OTHER; gFieldOther = true; return; }
+    if (low == "age"  || low == "yrs")                   { gFieldCur = F_OTHER; gFieldOther = true; return; }
+    if (low == "rst"  || low == "ur"  || low == "urs")   { gFieldCur = F_RST;   return; }
+    // separators / boundaries
+    if (low == "=" || low == "es" || low == "bt" || low == "hw" ||
+        low == "hw?" || low == "pse" || low == "de")     { gFieldCur = F_NONE;  return; }
+    // RST digits anywhere in the over
+    if (matchRST(token.c_str()))                         { gFieldRst = true; gFieldCur = F_NONE; return; }
+    // value token for the current field
+    if      (gFieldCur == F_NAME) appendDedup(gFieldName, token);
+    else if (gFieldCur == F_QTH)  appendDedup(gFieldQth,  token);
+    // F_OTHER / F_NONE: noted via gFieldOther, not captured verbatim
+}
+
+void resetInfoFields() {
+    gFieldCur   = F_NONE;
+    gFieldRst   = false;
+    gFieldOther = false;
+    gFieldName  = "";
+    gFieldQth   = "";
+}
+
 bool matchProsignTok(const char* tok, const char* expected) {
     if (!expected || !*expected) return false;
     String a(tok);      a.toUpperCase();
@@ -348,6 +487,7 @@ bool acceptCallsign(const String& tok, const String&)   { return matchCallsign(t
 bool acceptRST     (const String& tok, const String&)   { return matchRST(tok.c_str()); }
 bool acceptRef     (const String& tok, const String&)   { return matchRef(tok.c_str()); }
 bool acceptProsign (const String& tok, const String& e) { return matchProsignTok(tok.c_str(), e.c_str()); }
+bool acceptExchange(const String& tok, const String&)   { return matchExchange(tok.c_str()); }
 
 const char* const kCommonNoise[]   = { "de", "dr", "pse", "qsl", "tnx", "tu",
                                        "ok", "fb", "es", "qrl", "om", "oc",
@@ -360,6 +500,8 @@ const char* const kRstNoise[]      = { "r", "rr", "ur", "qsa", "qrk", "bk",
 const char* const kRefNoise[]      = { "qth", "loc", "ref", "r", "rr", "bk",
                                        nullptr };
 const char* const kProsignNoise[]  = { nullptr };
+const char* const kExchangeNoise[] = { "5nn", "599", "ur", "r", "rr", "nr",
+                                       "bk", "tu", nullptr };
 
 const SlotGrammar& grammarFor(QsoSlotKind slot) {
     static const SlotGrammar kGrammars[] = {
@@ -368,6 +510,8 @@ const SlotGrammar& grammarFor(QsoSlotKind slot) {
         /* SLOT_RST      */ { acceptRST,      kRstNoise,      true  },
         /* SLOT_REF      */ { acceptRef,      kRefNoise,      true  },
         /* SLOT_PROSIGN  */ { acceptProsign,  kProsignNoise,  false },
+        /* SLOT_EXCHANGE */ { acceptExchange, kExchangeNoise, true  },
+        /* SLOT_INFO     */ { nullptr,        kProsignNoise,  false },  // parser-based
     };
     return kGrammars[slot];
 }
@@ -423,6 +567,7 @@ void reEnterExpect();
 void advance();
 void enterStep();
 void startOpening();
+void pickBotIdentity();
 
 void startBotTx(const String& text) {
     gCachedBotText = text;
@@ -451,6 +596,7 @@ void resetOverAccumulators() {
     gOverActivity = millis();
     gConcatBuf   = "";
     gEeeeDetected = false;
+    resetInfoFields();
 }
 
 void startExpect(uint16_t budget) {
@@ -499,7 +645,24 @@ void enterStep() {
             startExpect(step.arg);
             break;
         case STEP_WAIT_USER_CQ:
+            // Initial opening: timeout -> jump to the bot-init branch
+            // (step.arg); a user CQ falls through to pc+1.
+            gWaitTimeoutEndsSession = false;
+            gWaitTimeoutTarget      = (uint8_t) step.arg;
+            gWaitUserCqTarget       = 0xFF;
             startOpening();
+            break;
+        case STEP_WAIT_CQ_LOOP:
+            // Contest loop wait: a user CQ re-inits the bot identity and
+            // jumps to step.arg; timeout ends the session.
+            gWaitTimeoutEndsSession = true;
+            gWaitUserCqTarget       = (uint8_t) step.arg;
+            startOpening();
+            break;
+        case STEP_LOOP:
+            pickBotIdentity();                  // new station for the next QSO
+            gPc = (uint8_t) step.arg;
+            enterStep();
             break;
         case STEP_PAUSE_MS:
             gState = RT_PAUSE; gStateStart = millis();
@@ -508,6 +671,17 @@ void enterStep() {
 }
 
 void advance() { gPc++; enterStep(); }
+
+// Resolve the end of a STEP_WAIT_* opening once the user has called CQ.
+void finishOpening() {
+    if (gWaitUserCqTarget != 0xFF) {
+        pickBotIdentity();                      // a fresh station answers/runs
+        gPc = gWaitUserCqTarget;
+        enterStep();
+    } else {
+        advance();                              // fall through to pc+1
+    }
+}
 
 // Send a recovery / repeat prompt without advancing; on completion we
 // re-enter the same EXPECT (does not spend a retry).
@@ -542,6 +716,16 @@ void processOver(const QsoStep& step) {
     if (gOverRepeat) {
         gRepeatSlot = gOverRepeatSlot;
         executePendingRepeat();
+        return;
+    }
+    if (step.slot == SLOT_INFO) {
+        // Standard QSO: capture the user's name for echoing back.
+        if (gFieldName.length()) gActors.userName = gFieldName;
+        if (step.kind == STEP_EXPECT_OPT) { advance(); return; }   // layer 2: just ack
+        // Layer 1 is required to carry the RST.
+        if (gFieldRst) { gRstReceived = true; advance(); return; }
+        if (gRetriesLeft > 0) { gRetriesLeft--; enterRecovery("pse ur rst?"); return; }
+        advance();                          // asked enough; proceed anyway
         return;
     }
     if (gOverMatched) {
@@ -608,12 +792,95 @@ static const QsoDescriptor kSotaPota = {
     /*defaultWpm*/ 18,
 };
 
-static const QsoDescriptor* selectDescriptor(menuNo /*mode*/) {
-    // PR-3.5 ships the single dynamic SOTA/POTA QSO. All current menu
-    // entries (SOTA, POTA, Standard, Contest) route here for now; the
-    // dedicated Standard / Contest descriptors land in PR-4, and the
-    // menu will be tidied to a single SOTA/POTA entry then.
-    return &kSotaPota;
+// ===========================================================================
+// Contest descriptor (PR-4)
+// ===========================================================================
+//
+// A contest is a continuous session of very short QSOs. The opening
+// decides the (sticky) running role; thereafter whoever runs keeps
+// calling CQ, the bot takes a fresh identity each QSO, and the session
+// ends on ~15 s of inactivity. The exchange is RST (always 5nn) plus the
+// CQ zone (CQ WW) or a serial (WPX/Sprint), per the Contest Type pref.
+//
+//   WAIT_USER_CQ arg=5 : user CQ -> pc1 (user runs); silence -> pc5 (bot runs)
+//   WAIT_CQ_LOOP arg=1 : next user CQ -> new bot identity + pc1; idle -> end
+//   LOOP        arg=5  : new bot identity + pc5 (bot calls CQ again)
+static const QsoStep kContestSteps[] = {
+    /* 0 */ { STEP_WAIT_USER_CQ, nullptr,                               SLOT_NONE,     5 },
+    // --- user runs, bot is search & pounce ---
+    /* 1 */ { STEP_BOT_TX,  "[BOTCALL]",                                SLOT_NONE,     0 },
+    /* 2 */ { STEP_EXPECT,  "",                                         SLOT_EXCHANGE, 3 },
+    /* 3 */ { STEP_BOT_TX,  "5nn [BOTEXCH]",                            SLOT_NONE,     0 },
+    /* 4 */ { STEP_WAIT_CQ_LOOP, nullptr,                              SLOT_NONE,     1 },
+    // --- bot runs (calls CQ), user is search & pounce ---
+    /* 5 */ { STEP_BOT_TX,  "cq test de [BOTCALL] [BOTCALL] test",      SLOT_NONE,     0 },
+    /* 6 */ { STEP_EXPECT,  "",                                         SLOT_CALLSIGN, 4 },
+    /* 7 */ { STEP_BOT_TX,  "[USERCALL] 5nn [BOTEXCH]",                 SLOT_NONE,     0 },
+    /* 8 */ { STEP_EXPECT,  "",                                         SLOT_EXCHANGE, 3 },
+    /* 9 */ { STEP_BOT_TX,  "tu",                                       SLOT_NONE,     0 },
+    /* 10*/ { STEP_LOOP,    nullptr,                                    SLOT_NONE,     5 },
+};
+
+static const QsoDescriptor kContest = {
+    "Contest",
+    kContestSteps,
+    sizeof(kContestSteps) / sizeof(QsoStep),
+    /*features*/ 0,
+    /*defaultWpm*/ 24,
+};
+
+// ===========================================================================
+// Standard ("rubber-stamp") QSO descriptor (PR-4)
+// ===========================================================================
+//
+// Three layers: (1) RST + name + QTH, (2) rig + ant + wx + age, (3) 73 /
+// <sk> sign-off. The user's info overs are SLOT_INFO (keyword-delimited
+// field parser): RST is required in layer 1, NAME/QTH are captured and
+// the bot echoes the name ("fb dr willi"). The opening decides who runs:
+// if the user calls CQ they send layer 1 first; if the bot runs it calls
+// CQ and sends layer 1 first.
+//
+//   WAIT_USER_CQ arg=9 : user CQ -> pc1 (user runs); silence -> pc9 (bot runs)
+static const QsoStep kStandardSteps[] = {
+    /* 0 */ { STEP_WAIT_USER_CQ, nullptr,                                    SLOT_NONE,    9 },
+    // --- user runs (called CQ): the user sends layer 1 first ---
+    /* 1 */ { STEP_BOT_TX,  "[USERCALL] de [BOTCALL] [BOTCALL] k",           SLOT_NONE,    0 },
+    /* 2 */ { STEP_EXPECT,  "",                                              SLOT_INFO,    3 },
+    /* 3 */ { STEP_BOT_TX,  "[USERCALL] de [BOTCALL] = fb dr [USERNAME] = ur rst 599 599 = name [BOTNAME] [BOTNAME] = qth [BOTQTH] [BOTQTH] = hw? k", SLOT_NONE, 0 },
+    /* 4 */ { STEP_EXPECT_OPT, "",                                           SLOT_INFO,    0 },
+    /* 5 */ { STEP_BOT_TX,  "= all copy fb = rig [BOTRIG] = ant [BOTANT] = wx [BOTWX] = age [BOTAGE] = hw? bk", SLOT_NONE, 0 },
+    /* 6 */ { STEP_EXPECT_OPT, "73",                                         SLOT_PROSIGN, 0 },
+    /* 7 */ { STEP_BOT_TX,  "tnx fb qso dr [USERNAME] = 73 73 = [USERCALL] de [BOTCALL] K", SLOT_NONE, 0 },
+    /* 8 */ { STEP_END,     nullptr,                                         SLOT_NONE,    0 },
+    // --- bot runs (user silent): the bot calls CQ and sends layer 1 first ---
+    /* 9 */ { STEP_BOT_TX,  "cq cq de [BOTCALL] [BOTCALL] k",                SLOT_NONE,    0 },
+    /* 10*/ { STEP_EXPECT,  "",                                              SLOT_CALLSIGN,4 },
+    /* 11*/ { STEP_BOT_TX,  "[USERCALL] de [BOTCALL] = gm dr om = ur rst 599 599 = name [BOTNAME] [BOTNAME] = qth [BOTQTH] [BOTQTH] = hw? k", SLOT_NONE, 0 },
+    /* 12*/ { STEP_EXPECT,  "",                                              SLOT_INFO,    3 },
+    /* 13*/ { STEP_BOT_TX,  "[USERCALL] de [BOTCALL] = fb dr [USERNAME] = rig [BOTRIG] = ant [BOTANT] = wx [BOTWX] = age [BOTAGE] = hw? bk", SLOT_NONE, 0 },
+    /* 14*/ { STEP_EXPECT_OPT, "",                                           SLOT_INFO,    0 },
+    /* 15*/ { STEP_BOT_TX,  "tnx fb qso dr [USERNAME] = 73 73 = [USERCALL] de [BOTCALL] K", SLOT_NONE, 0 },
+    /* 16*/ { STEP_EXPECT_OPT, "73",                                         SLOT_PROSIGN, 0 },
+    /* 17*/ { STEP_END,     nullptr,                                         SLOT_NONE,    0 },
+};
+
+static const QsoDescriptor kStandard = {
+    "Standard",
+    kStandardSteps,
+    sizeof(kStandardSteps) / sizeof(QsoStep),
+    /*features*/ 0,
+    /*defaultWpm*/ 18,
+};
+
+static const QsoDescriptor* selectDescriptor(menuNo mode) {
+    if (mode == _qsoContest) {
+        gContestType = MorsePreferences::pliste[posQsoBotContestType].value;
+        gSessionMode = true;
+        return &kContest;
+    }
+    gSessionMode = false;
+    if (mode == _qsoStandard) return &kStandard;
+    return &kSotaPota;                  // SOTA/POTA
 }
 
 // ===========================================================================
@@ -760,17 +1027,26 @@ void run(menuNo mode) {
                         if (upper != bot) gActors.userCall = token;
                     }
                     // a clear end-of-over marker ends the user's CQ at once
-                    if (isEndOfOver(upper)) advance();   // -> user-init branch
+                    if (isEndOfOver(upper)) finishOpening();
                 }
             }
             if (gState == RT_OPENING) {
                 if (gUserStartedCalling) {
                     if (!inputMidToken() &&
                         millis() - gOpeningActivity > kCallEndSilenceMs)
-                        advance();                       // -> user-init branch
-                } else if (millis() - gOpeningStart > kOpeningWaitMs) {
-                    gPc = gDesc->steps[gPc].arg;         // -> bot-init branch
-                    enterStep();
+                        finishOpening();
+                } else {
+                    const unsigned long to = gSessionMode ? kSessionIdleMs
+                                                          : kOpeningWaitMs;
+                    if (millis() - gOpeningStart > to) {
+                        if (gWaitTimeoutEndsSession) {
+                            renderInfo("session end");
+                            gState = RT_DONE;
+                        } else {
+                            gPc = gWaitTimeoutTarget;     // -> bot-init branch
+                            enterStep();
+                        }
+                    }
                 }
             }
         }
@@ -809,7 +1085,30 @@ void run(menuNo mode) {
                             String bot(gActors.botCall); bot.toUpperCase();
                             if (upper != bot) gActors.userCall = token;
                         }
-                        if (!gOverMatched) {
+                        if (step.slot == SLOT_INFO) {
+                            // Keyword-field parser collects the whole over;
+                            // gOverMatched tracks "RST seen" for processOver.
+                            parseInfoToken(token);
+                            if (gFieldRst) gOverMatched = true;
+                        } else if (step.slot == SLOT_EXCHANGE) {
+                            // Numeric exchange: take the single token, but
+                            // also accumulate consecutive digit tokens so a
+                            // split "1" "4" reads as "14" (longest match
+                            // wins). Non-numeric junk (the echoed callsign,
+                            // 5nn, ...) is not concatenated.
+                            if (matchSlot(SLOT_EXCHANGE, token.c_str(), expected.c_str())) {
+                                gOverMatched = true; gOverMatchedValue = token;
+                            }
+                            String norm = normalizeCutNumbers(token);
+                            if (allDigits(norm)) {
+                                gConcatBuf += norm;
+                                if (gConcatBuf.length() > 8)
+                                    gConcatBuf = gConcatBuf.substring(gConcatBuf.length() - 8);
+                                if (matchSlot(SLOT_EXCHANGE, gConcatBuf.c_str(), expected.c_str())) {
+                                    gOverMatched = true; gOverMatchedValue = gConcatBuf;
+                                }
+                            }
+                        } else if (!gOverMatched) {
                             if (matchSlot(step.slot, token.c_str(), expected.c_str())) {
                                 gOverMatched = true; gOverMatchedValue = token;
                             } else if (isNoise(token, g, expected)) {
@@ -829,12 +1128,25 @@ void run(menuNo mode) {
                 }
             }
 
-            // eeee retract: drop this over's accumulated match.
+            // eeee / <err> retract.
             if (gState == RT_EXPECT && gEeeeDetected) {
                 gEeeeDetected = false;
-                gOverMatched = false; gOverMatchedValue = "";
-                gOverRepeat  = false; gOverRepeatSlot = "";
-                gConcatBuf   = "";
+                if (step.slot == SLOT_INFO) {
+                    // Drop only the last word of the field being keyed, so a
+                    // long multi-field over isn't wiped to correct one word.
+                    String* f = (gFieldCur == F_QTH)  ? &gFieldQth
+                              : (gFieldCur == F_NAME) ? &gFieldName : nullptr;
+                    if (f) {
+                        int sp = f->lastIndexOf(' ');
+                        *f = (sp < 0) ? String("") : f->substring(0, sp);
+                    } else if (gFieldCur == F_RST) {
+                        gFieldRst = false;          // retract a just-sent RST
+                    }
+                } else {
+                    gOverMatched = false; gOverMatchedValue = "";
+                    gOverRepeat  = false; gOverRepeatSlot = "";
+                    gConcatBuf   = "";
+                }
                 gOverActivity = millis();
             }
 
@@ -846,10 +1158,17 @@ void run(menuNo mode) {
 
             // No reply at all from the user.
             if (gState == RT_EXPECT && !gOverStarted && !inputMidToken()) {
-                const unsigned long to =
-                    (step.kind == STEP_EXPECT_OPT) ? kOptNoReplyMs : kNoReplyMs;
+                // In a contest session, nobody answering the bot's CQ
+                // (the callsign EXPECT) means the run is over — end the
+                // session after the idle window rather than nagging "agn".
+                const bool sessionGate = gSessionMode && step.slot == SLOT_CALLSIGN;
+                unsigned long to;
+                if (step.kind == STEP_EXPECT_OPT) to = kOptNoReplyMs;
+                else if (sessionGate)             to = kSessionIdleMs;
+                else                              to = kNoReplyMs;
                 if (millis() - gStateStart > to) {
                     if (step.kind == STEP_EXPECT_OPT) advance();
+                    else if (sessionGate) { renderInfo("session end"); gState = RT_DONE; }
                     else if (gRetriesLeft > 0) {
                         gRetriesLeft--;
                         enterRecovery(step.slot == SLOT_CALLSIGN ? "qrz?" : "agn agn");

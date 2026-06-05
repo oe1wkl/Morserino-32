@@ -1724,11 +1724,13 @@ static uint8_t getContinentMask(uint8_t prefValue) {
     return (prefValue <= 6) ? masks[prefValue] : CONT_ALL;
 }
  
-// Continent (CONT_* bitmask) of the prefix chosen by the most recent
-// getRandomCall(). The QSO Bot reads this to pick a summit reference on
-// the same continent as the bot's generated callsign. Defaults to
-// CONT_ALL for the fallback (no-matching-prefix) path.
+// Continent (CONT_* bitmask) and CQ zone (1-40) of the prefix chosen by
+// the most recent getRandomCall(). The QSO Bot reads these to pick a
+// summit/park reference on the same continent as the bot's generated
+// callsign, and to give a realistic CQ-zone exchange in CQ WW. Default
+// to CONT_ALL / 0 for the fallback (no-matching-prefix) path.
 uint8_t lastGeneratedCallContinent = CONT_ALL;
+uint8_t lastGeneratedCallCqZone    = 0;
 
 String getRandomCall(int maxLength) {
     static char call[16];
@@ -1766,6 +1768,7 @@ String getRandomCall(int maxLength) {
     // Fallback if no matching prefixes (e.g., AN with common filter)
     if (totalWeight == 0) {
         lastGeneratedCallContinent = CONT_ALL;
+        lastGeneratedCallCqZone    = 0;
         // Generate old-style random call
         call[0] = 'a' + random(0, 26);
         call[1] = '0' + random(0, 10);
@@ -1797,6 +1800,7 @@ String getRandomCall(int maxLength) {
     // Read chosen prefix
     readPrefix(chosen, pfxBuf, &cont, &weight);
     lastGeneratedCallContinent = cont;
+    lastGeneratedCallCqZone    = pgm_read_byte(&prefixTable[chosen].cqZone);
 
     // --- Build the call sign ---
  
