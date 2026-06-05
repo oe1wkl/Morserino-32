@@ -3,7 +3,8 @@
 ### CHANGES V. 8.1
 
 #### New Features:
-* Added another game (currently only in single user mode): Morsel. Loosely based on Wold and Morse, it is a word guessing game that gives clues in high speed morse, getting slower over time if you guessed wrong. Goal is to find the right word sa quickly as possible.
+* The transceiver modes have been extended by a QSO-Bot mode, Contest, SOTA/POTA and standard QSOs can be trained.
+* M32Pocket only: Added another game,  Morsel. Loosely based on Wold and Morse, it is a word guessing game that gives clues in high speed morse, getting slower over time if you guessed wrong. Goal is to find the right word as quickly as possible. This is playable in single user or multi-player mode.
 
 #### Bug Fixes:
 * There was a bug in the multi-part file player code, which prevented that the device correctly re-starte where you had stopped playing a part. Fixed.
