@@ -77,6 +77,7 @@ struct FtpCaller {
 
 // ---- Player roster entry ----
 struct FtpPlayer {
+    uint8_t  mac[6];                // roster key (idents may collide across devices)
     char     ident[FTP_MAX_IDENT_LEN + 1];
     uint8_t  lives;
     uint32_t score;
