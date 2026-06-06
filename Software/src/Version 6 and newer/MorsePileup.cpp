@@ -323,10 +323,65 @@ static const char* getPlayerIdent() {
     return ftp.useCallsign ? ftp.playerCall : ftp.playerName;
 }
 
-//=== Networking stubs — real networking in Phase 3 ===
+//=== Networking — plain-text /ftp/ packets over ESP-NOW broadcast ===
+//
+// Wire format (Option A from the handoff): human-readable, pipe-delimited
+// ASCII so it is trivially parseable and debuggable. P2 implements the
+// beacon TX path and the RX *transport* (a lock-free-ish ring filled by the
+// ESP-NOW callback, drained by the lobby loop). P3 fills in the parsing and
+// roster update inside checkReceivedMessages().
+//
+//   /ftp/B|<ident>|<lives>|<score>|<inPileup>    Beacon (every 5 s)
 
-static void sendBeacon() { ftp.lastBeaconSent = millis(); }
-static void checkReceivedMessages() {}
+#define FTP_RX_RING   8
+#define FTP_RX_MAX    80          // keep packets well under the 250 B ESP-NOW cap
+
+// Producer = ESP-NOW RX callback (ftpNetOnRecv); consumer = lobby/game loop.
+struct FtpRx { uint8_t len; char d[FTP_RX_MAX]; };
+static volatile FtpRx   ftpRxRing[FTP_RX_RING];
+static volatile uint8_t ftpRxHead = 0, ftpRxTail = 0;
+
+// RX callback context — do the minimum: copy bytes, advance head, return.
+// No parsing, no String, no Serial here (constraint #1 / ISR safety).
+void MorsePileup::ftpNetOnRecv(const uint8_t* mac, const uint8_t* data, uint8_t len) {
+    (void)mac;
+    uint8_t h = ftpRxHead;
+    uint8_t nxt = (h + 1) % FTP_RX_RING;
+    if (nxt == ftpRxTail) return;                       // ring full: drop
+    uint8_t n = (len < FTP_RX_MAX) ? len : (FTP_RX_MAX - 1);
+    memcpy((void*)ftpRxRing[h].d, data, n);
+    ftpRxRing[h].d[n] = '\0';
+    ftpRxRing[h].len = n;
+    ftpRxHead = nxt;
+}
+
+// Broadcast a beacon. Called from the lobby idle frame every FTP_BEACON_INTERVAL.
+static void sendBeacon() {
+    ftp.lastBeaconSent = millis();
+    char buf[FTP_RX_MAX];
+    int n = snprintf(buf, sizeof(buf), "%sB|%s|%u|%lu|%d",
+                     FTP_MAGIC, getPlayerIdent(),
+                     (unsigned)ftp.lives, (unsigned long)ftp.score,
+                     (ftp.state == FTP_PILEUP) ? 1 : 0);
+    if (n > 0)
+        quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, (uint8_t*)buf, (size_t)n);
+}
+
+// Drain the RX ring on an idle lobby frame.
+// P2: prove the transport by echoing each received /ftp/ line to serial.
+// P3 replaces this print with type-dispatch + roster update.
+static void checkReceivedMessages() {
+    while (ftpRxTail != ftpRxHead) {
+        uint8_t t = ftpRxTail;
+        uint8_t len = ftpRxRing[t].len;
+        if (len >= FTP_RX_MAX) len = FTP_RX_MAX - 1;
+        char line[FTP_RX_MAX];
+        memcpy(line, (const void*)ftpRxRing[t].d, len);
+        line[len] = '\0';
+        ftpRxTail = (t + 1) % FTP_RX_RING;
+        Serial.println(String("FTP RX: ") + line);     // P2 verification (temporary)
+    }
+}
 
 //=== Player roster ===
 

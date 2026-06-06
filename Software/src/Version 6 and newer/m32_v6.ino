@@ -2951,6 +2951,18 @@ void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed i
     }
     #endif
 
+    // Fight the Pileup multiplayer: intercept its plain-text /ftp/ packets
+    // (beacons, attacks, ...). Must run BEFORE the MOPP branch below, or a
+    // /ftp/ packet would be mis-decoded as CW elements. Callback context:
+    // hand off to a copy-and-return ring filler, do not parse here.
+    #ifdef CONFIG_CW_GAME
+    if (pileupMode && broadcast && len >= FTP_MAGIC_LEN &&
+        memcmp(data, FTP_MAGIC, FTP_MAGIC_LEN) == 0) {
+        MorsePileup::ftpNetOnRecv(mac, data, len);
+        return;
+    }
+    #endif
+
     // Pileup game: intercept and decode MOPP packet to text
     #ifdef CONFIG_CW_GAME
     if (pileupMode && len > 2 && broadcast) {
