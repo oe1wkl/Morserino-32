@@ -1,91 +1,120 @@
 # Morserino-32 — session handoff
 
-This file is here so the **next Claude Code session in this worktree** can pick
-up cold. Read this first.
+This file is here so the **next Claude Code session** can pick up cold.
+Read this first.
 
-Worktree path:
-`/Users/wkraml/Documents/GitHub/Morserino-32/Software/src/Version 6 and newer/.claude/worktrees/optimistic-jones-457246`
+Upstream: `oe1wkl/Morserino-32` (`origin`). The user **is** OE1WKL — pushes
+to their own repo, no fork dance. `master` is the integration branch.
 
-(The main Morserino-32 repo at `/Users/wkraml/Documents/GitHub/Morserino-32`
-has `master` checked out; this worktree is a separate working copy reserved
-for the agent.)
+Worktrees for agent work live under
+`Software/src/Version 6 and newer/.claude/worktrees/<name>` and are created
+fresh per task off `master` (see the git crib below).
 
-Upstream: `oe1wkl/Morserino-32` (`origin`). The user **is** OE1WKL — pushes to
-their own repo, no fork dance.
+---
 
-## What landed in master
+## Current focus: "Fight the Pileup" multiplayer
 
-| PR  | Title | Notes |
-|-----|-------|-------|
-| #155 | Add Morsel: single-player word-guessing game | Full S0–S4. New M32 Pocket TFT game; per-word time + 5 s/guess scoring; persistent top-7 high-score table; word-length setting persisted to NVS `"morsel"`. |
-| #156 | Shrink MorseOutput textBuffer from 512 to 24 chars/line | +17 KB persistent RAM on every TFT board. |
-| #169 | Pin QuickEspNow to fixed fork | Resolves crash + leak across WiFi cycles. |
-| #170 | Remove WiFi-cycle reboot guards; add morseGame keyer state | Simplifies WiFi mode-switching now that the QuickEspNow fork survives cycles. |
-| #171 | Morsel multiplayer P2.1 lobby | Mode select, server/client role pick, MAC-keyed roster, ESP-NOW plumbing (magic-`MSL` packet format). |
-| #172 | Morsel MP: tear down ESP-NOW on exit | Avoids a re-entry reboot. |
-| #173 | Morsel multiplayer P2.2: synced game | Server picks 10 words from its pool and broadcasts them; clients run the unchanged single-player engine on the server's word; each device reports its final score to the server. |
+A CW pileup-training game for the **M32 Pocket only** (`pocketwroom`,
+`#ifdef CONFIG_CW_GAME`). Single-player was already complete; we are adding
+multiplayer over **ESP-NOW broadcast** using a plain-text `/ftp/` protocol.
 
-## Open PRs (review-ready)
+Design doc (the authoritative spec, NOT in the repo — it's in the user's
+private notes):
+`/Users/wkraml/Documents/Privat/Claude/HANDOFF_Pileup_Multiplayer.md`
+Read it before doing protocol/gameplay work — its "Critical Constraints"
+and "Networking Primitives" sections are hard-won.
 
-| PR  | Branch | Title | State |
-|-----|--------|-------|-------|
-| #174 | `diag/tft-backlight` | Fix: TFT-Pocket dark on USB-only power (revert PR #157 source path) | **Important** — see "Dark-screen regression" below. Hand-tested on a no-battery Pocket; restores the panel. |
-| #175 | `claude/morsel-mp-p23` | Morsel multiplayer P2.3: ranked score table broadcast to all devices | Final P2.x deliverable. Server sorts all reported entries (incl. itself) by adjusted time and broadcasts an `MSL_PKT_SCORES` packet; both server and client render the same "Ranking" screen with the own row highlighted yellow. +200 B RAM, +916 B flash. Tested on two M32 Pockets. |
-| #176 | `claude/morsel-manual-mp` | Documentation: add Morsel multiplayer section to EN and DE manuals | Source-only `.md` updates; PDFs regenerate via `Documentation/User Manual/Version 8.x/build.sh`. |
+### Status
 
-## Morsel multiplayer status — effectively complete
+| Phase | What | State |
+|------|------|-------|
+| P1 | ESP-NOW lifecycle + single-player default + MULTIPLAYER lobby label | **merged** (#178) |
+| P2 | Beacon TX + `/ftp/` RX transport (ISR-safe ring) | **merged** (#179) |
+| P3 | Beacon RX → live **MAC-keyed** roster | **merged** (#180) |
+| P4 | Attacks: send `/ftp/A` on correct copy; RX enqueues a network caller; render distinctly | **in progress** |
+| P5 | Network-attack defend + life cost (wire into existing defend path) | planned |
+| P6 | Elimination (`/ftp/X`) + winner (`/ftp/W`), last-player-standing derived per client | planned |
+| P7 | Polish: waiting-for-players UX, channel-mismatch hint, score compare, optional spectate | planned |
 
-The streamlined-first scope from the GDD is delivered:
+The MP **lobby** is fully working on `master` today: ESP-NOW comes up only
+when the user toggles into multiplayer, beacons broadcast every 5 s, and
+each device shows a live roster of the others. Single-player is the default
+and is unchanged. Exit/re-entry is reboot-clean.
 
-- **P2.1 lobby** ✓ (merged as #171)
-- **P2.2 synced game** ✓ (merged as #173)
-- **P2.3 ranked score broadcast** ✓ (PR #175)
-- **EN + DE manual coverage** ✓ (PR #176)
+### Architecture (what a new implementer needs)
 
-What's intentionally **out of scope** for v1 (per GDD §12 and earlier
-session decisions):
+- **Files:** `MorsePileup.h` / `MorsePileup.cpp`. The ESP-NOW receive hook
+  lives in `m32_v6.ino` → `onEspnowRecv()`.
+- **Protocol:** human-readable, pipe-delimited ASCII over ESP-NOW broadcast
+  (Option A from the design doc). Magic prefix `/ftp/` (`FTP_MAGIC`).
+  - `/ftp/B|<ident>|<lives>|<score>|<inPileup>` — Beacon (every 5 s). ✅
+  - `/ftp/A|<fromIdent>|<toMac>|<callsign>` — Attack. (P4, MAC-addressed.)
+  - `/ftp/X|<ident>` — Eliminated. (P6)
+  - `/ftp/W|<ident>|<score>` — Winner. (P6)
+- **RX path (ISR-safe):** `onEspnowRecv()` checks `pileupMode` + the `/ftp/`
+  prefix and calls `MorsePileup::ftpNetOnRecv()`, which only copies the
+  packet (+sender MAC) into a `volatile` ring and returns — no parsing in
+  the callback. The game loop drains the ring in `checkReceivedMessages()`
+  and dispatches each line through `ftpHandleMessage(mac, line)`
+  (`ftpSplit()` splits in place, preserving empty fields).
+- **Roster is keyed by MAC**, not ident — two of the user's own Pockets can
+  both be `OE1WKL` and still show as distinct rows. `FtpPlayer.mac[6]` is
+  the key; ident is display-only. See `rosterUpdateBeacon()`.
+- **Lobby-scoped so far:** through P3, all send/drain happens only in
+  `stateLobby()`. **P4 is the first phase to touch `statePileup()`** (the
+  timing-critical keyer loop) — see constraints below.
 
-- Auto server discovery (server is picked by explicit choice in the lobby).
-- Formal registration phase with a 3-2-1-GO countdown.
-- Disconnect-mid-game polish beyond the 8 s peer-TTL drop.
+### Hard constraints when touching `statePileup()` (P4+)
 
-A larger user-testing cohort is scheduled for early June. Issues that
-surface there get folded into a follow-up PR; the current PR set is
-believed sufficient for that test.
+- **Keyer timing is sacred.** The tight inner loop runs only
+  `checkPaddles()` + `doPaddleIambic()` while keying — no `delay()`,
+  no `yield()`, no drawing, no network. ESP-NOW send/receive must happen
+  **only in the idle frame section** (treat exactly like `pushFrame()`):
+  when `keyerState == IDLE_STATE`, no paddles pressed, input buffer empty.
+- **Re-verify keyer timing after every networking change** using the
+  Audacity WAV-capture method (record sidetone, confirm dit/dah lengths and
+  the ~3.0 dah/dit ratio match the standalone keyer). Network code is the
+  single most likely thing to reintroduce keyer jitter.
+- **Never broadcast during active keying** — queue outbound packets and
+  flush on an idle frame.
 
-## Dark-screen regression (resolved by #174, root cause not pinned down)
+---
 
-Symptom: on M32 Pocket without a battery installed (USB-powered only), the
-TFT panel stays dark while CPU/encoder/audio/keyer all work. Battery-fitted
-Pockets are unaffected. Confirmed reproducible on a no-battery Pocket
-(MAC `58:E6:C5:5A:E0:34`) by an earlier diagnostic session.
+## Done earlier (Morsel multiplayer) — reference implementation
 
-Bisected to PR #157 ("Replace DisplayWrapper with direct LovyanGFX on
-TFT"). The previous commit (#156) works on the no-battery device; #157
-is dark. PR #157's only substantive change was swapping the `display`
-global from `DisplayWrapper` (a thin LovyanGFX wrapper pulled in as a
-library archive) to an in-tree `LGFX` class. Functional examination of
-both `init()` implementations shows them to be equivalent — yet the
-in-tree variant breaks on USB-only-powered devices.
+Morsel was the **first** multiplayer game on the M32 and is a good template.
+It uses a binary `MSL` packet format (vs. Pileup's ASCII `/ftp/`) but the
+ESP-NOW lifecycle and the ISR-safe RX-ring pattern are the same. Worth
+reading `MorseMorsel.cpp` (`mslNetOnRecv`, `mslSend`, `mslNetPump`,
+`mslRosterAdd`) when in doubt about the house style.
 
-~19 fix-forward attempts in the side session failed (pinning LovyanGFX
-to older versions; moving the LGFX global to its own TU; deferring all
-panel/bus/light config from constructor to init(); re-init after WiFi
-warmup; disabling all `MorseGameMode/RadioCave/Morsel::warmup()` calls;
-inserting 200 ms delays after every plausible spike point; toggling
-`cfg.bus_shared`; SPI clock 40 MHz → 10 MHz; rewriting the in-tree
-class as a full V8.0-style wrapper). Only restoring the literal V8.0
-source path (DisplayWrapper as `lib_dep`) brings the panel back.
+Key Morsel learning that Pileup inherits (memory + PR #172): a game must
+**tear down ESP-NOW itself on exit** (`quickEspNow.stop()` + `WiFi.mode(OFF)`),
+because `menu_()` only re-runs its WiFi teardown on menu *entry*, not
+between two game launches. Pileup's `run()` does this (landed in P1).
 
-**Memory hint** (persistent across sessions, see
-`memory/tft-pocket-displaywrapper-required.md`): do NOT remove
-`oe1wkl/DisplayWrapper` from `platformio.ini` or replace it with an
-in-tree LGFX wrapper for the TFT Pocket path. Battery masks the bug,
-so it is easy to re-introduce blindly. The proper fix-forward (back
-to direct LovyanGFX, with the right magic to also work on USB-only
-power) remains open work.
+---
 
-## Heap budget (M32 Pocket / `pocketwroom`, master)
+## Dark-screen regression (DO NOT re-introduce)
+
+On an M32 Pocket **without a battery** (USB-only power), the TFT panel stays
+dark while CPU/encoder/audio/keyer all work. Battery-fitted Pockets are
+unaffected, which masks the bug.
+
+Root cause was bisected to swapping `DisplayWrapper` (a `lib_dep` LovyanGFX
+wrapper) for an in-tree `LGFX` class. ~19 fix-forward attempts failed; only
+restoring the `oe1wkl/DisplayWrapper` `lib_dep` path fixes it.
+
+**DO NOT** remove `oe1wkl/DisplayWrapper` from `platformio.ini` or replace
+it with an in-tree LGFX wrapper for the TFT Pocket path. All game display
+goes through `display.enterGameMode()` / `pushGameFrame()` /
+`exitGameMode()`. Never call `lcd.begin()` (it reconfigures the SPI pins
+38/39 shared with the encoder and kills encoder interrupts).
+(See `memory/tft-pocket-displaywrapper-required.md`.)
+
+---
+
+## Heap budget (M32 Pocket / `pocketwroom`)
 
 | State | Free heap | Largest contiguous block |
 |---|---:|---:|
@@ -93,83 +122,92 @@ power) remains open work.
 | After 8-bpp game sprite | comfortable | comfortable |
 | After `setupESPNow` (no sprite) | ~113 KB | ~102 KB |
 
-The 8-bpp palette sprite (PR #165, #168) cut the sprite footprint from
-~104 KB (16-bpp) to ~52 KB. ESP-NOW + sprite now coexist with margin,
-which unblocked the MP gameplay path.
+The 8-bpp palette sprite cut the sprite footprint from ~104 KB (16-bpp) to
+~52 KB, so ESP-NOW + sprite coexist with margin — that is what unblocked the
+MP gameplay path. The Pileup `/ftp/` RX ring is tiny (8 × 81 B).
+
+---
 
 ## Conventions / quirks worth remembering
 
 - **`m32_v6.ino N.cpp` debris.** PlatformIO occasionally leaves stale
-  `Software/src/Version 6 and newer/m32_v6.ino 2.cpp` (and `3.cpp`,
-  `4.cpp` …) in the source tree from interrupted builds. They cause
-  "multiple definition of …" linker errors. **Always delete them** if
-  a build mysteriously fails:
-
+  `Software/src/Version 6 and newer/m32_v6.ino 2.cpp` (`3.cpp`, …) from
+  interrupted builds → "multiple definition of …" linker errors. Delete:
   ```bash
   rm -f "Software/src/Version 6 and newer/"m32_v6.ino\ [0-9]*.cpp
   ```
 
-  (PR #164 added an auto-clean step but stale duplicates from before
-  that change can still appear after editor-interrupted builds.)
-
-- **Hardware available.** Multiple M32 Pockets (TFT, `/dev/cu.usbmodem12301`,
-  env `pocketwroom`) and at least one legacy OLED (`/dev/cu.usbserial-0001`,
-  env `heltec_wifi_lora_32_V2`). macOS reuses `usbmodem12301` for whichever
-  Pocket is currently plugged in — check the MAC via `pio device list` if
-  you need to be sure which device is on the bus.
-
-- **`pocketwroom-lora` is build-broken on master** independently — missing
-  `RadioLib` lib_dep. Pre-existing config issue.
-
-- **`heltec_wifi_kit_32_V3` is also build-broken on master** —
-  `MorsePreferences.cpp:1109` calls `MorseOutput::soundEventHandler()`
-  under `CONFIG_SOUND_I2S`, but the function is gated by
-  `CONFIG_TLV320AIC3100` in `MorseOutput.h:102`. Pre-existing
-  firmware-config bug. Don't burn time on it.
-
 - **PlatformIO project root is `Software/src/`**, NOT the source dir
-  `Software/src/Version 6 and newer/`. Running `pio` from the wrong
-  directory fails with `NotPlatformIOProjectError`.
+  `Software/src/Version 6 and newer/`. Running `pio` from the wrong place
+  fails with `NotPlatformIOProjectError`.
+
+- **CI.** A GitHub Actions `build` check runs on push (~2m45s). It is a
+  non-required check (PRs show `UNSTABLE`, not `BLOCKED`, while it runs), but
+  land PRs on green anyway. `gh pr checks <n> --watch` blocks until done.
+
+- **Hardware available.** Multiple M32 Pockets (TFT, env `pocketwroom`,
+  typically `/dev/cu.usbmodem12301`) and at least one legacy OLED
+  (`/dev/cu.usbserial-0001`, env `heltec_wifi_lora_32_V2`). macOS reuses
+  `usbmodem12301` for whichever Pocket is plugged in — `pio device list`
+  (or `lsof`) to be sure which is on the bus. MP testing needs **two**
+  Pockets on the **same ESP-NOW channel** (`posLoraChannel` pref:
+  0 → ch 6, 1 → ch 1; they must match).
+
+- **Build-broken envs on master (pre-existing, don't burn time):**
+  `pocketwroom-lora` (missing `RadioLib` lib_dep) and
+  `heltec_wifi_kit_32_V3` (`MorsePreferences.cpp` calls a
+  `CONFIG_TLV320AIC3100`-gated function under `CONFIG_SOUND_I2S`).
 
 - **Port locks.** The user often has a Chrome webserial tool open; a
-  PlatformIO IDE extension may also auto-start `pio device monitor`
-  and hold the port. `lsof /dev/cu.usbmodem12301` reveals the holder.
+  PlatformIO IDE extension may also hold the port via `pio device monitor`.
+  `lsof /dev/cu.usbmodem12301` reveals the holder.
 
-## Quick git crib
+---
+
+## Git crib
 
 ```bash
-cd "/Users/wkraml/Documents/GitHub/Morserino-32/Software/src/Version 6 and newer/.claude/worktrees/optimistic-jones-457246"
+cd /Users/wkraml/Documents/GitHub/Morserino-32
+git fetch origin && git log --oneline origin/master -5
 
-git fetch origin master
-git log --oneline -5
+# fresh worktree off master for a new phase:
+git worktree add -b claude/pileup-mp-p4 \
+  "Software/src/Version 6 and newer/.claude/worktrees/pileup-mp-p4" master
 
-# branches (open PRs):
-git branch | grep claude/
-#   claude/morsel-mp-p23     ← PR #175 (P2.3 ranking)
-#   claude/morsel-manual-mp  ← PR #176 (manuals MP section)
-#
-# also: diag/tft-backlight   ← PR #174 (no-battery dark-screen fix)
-
-# PlatformIO:
-cd Software/src
-~/.platformio/penv/bin/pio run -e pocketwroom                              # TFT
-~/.platformio/penv/bin/pio run -e heltec_wifi_lora_32_V2                   # OLED
+# PlatformIO (run from Software/src):
+cd "Software/src/Version 6 and newer/.claude/worktrees/pileup-mp-p4/Software/src"
+~/.platformio/penv/bin/pio run -e pocketwroom                      # TFT build
 ~/.platformio/penv/bin/pio run -e pocketwroom -t upload --upload-port /dev/cu.usbmodem12301
+~/.platformio/penv/bin/pio device monitor -b 115200 --port /dev/cu.usbmodem12301
 ```
+
+**Stacked-PR merge recipe** (used for #178→#179→#180): merge bottom-up,
+squash each, and after each merge rebase the next branch onto the new master
+to drop the already-merged commit, so every squash stays single-purpose:
+```bash
+gh pr merge <child> --squash
+# in the next worktree:
+git fetch origin && git rebase --onto origin/master <old-parent-sha>
+git push --force-with-lease
+gh pr edit <next> --base master      # if auto-retarget lags
+```
+
+---
 
 ## Working style preferences
 
 The user is OE1WKL (Willi Kraml), Austrian, very technically engaged.
 Across sessions they consistently:
 
-- Want incremental on-hardware validation before merging — each
-  milestone is built, flashed, smoke-tested, then committed and PR'd.
-- Prefer one squashed commit per PR with a descriptive title.
-- Are fine with the `Co-Authored-By: Claude Opus 4.7 <noreply@anthropic.com>`
-  trailer and the `🤖 Generated with [Claude Code](https://claude.com/claude-code)`
-  PR-body footer.
-- Sometimes dismiss the "Yes, flash" question and then say "yes" in
-  the next message — interpret that as "flash now".
-- Use spawned side-task chips happily once they know how — when an
-  out-of-scope issue surfaces, spawn one rather than letting it bloat
-  the current task.
+- Want **incremental on-hardware validation** before merging — each phase is
+  built, flashed, smoke-tested on real Pockets, then committed and PR'd.
+- Prefer **one squashed commit per PR** with a descriptive title; PRs are
+  often **stacked** (each phase branches off the previous).
+- Are fine with the
+  `Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>` trailer and the
+  `🤖 Generated with [Claude Code](https://claude.com/claude-code)` PR-body
+  footer.
+- Sometimes dismiss the "Yes, flash" prompt and then say "yes" next message
+  — interpret that as "flash now".
+- Use spawned side-task chips happily — when an out-of-scope issue surfaces,
+  spawn one rather than bloating the current task.
