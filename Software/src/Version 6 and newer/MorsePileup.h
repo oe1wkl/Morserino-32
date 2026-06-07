@@ -132,6 +132,12 @@ struct FtpGameData {
 // ---- Public interface ----
 namespace MorsePileup {
     void run();
+
+    // Called from onEspnowRecv() for broadcast /ftp/ packets while pileupMode
+    // is set. Runs in the ESP-NOW RX callback context: it only copies the
+    // packet into a ring buffer and returns; the lobby/game loop drains and
+    // parses it (see checkReceivedMessages()).
+    void ftpNetOnRecv(const uint8_t* mac, const uint8_t* data, uint8_t len);
 }
 
 #endif  // CONFIG_CW_GAME
