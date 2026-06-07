@@ -25,6 +25,7 @@ volatile bool pileupRxReady = false;
 #include <LovyanGFX.hpp>
 #include <ESP32Encoder.h>
 #include <Preferences.h>
+#include <WiFi.h>
 
 extern int checkEncoder();
 extern void serialEvent();
@@ -509,7 +510,7 @@ static void initGameData() {
     ftp.wpm = MorsePreferences::wpm;
     ftp.eliminationCount = 0;
     ftp.playerCount = 0;
-    ftp.singlePlayer = false;
+    ftp.singlePlayer = true;
     ftp.lastBeaconSent = 0;
     ftp.lastActivity = millis();
     ftp.callerCount = 0;
@@ -656,11 +657,13 @@ static void stateLobby() {
             canvas->setFont(&fonts::FreeSans9pt7b);
             drawCentredText(155, "SINGLE PLAYER", FTP_TITLE);
         } else {
+            canvas->setFont(&fonts::FreeSans9pt7b);
+            drawCentredText(155, "MULTIPLAYER", FTP_TITLE);
             canvas->setFont(&fonts::Font0);
-            int y = 155;
+            int y = 178;
             int active2 = countActivePlayers();
             if (active2 == 0)
-                drawCentredText(155, "Searching...", FTP_DIM);
+                drawCentredText(y, "Searching...", FTP_DIM);
             else {
                 for (int i = 0; i < FTP_MAX_PLAYERS && y < 230; i++) {
                     if (!ftp.players[i].active) continue;
@@ -704,6 +707,10 @@ static void stateLobby() {
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks == 1) {
             ftp.singlePlayer = !ftp.singlePlayer;
+            // Bring ESP-NOW up the first time the user enters multiplayer.
+            // Teardown happens once on Pileup exit (mirrors MorseMorsel,
+            // PR #172) — toggling back to single does not stop the radio.
+            if (!ftp.singlePlayer && !EspNowIsActive) MorseMenu::setupESPNow();
         }
         if (Buttons::modeButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
 
@@ -1526,6 +1533,15 @@ void MorsePileup::run() {
     cleanupKeyer();
     MorsePreferences::wpm = ftp.wpm;
     MorsePreferences::writePreferences("morserino");
+    // Tear down ESP-NOW if multiplayer brought it up. Mirrors MorseMorsel
+    // (PR #172): menu_()'s WiFi/ESP-NOW teardown only re-runs on menu
+    // *entry*, not between two game launches, so the radio would otherwise
+    // stay up and fragment the heap against the next sprite allocation.
+    if (EspNowIsActive) {
+        quickEspNow.stop();
+        EspNowIsActive = false;
+        WiFi.mode(WIFI_OFF);
+    }
     MorseGameMode::exit();
     Buttons::modeButton.clicks = 0;
     Buttons::volButton.clicks = 0;
