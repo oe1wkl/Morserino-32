@@ -1170,16 +1170,19 @@ static void statePileup() {
     gameCharBuffer = 0;
     updateTimings();
 
-    char challenge[FTP_MAX_CALL_LEN + 1];
-    challenge[0] = '\0';
-    bool needNewChallenge = true;
-    bool waitingForResult = false;
-    char resultExpected[FTP_MAX_CALL_LEN + 1] = "";
-    char resultGot[FTP_MAX_CALL_LEN + 1] = "";
-    unsigned long correctFlashTime = 0;
-    bool lastWasTimeout = false;
+    currentAttackIdx = -1;
+    attackPromptActive = false;
+    clearAllCallers();
+    for (int i = 0; i < diff().initialCallers && i < FTP_MAX_CALLERS; i++)
+        spawnAttack();
+    ftp.lastSpawn = millis();
+
+    char challenge[FTP_MAX_CALL_LEN + 1] = "";   // active caller currently loaded into the CW player
+    bool freshCaller = false;                    // true on the frame a new caller is loaded
+    bool attackMode = false;                     // true while keying an earned attack (pileup paused)
+    unsigned long attackModeStart = 0;           // millis() when the current attack pause began
+    bool waitingForResult = false;               // kept false: preserves the tuned tight-loop guard verbatim
     unsigned long lastSubmitTime = 0;
-    unsigned long challengeStartTime = 0;
     bool encoderIsVolume = false;
 
     clearInput();
@@ -1256,91 +1259,92 @@ static void statePileup() {
             continue;
         }
 
-        // --- CW player management ---
-        if (ftp.inputPos > 0 || leftKey || rightKey || keyerState != IDLE_STATE) {
+        // --- Earned-attack mode: after a correct defend the pileup pauses and the
+        //     player keys ONE attack. No spawning / no timeouts while it is up. ---
+        freshCaller = false;
+        if (attackMode) {
+            currentAttackIdx = -1;
             if (MorseCwEngine::isPlaying()) cwPlayerStop();
-        }
-        if (keyerState == IDLE_STATE && ftp.inputPos == 0 &&
-            !leftKey && !rightKey &&
-            millis() - lastSubmitTime > 2000) {
-            if (!MorseCwEngine::isPlaying() && challenge[0] != '\0' &&
-                correctFlashTime == 0) {
-                uint8_t saved = MorseCwEngine::getPlayCount();
-                cwPlayerStart(challenge);
-                MorseCwEngine::setPlayCount(saved);
+            challenge[0] = '\0';
+            if (!attackPromptActive) generateAttackPrompt();
+        } else {
+            // Spawn bot callers on a timer (bots keep the pressure up).
+            if (ftp.callerCount < FTP_MAX_CALLERS &&
+                millis() - ftp.lastSpawn > ftp.spawnInterval) {
+                spawnAttack();
             }
-            cwPlayerUpdate();
-            updateFtpSound();
+            // Defend the earliest active caller; if none, wait for the next spawn.
+            currentAttackIdx = findActiveAttack();
+            attackPromptActive = false;
+            if (currentAttackIdx >= 0) {
+                // (Re)load the active caller into the CW player when it changes.
+                if (strcmp(challenge, ftp.callers[currentAttackIdx].call) != 0) {
+                    strncpy(challenge, ftp.callers[currentAttackIdx].call, FTP_MAX_CALL_LEN);
+                    challenge[FTP_MAX_CALL_LEN] = '\0';
+                    cwPlayerStart(challenge);      // fresh caller: play from count 0
+                    clearInput();
+                    freshCaller = true;
+                }
+            } else {
+                challenge[0] = '\0';
+                if (MorseCwEngine::isPlaying()) cwPlayerStop();
+            }
         }
 
-        // --- New challenge ---
-        if (needNewChallenge) {
-            String call = getRandomCall(0);
-            call.toUpperCase();
-            strncpy(challenge, call.c_str(), FTP_MAX_CALL_LEN);
-            challenge[FTP_MAX_CALL_LEN] = '\0';
-            cwPlayerStart(challenge);
-            clearInput();
-            ftp.challengePos = 0;
-            needNewChallenge = false;
-            waitingForResult = false;
-            challengeStartTime = millis();
+        // --- CW player management for the active caller (tuned: stop-on-key, 2 s replay) ---
+        if (currentAttackIdx >= 0) {
+            if (ftp.inputPos > 0 || leftKey || rightKey || keyerState != IDLE_STATE) {
+                if (MorseCwEngine::isPlaying()) cwPlayerStop();
+            }
+            if (keyerState == IDLE_STATE && ftp.inputPos == 0 &&
+                !leftKey && !rightKey &&
+                millis() - lastSubmitTime > 2000) {
+                if (!MorseCwEngine::isPlaying() && challenge[0] != '\0' && !freshCaller) {
+                    uint8_t saved = MorseCwEngine::getPlayCount();
+                    cwPlayerStart(challenge);
+                    MorseCwEngine::setPlayCount(saved);
+                }
+                cwPlayerUpdate();
+                updateFtpSound();
+            }
         }
 
         // --- Submission ---
-        if (ftp.challengePos == 1 && !waitingForResult) {
+        if (ftp.challengePos == 1) {
             ftp.challengePos = 0;
-            cwPlayerStop();
-
-            ftp.inputBuf[ftp.inputPos] = '\0';
-            strncpy(resultGot, ftp.inputBuf, FTP_MAX_CALL_LEN);
-            resultGot[FTP_MAX_CALL_LEN] = '\0';
-
-            strncpy(resultExpected, challenge, FTP_MAX_CALL_LEN);
-            resultExpected[FTP_MAX_CALL_LEN] = '\0';
-            for (int i = 0; resultExpected[i]; i++)
-                if (resultExpected[i] >= 'a' && resultExpected[i] <= 'z')
-                    resultExpected[i] = resultExpected[i] - 'a' + 'A';
-
-            if (strcmp(resultGot, resultExpected) == 0) {
-                ftp.streak++;
-                if (ftp.streak > ftp.bestStreak) ftp.bestStreak = ftp.streak;
-                int bonus = FTP_SCORE_CORRECT + (ftp.streak * FTP_SCORE_STREAK_BONUS);
-                addScore(bonus);
-                ftp.totalBlocked++;
-                playSoundCorrect();
-                correctFlashTime = millis();
-                lastWasTimeout = false;
-            } else {
-                ftp.streak = 0;
-                addScore(FTP_SCORE_WRONG);
-                playSoundWrong();
-                triggerFlash(FTP_WARN, "WRONG");
-                uint8_t saved = MorseCwEngine::getPlayCount();
-                cwPlayerStart(challenge);
-                MorseCwEngine::setPlayCount(saved);
+            if (attackMode) {
+                handleAttackSubmit();              // single-player: scores only (P4b broadcasts /ftp/A)
+                if (!attackPromptActive) {         // attack sent -> resume the paused pileup
+                    unsigned long paused = millis() - attackModeStart;
+                    for (int i = 0; i < FTP_MAX_CALLERS; i++)
+                        if (ftp.callers[i].active) ftp.callers[i].spawnTime += paused;
+                    ftp.lastSpawn += paused;       // keep the spawn cadence across the pause
+                    attackMode = false;
+                }
+            } else if (currentAttackIdx >= 0) {
+                handleDefendSubmit();              // correct: removeAttack + currentAttackIdx = -1
+                if (currentAttackIdx < 0) {        // correct defend -> earn one keyed attack
+                    challenge[0] = '\0';
+                    attackMode = true;
+                    attackModeStart = millis();
+                    attackPromptActive = false;    // a fresh prompt is generated next frame
+                }
             }
-            clearInput();
             lastSubmitTime = millis();
         }
 
-        // --- Auto-advance after correct ---
-        if (correctFlashTime > 0 && millis() - correctFlashTime > 1000) {
-            correctFlashTime = 0;
-            needNewChallenge = true;
-        }
-
-        // --- Timeout ---
-        if (challengeStartTime > 0 && correctFlashTime == 0 &&
-            millis() - challengeStartTime > diff().callerTimeout) {
+        // --- Timeout of the active caller (measured from its spawn) ---
+        if (currentAttackIdx >= 0 &&
+            millis() - ftp.callers[currentAttackIdx].spawnTime > diff().callerTimeout) {
             cwPlayerStop();
+            removeAttack(currentAttackIdx);
+            currentAttackIdx = -1;
+            challenge[0] = '\0';
             ftp.totalDropped++;
             ftp.streak = 0;
             addScore(FTP_SCORE_TIMEOUT);
             playSoundTimeout();
-            challengeStartTime = 0;
-            lastWasTimeout = true;
-            correctFlashTime = millis();
+            triggerFlash(FTP_WARN, "TIMEOUT");
             clearInput();
             lastSubmitTime = millis();
         }
@@ -1366,128 +1370,12 @@ static void statePileup() {
             return;
         }
 
-        // --- Draw ---
+        // --- Draw (revived queued DEFEND/ATTACK UI) ---
         canvas->fillSprite(FTP_BG);
-
-        // HUD: lives | ident | score
-        for (int i = 0; i < ftp.lives; i++)
-            canvas->fillCircle(10 + i * 14, 10, 5, FTP_WARN);
-
-        canvas->setFont(&fonts::FreeSans9pt7b);
-        canvas->setTextColor(FTP_TEXT, FTP_BG);
-        canvas->setTextDatum(lgfx::top_center);
-        canvas->drawString(getPlayerIdent(), FTP_W / 2, 2);
-        {
-            char sbuf[16];
-            snprintf(sbuf, sizeof(sbuf), "%lu", (unsigned long)ftp.score);
-            canvas->setTextColor(FTP_ACCENT, FTP_BG);
-            canvas->setTextDatum(lgfx::top_right);
-            canvas->drawString(sbuf, FTP_W - 4, 2);
-            canvas->setTextDatum(lgfx::top_left);
-        }
-        canvas->drawFastHLine(0, 21, FTP_W, FTP_TEXT);
-
-        if (ftp.streak > 0) {
-            char stbuf[8];
-            snprintf(stbuf, sizeof(stbuf), "x%d", ftp.streak);
-            canvas->setFont(&fonts::Font0);
-            canvas->setTextColor(FTP_TITLE, FTP_BG);
-            canvas->setTextDatum(lgfx::top_right);
-            canvas->drawString(stbuf, FTP_W - 4, 24);
-            canvas->setTextDatum(lgfx::top_left);
-        }
-
-        // Progress bar
-        if (challengeStartTime > 0 && correctFlashTime == 0) {
-            unsigned long elapsed = millis() - challengeStartTime;
-            float remaining = 1.0f - (float)elapsed / (float)diff().callerTimeout;
-            if (remaining < 0.0f) remaining = 0.0f;
-            int barW = FTP_W - 20, barX = 10, barY = 34, barH = 4;
-            int fillW = (int)(barW * remaining);
-            uint16_t barColor = remaining > 0.5f ? FTP_OK :
-                                remaining > 0.25f ? FTP_TITLE : FTP_WARN;
-            canvas->drawRect(barX, barY, barW, barH, FTP_DIM);
-            if (fillW > 0) canvas->fillRect(barX, barY, fillW, barH, barColor);
-        }
-
-        // Challenge area
-        if (correctFlashTime > 0) {
-            canvas->setFont(&fonts::FreeSansBold12pt7b);
-            if (lastWasTimeout) {
-                drawCentredText(50, "TIMEOUT", FTP_WARN);
-                canvas->setFont(&fonts::FreeSans9pt7b);
-                drawCentredText(80, challenge, FTP_TITLE);
-            } else {
-                drawCentredText(50, "OK!", FTP_OK);
-                char cbuf[16];
-                snprintf(cbuf, sizeof(cbuf), "+%d",
-                    FTP_SCORE_CORRECT + ftp.streak * FTP_SCORE_STREAK_BONUS);
-                canvas->setFont(&fonts::FreeSans9pt7b);
-                drawCentredText(80, cbuf, FTP_OK);
-            }
-        } else {
-            canvas->setFont(&fonts::Font0);
-            char pbuf[20];
-            snprintf(pbuf, sizeof(pbuf), "Play #%d", MorseCwEngine::getPlayCount() + 1);
-            drawCentredText(44, pbuf, FTP_DIM);
-
-            if (MorseCwEngine::getPlayCount() >= FTP_PLAYS_BEFORE_REVEAL) {
-                canvas->setFont(&fonts::Font0);
-                drawCentredText(60, "Hint:", FTP_DIM);
-                canvas->setFont(&fonts::FreeSansBold12pt7b);
-                drawCentredText(74, challenge, FTP_TITLE);
-            } else {
-                canvas->setFont(&fonts::FreeSans9pt7b);
-                drawCentredText(66, "Listen...", FTP_TEXT);
-                char dots[8] = "";
-                for (int i = 0; i < FTP_PLAYS_BEFORE_REVEAL; i++)
-                    dots[i] = (i < MorseCwEngine::getPlayCount()) ? '*' : '.';
-                dots[FTP_PLAYS_BEFORE_REVEAL] = '\0';
-                drawCentredText(86, dots, FTP_ACCENT);
-            }
-        }
-
-        drawFlash();
-
-        // Input area
-        int inputY = 130;
-        canvas->drawFastHLine(0, inputY, FTP_W, FTP_DIM);
-        canvas->setFont(&fonts::Font0);
-        drawCentredText(inputY + 4, "YOUR RESPONSE:", FTP_DIM);
-        canvas->setFont(&fonts::FreeSansBold12pt7b);
-        if (ftp.inputPos > 0) {
-            drawCentredText(inputY + 20, ftp.inputBuf, FTP_INPUT);
-        } else {
-            canvas->setFont(&fonts::Font0);
-            drawCentredText(inputY + 26, "Key the callsign...", FTP_DIM);
-        }
-
-        // Stats
-        canvas->setFont(&fonts::Font0);
-        {
-            char statBuf[32];
-            snprintf(statBuf, sizeof(statBuf), "OK:%d  Miss:%d",
-                     ftp.totalBlocked, ftp.totalDropped);
-            drawCentredText(200, statBuf, FTP_DIM);
-        }
-        drawCentredText(218, "Click:submit FN:spd/vol", FTP_DIM);
-
-        // Status bar
-        canvas->fillRect(0, 290, FTP_W, 30, FTP_BAND);
-        canvas->setFont(&fonts::Font0);
-        {
-            char buf[20];
-            snprintf(buf, sizeof(buf), "%d wpm%s", ftp.wpm,
-                     encoderIsVolume ? "" : " <");
-            canvas->setTextColor(encoderIsVolume ? FTP_DIM : FTP_TEXT, FTP_BAND);
-            canvas->drawString(buf, 4, 294);
-            snprintf(buf, sizeof(buf), "%sVol %d",
-                     encoderIsVolume ? "< " : "",
-                     MorsePreferences::sidetoneVolume);
-            canvas->setTextColor(encoderIsVolume ? FTP_TEXT : FTP_DIM, FTP_BAND);
-            canvas->drawString(buf, 4, 306);
-        }
-
+        drawPileupHUD();        // lives | ident | score | streak
+        drawDefendArea();       // active caller DEFEND, or "YOUR ATTACK" prompt, or waiting
+        drawInputArea();        // keyed input, hints, wpm/SOLO status band
+        drawFlash();            // transient OK/WRONG/TIMEOUT/LIFE LOST overlay
         pushFrame();
 
         checkPaddles();
