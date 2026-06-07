@@ -135,8 +135,7 @@ static void   stateGameOver();
 static void   sendBeacon();
 static void   checkReceivedMessages();
 static void   updateRoster();
-static int    findPlayer(const char* ident);
-static int    addPlayer(const char* ident);
+static void   ftpHandleMessage(const uint8_t* mac, char* line);
 static int    countActivePlayers();
 static const char* getPlayerIdent();
 static void   pushFrame();
@@ -326,10 +325,9 @@ static const char* getPlayerIdent() {
 //=== Networking — plain-text /ftp/ packets over ESP-NOW broadcast ===
 //
 // Wire format (Option A from the handoff): human-readable, pipe-delimited
-// ASCII so it is trivially parseable and debuggable. P2 implements the
-// beacon TX path and the RX *transport* (a lock-free-ish ring filled by the
-// ESP-NOW callback, drained by the lobby loop). P3 fills in the parsing and
-// roster update inside checkReceivedMessages().
+// ASCII so it is trivially parseable and debuggable. The RX *transport* is a
+// lock-free-ish ring filled by the ESP-NOW callback and drained by the lobby
+// loop; ftpHandleMessage() parses each drained line and updates the roster.
 //
 //   /ftp/B|<ident>|<lives>|<score>|<inPileup>    Beacon (every 5 s)
 
@@ -337,17 +335,18 @@ static const char* getPlayerIdent() {
 #define FTP_RX_MAX    80          // keep packets well under the 250 B ESP-NOW cap
 
 // Producer = ESP-NOW RX callback (ftpNetOnRecv); consumer = lobby/game loop.
-struct FtpRx { uint8_t len; char d[FTP_RX_MAX]; };
+// The sender MAC travels with the payload — the roster is keyed by MAC.
+struct FtpRx { uint8_t mac[6]; uint8_t len; char d[FTP_RX_MAX]; };
 static volatile FtpRx   ftpRxRing[FTP_RX_RING];
 static volatile uint8_t ftpRxHead = 0, ftpRxTail = 0;
 
 // RX callback context — do the minimum: copy bytes, advance head, return.
 // No parsing, no String, no Serial here (constraint #1 / ISR safety).
 void MorsePileup::ftpNetOnRecv(const uint8_t* mac, const uint8_t* data, uint8_t len) {
-    (void)mac;
     uint8_t h = ftpRxHead;
     uint8_t nxt = (h + 1) % FTP_RX_RING;
     if (nxt == ftpRxTail) return;                       // ring full: drop
+    memcpy((void*)ftpRxRing[h].mac, mac, 6);
     uint8_t n = (len < FTP_RX_MAX) ? len : (FTP_RX_MAX - 1);
     memcpy((void*)ftpRxRing[h].d, data, n);
     ftpRxRing[h].d[n] = '\0';
@@ -367,46 +366,78 @@ static void sendBeacon() {
         quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, (uint8_t*)buf, (size_t)n);
 }
 
-// Drain the RX ring on an idle lobby frame.
-// P2: prove the transport by echoing each received /ftp/ line to serial.
-// P3 replaces this print with type-dispatch + roster update.
+// Drain the RX ring on an idle lobby frame and dispatch each line.
 static void checkReceivedMessages() {
     while (ftpRxTail != ftpRxHead) {
         uint8_t t = ftpRxTail;
         uint8_t len = ftpRxRing[t].len;
         if (len >= FTP_RX_MAX) len = FTP_RX_MAX - 1;
-        char line[FTP_RX_MAX];
+        char    line[FTP_RX_MAX];
+        uint8_t mac[6];
         memcpy(line, (const void*)ftpRxRing[t].d, len);
         line[len] = '\0';
+        memcpy(mac, (const void*)ftpRxRing[t].mac, 6);
         ftpRxTail = (t + 1) % FTP_RX_RING;
-        Serial.println(String("FTP RX: ") + line);     // P2 verification (temporary)
+        ftpHandleMessage(mac, line);
     }
 }
 
-//=== Player roster ===
+//=== Player roster (keyed by MAC) ===
 
-static int findPlayer(const char* ident) {
+// Split s in place on delim, preserving empty fields. Returns field count.
+static int ftpSplit(char* s, char delim, char** out, int maxOut) {
+    int n = 0;
+    if (maxOut <= 0) return 0;
+    out[n++] = s;
+    for (char* p = s; *p && n < maxOut; ++p)
+        if (*p == delim) { *p = '\0'; out[n++] = p + 1; }
+    return n;
+}
+
+// Add or refresh a roster entry, keyed by MAC (two devices may share a
+// callsign, so ident is display-only). Stores the latest lives/score/inPileup.
+static void rosterUpdateBeacon(const uint8_t* mac, const char* ident,
+                               uint8_t lives, uint32_t score, bool inPileup) {
+    int slot = -1;
     for (int i = 0; i < FTP_MAX_PLAYERS; i++)
-        if (ftp.players[i].active && strcmp(ftp.players[i].ident, ident) == 0) return i;
-    return -1;
+        if (ftp.players[i].active && memcmp(ftp.players[i].mac, mac, 6) == 0) {
+            slot = i; break;
+        }
+    if (slot < 0) {                              // new peer: claim a free slot
+        for (int i = 0; i < FTP_MAX_PLAYERS; i++)
+            if (!ftp.players[i].active) { slot = i; break; }
+        if (slot < 0) return;                    // roster full: ignore
+        memcpy(ftp.players[slot].mac, mac, 6);
+        ftp.players[slot].active = true;
+        ftp.playerCount++;
+    }
+    strncpy(ftp.players[slot].ident, ident, FTP_MAX_IDENT_LEN);
+    ftp.players[slot].ident[FTP_MAX_IDENT_LEN] = '\0';
+    ftp.players[slot].lives      = lives;
+    ftp.players[slot].score      = score;
+    ftp.players[slot].inPileup   = inPileup;
+    ftp.players[slot].eliminated = (lives == 0);
+    ftp.players[slot].lastBeacon = millis();
 }
 
-static int addPlayer(const char* ident) {
-    for (int i = 0; i < FTP_MAX_PLAYERS; i++) {
-        if (!ftp.players[i].active) {
-            strncpy(ftp.players[i].ident, ident, FTP_MAX_IDENT_LEN);
-            ftp.players[i].ident[FTP_MAX_IDENT_LEN] = '\0';
-            ftp.players[i].active = true;
-            ftp.players[i].inPileup = false;
-            ftp.players[i].eliminated = false;
-            ftp.players[i].lastBeacon = millis();
-            ftp.players[i].lives = 3;
-            ftp.players[i].score = 0;
-            ftp.playerCount++;
-            return i;
-        }
+// Parse one received /ftp/ line (mutable; split in place) and dispatch by type.
+static void ftpHandleMessage(const uint8_t* mac, char* line) {
+    if (strncmp(line, FTP_MAGIC, FTP_MAGIC_LEN) != 0) return;
+    char* body = line + FTP_MAGIC_LEN;           // e.g. "B|ident|lives|score|inP"
+    char* f[6];
+    int nf = ftpSplit(body, '|', f, 6);
+    if (nf < 1 || f[0][0] == '\0') return;
+    switch (f[0][0]) {
+        case 'B':                                // Beacon
+            if (nf >= 5)
+                rosterUpdateBeacon(mac, f[1],
+                                   (uint8_t)atoi(f[2]),
+                                   (uint32_t)strtoul(f[3], nullptr, 10),
+                                   atoi(f[4]) != 0);
+            break;
+        default:                                 // A / X / W arrive in later phases
+            break;
     }
-    return -1;
 }
 
 static void updateRoster() {
