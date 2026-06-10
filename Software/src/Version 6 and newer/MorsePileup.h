@@ -52,6 +52,7 @@ struct FtpDifficulty {
     uint16_t spawnMin;          // min ms between spawns (at high streak)
     uint8_t  initialCallers;    // callers on screen at start
     uint8_t  dropsPerLife;      // dropped callers before losing a life
+    uint8_t  playsBeforeReveal; // CW plays before the callsign text is shown
 };
 
 // ---- Game states ----

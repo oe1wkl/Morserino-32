@@ -84,12 +84,12 @@ static const int  CODE_CHARS_LEN = 36;
 #define FTP_BAND   PAL_DARKGREY  // 0x2104 dark grey status/footer band
 
 // Difficulty presets
-//                              label       timeout  spawnMax spawnMin initCal dropsPerLife
+//                              label       timeout  spawnMax spawnMin initCal dropsPerLife playsReveal
 static const FtpDifficulty difficulties[FTP_NUM_DIFFICULTIES] = {
-    { "EASY",      45000,  12000,    5000,    1,      5 },
-    { "NORMAL",    30000,   8000,    3000,    1,      4 },
-    { "HARD",      20000,   5000,    2000,    2,      3 },
-    { "EXPERT",    12000,   3500,    1500,    3,      2 },
+    { "EASY",      45000,  12000,    5000,    1,      5,      3 },
+    { "NORMAL",    30000,   8000,    3000,    1,      4,      3 },
+    { "HARD",      20000,   5000,    2000,    2,      3,      2 },
+    { "EXPERT",    12000,   3500,    1500,    3,      2,      1 },
 };
 
 static const FtpDifficulty& diff() { return difficulties[ftp.difficulty]; }
@@ -97,8 +97,8 @@ static const FtpDifficulty& diff() { return difficulties[ftp.difficulty]; }
 // Word-gap timeout: 7 dit-lengths of silence → submit input
 #define FTP_WORDGAP_FACTOR 7
 
-// CW playback: number of plays before showing text hint
-#define FTP_PLAYS_BEFORE_REVEAL 3
+// CW playback: plays before the callsign is shown is per-difficulty now
+// (FtpDifficulty::playsBeforeReveal — fewer on harder levels).
 
 // Attack CW pitch offset (semitones * ratio from sidetone)
 // We use a pitch ~4 semitones below the sidetone
@@ -136,6 +136,12 @@ static void   sendBeacon();
 static void   checkReceivedMessages();
 static void   updateRoster();
 static void   ftpHandleMessage(const uint8_t* mac, char* line);
+static const uint8_t* ftpMyMac();
+static void   ftpMacToHex(const uint8_t* mac, char* out);
+static bool   ftpHexToMac(const char* s, uint8_t* mac);
+static int    ftpPickVictim();
+static void   sendAttack(int victimIdx, const char* call);
+static void   spawnNetworkAttack(const char* call, uint8_t senderIdx);
 static int    countActivePlayers();
 static const char* getPlayerIdent();
 static void   pushFrame();
@@ -366,6 +372,60 @@ static void sendBeacon() {
         quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, (uint8_t*)buf, (size_t)n);
 }
 
+// This device's own STA MAC (the address peers see as the packet source).
+static const uint8_t* ftpMyMac() {
+    static uint8_t mac[6];
+    static bool valid = false;
+    if (!valid) { WiFi.macAddress(mac); valid = true; }
+    return mac;
+}
+
+static void ftpMacToHex(const uint8_t* mac, char* out) {   // out: >= 13 bytes
+    static const char* H = "0123456789ABCDEF";
+    for (int i = 0; i < 6; i++) {
+        out[i * 2]     = H[(mac[i] >> 4) & 0x0F];
+        out[i * 2 + 1] = H[mac[i] & 0x0F];
+    }
+    out[12] = '\0';
+}
+
+static int ftpHexNib(char c) {
+    if (c >= '0' && c <= '9') return c - '0';
+    if (c >= 'A' && c <= 'F') return c - 'A' + 10;
+    if (c >= 'a' && c <= 'f') return c - 'a' + 10;
+    return -1;
+}
+
+static bool ftpHexToMac(const char* s, uint8_t* mac) {
+    for (int i = 0; i < 6; i++) {
+        int hi = ftpHexNib(s[i * 2]), lo = ftpHexNib(s[i * 2 + 1]);
+        if (hi < 0 || lo < 0) return false;
+        mac[i] = (uint8_t)((hi << 4) | lo);
+    }
+    return true;
+}
+
+// Pick a random active, non-eliminated peer to attack; -1 if there are none.
+static int ftpPickVictim() {
+    int elig[FTP_MAX_PLAYERS], n = 0;
+    for (int i = 0; i < FTP_MAX_PLAYERS; i++)
+        if (ftp.players[i].active && !ftp.players[i].eliminated) elig[n++] = i;
+    if (n == 0) return -1;
+    return elig[random(n)];
+}
+
+// Broadcast an attack addressed (by MAC) to one peer: /ftp/A|from|toMac|call
+static void sendAttack(int victimIdx, const char* call) {
+    if (victimIdx < 0 || victimIdx >= FTP_MAX_PLAYERS) return;
+    char macHex[13];
+    ftpMacToHex(ftp.players[victimIdx].mac, macHex);
+    char buf[FTP_RX_MAX];
+    int n = snprintf(buf, sizeof(buf), "%sA|%s|%s|%s",
+                     FTP_MAGIC, getPlayerIdent(), macHex, call);
+    if (n > 0)
+        quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, (uint8_t*)buf, (size_t)n);
+}
+
 // Drain the RX ring on an idle lobby frame and dispatch each line.
 static void checkReceivedMessages() {
     while (ftpRxTail != ftpRxHead) {
@@ -435,7 +495,20 @@ static void ftpHandleMessage(const uint8_t* mac, char* line) {
                                    (uint32_t)strtoul(f[3], nullptr, 10),
                                    atoi(f[4]) != 0);
             break;
-        default:                                 // A / X / W arrive in later phases
+        case 'A':                                // Attack: from | toMac | call
+            if (nf >= 4) {
+                uint8_t toMac[6];
+                if (ftpHexToMac(f[2], toMac) &&
+                    memcmp(toMac, ftpMyMac(), 6) == 0) {   // addressed to this device
+                    int sidx = 0xFF;             // sender's roster slot (for the FROM label)
+                    for (int i = 0; i < FTP_MAX_PLAYERS; i++)
+                        if (ftp.players[i].active &&
+                            memcmp(ftp.players[i].mac, mac, 6) == 0) { sidx = i; break; }
+                    spawnNetworkAttack(f[3], (uint8_t)sidx);
+                }
+            }
+            break;
+        default:                                 // X / W arrive in later phases
             break;
     }
 }
@@ -545,6 +618,25 @@ static void spawnAttack() {
     ftp.callers[slot].progress = 0.0f;
     ftp.callerCount++;
     ftp.lastSpawn = millis();
+}
+
+// Enqueue an attack received from another player (a specific callsign, not random).
+// Does not touch lastSpawn — it must not perturb the bot-spawn cadence.
+static void spawnNetworkAttack(const char* call, uint8_t senderIdx) {
+    for (int i = 0; i < FTP_MAX_CALLERS; i++)        // ignore an identical active caller
+        if (ftp.callers[i].active && strcmp(ftp.callers[i].call, call) == 0) return;
+    int slot = -1;
+    for (int i = FTP_MAX_CALLERS - 1; i >= 0; i--)
+        if (!ftp.callers[i].active) { slot = i; break; }
+    if (slot < 0) return;                            // queue full: drop
+    strncpy(ftp.callers[slot].call, call, FTP_MAX_CALL_LEN);
+    ftp.callers[slot].call[FTP_MAX_CALL_LEN] = '\0';
+    ftp.callers[slot].spawnTime = millis();
+    ftp.callers[slot].active = true;
+    ftp.callers[slot].fromNetwork = true;
+    ftp.callers[slot].senderIdx = senderIdx;
+    ftp.callers[slot].progress = 0.0f;
+    ftp.callerCount++;
 }
 
 // Find the active attack with the earliest spawn time (= the one to defend)
@@ -998,7 +1090,16 @@ static void drawDefendArea() {
     atk.progress = (float)elapsed / (float)timeout;
 
     canvas->setFont(&fonts::Font0);
-    drawCentredText(y, "DEFEND!", FTP_WARN);
+    if (atk.fromNetwork) {
+        const char* who = (atk.senderIdx < FTP_MAX_PLAYERS &&
+                           ftp.players[atk.senderIdx].active)
+                          ? ftp.players[atk.senderIdx].ident : "NET";
+        char fb[24];
+        snprintf(fb, sizeof(fb), "FROM %s", who);
+        drawCentredText(y, fb, FTP_ATTACK);
+    } else {
+        drawCentredText(y, "DEFEND!", FTP_WARN);
+    }
 
     // Progress bar (time remaining)
     int barW = FTP_W - 20;
@@ -1014,15 +1115,16 @@ static void drawDefendArea() {
     if (fillW > 0)
         canvas->fillRect(barX, barY, fillW, barH, barColor);
 
-    // Show callsign text only after enough plays
-    if (MorseCwEngine::getPlayCount() >= FTP_PLAYS_BEFORE_REVEAL) {
+    // Show callsign text only after enough plays (fewer on harder levels).
+    uint8_t playsToReveal = diff().playsBeforeReveal;
+    if (MorseCwEngine::getPlayCount() >= playsToReveal) {
         canvas->setFont(&fonts::FreeSansBold12pt7b);
-        drawCentredText(y + 30, atk.call, FTP_TEXT);
+        drawCentredText(y + 30, atk.call, atk.fromNetwork ? FTP_ATTACK : FTP_TEXT);
     } else {
         // Show play count
         char pbuf[20];
         snprintf(pbuf, sizeof(pbuf), "Listen... (%d/%d)",
-                 MorseCwEngine::getPlayCount() + 1, FTP_PLAYS_BEFORE_REVEAL);
+                 MorseCwEngine::getPlayCount() + 1, playsToReveal);
         canvas->setFont(&fonts::Font0);
         drawCentredText(y + 34, pbuf, FTP_DIM);
     }
@@ -1146,13 +1248,24 @@ static void handleAttackSubmit() {
             expected[i] = expected[i] - 'a' + 'A';
 
     if (strcmp(ftp.inputBuf, expected) == 0) {
-        // Attack sent!
+        // Correct key — the attack is "sent".
         ftp.totalAttacksSent++;
         addScore(50);
-        triggerFlash(FTP_ATTACK, "ATTACK SENT!");
         playSoundCorrect();
         attackPromptActive = false;
-        // In multiplayer, this would send the attack to other players
+        if (!ftp.singlePlayer) {
+            int v = ftpPickVictim();
+            if (v >= 0) {
+                sendAttack(v, expected);          // broadcast /ftp/A to that peer
+                char fb[24];
+                snprintf(fb, sizeof(fb), "ATTACK %s", ftp.players[v].ident);
+                triggerFlash(FTP_ATTACK, fb);
+            } else {
+                triggerFlash(FTP_ATTACK, "NO TARGET");
+            }
+        } else {
+            triggerFlash(FTP_ATTACK, "ATTACK SENT!");
+        }
     } else {
         playSoundWrong();
         triggerFlash(FTP_WARN, "TRY AGAIN");
@@ -1180,7 +1293,6 @@ static void statePileup() {
     char challenge[FTP_MAX_CALL_LEN + 1] = "";   // active caller currently loaded into the CW player
     bool freshCaller = false;                    // true on the frame a new caller is loaded
     bool attackMode = false;                     // true while keying an earned attack (pileup paused)
-    unsigned long attackModeStart = 0;           // millis() when the current attack pause began
     bool waitingForResult = false;               // kept false: preserves the tuned tight-loop guard verbatim
     unsigned long lastSubmitTime = 0;
     bool encoderIsVolume = false;
@@ -1259,6 +1371,11 @@ static void statePileup() {
             continue;
         }
 
+        // Drain inbound /ftp/ packets (network attacks + beacons) on idle frames.
+        // Not while an attack pause is active: callers enqueued during the pause
+        // would be wrongly time-shifted on resume. They wait in the ring instead.
+        if (!ftp.singlePlayer && !attackMode) checkReceivedMessages();
+
         // --- Earned-attack mode: after a correct defend the pileup pauses and the
         //     player keys ONE attack. No spawning / no timeouts while it is up. ---
         freshCaller = false;
@@ -1273,11 +1390,18 @@ static void statePileup() {
                 millis() - ftp.lastSpawn > ftp.spawnInterval) {
                 spawnAttack();
             }
-            // Defend the earliest active caller; if none, wait for the next spawn.
-            currentAttackIdx = findActiveAttack();
+            // Lock onto one caller at a time. Pick a new one only when the
+            // current is gone, and reset its timeout reference on activation so
+            // EVERY caller gets its full defend window (queued callers wait
+            // without ageing — only the active one counts down).
             attackPromptActive = false;
+            if (currentAttackIdx < 0) {
+                currentAttackIdx = findActiveAttack();
+                if (currentAttackIdx >= 0)
+                    ftp.callers[currentAttackIdx].spawnTime = millis();
+            }
             if (currentAttackIdx >= 0) {
-                // (Re)load the active caller into the CW player when it changes.
+                // Load the active caller into the CW player when it changes.
                 if (strcmp(challenge, ftp.callers[currentAttackIdx].call) != 0) {
                     strncpy(challenge, ftp.callers[currentAttackIdx].call, FTP_MAX_CALL_LEN);
                     challenge[FTP_MAX_CALL_LEN] = '\0';
@@ -1314,27 +1438,25 @@ static void statePileup() {
             ftp.challengePos = 0;
             if (attackMode) {
                 handleAttackSubmit();              // single-player: scores only (P4b broadcasts /ftp/A)
-                if (!attackPromptActive) {         // attack sent -> resume the paused pileup
-                    unsigned long paused = millis() - attackModeStart;
-                    for (int i = 0; i < FTP_MAX_CALLERS; i++)
-                        if (ftp.callers[i].active) ftp.callers[i].spawnTime += paused;
-                    ftp.lastSpawn += paused;       // keep the spawn cadence across the pause
+                if (!attackPromptActive) {         // attack sent -> resume the pileup
                     attackMode = false;
+                    ftp.lastSpawn = millis();      // restart the bot-spawn cadence cleanly
                 }
             } else if (currentAttackIdx >= 0) {
                 handleDefendSubmit();              // correct: removeAttack + currentAttackIdx = -1
                 if (currentAttackIdx < 0) {        // correct defend -> earn one keyed attack
                     challenge[0] = '\0';
                     attackMode = true;
-                    attackModeStart = millis();
                     attackPromptActive = false;    // a fresh prompt is generated next frame
                 }
             }
             lastSubmitTime = millis();
         }
 
-        // --- Timeout of the active caller (measured from its spawn) ---
-        if (currentAttackIdx >= 0 &&
+        // --- Timeout of the active caller (counted from activation). Never while a
+        //     response is in progress, so an answer is not cut off mid-key and the
+        //     caller you are copying cannot be swapped out from under you. ---
+        if (currentAttackIdx >= 0 && ftp.inputPos == 0 &&
             millis() - ftp.callers[currentAttackIdx].spawnTime > diff().callerTimeout) {
             cwPlayerStop();
             removeAttack(currentAttackIdx);
