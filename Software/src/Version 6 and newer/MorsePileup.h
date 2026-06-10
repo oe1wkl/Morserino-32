@@ -69,7 +69,8 @@ enum FtpGameState : uint8_t {
 // ---- Pileup caller (bot or from network attack) ----
 struct FtpCaller {
     char     call[FTP_MAX_CALL_LEN + 1];
-    unsigned long spawnTime;
+    unsigned long spawnTime;        // defend-window start (reset when it becomes active)
+    unsigned long queuedSince;      // arrival time (queue-patience ref; frozen during attacks)
     bool     active;
     bool     fromNetwork;           // true = attack from another player
     uint8_t  senderIdx;             // index into players[] if fromNetwork

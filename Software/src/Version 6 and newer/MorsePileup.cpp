@@ -612,6 +612,7 @@ static void spawnAttack() {
     strncpy(ftp.callers[slot].call, call.c_str(), FTP_MAX_CALL_LEN);
     ftp.callers[slot].call[FTP_MAX_CALL_LEN] = '\0';
     ftp.callers[slot].spawnTime = millis();
+    ftp.callers[slot].queuedSince = millis();
     ftp.callers[slot].active = true;
     ftp.callers[slot].fromNetwork = false;
     ftp.callers[slot].senderIdx = 0;
@@ -632,6 +633,7 @@ static void spawnNetworkAttack(const char* call, uint8_t senderIdx) {
     strncpy(ftp.callers[slot].call, call, FTP_MAX_CALL_LEN);
     ftp.callers[slot].call[FTP_MAX_CALL_LEN] = '\0';
     ftp.callers[slot].spawnTime = millis();
+    ftp.callers[slot].queuedSince = millis();
     ftp.callers[slot].active = true;
     ftp.callers[slot].fromNetwork = true;
     ftp.callers[slot].senderIdx = senderIdx;
@@ -1293,6 +1295,7 @@ static void statePileup() {
     char challenge[FTP_MAX_CALL_LEN + 1] = "";   // active caller currently loaded into the CW player
     bool freshCaller = false;                    // true on the frame a new caller is loaded
     bool attackMode = false;                     // true while keying an earned attack (pileup paused)
+    unsigned long attackModeStart = 0;           // millis() the pause began (freezes queue patience)
     bool waitingForResult = false;               // kept false: preserves the tuned tight-loop guard verbatim
     unsigned long lastSubmitTime = 0;
     bool encoderIsVolume = false;
@@ -1320,7 +1323,7 @@ static void statePileup() {
                 if (c != 0) {
                     gameCharBuffer = 0;
                     if (c == ' ') {
-                        if (ftp.inputPos >= 2) {
+                        if (ftp.inputPos >= 1) {
                             ftp.lastCharTime = 0;
                             ftp.challengePos = 1;
                         }
@@ -1334,7 +1337,7 @@ static void statePileup() {
                     }
                 }
 
-                if (ftp.inputPos >= 2 && ftp.lastCharTime > 0 &&
+                if (ftp.inputPos >= 1 && ftp.lastCharTime > 0 &&
                     keyerState == IDLE_STATE && !leftKey && !rightKey) {
                     unsigned long wordGap = interWordSpace + ditLength;
                     if (wordGap < 1200) wordGap = 1200;
@@ -1439,6 +1442,10 @@ static void statePileup() {
             if (attackMode) {
                 handleAttackSubmit();              // single-player: scores only (P4b broadcasts /ftp/A)
                 if (!attackPromptActive) {         // attack sent -> resume the pileup
+                    // Unfreeze queue patience: callers did not age during the pause.
+                    unsigned long paused = millis() - attackModeStart;
+                    for (int i = 0; i < FTP_MAX_CALLERS; i++)
+                        if (ftp.callers[i].active) ftp.callers[i].queuedSince += paused;
                     attackMode = false;
                     ftp.lastSpawn = millis();      // restart the bot-spawn cadence cleanly
                 }
@@ -1447,6 +1454,7 @@ static void statePileup() {
                 if (currentAttackIdx < 0) {        // correct defend -> earn one keyed attack
                     challenge[0] = '\0';
                     attackMode = true;
+                    attackModeStart = millis();
                     attackPromptActive = false;    // a fresh prompt is generated next frame
                 }
             }
@@ -1469,6 +1477,22 @@ static void statePileup() {
             triggerFlash(FTP_WARN, "TIMEOUT");
             clearInput();
             lastSubmitTime = millis();
+        }
+
+        // --- Backlog give-up: a caller waiting too long in the queue (not the one
+        //     being defended) loses patience and leaves, counting as a drop. This is
+        //     the pressure — fall behind and the pile thins itself at your expense. ---
+        if (!attackMode) {
+            unsigned long patience = diff().callerTimeout;
+            for (int i = 0; i < FTP_MAX_CALLERS; i++) {
+                if (!ftp.callers[i].active || i == currentAttackIdx) continue;
+                if (millis() - ftp.callers[i].queuedSince > patience) {
+                    removeAttack(i);
+                    ftp.totalDropped++;
+                    triggerFlash(FTP_WARN, "MISSED!");
+                    break;                 // at most one give-up per frame (readable feedback)
+                }
+            }
         }
 
         // --- Life loss ---
