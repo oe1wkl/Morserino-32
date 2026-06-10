@@ -29,6 +29,7 @@ volatile bool pileupRxReady = false;
 
 extern int checkEncoder();
 extern void serialEvent();
+extern void checkShutDown(boolean);    // m32_v6.ino — inactivity time-out -> deep sleep
 extern boolean checkPaddles();
 extern boolean doPaddleIambic(boolean, boolean);
 extern boolean leftKey, rightKey;
@@ -755,11 +756,13 @@ static void enterString(const char* prompt, char* result, int maxLen,
 
         int enc = checkEncoder();
         if (enc) {
+            MorseOutput::resetTOT();
             charIdx = (charIdx + enc + charMax) % charMax;
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
         }
 
         Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == 1 && cursorPos < maxLen) {
             result[cursorPos] = ENTRY_CHARS[charIdx];
             cursorPos++;
@@ -773,6 +776,7 @@ static void enterString(const char* prompt, char* result, int maxLen,
         }
 
         Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::volButton.clicks == 1 && cursorPos > 0) {
             cursorPos--;
             result[cursorPos] = '\0';
@@ -784,6 +788,7 @@ static void enterString(const char* prompt, char* result, int maxLen,
             return;
         }
 
+        checkShutDown(false);
         serialEvent();
         delay(20);
     }
@@ -870,6 +875,7 @@ static void stateLobby() {
         // Encoder: change difficulty
         int enc = checkEncoder();
         if (enc) {
+            MorseOutput::resetTOT();
             int d = (int)ftp.difficulty + enc;
             if (d < 0) d = 0;
             if (d >= FTP_NUM_DIFFICULTIES) d = FTP_NUM_DIFFICULTIES - 1;
@@ -885,6 +891,7 @@ static void stateLobby() {
         }
 
         Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == 1) {
             ftp.singlePlayer = !ftp.singlePlayer;
             // Bring ESP-NOW up the first time the user enters multiplayer.
@@ -895,11 +902,13 @@ static void stateLobby() {
         if (Buttons::modeButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
 
         Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::volButton.clicks == 1) {
             if (hasCall && hasName) ftp.useCallsign = !ftp.useCallsign;
         }
         if (Buttons::volButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
 
+        checkShutDown(false);
         serialEvent();
         delay(20);
     }
@@ -972,6 +981,7 @@ static void stateCodeChallenge() {
 
         char decoded = pollKeyedChar();
         if (decoded) {
+            MorseOutput::resetTOT();
             if (decoded >= 'a' && decoded <= 'z') decoded = decoded - 'a' + 'A';
             if (decoded == ftp.challengeCode[ftp.challengePos]) {
                 ftp.challengePos++;
@@ -984,10 +994,13 @@ static void stateCodeChallenge() {
         }
 
         Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == -1) { failed = true; }
         Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::volButton.clicks == -1) { failed = true; }
 
+        checkShutDown(false);
         serialEvent();
     }
 
@@ -1036,6 +1049,7 @@ static void stateCodeChallenge() {
 //         for the player to key — this sends an attack to other players.
 
 static int  currentAttackIdx = -1;     // index of the attack being defended, or -1
+static bool encoderIsVolume = false;   // FN (vol button) toggles encoder between WPM and volume
 
 static void drawPileupHUD() {
     // Top bar: lives (dots) | ident | score
@@ -1167,11 +1181,17 @@ static void drawInputArea() {
         canvas->fillRect(cx, inputY + 22, 2, 16, FTP_INPUT);
     }
 
-    // Bottom status bar
+    // Bottom status bar: a single line showing EITHER the WPM or the volume,
+    // whichever the encoder currently adjusts; FN (vol button) swaps between them.
+    // One row only — the sprite is a touch shorter than the panel, so a second
+    // line at the very bottom would be clipped.
     canvas->fillRect(0, 290, FTP_W, 30, FTP_BAND);
     canvas->setFont(&fonts::Font0);
     char buf[32];
-    snprintf(buf, sizeof(buf), "%d wpm", ftp.wpm);
+    if (encoderIsVolume)
+        snprintf(buf, sizeof(buf), "Vol %d", MorsePreferences::sidetoneVolume);
+    else
+        snprintf(buf, sizeof(buf), "%d wpm", ftp.wpm);
     canvas->setTextColor(FTP_TEXT, FTP_BAND);
     canvas->drawString(buf, 4, 298);
 
@@ -1185,8 +1205,8 @@ static void drawInputArea() {
     // Hint text (hidden during flash)
     if (!isFlashing()) {
         canvas->setFont(&fonts::Font0);
-        drawCentredText(204, "Click: submit response", FTP_TEXT);
-        drawCentredText(218, "or pause to auto-submit", FTP_DIM);
+        drawCentredText(202, "Click:submit  FN:spd/vol", FTP_TEXT);
+        drawCentredText(216, "or pause to auto-submit", FTP_DIM);
     }
 }
 
@@ -1298,7 +1318,7 @@ static void statePileup() {
     unsigned long attackModeStart = 0;           // millis() the pause began (freezes queue patience)
     bool waitingForResult = false;               // kept false: preserves the tuned tight-loop guard verbatim
     unsigned long lastSubmitTime = 0;
-    bool encoderIsVolume = false;
+    encoderIsVolume = false;                     // reset the file-static FN toggle on game entry
 
     clearInput();
     unsigned long lastFrame = millis();
@@ -1364,6 +1384,7 @@ static void statePileup() {
         doPaddleIambic(leftKey, rightKey);
 
         if (keyerState != IDLE_STATE || leftKey || rightKey) {
+            MorseOutput::resetTOT();          // keying is activity
             serialEvent();
             continue;
         }
@@ -1531,6 +1552,7 @@ static void statePileup() {
         if (!waitingForResult && keyerState == IDLE_STATE) {
             int enc = checkEncoder();
             if (enc) {
+                MorseOutput::resetTOT();
                 if (encoderIsVolume) {
                     int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
                     MorsePreferences::sidetoneVolume = newVol;
@@ -1548,6 +1570,7 @@ static void statePileup() {
 
         // --- Buttons ---
         Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == 1 && ftp.inputPos >= 1) {
             ftp.challengePos = 1;
         }
@@ -1558,6 +1581,7 @@ static void statePileup() {
             return;
         }
         Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::volButton.clicks == 1) {
             encoderIsVolume = !encoderIsVolume;
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
@@ -1569,6 +1593,7 @@ static void statePileup() {
             return;
         }
 
+        checkShutDown(false);                 // inactivity -> deep sleep (like other modes)
         serialEvent();
     }
 
@@ -1612,6 +1637,7 @@ static void stateGameOver() {
 
     while (ftp.state == FTP_GAME_OVER) {
         Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == 1) {
             initGameData();
             ftp.state = FTP_LOBBY;
@@ -1619,7 +1645,9 @@ static void stateGameOver() {
         }
         if (Buttons::modeButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
         Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::volButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
+        checkShutDown(false);
         serialEvent();
         delay(20);
     }
@@ -1630,6 +1658,8 @@ static void stateGameOver() {
 void MorsePileup::run() {
     canvas = MorseGameMode::enterPortrait(MorsePreferences::leftHanded, 8);
     if (!canvas) return;
+
+    MorseOutput::resetTOT();                     // start the inactivity timer fresh
 
     loadPlayerIdentity();
     ftp.difficulty = 0;
