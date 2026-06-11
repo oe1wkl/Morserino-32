@@ -427,6 +427,40 @@ static void sendAttack(int victimIdx, const char* call) {
         quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, (uint8_t*)buf, (size_t)n);
 }
 
+// Broadcast that we are out, so peers can mark us eliminated instantly.
+static void sendEliminated() {
+    char buf[FTP_RX_MAX];
+    int n = snprintf(buf, sizeof(buf), "%sX|%s", FTP_MAGIC, getPlayerIdent());
+    if (n > 0)
+        quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, (uint8_t*)buf, (size_t)n);
+}
+
+// Broadcast that we are the last one standing (re-sent from game over for
+// reliability — packets can drop).
+static void sendWinner() {
+    char buf[FTP_RX_MAX];
+    int n = snprintf(buf, sizeof(buf), "%sW|%s|%lu", FTP_MAGIC, getPlayerIdent(),
+                     (unsigned long)ftp.score);
+    if (n > 0)
+        quickEspNow.send(ESPNOW_BROADCAST_ADDRESS, (uint8_t*)buf, (size_t)n);
+}
+
+// Sole survivor? Alive, MP, at least one competitor existed, and every
+// competitor (a peer that is in the pileup or already eliminated) is out.
+// A peer still sitting in the lobby (inPileup == false, not eliminated) does
+// not count, so it can't deadlock the result.
+static bool ftpIsLastStanding() {
+    if (ftp.singlePlayer || ftp.lives == 0) return false;
+    int competitors = 0, alive = 0;
+    for (int i = 0; i < FTP_MAX_PLAYERS; i++) {
+        if (!ftp.players[i].active) continue;
+        if (!ftp.players[i].inPileup && !ftp.players[i].eliminated) continue;
+        competitors++;
+        if (!ftp.players[i].eliminated) alive++;
+    }
+    return competitors > 0 && alive == 0;
+}
+
 // Drain the RX ring on an idle lobby frame and dispatch each line.
 static void checkReceivedMessages() {
     while (ftpRxTail != ftpRxHead) {
@@ -509,7 +543,21 @@ static void ftpHandleMessage(const uint8_t* mac, char* line) {
                 }
             }
             break;
-        default:                                 // X / W arrive in later phases
+        case 'X':                                // Eliminated: <ident> (key by source MAC)
+            for (int i = 0; i < FTP_MAX_PLAYERS; i++)
+                if (ftp.players[i].active &&
+                    memcmp(ftp.players[i].mac, mac, 6) == 0) {
+                    ftp.players[i].eliminated = true;
+                    break;
+                }
+            break;
+        case 'W':                                // Winner: <ident> | <score>
+            if (nf >= 2 && ftp.winnerIdent[0] == '\0') {   // first announcement wins
+                strncpy(ftp.winnerIdent, f[1], FTP_MAX_IDENT_LEN);
+                ftp.winnerIdent[FTP_MAX_IDENT_LEN] = '\0';
+            }
+            break;
+        default:
             break;
     }
 }
@@ -690,6 +738,8 @@ static void initGameData() {
     ftp.totalDropped = 0;
     ftp.wpm = MorsePreferences::wpm;
     ftp.eliminationCount = 0;
+    ftp.winnerIdent[0] = '\0';
+    ftp.iAmWinner = false;
     ftp.playerCount = 0;
     ftp.singlePlayer = true;
     ftp.lastBeaconSent = 0;
@@ -1025,6 +1075,8 @@ static void stateCodeChallenge() {
         ftp.totalDropped = 0;
         ftp.totalAttacksSent = 0;
         ftp.eliminationCount = 0;
+        ftp.winnerIdent[0] = '\0';
+        ftp.iAmWinner = false;
         ftp.callerCount = 0;
         ftp.lastSpawn = 0;
         ftp.spawnInterval = diff().spawnMax;
@@ -1552,10 +1604,26 @@ static void statePileup() {
             }
         }
 
-        if (ftp.lives == 0) {
+        // --- End conditions ---
+        if (!ftp.singlePlayer && ftp.winnerIdent[0]) {    // a peer announced the winner
             cleanupKeyer();
+            ftp.state = FTP_GAME_OVER;                     // keep pileupMode: game over listens
+            return;
+        }
+        if (ftp.lives == 0) {                              // we were eliminated
+            cleanupKeyer();
+            if (!ftp.singlePlayer) sendEliminated();        // tell peers we are out
+            else pileupMode = false;                        // MP keeps listening for /ftp/W
             ftp.state = FTP_GAME_OVER;
-            pileupMode = false;
+            return;
+        }
+        if (!ftp.singlePlayer && ftpIsLastStanding()) {    // sole survivor -> we win
+            ftp.iAmWinner = true;
+            strncpy(ftp.winnerIdent, getPlayerIdent(), FTP_MAX_IDENT_LEN);
+            ftp.winnerIdent[FTP_MAX_IDENT_LEN] = '\0';
+            sendWinner();
+            cleanupKeyer();
+            ftp.state = FTP_GAME_OVER;                      // keep pileupMode
             return;
         }
 
@@ -1626,38 +1694,63 @@ static void statePileup() {
 //=== STATE: Game Over ===
 
 static void stateGameOver() {
-    uint16_t totalCallers = ftp.totalBlocked + ftp.totalDropped;
-    uint8_t accuracy = (totalCallers > 0) ?
-        (uint8_t)(ftp.totalBlocked * 100 / totalCallers) : 0;
-
-    canvas->fillSprite(FTP_BG);
-    canvas->setFont(&fonts::FreeSansBold18pt7b);
-    drawCentredText(20, "PILEUP", FTP_WARN);
-    drawCentredText(58, "OVER!", FTP_WARN);
-
-    canvas->setFont(&fonts::FreeSans9pt7b);
-    char buf[40];
-    snprintf(buf, sizeof(buf), "Score: %lu", (unsigned long)ftp.score);
-    drawCentredText(110, buf, FTP_ACCENT);
-
-    canvas->setFont(&fonts::Font0);
-    snprintf(buf, sizeof(buf), "Defended: %d  Dropped: %d", ftp.totalBlocked, ftp.totalDropped);
-    drawCentredText(140, buf, FTP_TEXT);
-
-    snprintf(buf, sizeof(buf), "Accuracy: %d%%", accuracy);
-    drawCentredText(158, buf, accuracy >= 70 ? FTP_OK : FTP_WARN);
-
-    snprintf(buf, sizeof(buf), "Best streak: %d", ftp.bestStreak);
-    drawCentredText(176, buf, FTP_TEXT);
-
-    snprintf(buf, sizeof(buf), "%d wpm / %s", ftp.wpm, diff().label);
-    drawCentredText(200, buf, FTP_DIM);
-
-    drawCentredText(260, "Click: play again", FTP_TEXT);
-    drawCentredText(276, "Long press: exit", FTP_TEXT);
-    pushFrame();
+    unsigned long lastNet = 0;
 
     while (ftp.state == FTP_GAME_OVER) {
+        // Multiplayer: keep listening for the winner announcement, and keep
+        // telling peers our state — the winner re-announces /ftp/W (packets
+        // drop), everyone else beacons with lives = 0 so peers mark us out.
+        if (!ftp.singlePlayer) {
+            checkReceivedMessages();
+            if (millis() - lastNet >= FTP_BEACON_INTERVAL) {
+                if (ftp.iAmWinner) sendWinner();
+                else               sendBeacon();
+                lastNet = millis();
+            }
+        }
+
+        uint16_t totalCallers = ftp.totalBlocked + ftp.totalDropped;
+        uint8_t accuracy = (totalCallers > 0) ?
+            (uint8_t)(ftp.totalBlocked * 100 / totalCallers) : 0;
+
+        canvas->fillSprite(FTP_BG);
+        if (ftp.iAmWinner) {
+            canvas->setFont(&fonts::FreeSansBold18pt7b);
+            drawCentredText(20, "YOU", FTP_OK);
+            drawCentredText(58, "WIN!", FTP_OK);
+        } else if (ftp.winnerIdent[0]) {
+            canvas->setFont(&fonts::FreeSansBold12pt7b);
+            drawCentredText(26, "WINNER", FTP_TITLE);
+            canvas->setFont(&fonts::FreeSansBold18pt7b);
+            drawCentredText(52, ftp.winnerIdent, FTP_TITLE);
+        } else {
+            canvas->setFont(&fonts::FreeSansBold18pt7b);
+            drawCentredText(20, "PILEUP", FTP_WARN);
+            drawCentredText(58, "OVER!", FTP_WARN);
+        }
+
+        canvas->setFont(&fonts::FreeSans9pt7b);
+        char buf[40];
+        snprintf(buf, sizeof(buf), "Score: %lu", (unsigned long)ftp.score);
+        drawCentredText(110, buf, FTP_ACCENT);
+
+        canvas->setFont(&fonts::Font0);
+        snprintf(buf, sizeof(buf), "Defended: %d  Dropped: %d", ftp.totalBlocked, ftp.totalDropped);
+        drawCentredText(140, buf, FTP_TEXT);
+        snprintf(buf, sizeof(buf), "Accuracy: %d%%", accuracy);
+        drawCentredText(158, buf, accuracy >= 70 ? FTP_OK : FTP_WARN);
+        snprintf(buf, sizeof(buf), "Best streak: %d", ftp.bestStreak);
+        drawCentredText(176, buf, FTP_TEXT);
+        snprintf(buf, sizeof(buf), "%d wpm / %s", ftp.wpm, diff().label);
+        drawCentredText(200, buf, FTP_DIM);
+
+        if (!ftp.singlePlayer && !ftp.iAmWinner && !ftp.winnerIdent[0])
+            drawCentredText(222, "waiting for result...", FTP_DIM);
+
+        drawCentredText(260, "Click: play again", FTP_TEXT);
+        drawCentredText(276, "Long press: exit", FTP_TEXT);
+        pushFrame();
+
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == 1) {

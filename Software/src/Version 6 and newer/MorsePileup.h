@@ -130,6 +130,10 @@ struct FtpGameData {
     // Timers
     unsigned long lastBeaconSent;
     unsigned long lastActivity;
+
+    // Multiplayer result
+    char     winnerIdent[FTP_MAX_IDENT_LEN + 1];  // announced winner ("" = none yet)
+    bool     iAmWinner;                            // true only if THIS device won
 };
 
 // ---- Public interface ----
