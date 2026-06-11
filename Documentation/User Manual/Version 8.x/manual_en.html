@@ -1435,9 +1435,10 @@ The font family used is Lato.</p>
 <h4 class="unnumbered" id="tips-for-beginners">Tips for Beginners</h4>
 <p>Start with a lower Koch lesson (fewer characters) and a comfortable speed. The game is most effective as a training tool when you are challenged but not overwhelmed. If characters reach the bottom too quickly, reduce your starting sub-level or lower the WPM. As your recognition improves, increase the Koch lesson to add more characters to the pool.</p>
 <h3 data-number="5.7.2" id="fight-the-pileup"><span class="header-section-number">5.7.2</span> Fight the Pileup</h3>
-<p><strong>Fight the Pileup</strong> is a CW training game where you practice copying and keying callsigns under time pressure — just like working a real pileup on the bands. The game plays random callsigns as CW audio, and you must decode them by ear and key them back correctly before time runs out.</p>
+<p><strong>Fight the Pileup</strong> is a CW training game where you practise copying and keying callsigns under time pressure — just like working a real pileup on the bands. Callsigns arrive as CW audio; you decode them by ear and key them back before they give up. It can be played solo against the device, or as a multiplayer “last station standing” match against other M32 Pockets in the same room.</p>
+<p>Fight the Pileup is only available on the M32 Pocket.</p>
 <h4 class="unnumbered" id="starting-the-game-1">Starting the Game</h4>
-<p>From the main menu, navigate to <strong>Games → Fight Pileup</strong>. If this is your first time playing, you will be asked to enter your callsign and name using the encoder and buttons:</p>
+<p>From the main menu, navigate to <strong>Games → Fight Pileup</strong>. The first time you play, you are asked to enter your callsign and name with the encoder and buttons:</p>
 <ul>
 <li><strong>Encoder:</strong> Select a character</li>
 <li><strong>Click:</strong> Add the character</li>
@@ -1446,7 +1447,7 @@ The font family used is Lato.</p>
 </ul>
 <p>Your callsign and name are saved and remembered for future sessions.</p>
 <h4 class="unnumbered" id="the-lobby">The Lobby</h4>
-<p>After entering your identity, you arrive at the lobby screen. Here you can configure the game before entering the pileup:</p>
+<p>The lobby is where you set up a game before entering the pileup:</p>
 <ul>
 <li><strong>Encoder:</strong> Select difficulty level (EASY, NORMAL, HARD, EXPERT)</li>
 <li><strong>Click:</strong> Toggle between Single Player and Multiplayer mode</li>
@@ -1454,13 +1455,14 @@ The font family used is Lato.</p>
 <li><strong>Paddles:</strong> Enter the pileup (starts the code challenge)</li>
 <li><strong>Long press:</strong> Exit to menu</li>
 </ul>
-<p>The difficulty level controls how much time you have to respond, how many timeouts before you lose a life, and how quickly new challenges appear:</p>
+<p>The difficulty level controls how long each caller waits for you, how many drops cost a life, how fast new callers arrive, and how soon the callsign hint is revealed:</p>
 <table>
 <thead>
 <tr>
 <th>Level</th>
-<th>Timeout</th>
-<th>Drops per Life</th>
+<th>Caller timeout</th>
+<th>Drops per life</th>
+<th>Plays before hint</th>
 </tr>
 </thead>
 <tbody>
@@ -1468,52 +1470,48 @@ The font family used is Lato.</p>
 <td>EASY</td>
 <td>45 sec</td>
 <td>5</td>
+<td>3</td>
 </tr>
 <tr>
 <td>NORMAL</td>
 <td>30 sec</td>
 <td>4</td>
+<td>3</td>
 </tr>
 <tr>
 <td>HARD</td>
 <td>20 sec</td>
 <td>3</td>
+<td>2</td>
 </tr>
 <tr>
 <td>EXPERT</td>
 <td>12 sec</td>
 <td>2</td>
+<td>1</td>
 </tr>
 </tbody>
 </table>
+<p>In <strong>Multiplayer</strong> the lobby additionally shows the ESP-NOW <strong>Channel</strong> (Standard or Secondary) and a live list of the other players it has found. All devices must be set to the <strong>same channel</strong> to see each other — this is the LoRa/ESP-NOW channel preference.</p>
 <h4 class="unnumbered" id="code-challenge-entry-gate">Code Challenge (Entry Gate)</h4>
-<p>Before entering the pileup, you must key a short random code (4 characters) on your paddles. This serves as a warm-up and confirms that your paddles are working. Each correctly keyed character lights up in green. If you make a mistake, the sequence resets — just try again.</p>
-<p>Long press to cancel and return to the lobby.</p>
+<p>Before the pileup starts you key a short random code (4 characters) on your paddles — a warm-up that also confirms your paddles work. Each correct character lights up green; a mistake resets the sequence, just try again. You can already set your keying <strong>speed</strong> here: the <strong>encoder</strong> changes WPM, <strong>FN</strong> toggles it to volume, and the current value is shown on screen. Long press to cancel back to the lobby.</p>
 <h4 class="unnumbered" id="gameplay">Gameplay</h4>
-<p>Once you pass the code challenge, the pileup begins. The game presents you with a continuous stream of random callsigns to decode and key back.</p>
-<h4 class="unnumbered" id="how-it-works">How It Works</h4>
+<p>Callsigns (“callers”) arrive and queue up. You always work the <strong>oldest</strong> one first — that is the active caller, shown under <strong>DEFEND!</strong></p>
 <ol type="1">
-<li><p><strong>Listen:</strong> A callsign is played as CW audio at a different pitch from your sidetone, so you can distinguish it from your own keying. The callsign repeats automatically.</p></li>
-<li><p><strong>Decode:</strong> Try to identify the callsign by ear. After the 3rd play, a text hint appears on screen — but try to get it before that!</p></li>
-<li><p><strong>Key your response:</strong> Use your paddles to key the callsign you heard. Your keyed characters appear on screen as they are decoded.</p></li>
-<li><p><strong>Automatic submission:</strong> Your response is automatically submitted after a word-length pause (about 1 second of silence). You can also click the encoder to submit immediately.</p></li>
-<li><p><strong>Result:</strong></p>
+<li><p><strong>Listen.</strong> The active caller is played as CW audio at a slightly lower pitch than your sidetone, so you can tell it apart from your own keying. It repeats automatically.</p></li>
+<li><p><strong>Decode.</strong> Identify the callsign by ear. After a few plays (3 on Easy and Normal, 2 on Hard, 1 on Expert) the text is revealed on screen as a hint — but try to beat it.</p></li>
+<li><p><strong>Key it back.</strong> Key the callsign on your paddles; your decoded characters appear as you go. A word-length pause (about a second) submits automatically, or click the encoder to submit at once.</p></li>
+<li><p><strong>Result.</strong></p>
 <ul>
-<li><strong>Correct:</strong> A brief “OK!” flash with your score bonus, then the next challenge starts automatically.</li>
-<li><strong>Wrong:</strong> A “WRONG” flash. The CW plays again so you can retry with the same callsign.</li>
-<li><strong>Timeout:</strong> If the progress bar runs out before you respond correctly, you lose points and a new challenge begins.</li>
+<li><strong>Correct</strong> — the caller is cleared, you score, and you immediately <strong>earn an attack</strong> (see below).</li>
+<li><strong>Wrong</strong> — the CW replays so you can try the same caller again; there is no limit on retries within its time window.</li>
 </ul></li>
 </ol>
-<h4 class="unnumbered" id="screen-layout">Screen Layout</h4>
-<p>From top to bottom:</p>
-<ul>
-<li><strong>HUD bar:</strong> Lives (red dots), your callsign/name, current score, streak multiplier</li>
-<li><strong>Progress bar:</strong> Time remaining for the current challenge (green → yellow → red)</li>
-<li><strong>Challenge area:</strong> Play counter and hint (after 3 plays)</li>
-<li><strong>Input area:</strong> Your keyed response</li>
-<li><strong>Stats:</strong> Correct and missed counts</li>
-<li><strong>Status bar:</strong> Current WPM and volume level</li>
-</ul>
+<p>Each caller has its own time window, shown by the progress bar (green → yellow → red). The window starts when the caller becomes the <em>active</em> one, so every caller gets a fair, full chance. If the active caller’s window runs out it is <strong>dropped</strong>. And if callers pile up faster than you clear them, the ones waiting at the back eventually <strong>give up</strong> (“MISSED!”) — that counts as a drop too. Keeping the pile short is the real challenge.</p>
+<h4 class="unnumbered" id="earning-and-keying-attacks">Earning and Keying Attacks</h4>
+<p>Every caller you copy correctly earns you one <strong>attack</strong>. The pileup pauses and a magenta prompt — <strong>YOUR ATTACK — SEND:</strong> followed by a callsign — appears. Key that callsign on your paddles to “send” it. In <strong>single player</strong> this simply scores a bonus; in <strong>multiplayer</strong> the callsign is fired at another player and lands in <em>their</em> pile as a caller they must defend (see <em>Multiplayer</em> below). While you are keying an attack the pileup is frozen — callers neither arrive nor time out — so you can take your time. Send the attack to return to defending.</p>
+<h4 class="unnumbered" id="lives-and-game-over-solo">Lives and Game Over (solo)</h4>
+<p>You start with <strong>3 lives</strong>. Every <em>N</em> drops (the “drops per life” for your difficulty) costs one life; both timed-out callers and “MISSED” give-ups count. When your last life is gone the game ends, and the game-over screen shows your score, callsigns defended vs. dropped, accuracy, best streak, and the settings you played with. Press <strong>Click</strong> to play again (back to the lobby) or <strong>Long press</strong> to exit to the main menu.</p>
 <h4 class="unnumbered" id="scoring-1">Scoring</h4>
 <table>
 <thead>
@@ -1524,24 +1522,30 @@ The font family used is Lato.</p>
 </thead>
 <tbody>
 <tr>
-<td>Correct answer</td>
-<td>+100 base + 10 × streak bonus</td>
+<td>Correct caller</td>
+<td>+100 base + 10 × streak</td>
+</tr>
+<tr>
+<td>Attack sent</td>
+<td>+50</td>
 </tr>
 <tr>
 <td>Wrong answer</td>
 <td>−50</td>
 </tr>
 <tr>
-<td>Timeout</td>
+<td>Timed-out caller</td>
 <td>−25</td>
 </tr>
 </tbody>
 </table>
-<p>The streak counter increases with each consecutive correct answer and resets on any wrong answer or timeout. A higher streak means more bonus points per correct answer.</p>
-<h4 class="unnumbered" id="lives">Lives</h4>
-<p>You start with 3 lives. Every N timeouts costs you a life (N depends on the difficulty level). When all lives are lost, the game ends and your final score is displayed.</p>
+<p>Your <strong>streak</strong> grows with each correct copy and resets on a wrong answer or a timed-out caller; a higher streak adds more bonus per copy — and makes new callers arrive faster.</p>
 <h4 class="unnumbered" id="controls-during-play">Controls During Play</h4>
 <table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
 <thead>
 <tr>
 <th>Control</th>
@@ -1551,50 +1555,41 @@ The font family used is Lato.</p>
 <tbody>
 <tr>
 <td><strong>Paddles</strong></td>
-<td>Key your response</td>
+<td>Key your response (or the attack callsign)</td>
 </tr>
 <tr>
 <td><strong>Encoder</strong></td>
-<td>Adjust WPM speed or volume (see FN toggle)</td>
+<td>Adjust WPM speed, or volume (see FN)</td>
 </tr>
 <tr>
 <td><strong>Click</strong> (encoder)</td>
 <td>Submit your response immediately</td>
 </tr>
 <tr>
-<td><strong>FN short click</strong></td>
-<td>Toggle encoder between WPM and volume</td>
+<td><strong>FN (short click)</strong></td>
+<td>Toggle the encoder between <strong>speed</strong> and <strong>volume</strong></td>
 </tr>
 <tr>
 <td><strong>Long press</strong> (encoder or FN)</td>
-<td>Exit game</td>
+<td>Exit the game</td>
 </tr>
 </tbody>
 </table>
-<p>The status bar shows which parameter the encoder controls, indicated by a <code>&lt;</code> arrow:</p>
-<pre><code>15 wpm &lt;      ← encoder adjusts speed
-Vol 12
-
-15 wpm
-&lt; Vol 12      ← encoder adjusts volume</code></pre>
+<p>The bottom status line shows the value the encoder currently controls — <code>15 wpm</code> or <code>Vol 12</code> — and pressing <strong>FN</strong> swaps between them.</p>
+<h4 class="unnumbered" id="multiplayer">Multiplayer</h4>
+<p>In multiplayer, two or more M32 Pockets in the same room play at the same time and attack each other; the <strong>last player still in the game wins</strong>.</p>
+<p><strong>Set-up.</strong> On every device open Fight the Pileup and, in the lobby, press <strong>Click</strong> to switch to <strong>Multiplayer</strong>. Make sure all devices show the <strong>same Channel</strong> (Standard or Secondary). Within a few seconds each device lists the others under MULTIPLAYER. When everyone is ready, each player keys in on the paddles to start — players need not start at exactly the same moment.</p>
+<p><strong>Attacks.</strong> Whenever you correctly copy a caller and key your earned attack, that callsign is sent to one of the other players at random. On their device it appears as a caller marked <strong>FROM</strong> plus your callsign, shown in magenta, to be defended like any other; likewise, callsigns the others send land in <em>your</em> pile. Bot callers keep coming as well, so the pressure never lets up.</p>
+<p><strong>Opponents.</strong> During the pileup a compact strip near the top of the screen lists the other players and their remaining lives, updating live as they take damage; a player who has been knocked out is shown dimmed.</p>
+<p><strong>Winning.</strong> When you lose your last life you are out; your screen shows the game-over stats and waits for the result. The last player still alive wins: that device shows <strong>YOU WIN!</strong>, and every other device shows <strong>WINNER:</strong> followed by the winning callsign. From there, <strong>Click</strong> returns to the lobby for another match and <strong>Long press</strong> exits.</p>
 <h4 class="unnumbered" id="tips-for-beginners-1">Tips for Beginners</h4>
 <ul>
-<li><p><strong>Start on EASY difficulty.</strong> The 45-second timeout gives you plenty of time to listen to the callsign multiple times before attempting to key it.</p></li>
-<li><p><strong>Don’t rush.</strong> Wait for the text hint to appear after 3 plays if you’re not sure. There’s no penalty for waiting — only for timeouts.</p></li>
-<li><p><strong>Lower the WPM.</strong> Use the encoder to reduce the speed if the CW is too fast. The challenge plays at the same WPM as your keying speed.</p></li>
-<li><p><strong>Listen for the structure.</strong> Callsigns follow patterns: usually a 1-3 letter prefix, a digit, then 1-3 letter suffix (e.g., DL1ABC, W3XY, VK2GR).</p></li>
-<li><p><strong>Wrong answers let you retry.</strong> If you make a mistake, the same callsign replays — you get unlimited attempts within the timeout period.</p></li>
+<li><p><strong>Start on EASY.</strong> The 45-second window lets you hear each caller several times before you commit.</p></li>
+<li><p><strong>Use the hint.</strong> If you are unsure, wait for the callsign to be revealed — there is no penalty for taking your time, only for letting callers drop.</p></li>
+<li><p><strong>Slow down.</strong> Lower the WPM with the encoder; callers are played at your own keying speed.</p></li>
+<li><p><strong>Learn the shapes.</strong> Callsigns follow patterns: a 1–3 letter prefix, a digit, then a 1–3 letter suffix (DL1ABC, W3XY, VK2GR).</p></li>
+<li><p><strong>Keep the pile short.</strong> Especially in multiplayer, clear callers quickly — if the queue grows, the oldest callers give up and cost you lives.</p></li>
 </ul>
-<h4 class="unnumbered" id="game-over-1">Game Over</h4>
-<p>When all lives are lost, the game over screen shows your final statistics:</p>
-<ul>
-<li><strong>Score:</strong> Your total points</li>
-<li><strong>Defended / Dropped:</strong> How many callsigns you got right vs. timed out</li>
-<li><strong>Accuracy:</strong> Percentage of correct answers</li>
-<li><strong>Best streak:</strong> Longest run of consecutive correct answers</li>
-<li><strong>WPM / Difficulty:</strong> The settings you played with</li>
-</ul>
-<p>Press <strong>Click</strong> to play again (returns to lobby) or <strong>Long press</strong> to exit to the main menu.</p>
 <h3 data-number="5.7.3" id="radio-cave"><span class="header-section-number">5.7.3</span> Radio Cave</h3>
 <p><strong>Radio Cave</strong> is a text-based adventure game inspired by the classic <em>Colossal Cave Adventure</em>. You play as a ham radio operator who discovers an abandoned Cold War-era radio station hidden inside a mountain cave. Your mission: explore the station, repair the equipment, and complete a QSO with a remote station that has been calling for over 50 years.</p>
 <p>Unlike the other games, Radio Cave does not use scoring or time pressure. Instead, it is a puzzle-based exploration game where you navigate rooms, collect items, and solve challenges — all by keying commands as Morse code. CW clues are woven into the game world: some information is only revealed as Morse audio, and the final challenge requires you to key a real QSO exchange on your paddles.</p>
@@ -1745,7 +1740,7 @@ Vol 12
 <li><p>There is one fatal mistake possible in this game. The station has a warning about it. Read the manual — the one in the game, that is.</p></li>
 <li><p>The game can be completed, and every puzzle has a logical solution rooted in real radio practice and CW conventions.</p></li>
 </ul>
-<h4 class="unnumbered" id="game-over-2">Game Over</h4>
+<h4 class="unnumbered" id="game-over-1">Game Over</h4>
 <p>There is exactly one fatal mistake in Radio Cave. If it happens, a death screen appears; key any letter or click the encoder to restart from the beginning. Your save is wiped and your step counter resets.</p>
 <p>There is also one situation where the game can become unwinnable through repeated mistakes (you will know when it happens). In that case, key <code>NEW</code> and confirm with <code>Y</code> to start over.</p>
 <p>When you successfully complete the game, a victory screen shows your total step count. Congratulations — the message has finally been received.</p>
@@ -1910,7 +1905,7 @@ Vol 12
 <li><p>Raise your Koch lesson if you keep getting the pool-too-small warning: 3-letter words need lesson 8, 4-letter words lesson 10, 5-letter words lesson 14, 6-letter words lesson 16 (using the default Morserino character order).</p></li>
 <li><p>Backspace freely (<code>&lt;err&gt;</code> = 8 dits) — the timer keeps running, but a wrong submitted guess costs you 5 s, so it’s almost always cheaper to fix the mistake than to submit and try again.</p></li>
 </ul>
-<h4 class="unnumbered" id="multiplayer">Multiplayer</h4>
+<h4 class="unnumbered" id="multiplayer-1">Multiplayer</h4>
 <p>Morsel can also be played as a synchronised multi-player match against other M32 Pockets in the same room, with one device acting as the <strong>server</strong> and any number of others as <strong>clients</strong>. Every player keys the same 10 words at the same time, and at the end the server broadcasts a ranked score table that every device shows simultaneously.</p>
 <h5 class="unnumbered" id="starting-a-multiplayer-game">Starting a Multiplayer Game</h5>
 <p>After choosing <strong>Games → Morsel</strong>, pick <strong>Multiplayer</strong> at the first screen. You can then choose:</p>

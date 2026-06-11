@@ -1668,11 +1668,13 @@ the pool.
 
 ### Fight the Pileup
 
-**Fight the Pileup** is a CW training game where you practice copying and keying callsigns under time pressure — just like working a real pileup on the bands. The game plays random callsigns as CW audio, and you must decode them by ear and key them back correctly before time runs out.
+**Fight the Pileup** is a CW training game where you practise copying and keying callsigns under time pressure — just like working a real pileup on the bands. Callsigns arrive as CW audio; you decode them by ear and key them back before they give up. It can be played solo against the device, or as a multiplayer "last station standing" match against other M32 Pockets in the same room.
+
+Fight the Pileup is only available on the M32 Pocket.
 
 #### Starting the Game {-}
 
-From the main menu, navigate to **Games → Fight Pileup**. If this is your first time playing, you will be asked to enter your callsign and name using the encoder and buttons:
+From the main menu, navigate to **Games → Fight Pileup**. The first time you play, you are asked to enter your callsign and name with the encoder and buttons:
 
 - **Encoder:** Select a character
 - **Click:** Add the character
@@ -1683,7 +1685,7 @@ Your callsign and name are saved and remembered for future sessions.
 
 #### The Lobby {-}
 
-After entering your identity, you arrive at the lobby screen. Here you can configure the game before entering the pileup:
+The lobby is where you set up a game before entering the pileup:
 
 - **Encoder:** Select difficulty level (EASY, NORMAL, HARD, EXPERT)
 - **Click:** Toggle between Single Player and Multiplayer mode
@@ -1691,108 +1693,91 @@ After entering your identity, you arrive at the lobby screen. Here you can confi
 - **Paddles:** Enter the pileup (starts the code challenge)
 - **Long press:** Exit to menu
 
-The difficulty level controls how much time you have to respond, how many timeouts before you lose a life, and how quickly new challenges appear:
+The difficulty level controls how long each caller waits for you, how many drops cost a life, how fast new callers arrive, and how soon the callsign hint is revealed:
 
-| Level  | Timeout | Drops per Life |
-|--------|---------|----------------|
-| EASY   | 45 sec  | 5              |
-| NORMAL | 30 sec  | 4              |
-| HARD   | 20 sec  | 3              |
-| EXPERT | 12 sec  | 2              |
+| Level  | Caller timeout | Drops per life | Plays before hint |
+|--------|----------------|----------------|-------------------|
+| EASY   | 45 sec         | 5              | 3                 |
+| NORMAL | 30 sec         | 4              | 3                 |
+| HARD   | 20 sec         | 3              | 2                 |
+| EXPERT | 12 sec         | 2              | 1                 |
+
+In **Multiplayer** the lobby additionally shows the ESP-NOW **Channel** (Standard or Secondary) and a live list of the other players it has found. All devices must be set to the **same channel** to see each other — this is the LoRa/ESP-NOW channel preference.
 
 #### Code Challenge (Entry Gate) {-}
 
-Before entering the pileup, you must key a short random code (4 characters) on your paddles. This serves as a warm-up and confirms that your paddles are working. Each correctly keyed character lights up in green. If you make a mistake, the sequence resets — just try again.
-
-Long press to cancel and return to the lobby.
+Before the pileup starts you key a short random code (4 characters) on your paddles — a warm-up that also confirms your paddles work. Each correct character lights up green; a mistake resets the sequence, just try again. You can already set your keying **speed** here: the **encoder** changes WPM, **FN** toggles it to volume, and the current value is shown on screen. Long press to cancel back to the lobby.
 
 #### Gameplay {-}
 
-Once you pass the code challenge, the pileup begins. The game presents you with a continuous stream of random callsigns to decode and key back.
+Callsigns ("callers") arrive and queue up. You always work the **oldest** one first — that is the active caller, shown under **DEFEND!**
 
-#### How It Works {-}
+1. **Listen.** The active caller is played as CW audio at a slightly lower pitch than your sidetone, so you can tell it apart from your own keying. It repeats automatically.
 
-1. **Listen:** A callsign is played as CW audio at a different pitch from your sidetone, so you can distinguish it from your own keying. The callsign repeats automatically.
+2. **Decode.** Identify the callsign by ear. After a few plays (3 on Easy and Normal, 2 on Hard, 1 on Expert) the text is revealed on screen as a hint — but try to beat it.
 
-2. **Decode:** Try to identify the callsign by ear. After the 3rd play, a text hint appears on screen — but try to get it before that!
+3. **Key it back.** Key the callsign on your paddles; your decoded characters appear as you go. A word-length pause (about a second) submits automatically, or click the encoder to submit at once.
 
-3. **Key your response:** Use your paddles to key the callsign you heard. Your keyed characters appear on screen as they are decoded.
+4. **Result.**
+   - **Correct** — the caller is cleared, you score, and you immediately **earn an attack** (see below).
+   - **Wrong** — the CW replays so you can try the same caller again; there is no limit on retries within its time window.
 
-4. **Automatic submission:** Your response is automatically submitted after a word-length pause (about 1 second of silence). You can also click the encoder to submit immediately.
+Each caller has its own time window, shown by the progress bar (green → yellow → red). The window starts when the caller becomes the *active* one, so every caller gets a fair, full chance. If the active caller's window runs out it is **dropped**. And if callers pile up faster than you clear them, the ones waiting at the back eventually **give up** ("MISSED!") — that counts as a drop too. Keeping the pile short is the real challenge.
 
-5. **Result:**
-   - **Correct:** A brief "OK!" flash with your score bonus, then the next challenge starts automatically.
-   - **Wrong:** A "WRONG" flash. The CW plays again so you can retry with the same callsign.
-   - **Timeout:** If the progress bar runs out before you respond correctly, you lose points and a new challenge begins.
+#### Earning and Keying Attacks {-}
 
-#### Screen Layout {-}
+Every caller you copy correctly earns you one **attack**. The pileup pauses and a magenta prompt — **YOUR ATTACK — SEND:** followed by a callsign — appears. Key that callsign on your paddles to "send" it. In **single player** this simply scores a bonus; in **multiplayer** the callsign is fired at another player and lands in *their* pile as a caller they must defend (see *Multiplayer* below). While you are keying an attack the pileup is frozen — callers neither arrive nor time out — so you can take your time. Send the attack to return to defending.
 
-From top to bottom:
+#### Lives and Game Over (solo) {-}
 
-- **HUD bar:** Lives (red dots), your callsign/name, current score, streak multiplier
-- **Progress bar:** Time remaining for the current challenge (green → yellow → red)
-- **Challenge area:** Play counter and hint (after 3 plays)
-- **Input area:** Your keyed response
-- **Stats:** Correct and missed counts
-- **Status bar:** Current WPM and volume level
+You start with **3 lives**. Every *N* drops (the "drops per life" for your difficulty) costs one life; both timed-out callers and "MISSED" give-ups count. When your last life is gone the game ends, and the game-over screen shows your score, callsigns defended vs. dropped, accuracy, best streak, and the settings you played with. Press **Click** to play again (back to the lobby) or **Long press** to exit to the main menu.
 
 #### Scoring {-}
 
 | Event | Points |
 |-------|--------|
-| Correct answer | +100 base + 10 × streak bonus |
+| Correct caller | +100 base + 10 × streak |
+| Attack sent | +50 |
 | Wrong answer | −50 |
-| Timeout | −25 |
+| Timed-out caller | −25 |
 
-The streak counter increases with each consecutive correct answer and resets on any wrong answer or timeout. A higher streak means more bonus points per correct answer.
-
-#### Lives {-}
-
-You start with 3 lives. Every N timeouts costs you a life (N depends on the difficulty level). When all lives are lost, the game ends and your final score is displayed.
+Your **streak** grows with each correct copy and resets on a wrong answer or a timed-out caller; a higher streak adds more bonus per copy — and makes new callers arrive faster.
 
 #### Controls During Play {-}
 
 | Control | Action |
 |---------|--------|
-| **Paddles** | Key your response |
-| **Encoder** | Adjust WPM speed or volume (see FN toggle) |
+| **Paddles** | Key your response (or the attack callsign) |
+| **Encoder** | Adjust WPM speed, or volume (see FN) |
 | **Click** (encoder) | Submit your response immediately |
-| **FN short click** | Toggle encoder between WPM and volume |
-| **Long press** (encoder or FN) | Exit game |
+| **FN (short click)** | Toggle the encoder between **speed** and **volume** |
+| **Long press** (encoder or FN) | Exit the game |
 
-The status bar shows which parameter the encoder controls, indicated by a `<` arrow:
+The bottom status line shows the value the encoder currently controls — `15 wpm` or `Vol 12` — and pressing **FN** swaps between them.
 
-```
-15 wpm <      ← encoder adjusts speed
-Vol 12
+#### Multiplayer {-}
 
-15 wpm
-< Vol 12      ← encoder adjusts volume
-```
+In multiplayer, two or more M32 Pockets in the same room play at the same time and attack each other; the **last player still in the game wins**.
+
+**Set-up.** On every device open Fight the Pileup and, in the lobby, press **Click** to switch to **Multiplayer**. Make sure all devices show the **same Channel** (Standard or Secondary). Within a few seconds each device lists the others under MULTIPLAYER. When everyone is ready, each player keys in on the paddles to start — players need not start at exactly the same moment.
+
+**Attacks.** Whenever you correctly copy a caller and key your earned attack, that callsign is sent to one of the other players at random. On their device it appears as a caller marked **FROM** plus your callsign, shown in magenta, to be defended like any other; likewise, callsigns the others send land in *your* pile. Bot callers keep coming as well, so the pressure never lets up.
+
+**Opponents.** During the pileup a compact strip near the top of the screen lists the other players and their remaining lives, updating live as they take damage; a player who has been knocked out is shown dimmed.
+
+**Winning.** When you lose your last life you are out; your screen shows the game-over stats and waits for the result. The last player still alive wins: that device shows **YOU WIN!**, and every other device shows **WINNER:** followed by the winning callsign. From there, **Click** returns to the lobby for another match and **Long press** exits.
 
 #### Tips for Beginners {-}
 
-- **Start on EASY difficulty.** The 45-second timeout gives you plenty of time to listen to the callsign multiple times before attempting to key it.
+- **Start on EASY.** The 45-second window lets you hear each caller several times before you commit.
 
-- **Don't rush.** Wait for the text hint to appear after 3 plays if you're not sure. There's no penalty for waiting — only for timeouts.
+- **Use the hint.** If you are unsure, wait for the callsign to be revealed — there is no penalty for taking your time, only for letting callers drop.
 
-- **Lower the WPM.** Use the encoder to reduce the speed if the CW is too fast. The challenge plays at the same WPM as your keying speed.
+- **Slow down.** Lower the WPM with the encoder; callers are played at your own keying speed.
 
-- **Listen for the structure.** Callsigns follow patterns: usually a 1-3 letter prefix, a digit, then 1-3 letter suffix (e.g., DL1ABC, W3XY, VK2GR).
+- **Learn the shapes.** Callsigns follow patterns: a 1–3 letter prefix, a digit, then a 1–3 letter suffix (DL1ABC, W3XY, VK2GR).
 
-- **Wrong answers let you retry.** If you make a mistake, the same callsign replays — you get unlimited attempts within the timeout period.
-
-#### Game Over {-}
-
-When all lives are lost, the game over screen shows your final statistics:
-
-- **Score:** Your total points
-- **Defended / Dropped:** How many callsigns you got right vs. timed out
-- **Accuracy:** Percentage of correct answers
-- **Best streak:** Longest run of consecutive correct answers
-- **WPM / Difficulty:** The settings you played with
-
-Press **Click** to play again (returns to lobby) or **Long press** to exit to the main menu.
+- **Keep the pile short.** Especially in multiplayer, clear callers quickly — if the queue grows, the oldest callers give up and cost you lives.
 
 
 ### Radio Cave

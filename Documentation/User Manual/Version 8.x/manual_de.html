@@ -1416,7 +1416,8 @@ aus dem englischsprachigen Original übersetzt.</p>
 <h4 class="unnumbered" id="tipps-fuer-anfaenger">Tipps für Anfänger</h4>
 <p>Beginne mit einer niedrigen Koch-Lektion (weniger Zeichen) und einer angenehmen Geschwindigkeit. Das Spiel ist als Trainingstool am wirksamsten, wenn du gefordert, aber nicht überfordert bist. Wenn Zeichen zu schnell den Boden erreichen, verringere den Start-Sub-Level oder die WpM. Mit fortschreitender Erkennungsleistung kannst du die Koch-Lektion erhöhen, um mehr Zeichen in den Pool aufzunehmen.</p>
 <h3 data-number="5.7.2" id="fight-the-pileup"><span class="header-section-number">5.7.2</span> Fight the Pileup</h3>
-<p><strong>Fight the Pileup</strong> ist ein CW-Trainingsspiel, bei dem du Rufzeichen unter Zeitdruck kopieren und eingeben musst – ganz wie beim Arbeiten eines echten Pileups auf dem Band. Das Spiel gibt zufällige Rufzeichen als CW-Audio aus, und du musst sie nach Gehör dekodieren und korrekt zurückgeben, bevor die Zeit abläuft.</p>
+<p><strong>Fight the Pileup</strong> ist ein CW-Trainingsspiel, bei dem du Rufzeichen unter Zeitdruck kopieren und zurückgeben musst – ganz wie beim Arbeiten eines echten Pileups auf dem Band. Rufzeichen kommen als CW-Audio; du dekodierst sie nach Gehör und gibst sie zurück, bevor sie aufgeben. Es kann allein gegen das Gerät oder als Mehrspieler-Match „letzte Station, die übrig bleibt” gegen andere M32 Pockets im selben Raum gespielt werden.</p>
+<p>Fight the Pileup ist nur auf dem M32 Pocket verfügbar.</p>
 <h4 class="unnumbered" id="spielstart-1">Spielstart</h4>
 <p>Navigiere im Hauptmenü zu <strong>Games → Fight Pileup</strong>. Wenn du das Spiel zum ersten Mal spielst, wirst du aufgefordert, dein Rufzeichen und deinen Namen über den ENCODER einzugeben:</p>
 <ul>
@@ -1427,21 +1428,22 @@ aus dem englischsprachigen Original übersetzt.</p>
 </ul>
 <p>Rufzeichen und Name werden gespeichert und für zukünftige Sitzungen gemerkt.</p>
 <h4 class="unnumbered" id="die-lobby">Die Lobby</h4>
-<p>Nach der Eingabe deiner Identität gelangst du zum Lobby-Bildschirm, auf dem du das Spiel konfigurieren kannst:</p>
+<p>In der Lobby richtest du ein Spiel ein, bevor du den Pileup betrittst:</p>
 <ul>
 <li><strong>ENCODER</strong>: Schwierigkeitsgrad wählen (EASY, NORMAL, HARD, EXPERT)</li>
 <li><strong>Klick</strong>: Zwischen Einzelspieler- und Mehrspielermodus umschalten</li>
 <li><strong>FN (kurzer Klick)</strong>: Zwischen Rufzeichen- und Namensanzeige umschalten (wenn beides gesetzt ist)</li>
-<li><strong>Paddles</strong>: Pileup betreten (Aufgabe startet)</li>
+<li><strong>Paddles</strong>: Pileup betreten (Code-Aufgabe startet)</li>
 <li><strong>Langer Druck</strong>: Zum Menü zurückkehren</li>
 </ul>
-<p>Der Schwierigkeitsgrad beeinflusst die verfügbare Antwortzeit, die Anzahl der Timeouts pro Leben und wie schnell neue Aufgaben erscheinen:</p>
+<p>Der Schwierigkeitsgrad beeinflusst, wie lange jeder Anrufer auf dich wartet, wie viele Drops ein Leben kosten, wie schnell neue Anrufer erscheinen und wann der Rufzeichen-Hinweis eingeblendet wird:</p>
 <table>
 <thead>
 <tr>
 <th>Level</th>
-<th>Timeout</th>
+<th>Anrufer-Timeout</th>
 <th>Drops pro Leben</th>
+<th>Abspiele bis Hinweis</th>
 </tr>
 </thead>
 <tbody>
@@ -1449,52 +1451,48 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td>EASY</td>
 <td>45 Sek</td>
 <td>5</td>
+<td>3</td>
 </tr>
 <tr>
 <td>NORMAL</td>
 <td>30 Sek</td>
 <td>4</td>
+<td>3</td>
 </tr>
 <tr>
 <td>HARD</td>
 <td>20 Sek</td>
 <td>3</td>
+<td>2</td>
 </tr>
 <tr>
 <td>EXPERT</td>
 <td>12 Sek</td>
 <td>2</td>
+<td>1</td>
 </tr>
 </tbody>
 </table>
+<p>Im <strong>Mehrspielermodus</strong> zeigt die Lobby zusätzlich den ESP-NOW-<strong>Kanal</strong> (Standard oder Secondary) sowie eine aktuelle Liste der gefundenen Mitspieler. Alle Geräte müssen auf denselben <strong>Kanal</strong> eingestellt sein, um sich gegenseitig zu sehen – das ist die LoRa/ESP-NOW-Kanal-Einstellung.</p>
 <h4 class="unnumbered" id="code-aufgabe-eingangstor">Code-Aufgabe (Eingangstor)</h4>
-<p>Bevor du den Pileup betrittst, musst du einen kurzen zufälligen Code (4 Zeichen) auf deinen Paddles eingeben. Dies dient als Aufwärmübung und bestätigt, dass deine Paddles funktionieren. Jedes korrekt eingegebene Zeichen leuchtet grün auf. Bei einem Fehler wird die Sequenz zurückgesetzt – versuche es einfach erneut.</p>
-<p>Langer Druck zum Abbrechen und Rückkehr zur Lobby.</p>
+<p>Bevor der Pileup beginnt, gibst du einen kurzen zufälligen Code (4 Zeichen) auf deinen Paddles ein – eine Aufwärmübung, die zugleich bestätigt, dass deine Paddles funktionieren. Jedes korrekte Zeichen leuchtet grün auf; bei einem Fehler wird die Sequenz zurückgesetzt, versuche es einfach erneut. Du kannst hier bereits deine Gebe-<strong>Geschwindigkeit</strong> einstellen: der <strong>ENCODER</strong> ändert die WpM, <strong>FN</strong> schaltet auf Lautstärke um, und der aktuelle Wert wird angezeigt. Langer Druck bricht ab und kehrt zur Lobby zurück.</p>
 <h4 class="unnumbered" id="spielablauf-1">Spielablauf</h4>
-<p>Nach Bestehen der Code-Aufgabe beginnt der Pileup. Das Spiel präsentiert dir einen kontinuierlichen Strom zufälliger Rufzeichen, die du dekodieren und zurückgeben musst.</p>
-<p><strong>So funktioniert es:</strong></p>
+<p>Rufzeichen („Anrufer”) treffen ein und reihen sich in eine Warteschlange ein. Du bearbeitest immer den <strong>ältesten</strong> zuerst – das ist der aktive Anrufer, angezeigt unter <strong>DEFEND!</strong></p>
 <ol type="1">
-<li><p><strong>Hören:</strong> Ein Rufzeichen wird als CW-Audio mit einer anderen Tonhöhe als dein Mithörton abgespielt, damit du es von deiner eigenen Eingabe unterscheiden kannst. Das Rufzeichen wiederholt sich automatisch.</p></li>
-<li><p><strong>Dekodieren:</strong> Versuche, das Rufzeichen nach Gehör zu identifizieren. Nach dem 3. Abspielen erscheint ein Texthinweis auf dem Bildschirm – versuche aber, es vorher zu erkennen!</p></li>
-<li><p><strong>Antwort eingeben:</strong> Gib das gehörte Rufzeichen mit den Paddles ein. Die eingegebenen Zeichen erscheinen auf dem Bildschirm.</p></li>
-<li><p><strong>Automatische Abgabe:</strong> Deine Antwort wird automatisch nach einer Wortlängen-Pause (ca. 1 Sekunde Stille) abgegeben. Du kannst auch den ENCODER klicken, um sofort abzugeben.</p></li>
-<li><p><strong>Ergebnis:</strong></p>
+<li><p><strong>Hören.</strong> Der aktive Anrufer wird als CW-Audio mit einer etwas tieferen Tonhöhe als dein Mithörton abgespielt, damit du ihn von deiner eigenen Eingabe unterscheiden kannst. Er wiederholt sich automatisch.</p></li>
+<li><p><strong>Dekodieren.</strong> Identifiziere das Rufzeichen nach Gehör. Nach einigen Abspielungen (3 bei Easy und Normal, 2 bei Hard, 1 bei Expert) wird der Text als Hinweis eingeblendet – versuche aber, schneller zu sein.</p></li>
+<li><p><strong>Zurückgeben.</strong> Gib das Rufzeichen mit den Paddles ein; deine dekodierten Zeichen erscheinen währenddessen. Eine Pause in Wortlänge (etwa eine Sekunde) gibt automatisch ab, oder klicke den ENCODER, um sofort abzugeben.</p></li>
+<li><p><strong>Ergebnis.</strong></p>
 <ul>
-<li><strong>Richtig:</strong> Kurzes „OK!“-Aufleuchten mit Punktebonus, dann startet automatisch die nächste Aufgabe.</li>
-<li><strong>Falsch:</strong> „WRONG”-Aufleuchten. Das CW wird erneut abgespielt, sodass du es mit demselben Rufzeichen nochmals versuchen kannst.</li>
-<li><strong>Timeout:</strong> Wenn der Fortschrittsbalken abläuft, bevor du korrekt geantwortet hast, verlierst du Punkte und eine neue Aufgabe beginnt.</li>
+<li><strong>Richtig</strong> – der Anrufer ist erledigt, du bekommst Punkte und verdienst sofort einen <strong>Angriff</strong> (siehe unten).</li>
+<li><strong>Falsch</strong> – das CW wird erneut abgespielt, sodass du denselben Anrufer nochmals versuchen kannst; innerhalb seines Zeitfensters gibt es keine Begrenzung der Versuche.</li>
 </ul></li>
 </ol>
-<h4 class="unnumbered" id="bildschirm-layout">Bildschirm-Layout</h4>
-<p>Von oben nach unten:</p>
-<ul>
-<li><strong>HUD-Leiste:</strong> Leben (rote Punkte), dein Rufzeichen/Name, aktueller Punktestand, Streak-Multiplikator</li>
-<li><strong>Fortschrittsbalken:</strong> Verbleibende Zeit für die aktuelle Aufgabe (grün → gelb → rot)</li>
-<li><strong>Aufgabenbereich:</strong> Abspiel-Zähler und Hinweis (nach 3 Abspielungen)</li>
-<li><strong>Eingabebereich:</strong> Deine eingegebene Antwort</li>
-<li><strong>Statistiken:</strong> Richtige und falsche Antworten</li>
-<li><strong>Statusleiste:</strong> Aktuelle WpM und Lautstärke</li>
-</ul>
+<p>Jeder Anrufer hat sein eigenes Zeitfenster, angezeigt durch den Fortschrittsbalken (grün → gelb → rot). Das Fenster startet, sobald der Anrufer zum <em>aktiven</em> wird, sodass jeder Anrufer eine faire, volle Chance erhält. Läuft das Fenster des aktiven Anrufers ab, gilt er als <strong>Drop</strong>. Und wenn sich Anrufer schneller stapeln, als du sie abarbeitest, geben die hinten Wartenden schließlich <strong>auf</strong> („MISSED!“) – das zählt ebenfalls als Drop. Den Stapel kurz zu halten ist die eigentliche Herausforderung.</p>
+<h4 class="unnumbered" id="angriffe-verdienen-und-geben">Angriffe verdienen und geben</h4>
+<p>Jeder korrekt kopierte Anrufer bringt dir einen <strong>Angriff</strong> ein. Der Pileup pausiert, und eine magentafarbene Aufforderung – <strong>YOUR ATTACK — SEND:</strong> gefolgt von einem Rufzeichen – erscheint. Gib dieses Rufzeichen mit den Paddles, um es zu „senden”. Im <strong>Einzelspielermodus</strong> bringt das einfach einen Bonus; im <strong>Mehrspielermodus</strong> wird das Rufzeichen auf einen anderen Spieler abgefeuert und landet in <em>dessen</em> Stapel als Anrufer, den er abwehren muss (siehe <em>Mehrspielermodus</em> unten). Während du einen Angriff gibst, ist der Pileup eingefroren – es kommen keine Anrufer und keiner läuft ab – du kannst dir also Zeit lassen. Mit dem Senden des Angriffs kehrst du zur Abwehr zurück.</p>
+<h4 class="unnumbered" id="leben-und-game-over-einzelspieler">Leben und Game Over (Einzelspieler)</h4>
+<p>Du startest mit <strong>3 Leben</strong>. Alle <em>N</em> Drops (die „Drops pro Leben” deines Schwierigkeitsgrads) kosten ein Leben; sowohl abgelaufene Anrufer als auch „MISSED”-Aufgaben zählen. Wenn dein letztes Leben weg ist, endet das Spiel, und der Game-Over-Bildschirm zeigt deinen Punktestand, abgewehrte vs. verlorene Rufzeichen, die Genauigkeit, die beste Streak und die verwendeten Einstellungen. Drücke <strong>Klick</strong>, um erneut zu spielen (zurück zur Lobby), oder <strong>Langer Druck</strong>, um zum Hauptmenü zurückzukehren.</p>
 <h4 class="unnumbered" id="punktewertung-1">Punktewertung</h4>
 <table>
 <thead>
@@ -1505,22 +1503,24 @@ aus dem englischsprachigen Original übersetzt.</p>
 </thead>
 <tbody>
 <tr>
-<td>Richtige Antwort</td>
-<td>+100 Basis + 10 × Streak-Bonus</td>
+<td>Richtiger Anrufer</td>
+<td>+100 Basis + 10 × Streak</td>
+</tr>
+<tr>
+<td>Angriff gesendet</td>
+<td>+50</td>
 </tr>
 <tr>
 <td>Falsche Antwort</td>
 <td>−50</td>
 </tr>
 <tr>
-<td>Timeout</td>
+<td>Abgelaufener Anrufer</td>
 <td>−25</td>
 </tr>
 </tbody>
 </table>
-<p>Der Streak-Zähler erhöht sich bei jeder aufeinanderfolgenden richtigen Antwort und wird bei jeder falschen Antwort oder jedem Timeout zurückgesetzt.</p>
-<h4 class="unnumbered" id="leben">Leben</h4>
-<p>Du startest mit 3 Leben. Alle N Timeouts kosten dich ein Leben (N hängt vom Schwierigkeitsgrad ab). Wenn alle Leben verloren sind, endet das Spiel und deine Endpunktzahl wird angezeigt.</p>
+<p>Deine <strong>Streak</strong> wächst mit jedem korrekten Kopieren und wird bei einer falschen Antwort oder einem abgelaufenen Anrufer zurückgesetzt; eine höhere Streak bringt mehr Bonus pro Kopie – und lässt neue Anrufer schneller eintreffen.</p>
 <h4 class="unnumbered" id="steuerung-im-spiel-1">Steuerung im Spiel</h4>
 <table>
 <colgroup>
@@ -1536,19 +1536,19 @@ aus dem englischsprachigen Original übersetzt.</p>
 <tbody>
 <tr>
 <td><strong>Paddles</strong></td>
-<td>Antwort eingeben</td>
+<td>Antwort (oder Angriffs-Rufzeichen) eingeben</td>
 </tr>
 <tr>
 <td><strong>ENCODER</strong></td>
-<td>WpM-Geschwindigkeit oder Lautstärke anpassen (siehe FN-Umschaltung)</td>
+<td>WpM-Geschwindigkeit oder Lautstärke anpassen (siehe FN)</td>
 </tr>
 <tr>
 <td><strong>Klick</strong> (ENCODER)</td>
 <td>Antwort sofort abgeben</td>
 </tr>
 <tr>
-<td><strong>FN kurzer Klick</strong></td>
-<td>ENCODER zwischen WpM und Lautstärke umschalten</td>
+<td><strong>FN (kurzer Klick)</strong></td>
+<td>ENCODER zwischen <strong>Geschwindigkeit</strong> und <strong>Lautstärke</strong> umschalten</td>
 </tr>
 <tr>
 <td><strong>Langer Druck</strong> (ENCODER oder FN)</td>
@@ -1556,25 +1556,21 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 </tbody>
 </table>
-<p>Die Statusleiste zeigt mit einem <code>&lt;</code>-Pfeil an, welchen Parameter der ENCODER gerade steuert.</p>
+<p>Die untere Statuszeile zeigt den Wert, den der ENCODER gerade steuert – <code>15 wpm</code> oder <code>Vol 12</code> – und mit <strong>FN</strong> wechselst du zwischen beiden.</p>
+<h4 class="unnumbered" id="mehrspielermodus">Mehrspielermodus</h4>
+<p>Im Mehrspielermodus spielen zwei oder mehr M32 Pockets im selben Raum gleichzeitig und greifen sich gegenseitig an; der <strong>letzte Spieler, der noch im Spiel ist, gewinnt</strong>.</p>
+<p><strong>Einrichtung.</strong> Öffne auf jedem Gerät Fight the Pileup und schalte in der Lobby mit <strong>Klick</strong> auf <strong>Multiplayer</strong> um. Achte darauf, dass alle Geräte denselben <strong>Kanal</strong> anzeigen (Standard oder Secondary). Innerhalb weniger Sekunden listet jedes Gerät die anderen unter MULTIPLAYER auf. Wenn alle bereit sind, startet jeder Spieler durch Eingeben auf den Paddles – die Spieler müssen nicht exakt gleichzeitig starten.</p>
+<p><strong>Angriffe.</strong> Immer wenn du einen Anrufer korrekt kopierst und deinen verdienten Angriff gibst, wird dieses Rufzeichen zufällig an einen der anderen Spieler gesendet. Auf dessen Gerät erscheint es als Anrufer mit der Kennzeichnung <strong>FROM</strong> plus deinem Rufzeichen, in Magenta, und muss wie jeder andere abgewehrt werden; ebenso landen die Rufzeichen, die die anderen senden, in <em>deinem</em> Stapel. Bot-Anrufer kommen ebenfalls weiterhin, sodass der Druck nie nachlässt.</p>
+<p><strong>Gegner.</strong> Während des Pileups zeigt ein kompakter Streifen am oberen Bildschirmrand die anderen Spieler und ihre verbleibenden Leben, die sich live aktualisieren, wenn sie Schaden nehmen; ein ausgeschiedener Spieler wird abgedunkelt dargestellt.</p>
+<p><strong>Gewinnen.</strong> Wenn du dein letztes Leben verlierst, bist du draußen; dein Bildschirm zeigt die Game-Over-Statistik und wartet auf das Ergebnis. Der letzte noch lebende Spieler gewinnt: dessen Gerät zeigt <strong>YOU WIN!</strong>, und jedes andere Gerät zeigt <strong>WINNER:</strong> gefolgt vom Rufzeichen des Gewinners. Von dort kehrt <strong>Klick</strong> zur Lobby für ein weiteres Match zurück, und <strong>Langer Druck</strong> beendet das Spiel.</p>
 <h4 class="unnumbered" id="tipps-fuer-anfaenger-1">Tipps für Anfänger</h4>
 <ul>
-<li><p><strong>Beginne auf Schwierigkeitsgrad EASY.</strong> Der 45-Sekunden-Timeout gibt dir genug Zeit, das Rufzeichen mehrmals zu hören.</p></li>
-<li><p><strong>Kein Stress.</strong> Warte auf den Texthinweis nach 3 Abspielungen, wenn du dir nicht sicher bist. Warten kostet keine Punkte – nur Timeouts.</p></li>
-<li><p><strong>WpM reduzieren.</strong> Nutze den ENCODER, um die Geschwindigkeit zu senken, wenn das CW zu schnell ist.</p></li>
-<li><p><strong>Auf die Struktur achten.</strong> Rufzeichen folgen Mustern: meist ein 1–3-buchstabiges Präfix, eine Ziffer, dann ein 1–3-buchstabiges Suffix (z.B. DL1ABC, W3XY, VK2GR).</p></li>
-<li><p><strong>Falsche Antworten erlauben einen Neuversuch.</strong> Bei einem Fehler wird dasselbe Rufzeichen wiederholt – du hast unbegrenzte Versuche innerhalb der Timeout-Zeit.</p></li>
+<li><p><strong>Beginne auf EASY.</strong> Das 45-Sekunden-Fenster lässt dich jeden Anrufer mehrmals hören, bevor du dich festlegst.</p></li>
+<li><p><strong>Nutze den Hinweis.</strong> Wenn du unsicher bist, warte, bis das Rufzeichen eingeblendet wird – Warten kostet keine Punkte, nur das Fallenlassen von Anrufern.</p></li>
+<li><p><strong>Langsamer werden.</strong> Senke die WpM mit dem ENCODER; Anrufer werden mit deiner eigenen Gebegeschwindigkeit abgespielt.</p></li>
+<li><p><strong>Lerne die Muster.</strong> Rufzeichen folgen Mustern: ein 1–3-buchstabiges Präfix, eine Ziffer, dann ein 1–3-buchstabiges Suffix (z.B. DL1ABC, W3XY, VK2GR).</p></li>
+<li><p><strong>Halte den Stapel kurz.</strong> Besonders im Mehrspielermodus: arbeite Anrufer zügig ab – wächst die Warteschlange, geben die ältesten Anrufer auf und kosten dich Leben.</p></li>
 </ul>
-<h4 class="unnumbered" id="game-over-1">Game Over</h4>
-<p>Wenn alle Leben verloren sind, zeigt der Game-Over-Bildschirm die Endstatistik:</p>
-<ul>
-<li><strong>Score:</strong> Gesamtpunktzahl</li>
-<li><strong>Defended / Dropped:</strong> Richtige Antworten vs. Timeouts</li>
-<li><strong>Accuracy:</strong> Prozentualer Anteil richtiger Antworten</li>
-<li><strong>Best streak:</strong> Längste Folge aufeinanderfolgender richtiger Antworten</li>
-<li><strong>WPM / Difficulty:</strong> Die verwendeten Einstellungen</li>
-</ul>
-<p>Drücke <strong>Klick</strong>, um erneut zu spielen (zurück zur Lobby), oder <strong>Langer Druck</strong>, um zum Hauptmenü zurückzukehren.</p>
 <h3 data-number="5.7.3" id="radio-cave"><span class="header-section-number">5.7.3</span> Radio Cave</h3>
 <p><strong>Radio Cave</strong> ist ein textbasiertes Abenteuerspiel, inspiriert vom Klassiker <em>Colossal Cave Adventure</em>. Du spielst einen Funkamateur, der eine verlassene Kalter-Krieg-Radiostation entdeckt, die in einer Berghöhle verborgen ist. Deine Mission: Die Station erkunden, die Ausrüstung reparieren und ein QSO mit einer Gegenstation abschließen, die seit über 50 Jahren ruft.</p>
 <p>Im Gegensatz zu den anderen Spielen gibt es weder Punktewertung noch Zeitdruck. Stattdessen ist es ein rätsellösungsbasiertes Erkundungsspiel, bei dem du Räume erkundest, Gegenstände sammelst und Aufgaben löst – alles durch Eingabe von Befehlen als Morsecode. CW-Hinweise sind in die Spielwelt eingebettet: Einige Informationen werden nur als Morse-Audio übermittelt, und die finale Aufgabe erfordert ein echtes QSO-Austausch auf den Paddles.</p>
@@ -1725,7 +1721,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><p>Es gibt einen fatalen Fehler in diesem Spiel. Die Station warnt davor. Lies die Anleitung – die im Spiel, wohlgemerkt.</p></li>
 <li><p>Das Spiel ist lösbar, und jedes Rätsel hat eine logische Lösung, die in echter Funkpraxis und CW-Konventionen verwurzelt ist.</p></li>
 </ul>
-<h4 class="unnumbered" id="game-over-2">Game Over</h4>
+<h4 class="unnumbered" id="game-over-1">Game Over</h4>
 <p>Es gibt genau einen fatalen Fehler in Radio Cave. Wenn er passiert, erscheint ein Todesbildschirm; gib einen beliebigen Buchstaben ein oder klicke den ENCODER, um von vorne zu starten. Der Spielstand wird gelöscht und der Schrittzähler zurückgesetzt.</p>
 <p>Es gibt auch eine Situation, in der das Spiel durch wiederholte Fehler unlösbar werden kann (du wirst es bemerken). In diesem Fall gib <code>NEW</code> ein und bestätige mit <code>Y</code>, um neu zu starten.</p>
 <p>Wenn du das Spiel erfolgreich abschließt, zeigt ein Siegesbildschirm deine Gesamtschrittanzahl. Herzlichen Glückwunsch – die Nachricht wurde endlich empfangen.</p>
