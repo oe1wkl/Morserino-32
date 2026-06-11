@@ -5,7 +5,7 @@ It contains the always-true facts and hard rules for working on this codebase.
 Process guidance (how to approach a feature, refactor, or bugfix) lives in the
 project skills; this file is about *what is true* and *what must never be violated*.
 
-> **Status: DRAFT v0.1.** Items marked `TODO(audit)` are to be confirmed or
+> **Status: DRAFT v0.2.** Items marked `TODO(audit)` are to be confirmed or
 > filled in during/after the consistency audit. Do not guess these — ask or check.
 
 ---
@@ -107,7 +107,7 @@ These were each discovered the hard way. Treat them as invariants:
 
 All interactive modes — the classic training modes (CW Keyer, CW Generator,
 Echo Trainer, Koch Trainer, Transceiver modes, …) as well as games and the
-QSO Bot — must follow **`docs/UX_CONVENTIONS.md`**. The classic modes are the
+QSO Bot — must follow **`devdocs/UX_CONVENTIONS.md`**. The classic modes are the
 incumbent standard: global mechanisms (speed, volume, mode exit, preferences
 entry) are defined by them, and newer features conform to them — not the
 other way around. Games (M32 Pocket / TFT only) may differ in screen layout,
@@ -131,6 +131,6 @@ A change is done when:
 
 1. It builds cleanly for **both** hardware variants.
 2. It follows the hard rules in §3 and the NVS conventions in §4.
-3. Its user interaction conforms to `docs/UX_CONVENTIONS.md`.
+3. Its user interaction conforms to `devdocs/UX_CONVENTIONS.md`.
 4. Manuals (EN + DE) are updated or a TODO is explicitly recorded.
 5. No new ad-hoc patterns were introduced where a documented one exists.
