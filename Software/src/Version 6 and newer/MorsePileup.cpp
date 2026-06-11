@@ -54,6 +54,8 @@ extern String getRandomCall(int maxLength);
 extern String generateCWword(const String& symbols);
 
 static LGFX_Sprite* canvas = nullptr;
+static bool encoderIsVolume = false;   // FN (vol button) toggles encoder WPM <-> volume
+                                       // (shared by the code-challenge and pileup screens)
 static FtpGameData   ftp;
 
 static const char ENTRY_CHARS[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/";
@@ -895,10 +897,15 @@ static void stateLobby() {
             canvas->setFont(&fonts::FreeSans9pt7b);
             drawCentredText(155, "MULTIPLAYER", FTP_TITLE);
             canvas->setFont(&fonts::Font0);
-            int y = 178;
+            // Show the channel by its preferences label (not the hidden number);
+            // both devices must be on the same one to see each other.
+            snprintf(buf, sizeof(buf), "Channel: %s",
+                     MorsePreferences::pliste[posLoraChannel].value ? "Secondary" : "Standard");
+            drawCentredText(180, buf, FTP_TEXT);
+            int y = 198;
             int active2 = countActivePlayers();
             if (active2 == 0)
-                drawCentredText(y, "Searching...", FTP_DIM);
+                drawCentredText(y, "Waiting for players...", FTP_TEXT);
             else {
                 for (int i = 0; i < FTP_MAX_PLAYERS && y < 230; i++) {
                     if (!ftp.players[i].active) continue;
@@ -976,6 +983,7 @@ static void stateCodeChallenge() {
     clearPaddleLatches();
     gameCharBuffer = 0;
     updateTimings();
+    encoderIsVolume = false;          // start on speed; FN (vol button) toggles to volume
 
     unsigned long startTime = millis();
     bool success = false;
@@ -1026,6 +1034,15 @@ static void stateCodeChallenge() {
         snprintf(timeBuf, sizeof(timeBuf), "%lu sec", elapsed);
         drawCentredText(210, timeBuf, FTP_DIM);
 
+        // Speed / volume (encoder), same mechanism as the pileup; FN toggles.
+        char wvBuf[20];
+        if (encoderIsVolume)
+            snprintf(wvBuf, sizeof(wvBuf), "Vol %d", MorsePreferences::sidetoneVolume);
+        else
+            snprintf(wvBuf, sizeof(wvBuf), "%d wpm", ftp.wpm);
+        drawCentredText(234, wvBuf, FTP_ACCENT);
+        drawCentredText(254, "Encoder: spd   FN: vol", FTP_DIM);
+
         drawCentredText(280, "Long press: cancel", FTP_TEXT);
         pushFrame();
 
@@ -1043,11 +1060,35 @@ static void stateCodeChallenge() {
             }
         }
 
+        // Encoder: WPM, or volume when FN-toggled (same mechanism as the pileup).
+        if (keyerState == IDLE_STATE) {
+            int enc = checkEncoder();
+            if (enc) {
+                MorseOutput::resetTOT();
+                if (encoderIsVolume) {
+                    int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
+                    MorsePreferences::sidetoneVolume = newVol;
+                    #ifdef CONFIG_TLV320AIC3100
+                    MorseOutput::soundSetVolume(newVol);
+                    #endif
+                    MorseOutput::pwmClick(newVol);
+                } else {
+                    ftp.wpm = constrain(ftp.wpm + enc, 5, 60);
+                    MorsePreferences::wpm = ftp.wpm;
+                    updateTimings();
+                }
+            }
+        }
+
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == -1) { failed = true; }
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
+        if (Buttons::volButton.clicks == 1) {     // FN: toggle encoder speed/volume
+            encoderIsVolume = !encoderIsVolume;
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+        }
         if (Buttons::volButton.clicks == -1) { failed = true; }
 
         checkShutDown(false);
@@ -1101,7 +1142,6 @@ static void stateCodeChallenge() {
 //         for the player to key — this sends an attack to other players.
 
 static int  currentAttackIdx = -1;     // index of the attack being defended, or -1
-static bool encoderIsVolume = false;   // FN (vol button) toggles encoder between WPM and volume
 
 static void drawPileupHUD() {
     // Top bar: lives (dots) | ident | score
