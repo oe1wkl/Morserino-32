@@ -1078,6 +1078,21 @@ static void drawPileupHUD() {
         canvas->drawString(buf, FTP_W - 4, 26);
         canvas->setTextDatum(lgfx::top_left);
     }
+
+    // Multiplayer: a compact live strip of opponents — "IDENT:lives", green
+    // while alive, dimmed once eliminated. Their lives update from beacons.
+    if (!ftp.singlePlayer) {
+        canvas->setFont(&fonts::Font0);
+        int x = 4;
+        for (int i = 0; i < FTP_MAX_PLAYERS && x < FTP_W - 34; i++) {
+            if (!ftp.players[i].active) continue;
+            char ob[16];
+            snprintf(ob, sizeof(ob), "%s:%d", ftp.players[i].ident, ftp.players[i].lives);
+            canvas->setTextColor(ftp.players[i].eliminated ? FTP_DIM : FTP_OK, FTP_BG);
+            canvas->drawString(ob, x, 26);
+            x += canvas->textWidth(ob) + 6;
+        }
+    }
 }
 
 static void drawDefendArea() {
@@ -1399,6 +1414,13 @@ static void statePileup() {
         // Not while an attack pause is active: callers enqueued during the pause
         // would be wrongly time-shifted on resume. They wait in the ring instead.
         if (!ftp.singlePlayer && !attackMode) checkReceivedMessages();
+
+        // Keep the roster live during the game: beacon our own state (lives/score,
+        // inPileup = 1) so peers can track us, and age out peers that went silent.
+        if (!ftp.singlePlayer) {
+            if (millis() - ftp.lastBeaconSent >= FTP_BEACON_INTERVAL) sendBeacon();
+            updateRoster();
+        }
 
         // --- Earned-attack mode: after a correct defend the pileup pauses and the
         //     player keys ONE attack. No spawning / no timeouts while it is up. ---
