@@ -399,6 +399,9 @@ enum prefPos : uint8_t {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 				posBluetoothOut, posBluetoothARkey,
 #endif
+#ifdef CONFIG_BLE_MIDI
+				posMidiEnable, posMidiChannel, posMidiLeftNote, posMidiRightNote,
+#endif
 #ifdef CONFIG_TFT
         posTheme, 
 #endif
