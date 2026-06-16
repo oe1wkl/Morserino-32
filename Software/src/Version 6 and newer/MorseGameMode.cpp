@@ -226,6 +226,16 @@ LGFX_Sprite *MorseGameMode::getSprite() {
   return sprite;
 }
 
+void MorseGameMode::drawCentred(LGFX_Sprite *s, int centreX, int y,
+                                const char *text, uint16_t color, uint16_t bg,
+                                const lgfx::IFont *font) {
+  if (font) s->setFont(font);
+  s->setTextColor(color, bg);
+  s->setTextDatum(lgfx::top_center);
+  s->drawString(text, centreX, y);
+  s->setTextDatum(lgfx::top_left);
+}
+
 [[noreturn]] void MorseGameMode::triggerMemoryClearingReboot() {
   rebootMenuPtr = MorsePreferences::menuPtr;
   rebootMagic   = 0xC0FFEE42u;

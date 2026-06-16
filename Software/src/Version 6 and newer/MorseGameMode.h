@@ -64,6 +64,14 @@ namespace MorseGameMode {
   // Currently-allocated sprite, or nullptr if not in game mode.
   LGFX_Sprite *getSprite();
 
+  // Centre a single line of text horizontally at (centreX, y) on a game
+  // sprite, with the given fg/bg colours and optional font. Shared helper —
+  // was duplicated verbatim as drawCentredText() in MorseGame.cpp and
+  // MorsePileup.cpp; callers pass their own centre-x and background so it
+  // stays game-agnostic.
+  void drawCentred(LGFX_Sprite *s, int centreX, int y, const char *text,
+                   uint16_t color, uint16_t bg, const lgfx::IFont *font = nullptr);
+
   // Force a memory-clearing reboot. Saves MorsePreferences::menuPtr to RTC,
   // shows a brief "Clearing memory..." overlay, then ESP.restart()s. After
   // the reset, setup() detects the RTC magic and auto-resumes directly

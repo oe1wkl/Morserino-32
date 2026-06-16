@@ -292,11 +292,7 @@ static void pushFrame() {
 
 static void drawCentredText(int y, const char* text, uint16_t color,
                             const lgfx::IFont* font) {
-    if (font) canvas->setFont(font);
-    canvas->setTextColor(color, FTP_BG);
-    canvas->setTextDatum(lgfx::top_center);
-    canvas->drawString(text, FTP_W / 2, y);
-    canvas->setTextDatum(lgfx::top_left);
+    MorseGameMode::drawCentred(canvas, FTP_W / 2, y, text, color, FTP_BG, font);
 }
 
 static void drawFlash() {

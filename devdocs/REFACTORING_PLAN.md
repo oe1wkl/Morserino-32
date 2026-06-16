@@ -48,14 +48,18 @@ Status: ☐ not started · ◐ in progress · ☑ done.
   button, and encoder activity in `m32_v6.ino`'s `loop()`; implicit screen-update
   reset retained as backup.
 
-## Phase C — Shared helpers ☐
-*Behavior-preserving refactor. Enables Phases D–F. Verify no functional diff.*
+## Phase C — Shared helpers ☑ *(done 2026-06-15; both variants build SUCCESS)*
+*Behavior-preserving refactor.*
 
-- ☐ **L4** — hoist `drawCentredText` + a reusable on-device text-entry widget into
-  `MorseGameMode`/`MorseOutput`.
-- ☐ **L6** — extract one shared "live-controls" handler (encoder→speed/vol/scroll,
-  RED→toggle/scroll/dim, black→exit/prefs) used by the classic loop, the QSO Bot,
-  and the games.
+- ☑ **L4a** — hoisted `drawCentredText` into `MorseGameMode::drawCentred()`; both
+  games delegate to it. Byte-for-byte identical (W=170, bg=PAL_BG), no behavior
+  change.
+- ↪ **L4b** — the reusable text-entry widget (Pileup's `enterString`) is TFT-only
+  and Pileup-themed, and M3 needs it on **both** variants (OLED has no sprite).
+  **Moved to Phase E (M3)**, where the cross-variant design belongs.
+- ↪ **L6** — **moved to Phase F.** The shared live-controls handler's final shape
+  depends on what the games need (H3 routes in-game speed/volume through it), so it
+  is designed once there for `loop()` + QSO Bot + games rather than twice.
 
 ## Phase D — Low-risk user-facing consistency ☐
 *High value-to-risk. Update manuals.*
@@ -69,9 +73,10 @@ Status: ☐ not started · ◐ in progress · ☑ done.
 
 - ☐ **M5 + L5** — one canonical score namespace/scheme, schema-version byte, and a
   one-time migration reading old `m32game`/`radiocave`/`hi-hv` keys.
-- ☐ **M3** — expose player call/name in preferences via the Phase C text-entry
-  widget (string pref, not a numeric `prefPos`; keep `prefPos`/`pliste[]`/
-  `prefName[]` in sync).
+- ☐ **M3** — expose player call/name in preferences. Includes **L4b**: build a
+  **cross-variant** on-device text-entry widget (OLED scroll/status + TFT sprite),
+  generalizing Pileup's `enterString`, and wire it to a string pref (not a numeric
+  `prefPos`; keep `prefPos`/`pliste[]`/`prefName[]` in sync).
 
 ## Phase F — Control-grammar unification ☐
 *Highest impact; breaks learned behavior. GATE on Willi's sign-off + manual updates.*
@@ -81,6 +86,9 @@ Status: ☐ not started · ◐ in progress · ☑ done.
 - ☐ **H3** — route all in-game speed/volume through the shared mechanism (Phase C).
 - ☐ **M6** — standardize the CW-source visual distinction (user/machine/system)
   across Echo, Transceiver, QSO Bot, games.
+- ☐ **L6** (moved from Phase C) — extract one shared "live-controls" handler
+  (encoder→speed/vol/scroll, RED→toggle/scroll/dim, black→exit/prefs) used by
+  `loop()`, the QSO Bot, and the games; H3 routes in-game speed/volume through it.
 
 ## Phase G — LCD flicker ☐
 *Isolated. VERIFY-ON-DEVICE. Blocks nothing.*

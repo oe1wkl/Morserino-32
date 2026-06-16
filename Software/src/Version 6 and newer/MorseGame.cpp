@@ -469,11 +469,7 @@ static void pushFrame() { MorseGameMode::pushFrame(); }
 
 static void drawCentredText(int y, const char* text, uint16_t color,
                             const lgfx::IFont* font) {
-    if (font) canvas->setFont(font);
-    canvas->setTextColor(color, GC_BG);
-    canvas->setTextDatum(lgfx::top_center);
-    canvas->drawString(text, GAME_SCREEN_W / 2, y);
-    canvas->setTextDatum(lgfx::top_left);
+    MorseGameMode::drawCentred(canvas, GAME_SCREEN_W / 2, y, text, color, GC_BG, font);
 }
 
 static void drawInvader(GameInvader& inv) {
