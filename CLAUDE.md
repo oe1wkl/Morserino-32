@@ -5,8 +5,9 @@ It contains the always-true facts and hard rules for working on this codebase.
 Process guidance (how to approach a feature, refactor, or bugfix) lives in the
 project skills; this file is about *what is true* and *what must never be violated*.
 
-> **Status: DRAFT v0.2.** Items marked `TODO(audit)` are to be confirmed or
-> filled in during/after the consistency audit. Do not guess these — ask or check.
+> **Status: v0.3.** The `TODO(audit)` markers were resolved by the 2026-06
+> consistency audit and folded in below. Full evidence and citations live in
+> `devdocs/` (`todo-resolutions.md`, `mode-matrix.md`, `divergences.md`).
 
 ---
 
@@ -14,7 +15,7 @@ project skills; this file is about *what is true* and *what must never be violat
 
 The Morserino-32 (M32) is an ESP32-based Morse code (CW) training device.
 Firmware is written in **C++** using **PlatformIO** (developed in VS Code on macOS,
-versioned on GitHub). The maintainer is Willi, OE1WKL — an experienced CW operator;
+versioned on GitHub). The maintainer is Willi, OE1WKL — an experienced radio amateur, but only an aspiring CW operator (but he usually knows how things are being handled in CW);
 correct CW conventions (prosigns, QSO procedure, abbreviations) are a product
 requirement, not a nice-to-have.
 
@@ -28,30 +29,57 @@ There are **two hardware variants** that must both be supported by every change:
 - Variant-specific behavior is gated by **compile-time config flags**
   (e.g. `CONFIG_QSO_BOT` for the QSO Bot feature). New features that cannot run
   on both variants must introduce such a flag rather than `#ifdef`-ing ad hoc
-  on display or board macros. `TODO(audit): list all existing config flags and
-  the canonical place where they are defined.`
+  on display or board macros. **All config flags are defined per-environment in
+  `Software/src/platformio.ini` `build_flags`** (there is no central flags
+  header). The master switches are `CONFIG_TFT` (Pocket/LCD vs OLED),
+  `CONFIG_CW_GAME` (the four games, TFT-only), `CONFIG_QSO_BOT` (both variants),
+  and `LORA_DISABLED`; the full list is in `devdocs/todo-resolutions.md` §A1.
+  A few legacy gates still use bare board macros (e.g.
+  `#ifdef ARDUINO_heltec_wifi_kit_32_V3`) — prefer named flags for new code.
 - **Every change must be built for both variants before it is considered done.**
 
-`TODO(audit): exact PlatformIO environment names and the canonical build
-commands for each variant, e.g.:`
+The two canonical build commands (run from `Software/src/`, where
+`platformio.ini` lives):
 
 ```
-pio run -e <classic_env>
-pio run -e <pocket_env>
+pio run -e heltec_wifi_lora_32_V2    # Classic M32 (OLED, original Heltec V2, has LoRa)
+pio run -e pocketwroom               # M32 Pocket (LCD/TFT, ESP32-S3, default env)
 ```
+
+Other environments exist (`heltec_wifi_kit_32_V3`, `heltec_wifi_lora_32_V3`,
+`pocketwroom-lora`, `pocketwroom-170x240`, `heltec-vision-master-t190`,
+`minipcb_lora`, `ESP32_S3_Devkit`), but these two are the variant pair every
+change must pass. A pre-build hook (`scripts/clean_ino_dupes.py`) strips stray
+`<sketch>.ino N.cpp` duplicates first.
 
 ## 2. Repository layout
 
-`TODO(audit): fill in the actual directory map. At minimum, document where these live:`
+Firmware source lives in `Software/src/Version 6 and newer/`. Key locations
+(full map in `devdocs/todo-resolutions.md` §A3):
 
-- Core Morse engine (keyer, decoder, Koch tables, word/call sign sources)
-- Output layer (`MorseOutput`: display, sound, scrolling)
-- Display abstraction (`DisplayWrapper`)
-- Menu system and preferences/NVS handling
-- Games (Morsel, Radio Cave, … `TODO(audit): complete list`)
-- QSO Bot
-- ESPNow / multiplayer code
-- User manuals (English and German) and the PDF build pipeline
+- **Core Morse engine** — `m32_v6.ino` (`setup()`, `loop()`, keyer
+  `doPaddleIambic()`, generator `generateCW()`/`fetchNewWord()`,
+  `echoTrainerEval()`); decoder `MorseDecoder.cpp/.h`; tone detect
+  `goertzel.cpp`; game CW engine `MorseCwEngine.cpp/.h`.
+- **Koch tables + word/call sources** — `Koch` class in `MorsePreferences.*`;
+  `english_words.h`, `abbrev.h`, `callsign_prefixes.h`; `getRandomCall()` in
+  `m32_v6.ino`.
+- **Output layer** — `MorseOutput.cpp/.h` (display, sound/`pwmTone`, scrolling,
+  TOT).
+- **Display abstraction** — TFT: `oe1wkl/DisplayWrapper` (external lib). OLED:
+  `M32OledLGFX.h` (in-tree). `M32PocketLGFX.h` is orphaned dead code (reverted
+  #157).
+- **Menu / preferences / NVS** — `MorseMenu.cpp/.h`, `MorsePreferences.cpp/.h`;
+  serial protocol `MorseJSON.cpp/.h`.
+- **Games** (TFT only) — `MorseGame.cpp` (Morse Invaders), `MorsePileup.cpp`
+  (Fight the Pileup), `MorseRadioCave.cpp` (Radio Cave), `MorseMorsel.cpp`
+  (Morsel); shared infra `MorseGameMode.*`, `GameSprite.*`, `GamePalette.h`.
+- **QSO Bot** — `MorseQsoBot.cpp/.h`, `qso_content.h`.
+- **ESPNow / WiFi / LoRa** — `MorseWiFi.cpp/.h`; `onEspnowRecv()`/`setupESPNow()`
+  and `sendWithLora()` in `m32_v6.ino`; QuickEspNow (pinned fork). Bluetooth:
+  `MorseBluetooth.cpp/.h`.
+- **User manuals (EN + DE) and PDF pipeline** — `Documentation/User Manual/`;
+  filter `Documentation/User Manual/Version 8.x/normalize_ids.lua`.
 
 ## 3. Hard rules (violations have caused real bugs — do not relearn these)
 
@@ -64,9 +92,13 @@ These were each discovered the hard way. Treat them as invariants:
    mid-session.
 3. **The CW decoder emits a trailing space.** Any code matching decoded text
    against commands or answers must trim it first.
-4. **Prosigns must survive text processing.** `buildCwStream` preserves
-   uppercase prosigns; do not lowercase, normalize, or split strings carrying
-   prosigns before they reach CW generation.
+4. **Prosigns must survive text processing.** The prosign path is
+   `encodeProSigns()` → `generateCWword()` → `cleanUpProSigns()` (all in
+   `m32_v6.ino`); it preserves uppercase single-char prosign codes and renders
+   them as `<as> <ka> <kn> <sk> <ve> <bk> <err>`. Do not lowercase, normalize,
+   or split strings carrying prosigns before they reach CW generation.
+   (There is **no** `buildCwStream` function — that name in earlier drafts was
+   wrong.)
 5. **Never rely on the display library's automatic line wrapping.**
    LovyanGFX auto-wrap caused misplaced characters; wrapping is handled by our
    own code (`DisplayWrapper`), which also handles the leading-space-after-wrap
@@ -77,16 +109,35 @@ These were each discovered the hard way. Treat them as invariants:
    `maxPfxLen = (maxLength > 0) ? maxLength : 99` semantics (bug fixed in
    `getRandomCall()`); be careful when touching this code.
 
-`TODO(audit): extend this list with any further invariants the audit uncovers.`
+8. **A game or the QSO Bot must never inherit a transmit `morseState`.** Games
+   run under the dedicated `morseGame` state and the bot under `morseQsoBot`;
+   both are excluded from every LoRa/WiFi/external-TX gate, so they are
+   local-sidetone-only and never key a real rig. Reusing a stale
+   `loraTrx`/`wifiTrx` state in a game dereferences torn-down subsystems and
+   crashes (see the game dispatch in `MorseMenu.cpp` and the state comments in
+   `morsedefs.h`).
+9. **`prefPos` additions need three parallel arrays in sync** — the `prefPos`
+   enum (`morsedefs.h`), `pliste[]`, and `prefName[]` (`MorsePreferences.*`), all
+   positional. A missing `prefName[]` entry is a silent boot-time NVS panic, not
+   a compile error. `pliste[]` values are `uint8_t` only — string-valued
+   settings (call sign, name, WiFi SSID) need a separate text-entry flow, not a
+   `prefPos`.
 
 ## 4. Persistence (NVS) conventions
 
 - High scores, save/resume state, and user preferences are stored in **NVS**.
-- `TODO(audit): document the canonical namespace and key-naming scheme
-  (current code likely uses more than one — the audit should pick a winner,
-  e.g. ` `game.<name>.<item>` `), and the standard pattern for versioning
-  saved state so firmware updates don't load incompatible blobs.`
-- New features must reuse the documented pattern, never invent a new one.
+- **Current reality (three namespaces — to be consolidated):** `morserino`
+  (all preferences + snapshots + Morsel scores + Fight-Pileup/QSO-Bot identity),
+  `m32game` (Morse Invaders scores), `radiocave` (Radio Cave save blob). Keys
+  are flat and ad-hoc (`wpm`, `theme`, `hi`, `hs0_s`). Only `morserino` carries
+  a version stamp (`version_major`/`version_minor`); the game namespaces are
+  unversioned. The planned single scheme + migration is `devdocs/divergences.md`
+  (M5/L5).
+- Player identity (`playerCall`/`playerName`) lives in `morserino` but is **not**
+  a preferences item — it is set only inside Fight the Pileup or over serial.
+- **Until consolidation lands:** do not add a fourth namespace; put new game
+  state in `morserino` with a `<game>.<item>`-style key prefix and a one-byte
+  version field, and never load an unversioned blob into a changed struct.
 
 ## 5. Coding conventions
 
@@ -96,12 +147,17 @@ These were each discovered the hard way. Treat them as invariants:
 - Prefer reusing existing helpers (`MorseOutput`, `DisplayWrapper`, Koch
   filtering, word sources, call sign generator) over writing parallel
   implementations. If a helper is *almost* right, extend it — don't fork it.
-- Strings shown to the user on the device are English. `TODO(audit): confirm,
-  and document any length limits imposed by the displays.`
+- Strings shown to the user on the device are **English** (confirmed; the only
+  non-ASCII is the UTF-8 `©` glyph). Width is bounded by `NoOfCharsPerLine`;
+  status-line writes are column-indexed (e.g. the WpM slot at columns 7–12), so
+  status strings have hard per-field budgets and the OLED (3 visible lines) is
+  the tighter target. Menu labels are hand-fitted (e.g. `"Update Firmw"`).
 - Memory matters: the ESP32 is constrained. Avoid `String` churn in hot paths,
-  avoid large stack buffers in deeply nested calls, prefer `PROGMEM`/flash
-  storage for large constant tables where the platform supports it.
-  `TODO(audit): confirm current practice for large word lists.`
+  avoid large stack buffers in deeply nested calls. Large constant tables
+  (`english_words.h` ~118 KB, `callsign_prefixes.h`) are plain `const` arrays —
+  **correct for ESP32**, which places `const` data in flash and reads it through
+  the cache, so AVR-style `PROGMEM` accessors are unnecessary (and not used for
+  the word lists). Do not add `PROGMEM` wrappers to these tables.
 
 ## 6. User-facing consistency
 
