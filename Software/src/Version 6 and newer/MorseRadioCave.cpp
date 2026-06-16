@@ -731,8 +731,7 @@ static void drawLobby() {
     canvas->drawFastHLine(205, 86, 100, RC_FRAME);
 
     canvas->setFont(&fonts::FreeSansBold12pt7b);
-    drawCentredAt(rightCx,  96, "Click",  RC_OK);
-    drawCentredAt(rightCx, 118, "or key", RC_OK);
+    drawCentredAt(rightCx, 107, "Key", RC_OK);
 
     canvas->setFont(&fonts::FreeSans9pt7b);
     drawCentredAt(rightCx, 146, "to start", RC_TEXT);
@@ -749,10 +748,8 @@ static void lobbyLoop() {
 
     drawLobby();
     while (rcState == RC_LOBBY) {
-        // Either a paddle press or a mode-button short-press enters the
-        // game. Paddle is the "natural" way for a CW user; mode-button
-        // click is the fallback convention that matches other firmware
-        // screens.
+        // A paddle/key press enters the game. H1: paddle/key is the single
+        // start gesture across all games — the natural way for a CW user.
         if (checkPaddles()) {
             MorseOutput::resetTOT();
             while (checkPaddles()) delay(5);
@@ -765,12 +762,7 @@ static void lobbyLoop() {
 
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
-        if (Buttons::modeButton.clicks == 1) {
-            clearPaddleLatches();
-            gameCharBuffer = 0;
-            rcState = RC_PLAYING;
-            return;
-        }
+        // Start is paddle/key only (H1); the encoder click no longer starts.
         if (Buttons::modeButton.clicks == -1) { rcState = RC_EXIT; return; }
 
         Buttons::volButton.Update();

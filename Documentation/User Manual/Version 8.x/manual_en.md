@@ -1790,7 +1790,7 @@ Radio Cave is only available on the M32Pocket.
 
 #### Starting the Game {-}
 
-From the main menu, navigate to **Games → Radio Cave**. After a brief lobby screen, key any letter on the paddles or click the encoder to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.
+From the main menu, navigate to **Games → Radio Cave**. After a brief lobby screen, key any letter on the paddles to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.
 
 #### How to Play {-}
 
@@ -1904,7 +1904,7 @@ Morsel is only available on the M32Pocket.
 
 #### Starting the Game {-}
 
-From the main menu, navigate to **Games → Morsel**. The lobby shows the current **Koch lesson** and **Word length** settings, along with the controls available. Touch a paddle or click the encoder to begin.
+From the main menu, navigate to **Games → Morsel**. The lobby shows the current **Koch lesson** and **Word length** settings, along with the controls available. Touch a paddle to begin.
 
 #### Lobby Settings {-}
 

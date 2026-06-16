@@ -61,18 +61,28 @@ Status: ☐ not started · ◐ in progress · ☑ done.
   depends on what the games need (H3 routes in-game speed/volume through it), so it
   is designed once there for `loop()` + QSO Bot + games rather than twice.
 
-## Phase D — Low-risk user-facing consistency ☐
-*High value-to-risk. Update manuals.*
+## Phase D — Low-risk user-facing consistency ☑ *(done 2026-06-15; both variants build SUCCESS)*
+*High value-to-risk. Manuals updated (EN+DE).*
 
-- ☐ **M2** — unify result-screen / control-hint phrasing and casing.
-- ☐ **M1** — one uniform score-reset path.
-- ☐ **H1** — unify the game start gesture (recommend classic "paddle to start").
+- ☑ **M2** — result/game-over screens standardized to Title-Case `Click: <action>`
+  / `Long press: Exit` (Pileup casing fixed; Morsel game-over split into two
+  canonical lines). Compact in-play / lobby HUD hints left terse/lowercase
+  (width-constrained) — documented in UX §12 + §3.5.
+- ☑ **H1** — game start gesture unified to **paddle/key**. Invaders & Pileup were
+  already paddle-only (Pileup click = single/multi setting); dropped the
+  click-start fallback from the Morsel & Radio Cave single-player lobbies. UX §3.2
+  / §12 and the EN+DE manuals updated.
+- ↪ **M1** — score reset **moved to Phase E** (decided): build it against the
+  consolidated single-namespace store (M5) to avoid resetting 3 namespaces then
+  reworking it.
 
 ## Phase E — Persistence consolidation ☐
 *Contained migration risk. Test upgrade-in-place.*
 
 - ☐ **M5 + L5** — one canonical score namespace/scheme, schema-version byte, and a
   one-time migration reading old `m32game`/`radiocave`/`hi-hv` keys.
+- ☐ **M1** (moved from Phase D) — one uniform "Reset Scores" path against the
+  consolidated store.
 - ☐ **M3** — expose player call/name in preferences. Includes **L4b**: build a
   **cross-variant** on-device text-entry widget (OLED scroll/status + TFT sprite),
   generalizing Pileup's `enterString`, and wire it to a string pref (not a numeric

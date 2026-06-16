@@ -1783,8 +1783,8 @@ static void stateGameOver() {
         if (!ftp.singlePlayer && !ftp.iAmWinner && !ftp.winnerIdent[0])
             drawCentredText(222, "waiting for result...", FTP_DIM);
 
-        drawCentredText(260, "Click: play again", FTP_TEXT);
-        drawCentredText(276, "Long press: exit", FTP_TEXT);
+        drawCentredText(260, "Click: Play Again", FTP_TEXT);
+        drawCentredText(276, "Long press: Exit", FTP_TEXT);
         pushFrame();
 
         Buttons::modeButton.Update();

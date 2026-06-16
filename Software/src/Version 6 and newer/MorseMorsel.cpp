@@ -639,7 +639,7 @@ static void drawLobby() {
     drawCentred(96, "knob = Koch    FN = length", MSL_DIM);
 
     canvas->setFont(&fonts::FreeSansBold12pt7b);
-    drawCentred(116, "Click or key to start", MSL_GREEN);
+    drawCentred(116, "Key to start", MSL_GREEN);
     canvas->setFont(&fonts::FreeSans9pt7b);
     drawCentred(142, "FN-hold = high scores", MSL_DIM);
     pushFrame();
@@ -690,12 +690,7 @@ static void lobbyLoop() {
 
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
-        if (Buttons::modeButton.clicks == 1) {
-            clearPaddleLatches();
-            gameCharBuffer = 0;
-            mslState = MSL_PLAYING;
-            return;
-        }
+        // Start is paddle/key only (H1); the encoder click no longer starts.
         if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
 
         Buttons::volButton.Update();
@@ -940,7 +935,8 @@ static void drawResults() {
         snprintf(line, sizeof(line), "NEW HIGH SCORE  -  rank %d", lastRank + 1);
         drawCentred(118, line, MSL_GREEN);
     }
-    drawCentred(140, "click = high scores   hold = quit", MSL_DIM);
+    drawCentred(140, "Click: High Scores", MSL_DIM);
+    drawCentred(158, "Long press: Exit", MSL_DIM);
     pushFrame();
 }
 

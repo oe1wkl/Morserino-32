@@ -1903,8 +1903,8 @@ Radio Cave ist nur auf dem M32Pocket verfügbar.
 #### Spielstart {-}
 
 Navigiere im Hauptmenü zu **Games → Radio Cave**. Nach einem kurzen
-Lobby-Bildschirm kannst du einen Buchstaben auf den Paddles eingeben
-oder den ENCODER klicken, um das Spiel zu betreten. Wenn ein
+Lobby-Bildschirm kannst du einen Buchstaben auf den Paddles eingeben, um das Spiel zu
+betreten. Wenn ein
 gespeicherter Spielstand vorhanden ist, wird dieser automatisch geladen
 und du setzt dort fort; andernfalls beginnt ein neues Spiel.
 
@@ -2081,8 +2081,7 @@ Morsel ist nur am M32Pocket verfügbar.
 
 Navigiere im Hauptmenü zu **Games → Morsel**. Die Lobby zeigt die
 aktuell eingestellte **Koch-Lektion** und **Wortlänge** sowie die
-verfügbaren Bedienelemente. Berühre ein Paddle oder klicke den Encoder,
-um zu starten.
+verfügbaren Bedienelemente. Berühre ein Paddle, um zu starten.
 
 #### Einstellungen in der Lobby {-}
 

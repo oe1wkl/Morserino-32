@@ -99,17 +99,17 @@ These are exercised in every mode, so they must be identical everywhere:
    immediately active**; **Generator and Echo Trainer start "armed"**, waiting
    for a paddle touch or black-knob click to begin generating. Games always show
    an explicit **start screen / lobby** — nobody is dropped into a running game.
-2. **Start** in games must use **one gesture across all games** (target: the
-   classic "paddle/key to start"). Today this is not unified (Invaders = paddle,
-   Radio Cave/Pileup = click, Morsel = either) — `divergences.md` H1.
+2. **Start** in games is **paddle/key to start** — one gesture across all games,
+   matching the classic Generator/Echo trainers. Lobby selections use the encoder
+   and buttons; the paddle starts the round.
 3. **During operation,** top bar and content area follow §4 and §5.
 4. **Interruption:** modes with resumable state (e.g. Radio Cave) save to NVS
    automatically on exit — the user is never asked "save? y/n" on the device.
 5. **End of a game round** shows a **result screen**: outcome, score, and the
-   two standard choices — *play again* / *back to menu* — mapped to the same
-   inputs and worded identically in every game (target wording: `Click: Play
-   Again` / `Long press: Exit`; today the casing/vocabulary drifts —
-   `divergences.md` M2). Classic modes have no rounds; they run until exited.
+   two standard choices — *play again* (or the game's nearest equivalent) /
+   *back to menu* — in **Title Case** and mapped to the same inputs in every
+   game: `Click: Play Again` / `Long press: Exit`. Classic modes have no rounds;
+   they run until exited.
 6. **Exit** always returns to the same place in the menu the user came from.
 
 ## 4. Top bar
@@ -238,14 +238,17 @@ Games own the screen but **not** the control grammar. The target each game must
 reach (tracked in `devdocs/REFACTORING_PLAN.md` Phases D/F):
 
 - **Exit:** black-knob long-press only. No red-button exit/forfeit overload.
-- **Start:** one gesture for all games (recommended: paddle/key to start).
+- **Start:** **paddle/key to start** — one gesture for all games (the encoder and
+  buttons drive lobby selections; the paddle starts the round).
 - **Speed / volume:** the §2 mechanism exactly — encoder owns speed by default,
   red single-click toggles to volume, routed through `changeSpeed()`/
   `changeVolume()`; display the WPM the standard way even inside a HUD.
 - **Preferences:** offered from the lobby/result screen (mid-round exemption is
   allowed); shared settings still reachable from the normal preferences menu.
-- **Result screen:** identical wording and input mapping across games —
-  `Click: Play Again` / `Long press: Exit`.
+- **Result screen:** identical input mapping and **Title-Case** wording across
+  games — `Click: Play Again` (or the game's nearest equivalent, e.g. Morsel's
+  `Click: High Scores`) / `Long press: Exit`. Compact in-play / lobby HUD hints
+  may stay terse/lowercase (width-constrained).
 - **Pause** (where it exists): black-knob single-click, mirroring the trainer
   start/stop feel.
 

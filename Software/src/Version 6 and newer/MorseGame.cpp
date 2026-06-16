@@ -654,7 +654,7 @@ static void stateMenu() {
     canvas->setFont(&fonts::Font0);
     // Footer lines shifted up to fit inside the trimmed 304-px sprite
     // (was 286 / 300 when GAME_SCREEN_H was 320).
-    drawCentredText(270, "Touch:start FN:spd/lvl/vol", GC_HUD_TEXT);
+    drawCentredText(270, "Key:start FN:spd/lvl/vol", GC_HUD_TEXT);
     drawCentredText(284, "Long press: exit", GC_HUD_TEXT);
 
     pushFrame();
