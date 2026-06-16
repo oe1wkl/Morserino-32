@@ -6,9 +6,9 @@
  *
  *  Stage C of the DisplayWrapper retirement: replaces ThingPulse's
  *  SSD1306Wire library with LovyanGFX's Panel_SSD1306 on the legacy
- *  Heltec V2 / V3 / ESP32-S3-Devkit / minipcb_lora boards. Mirrors
- *  M32PocketLGFX.h on the TFT side — both inherit from lgfx::LGFX_Device
- *  so the rest of MorseOutput.cpp uses the same API.
+ *  Heltec V2 / V3 / ESP32-S3-Devkit / minipcb_lora boards. On the TFT
+ *  side the equivalent role is filled by the DisplayWrapper library;
+ *  both expose the same lgfx::LGFX_Device-based API to MorseOutput.cpp.
  *
  *  Font strategy
  *  -------------

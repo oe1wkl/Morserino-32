@@ -1029,6 +1029,8 @@ if (morseState == morseKeyer &&
   // check buttons
     Buttons::modeButton.Update();
     Buttons::volButton.Update();
+    if (Buttons::modeButton.clicks || Buttons::volButton.clicks)
+        MorseOutput::resetTOT();        // explicit TOT reset on any button activity
 
     switch (Buttons::volButton.clicks) {
       case 1:   if (encoderState == scrollMode) {
@@ -1121,6 +1123,7 @@ if (morseState == morseKeyer &&
      if ((t = checkEncoder())) {
         //DEBUG("t: " + String(t));
         MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);         /// click
+        MorseOutput::resetTOT();                                         // explicit TOT reset on encoder activity
         switch (encoderState) {
           case speedSettingMode:
                                   changeSpeed(t);
@@ -1507,6 +1510,8 @@ boolean checkPaddles() {
 // update the paddle latches in keyerControl
 void updatePaddleLatch(boolean dit, boolean dah)
 {
+    if (dit || dah)
+      MorseOutput::resetTOT();          // explicit TOT reset on paddle activity (was implicit via screen updates)
     if (dit)
       keyerControl |= DIT_L;
     if (dah)

@@ -1,1 +1,6 @@
 .DS_Store
+
+# Finder / iCloud duplicate-copy artifacts of the .ino sketch, e.g.
+# "m32_v6.ino 2.cpp" — these cause "multiple definition" link errors.
+# (A pre-build hook, scripts/clean_ino_dupes.py, also strips them.)
+*.ino [0-9]*.cpp

@@ -37,12 +37,16 @@ Status: ☐ not started · ◐ in progress · ☑ done.
 - ☑ Specified the **target games control-grammar** in `UX_CONVENTIONS.md` §12 for
   Phase F.
 
-## Phase B — Housekeeping ☐
-*S effort, no behavior change. Build both variants.*
+## Phase B — Housekeeping ☑ *(done 2026-06-15; both variants build SUCCESS)*
+*S effort, no behavior change.*
 
-- ☐ **L1** — delete stray `m32_v6.ino 2.cpp`; add `*.ino [0-9]*.cpp` to `.gitignore`.
-- ☐ **L2** — delete orphaned `M32PocketLGFX.h` (included nowhere).
-- ☐ **L7** — add explicit `MorseOutput::resetTOT()` on input in the classic paths.
+- ☑ **L1** — stray `m32_v6.ino 2.cpp` was already gone; added `*.ino [0-9]*.cpp`
+  guard to `.gitignore` so it can't return.
+- ☑ **L2** — removed orphaned `M32PocketLGFX.h` (reverted-#157 dead code, included
+  nowhere); fixed the now-stale reference comment in `M32OledLGFX.h`.
+- ☑ **L7** — added guarded `MorseOutput::resetTOT()` on paddle (`updatePaddleLatch`),
+  button, and encoder activity in `m32_v6.ino`'s `loop()`; implicit screen-update
+  reset retained as backup.
 
 ## Phase C — Shared helpers ☐
 *Behavior-preserving refactor. Enables Phases D–F. Verify no functional diff.*
