@@ -844,6 +844,7 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
       case _games:            // nor the games that depend on visual clues
       case _morseInvaders:
       case _fightPileup:
+      case _radioCave:
       case _morsel:
 #endif
       return false;
