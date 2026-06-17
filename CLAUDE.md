@@ -66,6 +66,9 @@ Firmware source lives in `Software/src/Version 6 and newer/`. Key locations
   `m32_v6.ino`.
 - **Output layer** — `MorseOutput.cpp/.h` (display, sound/`pwmTone`, scrolling,
   TOT).
+- **On-device text entry** — `MorseTextEntry.cpp/.h`: cross-variant encoder
+  char-picker (renders via `MorseOutput`, works OLED + TFT). Reuse it for any
+  on-device string entry (call/name, WiFi credentials, keyer memories) — don't fork.
 - **Display abstraction** — TFT: `oe1wkl/DisplayWrapper` (external lib). OLED:
   `M32OledLGFX.h` (in-tree). `M32PocketLGFX.h` is orphaned dead code (reverted
   #157).
@@ -121,7 +124,14 @@ These were each discovered the hard way. Treat them as invariants:
    positional. A missing `prefName[]` entry is a silent boot-time NVS panic, not
    a compile error. `pliste[]` values are `uint8_t` only — string-valued
    settings (call sign, name, WiFi SSID) need a separate text-entry flow, not a
-   `prefPos`.
+   `prefPos`. **Non-numeric / action prefs** (text entry, reset, snapshots) go
+   *after* `posSerialOut`: they use `extraItems[]` + handler cases
+   (`getValueLine`/`adjustKeyerPreference`) + `allOptions`, stay **out** of the
+   `pliste[]`/`prefName[]` loop (so no panic), and **must repaint via
+   `displayKeyerPreferencesMenu(pos)` after the action** — `setupPreferences` only
+   repaints on encoder navigation, so otherwise the screen lingers and the next
+   long-press exits the menu. (ClickButton fires a long-press *while held* at
+   `longClickTime`, not on release.) On-device text uses the `MorseTextEntry` widget.
 
 ## 4. Persistence (NVS) conventions
 
