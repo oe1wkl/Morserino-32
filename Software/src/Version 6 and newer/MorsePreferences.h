@@ -217,6 +217,8 @@ namespace MorsePreferences
   String getValueLine(prefPos);
   int getValue(prefPos);
   boolean adjustKeyerPreference(prefPos);
+  void editPlayerIdentity(prefPos pos);
+  void resetGameScores();
   void readPreferences(const char* repository);
   void readScreenPref();
   void readVoltagePref();

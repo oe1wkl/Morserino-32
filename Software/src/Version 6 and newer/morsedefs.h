@@ -412,6 +412,7 @@ enum prefPos : uint8_t {
                 // to be treated differently:
                 posKochFilter,                                                                                // 36
                 posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf,    // 37
+                posPlayerCall, posPlayerName, posResetScores,                                                  // Phase E: identity + score reset
 };
 
 enum actMessage : int {

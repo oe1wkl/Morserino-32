@@ -2722,6 +2722,28 @@ du deinen Morserino über USB mit einem Computer mit Chrome, Edge oder
 Opera verbindest und den Anweisungen in **Anhang 7 Einrichten von
 M32-Einstellungen über einen Browser** folgst.
 
+## Rufzeichen, Name und Spielstände
+
+Zwei Einstellungen sagen dem Morserino, wer du bist. **Call Sign** (Rufzeichen)
+und **Op Name** (Name) werden von den Spielen (Fight the Pileup, Morsel) und
+vom QSO-Bot verwendet. Wählst du einen dieser Einträge im Einstellungsmenü,
+öffnet sich ein Texteditor am Bildschirm (er funktioniert am OLED und am LCD
+gleich):
+
+- **ENCODER drehen** wählt ein Zeichen,
+- **ENCODER klicken** fügt es zum Text hinzu,
+- **FN-Taste klicken** löscht das letzte Zeichen,
+- **langer Druck** auf eine der Tasten beendet die Eingabe.
+
+Call Sign akzeptiert Buchstaben, Ziffern und den Schrägstrich; Op Name
+akzeptiert Buchstaben und ein Leerzeichen. Der aktuelle Wert wird neben der
+Einstellung angezeigt.
+
+**Reset Scores** löscht die gespeicherten Bestenlisten und den Spielfortschritt
+aller Spiele (Morse Invaders, Morsel und Radio Cave). Beim Auswählen erscheint
+eine Bestätigung: **FN** drücken zum Bestätigen, oder den ENCODER klicken zum
+Abbrechen.
+
 ## Liste aller Morserino-32-Einstellungen
 
 **Fett gedruckte Werte** sind Standard- oder empfohlene Werte. Wenn du

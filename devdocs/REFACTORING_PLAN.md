@@ -76,17 +76,27 @@ Status: ☐ not started · ◐ in progress · ☑ done.
   consolidated single-namespace store (M5) to avoid resetting 3 namespaces then
   reworking it.
 
-## Phase E — Persistence consolidation ☐
-*Contained migration risk. Test upgrade-in-place.*
+## Phase E — Persistence & player identity ☑ *(done 2026-06-15; both variants build SUCCESS)*
+*Light-touch decision: NO namespace migration; existing scores preserved.*
 
-- ☐ **M5 + L5** — one canonical score namespace/scheme, schema-version byte, and a
-  one-time migration reading old `m32game`/`radiocave`/`hi-hv` keys.
-- ☐ **M1** (moved from Phase D) — one uniform "Reset Scores" path against the
-  consolidated store.
-- ☐ **M3** — expose player call/name in preferences. Includes **L4b**: build a
-  **cross-variant** on-device text-entry widget (OLED scroll/status + TFT sprite),
-  generalizing Pileup's `enterString`, and wire it to a string pref (not a numeric
-  `prefPos`; keep `prefPos`/`pliste[]`/`prefName[]` in sync).
+- ☑ **L5** — versioned Morse Invaders high scores (`ver` key). Radio Cave (blob
+  `magic`+`version`) and Morsel (`hv`) were already self-versioned. Absent stamp =
+  current format → no data loss on upgrade.
+- ☑ **M3** — player **Call Sign** / **Op Name** now editable from the preferences
+  menu (top-level, both variants) via the new reusable **`MorseTextEntry`** widget
+  (encoder char-picker rendered through `MorseOutput` → cross-variant). Saved to
+  `morserino/playerCall|playerName`.
+- ☑ **M1** — uniform **Reset Scores** preferences action: confirm (FN=yes), then
+  clear `m32game`, `morsel` (`hi`/`hv`), `radiocave` (`save`).
+- ↪ **M5** (full consolidation) — **deferred by decision.** The game stores are
+  already individually versioned and working, so a migration is risk-without-
+  benefit. The four namespaces are documented in CLAUDE.md §4. (Audit had wrongly
+  put Morsel scores in `morserino`; they live in `morsel`.)
+- **Reusable next:** `MorseTextEntry` is built to also serve WiFi credentials
+  (replacing the insecure web-form) and CW keyer-memory entry — future work.
+
+**VERIFY-ON-DEVICE:** the `MorseTextEntry` layout on the 14-char OLED and the three
+new preferences items (esp. Reset Scores clearing the right keys).
 
 ## Phase F — Control-grammar unification ☐
 *Highest impact; breaks learned behavior. GATE on Willi's sign-off + manual updates.*

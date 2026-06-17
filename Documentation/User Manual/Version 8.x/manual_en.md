@@ -2446,6 +2446,25 @@ connect your Morserino via USB to a computer running Chrome, Edge or
 Opera and using the instructions in **Appendix 7**Using
 a Browser to set up M32 Preferences**.
 
+## Player identity and game scores
+
+Two preferences let you tell the Morserino who you are. **Call Sign** and
+**Op Name** are used by the games (Fight the Pileup, Morsel) and the QSO Bot.
+Select either item in the preferences menu and an on-screen text editor opens
+(it works the same on the OLED and the LCD):
+
+- **turn the ENCODER** to choose a character,
+- **click the ENCODER** to add it to the text,
+- **click the FN button** to delete the last character,
+- **long-press** either button when you are done.
+
+Call Sign accepts letters, digits and the slash; Op Name accepts letters and a
+space. The current value is shown next to the preference.
+
+**Reset Scores** clears the saved high scores and game progress for all games
+(Morse Invaders, Morsel and Radio Cave). Selecting it shows a confirmation:
+press **FN** to confirm, or click the ENCODER to cancel.
+
 ## List of All Morserino-32 preferences
 
 Bold values are default or recommended ones. When called from the start

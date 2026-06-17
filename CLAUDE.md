@@ -126,18 +126,23 @@ These were each discovered the hard way. Treat them as invariants:
 ## 4. Persistence (NVS) conventions
 
 - High scores, save/resume state, and user preferences are stored in **NVS**.
-- **Current reality (three namespaces — to be consolidated):** `morserino`
-  (all preferences + snapshots + Morsel scores + Fight-Pileup/QSO-Bot identity),
-  `m32game` (Morse Invaders scores), `radiocave` (Radio Cave save blob). Keys
-  are flat and ad-hoc (`wpm`, `theme`, `hi`, `hs0_s`). Only `morserino` carries
-  a version stamp (`version_major`/`version_minor`); the game namespaces are
-  unversioned. The planned single scheme + migration is `devdocs/divergences.md`
-  (M5/L5).
-- Player identity (`playerCall`/`playerName`) lives in `morserino` but is **not**
-  a preferences item — it is set only inside Fight the Pileup or over serial.
-- **Until consolidation lands:** do not add a fourth namespace; put new game
-  state in `morserino` with a `<game>.<item>`-style key prefix and a one-byte
-  version field, and never load an unversioned blob into a changed struct.
+- **Current reality (four NVS namespaces, kept separate by decision — see
+  `devdocs/REFACTORING_PLAN.md` Phase E):** `morserino` (all preferences +
+  snapshots + player identity `playerCall`/`playerName`), `m32game` (Morse
+  Invaders high scores), `morsel` (Morsel scores `hi`/`hv` + word length `wlen`),
+  `radiocave` (Radio Cave save blob). Keys are flat and ad-hoc (`wpm`, `theme`,
+  `hi`, `hs0_s`).
+- **Each store is self-versioned:** `morserino` has `version_major`/`version_minor`;
+  Radio Cave's blob carries `magic`+`version`; Morsel checks an `hv` key; Morse
+  Invaders has a `ver` key (added Phase E). An *absent* stamp is treated as the
+  current format, so existing data survives upgrades.
+- Player identity (`playerCall`/`playerName`) is settable from the **preferences
+  menu** (Call Sign / Op Name, added Phase E via the `MorseTextEntry` widget), and
+  still inside Fight the Pileup and over serial.
+- **For new game state:** prefer reusing an existing namespace over adding more;
+  always carry a one-byte version field and treat an absent stamp as current;
+  never load an unversioned blob into a changed struct. Full namespace
+  consolidation (M5) was deliberately deferred — the stores already self-validate.
 
 ## 5. Coding conventions
 

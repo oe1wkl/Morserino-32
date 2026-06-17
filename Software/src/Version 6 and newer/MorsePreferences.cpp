@@ -17,6 +17,7 @@
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
 #include "MorseJSON.h"
+#include "MorseTextEntry.h"
 #include "abbrev.h"
 #include "english_words.h"
 #include "ClickButton.h"   // button control library
@@ -443,7 +444,7 @@ parameter MorsePreferences::pliste[] = {
   }
 };
 
-const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf" };
+const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores" };
 
 #ifdef CONFIG_TFT
 themes MorsePreferences::themeList[] = {
@@ -668,6 +669,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posLoraChannel,
                                                    posGoertzelBandwidth, posExtAudioOnDecode,
                                                    QSOBOT
+                                                   posPlayerCall, posPlayerName, posResetScores,
                                                  };
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
@@ -823,8 +825,10 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
     topLine = "Manage Snapshots:";
   else if (pos < posHwConf)
     topLine = "Calibrate Voltage";
-  else
+  else if (pos == posHwConf)
     topLine = "Hardware Config.";
+  else
+    topLine = "Player & Scores:";
 
   topLine += emptyLine.substring(0,topMax - topLine.length());
   MorseOutput::clearStatusLine();
@@ -918,6 +922,17 @@ String MorsePreferences::getValueLine(prefPos pos) {
   const char* const milliWatt[] = {"10", "12.5", "16", "20", "25", "32", "40", "50", "63", "80", "100"};
 
   switch (pos) {
+    case posPlayerCall:
+    case posPlayerName: {
+        Preferences pp; pp.begin("morserino", true);
+        str = pp.getString(pos == posPlayerCall ? "playerCall" : "playerName", "");
+        pp.end();
+        if (str.length() == 0) str = "(not set)";
+        break;
+    }
+    case posResetScores:
+        str = "clear all";
+        break;
     case posKochFilter:
       str = koch.getNewChar();
       cleanUpProSigns(str);
@@ -1067,8 +1082,66 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
 }
 //// function to adjust the selected preference
 
+// --- Phase E: player identity entry + game-score reset (preferences actions) ---
+static const uint8_t IDENT_MAX_LEN = 8;   // matches FTP_MAX_IDENT_LEN (player call/name)
+
+void MorsePreferences::editPlayerIdentity(prefPos pos) {
+    const bool  isCall = (pos == posPlayerCall);
+    const char *key    = isCall ? "playerCall" : "playerName";
+    Preferences p;
+    p.begin("morserino", true);
+    String cur = p.getString(key, "");
+    p.end();
+    char buf[IDENT_MAX_LEN + 1];
+    MorseTextEntry::enterText(isCall ? "Call Sign:" : "Op Name:", buf, IDENT_MAX_LEN,
+                              isCall ? MorseTextEntry::CHARSET_CALLSIGN
+                                     : MorseTextEntry::CHARSET_NAME,
+                              cur.c_str());
+    p.begin("morserino", false);
+    p.putString(key, buf);
+    p.end();
+    Buttons::modeButton.clicks = 0;   // swallow the long-press that ended entry
+    Buttons::volButton.clicks  = 0;
+}
+
+void MorsePreferences::resetGameScores() {
+    MorseOutput::clearScrollLines();
+    MorseOutput::printOnScroll(0, BOLD,    0, "Clear scores?");
+    MorseOutput::printOnScroll(1, REGULAR, 0, "FN = yes");
+    MorseOutput::printOnScroll(2, REGULAR, 0, "click = no");
+    MorseOutput::refreshDisplay();
+    Buttons::modeButton.clicks = 0;
+    Buttons::volButton.clicks  = 0;
+    boolean confirmed = false;
+    while (true) {
+        Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) break;                       // encoder click = cancel
+        Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) { confirmed = true; break; }  // FN = confirm
+        checkShutDown(false);
+        serialEvent();
+        delay(20);
+    }
+    Buttons::modeButton.clicks = 0;
+    Buttons::volButton.clicks  = 0;
+    if (!confirmed) return;
+    Preferences p;
+    p.begin("m32game",   false); p.clear();                      p.end();   // Invaders high-score table
+    p.begin("morsel",    false); p.remove("hi"); p.remove("hv"); p.end();   // Morsel scores (keep wlen)
+    p.begin("radiocave", false); p.remove("save");               p.end();   // Radio Cave save/progress
+    MorseOutput::clearScrollLines();
+    MorseOutput::printOnScroll(1, BOLD, 0, "Scores cleared");
+    MorseOutput::refreshDisplay();
+    delay(1200);
+}
+
 boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotating the encoder changes the value, click returns to preferences menu
                                                                       /// returns true when a long button press ended it, and false when there was a short click
+    // Phase E action items are not encoder-adjusted: run the action, then stay
+    // in the preferences menu (return false; setupPreferences redraws).
+    if (pos == posPlayerCall || pos == posPlayerName) { editPlayerIdentity(pos); return false; }
+    if (pos == posResetScores)                        { resetGameScores();       return false; }
+
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
     uint8_t seq;
     int8_t t;
