@@ -156,9 +156,18 @@ static void updateSound() {
 // High scores (NVS persistence)
 //=============================================================================
 
+// Storage-format version for the m32game high-score table. Bump when the
+// GameHighScore layout or key scheme changes. An *absent* "ver" key is treated
+// as the current format, so high scores written before versioning are kept.
+static const uint8_t GAME_HS_VERSION = 1;
+
 static void loadHighScores() {
     Preferences pref;
     pref.begin("m32game", true);
+    if (pref.getUChar("ver", GAME_HS_VERSION) != GAME_HS_VERSION) {
+        pref.end();
+        return;                          // future/incompatible format -> start fresh
+    }
     for (int i = 0; i < GAME_HIGH_SCORES; i++) {
         char key[12];
         snprintf(key, sizeof(key), "hs%d_s", i);
@@ -187,6 +196,7 @@ static void saveHighScores() {
         snprintf(key, sizeof(key), "hs%d_w", i);
         pref.putUChar(key, highScores[i].wpm);
     }
+    pref.putUChar("ver", GAME_HS_VERSION);
     pref.end();
 }
 
