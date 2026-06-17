@@ -28,7 +28,6 @@
 #define MIDI_CHARACTERISTIC_UUID "7772E5DB-3868-4112-A1A9-F2669D106BF3"
 #define MIDI_DEVICE_NAME         "Morserino32 MIDI"
 
-bool MorseMidi::isMidiRunning  = false;
 bool MorseMidi::isMidiConnected = false;
 
 static TaskHandle_t midiTaskHandle = nullptr;
@@ -40,7 +39,7 @@ class MidiServerCallbacks : public BLEServerCallbacks {
     }
     void onDisconnect(BLEServer* server) override {
         MorseMidi::isMidiConnected = false;
-        delay(5000);
+        delay(500);
         server->startAdvertising();
     }
 };
@@ -55,7 +54,6 @@ static void midiTask(void*) {
     midiChar = service->createCharacteristic(
         MIDI_CHARACTERISTIC_UUID,
         BLECharacteristic::PROPERTY_READ   |
-        BLECharacteristic::PROPERTY_WRITE  |
         BLECharacteristic::PROPERTY_WRITE_NR |
         BLECharacteristic::PROPERTY_NOTIFY
     );
@@ -71,17 +69,19 @@ static void midiTask(void*) {
     delay(portMAX_DELAY);
 }
 
+bool MorseMidi::isRunning() { 
+    return midiTaskHandle != nullptr; 
+}
+
 void MorseMidi::initializeMidi() {
-    if (!isMidiRunning) {
+    if (midiTaskHandle == nullptr) {
         BaseType_t ret = xTaskCreate(midiTask, "ble_midi", 10000, nullptr, 3, &midiTaskHandle);
-        if (ret == pdPASS)
-            isMidiRunning = true;
         delay(100);
     }
 }
 
 void MorseMidi::stopMidi() {
-    if (isMidiRunning) {
+    if (midiTaskHandle != nullptr) {
         if (midiTaskHandle) {
             vTaskDelete(midiTaskHandle);
             midiTaskHandle = nullptr;
@@ -91,7 +91,6 @@ void MorseMidi::stopMidi() {
         delay(100);
         midiChar = nullptr;
         isMidiConnected = false;
-        isMidiRunning = false;
     }
 }
 

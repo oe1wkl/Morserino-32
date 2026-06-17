@@ -1020,13 +1020,13 @@ if (morseState == morseKeyer &&
 }
 #endif
 #ifdef CONFIG_BLE_MIDI
-if (MorsePreferences::pliste[posMidiEnable].value && !MorseMidi::isMidiRunning) {
+if (MorsePreferences::pliste[posMidiEnable].value && !MorseMidi::isRunning()) {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
     if (!MorseBluetooth::isBLErunning)
 #endif
     MorseMidi::initializeMidi();
 }
-if (!MorsePreferences::pliste[posMidiEnable].value && MorseMidi::isMidiRunning)
+if (!MorsePreferences::pliste[posMidiEnable].value && MorseMidi::isRunning())
     MorseMidi::stopMidi();
 #endif
 /// if we have time check for serial input and for button presses

@@ -18,7 +18,7 @@
 #ifdef CONFIG_BLE_MIDI
 
 namespace MorseMidi {
-    extern bool isMidiRunning;
+    bool isRunning();
     extern bool isMidiConnected;
     void initializeMidi();
     void stopMidi();
