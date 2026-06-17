@@ -1137,10 +1137,21 @@ void MorsePreferences::resetGameScores() {
 
 boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotating the encoder changes the value, click returns to preferences menu
                                                                       /// returns true when a long button press ended it, and false when there was a short click
-    // Phase E action items are not encoder-adjusted: run the action, then stay
-    // in the preferences menu (return false; setupPreferences redraws).
-    if (pos == posPlayerCall || pos == posPlayerName) { editPlayerIdentity(pos); return false; }
-    if (pos == posResetScores)                        { resetGameScores();       return false; }
+    // Phase E action items are not encoder-adjusted: run the action, then repaint
+    // the item so the result shows at once. setupPreferences does NOT repaint
+    // after a click that returns false (it only repaints on encoder navigation),
+    // so without this the editor screen would linger and the user would have to
+    // long-press again — which setupPreferences then reads as "exit preferences".
+    if (pos == posPlayerCall || pos == posPlayerName) {
+        editPlayerIdentity(pos);
+        displayKeyerPreferencesMenu(pos);
+        return false;
+    }
+    if (pos == posResetScores) {
+        resetGameScores();
+        displayKeyerPreferencesMenu(pos);
+        return false;
+    }
 
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
     uint8_t seq;
