@@ -98,17 +98,27 @@ Status: ☐ not started · ◐ in progress · ☑ done.
 **VERIFY-ON-DEVICE:** the `MorseTextEntry` layout on the 14-char OLED and the three
 new preferences items (esp. Reset Scores clearing the right keys).
 
-## Phase F — Control-grammar unification ☐
-*Highest impact; breaks learned behavior. GATE on Willi's sign-off + manual updates.*
+## Phase F — Control-grammar unification ◐ *(in progress)*
+*Highest impact; breaks learned behavior. Sign-off received 2026-06-18:
+Invaders give-up = black-long→menu (forfeit dropped); Morsel lobby high-scores
+shortcut dropped.*
 
-- ☐ **H2** — remove overloaded RED long-press (Invaders forfeit, Morsel lobby
-  high-scores); keep black-long-press as the sole exit.
-- ☐ **H3** — route all in-game speed/volume through the shared mechanism (Phase C).
-- ☐ **M6** — standardize the CW-source visual distinction (user/machine/system)
-  across Echo, Transceiver, QSO Bot, games.
+- ◐ **H2** — RED long-press bindings removed from every game's **primary
+  single-player flow** (Invaders lobby/playing-forfeit/paused/game-over; Morsel
+  lobby-hiscores/playing/results; Pileup lobby/challenge/results; Radio Cave
+  lobby/playing) → black-knob long-press is the sole exit there. Both variants
+  build SUCCESS. **Still to do:** the **Morsel multiplayer** sub-screens still
+  use RED-long = exit; their black-long means "back one level," so unifying them
+  is a back-vs-exit nav decision of its own. (Pileup's text-entry RED-long = the
+  widget's "done" — intentionally kept.)
+- ☐ **H3** — route all in-game speed/volume through the shared `changeSpeed`/
+  `changeVolume`. Invaders/Morsel/Pileup already use encoder=speed / RED-click=
+  toggle, so this is mostly internal once L6 lands.
 - ☐ **L6** (moved from Phase C) — extract one shared "live-controls" handler
   (encoder→speed/vol/scroll, RED→toggle/scroll/dim, black→exit/prefs) used by
   `loop()`, the QSO Bot, and the games; H3 routes in-game speed/volume through it.
+- ☐ **M6** — standardize the CW-source visual distinction (user/machine/system)
+  across Echo, Transceiver, QSO Bot, games.
 
 ## Phase G — LCD flicker ☐
 *Isolated. VERIFY-ON-DEVICE. Blocks nothing.*

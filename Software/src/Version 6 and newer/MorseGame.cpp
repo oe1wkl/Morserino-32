@@ -733,7 +733,6 @@ static void stateMenu() {
             drawCentredText(160, buf, GC_LEVELUP);
             pushFrame();
         }
-        if (Buttons::volButton.clicks == -1) { game.state = GAME_EXIT; return; }
 
         serialEvent();
         checkShutDown(false);
@@ -859,9 +858,6 @@ static void statePlaying() {
             encoderIsVolume = !encoderIsVolume;
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
         }
-        if (Buttons::volButton.clicks == -1) {
-            game.lives = 0; game.state = GAME_OVER; leavePlayingState(); return;
-        }
 
         // Spawn
         if (--game.spawnCounter <= 0) {
@@ -919,7 +915,6 @@ static void statePaused() {
             case -1: game.state = GAME_EXIT;    return;
         }
         Buttons::volButton.Update();
-        if (Buttons::volButton.clicks == -1) { game.state = GAME_EXIT; return; }
         serialEvent();
         checkShutDown(false);
         delay(20);
@@ -1025,7 +1020,6 @@ static void stateGameOver() {
             case -1: game.state = GAME_EXIT; return;
         }
         Buttons::volButton.Update();
-        if (Buttons::volButton.clicks == -1) { game.state = GAME_EXIT; return; }
         updateSound();
         serialEvent();
         delay(20);

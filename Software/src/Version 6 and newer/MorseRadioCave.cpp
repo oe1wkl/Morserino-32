@@ -767,7 +767,6 @@ static void lobbyLoop() {
 
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
-        if (Buttons::volButton.clicks == -1) { rcState = RC_EXIT; return; }
 
         serialEvent();
         checkShutDown(false);
@@ -2358,13 +2357,8 @@ static void deathLoop() {
             rcState = RC_EXIT;
             return;
         }
-        // FN long-press → exit to menu
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
-        if (Buttons::volButton.clicks == -1) {
-            rcState = RC_EXIT;
-            return;
-        }
 
         // Keep paddle activity feeding gameCharBuffer (we stay in gameMode)
         doPaddleIambic(leftKey, rightKey);

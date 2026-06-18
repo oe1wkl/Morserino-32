@@ -701,10 +701,6 @@ static void lobbyLoop() {
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
             drawLobby();
         }
-        if (Buttons::volButton.clicks == -1) {       // long press: high scores
-            mslState = MSL_HISCORES;
-            return;
-        }
 
         serialEvent();
         checkShutDown(false);
@@ -871,7 +867,6 @@ static void playLoop() {
                 MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
                 drawBoard("Listen and key the word");
             }
-            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
 
             // Multiplayer hard per-word deadline (GDD): if the word isn't
             // solved in time, skip it (penalty) and move on, so a stuck
@@ -964,7 +959,6 @@ static void resultsLoop() {
 
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
-        if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
 
         serialEvent();
         checkShutDown(false);

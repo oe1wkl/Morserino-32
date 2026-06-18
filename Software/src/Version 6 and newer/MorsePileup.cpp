@@ -959,7 +959,6 @@ static void stateLobby() {
         if (Buttons::volButton.clicks == 1) {
             if (hasCall && hasName) ftp.useCallsign = !ftp.useCallsign;
         }
-        if (Buttons::volButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
 
         checkShutDown(false);
         serialEvent();
@@ -1085,7 +1084,6 @@ static void stateCodeChallenge() {
             encoderIsVolume = !encoderIsVolume;
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
         }
-        if (Buttons::volButton.clicks == -1) { failed = true; }
 
         checkShutDown(false);
         serialEvent();
@@ -1797,7 +1795,6 @@ static void stateGameOver() {
         if (Buttons::modeButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
-        if (Buttons::volButton.clicks == -1) { ftp.state = FTP_EXIT; return; }
         checkShutDown(false);
         serialEvent();
         delay(20);
