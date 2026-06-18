@@ -2,14 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.10" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Morserino-32 User Manual</title>
   <style>
-    code{white-space: pre-wrap;}
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     /* The extra [class] is a hack that increases specificity enough to
        override a similar rule in reveal.js */
@@ -140,8 +146,13 @@ The font family used is Lato.</p>
 <li><a href="#appendix-7-using-a-browser-to-set-up-m32-preferences-and-upload-text-files" id="toc-appendix-7-using-a-browser-to-set-up-m32-preferences-and-upload-text-files"><span class="toc-section-number">7.7</span> Appendix 7: Using a Browser to set up M32 Preferences, and upload Text Files</a></li>
 <li><a href="#appendix-8-using-the-serial-output-of-the-m32" id="toc-appendix-8-using-the-serial-output-of-the-m32"><span class="toc-section-number">7.8</span> Appendix 8: Using the Serial Output of the M32</a></li>
 <li><a href="#appendix-9-using-the-bluetooth-keyboard-functionality" id="toc-appendix-9-using-the-bluetooth-keyboard-functionality"><span class="toc-section-number">7.9</span> Appendix 9: Using the Bluetooth Keyboard functionality</a></li>
-<li><a href="#appendix-10-list-of-common-cw-abbreviations-used-by-morserino-32" id="toc-appendix-10-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="toc-section-number">7.10</span> Appendix 10: List of common CW abbreviations used by Morserino-32</a></li>
-<li><a href="#appendix-11-glossary" id="toc-appendix-11-glossary"><span class="toc-section-number">7.11</span> Appendix 11: Glossary</a></li>
+<li><a href="#appendix-10-using-the-ble-midi-output" id="toc-appendix-10-using-the-ble-midi-output"><span class="toc-section-number">7.10</span> Appendix 10: Using the BLE MIDI Output</a>
+<ul>
+<li><a href="#connecting-to-a-host-device" id="toc-connecting-to-a-host-device"><span class="toc-section-number">7.10.1</span> Connecting to a host device</a></li>
+<li><a href="#preferences-1" id="toc-preferences-1"><span class="toc-section-number">7.10.2</span> Preferences</a></li>
+</ul></li>
+<li><a href="#appendix-11-list-of-common-cw-abbreviations-used-by-morserino-32" id="toc-appendix-11-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="toc-section-number">7.11</span> Appendix 11: List of common CW abbreviations used by Morserino-32</a></li>
+<li><a href="#appendix-12-glossary" id="toc-appendix-12-glossary"><span class="toc-section-number">7.12</span> Appendix 12: Glossary</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -564,7 +575,7 @@ The font family used is Lato.</p>
 <p>You can choose between the following at the second level of the menu:</p>
 <ul>
 <li><strong>Random</strong>: Generates groups of random characters. The length of the groups as well as the choice of characters can be selected in the preferences, by double clicking the ENCODER knob (see the description of preferences for details).</li>
-<li><strong>CW Abbrevs:</strong> Random abbreviations and Q-codes that are very common in CW transmissions (through a preference setting you can choose the maximum length of the abbreviations you want to train). See <strong>Appendix 10 List of common CW abbreviations used by Morserino-32</strong> for the abbreviations that can be generated, and their meaning.</li>
+<li><strong>CW Abbrevs:</strong> Random abbreviations and Q-codes that are very common in CW transmissions (through a preference setting you can choose the maximum length of the abbreviations you want to train). See <strong>Appendix 11 List of common CW abbreviations used by Morserino-32</strong> for the abbreviations that can be generated, and their meaning.</li>
 <li><strong>English Words</strong>: Random words from a list of the 5.000 most common words in the English language (again you can set a maximum length of a word through a preference).</li>
 <li><strong>Call Signs</strong>: Generates amateur radio call signs (these are not always real call signs, and there will be some generated that would not exist in the real world, as certain suffixes might not have been assigned to anyone). The maximum length can be selected through a preference, as well as (if you like it so) the continent of the call signs generated, and if it should not generate call signs with extremely rare prefixes.</li>
 <li><strong>Mixed</strong>: Selects randomly from the previous possibilities (random character groups, abbreviations, English words and call signs).</li>
@@ -1595,7 +1606,7 @@ The font family used is Lato.</p>
 <p>Unlike the other games, Radio Cave does not use scoring or time pressure. Instead, it is a puzzle-based exploration game where you navigate rooms, collect items, and solve challenges — all by keying commands as Morse code. CW clues are woven into the game world: some information is only revealed as Morse audio, and the final challenge requires you to key a real QSO exchange on your paddles.</p>
 <p>Radio Cave is only available on the M32Pocket.</p>
 <h4 class="unnumbered" id="starting-the-game-2">Starting the Game</h4>
-<p>From the main menu, navigate to <strong>Games → Radio Cave</strong>. After a brief lobby screen, key any letter on the paddles or click the encoder to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.</p>
+<p>From the main menu, navigate to <strong>Games → Radio Cave</strong>. After a brief lobby screen, key any letter on the paddles to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.</p>
 <h4 class="unnumbered" id="how-to-play">How to Play</h4>
 <p>The game displays text descriptions on the TFT screen. You explore by keying short commands as Morse code using the paddles. The game understands full words, abbreviations, and even single-letter shortcuts — whatever is fastest on the key. There is no time pressure, so take whatever speed feels comfortable.</p>
 <h4 class="unnumbered" id="display-layout-1">Display Layout</h4>
@@ -1748,7 +1759,7 @@ The font family used is Lato.</p>
 <p><strong>Morsel</strong> is a word-guessing game in which you identify a hidden word from two clues: one randomly chosen letter of the word shown in clear text on the display, and the whole word played in Morse code. The CW clue starts fast — 48 WPM — and slows by 5 WPM each round you don’t solve it, down to a floor of 18 WPM. Solving in fewer guesses is rewarded; finishing the 10-word match in the lowest total adjusted time wins.</p>
 <p>Morsel is only available on the M32Pocket.</p>
 <h4 class="unnumbered" id="starting-the-game-3">Starting the Game</h4>
-<p>From the main menu, navigate to <strong>Games → Morsel</strong>. The lobby shows the current <strong>Koch lesson</strong> and <strong>Word length</strong> settings, along with the controls available. Touch a paddle or click the encoder to begin.</p>
+<p>From the main menu, navigate to <strong>Games → Morsel</strong>. The lobby shows the current <strong>Koch lesson</strong> and <strong>Word length</strong> settings, along with the controls available. Touch a paddle to begin.</p>
 <h4 class="unnumbered" id="lobby-settings">Lobby Settings</h4>
 <p>Two settings can be adjusted directly in the lobby:</p>
 <table>
@@ -2199,6 +2210,26 @@ The font family used is Lato.</p>
 <td>Only relevant in <strong>Generic Kbd</strong> mode (see <strong>BLT Kbd Output</strong> above). Determines how the &lt;AR&gt; prosign is sent over Bluetooth: as the literal character “<strong>+</strong>” or as a soft line break (Shift+Enter).</td>
 <td><strong>+</strong> / Linefeed</td>
 </tr>
+<tr>
+<td>BLE MIDI Out</td>
+<td>Enables BLE MIDI output. When on, pressing and releasing the left or right paddle sends MIDI Note On / Note Off messages over Bluetooth Low Energy to any connected BLE MIDI host. Active in all modes where the paddles are used. <em>Cannot be active at the same time as BLT Kbd Output (see also <strong>Appendix 10</strong>).</em></td>
+<td><strong>Off</strong> / On</td>
+</tr>
+<tr>
+<td>MIDI Channel</td>
+<td>The MIDI channel used for BLE MIDI output.</td>
+<td>1–16, default <strong>1</strong></td>
+</tr>
+<tr>
+<td>MIDI Left Note</td>
+<td>The MIDI note number sent when the left paddle is pressed and released.</td>
+<td>0–127, default <strong>20</strong></td>
+</tr>
+<tr>
+<td>MIDI Right Note</td>
+<td>The MIDI note number sent when the right paddle is pressed and released.</td>
+<td>0–127, default <strong>21</strong></td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.2.3" id="preferences-regarding-koch-character-sequence"><span class="header-section-number">6.2.3</span> Preferences regarding Koch Character Sequence</h3>
@@ -2592,7 +2623,26 @@ The font family used is Lato.</p>
 <div class="note">
 <p>The Morserino works like a keyboard with a US key layout – this may need to be set accordingly on the computer you are using.</p>
 </div>
-<h2 data-number="7.10" id="appendix-10-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="header-section-number">7.10</span> Appendix 10: List of common CW abbreviations used by Morserino-32</h2>
+<h2 data-number="7.10" id="appendix-10-using-the-ble-midi-output"><span class="header-section-number">7.10</span> Appendix 10: Using the BLE MIDI Output</h2>
+<p>The M32 can send the state of the left and right paddle as MIDI Note On / Note Off messages over Bluetooth Low Energy (BLE MIDI). This allows the Morserino to be used as a wireless CW key input for any software that accepts MIDI — logging programs, SDR software, VBand, or a DAW.</p>
+<p>When enabled, pressing the left paddle sends a MIDI Note On for the configured left note, and releasing it sends a Note Off. The right paddle works the same way for the right note. Both paddles are independent, so squeezing both simultaneously produces two simultaneous Note On messages — useful for iambic-aware software.</p>
+<div class="note">
+<p>This feature is only active in CW Keyer mode! The MIDI device will only become visible on your PC, tablet, etc. once CW Keyer has been launched!</p>
+</div>
+<div class="note">
+<p>BLE MIDI and the Bluetooth keyboard (<strong>BLT Kbd Output</strong>) share the same Bluetooth hardware and cannot be active simultaneously. Enabling <strong>BLE MIDI Out</strong> disables the Bluetooth keyboard, and vice versa.</p>
+</div>
+<h3 data-number="7.10.1" id="connecting-to-a-host-device"><span class="header-section-number">7.10.1</span> Connecting to a host device</h3>
+<ol type="1">
+<li>Enable <strong>BLE MIDI Out</strong> in the preferences (set to <strong>On</strong>).</li>
+<li>On your computer, tablet, or phone, open a BLE MIDI connection manager. On iOS/macOS, GarageBand (Settings → Advanced → Bluetooth MIDI Devices) or the free app <em>midimittr</em> both work. On Windows, use a BLE MIDI driver such as <em>MIDIberry</em>.</li>
+<li>The Morserino will appear as <strong>Morserino32 MIDI</strong> in the device list. Select it to connect.</li>
+<li>After a disconnect, the Morserino resumes advertising after about half a second. Reconnection is manual — the host device does not reconnect automatically.</li>
+</ol>
+<h3 data-number="7.10.2" id="preferences-1"><span class="header-section-number">7.10.2</span> Preferences</h3>
+<p>See <strong>Preferences regarding Key, Paddles and Keyer</strong> for the four BLE MIDI settings: <strong>BLE MIDI Out</strong>, <strong>MIDI Channel</strong>, <strong>MIDI Left Note</strong>, and <strong>MIDI Right Note</strong>.</p>
+<hr />
+<h2 data-number="7.11" id="appendix-11-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="header-section-number">7.11</span> Appendix 11: List of common CW abbreviations used by Morserino-32</h2>
 <p>The list contains definitions in English and German, separated by a slash. Not all abbreviations are very common in all languages; abbreviations uncommon in English are in square brackets [].</p>
 <p><strong>A</strong></p>
 <table>
@@ -3850,7 +3900,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h2 data-number="7.11" id="appendix-11-glossary"><span class="header-section-number">7.11</span> Appendix 11: Glossary</h2>
+<h2 data-number="7.12" id="appendix-12-glossary"><span class="header-section-number">7.12</span> Appendix 12: Glossary</h2>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -3869,7 +3919,11 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>BLE</td>
-<td>Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output.</td>
+<td>Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output and BLE MIDI.</td>
+</tr>
+<tr>
+<td>BLE MIDI</td>
+<td>A standard protocol for sending MIDI messages over Bluetooth Low Energy. Used by the Morserino to send paddle press/release as MIDI Note On/Off to a connected host device. See <strong>Appendix 10</strong>.</td>
 </tr>
 <tr>
 <td>CW</td>

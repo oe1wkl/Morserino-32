@@ -2,14 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.10" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Morserino-32 Benutzerhandbuch</title>
   <style>
-    code{white-space: pre-wrap;}
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     /* The extra [class] is a hack that increases specificity enough to
        override a similar rule in reveal.js */
@@ -142,8 +148,13 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#anhang-7-einrichten-von-m32-einstellungen-ueber-einen-browser-und-hochladen-von-textdateien" id="toc-anhang-7-einrichten-von-m32-einstellungen-ueber-einen-browser-und-hochladen-von-textdateien"><span class="toc-section-number">7.7</span> Anhang 7: Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien</a></li>
 <li><a href="#anhang-8-nutzung-des-seriellen-ausgangs-des-m32" id="toc-anhang-8-nutzung-des-seriellen-ausgangs-des-m32"><span class="toc-section-number">7.8</span> Anhang 8: Nutzung des seriellen Ausgangs des M32</a></li>
 <li><a href="#anhang-9-benutzung-der-bluetooth-tastatur-funktion" id="toc-anhang-9-benutzung-der-bluetooth-tastatur-funktion"><span class="toc-section-number">7.9</span> Anhang 9: Benutzung der Bluetooth-Tastatur-Funktion</a></li>
-<li><a href="#anhang-10-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32" id="toc-anhang-10-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="toc-section-number">7.10</span> Anhang 10: Gängige CW-Abkürzungen, verwendet vom Morserino-32</a></li>
-<li><a href="#anhang-11-glossar" id="toc-anhang-11-glossar"><span class="toc-section-number">7.11</span> Anhang 11: Glossar</a></li>
+<li><a href="#anhang-10-verwendung-der-ble-midi-ausgabe" id="toc-anhang-10-verwendung-der-ble-midi-ausgabe"><span class="toc-section-number">7.10</span> Anhang 10: Verwendung der BLE-MIDI-Ausgabe</a>
+<ul>
+<li><a href="#verbindung-mit-einem-host-geraet-herstellen" id="toc-verbindung-mit-einem-host-geraet-herstellen"><span class="toc-section-number">7.10.1</span> Verbindung mit einem Host-Gerät herstellen</a></li>
+<li><a href="#einstellungen-1" id="toc-einstellungen-1"><span class="toc-section-number">7.10.2</span> Einstellungen</a></li>
+</ul></li>
+<li><a href="#anhang-11-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32" id="toc-anhang-11-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="toc-section-number">7.11</span> Anhang 11: Gängige CW-Abkürzungen, verwendet vom Morserino-32</a></li>
+<li><a href="#anhang-12-glossar" id="toc-anhang-12-glossar"><span class="toc-section-number">7.12</span> Anhang 12: Glossar</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -566,7 +577,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Auf der zweiten Menüebene kannst du zwischen folgenden Möglichkeiten wählen:</p>
 <ul>
 <li><strong>Random</strong>: Erzeugt Gruppen von zufälligen Zeichen. Länge der Gruppen und Zeichenauswahl können in den Einstellungen festgelegt werden (Details in der Beschreibung der Einstellungen).</li>
-<li><strong>CW Abbrevs</strong>: Zufällige Abkürzungen und Q-Gruppen, die im CW-Verkehr sehr häufig vorkommen (über eine Einstellung kannst du die maximale Länge der zu trainierenden Abkürzungen festlegen). Siehe <strong>Anhang 10 Gängige CW-Abkürzungen, verwendet vom Morserino-32</strong> für die generierbaren Abkürzungen und ihre Bedeutung.</li>
+<li><strong>CW Abbrevs</strong>: Zufällige Abkürzungen und Q-Gruppen, die im CW-Verkehr sehr häufig vorkommen (über eine Einstellung kannst du die maximale Länge der zu trainierenden Abkürzungen festlegen). Siehe <strong>Anhang 11 Gängige CW-Abkürzungen, verwendet vom Morserino-32</strong> für die generierbaren Abkürzungen und ihre Bedeutung.</li>
 <li><strong>English Words</strong>: Zufällige Wörter aus einer Liste der 5.000 gebräuchlichsten englischen Wörter (auch hier kann die maximale Wortlänge über eine Einstellung festgelegt werden).</li>
 <li><strong>Call Signs</strong>: Generiert Amateurfunk-Rufzeichen (dies sind nicht immer echte Rufzeichen; es werden auch solche generiert, die in der Realität nicht existieren würden, da bestimmte Suffixe möglicherweise noch niemandem zugeteilt wurden). Die maximale Länge kann über eine Einstellung gewählt werden, ebenso – wenn gewünscht – der Kontinent der generierten Rufzeichen sowie ob sehr seltene Präfixe ausgeblendet werden sollen.</li>
 <li><strong>Mixed</strong>: Wählt zufällig aus den oben genannten Möglichkeiten (zufällige Zeichengruppen, Abkürzungen, englische Wörter und Rufzeichen).</li>
@@ -1576,7 +1587,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Im Gegensatz zu den anderen Spielen gibt es weder Punktewertung noch Zeitdruck. Stattdessen ist es ein rätsellösungsbasiertes Erkundungsspiel, bei dem du Räume erkundest, Gegenstände sammelst und Aufgaben löst – alles durch Eingabe von Befehlen als Morsecode. CW-Hinweise sind in die Spielwelt eingebettet: Einige Informationen werden nur als Morse-Audio übermittelt, und die finale Aufgabe erfordert ein echtes QSO-Austausch auf den Paddles.</p>
 <p>Radio Cave ist nur auf dem M32Pocket verfügbar.</p>
 <h4 class="unnumbered" id="spielstart-2">Spielstart</h4>
-<p>Navigiere im Hauptmenü zu <strong>Games → Radio Cave</strong>. Nach einem kurzen Lobby-Bildschirm kannst du einen Buchstaben auf den Paddles eingeben oder den ENCODER klicken, um das Spiel zu betreten. Wenn ein gespeicherter Spielstand vorhanden ist, wird dieser automatisch geladen und du setzt dort fort; andernfalls beginnt ein neues Spiel.</p>
+<p>Navigiere im Hauptmenü zu <strong>Games → Radio Cave</strong>. Nach einem kurzen Lobby-Bildschirm kannst du einen Buchstaben auf den Paddles eingeben, um das Spiel zu betreten. Wenn ein gespeicherter Spielstand vorhanden ist, wird dieser automatisch geladen und du setzt dort fort; andernfalls beginnt ein neues Spiel.</p>
 <h4 class="unnumbered" id="spielweise">Spielweise</h4>
 <p>Das Spiel zeigt Textbeschreibungen auf dem TFT-Bildschirm an. Du erkundest die Umgebung durch Eingabe kurzer Befehle als Morsecode über die Paddles. Das Spiel versteht ganze Wörter, Abkürzungen und auch einzelne Buchstaben als Shortcuts. Es gibt keinen Zeitdruck – nimm die Geschwindigkeit, die sich für dich angenehm anfühlt.</p>
 <h4 class="unnumbered" id="display-layout-1">Display-Layout</h4>
@@ -1729,7 +1740,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p><strong>Morsel</strong> ist ein Worträtsel-Spiel: Du musst ein verborgenes Wort erraten, mit zwei Hinweisen — ein zufällig gewählter Buchstabe des Wortes wird im Klartext am Display angezeigt, und das ganze Wort wird in Morsecode wiedergegeben. Der CW-Hinweis beginnt schnell — 48 WpM — und wird mit jedem nicht gelösten Versuch um 5 WpM langsamer, bis hinunter auf 18 WpM. Wer mit weniger Versuchen löst, wird belohnt; das Spiel umfasst 10 Wörter, gewertet wird die niedrigste angepasste Gesamtzeit.</p>
 <p>Morsel ist nur am M32Pocket verfügbar.</p>
 <h4 class="unnumbered" id="starten-des-spiels">Starten des Spiels</h4>
-<p>Navigiere im Hauptmenü zu <strong>Games → Morsel</strong>. Die Lobby zeigt die aktuell eingestellte <strong>Koch-Lektion</strong> und <strong>Wortlänge</strong> sowie die verfügbaren Bedienelemente. Berühre ein Paddle oder klicke den Encoder, um zu starten.</p>
+<p>Navigiere im Hauptmenü zu <strong>Games → Morsel</strong>. Die Lobby zeigt die aktuell eingestellte <strong>Koch-Lektion</strong> und <strong>Wortlänge</strong> sowie die verfügbaren Bedienelemente. Berühre ein Paddle, um zu starten.</p>
 <h4 class="unnumbered" id="einstellungen-in-der-lobby">Einstellungen in der Lobby</h4>
 <p>Zwei Einstellungen können direkt in der Lobby geändert werden:</p>
 <table>
@@ -2180,6 +2191,26 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td>Nur im Modus <strong>Generic Kbd</strong> relevant (siehe <strong>BLT Kbd Output</strong> oben). Legt fest, wie das &lt;AR&gt;-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „<strong>+</strong>” oder als weicher Zeilenumbruch (Shift+Enter).</td>
 <td><strong>+</strong> / Linefeed</td>
 </tr>
+<tr>
+<td><strong>BLE MIDI Out</strong></td>
+<td>Aktiviert die BLE-MIDI-Ausgabe. Wenn eingeschaltet, sendet das Drücken und Loslassen des linken oder rechten Paddles MIDI-Note-On- bzw. Note-Off-Nachrichten über Bluetooth Low Energy an ein verbundenes BLE-MIDI-Gerät. In allen Modi aktiv, in denen die Paddles genutzt werden. <em>Kann nicht gleichzeitig mit BLT Kbd Output aktiv sein (siehe auch <strong>Anhang 10</strong>).</em></td>
+<td><strong>Off</strong> / On</td>
+</tr>
+<tr>
+<td><strong>MIDI Channel</strong></td>
+<td>Der MIDI-Kanal für die BLE-MIDI-Ausgabe.</td>
+<td>1–16, Standard <strong>1</strong></td>
+</tr>
+<tr>
+<td><strong>MIDI Left Note</strong></td>
+<td>Die MIDI-Notennummer, die beim Drücken und Loslassen des linken Paddles gesendet wird.</td>
+<td>0–127, Standard <strong>20</strong></td>
+</tr>
+<tr>
+<td><strong>MIDI Right Note</strong></td>
+<td>Die MIDI-Notennummer, die beim Drücken und Loslassen des rechten Paddles gesendet wird.</td>
+<td>0–127, Standard <strong>21</strong></td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.2.3" id="einstellungen-bezueglich-der-koch-zeichenfolge"><span class="header-section-number">6.2.3</span> Einstellungen bezüglich der Koch-Zeichenfolge</h3>
@@ -2572,7 +2603,26 @@ aus dem englischsprachigen Original übersetzt.</p>
 <div class="note">
 <p>Beachte, dass der Morserino wie eine Tastatur mit US-Tastenlayout arbeitet – dies ist ggf. auf dem verwendeten Computer entsprechend einzustellen.</p>
 </div>
-<h2 data-number="7.10" id="anhang-10-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.10</span> Anhang 10: Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
+<h2 data-number="7.10" id="anhang-10-verwendung-der-ble-midi-ausgabe"><span class="header-section-number">7.10</span> Anhang 10: Verwendung der BLE-MIDI-Ausgabe</h2>
+<p>Der M32 kann den Zustand des linken und rechten Paddles als MIDI-Note-On- bzw. Note-Off-Nachrichten über Bluetooth Low Energy (BLE MIDI) senden. Dadurch kann der Morserino als drahtlose CW-Tastatureingabe für jede Software verwendet werden, die MIDI akzeptiert – Logprogramme, SDR-Software, VBand oder eine DAW.</p>
+<p>Wenn aktiviert, sendet das Drücken des linken Paddles ein MIDI-Note-On für die konfigurierte linke Note; das Loslassen sendet ein Note-Off. Das rechte Paddle funktioniert genauso für die rechte Note. Beide Paddles sind unabhängig, sodass gleichzeitiges Drücken (Squeeze) zwei gleichzeitige Note-On-Nachrichten erzeugt – nützlich für iambic-fähige Software.</p>
+<div class="note">
+<p>Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird das MIDI Ger Tastatur für PC und Tablett etc. sichtbar!</p>
+</div>
+<div class="note">
+<p>BLE MIDI und die Bluetooth-Tastatur (<strong>BLT Kbd Output</strong>) nutzen dieselbe Bluetooth-Hardware und können nicht gleichzeitig aktiv sein. Das Aktivieren von <strong>BLE MIDI Out</strong> deaktiviert die Bluetooth-Tastatur und umgekehrt.</p>
+</div>
+<h3 data-number="7.10.1" id="verbindung-mit-einem-host-geraet-herstellen"><span class="header-section-number">7.10.1</span> Verbindung mit einem Host-Gerät herstellen</h3>
+<ol type="1">
+<li>Aktiviere <strong>BLE MIDI Out</strong> in den Einstellungen (setze auf <strong>On</strong>).</li>
+<li>Öffne auf deinem Computer, Tablet oder Smartphone einen BLE-MIDI-Verbindungsmanager. Unter iOS/macOS eignen sich GarageBand (Einstellungen → Erweitert → Bluetooth-MIDI-Geräte) oder die kostenlose App <em>midimittr</em>. Unter Windows kann ein BLE-MIDI-Treiber wie <em>MIDIberry</em> verwendet werden.</li>
+<li>Der Morserino erscheint als <strong>Morserino32 MIDI</strong> in der Geräteliste. Wähle ihn aus, um die Verbindung herzustellen.</li>
+<li>Nach einer Trennung beginnt der Morserino nach etwa einer halben Sekunde erneut zu advertisen. Die Verbindungswiederherstellung erfolgt manuell – das Host-Gerät verbindet sich nicht automatisch erneut.</li>
+</ol>
+<h3 data-number="7.10.2" id="einstellungen-1"><span class="header-section-number">7.10.2</span> Einstellungen</h3>
+<p>Siehe <strong>Einstellungen bezüglich Taste, Paddles und Keyer</strong> für die vier BLE-MIDI-Einstellungen: <strong>BLE MIDI Out</strong>, <strong>MIDI Channel</strong>, <strong>MIDI Left Note</strong> und <strong>MIDI Right Note</strong>.</p>
+<hr />
+<h2 data-number="7.11" id="anhang-11-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.11</span> Anhang 11: Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
 <p>Die Liste enthält Definitionen auf Englisch und Deutsch, getrennt durch einen Schrägstrich. Nicht alle Abkürzungen sind in allen Sprachen sehr gebräuchlich; im Englischen ungewöhnliche Abkürzungen stehen in eckigen Klammern [].</p>
 <p><strong>A</strong></p>
 <table>
@@ -3831,7 +3881,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tbody>
 </table>
 <hr />
-<h2 data-number="7.11" id="anhang-11-glossar"><span class="header-section-number">7.11</span> Anhang 11: Glossar</h2>
+<h2 data-number="7.12" id="anhang-12-glossar"><span class="header-section-number">7.12</span> Anhang 12: Glossar</h2>
 <table>
 <colgroup>
 <col style="width: 42%" />
@@ -3850,7 +3900,11 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 <tr>
 <td>BLE</td>
-<td>Bluetooth Low Energy – eine energiesparende Variante von Bluetooth, die für die drahtlose Tastaturausgabe verwendet wird.</td>
+<td>Bluetooth Low Energy – eine energiesparende Variante von Bluetooth, die für die drahtlose Tastaturausgabe und BLE MIDI verwendet wird.</td>
+</tr>
+<tr>
+<td>BLE MIDI</td>
+<td>Ein Standardprotokoll zur Übertragung von MIDI-Nachrichten über Bluetooth Low Energy. Der Morserino verwendet es, um Paddle-Druck und -Loslassen als MIDI-Note-On/Off an ein verbundenes Host-Gerät zu senden. Siehe <strong>Anhang 10</strong>.</td>
 </tr>
 <tr>
 <td>CW</td>

@@ -3086,7 +3086,9 @@ The M32 can send the state of the left and right paddle as MIDI Note On / Note O
 
 When enabled, pressing the left paddle sends a MIDI Note On for the configured left note, and releasing it sends a Note Off. The right paddle works the same way for the right note. Both paddles are independent, so squeezing both simultaneously produces two simultaneous Note On messages — useful for iambic-aware software.
 
-BLE MIDI output is active in all modes where the paddles are used (CW Keyer, Transceiver modes, etc.).
+::: note
+This feature is only active in CW Keyer mode! The MIDI device will only become visible on your PC, tablet, etc. once CW Keyer has been launched!
+:::
 
 ::: note
 BLE MIDI and the Bluetooth keyboard (**BLT Kbd Output**) share the same Bluetooth hardware and cannot be active simultaneously. Enabling **BLE MIDI Out** disables the Bluetooth keyboard, and vice versa.

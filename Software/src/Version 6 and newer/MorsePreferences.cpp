@@ -426,16 +426,16 @@ parameter MorsePreferences::pliste[] = {
     {}
   },
   {
-    36, 0, 127, 1,
+    20, 0, 127, 1,
     "MIDI Left Note",
-    "MIDI note for left paddle (default 36 = C2)",
+    "MIDI note for left paddle (default 20)",
     false,
     {}
   },
   {
-    38, 0, 127, 1,
+    21, 0, 127, 1,
     "MIDI Right Note",
-    "MIDI note for right paddle (default 38 = D2)",
+    "MIDI note for right paddle (default 21)",
     false,
     {}
   },
