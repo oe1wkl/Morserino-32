@@ -172,6 +172,17 @@ namespace MorsePreferences
 
   extern parameter pliste[];
 
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+  // posBluetoothOut selects the BLE radio role. The keyboard and MIDI share the
+  // single ESP32 BLE radio, so this one selector makes them mutually exclusive:
+  //   0    = off
+  //   1..4 = BLE HID keyboard sub-mode (bitmask: bit0 = Vband keying,
+  //          bit1/bit2 = send decoded/generated chars, 4 = generic keyboard)
+  //   5    = BLE MIDI output (BLEOUT_MIDI; only built when CONFIG_BLE_MIDI)
+  const uint8_t BLEOUT_MIDI = 5;
+  uint8_t bleKeyboardMode();       // keyboard bitmask, or 0 when off / MIDI selected
+#endif
+
   extern  prefPos keyerOptions[];
   extern  prefPos generatorOptions[];
   extern  prefPos playerOptions[];

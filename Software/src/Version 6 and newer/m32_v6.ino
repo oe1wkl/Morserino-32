@@ -1011,23 +1011,28 @@ void loop() {
 
   } // end switch and code depending on state of metaMorserino
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-// we check here if bluetooth should be started
+// we check here if bluetooth should be started or stopped
+// Free the shared BLE radio as soon as the selector leaves a keyboard sub-mode
+// (switched to MIDI or Off in preferences).
+if (MorseBluetooth::isBLErunning && MorsePreferences::bleKeyboardMode() == 0)
+    MorseBluetooth::stopBluetooth();
+// Start the BLE HID keyboard when a keyboard sub-mode is selected (keyer only).
 if (morseState == morseKeyer &&
-      MorsePreferences::pliste[posBluetoothOut].value != 0 &&
+      MorsePreferences::bleKeyboardMode() != 0 &&
       !MorseBluetooth::isBLErunning) {
     // Initialize Bluetooth System
     MorseBluetooth::initializeBluetooth();
 }
 #endif
 #ifdef CONFIG_BLE_MIDI
-if (MorsePreferences::pliste[posMidiEnable].value && !MorseMidi::isRunning()) {
-#ifdef CONFIG_BLUETOOTH_KEYBOARD
-    if (!MorseBluetooth::isBLErunning)
-#endif
-    MorseMidi::initializeMidi();
-}
-if (!MorsePreferences::pliste[posMidiEnable].value && MorseMidi::isRunning())
+// MIDI and the keyboard share the one BLE radio and are mutually exclusive via
+// the single BLE Output selector; bring MIDI up only once the keyboard is down.
+if (MorsePreferences::pliste[posBluetoothOut].value == MorsePreferences::BLEOUT_MIDI) {
+    if (!MorseMidi::isRunning() && !MorseBluetooth::isBLErunning)
+        MorseMidi::initializeMidi();
+} else if (MorseMidi::isRunning()) {
     MorseMidi::stopMidi();
+}
 #endif
 /// if we have time check for serial input and for button presses
 
@@ -1508,7 +1513,7 @@ boolean checkPaddles() {
       if (newL != leftKey) {
           leftKey = newL;
 #ifdef CONFIG_BLE_MIDI
-          if (MorsePreferences::pliste[posMidiEnable].value) {
+          if (MorsePreferences::pliste[posBluetoothOut].value == MorsePreferences::BLEOUT_MIDI) {
               if (newL) MorseMidi::noteOn(MorsePreferences::pliste[posMidiLeftNote].value);
               else      MorseMidi::noteOff(MorsePreferences::pliste[posMidiLeftNote].value);
           }
@@ -1518,7 +1523,7 @@ boolean checkPaddles() {
       if (newR != rightKey) {
           rightKey = newR;
 #ifdef CONFIG_BLE_MIDI
-          if (MorsePreferences::pliste[posMidiEnable].value) {
+          if (MorsePreferences::pliste[posBluetoothOut].value == MorsePreferences::BLEOUT_MIDI) {
               if (newR) MorseMidi::noteOn(MorsePreferences::pliste[posMidiRightNote].value);
               else      MorseMidi::noteOff(MorsePreferences::pliste[posMidiRightNote].value);
           }
@@ -2379,7 +2384,7 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);
  
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-    if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+    if ((MorsePreferences::bleKeyboardMode() & 0x6) >= 0x2)
         MorseBluetooth::bluetoothTypeString(tmp_str);
 #endif
  
@@ -2411,14 +2416,14 @@ void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
         MorseOutput::printToScroll(style, upper, true, encoderState == scrollMode);
         SerialOutMorse(upper, 0b100);
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+        if ((MorsePreferences::bleKeyboardMode() & 0x6) >= 0x2)
             MorseBluetooth::bluetoothTypeString(upper);
 #endif
     } else {
         MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
         SerialOutMorse(s, 0b100);
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+        if ((MorsePreferences::bleKeyboardMode() & 0x6) >= 0x2)
             MorseBluetooth::bluetoothTypeString(s);
 #endif
     }
@@ -2584,7 +2589,7 @@ void keyTransmitter(boolean noTx) {
       return;
    digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+   if ((MorsePreferences::bleKeyboardMode() & 0x1) == 0x1)
       MorseBluetooth::bluetoothTypeLCTRL(true);
 #endif
 }
@@ -3291,7 +3296,7 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
         }
         digitalWrite(keyerPin, LOW);      // stop keying Tx
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+        if ((MorsePreferences::bleKeyboardMode() & 0x1) == 0x1)
           MorseBluetooth::bluetoothTypeLCTRL(false);
 #endif
   }   // end key off

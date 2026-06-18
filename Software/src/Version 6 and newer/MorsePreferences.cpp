@@ -76,7 +76,7 @@ const char * prefName[] = {
 					  "bluetoothOut", "btARkey",
 #endif
 #ifdef CONFIG_BLE_MIDI
-					  "midiEnable", "midiChannel", "midiLeftNote", "midiRightNote",
+					  "midiChannel", "midiLeftNote", "midiRightNote",
 #endif
 #ifdef CONFIG_TFT
             "theme",
@@ -396,11 +396,21 @@ parameter MorsePreferences::pliste[] = {
   },
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   {
-    0, 0, 4, 1,                                                 // output via Bluetooth? 0 = none, 1= keyed sends CTRL key, 2 = decoded chars are sent as keystrokes, 3=both
-    "BLT Kbd Output",
-    "Select what is sent to the Bluetooth Keyboard output",
+    0, 0,                                                       // BLE radio role: 0=none, 1=Vband keying, 2=decoded, 3=both, 4=generic kbd, 5=MIDI
+#ifdef CONFIG_BLE_MIDI
+    5,                                                          // MIDI (value 5) is mutually exclusive with the keyboard - they share one BLE radio
+#else
+    4,
+#endif
+    1,
+    "BLE Output",
+    "Select the BLE output: keyboard variants or MIDI",
     true,
-    {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"}
+    {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"
+#ifdef CONFIG_BLE_MIDI
+     , "MIDI"
+#endif
+    }
   },
   {
     0, 0, 1, 1,                                                 // in Generic Kbd mode: 0=send '+', 1=send Shift+Enter (soft return)
@@ -411,13 +421,6 @@ parameter MorsePreferences::pliste[] = {
   },
 #endif
 #ifdef CONFIG_BLE_MIDI
-  {
-    0, 0, 1, 1,
-    "BLE MIDI Out",
-    "Send left/right paddle as MIDI Note On/Off via Bluetooth",
-    true,
-    {"Off", "On"}
-  },
   {
     1, 1, 16, 1,
     "MIDI Channel",
@@ -575,7 +578,17 @@ uint8_t MorsePreferences::memPtr = 0;
 uint8_t  MorsePreferences::filePartCount = 0;
 uint8_t  MorsePreferences::filePartSelected = 0;
 FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
- 
+
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+// Decode the BLE Output selector (posBluetoothOut) into the BLE-keyboard
+// bitmask. Returns 0 when the keyboard is not the selected role (Off, or MIDI),
+// so MIDI (value BLEOUT_MIDI) never triggers any keyboard code path.
+uint8_t MorsePreferences::bleKeyboardMode() {
+    uint8_t v = pliste[posBluetoothOut].value;
+    return (v >= 1 && v <= 4) ? v : 0;
+}
+#endif
+
 
 
 #define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, 
@@ -600,7 +613,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #define BLUE
 #endif
 #ifdef CONFIG_BLE_MIDI
-#define MIDI posMidiEnable, posMidiChannel, posMidiLeftNote, posMidiRightNote,
+#define MIDI posMidiChannel, posMidiLeftNote, posMidiRightNote,
 #else
 #define MIDI
 #endif

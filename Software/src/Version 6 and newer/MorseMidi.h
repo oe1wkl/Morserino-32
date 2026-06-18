@@ -17,6 +17,13 @@
 
 #ifdef CONFIG_BLE_MIDI
 
+// BLE MIDI is selected through the BLE Output preference (posBluetoothOut == 5),
+// which only exists with the BLE keyboard feature; the two share the single
+// ESP32 BLE radio and are therefore mutually exclusive by construction.
+#ifndef CONFIG_BLUETOOTH_KEYBOARD
+#error "CONFIG_BLE_MIDI requires CONFIG_BLUETOOTH_KEYBOARD (MIDI is selected via the BLE Output preference)."
+#endif
+
 namespace MorseMidi {
     bool isRunning();
     extern bool isMidiConnected;

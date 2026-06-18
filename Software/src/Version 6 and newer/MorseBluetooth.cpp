@@ -300,7 +300,7 @@ void MorseBluetooth::bluetoothTypeString(const String& str) {
     String modified;
     const String* toSend = &str;
 
-    if (MorsePreferences::pliste[posBluetoothOut].value >= 0x4) {
+    if (MorsePreferences::bleKeyboardMode() >= 0x4) {
         modified = str;
         modified.replace("<ERR>", "\b");
         modified.replace("<err>", "\b");

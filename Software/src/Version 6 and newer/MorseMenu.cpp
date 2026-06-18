@@ -447,7 +447,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
   switch (MorsePreferences::menuPtr) {
     case  _keyer:  /// keyer
                 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-                  if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
+                  if (MorsePreferences::bleKeyboardMode() != 0) {   // a keyboard sub-mode (not MIDI/off)
                     // Initialize Bluetooth System
                     MorseBluetooth::initializeBluetooth();
                   }
