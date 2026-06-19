@@ -2527,29 +2527,47 @@ void updateTimings() {
   effWpm = 60000 / (31 * ditLength + 4 * interCharacterSpace + interWordSpace );  ///  effective wpm with lengthened spaces = Farnsworth speed
 }
 
-void changeSpeed( int t) {
+// --- Speed/volume value-core vs. classic wrapper (Phase F / L6) ------------
+// changeSpeedValue / changeVolumeValue carry the *value* logic only: mutate the
+// setting, update derived timings / the codec, and report over the serial
+// protocol. They draw nothing. The classic wrappers changeSpeed / changeVolume
+// add the classic status-line update (and, for speed, the charCounter NVS-write
+// debounce reset). Interactive modes that own their own HUD — the games (H3) —
+// call the *Value cores directly, so they render speed/volume themselves
+// instead of scribbling over the classic status line. loop(), the echo trainer
+// and the QSO Bot keep calling the wrappers, so their behavior is unchanged.
+
+void changeSpeedValue( int t) {
   MorsePreferences::wpm += t;
   MorsePreferences::wpm = constrain(MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax);
   updateTimings();
-  if (m32state != menu_loop)
-      displayCWspeed();                     // update display of CW speed
-  charCounter = 0;                                    // reset character counter
   if (m32protocol)
       MorseJSON::jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, false);
 }
 
+void changeSpeed( int t) {
+  changeSpeedValue(t);
+  charCounter = 0;                                    // reset character counter (NVS-write debounce)
+  if (m32state != menu_loop)
+      displayCWspeed();                     // update display of CW speed
+}
 
-void changeVolume( int t) {
+
+void changeVolumeValue( int t) {
     MorsePreferences::sidetoneVolume += t+1;
     MorsePreferences::sidetoneVolume = constrain(MorsePreferences::sidetoneVolume, 1, 20) -1;
     //DEBUG(String(MorsePreferences::sidetoneVolume));
     #ifdef CONFIG_TLV320AIC3100
       MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
     #endif
-    if (m32state != menu_loop)
-        MorseOutput::displayVolume((encoderState == volumeSettingMode ? false : true), MorsePreferences::sidetoneVolume);      // sidetone volume;
     if (m32protocol)
       MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, false);
+}
+
+void changeVolume( int t) {
+    changeVolumeValue(t);
+    if (m32state != menu_loop)
+        MorseOutput::displayVolume((encoderState == volumeSettingMode ? false : true), MorsePreferences::sidetoneVolume);      // sidetone volume;
 }
 
 void keyTransmitter(boolean noTx) {

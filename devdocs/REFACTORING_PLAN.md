@@ -111,12 +111,26 @@ shortcut dropped.*
   use RED-long = exit; their black-long means "back one level," so unifying them
   is a back-vs-exit nav decision of its own. (Pileup's text-entry RED-long = the
   widget's "done" — intentionally kept.)
-- ☐ **H3** — route all in-game speed/volume through the shared `changeSpeed`/
-  `changeVolume`. Invaders/Morsel/Pileup already use encoder=speed / RED-click=
-  toggle, so this is mostly internal once L6 lands.
-- ☐ **L6** (moved from Phase C) — extract one shared "live-controls" handler
-  (encoder→speed/vol/scroll, RED→toggle/scroll/dim, black→exit/prefs) used by
-  `loop()`, the QSO Bot, and the games; H3 routes in-game speed/volume through it.
+- ☐ **H3** — route all in-game speed/volume through the shared speed/volume
+  **value-cores** (`changeSpeedValue` / `changeVolumeValue`, ready as of L6) so a
+  game's change updates timings/codec/protocol *without* drawing the classic
+  status line. Invaders/Morsel/Pileup already use encoder=speed / RED-click=
+  toggle, so this is mostly internal; each game keeps its own speed model
+  (Invaders global 5–60; Morsel 48→18 clue ramp + separate keying speed; Pileup
+  its own). Routing Invaders through the core also subsumes the standalone
+  codec fix (`8133a71`). Touches code shared by every classic mode → re-test the
+  classic modes on device too, not just the games.
+- ☑ **L6** (moved from Phase C; done 2026-06-19, both variants build SUCCESS) —
+  **speed/volume value-core extracted.** `changeSpeedValue` / `changeVolumeValue`
+  (`m32_v6.ino`) now carry the value logic only — clamp + `updateTimings` + codec
+  (`soundSetVolume`) + serial `jsonControl` — and draw nothing. The classic
+  wrappers `changeSpeed` / `changeVolume` call the cores and add only the classic
+  status-line update (plus, for speed, the `charCounter` NVS-write debounce reset).
+  Behavior-preserving: `loop()`, the echo trainer and the QSO Bot still call the
+  wrappers. The broader input-dispatch unification sketched originally
+  (encoder→scroll, RED→toggle/dim, black→exit/prefs) was **not** required for H3
+  and was deliberately not undertaken — scope held to the speed/volume path H3
+  consumes.
 - ☐ **M6** — standardize the CW-source visual distinction (user/machine/system)
   across Echo, Transceiver, QSO Bot, games.
 
