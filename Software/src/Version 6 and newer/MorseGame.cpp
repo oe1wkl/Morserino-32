@@ -684,8 +684,9 @@ static void stateMenu() {
                 MorsePreferences::wpm = game.wpm;
                 updateTimings();
             } else {
-                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 20);
+                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
                 MorsePreferences::sidetoneVolume = newVol;
+                MorseOutput::soundSetVolume(newVol);   // apply to the Pocket codec (was missing)
             }
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
             // Redraw all three lines
@@ -837,8 +838,9 @@ static void statePlaying() {
         int enc = checkEncoder();
         if (enc) {
             if (encoderIsVolume) {
-                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 20);
+                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
                 MorsePreferences::sidetoneVolume = newVol;
+                MorseOutput::soundSetVolume(newVol);   // apply to the Pocket codec (was missing)
                 MorseOutput::pwmClick(newVol);
             } else {
                 game.wpm = constrain(game.wpm + enc, 5, 60);
