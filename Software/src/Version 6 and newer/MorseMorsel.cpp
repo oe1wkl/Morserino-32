@@ -829,14 +829,9 @@ static void playLoop() {
             if (enc != 0) {
                 MorseOutput::resetTOT();
                 if (mslEnc == MSL_ENC_SPEED) {
-                    int w = constrain((int)MorsePreferences::wpm + enc,
-                                      (int)MorsePreferences::wpmMin,
-                                      (int)MorsePreferences::wpmMax);
-                    MorsePreferences::wpm = w;
-                    updateTimings();
+                    changeSpeedValue(enc);             // value-only: clamp(wpmMin..wpmMax) + timings + protocol, no classic draw
                 } else {
-                    int vol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 20);
-                    MorsePreferences::sidetoneVolume = vol;
+                    changeVolumeValue(enc);            // value-only: clamp(0..19) + Pocket codec + protocol; fixes prior 0..20 range + missing codec
                 }
                 MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
                 noteActivity();

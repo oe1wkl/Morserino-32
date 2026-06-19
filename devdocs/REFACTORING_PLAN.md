@@ -111,15 +111,22 @@ shortcut dropped.*
   use RED-long = exit; their black-long means "back one level," so unifying them
   is a back-vs-exit nav decision of its own. (Pileup's text-entry RED-long = the
   widget's "done" — intentionally kept.)
-- ☐ **H3** — route all in-game speed/volume through the shared speed/volume
-  **value-cores** (`changeSpeedValue` / `changeVolumeValue`, ready as of L6) so a
-  game's change updates timings/codec/protocol *without* drawing the classic
-  status line. Invaders/Morsel/Pileup already use encoder=speed / RED-click=
-  toggle, so this is mostly internal; each game keeps its own speed model
-  (Invaders global 5–60; Morsel 48→18 clue ramp + separate keying speed; Pileup
-  its own). Routing Invaders through the core also subsumes the standalone
-  codec fix (`8133a71`). Touches code shared by every classic mode → re-test the
-  classic modes on device too, not just the games.
+- ☑ **H3** (done 2026-06-19, both variants build SUCCESS) — all **four** games
+  now route in-game speed/volume through the shared value-cores
+  `changeSpeedValue` / `changeVolumeValue` (declared in `MorsePreferences.h`):
+  Invaders (lobby + playing), Pileup (challenge ×2), Morsel, Radio Cave. (The
+  audit guessed Radio Cave didn't expose live speed/volume — it does, so it was
+  included.) Each game keeps its own speed model; `wpmMin/wpmMax == 5/60`, so the
+  games' hardcoded `5..60` ranges were already equal — speed is behavior-identical.
+  Two latent bugs fixed in passing: **Morsel and Radio Cave in-game volume now
+  reaches the Pocket codec** (they set `sidetoneVolume` but skipped
+  `soundSetVolume` — the same silence Invaders had before `8133a71`), and their
+  volume range is normalized `0..20`→`0..19` (canonical `volumeMax`). Net −20
+  lines. **H3 touches only the game files + the header; the classic modes still
+  call the unchanged wrappers, so classic behavior is unchanged — the
+  classic-mode re-test caveat belonged to L6, not here.**
+  **VERIFY-ON-DEVICE (Pocket):** speed + volume adjust correctly in each game,
+  and Morsel/Radio Cave volume is now actually audible.
 - ☑ **L6** (moved from Phase C; done 2026-06-19, both variants build SUCCESS) —
   **speed/volume value-core extracted.** `changeSpeedValue` / `changeVolumeValue`
   (`m32_v6.ino`) now carry the value logic only — clamp + `updateTimings` + codec

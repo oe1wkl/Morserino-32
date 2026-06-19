@@ -39,6 +39,12 @@ extern String cleanUpProSigns( String &input );
 //extern int16_t batteryVoltage();
 //extern int16_t volt;
 extern void updateTimings();
+// Phase F/L6: value-only speed/volume cores (clamp + timings/codec + serial
+// protocol, no drawing). Interactive modes that own their own HUD — the games —
+// route in-game speed/volume through these instead of poking the prefs directly,
+// so timings/codec/protocol stay consistent without touching the classic line.
+extern void changeSpeedValue(int t);
+extern void changeVolumeValue(int t);
 
 extern int IRAM_ATTR checkEncoder();
 

@@ -680,13 +680,10 @@ static void stateMenu() {
                 if (game.startSubLevel < 1) game.startSubLevel = 1;
                 if (game.startSubLevel > 50) game.startSubLevel = 50;
             } else if (menuEncMode == 1) {
-                game.wpm = constrain(game.wpm + enc, 5, 60);
-                MorsePreferences::wpm = game.wpm;
-                updateTimings();
+                changeSpeedValue(enc);                 // value-only: clamp + timings + protocol, no classic draw
+                game.wpm = MorsePreferences::wpm;       // mirror back into the game's own model
             } else {
-                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
-                MorsePreferences::sidetoneVolume = newVol;
-                MorseOutput::soundSetVolume(newVol);   // apply to the Pocket codec (was missing)
+                changeVolumeValue(enc);                 // value-only: clamp + Pocket codec + protocol, no classic draw
             }
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
             // Redraw all three lines
@@ -838,14 +835,11 @@ static void statePlaying() {
         int enc = checkEncoder();
         if (enc) {
             if (encoderIsVolume) {
-                int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
-                MorsePreferences::sidetoneVolume = newVol;
-                MorseOutput::soundSetVolume(newVol);   // apply to the Pocket codec (was missing)
-                MorseOutput::pwmClick(newVol);
+                changeVolumeValue(enc);                 // value-only: clamp + Pocket codec + protocol, no classic draw
+                MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
             } else {
-                game.wpm = constrain(game.wpm + enc, 5, 60);
-                MorsePreferences::wpm = game.wpm;
-                updateTimings();
+                changeSpeedValue(enc);                  // value-only: clamp + timings + protocol, no classic draw
+                game.wpm = MorsePreferences::wpm;        // mirror back into the game's own model
             }
         }
 

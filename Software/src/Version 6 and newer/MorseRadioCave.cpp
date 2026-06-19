@@ -2505,19 +2505,14 @@ static void playLoop() {
             MorseOutput::resetTOT();   // encoder turn = user activity
             switch (encMode) {
                 case RC_ENC_SPEED: {
-                    int newWpm = constrain((int)MorsePreferences::wpm + enc,
-                                           (int)MorsePreferences::wpmMin,
-                                           (int)MorsePreferences::wpmMax);
-                    MorsePreferences::wpm = newWpm;
-                    updateTimings();
+                    changeSpeedValue(enc);             // value-only: clamp(wpmMin..wpmMax) + timings + protocol, no classic draw
                     MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
                     inputDirty = true;
                     break;
                 }
                 case RC_ENC_VOLUME: {
-                    int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 20);
-                    MorsePreferences::sidetoneVolume = newVol;
-                    MorseOutput::pwmClick(newVol);
+                    changeVolumeValue(enc);            // value-only: clamp(0..19) + Pocket codec + protocol; fixes prior 0..20 range + missing codec
+                    MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
                     inputDirty = true;
                     break;
                 }

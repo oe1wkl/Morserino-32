@@ -28,7 +28,8 @@ changing the speed, adjusting the volume, and leaving the mode must work
 identically in both. Whenever a game needs a mechanism that already exists in
 the classic modes (speed change, volume, pause, exit), it must reuse that
 mechanism — never invent a parallel one. The QSO Bot already does this
-exemplarily; the games do not yet (§12, `divergences.md` H1–H3).
+exemplarily; the games now reuse the same speed/volume mechanism too, via the
+shared value-cores (§2, §12).
 
 ## 1. Controls — what the inputs always mean
 
@@ -75,8 +76,10 @@ These are exercised in every mode, so they must be identical everywhere:
   (its default role), via `changeSpeed()`. The displayed WPM updates immediately
   in the standard top-bar slot (§4). Modes that deliberately manage speed
   themselves (Echo Trainer adaptivity, Morsel ramp-down) vary *relative to* the
-  user's setting and **restore it on exit**. Games must route in-game speed
-  through `changeSpeed()` too (target — `divergences.md` H3).
+  user's setting and **restore it on exit**. Games route in-game speed through
+  the shared value-core `changeSpeedValue()` — the same clamp/timings/protocol
+  without the classic top-bar draw, since the game renders speed in its own HUD
+  (`divergences.md` H3).
 - **Volume:** **red single-click selects volume**, then the encoder adjusts it
   via `changeVolume()`; a second red click returns the encoder to speed and
   persists the value (`writeVolume()`). A mode may never trap or repurpose this
@@ -240,9 +243,11 @@ reach (tracked in `devdocs/REFACTORING_PLAN.md` Phases D/F):
 - **Exit:** black-knob long-press only. No red-button exit/forfeit overload.
 - **Start:** **paddle/key to start** — one gesture for all games (the encoder and
   buttons drive lobby selections; the paddle starts the round).
-- **Speed / volume:** the §2 mechanism exactly — encoder owns speed by default,
-  red single-click toggles to volume, routed through `changeSpeed()`/
-  `changeVolume()`; display the WPM the standard way even inside a HUD.
+- **Speed / volume:** the §2 gesture exactly — encoder owns speed by default,
+  red single-click toggles to volume — with the value routed through the shared
+  value-cores `changeSpeedValue()` / `changeVolumeValue()` (the §2 mechanism
+  minus the classic top-bar draw, since the game owns its HUD and renders the
+  WPM/volume there). ☑ H3.
 - **Preferences:** offered from the lobby/result screen (mid-round exemption is
   allowed); shared settings still reachable from the normal preferences menu.
 - **Result screen:** identical input mapping and **Title-Case** wording across

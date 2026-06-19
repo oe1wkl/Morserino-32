@@ -1061,16 +1061,11 @@ static void stateCodeChallenge() {
             if (enc) {
                 MorseOutput::resetTOT();
                 if (encoderIsVolume) {
-                    int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
-                    MorsePreferences::sidetoneVolume = newVol;
-                    #ifdef CONFIG_TLV320AIC3100
-                    MorseOutput::soundSetVolume(newVol);
-                    #endif
-                    MorseOutput::pwmClick(newVol);
+                    changeVolumeValue(enc);            // value-only: clamp + Pocket codec + protocol, no classic draw
+                    MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
                 } else {
-                    ftp.wpm = constrain(ftp.wpm + enc, 5, 60);
-                    MorsePreferences::wpm = ftp.wpm;
-                    updateTimings();
+                    changeSpeedValue(enc);             // value-only: clamp + timings + protocol, no classic draw
+                    ftp.wpm = MorsePreferences::wpm;   // mirror back into the pileup's own model
                 }
             }
         }
@@ -1678,16 +1673,11 @@ static void statePileup() {
             if (enc) {
                 MorseOutput::resetTOT();
                 if (encoderIsVolume) {
-                    int newVol = constrain((int)MorsePreferences::sidetoneVolume + enc, 0, 19);
-                    MorsePreferences::sidetoneVolume = newVol;
-                    #ifdef CONFIG_TLV320AIC3100
-                    MorseOutput::soundSetVolume(newVol);
-                    #endif
-                    MorseOutput::pwmClick(newVol);
+                    changeVolumeValue(enc);            // value-only: clamp + Pocket codec + protocol, no classic draw
+                    MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
                 } else {
-                    ftp.wpm = constrain(ftp.wpm + enc, 5, 60);
-                    MorsePreferences::wpm = ftp.wpm;
-                    updateTimings();
+                    changeSpeedValue(enc);             // value-only: clamp + timings + protocol, no classic draw
+                    ftp.wpm = MorsePreferences::wpm;   // mirror back into the pileup's own model
                 }
             }
         }
