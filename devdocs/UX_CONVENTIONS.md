@@ -240,7 +240,9 @@ chapters, so keep headings stable.
 Games own the screen but **not** the control grammar. The target each game must
 reach (tracked in `devdocs/REFACTORING_PLAN.md` Phases D/F):
 
-- **Exit:** black-knob long-press only. No red-button exit/forfeit overload.
+- **Exit:** black-knob long-press only. No red-button exit/forfeit overload. In
+  a multi-level game flow (e.g. Morsel multiplayer setup), black-long steps **up
+  one level**, exiting at the top — the same gesture throughout, never a red-long.
 - **Start:** **paddle/key to start** — one gesture for all games (the encoder and
   buttons drive lobby selections; the paddle starts the round).
 - **Speed / volume:** the §2 gesture exactly — encoder owns speed by default,

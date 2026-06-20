@@ -1625,8 +1625,6 @@ ENCODER langer Druck: Spiel beenden und zum Morserino-Menü zurückkehren.
 FN kurzer Druck: Zwischen Geschwindigkeits- und Lautstärkeregelung
 umschalten.
 
-FN langer Druck: Beendet das Spiel ebenfalls.
-
 #### Punktewertung {-}
 
 Basispunkte pro zerstörtem Zeichen: 10, multipliziert mit mehreren
@@ -1823,7 +1821,7 @@ eintreffen.
 | **ENCODER** | WpM-Geschwindigkeit oder Lautstärke anpassen (siehe FN) |
 | **Klick** (ENCODER) | Antwort sofort abgeben |
 | **FN (kurzer Klick)** | ENCODER zwischen **Geschwindigkeit** und **Lautstärke** umschalten |
-| **Langer Druck** (ENCODER oder FN) | Spiel beenden |
+| **Langer Druck** (ENCODER) | Spiel beenden |
 
 Die untere Statuszeile zeigt den Wert, den der ENCODER gerade steuert –
 `15 wpm` oder `Vol 12` – und mit **FN** wechselst du zwischen beiden.
@@ -2280,8 +2278,7 @@ Anschließend stehen zwei Rollen zur Wahl:
 | **Start as Server** | Öffnet die Server-Lobby. Stelle die Koch-Lektion mit dem Encoder und die Wortlänge mit kurzem FN-Druck ein; in der Liste erscheinen die beigetretenen Spieler, sobald sie sich verbinden. Ein Klick auf den Encoder startet das Spiel. |
 | **Join a game** | Öffnet die Client-Lobby. Sucht den Beacon eines Servers und zeigt dessen Einstellungen (Länge, Koch-Lektion, Wortanzahl), sobald einer gefunden ist. Warte, bis der Server-Bediener startet. |
 
-Ein kurzer Encoder-Druck führt zurück zur Rollenauswahl; FN lang
-beendet Morsel vollständig.
+Ein langer Druck auf den Encoder geht eine Ebene zurück: von einer Server- oder Client-Lobby zur Rollenauswahl, von dort zur Auswahl Einzel-/Mehrspieler und schließlich aus Morsel heraus.
 
 Deine Kennung im Netz wird aus dem mit „Fight the Pileup" geteilten
 **Rufzeichen / Spielernamen** übernommen. Ist nichts gesetzt, wird

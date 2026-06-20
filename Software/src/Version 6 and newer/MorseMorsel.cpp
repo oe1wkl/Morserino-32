@@ -1454,9 +1454,7 @@ static void modeSelLoop() {
             mslState = MSL_MP_LOBBY;
             return;
         }
-        if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
-        Buttons::volButton.Update();
-        if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+        if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }  // black-long = exit (top of Morsel); red no longer exits
         serialEvent();
         checkShutDown(false);
         delay(10);
@@ -1553,9 +1551,7 @@ static void mpLobbyLoop() {
                 mslNetReset();
                 lastBeacon = lastJoin = 0; dirty = true;
             }
-            if (Buttons::modeButton.clicks == -1) { mslState = MSL_MODESEL; return; }
-            Buttons::volButton.Update();
-            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+            if (Buttons::modeButton.clicks == -1) { mslState = MSL_MODESEL; return; }  // black-long = back to mode select; red no longer exits
             serialEvent(); checkShutDown(false); delay(10);
             continue;
         }
@@ -1601,7 +1597,7 @@ static void mpLobbyLoop() {
                 MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
                 dirty = true;
             }
-            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+            // red-long no longer exits; black-long (above) steps back to role pick
             if (dirty || millis() - lastDraw > 500) {
                 drawMpServer(); dirty = false; lastDraw = millis();
             }
@@ -1620,8 +1616,7 @@ static void mpLobbyLoop() {
             if (Buttons::modeButton.clicks == -1) {
                 mpRole = MP_NONE; mpMenuSel = 0; dirty = true; continue;
             }
-            Buttons::volButton.Update();
-            if (Buttons::volButton.clicks == -1) { mslState = MSL_EXIT; return; }
+            // red has no function on the client wait screen; black-long steps back to role pick
             if (dirty || millis() - lastDraw > 400) {
                 drawMpClient(); dirty = false; lastDraw = millis();
             }
@@ -1711,8 +1706,7 @@ static void mpResultsLoop() {
         if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == 1)  { mpGame = false; mslState = MSL_MP_LOBBY; return; }
         if (Buttons::modeButton.clicks == -1) { mslState = MSL_EXIT; return; }
-        Buttons::volButton.Update();
-        if (Buttons::volButton.clicks == -1)  { mslState = MSL_EXIT; return; }
+        // red-long no longer exits; black-long = exit, black-click = play again (lobby)
         if (millis() - lastDraw > 400) { drawMpResults(); lastDraw = millis(); }
         serialEvent();
         checkShutDown(false);

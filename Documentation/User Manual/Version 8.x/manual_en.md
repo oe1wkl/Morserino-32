@@ -1612,8 +1612,6 @@ ENCODER long press: Exit the game and return to the Morserino menu.
 
 FN short press: Toggle between speed and volume control.
 
-FN long press: Also exits the game.
-
 #### Scoring {-}
 
 Base points per destroyed character are 10, multiplied by several
@@ -1751,7 +1749,7 @@ Your **streak** grows with each correct copy and resets on a wrong answer or a t
 | **Encoder** | Adjust WPM speed, or volume (see FN) |
 | **Click** (encoder) | Submit your response immediately |
 | **FN (short click)** | Toggle the encoder between **speed** and **volume** |
-| **Long press** (encoder or FN) | Exit the game |
+| **Long press** (encoder) | Exit the game |
 
 The bottom status line shows the value the encoder currently controls — `15 wpm` or `Vol 12` — and pressing **FN** swaps between them.
 
@@ -2026,7 +2024,7 @@ After choosing **Games → Morsel**, pick **Multiplayer** at the first screen. Y
 | **Start as Server** | Opens the server lobby. Adjust the Koch lesson with the encoder and the word length with FN short press; the displayed list shows joined players as they connect. Click the encoder to start the game. |
 | **Join a game** | Opens the client lobby. Searches for a server's broadcast and shows its settings (length, Koch lesson, word count) once one is found. Wait for the server operator to start. |
 
-A short press of the encoder returns to the role picker; FN long press exits Morsel.
+Hold the encoder (long press) to step back one level — from a server or client lobby to the role picker, from the role picker to the Single/Multiplayer chooser, and from there out of Morsel.
 
 Your identity on the network is taken from the **call sign / player name** shared with Fight the Pileup. If neither is set yet, a short MAC-derived tag is used automatically — set your call sign (`playerCall`) once via the M32 Configuration Tool to appear under it in the ranking.
 

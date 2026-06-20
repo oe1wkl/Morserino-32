@@ -99,18 +99,23 @@ Status: ☐ not started · ◐ in progress · ☑ done.
 new preferences items (esp. Reset Scores clearing the right keys).
 
 ## Phase F — Control-grammar unification ◐ *(in progress)*
-*Highest impact; breaks learned behavior. Sign-off received 2026-06-18:
-Invaders give-up = black-long→menu (forfeit dropped); Morsel lobby high-scores
-shortcut dropped.*
+*Highest impact; breaks learned behavior. Sign-off 2026-06-18: Invaders give-up
+= black-long→menu (forfeit dropped); Morsel lobby high-scores shortcut dropped.
+Sign-off 2026-06-20: in Morsel multiplayer, black-long stays "step back one
+level" (exit at the top) and the red-long shortcut is dropped. L6/H3/H2 all done;
+M6 deferred to its own display-design pass.*
 
-- ◐ **H2** — RED long-press bindings removed from every game's **primary
-  single-player flow** (Invaders lobby/playing-forfeit/paused/game-over; Morsel
-  lobby-hiscores/playing/results; Pileup lobby/challenge/results; Radio Cave
-  lobby/playing) → black-knob long-press is the sole exit there. Both variants
-  build SUCCESS. **Still to do:** the **Morsel multiplayer** sub-screens still
-  use RED-long = exit; their black-long means "back one level," so unifying them
-  is a back-vs-exit nav decision of its own. (Pileup's text-entry RED-long = the
-  widget's "done" — intentionally kept.)
+- ☑ **H2** (done 2026-06-20, both variants build SUCCESS) — RED long-press exit
+  bindings removed from every game's flow so **black-knob long-press is the sole
+  game exit everywhere**: Invaders; Morsel (SP **and** the multiplayer
+  mode-select / role-pick / server-client wait / MP results); Pileup
+  (lobby/challenge/results **and** the main playing loop — `MorsePileup.cpp:1703`,
+  an a7ff6b6 miss closed here); Radio Cave (never had a red-long). Morsel's
+  multi-level MP flow keeps **black-long = step up one level, exiting at the top**
+  (2026-06-20 decision); the server lobby's red *single*-click = word length is
+  kept. Manuals corrected EN+DE (Invaders + Pileup game-exit lines, Morsel MP
+  back-nav). (Pileup's text-entry RED-long = the widget's "done" — intentionally
+  kept.)
 - ☑ **H3** (done 2026-06-19, both variants build SUCCESS) — all **four** games
   now route in-game speed/volume through the shared value-cores
   `changeSpeedValue` / `changeVolumeValue` (declared in `MorsePreferences.h`):

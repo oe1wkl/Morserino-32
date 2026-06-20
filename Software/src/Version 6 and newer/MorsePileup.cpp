@@ -1700,12 +1700,7 @@ static void statePileup() {
             encoderIsVolume = !encoderIsVolume;
             MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
         }
-        if (Buttons::volButton.clicks == -1) {
-            cleanupKeyer();
-            ftp.state = FTP_EXIT;
-            pileupMode = false;
-            return;
-        }
+        // red-long no longer exits — black-knob long-press (above) is the sole exit (H2)
 
         checkShutDown(false);                 // inactivity -> deep sleep (like other modes)
         serialEvent();
