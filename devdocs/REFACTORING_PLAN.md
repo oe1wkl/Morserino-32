@@ -98,12 +98,12 @@ Status: ☐ not started · ◐ in progress · ☑ done.
 **VERIFY-ON-DEVICE:** the `MorseTextEntry` layout on the 14-char OLED and the three
 new preferences items (esp. Reset Scores clearing the right keys).
 
-## Phase F — Control-grammar unification ◐ *(in progress)*
+## Phase F — Control-grammar unification ☑ *(complete 2026-06-20)*
 *Highest impact; breaks learned behavior. Sign-off 2026-06-18: Invaders give-up
 = black-long→menu (forfeit dropped); Morsel lobby high-scores shortcut dropped.
 Sign-off 2026-06-20: in Morsel multiplayer, black-long stays "step back one
-level" (exit at the top) and the red-long shortcut is dropped. L6/H3/H2 all done;
-M6 deferred to its own display-design pass.*
+level" (exit at the top) and the red-long shortcut is dropped. L6/H3/H2/M6 all
+done — Phase F complete (games-M6 retrofit declined; only Phase G remains).*
 
 - ☑ **H2** (done 2026-06-20, both variants build SUCCESS) — RED long-press exit
   bindings removed from every game's flow so **black-knob long-press is the sole
@@ -143,8 +143,21 @@ M6 deferred to its own display-design pass.*
   (encoder→scroll, RED→toggle/dim, black→exit/prefs) was **not** required for H3
   and was deliberately not undertaken — scope held to the speed/volume path H3
   consumes.
-- ☐ **M6** — standardize the CW-source visual distinction (user/machine/system)
-  across Echo, Transceiver, QSO Bot, games.
+- ☑ **M6** (done 2026-06-20, both variants build SUCCESS) — CW-source visual
+  distinction implemented for the classic modes + QSO Bot. On the **TFT/Pocket**,
+  CW *transcription* renders in a per-theme **Morse colour** (a third `themes`
+  field beside foreground/background), set apart from menu/UI text which stays the
+  theme foreground — via new `FONT_ATTRIB` `MORSE_REGULAR`/`MORSE_BOLD` +
+  `OK_RESULT`/`ERR_RESULT` and a `getLGFX()->setTextColor()` override in
+  `printOnScroll` (no DisplayWrapper fork). **Weight** follows the device
+  convention — **BOLD = CW the operator must copy** (echo prompt, received Trx,
+  decoded audio, bot), **REGULAR = own keying + passive Generator** — now
+  consistent everywhere (decoded audio bolded to close the external-Trx gap; the
+  dead `FONT_INCOMING`/`FONT_OUTGOING` constants removed). Echo **OK/ERR** use
+  per-theme **green/red**. The 9-theme `morse`/`ok`/`err` palette was tuned on
+  device. Manuals (EN+DE) + UX_CONVENTIONS §5 updated. **Games deferred by
+  decision** — they keep their bespoke palettes (correctness / category colours),
+  not the shared Morse colour.
 
 ## Phase G — LCD flicker ☐
 *Isolated. VERIFY-ON-DEVICE. Blocks nothing.*
