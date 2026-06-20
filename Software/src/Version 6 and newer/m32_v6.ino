@@ -2348,7 +2348,15 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     if (MorsePreferences::pliste[posOutputCase].value) {
         tmp_str.toUpperCase();
     }
-    MorseOutput::printToScroll(REGULAR, tmp_str, true, encoderState == scrollMode);
+    FONT_ATTRIB cwStyle = REGULAR;
+#ifdef CONFIG_TFT
+    // M6: keyed + decoded characters are CW transcription — colour them. Weight
+    // stays REGULAR (unchanged) so existing per-mode weight cues are preserved
+    // (e.g. echo trainer's bold prompt vs regular response); direction-by-weight
+    // is a separate, deliberate follow-up.
+    cwStyle = MORSE_REGULAR;
+#endif
+    MorseOutput::printToScroll(cwStyle, tmp_str, true, encoderState == scrollMode);
     SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);
  
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
@@ -2493,7 +2501,7 @@ void echoTrainerEval() {
 
     if (echoResponse == echoTrainerWord) {
       echoTrainerState = SEND_WORD;
-      displayGeneratedMorse(BOLD,  "OK");
+      displayGeneratedMorse(OK_RESULT,  "OK");
       if (MorsePreferences::pliste[posEchoConf].value) {
           MorseOutput::soundSignalOK();
       }
@@ -2507,7 +2515,7 @@ void echoTrainerEval() {
       echoTrainerState = REPEAT_WORD;
       if (generatorMode != KOCH_LEARN || echoResponse != "") {
           ++errCounter;
-          displayGeneratedMorse(BOLD, "ERR");
+          displayGeneratedMorse(ERR_RESULT, "ERR");
           if (MorsePreferences::pliste[posEchoConf].value) {
               MorseOutput::soundSignalERR();
           }

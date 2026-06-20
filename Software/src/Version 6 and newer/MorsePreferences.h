@@ -136,6 +136,8 @@ namespace MorsePreferences
     uint16_t foreground;
     uint16_t background;
     uint16_t morse;            // M6: colour for CW transcription text (per theme)
+    uint16_t ok;               // M6: echo-trainer OK result colour (green, per theme)
+    uint16_t err;              // M6: echo-trainer ERR result colour (red, per theme)
   };
   extern themes themeList[];                 // theme for display wrapper
   #endif

@@ -663,9 +663,12 @@ void MorseOutput::initDisplay()
 
 
 #ifdef CONFIG_TFT
-// M6: the active theme's CW-transcription colour + its background, captured by
-// setTheme() and applied by printOnScroll() when drawing MORSE_* styled text.
+// M6: the active theme's CW-transcription colour, the OK/ERR result colours, and
+// its background, captured by setTheme() and applied by printOnScroll() when
+// drawing MORSE_* / OK_RESULT / ERR_RESULT styled text.
 static uint16_t currentMorseColor = 0xFFFF;
+static uint16_t currentOkColor    = 0x07E0;
+static uint16_t currentErrColor   = 0xF800;
 static uint16_t currentThemeBg    = 0x0000;
 
 void MorseOutput::setTheme (uint8_t theme) {
@@ -673,6 +676,8 @@ void MorseOutput::setTheme (uint8_t theme) {
   display.setTheme(MorsePreferences::themeList[theme].foreground,
                    MorsePreferences::themeList[theme].background);
   currentMorseColor = MorsePreferences::themeList[theme].morse;
+  currentOkColor    = MorsePreferences::themeList[theme].ok;
+  currentErrColor   = MorsePreferences::themeList[theme].err;
   currentThemeBg    = MorsePreferences::themeList[theme].background;
 }
 
@@ -951,7 +956,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   #endif
   for (int i = 0; (c = textBuffer[bufferLine][i]) ; ++i) {
     // if (c == ' ') DEBUG("Blank!");
-    if (c <= MORSE_BOLD)   {         /// a style marker (1..MORSE_BOLD)
+    if (c <= ERR_RESULT)   {         /// a style marker (1..ERR_RESULT)
       if (irFlag)         /// at the end of an emphasized string
       {
             //DEBUG("irFl>>" + temp + "<<");
@@ -993,18 +998,19 @@ uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, 
   int x, y;
 
   boolean inverse = (how == INVERSE_REGULAR || how == INVERSE_BOLD);
+  boolean bold    = (how & BOLD) || how == OK_RESULT || how == ERR_RESULT;
 
   if (inverse)
     display.setColor(WHITE);
   else
     display.setColor(BLACK);
 if (small) {
-if (how & BOLD)
+if (bold)
       display.setFont(DialogInput_bold_12);
     else
       display.setFont(DialogInput_plain_12);
   } else {
-    if (how & BOLD)
+    if (bold)
       display.setFont(DialogInput_bold_15);
     else
       display.setFont(DialogInput_plain_15);
@@ -1036,6 +1042,10 @@ if (how & BOLD)
   // last setTextColor(), so this sticks for exactly this string.
   if (how == MORSE_REGULAR || how == MORSE_BOLD)
     DisplayWrapper::getLGFX()->setTextColor(currentMorseColor, currentThemeBg);
+  else if (how == OK_RESULT)
+    DisplayWrapper::getLGFX()->setTextColor(currentOkColor, currentThemeBg);
+  else if (how == ERR_RESULT)
+    DisplayWrapper::getLGFX()->setTextColor(currentErrColor, currentThemeBg);
   #endif
 
   display.drawString(x, y, mystring);

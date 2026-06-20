@@ -448,16 +448,16 @@ const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "Lo
 
 #ifdef CONFIG_TFT
 themes MorsePreferences::themeList[] = {
-  //  foreground  background  morse  (M6 draft CW-transcription palette — tune on device)
-  {0,      0,      0x073F},            // 0: Plain (themes off) — cyan CW on black
-  {0xFFFF, 0x09f3, 0xFEA0},            // 1: Blues — gold
-  {0x3a08, 0xc616, 0x9963},            // 2: ePaper — ink red
-  {0x18c2, 0xfd2a, 0x114C},            // 3: Mandarin — deep navy
-  {0xd1a4, 0x0000, 0xFD80},            // 4: Darkroom — amber
-  {0x1eef, 0x10e2, 0x5F58},            // 5: Veggie — light turquoise (lighter, greener)
-  {0xf79d, 0xa0c3, 0xFE66},            // 6: Garnet — gold
-  {0x4a42, 0xff74, 0x034B},            // 7: Lemonade — dark teal
-  {0xf3e5, 0x01b0, 0x4E9C}             // 8: Complements — cyan
+  //  foreground  background  morse   ok      err     (M6 palette — tune on device)
+  {0,      0,      0x073F, 0x3ECA, 0xFAC9},     // 0: Plain — cyan / green / red
+  {0xFFFF, 0x09f3, 0xFEA0, 0x5F11, 0xFBCD},     // 1: Blues — gold / green / coral
+  {0x3a08, 0xc616, 0x9963, 0x1BE7, 0xB943},     // 2: ePaper — ink red / deep green / deep red
+  {0x18c2, 0xfd2a, 0x114C, 0x1325, 0xB0E3},     // 3: Mandarin — navy / dark green / dark red
+  {0xd1a4, 0x0000, 0xFD80, 0x370E, 0xFA88},     // 4: Darkroom — amber / green / bright red
+  {0x1eef, 0x10e2, 0x5F58, 0xAF08, 0xFAA8},     // 5: Veggie — turquoise / lime / red
+  {0xf79d, 0xa0c3, 0xFE66, 0x6F53, 0xFC4C},     // 6: Garnet — gold / light green / coral
+  {0x4a42, 0xff74, 0x034B, 0x14A8, 0xC163},     // 7: Lemonade — dark teal / green / deep red
+  {0xf3e5, 0x01b0, 0x4E9C, 0x5F11, 0xFAED}      // 8: Complements — cyan / green / pink-red
 
 };
 #endif
