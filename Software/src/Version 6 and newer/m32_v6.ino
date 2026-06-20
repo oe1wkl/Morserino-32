@@ -2348,13 +2348,15 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     if (MorsePreferences::pliste[posOutputCase].value) {
         tmp_str.toUpperCase();
     }
-    FONT_ATTRIB cwStyle = REGULAR;
+    // M6: keyed + decoded characters are CW transcription. Weight follows the
+    // device convention "incoming CW = bold, your own keying = regular":
+    // decoded-from-audio (Decoder, external Trx receive) is incoming, so it is
+    // bold; your keying stays regular. On TFT it also carries the theme Morse
+    // colour.
 #ifdef CONFIG_TFT
-    // M6: keyed + decoded characters are CW transcription — colour them. Weight
-    // stays REGULAR (unchanged) so existing per-mode weight cues are preserved
-    // (e.g. echo trainer's bold prompt vs regular response); direction-by-weight
-    // is a separate, deliberate follow-up.
-    cwStyle = MORSE_REGULAR;
+    FONT_ATTRIB cwStyle = keyed ? MORSE_REGULAR : MORSE_BOLD;
+#else
+    FONT_ATTRIB cwStyle = keyed ? REGULAR : BOLD;
 #endif
     MorseOutput::printToScroll(cwStyle, tmp_str, true, encoderState == scrollMode);
     SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);

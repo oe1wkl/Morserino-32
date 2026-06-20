@@ -143,12 +143,16 @@ These are exercised in every mode, so they must be identical everywhere:
 - Output uses the shared scroll area with `NoOfVisibleLines` visible lines
   (3 OLED / 4 TFT); wrapping is done by `DisplayWrapper`, never by the display
   library.
-- **CW-source distinction (confirmed mechanism):** machine/incoming CW is
-  `REGULAR` weight (`FONT_INCOMING`), user-outgoing CW is `BOLD`
-  (`FONT_OUTGOING`); result tokens `OK`/`ERR` are `BOLD`. **Target:** apply this
-  same distinction — weight on mono displays, a palette role on TFT — uniformly
-  across Echo Trainer, Transceiver modes, QSO Bot, and games (today the games
-  use their own colors with no shared rule — `divergences.md` M6).
+- **CW-source distinction (M6, implemented):** CW *transcription* is set apart
+  from menu / UI text. On the **TFT/Pocket** it renders in a per-theme **Morse
+  colour** (a third theme colour beside foreground/background); menus, status and
+  HUD text stay in the theme foreground. **Weight** encodes what the operator must
+  *copy*: **BOLD** for incoming / copy-target CW (echo prompt, received Trx,
+  decoded audio, QSO Bot transmission) and **REGULAR** for the operator's own
+  keying and the passive CW Generator read-along (mono OLED has weight only).
+  Echo-trainer **OK/ERR** results use per-theme **green/red** (not the Morse
+  colour). The classic modes + QSO Bot follow this; the four games keep their own
+  bespoke palettes by decision (`divergences.md` M6).
 - Prosigns are displayed in their conventional form — `<as> <ka> <kn> <sk> <ve>
   <bk> <err>` (from `cleanUpProSigns()`) — and are never broken across lines.
 
