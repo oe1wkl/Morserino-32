@@ -663,10 +663,17 @@ void MorseOutput::initDisplay()
 
 
 #ifdef CONFIG_TFT
+// M6: the active theme's CW-transcription colour + its background, captured by
+// setTheme() and applied by printOnScroll() when drawing MORSE_* styled text.
+static uint16_t currentMorseColor = 0xFFFF;
+static uint16_t currentThemeBg    = 0x0000;
+
 void MorseOutput::setTheme (uint8_t theme) {
   //DEBUG("Theme: " + String(theme));
   display.setTheme(MorsePreferences::themeList[theme].foreground,
                    MorsePreferences::themeList[theme].background);
+  currentMorseColor = MorsePreferences::themeList[theme].morse;
+  currentThemeBg    = MorsePreferences::themeList[theme].background;
 }
 
 #endif
@@ -944,7 +951,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   #endif
   for (int i = 0; (c = textBuffer[bufferLine][i]) ; ++i) {
     // if (c == ' ') DEBUG("Blank!");
-    if (c < 5)   {         /// a flag
+    if (c <= MORSE_BOLD)   {         /// a style marker (1..MORSE_BOLD)
       if (irFlag)         /// at the end of an emphasized string
       {
             //DEBUG("irFl>>" + temp + "<<");
@@ -985,7 +992,9 @@ uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, 
   uint8_t w;
   int x, y;
 
-  if (how > BOLD)
+  boolean inverse = (how == INVERSE_REGULAR || how == INVERSE_BOLD);
+
+  if (inverse)
     display.setColor(WHITE);
   else
     display.setColor(BLACK);
@@ -1016,10 +1025,18 @@ if (how & BOLD)
   display.fillRect(x,  y, w, LINE_HEIGHT+1);
   #endif
 
-  if (how > BOLD)
+  if (inverse)
     display.setColor(BLACK);
   else
     display.setColor(WHITE);
+  #ifdef CONFIG_TFT
+  // M6: CW transcription (MORSE_*) draws in the theme's Morse colour. Weight was
+  // already chosen above via (how & BOLD); here we override only the text colour,
+  // leaving the just-filled theme background intact. drawString() honours the
+  // last setTextColor(), so this sticks for exactly this string.
+  if (how == MORSE_REGULAR || how == MORSE_BOLD)
+    DisplayWrapper::getLGFX()->setTextColor(currentMorseColor, currentThemeBg);
+  #endif
 
   display.drawString(x, y, mystring);
   display.display();

@@ -135,6 +135,7 @@ namespace MorsePreferences
   struct themes {
     uint16_t foreground;
     uint16_t background;
+    uint16_t morse;            // M6: colour for CW transcription text (per theme)
   };
   extern themes themeList[];                 // theme for display wrapper
   #endif

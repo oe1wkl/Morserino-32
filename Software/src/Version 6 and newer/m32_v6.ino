@@ -2378,6 +2378,12 @@ void displayDecodedMorse(String symbol, boolean keyed) {
 //// the next function is used to display GENERATED characters
 
 void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
+#ifdef CONFIG_TFT
+    // M6: this is CW transcription — render it in the theme's Morse colour while
+    // keeping the incoming(REGULAR)/outgoing(BOLD) weight. OLED stays mono.
+    if (style == REGULAR)   style = MORSE_REGULAR;
+    else if (style == BOLD) style = MORSE_BOLD;
+#endif
     if (MorsePreferences::pliste[posOutputCase].value) {
         String upper = s;
         upper.toUpperCase();
