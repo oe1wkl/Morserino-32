@@ -515,6 +515,19 @@ void setup()
 #define VEXT_ON_VALUE LOW
 #endif
 
+#ifndef VEXT_SETTLE_MS
+#define VEXT_SETTLE_MS 100     // ms; let the Vext (TFT panel supply) rail settle before the ST7789 reset/init (defensive; Phase G/M4)
+#endif
+
+// Phase G/M4 boot-flicker fix: keep the TFT backlight OFF from panel init until
+// the first themed clear, so the boot-time MorseGameMode::warmup() sprite push —
+// which can briefly show its uninitialised buffer (internal RAM; this board has no
+// PSRAM) as "garbage" on the left, different on every cold boot — is never lit. The
+// clear overwrites that push while the panel is still dark. Set to 0 to revert.
+#ifndef BL_GATE_AT_BOOT
+#define BL_GATE_AT_BOOT 1
+#endif
+
 #ifdef PIN_VEXT
 pinMode(PIN_VEXT, OUTPUT);
 #endif
@@ -547,24 +560,35 @@ pinMode(modeButtonPin, INPUT);
 #ifdef PIN_VEXT
 // pinMode(PIN_VEXT, OUTPUT); // done earlier
 digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
+delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 reset/init (defensive; Phase G/M4)
 #endif
 //DEBUG("Init display");
   // init display
   MorsePreferences::readScreenPref();
+#if defined(CONFIG_TFT) && BL_GATE_AT_BOOT
+  // Pre-seed brightness to 0 BEFORE display.init(): LovyanGFX's init_impl() ends
+  // with setBrightness(_brightness) (default 127), which would otherwise light
+  // the panel during init. We need it to stay dark not just through init but
+  // through the warmup() push below, until the first themed clear — so pre-seed
+  // 0 here and light the panel only after that clear. (Phase G/M4)
+  MorseOutput::setBrightness(0);
+#endif
   MorseOutput::initDisplay();
 #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
 #endif
-
-  MorseOutput::setBrightness(MorsePreferences::oledBrightness);
-  MorseOutput::clearDisplay();
-  scrollTop = MorseOutput::getScrollTop();
 
 #ifdef CONFIG_TFT
   // Force LovyanGFX's first-time SPI/DMA allocation to happen at boot
   // rather than inside the first game session (where it would land
   // adjacent to the game sprite and prevent the sprite-region from
   // merging back when the sprite is freed).
+  //
+  // NOTE (Phase G/M4): MorseGameMode::warmup() pushes a full-screen sprite whose
+  // freshly-allocated buffer (internal RAM — there is no PSRAM) can momentarily
+  // contain uninitialised data — the "different garbage every cold boot" on the
+  // left of the screen. With the boot backlight gate it runs here while the panel
+  // is still DARK, and the themed clear below overwrites that push before lit.
   MorseGameMode::warmup();
 
 #ifdef CONFIG_CW_GAME
@@ -575,6 +599,18 @@ digitalWrite(PIN_VEXT, VEXT_ON_VALUE);
   MorseMorsel::warmup();
 #endif
 #endif
+
+#if defined(CONFIG_TFT) && BL_GATE_AT_BOOT
+  // Backlight has been held off since Vext. Paint the themed background FIRST
+  // (overwriting the warmup push above), THEN light the panel — so the first lit
+  // frame shows the clean background, never the warmup's garbage. (Phase G/M4)
+  MorseOutput::clearDisplay();
+  MorseOutput::setBrightness(MorsePreferences::oledBrightness);
+#else
+  MorseOutput::setBrightness(MorsePreferences::oledBrightness);
+  MorseOutput::clearDisplay();
+#endif
+  scrollTop = MorseOutput::getScrollTop();
 
   // Cycle WiFi+ESP-NOW once at boot so ESP-IDF's lazy persistent
   // allocations (~16 KB of netif / event loop / task structures) happen

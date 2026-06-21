@@ -159,15 +159,32 @@ done — Phase F complete (games-M6 retrofit declined; only Phase G remains).*
   decision** — they keep their bespoke palettes (correctness / category colours),
   not the shared Morse colour.
 
-## Phase G — LCD flicker ☐
+## Phase G — LCD flicker ◐
 *Isolated. VERIFY-ON-DEVICE. Blocks nothing.*
 
-- ☐ **M4** — experiment on `Vext` settle-delay, backlight-after-first-clear, and
-  offset-window-before-pixels. **Must test USB-only / no battery** to avoid
-  re-triggering the reverted #157 black-screen regression. Do NOT swap the
-  DisplayWrapper backend.
+- ☑ **M4** — boot flicker fixed (done 2026-06-21, both variants build SUCCESS,
+  **on-device confirmed** on the Pocket: splash is now the first thing shown).
+  **Root cause** (found by comparing against Hari Klein's `m32-ng`, identical
+  hardware, no flicker): the left-edge "garbage" — *different on every cold boot* —
+  was `MorseGameMode::warmup()` pushing a panel-sized sprite from **freshly
+  allocated, uninitialised PSRAM** while the backlight was on. (The earlier
+  Vext-rail and "power-on GRAM" theories were wrong: LovyanGFX's `begin()` already
+  clears before lighting, and Hari's identical `begin()` never flickers — so the
+  panel init was never the culprit.) **Fix** (all behind `BL_GATE_AT_BOOT`,
+  default on, TFT-only): pre-seed `setBrightness(0)` before `initDisplay()` so the
+  panel stays dark through init; run `warmup()` while dark; `clearDisplay()`
+  overwrites the warmup push; then raise brightness — so the warmup's garbage is
+  never lit and the heap-provisioning purpose of warmup is fully preserved. A
+  defensive `VEXT_SETTLE_MS` (100 ms) settle delay is kept. No backend swap; no
+  manual change (cosmetic boot-timing).
+  - **Follow-up (separate):** smaller, centred boot splash, inspired by Hari's —
+    keep full "M32 Pocket" text at ~2/3 scale.
 - ☐ **L8** — replace ad-hoc board `#ifdef`s with named config flags when touching
-  display/board code.
+  display/board code. The one genuine bare-board-macro leak is
+  `#ifdef ARDUINO_heltec_wifi_kit_32_V3` → `VOLT_CALIBRATE` (`morsedefs.h:160`); the
+  `#ifndef CONFIG_TFT` for `NoOfVisibleLines` (`MorseOutput.h:20`) is **already** the
+  canonical named master switch (CLAUDE.md §3.6) and stays as-is. Separate commit;
+  needs a `heltec_wifi_kit_32_V3` build to exercise the 4.33 path.
 
 ---
 
