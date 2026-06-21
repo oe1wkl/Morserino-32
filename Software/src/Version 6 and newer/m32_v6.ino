@@ -87,6 +87,9 @@ void packetReceived() {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"
 #endif
+#ifdef CONFIG_BLE_MIDI
+#include "MorseMidi.h"
+#endif
 using namespace Buttons;
 
 
@@ -1009,12 +1012,22 @@ void loop() {
   } // end switch and code depending on state of metaMorserino
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 // we check here if bluetooth should be started
-if (morseState == morseKeyer && 
-      MorsePreferences::pliste[posBluetoothOut].value != 0 && 
+if (morseState == morseKeyer &&
+      MorsePreferences::pliste[posBluetoothOut].value != 0 &&
       !MorseBluetooth::isBLErunning) {
     // Initialize Bluetooth System
     MorseBluetooth::initializeBluetooth();
 }
+#endif
+#ifdef CONFIG_BLE_MIDI
+if (MorsePreferences::pliste[posMidiEnable].value && !MorseMidi::isRunning()) {
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+    if (!MorseBluetooth::isBLErunning)
+#endif
+    MorseMidi::initializeMidi();
+}
+if (!MorsePreferences::pliste[posMidiEnable].value && MorseMidi::isRunning())
+    MorseMidi::stopMidi();
 #endif
 /// if we have time check for serial input and for button presses
 
@@ -1492,11 +1505,25 @@ boolean checkPaddles() {
   if (newR != oldR)
       rTimer = micros();
   if (micros() - lTimer > debDelay)
-      if (newL != leftKey)
+      if (newL != leftKey) {
           leftKey = newL;
+#ifdef CONFIG_BLE_MIDI
+          if (MorsePreferences::pliste[posMidiEnable].value) {
+              if (newL) MorseMidi::noteOn(MorsePreferences::pliste[posMidiLeftNote].value);
+              else      MorseMidi::noteOff(MorsePreferences::pliste[posMidiLeftNote].value);
+          }
+#endif
+      }
   if (micros() - rTimer > debDelay)
-      if (newR != rightKey)
+      if (newR != rightKey) {
           rightKey = newR;
+#ifdef CONFIG_BLE_MIDI
+          if (MorsePreferences::pliste[posMidiEnable].value) {
+              if (newR) MorseMidi::noteOn(MorsePreferences::pliste[posMidiRightNote].value);
+              else      MorseMidi::noteOff(MorsePreferences::pliste[posMidiRightNote].value);
+          }
+#endif
+      }
 
   oldL = newL;
   oldR = newR;

@@ -694,7 +694,7 @@ wählen:
 -   **CW Abbrevs**: Zufällige Abkürzungen und Q-Gruppen, die im
     CW-Verkehr sehr häufig vorkommen (über eine Einstellung kannst du
     die maximale Länge der zu trainierenden Abkürzungen festlegen). Siehe
-    **Anhang 10 Gängige CW-Abkürzungen, verwendet vom Morserino-32** für
+    **Anhang 11 Gängige CW-Abkürzungen, verwendet vom Morserino-32** für
     die generierbaren Abkürzungen und ihre Bedeutung.
 -   **English Words**: Zufällige Wörter aus einer Liste der 5.000
     gebräuchlichsten englischen Wörter (auch hier kann die maximale
@@ -2783,6 +2783,10 @@ oder die Verwendung einer externen Handtaste relevant sind (stelle
 | **Latency** | Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub" sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an" ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. | Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: **50 %**, d.h. eine halbe Punktlänge). |
 | **BLT Kbd Output** | Legt fest, was über Bluetooth gesendet wird (Bluetooth-Tastaturfunktion). Die Option **VBand** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Anhang 9**).* | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
 | **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **BLT Kbd Output** oben). Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
+| **BLE MIDI Out** | Aktiviert die BLE-MIDI-Ausgabe. Wenn eingeschaltet, sendet das Drücken und Loslassen des linken oder rechten Paddles MIDI-Note-On- bzw. Note-Off-Nachrichten über Bluetooth Low Energy an ein verbundenes BLE-MIDI-Gerät. In allen Modi aktiv, in denen die Paddles genutzt werden. *Kann nicht gleichzeitig mit BLT Kbd Output aktiv sein (siehe auch **Anhang 10**).* | **Off** / On |
+| **MIDI Channel** | Der MIDI-Kanal für die BLE-MIDI-Ausgabe. | 1–16, Standard **1** |
+| **MIDI Left Note** | Die MIDI-Notennummer, die beim Drücken und Loslassen des linken Paddles gesendet wird. | 0–127, Standard **20** |
+| **MIDI Right Note** | Die MIDI-Notennummer, die beim Drücken und Loslassen des rechten Paddles gesendet wird. | 0–127, Standard **21** |
 
 ### Einstellungen bezüglich der Koch-Zeichenfolge
 
@@ -3399,7 +3403,34 @@ einzustellen.
 :::
 
 
-## Anhang 10: Gängige CW-Abkürzungen, verwendet vom Morserino-32
+## Anhang 10: Verwendung der BLE-MIDI-Ausgabe
+
+Der M32 kann den Zustand des linken und rechten Paddles als MIDI-Note-On- bzw. Note-Off-Nachrichten über Bluetooth Low Energy (BLE MIDI) senden. Dadurch kann der Morserino als drahtlose CW-Tastatureingabe für jede Software verwendet werden, die MIDI akzeptiert – Logprogramme, SDR-Software, VBand oder eine DAW.
+
+Wenn aktiviert, sendet das Drücken des linken Paddles ein MIDI-Note-On für die konfigurierte linke Note; das Loslassen sendet ein Note-Off. Das rechte Paddle funktioniert genauso für die rechte Note. Beide Paddles sind unabhängig, sodass gleichzeitiges Drücken (Squeeze) zwei gleichzeitige Note-On-Nachrichten erzeugt – nützlich für iambic-fähige Software.
+
+::: note
+Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird das MIDI Ger Tastatur für PC und Tablett etc. sichtbar!
+:::
+
+::: note
+BLE MIDI und die Bluetooth-Tastatur (**BLT Kbd Output**) nutzen dieselbe Bluetooth-Hardware und können nicht gleichzeitig aktiv sein. Das Aktivieren von **BLE MIDI Out** deaktiviert die Bluetooth-Tastatur und umgekehrt.
+:::
+
+### Verbindung mit einem Host-Gerät herstellen
+
+1. Aktiviere **BLE MIDI Out** in den Einstellungen (setze auf **On**).
+2. Öffne auf deinem Computer, Tablet oder Smartphone einen BLE-MIDI-Verbindungsmanager. Unter iOS/macOS eignen sich GarageBand (Einstellungen → Erweitert → Bluetooth-MIDI-Geräte) oder die kostenlose App *midimittr*. Unter Windows kann ein BLE-MIDI-Treiber wie *MIDIberry* verwendet werden.
+3. Der Morserino erscheint als **Morserino32 MIDI** in der Geräteliste. Wähle ihn aus, um die Verbindung herzustellen.
+4. Nach einer Trennung beginnt der Morserino nach etwa einer halben Sekunde erneut zu advertisen. Die Verbindungswiederherstellung erfolgt manuell – das Host-Gerät verbindet sich nicht automatisch erneut.
+
+### Einstellungen
+
+Siehe **Einstellungen bezüglich Taste, Paddles und Keyer** für die vier BLE-MIDI-Einstellungen: **BLE MIDI Out**, **MIDI Channel**, **MIDI Left Note** und **MIDI Right Note**.
+
+---
+
+## Anhang 11: Gängige CW-Abkürzungen, verwendet vom Morserino-32
 
 Die Liste enthält Definitionen auf Englisch und Deutsch, getrennt durch
 einen Schrägstrich. Nicht alle Abkürzungen sind in allen Sprachen sehr
@@ -3770,12 +3801,13 @@ Klammern \[\].
 
 ---
 
-## Anhang 11: Glossar
+## Anhang 12: Glossar
 
 | Begriff | Definition |
 |---------|------------|
 | Access Point | Ein WLAN-Router oder eine Basisstation, mit der sich WLAN-Geräte verbinden, um über ein Netzwerk zu kommunizieren. |
-| BLE | Bluetooth Low Energy – eine energiesparende Variante von Bluetooth, die für die drahtlose Tastaturausgabe verwendet wird. |
+| BLE | Bluetooth Low Energy – eine energiesparende Variante von Bluetooth, die für die drahtlose Tastaturausgabe und BLE MIDI verwendet wird. |
+| BLE MIDI | Ein Standardprotokoll zur Übertragung von MIDI-Nachrichten über Bluetooth Low Energy. Der Morserino verwendet es, um Paddle-Druck und -Loslassen als MIDI-Note-On/Off an ein verbundenes Host-Gerät zu senden. Siehe **Anhang 10**. |
 | CW | Continuous Wave – der traditionelle Begriff für Morsecode-Kommunikation, bei der ein Radioträger ein- und ausgetastet wird. |
 | CW Keyer | Ein Gerät (oder Modus), das automatisch korrekt getimte Dits und Dahs aus der Paddle-Eingabe erzeugt. |
 | Tiefschlaf | Ein Zustand mit sehr niedrigem Stromverbrauch, in dem der Mikrocontroller größtenteils abgeschaltet ist. Das Gerät kann durch Drücken der FN-Taste geweckt werden. |

@@ -670,7 +670,7 @@ You can choose between the following at the second level of the menu:
 -   **CW Abbrevs:** Random abbreviations and Q-codes that are very
     common in CW transmissions (through a preference setting you can
     choose the maximum length of the abbreviations you want to train).
-    See **Appendix 10 List of common CW abbreviations
+    See **Appendix 11 List of common CW abbreviations
     used by Morserino-32** for the abbreviations that can
     be generated, and their meaning.
 -   **English Words**: Random words from a list of the 5.000 most common
@@ -2506,6 +2506,10 @@ to **Straight Key** in order to use a straight key).
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
 | BLT Kbd Output | Defines what is being sent via Bluetooth (Bluetooth keyboard functionality). The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
 | BLT \<AR> | Only relevant in **Generic Kbd** mode (see **BLT Kbd Output** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
+| BLE MIDI Out | Enables BLE MIDI output. When on, pressing and releasing the left or right paddle sends MIDI Note On / Note Off messages over Bluetooth Low Energy to any connected BLE MIDI host. Active in all modes where the paddles are used. *Cannot be active at the same time as BLT Kbd Output (see also **Appendix 10**).* | **Off** / On |
+| MIDI Channel | The MIDI channel used for BLE MIDI output. | 1–16, default **1** |
+| MIDI Left Note | The MIDI note number sent when the left paddle is pressed and released. | 0–127, default **20** |
+| MIDI Right Note | The MIDI note number sent when the right paddle is pressed and released. | 0–127, default **21** |
 
 
 
@@ -3093,7 +3097,34 @@ using.
 
 
 
-## Appendix 10: List of common CW abbreviations used by Morserino-32
+## Appendix 10: Using the BLE MIDI Output
+
+The M32 can send the state of the left and right paddle as MIDI Note On / Note Off messages over Bluetooth Low Energy (BLE MIDI). This allows the Morserino to be used as a wireless CW key input for any software that accepts MIDI — logging programs, SDR software, VBand, or a DAW.
+
+When enabled, pressing the left paddle sends a MIDI Note On for the configured left note, and releasing it sends a Note Off. The right paddle works the same way for the right note. Both paddles are independent, so squeezing both simultaneously produces two simultaneous Note On messages — useful for iambic-aware software.
+
+::: note
+This feature is only active in CW Keyer mode! The MIDI device will only become visible on your PC, tablet, etc. once CW Keyer has been launched!
+:::
+
+::: note
+BLE MIDI and the Bluetooth keyboard (**BLT Kbd Output**) share the same Bluetooth hardware and cannot be active simultaneously. Enabling **BLE MIDI Out** disables the Bluetooth keyboard, and vice versa.
+:::
+
+### Connecting to a host device
+
+1. Enable **BLE MIDI Out** in the preferences (set to **On**).
+2. On your computer, tablet, or phone, open a BLE MIDI connection manager. On iOS/macOS, GarageBand (Settings → Advanced → Bluetooth MIDI Devices) or the free app *midimittr* both work. On Windows, use a BLE MIDI driver such as *MIDIberry*.
+3. The Morserino will appear as **Morserino32 MIDI** in the device list. Select it to connect.
+4. After a disconnect, the Morserino resumes advertising after about half a second. Reconnection is manual — the host device does not reconnect automatically.
+
+### Preferences
+
+See **Preferences regarding Key, Paddles and Keyer** for the four BLE MIDI settings: **BLE MIDI Out**, **MIDI Channel**, **MIDI Left Note**, and **MIDI Right Note**.
+
+---
+
+## Appendix 11: List of common CW abbreviations used by Morserino-32
 
 The list contains definitions in English and German, separated by a
 slash. Not all abbreviations are very common in all languages;
@@ -3462,12 +3493,13 @@ abbreviations uncommon in English are in square brackets \[\].
 | 99 | get lost / verschwinde! |
 
 
-## Appendix 11: Glossary
+## Appendix 12: Glossary
 
 | Term | Definition |
 |------|------------|
 | Access Point | A WiFi router or base station that wireless devices connect to in order to communicate over a network. |
-| BLE | Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output. |
+| BLE | Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output and BLE MIDI. |
+| BLE MIDI | A standard protocol for sending MIDI messages over Bluetooth Low Energy. Used by the Morserino to send paddle press/release as MIDI Note On/Off to a connected host device. See **Appendix 10**. |
 | CW | Continuous Wave — the traditional term for Morse code communication, where a radio carrier is keyed on and off. |
 | CW Keyer | A device (or mode) that automatically generates properly timed dits and dahs from paddle input. |
 | Deep Sleep | A very low power state where the microcontroller is mostly shut off. The device can be woken up by pressing the FN button. |
