@@ -846,10 +846,11 @@ void displayStartUp(uint16_t volt) {
   s.reserve(18);
   s = PROJECTNAME;
   s += " ";
-  MorseOutput::clearDisplay();
   #ifdef CONFIG_TFT
-  MorseOutput::dispM32Logo();
+  MorseOutput::dispM32Logo();    // theme-independent white-on-black splash (clears to black itself)
   delay(1800);
+  MorseOutput::clearDisplay();   // restore the theme background for the version screen
+  #else
   MorseOutput::clearDisplay();
   #endif
 

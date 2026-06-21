@@ -52,6 +52,7 @@ LGFX display;
 // Pockets (root cause not yet pinned down); the DisplayWrapper library
 // path is the only one that keeps the panel alive.
 #include "DisplayWrapper.h"
+#include "m32logo_aa.h"          // pre-rendered anti-aliased boot-splash logo (white-on-black)
 DisplayWrapper display;
 #endif
 
@@ -1498,10 +1499,55 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
 }
 
 #ifdef CONFIG_TFT
+// Boot-splash tuning (tweakable):
+#ifndef M32_LOGO_STEPS
+#define M32_LOGO_STEPS     40              // animation frames — more = smoother (1 = none)
+#endif
+#ifndef M32_LOGO_STEP_MS
+#define M32_LOGO_STEP_MS   16              // ms paced between frames — higher = calmer
+#endif
+
 void MorseOutput::dispM32Logo() {
-  display.setColor(BLACK);
-  display.drawXbm(1, 30, M32c_width, M32c_height, M32c_bits);
-  display.setColor(WHITE);
+  // Theme-independent boot splash: a pre-rendered anti-aliased "M32 Pocket" logo
+  // (white-on-black 8-bit grayscale, m32logo_aa.h) grows smoothly out of the centre
+  // and eases to rest at its native size (z = 1.0, drawn 1:1, so the resting logo is
+  // pixel-crisp).
+  //
+  // Pre-rendering the AA offline sidesteps this board's two limits: there is no read
+  // line (TFT_MISO=-1, so a runtime-AA push would fringe black) and no PSRAM (so a
+  // large AA buffer won't allocate this late in boot). The asset already carries its
+  // anti-aliasing and is drawn opaque on a black screen — no read-back, small buffer.
+  // Growth is monotonic (easeOutCubic) so opaque frames never leave ghost edges.
+  auto *lcd = DisplayWrapper::getLGFX();
+  lcd->fillScreen(TFT_BLACK);
+  LGFX_Sprite logo(lcd);
+  logo.setColorDepth(16);
+  if (logo.createSprite(M32_AA_W, M32_AA_H)) {
+    // expand the 8-bit grayscale asset into the 16bpp sprite (grey → RGB565; grey is
+    // colour-order agnostic, so no byte-swap concerns)
+    for (int y = 0; y < M32_AA_H; ++y)
+      for (int x = 0; x < M32_AA_W; ++x) {
+        uint8_t v = M32logo_aa[y * M32_AA_W + x];
+        logo.drawPixel(x, y, logo.color565(v, v, v));
+      }
+    logo.setPivot(M32_AA_W / 2.0f, M32_AA_H / 2.0f);
+    const float cx = lcd->width()  / 2.0f;
+    const float cy = lcd->height() / 2.0f;
+    for (int i = 1; i <= M32_LOGO_STEPS; ++i) {
+      float t   = (float)i / M32_LOGO_STEPS;
+      float inv = 1.0f - t;
+      float e   = 1.0f - inv * inv * inv;   // easeOutCubic: grows, then settles gently
+      float z   = e;                        // ends at 1.0 → asset drawn 1:1 (crisp)
+      if (z < 0.02f) z = 0.02f;
+      logo.pushRotateZoom(lcd, cx, cy, 0.0f, z, z);
+      delay(M32_LOGO_STEP_MS);
+    }
+    logo.deleteSprite();
+  } else {
+    // fallback: the original 1-bit logo at native size, white on black
+    lcd->drawXBitmap((lcd->width() - M32c_width) / 2, (lcd->height() - M32c_height) / 2,
+                     M32c_bits, M32c_width, M32c_height, TFT_WHITE, TFT_BLACK);
+  }
   display.display();
 }
 #endif
