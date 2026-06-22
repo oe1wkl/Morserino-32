@@ -113,14 +113,15 @@ The font family used is Lato.</p>
 <li><a href="#recalling-a-snapshot" id="toc-recalling-a-snapshot"><span class="toc-section-number">6.1.2</span> Recalling a snapshot</a></li>
 <li><a href="#deleting-a-snapshot" id="toc-deleting-a-snapshot"><span class="toc-section-number">6.1.3</span> Deleting a snapshot</a></li>
 </ul></li>
-<li><a href="#list-of-all-morserino-32-preferences" id="toc-list-of-all-morserino-32-preferences"><span class="toc-section-number">6.2</span> List of All Morserino-32 preferences</a>
+<li><a href="#player-identity-and-game-scores" id="toc-player-identity-and-game-scores"><span class="toc-section-number">6.2</span> Player identity and game scores</a></li>
+<li><a href="#list-of-all-morserino-32-preferences" id="toc-list-of-all-morserino-32-preferences"><span class="toc-section-number">6.3</span> List of All Morserino-32 preferences</a>
 <ul>
-<li><a href="#general-preferences" id="toc-general-preferences"><span class="toc-section-number">6.2.1</span> General Preferences</a></li>
-<li><a href="#preferences-regarding-key-paddles-and-keyer" id="toc-preferences-regarding-key-paddles-and-keyer"><span class="toc-section-number">6.2.2</span> Preferences regarding Key, Paddles and Keyer</a></li>
-<li><a href="#preferences-regarding-koch-character-sequence" id="toc-preferences-regarding-koch-character-sequence"><span class="toc-section-number">6.2.3</span> Preferences regarding Koch Character Sequence</a></li>
-<li><a href="#preferences-regarding-cw-generation" id="toc-preferences-regarding-cw-generation"><span class="toc-section-number">6.2.4</span> Preferences regarding CW Generation</a></li>
-<li><a href="#preferences-regarding-echo-trainer" id="toc-preferences-regarding-echo-trainer"><span class="toc-section-number">6.2.5</span> Preferences regarding Echo Trainer</a></li>
-<li><a href="#preferences-regarding-transmitting-decoding-and-qso-bot" id="toc-preferences-regarding-transmitting-decoding-and-qso-bot"><span class="toc-section-number">6.2.6</span> Preferences regarding Transmitting, Decoding and QSO Bot</a></li>
+<li><a href="#general-preferences" id="toc-general-preferences"><span class="toc-section-number">6.3.1</span> General Preferences</a></li>
+<li><a href="#preferences-regarding-key-paddles-and-keyer" id="toc-preferences-regarding-key-paddles-and-keyer"><span class="toc-section-number">6.3.2</span> Preferences regarding Key, Paddles and Keyer</a></li>
+<li><a href="#preferences-regarding-koch-character-sequence" id="toc-preferences-regarding-koch-character-sequence"><span class="toc-section-number">6.3.3</span> Preferences regarding Koch Character Sequence</a></li>
+<li><a href="#preferences-regarding-cw-generation" id="toc-preferences-regarding-cw-generation"><span class="toc-section-number">6.3.4</span> Preferences regarding CW Generation</a></li>
+<li><a href="#preferences-regarding-echo-trainer" id="toc-preferences-regarding-echo-trainer"><span class="toc-section-number">6.3.5</span> Preferences regarding Echo Trainer</a></li>
+<li><a href="#preferences-regarding-transmitting-decoding-and-qso-bot" id="toc-preferences-regarding-transmitting-decoding-and-qso-bot"><span class="toc-section-number">6.3.6</span> Preferences regarding Transmitting, Decoding and QSO Bot</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#appendices" id="toc-appendices"><span class="toc-section-number">7</span> Appendices</a>
@@ -1415,7 +1416,6 @@ The font family used is Lato.</p>
 <p>ENCODER click (short press): Pause the game. Click again to resume.</p>
 <p>ENCODER long press: Exit the game and return to the Morserino menu.</p>
 <p>FN short press: Toggle between speed and volume control.</p>
-<p>FN long press: Also exits the game.</p>
 <h4 class="unnumbered" id="scoring">Scoring</h4>
 <p>Base points per destroyed character are 10, multiplied by several factors:</p>
 <ul>
@@ -1570,7 +1570,7 @@ The font family used is Lato.</p>
 <td>Toggle the encoder between <strong>speed</strong> and <strong>volume</strong></td>
 </tr>
 <tr>
-<td><strong>Long press</strong> (encoder or FN)</td>
+<td><strong>Long press</strong> (encoder)</td>
 <td>Exit the game</td>
 </tr>
 </tbody>
@@ -1595,7 +1595,7 @@ The font family used is Lato.</p>
 <p>Unlike the other games, Radio Cave does not use scoring or time pressure. Instead, it is a puzzle-based exploration game where you navigate rooms, collect items, and solve challenges — all by keying commands as Morse code. CW clues are woven into the game world: some information is only revealed as Morse audio, and the final challenge requires you to key a real QSO exchange on your paddles.</p>
 <p>Radio Cave is only available on the M32Pocket.</p>
 <h4 class="unnumbered" id="starting-the-game-2">Starting the Game</h4>
-<p>From the main menu, navigate to <strong>Games → Radio Cave</strong>. After a brief lobby screen, key any letter on the paddles or click the encoder to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.</p>
+<p>From the main menu, navigate to <strong>Games → Radio Cave</strong>. After a brief lobby screen, key any letter on the paddles to enter the game. If a saved game exists, it loads automatically and you continue where you left off; otherwise a new game begins.</p>
 <h4 class="unnumbered" id="how-to-play">How to Play</h4>
 <p>The game displays text descriptions on the TFT screen. You explore by keying short commands as Morse code using the paddles. The game understands full words, abbreviations, and even single-letter shortcuts — whatever is fastest on the key. There is no time pressure, so take whatever speed feels comfortable.</p>
 <h4 class="unnumbered" id="display-layout-1">Display Layout</h4>
@@ -1748,7 +1748,7 @@ The font family used is Lato.</p>
 <p><strong>Morsel</strong> is a word-guessing game in which you identify a hidden word from two clues: one randomly chosen letter of the word shown in clear text on the display, and the whole word played in Morse code. The CW clue starts fast — 48 WPM — and slows by 5 WPM each round you don’t solve it, down to a floor of 18 WPM. Solving in fewer guesses is rewarded; finishing the 10-word match in the lowest total adjusted time wins.</p>
 <p>Morsel is only available on the M32Pocket.</p>
 <h4 class="unnumbered" id="starting-the-game-3">Starting the Game</h4>
-<p>From the main menu, navigate to <strong>Games → Morsel</strong>. The lobby shows the current <strong>Koch lesson</strong> and <strong>Word length</strong> settings, along with the controls available. Touch a paddle or click the encoder to begin.</p>
+<p>From the main menu, navigate to <strong>Games → Morsel</strong>. The lobby shows the current <strong>Koch lesson</strong> and <strong>Word length</strong> settings, along with the controls available. Touch a paddle to begin.</p>
 <h4 class="unnumbered" id="lobby-settings">Lobby Settings</h4>
 <p>Two settings can be adjusted directly in the lobby:</p>
 <table>
@@ -1931,7 +1931,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<p>A short press of the encoder returns to the role picker; FN long press exits Morsel.</p>
+<p>Hold the encoder (long press) to step back one level — from a server or client lobby to the role picker, from the role picker to the Single/Multiplayer chooser, and from there out of Morsel.</p>
 <p>Your identity on the network is taken from the <strong>call sign / player name</strong> shared with Fight the Pileup. If neither is set yet, a short MAC-derived tag is used automatically — set your call sign (<code>playerCall</code>) once via the M32 Configuration Tool to appear under it in the ranking.</p>
 <h5 class="unnumbered" id="playing">Playing</h5>
 <p>The server picks 10 words from the pool and broadcasts them to all clients; every device then plays each word locally with the normal single-player engine (CW clue, paddle entry, colour-coded result). The clue speed schedule, scoring rules, error correction, idle handling and skip behaviour are all identical to single-player.</p>
@@ -2073,9 +2073,19 @@ The font family used is Lato.</p>
 <h3 data-number="6.1.3" id="deleting-a-snapshot"><span class="header-section-number">6.1.3</span> Deleting a snapshot</h3>
 <p>You can also delete a snapshot that is no longer needed, or that was created in error. Proceed as if you wanted to recall a snapshot, select the one you want to delete, and then <strong>click the FN button</strong> for deleting it. There will be a confirmation dialog to make sure you really want to delete that snapshot. If you rotete the ENCODER to “Yes” and click it, that snapshot will be deleted, and, like with storing and recalling snapshots, a short message will indicate that the action was successful.</p>
 <p>The easiest way to configure your preferences and snapshots is to connect your Morserino via USB to a computer running Chrome, Edge or Opera and using the instructions in <strong>Appendix 7</strong>Using a Browser to set up M32 Preferences**.</p>
-<h2 data-number="6.2" id="list-of-all-morserino-32-preferences"><span class="header-section-number">6.2</span> List of All Morserino-32 preferences</h2>
+<h2 data-number="6.2" id="player-identity-and-game-scores"><span class="header-section-number">6.2</span> Player identity and game scores</h2>
+<p>Two preferences let you tell the Morserino who you are. <strong>Call Sign</strong> and <strong>Op Name</strong> are used by the games (Fight the Pileup, Morsel) and the QSO Bot. Select either item in the preferences menu and an on-screen text editor opens (it works the same on the OLED and the LCD):</p>
+<ul>
+<li><strong>turn the ENCODER</strong> to choose a character,</li>
+<li><strong>click the ENCODER</strong> to add it to the text,</li>
+<li><strong>click the FN button</strong> to delete the last character,</li>
+<li><strong>long-press</strong> either button when you are done.</li>
+</ul>
+<p>Call Sign accepts letters, digits and the slash; Op Name accepts letters and a space. The current value is shown next to the preference.</p>
+<p><strong>Reset Scores</strong> clears the saved high scores and game progress for all games (Morse Invaders, Morsel and Radio Cave). Selecting it shows a confirmation: press <strong>FN</strong> to confirm, or click the ENCODER to cancel.</p>
+<h2 data-number="6.3" id="list-of-all-morserino-32-preferences"><span class="header-section-number">6.3</span> List of All Morserino-32 preferences</h2>
 <p>Bold values are default or recommended ones. When called from the start menu, all preferences are available for modification, when called from a running mode, only those that are relevant for this mode are available.</p>
-<h3 data-number="6.2.1" id="general-preferences"><span class="header-section-number">6.2.1</span> General Preferences</h3>
+<h3 data-number="6.3.1" id="general-preferences"><span class="header-section-number">6.3.1</span> General Preferences</h3>
 <p>A number of preferences are very generic in nature, and therefore apply to all modes of the Morserino-32.</p>
 <table>
 <colgroup>
@@ -2123,7 +2133,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Theme</td>
-<td>(For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black.</td>
+<td>(For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red.</td>
 <td><strong>Plain</strong> (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements</td>
 </tr>
 <tr>
@@ -2138,7 +2148,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.2.2" id="preferences-regarding-key-paddles-and-keyer"><span class="header-section-number">6.2.2</span> Preferences regarding Key, Paddles and Keyer</h3>
+<h3 data-number="6.3.2" id="preferences-regarding-key-paddles-and-keyer"><span class="header-section-number">6.3.2</span> Preferences regarding Key, Paddles and Keyer</h3>
 <p>These preferences control the behavior of the paddles (built in or external), primarily also the timing preferences relevant for Iambic Keying, or the use of an external straight key (set the <strong>Keyer Mode</strong> to <strong>Straight Key</strong> in order to use a straight key).</p>
 <table>
 <colgroup>
@@ -2201,7 +2211,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.2.3" id="preferences-regarding-koch-character-sequence"><span class="header-section-number">6.2.3</span> Preferences regarding Koch Character Sequence</h3>
+<h3 data-number="6.3.3" id="preferences-regarding-koch-character-sequence"><span class="header-section-number">6.3.3</span> Preferences regarding Koch Character Sequence</h3>
 <p>If you follow courses by various institutions, they will follow a certain order introducing Morse code characters to you. Here you can select which order you want to follow.</p>
 <table>
 <colgroup>
@@ -2229,7 +2239,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.2.4" id="preferences-regarding-cw-generation"><span class="header-section-number">6.2.4</span> Preferences regarding CW Generation</h3>
+<h3 data-number="6.3.4" id="preferences-regarding-cw-generation"><span class="header-section-number">6.3.4</span> Preferences regarding CW Generation</h3>
 <p>The following preferences control how characters are generated and played randomly, or how text files are being played as Morse characters. I’d like to draw your attention to <strong>Interchar Spc</strong> and <strong>Interword Spc</strong> primarily, as through those preferences you can achieve what is otherwise known as “Farnsworth Speed” or “Wordsworth Speed”, respectively. Of course, these preferences are also relevant for the Echo Trainer!</p>
 <table>
 <colgroup>
@@ -2317,7 +2327,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.2.5" id="preferences-regarding-echo-trainer"><span class="header-section-number">6.2.5</span> Preferences regarding Echo Trainer</h3>
+<h3 data-number="6.3.5" id="preferences-regarding-echo-trainer"><span class="header-section-number">6.3.5</span> Preferences regarding Echo Trainer</h3>
 <p>The following preferences control the essential properties of the Echo Trainer (however, Tone Shift is also interesting for the transceiver modes).</p>
 <p>Increasing the value for “Interword Space” also increases the “grace time” after the prompt before you must begin keying your response!</p>
 <table>
@@ -2366,7 +2376,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.2.6" id="preferences-regarding-transmitting-decoding-and-qso-bot"><span class="header-section-number">6.2.6</span> Preferences regarding Transmitting, Decoding and QSO Bot</h3>
+<h3 data-number="6.3.6" id="preferences-regarding-transmitting-decoding-and-qso-bot"><span class="header-section-number">6.3.6</span> Preferences regarding Transmitting, Decoding and QSO Bot</h3>
 <p>These preferences control some functions available for transmitting (either directly through LoRa or Wifi, or through keying an external transmitter), for decoding Morse code characters, and for the QSO Bot (see section <strong>5.5.4 QSO Bot</strong>).</p>
 <table>
 <colgroup>

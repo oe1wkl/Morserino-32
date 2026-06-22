@@ -2590,6 +2590,16 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 | Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON", the audio is also sent to the external audio I/O port.<br> **On the M32Pocket, this setting is ignored!** | On / **Off** |
 | Contest Type | Only relevant in the QSO Bot's **Contest** mode (section **5.5.4 QSO Bot**): which contest exchange the bot uses. **CQ WW** sends 5NN + the CQ zone of the bot's callsign; **WPX/Sprint** sends 5NN + a serial number. | **CQ WW** / WPX/Sprint |
 
+### Preferences regarding Player Identity and Scores
+
+These items appear at the very end of the preferences list. The first two set your personal identity, which is used by the **Fight the Pileup** game and by the **QSO Bot** (section **5.5.4 QSO Bot**); the third clears the stored game scores. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).
+
+| Preference Name | Description | Values |
+|---|---|---|
+| Call Sign | Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in **Fight the Pileup** and the **QSO Bot**. | up to 8 characters (stored as UPPER CASE) |
+| Op Name | Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case and used together with your call sign in **Fight the Pileup**. | up to 8 characters (stored as UPPER CASE) |
+| Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, and the **Radio Cave** saved progress. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
+
 
 
 # Appendices
