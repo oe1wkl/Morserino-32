@@ -573,12 +573,17 @@ var allMenus=[];
 var prefHelpTexts={};
 var prefAllExpanded=false;
 
+// Groups and the params within them follow the on-device preferences-menu order
+// (firmware allOptions[] in MorsePreferences.cpp), so the tool reads top-to-bottom
+// in the same order as the device (and the user manual). Koch + player identity have
+// their own tabs and are excluded here. Params absent on a given build (e.g. Headphone
+// Output, Theme, Invader Orient., the BLT pair, Contest Type) are skipped automatically.
 var PREF_GROUPS=[
-  {name:'General',icon:'⚙',params:['Encoder Click','Tone Pitch','Time-out','Quick Start','Output Case','Headphone Output','Theme','BLT Kbd Output','Serial Output']},
-  {name:'Key, Paddles & Keyer',icon:'🔑',params:['Paddle Polar.','External Pol.','Keyer Mode','CurtisB DahT%','CurtisB DitT%','AutoChar Spc','Latency']},
+  {name:'General',icon:'⚙',params:['Encoder Click','Tone Pitch','Time-out','Quick Start','Output Case','Headphone Output','Theme','Invader Orient.','Serial Output']},
+  {name:'Key, Paddles and Keyer',icon:'🔑',params:['Paddle Polar.','External Pol.','Keyer Mode','CurtisB DahT%','CurtisB DitT%','AutoChar Spc','Latency','BLT Kbd Output','BLT <AR>']},
   {name:'CW Generation',icon:'📡',params:['Interchar Spc','InterWord Spc','Random Groups','Length Rnd Gr','Length Calls','Calls Region','Call Prefixes','Length Abbrev','Length Words','Max # of Words','Stop<Next>Rep','CW Gen Displ','Randomize File','Each Word 2x']},
-  {name:'Echo Trainer',icon:'🔊',params:['Echo Prompt','Echo Repeats','Confrm. Tone','Tone Shift','Adaptv. Speed','Echo Speed Max']},
-  {name:'Transmitting & Decoding',icon:'📻',params:['Key ext TX','Generator Tx','Trx Channel','Bandwidth','Decoded on IO']}
+  {name:'Echo Trainer',icon:'🔊',params:['Echo Repeats','Echo Prompt','Confrm. Tone','Tone Shift','Adaptv. Speed','Echo Speed Max']},
+  {name:'Transmitting, Decoding and QSO Bot',icon:'📻',params:['Key ext TX','Generator Tx','Trx Channel','Bandwidth','Decoded on IO','Contest Type']}
 ];
 var KOCH_PREF_GROUP={name:'Koch Character Sequence',icon:'📖',params:['Koch Sequence','LICW Carousel']};
 var UPLOAD_PRESETS={player:{path:'/player.txt',accept:'.txt,.text',typeName:'text'},success:{path:'/sounds/success.mp3',accept:'.mp3',typeName:'MP3'},error:{path:'/sounds/error.mp3',accept:'.mp3',typeName:'MP3'},custom:{path:'',accept:'',typeName:'any'}};
@@ -692,20 +697,30 @@ async function doConnect(){
     await sendLine('put device/protocol/on');
     await sleep(600);
 
-    // Parse device info
+    // Require a valid device handshake before declaring "Connected".
+    // Opening a serial port always succeeds (any port — e.g. a debug console —
+    // opens at 115200), so an open port does NOT mean an M32 is on the other end.
+    // Only a parseable {"device":{...}} reply to device/protocol/on confirms it.
+    var devData=null;
     try{
       var devResp=await waitForResponse(2000);
-      var devData=JSON.parse(devResp);
-      if(devData.device){
-        deviceInfo=devData.device;
-        showDeviceInfo(devData.device);
-      }
-    }catch(e){ log('Device info: '+e.message); }
+      devData=JSON.parse(devResp);
+    }catch(e){ /* no / non-JSON reply — handled below */ }
 
-    // NOW set connected=true and enable UI
+    if(!devData || !devData.device){
+      log('No M32 response on this port. Is this the right serial port, and is the M32 powered on and not held open by another program (e.g. a serial monitor)?');
+      await doDisconnect();
+      setStatus('No M32 found','disconnected');
+      return;
+    }
+
+    deviceInfo=devData.device;
+    showDeviceInfo(devData.device);
+
+    // Valid handshake — NOW set connected=true and enable UI
     enableUI(true);
     setStatus('Connected','connected');
-    log('M32 protocol active — connected=true');
+    log('M32 protocol active ('+(devData.device.hardware||'?')+' · firmware '+(devData.device.firmware||'?')+' · protocol '+(devData.device.protocol||'?')+')');
 
     // Load hardware and battery info now that connected=true
     await loadHardwareInfo();
@@ -713,6 +728,7 @@ async function doConnect(){
   }catch(err){
     log('Connection error: '+err.message);
     setStatus('Failed','disconnected');
+    try{await doDisconnect()}catch(e){}
   }
 }
 
@@ -747,7 +763,7 @@ async function doDisconnect(){
 function showDeviceInfo(dev){
   var box=document.getElementById('deviceInfoBox'), grid=document.getElementById('deviceInfoGrid');
   grid.innerHTML='';
-  [{label:'Hardware',value:dev.hardware||'—'},{label:'Firmware',value:dev.firmware||'—'},{label:'Protocol',value:dev.protocol||'—'}].forEach(function(item){
+  [{label:'Hardware',value:dev.hardware||'—'},{label:'Firmware',value:dev.firmware||'—'},{label:'Build',value:dev.build||'—'},{label:'Protocol',value:dev.protocol||'—'}].forEach(function(item){
     var card=document.createElement('div');card.className='info-card';
     card.innerHTML='<div class="info-card-label">'+item.label+'</div><div class="info-card-value">'+item.value+'</div>';
     grid.appendChild(card);
@@ -777,9 +793,15 @@ async function loadHardwareInfo(){
   try{
     var bat=await sendAndParse('get battery',2000);
     if(bat.battery){
-      var status=bat.battery.status||'—';
-      if(bat.battery.voltage) status+=' ('+bat.battery.voltage+' mV)';
-      items.push({label:'Power',value:status});
+      // Over USB (which this protocol requires) the cell is normally charging, so the
+      // reported voltage is the charging voltage (~4.2 V), NOT the battery's state of
+      // charge — showing it would be misleading. Show only the power/charge status.
+      var s=bat.battery.status||'—';
+      var disp = s==='charging' ? 'USB — charging' :
+                 s==='full'     ? 'USB — battery full' :
+                 s==='no battery' ? 'USB powered (no battery)' :
+                 s==='usb powered' ? 'USB powered' : s;
+      items.push({label:'Power',value:disp});
     }
   }catch(e){log('Battery: '+e.message)}
   if(items.length>0){
@@ -794,13 +816,20 @@ async function loadHardwareInfo(){
 }
 
 async function resetDefaults(){
-  if(!confirm('Reset all parameters to factory defaults?\n\nSnapshots, WiFi, CW memories, and player identity will be preserved.')) return;
+  if(!confirm('Reset all parameters to factory defaults?\n\nThe device will REBOOT to apply the reset, so the connection will drop and you will need to reconnect afterwards.\n\nSnapshots, WiFi, CW memories, and player identity will be preserved.')) return;
   try{
     readBuffer=''; await sendLine('put device/reset/defaults');
     try{await waitForResponse(3000)}catch(e){}
-    log('Parameters reset to defaults');
+    log('Factory reset acknowledged — device is rebooting. Please reconnect to continue.');
     prefDetails={}; // force reload on next Preferences tab visit
-  }catch(e){log('Reset: '+e.message)}
+  }catch(e){
+    log('Reset: '+e.message);
+  }
+  // The device reboots to apply the reset (protocol v1.4): the protocol turns OFF
+  // and the USB connection drops. Tear down our side so the UI reflects it and the
+  // user can reconnect. (Auto-reconnect is unreliable: the device re-enumerates USB
+  // and WebSerial may require re-granting the port.)
+  try{await doDisconnect()}catch(e){}
 }
 
 // ============================================================================
