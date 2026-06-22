@@ -147,13 +147,15 @@ even within game HUDs. **QSO Bot** uses the classic status line unchanged.
 
 | Namespace | Keys (representative) | Written by | Read by |
 |---|---|---|---|
-| `morserino` | `wpm`, `sidetoneVolume`, `brightness`, `kochFilter`, `kochCharsLength`, `theme`, `vAdjust`, `lastExecuted`, `fileWordPtr`, `fPartCount/Sel`, `loraBand/QRG/Power`, `wlanSSID*`, `wlanPassword*`, `wlanTRXPeer*`, `useEspNow`, `version_major/minor`, snapshots; **`playerCall`, `playerName`**; **Morsel `hi`,`hv`,`wlen`** | `MorsePreferences.cpp`, `m32_v6.ino` (snapshots, serial identity 3852/3861), `MorsePileup.cpp:325`, `MorseMorsel.cpp` | prefs, all modes, Morsel, Pileup, QSO Bot, `MorseJSON` |
+| `morserino` | `wpm`, `sidetoneVolume`, `brightness`, `kochFilter`, `kochCharsLength`, `theme`, `vAdjust`, `lastExecuted`, `fileWordPtr`, `fPartCount/Sel`, `loraBand/QRG/Power`, `wlanSSID*`, `wlanPassword*`, `wlanTRXPeer*`, `useEspNow`, `version_major/minor`, `snapShots` (existence bitmap only); **`playerCall`, `playerName`** | `MorsePreferences.cpp`, `m32_v6.ino` (serial identity), `MorsePileup.cpp:325` | prefs, all modes, Pileup, QSO Bot, `MorseJSON` |
+| `snap0`..`snap7` | per-slot snapshot **contents** (same key layout as the `morserino` params, minus `Serial Output`/`Time-out`) | `doWriteSnapshot` (`MorsePreferences.cpp:1683`) | `doReadSnapshot` (`:1653`), `MorseJSON::jsonGetSnapshot` (`:363`) |
 | `m32game` | `hs%d_s` (score), `hs%d_k` (koch), `hs%d_l` (sublevel), `hs%d_w` (wpm) — top-N table | `MorseGame.cpp:176` | `MorseGame.cpp:159` |
+| `morsel` | `hi`/`hv` (Morsel scores), `wlen` (word length) | `MorseMorsel.cpp` | `MorseMorsel.cpp`, `MorseJSON` |
 | `radiocave` | `save` (single struct blob: progress + state) | `MorseRadioCave.cpp:283` | `MorseRadioCave.cpp:265` |
 
 **Versioning:** only `morserino` carries `version_major/minor`. `m32game`,
 `radiocave`, and Morsel's `hi/hv` are **unversioned** (L5). **Scores split** three
-ways: Invaders→`m32game`, Morsel→`morserino`, Radio Cave→`radiocave`, Fight the
+ways: Invaders→`m32game`, Morsel→`morsel`, Radio Cave→`radiocave`, Fight the
 Pileup→none persisted (multiplayer). See `divergences.md` M5.
 
 ---

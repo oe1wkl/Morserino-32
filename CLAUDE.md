@@ -136,12 +136,15 @@ These were each discovered the hard way. Treat them as invariants:
 ## 4. Persistence (NVS) conventions
 
 - High scores, save/resume state, and user preferences are stored in **NVS**.
-- **Current reality (four NVS namespaces, kept separate by decision — see
+- **Current reality (four logical NVS stores, kept separate by decision — see
   `devdocs/REFACTORING_PLAN.md` Phase E):** `morserino` (all preferences +
-  snapshots + player identity `playerCall`/`playerName`), `m32game` (Morse
+  player identity `playerCall`/`playerName`), `m32game` (Morse
   Invaders high scores), `morsel` (Morsel scores `hi`/`hv` + word length `wlen`),
   `radiocave` (Radio Cave save blob). Keys are flat and ad-hoc (`wpm`, `theme`,
-  `hi`, `hs0_s`).
+  `hi`, `hs0_s`). **Snapshots are *not* stored in `morserino`:** each snapshot's
+  *contents* live in its own companion namespace `snap0`..`snap7` (written by
+  `doWriteSnapshot`, read by `doReadSnapshot`/`MorseJSON::jsonGetSnapshot`); only
+  the `snapShots` existence bitmap is kept in `morserino`.
 - **Each store is self-versioned:** `morserino` has `version_major`/`version_minor`;
   Radio Cave's blob carries `magic`+`version`; Morsel checks an `hv` key; Morse
   Invaders has a `ver` key (added Phase E). An *absent* stamp is treated as the
