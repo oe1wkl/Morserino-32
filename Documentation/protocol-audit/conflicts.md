@@ -15,6 +15,32 @@ inconsistent / emits wrong data · **LOW** = cosmetic or doc‑only.
 
 ---
 
+## Resolution status (updated 2026-06-22)
+
+Tracked in [`RESOLUTION_PLAN.md`](RESOLUTION_PLAN.md). Decisions ratified by Willi 2026-06-22.
+The detailed entries below are the original audit record; this table is the live status.
+
+| # | Disposition |
+|---|---|
+| C1, C2 | ✅ resolved — firmware (version, reset/defaults) |
+| C3 | ✅ resolved — doc aligned to the firmware's `content` key |
+| C4 | ✅ resolved — `GET control/volume` min/max swap fixed in firmware |
+| C5 | ✅ documented — WiFi password write-only is intentional (security) |
+| C6 | 📋 deferred to **1.4** — game-score commands; documented as planned |
+| C7 | ✅ documented — hardware settings stay read-only |
+| C8, C10, C11, C12, C14, C17 | ✅ documented — protocol-doc gaps filled |
+| C9, C16 | ✅ resolved — hardware string + stale examples refreshed |
+| C13 | ✅ documented — parameter set is build-dependent; restore tolerates `INVALID PARAMETER` |
+| C-VER | ✅ (1) compatibility rule documented · 📋 (2) `GET capabilities` deferred to **1.4** |
+| C-NVS-NAMESPACE | ✅ resolved — snapshot/Morsel namespaces fixed in CLAUDE.md + mode-matrix |
+| C15 | ⏳ open — optional firmware input-length cap (plan Phase 4) |
+| C-ERR-HANDLING, C-BRACE | ⏳ open — config-tool robustness (plan Phase 3) |
+
+After Phases 1–2 the only items left are the two **1.4** deferrals and the optional tool-robustness
+work; everything resolvable at protocol 1.3 is closed.
+
+---
+
 ## C1 — `GET device` firmware version is always empty · HIGH · ✅ RESOLVED 2026-06-22
 
 > **Resolution (2026-06-22):** Fixed in firmware (option (a)) — `vsn` is now assigned in `setup()`

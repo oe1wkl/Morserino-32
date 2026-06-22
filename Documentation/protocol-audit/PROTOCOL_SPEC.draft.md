@@ -1,14 +1,15 @@
 # M32 USB Serial Protocol — Normative Specification (DRAFT)
 
-> **Status: DRAFT for ratification.** This is the protocol analogue of
-> `devdocs/UX_CONVENTIONS.md`: once Willi resolves the `PENDING-DECISION` items (each tied to an
-> entry in [`conflicts.md`](conflicts.md)), this becomes the single source of truth for the USB
-> serial protocol, and the existing `M32 Protocol.md` is updated to match.
+> **Status: DRAFT — decisions ratified 2026-06-22.** This is the protocol analogue of
+> `devdocs/UX_CONVENTIONS.md`; once finalised it becomes the single source of truth for the USB
+> serial protocol, and the existing `M32 Protocol.md` is updated to match (the 1.3 doc updates have
+> landed). All `PENDING-DECISION` items below have been resolved or deferred to protocol 1.4 — see the
+> **Resolution status** table in [`conflicts.md`](conflicts.md) and [`RESOLUTION_PLAN.md`](RESOLUTION_PLAN.md);
+> The inline `PENDING-DECISION` markers below are kept for traceability but are all resolved or deferred per that table (C3→`content`; C4 fixed; C5/C7/C13 documented; C6 and `GET capabilities` → 1.4).
 >
 > Every statement here was derived from the **firmware code** at audit HEAD `765a596`
 > (`Software/src/Version 6 and newer/`), cross‑checked against the document and the two host tools
-> in `Software/Utilities/`. Where the three disagree, the entry is marked `PENDING-DECISION (Cn)`
-> and describes the disagreement rather than guessing.
+> in `Software/Utilities/`.
 
 ---
 
@@ -37,9 +38,8 @@ These apply to **every** command unless an entry says otherwise.
   `{"control":{"name":"speed"|"volume","value":N}}` (`changeSpeed`/`changeVolume`,
   `m32_v6.ino:2598,2617`). `minimum`/`maximum` are omitted here.
 - **Success (`GET`)** → the object described per command (§4).
-- **Error** → `PENDING-DECISION (C3)`: firmware emits `{"error":{"content":"<message>"}}`
-  (`jsonError`→`jsonCreate`, `MorseJSON.cpp:30,147`); the document specifies
-  `{"error":{"name":"…"}}`. Choose one key for the spec. Until then, clients should read **both**.
+- **Error** → `{"error":{"content":"<message>"}}` (`jsonError`→`jsonCreate`, `MorseJSON.cpp:30,147`).
+  **RESOLVED (C3, 2026-06-22):** `content` is canonical; the document was corrected to match the firmware.
 
 ### 1.2 Error conditions emitted by the parser (before a command‑specific handler runs)
 
@@ -126,11 +126,11 @@ the connection — **the host must reconnect** and re-send `device/protocol/on`.
 ### 4.2 Control (speed / volume)
 
 **`GET control/{speed|volume}`** · R/R · → `{"control":{name,value,minimum,maximum}}`. Speed bounds
-`5..60` (`wpmMin/Max`); volume bounds `0..19` (`volumeMin/Max`). `PENDING-DECISION (C4)`: the volume
-reply currently reports `minimum:19,maximum:0` (swapped). FW 3793‑3797.
+`5..60` (`wpmMin/Max`); volume bounds `0..19` (`volumeMin/Max`). **RESOLVED (C4, 2026-06-22):** the
+volume reply previously reported `minimum:19,maximum:0` (swapped args); fixed in firmware. FW 3793‑3797.
 
 **`GET controls`** · R/R · → `{"controls":[{name:"speed",value},{name:"volume",value}]}` ·
-`PENDING-DECISION (C10)`: undocumented; decide keep/drop. FW 3801, `jsonControls` 179.
+**RESOLVED (C10):** kept and now documented. FW 3801, `jsonControls` 179.
 
 **`PUT control/speed/<wpm>`** · R/R · value = absolute words‑per‑minute, clamped 5..60 · →
 `{"control":{name:"speed",value}}` · Side effect: updates live keyer speed + timings. (Internally
@@ -288,17 +288,22 @@ to see non‑JSON bytes when `Serial Output ≠ none`.
 
 ---
 
-## 6. Open decisions (index)
+## 6. Decisions (index) — ratified 2026-06-22
 
-| Ref | Decision needed | Impact |
-|---|---|---|
-| C1 | ✅ RESOLVED — `device.firmware` now populated (`vsn` assigned in `setup()`) | HIGH |
-| C2 | ✅ RESOLVED — `reset/defaults` now does a real factory reset via flag+reboot | HIGH |
-| C3 | Error object key: `name` vs `content` | MEDIUM |
-| C4 | Fix swapped volume min/max | MEDIUM |
-| C5 | WiFi password write‑only — confirm + document | MEDIUM |
-| C6 | Game state in protocol scope? | MEDIUM |
-| C7 | Hardware settings read‑only — confirm + document | MEDIUM |
-| C9–C17, C‑VER | Documentation / minor behaviour clean‑ups | LOW–MED |
+| Ref | Outcome |
+|---|---|
+| C1 | ✅ RESOLVED — `device.firmware` populated (`vsn` assigned in `setup()`) |
+| C2 | ✅ RESOLVED — `reset/defaults` does a real factory reset via flag+reboot |
+| C3 | ✅ RESOLVED — error key is `content`; document corrected |
+| C4 | ✅ RESOLVED — swapped volume min/max fixed in firmware |
+| C5 | ✅ DOCUMENTED — WiFi password write‑only (intentional) |
+| C6 | 📋 DEFERRED to 1.4 — game-score commands; documented as planned |
+| C7 | ✅ DOCUMENTED — hardware settings stay read‑only |
+| C8, C10–C14, C17 | ✅ DOCUMENTED — protocol-doc gaps filled |
+| C13 | ✅ DOCUMENTED — parameter set is build-dependent |
+| C‑VER | ✅ DOCUMENTED (compat rule); 📋 `GET capabilities` deferred to 1.4 |
+| C15 | ⏳ OPEN — optional input-length cap (plan Phase 4) |
+| C‑ERR-HANDLING, C‑BRACE | ⏳ OPEN — config-tool robustness (plan Phase 3) |
 
-Until each is ratified, the corresponding §4 entry stays `PENDING-DECISION`.
+See [`RESOLUTION_PLAN.md`](RESOLUTION_PLAN.md) for the phased execution and [`conflicts.md`](conflicts.md)
+for the live status table.
