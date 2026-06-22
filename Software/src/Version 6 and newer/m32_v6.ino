@@ -2638,7 +2638,7 @@ void changeVolumeValue( int t) {
       MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
     #endif
     if (m32protocol)
-      MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, false);
+      MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMin, MorsePreferences::volumeMax, false);
 }
 
 void changeVolume( int t) {
@@ -3818,7 +3818,7 @@ void m32Get(String type, String token, String value) {                    /// GE
         if (token == "speed")
           MorseJSON::jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, true);
         else if (token == "volume")
-          MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMax, MorsePreferences::volumeMin, true);
+          MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMin, MorsePreferences::volumeMax, true);
         else /// invalid argument {
           MorseJSON::jsonError("INVALID ARGUMENT");
     }
