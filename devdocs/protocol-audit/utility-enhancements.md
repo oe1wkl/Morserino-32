@@ -66,7 +66,7 @@ confirmation of the C1 firmware-version fix. Reliable precisely because of C1.
 ## B. Coverage gap — what a backup cannot capture (axis 18)
 
 What the protocol can and cannot reach, per NVS namespace (cross‑referenced with
-`devdocs/mode-matrix.md` NVS inventory and the firmware):
+`devdocs/consistency-audit/mode-matrix.md` NVS inventory and the firmware):
 
 | Stored data | Namespace | Readable? | Writable? | Gap |
 |---|---|---|---|---|

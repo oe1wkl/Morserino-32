@@ -147,7 +147,7 @@ work; everything resolvable at protocol 1.3 is closed.
 - **DOC**: silent — no command addresses game state.
 - **FW**: Morse Invaders scores live in NVS namespace `m32game`, Morsel in `morsel` (`hi`/`hv`/`wlen`),
   Radio Cave in `radiocave` (`save` blob) — see `MorsePreferences.cpp:1130‑1132` (`resetGameScores`)
-  and `devdocs/mode-matrix.md` NVS inventory. **No `GET`/`PUT` reaches any of them**; the serial
+  and `devdocs/consistency-audit/mode-matrix.md` NVS inventory. **No `GET`/`PUT` reaches any of them**; the serial
   layer only ever opens the `morserino` (and `snapN`) namespaces.
 - **UTIL**: cannot read or write game state; no UI for it.
 - **Nature**: presence / coverage gap (axis 18). **Impact**: MEDIUM — a "full backup" cannot include
@@ -295,5 +295,5 @@ the (nonexistent) backup file format. → see `utility-enhancements.md`.
 ### C‑NVS‑NAMESPACE — snapshots live in `snapN`, not `morserino` · INFO (out of strict scope)
 `GET snapshot/<n>` opens NVS namespace `"snap"+n` (`MorseJSON.cpp:366`) and `doReadSnapshot`/
 `doWriteSnapshot` use `snap0..snap7` (`MorsePreferences.cpp:1653,1683`). CLAUDE.md §4 and
-`devdocs/mode-matrix.md` describe snapshots as part of the `morserino` namespace; the real storage is
+`devdocs/consistency-audit/mode-matrix.md` describe snapshots as part of the `morserino` namespace; the real storage is
 per‑snapshot namespaces. Flagged for the NVS docs, not the protocol.

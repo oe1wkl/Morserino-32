@@ -33,7 +33,7 @@ There are **two hardware variants** that must both be supported by every change:
   `Software/src/platformio.ini` `build_flags`** (there is no central flags
   header). The master switches are `CONFIG_TFT` (Pocket/LCD vs OLED),
   `CONFIG_CW_GAME` (the four games, TFT-only), `CONFIG_QSO_BOT` (both variants),
-  and `LORA_DISABLED`; the full list is in `devdocs/todo-resolutions.md` §A1.
+  and `LORA_DISABLED`; the full list is in `devdocs/consistency-audit/todo-resolutions.md` §A1.
   A few legacy gates still use bare board macros (e.g.
   `#ifdef ARDUINO_heltec_wifi_kit_32_V3`) — prefer named flags for new code.
 - **Every change must be built for both variants before it is considered done.**
@@ -55,7 +55,7 @@ change must pass. A pre-build hook (`scripts/clean_ino_dupes.py`) strips stray
 ## 2. Repository layout
 
 Firmware source lives in `Software/src/Version 6 and newer/`. Key locations
-(full map in `devdocs/todo-resolutions.md` §A3):
+(full map in `devdocs/consistency-audit/todo-resolutions.md` §A3):
 
 - **Core Morse engine** — `m32_v6.ino` (`setup()`, `loop()`, keyer
   `doPaddleIambic()`, generator `generateCW()`/`fetchNewWord()`,
@@ -137,7 +137,7 @@ These were each discovered the hard way. Treat them as invariants:
 
 - High scores, save/resume state, and user preferences are stored in **NVS**.
 - **Current reality (four logical NVS stores, kept separate by decision — see
-  `devdocs/REFACTORING_PLAN.md` Phase E):** `morserino` (all preferences +
+  `devdocs/consistency-audit/REFACTORING_PLAN.md` Phase E):** `morserino` (all preferences +
   player identity `playerCall`/`playerName`), `m32game` (Morse
   Invaders high scores), `morsel` (Morsel scores `hi`/`hv` + word length `wlen`),
   `radiocave` (Radio Cave save blob). Keys are flat and ad-hoc (`wpm`, `theme`,
@@ -198,6 +198,17 @@ propose an addition to that document — do not improvise silently.
 - The PDF build uses **pandoc + weasyprint**; heading anchors are normalized
   by `normalize_ids.lua` (umlauts in German headings broke internal TOC links
   before this filter existed). Do not remove or bypass this filter.
+- **Where documentation lives.** User-facing documentation (manuals, FAQ,
+  assembly/hardware notes) lives under `Documentation/`. **Developer/maintainer
+  documentation lives under `devdocs/`** — audits, design notes, refactoring/
+  resolution plans, conventions, release/CI runbooks. Group related developer
+  docs into a subdirectory (e.g. `devdocs/consistency-audit/`,
+  `devdocs/protocol-audit/`); standing/operational docs (`UX_CONVENTIONS.md`,
+  release runbooks, `HANDOFF.md`) stay at the `devdocs/` top level. The one
+  deliberate boundary case is the **serial-protocol description**
+  (`Documentation/Protocol Description/`): it is kept under `Documentation/`
+  because it is useful to advanced users, not just developers. When you add a
+  new developer doc, put it under `devdocs/` (see `devdocs/README.md`).
 
 ## 8. Definition of done (summary)
 

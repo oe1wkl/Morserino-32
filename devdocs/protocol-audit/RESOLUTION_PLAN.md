@@ -13,7 +13,7 @@ deferred to a future **1.4** (see the last section).
 - **C9** hardware string, **C16** stale examples — fixed when the protocol-doc `GET device`
   description + examples were refreshed (still need the ✅ mark in `conflicts.md`).
 - **C-NVS-NAMESPACE** — snapshot (`snap0..snap7`) and Morsel namespaces corrected in CLAUDE.md +
-  `devdocs/mode-matrix.md`.
+  `devdocs/consistency-audit/mode-matrix.md`.
 
 ## Ratified decisions (2026-06-22)
 

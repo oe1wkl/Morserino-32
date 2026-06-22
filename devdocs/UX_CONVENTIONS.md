@@ -8,9 +8,9 @@ how speed and volume are changed, how it ends, and how to get back to the menu.
 
 > **Status: v0.3.** The `TODO(audit)` markers were resolved by the 2026-06
 > consistency audit and folded in. Where current code still diverges from a
-> rule, the rule states the **target** and points to `devdocs/divergences.md`
+> rule, the rule states the **target** and points to `devdocs/consistency-audit/divergences.md`
 > for the gap and its fix; supporting evidence is in
-> `devdocs/todo-resolutions.md`. Confirmed mechanics are stated as fact.
+> `devdocs/consistency-audit/todo-resolutions.md`. Confirmed mechanics are stated as fact.
 
 ---
 
@@ -242,7 +242,7 @@ chapters, so keep headings stable.
 ## 12. Games — control grammar (target spec)
 
 Games own the screen but **not** the control grammar. The target each game must
-reach (tracked in `devdocs/REFACTORING_PLAN.md` Phases D/F):
+reach (tracked in `devdocs/consistency-audit/REFACTORING_PLAN.md` Phases D/F):
 
 - **Exit:** black-knob long-press only. No red-button exit/forfeit overload. In
   a multi-level game flow (e.g. Morsel multiplayer setup), black-long steps **up
