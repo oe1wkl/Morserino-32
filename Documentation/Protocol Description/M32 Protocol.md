@@ -57,7 +57,7 @@ Morserino sends a message whenever a user action is executed on the device (navi
 
 ## Sending commands to Morserino
 
-Commands sent to the Morserino start with "GET" (read values) or "PUT" (write values) and additional parameters. Commands are ended by a single carriage return (\n or ascii 10). Responses to GET commands are of course JSON objects, while as a rule there are no responses to PUT commands.
+Commands sent to the Morserino start with "GET" (read values) or "PUT" (write values) and additional parameters. Commands are ended by a single line feed (\n, ascii 10); a trailing carriage return (\r) is tolerated. Responses to GET commands are of course JSON objects, while as a rule there are no responses to PUT commands.
 
 
 
@@ -92,6 +92,16 @@ While the protocol is enabled, the time-out of the connected Morserino is disabl
 The protocol can also be disabled with the command:
 `PUT device/protocol/off`
 
+The device acknowledges this with a farewell object: `{"end m32protocol":{"content":"Goodbye!"}}`.
+
+
+
+## Versioning and Compatibility
+
+The protocol version is reported in the `device` object as the `protocol` property (currently "1.3"). Changes within a major version are **additive**: new GET/PUT commands and new properties may be added, but existing ones keep their meaning. A connected program should therefore **ignore any object or property it does not recognise**, and treat an unknown command (one that returns an "UNKNOWN COMMAND" or "NOT YET IMPLEMENTED" error) as "not supported by this firmware".
+
+To identify the firmware it is talking to, a program uses the `device` object: `firmware` (the firmware version), `protocol` (the protocol version), and `build` (the firmware compile date). In version 1.3 there is no command to enumerate the supported commands; such a `GET capabilities` query is a candidate for a future protocol version.
+
 
 
 ## Success and Error Feedback
@@ -102,9 +112,9 @@ When the M32 could parse and execute the command, an "ok" object is returned, e.
 
  Exceptions are the `PUT control` commands: they return the "control" objects, in the same way as `GET control`.
 
-When invalid  commands are sent to the Morserino, an "error" object is returned, e.g.
+When invalid  commands are sent to the Morserino, an "error" object is returned, with the error text in the "content" property, e.g.
 
-`{"error":{"name":"INVALID Value xxx"}}` .
+`{"error":{"content":"INVALID Value xxx"}}` .
 
 
 
@@ -213,6 +223,10 @@ This returns the properties "name", "value", "minimum" and "maximum" for keyer s
 
 This returns the properties "name", "value", "minimum" and "maximum" for the volume control.
 
+`GET controls`
+
+This returns both controls and their current values in a list (without minimum/maximum), e.g. `{"controls":[{"name":"speed","value":18},{"name":"volume","value":12}]}`.
+
 `PUT control/speed/<value>`
 
 Use this to set the keyer speed to <value> (numeric value, words per minute).
@@ -305,6 +319,8 @@ Example:
 	{"name":"External Pol.","value":0,"displayed":"Normal"},...
 	]}
 
+The exact set of parameters depends on the hardware variant and firmware build (for example "Headphone Output" and "Theme" exist only on the M32 Pocket, "Invader Orient." only on builds with the games). A program that restores a configuration by parameter name should match case-insensitively and **tolerate an "INVALID PARAMETER" error** for any parameter not present on the connected device, rather than aborting the whole restore.
+
 `GET config/<parameter name>`
 
 This returns all details of that parameter (or an error if an invalid parameter name has been given; upper and lower case in parameter names are not significant). The returned properties are:
@@ -362,7 +378,7 @@ Clear (i.e., delete) snapshot n (n = 1..8).
 
 This command returns the full contents of snapshot n (n = 1..8) without recalling it — the current device settings are not modified. This is useful for inspecting or comparing snapshot contents. The snapshot must exist (see `GET snapshots` to check which snapshots are stored).
 
-The response includes the stored menu selection, custom character set, and all parameter values with their display representations.
+The response includes the stored menu selection, custom character set, and all parameter values with their display representations. Note that snapshots do not store the "Serial Output" and "Time-out" parameters, so these two are absent from the `configs` list of a snapshot.
 
 Example:
 
@@ -436,7 +452,7 @@ This opens the file for writing (any filename, including a path).
 
 `PUT file/data/<base64chunk>`
 
-This decodes and writes a chunk of a base64-encoded data. The chunks can be up to around 200 bytes of binary data.
+This decodes and writes a chunk of base64-encoded data. A single chunk may decode to **at most 256 bytes** of binary data (i.e. up to about 344 base64 characters); the host tools use 180 bytes per chunk. A chunk that decodes to more than 256 bytes is rejected with an error and not written.
 
 `PUT file/end`
 
@@ -472,7 +488,7 @@ This sets the SSID for WiFi setting <n> (n = 1..3).
 
 `PUT wifi/password/<n>/<password>`		
 
-This sets password for WiFi setting <n>.
+This sets the password for WiFi setting <n>. For security the password is **write-only**: it can be set, but is never returned by `GET wifi` (and therefore cannot be included in a backup).
 
 `PUT wifi/trxpeer/<n>/<trxpeer>`			
 
@@ -480,7 +496,7 @@ This sets the entry for TRX Peer for WiFi setting <n>.
 
 `PUT wifi/select/<n>`					
 
-This selects one of the three WiFi entries as the one to be used for connecting.
+This selects which connection to use: <n> = 1, 2 or 3 selects one of the three WiFi entries, while **<n> = 0 selects EspNow** (peer-to-peer WiFi without an access point).
 
 
 ### Koch Lessons
@@ -559,7 +575,7 @@ Example:
 
 `GET hardware`
 
-This returns read-only information about hardware settings. These values are displayed for informational purposes and cannot be changed via the serial protocol.
+This returns read-only information about hardware settings. These values are displayed for informational purposes and cannot be changed via the serial protocol (so a backup tool can read them for reference, but cannot restore them).
 
 The properties are: "brightness" (type Number; OLED brightness level), "leftHanded" (type Boolean; whether screen is flipped for left-handed use), and "vAdjust" (type Number; battery voltage calibration value). On devices with LoRa hardware, the response also includes "loraBand" (type Number; 0=433, 1=868, 2=920 MHz), "loraFrequency" (type Number; exact frequency in Hz), and "loraPower" (type Number; transmit power in dBm).
 
@@ -633,3 +649,12 @@ Example:
 
 *Note*:
 Content stored in permanent memory can be recalled ("played") in Morserino-32's keyer mode, even when the Morserino is operated stand-alone and  there is no serial connection to a computer (see user manual for details).
+
+
+
+## Planned for a future protocol version (1.4)
+
+These are not part of protocol version 1.3, but are recorded here so they are not forgotten:
+
+* **Game scores** — commands to read and clear the stored game state (Morse Invaders high-score table, Morsel scores, Radio Cave saved progress), so that a backup tool could include and reset them. At present this game state is not reachable via the protocol.
+* **`GET capabilities`** — a command that returns the list of commands/objects a given firmware supports, so that a connected program can adapt to different firmware versions without trial and error (see "Versioning and Compatibility").
