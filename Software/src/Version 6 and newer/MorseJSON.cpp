@@ -14,6 +14,7 @@
 
 #include "MorseJSON.h"
 #include "MorseMenu.h"
+#include "MorseOutput.h"   // getPowerpathState() for the battery charge state
 
 ///// create json output for serial port
 using namespace MorseJSON;
@@ -24,6 +25,7 @@ void MorseJSON::jsonDevice(const String& brd, const String& vsn) { // create jso
 	device["hardware"] = brd;
 	device["firmware"] = vsn;
 	device["protocol"] = M32P_VERSION;
+	device["build"]    = COMPILEDATE;   // firmware compile date (__DATE__), additive build stamp
 	serializeJson(doc, Serial);
 }
 
@@ -449,9 +451,16 @@ void MorseJSON::jsonGetBattery(void) {
     StaticJsonDocument<128> doc;
     JsonObject bat = doc.createNestedObject("battery");
 #ifdef CONFIG_MCP73871
-    int16_t v = batteryVoltage();
-    bat["voltage"] = v;
-    bat["status"] = (v > 4100) ? "full" : "charging";
+    bat["voltage"] = batteryVoltage();
+    // Charge state from the MCP73871 status pins — the same source the device's own
+    // battery icon uses. A voltage threshold is unreliable: while charging over USB the
+    // cell voltage already sits near 4.2 V long before the charger reports "complete".
+    switch (MorseOutput::getPowerpathState()) {
+        case 4:  bat["status"] = "full";        break;   // charge complete
+        case 6:  bat["status"] = "no battery";  break;   // running on USB, no cell installed
+        case 2:
+        default: bat["status"] = "charging";    break;   // charging (and safe default while on USB)
+    }
 #else
     bat["status"] = "usb powered";
 #endif

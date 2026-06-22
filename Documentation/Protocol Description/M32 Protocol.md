@@ -1,6 +1,6 @@
 # The M32 Serial Protocol
 
-	Date: April 3, 2026
+	Date: June 22, 2026
 	Version: 1.3
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
@@ -83,7 +83,7 @@ After establishing the connection physically, the M32 protocol needs to be enabl
 `
 
 As a confirmation device information is returned, e.g.:
-`{"device":{"hardware":"2nd edition","firmware":"5.0","protocol":"1.0"}}`
+`{"device":{"hardware":"M32 2nd edition","firmware":"8.1","protocol":"1.3","build":"Jun 22 2026"}}`
 
 From this response the connected computer program gets not only confirmation that the communication has been established, but also information about the hardware used, as well as the firmware and protocol versions.
 
@@ -179,13 +179,14 @@ Example:
 ### Device Information
 
 `GET device`
-Returns the properties „hardware“ (can currently be "1st edition“, or “2nd edition“)
-„firmware“ (the firmware version number, and
-„protocol“ (the M32 Protocol version).
+Returns the properties „hardware“ (e.g. "M32 1st edition", "M32 2nd edition", or a board name such as the M32 Pocket's HW_NAME)
+„firmware“ (the firmware version number),
+„protocol“ (the M32 Protocol version), and
+„build“ (the firmware compile date, e.g. "Jun 22 2026").
 
 Example:
 
-	{"device":{"hardware":"2nd edition","firmware":"5.0","protocol":"1.0"}}
+	{"device":{"hardware":"M32 2nd edition","firmware":"8.1","protocol":"1.3","build":"Jun 22 2026"}}
 
 `PUT device/protocol/on`       
 This switches the M32 protocol on (you will get device information back; you will also get device info when command is sent while protocol is already ON);
@@ -196,6 +197,8 @@ This switches the M32 Protocol off (time-out as defined in its parameter will be
 
 `PUT device/reset/defaults`
 This resets all configurable parameters to their factory default values. Snapshots, WiFi configuration, CW memories, and player identity are not affected.
+
+The reset can only be carried out during start-up (before the stored values are loaded), so the device acknowledges the command, then **reboots** to perform it. The reboot switches the M32 protocol off and drops the serial connection; the connected program must reconnect and send `PUT device/protocol/on` again to continue.
 
 
 
@@ -576,7 +579,7 @@ Example (M32 Pocket, no LoRa):
 
 This returns information about the power / battery status. Note that when connected via USB (which is required for the serial protocol), the battery is typically being charged, so the voltage reading reflects charging voltage rather than actual battery level.
 
-On devices with battery monitoring hardware (e.g. M32 Pocket), the response includes "voltage" (type Number; millivolts) and "status" (type String; "charging" or "full"). On other devices, the status is "usb powered".
+On devices with battery monitoring hardware (e.g. M32 Pocket), the response includes "voltage" (type Number; millivolts) and "status" (type String). The status is read from the charge-controller status pins (the same source the device's own battery icon uses, *not* a voltage threshold) and is one of "charging", "full" (charge complete) or "no battery". Because the voltage sits near 4.2 V throughout charging, it is not a reliable indicator of charge level — use "status", not "voltage", to tell charging from full. On other devices (no battery monitoring), the status is "usb powered".
 
 Example (M32 Pocket):
 

@@ -55,6 +55,8 @@ const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 
 // using the M32 serial protocol
 //define M32Protocol version 1.1 updateTimings(), 1.2 add bulk file upload file list and delete
+// 1.3 add snapshot/player/customchars/hardware/battery reads + reset/defaults
+//     (within 1.3: reset/defaults reboots to apply; "firmware" field now populated)
 #define M32P_VERSION "1.3"
 
 /////// protocol version for IP (and LoRa) - for the time being this is B01

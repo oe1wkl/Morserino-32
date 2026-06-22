@@ -699,6 +699,24 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   adcAttachPin(audioInPin);
 #endif
 
+  // Factory reset: the serial command "PUT device/reset/defaults" sets this flag
+  // and reboots, because the actual reset has to happen *here* — before
+  // readPreferences() overwrites pliste[] with the stored values. resetDefaults()
+  // restores the compile-time defaults only while pliste[] still holds them, which
+  // is the case at this point. (The hardware-config menu's reset works for the same
+  // reason: it too runs before readPreferences().)
+  {
+    Preferences resetPref;
+    resetPref.begin("morserino", false);
+    if (resetPref.getUChar("factoryReset", 0)) {
+        resetPref.remove("factoryReset");
+        resetPref.end();
+        MorsePreferences::resetDefaults();
+    } else {
+        resetPref.end();
+    }
+  }
+
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
@@ -910,6 +928,12 @@ void displayStartUp(uint16_t volt) {
     else
         brd = "unknown M32 board";
 #endif
+
+  // firmware version string for the M32 protocol "GET device" response
+  // (major.minor, plus .patch when non-zero — mirrors the splash-screen format)
+  vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR);
+  if (VERSION_PATCH != 0)
+      vsn += "." + String(VERSION_PATCH);
 
 //DEBUG("Display done, delay");
 delay(1800);
@@ -3913,8 +3937,20 @@ void m32Put(String type, String token, String value) {                    /// PU
             MorseJSON::jsonError("INVALID Value " + value);
       }
       else if (token == "reset" && value == "defaults") {
-        MorsePreferences::resetDefaults();
+        // resetDefaults() only restores the compile-time defaults when it runs
+        // *before* readPreferences() has overwritten pliste[] with the stored
+        // values — i.e. early in setup(). At full runtime pliste[] already holds
+        // the current values, so a direct call would merely re-persist them. So
+        // we set a boot-surviving NVS flag and reboot; setup() performs the real
+        // reset before readPreferences() (see the "factoryReset" check there).
+        Preferences resetPref;
+        resetPref.begin("morserino", false);
+        resetPref.putUChar("factoryReset", 1);
+        resetPref.end();
         MorseJSON::jsonOK();
+        Serial.flush();          // ensure the OK reaches the host before we reboot
+        delay(100);
+        ESP.restart();
       }
       else MorseJSON::jsonError("INVALID NAME " + token);
     }
