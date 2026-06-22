@@ -156,10 +156,10 @@ const int HF_Pin = PIN_HF;    // for the HF PWM generation
 const int HF_Pin = 22;
 #endif
 
-/// voltage calibration factor
-#ifdef ARDUINO_heltec_wifi_kit_32_V3
-#define VOLT_CALIBRATE 4.33
-#else
+/// voltage calibration factor — named flag (L8): override per board with
+/// -D VOLT_CALIBRATE in platformio.ini build_flags. Default 12.9; set to 4.33
+/// in the heltec_wifi_kit_32_V3 and minipcb_lora envs.
+#ifndef VOLT_CALIBRATE
 #define VOLT_CALIBRATE 12.9
 #endif
 

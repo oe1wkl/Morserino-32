@@ -159,7 +159,7 @@ done — Phase F complete (games-M6 retrofit declined; only Phase G remains).*
   decision** — they keep their bespoke palettes (correctness / category colours),
   not the shared Morse colour.
 
-## Phase G — LCD flicker ◐
+## Phase G — LCD flicker ☑ *(complete 2026-06-22)*
 *Isolated. VERIFY-ON-DEVICE. Blocks nothing.*
 
 - ☑ **M4** — boot flicker fixed (done 2026-06-21, both variants build SUCCESS,
@@ -167,7 +167,8 @@ done — Phase F complete (games-M6 retrofit declined; only Phase G remains).*
   **Root cause** (found by comparing against Hari Klein's `m32-ng`, identical
   hardware, no flicker): the left-edge "garbage" — *different on every cold boot* —
   was `MorseGameMode::warmup()` pushing a panel-sized sprite from **freshly
-  allocated, uninitialised PSRAM** while the backlight was on. (The earlier
+  allocated, uninitialised internal RAM** (this board has no PSRAM) while the
+  backlight was on. (The earlier
   Vext-rail and "power-on GRAM" theories were wrong: LovyanGFX's `begin()` already
   clears before lighting, and Hari's identical `begin()` never flickers — so the
   panel init was never the culprit.) **Fix** (all behind `BL_GATE_AT_BOOT`,
@@ -177,14 +178,22 @@ done — Phase F complete (games-M6 retrofit declined; only Phase G remains).*
   never lit and the heap-provisioning purpose of warmup is fully preserved. A
   defensive `VEXT_SETTLE_MS` (100 ms) settle delay is kept. No backend swap; no
   manual change (cosmetic boot-timing).
-  - **Follow-up (separate):** smaller, centred boot splash, inspired by Hari's —
-    keep full "M32 Pocket" text at ~2/3 scale.
-- ☐ **L8** — replace ad-hoc board `#ifdef`s with named config flags when touching
-  display/board code. The one genuine bare-board-macro leak is
-  `#ifdef ARDUINO_heltec_wifi_kit_32_V3` → `VOLT_CALIBRATE` (`morsedefs.h:160`); the
+  - ☑ **Follow-up (done 2026-06-22):** smaller, centred, *animated* boot splash — a
+    pre-rendered anti-aliased white-on-black "M32 Pocket" logo (`m32logo_aa.h`) that
+    grows out of the centre (easeOutCubic). Pre-rendered AA because the panel has no
+    read line (runtime AA fringes black) and no PSRAM (no large AA buffer fits).
+- ☑ **L8** (done 2026-06-22) — the voltage-calibration gate
+  `#ifdef ARDUINO_heltec_wifi_kit_32_V3` (`morsedefs.h:160`) is now a named flag
+  (`#ifndef VOLT_CALIBRATE` / `#define 12.9`), with `-D VOLT_CALIBRATE=4.33` set in the
+  `heltec_wifi_kit_32_V3` and `minipcb_lora` envs — behaviour-preserving (verified 4.33
+  vs default 12.9 via the preprocessor; the canonical pair builds SUCCESS). The
+  `ARDUINO_heltec_wifi_kit_32_V3` macro itself **stays**: it still gates board-version
+  battery logic in `m32_v6.ino`/`MorsePreferences.cpp` (out of L8's audit scope). The
   `#ifndef CONFIG_TFT` for `NoOfVisibleLines` (`MorseOutput.h:20`) is **already** the
-  canonical named master switch (CLAUDE.md §3.6) and stays as-is. Separate commit;
-  needs a `heltec_wifi_kit_32_V3` build to exercise the 4.33 path.
+  canonical named master switch (CLAUDE.md §3.6) and stays as-is. NB: the
+  `heltec_wifi_kit_32_V3` / `minipcb_lora` envs have a **pre-existing, unrelated** build
+  failure (`soundEventHandler` in `MorsePreferences.cpp`), so the 4.33 path was verified
+  via the compiler flags rather than a full link.
 
 ---
 
