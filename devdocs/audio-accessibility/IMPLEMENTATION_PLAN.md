@@ -84,10 +84,18 @@ encodes to this format (ffmpeg `-ar 44100 -ac 2`).
   (menu entries) and `displayKeyerPreferencesMenu()` / `displayValueLine()` (pref label + value),
   all `#ifdef CONFIG_AUDIO_A11Y` (now set on the env). The extractor also emits `voice_clips.h`.
   All three variants build (accessibility flash 2.04 MB; mainline + classic unaffected, announce
-  is a no-op there). **Limits / follow-ups:** playback is *blocking* (turn-and-hear; no
-  interrupt-on-encoder — the library's stream copier blocks); char-by-char voicing (Koch new
-  char, decoder output) + composed snapshot/number readouts not wired yet; numeric values voiced
-  only where a clip exists (0–60 + ×5 to 250); always-on (no runtime toggle — dedicated build).
+  is a no-op there).
+- **Phase 3b — on-hardware fixes + async playback** — ✅ built (on-device test pending).
+  Clips must be **44100 Hz stereo** to match the I2S — 22.05 kHz/mono played 4× fast and froze.
+  Loudness boosted ~+5 dB (ffmpeg `volume=6dB` + brick-wall limiter). The freeze (the blocking
+  `playSPIFFSFile` lets the decoder's bounded result queue accumulate across clips and stall the
+  copier) is fixed by **vendoring `cw-i2s-sidetone`** under `Software/src/vendor/` (Pocket-scoped
+  `symlink://` dep) with non-blocking `startClip/serviceClip/stopClip` that reset the decoder
+  (`end()+begin()` clears the reader queue) per clip. `MorseVoice` is now debounced + interruptible:
+  `announce()` sets a pending clip, `tick()` (polled from the menu/pref loops) starts it after a
+  120 ms settle and interrupts any current clip; `menuExec()` stops before a mode starts.
+  **Still open:** char-by-char voicing (Koch/decoder) + composed snapshot/number readouts; numeric
+  values only where a clip exists (0–60 + ×5 to 250); always-on (no runtime toggle — dedicated build).
 - **Phase 4 — release & installer** — ⏳ much simpler under the separate-binary
   approach: publish the accessibility build as its **own** installer entry/page with
   its **own** `partitions.bin` + SPIFFS image — the mainline shared partition is
