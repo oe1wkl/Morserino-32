@@ -276,6 +276,9 @@ void MorseMenu::menu_() {
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
         serialEvent();
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();                 // drive async menu announcements (non-blocking)
+#endif
 
         if (disp != MorsePreferences::newMenuPtr) {
           disp = MorsePreferences::newMenuPtr;
@@ -430,6 +433,9 @@ String MorseMenu::getMenuPath(uint8_t ptr) {
 
 
 boolean MorseMenu::menuExec() {       // return true if we should  leave menu after execution, false if we should stay in menu
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::stop();                 // silence any pending/playing announcement before the mode starts
+#endif
 
   uint32_t wcount = 0;
 //  String peer;

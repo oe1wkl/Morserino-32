@@ -19,10 +19,16 @@
 // announce() is a no-op on builds without CONFIG_AUDIO_A11Y, so call sites stay clean.
 namespace MorseVoice
 {
-  // Speak the clip for a firmware-facing UI string (menu display text, spoken pref
-  // label, option value, numeric value...). Trims the string first (the decoder/display
-  // pad with spaces). Silent if the string has no clip (e.g. an out-of-range number).
+  // Request announcement of a firmware-facing UI string (menu display text, spoken pref
+  // label, option value, numeric value...). Non-blocking and debounced: the latest request
+  // wins, and tick() starts playback once navigation settles. Silent if the string has no
+  // clip (e.g. an out-of-range number). No-op without CONFIG_AUDIO_A11Y.
   void announce(const String& text);
+  // Drive async playback (advance/finish current clip, fire the settled request). Must be
+  // polled frequently from the menu / preference loops.
+  void tick();
+  // Interrupt + clear any current/pending announcement (e.g. when leaving the menu).
+  void stop();
 }
 
 #endif /* #ifndef MORSEVOICE_H_ */

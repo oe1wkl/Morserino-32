@@ -2145,16 +2145,24 @@ void MorseOutput::soundSignalERR() {
 // V9.0 audio accessibility: play a pre-rendered voice clip from SPIFFS (/voice/<id>.mp3).
 // Blocking (the clip plays to completion, like the echo OK/ERR sounds). No-op on builds
 // without the I2S codec.
-void MorseOutput::playVoiceClip(const char* path) {
+// V9.0 audio accessibility: thin wrappers over the sidetone library's async clip API.
+// Non-blocking; the firmware polls voiceService() from its loops (see MorseVoice).
+bool MorseOutput::voiceStart(const char* path) {
 #ifdef CONFIG_SOUND_I2S
-    sidetone.playSPIFFSFile(path);
-    // playSPIFFSFile() returns when the file has been *read*, not when playback has
-    // *finished*: the decoder's bounded result queue (setResultQueueFactor 14) still
-    // holds undrained samples. Without this pause, rapid back-to-back menu announcements
-    // pile up in that queue until the background copier task stalls and the next
-    // playSPIFFSFile()'s `while (mp3file.available())` never returns -> the device freezes
-    // after a few entries. delay() yields to the audio task, which drains the queue to the
-    // I2S codec in the meantime, so each clip starts from a clean state.
-    delay(250);
+    return sidetone.startClip(path);
+#else
+    (void)path; return false;
+#endif
+}
+bool MorseOutput::voiceService() {
+#ifdef CONFIG_SOUND_I2S
+    return sidetone.serviceClip();
+#else
+    return false;
+#endif
+}
+void MorseOutput::voiceStop() {
+#ifdef CONFIG_SOUND_I2S
+    sidetone.stopClip();
 #endif
 }

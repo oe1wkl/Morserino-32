@@ -748,6 +748,9 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 
   while (true) {                            // we wait for single click = selection or long click = exit - or single or long click or FN button, or for a serial event
         serialEvent();
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();                 // drive async preference-label/value announcements
+#endif
         if (goToMenu) {
             MorseJSON::jsonActivate(ACT_EXIT);
             goToMenu = false;
@@ -1192,6 +1195,9 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
 
     while (true) {                            // we wait for single click = selection or long click = exit
         serialEvent();
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();                 // drive async preference-value announcements
+#endif
         if (goToMenu) {
             MorseJSON::jsonActivate(ACT_EXIT);
             goToMenu = false;
