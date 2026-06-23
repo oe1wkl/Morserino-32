@@ -38,12 +38,16 @@ lossy-slug cases (`0`/`0%`, `+`).
 - **Phase 0 — branch & scaffolding** — ✅ done. `V9.0` branched; 8.2-beta prep
   committed to master as-is; this doc + report under `devdocs/audio-accessibility/`;
   generated clips git-ignored (`Software/src/data/voice/`).
-- **Phase 1 — spokenName field + clip regeneration (incl. characters)** — 🚧 in progress.
-  - ✅ `parameter.spokenName` field added; 20 cryptic preference labels populated;
+- **Phase 1 — spokenName field + clip regeneration (incl. characters)** — ✅ done.
+  - `parameter.spokenName` field added; 20 cryptic preference labels populated;
     **both variants build** (Pocket flash +109 B only).
-  - ⏳ Move tooling into `Software/tools/audio-accessibility/`; extend the extractor
-    for `spokenName` + menu/extraItems spoken overrides + NATO/punctuation/prosign
-    atoms; emit the manifest; regenerate + measure the full clip set.
+  - Tooling in `Software/tools/audio-accessibility/`: `extract_voice_strings.py`
+    (reads `spokenName` + menu/action spoken overrides + NATO/punctuation/prosign
+    atoms; emits `voice_strings.txt` + `voice_manifest.json`) and `generate_audio.sh`.
+  - **Measured: 383 clips = 2.34 MB** @32k (254 phrases + 138 atoms; mean 6.4 KB).
+    Slug made lossless for `%` (percentages vs integer atoms); only the intentional
+    `Off/OFF`,`On/ON` dedupes remain. Manifest drives prosign/number composition
+    (`<ka>`→`pro sign`+`Kilo`+`Alpha`). Clips land in `Software/src/data/voice/` (git-ignored).
 - **Phase 2 — dev partition + filesystem flash** — ⏳ new env `pocketwroom-audio`
   with a custom partition CSV (shrink OTA app slots → grow SPIFFS ~2.9 MB, keep OTA);
   clips in `Software/src/data/voice/`, flashed with `pio run -e pocketwroom-audio
