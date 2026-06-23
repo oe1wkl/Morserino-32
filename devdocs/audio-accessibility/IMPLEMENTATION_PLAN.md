@@ -41,9 +41,10 @@ it out. **Both variants must keep building** every phase.
   `millivolts`). Prosigns, snapshot readouts, Koch "NN char X", voltages, the
   WpM/volume HUD are all built by sequencing these.
 
-A generated **manifest** (UI-string / character → ordered clip-slug list) is the
-robust replacement for re-implementing slugify on-device; it also resolves the
-lossy-slug cases (`0`/`0%`, `+`).
+A generated **manifest** (`voice_manifest.json`) maps each UI string / character →
+ordered **clip-id** list. Clips are stored as `/voice/<8-hex md5 id>.mp3` — SPIFFS
+caps the full path at 32 chars (the readable slugs ran to ~48) — so the firmware
+resolves strings → ids via the manifest, never re-deriving names on-device.
 
 ## Phases & status
 
@@ -60,7 +61,7 @@ lossy-slug cases (`0`/`0%`, `+`).
     Slug made lossless for `%` (percentages vs integer atoms); only the intentional
     `Off/OFF`,`On/ON` dedupes remain. Manifest drives prosign/number composition
     (`<ka>`→`pro sign`+`Kilo`+`Alpha`). Clips land in `Software/src/data/voice/` (git-ignored).
-- **Phase 2 — separate accessibility build + dev flash** — ⏳ new env
+- **Phase 2 — separate accessibility build + dev flash** — ✅ done. New env
   `pocketwroom-accessibility` (extends `pocketwroom`): `CONFIG_CW_GAME` off, WiFi-AP
   firmware-update/upload gated off, `CONFIG_AUDIO_A11Y` on. Custom partition CSV:
   single app (~2 MB, games gone, no OTA) + a large **SPIFFS (~5 MB)** holding
@@ -68,6 +69,9 @@ lossy-slug cases (`0`/`0%`, `+`).
   `-t uploadfs`. Mainline Pocket partition untouched. (Production refinement: split a
   dedicated **read-only `voice` partition** from the user SPIFFS so a reflash never
   clobbers `player.txt` — needs a custom mount + esptool flash.)
+  **Verified:** games stripped → firmware **2.03 MB** in the 2.81 MB app slot (RAM 34%);
+  `buildfs` SPIFFS image (385 clips, **2.03 MB** Piper @1.1) fits the 5.06 MB voice store.
+  Clips named `/voice/<8-hex md5 id>.mp3` (SPIFFS 32-char path limit); manifest maps text→id.
 - **Phase 3 — playback integration** — ⏳ `MorseVoice.*`: `announce()` +
   `composeNumber()` via the existing `sidetone.playSPIFFSFile()`, interrupt-on-
   encoder-turn, hooked into `menuDisplay()`/`displayValueLine()`; a "Voice Output"

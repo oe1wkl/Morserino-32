@@ -305,8 +305,8 @@ o umlaut
 Oceania
 Off
 OFF
-On
 ON
+On
 ON (less ICS)
 ON (true WpM)
 Op Name

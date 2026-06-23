@@ -6,7 +6,7 @@ Design + rationale: [`devdocs/audio-accessibility/IMPLEMENTATION_PLAN.md`](../..
 ## Files
 - `extract_voice_strings.py` — reads the firmware tables (config-aware for the Pocket
   build) and emits `voice_strings.txt` (one clip per line) + `voice_manifest.json`
-  (phrase→slug, and character/prosign/number → ordered clip-slug list for on-device
+  (phrase→clip-id, and character/prosign/number → ordered clip-id list for on-device
   composition). Re-run when menu/preference entries change.
 - `generate_audio.sh` — renders one mono MP3 per line into `Software/src/data/voice/`.
 - `voice_strings.txt`, `voice_manifest.json` — committed build inputs (regenerable).

@@ -20,7 +20,7 @@ regenerates when entries change. Outputs (next to this script):
 Decisions (maintainer, 2026-06-23): spoken label = dedicated field; letters = NATO
 phonetic; prosigns = "pro sign" + phonetic letters composed from atoms.
 """
-import json, os, re, sys
+import hashlib, json, os, re, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.environ.get("M32_SRC", os.path.normpath(
@@ -121,12 +121,11 @@ def top_entries(body):
 def load(name):
     with open(os.path.join(SRC, name), encoding="utf-8") as f: return f.read()
 
-def slug(text):
-    # Map '%' -> 'pct' so percentage option values ("25%") don't collide with the
-    # bare-integer composition atoms ("25"); keeps slugs deterministic + lossless.
-    t = text.lower().replace("%", "pct")
-    s = re.sub(r"[^a-z0-9_]", "", t.replace(" ", "_"))
-    return re.sub(r"_+", "_", s).strip("_")
+def clip_id(text):
+    # Short, stable, filesystem-safe id: first 8 hex of md5(text). SPIFFS caps the
+    # full path at 32 chars, so clips are stored as /voice/<id>.mp3 and the firmware
+    # resolves UI string / character -> id via voice_manifest.json (no on-device slugify).
+    return hashlib.md5(text.encode()).hexdigest()[:8]
 
 
 # ── 1) Menu entries ──────────────────────────────────────────────────────────
@@ -176,48 +175,48 @@ atom_texts = letters + punct + ints
 
 # ── Character -> clip-sequence manifest (drives composition on-device) ───────
 CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH"
-char_seq = {}
+char_seq = {}   # char -> ordered list of clip TEXTS (converted to ids in the manifest)
 missing = []
 for ch in CWchars:
     if ch in NATO:                       # letter
-        char_seq[ch] = [slug(NATO[ch])]
+        char_seq[ch] = [NATO[ch]]
     elif ch.isdigit():                   # digit -> number atom
-        char_seq[ch] = [slug(ch)]
+        char_seq[ch] = [ch]
     elif ch in PUNCT:
-        char_seq[ch] = [slug(PUNCT[ch])]
+        char_seq[ch] = [PUNCT[ch]]
     elif ch in PROSIGN_LETTERS:          # prosign code -> "pro sign" + 2 phonetics
         a,b = PROSIGN_LETTERS[ch]
-        char_seq[ch] = [slug("pro sign"), slug(NATO[a]), slug(NATO[b])]
+        char_seq[ch] = ["pro sign", NATO[a], NATO[b]]
     elif ch in UMLAUT:
-        char_seq[ch] = [slug(UMLAUT[ch])]
+        char_seq[ch] = [UMLAUT[ch]]
     elif ch == 'H':                      # 'ch' digraph
-        char_seq[ch] = [slug("C H")]
+        char_seq[ch] = ["C H"]
     else:
         missing.append(ch)
-char_seq["<err>"] = [slug("pro sign"), slug("error")]
+char_seq["<err>"] = ["pro sign", "error"]
 
-# ── Dedupe, collision check, write ───────────────────────────────────────────
+# ── Dedupe, assign ids, write ────────────────────────────────────────────────
 all_texts = sorted({t for t in (phrase_texts + atom_texts) if t and t.strip()},
                    key=lambda s: s.lower())
-slug_map = {}
-for t in all_texts: slug_map.setdefault(slug(t), []).append(t)
-collisions = {k:v for k,v in slug_map.items() if len(v) > 1}
-empties    = slug_map.get("", [])
+id_map = {}
+for t in all_texts: id_map.setdefault(clip_id(t), []).append(t)
+collisions = {k: v for k, v in id_map.items() if len(v) > 1}   # md5 collisions (expect none)
 
 with open(os.path.join(HERE, "voice_strings.txt"), "w", encoding="utf-8") as f:
     f.write("\n".join(all_texts) + "\n")
 
 manifest = {
-    "phrases": {t: slug(t) for t in sorted(set(phrase_texts)) if t.strip()},
-    "characters": char_seq,
-    "collisions": collisions,
-    "empty_slugs": empties,
+    "voice_dir": "/voice",
+    "phrases": {t: clip_id(t) for t in sorted(set(phrase_texts)) if t.strip()},
+    "characters": {c: [clip_id(t) for t in seq] for c, seq in char_seq.items()},
+    "clips": {clip_id(t): t for t in all_texts},   # id -> text (firmware reverse map / debug)
+    "id_collisions": collisions,
     "counts": {
         "menu": len(set(menu_entries)), "pref_labels": len(set(pref_labels)),
         "option_values": len(set(option_values)), "actions": len(set(action_items)),
-        "phrases_total": len({slug(t) for t in phrase_texts if t.strip()}),
-        "atoms_total": len({slug(t) for t in atom_texts}),
-        "clips_total": len({slug(t) for t in all_texts}),
+        "phrases_total": len({clip_id(t) for t in phrase_texts if t.strip()}),
+        "atoms_total": len({clip_id(t) for t in atom_texts}),
+        "clips_total": len(all_texts),
     },
 }
 with open(os.path.join(HERE, "voice_manifest.json"), "w", encoding="utf-8") as f:
@@ -226,7 +225,6 @@ with open(os.path.join(HERE, "voice_manifest.json"), "w", encoding="utf-8") as f
 print("M32 Pocket voice-clip extraction")
 print("="*40)
 for k,v in manifest["counts"].items(): print(f"  {k:<16} {v:>4}")
-print(f"  slug collisions  {len(collisions):>4}  {list(collisions.values())}")
-print(f"  empty slugs      {len(empties):>4}  {empties}")
+print(f"  md5 id collisions {len(collisions):>3}  {list(collisions.values())}")
 if missing: print(f"  !! chars with no voicing: {missing}")
-print("wrote voice_strings.txt + voice_manifest.json")
+print("wrote voice_strings.txt + voice_manifest.json (clips named /voice/<id>.mp3)")
