@@ -173,12 +173,14 @@ bool I2S_Sidetone::serviceClip() {
 
 void I2S_Sidetone::stopClip() {
     if (!clipPlaying) return;
-    mixer->set(0, *effects);                      // hand the mixer back to the sidetone path
-    decoder->end();                               // reader.end() clears the result queue ...
-    decoder->begin(clipCfg);                      // ... and re-begin leaves it clean + ready
-    mp3file.close();
     clipPlaying = false;
-    fileDoneAt = 0;
+    mixer->set(0, *effects);                      // hand the mixer back to the sidetone path. SAME teardown
+    mp3file.close();                              // as the proven playSPIFFSFile -- we do NOT call decoder
+    fileDoneAt = 0;                               // end()/begin() here: that races the high-priority audio
+                                                  // task (which may still be reading the decoder) and crashes.
+                                                  // Reusing the decoder via setStream() is safe; the result
+                                                  // queue stays empty because each clip fully drains (see
+                                                  // serviceClip) before we stop -- no mid-clip interrupt.
 }
 
 bool I2S_Sidetone::isClipPlaying() {

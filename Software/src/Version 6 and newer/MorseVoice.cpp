@@ -58,12 +58,15 @@ void MorseVoice::tick() {
     // advance / finish the clip that is currently playing
     if (clipPlaying && !MorseOutput::voiceService())
         clipPlaying = false;
-    // once navigation has settled, speak the latest requested entry (interrupting a current clip)
-    if (pendingId[0] && (millis() - pendingAt) >= DEBOUNCE_MS) {
+    // Start the latest request only once any current clip has finished. We deliberately do NOT
+    // interrupt a playing clip: tearing the decoder down mid-play races the audio task (a hang).
+    // Each clip fully drains, so the result queue can't accumulate. Latest pending still wins, so
+    // after a clip ends we speak wherever the user has landed -- with up to ~1 clip of lag.
+    if (pendingId[0] && !clipPlaying && (millis() - pendingAt) >= DEBOUNCE_MS) {
         char path[24];                      // "/voice/" + 8 hex + ".mp3" + NUL
         snprintf(path, sizeof(path), "/voice/%s.mp3", pendingId);
         pendingId[0] = '\0';
-        MorseOutput::voiceStart(path);      // startClip() interrupts any current clip internally
+        MorseOutput::voiceStart(path);
         clipPlaying = true;
     }
 #endif
