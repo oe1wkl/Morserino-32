@@ -177,6 +177,9 @@ namespace MorsePreferences
      const char *parDescript;
      const boolean isMapped;
      const char *mapping[MAX_MAP_ELEMENTS];
+     const char *spokenName;   // V9.0 audio accessibility: ear-friendly label for TTS;
+                               // nullptr ==> fall back to parName. Only the cryptic,
+                               // display-cramped parNames need to set this.
   };
 
   extern parameter pliste[];

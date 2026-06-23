@@ -126,14 +126,16 @@ parameter MorsePreferences::pliste[] = {
     "External Pol.",
     "Polarity of external paddle",
     true,
-    {"Normal", "Reversed"}
+    {"Normal", "Reversed"},
+    "External polarity"
   },
   {
     1, 0, 1, 1,                                                 // paddle polarity
     "Paddle Polar.",
     "Where are dits and dahs",
     true,
-    {"-. dah dit", ".- dit dah"}
+    {"-. dah dit", ".- dit dah"},
+    "Paddle polarity"
   },
   {
     2, 1, 5, 1,                                                 // keyer modes (Curtis modes etc.)
@@ -147,21 +149,24 @@ parameter MorsePreferences::pliste[] = {
     "CurtisB DahT%",                                          // keyer: timing for enhanced Curtis mode: dah                    0 - 100
     "Timing for CurtisB Dahs in %",
     false,
-    {}
+    {},
+    "Curtis B dah timing"
   },
   {
     75, 0, 100, 5,                                              // keyer: timing for enhanced Curtis mode: dit                    0 - 100
     "CurtisB DitT%",
     "Timing for CurtisB Dits in %",
     false,
-    {}
+    {},
+    "Curtis B dit timing"
   },
   {
     0, 0, 3, 1,                                                   // AutoChar Spacing: extend the pause between chars; 0=off, 1-3 ==> 2-4
     "AutoChar Spc",
     "ACS: Minimum spacing between characters",
     true,
-    {"Off", "2 dits", "3 dits", "4 dits"}
+    {"Off", "2 dits", "3 dits", "4 dits"},
+    "Auto character spacing"
   },
   {
     1, 0, 2, 1,                                                 // 0 = no shift, 1 = up, 2 = down (a half tone)                   0 - 2
@@ -175,14 +180,16 @@ parameter MorsePreferences::pliste[] = {
     "InterWord Spc",
     "The time (in dits) that is inserted between generated words",
     false,
-    {}
+    {},
+    "Inter-word spacing"
   },
   {
     3, 3, 45, 1,                                                  // for generators: intercharacter space, in dit dit lengths; default = 3
     "Interchar Spc",
     "Space between generated characters, in dits",
     false,
-    {}
+    {},
+    "Inter-character spacing"
   },
   {
     0, 0, 9,  1,                                                // Generators: from which pool are we generating random characters?
@@ -196,7 +203,8 @@ parameter MorsePreferences::pliste[] = {
     "Length Rnd Gr",
     "How many characters in each group of random characters?",
     true,
-    {"", "1", "2", "3", "4", "5", "6", "2 to 3", "2 to 4", "2 to 5", "2 to 6"}
+    {"", "1", "2", "3", "4", "5", "6", "2 to 3", "2 to 4", "2 to 5", "2 to 6"},
+    "Random group length"
   },
   {
     0, 0, 4, 1,                                                 // Generators: max length of call signs generated (0 = unlimited)    0, 3 - 6
@@ -238,14 +246,16 @@ parameter MorsePreferences::pliste[] = {
     "CW Gen Displ",
     "No, char by char or word by word display",
     true,
-    {"Display off", "Char by char", "Word by word"}
+    {"Display off", "Char by char", "Word by word"},
+    "Generator display"
   },
   {
     0, 0, 3,  1,                                                // in CW trainer mode: repeat each word?
     "Each Word 2x",
     "Repeat each generated word",
     true,
-    {"OFF", "ON", "ON (less ICS)", "ON (true WpM)"}
+    {"OFF", "ON", "ON (less ICS)", "ON (true WpM)"},
+    "Repeat each word"
   },
   {
     1, 1, 3,  1,                                                //  1 = CODE_ONLY 2 = DISP_ONLY 3 = CODE_AND_DISP
@@ -266,14 +276,16 @@ parameter MorsePreferences::pliste[] = {
     "Confrm. Tone",
     "Audible confirmation in Echo Trainer",
     true,
-    {"OFF", "ON"}
+    {"OFF", "ON"},
+    "Confirmation tone"
   },
   {
     1, 0, 3, 1,                                                 // key TX in generator/player/receiver mode?
     "Key ext TX",
     "When to key an external transmitter",
     true,
-    {"Never", "CW Keyer only", "Keyer & Gen.", "Keyer&Gen.&RX"}
+    {"Never", "CW Keyer only", "Keyer & Gen.", "Keyer&Gen.&RX"},
+    "Key external transmitter"
   },
 #ifdef LORA_DISABLED
  {
@@ -304,7 +316,8 @@ parameter MorsePreferences::pliste[] = {
     "Adaptv. Speed",
     "Adaptive Speed of Echo Trainer?",
     true,
-    {"OFF", "ON"}
+    {"OFF", "ON"},
+    "Adaptive speed"
   },
   {
     0, 0, 10, 1,                                                // Echo trainer: max response speed (0 = no limit, 5-60 wpm)
@@ -348,7 +361,8 @@ parameter MorsePreferences::pliste[] = {
     "Decoded on IO",
     "Decoded audio to be sent to the I/O port)",
     true,
-    {"OFF", "ON"}
+    {"OFF", "ON"},
+    "Decoded audio on I O port"
   },
   {
     1, 0, 3,  1,                                                // time-out value: 0 = no timeout, 1 = 5 min, 2 = 10 min, 3 = 15 min
@@ -376,21 +390,24 @@ parameter MorsePreferences::pliste[] = {
     "Stop<Next>Rep",
     "Stop after each word; choose repeat or next word with paddle",
     true,
-    {"OFF", "ON"}
+    {"OFF", "ON"},
+    "Stop after each word"
   },
   {
     0, 0, 250, 5,                                               // max # of words generated before the Morserino pauses, 0 = no limit; allow step = 5 only
     "Max # of Words",
     "Stop after selected number of words",
     false,
-    {}
+    {},
+    "Maximum number of words"
   },
   {
     0, 0, 1,  1,                                                // allows to set different LoRa sync words, and so creating virtual "channels"; 0 = 0x27, 1 = 0x66
     "Trx Channel",
     "Which virtual channel is used by LoRa or EspNow Trx",
     true,
-    {"Standard", "Secondary"}
+    {"Standard", "Secondary"},
+    "Transceiver channel"
   },
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   {
@@ -398,14 +415,16 @@ parameter MorsePreferences::pliste[] = {
     "BLT Kbd Output",
     "Select what is sent to the Bluetooth Keyboard output",
     true,
-    {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"}
+    {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"},
+    "Bluetooth keyboard output"
   },
   {
     0, 0, 1, 1,                                                 // in Generic Kbd mode: 0=send '+', 1=send Shift+Enter (soft return)
     "BLT <AR>",
     "Generic Kbd: send <AR> as '+' or as Linefeed (Shift+Enter)",
     true,
-    {"+", "Linefeed"}
+    {"+", "Linefeed"},
+    "Bluetooth A R character"
   },
 #endif
 #ifdef CONFIG_TFT
@@ -423,7 +442,8 @@ parameter MorsePreferences::pliste[] = {
     "Invader Orient.",
     "Invader character orientation",
     true,
-    {"Portrait", "Landscape"}
+    {"Portrait", "Landscape"},
+    "Invader orientation"
   },
 #endif
 #ifdef CONFIG_QSO_BOT
