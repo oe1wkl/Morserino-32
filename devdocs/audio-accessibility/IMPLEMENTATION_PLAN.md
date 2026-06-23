@@ -46,6 +46,12 @@ ordered **clip-id** list. Clips are stored as `/voice/<8-hex md5 id>.mp3` — SP
 caps the full path at 32 chars (the readable slugs ran to ~48) — so the firmware
 resolves strings → ids via the manifest, never re-deriving names on-device.
 
+**Clip format is hardware-locked: 44100 Hz, 16-bit, stereo**, to match
+`sidetone.begin(44100, 16, 2)`. The cw-i2s-sidetone decode path does not resample, so a
+22.05 kHz / mono clip plays back **4× too fast** (2× rate × 2× channels) *and* under/over-feeds
+the copier's bounded result queue, **freezing the device** after a few clips. `generate_audio.sh`
+encodes to this format (ffmpeg `-ar 44100 -ac 2`).
+
 ## Phases & status
 
 - **Phase 0 — branch & scaffolding** — ✅ done. `V9.0` branched; 8.2-beta prep

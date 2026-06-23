@@ -34,13 +34,14 @@ PIPER_MODEL="${PIPER_MODEL:-$SCRIPT_DIR/models/en_GB-alan-medium.onnx}"
 LENGTH_SCALE="${LENGTH_SCALE:-1.1}"   # piper phoneme length; >1.0 = slower (1.1 = approved rate)
 
 # ---- Encoding ---------------------------------------------------------------
-# The design brief lists "32 kbps". NOTE: its example used `lame --preset voice
-# -b 32`, but `--preset voice` is an ABR preset that overrides -b and actually
-# emits ~56-60 kbps (hence the brief's ~12 KB/clip samples). We honour the stated
-# 32 kbps with a true CBR mono encode. Set BITRATE=24 SR=16 for the smaller
-# fallback mentioned in the brief.
+# Clips MUST match the M32 Pocket I2S sidetone format: sidetone.begin(44100, 16, 2)
+# = 44100 Hz, 16-bit, STEREO (MorseOutput.cpp). The cw-i2s-sidetone decode path does
+# NOT resample, so a 22.05 kHz / mono clip plays back 4x too fast (2x rate x 2x channels)
+# AND under/over-feeds the copier's bounded result queue, stalling playback after a few
+# clips. Encode at 44100 Hz stereo to match the hardware.
 BITRATE="${BITRATE:-32}"  # kbps, CBR
-SR="${SR:-22.05}"         # output sample rate in kHz (espeak emits 22.05 kHz mono)
+OUT_SR="${OUT_SR:-44100}" # Hz       -- must equal the I2S sample rate
+OUT_CH="${OUT_CH:-2}"     # channels -- must equal the I2S channel count (stereo)
 
 # Defaults are repo-relative: the V9.0 string list (from extract_voice_strings.py)
 # and the SPIFFS data/voice dir that `pio run -e pocketwroom-audio -t uploadfs` flashes.
@@ -55,7 +56,7 @@ if [ "$TTS_ENGINE" = piper ]; then
 else
   command -v espeak-ng >/dev/null || { echo "espeak-ng not found" >&2; exit 1; }
 fi
-command -v lame >/dev/null || { echo "lame not found" >&2; exit 1; }
+command -v ffmpeg >/dev/null || { echo "ffmpeg not found" >&2; exit 1; }
 mkdir -p "$OUTDIR"
 
 # ---- Clip id: first 8 hex of md5(text). Must match extract_voice_strings.py so the
@@ -84,7 +85,8 @@ while IFS= read -r TEXT || [ -n "$TEXT" ]; do
   else
     printf '%s' "$TEXT" | espeak-ng -v "$VOICE" -s "$SPEED" -p "$PITCH" -a "$AMP" -w "$TMP/${FNAME}.wav"
   fi
-  lame -m m -b "$BITRATE" --resample "$SR" -q 2 --silent "$TMP/${FNAME}.wav" "$OUT"
+  # Encode to MP3 at the M32 I2S format (44100 Hz stereo); -ac 2 duplicates the mono voice.
+  ffmpeg -y -i "$TMP/${FNAME}.wav" -ar "$OUT_SR" -ac "$OUT_CH" -b:a "${BITRATE}k" "$OUT" 2>/dev/null
   rm -f "$TMP/${FNAME}.wav"
   generated=$((generated+1))
 done < "$INPUT"
@@ -95,7 +97,7 @@ count=$(find "$OUTDIR" -name '*.mp3' | wc -l | tr -d ' ')
 echo "----------------------------------------------"
 echo "input            : $INPUT"
 echo "engine           : $TTS_ENGINE${TTS_ENGINE:+ }$([ "$TTS_ENGINE" = piper ] && echo "(alan, length-scale ${LENGTH_SCALE})")"
-echo "bitrate          : ${BITRATE} kbps CBR mono @ ${SR} kHz"
+echo "format           : ${BITRATE} kbps @ ${OUT_SR} Hz, ${OUT_CH}ch (matches M32 I2S)"
 echo "generated now    : $generated"
 echo "skipped (exist)  : $skipped"
 echo "empty-slug skips : $empty"
