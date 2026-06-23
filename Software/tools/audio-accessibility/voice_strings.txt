@@ -303,8 +303,8 @@ Num+Interp.
 Numerals
 o umlaut
 Oceania
-Off
 OFF
+Off
 ON
 On
 ON (less ICS)
