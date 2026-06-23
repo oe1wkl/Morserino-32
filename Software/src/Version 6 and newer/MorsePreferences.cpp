@@ -17,6 +17,7 @@
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
 #include "MorseJSON.h"
+#include "MorseVoice.h"
 #include "MorseTextEntry.h"
 #include "abbrev.h"
 #include "english_words.h"
@@ -859,6 +860,11 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   itemLine = (pos <= posSerialOut ? MorsePreferences::pliste[pos].parName : extraItems[pos-posKochFilter]);
   itemLine += emptyLine.substring(0,maxLength - itemLine.length());
   MorseOutput::printOnScroll(1, BOLD, 0, itemLine);
+#ifdef CONFIG_AUDIO_A11Y
+  if (pos <= posSerialOut)                        // a11y: speak the preference label (spokenName overrides parName)
+      MorseVoice::announce(pliste[pos].spokenName ? String(pliste[pos].spokenName)
+                                                  : String(pliste[pos].parName));
+#endif
   displayValueLine(pos, itemLine, false);
 }
 
@@ -879,6 +885,10 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
     valueLine = (pos <= posSerialOut ? (pliste[pos].isMapped ? pliste[pos].mapping[pliste[pos].value] : String(pliste[pos].value)) : getValueLine(pos));
     if (pos == posMaxSequence && pliste[pos].value == 0)                  /// we do a "mapping" for 0 here
         valueLine = "Unlimited";
+#ifdef CONFIG_AUDIO_A11Y
+    if (!jsonOnly)                                                        // a11y: speak the option value / number
+        MorseVoice::announce(valueLine);
+#endif
     valueLine += emptyLine.substring(0,maxLength - valueLine.length());
 
     if (m32protocol) {

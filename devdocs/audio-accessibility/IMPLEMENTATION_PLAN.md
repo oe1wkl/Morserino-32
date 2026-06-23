@@ -72,10 +72,16 @@ resolves strings → ids via the manifest, never re-deriving names on-device.
   **Verified:** games stripped → firmware **2.03 MB** in the 2.81 MB app slot (RAM 34%);
   `buildfs` SPIFFS image (385 clips, **2.03 MB** Piper @1.1) fits the 5.06 MB voice store.
   Clips named `/voice/<8-hex md5 id>.mp3` (SPIFFS 32-char path limit); manifest maps text→id.
-- **Phase 3 — playback integration** — ⏳ `MorseVoice.*`: `announce()` +
-  `composeNumber()` via the existing `sidetone.playSPIFFSFile()`, interrupt-on-
-  encoder-turn, hooked into `menuDisplay()`/`displayValueLine()`; a "Voice Output"
-  on/off preference; gated by `CONFIG_AUDIO_A11Y`.
+- **Phase 3 — playback integration** — ✅ done (first cut). `MorseVoice::announce(text)` binary-
+  searches the generated `voice_clips.h` (firmware UI string → clip id) and plays `/voice/<id>.mp3`
+  via `MorseOutput::playVoiceClip()` → `sidetone.playSPIFFSFile()`. Hooked into `menuDisplay()`
+  (menu entries) and `displayKeyerPreferencesMenu()` / `displayValueLine()` (pref label + value),
+  all `#ifdef CONFIG_AUDIO_A11Y` (now set on the env). The extractor also emits `voice_clips.h`.
+  All three variants build (accessibility flash 2.04 MB; mainline + classic unaffected, announce
+  is a no-op there). **Limits / follow-ups:** playback is *blocking* (turn-and-hear; no
+  interrupt-on-encoder — the library's stream copier blocks); char-by-char voicing (Koch new
+  char, decoder output) + composed snapshot/number readouts not wired yet; numeric values voiced
+  only where a clip exists (0–60 + ×5 to 250); always-on (no runtime toggle — dedicated build).
 - **Phase 4 — release & installer** — ⏳ much simpler under the separate-binary
   approach: publish the accessibility build as its **own** installer entry/page with
   its **own** `partitions.bin` + SPIFFS image — the mainline shared partition is

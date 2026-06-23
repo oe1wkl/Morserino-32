@@ -111,6 +111,7 @@ namespace MorseOutput
   void pwmClick(unsigned int volume);
   void soundSignalOK();
   void soundSignalERR();
+  void playVoiceClip(const char* path);   // V9.0 a11y: play /voice/<id>.mp3 (no-op without I2S)
 }
 
 #endif /* #ifndef MORSEOUTPUT_H_ */

@@ -16,6 +16,7 @@
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
+#include "MorseVoice.h"
 
 #ifdef CONFIG_TFT
 #include "MorseGameMode.h"
@@ -400,6 +401,9 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
             MorseOutput::printOnScroll(0, BOLD, 0, menuText[ptr]);
             break;
   }
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::announce(menuText[ptr]);          // a11y: speak the highlighted menu entry
+#endif
   if (m32protocol) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
       MorseJSON::jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));

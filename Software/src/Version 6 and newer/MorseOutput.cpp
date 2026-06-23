@@ -2141,3 +2141,12 @@ void MorseOutput::soundSignalERR() {
   }
 #endif
 }
+
+// V9.0 audio accessibility: play a pre-rendered voice clip from SPIFFS (/voice/<id>.mp3).
+// Blocking (the clip plays to completion, like the echo OK/ERR sounds). No-op on builds
+// without the I2S codec.
+void MorseOutput::playVoiceClip(const char* path) {
+#ifdef CONFIG_SOUND_I2S
+    sidetone.playSPIFFSFile(path);
+#endif
+}
