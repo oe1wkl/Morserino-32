@@ -2148,5 +2148,13 @@ void MorseOutput::soundSignalERR() {
 void MorseOutput::playVoiceClip(const char* path) {
 #ifdef CONFIG_SOUND_I2S
     sidetone.playSPIFFSFile(path);
+    // playSPIFFSFile() returns when the file has been *read*, not when playback has
+    // *finished*: the decoder's bounded result queue (setResultQueueFactor 14) still
+    // holds undrained samples. Without this pause, rapid back-to-back menu announcements
+    // pile up in that queue until the background copier task stalls and the next
+    // playSPIFFSFile()'s `while (mp3file.available())` never returns -> the device freezes
+    // after a few entries. delay() yields to the audio task, which drains the queue to the
+    // I2S codec in the meantime, so each clip starts from a clean state.
+    delay(250);
 #endif
 }

@@ -42,6 +42,10 @@ LENGTH_SCALE="${LENGTH_SCALE:-1.1}"   # piper phoneme length; >1.0 = slower (1.1
 BITRATE="${BITRATE:-32}"  # kbps, CBR
 OUT_SR="${OUT_SR:-44100}" # Hz       -- must equal the I2S sample rate
 OUT_CH="${OUT_CH:-2}"     # channels -- must equal the I2S channel count (stereo)
+# Loudness: Piper output is ~5 dB quieter than the CW sidetone. Boost gain then brick-wall
+# limit to raise the average without clipping (measured ~+5 dB mean at GAIN_DB=6, peaks held
+# just under full scale). EBU loudnorm/dynaudnorm went the WRONG way for this short speech.
+GAIN_DB="${GAIN_DB:-6}"
 
 # Defaults are repo-relative: the V9.0 string list (from extract_voice_strings.py)
 # and the SPIFFS data/voice dir that `pio run -e pocketwroom-audio -t uploadfs` flashes.
@@ -86,7 +90,9 @@ while IFS= read -r TEXT || [ -n "$TEXT" ]; do
     printf '%s' "$TEXT" | espeak-ng -v "$VOICE" -s "$SPEED" -p "$PITCH" -a "$AMP" -w "$TMP/${FNAME}.wav"
   fi
   # Encode to MP3 at the M32 I2S format (44100 Hz stereo); -ac 2 duplicates the mono voice.
-  ffmpeg -y -i "$TMP/${FNAME}.wav" -ar "$OUT_SR" -ac "$OUT_CH" -b:a "${BITRATE}k" "$OUT" 2>/dev/null
+  # gain + brick-wall limiter boosts the quiet Piper output toward the sidetone level.
+  ffmpeg -y -i "$TMP/${FNAME}.wav" -af "volume=${GAIN_DB}dB,alimiter=limit=0.95" \
+         -ar "$OUT_SR" -ac "$OUT_CH" -b:a "${BITRATE}k" "$OUT" 2>/dev/null
   rm -f "$TMP/${FNAME}.wav"
   generated=$((generated+1))
 done < "$INPUT"
