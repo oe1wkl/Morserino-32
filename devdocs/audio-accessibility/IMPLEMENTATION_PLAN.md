@@ -18,6 +18,18 @@ it out. **Both variants must keep building** every phase.
 3. **Prosigns = `"pro sign"` + phonetic letters, composed from snippets**
    (`<ka>` = `pro sign` + `Kilo` + `Alpha`). Reuses the 26 phonetic letter clips, so
    no per-prosign clip is stored — same idea as `Snapshot` + number.
+4. **Voice = Piper neural TTS** (`en_GB-alan-medium`, redistributable license),
+   generated **offline** with `--length-scale ≈1.2` (slightly slower). Because we
+   pre-render, synth quality is decoupled from on-device size — espeak's weak
+   sibilants were the real quality issue, not the bitrate. espeak-ng stays as a
+   fallback engine (`TTS_ENGINE=espeak`).
+5. **Ship as a separate "M32 Pocket Accessibility" binary** (own build env + partition),
+   *not* a repartition of the mainline Pocket firmware. The games and the WiFi-AP
+   firmware-update/upload are stripped — unusable blind, and updates/uploads go via
+   the USB-serial browser tool (screen-reader friendly). This frees the 2nd OTA app
+   slot + game flash for a dedicated, larger **voice** store, and — crucially — leaves
+   the mainline partition table untouched, so the web installer needs **no fleet-wide
+   migration**. Serial-protocol upload stays (config tool); only the WiFi-AP path goes.
 
 ## Architecture: two clip mechanisms
 
@@ -48,21 +60,28 @@ lossy-slug cases (`0`/`0%`, `+`).
     Slug made lossless for `%` (percentages vs integer atoms); only the intentional
     `Off/OFF`,`On/ON` dedupes remain. Manifest drives prosign/number composition
     (`<ka>`→`pro sign`+`Kilo`+`Alpha`). Clips land in `Software/src/data/voice/` (git-ignored).
-- **Phase 2 — dev partition + filesystem flash** — ⏳ new env `pocketwroom-audio`
-  with a custom partition CSV (shrink OTA app slots → grow SPIFFS ~2.9 MB, keep OTA);
-  clips in `Software/src/data/voice/`, flashed with `pio run -e pocketwroom-audio
-  -t uploadfs`. (Dedicated read-only `voice` partition deferred to Phase 4.)
+- **Phase 2 — separate accessibility build + dev flash** — ⏳ new env
+  `pocketwroom-accessibility` (extends `pocketwroom`): `CONFIG_CW_GAME` off, WiFi-AP
+  firmware-update/upload gated off, `CONFIG_AUDIO_A11Y` on. Custom partition CSV:
+  single app (~2 MB, games gone, no OTA) + a large **SPIFFS (~5 MB)** holding
+  `/voice/` + `player.txt`. Dev flash: `pio run -e pocketwroom-accessibility` then
+  `-t uploadfs`. Mainline Pocket partition untouched. (Production refinement: split a
+  dedicated **read-only `voice` partition** from the user SPIFFS so a reflash never
+  clobbers `player.txt` — needs a custom mount + esptool flash.)
 - **Phase 3 — playback integration** — ⏳ `MorseVoice.*`: `announce()` +
   `composeNumber()` via the existing `sidetone.playSPIFFSFile()`, interrupt-on-
   encoder-turn, hooked into `menuDisplay()`/`displayValueLine()`; a "Voice Output"
   on/off preference; gated by `CONFIG_AUDIO_A11Y`.
-- **Phase 4 — release pipeline & installer** — ⏳ dedicated `voice` partition;
-  per-firmware partition-table versioning so the web installer isn't broken
-  (`rename_binaries.py` / `dropbox_publish.sh` / `flash-m32pocket.html`); EN+DE manual.
+- **Phase 4 — release & installer** — ⏳ much simpler under the separate-binary
+  approach: publish the accessibility build as its **own** installer entry/page with
+  its **own** `partitions.bin` + SPIFFS image — the mainline shared partition is
+  unchanged, so no fleet-wide migration. Add its artifacts to `rename_binaries.py` /
+  `dropbox_publish.sh`; an install option on `flash-m32pocket.html`; EN+DE manual.
 
 ## Reproduce the clip set
 ```
-python3 Software/tools/audio-accessibility/extract_menu_strings.py   # -> string lists + manifest
+python3 Software/tools/audio-accessibility/extract_voice_strings.py   # -> voice_strings.txt + voice_manifest.json
 Software/tools/audio-accessibility/generate_audio.sh                  # -> Software/src/data/voice/*.mp3
 ```
-Re-run whenever menu/preference entries change in a release. Requires `espeak-ng` + `lame`.
+Re-run whenever menu/preference entries change. Requires `lame` + Piper (`.venv` +
+`pip install piper-tts` + a model under `models/`, see `README.md`); `espeak-ng` is the fallback.

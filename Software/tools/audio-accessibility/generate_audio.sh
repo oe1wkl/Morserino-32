@@ -2,16 +2,19 @@
 #
 # generate_audio.sh -- Morserino-32 audio-accessibility clip generator
 #
-# Reads menu_strings.txt (one UI string per line) and produces one mono MP3 per
-# string under audio/, using espeak-ng + lame with the parameters fixed by the
-# design phase. Reruns are incremental: an existing *_male.mp3 is left untouched.
+# Reads voice_strings.txt (one UI string per line) and produces one mono MP3 per
+# string under Software/src/data/voice/, using Piper neural TTS (default; the
+# redistributable shipping voice) or espeak-ng, then lame. Reruns are incremental:
+# an existing *_male.mp3 is left untouched.
 #
 # Usage:
-#   ./generate_audio.sh                 # default voice set, 32 kbps
-#   INPUT=menu_descriptions.txt ./generate_audio.sh   # also voice the help texts
-#   BITRATE=24 SR=16 ./generate_audio.sh              # smaller fallback set
+#   ./generate_audio.sh                          # Piper (alan, en-GB), 32 kbps
+#   LENGTH_SCALE=1.3 ./generate_audio.sh         # slower speech
+#   TTS_ENGINE=espeak ./generate_audio.sh        # espeak-ng fallback
+#   BITRATE=24 SR=16 ./generate_audio.sh         # smaller fallback set
 #
-# Requirements: espeak-ng, lame  (brew install espeak-ng lame)
+# Requirements: lame, plus EITHER Piper (.venv + `pip install piper-tts` + a voice
+# model under models/) OR espeak-ng. (brew install lame espeak-ng)
 #
 set -euo pipefail
 
@@ -23,6 +26,12 @@ SPEED="${SPEED:-140}"     # espeak -s
 PITCH="${PITCH:-50}"      # espeak -p
 AMP="${AMP:-180}"         # espeak -a
 SUFFIX="${SUFFIX:-_male}" # filename suffix (a 2nd voice set would use e.g. _female)
+
+# ---- TTS engine: 'piper' (neural, redistributable; shipping default) or 'espeak' ----
+TTS_ENGINE="${TTS_ENGINE:-piper}"
+PIPER_BIN="${PIPER_BIN:-$SCRIPT_DIR/.venv/bin/piper}"
+PIPER_MODEL="${PIPER_MODEL:-$SCRIPT_DIR/models/en_GB-alan-medium.onnx}"
+LENGTH_SCALE="${LENGTH_SCALE:-1.2}"   # piper phoneme length; >1.0 = slower
 
 # ---- Encoding ---------------------------------------------------------------
 # The design brief lists "32 kbps". NOTE: its example used `lame --preset voice
@@ -40,8 +49,13 @@ OUTDIR="${OUTDIR:-$SCRIPT_DIR/../../src/data/voice}"
 TMP="$(mktemp -d)"
 trap 'rm -rf "$TMP"' EXIT
 
-command -v espeak-ng >/dev/null || { echo "espeak-ng not found" >&2; exit 1; }
-command -v lame      >/dev/null || { echo "lame not found"      >&2; exit 1; }
+if [ "$TTS_ENGINE" = piper ]; then
+  [ -x "$PIPER_BIN" ]   || { echo "piper not found at $PIPER_BIN (create .venv + pip install piper-tts)" >&2; exit 1; }
+  [ -f "$PIPER_MODEL" ] || { echo "piper model not found: $PIPER_MODEL" >&2; exit 1; }
+else
+  command -v espeak-ng >/dev/null || { echo "espeak-ng not found" >&2; exit 1; }
+fi
+command -v lame >/dev/null || { echo "lame not found" >&2; exit 1; }
 mkdir -p "$OUTDIR"
 
 # ---- Filename slug: lowercase, spaces->_, strip non-alnum (keep _) ----------
@@ -69,9 +83,13 @@ while IFS= read -r TEXT || [ -n "$TEXT" ]; do
   if [ -f "$OUT" ]; then
     skipped=$((skipped+1)); continue
   fi
-  # Feed text on stdin (not as an argv operand) so strings that begin with '-'
-  # -- e.g. "-. dah dit" -- are not mis-parsed by espeak-ng as options.
-  printf '%s' "$TEXT" | espeak-ng -v "$VOICE" -s "$SPEED" -p "$PITCH" -a "$AMP" -w "$TMP/${FNAME}.wav"
+  # Synthesize WAV. Text on stdin so a leading '-' (e.g. "-. dah dit") is not
+  # mis-parsed as an option.
+  if [ "$TTS_ENGINE" = piper ]; then
+    printf '%s' "$TEXT" | "$PIPER_BIN" -m "$PIPER_MODEL" --length-scale "$LENGTH_SCALE" -f "$TMP/${FNAME}.wav" 2>/dev/null
+  else
+    printf '%s' "$TEXT" | espeak-ng -v "$VOICE" -s "$SPEED" -p "$PITCH" -a "$AMP" -w "$TMP/${FNAME}.wav"
+  fi
   lame -m m -b "$BITRATE" --resample "$SR" -q 2 --silent "$TMP/${FNAME}.wav" "$OUT"
   rm -f "$TMP/${FNAME}.wav"
   generated=$((generated+1))
@@ -82,6 +100,7 @@ total_kb=$(du -sk "$OUTDIR" | awk '{print $1}')
 count=$(find "$OUTDIR" -name "*${SUFFIX}.mp3" | wc -l | tr -d ' ')
 echo "----------------------------------------------"
 echo "input            : $INPUT"
+echo "engine           : $TTS_ENGINE${TTS_ENGINE:+ }$([ "$TTS_ENGINE" = piper ] && echo "(alan, length-scale ${LENGTH_SCALE})")"
 echo "bitrate          : ${BITRATE} kbps CBR mono @ ${SR} kHz"
 echo "generated now    : $generated"
 echo "skipped (exist)  : $skipped"
