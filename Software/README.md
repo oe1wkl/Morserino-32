@@ -3,19 +3,27 @@
 ### CHANGES V. 8.1
 
 #### New Features:
-* The transceiver modes have been extended by a QSO Bot mode; Contest, SOTA/POTA and standard QSOs can be trained.
+* The transceiver modes have been extended by a QSO Bot mode; Contest, SOTA/POTA and standard QSOs can be trained. For now this has to be considered experimental, it probably needs a lot of improvement.
 * M32Pocket only: Added another game: Morsel. Loosely based on Wordle and Morsle, it is a word guessing game that gives clues in high speed morse, getting slower over time if you guessed wrong. Goal is to find the right word as quickly as possible. Can be played as single-user or multi-player game.
 
 #### Feature Modifications:
 * For use as a Bluetooth Keyboard, there is a new setting in Preferences: BLT <AR>, with options „+“ and „Linefeed“. This handles how the <ar> pro Sign is handled: either a the character ‚+‘, or as a linefeed (soft return).
 * Added „VK/ZL“ as another call region setting to allow VK and ZL users to train for their local call signs only.
+* USB Serial protocol: a few clarifications in the protocol document.
+* USB Serial protocol - resetting preferences to default values requires a re-start when done through this protocol.
+* USB Serial protocol: device now also reports the build date of the firmware, in addition to the version  number.
 * M32Pocket only: Fight the Pileup game has been reworked to be played also as a multi-user game.
+* M32Pocket only: a fancier splash screen and more colours throughout ;-)
 
 #### Bug Fixes:
+* Serial protocol: The firmware version and the battery status were
+*  not reported correctly. Fixed.
 * M32Pocket only: There was a bug in the multi-part file player code, which prevented that the device correctly re-started where you had stopped playing a part. Fixed.
 * M32Pocket only: Morse invaders: character chosen randomly was not chosen fairly. The distribution is now better.
-* Some minor nuisances in the user interface have been fixed.
 * M32Pocket only: Sorted some heap memory issues that prevented the implementation of multi-user games.
+* M32Pocket only: there was an irritating flicker at boot-up. Fixed.
+* Some minor nuisances and inconsistencies in the user interface have been fixed.
+
 
 ### Changes V. 8.0
 
