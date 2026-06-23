@@ -58,7 +58,8 @@ Before you tag, make sure of these — the workflow fails fast on each:
    same section. You don't need a separate section per beta.
 
 2. **Commit and push** the README change to `master`:
-   ```sh
+   ``` 
+   sh
    git add Software/README.md
    git commit -m "Update V<ver> changelog"
    git push origin master
