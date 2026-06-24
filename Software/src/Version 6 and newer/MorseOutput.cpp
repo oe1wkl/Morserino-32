@@ -2166,3 +2166,8 @@ void MorseOutput::voiceStop() {
     sidetone.stopClip();
 #endif
 }
+void MorseOutput::voiceResetDecoder() {
+#ifdef CONFIG_SOUND_I2S
+    sidetone.resetDecoder();
+#endif
+}

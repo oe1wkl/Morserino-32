@@ -19,11 +19,13 @@ class I2S_Sidetone {
     bool playSPIFFSFile(const char *filename);
     // --- Async (non-blocking) clip playback for V9.0 audio accessibility -----------------
     // startClip() returns immediately; poll serviceClip() from the main loop to advance and
-    // finish playback; stopClip() interrupts and resets the decoder (end()+begin() clears the
-    // reader's result queue) so clips can't accumulate and stall the copier (the freeze bug).
+    // finish playback; stopClip() hands the mixer back the instant the file is read.
     bool startClip(const char *filename);
     bool serviceClip();
     void stopClip();
+    // Reset the reused MP3 decoder to clear state that slowly accumulates across many clips.
+    // ONLY call when no clip is playing (mixer on the sidetone): end() races the audio task.
+    void resetDecoder();
     bool isClipPlaying();
     bool isOn();
     void tick();

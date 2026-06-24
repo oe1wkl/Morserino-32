@@ -183,3 +183,13 @@ void I2S_Sidetone::stopClip() {
 bool I2S_Sidetone::isClipPlaying() {
     return clipPlaying;
 }
+
+void I2S_Sidetone::resetDecoder() {
+    // Clear MP3-decoder state that slowly accumulates when the decoder is reused across many
+    // clips (a very-late freeze). end()/begin() resets the reader + decoder. SAFE ONLY when no
+    // clip is playing: the mixer is on the sidetone (effects) and the audio task is not reading
+    // the decoder, so we don't race it. The firmware calls this during an idle pause.
+    if (clipPlaying) return;
+    decoder->end();
+    decoder->begin(clipCfg);
+}

@@ -225,7 +225,7 @@ namespace MorsePreferences
   boolean storeSnapshot(uint8_t);
   boolean setupPreferences(uint8_t);
   void displayKeyerPreferencesMenu(prefPos);
-  void displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly);
+  void displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading = true);
   String getValueLine(prefPos);
   int getValue(prefPos);
   boolean adjustKeyerPreference(prefPos);

@@ -27,7 +27,10 @@ static char     pend[MV_MAX][9];           // pending utterance (awaiting its se
 static int      pendLen = 0;
 static uint32_t pendAt = 0;
 static bool     playing = false;
+static bool     dirty = false;             // decoder has been used since the last reset
+static uint32_t idleSince = 0;             // millis() when playback last went idle (0 = active)
 static const uint32_t DEBOUNCE_MS = 120;
+static const uint32_t RESET_IDLE_MS = 150; // reset the decoder after this much idle (a safe pause)
 
 static const char* lookupId(const char *key) {     // binary search voiceLookup[] (strcmp-sorted)
     int lo = 0, hi = (int)voiceLookupCount - 1;
@@ -78,14 +81,25 @@ void MorseVoice::tick() {
     char path[24];                                     // "/voice/" + 8 hex + ".mp3" + NUL
     if (seqPos < seqLen) {                             // continue the active utterance (next clip)
         snprintf(path, sizeof(path), "/voice/%s.mp3", seq[seqPos]);
-        MorseOutput::voiceStart(path); playing = true;
+        MorseOutput::voiceStart(path); playing = true; dirty = true; idleSince = 0;
         return;
     }
     if (pendLen > 0 && (millis() - pendAt) >= DEBOUNCE_MS) {   // active done -> start settled pending
         for (int i = 0; i < pendLen; i++) memcpy(seq[i], pend[i], 9);
         seqLen = pendLen; seqPos = 0; pendLen = 0;
         snprintf(path, sizeof(path), "/voice/%s.mp3", seq[0]);
-        MorseOutput::voiceStart(path); playing = true;
+        MorseOutput::voiceStart(path); playing = true; dirty = true; idleSince = 0;
+        return;
+    }
+    // Idle: nothing playing or pending. After a short pause the mixer has been on the sidetone
+    // long enough that the audio task is off the decoder, so reset it once to clear the state
+    // that slowly accumulates across many clips (the very-late freeze).
+    if (dirty) {
+        if (idleSince == 0) idleSince = millis();
+        else if (millis() - idleSince >= RESET_IDLE_MS) {
+            MorseOutput::voiceResetDecoder();
+            dirty = false; idleSince = 0;
+        }
     }
 #endif
 }

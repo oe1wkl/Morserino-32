@@ -114,6 +114,7 @@ namespace MorseOutput
   bool voiceStart(const char* path);      // V9.0 a11y: start async clip (no-op without I2S)
   bool voiceService();                    //   poll from loop; true while a clip is playing
   void voiceStop();                       //   interrupt the current clip
+  void voiceResetDecoder();               //   reset the decoder when idle (clears slow accumulation)
 }
 
 #endif /* #ifndef MORSEOUTPUT_H_ */

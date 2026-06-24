@@ -871,7 +871,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
 
 
 
-void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly) {
+void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading) {
     String valueLine; valueLine.reserve(20);
     const String emptyLine = "                    ";
     const int maxLength = 14;
@@ -885,13 +885,13 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
     if (pos == posMaxSequence && pliste[pos].value == 0)                  /// we do a "mapping" for 0 here
         valueLine = "Unlimited";
 #ifdef CONFIG_AUDIO_A11Y
-    if (!jsonOnly) {                                                      // a11y: speak "heading value"
-        if (pos <= posSerialOut) {
+    if (!jsonOnly) {                                                      // a11y: heading+value on entry, value-only when adjusting
+        if (withHeading && pos <= posSerialOut) {
             MorseVoice::announce(pliste[pos].spokenName ? String(pliste[pos].spokenName)
                                                         : String(pliste[pos].parName));
             MorseVoice::announceMore(valueLine);
         } else
-            MorseVoice::announce(valueLine);                             // action items: value line only
+            MorseVoice::announce(valueLine);                             // value only (adjusting, or action items)
     }
 #endif
     valueLine += emptyLine.substring(0,maxLength - valueLine.length());
@@ -1336,7 +1336,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                   break;
                   }
             }
-            displayValueLine(pos, itemLine, false);          /// now display the value
+            displayValueLine(pos, itemLine, false, false);   /// now display the value (value only, no heading)
 	          MorseOutput::refreshDisplay(); // update the display
          }      // end if     (checkEncoder)
         #ifdef CONFIG_MCP73871
