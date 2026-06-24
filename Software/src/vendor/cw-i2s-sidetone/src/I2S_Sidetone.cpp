@@ -156,18 +156,15 @@ bool I2S_Sidetone::startClip(const char *filename) {
 }
 
 bool I2S_Sidetone::serviceClip() {
-    // Poll from the main loop. Returns true while a clip is still playing.
+    // Poll from the main loop. Returns true while a clip is still playing. We hand the mixer
+    // back to the sidetone the INSTANT the file is fully read -- exactly like the proven
+    // (blocking) playSPIFFSFile -- instead of holding the mixer on the decoder past EOF.
+    // Reading the decoder repeatedly past end-of-file is what eventually wedged it (the small
+    // ~81 ms result queue is already drained, so there is nothing to wait for anyway).
     if (!clipPlaying) return false;
-    if (mp3file.available()) {                    // still feeding the decoder from the file
-        fileDoneAt = 0;
+    if (mp3file.available())                       // still feeding the decoder from the file
         return true;
-    }
-    // File fully read: keep the mixer on the decoder briefly so the copier task drains the
-    // decoded tail to the I2S before we hand the mixer back to the sidetone.
-    if (fileDoneAt == 0) fileDoneAt = millis();
-    if (millis() - fileDoneAt < 300)
-        return true;
-    stopClip();
+    stopClip();                                    // file done -> hand the mixer back immediately
     return false;
 }
 
