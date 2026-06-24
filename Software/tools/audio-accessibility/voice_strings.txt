@@ -6,6 +6,8 @@
 1
 10
 10 min
+10 minutes
+10 words per minute
 10 wpm
 100
 100%
@@ -25,6 +27,8 @@
 145
 15
 15 min
+15 minutes
+15 words per minute
 15 wpm
 150
 155
@@ -47,6 +51,7 @@
 2 to 5
 2 to 6
 20
+20 words per minute
 20 wpm
 200
 205
@@ -58,63 +63,80 @@
 225
 23
 230
+233 Hertz
 233 Hz Bb3
 235
 24
 240
 245
 25
+25 words per minute
 25 wpm
 25%
 250
 26
+262 Hertz
 262 Hz C4
 27
 28
 29
+294 Hertz
 294 Hz D4
 3
 3 dits
 30
+30 words per minute
 30 wpm
 31
+311 Hertz
 311 Hz E4
 32
 33
 34
+349 Hertz
 349 Hz F4
 35
+35 words per minute
 35 wpm
 36
 37
 37.5%
 38
 39
+392 Hertz
 392 Hz G4
 4
 4 dits
 40
+40 words per minute
 40 wpm
 41
 42
 43
 44
+440 Hertz
 440 Hz A4
 45
+45 words per minute
 45 wpm
 46
+466 Hertz
 466 Hz Bb4
 47
 48
 49
 5
 5 min
+5 minutes
+5 words per minute
 5 wpm
 50
+50 words per minute
 50 wpm
 50%
 51
 52
+523 Hertz
 523 Hz C5
 53
 54
@@ -122,37 +144,47 @@
 56
 57
 58
+587 Hertz
 587 Hz D5
 59
 6
 60
 62.5%
+622 Hertz
 622 Hz E5
 65
+698 Hertz
 698 Hz F5
 7
 70
 75
 75%
+784 Hertz
 784 Hz G5
 8
 80
 85
 87.5%
+880 Hertz
 880 Hz A5
 9
 90
+932 Hertz
 932 Hz Bb5
 95
 a umlaut
 Adaptive random
+Adaptive Random
 Adaptive speed
 Africa
 All
+All characters
 All Chars
 Alph+Num+Int
 Alpha
 Alpha + Num
+alpha and numerals
+alpha, numerals and interpunctions
 Asia
 at sign
 Auto character spacing
@@ -176,6 +208,7 @@ Bluetooth A R character
 Bluetooth keyboard output
 Bravo
 C H
+Calibrate Battery
 Calibrate battery
 Call Prefixes
 Call Sign
@@ -186,6 +219,8 @@ Cancel Recall
 Cancel Store
 char
 Char by char
+character
+Character by character
 Charlie
 Check WiFi
 clear all
@@ -200,23 +235,26 @@ Contest Type
 CQ WW
 Curtis B dah timing
 Curtis B dit timing
+Custom Characters
 Custom Chars
 CW abbreviations
+CW Abbreviations
 CW Academy
 CW Decoder
 CW Generator
 CW Keyer
 CW Keyer only
-dah dit
 Darkroom
 dash
+dash dot
 Decoded
 Decoded audio on I O port
 Delta
+Disp MAC Address
 Display MAC address
 Display off
 Display only
-dit dah
+dot dash
 Down 1 Half
 Echo
 Echo Prompt
@@ -242,25 +280,32 @@ Generated
 Generator display
 Generator Tx
 Generic Kbd
+Generic Keyboard
 Go To Sleep
 Golf
 Hardware configuration
+Hardware Configuration
 Headphone Output
 Hotel
 Iambic A
 Iambic B
+iCW or External Transceiver
 India
 Inter-character spacing
 Inter-word spacing
 Internet CW, external transceiver
 Interp+ProSn
 Interpunct.
+interpunctions
+Interpunctions and Pro Signs
 Invader orientation
 Juliett
 Key external transmitter
 Keyed
 Keyed+Decoded
 Keyer & Gen.
+Keyer and Generator
+Keyer and Generator and receiver
 Keyer Mode
 Keyer&Gen.&RX
 Kilo
@@ -271,6 +316,7 @@ l-o: Var. Vol.
 Landscape
 Latency
 LCWO
+Learn New Character
 Learn new character
 Lemonade
 Length Abbrev
@@ -278,6 +324,8 @@ Length Calls
 Length Words
 LICW Carousel
 Lima
+line out Speaker Muted
+line out with variable volume
 line-out
 Linefeed
 lower
@@ -303,6 +351,8 @@ November
 Num+Int+ProS
 Num+Interp.
 Numerals
+numerals and Interpunctions
+numerals, Interpunctions and Prosigns
 o umlaut
 Oceania
 OFF
@@ -312,6 +362,7 @@ ON
 ON (less ICS)
 ON (true WpM)
 Op Name
+Operator Name
 Oscar
 Output Case
 Paddle polarity
@@ -347,7 +398,9 @@ slash
 Snapshot
 SOTA/POTA
 Sound & Disp
+Sound and Display
 Sound only
+South America
 Standard
 Stop after each word
 Store Snapshot
@@ -365,8 +418,10 @@ Uniform
 Unlimited
 Up 1 Half
 Update firmware
+Update Firmware
 Upload File
 UPPER
+Vband and Decoded
 Vband Keying
 Vband+Decoded
 Veggie
@@ -376,6 +431,9 @@ Volume
 Whiskey
 Wide
 WiFi Functions
+WiFi Transceiver
+WiFi transmit OFF
+WiFi Transmit ON
 WiFi Trx
 WiFi Tx OFF
 WiFi Tx ON
