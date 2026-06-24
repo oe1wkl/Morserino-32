@@ -16,13 +16,20 @@
 #include "voice_clips.h"   // generated: voiceLookup[] (UI string -> clip id), sorted by strcmp
 #include <string.h>
 
-static char     pendingId[12] = "";        // clip id awaiting its debounce window ("" = none)
-static uint32_t pendingAt     = 0;
-static bool     clipPlaying   = false;
-static const uint32_t DEBOUNCE_MS = 120;   // let fast scrolling settle before we speak
+// An "utterance" is a short sequence of clip ids (e.g. heading + value, or "pro sign" + two
+// phonetic letters). announce() starts a new pending utterance; announceMore() appends to it.
+// Once navigation settles, tick() plays the pending utterance clip-by-clip (no mid-clip
+// interrupt -- tearing the decoder down mid-play races the audio task). Latest pending wins.
+#define MV_MAX 8
+static char     seq[MV_MAX][9];            // active utterance (ids being played)
+static int      seqLen = 0, seqPos = 0;
+static char     pend[MV_MAX][9];           // pending utterance (awaiting its settle window)
+static int      pendLen = 0;
+static uint32_t pendAt = 0;
+static bool     playing = false;
+static const uint32_t DEBOUNCE_MS = 120;
 
-// Binary search voiceLookup[] (sorted by strcmp byte order); nullptr if no clip for `key`.
-static const char* lookupId(const char *key) {
+static const char* lookupId(const char *key) {     // binary search voiceLookup[] (strcmp-sorted)
     int lo = 0, hi = (int)voiceLookupCount - 1;
     while (lo <= hi) {
         int mid = (lo + hi) >> 1;
@@ -32,22 +39,31 @@ static const char* lookupId(const char *key) {
     }
     return nullptr;
 }
+
+static const char* idFor(const String& text) {
+    String s = text; s.trim();             // display strings are space-padded; decoder adds a trailing space
+    return s.length() ? lookupId(s.c_str()) : nullptr;
+}
 #endif
 
-void MorseVoice::announce(const String& text) {
+void MorseVoice::announce(const String& text) {        // start a NEW pending utterance
 #ifdef CONFIG_AUDIO_A11Y
-    String s = text;
-    s.trim();                              // display strings are space-padded; decoder adds a trailing space
-    if (s.length() == 0)
-        return;
-    const char *id = lookupId(s.c_str());
-    if (id == nullptr) {                   // no clip for this string: drop any stale pending, stay silent
-        pendingId[0] = '\0';
-        return;
+    const char *id = idFor(text);
+    pendLen = 0;                                        // replace whatever was pending
+    if (id) { strncpy(pend[pendLen], id, 8); pend[pendLen][8] = '\0'; pendLen = 1; }
+    pendAt = millis();
+#else
+    (void)text;
+#endif
+}
+
+void MorseVoice::announceMore(const String& text) {    // append to the pending utterance
+#ifdef CONFIG_AUDIO_A11Y
+    const char *id = idFor(text);
+    if (id && pendLen < MV_MAX) {
+        strncpy(pend[pendLen], id, 8); pend[pendLen][8] = '\0'; pendLen++;
+        pendAt = millis();
     }
-    strncpy(pendingId, id, sizeof(pendingId) - 1);
-    pendingId[sizeof(pendingId) - 1] = '\0';
-    pendingAt = millis();                  // (re)start the debounce window -> latest request wins
 #else
     (void)text;
 #endif
@@ -55,27 +71,29 @@ void MorseVoice::announce(const String& text) {
 
 void MorseVoice::tick() {
 #ifdef CONFIG_AUDIO_A11Y
-    // advance / finish the clip that is currently playing
-    if (clipPlaying && !MorseOutput::voiceService())
-        clipPlaying = false;
-    // Start the latest request only once any current clip has finished. We deliberately do NOT
-    // interrupt a playing clip: tearing the decoder down mid-play races the audio task (a hang).
-    // Each clip fully drains, so the result queue can't accumulate. Latest pending still wins, so
-    // after a clip ends we speak wherever the user has landed -- with up to ~1 clip of lag.
-    if (pendingId[0] && !clipPlaying && (millis() - pendingAt) >= DEBOUNCE_MS) {
-        char path[24];                      // "/voice/" + 8 hex + ".mp3" + NUL
-        snprintf(path, sizeof(path), "/voice/%s.mp3", pendingId);
-        pendingId[0] = '\0';
-        MorseOutput::voiceStart(path);
-        clipPlaying = true;
+    if (playing) {                                     // advance the clip in progress
+        if (!MorseOutput::voiceService()) { playing = false; seqPos++; }
+        else return;
+    }
+    char path[24];                                     // "/voice/" + 8 hex + ".mp3" + NUL
+    if (seqPos < seqLen) {                             // continue the active utterance (next clip)
+        snprintf(path, sizeof(path), "/voice/%s.mp3", seq[seqPos]);
+        MorseOutput::voiceStart(path); playing = true;
+        return;
+    }
+    if (pendLen > 0 && (millis() - pendAt) >= DEBOUNCE_MS) {   // active done -> start settled pending
+        for (int i = 0; i < pendLen; i++) memcpy(seq[i], pend[i], 9);
+        seqLen = pendLen; seqPos = 0; pendLen = 0;
+        snprintf(path, sizeof(path), "/voice/%s.mp3", seq[0]);
+        MorseOutput::voiceStart(path); playing = true;
     }
 #endif
 }
 
 void MorseVoice::stop() {
 #ifdef CONFIG_AUDIO_A11Y
-    pendingId[0] = '\0';
+    pendLen = 0; seqLen = 0; seqPos = 0;
     MorseOutput::voiceStop();
-    clipPlaying = false;
+    playing = false;
 #endif
 }

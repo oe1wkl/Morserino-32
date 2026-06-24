@@ -8,8 +8,8 @@ struct VoiceEntry { const char* key; const char* id; };
 
 static const VoiceEntry voiceLookup[] = {
   {"(not set)", "3e670ad8"},
-  {"-. dah dit", "8af3f8c0"},
-  {".- dit dah", "21d0aac2"},
+  {"-. dah dit", "ffc3b68d"},
+  {".- dit dah", "61ebdc39"},
   {"0", "cfcd2084"},
   {"0%", "9f1ef078"},
   {"1", "c4ca4238"},

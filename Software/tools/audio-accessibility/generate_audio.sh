@@ -46,6 +46,11 @@ OUT_CH="${OUT_CH:-2}"     # channels -- must equal the I2S channel count (stereo
 # limit to raise the average without clipping (measured ~+5 dB mean at GAIN_DB=6, peaks held
 # just under full scale). EBU loudnorm/dynaudnorm went the WRONG way for this short speech.
 GAIN_DB="${GAIN_DB:-6}"
+# Silence padding. The async player hands the mixer back the instant a clip's file is read,
+# leaving ~80 ms of decoded tail that plays at the START of the NEXT clip. Trailing silence
+# makes that residue (and the cut) inaudible; a little leading silence hides MP3 decoder priming.
+LEAD_MS="${LEAD_MS:-40}"    # leading silence, milliseconds
+TRAIL_S="${TRAIL_S:-0.18}"  # trailing silence, seconds (> the ~80 ms result-queue tail)
 
 # Defaults are repo-relative: the V9.0 string list (from extract_voice_strings.py)
 # and the SPIFFS data/voice dir that `pio run -e pocketwroom-audio -t uploadfs` flashes.
@@ -90,8 +95,9 @@ while IFS= read -r TEXT || [ -n "$TEXT" ]; do
     printf '%s' "$TEXT" | espeak-ng -v "$VOICE" -s "$SPEED" -p "$PITCH" -a "$AMP" -w "$TMP/${FNAME}.wav"
   fi
   # Encode to MP3 at the M32 I2S format (44100 Hz stereo); -ac 2 duplicates the mono voice.
-  # gain + brick-wall limiter boosts the quiet Piper output toward the sidetone level.
-  ffmpeg -y -i "$TMP/${FNAME}.wav" -af "volume=${GAIN_DB}dB,alimiter=limit=0.95" \
+  # gain + brick-wall limiter (loudness) + lead/trail silence (hides the async cut + priming).
+  ffmpeg -y -i "$TMP/${FNAME}.wav" \
+         -af "adelay=${LEAD_MS}|${LEAD_MS},volume=${GAIN_DB}dB,alimiter=limit=0.95,apad=pad_dur=${TRAIL_S}" \
          -ar "$OUT_SR" -ac "$OUT_CH" -b:a "${BITRATE}k" "$OUT" 2>/dev/null
   rm -f "$TMP/${FNAME}.wav"
   generated=$((generated+1))

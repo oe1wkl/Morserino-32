@@ -207,6 +207,7 @@ CW Decoder
 CW Generator
 CW Keyer
 CW Keyer only
+dah dit
 Darkroom
 dash
 Decoded
@@ -215,6 +216,7 @@ Delta
 Display MAC address
 Display off
 Display only
+dit dah
 Down 1 Half
 Echo
 Echo Prompt
@@ -305,8 +307,8 @@ o umlaut
 Oceania
 OFF
 Off
-ON
 On
+ON
 ON (less ICS)
 ON (true WpM)
 Op Name

@@ -24,7 +24,10 @@ namespace MorseVoice
   // wins, and tick() starts playback once navigation settles. Silent if the string has no
   // clip (e.g. an out-of-range number). No-op without CONFIG_AUDIO_A11Y.
   void announce(const String& text);
-  // Drive async playback (advance/finish current clip, fire the settled request). Must be
+  // Append another clip to the current (still-debouncing) utterance, e.g. the value after the
+  // heading: announce("Serial Output"); announceMore("Nothing"); -> speaks both in sequence.
+  void announceMore(const String& text);
+  // Drive async playback (advance/finish current clip, fire the settled utterance). Must be
   // polled frequently from the menu / preference loops.
   void tick();
   // Interrupt + clear any current/pending announcement (e.g. when leaving the menu).

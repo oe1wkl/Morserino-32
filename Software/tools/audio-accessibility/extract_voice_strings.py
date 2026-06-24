@@ -71,6 +71,20 @@ ACTION_SPOKEN = {  # polished display label -> spoken
 VALUE_SPOKEN = {"+": "plus"}   # symbol-only option value (BLT <AR>) -> spoken word
 UNIT_WORDS = ["words per minute", "Volume", "char", "Snapshot", "millivolts", "pro sign", "error"]
 
+# User-editable pronunciation overrides (spoken_overrides.tsv): firmware string -> spoken text.
+# Highest priority -- lets the maintainer hand-tune how any entry / option / label is pronounced.
+USER_OVERRIDES = {}
+_ovr = os.path.join(HERE, "spoken_overrides.tsv")
+if os.path.exists(_ovr):
+    with open(_ovr, encoding="utf-8") as _f:
+        for _line in _f:
+            _line = _line.rstrip("\n")
+            if not _line or _line.lstrip().startswith("#") or "\t" not in _line:
+                continue
+            _k, _v = _line.split("\t", 1)
+            if _k.strip() and _v.strip():
+                USER_OVERRIDES[_k.strip()] = _v.strip()
+
 
 def strip_comments(t):
     t = re.sub(r"/\*.*?\*/", "", t, flags=re.S)
@@ -196,8 +210,8 @@ for ch in CWchars:
 char_seq["<err>"] = ["pro sign", "error"]
 
 # ── Dedupe, assign ids, write ────────────────────────────────────────────────
-all_texts = sorted({t for t in (phrase_texts + atom_texts) if t and t.strip()},
-                   key=lambda s: s.lower())
+all_texts = sorted({t for t in (phrase_texts + atom_texts + list(USER_OVERRIDES.values()))
+                    if t and t.strip()}, key=lambda s: s.lower())
 id_map = {}
 for t in all_texts: id_map.setdefault(clip_id(t), []).append(t)
 collisions = {k: v for k, v in id_map.items() if len(v) > 1}   # md5 collisions (expect none)
@@ -230,7 +244,7 @@ with open(os.path.join(HERE, "voice_manifest.json"), "w", encoding="utf-8") as f
 fw_lookup = {}
 def fw_add(key, clip_text):
     if key and key.strip():
-        fw_lookup[key] = clip_text
+        fw_lookup[key] = USER_OVERRIDES.get(key, clip_text)   # user override wins
 for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spoken clip
 for lbl in pref_labels: fw_add(lbl, lbl)
 for v in option_values: fw_add(v, v)

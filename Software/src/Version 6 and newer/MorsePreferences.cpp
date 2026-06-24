@@ -863,11 +863,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   itemLine = (pos <= posSerialOut ? MorsePreferences::pliste[pos].parName : extraItems[pos-posKochFilter]);
   itemLine += emptyLine.substring(0,maxLength - itemLine.length());
   MorseOutput::printOnScroll(1, BOLD, 0, itemLine);
-#ifdef CONFIG_AUDIO_A11Y
-  if (pos <= posSerialOut)                        // a11y: speak the preference label (spokenName overrides parName)
-      MorseVoice::announce(pliste[pos].spokenName ? String(pliste[pos].spokenName)
-                                                  : String(pliste[pos].parName));
-#endif
+  // a11y: the heading + value are announced together by displayValueLine() (called next).
   displayValueLine(pos, itemLine, false);
 }
 
@@ -889,8 +885,14 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
     if (pos == posMaxSequence && pliste[pos].value == 0)                  /// we do a "mapping" for 0 here
         valueLine = "Unlimited";
 #ifdef CONFIG_AUDIO_A11Y
-    if (!jsonOnly)                                                        // a11y: speak the option value / number
-        MorseVoice::announce(valueLine);
+    if (!jsonOnly) {                                                      // a11y: speak "heading value"
+        if (pos <= posSerialOut) {
+            MorseVoice::announce(pliste[pos].spokenName ? String(pliste[pos].spokenName)
+                                                        : String(pliste[pos].parName));
+            MorseVoice::announceMore(valueLine);
+        } else
+            MorseVoice::announce(valueLine);                             // action items: value line only
+    }
 #endif
     valueLine += emptyLine.substring(0,maxLength - valueLine.length());
 

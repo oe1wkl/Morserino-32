@@ -651,6 +651,7 @@
     "e669434b": "CW Generator",
     "91662631": "CW Keyer",
     "eb1ee46d": "CW Keyer only",
+    "ffc3b68d": "dah dit",
     "1d5c81e3": "Darkroom",
     "b999a7c3": "dash",
     "503aaffc": "Decoded",
@@ -659,6 +660,7 @@
     "43f7eeee": "Display MAC address",
     "6e8b9688": "Display off",
     "8e0340a5": "Display only",
+    "61ebdc39": "dit dah",
     "5cb6407a": "Down 1 Half",
     "d31ef811": "Echo",
     "0dfac86c": "Echo Prompt",
@@ -749,8 +751,8 @@
     "2d883619": "Oceania",
     "88559a0c": "OFF",
     "d15305d7": "Off",
-    "90651ebe": "ON",
     "521c36a3": "On",
+    "90651ebe": "ON",
     "9a0ce9ab": "ON (less ICS)",
     "72e5e36f": "ON (true WpM)",
     "16a603e9": "Op Name",
@@ -836,6 +838,6 @@
     "actions": 16,
     "phrases_total": 256,
     "atoms_total": 138,
-    "clips_total": 385
+    "clips_total": 387
   }
 }
