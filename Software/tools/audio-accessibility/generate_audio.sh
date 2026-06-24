@@ -45,7 +45,11 @@ OUT_CH="${OUT_CH:-2}"     # channels -- must equal the I2S channel count (stereo
 # Loudness: Piper output is ~5 dB quieter than the CW sidetone. Boost gain then brick-wall
 # limit to raise the average without clipping (measured ~+5 dB mean at GAIN_DB=6, peaks held
 # just under full scale). EBU loudnorm/dynaudnorm went the WRONG way for this short speech.
-GAIN_DB="${GAIN_DB:-6}"
+# NB: +6 dB sounded "clipped" on hardware -- not file clipping (peaks were ~-2 dBFS), but the
+# device speaker amp adds +6 dB (setSpeakerGain(6.0) in MorseOutput::soundEnableSpeaker), so a
+# hot clip overdrives it. Lowered to a safer default; tune on-device (raise if too quiet, lower
+# if it distorts -- or reduce the amp gain). This is a clips-only change (regenerate + uploadfs).
+GAIN_DB="${GAIN_DB:-3}"
 # Silence padding. The async player hands the mixer back the instant a clip's file is read,
 # leaving ~80 ms of decoded tail that plays at the START of the NEXT clip. Trailing silence
 # makes that residue (and the cut) inaudible; a little leading silence hides MP3 decoder priming.
