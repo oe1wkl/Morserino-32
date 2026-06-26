@@ -15,6 +15,9 @@
 #include "goertzel.h"
 #include "MorseDecoder.h"
 #include "MorseOutput.h"
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+#include "MorseBluetooth.h"
+#endif
 
 extern unsigned long genTimer;      /// needed for echo trainer
 extern morserinoMode morseState;
@@ -194,6 +197,10 @@ void Decoder::OFF_() {                                 /// what we do when we ju
             recalculateDit(highDuration);
             if (morseState == loraTrx || morseState == wifiTrx)
                 cwForTx(1);
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+            if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1 && fromKey)
+                MorseBluetooth::bluetoothTypeCharacter('[');
+#endif
       }
       else  {        /// we got a dah
             myTable.recordDah();
@@ -201,6 +208,10 @@ void Decoder::OFF_() {                                 /// what we do when we ju
             recalculateDah(highDuration);
             if (morseState == loraTrx || morseState == wifiTrx)
                 cwForTx(2);
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+            if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1 && fromKey)
+                MorseBluetooth::bluetoothTypeCharacter(']');
+#endif
       }
   }
   keyOut(false, fromKey, 0, 0);

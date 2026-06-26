@@ -25,6 +25,7 @@ namespace MorseBluetooth
 	void stopBluetooth(void);
 	void bluetoothTypeLCTRL(bool ctrl);
 	void bluetoothTypeCharacter(const char chr);
+	void bluetoothTypeVbandElement(char c);
 	void bluetoothTypeString(const String& str);
 };
 

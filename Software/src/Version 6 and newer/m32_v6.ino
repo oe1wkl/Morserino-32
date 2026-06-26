@@ -235,6 +235,9 @@ KEYERSTATES keyerState;
 unsigned long charCounter = 25; // we use this to count characters after changing speed - after n characters we decide to write the config into NVS
 uint8_t sensor;                 // what we read from checking the touch sensors
 boolean leftKey, rightKey;
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+static char bluetoothVbandKeyChar = 0;
+#endif
 
 
 unsigned long interWordTimer = 0;      // timer to detect interword spaces
@@ -1381,6 +1384,9 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                              curtistimer = ditLength;        // no early paddle checking in Curtis mode A, U oder Non-squeeze
                              break;
             }
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+            bluetoothVbandKeyChar = '[';
+#endif
             keyerState = KEY_START;                          // set next state of state machine
             break;
 
@@ -1402,6 +1408,9 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                              curtistimer = dahLength;        // no early paddle checking in Curtis mode A,  oder Non-squeeze
                              break;
             }
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+            bluetoothVbandKeyChar = ']';
+#endif
             keyerState = KEY_START;                          // set next state of state machine
             break;
 
@@ -2648,13 +2657,15 @@ void changeVolume( int t) {
 }
 
 void keyTransmitter(boolean noTx) {
-  if (noTx )
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1 && bluetoothVbandKeyChar != 0) {
+      MorseBluetooth::bluetoothTypeVbandElement(bluetoothVbandKeyChar);
+      bluetoothVbandKeyChar = 0;
+   }
+#endif
+   if (noTx)
       return;
    digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
-#ifdef CONFIG_BLUETOOTH_KEYBOARD
-   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
-      MorseBluetooth::bluetoothTypeLCTRL(true);
-#endif
 }
 
 
@@ -3359,8 +3370,7 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
         }
         digitalWrite(keyerPin, LOW);      // stop keying Tx
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
-          MorseBluetooth::bluetoothTypeLCTRL(false);
+        bluetoothVbandKeyChar = 0;
 #endif
   }   // end key off
 }

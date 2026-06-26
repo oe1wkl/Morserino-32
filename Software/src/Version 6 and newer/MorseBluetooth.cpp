@@ -252,7 +252,7 @@ void MorseBluetooth::bluetoothTypeCharacter(const char chr)
 		uint8_t val = (uint8_t)chr;
 		if (val > KEYMAP_SIZE)
 			return; // character not available on keyboard - skip
-		KEYMAP map = keymap[chr];
+		KEYMAP map = keymap[(uint8_t)chr];
 
 		// create input report
 		InputReport report = {
@@ -273,6 +273,12 @@ void MorseBluetooth::bluetoothTypeCharacter(const char chr)
 		input->setValue((uint8_t *)&NO_KEY_PRESSED, sizeof(NO_KEY_PRESSED));
 		input->notify();
 	}
+}
+
+void MorseBluetooth::bluetoothTypeVbandElement(char c)
+{
+	if (isBleConnected)
+		bluetoothTypeCharacter(c);
 }
 
 // Emit a Shift+Enter HID report (soft return in word processors / chat apps).
