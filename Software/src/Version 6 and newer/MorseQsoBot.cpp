@@ -34,6 +34,7 @@
 #include "morsedefs.h"
 #include "ClickButton.h"
 #include "qso_content.h"
+#include "MorseQsoBotMatch.h"     // pure matcher primitives (unit-tested off-device)
 #include <Preferences.h>
 #include <ctype.h>
 
@@ -61,6 +62,7 @@ extern uint8_t      lastGeneratedCallCqZone;       // set by getRandomCall
 namespace {
 
 using namespace MorseQsoBot;
+using namespace QsoMatch;     // looksLikeCallsign, matchRST, noise tables, InfoParser, ...
 
 // ---- Input accumulator (private to this module) ------------------------
 
@@ -329,152 +331,21 @@ void renderInfo(const char* text) {
 }
 
 // ---- Matcher ----------------------------------------------------------
-
-bool looksLikeCallsign(const char* tok) {
-    int len = strlen(tok);
-    if (len < 3 || len > 10) return false;
-    int digitPos = -1;
-    for (int i = 0; i < len; i++)
-        if (tok[i] >= '0' && tok[i] <= '9') { digitPos = i; break; }
-    if (digitPos < 1 || digitPos > 2) return false;
-    for (int i = 0; i < digitPos; i++)
-        if (tok[i] < 'A' || tok[i] > 'Z') return false;
-    int i = digitPos + 1, suffixLetters = 0;
-    while (i < len && tok[i] >= 'A' && tok[i] <= 'Z') { suffixLetters++; i++; }
-    if (suffixLetters < 1 || suffixLetters > 4) return false;
-    if (i < len) {
-        if (tok[i++] != '/') return false;
-        while (i < len) {
-            char c = tok[i++];
-            if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))) return false;
-        }
-    }
-    return true;
-}
-
-bool matchCallsign(const char* tok) {
-    if (!looksLikeCallsign(tok)) return false;
-    String t(tok);
-    String bot(gActors.botCall); bot.toUpperCase();
-    return t != bot;
-}
-
-// Cut-number normalisation for the three common cuts: T->0, A->1, N->9.
-String normalizeCutNumbers(const String& tok) {
-    String out; out.reserve(tok.length());
-    for (unsigned i = 0; i < tok.length(); i++) {
-        char c = tok[i];
-        if (c >= 'a' && c <= 'z') c = c - 'a' + 'A';
-        switch (c) {
-            case 'T': out += '0'; break;
-            case 'A': out += '1'; break;
-            case 'N': out += '9'; break;
-            default:  out += c;   break;
-        }
-    }
-    return out;
-}
-
-bool matchRST(const char* tok) {
-    String n = normalizeCutNumbers(String(tok));
-    if (n.length() != 3) return false;
-    if (n[0] < '3' || n[0] > '5') return false;
-    return isdigit((unsigned char) n[1]) && isdigit((unsigned char) n[2]);
-}
-
-bool matchRef(const char* tok) {
-    String t(tok);            t.toUpperCase();
-    String r(gActors.botRef); r.toUpperCase();
-    return t == r;
-}
-
-bool allDigits(const String& s) {
-    if (s.length() == 0) return false;
-    for (unsigned i = 0; i < s.length(); i++)
-        if (!isdigit((unsigned char) s[i])) return false;
-    return true;
-}
-
-// CQ WW zone: 1-2 digits, value 1..40 (cut numbers allowed).
-bool matchZone(const char* tok) {
-    String n = normalizeCutNumbers(String(tok));
-    if (!allDigits(n) || n.length() < 1 || n.length() > 2) return false;
-    int v = n.toInt();
-    return v >= 1 && v <= 40;
-}
-
-// WPX/Sprint serial: 1-4 digits (cut numbers allowed). The bot can't
-// validate the user's own serial, so any plausible number is accepted.
-bool matchSerial(const char* tok) {
-    String n = normalizeCutNumbers(String(tok));
-    return allDigits(n) && n.length() >= 1 && n.length() <= 4;
-}
-
-bool matchExchange(const char* tok) {
-    return (gContestType == 0) ? matchZone(tok) : matchSerial(tok);
-}
-
-// ---- Standard-QSO keyword-field parser (SLOT_INFO) --------------------
 //
-// A Standard over carries several keyword-delimited fields with no fixed
-// separator: "name willi willi qth vienna = rig ic7300 ant efhw". The
-// parser tracks the "current field" (switched by a keyword), captures the
-// value tokens that follow (NAME/QTH only; deduping the conventional
-// doubling), notes whether RST and the layer-2 fields were present, and
-// treats =, es, bt, hw and prosigns as boundaries.
+// The pure token classifiers (looksLikeCallsign, normalizeCutNumbers,
+// matchRST, matchZone, matchSerial, matchProsignTok, the noise tables,
+// isEndOfOver/isSlotKeyword/isRepeatTrigger, and the SLOT_INFO parser) live
+// in MorseQsoBotMatch.h so they can be unit-tested off-device. The three
+// context-dependent matchers below are thin bridges that supply the per-QSO
+// state (gActors / gContestType) to the two-argument forms in that header.
 
-enum FieldCur : uint8_t { F_NONE, F_NAME, F_QTH, F_RST, F_OTHER };
-FieldCur gFieldCur   = F_NONE;
-bool     gFieldRst   = false;
-bool     gFieldOther = false;      // rig/ant/wx/age seen (acknowledged generically)
-String   gFieldName;
-String   gFieldQth;
+bool matchCallsign(const char* tok) { return QsoMatch::matchCallsign(tok, gActors.botCall); }
+bool matchRef     (const char* tok) { return QsoMatch::matchRef(tok, gActors.botRef); }
+bool matchExchange(const char* tok) { return QsoMatch::matchExchange(tok, gContestType); }
 
-void appendDedup(String& field, const String& tok) {
-    int sp = field.lastIndexOf(' ');
-    String last = (sp < 0) ? field : field.substring(sp + 1);
-    if (last.equalsIgnoreCase(tok)) return;            // dedupe "willi willi"
-    if (field.length()) field += " ";
-    field += tok;
-}
-
-void parseInfoToken(const String& token) {
-    String low(token); low.toLowerCase();
-    // field keywords
-    if (low == "name" || low == "op"  || low == "nm")    { gFieldCur = F_NAME;  return; }
-    if (low == "qth"  || low == "loc" || low == "qra")   { gFieldCur = F_QTH;   return; }
-    if (low == "rig"  || low == "tcvr"|| low == "radio" || low == "trx")
-                                                         { gFieldCur = F_OTHER; gFieldOther = true; return; }
-    if (low == "ant"  || low == "antenna" || low == "aerial")
-                                                         { gFieldCur = F_OTHER; gFieldOther = true; return; }
-    if (low == "wx"   || low == "temp")                  { gFieldCur = F_OTHER; gFieldOther = true; return; }
-    if (low == "age"  || low == "yrs")                   { gFieldCur = F_OTHER; gFieldOther = true; return; }
-    if (low == "rst"  || low == "ur"  || low == "urs")   { gFieldCur = F_RST;   return; }
-    // separators / boundaries
-    if (low == "=" || low == "es" || low == "bt" || low == "hw" ||
-        low == "hw?" || low == "pse" || low == "de")     { gFieldCur = F_NONE;  return; }
-    // RST digits anywhere in the over
-    if (matchRST(token.c_str()))                         { gFieldRst = true; gFieldCur = F_NONE; return; }
-    // value token for the current field
-    if      (gFieldCur == F_NAME) appendDedup(gFieldName, token);
-    else if (gFieldCur == F_QTH)  appendDedup(gFieldQth,  token);
-    // F_OTHER / F_NONE: noted via gFieldOther, not captured verbatim
-}
-
-void resetInfoFields() {
-    gFieldCur   = F_NONE;
-    gFieldRst   = false;
-    gFieldOther = false;
-    gFieldName  = "";
-    gFieldQth   = "";
-}
-
-bool matchProsignTok(const char* tok, const char* expected) {
-    if (!expected || !*expected) return false;
-    String a(tok);      a.toUpperCase();
-    String b(expected); b.toUpperCase();
-    return a == b;
-}
+// SLOT_INFO keyword-field parser state for the current over (see InfoParser
+// in MorseQsoBotMatch.h). One instance, reset per over.
+QsoMatch::InfoParser gInfo;
 
 typedef bool (*SlotAccept)(const String& tok, const String& expected);
 
@@ -490,26 +361,8 @@ bool acceptRef     (const String& tok, const String&)   { return matchRef(tok.c_
 bool acceptProsign (const String& tok, const String& e) { return matchProsignTok(tok.c_str(), e.c_str()); }
 bool acceptExchange(const String& tok, const String&)   { return matchExchange(tok.c_str()); }
 
-const char* const kCommonNoise[]   = { "de", "dr", "pse", "qsl", "tnx", "tu",
-                                       "ok", "fb", "es", "qrl", "om", "oc",
-                                       "dx", "hr", "gm", "ga", "ge", "gd",
-                                       "cfm", "cpy", "ant", "rig", nullptr };
-// Note: "k" is deliberately NOT listed here. It is an end-of-over marker
-// (see isEndOfOver) but also a very common callsign first letter; if the
-// decoder splits a call's leading "K" into its own token (common before
-// its speed estimate has settled at the start of an over), treating "k"
-// as noise would drop the prefix and lose the call. Leaving it out lets
-// the concat buffer glue "K" + "2XYZ" back into "K2XYZ". A trailing "k"
-// after the call has already matched is handled by isEndOfOver instead.
-const char* const kCallsignNoise[] = { "bk", "qrz", "qrz?", "cq", "sota",
-                                       "pota", nullptr };
-const char* const kRstNoise[]      = { "r", "rr", "ur", "qsa", "qrk", "bk",
-                                       "rst", nullptr };
-const char* const kRefNoise[]      = { "qth", "loc", "ref", "r", "rr", "bk",
-                                       nullptr };
-const char* const kProsignNoise[]  = { nullptr };
-const char* const kExchangeNoise[] = { "5nn", "599", "ur", "r", "rr", "nr",
-                                       "bk", "tu", nullptr };
+// Noise tables (kCommonNoise, kCallsignNoise, ...) live in MorseQsoBotMatch.h
+// and are visible here via `using namespace QsoMatch`.
 
 const SlotGrammar& grammarFor(QsoSlotKind slot) {
     static const SlotGrammar kGrammars[] = {
@@ -524,47 +377,17 @@ const SlotGrammar& grammarFor(QsoSlotKind slot) {
     return kGrammars[slot];
 }
 
-bool tokenInList(const String& upper, const char* const* list) {
-    if (!list) return false;
-    for (int i = 0; list[i]; i++) {
-        String n(list[i]); n.toUpperCase();
-        if (upper == n) return true;
-    }
-    return false;
-}
-
+// Noise check for a slot's grammar: delegates to the header (kCommonNoise +
+// the slot's extra-noise list). isEndOfOver / isSlotKeyword / isRepeatTrigger
+// and tokenInList also live in MorseQsoBotMatch.h (visible via using).
 bool isNoise(const String& tok, const SlotGrammar& g, const String& expected) {
-    String u(tok); u.toUpperCase();
-    if (expected.length()) {
-        String e(expected); e.toUpperCase();
-        if (u == e) return false;
-    }
-    return tokenInList(u, kCommonNoise) || tokenInList(u, g.extraNoise);
+    return isNoiseToken(tok, g.extraNoise, expected);
 }
 
 bool matchSlot(QsoSlotKind kind, const char* tok, const char* expected) {
     const SlotGrammar& g = grammarFor(kind);
     if (!g.accept) return false;
     return g.accept(String(tok), String(expected ? expected : ""));
-}
-
-// End-of-over marker? Conservative set to avoid colliding with cut
-// numbers (a lone "N"/"B" can be a cut 9/6 in a split RST). The silence
-// fallback (kOverEndSilenceMs) catches everything else.
-bool isEndOfOver(const String& upper) {
-    return upper == "K" || upper == "+" || upper == "AR" ||
-           upper == "73" || upper == "72" || upper == "BK" || upper == "KK";
-}
-
-bool isSlotKeyword(const String& tok) {
-    String k(tok); k.toLowerCase();
-    return k == "rst" || k == "call" || k == "cl" || k == "ur" ||
-           k == "qth" || k == "loc" || k == "ref" || k == "sota" ||
-           k == "pota" || k == "summit" || k == "name" || k == "op" || k == "nm";
-}
-
-bool isRepeatTrigger(const String& upper) {
-    return upper == "AGN" || upper == "RPT";
 }
 
 // ---- State transitions -----------------------------------------------
@@ -604,7 +427,7 @@ void resetOverAccumulators() {
     gOverActivity = millis();
     gConcatBuf   = "";
     gEeeeDetected = false;
-    resetInfoFields();
+    gInfo.reset();
 }
 
 void startExpect(uint16_t budget) {
@@ -692,6 +515,23 @@ void finishOpening() {
     }
 }
 
+// Varied recovery prompts (T1.3): instead of looping the identical nag, the
+// bot picks one at random. All are short (OLED status budget), lowercase (no
+// uppercase SANKEBH prosign markers), and unambiguous CW abbreviations.
+const char* const kCallRecovery[] = { "qrz?", "agn agn", "call?", "pse agn" };
+const char* const kGenRecovery[]  = { "agn agn", "agn?", "pse rpt", "hw?" };
+const char* const kRstRecovery[]  = { "pse ur rst?", "rst?", "ur rst agn?", "pse rpt rst" };
+
+template <int N>
+const char* pickPrompt(const char* const (&pool)[N]) { return pool[random(N)]; }
+
+// Recovery prompt for a failed EXPECT: a callsign-specific pool (the bot is
+// asking who is calling) or the generic "didn't copy" pool.
+const char* recoveryPrompt(QsoSlotKind slot) {
+    return (slot == SLOT_CALLSIGN) ? pickPrompt(kCallRecovery)
+                                   : pickPrompt(kGenRecovery);
+}
+
 // Send a recovery / repeat prompt without advancing; on completion we
 // re-enter the same EXPECT (does not spend a retry).
 void enterRecovery(const char* prompt) {
@@ -729,11 +569,11 @@ void processOver(const QsoStep& step) {
     }
     if (step.slot == SLOT_INFO) {
         // Standard QSO: capture the user's name for echoing back.
-        if (gFieldName.length()) gActors.userName = gFieldName;
+        if (gInfo.name.length()) gActors.userName = gInfo.name;
         if (step.kind == STEP_EXPECT_OPT) { advance(); return; }   // layer 2: just ack
         // Layer 1 is required to carry the RST.
-        if (gFieldRst) { gRstReceived = true; advance(); return; }
-        if (gRetriesLeft > 0) { gRetriesLeft--; enterRecovery("pse ur rst?"); return; }
+        if (gInfo.rst) { gRstReceived = true; advance(); return; }
+        if (gRetriesLeft > 0) { gRetriesLeft--; enterRecovery(pickPrompt(kRstRecovery)); return; }
         advance();                          // asked enough; proceed anyway
         return;
     }
@@ -746,7 +586,7 @@ void processOver(const QsoStep& step) {
     if (step.kind == STEP_EXPECT_OPT) { advance(); return; }
     if (gRetriesLeft > 0) {
         gRetriesLeft--;
-        enterRecovery(step.slot == SLOT_CALLSIGN ? "qrz?" : "agn agn");
+        enterRecovery(recoveryPrompt(step.slot));
     } else {
         renderInfo("Giving up");
         gState = RT_DONE;
@@ -1100,8 +940,8 @@ void run(menuNo mode) {
                         if (step.slot == SLOT_INFO) {
                             // Keyword-field parser collects the whole over;
                             // gOverMatched tracks "RST seen" for processOver.
-                            parseInfoToken(token);
-                            if (gFieldRst) gOverMatched = true;
+                            gInfo.feed(token);
+                            if (gInfo.rst) gOverMatched = true;
                         } else if (step.slot == SLOT_EXCHANGE) {
                             // Numeric exchange: take the single token, but
                             // also accumulate consecutive digit tokens so a
@@ -1155,13 +995,13 @@ void run(menuNo mode) {
                 if (step.slot == SLOT_INFO) {
                     // Drop only the last word of the field being keyed, so a
                     // long multi-field over isn't wiped to correct one word.
-                    String* f = (gFieldCur == F_QTH)  ? &gFieldQth
-                              : (gFieldCur == F_NAME) ? &gFieldName : nullptr;
+                    String* f = (gInfo.cur == F_QTH)  ? &gInfo.qth
+                              : (gInfo.cur == F_NAME) ? &gInfo.name : nullptr;
                     if (f) {
                         int sp = f->lastIndexOf(' ');
                         *f = (sp < 0) ? String("") : f->substring(0, sp);
-                    } else if (gFieldCur == F_RST) {
-                        gFieldRst = false;          // retract a just-sent RST
+                    } else if (gInfo.cur == F_RST) {
+                        gInfo.rst = false;          // retract a just-sent RST
                     }
                 } else {
                     gOverMatched = false; gOverMatchedValue = "";
@@ -1192,7 +1032,7 @@ void run(menuNo mode) {
                     else if (sessionGate) { renderInfo("session end"); gState = RT_DONE; }
                     else if (gRetriesLeft > 0) {
                         gRetriesLeft--;
-                        enterRecovery(step.slot == SLOT_CALLSIGN ? "qrz?" : "agn agn");
+                        enterRecovery(recoveryPrompt(step.slot));
                     } else { renderInfo("Giving up"); gState = RT_DONE; }
                 }
             }

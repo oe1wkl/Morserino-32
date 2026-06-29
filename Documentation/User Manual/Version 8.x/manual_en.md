@@ -1437,13 +1437,14 @@ a spelling test:
 -   **To correct a mistake**, send `<err>` (a run of dits) or `eeee`, then
     send the corrected information; the bot discards what you retracted and
     takes the new version.
--   **To ask for a repeat**, send `agn` or `rpt`; the bot repeats its last
-    over. You can also ask for one item — `rpt rst`, `rpt call`, `rpt qth` —
-    and the bot repeats just that.
+-   **To ask for a repeat**, send `agn`, `rpt`, or simply `?`; the bot repeats
+    its last over. You can also ask for one item — `rpt rst`, `rpt call`,
+    `rpt qth` — and the bot repeats just that.
 
 If you key something the bot cannot make sense of, or you go quiet partway
-through, it reacts the way a real operator would — `agn agn`, `qrz?`, or by
-repeating its last over — rather than simply stopping.
+through, it reacts the way a real operator would — asking for a repeat with a
+varying prompt such as `agn agn`, `agn?`, `pse rpt`, or `qrz?`, or by repeating
+its last over — rather than simply stopping.
 
 #### SOTA / POTA {-}
 

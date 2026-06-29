@@ -1447,14 +1447,16 @@ wie ein Diktat:
 -   **Um einen Fehler zu korrigieren**, sende `<err>` (eine Reihe von Dits)
     oder `eeee` und danach die korrigierte Information; der Bot verwirft das
     Zurückgenommene und übernimmt die neue Fassung.
--   **Um eine Wiederholung zu erbitten**, sende `agn` oder `rpt`; der Bot
-    wiederholt seine letzte Übergabe. Du kannst auch nach einem einzelnen
-    Punkt fragen – `rpt rst`, `rpt call`, `rpt qth` – und der Bot wiederholt
-    nur diesen.
+-   **Um eine Wiederholung zu erbitten**, sende `agn`, `rpt` oder einfach `?`;
+    der Bot wiederholt seine letzte Übergabe. Du kannst auch nach einem
+    einzelnen Punkt fragen – `rpt rst`, `rpt call`, `rpt qth` – und der Bot
+    wiederholt nur diesen.
 
 Tastest du etwas, das der Bot nicht zuordnen kann, oder verstummst du
-mittendrin, reagiert er wie ein echter Operator – `agn agn`, `qrz?` oder
-durch Wiederholung seiner letzten Übergabe – statt einfach stehen zu bleiben.
+mittendrin, reagiert er wie ein echter Operator – er bittet mit wechselnden
+Aufforderungen wie `agn agn`, `agn?`, `pse rpt` oder `qrz?` um eine
+Wiederholung, oder wiederholt seine letzte Übergabe – statt einfach stehen zu
+bleiben.
 
 #### SOTA / POTA {-}
 
