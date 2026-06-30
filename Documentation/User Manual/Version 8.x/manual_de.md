@@ -1451,6 +1451,11 @@ wie ein Diktat:
     der Bot wiederholt seine letzte Übergabe. Du kannst auch nach einem
     einzelnen Punkt fragen – `rpt rst`, `rpt call`, `rpt qth` – und der Bot
     wiederholt nur diesen.
+-   **Um das Tempo des Bots zu ändern**, sende `qrs` (langsamer) oder `qrq`
+    (schneller); der Bot passt sein Tempo an, und du hörst die neue
+    Geschwindigkeit bei seiner nächsten Übergabe. Sende es erneut, um weiter
+    nachzuregeln. Das ändert nur das Tempo des Bots, nicht dein eigenes
+    Keyer-/Mithörton-Tempo (das du wie gewohnt mit dem Encoder einstellst).
 
 Tastest du etwas, das der Bot nicht zuordnen kann, oder verstummst du
 mittendrin, reagiert er wie ein echter Operator – er bittet mit wechselnden
@@ -1461,9 +1466,12 @@ bleiben.
 Wie nachsichtig und wie gesprächig der Bot ist, lässt sich mit der Einstellung
 **QSO Difficulty** festlegen (**Beginner** / **Intermediate** / **Advanced**).
 Bei **Beginner** gibt dir der Bot mehr Zeit, erlaubt einen zusätzlichen Versuch,
-gibt Rapporte voll ausgeschrieben (599 statt 5nn) und verwendet klare, ruhige
-Aufforderungen; bei **Advanced** hält er ein strafferes Tempo und antwortet
-knapper. Das gilt für alle QSO-Bot-Modi.
+gibt Rapporte voll ausgeschrieben (599 statt 5nn), verwendet klare, ruhige
+Aufforderungen und sendet immer mit deinem eigenen Tempo. Bei **Intermediate**
+und **Advanced** ruft der Bot manchmal mit einem Tempo, das ein paar WpM von
+deinem abweicht, damit du das Erbitten von `qrs`/`qrq` übst; **Advanced** hält
+zudem ein strafferes Tempo und antwortet knapper. Das gilt für alle
+QSO-Bot-Modi.
 
 #### SOTA / POTA {-}
 

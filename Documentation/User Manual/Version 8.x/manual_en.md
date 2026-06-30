@@ -1440,6 +1440,10 @@ a spelling test:
 -   **To ask for a repeat**, send `agn`, `rpt`, or simply `?`; the bot repeats
     its last over. You can also ask for one item — `rpt rst`, `rpt call`,
     `rpt qth` — and the bot repeats just that.
+-   **To change the bot's speed**, send `qrs` (slower) or `qrq` (faster); the
+    bot adjusts its sending and you hear the new speed on its next over. Send it
+    again to keep nudging. This changes only the bot's speed, not your own
+    keyer/sidetone speed (which you set with the encoder as usual).
 
 If you key something the bot cannot make sense of, or you go quiet partway
 through, it reacts the way a real operator would — asking for a repeat with a
@@ -1449,9 +1453,11 @@ its last over — rather than simply stopping.
 How forgiving and how chatty the bot is can be set with the **QSO Difficulty**
 preference (**Beginner** / **Intermediate** / **Advanced**). On **Beginner** the
 bot gives you more time, allows an extra retry, spells signal reports out in
-full (599 instead of 5nn), and uses clear, calm prompts; on **Advanced** it
-keeps a tighter rhythm and answers more tersely. This applies to all QSO Bot
-modes.
+full (599 instead of 5nn), uses clear, calm prompts, and always sends at your
+own speed. On **Intermediate** and **Advanced** the bot sometimes calls at a
+speed a few WpM away from yours, so you get to practise asking for `qrs`/`qrq`;
+**Advanced** also keeps a tighter rhythm and answers more tersely. This applies
+to all QSO Bot modes.
 
 #### SOTA / POTA {-}
 

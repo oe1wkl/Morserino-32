@@ -94,7 +94,7 @@ Proposed levels: **Beginner / Intermediate / Advanced** (3 is enough; a 4th
 | Recovery patience / retries | generous, long timeouts | default | few retries, tight timeouts | ✅ wired |
 | Unrecognised-input variety (T1.3) | clearer, calmer prompts | mixed | curt | ✅ wired |
 | Bot's own cut numbers | spelled out (`599`) | cut (`5nn`) | cut (`5nn`) | ✅ wired (Beginner spell-out) |
-| Speed mismatch (T2.2) | never | occasional, ±4 WpM | more frequent, ±4–8 WpM | ⬜ T2.2 |
+| Speed mismatch (T2.2) | never | occasional, ±4 WpM | more frequent, ±4–8 WpM | ✅ wired |
 | Repeat style | full, clear repeats | partial | terse (`agn`) | ⬜ later |
 | Formality (T2.3) | always full preambles | mirrors the user | drops `... de ...` readily | ⬜ T2.3 |
 
@@ -125,7 +125,7 @@ enabler.
 | # | Item | Effort | Impact | Notes |
 |---|---|---|---|---|
 | **T2.1** | **Within-over override** for simple slots | M | Medium | Let a later valid token replace an earlier match within the same over (currently first-match-wins). Aligns with analysis 4.3. Must not regress the deferred-turn logic that fixed talking-over-the-user. |
-| **T2.2** | **`qrs`/`qrq` recognition + speed-mismatch provocation** | M | Medium | Parse keyed `qrs`/`qrq` to step the keyer WpM. **To make the feature actually used, the bot must sometimes create a reason to use it:** on some QSOs it sends at a WpM *moderately* different from the device's current setting — 4–8 WpM faster or slower (smaller is imperceptible; larger is just frustrating). Two trigger points: (a) when the bot *initiates* (calls CQ), and (b) when it *answers the user's CQ*. This requires the two parties to run at independent speeds. **Gated by the QSO Difficulty setting** (cross-cutting enabler above): off at Beginner so it never confuses a learner who hasn't met `qrs`/`qrq` yet. |
+| **T2.2** | **`qrs`/`qrq` recognition + speed-mismatch provocation** | M | Medium | ✅ **DONE**. Per-QSO `gBotWpm` picked in `pickBotIdentity`; `startBotTx` keys at it only when it differs from the user's WpM (else `0`/live, preserving Farnsworth). Mismatch chance/size scale with difficulty (Intermediate ~30% ±4; Advanced ~50% ±4–8; Beginner never). Keyed `qrs`/`qrq` step the bot's fist by 3 WpM (clamped to `wpmMin..wpmMax`), honoured at every level, without ending the over. Manuals (EN+DE) updated. *Note:* the WpM indicator still shows the user's speed; the bot's differing speed is heard, not shown. |
 | **T2.3** | **Formality mirroring** (P5) | M | Medium | Track whether the user drops the `... de ...` preamble; conditionally strip the preamble from bot overs (except first/last). Templates are fixed strings, so needs a post-expand transform or template variants. |
 
 > **T2.2 implementation dependency — independent bot speed.** Today the bot

@@ -166,11 +166,18 @@ uint8_t   gLevel            = LVL_INTERMEDIATE;
 uint8_t   gBotZone          = 14;      // bot's CQ zone (CQ WW exchange)
 uint16_t  gBotSerial        = 1;       // bot's serial (WPX/Sprint exchange)
 
+// Independent bot "fist" speed (T2.2). 0 = track the user's live keyer speed
+// (the original behaviour, preserving Farnsworth). When it differs from the
+// user's current WpM, startBotTx keys at this fixed speed instead, so the user
+// has to send qrs/qrq to bring the bot into copy range.
+uint8_t   gBotWpm           = 0;
+constexpr uint8_t kQrsStep  = 3;       // WpM step per qrs/qrq request
+
 // (Re)pick the bot's per-QSO identity: a fresh callsign and everything
 // derived from it (continent-matched ref, CQ zone), a name, the S2S
-// chance, and — for contests — a fresh random serial (each CQ is a
-// different station). Called at session start and at every contest QSO
-// loop so the user works/copies a new station each time.
+// chance, a per-QSO sending speed, and — for contests — a fresh random serial
+// (each CQ is a different station). Called at session start and at every
+// contest QSO loop so the user works/copies a new station each time.
 void pickBotIdentity() {
     String call = getRandomCall(0);                    // sets lastGeneratedCall*
     const uint8_t cont = lastGeneratedCallContinent;
@@ -189,6 +196,36 @@ void pickBotIdentity() {
     gActors.botAge   = String(QsoContent::kAges[random(QsoContent::kAgesCount)]);
     gBotAlsoActivator = (random(100) < 15);
     gBotSerial       = random(1, 600);                 // random per station
+
+    // Sending speed: default to the user's speed (gBotWpm == user WpM makes
+    // startBotTx fall back to live timings, so no behaviour change). On
+    // Intermediate/Advanced, sometimes give this station a fist a few WpM off
+    // so the user must use qrs/qrq — Beginner never gets a mismatch.
+    const uint8_t userWpm = MorsePreferences::wpm;
+    gBotWpm = userWpm;
+    if (gLevel != LVL_BEGINNER) {
+        const int chance = (gLevel == LVL_ADVANCED) ? 50 : 30;        // % of QSOs
+        if ((int) random(100) < chance) {
+            const int delta = (gLevel == LVL_ADVANCED) ? (int) random(4, 9) : 4;  // ±4..8 / ±4
+            const int dir   = random(2) ? 1 : -1;
+            int w = constrain((int) userWpm + dir * delta,
+                              (int) MorsePreferences::wpmMin, (int) MorsePreferences::wpmMax);
+            if (w == (int) userWpm)        // clamp collapsed it -> try the other way
+                w = constrain((int) userWpm - dir * delta,
+                              (int) MorsePreferences::wpmMin, (int) MorsePreferences::wpmMax);
+            gBotWpm = (uint8_t) w;
+        }
+    }
+}
+
+// qrs (slower) / qrq (faster): step the bot's fist toward what the user asked
+// for, clamped to the keyer's legal range. Always honoured, at every level —
+// it is a core CW skill, independent of whether this QSO started mismatched.
+void adjustBotSpeed(int dir) {
+    int w = (gBotWpm > 0) ? (int) gBotWpm : (int) MorsePreferences::wpm;
+    w += dir * (int) kQrsStep;
+    gBotWpm = (uint8_t) constrain(w, (int) MorsePreferences::wpmMin,
+                                     (int) MorsePreferences::wpmMax);
 }
 
 void initActors() {
@@ -431,7 +468,9 @@ void startBotTx(const String& text) {
     MorseCwEngine::PlayOpts opts = {
         /*pitchHz        */ (uint16_t) MorseOutput::notes[
                                 MorsePreferences::pliste[posPitch].value],
-        /*wpm            */ 0,
+        // Key at the bot's own fist only when it differs from the user's speed;
+        // otherwise 0 = live timings (unchanged behaviour, keeps Farnsworth).
+        /*wpm            */ (gBotWpm && gBotWpm != MorsePreferences::wpm) ? gBotWpm : (uint8_t) 0,
         /*loop           */ false,
         /*resumeGapDits  */ 2,
         /*extraMute      */ nullptr,
@@ -980,7 +1019,14 @@ void run(menuNo mode) {
                     gOverActivity = millis();
 
                     bool consumed = false;
-                    if (isRepeatTrigger(upper)) {
+                    if (upper == "QRS" || upper == "QRQ") {
+                        // Speed request: nudge the bot's fist; the change is
+                        // heard on the bot's next over. Consumed so it isn't
+                        // matched as a value, but it does NOT end the over —
+                        // other tokens in the same over still count.
+                        adjustBotSpeed(upper == "QRS" ? -1 : +1);
+                        consumed = true;
+                    } else if (isRepeatTrigger(upper)) {
                         gOverRepeat = true; gOverRepeatSlot = ""; consumed = true;
                     } else if (gOverRepeat && gOverRepeatSlot.length() == 0 &&
                                isSlotKeyword(token)) {
