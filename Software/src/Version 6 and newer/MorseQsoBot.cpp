@@ -154,6 +154,15 @@ QsoActors gActors;
 uint8_t   gActivity         = 0;       // 0 = SOTA, 1 = POTA (bot-as-activator)
 bool      gBotAlsoActivator = false;   // S2S/P2P: bot answers AND sends a ref
 uint8_t   gContestType      = 0;       // 0 = CQ WW (zone), 1 = WPX/Sprint (serial)
+
+// QSO Difficulty (posQsoBotLevel): how forgiving and how chatty the bot is.
+// Read once at run() start. Several behaviours below scale with it: retry
+// budget, patience timeouts, recovery-prompt tone, and (Beginner) spelling out
+// cut-number RSTs. Future items (speed mismatch T2.2, formality T2.3) will read
+// it too.
+enum BotLevel : uint8_t { LVL_BEGINNER = 0, LVL_INTERMEDIATE = 1, LVL_ADVANCED = 2 };
+uint8_t   gLevel            = LVL_INTERMEDIATE;
+
 uint8_t   gBotZone          = 14;      // bot's CQ zone (CQ WW exchange)
 uint16_t  gBotSerial        = 1;       // bot's serial (WPX/Sprint exchange)
 
@@ -273,9 +282,17 @@ String        gOverMatchedValue;
 bool          gOverRepeat      = false;    // "agn"/"rpt" seen this over
 String        gOverRepeatSlot;             // optional slot after "rpt"
 unsigned long gOverActivity    = 0;        // last keying time this over
-constexpr unsigned long kOverEndSilenceMs = 2500;   // user finished (no marker)
-constexpr unsigned long kNoReplyMs        = 12000;  // user never replied
 constexpr unsigned long kOptNoReplyMs     = 4000;   // optional ack, no reply
+
+// Patience windows scale with QSO Difficulty: a Beginner gets more time to
+// compose and is nagged later; an Advanced op is held to a tighter rhythm.
+// (Intermediate keeps the original 2500 / 12000 ms values.)
+unsigned long overEndSilenceMs() {                  // user finished (no marker)
+    return gLevel == LVL_BEGINNER ? 3200 : gLevel == LVL_ADVANCED ? 2000 : 2500;
+}
+unsigned long noReplyMs() {                         // user never replied
+    return gLevel == LVL_BEGINNER ? 16000 : gLevel == LVL_ADVANCED ? 9000 : 12000;
+}
 
 // Last real bot over (expanded), for full-repeat on "agn"/"rpt".
 String        gLastBotTx;
@@ -401,7 +418,14 @@ void startOpening();
 void pickBotIdentity();
 
 void startBotTx(const String& text) {
-    gCachedBotText = text;
+    String tx = text;
+    // Beginner: spell RST out in full ("5nn" -> "599") — easier to copy than
+    // the cut form. Safe to do globally here: "5nn" never occurs in a serial
+    // exchange (those are plain digits). Advanced/Intermediate keep the cut
+    // form the templates already use. Single choke point so it also covers
+    // repeats and recovery prompts, and display matches what is keyed.
+    if (gLevel == LVL_BEGINNER) tx.replace("5nn", "599");
+    gCachedBotText = tx;
     gDisplayPos    = 0;
     emitNextBotChar();
     MorseCwEngine::PlayOpts opts = {
@@ -413,7 +437,7 @@ void startBotTx(const String& text) {
         /*extraMute      */ nullptr,
         /*onCharComplete */ onBotCharComplete,
     };
-    MorseCwEngine::playStart(text, opts);
+    MorseCwEngine::playStart(tx, opts);
     gState      = RT_BOT_TX;
     gStateStart = millis();
 }
@@ -433,12 +457,17 @@ void resetOverAccumulators() {
 void startExpect(uint16_t budget) {
     inputReset();
     resetOverAccumulators();
+    uint8_t base;
     if (budget == 0) {
         const QsoStep& step = gDesc->steps[gPc];
-        gRetriesLeft = (step.slot == SLOT_CALLSIGN) ? 4 : 2;
+        base = (step.slot == SLOT_CALLSIGN) ? 4 : 2;
     } else {
-        gRetriesLeft = (uint8_t) budget;
+        base = (uint8_t) budget;
     }
+    // Difficulty: a Beginner gets an extra try, an Advanced op one fewer
+    // (never below 1, so the bot always asks at least once before giving up).
+    int adj = (int) base + (gLevel == LVL_BEGINNER ? 1 : gLevel == LVL_ADVANCED ? -1 : 0);
+    gRetriesLeft = (uint8_t) (adj < 1 ? 1 : adj);
     gState      = RT_EXPECT;
     gStateStart = millis();
 }
@@ -518,18 +547,43 @@ void finishOpening() {
 // Varied recovery prompts (T1.3): instead of looping the identical nag, the
 // bot picks one at random. All are short (OLED status budget), lowercase (no
 // uppercase SANKEBH prosign markers), and unambiguous CW abbreviations.
-const char* const kCallRecovery[] = { "qrz?", "agn agn", "call?", "pse agn" };
-const char* const kGenRecovery[]  = { "agn agn", "agn?", "pse rpt", "hw?" };
-const char* const kRstRecovery[]  = { "pse ur rst?", "rst?", "ur rst agn?", "pse rpt rst" };
+//
+// The tone also scales with QSO Difficulty: a Beginner gets clearer, calmer
+// prompts; an Advanced op gets the curt forms a seasoned operator would send.
+// (Intermediate keeps the original mixed pools.)
+const char* const kCallRecovery[]    = { "qrz?", "agn agn", "call?", "pse agn" };
+const char* const kCallRecoveryBeg[] = { "qrz?", "pse agn", "ur call agn?" };
+const char* const kCallRecoveryAdv[] = { "qrz?", "agn", "call?" };
+
+const char* const kGenRecovery[]     = { "agn agn", "agn?", "pse rpt", "hw?" };
+const char* const kGenRecoveryBeg[]  = { "pse agn", "agn agn", "pse rpt" };
+const char* const kGenRecoveryAdv[]  = { "agn", "agn?", "?" };
+
+const char* const kRstRecovery[]     = { "pse ur rst?", "rst?", "ur rst agn?", "pse rpt rst" };
+const char* const kRstRecoveryBeg[]  = { "pse ur rst?", "ur rst agn?" };
+const char* const kRstRecoveryAdv[]  = { "rst?", "rst pse" };
 
 template <int N>
 const char* pickPrompt(const char* const (&pool)[N]) { return pool[random(N)]; }
 
 // Recovery prompt for a failed EXPECT: a callsign-specific pool (the bot is
-// asking who is calling) or the generic "didn't copy" pool.
+// asking who is calling) or the generic "didn't copy" pool, by difficulty.
 const char* recoveryPrompt(QsoSlotKind slot) {
-    return (slot == SLOT_CALLSIGN) ? pickPrompt(kCallRecovery)
-                                   : pickPrompt(kGenRecovery);
+    if (slot == SLOT_CALLSIGN) {
+        return gLevel == LVL_BEGINNER ? pickPrompt(kCallRecoveryBeg)
+             : gLevel == LVL_ADVANCED ? pickPrompt(kCallRecoveryAdv)
+                                      : pickPrompt(kCallRecovery);
+    }
+    return gLevel == LVL_BEGINNER ? pickPrompt(kGenRecoveryBeg)
+         : gLevel == LVL_ADVANCED ? pickPrompt(kGenRecoveryAdv)
+                                  : pickPrompt(kGenRecovery);
+}
+
+// Recovery prompt when a Standard-QSO over arrived without the required RST.
+const char* rstRecoveryPrompt() {
+    return gLevel == LVL_BEGINNER ? pickPrompt(kRstRecoveryBeg)
+         : gLevel == LVL_ADVANCED ? pickPrompt(kRstRecoveryAdv)
+                                  : pickPrompt(kRstRecovery);
 }
 
 // Send a recovery / repeat prompt without advancing; on completion we
@@ -573,7 +627,7 @@ void processOver(const QsoStep& step) {
         if (step.kind == STEP_EXPECT_OPT) { advance(); return; }   // layer 2: just ack
         // Layer 1 is required to carry the RST.
         if (gInfo.rst) { gRstReceived = true; advance(); return; }
-        if (gRetriesLeft > 0) { gRetriesLeft--; enterRecovery(pickPrompt(kRstRecovery)); return; }
+        if (gRetriesLeft > 0) { gRetriesLeft--; enterRecovery(rstRecoveryPrompt()); return; }
         advance();                          // asked enough; proceed anyway
         return;
     }
@@ -757,6 +811,7 @@ void run(menuNo mode) {
     keyDecoder.setup();
 
     // ---- Bot state init ----
+    gLevel = MorsePreferences::pliste[posQsoBotLevel].value;   // QSO Difficulty
     initActors();
     inputReset();
     gPc             = 0;
@@ -1013,7 +1068,7 @@ void run(menuNo mode) {
 
             // End-of-over by silence (user keyed, no explicit marker).
             if (gState == RT_EXPECT && gOverStarted && !inputMidToken() &&
-                millis() - gOverActivity > kOverEndSilenceMs) {
+                millis() - gOverActivity > overEndSilenceMs()) {
                 processOver(step);
             }
 
@@ -1026,7 +1081,7 @@ void run(menuNo mode) {
                 unsigned long to;
                 if (step.kind == STEP_EXPECT_OPT) to = kOptNoReplyMs;
                 else if (sessionGate)             to = kSessionIdleMs;
-                else                              to = kNoReplyMs;
+                else                              to = noReplyMs();
                 if (millis() - gStateStart > to) {
                     if (step.kind == STEP_EXPECT_OPT) advance();
                     else if (sessionGate) { renderInfo("session end"); gState = RT_DONE; }

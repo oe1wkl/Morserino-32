@@ -409,6 +409,7 @@ enum prefPos : uint8_t {
 #endif
 #ifdef CONFIG_QSO_BOT
         posQsoBotContestType,
+        posQsoBotLevel,
 #endif
   posSerialOut,
                 // to be treated differently:

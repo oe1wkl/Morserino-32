@@ -1446,6 +1446,13 @@ through, it reacts the way a real operator would — asking for a repeat with a
 varying prompt such as `agn agn`, `agn?`, `pse rpt`, or `qrz?`, or by repeating
 its last over — rather than simply stopping.
 
+How forgiving and how chatty the bot is can be set with the **QSO Difficulty**
+preference (**Beginner** / **Intermediate** / **Advanced**). On **Beginner** the
+bot gives you more time, allows an extra retry, spells signal reports out in
+full (599 instead of 5nn), and uses clear, calm prompts; on **Advanced** it
+keeps a tighter rhythm and answers more tersely. This applies to all QSO Bot
+modes.
+
 #### SOTA / POTA {-}
 
 The bot plays a summit or park activation. If it calls CQ, it is the
@@ -2590,6 +2597,7 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).<br> **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; center frequency = ca 700 Hz. | **Wide** / Narrow |
 | Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON", the audio is also sent to the external audio I/O port.<br> **On the M32Pocket, this setting is ignored!** | On / **Off** |
 | Contest Type | Only relevant in the QSO Bot's **Contest** mode (section **5.5.4 QSO Bot**): which contest exchange the bot uses. **CQ WW** sends 5NN + the CQ zone of the bot's callsign; **WPX/Sprint** sends 5NN + a serial number. | **CQ WW** / WPX/Sprint |
+| QSO Difficulty | How forgiving and how chatty the QSO Bot partner is (all QSO Bot modes, section **5.5.4 QSO Bot**). **Beginner** is patient (more time to reply, an extra retry), spells signal reports out in full (599 rather than 5nn), and uses clear, calm prompts. **Advanced** keeps a tighter rhythm and uses curt, seasoned-operator prompts. **Intermediate** sits in between. | Beginner / **Intermediate** / Advanced |
 
 ### Preferences regarding Player Identity and Scores
 

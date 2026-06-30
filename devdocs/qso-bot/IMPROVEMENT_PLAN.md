@@ -68,6 +68,17 @@ Impact is on *training realism* unless noted.
 
 ### Cross-cutting enabler — QSO difficulty / competence setting
 
+> ✅ **DONE** (branch `qso-bot-improvements`). The `posQsoBotLevel` pref
+> ("QSO Difficulty": Beginner / **Intermediate** / Advanced, default
+> Intermediate) is wired through the three parallel arrays + `qsoBotOptions[]` +
+> `allOptions`; manuals (EN+DE) updated. Read once at `run()` start into
+> `gLevel`. Behaviours wired **now**: retry budget (±1, floor 1), patience
+> timeouts (`overEndSilenceMs`/`noReplyMs`), recovery-prompt tone (gentle/curt
+> pools), and Beginner RST spell-out (`5nn`→`599` at the single `startBotTx`
+> choke point). Still reading-`gLevel`-later: speed mismatch (T2.2), formality
+> (T2.3), repeat terseness. Existing devices upgrade cleanly: a missing NVS key
+> falls back to the pliste default (Intermediate) and is written back.
+
 Several items below should *not* behave the same for a first-week learner and a
 seasoned op. Rather than gate each feature with its own ad-hoc flag, add **one
 "QSO Difficulty" preference** that a number of bot behaviours read. This matches
@@ -78,14 +89,14 @@ personality at each level instead of unrelated knobs.
 Proposed levels: **Beginner / Intermediate / Advanced** (3 is enough; a 4th
 "Expert" only if a level proves too coarse). What scales:
 
-| Behaviour | Beginner | Intermediate | Advanced |
-|---|---|---|---|
-| Speed mismatch (T2.2) | never | occasional, ±4 WpM | more frequent, ±4–8 WpM |
-| Recovery patience / retries | generous, long timeouts | default | few retries, tight timeouts |
-| Repeat style | full, clear repeats | partial | terse (`agn`) |
-| Bot's own abbreviation / cut numbers | spelled out (`599`, no cuts) | some | cut numbers + heavier abbrev |
-| Formality (T2.3) | always full preambles | mirrors the user | drops `... de ...` readily |
-| Unrecognised-input variety (T1.3) | clearer, calmer prompts | mixed | curt |
+| Behaviour | Beginner | Intermediate | Advanced | Status |
+|---|---|---|---|---|
+| Recovery patience / retries | generous, long timeouts | default | few retries, tight timeouts | ✅ wired |
+| Unrecognised-input variety (T1.3) | clearer, calmer prompts | mixed | curt | ✅ wired |
+| Bot's own cut numbers | spelled out (`599`) | cut (`5nn`) | cut (`5nn`) | ✅ wired (Beginner spell-out) |
+| Speed mismatch (T2.2) | never | occasional, ±4 WpM | more frequent, ±4–8 WpM | ⬜ T2.2 |
+| Repeat style | full, clear repeats | partial | terse (`agn`) | ⬜ later |
+| Formality (T2.3) | always full preambles | mirrors the user | drops `... de ...` readily | ⬜ T2.3 |
 
 **Mechanics / cost (M).** This is a new numeric `prefPos` (e.g.
 `posQsoBotLevel`), a `uint8_t` selector — so it fits the standard
