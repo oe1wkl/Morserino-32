@@ -38,16 +38,21 @@ static void test_callsign_shape() {
     CHECK(looksLikeCallsign("OE1WKL"));
     CHECK(looksLikeCallsign("DL2ABC"));
     CHECK(looksLikeCallsign("OE1ABC/P"));   // portable suffix
+    CHECK(looksLikeCallsign("KH6ABC"));      // 2-letter prefix, area 6
+
+    // Digit-leading prefixes (T3.4): now recognised.
+    CHECK(looksLikeCallsign("2E0ABC"));      // UK
+    CHECK(looksLikeCallsign("4X1AB"));       // Israel
+    CHECK(looksLikeCallsign("9A1AA"));       // Croatia
+    CHECK(looksLikeCallsign("3D2AG"));       // Fiji
+    CHECK(looksLikeCallsign("5N0AB"));       // Nigeria
 
     CHECK(!looksLikeCallsign("ABC"));       // no digit
     CHECK(!looksLikeCallsign("K2"));        // too short
-    CHECK(!looksLikeCallsign("599"));       // RST, not a call
-    CHECK(!looksLikeCallsign("12AB"));      // leading digit (pos 0)
-    // KNOWN LIMITATION (documented by this test, not a bug to "fix" here):
-    // the matcher requires the digit in position 1 or 2, so leading-digit
-    // prefixes (2E0xxx, 3D2xxx, ...) are NOT recognised. Changing this is a
-    // behaviour change, out of scope for the test-harness task.
-    CHECK(!looksLikeCallsign("2E0ABC"));
+    CHECK(!looksLikeCallsign("599"));       // RST: no letter suffix
+    CHECK(!looksLikeCallsign("5NN"));       // RST: no prefix before the area digit
+    CHECK(!looksLikeCallsign("12AB"));      // prefix has no letter
+    CHECK(!looksLikeCallsign("OE1ABC/"));   // trailing slash
     CHECK(!looksLikeCallsign("CQ"));        // noise word
     CHECK(!looksLikeCallsign("K"));         // bare K (split prefix) is not a call
 }

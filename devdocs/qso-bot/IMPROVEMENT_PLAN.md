@@ -146,7 +146,7 @@ enabler.
 | # | Item | Effort | Impact | Notes |
 |---|---|---|---|---|
 | **T3.1** | **Content breadth** | S–M (ongoing) | Low–Medium | Grow `qso_content.h` pools (names/QTHs/rigs), add more SOTA/POTA refs. Pure content; low risk. |
-| **T3.4** | **Leading-digit callsign prefixes** | S | Low | *Found during T1.1.* `looksLikeCallsign` requires the digit in position 1–2, so `2E0xxx`/`3D2xxx`/`3Z…` etc. are not recognised as callsigns. Real but uncommon on a training partner. If changed, update the asserted-limitation test in `Software/tests/qso_bot_matcher/`. |
+| **T3.4** | **Leading-digit callsign prefixes** | S | Low | ✅ **DONE**. `looksLikeCallsign` rewritten to parse from the end (`[prefix][area-digit][suffix]/tail`), so `2E0…`/`4X1…`/`9A1…`/`3D2…`/`5N0…` are accepted while `5NN`/`599` are still rejected. Host tests extended (99 checks). Internal robustness → no manual change. |
 | **T3.2** | **More QSO descriptors** | M each | Medium | e.g. a deeper ragchew, or a "DX pileup-style" short exchange. The descriptor architecture makes this additive. |
 | **T3.3** | **LLM / WiFi companion mode** (P10) | L (project) | High for advanced users | Firmware change is small (point MOPP/WiFi Transceiver at a server); the work is the server + safe-output constraints. Out of scope for the built-in bot; track as a separate initiative. |
 

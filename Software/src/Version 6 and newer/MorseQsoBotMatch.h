@@ -25,29 +25,56 @@ namespace QsoMatch {
 
 // ---- Callsign shape ----------------------------------------------------
 
-// True if `tok` has the shape of a callsign: 3..10 chars, a digit in
-// position 1 or 2, only letters before it, 1..4 suffix letters, optional
-// "/PORTABLE" tail. (Shape only — does not compare against any station.)
+// True if `tok` has the shape of a callsign. Parsed from the end as
+// [prefix][area-digit][suffix](/tail):
+//   - suffix: a trailing run of 1..4 letters,
+//   - area digit: one digit immediately before the suffix,
+//   - prefix: 1..2 alphanumeric chars before the area digit, at least one a
+//     letter (this is what allows digit-leading prefixes like 2E0, 4X1, 9A1,
+//     3D2 while still rejecting an RST such as "5NN", which has no prefix
+//     before the area digit, and "599", which has no letter suffix),
+//   - optional "/TAIL": a non-empty alphanumeric run (portable etc.).
+// (Shape only — does not compare against any station.)
 inline bool looksLikeCallsign(const char* tok) {
     int len = strlen(tok);
     if (len < 3 || len > 10) return false;
-    int digitPos = -1;
-    for (int i = 0; i < len; i++)
-        if (tok[i] >= '0' && tok[i] <= '9') { digitPos = i; break; }
-    if (digitPos < 1 || digitPos > 2) return false;
-    for (int i = 0; i < digitPos; i++)
-        if (tok[i] < 'A' || tok[i] > 'Z') return false;
-    int i = digitPos + 1, suffixLetters = 0;
-    while (i < len && tok[i] >= 'A' && tok[i] <= 'Z') { suffixLetters++; i++; }
-    if (suffixLetters < 1 || suffixLetters > 4) return false;
-    if (i < len) {
-        if (tok[i++] != '/') return false;
-        while (i < len) {
-            char c = tok[i++];
-            if (!((c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))) return false;
+
+    // Split off an optional "/TAIL"; validate it is non-empty alphanumeric.
+    int coreLen = len;
+    for (int i = 0; i < len; i++) {
+        if (tok[i] == '/') {
+            coreLen = i;
+            if (i + 1 >= len) return false;                 // trailing slash
+            for (int t = i + 1; t < len; t++)
+                if (!((tok[t] >= 'A' && tok[t] <= 'Z') ||
+                      (tok[t] >= '0' && tok[t] <= '9'))) return false;
+            break;
         }
     }
-    return true;
+    if (coreLen < 3) return false;
+
+    // Suffix: trailing letters, 1..4.
+    int sufStart = coreLen;
+    while (sufStart > 0 && tok[sufStart - 1] >= 'A' && tok[sufStart - 1] <= 'Z')
+        sufStart--;
+    int sufLen = coreLen - sufStart;
+    if (sufLen < 1 || sufLen > 4) return false;
+
+    // Area digit immediately before the suffix.
+    int areaPos = sufStart - 1;
+    if (areaPos < 1) return false;                          // need a prefix too
+    if (!(tok[areaPos] >= '0' && tok[areaPos] <= '9')) return false;
+
+    // Prefix: 1..2 alphanumeric chars, at least one letter.
+    int preLen = areaPos;
+    if (preLen < 1 || preLen > 2) return false;
+    bool preHasLetter = false;
+    for (int j = 0; j < areaPos; j++) {
+        char c = tok[j];
+        if (c >= 'A' && c <= 'Z')      preHasLetter = true;
+        else if (!(c >= '0' && c <= '9')) return false;
+    }
+    return preHasLetter;
 }
 
 // A token is a usable callsign for slot-matching when it looks like one and

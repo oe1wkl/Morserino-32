@@ -29,12 +29,12 @@ Not covered (runtime/integration, lives in `MorseQsoBot.cpp`): timeouts and
 turn-taking, the concat-buffer reassembly of split tokens (`5 9 9` → `599`),
 the CW engine, and display. Those need the device or a much larger harness.
 
-## Known limitation asserted (not a bug)
+## Callsign shape
 
-`looksLikeCallsign` requires the digit in position 1 or 2, so leading-digit
-prefixes (`2E0xxx`, `3D2xxx`, …) are **not** recognised. The test asserts the
-current behaviour; changing it is a deliberate behaviour change, tracked
-separately in `devdocs/qso-bot/IMPROVEMENT_PLAN.md`.
+`looksLikeCallsign` parses a call from the end as `[prefix][area-digit][suffix]`
+with an optional `/TAIL`, so digit-leading prefixes (`2E0…`, `4X1…`, `9A1…`,
+`3D2…`) are recognised while RST-like tokens (`5NN`, `599`) are still rejected
+(T3.4). The tests pin both the accepted and rejected forms.
 
 ## Adding cases
 
