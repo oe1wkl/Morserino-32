@@ -124,7 +124,7 @@ enabler.
 
 | # | Item | Effort | Impact | Notes |
 |---|---|---|---|---|
-| **T2.1** | **Within-over override** for simple slots | M | Medium | Let a later valid token replace an earlier match within the same over (currently first-match-wins). Aligns with analysis 4.3. Must not regress the deferred-turn logic that fixed talking-over-the-user. |
+| **T2.1** | **Within-over override** for simple slots | M | Medium | ✅ **DONE**. For RST/CALLSIGN/REF/PROSIGN a token that matches on its own now overrides any earlier match in the same over and clears the concat buffer (so `599 = 579` or a re-sent callsign corrects in place); split-token gluing stays gated to before the first match. `SLOT_EXCHANGE` left as-is (a lone digit is a valid zone, so its concat must keep accumulating). Deferred turn-taking unchanged. Manuals (EN+DE) updated. |
 | **T2.2** | **`qrs`/`qrq` recognition + speed-mismatch provocation** | M | Medium | ✅ **DONE**. Per-QSO `gBotWpm` picked in `pickBotIdentity`; `startBotTx` keys at it only when it differs from the user's WpM (else `0`/live, preserving Farnsworth). Mismatch chance/size scale with difficulty (Intermediate ~30% ±4; Advanced ~50% ±4–8; Beginner never). Keyed `qrs`/`qrq` step the bot's fist by 3 WpM (clamped to `wpmMin..wpmMax`), honoured at every level, without ending the over. Manuals (EN+DE) updated. *Note:* the WpM indicator still shows the user's speed; the bot's differing speed is heard, not shown. |
 | **T2.3** | **Formality mirroring** (P5) | M | Medium | Track whether the user drops the `... de ...` preamble; conditionally strip the preamble from bot overs (except first/last). Templates are fixed strings, so needs a post-expand transform or template variants. |
 

@@ -1436,7 +1436,9 @@ a spelling test:
     couple of seconds — it will not key over you while you are still sending.
 -   **To correct a mistake**, send `<err>` (a run of dits) or `eeee`, then
     send the corrected information; the bot discards what you retracted and
-    takes the new version.
+    takes the new version. For a single value such as an RST or a callsign you
+    can also just send the corrected version again later in the same over (for
+    example `599 = 579`) — the most recent one counts.
 -   **To ask for a repeat**, send `agn`, `rpt`, or simply `?`; the bot repeats
     its last over. You can also ask for one item — `rpt rst`, `rpt call`,
     `rpt qth` — and the bot repeats just that.

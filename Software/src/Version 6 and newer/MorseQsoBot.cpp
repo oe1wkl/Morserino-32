@@ -1061,12 +1061,24 @@ void run(menuNo mode) {
                                     gOverMatched = true; gOverMatchedValue = gConcatBuf;
                                 }
                             }
-                        } else if (!gOverMatched) {
+                        } else {
+                            // Simple slots (RST / CALLSIGN / REF / PROSIGN). A
+                            // token that matches on its own is a complete value
+                            // and OVERRIDES any earlier match in this over, so a
+                            // correction like "599 = 579" or a re-sent callsign
+                            // takes the later value (real CW practice). It also
+                            // clears the concat buffer so the correction starts
+                            // clean. Split tokens are still glued via concat, but
+                            // only until the first match — afterwards a partial
+                            // can't corrupt the captured value. (SLOT_EXCHANGE is
+                            // handled above and deliberately keeps accumulating,
+                            // since a lone digit is itself a valid zone.)
                             if (matchSlot(step.slot, token.c_str(), expected.c_str())) {
                                 gOverMatched = true; gOverMatchedValue = token;
+                                gConcatBuf = "";
                             } else if (isNoise(token, g, expected)) {
                                 // drop, keep listening
-                            } else if (g.allowConcat) {
+                            } else if (!gOverMatched && g.allowConcat) {
                                 gConcatBuf += token;
                                 if (gConcatBuf.length() > 16)
                                     gConcatBuf = gConcatBuf.substring(gConcatBuf.length() - 16);

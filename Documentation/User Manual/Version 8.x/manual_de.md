@@ -1446,7 +1446,10 @@ wie ein Diktat:
     noch sendest.
 -   **Um einen Fehler zu korrigieren**, sende `<err>` (eine Reihe von Dits)
     oder `eeee` und danach die korrigierte Information; der Bot verwirft das
-    Zurückgenommene und übernimmt die neue Fassung.
+    Zurückgenommene und übernimmt die neue Fassung. Bei einem einzelnen Wert
+    wie einem Rapport oder einem Rufzeichen kannst du die korrigierte Fassung
+    auch einfach später in derselben Übergabe noch einmal senden (zum Beispiel
+    `599 = 579`) – es zählt die zuletzt gesendete.
 -   **Um eine Wiederholung zu erbitten**, sende `agn`, `rpt` oder einfach `?`;
     der Bot wiederholt seine letzte Übergabe. Du kannst auch nach einem
     einzelnen Punkt fragen – `rpt rst`, `rpt call`, `rpt qth` – und der Bot
