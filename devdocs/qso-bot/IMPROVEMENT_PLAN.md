@@ -145,7 +145,7 @@ enabler.
 
 | # | Item | Effort | Impact | Notes |
 |---|---|---|---|---|
-| **T3.1** | **Content breadth** | S–M (ongoing) | Low–Medium | Grow `qso_content.h` pools (names/QTHs/rigs), add more SOTA/POTA refs. Pure content; low risk. |
+| **T3.1** | **Content breadth** | S–M (ongoing) | Low–Medium | ✅ **DONE** (first pass). Unified everything continent-aware under one `ContValue{value,continent}` + `pickByContinent`; **names and QTHs are now continent-matched** to the bot's callsign (JA→HIRO/TOKYO, not WERNER/VIENNA). Added SA + AF SOTA/POTA refs (+more NA/AS/OC) so every generated continent has matching refs. Grew pools: names 20→40, rigs +QRP/SOTA & classics (12→26), antennas 10→18, wx 11→19. Internal content → no manual change. Still "ongoing": can keep adding refs/cities over time. |
 | **T3.4** | **Leading-digit callsign prefixes** | S | Low | ✅ **DONE**. `looksLikeCallsign` rewritten to parse from the end (`[prefix][area-digit][suffix]/tail`), so `2E0…`/`4X1…`/`9A1…`/`3D2…`/`5N0…` are accepted while `5NN`/`599` are still rejected. Host tests extended (99 checks). Internal robustness → no manual change. |
 | **T3.2** | **More QSO descriptors** | M each | Medium | e.g. a deeper ragchew, or a "DX pileup-style" short exchange. The descriptor architecture makes this additive. |
 | **T3.3** | **LLM / WiFi companion mode** (P10) | L (project) | High for advanced users | Firmware change is small (point MOPP/WiFi Transceiver at a server); the work is the server + safe-output constraints. Out of scope for the built-in bot; track as a separate initiative. |

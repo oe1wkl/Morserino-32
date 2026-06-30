@@ -188,8 +188,8 @@ void pickBotIdentity() {
     gActivity        = random(2);
     gActors.botRef   = String(gActivity == 0 ? QsoContent::pickSotaRef(cont)
                                              : QsoContent::pickPotaRef(cont));
-    gActors.botName  = String(QsoContent::kNames[random(QsoContent::kNamesCount)]);
-    gActors.botQth   = String(QsoContent::kQths[random(QsoContent::kQthsCount)]);
+    gActors.botName  = String(QsoContent::pickName(cont));   // continent-matched
+    gActors.botQth   = String(QsoContent::pickQth(cont));    // continent-matched
     gActors.botRig   = String(QsoContent::kRigs[random(QsoContent::kRigsCount)]);
     gActors.botAnt   = String(QsoContent::kAnts[random(QsoContent::kAntsCount)]);
     gActors.botWx    = String(QsoContent::kWxs[random(QsoContent::kWxsCount)]);
