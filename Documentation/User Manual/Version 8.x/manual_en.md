@@ -1436,14 +1436,36 @@ a spelling test:
     couple of seconds — it will not key over you while you are still sending.
 -   **To correct a mistake**, send `<err>` (a run of dits) or `eeee`, then
     send the corrected information; the bot discards what you retracted and
-    takes the new version.
--   **To ask for a repeat**, send `agn` or `rpt`; the bot repeats its last
-    over. You can also ask for one item — `rpt rst`, `rpt call`, `rpt qth` —
-    and the bot repeats just that.
+    takes the new version. For a single value such as an RST or a callsign you
+    can also just send the corrected version again later in the same over (for
+    example `599 = 579`) — the most recent one counts.
+-   **To ask for a repeat**, send `agn`, `rpt`, or simply `?`; the bot repeats
+    its last over. You can also ask for one item — `rpt rst`, `rpt call`,
+    `rpt qth` — and the bot repeats just that.
+-   **To change the bot's speed**, send `qrs` (slower) or `qrq` (faster); the
+    bot adjusts its sending and you hear the new speed on its next over. Send it
+    again to keep nudging. This changes only the bot's speed, not your own
+    keyer/sidetone speed (which you set with the encoder as usual).
 
 If you key something the bot cannot make sense of, or you go quiet partway
-through, it reacts the way a real operator would — `agn agn`, `qrz?`, or by
-repeating its last over — rather than simply stopping.
+through, it reacts the way a real operator would — asking for a repeat with a
+varying prompt such as `agn agn`, `agn?`, `pse rpt`, or `qrz?`, or by repeating
+its last over — rather than simply stopping.
+
+How forgiving and how chatty the bot is can be set with the **QSO Difficulty**
+preference (**Beginner** / **Intermediate** / **Advanced**). On **Beginner** the
+bot gives you more time, allows an extra retry, spells signal reports out in
+full (599 instead of 5nn), uses clear, calm prompts, and always sends at your
+own speed. On **Intermediate** and **Advanced** the bot sometimes calls at a
+speed a few WpM away from yours, so you get to practise asking for `qrs`/`qrq`;
+**Advanced** also keeps a tighter rhythm and answers more tersely. This applies
+to all QSO Bot modes.
+
+In a **Standard** QSO the bot also mirrors your formality: once the contact is
+under way, if you drop the `<call> de <call>` framing between overs, the bot
+drops it too. **Beginner** always keeps the full framing; **Advanced** drops it
+readily once the QSO is established. The opening and the final sign-off always
+use the full callsign framing.
 
 #### SOTA / POTA {-}
 
@@ -2589,6 +2611,7 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).<br> **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; center frequency = ca 700 Hz. | **Wide** / Narrow |
 | Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON", the audio is also sent to the external audio I/O port.<br> **On the M32Pocket, this setting is ignored!** | On / **Off** |
 | Contest Type | Only relevant in the QSO Bot's **Contest** mode (section **5.5.4 QSO Bot**): which contest exchange the bot uses. **CQ WW** sends 5NN + the CQ zone of the bot's callsign; **WPX/Sprint** sends 5NN + a serial number. | **CQ WW** / WPX/Sprint |
+| QSO Difficulty | How forgiving and how chatty the QSO Bot partner is (all QSO Bot modes, section **5.5.4 QSO Bot**). **Beginner** is patient (more time to reply, an extra retry), spells signal reports out in full (599 rather than 5nn), and uses clear, calm prompts. **Advanced** keeps a tighter rhythm and uses curt, seasoned-operator prompts. **Intermediate** sits in between. | Beginner / **Intermediate** / Advanced |
 
 ### Preferences regarding Player Identity and Scores
 

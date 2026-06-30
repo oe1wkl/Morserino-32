@@ -84,6 +84,7 @@ const char * prefName[] = {
 #endif
 #ifdef CONFIG_QSO_BOT
             "qsoBotContestType",
+            "qsoBotLevel",
 #endif
             "serialOut"
 					};
@@ -434,6 +435,13 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"CQ WW", "WPX/Sprint"}
   },
+  {
+    1, 0, 2, 1,                                                 // QSO Bot difficulty: 0=Beginner, 1=Intermediate, 2=Advanced
+    "QSO Difficulty",
+    "How forgiving and how chatty the QSO Bot partner is",
+    true,
+    {"Beginner", "Intermediate", "Advanced"}
+  },
 #endif
   {
     5, 0, 5, 1,        // Serial Output entry (unchanged)                                                // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
@@ -569,7 +577,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #define BLUE
 #endif
 #ifdef CONFIG_QSO_BOT
-#define QSOBOT posQsoBotContestType,
+#define QSOBOT posQsoBotLevel, posQsoBotContestType,
 #else
 #define QSOBOT
 #endif
@@ -643,7 +651,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth,
-                                                   posQsoBotContestType
+                                                   posQsoBotLevel, posQsoBotContestType
                                                  };
 #endif
 

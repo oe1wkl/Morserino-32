@@ -1446,15 +1446,42 @@ wie ein Diktat:
     noch sendest.
 -   **Um einen Fehler zu korrigieren**, sende `<err>` (eine Reihe von Dits)
     oder `eeee` und danach die korrigierte Information; der Bot verwirft das
-    Zurückgenommene und übernimmt die neue Fassung.
--   **Um eine Wiederholung zu erbitten**, sende `agn` oder `rpt`; der Bot
-    wiederholt seine letzte Übergabe. Du kannst auch nach einem einzelnen
-    Punkt fragen – `rpt rst`, `rpt call`, `rpt qth` – und der Bot wiederholt
-    nur diesen.
+    Zurückgenommene und übernimmt die neue Fassung. Bei einem einzelnen Wert
+    wie einem Rapport oder einem Rufzeichen kannst du die korrigierte Fassung
+    auch einfach später in derselben Übergabe noch einmal senden (zum Beispiel
+    `599 = 579`) – es zählt die zuletzt gesendete.
+-   **Um eine Wiederholung zu erbitten**, sende `agn`, `rpt` oder einfach `?`;
+    der Bot wiederholt seine letzte Übergabe. Du kannst auch nach einem
+    einzelnen Punkt fragen – `rpt rst`, `rpt call`, `rpt qth` – und der Bot
+    wiederholt nur diesen.
+-   **Um das Tempo des Bots zu ändern**, sende `qrs` (langsamer) oder `qrq`
+    (schneller); der Bot passt sein Tempo an, und du hörst die neue
+    Geschwindigkeit bei seiner nächsten Übergabe. Sende es erneut, um weiter
+    nachzuregeln. Das ändert nur das Tempo des Bots, nicht dein eigenes
+    Keyer-/Mithörton-Tempo (das du wie gewohnt mit dem Encoder einstellst).
 
 Tastest du etwas, das der Bot nicht zuordnen kann, oder verstummst du
-mittendrin, reagiert er wie ein echter Operator – `agn agn`, `qrz?` oder
-durch Wiederholung seiner letzten Übergabe – statt einfach stehen zu bleiben.
+mittendrin, reagiert er wie ein echter Operator – er bittet mit wechselnden
+Aufforderungen wie `agn agn`, `agn?`, `pse rpt` oder `qrz?` um eine
+Wiederholung, oder wiederholt seine letzte Übergabe – statt einfach stehen zu
+bleiben.
+
+Wie nachsichtig und wie gesprächig der Bot ist, lässt sich mit der Einstellung
+**QSO Difficulty** festlegen (**Beginner** / **Intermediate** / **Advanced**).
+Bei **Beginner** gibt dir der Bot mehr Zeit, erlaubt einen zusätzlichen Versuch,
+gibt Rapporte voll ausgeschrieben (599 statt 5nn), verwendet klare, ruhige
+Aufforderungen und sendet immer mit deinem eigenen Tempo. Bei **Intermediate**
+und **Advanced** ruft der Bot manchmal mit einem Tempo, das ein paar WpM von
+deinem abweicht, damit du das Erbitten von `qrs`/`qrq` übst; **Advanced** hält
+zudem ein strafferes Tempo und antwortet knapper. Das gilt für alle
+QSO-Bot-Modi.
+
+In einem **Standard**-QSO spiegelt der Bot außerdem deine Förmlichkeit: Sobald
+das QSO läuft, lässt der Bot die Rahmung `<call> de <call>` zwischen den
+Übergaben ebenfalls weg, wenn du sie weglässt. **Beginner** behält immer die
+volle Rahmung bei; **Advanced** lässt sie früh weg, sobald das QSO etabliert
+ist. Eröffnung und Schluss-Verabschiedung verwenden immer die volle
+Rufzeichen-Rahmung.
 
 #### SOTA / POTA {-}
 
@@ -2856,6 +2883,7 @@ Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot
 | **Bandwidth** | Legt die Bandbreite fest, die der CW-Decoder verwendet (implementiert in Software als sogenannter Goertzel-Filter). **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz. | **Wide** / Narrow |
 | **Decoded on I/O** | Normalerweise wird dekodiertes CW von einer externen Quelle (bei Verwendung eines der Transceiver-Modi oder des Decoders für Audiodekodierung) über den Lautsprecher (oder Kopfhörer) abgespielt, aber nicht an den externen Audio-E/A-Anschluss gesendet. Bei Einstellung auf „ON" wird der Ton auch an den externen Audio-E/A-Anschluss gesendet. **Beim M32Pocket wird diese Einstellung ignoriert!** | On / **Off** |
 | **Contest Type** | Nur relevant im **Contest**-Modus des QSO Bots (Abschnitt **5.5.4 QSO Bot**): welcher Contest-Austausch verwendet wird. **CQ WW** sendet 5NN + die CQ-Zone des Bot-Rufzeichens; **WPX/Sprint** sendet 5NN + eine Seriennummer. | **CQ WW** / WPX/Sprint |
+| **QSO Difficulty** | Wie nachsichtig und wie gesprächig der QSO-Bot-Partner ist (alle QSO-Bot-Modi, Abschnitt **5.5.4 QSO Bot**). **Beginner** ist geduldig (mehr Zeit zum Antworten, ein zusätzlicher Versuch), gibt Rapporte voll ausgeschrieben (599 statt 5nn) und verwendet klare, ruhige Aufforderungen. **Advanced** hält ein strafferes Tempo und verwendet knappe Aufforderungen wie von einem erfahrenen Operator. **Intermediate** liegt dazwischen. | Beginner / **Intermediate** / Advanced |
 
 ### Einstellungen zu Rufzeichen, Name und Spielständen
 
