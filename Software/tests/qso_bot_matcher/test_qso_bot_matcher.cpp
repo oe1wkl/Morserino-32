@@ -190,7 +190,24 @@ static void test_info_parser() {
         CHECK(p.name == String(""));
         CHECK(!p.rst);
         CHECK(!p.other);
+        CHECK(!p.framed);
         CHECK(p.cur == F_NONE);
+    }
+    {   // formality signal (T2.3): "de" framing
+        InfoParser p; p.reset();
+        feedAll(p, {"oe5abc", "de", "dl3xyz", "rst", "599", "name", "bob"});
+        CHECK(p.framed);
+        CHECK(p.name == String("bob"));     // captured despite the framing
+    }
+    {   // informal over: no call, no "de" -> not framed
+        InfoParser p; p.reset();
+        feedAll(p, {"rst", "599", "name", "bob", "qth", "london"});
+        CHECK(!p.framed);
+    }
+    {   // a lone callsign token also counts as framing
+        InfoParser p; p.reset();
+        feedAll(p, {"de", "w1aw"});
+        CHECK(p.framed);
     }
 }
 

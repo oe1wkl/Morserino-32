@@ -1476,6 +1476,13 @@ deinem abweicht, damit du das Erbitten von `qrs`/`qrq` übst; **Advanced** hält
 zudem ein strafferes Tempo und antwortet knapper. Das gilt für alle
 QSO-Bot-Modi.
 
+In einem **Standard**-QSO spiegelt der Bot außerdem deine Förmlichkeit: Sobald
+das QSO läuft, lässt der Bot die Rahmung `<call> de <call>` zwischen den
+Übergaben ebenfalls weg, wenn du sie weglässt. **Beginner** behält immer die
+volle Rahmung bei; **Advanced** lässt sie früh weg, sobald das QSO etabliert
+ist. Eröffnung und Schluss-Verabschiedung verwenden immer die volle
+Rufzeichen-Rahmung.
+
 #### SOTA / POTA {-}
 
 Der Bot spielt eine Gipfel- oder Parkaktivierung. Ruft er CQ, ist er der

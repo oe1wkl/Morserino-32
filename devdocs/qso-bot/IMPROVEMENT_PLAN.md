@@ -96,7 +96,7 @@ Proposed levels: **Beginner / Intermediate / Advanced** (3 is enough; a 4th
 | Bot's own cut numbers | spelled out (`599`) | cut (`5nn`) | cut (`5nn`) | ✅ wired (Beginner spell-out) |
 | Speed mismatch (T2.2) | never | occasional, ±4 WpM | more frequent, ±4–8 WpM | ✅ wired |
 | Repeat style | full, clear repeats | partial | terse (`agn`) | ⬜ later |
-| Formality (T2.3) | always full preambles | mirrors the user | drops `... de ...` readily | ⬜ T2.3 |
+| Formality (T2.3) | always full preambles | mirrors the user | drops `... de ...` readily | ✅ wired |
 
 **Mechanics / cost (M).** This is a new numeric `prefPos` (e.g.
 `posQsoBotLevel`), a `uint8_t` selector — so it fits the standard
@@ -126,7 +126,7 @@ enabler.
 |---|---|---|---|---|
 | **T2.1** | **Within-over override** for simple slots | M | Medium | ✅ **DONE**. For RST/CALLSIGN/REF/PROSIGN a token that matches on its own now overrides any earlier match in the same over and clears the concat buffer (so `599 = 579` or a re-sent callsign corrects in place); split-token gluing stays gated to before the first match. `SLOT_EXCHANGE` left as-is (a lone digit is a valid zone, so its concat must keep accumulating). Deferred turn-taking unchanged. Manuals (EN+DE) updated. |
 | **T2.2** | **`qrs`/`qrq` recognition + speed-mismatch provocation** | M | Medium | ✅ **DONE**. Per-QSO `gBotWpm` picked in `pickBotIdentity`; `startBotTx` keys at it only when it differs from the user's WpM (else `0`/live, preserving Farnsworth). Mismatch chance/size scale with difficulty (Intermediate ~30% ±4; Advanced ~50% ±4–8; Beginner never). Keyed `qrs`/`qrq` step the bot's fist by 3 WpM (clamped to `wpmMin..wpmMax`), honoured at every level, without ending the over. Manuals (EN+DE) updated. *Note:* the WpM indicator still shows the user's speed; the bot's differing speed is heard, not shown. |
-| **T2.3** | **Formality mirroring** (P5) | M | Medium | Track whether the user drops the `... de ...` preamble; conditionally strip the preamble from bot overs (except first/last). Templates are fixed strings, so needs a post-expand transform or template variants. |
+| **T2.3** | **Formality mirroring** (P5) | M | Medium | ✅ **DONE**. `InfoParser.framed` (header, tested) flags whether the user's over used `de`/callsign framing. Runtime tracks `gQsoWarm` + `gUserInformal`; `maybeDropPreamble` strips a leading `<usercall> de <botcall>` from the bot's mid-QSO overs (Beginner never; Intermediate mirrors the user; Advanced drops readily once warm). Openings precede warm-up and closings carry the preamble at the end, so both stay formal automatically; SOTA/POTA + Contest have no info overs so are unaffected. Manuals (EN+DE) updated. |
 
 > **T2.2 implementation dependency — independent bot speed.** Today the bot
 > keys with `MorseCwEngine::PlayOpts.wpm = 0` (`startBotTx`,

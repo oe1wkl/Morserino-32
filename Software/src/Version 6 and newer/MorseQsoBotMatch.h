@@ -208,18 +208,23 @@ inline bool isRepeatTrigger(const String& upper) {
 enum FieldCur : uint8_t { F_NONE, F_NAME, F_QTH, F_RST, F_OTHER };
 
 struct InfoParser {
-    FieldCur cur   = F_NONE;
-    bool     rst   = false;
-    bool     other = false;      // rig/ant/wx/age seen (acknowledged generically)
+    FieldCur cur    = F_NONE;
+    bool     rst    = false;
+    bool     other  = false;     // rig/ant/wx/age seen (acknowledged generically)
+    bool     framed = false;     // over used formal call framing (a callsign or "de")
     String   name;
     String   qth;
 
     void reset() {
-        cur = F_NONE; rst = false; other = false; name = ""; qth = "";
+        cur = F_NONE; rst = false; other = false; framed = false; name = ""; qth = "";
     }
 
     void feed(const String& token) {
+        // Formality signal (for T2.3 mirroring): a callsign token or an explicit
+        // "de" means the user framed the over the formal "<call> de <call>" way.
+        if (looksLikeCallsign(token.c_str())) framed = true;
         String low(token); low.toLowerCase();
+        if (low == "de") { framed = true; cur = F_NONE; return; }
         // field keywords
         if (low == "name" || low == "op"  || low == "nm")    { cur = F_NAME;  return; }
         if (low == "qth"  || low == "loc" || low == "qra")   { cur = F_QTH;   return; }
@@ -232,7 +237,7 @@ struct InfoParser {
         if (low == "rst"  || low == "ur"  || low == "urs")   { cur = F_RST;   return; }
         // separators / boundaries
         if (low == "=" || low == "es" || low == "bt" || low == "hw" ||
-            low == "hw?" || low == "pse" || low == "de")     { cur = F_NONE;  return; }
+            low == "hw?" || low == "pse")                    { cur = F_NONE;  return; }
         // RST digits anywhere in the over
         if (matchRST(token.c_str()))                         { rst = true; cur = F_NONE; return; }
         // value token for the current field

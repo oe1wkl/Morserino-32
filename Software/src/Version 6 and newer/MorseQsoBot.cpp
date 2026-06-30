@@ -338,6 +338,14 @@ String        gRepeatSlot;                 // used by executePendingRepeat
 // RST received from the user (validity note at end of QSO).
 bool          gRstReceived = false;
 
+// Formality mirroring (T2.3). gQsoWarm becomes true once the user has sent a
+// first info over (so openings stay formal); gUserInformal tracks whether that
+// over dropped the "<call> de <call>" framing. The bot then drops its own
+// preamble on mid-QSO overs — see maybeDropPreamble. Only Standard QSOs use
+// info overs, so SOTA/POTA and Contest are unaffected.
+bool          gQsoWarm     = false;
+bool          gUserInformal = false;
+
 // ---- Bot CW display (char-by-char via displayGeneratedMorse) ----------
 
 String        gCachedBotText;
@@ -454,8 +462,28 @@ void enterStep();
 void startOpening();
 void pickBotIdentity();
 
+// Formality mirroring (T2.3): once a QSO has warmed up, drop the bot's leading
+// "<usercall> de <botcall>" preamble to match the user's informality. Returns
+// the text unchanged unless it actually starts with that preamble, so openings
+// (which precede warm-up) and closings (preamble at the END) keep full
+// formality automatically. Beginner is always formal; Intermediate mirrors the
+// user (drops only when they dropped it); Advanced drops readily once warm.
+String maybeDropPreamble(const String& text) {
+    if (gLevel == LVL_BEGINNER || !gQsoWarm) return text;
+    const bool drop = gUserInformal || (gLevel == LVL_ADVANCED);
+    if (!drop) return text;
+    String user(gActors.userCall); user.toLowerCase();
+    String bot(gActors.botCall);   bot.toLowerCase();
+    String pre = user + " de " + bot;
+    if (!text.startsWith(pre)) return text;
+    String rest = text.substring(pre.length());
+    rest.trim();
+    if (rest.startsWith("=")) { rest = rest.substring(1); rest.trim(); }
+    return rest;
+}
+
 void startBotTx(const String& text) {
-    String tx = text;
+    String tx = maybeDropPreamble(text);
     // Beginner: spell RST out in full ("5nn" -> "599") — easier to copy than
     // the cut form. Safe to do globally here: "5nn" never occurs in a serial
     // exchange (those are plain digits). Advanced/Intermediate keep the cut
@@ -663,6 +691,10 @@ void processOver(const QsoStep& step) {
     if (step.slot == SLOT_INFO) {
         // Standard QSO: capture the user's name for echoing back.
         if (gInfo.name.length()) gActors.userName = gInfo.name;
+        // Formality mirroring (T2.3): the QSO has warmed up, and we note
+        // whether this over kept or dropped the formal call framing.
+        gQsoWarm      = true;
+        gUserInformal = !gInfo.framed;
         if (step.kind == STEP_EXPECT_OPT) { advance(); return; }   // layer 2: just ack
         // Layer 1 is required to carry the RST.
         if (gInfo.rst) { gRstReceived = true; advance(); return; }
@@ -860,6 +892,8 @@ void run(menuNo mode) {
     gConcatBuf      = "";
     gEeeeDetected   = false;
     gRstReceived    = false;
+    gQsoWarm        = false;
+    gUserInformal   = false;
     gLastBotTx      = "";
     gRepeatSlot     = "";
     resetOverAccumulators();

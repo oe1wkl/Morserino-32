@@ -1461,6 +1461,12 @@ speed a few WpM away from yours, so you get to practise asking for `qrs`/`qrq`;
 **Advanced** also keeps a tighter rhythm and answers more tersely. This applies
 to all QSO Bot modes.
 
+In a **Standard** QSO the bot also mirrors your formality: once the contact is
+under way, if you drop the `<call> de <call>` framing between overs, the bot
+drops it too. **Beginner** always keeps the full framing; **Advanced** drops it
+readily once the QSO is established. The opening and the final sign-off always
+use the full callsign framing.
+
 #### SOTA / POTA {-}
 
 The bot plays a summit or park activation. If it calls CQ, it is the
