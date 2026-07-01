@@ -262,6 +262,17 @@ reach (tracked in `devdocs/consistency-audit/REFACTORING_PLAN.md` Phases D/F):
   may stay terse/lowercase (width-constrained).
 - **Pause** (where it exists): black-knob single-click, mirroring the trainer
   start/stop feel.
+- **High scores:** reached by **black-knob single-click** — from the result
+  screen (`Click: High Scores`, all games with a table) and, where a game
+  offers a pre-game peek, from the **lobby/ready screen** too (the grid games,
+  Trailblazer + Fox Hunt). This keeps the red button volume-only (§2) — do
+  **not** put high scores on a red-button long-press (that would be the H2
+  red-long overload this doc warns against).
+- **Repurposing black-single-click where there is no pause** *(intentional,
+  §1a context split)*: a game with no pause may use black-knob single-click
+  during play for another momentary action, provided it is stable within that
+  game. **Fox Hunt** does this — black-single-click **replays the current CW
+  clue** (a listen-and-navigate round has nothing to pause).
 
 What games **may** differ in: layout, graphics, color, HUD content, lobby design,
 game-specific settings, and per-round timeout rules (§8). Everything in §1–§2
