@@ -343,6 +343,8 @@ const uint8_t menuN = 43
 #endif
 #ifdef CONFIG_CW_GAME
     + 5    // Games, Morse Invaders, Fight the Pileup, Radio Cave, Morsel
+    + 1    // Trailblazer — see MorseTrailblazer.h
+    + 1    // Fox Hunt — see MorseFoxHunt.h
 #endif
 #ifdef CONFIG_QSO_BOT
     + 4    // QSO Bot, SOTA/POTA, Standard, Contest
@@ -368,6 +370,10 @@ enum menuNo
 #endif
         _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload,
         _wifi_update, _wifi_select, _goToSleep
+#ifdef CONFIG_CW_GAME
+        , _trailblazer  // see MorseTrailblazer.h
+        , _foxHunt      // see MorseFoxHunt.h
+#endif
    };
 
 enum loops
