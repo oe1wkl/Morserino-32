@@ -2749,8 +2749,36 @@ rotating the encoder knob, and pressing it once the right option shows
 up.
 
 The selectable options are **Calibr. Batt.** (calibration of battery
-measurement), **Flip Screen**, **LoRa Config.** and **Cancel** (which
-just leaves this menu and continues with regular start-up of the M32).
+measurement), **Flip Screen**, **LoRa Config.**, **CN3: Touch / CN3:
+Mechan.** (M32 Pocket only — the paddle type on the CN3 connector) and
+**Cancel** (which just leaves this menu and continues with regular
+start-up of the M32).
+
+### CN3 Connector: touch or mechanical paddle (M32 Pocket only)
+
+The M32 Pocket has two paddle inputs: the 3.5 mm jack (for a mechanical
+paddle or key), and the small **CN3** connector, which is normally used
+for the capacitive **touch** paddles. If you prefer, you can instead
+connect a **mechanical** paddle or key to CN3 — no hardware modification
+is needed, only this setting.
+
+The menu item shows the current setting: **CN3: Touch** (the default) or
+**CN3: Mechan.** To change it:
+
+1.  Start your M32 while holding a paddle (touch paddle, the paddle on
+    the 3.5 mm jack, or a straight key) pressed, to enter the Hardware
+    Configuration menu.
+2.  Rotate the ENCODER until the CN3 item shows, and press the ENCODER
+    knob.
+3.  Rotate the ENCODER to choose **Touch** or **Mechanical**, then press
+    the ENCODER knob to confirm.
+
+If you changed the setting, the M32 re-boots so the CN3 pins come up in
+the chosen mode. In **Mechanical** mode the touch paddles on CN3 no
+longer work (the two pins are read as an ordinary paddle instead); the
+3.5 mm jack keeps working in both modes. Note that a mechanical paddle
+plugged into CN3 will also let you into this menu while the setting is
+still on Touch, so you can always switch modes.
 
 ### Flipping the display screen for left-hand use
 

@@ -438,6 +438,9 @@ void MorseJSON::jsonGetHardware(void) {
     JsonObject hw = doc.createNestedObject("hardware");
     hw["brightness"] = MorsePreferences::oledBrightness;
     hw["leftHanded"] = MorsePreferences::leftHanded;
+#ifdef CONFIG_CN3_PADDLE
+    hw["cn3Paddle"] = MorsePreferences::cn3Mechanical ? "mechanical" : "touch";
+#endif
     hw["vAdjust"] = MorsePreferences::vAdjust;
 #ifndef LORA_DISABLED
     hw["loraBand"] = MorsePreferences::loraBand;

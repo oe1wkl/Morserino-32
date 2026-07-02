@@ -3119,8 +3119,38 @@ sobald die richtige Option angezeigt wird.
 Die wählbaren Optionen sind **Calibr. Batt.** (Kalibrierung der
 Akkumessung), **Flip Screen** (Bildschirm umdrehen), **LoRa Config.**
 (LoRa-Konfiguration), **Reset Prefs.** (Einstellungen auf Werksstandard
-zurücksetzen) und **Cancel** (Abbruch; verlässt das Menü und fährt mit
-dem normalen Einschalten des M32 fort).
+zurücksetzen), **CN3: Touch / CN3: Mechan.** (nur M32 Pocket — Paddle-Typ
+am CN3-Anschluss) und **Cancel** (Abbruch; verlässt das Menü und fährt
+mit dem normalen Einschalten des M32 fort).
+
+### CN3-Anschluss: Touch- oder mechanisches Paddle (nur M32 Pocket)
+
+Der M32 Pocket hat zwei Paddle-Eingänge: die 3,5-mm-Klinkenbuchse (für
+ein mechanisches Paddle oder eine Handtaste) und den kleinen
+**CN3**-Anschluss, der normalerweise für die kapazitiven
+**Touch**-Paddles verwendet wird. Wenn du möchtest, kannst du stattdessen
+ein **mechanisches** Paddle oder eine Handtaste an CN3 anschließen — dazu
+ist keine Hardware-Änderung nötig, nur diese Einstellung.
+
+Der Menüpunkt zeigt die aktuelle Einstellung an: **CN3: Touch**
+(Standard) oder **CN3: Mechan.** So änderst du sie:
+
+1.  Starte deinen M32, während du ein Paddle (Touchpaddle, das Paddle an
+    der 3,5-mm-Klinke oder eine Handtaste) gedrückt hältst, um in das
+    Hardware-Konfigurationsmenü zu gelangen.
+2.  Drehe den ENCODER, bis der CN3-Punkt erscheint, und drücke den
+    ENCODER-Knopf.
+3.  Wähle mit dem ENCODER **Touch** oder **Mechanical** und bestätige mit
+    einem Druck auf den ENCODER-Knopf.
+
+Wenn du die Einstellung geändert hast, startet der M32 neu, damit die
+CN3-Pins im gewählten Modus hochfahren. Im **Mechanical**-Modus
+funktionieren die Touch-Paddles an CN3 nicht mehr (die beiden Pins werden
+stattdessen wie ein gewöhnliches Paddle gelesen); die 3,5-mm-Klinke
+funktioniert in beiden Modi. Hinweis: Ein an CN3 angeschlossenes
+mechanisches Paddle lässt dich auch dann in dieses Menü, wenn die
+Einstellung noch auf Touch steht — du kommst also immer wieder in den
+Umschaltdialog.
 
 ### Umdrehen des Bildschirms für linkshändige Bedienung
 
