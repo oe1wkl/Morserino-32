@@ -33,6 +33,14 @@ namespace MorseGridScore {
     uint8_t  koch;        // Koch lesson played at
   };
 
+  // The scoring formula, shared with multiplayer so a multiplayer CPM always
+  // matches what the same run would score solo: adjustedMs() is the elapsed
+  // time plus the per-wrong-entry penalty (also the multiplayer ranking key —
+  // on an identical maze, ascending adjusted time == descending CPM, minus
+  // CPM's rounding ties); cpm() is steps over that, in chars/min.
+  unsigned long adjustedMs(unsigned long elapsedMs, int wrong);
+  uint16_t cpm(unsigned long elapsedMs, int steps, int wrong);
+
   // Compute cpm from the just-finished maze, insert into game g's table if it
   // qualifies, persist on qualification, and return the 0-based rank (or -1
   // if it didn't make the table). Fills `out` with the played score for the

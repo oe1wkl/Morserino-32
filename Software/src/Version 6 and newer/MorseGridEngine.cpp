@@ -144,6 +144,52 @@ void MorseGridEngine::generate() {
 }
 
 //=============================================================================
+// Multiplayer maze transfer — layout: [0]=pathLen, [1..CELLS]=grid chars,
+// then pathLen path cells as row*COLS+col. See header for why the maze
+// travels verbatim rather than a seed.
+//=============================================================================
+
+int MorseGridEngine::exportState(uint8_t *buf, int maxLen) {
+    int need = 1 + GRIDENG_CELLS + pathLen;
+    if (maxLen < need) return 0;
+    buf[0] = (uint8_t)pathLen;
+    memcpy(buf + 1, grid, GRIDENG_CELLS);
+    for (int i = 0; i < pathLen; i++)
+        buf[1 + GRIDENG_CELLS + i] = (uint8_t)(pathRow[i] * GRIDENG_COLS + pathCol[i]);
+    return need;
+}
+
+bool MorseGridEngine::importState(const uint8_t *buf, int len) {
+    if (len < 1) return false;
+    int pl = buf[0];
+    if (pl < 2 || pl > GRIDENG_CELLS) return false;
+    if (len < 1 + GRIDENG_CELLS + pl) return false;
+
+    // Validate the path before touching state: cells in range, start on the
+    // left edge, end on the right edge, consecutive cells orthogonally
+    // adjacent (a corrupt packet must not become a walkable non-maze).
+    uint8_t pc[GRIDENG_CELLS], pr[GRIDENG_CELLS];
+    for (int i = 0; i < pl; i++) {
+        uint8_t cell = buf[1 + GRIDENG_CELLS + i];
+        if (cell >= GRIDENG_CELLS) return false;
+        pc[i] = cell % GRIDENG_COLS;
+        pr[i] = cell / GRIDENG_COLS;
+        if (i > 0) {
+            int dc = (int)pc[i] - pc[i - 1], dr = (int)pr[i] - pr[i - 1];
+            if (abs(dc) + abs(dr) != 1) return false;
+        }
+    }
+    if (pc[0] != 0 || pc[pl - 1] != GRIDENG_COLS - 1) return false;
+
+    memcpy(grid, buf + 1, GRIDENG_CELLS);
+    memcpy(pathCol, pc, pl);
+    memcpy(pathRow, pr, pl);
+    pathLen = pl;
+    pos = 0;
+    return true;
+}
+
+//=============================================================================
 // Queries
 //=============================================================================
 

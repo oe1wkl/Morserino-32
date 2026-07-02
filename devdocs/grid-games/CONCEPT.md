@@ -1,22 +1,23 @@
 # Grid-Maze CW Games — Concept & Design
 
-**Status: DRAFT v0.9 (2026-07-01).** Concept for two new M32 Pocket games
+**Status: v1.0 (2026-07-02).** Concept for two new M32 Pocket games
 proposed by Willi (OE1WKL). Done and confirmed on real hardware: the on-device
 layout prototype (§10 step 0), the shared grid+path engine (§10 step 1), both
 games — Trailblazer (`MorseTrailblazer.*`, step 2) and Fox Hunt
-(`MorseFoxHunt.*`, step 3) — and **scoring + high-score persistence**
-(`MorseGridScore.*`, step 4: chars/min metric, `gridgame` NVS). The throwaway
-Grid Proto menu entry has been **removed**, and each game's ready screen now
-opens its high-score table on a red-button hold. **Next: multiplayer (§10 step
-5)**, then remaining menu-reorg (step 6) and manuals (step 8).
+(`MorseFoxHunt.*`, step 3) — **scoring + high-score persistence**
+(`MorseGridScore.*`, step 4: chars/min metric, `gridgame` NVS), and the
+menu/UX conformance pass (step 6). **Multiplayer (§6, step 5) is implemented**
+— shared `MorseGridNet.*`, same-maze race over ESP-NOW mirroring Morsel —
+and builds on both variants; on-device testing with two Pockets is the next
+verification step. **Remaining: manuals (step 8).**
 
 **Decisions so far:** names = **Trailblazer** (A) + **Fox Hunt** (B); scoring =
 **combined adjusted-time**; grid = **fixed 12 × 4** (revised from 12×5 after
 on-device testing, see §2.2); Game B directions = **N/E/S/W**, legend
 **always shown**; trail colour = **cyan** (§2.7); prosign cell rendering
-confirmed legible at 12×4 (§2.6). **Still open (non-blocking):** whether trail
-colour should be theme-derived rather than a fixed cyan, Game B's on-demand
-replay control input, and multiplayer format (§9).
+confirmed legible at 12×4 (§2.6); multiplayer = **same-maze race**, with the
+**maze itself broadcast**, not a seed (§6). **Still open (non-blocking):**
+whether trail colour should be theme-derived rather than a fixed cyan (Q5).
 
 ---
 
@@ -100,9 +101,16 @@ the feedback differ. That makes them natural siblings to build together.
   whole path was the point), and a test user could then follow the Fox Hunt
   maze by eye **without decoding any CW at all** — defeating the game. Do not
   reintroduce a path preview.
-- The path is generated once per game; in **multiplayer** the server's
-  path **seed** is broadcast so every device generates the identical maze (see
-  §6).
+- The path is generated once per game; in **multiplayer** the server
+  broadcasts the **generated maze itself** (grid + path, ~100 bytes) so every
+  device races the identical one. *(The original idea of broadcasting a path
+  seed was dropped during implementation: `koch.getCharSet()` depends on the
+  Koch **sequence** preference — M32 native / LCWO / CW Academy / LICW /
+  custom — as well as the lesson number, so seed-based regeneration would
+  silently produce different grids on devices with different sequence
+  settings. Broadcasting the maze verbatim is immune to any local-preference
+  divergence — the same reason Morsel broadcasts its actual words rather than
+  pool indices. See §6.)*
 
 ### 2.4 Sound feedback (both games)
 
@@ -364,21 +372,47 @@ table.
 
 ---
 
-## 6. Multiplayer **[PROVISIONAL]** — mirror Morsel
+## 6. Multiplayer — same-maze race, mirroring Morsel — DONE
 
-Reuse Morsel's ESP-NOW model almost verbatim (server/client roles, broadcast
-packets, lobby roster, result reporting, ranked SCORES broadcast):
+Shipped in **`MorseGridNet.cpp/.h`**, one module shared verbatim by both games
+(only the title string and a game id differ). It reuses Morsel's ESP-NOW model
+almost 1:1 — pure broadcast, no pairing; protocol magic **"GRD"** (routed in
+`onEspnowRecv()` next to Morsel's "MSL" branch); receive ring filled in
+callback context, drained in the game loop; server roster keyed by sender MAC
+with a TTL; beacon/join/start/result/scores packet types:
 
-1. One device is **server**, picks Koch lesson + grid size + a **path seed**,
-   and broadcasts them; others **join** in a lobby with a roster.
-2. On start, the seed makes every device generate the **identical maze**, and
-   everyone solves the **same** grid/path — a **race**.
-3. Each device reports its result (time, wrong entries, completed) at finish;
-   the server ranks all players and broadcasts the table; both sides render it.
+1. Each game now opens with a **mode select** (Single player / Multiplayer,
+   Morsel's picker grammar). On Multiplayer, one device becomes **server**
+   (role pick → roster lobby), the rest **join** (client wait screen). The
+   server's session starts at the **full-alphabet Koch default** (41,
+   encoder-adjustable in the lobby; the operator's real lesson is restored on
+   leaving the server role and again in `teardown()`), exactly like Morsel's
+   server lobby.
+2. On START the server `generate()`s under its Koch set and broadcasts the
+   **serialised maze** (`MorseGridEngine::exportState()` — grid chars + path
+   cells, ≤ 97 bytes payload; clients validate and `importState()` it).
+   Everyone then races the **identical maze**. *Why the maze and not a seed:
+   see §2.3 — the Koch sequence preference makes seed-regeneration unsafe.*
+   Clients also **adopt the server's Koch lesson** for the race (restored on
+   leaving the multiplayer flow): the maze travels in the packet, but Fox
+   Hunt's direction legend is computed against the local `koch.getCharSet()`,
+   and a client left at a low lesson would otherwise race with shorter
+   substituted direction letters than the server's canonical N/E/S/W.
+3. Each device reports **elapsed time + wrong entries** when it finishes
+   (resent every second until it appears in the ranking); the server ranks
+   everyone — itself included, competing as a regular player — by **adjusted
+   time** (`MorseGridScore::adjustedMs`, which on an identical maze orders
+   exactly like descending CPM) and broadcasts the table; both sides render
+   it with the **CPM** each result works out to (`MorseGridScore::cpm`, the
+   identical formula as the solo tables — a multiplayer CPM always matches
+   what the same run would have scored solo).
 
-**Race vs. other formats** (e.g. turn-based, or live "ghost" progress bars
-showing how far each opponent has got) is **§9-Q7**. The same-maze race is the
-recommended default — most exciting and closest to Morsel's proven netcode.
+Multiplayer results are **transient** — never written to the `gridgame` NVS
+tables (§7), as in Morsel. The ranking screen's black-click returns to the
+multiplayer lobby with the role kept ("play again"); black-long exits, per
+the §12 games grammar. **Q7 resolved: plain same-maze race** — no turn-based
+mode, no live "ghost" progress (nothing is transmitted during play; the maze
+stays a solo effort until the finish times meet on the ranking screen).
 
 ---
 
@@ -391,7 +425,7 @@ Per CLAUDE.md §4 (one-byte version field; treat an absent stamp as empty):
   (Fox Hunt), each 7 rows of the `GridScore` struct (`MorseGridScore.cpp`).
   An absent or mismatched version stamp yields an empty table, so the format
   can evolve safely. Now the 5th NVS namespace (CLAUDE.md §4 updated).
-- Multiplayer results will be transient (not persisted), as in Morsel — step 5.
+- Multiplayer results are transient (not persisted), as in Morsel (§6).
 
 ---
 
@@ -436,6 +470,13 @@ Per CLAUDE.md §4 (one-byte version field; treat an absent stamp as empty):
 - **Prosign cell layout** (§2.6): the Invaders-style shrink-font-plus-overbar
   treatment, tested at the new 12×4 size up to the MAX Koch lesson (all
   prosigns visible), confirmed legible on real hardware. No fallback needed.
+- **Q6 — Game B on-demand replay control** (§4.2), resolved in step 6:
+  black-knob single-click during play (§1a context split — the game has no
+  pause); documented in `UX_CONVENTIONS.md` §12.
+- **Q7 — Multiplayer format:** plain **same-maze race** (§6) — no turn-based
+  mode, no live-progress "ghosts". **The maze travels in the START packet**
+  (engine export/import), not a path seed — seed-regeneration is unsafe
+  across differing Koch *sequence* preferences (§2.3).
 
 **Open:**
 
@@ -443,11 +484,6 @@ Per CLAUDE.md §4 (one-byte version field; treat an absent stamp as empty):
   cyan above (§2.7)? Needs a look at how Radio Cave / Morsel pick per-theme
   accents before deciding; could add real complexity if no suitable theme
   hook exists.
-- **Q6 — Game B on-demand replay control** (§4.2): which input, now that the
-  red button is reserved for speed/volume (§2.5) — needs a concrete proposal
-  against `UX_CONVENTIONS.md`.
-- **Q7 — Multiplayer format:** same-maze race (recommended) vs. turn-based vs.
-  live-progress race (§6). Lower urgency.
 
 ---
 
@@ -507,8 +543,20 @@ Per CLAUDE.md §4 (one-byte version field; treat an absent stamp as empty):
    duplicated. Each game now tracks start-time + wrong-count per maze and, on
    solve, records the score and shows results instead of the old
    auto-continue. Both variants build clean.
-5. Multiplayer (clone Morsel's netcode: seed/params broadcast, roster, result
-   reporting, ranked SCORES). **← NEXT**
+5. **Multiplayer — DONE (implementation + both-variant builds; two-device
+   on-device test pending).** `MorseGridNet.h`/`.cpp`, one module shared by
+   both games — Morsel's netcode cloned (roster, beacons, result reporting,
+   ranked SCORES; magic "GRD" routed in `onEspnowRecv()`), with two grid-game
+   twists: the START packet carries the **serialised maze**
+   (`MorseGridEngine::exportState()`/`importState()`, replacing the planned
+   seed broadcast — see §2.3/§6 for why) and the ranking uses the shared
+   scoring formula (`MorseGridScore::adjustedMs`/`cpm`, now exposed from the
+   step-4 module so solo and multiplayer can never drift apart). Each game
+   gained a Morsel-style mode select (Single player / Multiplayer) ahead of
+   its ready screen, an `FH_MP_SOLVED`/`TB_MP_SOLVED` end state (transient
+   ranking screen instead of the NVS tables), and a `MorseGridNet::teardown()`
+   call at `run()` exit (ESP-NOW down + Koch lesson restore — same
+   between-game-launches reasoning as Morsel's own teardown).
 6. **Menu / UX conformance — DONE.** Throwaway Grid Proto entry removed
    (2026-07-01). High-score viewer on each game's ready screen via
    **black-knob single-click** (not red-hold — red stays volume-only per §2;
@@ -519,5 +567,8 @@ Per CLAUDE.md §4 (one-byte version field; treat an absent stamp as empty):
 7. Build **both** variants (TFT-only, but confirm the OLED env compiles with
    the feature `#ifdef`-ed out) — done every step so far.
 8. **Manual (EN + DE) sections — still TODO**, deliberately deferred until the
-   feature is complete (multiplayer + cleanup remain), so it's written once
-   against the final shape rather than churned. Tracked here per CLAUDE.md §7.
+   feature is complete so it's written once against the final shape rather
+   than churned. With multiplayer (step 5) implemented, the feature set is now
+   final — the manual sections are unblocked and are the **last remaining
+   step** (after the two-device multiplayer test confirms step 5 on real
+   hardware). Tracked here per CLAUDE.md §7.

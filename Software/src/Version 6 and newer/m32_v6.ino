@@ -54,6 +54,7 @@
 #include "MorsePileup.h"
 #include "MorseRadioCave.h"
 #include "MorseMorsel.h"
+#include "MorseGridNet.h"
 #endif
 
 #ifdef CONFIG_TFT
@@ -3047,6 +3048,16 @@ void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed i
     if (MorseMorsel::morselNetMode && broadcast && len >= 5 &&
         data[0] == 'M' && data[1] == 'S' && data[2] == 'L') {
         MorseMorsel::mslNetOnRecv(mac, data, len);
+        return;
+    }
+    #endif
+
+    // Grid-maze games (Trailblazer / Fox Hunt) multiplayer: same model,
+    // protocol magic "GRD".
+    #ifdef CONFIG_CW_GAME
+    if (MorseGridNet::gridNetMode && broadcast && len >= 5 &&
+        data[0] == 'G' && data[1] == 'R' && data[2] == 'D') {
+        MorseGridNet::onRecv(mac, data, len);
         return;
     }
     #endif

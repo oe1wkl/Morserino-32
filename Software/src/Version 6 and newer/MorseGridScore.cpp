@@ -76,17 +76,23 @@ static void saveTable(int g) {
 // Scoring
 //=============================================================================
 
+unsigned long MorseGridScore::adjustedMs(unsigned long elapsedMs, int wrong) {
+    return elapsedMs + (unsigned long)wrong * GRIDSCORE_WRONG_PENALTY_MS;
+}
+
+uint16_t MorseGridScore::cpm(unsigned long elapsedMs, int steps, int wrong) {
+    unsigned long adjMs = adjustedMs(elapsedMs, wrong);
+    if (adjMs == 0) adjMs = 1;                                   // guard div-by-zero
+    return (uint16_t)(((unsigned long)steps * 60000UL + adjMs / 2) / adjMs);
+}
+
 int MorseGridScore::record(Game g, unsigned long elapsedMs, int steps, int wrong,
                            int koch, GridScore &out) {
     ensureLoaded(g);
 
-    unsigned long adjMs = elapsedMs + (unsigned long)wrong * GRIDSCORE_WRONG_PENALTY_MS;
-    if (adjMs == 0) adjMs = 1;                                   // guard div-by-zero
-    uint16_t cpm = (uint16_t)(((unsigned long)steps * 60000UL + adjMs / 2) / adjMs);
-
     GridScore s;
     s.elapsedMs = elapsedMs;
-    s.cpm       = cpm;
+    s.cpm       = cpm(elapsedMs, steps, wrong);
     s.wrong     = (uint16_t)wrong;
     s.steps     = (uint8_t)steps;
     s.koch      = (uint8_t)koch;

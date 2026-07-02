@@ -210,9 +210,12 @@ Two patterns exist and are **not** yet unified:
 - **Classic Transceiver** (LoRa / WiFi): the peer is configured in preferences
   (`wlanTRXPeer`); the session starts on mode entry (WiFi resolves/broadcasts to
   the peer, LoRa just receives). No interactive pairing screen.
-- **Game multiplayer** (Morsel, Fight the Pileup over ESP-NOW): an explicit
-  **lobby** — "Start as Server" / join, roster, "waiting for server" — set up via
-  `setupESPNow()` after a boot-time `wifiWarmup()`.
+- **Game multiplayer** (Morsel, Fight the Pileup, Trailblazer + Fox Hunt over
+  ESP-NOW): an explicit **lobby** — "Start as Server" / join, roster, "waiting
+  for server" — set up via `setupESPNow()` after a boot-time `wifiWarmup()`.
+  The grid games share one lobby implementation (`MorseGridNet`) that follows
+  Morsel's grammar exactly (mode select → role pick → roster/wait; black-long
+  steps up one level per §12).
 
 The classic Transceiver flow is the incumbent; where game multiplayer concepts
 overlap (initiating a session, showing the peer, handling disconnect) they
