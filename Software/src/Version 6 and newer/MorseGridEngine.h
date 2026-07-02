@@ -46,12 +46,20 @@ namespace MorseGridEngine {
 
   // Generate a fresh grid + hidden path, filling from the current
   // koch.getCharSet() and using the ambient random() stream. Resets the
-  // current position to the start of the path. For deterministic generation
-  // (e.g. multiplayer: all devices must build the identical maze), call
-  // randomSeed() and set MorsePreferences::kochFilter to the agreed lesson
-  // before calling this — the same save/restore-around-a-session convention
-  // Morsel's lobby already uses, not a parameter here.
+  // current position to the start of the path.
   void generate();
+
+  // Multiplayer maze transfer: the server generate()s once and broadcasts the
+  // serialised maze; every client rebuilds the identical one via importState().
+  // The maze itself travels (not a seed + lesson): koch.getCharSet() depends on
+  // the Koch *sequence* preference (M32 native / LCWO / CW Academy / LICW /
+  // custom) as well as the lesson, so seed-based regeneration would silently
+  // produce different grids on devices with different sequence settings — the
+  // same reason Morsel broadcasts its actual words rather than pool indices.
+  // Worst-case size: 1 + GRIDENG_CELLS + GRIDENG_CELLS = 97 bytes.
+  #define GRIDENG_STATE_MAX (1 + 2 * GRIDENG_COLS * GRIDENG_ROWS)
+  int  exportState(uint8_t *buf, int maxLen);   // bytes written, or 0 if maxLen too small
+  bool importState(const uint8_t *buf, int len); // validates; resets position to start
 
   int  pathLength();
   int  currentIndex();

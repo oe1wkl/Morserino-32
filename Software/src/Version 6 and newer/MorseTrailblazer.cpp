@@ -16,6 +16,7 @@
 #include "MorseGame.h"          // gameMode, gameCharBuffer
 #include "MorseGridEngine.h"
 #include "MorseGridScore.h"
+#include "MorseGridNet.h"
 
 #include <LovyanGFX.hpp>
 
@@ -41,12 +42,13 @@ extern boolean leftKey, rightKey;
 // Module state
 //=============================================================================
 
-enum TbState : uint8_t { TB_READY, TB_PLAYING, TB_SOLVED, TB_EXIT };
+enum TbState : uint8_t { TB_MODESEL, TB_READY, TB_PLAYING, TB_SOLVED, TB_MP_SOLVED, TB_EXIT };
 enum TbEnc   : uint8_t { TB_ENC_SPEED, TB_ENC_VOLUME };
 
 static LGFX_Sprite *canvas = nullptr;
 static TbState tbState;
 static TbEnc   tbEnc;
+static bool    tbResumeMp;         // re-enter the MP lobby (role kept) after a ranking
 
 static unsigned long tbStartMs;    // maze start time, for the CPM score
 static int           tbWrong;      // wrong entries this maze
@@ -150,11 +152,38 @@ static void drawSolved() {
 // States
 //=============================================================================
 
+// Reset the per-maze score counters (the maze itself is either generated
+// locally, below, or already in the engine from a multiplayer START).
+static void tbResetScore() {
+    tbStartMs = millis();
+    tbWrong   = 0;
+}
+
 // Generate a fresh maze and reset the per-maze score counters.
 static void tbBeginMaze() {
     MorseGridEngine::generate();
-    tbStartMs = millis();
-    tbWrong   = 0;
+    tbResetScore();
+}
+
+// Mode select + multiplayer lobby — the whole flow is shared with Fox Hunt
+// (MorseGridNet); only the title and game id differ.
+static void stateModeSel() {
+    MorseGridNet::Flow f = MorseGridNet::enter(canvas, "TRAILBLAZER",
+                                               MorseGridScore::TRAILBLAZER, tbResumeMp);
+    tbResumeMp = false;
+    switch (f) {
+        case MorseGridNet::FLOW_SINGLE:                   // normal ready screen
+            tbState = TB_READY;
+            break;
+        case MorseGridNet::FLOW_MP_PLAY:                  // race maze is already
+            gameCharBuffer = 0;                           // in the engine
+            tbResetScore();
+            tbState = TB_PLAYING;
+            break;
+        default:
+            tbState = TB_EXIT;
+            break;
+    }
 }
 
 static void stateReady() {
@@ -209,7 +238,10 @@ static void statePlaying() {
             if (c == MorseGridEngine::nextChar()) {
                 MorseOutput::soundSignalOK();
                 MorseGridEngine::advance();
-                if (MorseGridEngine::atEnd()) { tbState = TB_SOLVED; return; }
+                if (MorseGridEngine::atEnd()) {
+                    tbState = MorseGridNet::isMpGame() ? TB_MP_SOLVED : TB_SOLVED;
+                    return;
+                }
                 drawPlay();
             } else {
                 MorseOutput::soundSignalERR();     // audio only — CONCEPT.md §2.4
@@ -271,6 +303,24 @@ static void stateSolved() {
     }
 }
 
+// Multiplayer end-of-maze: no NVS high score (MP results are transient, like
+// Morsel's) — report the result and show the shared ranking screen instead.
+static void stateMpSolved() {
+    unsigned long elapsed = millis() - tbStartMs;
+    int steps = MorseGridEngine::pathLength() - 1;      // moves = correct entries
+
+    drawSolved();
+    delay(800);                                         // brief acknowledgment
+
+    MorseGridNet::After a = MorseGridNet::results(canvas, elapsed, tbWrong, steps);
+    if (a == MorseGridNet::AGAIN) {
+        tbResumeMp = true;                              // back to the MP lobby
+        tbState = TB_MODESEL;
+    } else {
+        tbState = TB_EXIT;
+    }
+}
+
 //=============================================================================
 // Entry point
 //=============================================================================
@@ -283,18 +333,22 @@ void MorseTrailblazer::run() {
     clearPaddleLatches();
     gameMode = true;
     gameCharBuffer = 0;
-    tbState = TB_READY;
+    tbState = TB_MODESEL;
     tbEnc = TB_ENC_SPEED;
+    tbResumeMp = false;
 
     while (tbState != TB_EXIT) {
         switch (tbState) {
-            case TB_READY:   stateReady();   break;
-            case TB_PLAYING: statePlaying(); break;
-            case TB_SOLVED:  stateSolved();  break;
-            default:         tbState = TB_EXIT; break;
+            case TB_MODESEL:   stateModeSel();  break;
+            case TB_READY:     stateReady();    break;
+            case TB_PLAYING:   statePlaying();  break;
+            case TB_SOLVED:    stateSolved();   break;
+            case TB_MP_SOLVED: stateMpSolved(); break;
+            default:           tbState = TB_EXIT; break;
         }
     }
 
+    MorseGridNet::teardown();   // stop packet routing + ESP-NOW, restore Koch
     gameMode = false;
     gameCharBuffer = 0;
     MorsePreferences::writePreferences("morserino");   // persist any speed/volume

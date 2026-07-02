@@ -16,6 +16,7 @@
 #include "MorseGame.h"          // gameMode, gameCharBuffer
 #include "MorseGridEngine.h"
 #include "MorseGridScore.h"
+#include "MorseGridNet.h"
 #include "MorseCwEngine.h"
 
 #include <LovyanGFX.hpp>
@@ -48,12 +49,13 @@ extern KEYERSTATES keyerState;
 // Module state
 //=============================================================================
 
-enum FhState : uint8_t { FH_READY, FH_PLAYING, FH_SOLVED, FH_EXIT };
+enum FhState : uint8_t { FH_MODESEL, FH_READY, FH_PLAYING, FH_SOLVED, FH_MP_SOLVED, FH_EXIT };
 enum FhEnc   : uint8_t { FH_ENC_SPEED, FH_ENC_VOLUME };
 
 static LGFX_Sprite *canvas = nullptr;
 static FhState fhState;
 static FhEnc   fhEnc;
+static bool    fhResumeMp;         // re-enter the MP lobby (role kept) after a ranking
 static unsigned long fhNextReplayAt;
 
 static unsigned long fhStartMs;    // maze start time, for the CPM score
@@ -200,12 +202,40 @@ static void drawSolved() {
 // States
 //=============================================================================
 
-// Generate a fresh maze, play its first clue, and reset the per-maze score.
-static void fhBeginMaze() {
-    MorseGridEngine::generate();
+// Reset the per-maze score counters and play the first clue (the maze itself
+// is either generated locally, below, or already in the engine from a
+// multiplayer START).
+static void fhStartRun() {
     fhStartMs = millis();
     fhWrong   = 0;
     playClue();
+}
+
+// Generate a fresh maze, play its first clue, and reset the per-maze score.
+static void fhBeginMaze() {
+    MorseGridEngine::generate();
+    fhStartRun();
+}
+
+// Mode select + multiplayer lobby — the whole flow is shared with Trailblazer
+// (MorseGridNet); only the title and game id differ.
+static void stateModeSel() {
+    MorseGridNet::Flow f = MorseGridNet::enter(canvas, "FOX HUNT",
+                                               MorseGridScore::FOXHUNT, fhResumeMp);
+    fhResumeMp = false;
+    switch (f) {
+        case MorseGridNet::FLOW_SINGLE:                   // normal ready screen
+            fhState = FH_READY;
+            break;
+        case MorseGridNet::FLOW_MP_PLAY:                  // race maze is already
+            gameCharBuffer = 0;                           // in the engine
+            fhStartRun();
+            fhState = FH_PLAYING;
+            break;
+        default:
+            fhState = FH_EXIT;
+            break;
+    }
 }
 
 static void stateReady() {
@@ -269,7 +299,7 @@ static void statePlaying() {
                 MorseGridEngine::advance();
                 if (MorseGridEngine::atEnd()) {
                     MorseCwEngine::playStop();
-                    fhState = FH_SOLVED;
+                    fhState = MorseGridNet::isMpGame() ? FH_MP_SOLVED : FH_SOLVED;
                     return;
                 }
                 delay(FH_OK_PAUSE_MS);   // deliberate breath — otherwise the OK
@@ -347,6 +377,24 @@ static void stateSolved() {
     }
 }
 
+// Multiplayer end-of-maze: no NVS high score (MP results are transient, like
+// Morsel's) — report the result and show the shared ranking screen instead.
+static void stateMpSolved() {
+    unsigned long elapsed = millis() - fhStartMs;
+    int steps = MorseGridEngine::pathLength() - 1;      // moves = correct entries
+
+    drawSolved();
+    delay(800);                                         // brief acknowledgment
+
+    MorseGridNet::After a = MorseGridNet::results(canvas, elapsed, fhWrong, steps);
+    if (a == MorseGridNet::AGAIN) {
+        fhResumeMp = true;                              // back to the MP lobby
+        fhState = FH_MODESEL;
+    } else {
+        fhState = FH_EXIT;
+    }
+}
+
 //=============================================================================
 // Entry point
 //=============================================================================
@@ -359,19 +407,23 @@ void MorseFoxHunt::run() {
     clearPaddleLatches();
     gameMode = true;
     gameCharBuffer = 0;
-    fhState = FH_READY;
+    fhState = FH_MODESEL;
     fhEnc = FH_ENC_SPEED;
+    fhResumeMp = false;
 
     while (fhState != FH_EXIT) {
         switch (fhState) {
-            case FH_READY:   stateReady();   break;
-            case FH_PLAYING: statePlaying(); break;
-            case FH_SOLVED:  stateSolved();  break;
-            default:         fhState = FH_EXIT; break;
+            case FH_MODESEL:   stateModeSel();  break;
+            case FH_READY:     stateReady();    break;
+            case FH_PLAYING:   statePlaying();  break;
+            case FH_SOLVED:    stateSolved();   break;
+            case FH_MP_SOLVED: stateMpSolved(); break;
+            default:           fhState = FH_EXIT; break;
         }
     }
 
     MorseCwEngine::playStop();
+    MorseGridNet::teardown();   // stop packet routing + ESP-NOW, restore Koch
     gameMode = false;
     gameCharBuffer = 0;
     MorsePreferences::writePreferences("morserino");   // persist any speed/volume

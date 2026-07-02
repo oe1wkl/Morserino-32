@@ -1550,8 +1550,10 @@ close to 700 Hz.
 
 The Morserino Pocket features now CW-based games that make learning and
 practicing Morse code more engaging. Games are found under the "Games"
-menu entry. Four games are currently available: **Morse Invaders**,
-**Fight the Pileup**, **Radio Cave**, and **Morsel**.
+menu entry. Six games are currently available: **Morse Invaders**,
+**Fight the Pileup**, **Radio Cave**, **Morsel**, **Trailblazer**, and
+**Fox Hunt**. The last two are a pair of grid-maze games that share the same
+playing field — Trailblazer trains sending, Fox Hunt trains receiving.
 
 ### Morse Invaders
 
@@ -2074,6 +2076,116 @@ Your own row is highlighted in yellow. The screen updates live as more players f
 
 The protocol is **ESP-NOW broadcast** on a fixed channel — no router, internet, or pairing is needed; all devices in radio range simply hear each other. The soft cap is **20 players** per match. A device that loses contact with the server is dropped from the displayed ranking after about 8 seconds.
 
+### Trailblazer
+
+**Trailblazer** and **Fox Hunt** (the next section) are a matched pair of grid-maze games. Both put you on the same playing field: a grid of 12 × 4 random characters, drawn from your current Koch lesson, with a **start** cell on the left edge, an **end** cell on the right edge, and a hidden, winding **path** between them. You travel that path one cell at a time, from start to finish. The two games differ only in what you must do to take each step — Trailblazer trains **sending**, Fox Hunt trains **receiving**.
+
+In **Trailblazer**, the next cell on the path is **highlighted** on the display. You simply **key that visible character** in Morse to move into it. Correct keying advances you and lights up the next cell; a wrong character sounds an error tone and you stay put. Because the target letter is always in plain sight, Trailblazer is fundamentally a **sending drill** — the maze gives it a sense of journey and progress, and a natural scoring axis (how quickly and cleanly you send your way to the end).
+
+Trailblazer is only available on the M32 Pocket. It is playable from **Koch lesson 6** upward.
+
+#### Starting the Game {-}
+
+From the main menu, navigate to **Games → Trailblazer**. You first see a **Single player / Multiplayer** chooser (turn the encoder to move, click to pick). Choosing **Single player** brings up the ready screen, which shows the game name, your current Koch lesson, and the controls. **Touch a paddle to start.** (Multiplayer is described at the end of this section.)
+
+On the ready screen:
+
+| Control | Action |
+|---------|--------|
+| **Paddle / key** | Start a new maze |
+| **Encoder (knob)** | Adjust your keying WPM (or volume — see below) |
+| **FN short press** | Toggle the encoder between speed and volume |
+| **Encoder click** | View the high-score table |
+| **Encoder long press** | Quit back to the main menu |
+
+#### Playing {-}
+
+The full grid is shown, with your current position marked by a token and the **next** path cell highlighted in yellow. Key the highlighted character on your paddles. Each correct character moves you into the cell, draws the trail behind you in cyan, and highlights the following cell. Keep going until you reach the end marker on the right edge — the screen then shows **Solved!** and your score.
+
+A wrong character just sounds a short error tone and leaves you where you are; every wrong entry counts against your score, so clean sending pays off. Only the trail **behind** you is ever drawn — the path ahead is never shown, so you follow it one lit cell at a time.
+
+Pro signs can appear as grid cells once your Koch lesson has reached them. They are shown as their conventional two-letter abbreviation (`AS`, `KA`, `KN`, `SK`, `VE`, `BK`, `AR`) with a bar above, exactly as in the other modes; key the pro sign itself to enter such a cell.
+
+#### Controls During the Game {-}
+
+| Control | Action |
+|---------|--------|
+| **Paddles** | Key the highlighted character |
+| **Encoder** | Adjust your keying WPM |
+| **FN short press** | Toggle the encoder between speed and volume |
+| **Encoder long press** | Quit back to the main menu |
+
+#### Scoring and High Scores {-}
+
+Your score is an **effective speed in characters per minute (CPM)** — higher is better. It is the number of steps you took (the path length) divided by your **adjusted time**: the raw solve time plus a **5-second penalty for every wrong entry**. Dividing by the path length makes scores fair across mazes of different lengths, and turns the result into a meaningful CW figure: your effective sending speed.
+
+After you solve a maze, a results screen shows the CPM, the number of steps, wrong entries, your time, and the Koch lesson played at; if the result makes the top-7 list a `NEW HIGH SCORE` banner appears. Clicking the encoder opens the **high-score table** (kept separately for each game, persisted in non-volatile storage); a further press starts a fresh maze, and a long press exits. You can also open the high-score table from the ready screen with an encoder click.
+
+#### Multiplayer {-}
+
+Trailblazer and Fox Hunt can both be played as a **same-maze race** against other M32 Pockets in the same room. One device acts as the **server**: it picks the Koch lesson, generates the maze, and broadcasts it so that **every device races the identical grid and path** at the same time. The first to reach the end with the best effective speed wins. The multiplayer flow is shared by both games and works exactly the same in each.
+
+At the **Single player / Multiplayer** chooser, pick **Multiplayer**. You then choose a role:
+
+| Role | Action |
+|------|--------|
+| **Start as Server** | Opens the server lobby. The session starts at the full alphabet (Koch 41) so a mixed group has a common character set; adjust it down with the encoder if you like. The list fills with players as they join. Click the encoder to start the race. |
+| **Join a game** | Opens the client lobby. It searches for a server's broadcast and shows its Koch lesson once found. Wait for the server operator to start; the maze then arrives and your race begins automatically. |
+
+A long press of the encoder steps back one level — from a server or client lobby to the role picker, from the role picker to the Single/Multiplayer chooser, and from there out of the game.
+
+Your identity on the network is taken from the **call sign / player name** shared with Fight the Pileup and Morsel. If neither is set, a short MAC-derived tag is used automatically.
+
+::: note
+When you join a game, your device adopts the server's Koch lesson for the race, so the grid — and Fox Hunt's direction keys — are the same for everyone. Your own training lesson is restored when you leave the game.
+:::
+
+When you finish, your device reports its time and wrong-entry count; the server ranks everyone (itself included, competing as a regular player) and broadcasts a **Ranking** screen that all devices show identically. Each row lists the rank, player, the effective CPM, the time, and the number of wrong entries; your own row is highlighted in yellow. Click the encoder to return to the multiplayer lobby for another race, or long-press to exit. Multiplayer results are **not** saved to the high-score tables.
+
+The networking is **ESP-NOW broadcast** on a fixed channel — no router, internet, or pairing needed; all devices in range hear each other, with a soft cap of 20 players.
+
+### Fox Hunt
+
+**Fox Hunt** is the receiving counterpart to Trailblazer, played on the same 12 × 4 grid with a hidden path from the left edge to the right edge (see the Trailblazer section for the shared playing field). The difference is how you take each step: instead of showing you the next cell, the device **plays its character in Morse code**. You must recognise the character by ear, spot which of the neighbouring cells holds it, and **key the direction** toward it. Correct direction → you advance and the next character is played; wrong → an error tone, and you stay put.
+
+This trains **receiving by ear** with a spatial twist — you have to both decode the character and locate it among the neighbours. You could guess one of the four directions blindly, but every wrong key costs your score, so decoding is the efficient route.
+
+Fox Hunt is only available on the M32 Pocket, and is playable from **Koch lesson 6** upward.
+
+#### Direction Keys {-}
+
+Directions are keyed as single letters using the **compass** convention — the same one Radio Cave uses:
+
+| Direction | Compass letter |
+|-----------|----------------|
+| Up    | **N** (north) |
+| Right | **E** (east) |
+| Down  | **S** (south) |
+| Left  | **W** (west) |
+
+A four-arrow **legend** is shown on screen at all times, so you never have to remember the mapping. Because the compass letters are not all learned early in the Koch order, any that you have not yet learned are automatically **substituted** by another character from your current lesson; the legend always shows the actual letter to key for each direction (a substituted key is drawn in yellow). You key the **direction**, never the heard character itself — a keyed letter that is not in the legend is treated as a wrong move.
+
+#### Starting and Controls {-}
+
+From the main menu, navigate to **Games → Fox Hunt**, then pick **Single player** or **Multiplayer** (multiplayer works exactly as described for Trailblazer above — the two games share one lobby). On the single-player ready screen, touch a paddle to start.
+
+| Control | Action |
+|---------|--------|
+| **Paddles** | Key the direction (N/E/S/W or its substitute) toward the heard character |
+| **Encoder** | Adjust your keying WPM (or volume) |
+| **FN short press** | Toggle the encoder between speed and volume |
+| **Encoder click (ready screen)** | View the high-score table |
+| **Encoder click (during play)** | Replay the current character |
+| **Encoder long press** | Quit back to the main menu |
+
+#### Playing {-}
+
+On arrival at each cell, the device plays the next character once, at your current keying speed and shifted slightly in pitch so you can tell it apart from your own sidetone. Decode it, find the neighbouring cell that holds it, and key the direction toward that cell. If you are idle for a few seconds, the character **replays** automatically; you can also replay it on demand at any time with an **encoder click**. As in Trailblazer, only the trail behind you is drawn — the path ahead is never revealed, so you must rely on your ears.
+
+#### Scoring, High Scores, and Multiplayer {-}
+
+Scoring, the results and high-score screens, and multiplayer all work exactly as in Trailblazer (effective CPM with a 5-second penalty per wrong entry; a separate high-score table for Fox Hunt; the same server/client same-maze race). See the Trailblazer section above for the details.
+
 ## WiFi Functions
 
 Apart from the functionality of WiFi Transceiver, you can use the WiFi
@@ -2482,8 +2594,9 @@ Call Sign accepts letters, digits and the slash; Op Name accepts letters and a
 space. The current value is shown next to the preference.
 
 **Reset Scores** clears the saved high scores and game progress for all games
-(Morse Invaders, Morsel and Radio Cave). Selecting it shows a confirmation:
-press **FN** to confirm, or click the ENCODER to cancel.
+(Morse Invaders, Morsel, Radio Cave, and the Trailblazer and Fox Hunt
+grid-maze games). Selecting it shows a confirmation: press **FN** to confirm,
+or click the ENCODER to cancel.
 
 ## List of All Morserino-32 preferences
 
@@ -2621,7 +2734,7 @@ These items appear at the very end of the preferences list. The first two set yo
 |---|---|---|
 | Call Sign | Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in **Fight the Pileup** and the **QSO Bot**. | up to 8 characters (stored as UPPER CASE) |
 | Op Name | Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case and used together with your call sign in **Fight the Pileup**. | up to 8 characters (stored as UPPER CASE) |
-| Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, and the **Radio Cave** saved progress. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
+| Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, the **Radio Cave** saved progress, and the **Trailblazer** and **Fox Hunt** high-score tables. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
 
 
 
