@@ -478,6 +478,7 @@ uint8_t MorsePreferences::loraBand = 0;                     // 0 = 433, 1 = 868,
 uint32_t MorsePreferences::loraQRG = QRG433;                // for 70 cm band
 uint8_t MorsePreferences::loraPower = 14;                   // default 14 dBm = 25 mW
 boolean MorsePreferences::leftHanded = false;               // to flip screen for left-handed use in Pocket
+boolean MorsePreferences::cn3Mechanical = false;            // CN3 connector: false = capacitive touch (default), true = mechanical paddle/key
 
   ///// stored in preferences, but not adjustable through preferences menu:
 
@@ -1022,6 +1023,11 @@ String MorsePreferences::getValueLine(prefPos pos) {
         case 4:   str = "LoRa Config.";
                   break;
 #endif
+#ifdef CONFIG_CN3_PADDLE
+        case HWCONF_CN3_SLOT:
+                  str = MorsePreferences::cn3Mechanical ? "CN3: Mechan." : "CN3: Touch";
+                  break;
+#endif
         default:  str = "Cancel";
                   break;
         }
@@ -1289,7 +1295,10 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                   MorsePreferences::vAdjust = constrain(MorsePreferences::vAdjust, 155, 254);
                                   break;
                       case posHwConf:
-                      #ifndef LORA_DISABLED
+                      #ifdef CONFIG_CN3_PADDLE
+                                  hwConf += (t + HWCONF_NUM_SLOTS);
+                                  hwConf = hwConf % HWCONF_NUM_SLOTS;
+                      #elif !defined(LORA_DISABLED)
                                   hwConf += (t+5);
                                   hwConf = hwConf % 5;
                       #else
@@ -1472,7 +1481,12 @@ void MorsePreferences::readScreenPref() {
   if (pref.isKey("leftHanded")) { // has this been set yet?
     MorsePreferences::leftHanded = pref.getBool("leftHanded");
   }   else
-    MorsePreferences::leftHanded = false;  
+    MorsePreferences::leftHanded = false;
+#ifdef CONFIG_CN3_PADDLE
+  // CN3 paddle mode is a hardware-config toggle read early (before initSensors / checkKey),
+  // like leftHanded. Absent key = default (capacitive touch).
+  MorsePreferences::cn3Mechanical = pref.getBool("cn3Mech", false);
+#endif
   pref.end();
 }
 
@@ -1829,6 +1843,63 @@ void MorsePreferences::flipScreen() {
   pref.putBool("leftHanded", MorsePreferences::leftHanded);
   pref.end();
 }
+
+#ifdef CONFIG_CN3_PADDLE
+// Hardware Config menu action: let the user choose whether the CN3 connector carries a
+// capacitive touch paddle (default) or a mechanical paddle/key. Modeled on confirmDelete()
+// for the encoder chooser and on flipScreen() for the persist step. When the setting
+// changes we reboot, so IO4/IO5 are re-initialised for the chosen mode from a clean state
+// (touch peripheral vs. INPUT_PULLUP) in setup().
+void MorsePreferences::cn3PaddleConfig() {
+  const String emptyLine = "                    ";
+  const int maxLength = 18;
+  String valueLine;
+  int8_t t;
+  uint8_t choice = MorsePreferences::cn3Mechanical ? 1 : 0;   // 0 = Touch, 1 = Mechanical
+  const char* options[] = {"Touch", "Mechanical"};
+
+  MorseOutput::clearStatusLine();
+  MorseOutput::clearScrollLines();
+  MorseOutput::printOnStatusLine(true, 0, "CN3 Paddle Type:");
+  String itemLine = "CN3 Connector";
+  itemLine += emptyLine.substring(0, maxLength - itemLine.length());
+  MorseOutput::printOnScroll(1, BOLD, 0, itemLine);
+
+  valueLine = String(options[choice]);
+  valueLine += emptyLine.substring(0, maxLength - valueLine.length());
+  MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
+  MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
+  MorseOutput::refreshDisplay();
+
+  while (true) {
+    Buttons::modeButton.Update();
+    switch (Buttons::modeButton.clicks) {
+      case -1 :   // long press = cancel, leave setting unchanged
+                  return;
+      case  1 : { // short press = confirm current selection
+                  boolean newVal = (choice == 1);
+                  if (newVal != MorsePreferences::cn3Mechanical) {
+                      MorsePreferences::cn3Mechanical = newVal;
+                      pref.begin("morserino", false);
+                      pref.putBool("cn3Mech", newVal);
+                      pref.end();
+                      ESP.restart();          // reboot so IO4/IO5 come up in the chosen mode
+                  }
+                  return;
+                }
+    }
+    if ((t = checkEncoder())) {
+      MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+      choice = (choice + 1) % 2;              // toggle between Touch and Mechanical
+      valueLine = String(options[choice]);
+      valueLine += emptyLine.substring(0, maxLength - valueLine.length());
+      MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
+      MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
+      MorseOutput::refreshDisplay();
+    }
+  }
+}
+#endif // CONFIG_CN3_PADDLE
 
 void MorsePreferences::fireCharSeen(boolean wpmOnly)
 {

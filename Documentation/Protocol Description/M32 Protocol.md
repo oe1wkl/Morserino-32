@@ -577,7 +577,7 @@ Example:
 
 This returns read-only information about hardware settings. These values are displayed for informational purposes and cannot be changed via the serial protocol (so a backup tool can read them for reference, but cannot restore them).
 
-The properties are: "brightness" (type Number; OLED brightness level), "leftHanded" (type Boolean; whether screen is flipped for left-handed use), and "vAdjust" (type Number; battery voltage calibration value). On devices with LoRa hardware, the response also includes "loraBand" (type Number; 0=433, 1=868, 2=920 MHz), "loraFrequency" (type Number; exact frequency in Hz), and "loraPower" (type Number; transmit power in dBm).
+The properties are: "brightness" (type Number; OLED brightness level), "leftHanded" (type Boolean; whether screen is flipped for left-handed use), and "vAdjust" (type Number; battery voltage calibration value). On the M32 Pocket the response also includes "cn3Paddle" (type String; "touch" or "mechanical" — the paddle type configured for the CN3 connector). On devices with LoRa hardware, the response also includes "loraBand" (type Number; 0=433, 1=868, 2=920 MHz), "loraFrequency" (type Number; exact frequency in Hz), and "loraPower" (type Number; transmit power in dBm).
 
 Example (M32 with LoRa):
 
