@@ -1569,8 +1569,11 @@ Tonfrequenz nicht so nahe an 700 Hz liegen.
 
 Der Morserino Pocket bietet jetzt CW-basierte Spiele, die das Lernen
 und Üben des Morsecodes unterhaltsamer gestalten. Die Spiele sind unter
-dem Menüpunkt „**Games**" zu finden. Derzeit sind vier Spiele verfügbar:
-**Morse Invaders**, **Fight the Pileup**, **Radio Cave** und **Morsel**.
+dem Menüpunkt „**Games**" zu finden. Derzeit sind sechs Spiele verfügbar:
+**Morse Invaders**, **Fight the Pileup**, **Radio Cave**, **Morsel**,
+**Trailblazer** und **Fox Hunt**. Die beiden letzten sind ein Paar
+Gitter-Labyrinth-Spiele mit demselben Spielfeld — Trailblazer trainiert
+das Geben, Fox Hunt das Aufnehmen.
 
 ### Morse Invaders
 
@@ -2358,6 +2361,213 @@ Obergrenze liegt bei **20 Spielern** pro Match. Ein Client, der die
 Verbindung zum Server verliert, wird nach etwa 8 Sekunden aus der
 angezeigten Rangliste entfernt.
 
+### Trailblazer
+
+**Trailblazer** und **Fox Hunt** (nächster Abschnitt) sind ein
+zusammengehöriges Paar von Gitter-Labyrinth-Spielen. Beide verwenden
+dasselbe Spielfeld: ein Gitter aus 12 × 4 zufälligen Zeichen aus deiner
+aktuellen Koch-Lektion, mit einer **Startzelle** am linken Rand, einer
+**Zielzelle** am rechten Rand und einem verborgenen, gewundenen **Pfad**
+dazwischen. Du folgst diesem Pfad Zelle für Zelle vom Start zum Ziel. Die
+beiden Spiele unterscheiden sich nur darin, was du für jeden Schritt tun
+musst — Trailblazer trainiert das **Geben**, Fox Hunt das **Aufnehmen**.
+
+Bei **Trailblazer** ist die nächste Zelle des Pfads am Display
+**hervorgehoben**. Du gibst einfach dieses sichtbare Zeichen in Morse, um
+in die Zelle vorzurücken. Richtiges Geben bringt dich weiter und hebt die
+nächste Zelle hervor; ein falsches Zeichen erzeugt einen Fehlerton, und du
+bleibst stehen. Weil das Zielzeichen stets sichtbar ist, ist Trailblazer im
+Kern eine **Gebeübung** — das Labyrinth gibt ihr das Gefühl einer Reise mit
+sichtbarem Fortschritt und eine natürliche Wertungsachse (wie schnell und
+sauber du dich bis zum Ziel gibst).
+
+Trailblazer ist nur am M32 Pocket verfügbar. Es ist ab **Koch-Lektion 6**
+spielbar.
+
+#### Spielstart {-}
+
+Navigiere im Hauptmenü zu **Games → Trailblazer**. Zuerst erscheint eine
+Auswahl **Single player / Multiplayer** (Encoder drehen zum Wechseln,
+Klick zum Auswählen). **Single player** öffnet den Bereitschafts-Bildschirm
+mit Spielname, aktueller Koch-Lektion und den Bedienelementen. **Berühre
+ein Paddle, um zu starten.** (Der Mehrspielermodus ist am Ende dieses
+Abschnitts beschrieben.)
+
+Am Bereitschafts-Bildschirm:
+
+| Bedienelement | Aktion |
+|---------------|--------|
+| **Paddle / Taste** | Neues Labyrinth starten |
+| **Encoder (Knopf)** | Deine Gebe-WpM ändern (oder Lautstärke — siehe unten) |
+| **FN kurz** | Encoder zwischen Tempo und Lautstärke umschalten |
+| **Encoder-Klick** | Bestenliste anzeigen |
+| **Encoder lang** | Zurück zum Hauptmenü |
+
+#### Ablauf {-}
+
+Das gesamte Gitter wird angezeigt, deine aktuelle Position mit einem Token
+markiert und die **nächste** Pfadzelle gelb hervorgehoben. Gib das
+hervorgehobene Zeichen auf den Paddles. Jedes richtige Zeichen bringt dich in
+die Zelle, zeichnet die Spur in Cyan hinter dir und hebt die folgende Zelle
+hervor. Mach weiter, bis du die Zielmarke am rechten Rand erreichst — dann
+zeigt das Display **Solved!** und deine Wertung.
+
+Ein falsches Zeichen erzeugt nur einen kurzen Fehlerton und lässt dich stehen;
+jede Fehleingabe zählt gegen deine Wertung, sauberes Geben lohnt sich also. Es
+wird immer nur die Spur **hinter** dir gezeichnet — der Pfad voraus wird nie
+gezeigt, du folgst ihm Zelle für Zelle.
+
+Sobald deine Koch-Lektion sie erreicht hat, können auch Prozeichen als
+Gitterzellen auftreten. Sie werden als übliche zweibuchstabige Abkürzung
+(`AS`, `KA`, `KN`, `SK`, `VE`, `BK`, `AR`) mit Balken darüber dargestellt,
+genau wie in den anderen Betriebsarten; gib das Prozeichen selbst, um in eine
+solche Zelle vorzurücken.
+
+#### Bedienung während des Spiels {-}
+
+| Bedienelement | Aktion |
+|---------------|--------|
+| **Paddles** | Das hervorgehobene Zeichen geben |
+| **Encoder** | Deine Gebe-WpM ändern |
+| **FN kurz** | Encoder zwischen Tempo und Lautstärke umschalten |
+| **Encoder lang** | Zurück zum Hauptmenü |
+
+#### Wertung und Bestenliste {-}
+
+Deine Wertung ist eine **effektive Geschwindigkeit in Zeichen pro Minute
+(CPM)** — höher ist besser. Sie ist die Anzahl deiner Schritte (die Pfadlänge)
+geteilt durch deine **angepasste Zeit**: die reine Lösungszeit plus einer
+**5-Sekunden-Strafe für jede Fehleingabe**. Das Teilen durch die Pfadlänge
+macht die Wertungen über verschieden lange Labyrinthe hinweg vergleichbar und
+verwandelt das Ergebnis in eine aussagekräftige CW-Kennzahl: deine effektive
+Gebegeschwindigkeit.
+
+Nach dem Lösen zeigt ein Ergebnis-Bildschirm die CPM, die Anzahl der Schritte,
+die Fehleingaben, deine Zeit und die gespielte Koch-Lektion; schafft es das
+Ergebnis in die Top-7-Liste, erscheint ein `NEW HIGH SCORE`-Banner. Ein
+Encoder-Klick öffnet die **Bestenliste** (für jedes Spiel getrennt, im
+nichtflüchtigen Speicher gesichert); ein weiterer Druck startet ein neues
+Labyrinth, ein langer Druck beendet das Spiel. Die Bestenliste lässt sich auch
+vom Bereitschafts-Bildschirm aus mit einem Encoder-Klick öffnen.
+
+#### Mehrspielermodus {-}
+
+Trailblazer und Fox Hunt lassen sich beide als **Rennen auf demselben
+Labyrinth** gegen andere M32 Pockets im selben Raum spielen. Ein Gerät ist der
+**Server**: Es wählt die Koch-Lektion, erzeugt das Labyrinth und überträgt es,
+sodass **jedes Gerät dasselbe Gitter und denselben Pfad** zeitgleich spielt.
+Wer als Erster mit der besten effektiven Geschwindigkeit das Ziel erreicht,
+gewinnt. Der Mehrspieler-Ablauf ist für beide Spiele gleich.
+
+Wähle bei der Auswahl **Single player / Multiplayer** den Punkt
+**Multiplayer**. Danach wählst du eine Rolle:
+
+| Rolle | Aktion |
+|-------|--------|
+| **Start as Server** | Öffnet die Server-Lobby. Die Sitzung startet mit dem vollen Alphabet (Koch 41), damit eine gemischte Gruppe einen gemeinsamen Zeichensatz hat; mit dem Encoder kannst du ihn herunterregeln. Die Liste füllt sich mit den beitretenden Spielern. Ein Encoder-Klick startet das Rennen. |
+| **Join a game** | Öffnet die Client-Lobby. Sie sucht den Beacon eines Servers und zeigt dessen Koch-Lektion, sobald er gefunden ist. Warte, bis der Server-Bediener startet; das Labyrinth kommt dann an und dein Rennen beginnt automatisch. |
+
+Ein langer Druck auf den Encoder geht eine Ebene zurück — von einer Server-
+oder Client-Lobby zur Rollenauswahl, von dort zur Auswahl
+Einzel-/Mehrspieler und schließlich aus dem Spiel heraus.
+
+Deine Kennung im Netz wird aus dem mit „Fight the Pileup" und Morsel geteilten
+**Rufzeichen / Spielernamen** übernommen. Ist nichts gesetzt, wird automatisch
+eine kurze MAC-basierte Kennung verwendet.
+
+::: note
+Beim Beitritt übernimmt dein Gerät für das Rennen die Koch-Lektion des Servers,
+sodass das Gitter — und die Richtungstasten von Fox Hunt — für alle gleich
+sind. Deine eigene Trainingslektion wird beim Verlassen des Spiels
+wiederhergestellt.
+:::
+
+Wenn du fertig bist, meldet dein Gerät seine Zeit und die Zahl der
+Fehleingaben; der Server erstellt die Rangliste (er selbst spielt als
+gleichberechtigter Teilnehmer mit) und überträgt einen **Ranking**-Bildschirm,
+den alle Geräte identisch anzeigen. Jede Zeile nennt Rang, Spieler, die
+effektive CPM, die Zeit und die Zahl der Fehleingaben; deine eigene Zeile ist
+gelb hervorgehoben. Ein Encoder-Klick führt zurück in die Multiplayer-Lobby
+für ein weiteres Rennen, ein langer Druck beendet das Spiel.
+Mehrspieler-Ergebnisse werden **nicht** in die Bestenlisten übernommen.
+
+Das Funkprotokoll ist **ESP-NOW-Broadcast** auf einem festen Kanal — weder
+Router noch Internet oder Pairing nötig; alle Geräte in Reichweite empfangen
+einander, mit einer weichen Obergrenze von 20 Spielern.
+
+### Fox Hunt
+
+**Fox Hunt** ist das Aufnahme-Gegenstück zu Trailblazer, gespielt auf demselben
+12 × 4-Gitter mit verborgenem Pfad vom linken zum rechten Rand (das gemeinsame
+Spielfeld ist im Trailblazer-Abschnitt beschrieben). Der Unterschied liegt
+darin, wie du jeden Schritt machst: Statt dir die nächste Zelle zu zeigen,
+**spielt das Gerät ihr Zeichen in Morse**. Du musst das Zeichen nach Gehör
+erkennen, herausfinden, welche der Nachbarzellen es enthält, und die
+**Richtung** dorthin geben. Richtige Richtung → du rückst vor, und das nächste
+Zeichen wird gespielt; falsch → ein Fehlerton, und du bleibst stehen.
+
+Das trainiert das **Aufnehmen nach Gehör** mit einer räumlichen Note — du musst
+das Zeichen dekodieren *und* es unter den Nachbarn verorten. Du könntest eine
+der vier Richtungen blind raten, aber jede Fehleingabe kostet Wertung, das
+Dekodieren ist also der effizientere Weg.
+
+Fox Hunt ist nur am M32 Pocket verfügbar und ab **Koch-Lektion 6** spielbar.
+
+#### Richtungstasten {-}
+
+Richtungen werden als einzelne Buchstaben nach der **Kompass**-Konvention
+gegeben — dieselbe, die Radio Cave verwendet:
+
+| Richtung | Kompassbuchstabe |
+|----------|------------------|
+| Oben   | **N** (Nord) |
+| Rechts | **E** (Ost) |
+| Unten  | **S** (Süd) |
+| Links  | **W** (West) |
+
+Eine **Legende** mit vier Pfeilen wird ständig am Display gezeigt, sodass du dir
+die Zuordnung nie merken musst. Da die Kompassbuchstaben in der Koch-Reihenfolge
+nicht alle früh gelernt werden, wird jeder noch nicht gelernte automatisch durch
+ein anderes Zeichen deiner aktuellen Lektion **ersetzt**; die Legende zeigt für
+jede Richtung stets den tatsächlich zu gebenden Buchstaben (eine Ersatztaste ist
+gelb dargestellt). Du gibst die **Richtung**, niemals das gehörte Zeichen selbst
+— ein gegebener Buchstabe, der nicht in der Legende steht, gilt als Fehlzug.
+
+#### Start und Bedienung {-}
+
+Navigiere im Hauptmenü zu **Games → Fox Hunt** und wähle dann **Single player**
+oder **Multiplayer** (der Mehrspielermodus funktioniert genau wie bei
+Trailblazer oben — beide Spiele teilen sich eine Lobby). Berühre am
+Einzelspieler-Bereitschaftsbildschirm ein Paddle, um zu starten.
+
+| Bedienelement | Aktion |
+|---------------|--------|
+| **Paddles** | Die Richtung (N/E/S/W oder Ersatz) zum gehörten Zeichen geben |
+| **Encoder** | Deine Gebe-WpM ändern (oder Lautstärke) |
+| **FN kurz** | Encoder zwischen Tempo und Lautstärke umschalten |
+| **Encoder-Klick (Bereitschaft)** | Bestenliste anzeigen |
+| **Encoder-Klick (im Spiel)** | Das aktuelle Zeichen wiederholen |
+| **Encoder lang** | Zurück zum Hauptmenü |
+
+#### Ablauf {-}
+
+Bei Ankunft an jeder Zelle spielt das Gerät das nächste Zeichen einmal, in
+deinem aktuellen Gebetempo und leicht in der Tonhöhe verschoben, damit du es von
+deinem eigenen Mithörton unterscheiden kannst. Dekodiere es, finde die
+Nachbarzelle, die es enthält, und gib die Richtung dorthin. Bleibst du einige
+Sekunden untätig, wird das Zeichen automatisch **wiederholt**; du kannst es
+außerdem jederzeit mit einem **Encoder-Klick** erneut abspielen. Wie bei
+Trailblazer wird nur die Spur hinter dir gezeichnet — der Pfad voraus wird nie
+enthüllt, du musst dich also auf deine Ohren verlassen.
+
+#### Wertung, Bestenliste und Mehrspieler {-}
+
+Wertung, die Ergebnis- und Bestenlisten-Bildschirme sowie der Mehrspielermodus
+funktionieren genau wie bei Trailblazer (effektive CPM mit 5-Sekunden-Strafe je
+Fehleingabe; eine eigene Bestenliste für Fox Hunt; dasselbe
+Server/Client-Rennen auf demselben Labyrinth). Die Einzelheiten stehen im
+Trailblazer-Abschnitt oben.
+
 ## WiFi Functions
 
 Neben der WiFi-Transceiver-Funktionalität kannst du die WLAN-Funktion
@@ -2764,7 +2974,8 @@ akzeptiert Buchstaben und ein Leerzeichen. Der aktuelle Wert wird neben der
 Einstellung angezeigt.
 
 **Reset Scores** löscht die gespeicherten Bestenlisten und den Spielfortschritt
-aller Spiele (Morse Invaders, Morsel und Radio Cave). Beim Auswählen erscheint
+aller Spiele (Morse Invaders, Morsel, Radio Cave sowie die Gitter-Labyrinth-Spiele
+Trailblazer und Fox Hunt). Beim Auswählen erscheint
 eine Bestätigung: **FN** drücken zum Bestätigen, oder den ENCODER klicken zum
 Abbrechen.
 
@@ -2893,7 +3104,7 @@ Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen 
 |---|---|---|
 | **Call Sign** | Dein eigenes Amateurfunk-Rufzeichen. Gib es mit dem Encoder und den Tasten ein. Es wird in Großbuchstaben gespeichert und als dein Stationsrufzeichen in **Fight the Pileup** und im **QSO Bot** verwendet. | bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert) |
 | **Op Name** | Dein Operatorname (z.B. dein Vorname). Gib ihn mit dem Encoder und den Tasten ein. Er wird in Großbuchstaben gespeichert und zusammen mit deinem Rufzeichen in **Fight the Pileup** verwendet. | bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert) |
-| **Reset Scores** | Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele — die Bestenliste von **Morse Invaders**, die Bestwerte von **Morsel** und den gespeicherten Fortschritt von **Radio Cave**. Du wirst gebeten, mit der **FN**-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.) | mit FN bestätigen |
+| **Reset Scores** | Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele — die Bestenliste von **Morse Invaders**, die Bestwerte von **Morsel**, den gespeicherten Fortschritt von **Radio Cave** sowie die Bestenlisten von **Trailblazer** und **Fox Hunt**. Du wirst gebeten, mit der **FN**-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.) | mit FN bestätigen |
 
 # Anhänge
 
