@@ -6,10 +6,13 @@ layout prototype (§10 step 0), the shared grid+path engine (§10 step 1), both
 games — Trailblazer (`MorseTrailblazer.*`, step 2) and Fox Hunt
 (`MorseFoxHunt.*`, step 3) — **scoring + high-score persistence**
 (`MorseGridScore.*`, step 4: chars/min metric, `gridgame` NVS), and the
-menu/UX conformance pass (step 6). **Multiplayer (§6, step 5) is implemented**
-— shared `MorseGridNet.*`, same-maze race over ESP-NOW mirroring Morsel —
-and builds on both variants; on-device testing with two Pockets is the next
-verification step. **Remaining: manuals (step 8).**
+menu/UX conformance pass (step 6). **Multiplayer (§6, step 5) is
+implemented and confirmed on real hardware** (two Pockets) — shared
+`MorseGridNet.*`, same-maze race over ESP-NOW mirroring Morsel. The
+**manuals (EN + DE, step 8) are done** — Trailblazer + Fox Hunt sections
+covering the shared field, both games' single-player loops, scoring, and the
+shared multiplayer race, plus Reset Scores now listing the grid-game tables.
+**The feature is complete.**
 
 **Decisions so far:** names = **Trailblazer** (A) + **Fox Hunt** (B); scoring =
 **combined adjusted-time**; grid = **fixed 12 × 4** (revised from 12×5 after
@@ -566,9 +569,13 @@ Per CLAUDE.md §4 (one-byte version field; treat an absent stamp as empty):
    `UX_CONVENTIONS.md` §12; result-screen wording is Title-Case per that spec.
 7. Build **both** variants (TFT-only, but confirm the OLED env compiles with
    the feature `#ifdef`-ed out) — done every step so far.
-8. **Manual (EN + DE) sections — still TODO**, deliberately deferred until the
-   feature is complete so it's written once against the final shape rather
-   than churned. With multiplayer (step 5) implemented, the feature set is now
-   final — the manual sections are unblocked and are the **last remaining
-   step** (after the two-device multiplayer test confirms step 5 on real
-   hardware). Tracked here per CLAUDE.md §7.
+8. **Manual (EN + DE) sections — DONE.** Written once against the final shape
+   after multiplayer (step 5) was confirmed on hardware:
+   `Documentation/User Manual/Version 8.x/manual_en.md` + `manual_de.md` gained
+   **Trailblazer** and **Fox Hunt** sections (shared 12×4 field, both games'
+   single-player loops, N/E/S/W legend + substitution, effective-CPM scoring
+   and high scores, and the shared same-maze multiplayer race), the games
+   intro went four → six games, and the Reset Scores entries now list the
+   grid-game tables. Both HTML + PDF regenerated via `build.sh`. A companion
+   firmware fix made Reset Scores actually clear the `gridgame` NVS namespace
+   (it was the only game store it had been skipping).
