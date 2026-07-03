@@ -417,6 +417,9 @@ enum prefPos : uint8_t {
         posQsoBotContestType,
         posQsoBotLevel,
 #endif
+#ifdef CONFIG_BLE_SERIAL
+        posBleSerial,
+#endif
   posSerialOut,
                 // to be treated differently:
                 posKochFilter,                                                                                // 36

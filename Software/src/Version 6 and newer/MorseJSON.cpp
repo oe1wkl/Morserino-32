@@ -389,11 +389,15 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     custom["active"] = snapPref.getBool("useCustomChar", false);
     custom["characters"] = snapPref.getString("customCharSet", "");
 
-    // All pliste[] parameters (except posTimeOut and posSerialOut which are excluded from snapshots)
+    // All pliste[] parameters (except posTimeOut, posBleSerial and posSerialOut which are excluded from snapshots)
     JsonArray configs = snap.createNestedArray("configs");
     for (uint8_t i = 0; i < posSerialOut; ++i) {
         if (i == posTimeOut)
             continue;  // not stored in snapshots
+#ifdef CONFIG_BLE_SERIAL
+        if (i == posBleSerial)
+            continue;  // not stored in snapshots
+#endif
         uint8_t val = snapPref.getUChar(prefName[i], 255);
         if (val == 255)
             continue;  // not present in this snapshot
