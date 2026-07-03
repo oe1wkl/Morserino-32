@@ -2142,11 +2142,10 @@ void MorseOutput::soundSignalERR() {
 #endif
 }
 
-// V9.0 audio accessibility: play a pre-rendered voice clip from SPIFFS (/voice/<id>.mp3).
-// Blocking (the clip plays to completion, like the echo OK/ERR sounds). No-op on builds
-// without the I2S codec.
 // V9.0 audio accessibility: thin wrappers over the sidetone library's async clip API.
-// Non-blocking; the firmware polls voiceService() from its loops (see MorseVoice).
+// Non-blocking; the firmware polls voiceService() from its loops (see MorseVoice). All
+// pipeline work (file open/close, mixer routing, per-clip decoder reset) happens inside
+// the library's audio task -- the firmware never touches the decode pipeline directly.
 bool MorseOutput::voiceStart(const char* path) {
 #ifdef CONFIG_SOUND_I2S
     return sidetone.startClip(path);
@@ -2164,10 +2163,5 @@ bool MorseOutput::voiceService() {
 void MorseOutput::voiceStop() {
 #ifdef CONFIG_SOUND_I2S
     sidetone.stopClip();
-#endif
-}
-void MorseOutput::voiceResetDecoder() {
-#ifdef CONFIG_SOUND_I2S
-    sidetone.resetDecoder();
 #endif
 }

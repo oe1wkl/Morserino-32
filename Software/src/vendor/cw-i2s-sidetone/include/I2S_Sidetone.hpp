@@ -5,6 +5,8 @@
 #include "AudioTools/AudioCodecs/CodecMP3Helix.h"
 #include "BlackmanHarrisEnvelope.hpp"
 #include "ComplexRotorSine.hpp"
+#include "freertos/FreeRTOS.h"
+#include "freertos/queue.h"
 
 class I2S_Sidetone {
 	public:
@@ -18,20 +20,23 @@ class I2S_Sidetone {
     void off();
     bool playSPIFFSFile(const char *filename);
     // --- Async (non-blocking) clip playback for V9.0 audio accessibility -----------------
-    // startClip() returns immediately; poll serviceClip() from the main loop to advance and
-    // finish playback; stopClip() hands the mixer back the instant the file is read.
-    bool startClip(const char *filename);
-    bool serviceClip();
-    void stopClip();
-    // Reset the reused MP3 decoder to clear state that slowly accumulates across many clips.
-    // ONLY call when no clip is playing (mixer on the sidetone): end() races the audio task.
-    void resetDecoder();
+    // The AUDIO TASK owns the entire clip lifecycle (file open, mixer routing, decoder
+    // reset): startClip()/stopClip() only post a command into a 1-deep mailbox (latest
+    // wins) and return immediately. No other task ever mutates the decode pipeline while
+    // the copier is running -- cross-task mutation was the root of a whole class of
+    // freezes and crashes (including every failed decoder-reset attempt).
+    bool startClip(const char *filename);   // returns false if the file does not exist
+    bool serviceClip();                     // true while a clip is pending or playing
+    void stopClip();                        // interrupt the current/pending clip
     bool isClipPlaying();
+    uint32_t clipsPlayed();                 // diagnostics: completed clips since boot
     bool isOn();
     void tick();
     size_t readBytes (uint8_t *data, size_t len);
     int available ();
+    void audioLoop();                       // audio-task context ONLY: one command + one copy()
 	private:
+    void teardownClip();                    // audio-task context ONLY
     I2SStream *i2s;
     ComplexRotorSine *sine;
     GeneratedSoundStream<int16_t> *in;
@@ -46,7 +51,13 @@ class I2S_Sidetone {
     InputMixer<int16_t> *mixer;
 
     float frequency;
-    bool clipPlaying = false;     // V9.0 async clip playback state
-    uint32_t fileDoneAt = 0;      // millis() when the clip file finished reading (0 = reading)
-    AudioInfo clipCfg;            // saved decode config, to re-begin() the decoder per clip
+    // --- V9.0 async clip state ---
+    struct ClipCmd { uint8_t op; char path[40]; };  // op: 0 = stop, 1 = play
+    QueueHandle_t clipQueue = nullptr;   // UI -> audio-task mailbox (depth 1, xQueueOverwrite)
+    volatile bool clipBusy = false;      // set by UI on play request, cleared by the audio task
+    bool clipPlaying = false;            // audio-task private: mixer currently on the decoder
+    volatile uint32_t clipsDone = 0;     // diagnostics counter
+    size_t   wdLastPos = 0;              // watchdog: last observed file position
+    uint32_t wdLastMs = 0;               // watchdog: last time the position advanced
+    AudioInfo clipCfg;                   // saved decode config, to re-begin() the decoder per clip
 };

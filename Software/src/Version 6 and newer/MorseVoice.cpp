@@ -15,6 +15,9 @@
 #include "MorseOutput.h"
 #include "voice_clips.h"   // generated: voiceLookup[] (UI string -> clip id), sorted by strcmp
 #include <string.h>
+#ifdef CONFIG_AUDIO_A11Y_DIAG
+#include <esp_heap_caps.h>
+#endif
 
 // An "utterance" is a short sequence of clip ids (e.g. heading + value, or "pro sign" + two
 // phonetic letters). announce() starts a new pending utterance; announceMore() appends to it.
@@ -72,7 +75,16 @@ void MorseVoice::announceMore(const String& text) {    // append to the pending 
 void MorseVoice::tick() {
 #ifdef CONFIG_AUDIO_A11Y
     if (playing) {                                     // advance the clip in progress
-        if (!MorseOutput::voiceService()) { playing = false; seqPos++; }
+        if (!MorseOutput::voiceService()) {
+            playing = false; seqPos++;
+#ifdef CONFIG_AUDIO_A11Y_DIAG
+            // Leak diagnosis for the (former) very-late freeze: watch these across hundreds
+            // of clips -- a steady decline means something still accumulates per clip.
+            Serial.printf("[a11y] clip done: heap=%u minEver=%u maxBlock=%u\n",
+                          ESP.getFreeHeap(), ESP.getMinFreeHeap(),
+                          heap_caps_get_largest_free_block(MALLOC_CAP_8BIT));
+#endif
+        }
         else return;
     }
     char path[24];                                     // "/voice/" + 8 hex + ".mp3" + NUL
@@ -87,9 +99,9 @@ void MorseVoice::tick() {
         snprintf(path, sizeof(path), "/voice/%s.mp3", seq[0]);
         MorseOutput::voiceStart(path); playing = true;
     }
-    // NB: an idle-pause decoder reset (end()/begin()) was tried here to clear the slow
-    // accumulation behind the very-late freeze, but end()/begin() crashes even when idle, so
-    // it is removed. The slow leak needs a different approach (see HANDOFF / heap diagnosis).
+    // NB: the decoder is reset per clip by the AUDIO TASK itself (vendor/cw-i2s-sidetone,
+    // audioLoop/teardownClip) -- that is the only context where end()/begin() cannot race
+    // the copier. Resetting from here (the UI task) crashed every time it was tried.
 #endif
 }
 

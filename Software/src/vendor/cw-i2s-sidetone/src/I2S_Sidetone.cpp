@@ -2,13 +2,12 @@
 
 static void audio_task(void *userData)
 {
-  StreamCopy *copier = (StreamCopy*)userData;
-  // Serial.println("copier task running");
-  // Serial.print("Stream Copier status:");
-  // Serial.println(copier->isActive());
+  // The audio task owns the whole decode pipeline: it processes clip commands AND runs the
+  // copier, strictly sequentially (see I2S_Sidetone::audioLoop). copy() blocks on the I2S
+  // DMA queue, which is what lets lower-priority tasks run despite our high priority.
+  I2S_Sidetone *st = (I2S_Sidetone*)userData;
   while (1) {
-    copier->copy();
-    // taskYIELD();
+    st->audioLoop();
   }
 }
 
@@ -81,7 +80,8 @@ void I2S_Sidetone::begin(int samplerate, int bps, int channels, int buffer_size)
     volume->setVolume(0.8);
 
     AudioLogger::instance().begin(Serial,AudioLogger::Error);
-    xTaskCreatePinnedToCore(audio_task, "audio", 4096, (void*)copier, configMAX_PRIORITIES - 1, nullptr, 1);
+    clipQueue = xQueueCreate(1, sizeof(ClipCmd));   // V9.0: UI -> audio-task command mailbox
+    xTaskCreatePinnedToCore(audio_task, "audio", 4096, (void*)this, configMAX_PRIORITIES - 1, nullptr, 1);
 }
 void I2S_Sidetone::setADSR(float attack=0.001, float decay=0.001, float sustainLevel=0.5, float release=0.005) {
     adsr->setAttackRate(attack);
@@ -116,6 +116,13 @@ void I2S_Sidetone::off() {
 }
 
 bool I2S_Sidetone::playSPIFFSFile(const char *filename) {
+    // If an async voice clip is in flight, stop it and wait for the audio task to hand the
+    // mixer back: the blocking path below mutates the same decoder/mixer from this task.
+    if (clipBusy) {
+        stopClip();
+        uint32_t t0 = millis();
+        while (clipBusy && millis() - t0 < 500) delay(5);
+    }
     if(SPIFFS.exists(filename)) {
         mp3file = SPIFFS.open(filename, "r");
         if(!mp3file){
@@ -138,58 +145,88 @@ bool I2S_Sidetone::isOn() {
 }
 
 // ---- V9.0 async clip playback ---------------------------------------------------------
-// Non-blocking MP3 clip playback for menu / voice announcements. Unlike playSPIFFSFile()
-// (which blocks and never drains the decoder, so rapid clips overflow the bounded result
-// queue and stall the copier task), these reset the decoder per clip via end()+begin() so
-// the queue can never accumulate -- enabling smooth, interruptible announcements.
+// Non-blocking MP3 clip playback for menu / voice announcements. The UI-facing calls below
+// only post commands into the 1-deep mailbox; ALL pipeline mutation (file open/close, mixer
+// routing, decoder reset) happens in audioLoop()/teardownClip() inside the audio task,
+// strictly sequential with copy(). History: mutating the pipeline from the UI task while
+// the audio task was copying caused freezes (result-queue wedge) and crashes (every
+// cross-task decoder end()/begin() attempt) -- do not move any of it back to the UI side.
 
 bool I2S_Sidetone::startClip(const char *filename) {
-    if (clipPlaying) stopClip();                 // interrupt any current clip first
-    if (!SPIFFS.exists(filename)) return false;
-    mp3file = SPIFFS.open(filename, "r");
-    if (!mp3file) return false;
-    decoder->setStream(&mp3file);
-    mixer->set(0, *decoder);                     // route the mixer to the decoder
-    fileDoneAt = 0;
-    clipPlaying = true;
+    if (!clipQueue || !SPIFFS.exists(filename)) return false;
+    ClipCmd cmd; cmd.op = 1;
+    strlcpy(cmd.path, filename, sizeof(cmd.path));
+    clipBusy = true;                 // reflect the request until the audio task takes over
+    xQueueOverwrite(clipQueue, &cmd);
     return true;
 }
 
 bool I2S_Sidetone::serviceClip() {
-    // Poll from the main loop. Returns true while a clip is still playing. We hand the mixer
-    // back to the sidetone the INSTANT the file is fully read -- exactly like the proven
-    // (blocking) playSPIFFSFile -- instead of holding the mixer on the decoder past EOF.
-    // Reading the decoder repeatedly past end-of-file is what eventually wedged it (the small
-    // ~81 ms result queue is already drained, so there is nothing to wait for anyway).
-    if (!clipPlaying) return false;
-    if (mp3file.available())                       // still feeding the decoder from the file
-        return true;
-    stopClip();                                    // file done -> hand the mixer back immediately
-    return false;
+    // Poll from the main loop: true while a clip is pending or playing. The audio task does
+    // all the work; this is a pure state query now.
+    return clipBusy;
 }
 
 void I2S_Sidetone::stopClip() {
-    if (!clipPlaying) return;
-    clipPlaying = false;
-    mixer->set(0, *effects);                      // hand the mixer back to the sidetone path. SAME teardown
-    mp3file.close();                              // as the proven playSPIFFSFile -- we do NOT call decoder
-    fileDoneAt = 0;                               // end()/begin() here: that races the high-priority audio
-                                                  // task (which may still be reading the decoder) and crashes.
-                                                  // Reusing the decoder via setStream() is safe; the result
-                                                  // queue stays empty because each clip fully drains (see
-                                                  // serviceClip) before we stop -- no mid-clip interrupt.
+    if (!clipQueue || !clipBusy) return;
+    ClipCmd cmd; cmd.op = 0; cmd.path[0] = '\0';
+    xQueueOverwrite(clipQueue, &cmd);   // overwrites an unconsumed play request: latest wins
 }
 
 bool I2S_Sidetone::isClipPlaying() {
-    return clipPlaying;
+    return clipBusy;
 }
 
-void I2S_Sidetone::resetDecoder() {
-    // Clear MP3-decoder state that slowly accumulates when the decoder is reused across many
-    // clips (a very-late freeze). end()/begin() resets the reader + decoder. SAFE ONLY when no
-    // clip is playing: the mixer is on the sidetone (effects) and the audio task is not reading
-    // the decoder, so we don't race it. The firmware calls this during an idle pause.
-    if (clipPlaying) return;
+uint32_t I2S_Sidetone::clipsPlayed() {
+    return clipsDone;
+}
+
+void I2S_Sidetone::audioLoop() {
+    // AUDIO-TASK CONTEXT ONLY. One command, clip progress bookkeeping, then one copy().
+    // Everything here runs strictly sequentially with copy(), so the pipeline is never
+    // mutated while it is being read.
+    ClipCmd cmd;
+    if (clipQueue && xQueueReceive(clipQueue, &cmd, 0) == pdTRUE) {
+        if (clipPlaying) teardownClip();             // interrupt whatever is playing
+        if (cmd.op == 1) {
+            mp3file = SPIFFS.open(cmd.path, "r");
+            if (mp3file) {
+                decoder->setStream(&mp3file);
+                mixer->set(0, *decoder);             // route the mixer to the decoder
+                clipPlaying = true;
+                clipBusy = true;
+                wdLastPos = 0; wdLastMs = millis();
+            } else
+                clipBusy = false;                    // open failed -> back to idle
+        } else
+            clipBusy = false;                        // stop with nothing (left) playing
+    }
+    if (clipPlaying) {
+        if (!mp3file.available()) {
+            // File fully read -> hand the mixer back immediately (like the proven blocking
+            // path); holding the mixer on the decoder past EOF is what wedged it before.
+            teardownClip();
+        } else {
+            // Watchdog: if the file position stops advancing, the pipeline is stuck --
+            // force-recover instead of hanging forever. Normal clips are ~1 s long.
+            size_t pos = mp3file.position();
+            if (pos != wdLastPos) { wdLastPos = pos; wdLastMs = millis(); }
+            else if (millis() - wdLastMs > 2000) teardownClip();
+        }
+    }
+    copier->copy();
+}
+
+void I2S_Sidetone::teardownClip() {
+    // AUDIO-TASK CONTEXT ONLY. Resetting the decoder here cannot race the copier (same
+    // task, sequential) -- this is the safe home for the end()/begin() reset that clears
+    // whatever the reused Helix decoder / reader queue accumulates across many clips
+    // (the cause of the freeze that only appeared after very many announcements).
+    mixer->set(0, *effects);              // hand the mixer back to the sidetone path
+    mp3file.close();
     decoder->end();
     decoder->begin(clipCfg);
+    clipPlaying = false;
+    clipsDone = clipsDone + 1;
+    clipBusy = false;
 }
