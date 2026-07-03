@@ -1082,7 +1082,8 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
     valueLine = String(options[choice]);
     valueLine += emptyLine.substring(0, maxLength - valueLine.length());
     MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
-    MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
+    if (protocolActive())                   // was ungated (pre-tee, un-handshaken USB received it) — see DESIGN.md
+        MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
 
     while (true) {
@@ -1111,7 +1112,8 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
             valueLine = String(options[choice]);
             valueLine += emptyLine.substring(0, maxLength - valueLine.length());
             MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
-            MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
+            if (protocolActive())
+                MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
 
         }
     }

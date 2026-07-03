@@ -43,8 +43,11 @@ struct BleByteRing {
 
   volatile uint16_t head = 0;             // producer-owned, free-running (masked on access)
   volatile uint16_t tail = 0;             // consumer-owned, free-running
-  volatile uint16_t connectMark = 0;      // latched by the producer task at session start
+  volatile uint16_t connectMark = 0;      // latched by the producer task at session start/end
   volatile bool overflow = false;         // set by producer on a dropped write, cleared by consumer
+  volatile bool poisoned = false;         // set by producer with overflow, cleared by consumer once drained:
+                                          // while set, NO new write is admitted, so a torn line can never be
+                                          // spliced to post-overflow bytes — the seam is always at ring-empty
   uint8_t buf[N];
 
   uint16_t used() const { return (uint16_t)(head - tail); }
@@ -52,8 +55,9 @@ struct BleByteRing {
 
   // producer: all-or-nothing — a torn command line must never enter the ring
   bool produce(const uint8_t *d, uint16_t len) {
-    if (len > free_()) {
+    if (poisoned || len > free_()) {
       overflow = true;
+      poisoned = true;
       return false;
     }
     uint16_t h = head;
@@ -89,11 +93,16 @@ struct BleByteRing {
     return true;
   }
 
-  void latchMark() { connectMark = head; }    // producer task only (connect callback)
-  void resetToMark() { tail = connectMark; }  // consumer task only: tail <= mark <= head always holds
+  // producer task only. Must be called at BOTH session edges (connect AND
+  // disconnect): the mark separates sessions, and a stale mark would make
+  // resetToMark() rewind tail over already-consumed bytes and replay them.
+  void latchMark() { connectMark = head; }
+  void resetToMark() { tail = connectMark; }  // consumer task only; valid while the mark is fresh (see above)
+  void clearPoisoned() { poisoned = false; }  // consumer task only, after draining to empty
   void hardReset() {                          // ONLY legal with the producer stopped (server down)
     head = tail = connectMark = 0;
     overflow = false;
+    poisoned = false;
   }
 };
 

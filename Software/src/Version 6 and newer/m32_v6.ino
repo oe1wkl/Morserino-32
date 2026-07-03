@@ -1334,7 +1334,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   static long latencytimer;                // timer for "muting" paddles for some time in state INTER_ELEMENT
   static long corrTime;
   unsigned int pitch;
-#ifdef CONFIG_BLUETOOTH_KEYBOARD  // only when BLE is compiled in (biggest heap user) we check heap size here, and only every 10 seconds, to avoid too much overhead
+#if defined(CONFIG_BLUETOOTH_KEYBOARD) || defined(CONFIG_BLE_SERIAL)  // only when BLE is compiled in (biggest heap user) we check heap size here, and only every 10 seconds, to avoid too much overhead
     static unsigned long lastHeapCheck = 0;
     if (millis() - lastHeapCheck > 10000) {
         lastHeapCheck = millis();
@@ -3836,6 +3836,7 @@ void bleSerialEvent() {
     bleInputString = "";
     bleDiscardLine = false;
   }
+  bool dispatched = false;
   while (MorseBleSerial::readByte(b)) {                     // returns false immediately after stop()
     if (bleDiscardLine) {                                   // tail of a runaway line: swallow up to \n, execute nothing
       if (b == '\n')
@@ -3843,18 +3844,16 @@ void bleSerialEvent() {
       continue;
     }
     bleInputString += (char) b;
-    if (bleInputString.length() > 400) {                    // no legitimate command is this long
-      bleInputString = "";
+    if (bleInputString.length() > 400) {                    // no legitimate command is this long; USB accepts such
+      bleInputString = "";                                  // lines, so at least say why BLE did not
       bleDiscardLine = true;
+      MorseJSON::jsonError("BLE LINE TOO LONG");
       continue;
     }
     if (b != '\n')
       continue;
     bleInputString.trim();
-    if (MorseBleSerial::takeRxOverflow()) {                 // ring overflowed while this line was assembling:
-      MorseJSON::jsonError("BLE RX OVERFLOW");              // the line is torn — discard, report once
-    }
-    else if (!bleProtocol) {                                // pre-handshake: only the protocol/on probe is recognized
+    if (!bleProtocol) {                                     // pre-handshake: only the protocol/on probe is recognized
       if (bleInputString.equalsIgnoreCase("put device/protocol/on")) {
         bleProtocol = true;
         MorseJSON::jsonDevice(brd, vsn);
@@ -3869,7 +3868,17 @@ void bleSerialEvent() {
     else
       serialDecode(bleInputString);                         // one shared protocol engine, no duplication
     bleInputString = "";
+    dispatched = true;
     break;                                                  // one completed line per poll — see header comment
+  }
+  // RX overflow: the ring poisons itself on a dropped write (no new bytes are
+  // admitted until drained), so everything consumed above was intact pre-drop
+  // data — dispatched normally. Once the ring runs empty, the assembling
+  // line's tail is known lost: discard the dead prefix and report once.
+  if (!dispatched && MorseBleSerial::takeRxOverflow()) {
+    bleInputString = "";
+    bleDiscardLine = false;
+    MorseJSON::jsonError("BLE RX OVERFLOW");
   }
 }
 #endif // CONFIG_BLE_SERIAL

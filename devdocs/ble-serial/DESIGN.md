@@ -54,6 +54,55 @@ BLE Serial; the top-menu backstop in `menu_()` restarts it.
   is ~30 ms. Protocol replies (`txEnqueue`) self-drain for at most 20 ms,
   then drop and count `txDropped`.
 
+## Adversarial implementation review (2026-07-02) — outcome
+
+A 5-dimension multi-agent review (concurrency/BLE-stack, protocol semantics,
+CLAUDE.md conformance, plan fidelity, regression risk) with two independent
+verification votes per finding confirmed 12 findings; all were fixed in the
+same session (commit "review fixes"):
+
+- **critical:** disconnect replayed the whole session's RX bytes as executed
+  commands (mark latched only at connect) → mark is now re-latched in
+  `onDisconnect`; regression host test `testDisconnectRelatchNoReplay`.
+- mtuPayload now resets to 20 per connection (stale large MTU = silent ATT
+  truncation); `init()` verifies controller+Bluedroid status after
+  `BLEDevice::init` (whose failures are swallowed by the library) before
+  `createServer`, with a sticky-failure latch so polling sites don't retry
+  every pass; RX overflow re-designed (ring poisons itself until drained —
+  no spliced line can ever dispatch, intact pre-drop lines still execute);
+  `txEnqueue` got a back-off latch (a congestion episode costs the loop task
+  at most one 20 ms wait total, not 20 ms per byte); `bleProtocol` also
+  cleared in the pump session reset (handshake/disconnect race); overlong
+  BLE lines now report `BLE LINE TOO LONG`; the top-menu restart backstop
+  also runs in the menu wait loop (a `_wifi_*` function returns there, not
+  through `menu_()`'s top — without this BLE never resumed, and a pref
+  toggled ON from the top menu never started); `confirmDelete()`'s two
+  `jsonConfigShort` calls gated on `protocolActive()` (see below); heap
+  monitor `#ifdef` widened to `CONFIG_BLE_SERIAL`.
+
+**Known residual risks (accepted, documented):**
+
+- `BLECharacteristic::notify()` runs on the loop task while the Bluedroid
+  task mutates the server's connection map on disconnect; the library has no
+  locking. Window is minimized (fresh `linkUp()` check each drain iteration)
+  but cannot be closed from outside the library. Panel severity: minor.
+- The library leaks the `BLEServer`/`BLEService`/`BLECharacteristic`/
+  `BLE2902` objects on every `deinit(false)` → `init()` cycle (our own
+  callback objects are static). Roughly a few hundred bytes to ~1 KB per
+  suspend/restart cycle; measure in hardware checklist item 10.
+- Flag-on behavior delta vs master: `confirmDelete()` (delete-snapshot
+  dialog) used to emit `{"config":…}` JSON to a **never-handshaken** USB
+  terminal (the only two ungated emission sites in the codebase). These are
+  now gated on `protocolActive()` like every sibling site — handshaken
+  clients see no difference. Judged a pre-existing inconsistency, aligned
+  rather than preserved.
+- `MorseBluetooth::stopBluetooth()`'s `deinit(false)` change is compile-flag
+  gated, so flag-on builds change the BT-keyboard stop path even for users
+  who never enable BLE Serial (likely fixing the latent hang below, but
+  less free heap for a subsequent WiFi session than the old `deinit(true)`
+  path). **Hardware verification of checklist items 10–13 is a hard
+  pre-merge gate.**
+
 ## Deliberate raw-`Serial` exemptions
 
 Do **not** "fix" these into the `m32out` tee:

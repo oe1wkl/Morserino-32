@@ -44,16 +44,38 @@ static void testUint16FreeRunningWrap() {
 
 static void testOverflowAllOrNothing() {
   BleByteRing<16> r;
-  uint8_t d[20];
+  uint8_t d[20], b;
   memset(d, 0xAA, sizeof(d));
   CHECK(r.produce(d, 12));
   CHECK(!r.produce(d, 8));        // 12 + 8 > 16: dropped whole
   CHECK(r.overflow);
+  CHECK(r.poisoned);
   CHECK(r.used() == 12);          // ring content untouched
-  r.overflow = false;
-  CHECK(r.produce(d, 4));         // exactly full is fine
+  CHECK(!r.produce(d, 2));        // poisoned: NOTHING is admitted, even though it would fit —
+  CHECK(r.used() == 12);          // this is what makes a spliced line impossible
+  while (r.consume(b)) {}         // consumer drains the intact pre-drop bytes...
+  r.overflow = false;             // ...then takes the overflow (takeRxOverflow equivalent)
+  r.clearPoisoned();
+  CHECK(r.produce(d, 16));        // exactly full is fine again
   CHECK(r.used() == 16);
   CHECK(!r.overflow);
+}
+
+static void testDisconnectRelatchNoReplay() {
+  // regression for the review-confirmed critical: a disconnect must re-latch
+  // the mark, otherwise resetToMark() rewinds tail over already-consumed
+  // bytes and the whole session's commands replay
+  BleByteRing<64> r;
+  const uint8_t cmd[] = "put device/protocol/on\nput menu/start now/4\n";
+  r.latchMark();                  // connect
+  CHECK(r.produce(cmd, sizeof(cmd) - 1));
+  uint8_t b;
+  while (r.consume(b)) {}         // session runs: consumer executes everything
+  CHECK(r.used() == 0);
+  r.latchMark();                  // disconnect: THE FIX — mark moves to head
+  r.resetToMark();                // pump()'s session reset
+  CHECK(r.used() == 0);           // nothing to replay
+  CHECK(!r.consume(b));
 }
 
 static void testProduceSome() {
@@ -181,6 +203,7 @@ int main() {
   testWrapAround();
   testUint16FreeRunningWrap();
   testOverflowAllOrNothing();
+  testDisconnectRelatchNoReplay();
   testProduceSome();
   testMarkReset();
   testMarkResetIdleSession();

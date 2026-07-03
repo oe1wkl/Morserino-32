@@ -299,7 +299,15 @@ void MorseMenu::menu_() {
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
         serialEvent();
-
+#ifdef CONFIG_BLE_SERIAL
+        // the top-menu backstop must also live in this wait loop: a _wifi_*
+        // menu function (or a pref toggled ON from here, incl. remotely via
+        // PUT config) returns HERE, not through the top of menu_() — without
+        // this, BLE Serial stays down until the next mode entry/exit. Cheap
+        // when running (one flag test); a failed init latches and won't retry.
+        if (MorsePreferences::pliste[posBleSerial].value && !MorseBleSerial::isRunning)
+          MorseBleSerial::init();
+#endif
         if (disp != MorsePreferences::newMenuPtr) {
           disp = MorsePreferences::newMenuPtr;
           MorseMenu::menuDisplay(disp);

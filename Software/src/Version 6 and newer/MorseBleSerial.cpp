@@ -25,6 +25,7 @@
 #include "BLEServer.h"
 #include "BLE2902.h"
 #include <esp_bt.h>              // esp_bt_controller_get_status
+#include <esp_bt_main.h>         // esp_bluedroid_get_status
 
 // Nordic UART Service: the de-facto BLE-UART standard — works out of the box
 // with CoreBluetooth, bleak, nRF Connect. RX is written by the central (our
@@ -48,6 +49,9 @@ static BleByteRing<4096> txRing;                        // produced AND consumed
 static uint8_t staging[512];                            // contiguous chunk for notify()
 static BleFlowGate flow;
 static uint32_t txDropped = 0;                          // diagnostic: protocol bytes dropped on a stalled client
+static bool txBackoff = false;                          // ring filled and the drain deadline passed: drop instead of
+                                                        // waiting, so a multi-KB response stalls the loop task at most
+                                                        // once (~20 ms) per congestion episode, not once per byte
 
 static BLEServer *bleServer = nullptr;
 static BLECharacteristic *txChar = nullptr;
@@ -63,14 +67,18 @@ class BleSerialServerCallbacks : public BLEServerCallbacks {
     void onConnect(BLEServer *server) override {
         ourConnId = server->getConnId();
         rxRing.latchMark();                             // serialized with onWrite on this task: cleanly
-        MorseBleSerial::isConnected = true;             // separates old-session bytes from the new session's
-        sessionResetPending = true;
-    }
+        mtuPayload = 20;                                // separates old-session bytes from the new session's;
+        MorseBleSerial::isConnected = true;             // MTU is per-connection state — back to the ATT default
+        sessionResetPending = true;                     // until this central's own MTU exchange (a stale large
+    }                                                   // value would ATT-truncate notifies = silent byte loss)
     void onDisconnect(BLEServer *server) override {
         (void) server;
         MorseBleSerial::isConnected = false;
         bleProtocol = false;                            // session state dies with the link
         ourConnId = 0xFFFF;
+        rxRing.latchMark();                             // re-latch at session END too: a stale connect-time mark
+                                                        // would make pump()'s reset rewind tail over consumed
+                                                        // bytes and REPLAY the whole session's commands
         sessionResetPending = true;
         advertisePending = true;                        // restart advertising from pump(), not from here
     }
@@ -118,21 +126,39 @@ bool MorseBleSerial::linkUp() {
     return isRunning && isConnected && !sessionResetPending;
 }
 
+static bool initFailedSticky = false;   // don't retry (and re-splash) every polling pass after a failure;
+                                        // cleared by stop(), i.e. a pref off->on cycle or reboot allows retry
+
+static bool bleInitFail(const char *why) {
+    MorseOutput::printOnScroll(2, BOLD, 0, "BLE init fail");
+    MorseJSON::jsonError(String("BLE INIT FAILED: ") + why);
+    initFailedSticky = true;
+    return false;
+}
+
 bool MorseBleSerial::init() {
     if (isRunning)
         return true;
+    if (initFailedSticky)
+        return false;
     // Defensive (PLAN D16): after a legacy deinit(true) the library's
     // 'initialized' flag stays true, init() becomes a silent no-op and
     // createServer() would block the loop task forever in registerApp.
     // Refuse visibly instead of freezing the device.
     if (BLEDevice::getInitialized() ||
-        esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED) {
-        MorseOutput::printOnScroll(2, BOLD, 0, "BLE init fail");
-        MorseJSON::jsonError("BLE INIT FAILED");
-        return false;
-    }
+        esp_bt_controller_get_status() == ESP_BT_CONTROLLER_STATUS_ENABLED)
+        return bleInitFail("STACK STATE");
 
     BLEDevice::init(BLE_NAME);
+    // BLEDevice::init returns void and swallows btStart()/bluedroid failures
+    // (e.g. ESP_ERR_NO_MEM on a fragmented heap) while still setting its
+    // 'initialized' flag; createServer() would then block forever waiting for
+    // a REG_EVT that never comes. Verify the stack actually came up.
+    if (esp_bt_controller_get_status() != ESP_BT_CONTROLLER_STATUS_ENABLED ||
+        esp_bluedroid_get_status() != ESP_BLUEDROID_STATUS_ENABLED) {
+        BLEDevice::deinit(false);       // clear the library flag so a later retry is real
+        return bleInitFail("NO MEM");
+    }
     BLEDevice::setMTU(517);
     BLEDevice::setCustomGattsHandler(bleSerialGattsHook);
 
@@ -172,9 +198,11 @@ void MorseBleSerial::stop() {
         BLEDevice::deinit(false);       // deinit(true) poisons the library for the rest of the boot (PLAN D16)
     isConnected = false;
     bleProtocol = false;                // protocolActive() reverts immediately: auto-sleep keeps working
+    initFailedSticky = false;           // a pref off->on cycle may retry a failed init
     sessionResetPending = false;
     advertisePending = false;
     lineResetLatch = false;
+    txBackoff = false;
     ourGattsIf = 0xFFFF;
     ourConnId = 0xFFFF;
     mtuPayload = 20;
@@ -188,12 +216,16 @@ void MorseBleSerial::stop() {
 void MorseBleSerial::pump() {
     if (!isRunning)
         return;
-    if (sessionResetPending) {          // consumer-side only (PLAN D18): tail -> producer-latched mark,
-        rxRing.resetToMark();           // old-session bytes vanish, a new central's early first
-        rxRing.overflow = false;        // write (before this pass) survives
+    if (sessionResetPending) {          // consumer-side only (PLAN D18): tail -> producer-latched mark
+        rxRing.resetToMark();           // (latched at BOTH session edges), old-session bytes vanish, a
+        rxRing.overflow = false;        // new central's early first write (before this pass) survives
+        rxRing.clearPoisoned();
         txRing.hardReset();             // TX ring is loop-task-owned on both sides: trivially safe
         flow.resetSession(millis());
         lineResetLatch = true;          // bleSerialEvent must drop its partial line
+        bleProtocol = false;            // belt-and-braces: a handshake racing the disconnect edge must
+                                        // not leave a dead session marked active (zombie sleep-suppression)
+        txBackoff = false;
         sessionResetPending = false;
     }
     if (advertisePending && !isConnected && bleServer != nullptr) {
@@ -201,6 +233,8 @@ void MorseBleSerial::pump() {
         advertisePending = false;
     }
     flow.service(millis());             // watchdog: resync credits if confirmations stopped
+    if (txBackoff && txRing.used() == 0)
+        txBackoff = false;              // congestion episode over: ring fully drained
     uint8_t chunks = 0;
     while (chunks < 2 && linkUp() && flow.canSend() && txRing.used() > 0) {
         uint16_t n = bleStageChunk(txRing, staging, mtuPayload);
@@ -227,18 +261,30 @@ bool MorseBleSerial::takeLineReset() {
 }
 
 bool MorseBleSerial::takeRxOverflow() {
+    // call only with the ring drained (readByte just returned false): taking
+    // the flag also lifts the poison so the producer admits writes again
     if (!rxRing.overflow)
         return false;
     rxRing.overflow = false;
+    rxRing.clearPoisoned();
     return true;
 }
 
 size_t MorseBleSerial::txEnqueue(const uint8_t *buf, size_t len) {
     // protocol replies: try hard for bounded time (self-drain), then drop —
-    // a stalled client must never stall the device
+    // a stalled client must never stall the device. The tee feeds us one
+    // write() per byte for serialized JSON, so the 20 ms budget must cover
+    // the whole congestion episode, not each call: once the deadline passes,
+    // txBackoff drops everything until pump() fully drains the ring.
     if (!linkUp())
         return len;
-    size_t written = 0;
+    size_t written = txRing.produceSome(buf, (uint16_t) len);
+    if (written >= len)
+        return len;
+    if (txBackoff) {
+        txDropped += (uint32_t)(len - written);
+        return len;
+    }
     uint32_t start = millis();
     for (;;) {
         written += txRing.produceSome(buf + written, (uint16_t)(len - written));
@@ -246,6 +292,7 @@ size_t MorseBleSerial::txEnqueue(const uint8_t *buf, size_t len) {
             break;
         if ((uint32_t)(millis() - start) >= 20 || !linkUp()) {
             txDropped += (uint32_t)(len - written);         // torn JSON possible: client re-issues the GET
+            txBackoff = true;
             break;
         }
         pump();
