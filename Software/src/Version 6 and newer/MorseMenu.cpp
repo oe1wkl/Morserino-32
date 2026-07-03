@@ -245,6 +245,10 @@ void MorseMenu::menu_() {
    uint8_t disp = 0;
    int t, command;
    m32state = menu_loop;
+   // Persist a volume changed in the mode we just left. The in-mode save only fires on
+   // the vol-button toggle back to speed mode; every other exit (long-press to menu,
+   // decoder mode, games, QSO bot) would otherwise lose the change on reboot.
+   MorsePreferences::writeVolume();                     // no-op if unchanged
 
 #ifdef LORA_RADIOLIB
     radio.standby();
