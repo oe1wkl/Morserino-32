@@ -42,14 +42,27 @@ LENGTH_SCALE="${LENGTH_SCALE:-1.1}"   # piper phoneme length; >1.0 = slower (1.1
 BITRATE="${BITRATE:-32}"  # kbps, CBR
 OUT_SR="${OUT_SR:-44100}" # Hz       -- must equal the I2S sample rate
 OUT_CH="${OUT_CH:-2}"     # channels -- must equal the I2S channel count (stereo)
-# Loudness: Piper output is ~5 dB quieter than the CW sidetone. Boost gain then brick-wall
-# limit to raise the average without clipping (measured ~+5 dB mean at GAIN_DB=6, peaks held
-# just under full scale). EBU loudnorm/dynaudnorm went the WRONG way for this short speech.
-# NB: +6 dB sounded "clipped" on hardware -- not file clipping (peaks were ~-2 dBFS), but the
-# device speaker amp adds +6 dB (setSpeakerGain(6.0) in MorseOutput::soundEnableSpeaker), so a
-# hot clip overdrives it. Lowered to a safer default; tune on-device (raise if too quiet, lower
-# if it distorts -- or reduce the amp gain). This is a clips-only change (regenerate + uploadfs).
-GAIN_DB="${GAIN_DB:-3}"
+# Loudness + micro-speaker EQ. The "clipped" sound on hardware was NOT file clipping (peaks
+# ~-2 dBFS, zero flat-topping): spectrogram analysis of a speaker recording (2026-07-03)
+# showed vowel harmonics smeared up to 8-16 kHz = the micro-speaker driven past its
+# excursion limit. Alan's fundamental is ~110 Hz; energy below ~250 Hz produces no audible
+# output on this speaker, only cone excursion (= distortion). So:
+#   - HPF_HZ      : cascaded 2x2-pole high-pass (24 dB/oct) removes the distorting sub-band.
+#                   This is why CW (a single ~600 Hz tone) always sounded clean while speech
+#                   at the same volume distorted.
+#   - PRESENCE_DB : gentle bell at 3 kHz for intelligibility.
+#   - compressor  : 2.5:1 raises average loudness toward the CW sidetone WITHOUT raising
+#                   peaks (the earlier pure-gain approach traded loudness against overdrive).
+# EBU loudnorm/dynaudnorm went the WRONG way for this short speech. Tune on-device:
+# GAIN_DB louder/softer overall; if it still distorts, raise HPF_HZ before lowering gain.
+# Clips-only change: regenerate + uploadfs, firmware untouched.
+HPF_HZ="${HPF_HZ:-250}"          # high-pass corner, Hz (applied twice = 24 dB/oct)
+PRESENCE_DB="${PRESENCE_DB:-2.5}" # presence lift at 3 kHz, dB
+COMP_MAKEUP="${COMP_MAKEUP:-4}"  # compressor make-up gain, dB
+# GAIN_DB=6 with THIS chain is NOT the old "clipped" 6: the HPF removed the excursion-
+# burning low band and the compressor tamed the peaks first. Measured on "CW Keyer":
+# >250 Hz band RMS -20.5 dB (~+2 dB louder than the gain-3 set), peak -2.6 dBFS.
+GAIN_DB="${GAIN_DB:-6}"
 # Silence padding. The async player hands the mixer back the instant a clip's file is read,
 # leaving ~80 ms of decoded tail that plays at the START of the NEXT clip. Trailing silence
 # makes that residue (and the cut) inaudible; a little leading silence hides MP3 decoder priming.
@@ -99,9 +112,10 @@ while IFS= read -r TEXT || [ -n "$TEXT" ]; do
     printf '%s' "$TEXT" | espeak-ng -v "$VOICE" -s "$SPEED" -p "$PITCH" -a "$AMP" -w "$TMP/${FNAME}.wav"
   fi
   # Encode to MP3 at the M32 I2S format (44100 Hz stereo); -ac 2 duplicates the mono voice.
-  # gain + brick-wall limiter (loudness) + lead/trail silence (hides the async cut + priming).
+  # Chain: micro-speaker EQ (high-pass + presence) -> speech compression -> gain ->
+  # brick-wall limiter -> lead/trail silence (hides the async cut + decoder priming).
   ffmpeg -y -i "$TMP/${FNAME}.wav" \
-         -af "adelay=${LEAD_MS}|${LEAD_MS},volume=${GAIN_DB}dB,alimiter=limit=0.95,apad=pad_dur=${TRAIL_S}" \
+         -af "highpass=f=${HPF_HZ},highpass=f=${HPF_HZ},equalizer=f=3000:t=q:w=1.0:g=${PRESENCE_DB},acompressor=threshold=-18dB:ratio=2.5:attack=4:release=140:makeup=${COMP_MAKEUP}dB,volume=${GAIN_DB}dB,alimiter=limit=0.95,adelay=${LEAD_MS}|${LEAD_MS},apad=pad_dur=${TRAIL_S}" \
          -ar "$OUT_SR" -ac "$OUT_CH" -b:a "${BITRATE}k" "$OUT" 2>/dev/null
   rm -f "$TMP/${FNAME}.wav"
   generated=$((generated+1))
