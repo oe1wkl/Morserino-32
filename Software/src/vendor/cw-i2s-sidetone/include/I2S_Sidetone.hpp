@@ -20,11 +20,12 @@ class I2S_Sidetone {
     void off();
     bool playSPIFFSFile(const char *filename);
     // --- Async (non-blocking) clip playback for V9.0 audio accessibility -----------------
-    // The AUDIO TASK owns the entire clip lifecycle (file open, mixer routing, decoder
-    // reset): startClip()/stopClip() only post a command into a 1-deep mailbox (latest
-    // wins) and return immediately. No other task ever mutates the decode pipeline while
-    // the copier is running -- cross-task mutation was the root of a whole class of
-    // freezes and crashes (including every failed decoder-reset attempt).
+    // The AUDIO TASK owns the entire clip lifecycle (file open/close, mixer routing):
+    // startClip()/stopClip() only post a command into a 1-deep mailbox (latest wins) and
+    // return immediately. No other task ever mutates the decode pipeline while the copier
+    // is running -- cross-task mutation was the root of a whole class of freezes and
+    // crashes. The decoder is REUSED across clips via setStream(), never end()/begin()-
+    // reset (that freezes/crashes in every context tried; see teardownClip in the .cpp).
     bool startClip(const char *filename);   // returns false if the file does not exist
     bool serviceClip();                     // true while a clip is pending or playing
     void stopClip();                        // interrupt the current/pending clip
@@ -59,5 +60,4 @@ class I2S_Sidetone {
     volatile uint32_t clipsDone = 0;     // diagnostics counter
     size_t   wdLastPos = 0;              // watchdog: last observed file position
     uint32_t wdLastMs = 0;               // watchdog: last time the position advanced
-    AudioInfo clipCfg;                   // saved decode config, to re-begin() the decoder per clip
 };

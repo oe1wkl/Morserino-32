@@ -52,8 +52,7 @@ void I2S_Sidetone::begin(int samplerate, int bps, int channels, int buffer_size)
     decoder = new EncodedAudioStream(&mp3file, new MP3DecoderHelix());
     decoder->setNotifyActive (false);
     decoder->transformationReader().setResultQueueFactor(14); // workaround see discussion 1828
-    decoder->begin(config);
-    clipCfg = config;                  // V9.0: save the decode config to re-begin() the decoder per clip
+    decoder->begin(config);            // NB: the ONLY begin() this decoder ever gets (see teardownClip)
 
     mixer = new InputMixer<int16_t>();
     mixer->setLimitToAvailableData(true);
@@ -218,14 +217,20 @@ void I2S_Sidetone::audioLoop() {
 }
 
 void I2S_Sidetone::teardownClip() {
-    // AUDIO-TASK CONTEXT ONLY. Resetting the decoder here cannot race the copier (same
-    // task, sequential) -- this is the safe home for the end()/begin() reset that clears
-    // whatever the reused Helix decoder / reader queue accumulates across many clips
-    // (the cause of the freeze that only appeared after very many announcements).
+    // AUDIO-TASK CONTEXT ONLY.
     mixer->set(0, *effects);              // hand the mixer back to the sidetone path
     mp3file.close();
-    decoder->end();
-    decoder->begin(clipCfg);
+    // Do NOT end()/begin() the decoder here. A per-clip reset froze the device right
+    // after the FIRST clip even from this task (2026-07-03), on top of the earlier
+    // cross-task crashes: with this audio-tools version the decoder cannot be re-begun
+    // inside a running pipeline, period (begin() re-registers notify listeners and
+    // re-runs codec setup that the library only exercises once, before the audio task
+    // starts). Reusing the decoder via setStream() is the proven pattern -- the blocking
+    // playSPIFFSFile has done exactly that for years. The historical "very-late freeze"
+    // was in all likelihood the per-clip UI-vs-audio-task race window (eliminated by the
+    // command mailbox), not decoder-state accumulation -- the CONFIG_AUDIO_A11Y_DIAG
+    // heap trace can verify nothing accumulates. If a real leak ever shows up, rebuild
+    // the whole pipeline offline; never reset the decoder in place.
     clipPlaying = false;
     clipsDone = clipsDone + 1;
     clipBusy = false;
