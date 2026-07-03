@@ -1475,14 +1475,8 @@ void MorsePreferences::readPreferences(const char* repository) {
 //// now we read the preferences into memory that are also restored from snapshots (with two exception: posTimeOut and posSerialOut)
 
     for (uint8_t i = 0; i <= posSerialOut; ++i) {
-      if (!morserino) {
-          if (i == posTimeOut || i == posSerialOut)
-            continue;
-#ifdef CONFIG_BLE_SERIAL
-          if (i == posBleSerial)                                  // like serialOut: never restored from snapshots
-            continue;
-#endif
-      }
+      if (!morserino && snapshotExempt(i))
+          continue;
 
 
       if ((temp = pref.getUChar(prefName[i],255)) != 255) {         // we have something in the repository
@@ -1628,12 +1622,8 @@ void MorsePreferences::writePreferences(const char* repository) {
   }
 
   for (uint8_t i = 0; i < posSerialOut; ++i) {                                       // for all these preferences
-        if (i == posTimeOut && !morserino)                                            // ignore timeout when writing to snapshot
+        if (!morserino && snapshotExempt(i))                                          // some prefs are never written to snapshots
             continue;
-#ifdef CONFIG_BLE_SERIAL
-        if (i == posBleSerial && !morserino)                                          // BLE serial state is not stored in snapshots
-            continue;
-#endif
         if (MorsePreferences::pliste[i].value != pref.getUChar(prefName[i],255) ) {     // stored value is different,
 //          DEBUG("@1347 " + String(prefName[i]) + " old: " + String(pref.getUChar(prefName[i],255)) + " new: " + String(MorsePreferences::pliste[i].value));
             pref.putUChar(prefName[i], MorsePreferences::pliste[i].value);            // so we need to store new value
@@ -1650,11 +1640,8 @@ void MorsePreferences::writePreferences(const char* repository) {
                     break;
 #ifdef CONFIG_BLE_SERIAL
               case posBleSerial:                                  // OFF stops BLE at once; ON waits for the top-menu backstop
-                    if (morserino && pliste[posBleSerial].value == 0 && MorseBleSerial::isRunning) {
-                      MorseJSON::jsonCreate("message", "BLE serial off", "");
-                      MorseBleSerial::txFlush(300);               // best-effort: the goodbye may reach the client, jsonOK will not
-                      MorseBleSerial::stop();
-                    }
+                    if (morserino && pliste[posBleSerial].value == 0)
+                      MorseBleSerial::stopWithNotice("BLE serial off", 300);
                     break;
 #endif
               case posKochSeq:

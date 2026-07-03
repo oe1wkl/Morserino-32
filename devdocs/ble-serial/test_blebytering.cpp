@@ -48,17 +48,26 @@ static void testOverflowAllOrNothing() {
   memset(d, 0xAA, sizeof(d));
   CHECK(r.produce(d, 12));
   CHECK(!r.produce(d, 8));        // 12 + 8 > 16: dropped whole
-  CHECK(r.overflow);
   CHECK(r.poisoned);
   CHECK(r.used() == 12);          // ring content untouched
   CHECK(!r.produce(d, 2));        // poisoned: NOTHING is admitted, even though it would fit —
   CHECK(r.used() == 12);          // this is what makes a spliced line impossible
   while (r.consume(b)) {}         // consumer drains the intact pre-drop bytes...
-  r.overflow = false;             // ...then takes the overflow (takeRxOverflow equivalent)
-  r.clearPoisoned();
+  r.clearPoisoned();              // ...then takes the overflow (takeRxOverflow equivalent)
   CHECK(r.produce(d, 16));        // exactly full is fine again
   CHECK(r.used() == 16);
-  CHECK(!r.overflow);
+  CHECK(!r.poisoned);
+}
+
+static void testConsumeBulkWrap() {
+  BleByteRing<16> r;
+  uint8_t d[12], out[16], b;
+  for (int i = 0; i < 12; ++i) d[i] = (uint8_t)(i + 1);
+  CHECK(r.produce(d, 12));        // advance indices toward the wrap seam
+  for (int i = 0; i < 12; ++i) CHECK(r.consume(b));
+  CHECK(r.produce(d, 12));        // this write wraps the pow2 boundary
+  CHECK(r.consumeBulk(out, 16) == 12);   // bulk read spans the two segments
+  for (int i = 0; i < 12; ++i) CHECK(out[i] == (uint8_t)(i + 1));
 }
 
 static void testDisconnectRelatchNoReplay() {
@@ -203,6 +212,7 @@ int main() {
   testWrapAround();
   testUint16FreeRunningWrap();
   testOverflowAllOrNothing();
+  testConsumeBulkWrap();
   testDisconnectRelatchNoReplay();
   testProduceSome();
   testMarkReset();

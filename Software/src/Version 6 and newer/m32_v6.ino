@@ -1105,10 +1105,8 @@ if (morseState == morseKeyer &&
       MorsePreferences::pliste[posBluetoothOut].value != 0 &&
       !MorseBluetooth::isBLErunning
 #ifdef CONFIG_BLE_SERIAL
-      // mutual exclusion, BLE Serial wins (PUT cw/play needs the keyer active);
-      // gated on isRunning too: a failed BLE init degrades to the keyboard
-      && !(MorsePreferences::pliste[posBleSerial].value && MorseBleSerial::isRunning)
-#endif
+      && !MorseBleSerial::blocksBtKeyboard()   // mutual exclusion, BLE Serial wins (also enforced inside
+#endif                                         // initializeBluetooth; checked here to keep the loop cheap)
       ) {
     // Initialize Bluetooth System
     MorseBluetooth::initializeBluetooth();
@@ -3836,7 +3834,6 @@ void bleSerialEvent() {
     bleInputString = "";
     bleDiscardLine = false;
   }
-  bool dispatched = false;
   while (MorseBleSerial::readByte(b)) {                     // returns false immediately after stop()
     if (bleDiscardLine) {                                   // tail of a runaway line: swallow up to \n, execute nothing
       if (b == '\n')
@@ -3868,14 +3865,14 @@ void bleSerialEvent() {
     else
       serialDecode(bleInputString);                         // one shared protocol engine, no duplication
     bleInputString = "";
-    dispatched = true;
-    break;                                                  // one completed line per poll — see header comment
+    return;                                                 // one completed line per poll — see header comment
   }
-  // RX overflow: the ring poisons itself on a dropped write (no new bytes are
-  // admitted until drained), so everything consumed above was intact pre-drop
-  // data — dispatched normally. Once the ring runs empty, the assembling
-  // line's tail is known lost: discard the dead prefix and report once.
-  if (!dispatched && MorseBleSerial::takeRxOverflow()) {
+  // Only reached with the RX ring drained. RX overflow: the ring poisons
+  // itself on a dropped write (no new bytes admitted until drained), so
+  // everything consumed above was intact pre-drop data — dispatched normally.
+  // At ring-empty the assembling line's tail is known lost: discard the dead
+  // prefix and report once.
+  if (MorseBleSerial::takeRxOverflow()) {
     bleInputString = "";
     bleDiscardLine = false;
     MorseJSON::jsonError("BLE RX OVERFLOW");

@@ -27,8 +27,8 @@ size_t M32Tee::write(const uint8_t *buffer, size_t size) {
 #ifdef CONFIG_BLE_SERIAL
 	if (m32protocol)
 		Serial.write(buffer, size);
-	if (bleProtocol && MorseBleSerial::linkUp())
-		MorseBleSerial::txEnqueue(buffer, size);
+	if (bleProtocol)                    // cheap gate only — txEnqueue does the full linkUp() check,
+		MorseBleSerial::txEnqueue(buffer, size);   // and this path runs once per serialized byte
 	return size;
 #else
 	// without BLE the tee degenerates to a plain forward: every call site is
@@ -40,7 +40,7 @@ size_t M32Tee::write(const uint8_t *buffer, size_t size) {
 void M32Tee::echo(const String& s) {
 	Serial.print(s);            // today's "Serial Output" behavior, handshake irrelevant
 #ifdef CONFIG_BLE_SERIAL
-	if (bleProtocol && MorseBleSerial::linkUp())
+	if (bleProtocol)            // cheap gate only — txEnqueueEcho does the full linkUp() check
 		MorseBleSerial::txEnqueueEcho((const uint8_t *) s.c_str(), s.length());
 #endif
 }

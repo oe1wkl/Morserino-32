@@ -18,6 +18,9 @@
 #include "MorsePreferences.h"
 #include "MorseJSON.h"
 #include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
+#ifdef CONFIG_BLE_SERIAL
+#include "MorseBleSerial.h"    // suspendForWifi() at the radio bring-up primitives
+#endif
 
 ////////////////// Variables for file handling and WiFi functions
 
@@ -421,7 +424,10 @@ static void shutdownWiFi() {
 
 void MorseWiFi::startAP() {
   volatile bool configDone = false;   // flag to exit the server loop
- 
+
+#ifdef CONFIG_BLE_SERIAL
+  MorseBleSerial::suspendForWifi();   // defense in depth: idempotent, and future callers of this
+#endif                                // radio primitive stay safe without knowing about BLE
   WiFi.mode(WIFI_AP);
   WiFi.setHostname(ssid);
   WiFi.softAP(ssid);
@@ -554,6 +560,9 @@ void MorseWiFi::updateFirmware()   {                   /// start wifi client, we
 
 boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Connect to WiFi network
+#ifdef CONFIG_BLE_SERIAL
+  MorseBleSerial::suspendForWifi();   // defense in depth: idempotent, and future callers of this
+#endif                                // radio primitive stay safe without knowing about BLE
   if (MorsePreferences::wlanSSID == "")
       return internal::errorConnect(String("WiFi Not Conf"));
   //DEBUG("SSID: " + MorsePreferences::wlanSSID + " PW: >" +  MorsePreferences::wlanPassword + "<");

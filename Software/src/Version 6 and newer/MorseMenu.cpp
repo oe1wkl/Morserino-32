@@ -275,13 +275,6 @@ void MorseMenu::menu_() {
       //ESP.restart(); // not needed anymore
     }
 #endif
-#ifdef CONFIG_BLE_SERIAL
-    // top-menu backstop: (re)start BLE Serial after boot-time pref changes or a
-    // WiFi-mode suspension; a failed init leaves isRunning false and degrades
-    // gracefully (the BT keyboard exclusion is gated on isRunning, too)
-    if (MorsePreferences::pliste[posBleSerial].value && !MorseBleSerial::isRunning)
-      MorseBleSerial::init();
-#endif
     genIsActive = false;
     cleanStartSettings();
     MorseOutput::clearScroll();                  // clear the buffer
@@ -300,11 +293,11 @@ void MorseMenu::menu_() {
     while (true) {                          // we wait for a click (= selection) or to get some serial input
         serialEvent();
 #ifdef CONFIG_BLE_SERIAL
-        // the top-menu backstop must also live in this wait loop: a _wifi_*
-        // menu function (or a pref toggled ON from here, incl. remotely via
-        // PUT config) returns HERE, not through the top of menu_() — without
-        // this, BLE Serial stays down until the next mode entry/exit. Cheap
-        // when running (one flag test); a failed init latches and won't retry.
+        // THE top-menu backstop (the only one): every path to the top menu
+        // ends in this wait loop — menu_() falls straight through to here,
+        // and _wifi_* functions / a pref toggled ON (locally or via PUT
+        // config) return here without re-entering menu_(). Cheap when
+        // running (one flag test); a failed init latches and won't retry.
         if (MorsePreferences::pliste[posBleSerial].value && !MorseBleSerial::isRunning)
           MorseBleSerial::init();
 #endif
@@ -481,26 +474,16 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 #ifdef CONFIG_BLUETOOTH_KEYBOARD
                   if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
                 #ifdef CONFIG_BLE_SERIAL
-                    if (MorsePreferences::pliste[posBleSerial].value && MorseBleSerial::isRunning) {
-                      // mutual exclusion, BLE Serial wins (PUT cw/play needs the keyer active);
-                      // isRunning-gated so a failed BLE init degrades to today's keyboard
-                      static bool notifiedOnce = false;
+                    if (MorseBleSerial::blocksBtKeyboard()) {     // one-time notice; the skip itself is
+                      static bool notifiedOnce = false;           // enforced inside initializeBluetooth()
                       if (!notifiedOnce) {
                         notifiedOnce = true;
-                        MorseOutput::clearDisplay();
-                        MorseOutput::printOnScroll(1, BOLD, 0, "BT Kbd off");
-                        MorseOutput::printOnScroll(2, REGULAR, 0, "BLE Serial on");
-                        MorseOutput::refreshDisplay();
-                        if (protocolActive())
-                          MorseJSON::jsonCreate("message", "BT Kbd off: BLE Serial active", "");
-                        delay(1400);
+                        showStartDisplay("BT Kbd off", "BLE Serial on", "", 1400);
                       }
-                    } else
-                      MorseBluetooth::initializeBluetooth();
-                #else
-                    // Initialize Bluetooth System
-                    MorseBluetooth::initializeBluetooth();
+                    }
                 #endif
+                    // Initialize Bluetooth System (no-op while BLE Serial runs)
+                    MorseBluetooth::initializeBluetooth();
                   }
                 #endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::keyerOptions, MorsePreferences::keyerOptionsSize);
@@ -832,20 +815,12 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
 }   /// end menuExec()
 
 #ifdef CONFIG_BLE_SERIAL
-// BLE and WiFi share the 2.4 GHz radio and were never co-resident in this
-// firmware: whenever any code path brings up the WiFi radio, BLE Serial is
-// suspended (link drops, client is told first, best-effort) and stays down
-// for the remainder of the session; the top-menu backstop in menu_()
-// restarts it. stop() clears bleProtocol synchronously, so auto-sleep and
-// the emission gates revert to USB-only immediately (PLAN D8/D19).
-static void suspendBleSerialForWifi() {
-  if (MorseBleSerial::isRunning) {
-    if (protocolActive())
-      MorseJSON::jsonCreate("message", "BLE serial suspended: wireless mode", "");
-    MorseBleSerial::txFlush(500);
-    MorseBleSerial::stop();
-  }
-}
+// whenever any code path brings up the WiFi radio, BLE Serial is suspended
+// for the remainder of the session (PLAN D8; the wait-loop backstop restarts
+// it at the top menu). The radio primitives in MorseWiFi carry the same call
+// as defense in depth — these menu-level hooks are what the manuals promise
+// (uniform for every _wifi_* function, including display-only ones).
+static void suspendBleSerialForWifi() { MorseBleSerial::suspendForWifi(); }
 #else
 static inline void suspendBleSerialForWifi() {}
 #endif

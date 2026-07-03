@@ -34,11 +34,13 @@
 namespace MorseBleSerial
 {
 	extern volatile bool isRunning;                        // GATT server up; set false FIRST in stop()
-	extern volatile bool isConnected;                      // maintained by callbacks, cleared synchronously by stop()
 
-	bool linkUp();                                         // isRunning && isConnected && no session reset pending
+	bool linkUp();                                         // isRunning && connected && no session reset pending
+	bool blocksBtKeyboard();                               // mutual exclusion: pref on AND server running (PLAN D3)
 	bool init();                                           // defensive: false + visible error if the BLE stack is unusable; never blocks
 	void stop();                                           // synchronous teardown incl. bleProtocol — never trusts onDisconnect to fire
+	void stopWithNotice(const String &msg, uint32_t flushMs);  // protocol message (best-effort) + flush + stop
+	void suspendForWifi();                                 // the one wording/timeout for every WiFi bring-up path
 	void pump();                                           // loop task: session reset, advertising restart, flow-gated TX drain
 	bool readByte(uint8_t &b);                             // consume one RX byte (loop task); false after stop()
 	bool takeLineReset();                                  // read-and-clear: caller must discard its partial input line
