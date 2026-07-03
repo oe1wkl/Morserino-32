@@ -1,4 +1,17 @@
 # Change History
+### CHANGES V. 8.2
+
+#### New Features:
+* M32 Pocket only: Two more games, both playable as single and multi player games: Trailblazer and Fox Hunt (both inspired by ideas of Theresa, DC1TH, who made similar Morse code games for Android phones - special thanks to her for letting me steal her ideas!). Follow the path through a maze, visually in the one game and hearing the Morse code in the other - both games acknowledge your current Koch lesson settings.
+* M32 Pocket only - experimental at the moment: A Hardware Config. option to use the paddle connector on the PCB (normally used to connect the Pocket’s capacitive touch paddles) for mechanical keys / paddles) - useful if you want to integrate a mechanical key into a case with the M32 Pocket. This can be reached via the „Hardware Config“ menu.
+
+#### Feature Modifications:
+* Several improvements of the QSO Bot behaviour, including a new preference (difficulty level). Provides for more varied and more realistic QSOs. QSO partners may now have a different speed than you…
+
+#### Bug Fixes:
+* Audio volume was not properly restored after reboot. Fixed.
+* QSO Bot did not allow call signs with an initial letter K. Fixed.
+* QSO Bot did not recognise calls with a prefix starting with a digit (e.g. 2E0XY). Fixed.
 
 ### CHANGES V. 8.1
 
