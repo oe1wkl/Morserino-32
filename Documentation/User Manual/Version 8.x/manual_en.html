@@ -131,10 +131,11 @@ The font family used is Lato.</p>
 <ul>
 <li><a href="#appendix-1-hardware-configuration-menu" id="toc-appendix-1-hardware-configuration-menu"><span class="toc-section-number">7.1</span> Appendix 1: Hardware Configuration Menu</a>
 <ul>
-<li><a href="#flipping-the-display-screen-for-left-hand-use" id="toc-flipping-the-display-screen-for-left-hand-use"><span class="toc-section-number">7.1.1</span> Flipping the display screen for left-hand use</a></li>
-<li><a href="#calibration-of-battery-measurement" id="toc-calibration-of-battery-measurement"><span class="toc-section-number">7.1.2</span> Calibration of Battery Measurement</a></li>
-<li><a href="#configuring-lora-band-frequency-and-output-power" id="toc-configuring-lora-band-frequency-and-output-power"><span class="toc-section-number">7.1.3</span> Configuring LoRa Band, Frequency and Output Power</a></li>
-<li><a href="#resetting-preferences-to-their-factory-defaults" id="toc-resetting-preferences-to-their-factory-defaults"><span class="toc-section-number">7.1.4</span> Resetting Preferences to their Factory Defaults</a></li>
+<li><a href="#cn3-connector-touch-or-mechanical-paddle-m32-pocket-only" id="toc-cn3-connector-touch-or-mechanical-paddle-m32-pocket-only"><span class="toc-section-number">7.1.1</span> CN3 Connector: touch or mechanical paddle (M32 Pocket only)</a></li>
+<li><a href="#flipping-the-display-screen-for-left-hand-use" id="toc-flipping-the-display-screen-for-left-hand-use"><span class="toc-section-number">7.1.2</span> Flipping the display screen for left-hand use</a></li>
+<li><a href="#calibration-of-battery-measurement" id="toc-calibration-of-battery-measurement"><span class="toc-section-number">7.1.3</span> Calibration of Battery Measurement</a></li>
+<li><a href="#configuring-lora-band-frequency-and-output-power" id="toc-configuring-lora-band-frequency-and-output-power"><span class="toc-section-number">7.1.4</span> Configuring LoRa Band, Frequency and Output Power</a></li>
+<li><a href="#resetting-preferences-to-their-factory-defaults" id="toc-resetting-preferences-to-their-factory-defaults"><span class="toc-section-number">7.1.5</span> Resetting Preferences to their Factory Defaults</a></li>
 </ul></li>
 <li><a href="#appendix-2-more-information-about-lora" id="toc-appendix-2-more-information-about-lora"><span class="toc-section-number">7.2</span> Appendix 2: More information about LoRa</a></li>
 <li><a href="#appendix-3-adjusting-audio-level" id="toc-appendix-3-adjusting-audio-level"><span class="toc-section-number">7.3</span> Appendix 3: Adjusting Audio Level</a></li>
@@ -142,7 +143,10 @@ The font family used is Lato.</p>
 <li><a href="#appendix-5-updating-the-firmware-via-usb-and-an-update-program" id="toc-appendix-5-updating-the-firmware-via-usb-and-an-update-program"><span class="toc-section-number">7.5</span> Appendix 5: Updating the Firmware via USB and an update program</a></li>
 <li><a href="#appendix-6-updating-the-firmware-via-usb-and-a-browser-webserial" id="toc-appendix-6-updating-the-firmware-via-usb-and-a-browser-webserial"><span class="toc-section-number">7.6</span> Appendix 6: Updating the Firmware via USB and a Browser (Webserial)</a></li>
 <li><a href="#appendix-7-using-a-browser-to-set-up-m32-preferences-and-upload-text-files" id="toc-appendix-7-using-a-browser-to-set-up-m32-preferences-and-upload-text-files"><span class="toc-section-number">7.7</span> Appendix 7: Using a Browser to set up M32 Preferences, and upload Text Files</a></li>
-<li><a href="#appendix-8-using-the-serial-output-of-the-m32" id="toc-appendix-8-using-the-serial-output-of-the-m32"><span class="toc-section-number">7.8</span> Appendix 8: Using the Serial Output of the M32</a></li>
+<li><a href="#appendix-8-using-the-serial-output-of-the-m32" id="toc-appendix-8-using-the-serial-output-of-the-m32"><span class="toc-section-number">7.8</span> Appendix 8: Using the Serial Output of the M32</a>
+<ul>
+<li><a href="#using-the-m32-serial-protocol-over-bluetooth-ble-serial" id="toc-using-the-m32-serial-protocol-over-bluetooth-ble-serial"><span class="toc-section-number">7.8.1</span> Using the M32 Serial Protocol over Bluetooth (BLE Serial)</a></li>
+</ul></li>
 <li><a href="#appendix-9-using-the-bluetooth-keyboard-functionality" id="toc-appendix-9-using-the-bluetooth-keyboard-functionality"><span class="toc-section-number">7.9</span> Appendix 9: Using the Bluetooth Keyboard functionality</a></li>
 <li><a href="#appendix-10-list-of-common-cw-abbreviations-used-by-morserino-32" id="toc-appendix-10-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="toc-section-number">7.10</span> Appendix 10: List of common CW abbreviations used by Morserino-32</a></li>
 <li><a href="#appendix-11-glossary" id="toc-appendix-11-glossary"><span class="toc-section-number">7.11</span> Appendix 11: Glossary</a></li>
@@ -2328,8 +2332,13 @@ The font family used is Lato.</p>
 <td><strong>Portrait</strong> / Landscape</td>
 </tr>
 <tr>
+<td>BLE Serial</td>
+<td>Makes the M32 Serial Protocol (see <strong>Appendix 8</strong>) available over Bluetooth Low Energy, in addition to the USB connector. This allows apps on phones and tablets (e.g. on iOS, where a serial connection over Bluetooth is otherwise not possible) to remote-control the Morserino and to send text that is keyed as CW — without a USB cable. When set to <strong>On</strong>, the device is visible as “<strong>Morserino-32</strong>” from the next return to the main menu on; an app can then connect at any time, no pairing is required. The Bluetooth connection is suspended whenever a WiFi function is used (WiFi transceiver, multiplayer games, file upload, firmware update, WiFi configuration) and becomes available again when you return to the main menu. While BLE Serial is enabled and running, the Bluetooth keyboard output (see <strong>Appendix 9</strong>) is disabled in CW Keyer mode. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery.</td>
+<td><strong>Off</strong> / On</td>
+</tr>
+<tr>
 <td>Serial Output</td>
-<td>Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and “generated” characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). <strong>Nothing</strong> sends out none of these characters (but certain system or error messages might still appear), while <strong>All</strong> send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also <strong>Appendix 8 Using the Serial Output of the M32</strong>.</td>
+<td>Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and “generated” characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). <strong>Nothing</strong> sends out none of these characters (but certain system or error messages might still appear), while <strong>All</strong> send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also <strong>Appendix 8 Using the Serial Output of the M32</strong>. This setting also applies to the character stream sent to a connected BLE Serial app (see the <strong>BLE Serial</strong> preference above).</td>
 <td>Nothing / Keyer / Decoded / Keyed+Decoded / Generated / <strong>All</strong> (default since V. 4.3)</td>
 </tr>
 </tbody>
@@ -2651,15 +2660,24 @@ The font family used is Lato.</p>
 <h1 data-number="7" id="appendices"><span class="header-section-number">7</span> Appendices</h1>
 <h2 data-number="7.1" id="appendix-1-hardware-configuration-menu"><span class="header-section-number">7.1</span> Appendix 1: Hardware Configuration Menu</h2>
 <p>There is a hardware configuration menu that can be reached by <strong>pressing a paddle (or external paddle or straight key) while switching the M32 on</strong>. You can then select the configuration you want to perform by rotating the encoder knob, and pressing it once the right option shows up.</p>
-<p>The selectable options are <strong>Calibr. Batt.</strong> (calibration of battery measurement), <strong>Flip Screen</strong>, <strong>LoRa Config.</strong> and <strong>Cancel</strong> (which just leaves this menu and continues with regular start-up of the M32).</p>
-<h3 data-number="7.1.1" id="flipping-the-display-screen-for-left-hand-use"><span class="header-section-number">7.1.1</span> Flipping the display screen for left-hand use</h3>
+<p>The selectable options are <strong>Calibr. Batt.</strong> (calibration of battery measurement), <strong>Flip Screen</strong>, <strong>LoRa Config.</strong>, <strong>CN3: Touch / CN3: Mechan.</strong> (M32 Pocket only — the paddle type on the CN3 connector) and <strong>Cancel</strong> (which just leaves this menu and continues with regular start-up of the M32).</p>
+<h3 data-number="7.1.1" id="cn3-connector-touch-or-mechanical-paddle-m32-pocket-only"><span class="header-section-number">7.1.1</span> CN3 Connector: touch or mechanical paddle (M32 Pocket only)</h3>
+<p>The M32 Pocket has two paddle inputs: the 3.5 mm jack (for a mechanical paddle or key), and the small <strong>CN3</strong> connector, which is normally used for the capacitive <strong>touch</strong> paddles. If you prefer, you can instead connect a <strong>mechanical</strong> paddle or key to CN3 — no hardware modification is needed, only this setting.</p>
+<p>The menu item shows the current setting: <strong>CN3: Touch</strong> (the default) or <strong>CN3: Mechan.</strong> To change it:</p>
+<ol type="1">
+<li>Start your M32 while holding a paddle (touch paddle, the paddle on the 3.5 mm jack, or a straight key) pressed, to enter the Hardware Configuration menu.</li>
+<li>Rotate the ENCODER until the CN3 item shows, and press the ENCODER knob.</li>
+<li>Rotate the ENCODER to choose <strong>Touch</strong> or <strong>Mechanical</strong>, then press the ENCODER knob to confirm.</li>
+</ol>
+<p>If you changed the setting, the M32 re-boots so the CN3 pins come up in the chosen mode. In <strong>Mechanical</strong> mode the touch paddles on CN3 no longer work (the two pins are read as an ordinary paddle instead); the 3.5 mm jack keeps working in both modes. Note that a mechanical paddle plugged into CN3 will also let you into this menu while the setting is still on Touch, so you can always switch modes.</p>
+<h3 data-number="7.1.2" id="flipping-the-display-screen-for-left-hand-use"><span class="header-section-number">7.1.2</span> Flipping the display screen for left-hand use</h3>
 <p>This is probably only relevant for the M32Pocket! With the M32Pocket, if you want to key with your left hand, the normal display would be upside down; with this configuration option the display is rotated by 180° to allow left-hand use.</p>
 <ol type="1">
 <li>Start your M32 while holding the touch paddles (or external paddles, or straight key) pressed.</li>
 <li>Select the Option <strong>Flip Screen</strong> with the rotary encoder, and pressing the ENCODER knob.</li>
 </ol>
 <p>The M32 will re-boot, with the display now rotated 180°.</p>
-<h3 data-number="7.1.2" id="calibration-of-battery-measurement"><span class="header-section-number">7.1.2</span> Calibration of Battery Measurement</h3>
+<h3 data-number="7.1.3" id="calibration-of-battery-measurement"><span class="header-section-number">7.1.3</span> Calibration of Battery Measurement</h3>
 <div class="note">
 <p>For the M32Pocket, calibrating battery measurement is not necessary, and therefore this item is only available on 1st and 2nd edition Morserinos.</p>
 </div>
@@ -2674,7 +2692,7 @@ The font family used is Lato.</p>
 <div class="note">
 <p>If your battery is reasonably new, and you know for sure that it is fully charged, as it has been in charging mode long enough (&gt;10 hours for 1st &amp; 2nd edition Morserinos, &gt;3 hours for M32 Pocket), you can assume a battery voltage of 4.2V and use that value instead of measuring the battery.</p>
 </div>
-<h3 data-number="7.1.3" id="configuring-lora-band-frequency-and-output-power"><span class="header-section-number">7.1.3</span> Configuring LoRa Band, Frequency and Output Power</h3>
+<h3 data-number="7.1.4" id="configuring-lora-band-frequency-and-output-power"><span class="header-section-number">7.1.4</span> Configuring LoRa Band, Frequency and Output Power</h3>
 <p>Obviously this section is only applicable if you have a Morserino with LoRa capability (like a 1st or 2nd edition Morserino).</p>
 <p>If you have a standard 433 MHz Heltec module in your Morserino-32 (1st or 2nd edition), which is practically always the case, it has been already preconfigured for the right band and a default frequency within that band.</p>
 <p>If you have to change either the LoRa frequency within the standard band, or you use a Heltec module for the 868 and 920 MHz bands, you have to configure your Morserino-32 before you use the LoRa capabilities.</p>
@@ -2696,7 +2714,7 @@ The font family used is Lato.</p>
 <p><em>Be aware of applicable regulations in your jurisdiction, there might be a legal limit regarding output power! Be also aware that the higher the output power, the higher the risk of destroying the LoRa transceiver when used without proper termination (a suitable antenna or a dummy load).</em></p>
 </div>
 <p>Immediately after that the Morserino-32 will start normally, with the now selected LoRa settings in effect. On the top line of the Startup Screen you will see the configured QRG for LoRa as a 5-digit number (e.g. 43415 for the default in the 433 MHz band).</p>
-<h3 data-number="7.1.4" id="resetting-preferences-to-their-factory-defaults"><span class="header-section-number">7.1.4</span> Resetting Preferences to their Factory Defaults</h3>
+<h3 data-number="7.1.5" id="resetting-preferences-to-their-factory-defaults"><span class="header-section-number">7.1.5</span> Resetting Preferences to their Factory Defaults</h3>
 <p>This item resets all preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.</p>
 <h2 data-number="7.2" id="appendix-2-more-information-about-lora"><span class="header-section-number">7.2</span> Appendix 2: More information about LoRa</h2>
 <p>When morse code is packed into a LoRa data packet, dots, dashes and pauses are encoded; it is not so that the clear text would be sent as ASCII characters. Therefore it is possible to send “illegal” morse code characters, or characters that might only be used in certain languages. They will be transmitted correctly (but shown on the display as non-decodable).</p>
@@ -2817,6 +2835,20 @@ The font family used is Lato.</p>
 <li><strong>Morserino Phrases Trainer</strong> by Tommy, OZ1THC (see <em>https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer</em>).</li>
 <li>See also the description of the <strong>Serial Output</strong> preference in section <strong>6.2.1 General Preferences</strong>.</li>
 </ul>
+<h3 data-number="7.8.1" id="using-the-m32-serial-protocol-over-bluetooth-ble-serial"><span class="header-section-number">7.8.1</span> Using the M32 Serial Protocol over Bluetooth (BLE Serial)</h3>
+<p>The M32 Serial Protocol is not tied to the USB cable: when the preference <strong>BLE Serial</strong> (see section <strong>6.2.1 General Preferences</strong>) is set to <strong>On</strong>, the very same protocol is also available over Bluetooth Low Energy. This is particularly useful for phones and tablets — on iOS, for example, apps cannot open a classic serial connection over Bluetooth at all, while BLE works fine. An app can remote-control the Morserino exactly like a program connected via USB, including sending text that the Morserino keys as CW (<code>PUT cw/play/...</code>).</p>
+<p>After enabling the preference, the Morserino advertises itself as “<strong>Morserino-32</strong>” whenever it is at the main menu or in one of the training modes and no client is connected. No pairing is necessary — connecting works like plugging in a USB cable, and the app starts the session with the usual <code>PUT device/protocol/on</code> command.</p>
+<p>A few things to be aware of:</p>
+<ul>
+<li>USB and BLE sessions are independent and can even be active at the same time; each is started and ended with its own <code>PUT device/protocol/on</code> / <code>off</code>.</li>
+<li>Any function that needs the WiFi radio (WiFi transceiver modes, multiplayer games, file upload, firmware update, WiFi configuration) suspends the Bluetooth connection for the remainder of that activity; it becomes available again when you return to the main menu.</li>
+<li>In CW Keyer mode, BLE Serial and the Bluetooth keyboard (Appendix
+<ol start="9" type="1">
+<li>cannot be active at the same time; while BLE Serial is enabled and running, the keyboard output is skipped (the device shows a short notice).</li>
+</ol></li>
+<li>An active protocol session prevents the automatic power-off timeout, just like a USB session does — remember this when running on battery.</li>
+</ul>
+<p>For developers: the technical details (service UUIDs, framing, transport behavior) are described in the <em>M32 Protocol</em> description in the <code>Documentation/Protocol Description</code> folder on GitHub; a ready-made test and demo script (<code>ble_m32_test.py</code>, using Python and <em>bleak</em>) can be found in the <code>devdocs/ble-serial</code> folder.</p>
 <h2 data-number="7.9" id="appendix-9-using-the-bluetooth-keyboard-functionality"><span class="header-section-number">7.9</span> Appendix 9: Using the Bluetooth Keyboard functionality</h2>
 <p>In “CW Keyer” mode, the M32 can send the keyed Morse code as keyboard codes via Bluetooth to a computer (including cell phones and tablets).</p>
 <p>To do this, the “<strong>BLT Kbd Output</strong>” setting must be set accordingly (for more information on the available options, see section  <strong>6.2.2 Preferences regarding Key, Paddles and Keyer</strong>).</p>
@@ -4103,7 +4135,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>BLE</td>
-<td>Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output.</td>
+<td>Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output and for the M32 Serial Protocol over Bluetooth (see the BLE Serial preference).</td>
 </tr>
 <tr>
 <td>CW</td>
