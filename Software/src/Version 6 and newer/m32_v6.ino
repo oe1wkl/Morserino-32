@@ -2863,6 +2863,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 }
 
 void shutMeDown() {
+  MorsePreferences::writeVolume();   // volume may have been changed without returning to the menu
   MorseOutput::sleep();     /// shut down Heltec display
   if (m32protocol)
     MorseJSON::jsonError("M32 SLEEP SHUTDOWN BY USER");
