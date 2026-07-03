@@ -19,7 +19,7 @@
 #include "M32ProtocolOut.h"      // bleProtocol
 #include "MorseJSON.h"           // jsonError on init failure
 #include "MorseOutput.h"         // splash on init failure
-#include "MorsePreferences.h"    // pliste[posBleSerial] for the keyboard-exclusion predicate
+#include "MorsePreferences.h"    // pliste[posBluetoothOut]: are we selected on the Bluetooth Use selector?
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"      // isBLErunning: HID-owns-the-stack is a transient, not an init failure
 #endif
@@ -149,11 +149,6 @@ bool MorseBleSerial::linkUp() {
     return isRunning && isConnected && !sessionResetPending;
 }
 
-bool MorseBleSerial::blocksBtKeyboard() {
-    // mutual exclusion, BLE Serial wins (PUT cw/play needs the keyer active);
-    // gated on isRunning too so a failed init degrades to today's keyboard
-    return MorsePreferences::pliste[posBleSerial].value != 0 && isRunning;
-}
 
 static bool initFailedSticky = false;   // don't retry (and re-splash) every polling pass after a failure;
                                         // cleared by stop(), i.e. a pref off->on cycle or reboot allows retry

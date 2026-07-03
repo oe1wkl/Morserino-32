@@ -17,6 +17,10 @@
 
 #ifdef CONFIG_BLE_SERIAL
 
+#ifndef CONFIG_BLUETOOTH_KEYBOARD
+#error "CONFIG_BLE_SERIAL requires CONFIG_BLUETOOTH_KEYBOARD: BLE Serial is option 5 of the 'Bluetooth Use' selector (posBluetoothOut)"
+#endif
+
 #include <Arduino.h>
 
 /// "BLE Serial": the M32 serial protocol over a Nordic-UART-Service GATT
@@ -36,7 +40,6 @@ namespace MorseBleSerial
 	extern volatile bool isRunning;                        // GATT server up; set false FIRST in stop()
 
 	bool linkUp();                                         // isRunning && connected && no session reset pending
-	bool blocksBtKeyboard();                               // mutual exclusion: pref on AND server running (PLAN D3)
 	bool init();                                           // defensive: false + visible error if the BLE stack is unusable; never blocks
 	void stop();                                           // synchronous teardown incl. bleProtocol — never trusts onDisconnect to fire
 	void stopWithNotice(const String &msg, uint32_t flushMs);  // protocol message (best-effort) + flush + stop

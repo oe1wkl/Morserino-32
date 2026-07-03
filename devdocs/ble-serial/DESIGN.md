@@ -6,6 +6,31 @@ full decision table D1–D19 and rationale) is [PLAN.md](PLAN.md); this file
 records what an implementer or debugger needs beyond it: the contracts,
 deliberate exemptions, measured results, and the one latent bug we found.*
 
+## Selector rework (PR #194 feedback, 2026-07-03)
+
+Willi asked for **one** Bluetooth selector instead of two competing
+preferences (keyboard output vs. BLE Serial). Consequences:
+
+- `posBleSerial` was removed entirely: the rule-9 triple (enum entry,
+  `pliste[]`, `prefName[]`), the `BLESER` macro in the option arrays, the
+  snapshot exemption (read, write, and JSON sides), and the
+  keyboard-exclusion predicate with its one-time notice splash
+  ("BT Kbd off"/"BLE Serial on").
+- BLE serial is now **option 5 of the "Bluetooth Use" selector**
+  (`posBluetoothOut == 5`, `BLT_USE_SERIAL_PROT` in `morsedefs.h`). Options
+  0-4 keep their historic order and meanings, so stored settings stay
+  compatible; option 5 exists only in `CONFIG_BLE_SERIAL` builds.
+- The keyboard-vs-serial mutual exclusion is now **structural**: one selector
+  value owns the BLE stack, so no exclusion predicate or notice is needed.
+- The setting is stored in snapshots like any normal preference (the old
+  snapshot exemption is obsolete).
+- Display-width caveat: the mapped value `"BLT Serial Prot."` is 16 chars vs
+  the OLED's 14-char line budget — flagged to Willi in the PR.
+
+References to `posBleSerial`, the OFF/ON toggle, the snapshot exemption, or
+the "BT Kbd off" splash in PLAN.md and in the sections below are historical;
+this section supersedes them.
+
 ## Architecture in five sentences
 
 `MorseBleSerial` runs a Bluedroid NUS GATT server (`6E400001/2/3-B5A3-…`,

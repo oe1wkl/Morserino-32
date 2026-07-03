@@ -842,7 +842,7 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
 
 #ifdef CONFIG_BLE_SERIAL
     bleInputString.reserve(400);      // mirrors inputString; avoids String churn on the command path
-    if (MorsePreferences::pliste[posBleSerial].value)
+    if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT)
       MorseBleSerial::init();         // defensive: refuses visibly instead of blocking if the stack is unusable
 #endif
 
@@ -1105,8 +1105,8 @@ if (morseState == morseKeyer &&
       MorsePreferences::pliste[posBluetoothOut].value != 0 &&
       !MorseBluetooth::isBLErunning
 #ifdef CONFIG_BLE_SERIAL
-      && !MorseBleSerial::blocksBtKeyboard()   // mutual exclusion, BLE Serial wins (also enforced inside
-#endif                                         // initializeBluetooth; checked here to keep the loop cheap)
+      && MorsePreferences::pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT   // selector gives BLE to the serial
+#endif                                                                            // protocol (also enforced inside init)
       ) {
     // Initialize Bluetooth System
     MorseBluetooth::initializeBluetooth();

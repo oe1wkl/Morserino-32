@@ -22,9 +22,6 @@
 #include "morsedefs.h"
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
-#ifdef CONFIG_BLE_SERIAL
-#include "MorseBleSerial.h"    // mutual-exclusion guard in initializeBluetooth()
-#endif
 #include "BLEDevice.h"
 #include "BLEHIDDevice.h"
 #include "HIDTypes.h"
@@ -198,10 +195,10 @@ void bluetoothTask(void*) {
 void MorseBluetooth::initializeBluetooth(void)
 {
 #ifdef CONFIG_BLE_SERIAL
-    // mutual exclusion (BLE Serial wins): two GATT servers must never share
-    // the Bluedroid stack — enforced here so every present and future call
-    // site is safe, not just the currently-guarded ones
-    if (MorseBleSerial::blocksBtKeyboard())
+    // the "Bluetooth Use" selector gives the BLE stack to the serial
+    // protocol at value 5 — never start the keyboard's GATT server then;
+    // enforced here so every present and future call site is safe
+    if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT)
         return;
 #endif
 	// start Bluetooth task - stack size was originally 20000m prio was 5

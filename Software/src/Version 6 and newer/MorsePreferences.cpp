@@ -90,9 +90,6 @@ const char * prefName[] = {
             "qsoBotContestType",
             "qsoBotLevel",
 #endif
-#ifdef CONFIG_BLE_SERIAL
-            "bleSerial",
-#endif
             "serialOut"
 					};
 
@@ -402,11 +399,22 @@ parameter MorsePreferences::pliste[] = {
   },
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   {
-    0, 0, 4, 1,                                                 // output via Bluetooth? 0 = none, 1= keyed sends CTRL key, 2 = decoded chars are sent as keystrokes, 3=both
-    "BLT Kbd Output",
-    "Select what is sent to the Bluetooth Keyboard output",
+    // one selector for everything Bluetooth: 0 = off, 1-4 = the historic
+    // keyboard modes (order is load-bearing for stored settings), 5 = the
+    // M32 serial protocol over BLE (builds with CONFIG_BLE_SERIAL only)
+#ifdef CONFIG_BLE_SERIAL
+    0, 0, 5, 1,
+#else
+    0, 0, 4, 1,
+#endif
+    "Bluetooth Use",
+    "Select what Bluetooth is used for (keyboard output or M32 serial protocol)",
     true,
-    {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"}
+    {"No Bluetooth", "VBand Kbd", "Decoded output", "VBand+Decoded", "Generic Kbd"
+#ifdef CONFIG_BLE_SERIAL
+     , "BLT Serial Prot."
+#endif
+    }
   },
   {
     0, 0, 1, 1,                                                 // in Generic Kbd mode: 0=send '+', 1=send Shift+Enter (soft return)
@@ -593,11 +601,6 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define BLUE
 #endif
-#ifdef CONFIG_BLE_SERIAL
-#define BLESER posBleSerial,
-#else
-#define BLESER
-#endif
 #ifdef CONFIG_QSO_BOT
 #define QSOBOT posQsoBotLevel, posQsoBotContestType,
 #else
@@ -605,71 +608,71 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #endif
 
 
-  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency
                                                  };
-  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
- prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
 
- prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
- prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
- prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posKochSeq, posCarouselStart, posInterCharSpace,  posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
 
- prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
- prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
                                                    posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
                                                    posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
 #ifdef CONFIG_QSO_BOT
- prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth,
@@ -677,7 +680,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                  };
 #endif
 
- prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME BLUE BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
@@ -689,7 +692,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
  // BLUE, QSOBOT) are macro-expanded into their groups so the order stays
  // stable across build configurations.
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT BLESER posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLUE
                                                    posKochSeq, posCarouselStart,
@@ -1639,10 +1642,10 @@ void MorsePreferences::writePreferences(const char* repository) {
                       Goertzel::setup();
                     break;
 #ifdef CONFIG_BLE_SERIAL
-              case posBleSerial:                                  // OFF stops BLE at once; ON waits for the top-menu backstop
-                    if (morserino && pliste[posBleSerial].value == 0)
+              case posBluetoothOut:                               // selected away from BLT Serial Prot.: stop BLE serial now;
+                    if (morserino && pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT)
                       MorseBleSerial::stopWithNotice("BLE serial off", 300);
-                    break;
+                    break;                                        // selected TO it: the top-menu backstop starts it
 #endif
               case posKochSeq:
                     if (morserino && !MorsePreferences::useCustomChars)

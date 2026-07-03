@@ -239,15 +239,17 @@ should feel like it. Convergence is a design decision for Willi
 
 Services that extend the device's I/O channels without their own screen
 (currently: **BLE Serial**; the pattern also covers the Bluetooth keyboard)
-are controlled by a **preferences toggle, never a menu entry**. When enabled
+are controlled through the **preferences mechanism, never a menu entry** —
+either a dedicated toggle or an option of a shared selector (BLE Serial is
+option 5, *BLT Serial Prot.*, of the **Bluetooth Use** selector). When enabled
 they start at boot and remain active across menu navigation and interactive
 modes, except that any activity which needs the WiFi radio — a WiFi menu
 function, WiFi transceiver, or a mode that starts wireless multiplayer or
 WiFi transmit mid-session — suspends them for the remainder of that session;
 they resume automatically on return to the top menu. Connection and
 disconnection are silent on the device screen; state changes the user must
-know about (suspension, mutual exclusion with another service) are shown once
-as a short splash and mirrored as an M32-protocol `message` object.
+know about (e.g. suspension for WiFi) are shown once as a short splash and
+mirrored as an M32-protocol `message` object.
 
 ## 11. Manual parity
 

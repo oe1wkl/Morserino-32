@@ -417,9 +417,6 @@ enum prefPos : uint8_t {
         posQsoBotContestType,
         posQsoBotLevel,
 #endif
-#ifdef CONFIG_BLE_SERIAL
-        posBleSerial,
-#endif
   posSerialOut,
                 // to be treated differently:
                 posKochFilter,                                                                                // 36
@@ -430,6 +427,13 @@ enum prefPos : uint8_t {
 enum actMessage : int {
   ACT_EXIT, ACT_ON, ACT_SET, ACT_CANCELLED, ACT_RECALLED, ACT_CLEARED
 };
+
+#ifdef CONFIG_BLE_SERIAL
+// "Bluetooth Use" selector (posBluetoothOut): values 0-4 are the historic
+// keyboard modes (order must never change - stored settings depend on it);
+// 5 selects the M32 serial protocol over BLE instead of the keyboard.
+#define BLT_USE_SERIAL_PROT 5
+#endif
 
 extern void DEBUG (const String& s);
 

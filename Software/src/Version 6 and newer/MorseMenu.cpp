@@ -295,10 +295,10 @@ void MorseMenu::menu_() {
 #ifdef CONFIG_BLE_SERIAL
         // THE top-menu backstop (the only one): every path to the top menu
         // ends in this wait loop — menu_() falls straight through to here,
-        // and _wifi_* functions / a pref toggled ON (locally or via PUT
+        // and _wifi_* functions / the selector changed (locally or via PUT
         // config) return here without re-entering menu_(). Cheap when
         // running (one flag test); a failed init latches and won't retry.
-        if (MorsePreferences::pliste[posBleSerial].value && !MorseBleSerial::isRunning)
+        if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT && !MorseBleSerial::isRunning)
           MorseBleSerial::init();
 #endif
         if (disp != MorsePreferences::newMenuPtr) {
@@ -473,16 +473,8 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
     case  _keyer:  /// keyer
                 #ifdef CONFIG_BLUETOOTH_KEYBOARD
                   if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
-                #ifdef CONFIG_BLE_SERIAL
-                    if (MorseBleSerial::blocksBtKeyboard()) {     // one-time notice; the skip itself is
-                      static bool notifiedOnce = false;           // enforced inside initializeBluetooth()
-                      if (!notifiedOnce) {
-                        notifiedOnce = true;
-                        showStartDisplay("BT Kbd off", "BLE Serial on", "", 1400);
-                      }
-                    }
-                #endif
-                    // Initialize Bluetooth System (no-op while BLE Serial runs)
+                    // Initialize Bluetooth System (no-op when the Bluetooth
+                    // Use selector assigns BLE to the serial protocol)
                     MorseBluetooth::initializeBluetooth();
                   }
                 #endif

@@ -185,11 +185,7 @@ namespace MorsePreferences
   // preferences that live only in the "morserino" store, never in snapshots —
   // the ONE list consumed by the read loop, the write loop and jsonGetSnapshot
   inline bool snapshotExempt(uint8_t pos) {
-    return pos == posTimeOut || pos == posSerialOut
-#ifdef CONFIG_BLE_SERIAL
-           || pos == posBleSerial
-#endif
-           ;
+    return pos == posTimeOut || pos == posSerialOut;
   }
 
   extern  prefPos keyerOptions[];
