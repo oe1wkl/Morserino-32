@@ -93,6 +93,13 @@ const char * prefName[] = {
             "serialOut"
 					};
 
+// rule 9 (CLAUDE.md): prefName[], pliste[] and the prefPos enum are positional
+// triplets. A missing or extra entry silently shifts every following
+// preference (wrong names, wrong NVS keys, values clamped by the wrong
+// limits) — make that a compile error instead.
+static_assert(sizeof(prefName) / sizeof(prefName[0]) == posSerialOut + 1,
+              "prefName[] out of sync with the prefPos enum (rule 9)");
+
 
 
 /* parameter:
@@ -458,15 +465,6 @@ parameter MorsePreferences::pliste[] = {
     {"Beginner", "Intermediate", "Advanced"}
   },
 #endif
-#ifdef CONFIG_BLE_SERIAL
-  {
-    0, 0, 1, 1,                                                 // M32 serial protocol over BLE (Nordic UART Service); off by default
-    "BLE Serial",
-    "Remote control via Bluetooth LE (M32 protocol)",
-    true,
-    {"Off", "On"}
-  },
-#endif
   {
     5, 0, 5, 1,        // Serial Output entry (unchanged)                                                // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
     "Serial Output",
@@ -475,6 +473,9 @@ parameter MorsePreferences::pliste[] = {
     {"Nothing", "Keyed", "Decoded", "Keyed+Decoded", "Generated", "All"}
   }
 };
+
+static_assert(sizeof(MorsePreferences::pliste) / sizeof(MorsePreferences::pliste[0]) == posSerialOut + 1,
+              "pliste[] out of sync with the prefPos enum (rule 9)");
 
 const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores" };
 
