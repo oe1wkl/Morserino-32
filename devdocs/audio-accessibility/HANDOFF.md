@@ -15,12 +15,18 @@ out loud. Built, flashed, and exercised on real hardware; first blind-user sessi
 - Async, non-blocking, debounced (120 ms settle); **latest entry wins**, no mid-clip interrupt.
 - 60 maintainer pronunciation overrides applied (`spoken_overrides.tsv`).
 
-**2026-07-03 rework (commit `9d66535` + clip regen) — NEEDS ON-DEVICE VERIFICATION:**
-- **Freeze root cause found & fixed structurally**: every freeze/crash variant came from the
-  UI task mutating the decode pipeline while the audio task was in `copier->copy()`. The
-  audio task now owns the whole clip lifecycle (1-deep command mailbox; `audioLoop()`/
-  `teardownClip()` in the vendored lib); decoder is reset **per clip, inside the audio task**
-  (safe there — every *cross-task* reset attempt crashed); plus a 2 s no-progress watchdog.
+**2026-07-03 rework (commits `9d66535` + `cd97e87` + clip regen) — NEEDS ON-DEVICE VERIFICATION:**
+- **Freeze root cause reinterpreted & fixed structurally**: every freeze/crash variant came
+  from the UI task mutating the decode pipeline while the audio task was in `copier->copy()`
+  — including the historical "very-late freeze", which was most likely the per-clip race
+  window (a dice roll per clip), **not** decoder-state accumulation. The audio task now owns
+  the whole clip lifecycle (1-deep command mailbox; `audioLoop()`/`teardownClip()` in the
+  vendored lib) + a 2 s no-progress watchdog that self-heals any residual wedge.
+- **Decoder reset is dead in ALL contexts**: the per-clip in-audio-task `end()/begin()`
+  froze after the FIRST clip (tried + removed, `cd97e87`), matching the earlier UI-task and
+  idle crashes. This audio-tools version cannot re-`begin()` an `EncodedAudioStream` inside
+  a running pipeline. The decoder is **reused via `setStream()`** — the pattern the blocking
+  `playSPIFFSFile` has proven for years. Never reintroduce a decoder reset.
 - **"Clipped" sound diagnosed** (spectrogram of a speaker recording): micro-speaker excursion
   distortion from the <250 Hz band, not file clipping. `generate_audio.sh` now applies
   **HPF 250 Hz (24 dB/oct) + presence +2.5 dB @3 kHz + 2.5:1 compression**; audible-band
@@ -70,8 +76,9 @@ custom partition (`m32pocket_accessibility.csv`); games + WiFi-AP update are str
 ## Open items (rough priority)
 
 1. **Verify the 2026-07-03 rework on device** — (a) freeze: marathon-scroll hundreds of
-   entries (diag build shows per-clip heap — should be flat now that the decoder is reset
-   per clip); (b) sound: the EQ'd clip set (cleaner? loud enough vs CW? `GAIN_DB`/`HPF_HZ`
+   entries; with the diag build the per-clip heap trace should be **flat** (no leak = the
+   race-window theory holds; a decline = real accumulation, needs the offline-rebuild
+   approach); (b) sound: the EQ'd clip set (cleaner? loud enough vs CW? `GAIN_DB`/`HPF_HZ`
    in `generate_audio.sh` are the knobs, clips-only change).
 2. **Message coverage** *(maintainer decision 2026-07-03)*: **the M32 serial-protocol text
    stream is the canonical inventory of what should be spoken** — it was co-designed with
