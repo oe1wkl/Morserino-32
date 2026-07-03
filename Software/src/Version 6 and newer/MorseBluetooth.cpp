@@ -211,7 +211,17 @@ void MorseBluetooth::stopBluetooth(void)
         DEBUG("Stopping BLE");
         vTaskDelete(taskHandle);
         delay(100);
+#ifdef CONFIG_BLE_SERIAL
+        // deinit(true) releases BTDM memory irreversibly AND leaves the library's
+        // 'initialized' flag set (BLEDevice.cpp, core 2.0.17): any later init() is a
+        // silent no-op and createServer() blocks forever in registerApp. BLE Serial
+        // must be able to (re)start after the keyboard stops, so keep the stack
+        // re-initializable. (This also un-masks a latent keyer->menu->keyer re-init
+        // hang of the keyboard itself — see devdocs/ble-serial/DESIGN.md.)
+        BLEDevice::deinit(false);
+#else
         BLEDevice::deinit(true);    // release ALL BLE memory
+#endif
         delay(100);
         MorseBluetooth::isBLErunning = false;
     }

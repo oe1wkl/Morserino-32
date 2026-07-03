@@ -17,6 +17,9 @@
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
 #include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
+#ifdef CONFIG_BLE_SERIAL
+#include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
+#endif
 
 #ifdef CONFIG_TFT
 #include "MorseGameMode.h"
@@ -269,6 +272,13 @@ void MorseMenu::menu_() {
       //DEBUG("Bluetooth Stopped");
       //ESP.restart(); // not needed anymore
     }
+#endif
+#ifdef CONFIG_BLE_SERIAL
+    // top-menu backstop: (re)start BLE Serial after boot-time pref changes or a
+    // WiFi-mode suspension; a failed init leaves isRunning false and degrades
+    // gracefully (the BT keyboard exclusion is gated on isRunning, too)
+    if (MorsePreferences::pliste[posBleSerial].value && !MorseBleSerial::isRunning)
+      MorseBleSerial::init();
 #endif
     genIsActive = false;
     cleanStartSettings();

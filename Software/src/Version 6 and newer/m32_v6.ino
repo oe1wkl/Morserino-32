@@ -186,6 +186,8 @@ boolean m32protocol = false;
 #ifdef CONFIG_BLE_SERIAL
 volatile bool bleProtocol = false;                      // per-transport handshake state for BLE Serial (see M32ProtocolOut.h);
                                                         // cleared by onDisconnect (BT task) and synchronously by MorseBleSerial::stop()
+String bleInputString;                                  // BLE line assembly, mirrors inputString (reserve(400) in setup())
+bool bleDiscardLine = false;                            // discard the tail of an overlong line up to the next \n
 #endif
 String inputString = "";      // a String to hold incoming data         // for serial input
 boolean stringComplete = false;  // whether the string is complete
@@ -838,8 +840,14 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
     //DEBUG("Clear serial input buffer");
     inputString = "";
 
+#ifdef CONFIG_BLE_SERIAL
+    bleInputString.reserve(400);      // mirrors inputString; avoids String churn on the command path
+    if (MorsePreferences::pliste[posBleSerial].value)
+      MorseBleSerial::init();         // defensive: refuses visibly instead of blocking if the stack is unusable
+#endif
+
     //WiFi.useStaticBuffers(true);
-    
+
     MorseMenu::menu_();
   } /////////// END setup()
 
@@ -2910,6 +2918,9 @@ void shutMeDown() {
   MorseOutput::sleep();     /// shut down Heltec display
   if (protocolActive())
     MorseJSON::jsonError("M32 SLEEP SHUTDOWN BY USER");
+#ifdef CONFIG_BLE_SERIAL
+  MorseBleSerial::txFlush(300);       // best-effort: let the shutdown notice reach a live BLE client
+#endif
 
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0); //1 = High, 0 = Low
 #ifdef LORA_RADIOLIB
@@ -3795,7 +3806,67 @@ void serialEvent() {
           inputString = "";
           stringComplete = false;
       }
+#ifdef CONFIG_BLE_SERIAL
+      bleSerialEvent();               // BLE is serviced everywhere USB is: serialEvent() is polled in
+                                      // loop(), the menu wait-loop and every busy-wait site
+#endif
 }
+
+#ifdef CONFIG_BLE_SERIAL
+
+/////////////////////
+// the BLE twin of serialEvent() above: assemble bytes from the BLE RX ring
+// into lines and dispatch them through the same protocol engine. Deliberate
+// mirror of serialEvent()'s line assembly — keep the two in sync.
+// EXACTLY ONE completed line per poll (like serialEvent's break at \n), so
+// loop() consumes dispatch flags (goToMenu/executeMenu/executeNow) between
+// lines and batched BLE writes behave identically to batched USB input.
+/////////////////////
+
+void bleSerialEvent() {
+  uint8_t b;
+  MorseBleSerial::pump();                                   // session resets, advertising restart, flow-gated TX drain
+  if (MorseBleSerial::takeLineReset()) {                    // new central: our partial line belongs to the old session
+    bleInputString = "";
+    bleDiscardLine = false;
+  }
+  while (MorseBleSerial::readByte(b)) {                     // returns false immediately after stop()
+    if (bleDiscardLine) {                                   // tail of a runaway line: swallow up to \n, execute nothing
+      if (b == '\n')
+        bleDiscardLine = false;
+      continue;
+    }
+    bleInputString += (char) b;
+    if (bleInputString.length() > 400) {                    // no legitimate command is this long
+      bleInputString = "";
+      bleDiscardLine = true;
+      continue;
+    }
+    if (b != '\n')
+      continue;
+    bleInputString.trim();
+    if (MorseBleSerial::takeRxOverflow()) {                 // ring overflowed while this line was assembling:
+      MorseJSON::jsonError("BLE RX OVERFLOW");              // the line is torn — discard, report once
+    }
+    else if (!bleProtocol) {                                // pre-handshake: only the protocol/on probe is recognized
+      if (bleInputString.equalsIgnoreCase("put device/protocol/on")) {
+        bleProtocol = true;
+        MorseJSON::jsonDevice(brd, vsn);
+      }
+    }
+    else if (bleInputString.equalsIgnoreCase("put device/protocol/off")) {
+      // intercepted per transport (whole-line compare, fully case-insensitive):
+      // ends only the BLE session — the USB handler in m32Put stays USB-only
+      MorseJSON::jsonCreate("end m32protocol", "Goodbye!", "");
+      bleProtocol = false;
+    }
+    else
+      serialDecode(bleInputString);                         // one shared protocol engine, no duplication
+    bleInputString = "";
+    break;                                                  // one completed line per poll — see header comment
+  }
+}
+#endif // CONFIG_BLE_SERIAL
 
 
 /////////////////////
@@ -4003,6 +4074,9 @@ void m32Put(String type, String token, String value) {                    /// PU
         resetPref.end();
         MorseJSON::jsonOK();
         Serial.flush();          // ensure the OK reaches the host before we reboot
+#ifdef CONFIG_BLE_SERIAL
+        MorseBleSerial::txFlush(500);  // same courtesy for a BLE client; the link drops with the reboot
+#endif
         delay(100);
         ESP.restart();
       }
