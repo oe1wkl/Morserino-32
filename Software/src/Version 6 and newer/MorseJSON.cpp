@@ -15,6 +15,7 @@
 #include "MorseJSON.h"
 #include "MorseMenu.h"
 #include "MorseOutput.h"   // getPowerpathState() for the battery charge state
+#include "M32ProtocolOut.h" // m32out: delivers protocol output to every handshaken transport
 
 ///// create json output for serial port
 using namespace MorseJSON;
@@ -26,7 +27,7 @@ void MorseJSON::jsonDevice(const String& brd, const String& vsn) { // create jso
 	device["firmware"] = vsn;
 	device["protocol"] = M32P_VERSION;
 	device["build"]    = COMPILEDATE;   // firmware compile date (__DATE__), additive build stamp
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonError(const String& errormessage) { // create json object with error message, and send it to the serial output
@@ -45,7 +46,7 @@ void MorseJSON::jsonMenu(const String& path, unsigned int number, boolean active
 	obj["executable"] = exec;
 	obj["active"] = active;
 
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonMenuList(void) { // get all parameter names and their values, and send them as json object
@@ -57,7 +58,7 @@ void MorseJSON::jsonMenuList(void) { // get all parameter names and their values
           obj["menu number"] = i;
           obj["executable"] = MorseMenu::isRemotelyExecutable(i);
       }
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonParameter(const String& token) { /// find parameter "token" and create json object for it
@@ -93,7 +94,7 @@ void MorseJSON::jsonParameterList(void) { // get all parameter names and their v
            else
                obj["displayed"] = String(MorsePreferences::pliste[i].value);
        }
-       serializeJson(doc, Serial);
+       serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and associated values
@@ -111,7 +112,7 @@ void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and asso
 		array.add(cleanUpProSigns(s));
 	}
 	kochlesson["characters"] = array;
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
@@ -134,7 +135,7 @@ void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
 		}
 		conf["mapped values"] = array;
 	}
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonConfigShort(const String& item, int value, const String& displayed) { // create json object for a parameter with its value, and send it to the serial output
@@ -143,7 +144,7 @@ void MorseJSON::jsonConfigShort(const String& item, int value, const String& dis
 	conf["name"] = item;
 	conf["value"] = value;
 	conf["displayed"] = displayed;
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonCreate(const String& objName, const String& path, const String& state) { // create json object with name "objName", and two properties "content" and "state", and send it to the serial output
@@ -152,7 +153,7 @@ void MorseJSON::jsonCreate(const String& objName, const String& path, const Stri
 	obj["content"] = path;
 	if (state != "")
 		obj["status"] = state;
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonActivate(actMessage active) { /// if active == 1: we are LEAVING a mode
@@ -162,7 +163,7 @@ void MorseJSON::jsonActivate(actMessage active) { /// if active == 1: we are LEA
 	if (active > 5)
 		active = (actMessage)0;
 	activate["state"] = message[active];
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonControl(const String& item, uint8_t value, uint8_t mini, uint8_t maxi, boolean detailed) { /// create json object for a control item with its value, and send it to the serial output; if detailed == true, also include minimum and maximum values
@@ -175,7 +176,7 @@ void MorseJSON::jsonControl(const String& item, uint8_t value, uint8_t mini, uin
 		control["minimum"] = mini;
 		control["maximum"] = maxi;
 	}
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonControls(void) {
@@ -190,7 +191,7 @@ void MorseJSON::jsonControls(void) {
 
 	StaticJsonDocument<256> doc;
 	doc["controls"] = liste;
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonSnapshots(void) {
@@ -205,7 +206,7 @@ void MorseJSON::jsonSnapshots(void) {
 		array.add((int)MorsePreferences::memories[i] + 1);
 	}
 	conf["existing snapshots"] = array;
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonFileStats(void) { // get info about SPIFFS file system
@@ -219,12 +220,12 @@ void MorseJSON::jsonFileStats(void) { // get info about SPIFFS file system
 	used = SPIFFS.usedBytes();
 	total = SPIFFS.totalBytes();
 	conf["free"] = total - used;
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonFileFirstLine(void) {
 	File file = SPIFFS.open("/player.txt", "r"); // Open the file for reading in SPIFFS - no error handling, file must exist
-	Serial.print("{\"file\":{\"first line\":\"");
+	m32out.print("{\"file\":{\"first line\":\"");
 	while (file.available())
 	{
 		char c = file.read();
@@ -233,33 +234,33 @@ void MorseJSON::jsonFileFirstLine(void) {
 		if (c == '\n')
 			break;
 		else
-			Serial.write(c);
+			m32out.write(c);
 	}
-	Serial.print("\"}}");
+	m32out.print("\"}}");
 	file.close();
 }
 
 void MorseJSON::jsonFileText(void) {
 	File file = SPIFFS.open("/player.txt", "r");
-	Serial.print("{\"file\":{\"text\":\"");
+	m32out.print("{\"file\":{\"text\":\"");
 	while (file.available())
 	{
 		char c = file.read();
 		switch (c) {
-			case '"':  Serial.print("\\\""); break;
-			case '\\': Serial.print("\\\\"); break;
-			case '\n': Serial.print("\\n");  break;
-			case '\r': Serial.print("\\r");  break;
-			case '\t': Serial.print("\\t");  break;
+			case '"':  m32out.print("\\\""); break;
+			case '\\': m32out.print("\\\\"); break;
+			case '\n': m32out.print("\\n");  break;
+			case '\r': m32out.print("\\r");  break;
+			case '\t': m32out.print("\\t");  break;
 			case '{':  break;  // skip curly braces
 			case '}':  break;
 			default:
 				if (c >= 0x20)   // skip other control characters
-					Serial.write(c);
+					m32out.write(c);
 				break;
 		}
 	}
-	Serial.print("\"}}");
+	m32out.print("\"}}");
 	file.close();
 }
 
@@ -269,7 +270,7 @@ void MorseJSON::jsonFilePart(const String& name, uint8_t index, uint8_t total) {
     obj["name"] = name;
     obj["selected"] = index + 1;    // 1-based for the serial client
     obj["count"] = total;
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonFileList(void) {
@@ -287,7 +288,7 @@ void MorseJSON::jsonFileList(void) {
     doc["total"] = SPIFFS.totalBytes();
     doc["used"] = SPIFFS.usedBytes();
     doc["free"] = SPIFFS.totalBytes() - SPIFFS.usedBytes();
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonUploadComplete(const String& filename, uint32_t size) {
@@ -295,7 +296,7 @@ void MorseJSON::jsonUploadComplete(const String& filename, uint32_t size) {
     JsonObject obj = doc.createNestedObject("upload");
     obj["file"] = filename;    // this one is fine — we pass the filename ourselves
     obj["size"] = size;
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetWifi(void) {
@@ -322,7 +323,7 @@ void MorseJSON::jsonGetWifi(void) {
 	doc["espnow"] = MorsePreferences::useEspNow;
 	doc["wlanChoice"] = MorsePreferences::wlanChoice;
 
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetCwStores(void) {
@@ -338,7 +339,7 @@ void MorseJSON::jsonGetCwStores(void) {
 	}
 
 	conf["cw memories in use"] = array;
-	serializeJson(doc, Serial);
+	serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetCwStore(const String& value) { // get content of CW memory "value" (number between 1 and 8), and send it as json object; if value is invalid, send json object with error message
@@ -354,7 +355,7 @@ void MorseJSON::jsonGetCwStore(const String& value) { // get content of CW memor
 		JsonObject obj = doc.createNestedObject("CW Memory");
 		obj["number"] = number;
 		obj["content"] = String(MorsePreferences::cwMem[number - 1]);
-		serializeJson(doc, Serial);
+		serializeJson(doc, m32out);
 	}
 }
 
@@ -408,7 +409,7 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     }
 
     snapPref.end();
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetPlayer(void) {
@@ -422,7 +423,7 @@ void MorseJSON::jsonGetPlayer(void) {
     JsonObject player = doc.createNestedObject("player");
     player["call"] = call;
     player["name"] = name;
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetCustomChars(void) {
@@ -430,7 +431,7 @@ void MorseJSON::jsonGetCustomChars(void) {
     JsonObject obj = doc.createNestedObject("customchars");
     obj["active"] = MorsePreferences::useCustomChars;
     obj["characters"] = MorsePreferences::customCharSet;
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetHardware(void) {
@@ -447,7 +448,7 @@ void MorseJSON::jsonGetHardware(void) {
     hw["loraFrequency"] = MorsePreferences::loraQRG;
     hw["loraPower"] = MorsePreferences::loraPower;
 #endif
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }
 
 void MorseJSON::jsonGetBattery(void) {
@@ -467,5 +468,5 @@ void MorseJSON::jsonGetBattery(void) {
 #else
     bat["status"] = "usb powered";
 #endif
-    serializeJson(doc, Serial);
+    serializeJson(doc, m32out);
 }

@@ -41,6 +41,10 @@
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
 #include "MorseJSON.h"        // JSON handling for file upload and serial communication
+#include "M32ProtocolOut.h"   // m32out tee + protocolActive(): protocol output/gating across transports
+#ifdef CONFIG_BLE_SERIAL
+#include "MorseBleSerial.h"   // M32 protocol over BLE (Nordic UART Service)
+#endif
 #include <mbedtls/base64.h>     // for base64 decoding (built into ESP32)
 
 // MorseGame.h is needed even on QSO-Bot-only builds: it carries the
@@ -179,6 +183,10 @@ encoderMode encoderState = speedSettingMode;    // we start with adjusting the s
 
 // a few things for the serial m32protocol
 boolean m32protocol = false;
+#ifdef CONFIG_BLE_SERIAL
+volatile bool bleProtocol = false;                      // per-transport handshake state for BLE Serial (see M32ProtocolOut.h);
+                                                        // cleared by onDisconnect (BT task) and synchronously by MorseBleSerial::stop()
+#endif
 String inputString = "";      // a String to hold incoming data         // for serial input
 boolean stringComplete = false;  // whether the string is complete
 String vsn, brd;              // strings to hold firmware version and board version
@@ -2515,7 +2523,7 @@ void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
 void SerialOutMorse(const String& s, uint8_t origin) {
   uint8_t bitmap = (MorsePreferences::pliste[posSerialOut].value < 5 ? MorsePreferences::pliste[posSerialOut].value : 7);
   if (origin & bitmap)
-      Serial.print(s);
+      m32out.echo(s);       // USB always (as before); a handshaken BLE client gets a copy, drop-immediately (keying path)
 }
 
 
@@ -3926,7 +3934,7 @@ void m32Get(String type, String token, String value) {                    /// GE
               for (int i = 0; i < MorsePreferences::filePartCount; i++) {
                   arr.add(MorsePreferences::fileParts[i].name);
               }
-              serializeJson(doc, Serial);
+              serializeJson(doc, m32out);
           }
       }    }
     else if (type == "wifi") {
