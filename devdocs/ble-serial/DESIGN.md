@@ -163,14 +163,57 @@ callback objects are static); measure the per-cycle free-heap delta in
 hardware checklist item 10 — the suspend/restart cycle runs many times per
 battery charge.
 
-## Hardware test checklist
+## First hardware contact (2026-07-03, M32 Pocket) — four fixes + findings
 
-The full 15-step on-hardware matrix is PLAN.md §8. Run
-[`ble_m32_test.py`](ble_m32_test.py) (`pip install bleak`) from a Mac for
-steps 1–8 (scripted) and `--repl` for the rest. No hardware was attached
-during implementation, so **all on-hardware steps are still open**; the
-host-testable logic (ring, reset, flow policy) and both-variant + flag-off
-builds are done.
+Steps 1–8 of the PLAN §8 matrix **pass on a real M32 Pocket** (scripted run:
+handshake + early-write, chunked `GET menus` reassembly, remote keyer start,
+`cw/play` audible, batched write, mixed-case `Put device/protocol/off`
+isolation + un-handshaken silence, re-handshake, 2.9 KB flow-control soak,
+disconnect → re-advertise → reconnect cycles). Four defects were found and
+fixed on the way — none reachable without radio hardware:
+
+1. **Library scan-response overflow (no advertising at all).**
+   `BLEAdvertising::start()` with `setScanResponse(true)` memcpy's the whole
+   ADV payload (128-bit NUS UUID included) into the scan response beside the
+   name → 35 B > 31 B → `esp_ble_gap_config_adv_data` INVALID_ARG (visible
+   only at CORE_DEBUG_LEVEL ≥1, which QuickDebug precludes) → `start()`
+   returns **before** `esp_ble_gap_start_advertising`. Fix: direct GAP calls
+   with explicit ADV payload (flags + UUID) and raw name-only scan response.
+2. **Keyboard-bond connection theft (invisible while "working").** Hosts
+   bonded to the BT keyboard ("Morserino32 Keyboard", e.g. for VBand)
+   auto-reconnect to the chip's **public address** the instant anything
+   advertises from it, and hold the link — `AUTH_CMPL` fires, advertising
+   stops, no scanner ever sees the device. Fix: BLE Serial advertises from a
+   **static random address** (own identity, derived from the BT MAC with the
+   static-random bits set and one byte flipped); keyboard bonds keep working
+   for the keyboard, and never capture BLE Serial. The advertising *restart*
+   in `pump()` must use the same path — the library default would silently
+   revert to the public address on the first reconnect cycle.
+3. **HID-owned stack latched a permanent init failure.** Enabling BLE Serial
+   while the keyboard runs (keyer mode) made `init()`'s defensive pre-check
+   latch `initFailedSticky` — and nothing could clear it while not running.
+   Fixes: HID-owned stack is a transient refusal (no sticky, no splash;
+   backstop retries after `menu_()` stops the keyboard), and
+   `stopWithNotice()` now calls `stop()` even when not running so a pref
+   off→on cycle always resets module state.
+4. Test-script bugs of its own: bare `GET control` is an INVALID ARGUMENT by
+   protocol (use `control/speed`); the soak now uses `GET configs`.
+
+Observed, for the app side: the character echo arrives **lowercase** (the
+"Output Case" preference governs it) — the iOS EchoTracker must compare
+case-insensitively; and the app must **cancel its pending connect** when the
+picker closes, or iOS completes it silently later (zombie connection the app
+doesn't show).
+
+## Hardware test checklist — remaining
+
+The rest of the PLAN §8 matrix is still open: WiFi suspend/resume ×5 with
+per-cycle heap deltas (both boards), mid-game multiplayer drop, suspended-
+session auto-sleep + remote self-disable, BT-keyboard interplay on the
+classic V2, ≥35 WpM stalled-client CW-timing soak, WiFi-upload-after-BLE on
+V2, snapshots, and the classic-V2 run of the scripted steps. Run
+[`ble_m32_test.py`](ble_m32_test.py) (`pip install bleak`) scripted or
+`--repl`.
 
 ## TODO handed to Willi
 

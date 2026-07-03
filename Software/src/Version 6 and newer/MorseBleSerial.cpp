@@ -20,6 +20,9 @@
 #include "MorseJSON.h"           // jsonError on init failure
 #include "MorseOutput.h"         // splash on init failure
 #include "MorsePreferences.h"    // pliste[posBleSerial] for the keyboard-exclusion predicate
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+#include "MorseBluetooth.h"      // isBLErunning: HID-owns-the-stack is a transient, not an init failure
+#endif
 #include "morsedefs.h"
 
 #include "BLEDevice.h"
@@ -27,6 +30,8 @@
 #include "BLE2902.h"
 #include <esp_bt.h>              // esp_bt_controller_get_status
 #include <esp_bt_main.h>         // esp_bluedroid_get_status
+#include <esp_gap_ble_api.h>     // direct advertising config (see init: the wrapper fails silently)
+#include <esp_mac.h>             // esp_read_mac: derive our static random address
 
 // Nordic UART Service: the de-facto BLE-UART standard — works out of the box
 // with CoreBluetooth, bleak, nRF Connect. RX is written by the central (our
@@ -120,6 +125,23 @@ static void bleSerialGattsHook(esp_gatts_cb_event_t event, esp_gatt_if_t gatts_i
 static BleSerialServerCallbacks serverCallbacks;        // static: no per-stop/start-cycle heap churn
 static BleSerialRxCallbacks rxCallbacks;
 
+// one advertising-start path for BOTH init() and pump()'s post-disconnect
+// restart. The adv/scan-response payloads persist in the controller between
+// stop/start; the parameters do NOT — a restart through the library default
+// (BLEAdvertising::start) would advertise from the PUBLIC address again and
+// any host bonded to the Bluetooth keyboard instantly re-captures the device.
+static bool bleSerialStartAdvertising() {
+    esp_ble_adv_params_t advParams = {};
+    advParams.adv_int_min = 0x20;
+    advParams.adv_int_max = 0x40;
+    advParams.adv_type = ADV_TYPE_IND;
+    advParams.own_addr_type = BLE_ADDR_TYPE_RANDOM;     // our own identity, distinct from the keyboard's
+    advParams.peer_addr_type = BLE_ADDR_TYPE_PUBLIC;
+    advParams.channel_map = ADV_CHNL_ALL;
+    advParams.adv_filter_policy = ADV_FILTER_ALLOW_SCAN_ANY_CON_ANY;
+    return esp_ble_gap_start_advertising(&advParams) == ESP_OK;
+}
+
 // -------------------------------------------------------------- module API —
 // everything below runs on the Arduino loop task.
 
@@ -148,6 +170,15 @@ bool MorseBleSerial::init() {
         return true;
     if (initFailedSticky)
         return false;
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+    // transient, not a failure: the HID keyboard currently owns the stack
+    // (e.g. BLE Serial was enabled while in keyer mode — the keyboard started
+    // first). Refuse WITHOUT the sticky latch and without a splash; the
+    // backstop retries after menu_() stops the keyboard. Latching here would
+    // disable BLE Serial until reboot (found on hardware, M32 Pocket).
+    if (MorseBluetooth::isBLErunning)
+        return false;
+#endif
     // Defensive (PLAN D16): after a legacy deinit(true) the library's
     // 'initialized' flag stays true, init() becomes a silent no-op and
     // createServer() would block the loop task forever in registerApp.
@@ -181,11 +212,44 @@ bool MorseBleSerial::init() {
     service->start();
 
     // flags (3 B) + 128-bit NUS UUID (18 B) fill the 31-byte ADV PDU; the
-    // device name rides in the scan response so scanners still show it
-    BLEAdvertising *advertising = bleServer->getAdvertising();
-    advertising->addServiceUUID(NUS_SERVICE_UUID);
-    advertising->setScanResponse(true);
-    advertising->start();
+    // device name rides in the scan response so scanners still show it.
+    // The scan response must be EXPLICIT (name-only): the library's
+    // auto-built one (setScanResponse(true) alone) memcpy's the whole ADV
+    // payload — 128-bit UUID included — beside the name, exceeds 31 bytes,
+    // and esp_ble_gap_config_adv_data's INVALID_ARG makes start() bail
+    // BEFORE esp_ble_gap_start_advertising: silently no advertising at all
+    // (verified on hardware, M32 Pocket, core 2.0.17).
+    // BLE Serial advertises from a STATIC RANDOM address, not the chip's
+    // public one: hosts that bonded to the Bluetooth keyboard (VBand use)
+    // auto-reconnect to the public identity the instant it advertises and
+    // hold the connection — the device becomes invisible to every scanner
+    // (found on hardware: this Mac's old keyboard pairing was the thief).
+    // A distinct identity keeps old keyboard bonds and BLE Serial apart.
+    uint8_t randAddr[6];
+    esp_read_mac(randAddr, ESP_MAC_BT);
+    randAddr[0] |= 0xC0;                                         // static-random address: two MSBs must be 11
+    randAddr[5] ^= 0x55;                                         // and visibly distinct from the keyboard identity
+    esp_ble_gap_set_rand_addr(randAddr);
+    // advertising payloads via direct GAP calls: BLEAdvertising::start()'s
+    // auto-built scan response would exceed 31 bytes and bail silently — see
+    // the note above bleSerialStartAdvertising()
+    static uint8_t nusUuidLE[16];
+    memcpy(nusUuidLE, BLEUUID(NUS_SERVICE_UUID).to128().getNative()->uuid.uuid128, 16);
+    esp_ble_adv_data_t advData = {};
+    advData.set_scan_rsp = false;
+    advData.include_name = false;
+    advData.include_txpower = false;
+    advData.appearance = 0;
+    advData.flag = ESP_BLE_ADV_FLAG_GEN_DISC | ESP_BLE_ADV_FLAG_BREDR_NOT_SPT;
+    advData.service_uuid_len = 16;
+    advData.p_service_uuid = nusUuidLE;
+    esp_ble_gap_config_adv_data(&advData);
+    static uint8_t scanRspRaw[14];
+    scanRspRaw[0] = 13;                                          // AD length: type + 12-char name
+    scanRspRaw[1] = 0x09;                                        // Complete Local Name
+    memcpy(scanRspRaw + 2, "Morserino-32", 12);
+    esp_ble_gap_config_scan_rsp_data_raw(scanRspRaw, sizeof(scanRspRaw));
+    bleSerialStartAdvertising();
 
     // no BLESecurity / no bonding (PLAN D4): same trust model as a USB cable,
     // and what keeps the iOS CoreBluetooth path prompt-free
@@ -235,7 +299,7 @@ void MorseBleSerial::pump() {
         sessionResetPending = false;
     }
     if (advertisePending && !isConnected && bleServer != nullptr) {
-        bleServer->getAdvertising()->start();
+        bleSerialStartAdvertising();    // NEVER the library path: it would revert to the public address
         advertisePending = false;
     }
     if (!isConnected)                   // idle/advertising is the dominant state, and pump() runs at every
@@ -327,8 +391,10 @@ void MorseBleSerial::txFlush(uint32_t timeoutMs) {
 void MorseBleSerial::stopWithNotice(const String &msg, uint32_t flushMs) {
     // the one graceful-shutdown ritual: tell the client (best-effort — the
     // message may arrive, anything after it will not), drain, tear down
-    if (!isRunning)
-        return;
+    if (!isRunning) {
+        stop();     // still reset ALL module state — in particular the sticky
+        return;     // init-failure latch, so a pref off->on cycle can retry
+    }
     if (protocolActive())
         MorseJSON::jsonCreate("message", msg, "");
     txFlush(flushMs);

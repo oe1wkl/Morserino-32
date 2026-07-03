@@ -144,10 +144,10 @@ async def scripted(client, stream):
 
     # 6 - batched write: both lines must execute (one per poll)
     stream.echo = ""
-    batch = f"PUT cw/play/HI\nGET control\n".encode()
+    batch = b"PUT cw/play/HI\nGET control/speed\n"   # NB: bare "GET control" is an INVALID ARGUMENT by protocol
     print(f">> [single GATT write] {batch!r}")
     await client.write_gatt_char(NUS_RX, batch, response=True)
-    await wait_for(stream, lambda o: "control" in o or "controls" in o, what="control after batched cw/play")
+    await wait_for(stream, lambda o: "control" in o, what="control after batched cw/play")
     passed.append("batched-write")
     await asyncio.sleep(2.0)
 
@@ -166,10 +166,11 @@ async def scripted(client, stream):
     await wait_for(stream, lambda o: "device" in o, what="re-handshake")
     passed.append("re-handshake")
 
-    # 8 - multi-KB response: flow control / chunking soak
-    await send_line(client, "GET snapshots")
-    snaps = await wait_for(stream, lambda o: "snapshots" in o, timeout=15.0, what="snapshots")
-    print(f"<< snapshots object OK ({len(json.dumps(snaps))} chars, reassembled untorn)")
+    # 8 - multi-KB response: flow control / chunking soak (configs is the
+    # fattest guaranteed-present response; snapshots may be empty)
+    await send_line(client, "GET configs")
+    cfgs = await wait_for(stream, lambda o: "configs" in o, timeout=15.0, what="configs")
+    print(f"<< configs object OK ({len(json.dumps(cfgs))} chars, reassembled untorn)")
     passed.append("flow-control-soak")
 
     await send_line(client, "PUT device/protocol/off")
