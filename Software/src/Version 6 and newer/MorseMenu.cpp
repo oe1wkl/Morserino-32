@@ -21,6 +21,8 @@
 #include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
 #endif
 
+static void suspendBleSerialForWifi();   // defined below setupWifi(); no-op without CONFIG_BLE_SERIAL
+
 #ifdef CONFIG_TFT
 #include "MorseGameMode.h"
 
@@ -470,8 +472,27 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
     case  _keyer:  /// keyer
                 #ifdef CONFIG_BLUETOOTH_KEYBOARD
                   if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
+                #ifdef CONFIG_BLE_SERIAL
+                    if (MorsePreferences::pliste[posBleSerial].value && MorseBleSerial::isRunning) {
+                      // mutual exclusion, BLE Serial wins (PUT cw/play needs the keyer active);
+                      // isRunning-gated so a failed BLE init degrades to today's keyboard
+                      static bool notifiedOnce = false;
+                      if (!notifiedOnce) {
+                        notifiedOnce = true;
+                        MorseOutput::clearDisplay();
+                        MorseOutput::printOnScroll(1, BOLD, 0, "BT Kbd off");
+                        MorseOutput::printOnScroll(2, REGULAR, 0, "BLE Serial on");
+                        MorseOutput::refreshDisplay();
+                        if (protocolActive())
+                          MorseJSON::jsonCreate("message", "BT Kbd off: BLE Serial active", "");
+                        delay(1400);
+                      }
+                    } else
+                      MorseBluetooth::initializeBluetooth();
+                #else
                     // Initialize Bluetooth System
                     MorseBluetooth::initializeBluetooth();
+                #endif
                   }
                 #endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::keyerOptions, MorsePreferences::keyerOptionsSize);
@@ -785,9 +806,13 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       case _wifi_check:
       case _wifi_upload:
       case _wifi_update:
+                  // uniform for ALL _wifi_* functions (even display-only _wifi_mac):
+                  // one rule, no per-function special case to drift
+                  suspendBleSerialForWifi();
                   MorseWiFi::menuExec((uint8_t) MorsePreferences::menuPtr);
                   break;
       case _wifi_select:
+                  suspendBleSerialForWifi();
                   MorseWiFi::menuNetSelect();
                   break;
       case  _goToSleep: /// deep sleep
@@ -798,10 +823,31 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
   return false;
 }   /// end menuExec()
 
+#ifdef CONFIG_BLE_SERIAL
+// BLE and WiFi share the 2.4 GHz radio and were never co-resident in this
+// firmware: whenever any code path brings up the WiFi radio, BLE Serial is
+// suspended (link drops, client is told first, best-effort) and stays down
+// for the remainder of the session; the top-menu backstop in menu_()
+// restarts it. stop() clears bleProtocol synchronously, so auto-sleep and
+// the emission gates revert to USB-only immediately (PLAN D8/D19).
+static void suspendBleSerialForWifi() {
+  if (MorseBleSerial::isRunning) {
+    if (protocolActive())
+      MorseJSON::jsonCreate("message", "BLE serial suspended: wireless mode", "");
+    MorseBleSerial::txFlush(500);
+    MorseBleSerial::stop();
+  }
+}
+#else
+static inline void suspendBleSerialForWifi() {}
+#endif
+
 boolean MorseMenu::setupWifi() {
   String peer;
   peer.reserve(24);
   const char* peerHost;
+
+  suspendBleSerialForWifi();
 
 //// if not true WiFi has not been configured or is not available, hence return false!
   if (! MorseWiFi::wifiConnect()) {
@@ -840,6 +886,7 @@ void MorseMenu::wifiWarmup() {
 
 void MorseMenu::setupESPNow() {
   // init wifi for espnow
+      suspendBleSerialForWifi();
       WiFi.mode(WIFI_STA);
       WiFi.disconnect (false, true);
       EspNowIsActive = true;

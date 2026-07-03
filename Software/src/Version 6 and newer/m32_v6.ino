@@ -1101,9 +1101,15 @@ void loop() {
   } // end switch and code depending on state of metaMorserino
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 // we check here if bluetooth should be started
-if (morseState == morseKeyer && 
-      MorsePreferences::pliste[posBluetoothOut].value != 0 && 
-      !MorseBluetooth::isBLErunning) {
+if (morseState == morseKeyer &&
+      MorsePreferences::pliste[posBluetoothOut].value != 0 &&
+      !MorseBluetooth::isBLErunning
+#ifdef CONFIG_BLE_SERIAL
+      // mutual exclusion, BLE Serial wins (PUT cw/play needs the keyer active);
+      // gated on isRunning too: a failed BLE init degrades to the keyboard
+      && !(MorsePreferences::pliste[posBleSerial].value && MorseBleSerial::isRunning)
+#endif
+      ) {
     // Initialize Bluetooth System
     MorseBluetooth::initializeBluetooth();
 }
