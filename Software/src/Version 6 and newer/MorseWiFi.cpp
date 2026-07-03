@@ -17,6 +17,7 @@
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
 #include "MorseJSON.h"
+#include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
 
 ////////////////// Variables for file handling and WiFi functions
 
@@ -274,7 +275,7 @@ void MorseWiFi::menuNetSelect() {
       MorseOutput::clearScrollLines();
       MorseOutput::printOnScroll(0, REGULAR, 0, names[choice] );
       MorseOutput::printOnScroll(1, REGULAR, 0, peers[choice] );
-      if (m32protocol) {
+      if (protocolActive()) {
                   MorseJSON::jsonCreate("message", names[choice], "");
                   MorseJSON::jsonCreate("message", peers[choice], "");
       }
@@ -336,7 +337,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       MorseOutput::printOnStatusLine( true, 0,  WiFi.macAddress());
 
                       delay(1000);
-                      if (m32protocol) {
+                      if (protocolActive()) {
                         MorseJSON::jsonCreate("message", msg, "");
                         WiFi.disconnect(true,false);
                         return;
@@ -360,7 +361,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       MorseOutput::clearDisplay();
                       msg = "Connecting... ";
                       MorseOutput::printOnStatusLine( true, 0,  msg);
-                      if (m32protocol)
+                      if (protocolActive())
                         MorseJSON::jsonCreate("message", msg + "Please wait", "");
                       if (! MorseWiFi::wifiConnect())
                           msg = ""; //return false;
@@ -372,7 +373,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       }
                       //WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi
                       delay(1000);
-                      if (m32protocol) {
+                      if (protocolActive()) {
                           if (msg != "")
                               MorseJSON::jsonCreate("message", msg, "");
                           WiFi.disconnect(true,false);
@@ -402,7 +403,7 @@ void MorseWiFi::menuExec(uint8_t command) {
       MorseOutput::clearDisplay();
       MorseOutput::printOnScroll(0, REGULAR, 0, "Not Available" ); 
       MorseOutput::printOnScroll(1, REGULAR, 0, "Using EspNow" ); 
-      if (m32protocol)
+      if (protocolActive())
           MorseJSON::jsonCreate("message", "Not available when using ESPNOW", "");
       delay(1800);                   
     }
@@ -577,7 +578,7 @@ boolean internal::errorConnect(String msg) {
   MorseOutput::printOnScroll(0, INVERSE_BOLD, 0, msg);
   MorseOutput::printOnScroll(1, REGULAR, 0, MorsePreferences::wlanSSID);
   delay(3500);
-  if (m32protocol) {
+  if (protocolActive()) {
     MorseJSON::jsonCreate("message", "Not connected " + msg, "");
   }
   return false;

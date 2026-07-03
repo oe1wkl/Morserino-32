@@ -17,6 +17,7 @@
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
 #include "MorseJSON.h"
+#include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
 #include "MorseTextEntry.h"
 #include "abbrev.h"
 #include "english_words.h"
@@ -750,7 +751,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 
           exitFromHere: if (MorsePreferences::useCustomChars)
                             koch.setCustomChars(getCustomChars()); //// get custom characters
-                        if (m32protocol && posPtr < posKochFilter)
+                        if (protocolActive() && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
 
                         writePreferences("morserino");
@@ -766,7 +767,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             case 1:     // recall snapshot
                         if (MorsePreferences::recallSnapshot()) {
                           writePreferences("morserino");
-                          if (m32protocol) {
+                          if (protocolActive()) {
                               MorseJSON::jsonActivate(ACT_RECALLED);
                               //delay(1000);     // to allow the user to see/hear the "recalled" message on the display before we switch back to the main menu
                           }
@@ -781,10 +782,10 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             case -1:    //store snapshot
                         if (MorsePreferences::storeSnapshot(atMenu)) {
                           // writePreferences("morserino"); now in writePreferences()
-                          if (m32protocol)
+                          if (protocolActive())
                               MorseJSON::jsonActivate(ACT_SET);
                         }
-                        else if (m32protocol)
+                        else if (protocolActive())
                           MorseJSON::jsonActivate(ACT_CANCELLED);
                         while(Buttons:: volButton.clicks)
                           Buttons:: volButton.Update();
@@ -870,7 +871,7 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
         valueLine = "Unlimited";
     valueLine += emptyLine.substring(0,maxLength - valueLine.length());
 
-    if (m32protocol) {
+    if (protocolActive()) {
       jsonValueLine = valueLine;
       jsonValueLine.trim();
       switch (pos) {
@@ -1659,7 +1660,7 @@ boolean  MorsePreferences::recallSnapshot() {         // return true if we selec
           if (MorsePreferences::memPtr != MorsePreferences::memCounter)  {
             doReadSnapshot(MorsePreferences::memPtr);
             MorseOutput::printOnScroll(2, BOLD, 0, text);
-            if (m32protocol)
+            if (protocolActive())
               MorseJSON::jsonCreate("message", text, "");
             delay(1500);
             return true;
@@ -1689,7 +1690,7 @@ boolean MorsePreferences::storeSnapshot(uint8_t menu) {        // return true if
     if (MorsePreferences::memPtr != 8)  {
         doWriteSnapshot(memPtr, menu);
         text = "Snap " + String(MorsePreferences::memPtr+1) + " STORED ";
-        if (m32protocol)
+        if (protocolActive())
           MorseJSON::jsonCreate("message", text, "");
         MorseOutput::printOnScroll(2, BOLD, 0, text);
         delay(1000);
@@ -1733,7 +1734,7 @@ void MorsePreferences::clearMemory(uint8_t ptr) {
 
   text = doClearMemory(ptr);
 
-  if (m32protocol)                                                            // output to m32protocol and screen
+  if (protocolActive())                                                            // output to m32protocol and screen
       MorseJSON::jsonCreate("message", text, "");
   MorseOutput::printOnScroll(2, BOLD, 0, text);
   delay(900);

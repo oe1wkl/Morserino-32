@@ -16,6 +16,7 @@
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
+#include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
 
 #ifdef CONFIG_TFT
 #include "MorseGameMode.h"
@@ -259,7 +260,7 @@ void MorseMenu::menu_() {
       MorseOutput::clearDisplay();
       MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Stop BT Kbd");
       //MorseOutput::printOnScroll(2, REGULAR, 0, "Needs Reboot");
-      if (m32protocol)
+      if (protocolActive())
               MorseJSON::jsonCreate("message", "Stop BT Kbd", "");
       MorseOutput::refreshDisplay();
       delay (1400);
@@ -306,7 +307,7 @@ void MorseMenu::menu_() {
             const bool announceQuickStart = true;
 #endif
             if (announceQuickStart) {
-              if (m32protocol)
+              if (protocolActive())
                 MorseJSON::jsonCreate("message", "Quick Start", "");
               MorseOutput::printOnScroll(2, REGULAR, 1, "QUICK START");
               MorseOutput::refreshDisplay();
@@ -411,7 +412,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
             MorseOutput::printOnScroll(0, BOLD, 0, menuText[ptr]);
             break;
   }
-  if (m32protocol) {
+  if (protocolActive()) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
       MorseJSON::jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));
   }
@@ -443,7 +444,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
 //  const char* peerHost;
   String s;
 
-  if (m32protocol && (MorsePreferences::menuPtr != _kochSel))
+  if (protocolActive() && (MorsePreferences::menuPtr != _kochSel))
       MorseJSON::jsonActivate(ACT_ON);
 
   m32state = active_loop;
@@ -649,7 +650,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 else {
                     MorseOutput::clearDisplay();
                     MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
-                    if (m32protocol)
+                    if (protocolActive())
                       MorseJSON::jsonCreate("message", "Connecting...", "");
 
                     if (!setupWifi())
@@ -672,7 +673,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 morseState = morseTrx;
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(1, REGULAR, 0, "Start CW Trx" );
-                if (m32protocol)
+                if (protocolActive())
                   MorseJSON::jsonCreate("message", "Start CW Transceiver", "");
                 clearPaddleLatches();
                 goto setupDecoder;
@@ -754,7 +755,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 encoderState = volumeSettingMode;
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(1, REGULAR, 0, "Start Decoder" );
-                if (m32protocol)
+                if (protocolActive())
                   MorseJSON::jsonCreate("message", "Start Decoder", "");
       setupDecoder:
                 speedChanged = true;
@@ -852,7 +853,7 @@ void MorseMenu::showStartDisplay(const String& l0, const String& l1, const Strin
         MorseOutput::printOnScroll(1, REGULAR, 0, l1);
     if (l2.length())
         MorseOutput::printOnScroll(2, REGULAR, 0, l2);
-    if (m32protocol)
+    if (protocolActive())
         MorseJSON::jsonCreate("message", l0  + l1 + l2, "");
     delay(pause);
     cleanupScreen();
@@ -927,7 +928,7 @@ int8_t MorseMenu::selectFilePart() {
                     String(MorsePreferences::fileParts[selected + 1].name));
  
             // Report to serial client (like menuDisplay does)
-            if (m32protocol) {
+            if (protocolActive()) {
                 MorseJSON::jsonFilePart(
                     String(MorsePreferences::fileParts[selected].name),
                     selected,
@@ -950,18 +951,18 @@ int8_t MorseMenu::selectFilePart() {
             case 1:
                 MorsePreferences::filePartSelected = selected;
                 MorsePreferences::writeFilePartData();
-                if (m32protocol)
+                if (protocolActive())
                     MorseJSON::jsonActivate(ACT_SET);
                 return selected;
             case -1:
-                if (m32protocol)
+                if (protocolActive())
                     MorseJSON::jsonActivate(ACT_CANCELLED);
                 return -1;
         }
  
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks == -1) {
-            if (m32protocol)
+            if (protocolActive())
                 MorseJSON::jsonActivate(ACT_CANCELLED);
             return -1;
         }

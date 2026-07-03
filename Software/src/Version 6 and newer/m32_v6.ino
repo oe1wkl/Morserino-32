@@ -1047,7 +1047,7 @@ void loop() {
                               else {
                                   keyOut(false, true, 0, 0);
                                   MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
-                                  if (m32protocol)
+                                  if (protocolActive())
                                     MorseJSON::jsonCreate("message", continueMsg4Json, "");
                               }
                           } else {                  /// no paddle pressed - check stop flag
@@ -1160,14 +1160,14 @@ if (morseState == morseKeyer &&
     }
 
     switch (Buttons::modeButton.clicks) {                                // actions based on encoder button
-       case -1:   if (m32protocol)
+       case -1:   if (protocolActive())
                       MorseJSON::jsonActivate(ACT_EXIT);
                   MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
                   return;
        case 1:    if (encoderState == memSelMode) {
                     if (ptr != 0) {
                       preparePlay(memList[ptr]);
-                      if (m32protocol)
+                      if (protocolActive())
                         MorseJSON::jsonOK();
                     }
                     encoderState = speedSettingMode;
@@ -1178,7 +1178,7 @@ if (morseState == morseKeyer &&
                   if (!genIsActive) {
                         keyOut(false, true, 0, 0);
                         MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
-                        if (m32protocol)
+                        if (protocolActive())
                             MorseJSON::jsonCreate("message", continueMsg4Json, "");
                   }
                   else {
@@ -1186,7 +1186,7 @@ if (morseState == morseKeyer &&
                   }
 
               } else if (morseState == morseKeyer || morseState == morseTrx) {  // when Keyer is active, we select a keyer memory
-                    if (m32protocol)
+                    if (protocolActive())
                         MorseJSON::jsonCreate("message", "Select Memory", "");
                     memoryKeyer();
               }
@@ -1283,7 +1283,7 @@ void checkStopFlag() {
       //if (MorsePreferences::fileWordPointer > 1)
       //  --MorsePreferences::fileWordPointer;          // avoid that a word is being skipped after interruption
       MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
-      if (m32protocol)
+      if (protocolActive())
         MorseJSON::jsonCreate("message", continueMsg4Json, "");
     }
 }
@@ -2662,7 +2662,7 @@ void changeSpeedValue( int t) {
   MorsePreferences::wpm += t;
   MorsePreferences::wpm = constrain(MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax);
   updateTimings();
-  if (m32protocol)
+  if (protocolActive())
       MorseJSON::jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, false);
 }
 
@@ -2681,7 +2681,7 @@ void changeVolumeValue( int t) {
     #ifdef CONFIG_TLV320AIC3100
       MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
     #endif
-    if (m32protocol)
+    if (protocolActive())
       MorseJSON::jsonControl("volume", MorsePreferences::sidetoneVolume, MorsePreferences::volumeMin, MorsePreferences::volumeMax, false);
 }
 
@@ -2891,13 +2891,13 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 
   if (MorsePreferences::pliste[posTimeOut].value || enforce) {
       timeOut = 300000UL * MorsePreferences::pliste[posTimeOut].value;
-    if (m32protocol && !enforce)                          /// no time-out while m32protocol is active unless forced
+    if (protocolActive() && !enforce)                          /// no time-out while m32protocol is active unless forced
       return;
     if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {
           MorseOutput::clearDisplay();
           MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Power OFF...");
           MorseOutput::printOnScroll(2, REGULAR, 0, "FN to turn ON");
-          if (m32protocol)
+          if (protocolActive())
                   MorseJSON::jsonCreate("message", "Power off", "");
           MorseOutput::refreshDisplay();
           delay (1500);
@@ -2908,7 +2908,7 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 
 void shutMeDown() {
   MorseOutput::sleep();     /// shut down Heltec display
-  if (m32protocol)
+  if (protocolActive())
     MorseJSON::jsonError("M32 SLEEP SHUTDOWN BY USER");
 
   esp_sleep_enable_ext0_wakeup(GPIO_NUM_0, 0); //1 = High, 0 = Low
@@ -3485,7 +3485,7 @@ void memoryKeyer() {
     MorseOutput::clearStatusLine();
     if (maxMemCount == 0) {                   // no memories have been set
       MorseOutput::printOnStatusLine(true, 0, "No memories stored");
-      if (m32protocol)
+      if (protocolActive())
           MorseJSON::jsonCreate("message", "No memories stored!", "");
       delay(500);
       updateTopLine();
@@ -3502,14 +3502,14 @@ void dispMem(int8_t memNo) {
   MorseOutput::clearStatusLine();
   if (memNo == 0)   {    // exit
     MorseOutput::printOnStatusLine(true, 0, "EXIT");
-    if (m32protocol) MorseJSON::jsonCreate("message", "Click to Exit", "");
+    if (protocolActive()) MorseJSON::jsonCreate("message", "Click to Exit", "");
   }
   else {
     String Number = (memNo < 3 ? "R" : "_") + String(memNo) + ": " ;
     String Value = Number + String(MorsePreferences::cwMem[memNo-1]);
     Value = Value.substring(0,18);
     MorseOutput::printOnStatusLine(false, 0, Value);
-    if (m32protocol) MorseJSON::jsonCreate("message", "Memory " + Value, "");
+    if (protocolActive()) MorseJSON::jsonCreate("message", "Memory " + Value, "");
     }
 }
 
@@ -3811,7 +3811,7 @@ firstArg.reserve(20);
 secondArg.reserve(20);
 thirdArg.reserve(20);
 
-  if (!m32protocol)
+  if (!protocolActive())                    // any handshaken transport may dispatch; delivery is per-transport in m32out
     return;
   input.trim();
   int blank = input.indexOf(" ");
