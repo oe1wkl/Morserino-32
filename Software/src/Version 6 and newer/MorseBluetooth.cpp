@@ -151,16 +151,25 @@ class OutputCallbacks : public BLECharacteristicCallbacks {
 
 void bluetoothTask(void*) {
 
+    // This task may run once per keyer session (stopBluetooth on every menu
+    // return, restart on the next keyer entry). Our own objects are static so
+    // repeated cycles do not churn the heap; the BLEServer/BLEHIDDevice objects
+    // below come from the library, which leaks them across deinit/init cycles
+    // (a few hundred bytes per cycle — known library wart, nothing we can free).
+    static BleKeyboardCallbacks keyboardCallbacks;
+    static OutputCallbacks outputCallbacks;
+    static BLESecurity security;
+
     // initialize the device
     BLEDevice::init(DEVICE_NAME);
     BLEServer* server = BLEDevice::createServer();
-    server->setCallbacks(new BleKeyboardCallbacks());
+    server->setCallbacks(&keyboardCallbacks);
 
     // create an HID device
     hid = new BLEHIDDevice(server);
     input = hid->inputReport(1); // report ID
     output = hid->outputReport(1); // report ID
-    output->setCallbacks(new OutputCallbacks());
+    output->setCallbacks(&outputCallbacks);
 
     // set manufacturer name
     hid->manufacturer()->setValue("Morserino32");
@@ -170,8 +179,7 @@ void bluetoothTask(void*) {
     hid->hidInfo(0x00, 0x02);
 
     // Security: device requires bonding
-    BLESecurity* security = new BLESecurity();
-    security->setAuthenticationMode(ESP_LE_AUTH_BOND);
+    security.setAuthenticationMode(ESP_LE_AUTH_BOND);
 
     // set report map
     hid->reportMap((uint8_t*)REPORT_MAP, sizeof(REPORT_MAP));
@@ -211,9 +219,17 @@ void MorseBluetooth::stopBluetooth(void)
         DEBUG("Stopping BLE");
         vTaskDelete(taskHandle);
         delay(100);
-        BLEDevice::deinit(true);    // release ALL BLE memory
+        // deinit(true) releases the BT controller memory irreversibly AND leaves the
+        // library's 'initialized' flag set (BLEDevice.cpp, core 2.0.17): any later
+        // init() is then a silent no-op and createServer() blocks forever in
+        // registerApp — the keyboard could never restart until reboot (every
+        // keyer -> menu -> keyer cycle). deinit(false) keeps the stack
+        // re-initializable; in exchange the controller BSS stays reserved
+        // for the rest of the boot.
+        BLEDevice::deinit(false);
         delay(100);
         MorseBluetooth::isBLErunning = false;
+        isBleConnected = false;     // onDisconnect is not delivered through deinit
     }
 }
 
