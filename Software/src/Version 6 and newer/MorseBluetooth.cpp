@@ -44,6 +44,10 @@ BaseType_t xReturned;
 
 bool isBleConnected = false;
 
+// set (on the loop task) while stopBluetooth() tears the stack down; read by
+// onDisconnect (BLE event task) to skip the reconnect grace period + re-advertise
+static volatile bool btStopping = false;
+
 TaskHandle_t taskHandle;    //
 
 // Message (report) sent when a key is pressed or released
@@ -121,6 +125,13 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
 
     void onDisconnect(BLEServer* server) {
         isBleConnected = false;
+
+        // Teardown in progress (stopBluetooth): this callback runs on the BLE
+        // event task and deinit() waits behind it, so the 5 s reconnect grace
+        // below would stall the mode exit — and re-advertising a dying stack
+        // makes no sense. Just note the disconnect and get out of the way.
+        if (btStopping)
+            return;
 
         // Disallow notifications for characteristics
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
@@ -217,6 +228,7 @@ void MorseBluetooth::stopBluetooth(void)
 {
     if (MorseBluetooth::isBLErunning) {
         DEBUG("Stopping BLE");
+        btStopping = true;          // tell onDisconnect to skip its 5 s grace + re-advertise
         vTaskDelete(taskHandle);
         delay(100);
         // deinit(true) releases the BT controller memory irreversibly AND leaves the
@@ -230,6 +242,7 @@ void MorseBluetooth::stopBluetooth(void)
         delay(100);
         MorseBluetooth::isBLErunning = false;
         isBleConnected = false;     // onDisconnect is not delivered through deinit
+        btStopping = false;
     }
 }
 
