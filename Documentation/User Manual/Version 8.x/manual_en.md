@@ -943,6 +943,12 @@ adaptive speed, the speed for keying your input stays at that maximum
 (so you can train your copying at faster speeds than you are comfortable
 to use when keying).
 
+**Echo Think Time:** Set this to the number of seconds you would like
+to wait after the prompt has been sent before the Echo Trainer expects
+your response. This is useful for head copy practice, especially with
+call signs, where you may need a moment to build a mental picture of
+what you heard before keying your answer. Default is 0 (no extra wait).
+
 **Intercharacter Space** and **Interword Space**: The first preference
 defines the pause between characters in the prompt the M32 is generating
 (the same as in the Generator modes, see there); both preferences also
@@ -2705,6 +2711,7 @@ time" after the prompt before you must begin keying your response!
 | Tone Shift | The pitch of the tone, when you are using the Echo Trainer mode or transmitting in a transceiver mode, can either be the same as the one you get from the receiver (or from the prompt in Echo Trainer mode), or can be a half tone lower or a half tone higher. | **No Tone Shift** / Up 1/2 Tone / Down 1/2 Tone |
 | Adaptv. Speed | If this is set to ON, the speed will be increased by 1 WpM whenever you gave a correct response in Echo Trainer mode, and will be decreased by 1 whenever you made a mistake. | ON / **OFF** |
 | Echo Speed Max | Set this to the maximum speed you would like to use for keying in Echo Trainer mode. If you set the speed faster than this value with the Encoder, or if it is getting faster as a result of adaptive speed, the speed for keying your input stays at that maximum. | **No limit** / 5 – 50 wpm (in steps of 5 wpm) |
+| Echo Think Time | Sets the number of seconds added after the prompt before the Echo Trainer expects your response. Useful for head copy practice with call signs, where you need thinking time without changing the keying speed. | **0s** / 1s – 10s / 15s / 20s |
 
 
 
