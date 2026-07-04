@@ -1734,6 +1734,48 @@ String getRandomCall(int maxLength) {
     // (weight 1 = unseen/theoretical prefix)
     uint8_t minWeight = commonOnly ? 81 : 0;  // Claude recommended 2 but that gave way too many rare prefixes.
  
+    // --- VK/ZL custom generator ---
+    if (vkzlOnly) {
+        // VK/ZL weighted area and suffix generator
+        // Overall: 85% VK, 15% ZL
+        bool isVK = (random(0, 100) < 85);
+        int area;
+        if (isVK) {
+            // VK area weights: 0=1,1=10,2=20,3=20,4=15,5=10,6=5,7=15,8=3,9=1
+            int r = random(0, 100);
+            if      (r < 1)  area = 0;
+            else if (r < 11) area = 1;
+            else if (r < 31) area = 2;
+            else if (r < 51) area = 3;
+            else if (r < 66) area = 4;
+            else if (r < 76) area = 5;
+            else if (r < 81) area = 6;
+            else if (r < 96) area = 7;
+            else if (r < 99) area = 8;
+            else             area = 9;
+            call[pos++] = 'v';
+            call[pos++] = 'k';
+        } else {
+            // ZL area weights: 1=35,2=35,3=20,4=10
+            int r = random(0, 100);
+            if      (r < 35) area = 1;
+            else if (r < 70) area = 2;
+            else if (r < 90) area = 3;
+            else             area = 4;
+            call[pos++] = 'z';
+            call[pos++] = 'l';
+        }
+        call[pos++] = '0' + area;
+        // Suffix: 30% two letters, 70% three letters
+        int suffixLen = (random(0, 10) < 3) ? 2 : 3;
+        for (int i = 0; i < suffixLen; i++)
+            call[pos++] = 'a' + random(0, 26);
+        call[pos] = ' ';
+        lastGeneratedCallContinent = CONT_OC;
+        lastGeneratedCallCqZone    = isVK ? 29 : 32;
+        return String(call);
+    }
+
     // --- Weighted random prefix selection (two-pass) ---
  
     // Pass 1: sum weights of matching entries
