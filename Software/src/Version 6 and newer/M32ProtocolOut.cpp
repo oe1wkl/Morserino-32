@@ -25,14 +25,17 @@ size_t M32Tee::write(uint8_t c) {
 
 size_t M32Tee::write(const uint8_t *buffer, size_t size) {
 #ifdef CONFIG_BLE_SERIAL
-	if (m32protocol)
+	if (target != M32Target::BleOnly && m32protocol)
 		Serial.write(buffer, size);
-	if (bleProtocol)                    // cheap gate only — txEnqueue does the full linkUp() check,
-		MorseBleSerial::txEnqueue(buffer, size);   // and this path runs once per serialized byte
+	if (target == M32Target::BleOnly)              // targeted: answers that client's own input, so
+		MorseBleSerial::txEnqueue(buffer, size);   // deliver even pre-handshake (linkUp checked inside)
+	else if (target == M32Target::All && bleProtocol)  // cheap gate only — txEnqueue does the full check
+		MorseBleSerial::txEnqueue(buffer, size);
 	return size;
 #else
 	// without BLE the tee degenerates to a plain forward: every call site is
 	// only reachable under an m32protocol gate, so behavior is byte-identical
+	// (M32Target::UsbOnly narrows nothing when USB is the only transport)
 	return Serial.write(buffer, size);
 #endif
 }

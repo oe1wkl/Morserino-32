@@ -1102,12 +1102,8 @@ void loop() {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 // we check here if bluetooth should be started
 if (morseState == morseKeyer &&
-      MorsePreferences::pliste[posBluetoothOut].value != 0 &&
-      !MorseBluetooth::isBLErunning
-#ifdef CONFIG_BLE_SERIAL
-      && MorsePreferences::pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT   // selector gives BLE to the serial
-#endif                                                                            // protocol (also enforced inside init)
-      ) {
+      MorseBluetooth::keyboardMode() != 0 &&      // 0 also when the selector gives BLE to the serial
+      !MorseBluetooth::isBLErunning) {            // protocol (additionally enforced inside init)
     // Initialize Bluetooth System
     MorseBluetooth::initializeBluetooth();
 }
@@ -2479,8 +2475,8 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     SerialOutMorse(tmp_str, keyed ? 0b001 : 0b010);
  
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-    if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
-        MorseBluetooth::bluetoothTypeString(tmp_str);
+    if ((MorseBluetooth::keyboardMode() & 0x6) >= 0x2)      // keyboardMode, not the raw pliste value:
+        MorseBluetooth::bluetoothTypeString(tmp_str);       // 5 (BLE Serial) must never pass a HID gate
 #endif
  
     if (morseState == echoTrainer) {
@@ -2517,14 +2513,14 @@ void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
         MorseOutput::printToScroll(style, upper, true, encoderState == scrollMode);
         SerialOutMorse(upper, 0b100);
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+        if ((MorseBluetooth::keyboardMode() & 0x6) >= 0x2)
             MorseBluetooth::bluetoothTypeString(upper);
 #endif
     } else {
         MorseOutput::printToScroll(style, s, true, encoderState == scrollMode);
         SerialOutMorse(s, 0b100);
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x6) >= 0x2)
+        if ((MorseBluetooth::keyboardMode() & 0x6) >= 0x2)
             MorseBluetooth::bluetoothTypeString(s);
 #endif
     }
@@ -2708,7 +2704,7 @@ void keyTransmitter(boolean noTx) {
       return;
    digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-   if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+   if ((MorseBluetooth::keyboardMode() & 0x1) == 0x1)
       MorseBluetooth::bluetoothTypeLCTRL(true);
 #endif
 }
@@ -3429,7 +3425,7 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
         }
         digitalWrite(keyerPin, LOW);      // stop keying Tx
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-        if ((MorsePreferences::pliste[posBluetoothOut].value & 0x1) == 0x1)
+        if ((MorseBluetooth::keyboardMode() & 0x1) == 0x1)
           MorseBluetooth::bluetoothTypeLCTRL(false);
 #endif
   }   // end key off
@@ -3804,6 +3800,7 @@ void serialEvent() {
                 inputString.toLowerCase();
                 if (inputString  == "put device/protocol/on")  {  /// client wants to switch m32 Protocol on
                   m32protocol = true;
+                  M32TargetScope usbOnly(M32Target::UsbOnly);     // handshake reply: a live BLE session must not see it
                   MorseJSON::jsonDevice(brd,vsn);
                 }
               }
@@ -3845,6 +3842,7 @@ void bleSerialEvent() {
     if (bleInputString.length() > 400) {                    // no legitimate command is this long; USB accepts such
       bleInputString = "";                                  // lines, so at least say why BLE did not
       bleDiscardLine = true;
+      M32TargetScope bleOnly(M32Target::BleOnly);           // this client's problem — never inject it into USB
       MorseJSON::jsonError("BLE LINE TOO LONG");
       continue;
     }
@@ -3854,14 +3852,30 @@ void bleSerialEvent() {
     if (!bleProtocol) {                                     // pre-handshake: only the protocol/on probe is recognized
       if (bleInputString.equalsIgnoreCase("put device/protocol/on")) {
         bleProtocol = true;
+        M32TargetScope bleOnly(M32Target::BleOnly);         // handshake reply: a live USB session must not see it
         MorseJSON::jsonDevice(brd, vsn);
       }
     }
     else if (bleInputString.equalsIgnoreCase("put device/protocol/off")) {
       // intercepted per transport (whole-line compare, fully case-insensitive):
       // ends only the BLE session — the USB handler in m32Put stays USB-only
+      M32TargetScope bleOnly(M32Target::BleOnly);
       MorseJSON::jsonCreate("end m32protocol", "Goodbye!", "");
       bleProtocol = false;
+    }
+    else if (bleInputString.equalsIgnoreCase("put device/protocol/on")) {
+      // already-on re-ack, mirroring m32Put's behavior for USB — intercepted
+      // here so BOTH protocol on and off stay per-transport (m32Put's device/
+      // protocol branch is USB-only and answers with a UsbOnly target)
+      M32TargetScope bleOnly(M32Target::BleOnly);
+      MorseJSON::jsonDevice(brd, vsn);
+    }
+    else if (bleInputString.length() >= 20 &&
+             bleInputString.substring(0, 20).equalsIgnoreCase("put device/protocol/")) {
+      // bogus protocol value: answer HERE, per transport — falling through to
+      // serialDecode would route m32Put's UsbOnly-targeted error to USB
+      M32TargetScope bleOnly(M32Target::BleOnly);
+      MorseJSON::jsonError("INVALID Value " + bleInputString.substring(20));
     }
     else
       serialDecode(bleInputString);                         // one shared protocol engine, no duplication
@@ -3876,6 +3890,7 @@ void bleSerialEvent() {
   if (MorseBleSerial::takeRxOverflow()) {
     bleInputString = "";
     bleDiscardLine = false;
+    M32TargetScope bleOnly(M32Target::BleOnly);             // this client's problem — never inject it into USB
     MorseJSON::jsonError("BLE RX OVERFLOW");
   }
 }
@@ -4018,7 +4033,7 @@ void m32Get(String type, String token, String value) {                    /// GE
               for (int i = 0; i < MorsePreferences::filePartCount; i++) {
                   arr.add(MorsePreferences::fileParts[i].name);
               }
-              serializeJson(doc, m32out);
+              MorseJSON::jsonSend(doc);
           }
       }    }
     else if (type == "wifi") {
@@ -4065,11 +4080,15 @@ void m32Put(String type, String token, String value) {                    /// PU
     ////////////////// DEVICE ///////////////////////
     else if (type == "device") {
       if (token == "protocol") {
-        if (value == "off") {
+        // reachable from USB only: bleSerialEvent intercepts both protocol
+        // on and off before serialDecode. Session control is single-transport:
+        // a handshaken BLE client must not see this session end (or re-ack).
+        M32TargetScope usbOnly(M32Target::UsbOnly);
+        if (value.equalsIgnoreCase("off")) {            // value arg is not lowercased by serialDecode
             MorseJSON::jsonCreate("end m32protocol", "Goodbye!", "");
             m32protocol = false;
         }
-        else if (value == "on")
+        else if (value.equalsIgnoreCase("on"))
             MorseJSON::jsonDevice(brd,vsn);             // even when we are on, we send the device info, so that the client is getting some positive feedback
         else
             MorseJSON::jsonError("INVALID Value " + value);
@@ -4175,6 +4194,18 @@ void m32Put(String type, String token, String value) {                    /// PU
                     MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
                 }
                 MorseJSON::jsonOK();
+#ifdef CONFIG_BLE_SERIAL
+                // this path recalls WITHOUT writePreferences, so the change-switch
+                // there (stop BLE Serial when the selector moved away from BLT
+                // Serial Prot.) must run here too — otherwise BLE Serial keeps
+                // running while the selector reads 0-4, and the next keyer entry
+                // starts the HID keyboard on top of the live NUS stack. The OK
+                // above still reaches a BLE client: stopWithNotice flushes first.
+                // (Selector recalled TO value 5: the top-menu backstop starts us.)
+                if (token == "recall" &&
+                    MorsePreferences::pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT)
+                    MorseBleSerial::stopWithNotice("BLE serial off", 300);
+#endif
                 return;                                                               // we are done here, and return
               }                                                                       // otherwise:
             }                                                                         /// not found

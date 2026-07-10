@@ -241,7 +241,7 @@ Services that extend the device's I/O channels without their own screen
 (currently: **BLE Serial**; the pattern also covers the Bluetooth keyboard)
 are controlled through the **preferences mechanism, never a menu entry** —
 either a dedicated toggle or an option of a shared selector (BLE Serial is
-option 5, *BLT Serial Prot.*, of the **Bluetooth Use** selector). When enabled
+option 5, *BLE Serial*, of the **Bluetooth Use** selector). When enabled
 they start at boot and remain active across menu navigation and interactive
 modes, except that any activity which needs the WiFi radio — a WiFi menu
 function, WiFi transceiver, or a mode that starts wireless multiplayer or

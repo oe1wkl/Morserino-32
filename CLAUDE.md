@@ -132,8 +132,10 @@ These were each discovered the hard way. Treat them as invariants:
    `protocolActive()` (any transport handshaken), never on bare `m32protocol`;
    the bytes go through the `m32out` tee (`M32ProtocolOut.h`), never raw
    `Serial`, so per-transport delivery stays correct. The raw character echo
-   uses `m32out.echo()`. Only `DEBUG()` and the RadioLib boot prints stay on
-   raw `Serial` (deliberate — see `devdocs/ble-serial/DESIGN.md`).
+   uses `m32out.echo()`. Session-scoped messages (handshake replies, goodbyes,
+   transport-specific errors) are wrapped in an `M32TargetScope` so they reach
+   only the transport they concern. Only `DEBUG()` and the RadioLib boot prints
+   stay on raw `Serial` (deliberate — see `devdocs/ble-serial/DESIGN.md`).
 10. **`prefPos` additions need three parallel arrays in sync** — the `prefPos`
    enum (`morsedefs.h`), `pliste[]`, and `prefName[]` (`MorsePreferences.*`), all
    positional. A missing `prefName[]` entry is a silent boot-time NVS panic, not

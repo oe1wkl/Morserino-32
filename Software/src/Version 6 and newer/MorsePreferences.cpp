@@ -419,7 +419,7 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"No Bluetooth", "VBand Kbd", "Decoded output", "VBand+Decoded", "Generic Kbd"
 #ifdef CONFIG_BLE_SERIAL
-     , "BLT Serial Prot."
+     , "BLE Serial"
 #endif
     }
   },
@@ -893,7 +893,8 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
     valueLine = (pos <= posSerialOut ? (pliste[pos].isMapped ? pliste[pos].mapping[pliste[pos].value] : String(pliste[pos].value)) : getValueLine(pos));
     if (pos == posMaxSequence && pliste[pos].value == 0)                  /// we do a "mapping" for 0 here
         valueLine = "Unlimited";
-    valueLine += emptyLine.substring(0,maxLength - valueLine.length());
+    if (valueLine.length() < maxLength)             // guard: for a >14-char value the subtraction wraps
+        valueLine += emptyLine.substring(0,maxLength - valueLine.length());  // unsigned and appends the whole emptyLine
 
     if (protocolActive()) {
       jsonValueLine = valueLine;
@@ -1486,6 +1487,13 @@ void MorsePreferences::readPreferences(const char* repository) {
       if ((temp = pref.getUChar(prefName[i],255)) != 255) {         // we have something in the repository
          if (i == posTimeOut && temp > 3)
             temp = 0;
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+         if (i == posBluetoothOut && temp > pliste[i].maximum)
+            temp = 0;      // out of range = stored by a build with more selector options (e.g. 5 =
+                           // BLE Serial from a CONFIG_BLE_SERIAL build): fail safe to Off. The generic
+                           // constrain below would clamp to the maximum — turning a BLE Serial user
+                           // into "Generic Kbd", typing decoded CW at any bonded host.
+#endif
          if (pliste[i].stepValue !=1)
             if (uint8_t d = temp % pliste[i].stepValue)             // we bring odd values in line with the step increment
               temp -= d;
@@ -1643,7 +1651,7 @@ void MorsePreferences::writePreferences(const char* repository) {
                       Goertzel::setup();
                     break;
 #ifdef CONFIG_BLE_SERIAL
-              case posBluetoothOut:                               // selected away from BLT Serial Prot.: stop BLE serial now;
+              case posBluetoothOut:                               // selected away from BLE Serial: stop BLE serial now;
                     if (morserino && pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT)
                       MorseBleSerial::stopWithNotice("BLE serial off", 300);
                     break;                                        // selected TO it: the top-menu backstop starts it

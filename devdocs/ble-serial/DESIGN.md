@@ -24,8 +24,11 @@ preferences (keyboard output vs. BLE Serial). Consequences:
   value owns the BLE stack, so no exclusion predicate or notice is needed.
 - The setting is stored in snapshots like any normal preference (the old
   snapshot exemption is obsolete).
-- Display-width caveat: the mapped value `"BLT Serial Prot."` is 16 chars vs
-  the OLED's 14-char line budget — flagged to Willi in the PR.
+- Display-width caveat (resolved 2026-07-10): the mapped value was
+  `"BLT Serial Prot."`, 16 chars vs the OLED's 14-char line budget; per
+  Willi's review it is now **"BLE Serial"**, and `displayValueLine`'s
+  padding arithmetic is guarded against unsigned wrap for any future
+  overlong value.
 
 References to `posBleSerial`, the OFF/ON toggle, the snapshot exemption, or
 the "BT Kbd off" splash in PLAN.md and in the sections below are historical;
@@ -74,10 +77,28 @@ BLE Serial; the top-menu backstop in `menu_()` restarts it.
   `stop()` runs inside the dispatch chain) safe. Callers that want the TX
   ring delivered flush **before** stopping (`txFlush(300/500)`); `stop()`
   itself does not flush.
-- **Echo never stalls keying.** `txEnqueueEcho` (the `SerialOutMorse` copy)
-  drops immediately when the ring is full — no self-drain; a dit at 40 WpM
-  is ~30 ms. Protocol replies (`txEnqueue`) self-drain for at most 20 ms,
-  then drop and count `txDropped`.
+- **Nothing on the TX side ever waits (revised 2026-07-10, review round 2).**
+  `txEnqueueEcho` (the `SerialOutMorse` copy) drops immediately when the ring
+  is full; a dit at 40 WpM is ~30 ms. Protocol replies (`txEnqueue`) used to
+  self-drain for up to 20 ms, but that deadline sat inside the CW keying path
+  (speed/volume `jsonControl` from keyer mode) — twice the ~10 ms delays that
+  have caused audible, field-reported CW-timing bugs before. `txEnqueue` now
+  also never drains: it checks the `txBackoff` latch FIRST (so fragments of
+  later objects cannot splice into a torn one), enqueues what fits, and on
+  overflow enters a backoff episode that drops everything until `pump()` has
+  fully drained the ring. `pump()` — called from every polling site — is the
+  only drainer. JSON additionally reaches the tee in ~256-byte chunks
+  (`MorseJSON::jsonSend`), not one `write()` per byte.
+- **Session-scoped messages are single-transport (added 2026-07-10).**
+  Handshake replies, `end m32protocol`/"Goodbye!", the BLE
+  `LINE TOO LONG`/`RX OVERFLOW` errors and the suspend/stop notices concern
+  exactly one transport; their emission is wrapped in an `M32TargetScope`
+  (`M32ProtocolOut.h`) narrowing the tee to `UsbOnly`/`BleOnly`, so a
+  handshaken client never sees the *other* session end or errors it never
+  provoked. A `BleOnly` message is delivered whenever the link is up (even
+  pre-handshake — it answers that client's own input). Both `protocol/on`
+  and `protocol/off` are intercepted per transport in `bleSerialEvent`, so
+  `m32Put`'s `device/protocol` branch is USB-only and answers `UsbOnly`.
 
 ## Adversarial implementation review (2026-07-02) — outcome
 
@@ -121,12 +142,51 @@ same session (commit "review fixes"):
   now gated on `protocolActive()` like every sibling site — handshaken
   clients see no difference. Judged a pre-existing inconsistency, aligned
   rather than preserved.
-- `MorseBluetooth::stopBluetooth()`'s `deinit(false)` change is compile-flag
-  gated, so flag-on builds change the BT-keyboard stop path even for users
-  who never enable BLE Serial (likely fixing the latent hang below, but
-  less free heap for a subsequent WiFi session than the old `deinit(true)`
-  path). **Hardware verification of checklist items 10–13 is a hard
-  pre-merge gate.**
+- `MorseBluetooth::stopBluetooth()` uses `deinit(false)` **unconditionally
+  since master 06a3502/c61ac37** (2026-07-09, verified on hardware by Willi:
+  the keyboard was one-shot per boot under `deinit(true)`, exactly the latent
+  hang described below) — the flag-gated hunk this branch carried was merged
+  away. The BT controller BSS stays reserved after any BT session; Willi
+  treats the WiFi-upload/OTA-after-BT check on the classic V2 (checklist
+  item 13) as a hard merge gate. **Hardware verification of checklist items
+  10–13 is a hard pre-merge gate.**
+
+## Review round 2 (Willi's PR #194 review, fixed 2026-07-10)
+
+Willi's in-depth review confirmed seven issues; all are fixed on the branch:
+
+1. **Stale HID keying after a keyboard→BLE-Serial selector switch.** Master
+   now clears `isBleConnected` in `stopBluetooth()`; additionally every HID
+   bitmask gate goes through the new `MorseBluetooth::keyboardMode()`, which
+   returns 0 for selector value 5 — 5 = 0b101 would otherwise pass both the
+   `& 0x1` (key-as-CTRL) and `& 0x6` (decoded output) tests. New HID gates
+   must use `keyboardMode()`, never the raw `pliste` value.
+2. **`PUT snapshot/recall` bypassed the selector change-switch** (it recalls
+   without `writePreferences`): the recall path in `m32Put` now runs the same
+   stop-BLE-Serial side effect when the recalled selector is not 5.
+3. + 4. **`txEnqueue` backoff order + synchronous drain** — see the revised
+   TX-side contract above (never waits, backoff checked first).
+5. **Session-control leakage across transports** — see the new
+   single-transport contract above (`M32TargetScope`).
+6. **`sessionResetPending` lost-update**: the pump's reset block now clears
+   the flag FIRST (like `takeLineReset`), so an edge signalled by the
+   Bluedroid task mid-block triggers another reset instead of being lost.
+7. **Downgrade hazard**: `readPreferences` maps an out-of-range
+   `posBluetoothOut` (e.g. stored 5 read by a keyboard-only build) to 0 (Off)
+   instead of letting the generic constrain clamp it to 4 = Generic Kbd,
+   which would type decoded CW at any bonded host.
+
+Plus the requested non-blocking items: selector value renamed to
+**"BLE Serial"** + `displayValueLine` padding wrap guard; on-device splash
+("BLE Ser. susp.") when WiFi suspends BLE Serial per UX_CONVENTIONS §10.1;
+USB `PUT device/protocol/<value>` compares case-insensitively (parity with
+BLE); static `BLE2902` (no per-init leak); scan response derived from
+`BLE_NAME` with a `static_assert`; chunked JSON serialization
+(`MorseJSON::jsonSend`). Deliberately NOT done: heap-allocating the
+rings/staging (~5.6 KB) in `init()` — static allocation is immune to the
+fragmented-heap failure mode that `init()` already has to defend against
+(the "NO MEM" path), and the RAM headroom on both variants absorbs it;
+revisit only if a variant gets tight.
 
 ## Deliberate raw-`Serial` exemptions
 
@@ -158,17 +218,19 @@ Consequences:
    free heap than the old keyer-with-BT→menu→WiFi path where `deinit(true)`
    donated its memory. Verify WiFi upload/OTA on the classic V2 **after** a
    BLE session (hardware checklist item 13).
-2. **Latent pre-existing bug (unrelated to this feature, un-masked by it):**
-   with the flag off, every keyer→menu→keyer cycle with the BT keyboard
-   re-runs `initializeBluetooth()` after a `deinit(true)`. The fresh
-   `bluetoothTask` then hangs forever in `registerApp` (contained only
-   because it is a dedicated task) and leaks its 10 KB stack per cycle. The
-   `//ESP.restart(); // not needed anymore` comment in `menu_()` masks this
-   history. The `deinit(false)` change likely fixes it on flag-on builds —
-   verify on hardware and record the result here. On the S3 (`pocketwroom`),
-   also record what `esp_bt_controller_mem_release` actually returned in the
-   old `deinit(true)` path (BLE-only silicon may have failed the release all
-   along, i.e. poisoned-but-not-released).
+2. **Latent pre-existing bug — CONFIRMED AND FIXED ON MASTER (2026-07-09):**
+   every keyer→menu→keyer cycle with the BT keyboard re-ran
+   `initializeBluetooth()` after a `deinit(true)`; the fresh `bluetoothTask`
+   hung forever in `registerApp` (contained only because it is a dedicated
+   task) and leaked its 10 KB stack per cycle — the keyboard was one-shot per
+   boot since the `ESP.restart()` after "Stop BT Kbd" was removed in March.
+   Willi verified the flow on hardware and fixed it on master (06a3502 +
+   c61ac37): `stopBluetooth()` uses `deinit(false)` unconditionally, clears
+   `isBleConnected`, and a `btStopping` teardown flag skips `onDisconnect`'s
+   5 s reconnect grace so mode exit stays fast. Still open for the S3
+   (`pocketwroom`): what `esp_bt_controller_mem_release` actually returned in
+   the old `deinit(true)` path (BLE-only silicon may have failed the release
+   all along, i.e. poisoned-but-not-released).
 
 ## Memory / builds (measured 2026-07-02, espressif32@6.11.0)
 

@@ -476,9 +476,9 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
   switch (MorsePreferences::menuPtr) {
     case  _keyer:  /// keyer
                 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-                  if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
-                    // Initialize Bluetooth System (no-op when the Bluetooth
-                    // Use selector assigns BLE to the serial protocol)
+                  if (MorseBluetooth::keyboardMode() != 0) {
+                    // Initialize Bluetooth System (keyboardMode() is 0 when the
+                    // Bluetooth Use selector assigns BLE to the serial protocol)
                     MorseBluetooth::initializeBluetooth();
                   }
                 #endif

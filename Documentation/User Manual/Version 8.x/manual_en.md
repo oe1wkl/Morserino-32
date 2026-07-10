@@ -2639,7 +2639,7 @@ to **Straight Key** in order to use a straight key).
 | CurtisB DitT% | Timing in Curtis B mode for dits; see the section **5.1 CW Keyer** Also influences the behavior in Ultimatic mode!                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
 | AutoChar Spce | Minimum spacing between characters | Off / min. 2 / **3** / 4 dots |
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
-| Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* The last option, **BLT Serial Prot.**, instead makes the M32 Serial Protocol (see **Appendix 8**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLT Serial Prot. |
+| Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* The last option, **BLE Serial**, instead makes the M32 Serial Protocol (see **Appendix 8**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
 | BLT \<AR> | Only relevant in **Generic Kbd** mode (see **Bluetooth Use** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
 
 
@@ -3250,7 +3250,7 @@ purpose:
 
 The M32 Serial Protocol is not tied to the USB cable: when the
 preference **Bluetooth Use** (see section **6.2.2 Preferences regarding
-Key, Paddles and Keyer**) is set to **BLT Serial Prot.**, the very same
+Key, Paddles and Keyer**) is set to **BLE Serial**, the very same
 protocol is also available over Bluetooth Low Energy. This is particularly useful for phones and tablets — on
 iOS, for example, apps cannot open a classic serial connection over
 Bluetooth at all, while BLE works fine. An app can remote-control the
@@ -3272,7 +3272,8 @@ A few things to be aware of:
 -   Any function that needs the WiFi radio (WiFi transceiver modes,
     multiplayer games, file upload, firmware update, WiFi
     configuration) suspends the Bluetooth connection for the remainder
-    of that activity; it becomes available again when you return to the
+    of that activity — a short notice ("BLE Ser. susp.") appears on the
+    display; it becomes available again when you return to the
     main menu.
 -   The **Bluetooth Use** selector assigns the Bluetooth radio either
     to the keyboard output (Appendix 9) or to the serial protocol, so

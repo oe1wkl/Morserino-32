@@ -7,8 +7,8 @@ Runs from any Mac/Linux/Windows machine with Bluetooth:
     python3 ble_m32_test.py --repl     # interactive: type protocol lines yourself
 
 The device must run firmware with CONFIG_BLE_SERIAL and have the
-"Bluetooth Use" preference set to "BLT Serial Prot." (double-click the
-black knob -> turn to "Bluetooth Use" -> select "BLT Serial Prot." ->
+"Bluetooth Use" preference set to "BLE Serial" (double-click the
+black knob -> turn to "Bluetooth Use" -> select "BLE Serial" ->
 leave preferences; it starts on the next return to the top menu).
 
 What the scripted sequence exercises (PLAN section 8, steps 1-8):

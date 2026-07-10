@@ -211,6 +211,15 @@ void bluetoothTask(void*) {
     delay(portMAX_DELAY);
 };
 
+uint8_t MorseBluetooth::keyboardMode(void)
+{
+#ifdef CONFIG_BLE_SERIAL
+    if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT)
+        return 0;                       // selector gives BLE to the serial protocol: no keyboard mode
+#endif
+    return MorsePreferences::pliste[posBluetoothOut].value;
+}
+
 void MorseBluetooth::initializeBluetooth(void)
 {
 #ifdef CONFIG_BLE_SERIAL
@@ -338,7 +347,7 @@ void MorseBluetooth::bluetoothTypeString(const String& str) {
     String modified;
     const String* toSend = &str;
 
-    if (MorsePreferences::pliste[posBluetoothOut].value >= 0x4) {
+    if (keyboardMode() >= 0x4) {
         modified = str;
         modified.replace("<ERR>", "\b");
         modified.replace("<err>", "\b");

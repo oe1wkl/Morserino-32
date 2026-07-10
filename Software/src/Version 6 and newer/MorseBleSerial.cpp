@@ -39,8 +39,9 @@
 static const char *NUS_SERVICE_UUID = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E";
 static const char *NUS_RX_UUID      = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E";
 static const char *NUS_TX_UUID      = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E";
-static const char *BLE_NAME         = "Morserino-32";   // distinct from the HID's "Morserino32 Keyboard";
+static const char BLE_NAME[]        = "Morserino-32";   // distinct from the HID's "Morserino32 Keyboard";
                                                         // carried in the scan response (no room next to the 128-bit UUID)
+static_assert(sizeof(BLE_NAME) - 1 <= 29, "BLE_NAME must fit a 31-byte scan response (2 bytes AD header)");
 
 volatile bool MorseBleSerial::isRunning = false;
 
@@ -55,9 +56,9 @@ static BleByteRing<1024> rxRing;                        // producer: onWrite (Bl
 static BleByteRing<4096> txRing;                        // produced AND consumed on the loop task
 static uint8_t staging[512];                            // contiguous chunk for notify()
 static BleFlowGate flow;
-static bool txBackoff = false;                          // ring filled and the drain deadline passed: drop instead of
-                                                        // waiting, so a multi-KB response stalls the loop task at most
-                                                        // once (~20 ms) per congestion episode, not once per byte
+static bool txBackoff = false;                          // TX ring overflowed: drop everything until pump() has fully
+                                                        // drained it — txEnqueue never waits (it can sit in the CW
+                                                        // keying path), so this is the whole congestion policy
 
 static BLEServer *bleServer = nullptr;
 static BLECharacteristic *txChar = nullptr;
@@ -200,7 +201,8 @@ bool MorseBleSerial::init() {
 
     BLEService *service = bleServer->createService(NUS_SERVICE_UUID);
     txChar = service->createCharacteristic(NUS_TX_UUID, BLECharacteristic::PROPERTY_NOTIFY);
-    txChar->addDescriptor(new BLE2902());
+    static BLE2902 txCccd;              // static like our callback instances: a heap-allocated
+    txChar->addDescriptor(&txCccd);     // descriptor would leak once per suspend/resume cycle
     BLECharacteristic *rxChar = service->createCharacteristic(NUS_RX_UUID,
                                     BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
     rxChar->setCallbacks(&rxCallbacks);
@@ -239,10 +241,10 @@ bool MorseBleSerial::init() {
     advData.service_uuid_len = 16;
     advData.p_service_uuid = nusUuidLE;
     esp_ble_gap_config_adv_data(&advData);
-    static uint8_t scanRspRaw[14];
-    scanRspRaw[0] = 13;                                          // AD length: type + 12-char name
+    static uint8_t scanRspRaw[2 + sizeof(BLE_NAME) - 1];
+    scanRspRaw[0] = sizeof(BLE_NAME);                            // AD length: type byte + name (sizeof includes the NUL = +1 for the type)
     scanRspRaw[1] = 0x09;                                        // Complete Local Name
-    memcpy(scanRspRaw + 2, "Morserino-32", 12);
+    memcpy(scanRspRaw + 2, BLE_NAME, sizeof(BLE_NAME) - 1);
     esp_ble_gap_config_scan_rsp_data_raw(scanRspRaw, sizeof(scanRspRaw));
     bleSerialStartAdvertising();
 
@@ -282,16 +284,18 @@ void MorseBleSerial::stop() {
 void MorseBleSerial::pump() {
     if (!isRunning)
         return;
-    if (sessionResetPending) {          // consumer-side only (PLAN D18): tail -> producer-latched mark
-        rxRing.resetToMark();           // (latched at BOTH session edges), old-session bytes vanish, a
-        rxRing.clearPoisoned();         // new central's early first write (before this pass) survives
-        txRing.hardReset();             // TX ring is loop-task-owned on both sides: trivially safe
-        flow.resetSession(millis());
+    if (sessionResetPending) {
+        sessionResetPending = false;    // clear FIRST (like takeLineReset): an edge the Bluedroid task
+                                        // signals while this block runs must trigger another reset, not
+                                        // be lost — stale lines from a dead session could execute
+        rxRing.resetToMark();           // consumer-side only (PLAN D18): tail -> producer-latched mark
+        rxRing.clearPoisoned();         // (latched at BOTH session edges), old-session bytes vanish, a
+        txRing.hardReset();             // new central's early first write (before this pass) survives;
+        flow.resetSession(millis());    // TX ring is loop-task-owned on both sides: trivially safe
         lineResetLatch = true;          // bleSerialEvent must drop its partial line
         bleProtocol = false;            // belt-and-braces: a handshake racing the disconnect edge must
                                         // not leave a dead session marked active (zombie sleep-suppression)
         txBackoff = false;
-        sessionResetPending = false;
     }
     if (advertisePending && !isConnected && bleServer != nullptr) {
         bleSerialStartAdvertising();    // NEVER the library path: it would revert to the public address
@@ -337,29 +341,22 @@ bool MorseBleSerial::takeRxOverflow() {
 }
 
 size_t MorseBleSerial::txEnqueue(const uint8_t *buf, size_t len) {
-    // protocol replies: try hard for bounded time (self-drain), then drop —
-    // a stalled client must never stall the device. The tee feeds us one
-    // write() per byte for serialized JSON, so the 20 ms budget must cover
-    // the whole congestion episode, not each call: once the deadline passes,
-    // txBackoff drops everything until pump() fully drains the ring.
+    // protocol replies: enqueue what fits, NEVER wait — this can run inside
+    // the CW keying path (speed/volume jsonControl from keyer mode), where
+    // even a bounded stall is an audible timing error. pump(), called from
+    // every polling site, does all the draining. On overflow we enter a
+    // backoff episode and drop everything until pump() has fully drained the
+    // ring (used()==0): the client sees at most one torn JSON object per
+    // episode and re-issues the GET; checking txBackoff BEFORE producing
+    // keeps fragments of later objects from splicing into the torn one.
     if (!linkUp())
         return len;
-    size_t written = txRing.produceSome(buf, (uint16_t) len);
-    if (written >= len)
-        return len;
     if (txBackoff)
-        return len;                     // already in a congestion episode: drop without waiting
-    uint32_t start = millis();
-    for (;;) {
-        written += txRing.produceSome(buf + written, (uint16_t)(len - written));
-        if (written >= len)
-            break;
-        if ((uint32_t)(millis() - start) >= 20 || !linkUp()) {
-            txBackoff = true;           // torn JSON possible: client re-issues the GET
-            DEBUG("BLE TX backoff: client not draining, dropping protocol bytes");
-            break;
-        }
-        pump();
+        return len;                     // congestion episode: drop until fully drained
+    size_t written = txRing.produceSome(buf, (uint16_t) len);
+    if (written < len) {
+        txBackoff = true;               // torn JSON possible: client re-issues the GET
+        DEBUG("BLE TX backoff: client not draining, dropping protocol bytes");
     }
     return len;
 }
@@ -390,8 +387,10 @@ void MorseBleSerial::stopWithNotice(const String &msg, uint32_t flushMs) {
         stop();     // still reset ALL module state — in particular the sticky
         return;     // init-failure latch, so a pref off->on cycle can retry
     }
-    if (protocolActive())
-        MorseJSON::jsonCreate("message", msg, "");
+    if (protocolActive()) {
+        M32TargetScope bleOnly(M32Target::BleOnly);     // OUR session's goodbye: a handshaken USB
+        MorseJSON::jsonCreate("message", msg, "");      // client must not see it (session-scoped)
+    }
     txFlush(flushMs);
     stop();
 }
@@ -399,7 +398,16 @@ void MorseBleSerial::stopWithNotice(const String &msg, uint32_t flushMs) {
 void MorseBleSerial::suspendForWifi() {
     // BLE and WiFi share the 2.4 GHz radio and were never co-resident in this
     // firmware; the top-menu backstop (MorseMenu wait loop) restarts us
+    bool wasRunning = isRunning;
     stopWithNotice("BLE serial suspended: wireless mode", 500);
+    if (wasRunning) {                   // splash once (UX_CONVENTIONS 10.1): a state change the user
+                                        // must know about is shown on the device, not just in the
+                                        // protocol message. wasRunning also keeps the defense-in-depth
+                                        // second call (radio primitives) from splashing again.
+        MorseOutput::printOnScroll(2, BOLD, 0, "BLE Ser. susp.");
+        MorseOutput::refreshDisplay();
+        delay(800);
+    }
 }
 
 #endif /* #ifdef CONFIG_BLE_SERIAL */

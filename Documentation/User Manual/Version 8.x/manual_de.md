@@ -3019,7 +3019,7 @@ oder die Verwendung einer externen Handtaste relevant sind (stelle
 | **CurtisB DitT%** | Timing im Curtis-B-Modus für Dits; siehe Abschnitt **5.1 CW Keyer**. Beeinflusst auch das Verhalten im Ultimatic-Modus! | 0–100, in 5er-Schritten [**55–95**] |
 | **AutoChar Spce** | Mindestabstand zwischen den Zeichen. | Off / min. 2 / **3** / 4 dots |
 | **Latency** | Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub" sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an" ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. | Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: **50 %**, d.h. eine halbe Punktlänge). |
-| **Bluetooth Use** | Legt fest, wofür das Bluetooth-Funkmodul verwendet wird. Die ersten vier Optionen (neben **No Bluetooth**) sind Tastatur-Modi: Die Option **VBand Kbd** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded output** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded output**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Anhang 9**).* Die letzte Option, **BLT Serial Prot.**, stellt stattdessen das M32-Serielle-Protokoll (siehe **Anhang 8**) über Bluetooth Low Energy zur Verfügung — damit können Apps auf Smartphones und Tablets den Morserino fernsteuern und Text senden, der als CW getastet wird, ganz ohne USB-Kabel; die Auswahl wird bei der nächsten Rückkehr ins Hauptmenü wirksam. Beachte: Wie eine USB-Protokollsitzung verhindert auch eine aktive BLE-Protokollsitzung die automatische Abschaltung (Timeout) — denke daran im Akkubetrieb. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLT Serial Prot. |
+| **Bluetooth Use** | Legt fest, wofür das Bluetooth-Funkmodul verwendet wird. Die ersten vier Optionen (neben **No Bluetooth**) sind Tastatur-Modi: Die Option **VBand Kbd** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded output** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded output**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Anhang 9**).* Die letzte Option, **BLE Serial**, stellt stattdessen das M32-Serielle-Protokoll (siehe **Anhang 8**) über Bluetooth Low Energy zur Verfügung — damit können Apps auf Smartphones und Tablets den Morserino fernsteuern und Text senden, der als CW getastet wird, ganz ohne USB-Kabel; die Auswahl wird bei der nächsten Rückkehr ins Hauptmenü wirksam. Beachte: Wie eine USB-Protokollsitzung verhindert auch eine aktive BLE-Protokollsitzung die automatische Abschaltung (Timeout) — denke daran im Akkubetrieb. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
 | **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **Bluetooth Use** oben). Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
 
 ### Einstellungen bezüglich der Koch-Zeichenfolge
@@ -3660,7 +3660,7 @@ Abschnitt **6.2.1 Allgemeine Einstellungen**.
 
 Das M32-Serielle-Protokoll ist nicht an das USB-Kabel gebunden: Wenn die
 Einstellung **Bluetooth Use** (siehe Abschnitt **6.2.2 Einstellungen zu
-Key, Paddles und Keyer**) auf **BLT Serial Prot.** steht, ist dasselbe
+Key, Paddles und Keyer**) auf **BLE Serial** steht, ist dasselbe
 Protokoll auch über Bluetooth Low Energy verfügbar. Das ist besonders für Smartphones und
 Tablets nützlich — unter iOS etwa können Apps überhaupt keine
 klassische serielle Verbindung über Bluetooth öffnen, BLE hingegen
@@ -3684,7 +3684,8 @@ Ein paar Dinge sind zu beachten:
 -   Jede Funktion, die das WLAN benötigt (WiFi-Transceiver-Modi,
     Mehrspieler-Spiele, Datei-Upload, Firmware-Update,
     WLAN-Konfiguration), unterbricht die Bluetooth-Verbindung für die
-    Dauer dieser Aktivität; nach der Rückkehr ins Hauptmenü steht sie
+    Dauer dieser Aktivität — ein kurzer Hinweis („BLE Ser. susp.")
+    erscheint am Display; nach der Rückkehr ins Hauptmenü steht sie
     wieder zur Verfügung.
 -   Die Einstellung **Bluetooth Use** weist das Bluetooth-Funkmodul
     entweder der Tastaturausgabe (Anhang 9) oder dem seriellen

@@ -38,15 +38,36 @@ inline bool protocolActive() { return m32protocol || bleProtocol; }
 inline bool protocolActive() { return m32protocol; }
 #endif
 
+/// Session-scoped messages (handshake replies, "end m32protocol"/Goodbye,
+/// transport-specific errors like BLE LINE TOO LONG) concern exactly ONE
+/// transport and must not leak to the other's client — a handshaken USB
+/// client must not see the BLE session end. Wrap their emission in an
+/// M32TargetScope; everything else stays on the plain tee.
+enum class M32Target : uint8_t {
+    All,                                  // the tee: every handshaken transport (default)
+    UsbOnly,                              // this message concerns the USB session only
+    BleOnly                               // ... or the BLE session only (delivered iff the link is
+                                          // up, even pre-handshake: it answers that client's input)
+};
+
 class M32Tee : public Print {
   public:
     size_t write(uint8_t c) override;
     size_t write(const uint8_t *buffer, size_t size) override;
     void echo(const String& s);           // raw keyed/generated character stream (SerialOutMorse):
                                           // USB always (caller gates on posSerialOut), BLE iff handshaken
+    M32Target target = M32Target::All;    // transient — set it only through M32TargetScope
     using Print::write;
 };
 
 extern M32Tee m32out;
+
+class M32TargetScope {                    // RAII so no early return can leave the tee narrowed
+  public:
+    explicit M32TargetScope(M32Target t) : saved(m32out.target) { m32out.target = t; }
+    ~M32TargetScope() { m32out.target = saved; }
+  private:
+    M32Target saved;
+};
 
 #endif /* #ifndef M32PROTOCOLOUT_H_ */
