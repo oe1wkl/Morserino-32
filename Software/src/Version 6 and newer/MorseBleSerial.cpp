@@ -59,6 +59,10 @@ static BleFlowGate flow;
 static bool txBackoff = false;                          // TX ring overflowed: drop everything until pump() has fully
                                                         // drained it — txEnqueue never waits (it can sit in the CW
                                                         // keying path), so this is the whole congestion policy
+static bool txBackoffLogPending = false;                // DEBUG deferred to pump(): txEnqueue runs BETWEEN the chunks
+                                                        // of a JSON object streaming through the tee, and a DEBUG
+                                                        // there splices raw text into the middle of the USB client's
+                                                        // object (found on hardware: corrupted a concurrent USB GET)
 
 static BLEServer *bleServer = nullptr;
 static BLECharacteristic *txChar = nullptr;
@@ -201,8 +205,15 @@ bool MorseBleSerial::init() {
 
     BLEService *service = bleServer->createService(NUS_SERVICE_UUID);
     txChar = service->createCharacteristic(NUS_TX_UUID, BLECharacteristic::PROPERTY_NOTIFY);
-    static BLE2902 txCccd;              // static like our callback instances: a heap-allocated
-    txChar->addDescriptor(&txCccd);     // descriptor would leak once per suspend/resume cycle
+    // Deliberately heap-allocated per init(), like the library's own
+    // server/service/characteristic objects (documented leak, a few dozen
+    // bytes per suspend/resume cycle). A static instance does NOT work:
+    // BLEDescriptor::executeCreate() refuses a descriptor whose m_handle is
+    // already set (from the previous init cycle, setHandle() is private), so
+    // the re-created characteristic would silently get NO CCCD — every
+    // client's enable-notify then fails with ATT "attribute not found"
+    // (found on hardware, M32 Pocket, first stop->init cycle).
+    txChar->addDescriptor(new BLE2902());
     BLECharacteristic *rxChar = service->createCharacteristic(NUS_RX_UUID,
                                     BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
     rxChar->setCallbacks(&rxCallbacks);
@@ -271,6 +282,7 @@ void MorseBleSerial::stop() {
     advertisePending = false;
     lineResetLatch = false;
     txBackoff = false;
+    txBackoffLogPending = false;
     ourGattsIf = 0xFFFF;
     ourConnId = 0xFFFF;
     mtuPayload = 20;
@@ -284,6 +296,10 @@ void MorseBleSerial::stop() {
 void MorseBleSerial::pump() {
     if (!isRunning)
         return;
+    if (txBackoffLogPending) {          // deferred from txEnqueue: pump() is only called between
+        txBackoffLogPending = false;    // protocol lines, never mid-object in the tee
+        DEBUG("BLE TX backoff: client not draining, dropping protocol bytes");
+    }
     if (sessionResetPending) {
         sessionResetPending = false;    // clear FIRST (like takeLineReset): an edge the Bluedroid task
                                         // signals while this block runs must trigger another reset, not
@@ -356,7 +372,7 @@ size_t MorseBleSerial::txEnqueue(const uint8_t *buf, size_t len) {
     size_t written = txRing.produceSome(buf, (uint16_t) len);
     if (written < len) {
         txBackoff = true;               // torn JSON possible: client re-issues the GET
-        DEBUG("BLE TX backoff: client not draining, dropping protocol bytes");
+        txBackoffLogPending = true;     // report from pump(), never from inside the tee write path
     }
     return len;
 }

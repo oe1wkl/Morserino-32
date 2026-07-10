@@ -180,9 +180,14 @@ Plus the requested non-blocking items: selector value renamed to
 **"BLE Serial"** + `displayValueLine` padding wrap guard; on-device splash
 ("BLE Ser. susp.") when WiFi suspends BLE Serial per UX_CONVENTIONS §10.1;
 USB `PUT device/protocol/<value>` compares case-insensitively (parity with
-BLE); static `BLE2902` (no per-init leak); scan response derived from
-`BLE_NAME` with a `static_assert`; chunked JSON serialization
-(`MorseJSON::jsonSend`). Deliberately NOT done: heap-allocating the
+BLE); scan response derived from `BLE_NAME` with a `static_assert`; chunked
+JSON serialization (`MorseJSON::jsonSend`). The suggested **static `BLE2902`
+was tried and REVERTED after hardware testing**: `BLEDescriptor::
+executeCreate()` refuses a descriptor whose handle is already set (private
+`setHandle`, no reset path), so from the second `init()` on the TX
+characteristic silently had no CCCD and every enable-notify failed with ATT
+"attribute not found" — the per-init `new BLE2902()` (small documented leak,
+like the library's other per-cycle objects) is load-bearing. Deliberately NOT done: heap-allocating the
 rings/staging (~5.6 KB) in `init()` — static allocation is immune to the
 fragmented-heap failure mode that `init()` already has to defend against
 (the "NO MEM" path), and the RAM headroom on both variants absorbs it;
