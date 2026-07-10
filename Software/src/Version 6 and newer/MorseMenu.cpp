@@ -20,6 +20,7 @@
 #ifdef CONFIG_BLE_SERIAL
 #include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
 #endif
+#include "MorseVoice.h"
 
 static void suspendBleSerialForWifi();   // defined below setupWifi(); no-op without CONFIG_BLE_SERIAL
 
@@ -305,6 +306,11 @@ void MorseMenu::menu_() {
         if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT && !MorseBleSerial::isRunning)
           MorseBleSerial::init();
 #endif
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();                 // drive async menu announcements (non-blocking)
+#endif
+
+
         if (disp != MorsePreferences::newMenuPtr) {
           disp = MorsePreferences::newMenuPtr;
           MorseMenu::menuDisplay(disp);
@@ -429,6 +435,9 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
             MorseOutput::printOnScroll(0, BOLD, 0, menuText[ptr]);
             break;
   }
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::announce(menuText[ptr]);          // a11y: speak the highlighted menu entry
+#endif
   if (protocolActive()) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
       MorseJSON::jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));
@@ -455,6 +464,9 @@ String MorseMenu::getMenuPath(uint8_t ptr) {
 
 
 boolean MorseMenu::menuExec() {       // return true if we should  leave menu after execution, false if we should stay in menu
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::stop();                 // silence any pending/playing announcement before the mode starts
+#endif
 
   uint32_t wcount = 0;
 //  String peer;

@@ -1,0 +1,12 @@
+# M32 Pocket "Accessibility" partition table (V9.0) — 8 MB flash.
+# Single application (no OTA update target) + a large SPIFFS holding the voice
+# clips (/voice/) and the file-player text (player.txt). Games and the WiFi-AP
+# firmware-update/upload are stripped from this build, so the 2nd OTA app slot is
+# reclaimed for audio. The mainline pocketwroom partition table is left untouched.
+#
+# Name,     Type, SubType,  Offset,    Size,      Flags
+nvs,        data, nvs,      0x9000,    0x5000,
+otadata,    data, ota,      0xe000,    0x2000,
+app0,       app,  ota_0,    0x10000,   0x2D0000,
+spiffs,     data, spiffs,   0x2E0000,  0x510000,
+coredump,   data, coredump, 0x7F0000,  0x10000,

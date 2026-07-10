@@ -1,0 +1,74 @@
+# Spoken-text overrides for the M32 voice clips -- EDIT THIS FILE to customise how any
+# menu entry / option / label is pronounced. One override per line:
+#
+#     <firmware string><TAB><what to say instead>
+#
+# The "firmware string" is the exact text as it appears on the device / in voice_clips.h
+# keys (also listed in voice_strings.txt). Separate the two columns with a single TAB.
+# Lines starting with # are ignored. After editing, regenerate + reflash:
+#
+#   python3 extract_voice_strings.py
+#   ./generate_audio.sh
+#   pio run -e pocketwroom-accessibility -t uploadfs   (from Software/src/)
+#
+# Examples (edit freely / delete):
+.- dit dah	dot dash
+-. dah dit	dash dot
+10 min	10 minutes
+10 wpm	10 words per minute
+15 min	15 minutes
+15 wpm	15 words per minute
+20 wpm	20 words per minute
+233 Hz Bb3	233 Hertz
+25 wpm	25 words per minute
+262 Hz C4	262 Hertz
+294 Hz D4	294 Hertz
+30 wpm	30 words per minute
+311 Hz E4	311 Hertz
+349 Hz F4	349 Hertz
+35 wpm	35 words per minute
+392 Hz G4	392 Hertz
+40 wpm	40 words per minute
+440 Hz A4	440 Hertz
+45 wpm	45 words per minute
+466 Hz Bb4	466 Hertz
+5 min	5 minutes
+5 wpm	5 words per minute
+50 wpm	50 words per minute
+523 Hz C5	523 Hertz
+587 Hz D5	587 Hertz
+622 Hz E5	622 Hertz
+698 Hz F5	698 Hertz
+784 Hz G5	784 Hertz
+880 Hz A5	880 Hertz
+932 Hz Bb5	932 Hertz
+Adapt. Rand.	Adaptive Random
+All Chars	All characters
+Alph+Num+Int	alpha, numerals and interpunctions
+Alpha + Num	alpha and numerals
+CW Abbrevs	CW Abbreviations
+Calibrate Batt	Calibrate Battery
+Char by char	Character by character
+Custom Chars	Custom Characters
+Disp MAC Addr	Disp MAC Address
+Generic Kbd	Generic Keyboard
+Hardware Conf	Hardware Configuration
+Interp+ProSn	Interpunctions and Pro Signs
+Interpunct.	interpunctions
+Keyer & Gen.	Keyer and Generator
+Keyer&Gen.&RX	Keyer and Generator and receiver
+Learn New Chr	Learn New Character
+Num+Int+ProS	numerals, Interpunctions and Prosigns
+Num+Interp.	numerals and Interpunctions
+Op Name	Operator Name
+S America	South America
+Sound & Disp	Sound and Display
+Update Firmw	Update Firmware
+Vband+Decoded	Vband and Decoded
+WiFi Trx	WiFi Transceiver
+WiFi Tx OFF	WiFi transmit OFF
+WiFi Tx ON	WiFi Transmit ON
+char	character
+iCW/Ext Trx	iCW or External Transceiver
+l-o: Lsp Muted	line out Speaker Muted
+l-o: Var. Vol.	line out with variable volume
