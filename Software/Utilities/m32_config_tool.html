@@ -250,6 +250,101 @@
       .info-grid{grid-template-columns:1fr 1fr}
       .help-balloon{left:0;transform:none;width:250px}
     }
+    /* ── M32 TTY tab ─────────────────────────────────────────────────────── */
+    .tty-notice{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;
+      background:#fffbf0;border:2px solid #e8c060;border-radius:var(--radius);
+      margin-bottom:18px;font-size:14px;line-height:1.55;color:#5a4000}
+    .tty-notice-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+    .tty-notice strong{color:var(--accent)}
+    .tty-notice code{background:#f5e8c0;border-radius:3px;padding:1px 5px;
+      font-family:'Courier New',monospace;font-size:13px;color:#7a4500}
+    .tty-panels{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+    @media(max-width:680px){.tty-panels{grid-template-columns:1fr}}
+    .tty-panel{border:2px solid var(--box-border);border-radius:var(--radius);
+      background:#1a2832;display:flex;flex-direction:column;
+      min-height:320px;overflow:hidden;
+      box-shadow:var(--box-shadow)}
+    .tty-panel-header{display:flex;align-items:center;justify-content:space-between;
+      padding:9px 14px;background:linear-gradient(90deg,#1a2e3e,#2c4a5e);
+      flex-shrink:0}
+    .tty-panel-title{font-size:11px;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase}
+    .tty-panel-title-tx{color:#e8a040}
+    .tty-panel-title-rx{color:#7dbb7d}
+    .tty-panel-badge{font-size:10px;font-weight:700;letter-spacing:.07em;
+      text-transform:uppercase;padding:2px 8px;border-radius:3px;
+      border:1px solid transparent;color:#666;background:transparent;transition:all .2s}
+    .tty-panel-badge.active{border-color:#7dbb7d;color:#7dbb7d;background:rgba(125,187,125,.12)}
+    /* TX transcript */
+    #ttyTranscript{flex:1;overflow-y:auto;padding:12px 14px;
+      font-family:'Courier New',monospace;font-size:14px;line-height:1.7;
+      color:#c8c8c8;word-break:break-all;white-space:pre-wrap}
+    #ttyTranscript::-webkit-scrollbar{width:5px}
+    #ttyTranscript::-webkit-scrollbar-track{background:transparent}
+    #ttyTranscript::-webkit-scrollbar-thumb{background:#3a5060;border-radius:3px}
+    .tty-tx-line{display:block;color:#b07828}
+    .tty-tx-line::before{content:'▶ ';color:#3a5060;font-size:11px}
+    .tty-tx-placeholder{color:#4a6070;font-size:13px}
+    /* TX composer row */
+    .tty-composer{display:flex;align-items:center;gap:8px;
+      padding:9px 12px;border-top:1px solid #2c4a5e;
+      background:#111e28;flex-shrink:0}
+    #ttyInput{flex:1;background:#0d1a22;border:1px solid #2c4a5e;
+      border-radius:4px;color:#e8a040;font-family:'Courier New',monospace;
+      font-size:14px;padding:7px 10px;outline:none;caret-color:#e8a040;transition:border-color .15s}
+    #ttyInput::placeholder{color:#4a6070;opacity:.8}
+    #ttyInput:focus{border-color:#5a7080}
+    #ttyInput:disabled{opacity:.25;cursor:not-allowed}
+    #ttyStopBtn{padding:5px 11px;border-radius:4px;border:1px solid #3a5060;
+      background:transparent;color:#6a8898;font-family:Lato,Arial,sans-serif;
+      font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all .15s}
+    #ttyStopBtn:hover:not(:disabled){border-color:#c02713;color:#c02713}
+    #ttyStopBtn:disabled{opacity:.25;cursor:not-allowed}
+    /* RX output */
+    #ttyRxOutput{flex:1;overflow-y:auto;padding:12px 14px;
+      font-family:'Courier New',monospace;font-size:16px;line-height:1.75;
+      color:#7ddd80;word-break:break-all;white-space:pre-wrap;
+      background:linear-gradient(180deg,#0d1a22 0%,#0a1520 100%)}
+    #ttyRxOutput::-webkit-scrollbar{width:5px}
+    #ttyRxOutput::-webkit-scrollbar-track{background:transparent}
+    #ttyRxOutput::-webkit-scrollbar-thumb{background:#3a5060;border-radius:3px}
+    .tty-rx-placeholder{color:#2a4a38;font-size:13px}
+    .tty-rx-cursor{display:none;width:9px;height:16px;background:#7ddd80;
+      vertical-align:text-bottom;margin-left:1px;
+      animation:tty-blink 1.1s step-end infinite;opacity:.8}
+    @keyframes tty-blink{0%,100%{opacity:.8}50%{opacity:0}}
+    .tty-rx-footer{display:flex;align-items:center;gap:10px;padding:7px 14px;
+      border-top:1px solid #2c4a5e;background:#111e28;flex-shrink:0}
+    #ttyClearBtn{padding:4px 10px;border-radius:4px;border:1px solid #3a5060;
+      background:transparent;color:#6a8898;font-family:Lato,Arial,sans-serif;
+      font-size:11px;font-weight:700;cursor:pointer;transition:all .15s}
+    #ttyClearBtn:hover{border-color:#5a7080;color:#a8c8d8}
+    .tty-rx-count{font-family:'Courier New',monospace;font-size:11px;
+      color:#3a5060;margin-left:auto}
+    /* Speed/volume bar */
+    .tty-hw-bar{display:flex;gap:20px;align-items:center;flex-wrap:wrap;
+      padding:10px 14px;background:var(--box-bg);border:2px solid var(--box-border);
+      border-radius:var(--radius);box-shadow:var(--box-shadow)}
+    .tty-hw-group{display:flex;align-items:center;gap:8px}
+    .tty-hw-label{font-size:11px;font-weight:700;text-transform:uppercase;
+      letter-spacing:.08em;color:var(--muted);white-space:nowrap}
+    .tty-hw-slider{-webkit-appearance:none;appearance:none;width:110px;height:6px;
+      background:#c8d8e4;border-radius:3px;outline:none;cursor:pointer}
+    .tty-hw-slider::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;
+      border-radius:50%;background:var(--accent);cursor:pointer;
+      box-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .tty-hw-slider:disabled{opacity:.35}
+    .tty-hw-val{font-size:14px;font-weight:900;color:var(--accent);
+      min-width:28px;text-align:right;font-family:'Courier New',monospace}
+    .tty-hw-unit{font-size:12px;color:var(--muted)}
+    .tty-debug-toggle{display:flex;align-items:center;gap:5px;margin-left:auto;
+      font-size:11px;color:var(--muted);cursor:pointer;user-select:none}
+    .tty-debug-toggle input{cursor:pointer;accent-color:var(--accent)}
+    .tty-debug-strip{display:none;font-family:'Courier New',monospace;font-size:11px;
+      background:#111e28;color:#5a8870;padding:7px 14px;max-height:80px;overflow-y:auto;
+      border-top:1px solid #2c4a5e}
+    .tty-debug-rx{color:#5a9}
+    .tty-debug-tx{color:#a85}
   </style>
 </head>
 <body>
@@ -309,6 +404,9 @@
   <button class="tab-btn" onclick="switchTab('files')" data-tab="files">
     <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>
     <span class="tab-label">Files</span></button>
+  <button class="tab-btn" onclick="switchTab('tty')" data-tab="tty">
+    <svg viewBox="0 0 24 24" fill="none" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M7 9l3 3-3 3"/><line x1="13" y1="15" x2="17" y2="15"/></svg>
+    <span class="tab-label">M32 TTY</span></button>
 </div>
 
 <div class="conn-bar" id="connBar">
@@ -550,6 +648,74 @@
 </div>
 
 <!-- ACTIVITY LOG -->
+<!-- M32 TTY -->
+<div class="tab-content" id="tab-tty">
+  <!-- Mode warning notice -->
+  <div class="tty-notice">
+    <span class="tty-notice-icon">⚠️</span>
+    <div>
+      <strong>Required M32 mode:</strong> The Morserino must be set to
+      <code>CW Keyer</code> or <code>iCW / Ext. TRX</code> mode for text transmission to work.
+      In those modes, text you type here is played as CW by the Morserino.
+      Decoded characters are displayed on the right whenever the Morserino is in
+      <code>CW Decoder</code> or <code>iCW / Ext. TRX</code> mode with <strong>Serial Output</strong> enabled.
+    </div>
+  </div>
+
+  <div class="tty-panels">
+    <!-- TX panel -->
+    <div class="tty-panel">
+      <div class="tty-panel-header">
+        <span class="tty-panel-title tty-panel-title-tx">▲ &nbsp;Transmit — Text → CW</span>
+      </div>
+      <!-- Scrolling transcript -->
+      <div id="ttyTranscript">
+        <span class="tty-tx-placeholder">Sent lines appear here. Connect and type below.</span>
+      </div>
+      <!-- Composer row -->
+      <div class="tty-composer">
+        <input id="ttyInput" type="text" disabled placeholder="Type and press Enter to transmit…"
+          spellcheck="false" autocomplete="off" autocorrect="off">
+        <button id="ttyStopBtn" disabled>■ Stop</button>
+      </div>
+    </div>
+
+    <!-- RX panel -->
+    <div class="tty-panel">
+      <div class="tty-panel-header">
+        <span class="tty-panel-title tty-panel-title-rx">▼ &nbsp;Receive — Decoded CW</span>
+        <span class="tty-panel-badge" id="ttyModeBadge">—</span>
+      </div>
+      <div id="ttyRxOutput">
+        <span class="tty-rx-placeholder">Decoded characters appear here when the Morserino is in CW Decoder or Transceiver mode with Serial Output enabled.</span><span class="tty-rx-cursor" id="ttyRxCursor"></span>
+      </div>
+      <div class="tty-rx-footer">
+        <button id="ttyClearBtn">Clear</button>
+        <span class="tty-rx-count" id="ttyRxCount">0 chars</span>
+      </div>
+      <div class="tty-debug-strip" id="ttyDebugStrip"></div>
+    </div>
+  </div>
+
+  <!-- Speed / Volume / Debug -->
+  <div class="tty-hw-bar">
+    <div class="tty-hw-group">
+      <span class="tty-hw-label">Speed</span>
+      <input type="range" class="tty-hw-slider" id="ttySpeedSlider" min="5" max="45" value="20" disabled>
+      <span class="tty-hw-val" id="ttySpeedVal">—</span>
+      <span class="tty-hw-unit">wpm</span>
+    </div>
+    <div class="tty-hw-group">
+      <span class="tty-hw-label">Volume</span>
+      <input type="range" class="tty-hw-slider" id="ttyVolumeSlider" min="0" max="19" value="10" disabled>
+      <span class="tty-hw-val" id="ttyVolumeVal">—</span>
+    </div>
+    <label class="tty-debug-toggle">
+      <input type="checkbox" id="ttyDebugChk"> Raw debug
+    </label>
+  </div>
+</div>
+
 <div class="log-toggle" id="logToggle" onclick="toggleLog()">
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
   Activity Log
@@ -1659,8 +1825,261 @@ async function fbUploadToM32(){
 }
 
 // ============================================================================
-// LOAD OPTIONAL HELP TEXTS
+// M32 TTY
 // ============================================================================
+// The existing readLoop() accumulates everything into readBuffer for
+// waitForResponse(). The TTY tab needs its own live stream of characters.
+// We install a hook: ttyCharHook(ch) is called for every non-JSON character
+// that arrives while the TTY tab is visible. JSON events (mode, control, etc.)
+// are also intercepted to update the mode badge and sliders.
+// The hook is wired into the readBuffer accumulation via ttyProcessChunk().
+
+var ttyActive = false;       // true while TTY tab is the visible tab
+var ttyJsonBuf = '';         // accumulates inside { … }
+var ttyJsonDepth = 0;
+var ttyInJson = false;
+var ttyRxCharCount = 0;
+var ttySpeedTimer = null;
+var ttyVolumeTimer = null;
+
+// DOM refs (resolved lazily — elements exist after HTML parse)
+function ttyEl(id){ return document.getElementById(id); }
+
+// Called from switchTab() / loadTabData()
+function ttyOnEnter(){
+  ttyActive = true;
+  ttyEl('ttyRxCursor').style.display = connected ? 'inline-block' : 'none';
+  ttyEl('ttyInput').disabled   = !connected;
+  ttyEl('ttyStopBtn').disabled = !connected;
+  ttyEl('ttySpeedSlider').disabled = !connected;
+  ttyEl('ttyVolumeSlider').disabled = !connected;
+  if(connected){
+    ttyEl('ttyInput').focus();
+    // Sync sliders from device
+    sendAndParse('get control/speed').then(function(r){
+      if(r.control){ ttyApplyControl(r.control); }
+    }).catch(function(){});
+    sendAndParse('get control/volume').then(function(r){
+      if(r.control){ ttyApplyControl(r.control); }
+    }).catch(function(){});
+  }
+}
+
+function ttyOnLeave(){
+  ttyActive = false;
+}
+
+// Called by the patched readLoop whenever a new chunk arrives
+function ttyProcessChunk(chunk){
+  if(!ttyActive) return;
+  for(var i=0;i<chunk.length;i++){
+    var ch=chunk[i];
+    if(!ttyInJson){
+      if(ch==='{'){
+        ttyInJson=true; ttyJsonDepth=1; ttyJsonBuf=ch;
+      } else if(ch==='\n'||ch==='\r'){
+        // ignore bare line endings
+      } else {
+        ttyAppendRx(ch);
+        ttyDbg('← '+JSON.stringify(ch),'tty-debug-rx');
+      }
+    } else {
+      ttyJsonBuf+=ch;
+      if(ch==='{') ttyJsonDepth++;
+      else if(ch==='}'){
+        ttyJsonDepth--;
+        if(ttyJsonDepth===0){
+          ttyInJson=false;
+          var raw=ttyJsonBuf; ttyJsonBuf='';
+          try{ ttyHandleJSON(JSON.parse(raw)); }catch(e){}
+        }
+      }
+    }
+  }
+}
+
+function ttyHandleJSON(obj){
+  if(obj.menu){
+    var label=(obj.menu.content||'').split('/').pop()||obj.menu.content||'—';
+    var badge=ttyEl('ttyModeBadge');
+    badge.textContent=label;
+    badge.classList.toggle('active', !!obj.menu.content);
+  }
+  if(obj.activate){
+    var badge=ttyEl('ttyModeBadge');
+    var s=obj.activate.state||'';
+    badge.classList.toggle('active', s==='ON'||s==='SET');
+  }
+  if(obj.control){ ttyApplyControl(obj.control); }
+}
+
+function ttyApplyControl(c){
+  if(c.name==='speed'){
+    var sl=ttyEl('ttySpeedSlider');
+    if(c.minimum) sl.min=c.minimum;
+    if(c.maximum) sl.max=c.maximum;
+    sl.value=c.value;
+    ttyEl('ttySpeedVal').textContent=c.value;
+  } else if(c.name==='volume'){
+    var sl=ttyEl('ttyVolumeSlider');
+    if(c.minimum) sl.min=c.minimum;
+    if(c.maximum) sl.max=c.maximum;
+    sl.value=c.value;
+    ttyEl('ttyVolumeVal').textContent=c.value;
+  }
+}
+
+function ttyAppendRx(ch){
+  var out=ttyEl('ttyRxOutput');
+  var ph=out.querySelector('.tty-rx-placeholder');
+  if(ph) ph.remove();
+  var cursor=ttyEl('ttyRxCursor');
+  out.insertBefore(document.createTextNode(ch), cursor);
+  ttyRxCharCount++;
+  ttyEl('ttyRxCount').textContent=ttyRxCharCount+' chars';
+  out.scrollTop=out.scrollHeight;
+}
+
+function ttyDbg(msg, cls){
+  if(!ttyEl('ttyDebugChk').checked) return;
+  var strip=ttyEl('ttyDebugStrip');
+  var line=document.createElement('div');
+  line.className=cls||'';
+  line.textContent=msg;
+  strip.appendChild(line);
+  strip.scrollTop=strip.scrollHeight;
+}
+
+// TTY debug toggle
+document.addEventListener('DOMContentLoaded', function(){
+  ttyEl('ttyDebugChk').addEventListener('change', function(){
+    ttyEl('ttyDebugStrip').style.display = this.checked ? 'block' : 'none';
+  });
+});
+
+// TX: Enter to send
+document.addEventListener('DOMContentLoaded', function(){
+  ttyEl('ttyInput').addEventListener('keydown', function(e){
+    if(e.key==='Enter'){
+      e.preventDefault();
+      var text=ttyEl('ttyInput').value.trim();
+      if(!text||!connected) return;
+      try{
+        sendLine('put cw/play/'+text);
+        ttyDbg('→ put cw/play/'+text,'tty-debug-tx');
+        log('TTY: playing "'+text.slice(0,60)+(text.length>60?'…':'')+'"');
+        // Append to transcript
+        var transcript=ttyEl('ttyTranscript');
+        var ph=transcript.querySelector('.tty-tx-placeholder');
+        if(ph) ph.remove();
+        var line=document.createElement('span');
+        line.className='tty-tx-line'; line.textContent=text;
+        transcript.appendChild(line);
+        transcript.scrollTop=transcript.scrollHeight;
+        ttyEl('ttyInput').value='';
+      }catch(err){ log('TTY send error: '+err.message); }
+    }
+  });
+
+  ttyEl('ttyStopBtn').addEventListener('click', function(){
+    if(!connected) return;
+    try{ sendLine('put cw/stop'); log('TTY: CW stopped'); }catch(e){}
+  });
+
+  ttyEl('ttyClearBtn').addEventListener('click', function(){
+    var out=ttyEl('ttyRxOutput');
+    var cursor=ttyEl('ttyRxCursor');
+    while(out.firstChild && out.firstChild!==cursor) out.removeChild(out.firstChild);
+    var ph=document.createElement('span');
+    ph.className='tty-rx-placeholder';
+    ph.textContent='Decoded characters appear here when the Morserino is in CW Decoder or Transceiver mode with Serial Output enabled.';
+    out.insertBefore(ph, cursor);
+    ttyRxCharCount=0; ttyEl('ttyRxCount').textContent='0 chars';
+  });
+
+  ttyEl('ttySpeedSlider').addEventListener('input', function(){
+    ttyEl('ttySpeedVal').textContent=this.value;
+    clearTimeout(ttySpeedTimer);
+    var val=this.value;
+    ttySpeedTimer=setTimeout(function(){
+      if(!connected) return;
+      try{ sendLine('put control/speed/'+val); log('TTY: speed '+val+' wpm'); }catch(e){}
+    },300);
+  });
+
+  ttyEl('ttyVolumeSlider').addEventListener('input', function(){
+    ttyEl('ttyVolumeVal').textContent=this.value;
+    clearTimeout(ttyVolumeTimer);
+    var val=this.value;
+    ttyVolumeTimer=setTimeout(function(){
+      if(!connected) return;
+      try{ sendLine('put control/volume/'+val); log('TTY: volume '+val); }catch(e){}
+    },300);
+  });
+});
+
+// ── Patch readLoop to intercept chunks for TTY ──────────────────────────────
+// We wrap the original readLoop: the existing code sets `reader` from the
+// TextDecoderStream. We override the read loop to also call ttyProcessChunk.
+// Since readLoop() is declared before this, we can simply redefine it.
+var _origReadLoop = readLoop;
+readLoop = async function(){
+  try{
+    while(true){
+      var r=await reader.read();
+      if(r.done) break;
+      if(r.value){
+        readBuffer+=r.value;        // existing behaviour
+        ttyProcessChunk(r.value);  // TTY intercept
+      }
+    }
+  }catch(e){}
+};
+
+// ── Hook TTY enable/disable into enableUI ───────────────────────────────────
+var _origEnableUI = enableUI;
+enableUI = function(c){
+  _origEnableUI(c);
+  if(ttyActive){
+    ttyEl('ttyInput').disabled   = !c;
+    ttyEl('ttyStopBtn').disabled = !c;
+    ttyEl('ttySpeedSlider').disabled = !c;
+    ttyEl('ttyVolumeSlider').disabled = !c;
+    ttyEl('ttyRxCursor').style.display = c ? 'inline-block' : 'none';
+    if(c) ttyEl('ttyInput').focus();
+  }
+  if(!c){
+    // Reset TTY state on disconnect
+    ttyEl('ttyModeBadge').textContent='—';
+    ttyEl('ttyModeBadge').classList.remove('active');
+    ttyEl('ttySpeedVal').textContent='—';
+    ttyEl('ttyVolumeVal').textContent='—';
+    ttyEl('ttyRxCursor').style.display='none';
+    ttyEl('ttyInput').disabled=true;
+    ttyEl('ttyStopBtn').disabled=true;
+    ttyEl('ttySpeedSlider').disabled=true;
+    ttyEl('ttyVolumeSlider').disabled=true;
+    ttyInJson=false; ttyJsonBuf=''; ttyJsonDepth=0;
+  }
+};
+
+// ── Hook TTY into loadTabData ───────────────────────────────────────────────
+var _origLoadTabData = loadTabData;
+loadTabData = function(tabId){
+  if(tabId==='tty'){ ttyOnEnter(); return; }
+  // If leaving TTY tab
+  if(ttyActive && tabId!=='tty') ttyOnLeave();
+  _origLoadTabData(tabId);
+};
+
+// Also hook switchTab to catch ttyOnLeave when navigating away
+var _origSwitchTab = switchTab;
+switchTab = function(tabId){
+  if(ttyActive && tabId!=='tty') ttyOnLeave();
+  _origSwitchTab(tabId);
+};
+
+
 (function(){
   fetch('m32_pref_help.json').then(function(r){if(r.ok)return r.json();throw new Error('not found')}).then(function(data){
     prefHelpTexts=data; log('Loaded preference help texts ('+Object.keys(data).length+' entries)');

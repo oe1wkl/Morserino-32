@@ -93,6 +93,8 @@ The font family used is Lato.</p>
 <li><a href="#fight-the-pileup" id="toc-fight-the-pileup"><span class="toc-section-number">5.7.2</span> Fight the Pileup</a></li>
 <li><a href="#radio-cave" id="toc-radio-cave"><span class="toc-section-number">5.7.3</span> Radio Cave</a></li>
 <li><a href="#morsel" id="toc-morsel"><span class="toc-section-number">5.7.4</span> Morsel</a></li>
+<li><a href="#trailblazer" id="toc-trailblazer"><span class="toc-section-number">5.7.5</span> Trailblazer</a></li>
+<li><a href="#fox-hunt" id="toc-fox-hunt"><span class="toc-section-number">5.7.6</span> Fox Hunt</a></li>
 </ul></li>
 <li><a href="#wifi-functions" id="toc-wifi-functions"><span class="toc-section-number">5.8</span> WiFi Functions</a>
 <ul>
@@ -122,16 +124,18 @@ The font family used is Lato.</p>
 <li><a href="#preferences-regarding-cw-generation" id="toc-preferences-regarding-cw-generation"><span class="toc-section-number">6.3.4</span> Preferences regarding CW Generation</a></li>
 <li><a href="#preferences-regarding-echo-trainer" id="toc-preferences-regarding-echo-trainer"><span class="toc-section-number">6.3.5</span> Preferences regarding Echo Trainer</a></li>
 <li><a href="#preferences-regarding-transmitting-decoding-and-qso-bot" id="toc-preferences-regarding-transmitting-decoding-and-qso-bot"><span class="toc-section-number">6.3.6</span> Preferences regarding Transmitting, Decoding and QSO Bot</a></li>
+<li><a href="#preferences-regarding-player-identity-and-scores" id="toc-preferences-regarding-player-identity-and-scores"><span class="toc-section-number">6.3.7</span> Preferences regarding Player Identity and Scores</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#appendices" id="toc-appendices"><span class="toc-section-number">7</span> Appendices</a>
 <ul>
 <li><a href="#appendix-1-hardware-configuration-menu" id="toc-appendix-1-hardware-configuration-menu"><span class="toc-section-number">7.1</span> Appendix 1: Hardware Configuration Menu</a>
 <ul>
-<li><a href="#flipping-the-display-screen-for-left-hand-use" id="toc-flipping-the-display-screen-for-left-hand-use"><span class="toc-section-number">7.1.1</span> Flipping the display screen for left-hand use</a></li>
-<li><a href="#calibration-of-battery-measurement" id="toc-calibration-of-battery-measurement"><span class="toc-section-number">7.1.2</span> Calibration of Battery Measurement</a></li>
-<li><a href="#configuring-lora-band-frequency-and-output-power" id="toc-configuring-lora-band-frequency-and-output-power"><span class="toc-section-number">7.1.3</span> Configuring LoRa Band, Frequency and Output Power</a></li>
-<li><a href="#resetting-preferences-to-their-factory-defaults" id="toc-resetting-preferences-to-their-factory-defaults"><span class="toc-section-number">7.1.4</span> Resetting Preferences to their Factory Defaults</a></li>
+<li><a href="#cn3-connector-touch-or-mechanical-paddle-m32-pocket-only" id="toc-cn3-connector-touch-or-mechanical-paddle-m32-pocket-only"><span class="toc-section-number">7.1.1</span> CN3 Connector: touch or mechanical paddle (M32 Pocket only)</a></li>
+<li><a href="#flipping-the-display-screen-for-left-hand-use" id="toc-flipping-the-display-screen-for-left-hand-use"><span class="toc-section-number">7.1.2</span> Flipping the display screen for left-hand use</a></li>
+<li><a href="#calibration-of-battery-measurement" id="toc-calibration-of-battery-measurement"><span class="toc-section-number">7.1.3</span> Calibration of Battery Measurement</a></li>
+<li><a href="#configuring-lora-band-frequency-and-output-power" id="toc-configuring-lora-band-frequency-and-output-power"><span class="toc-section-number">7.1.4</span> Configuring LoRa Band, Frequency and Output Power</a></li>
+<li><a href="#resetting-preferences-to-their-factory-defaults" id="toc-resetting-preferences-to-their-factory-defaults"><span class="toc-section-number">7.1.5</span> Resetting Preferences to their Factory Defaults</a></li>
 </ul></li>
 <li><a href="#appendix-2-more-information-about-lora" id="toc-appendix-2-more-information-about-lora"><span class="toc-section-number">7.2</span> Appendix 2: More information about LoRa</a></li>
 <li><a href="#appendix-3-adjusting-audio-level" id="toc-appendix-3-adjusting-audio-level"><span class="toc-section-number">7.3</span> Appendix 3: Adjusting Audio Level</a></li>
@@ -1371,10 +1375,13 @@ The font family used is Lato.</p>
 <li>It recognises your information inside the usual conversational padding — <code>de oe1wkl k</code>, <code>r ur 599 599 bk</code>, <code>qth vienna vienna</code> all work; the filler words are ignored.</li>
 <li>Signal reports may be sent as full numbers or as <strong>cut numbers</strong> (<code>5nn</code> for 599, <code>t</code> for 0, <code>a</code> for 1, <code>n</code> for 9).</li>
 <li><strong>The bot waits for you to finish.</strong> It only answers once you send an end-of-over signal (<code>k</code>, <code>&lt;sk&gt;</code>, <code>&lt;ar&gt;</code>, <code>bk</code>, <code>73</code>) or pause for a couple of seconds — it will not key over you while you are still sending.</li>
-<li><strong>To correct a mistake</strong>, send <code>&lt;err&gt;</code> (a run of dits) or <code>eeee</code>, then send the corrected information; the bot discards what you retracted and takes the new version.</li>
-<li><strong>To ask for a repeat</strong>, send <code>agn</code> or <code>rpt</code>; the bot repeats its last over. You can also ask for one item — <code>rpt rst</code>, <code>rpt call</code>, <code>rpt qth</code> — and the bot repeats just that.</li>
+<li><strong>To correct a mistake</strong>, send <code>&lt;err&gt;</code> (a run of dits) or <code>eeee</code>, then send the corrected information; the bot discards what you retracted and takes the new version. For a single value such as an RST or a callsign you can also just send the corrected version again later in the same over (for example <code>599 = 579</code>) — the most recent one counts.</li>
+<li><strong>To ask for a repeat</strong>, send <code>agn</code>, <code>rpt</code>, or simply <code>?</code>; the bot repeats its last over. You can also ask for one item — <code>rpt rst</code>, <code>rpt call</code>, <code>rpt qth</code> — and the bot repeats just that.</li>
+<li><strong>To change the bot’s speed</strong>, send <code>qrs</code> (slower) or <code>qrq</code> (faster); the bot adjusts its sending and you hear the new speed on its next over. Send it again to keep nudging. This changes only the bot’s speed, not your own keyer/sidetone speed (which you set with the encoder as usual).</li>
 </ul>
-<p>If you key something the bot cannot make sense of, or you go quiet partway through, it reacts the way a real operator would — <code>agn agn</code>, <code>qrz?</code>, or by repeating its last over — rather than simply stopping.</p>
+<p>If you key something the bot cannot make sense of, or you go quiet partway through, it reacts the way a real operator would — asking for a repeat with a varying prompt such as <code>agn agn</code>, <code>agn?</code>, <code>pse rpt</code>, or <code>qrz?</code>, or by repeating its last over — rather than simply stopping.</p>
+<p>How forgiving and how chatty the bot is can be set with the <strong>QSO Difficulty</strong> preference (<strong>Beginner</strong> / <strong>Intermediate</strong> / <strong>Advanced</strong>). On <strong>Beginner</strong> the bot gives you more time, allows an extra retry, spells signal reports out in full (599 instead of 5nn), uses clear, calm prompts, and always sends at your own speed. On <strong>Intermediate</strong> and <strong>Advanced</strong> the bot sometimes calls at a speed a few WpM away from yours, so you get to practise asking for <code>qrs</code>/<code>qrq</code>; <strong>Advanced</strong> also keeps a tighter rhythm and answers more tersely. This applies to all QSO Bot modes.</p>
+<p>In a <strong>Standard</strong> QSO the bot also mirrors your formality: once the contact is under way, if you drop the <code>&lt;call&gt; de &lt;call&gt;</code> framing between overs, the bot drops it too. <strong>Beginner</strong> always keeps the full framing; <strong>Advanced</strong> drops it readily once the QSO is established. The opening and the final sign-off always use the full callsign framing.</p>
 <h4 class="unnumbered" id="sota-pota">SOTA / POTA</h4>
 <p>The bot plays a summit or park activation. If it calls CQ, it is the activator and sends a summit/park reference chosen to match the country of its callsign (<code>oe/st-002</code> for an Austrian call, <code>w6/ss-001</code> for a US call, and so on); you call in as the chaser and exchange signal reports. If <strong>you</strong> call CQ, you are the activator and the bot chases you. Occasionally the bot that answers your CQ turns out to be an activator too, and sends its own reference — a Summit-to-Summit / Park-to-Park contact (it can even be SOTA-to-POTA). A SOTA/POTA session is a single contact; the bot signs off when it is done.</p>
 <h4 class="unnumbered" id="standard">Standard</h4>
@@ -1389,7 +1396,7 @@ The font family used is Lato.</p>
 <p>The current speed as detected by the decoder is displayed as WpM on the status line.</p>
 <p>This mode does not have many preferences (see the section <strong>6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot</strong>); maybe the most important is the ability to switch the filter bandwidth of the audio decoder between narrow (ca 150 Hz) and wide (ca 600 Hz). For decoding signals from a transceiver (where there might be other signals in the vicinity), it is usually best to set the bandwidth to <strong>Narrow</strong> and tune the signal to 700 Hz (± 5%). For decoding signals from an FM transceiver, or from iCW or other environments with little interference, it is better to use the <strong>Wide</strong> setting – in that case the audio frequency does not need to be very close to 700 Hz.</p>
 <h2 data-number="5.7" id="games"><span class="header-section-number">5.7</span> Games</h2>
-<p>The Morserino Pocket features now CW-based games that make learning and practicing Morse code more engaging. Games are found under the “Games” menu entry. Four games are currently available: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong>, and <strong>Morsel</strong>.</p>
+<p>The Morserino Pocket features now CW-based games that make learning and practicing Morse code more engaging. Games are found under the “Games” menu entry. Six games are currently available: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong>, <strong>Morsel</strong>, <strong>Trailblazer</strong>, and <strong>Fox Hunt</strong>. The last two are a pair of grid-maze games that share the same playing field — Trailblazer trains sending, Fox Hunt trains receiving.</p>
 <h3 data-number="5.7.1" id="morse-invaders"><span class="header-section-number">5.7.1</span> Morse Invaders</h3>
 <p>Morse Invaders is a game where characters fall down the color display, and you must key the correct Morse code to destroy them before they reach the bottom. It combines the fun of a classic arcade game with effective CW training.</p>
 <p>The character pool is determined by your current Koch lesson setting – the game uses exactly the characters you have been learning. This means the game adapts to your level automatically. Each Koch lesson forms a “stratum” within which sub-levels of increasing difficulty are formed by raising the speed at which characters fall and how often new ones appear.</p>
@@ -1971,6 +1978,186 @@ The font family used is Lato.</p>
 <p>Your own row is highlighted in yellow. The screen updates live as more players finish; up to six top entries are shown on screen and a <code>+N more</code> indicator appears if more players have reported. Click the encoder to return to the multiplayer lobby; a long press exits Morsel.</p>
 <h5 class="unnumbered" id="networking-notes">Networking Notes</h5>
 <p>The protocol is <strong>ESP-NOW broadcast</strong> on a fixed channel — no router, internet, or pairing is needed; all devices in radio range simply hear each other. The soft cap is <strong>20 players</strong> per match. A device that loses contact with the server is dropped from the displayed ranking after about 8 seconds.</p>
+<h3 data-number="5.7.5" id="trailblazer"><span class="header-section-number">5.7.5</span> Trailblazer</h3>
+<p><strong>Trailblazer</strong> and <strong>Fox Hunt</strong> (the next section) are a matched pair of grid-maze games. Both put you on the same playing field: a grid of 12 × 4 random characters, drawn from your current Koch lesson, with a <strong>start</strong> cell on the left edge, an <strong>end</strong> cell on the right edge, and a hidden, winding <strong>path</strong> between them. You travel that path one cell at a time, from start to finish. The two games differ only in what you must do to take each step — Trailblazer trains <strong>sending</strong>, Fox Hunt trains <strong>receiving</strong>.</p>
+<p>In <strong>Trailblazer</strong>, the next cell on the path is <strong>highlighted</strong> on the display. You simply <strong>key that visible character</strong> in Morse to move into it. Correct keying advances you and lights up the next cell; a wrong character sounds an error tone and you stay put. Because the target letter is always in plain sight, Trailblazer is fundamentally a <strong>sending drill</strong> — the maze gives it a sense of journey and progress, and a natural scoring axis (how quickly and cleanly you send your way to the end).</p>
+<p>Trailblazer is only available on the M32 Pocket. It is playable from <strong>Koch lesson 6</strong> upward.</p>
+<h4 class="unnumbered" id="starting-the-game-4">Starting the Game</h4>
+<p>From the main menu, navigate to <strong>Games → Trailblazer</strong>. You first see a <strong>Single player / Multiplayer</strong> chooser (turn the encoder to move, click to pick). Choosing <strong>Single player</strong> brings up the ready screen, which shows the game name, your current Koch lesson, and the controls. <strong>Touch a paddle to start.</strong> (Multiplayer is described at the end of this section.)</p>
+<p>On the ready screen:</p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddle / key</strong></td>
+<td>Start a new maze</td>
+</tr>
+<tr>
+<td><strong>Encoder (knob)</strong></td>
+<td>Adjust your keying WPM (or volume — see below)</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Toggle the encoder between speed and volume</td>
+</tr>
+<tr>
+<td><strong>Encoder click</strong></td>
+<td>View the high-score table</td>
+</tr>
+<tr>
+<td><strong>Encoder long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="playing-1">Playing</h4>
+<p>The full grid is shown, with your current position marked by a token and the <strong>next</strong> path cell highlighted in yellow. Key the highlighted character on your paddles. Each correct character moves you into the cell, draws the trail behind you in cyan, and highlights the following cell. Keep going until you reach the end marker on the right edge — the screen then shows <strong>Solved!</strong> and your score.</p>
+<p>A wrong character just sounds a short error tone and leaves you where you are; every wrong entry counts against your score, so clean sending pays off. Only the trail <strong>behind</strong> you is ever drawn — the path ahead is never shown, so you follow it one lit cell at a time.</p>
+<p>Pro signs can appear as grid cells once your Koch lesson has reached them. They are shown as their conventional two-letter abbreviation (<code>AS</code>, <code>KA</code>, <code>KN</code>, <code>SK</code>, <code>VE</code>, <code>BK</code>, <code>AR</code>) with a bar above, exactly as in the other modes; key the pro sign itself to enter such a cell.</p>
+<h4 class="unnumbered" id="controls-during-the-game-2">Controls During the Game</h4>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Key the highlighted character</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>Adjust your keying WPM</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Toggle the encoder between speed and volume</td>
+</tr>
+<tr>
+<td><strong>Encoder long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="scoring-and-high-scores">Scoring and High Scores</h4>
+<p>Your score is an <strong>effective speed in characters per minute (CPM)</strong> — higher is better. It is the number of steps you took (the path length) divided by your <strong>adjusted time</strong>: the raw solve time plus a <strong>5-second penalty for every wrong entry</strong>. Dividing by the path length makes scores fair across mazes of different lengths, and turns the result into a meaningful CW figure: your effective sending speed.</p>
+<p>After you solve a maze, a results screen shows the CPM, the number of steps, wrong entries, your time, and the Koch lesson played at; if the result makes the top-7 list a <code>NEW HIGH SCORE</code> banner appears. Clicking the encoder opens the <strong>high-score table</strong> (kept separately for each game, persisted in non-volatile storage); a further press starts a fresh maze, and a long press exits. You can also open the high-score table from the ready screen with an encoder click.</p>
+<h4 class="unnumbered" id="multiplayer-2">Multiplayer</h4>
+<p>Trailblazer and Fox Hunt can both be played as a <strong>same-maze race</strong> against other M32 Pockets in the same room. One device acts as the <strong>server</strong>: it picks the Koch lesson, generates the maze, and broadcasts it so that <strong>every device races the identical grid and path</strong> at the same time. The first to reach the end with the best effective speed wins. The multiplayer flow is shared by both games and works exactly the same in each.</p>
+<p>At the <strong>Single player / Multiplayer</strong> chooser, pick <strong>Multiplayer</strong>. You then choose a role:</p>
+<table>
+<colgroup>
+<col style="width: 42%" />
+<col style="width: 57%" />
+</colgroup>
+<thead>
+<tr>
+<th>Role</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Start as Server</strong></td>
+<td>Opens the server lobby. The session starts at the full alphabet (Koch 41) so a mixed group has a common character set; adjust it down with the encoder if you like. The list fills with players as they join. Click the encoder to start the race.</td>
+</tr>
+<tr>
+<td><strong>Join a game</strong></td>
+<td>Opens the client lobby. It searches for a server’s broadcast and shows its Koch lesson once found. Wait for the server operator to start; the maze then arrives and your race begins automatically.</td>
+</tr>
+</tbody>
+</table>
+<p>A long press of the encoder steps back one level — from a server or client lobby to the role picker, from the role picker to the Single/Multiplayer chooser, and from there out of the game.</p>
+<p>Your identity on the network is taken from the <strong>call sign / player name</strong> shared with Fight the Pileup and Morsel. If neither is set, a short MAC-derived tag is used automatically.</p>
+<div class="note">
+<p>When you join a game, your device adopts the server’s Koch lesson for the race, so the grid — and Fox Hunt’s direction keys — are the same for everyone. Your own training lesson is restored when you leave the game.</p>
+</div>
+<p>When you finish, your device reports its time and wrong-entry count; the server ranks everyone (itself included, competing as a regular player) and broadcasts a <strong>Ranking</strong> screen that all devices show identically. Each row lists the rank, player, the effective CPM, the time, and the number of wrong entries; your own row is highlighted in yellow. Click the encoder to return to the multiplayer lobby for another race, or long-press to exit. Multiplayer results are <strong>not</strong> saved to the high-score tables.</p>
+<p>The networking is <strong>ESP-NOW broadcast</strong> on a fixed channel — no router, internet, or pairing needed; all devices in range hear each other, with a soft cap of 20 players.</p>
+<h3 data-number="5.7.6" id="fox-hunt"><span class="header-section-number">5.7.6</span> Fox Hunt</h3>
+<p><strong>Fox Hunt</strong> is the receiving counterpart to Trailblazer, played on the same 12 × 4 grid with a hidden path from the left edge to the right edge (see the Trailblazer section for the shared playing field). The difference is how you take each step: instead of showing you the next cell, the device <strong>plays its character in Morse code</strong>. You must recognise the character by ear, spot which of the neighbouring cells holds it, and <strong>key the direction</strong> toward it. Correct direction → you advance and the next character is played; wrong → an error tone, and you stay put.</p>
+<p>This trains <strong>receiving by ear</strong> with a spatial twist — you have to both decode the character and locate it among the neighbours. You could guess one of the four directions blindly, but every wrong key costs your score, so decoding is the efficient route.</p>
+<p>Fox Hunt is only available on the M32 Pocket, and is playable from <strong>Koch lesson 6</strong> upward.</p>
+<h4 class="unnumbered" id="direction-keys">Direction Keys</h4>
+<p>Directions are keyed as single letters using the <strong>compass</strong> convention — the same one Radio Cave uses:</p>
+<table>
+<thead>
+<tr>
+<th>Direction</th>
+<th>Compass letter</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Up</td>
+<td><strong>N</strong> (north)</td>
+</tr>
+<tr>
+<td>Right</td>
+<td><strong>E</strong> (east)</td>
+</tr>
+<tr>
+<td>Down</td>
+<td><strong>S</strong> (south)</td>
+</tr>
+<tr>
+<td>Left</td>
+<td><strong>W</strong> (west)</td>
+</tr>
+</tbody>
+</table>
+<p>A four-arrow <strong>legend</strong> is shown on screen at all times, so you never have to remember the mapping. Because the compass letters are not all learned early in the Koch order, any that you have not yet learned are automatically <strong>substituted</strong> by another character from your current lesson; the legend always shows the actual letter to key for each direction (a substituted key is drawn in yellow). You key the <strong>direction</strong>, never the heard character itself — a keyed letter that is not in the legend is treated as a wrong move.</p>
+<h4 class="unnumbered" id="starting-and-controls">Starting and Controls</h4>
+<p>From the main menu, navigate to <strong>Games → Fox Hunt</strong>, then pick <strong>Single player</strong> or <strong>Multiplayer</strong> (multiplayer works exactly as described for Trailblazer above — the two games share one lobby). On the single-player ready screen, touch a paddle to start.</p>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Key the direction (N/E/S/W or its substitute) toward the heard character</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>Adjust your keying WPM (or volume)</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Toggle the encoder between speed and volume</td>
+</tr>
+<tr>
+<td><strong>Encoder click (ready screen)</strong></td>
+<td>View the high-score table</td>
+</tr>
+<tr>
+<td><strong>Encoder click (during play)</strong></td>
+<td>Replay the current character</td>
+</tr>
+<tr>
+<td><strong>Encoder long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="playing-2">Playing</h4>
+<p>On arrival at each cell, the device plays the next character once, at your current keying speed and shifted slightly in pitch so you can tell it apart from your own sidetone. Decode it, find the neighbouring cell that holds it, and key the direction toward that cell. If you are idle for a few seconds, the character <strong>replays</strong> automatically; you can also replay it on demand at any time with an <strong>encoder click</strong>. As in Trailblazer, only the trail behind you is drawn — the path ahead is never revealed, so you must rely on your ears.</p>
+<h4 class="unnumbered" id="scoring-high-scores-and-multiplayer">Scoring, High Scores, and Multiplayer</h4>
+<p>Scoring, the results and high-score screens, and multiplayer all work exactly as in Trailblazer (effective CPM with a 5-second penalty per wrong entry; a separate high-score table for Fox Hunt; the same server/client same-maze race). See the Trailblazer section above for the details.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two functions of the device, when you are using WiFi through an access point, that were of high importance in teh past:</p>
 <ul>
@@ -2082,7 +2269,7 @@ The font family used is Lato.</p>
 <li><strong>long-press</strong> either button when you are done.</li>
 </ul>
 <p>Call Sign accepts letters, digits and the slash; Op Name accepts letters and a space. The current value is shown next to the preference.</p>
-<p><strong>Reset Scores</strong> clears the saved high scores and game progress for all games (Morse Invaders, Morsel and Radio Cave). Selecting it shows a confirmation: press <strong>FN</strong> to confirm, or click the ENCODER to cancel.</p>
+<p><strong>Reset Scores</strong> clears the saved high scores and game progress for all games (Morse Invaders, Morsel, Radio Cave, and the Trailblazer and Fox Hunt grid-maze games). Selecting it shows a confirmation: press <strong>FN</strong> to confirm, or click the ENCODER to cancel.</p>
 <h2 data-number="6.3" id="list-of-all-morserino-32-preferences"><span class="header-section-number">6.3</span> List of All Morserino-32 preferences</h2>
 <p>Bold values are default or recommended ones. When called from the start menu, all preferences are available for modification, when called from a running mode, only those that are relevant for this mode are available.</p>
 <h3 data-number="6.3.1" id="general-preferences"><span class="header-section-number">6.3.1</span> General Preferences</h3>
@@ -2422,20 +2609,67 @@ The font family used is Lato.</p>
 <td>Only relevant in the QSO Bot’s <strong>Contest</strong> mode (section <strong>5.5.4 QSO Bot</strong>): which contest exchange the bot uses. <strong>CQ WW</strong> sends 5NN + the CQ zone of the bot’s callsign; <strong>WPX/Sprint</strong> sends 5NN + a serial number.</td>
 <td><strong>CQ WW</strong> / WPX/Sprint</td>
 </tr>
+<tr>
+<td>QSO Difficulty</td>
+<td>How forgiving and how chatty the QSO Bot partner is (all QSO Bot modes, section <strong>5.5.4 QSO Bot</strong>). <strong>Beginner</strong> is patient (more time to reply, an extra retry), spells signal reports out in full (599 rather than 5nn), and uses clear, calm prompts. <strong>Advanced</strong> keeps a tighter rhythm and uses curt, seasoned-operator prompts. <strong>Intermediate</strong> sits in between.</td>
+<td>Beginner / <strong>Intermediate</strong> / Advanced</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="6.3.7" id="preferences-regarding-player-identity-and-scores"><span class="header-section-number">6.3.7</span> Preferences regarding Player Identity and Scores</h3>
+<p>These items appear at the very end of the preferences list. The first two set your personal identity, which is used by the <strong>Fight the Pileup</strong> game and by the <strong>QSO Bot</strong> (section <strong>5.5.4 QSO Bot</strong>); the third clears the stored game scores. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Preference Name</th>
+<th>Description</th>
+<th>Values</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Call Sign</td>
+<td>Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in <strong>Fight the Pileup</strong> and the <strong>QSO Bot</strong>.</td>
+<td>up to 8 characters (stored as UPPER CASE)</td>
+</tr>
+<tr>
+<td>Op Name</td>
+<td>Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case and used together with your call sign in <strong>Fight the Pileup</strong>.</td>
+<td>up to 8 characters (stored as UPPER CASE)</td>
+</tr>
+<tr>
+<td>Reset Scores</td>
+<td>This is an action, not a setting: it clears the stored high scores and saved progress of the games — the <strong>Morse Invaders</strong> high-score table, the <strong>Morsel</strong> high scores, the <strong>Radio Cave</strong> saved progress, and the <strong>Trailblazer</strong> and <strong>Fox Hunt</strong> high-score tables. You are asked to confirm by pressing the <strong>FN</strong> button. (Fight the Pileup keeps no persistent high score and is not affected.)</td>
+<td>press FN to confirm</td>
+</tr>
 </tbody>
 </table>
 <h1 data-number="7" id="appendices"><span class="header-section-number">7</span> Appendices</h1>
 <h2 data-number="7.1" id="appendix-1-hardware-configuration-menu"><span class="header-section-number">7.1</span> Appendix 1: Hardware Configuration Menu</h2>
 <p>There is a hardware configuration menu that can be reached by <strong>pressing a paddle (or external paddle or straight key) while switching the M32 on</strong>. You can then select the configuration you want to perform by rotating the encoder knob, and pressing it once the right option shows up.</p>
-<p>The selectable options are <strong>Calibr. Batt.</strong> (calibration of battery measurement), <strong>Flip Screen</strong>, <strong>LoRa Config.</strong> and <strong>Cancel</strong> (which just leaves this menu and continues with regular start-up of the M32).</p>
-<h3 data-number="7.1.1" id="flipping-the-display-screen-for-left-hand-use"><span class="header-section-number">7.1.1</span> Flipping the display screen for left-hand use</h3>
+<p>The selectable options are <strong>Calibr. Batt.</strong> (calibration of battery measurement), <strong>Flip Screen</strong>, <strong>LoRa Config.</strong>, <strong>CN3: Touch / CN3: Mechan.</strong> (M32 Pocket only — the paddle type on the CN3 connector) and <strong>Cancel</strong> (which just leaves this menu and continues with regular start-up of the M32).</p>
+<h3 data-number="7.1.1" id="cn3-connector-touch-or-mechanical-paddle-m32-pocket-only"><span class="header-section-number">7.1.1</span> CN3 Connector: touch or mechanical paddle (M32 Pocket only)</h3>
+<p>The M32 Pocket has two paddle inputs: the 3.5 mm jack (for a mechanical paddle or key), and the small <strong>CN3</strong> connector, which is normally used for the capacitive <strong>touch</strong> paddles. If you prefer, you can instead connect a <strong>mechanical</strong> paddle or key to CN3 — no hardware modification is needed, only this setting.</p>
+<p>The menu item shows the current setting: <strong>CN3: Touch</strong> (the default) or <strong>CN3: Mechan.</strong> To change it:</p>
+<ol type="1">
+<li>Start your M32 while holding a paddle (touch paddle, the paddle on the 3.5 mm jack, or a straight key) pressed, to enter the Hardware Configuration menu.</li>
+<li>Rotate the ENCODER until the CN3 item shows, and press the ENCODER knob.</li>
+<li>Rotate the ENCODER to choose <strong>Touch</strong> or <strong>Mechanical</strong>, then press the ENCODER knob to confirm.</li>
+</ol>
+<p>If you changed the setting, the M32 re-boots so the CN3 pins come up in the chosen mode. In <strong>Mechanical</strong> mode the touch paddles on CN3 no longer work (the two pins are read as an ordinary paddle instead); the 3.5 mm jack keeps working in both modes. Note that a mechanical paddle plugged into CN3 will also let you into this menu while the setting is still on Touch, so you can always switch modes.</p>
+<h3 data-number="7.1.2" id="flipping-the-display-screen-for-left-hand-use"><span class="header-section-number">7.1.2</span> Flipping the display screen for left-hand use</h3>
 <p>This is probably only relevant for the M32Pocket! With the M32Pocket, if you want to key with your left hand, the normal display would be upside down; with this configuration option the display is rotated by 180° to allow left-hand use.</p>
 <ol type="1">
 <li>Start your M32 while holding the touch paddles (or external paddles, or straight key) pressed.</li>
 <li>Select the Option <strong>Flip Screen</strong> with the rotary encoder, and pressing the ENCODER knob.</li>
 </ol>
 <p>The M32 will re-boot, with the display now rotated 180°.</p>
-<h3 data-number="7.1.2" id="calibration-of-battery-measurement"><span class="header-section-number">7.1.2</span> Calibration of Battery Measurement</h3>
+<h3 data-number="7.1.3" id="calibration-of-battery-measurement"><span class="header-section-number">7.1.3</span> Calibration of Battery Measurement</h3>
 <div class="note">
 <p>For the M32Pocket, calibrating battery measurement is not necessary, and therefore this item is only available on 1st and 2nd edition Morserinos.</p>
 </div>
@@ -2450,7 +2684,7 @@ The font family used is Lato.</p>
 <div class="note">
 <p>If your battery is reasonably new, and you know for sure that it is fully charged, as it has been in charging mode long enough (&gt;10 hours for 1st &amp; 2nd edition Morserinos, &gt;3 hours for M32 Pocket), you can assume a battery voltage of 4.2V and use that value instead of measuring the battery.</p>
 </div>
-<h3 data-number="7.1.3" id="configuring-lora-band-frequency-and-output-power"><span class="header-section-number">7.1.3</span> Configuring LoRa Band, Frequency and Output Power</h3>
+<h3 data-number="7.1.4" id="configuring-lora-band-frequency-and-output-power"><span class="header-section-number">7.1.4</span> Configuring LoRa Band, Frequency and Output Power</h3>
 <p>Obviously this section is only applicable if you have a Morserino with LoRa capability (like a 1st or 2nd edition Morserino).</p>
 <p>If you have a standard 433 MHz Heltec module in your Morserino-32 (1st or 2nd edition), which is practically always the case, it has been already preconfigured for the right band and a default frequency within that band.</p>
 <p>If you have to change either the LoRa frequency within the standard band, or you use a Heltec module for the 868 and 920 MHz bands, you have to configure your Morserino-32 before you use the LoRa capabilities.</p>
@@ -2472,7 +2706,7 @@ The font family used is Lato.</p>
 <p><em>Be aware of applicable regulations in your jurisdiction, there might be a legal limit regarding output power! Be also aware that the higher the output power, the higher the risk of destroying the LoRa transceiver when used without proper termination (a suitable antenna or a dummy load).</em></p>
 </div>
 <p>Immediately after that the Morserino-32 will start normally, with the now selected LoRa settings in effect. On the top line of the Startup Screen you will see the configured QRG for LoRa as a 5-digit number (e.g. 43415 for the default in the 433 MHz band).</p>
-<h3 data-number="7.1.4" id="resetting-preferences-to-their-factory-defaults"><span class="header-section-number">7.1.4</span> Resetting Preferences to their Factory Defaults</h3>
+<h3 data-number="7.1.5" id="resetting-preferences-to-their-factory-defaults"><span class="header-section-number">7.1.5</span> Resetting Preferences to their Factory Defaults</h3>
 <p>This item resets all preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.</p>
 <h2 data-number="7.2" id="appendix-2-more-information-about-lora"><span class="header-section-number">7.2</span> Appendix 2: More information about LoRa</h2>
 <p>When morse code is packed into a LoRa data packet, dots, dashes and pauses are encoded; it is not so that the clear text would be sent as ASCII characters. Therefore it is possible to send “illegal” morse code characters, or characters that might only be used in certain languages. They will be transmitted correctly (but shown on the display as non-decodable).</p>

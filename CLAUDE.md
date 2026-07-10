@@ -19,6 +19,13 @@ versioned on GitHub). The maintainer is Willi, OE1WKL — an experienced radio a
 correct CW conventions (prosigns, QSO procedure, abbreviations) are a product
 requirement, not a nice-to-have.
 
+**Branch workflow.** Any *major undertaking* — a new feature (especially one
+that gets its own menu entry), a large refactor, or an extended
+debugging/audit session — is done on its **own dedicated branch off `master`**,
+named for the work (not for an unrelated feature), and merged back to `master`
+when finished. Do not pile a new major feature onto a branch created for a
+different one. Small, self-contained fixes may go directly on `master`.
+
 There are **two hardware variants** that must both be supported by every change:
 
 | | Classic M32 | M32 Pocket |
@@ -136,12 +143,14 @@ These were each discovered the hard way. Treat them as invariants:
 ## 4. Persistence (NVS) conventions
 
 - High scores, save/resume state, and user preferences are stored in **NVS**.
-- **Current reality (four logical NVS stores, kept separate by decision — see
+- **Current reality (five logical NVS stores, kept separate by decision — see
   `devdocs/consistency-audit/REFACTORING_PLAN.md` Phase E):** `morserino` (all preferences +
   player identity `playerCall`/`playerName`), `m32game` (Morse
   Invaders high scores), `morsel` (Morsel scores `hi`/`hv` + word length `wlen`),
-  `radiocave` (Radio Cave save blob). Keys are flat and ad-hoc (`wpm`, `theme`,
-  `hi`, `hs0_s`). **Snapshots are *not* stored in `morserino`:** each snapshot's
+  `radiocave` (Radio Cave save blob), `gridgame` (Trailblazer + Fox Hunt
+  high-score tables — keys `tb`/`tbv`, `fh`/`fhv`; each self-versioned, see
+  `MorseGridScore.cpp` and `devdocs/grid-games/`). Keys are flat and ad-hoc
+  (`wpm`, `theme`, `hi`, `hs0_s`). **Snapshots are *not* stored in `morserino`:** each snapshot's
   *contents* live in its own companion namespace `snap0`..`snap7` (written by
   `doWriteSnapshot`, read by `doReadSnapshot`/`MorseJSON::jsonGetSnapshot`); only
   the `snapShots` existence bitmap is kept in `morserino`.

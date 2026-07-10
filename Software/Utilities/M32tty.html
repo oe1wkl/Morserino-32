@@ -1,0 +1,908 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Morserino-32 — Web Interface</title>
+<style>
+/* ── Design tokens ─────────────────────────────────────────────────────── */
+:root {
+  --bg:         #0e0e0e;
+  --panel:      #161616;
+  --border:     #2a2a2a;
+  --border-lit: #3d3d3d;
+
+  --amber:      #e8a020;
+  --amber-dim:  #b07828;
+  --amber-glow: rgba(232,160,32,0.13);
+
+  --green:      #6fe87a;
+  --green-dim:  #2a7a38;
+  --green-glow: rgba(111,232,122,0.10);
+
+  --red:        #e05050;
+  --red-dim:    #5a2020;
+
+  --text:       #c8c8c8;
+  --text-dim:   #555;
+  --text-label: #777;
+
+  --mono: 'Courier New', Courier, monospace;
+  --ui:   'Helvetica Neue', Arial, sans-serif;
+  --r:    3px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--ui);
+  font-size: 14px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────── */
+header {
+  background: var(--panel);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+.logo-mark {
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--amber);
+  text-shadow: 0 0 14px var(--amber-dim);
+  white-space: nowrap;
+}
+.logo-morse {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--amber-dim);
+  letter-spacing: 3px;
+  user-select: none;
+}
+
+/* Device info strip — populated after handshake */
+#device-info {
+  display: none;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  gap: 12px;
+  flex-wrap: wrap;
+}
+#device-info span { color: var(--text-label); }
+#device-info b    { color: var(--amber-dim); }
+
+.header-right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Status pill */
+.status-pill {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 11px; border-radius: 20px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 0.05em; text-transform: uppercase;
+  border: 1px solid var(--border); color: var(--text-dim);
+  transition: all .2s;
+}
+.status-pill.connected {
+  border-color: var(--green-dim); color: var(--green);
+  background: var(--green-glow);
+}
+.status-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--text-dim); flex-shrink: 0;
+  transition: background .2s, box-shadow .2s;
+}
+.status-pill.connected .status-dot {
+  background: var(--green); box-shadow: 0 0 6px var(--green);
+  animation: blink-dot 2s ease-in-out infinite;
+}
+@keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:.45} }
+
+/* Buttons */
+.btn {
+  padding: 6px 16px; border-radius: var(--r); border: 1px solid;
+  font-size: 12px; font-weight: 700; cursor: pointer;
+  letter-spacing: .04em; transition: all .15s;
+}
+.btn:disabled { opacity: .3; cursor: not-allowed; }
+
+.btn-amber {
+  background: var(--amber-glow); border-color: var(--amber-dim);
+  color: var(--amber);
+}
+.btn-amber:hover:not(:disabled) {
+  background: rgba(232,160,32,.24); border-color: var(--amber);
+  box-shadow: 0 0 10px var(--amber-dim);
+}
+.btn-muted {
+  background: transparent; border-color: var(--border-lit);
+  color: var(--text-dim);
+}
+.btn-muted:hover:not(:disabled) { border-color: #666; color: var(--text); }
+
+/* ── Main two-panel layout ─────────────────────────────────────────────── */
+main {
+  flex: 1; display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+  min-height: 0;
+}
+@media (max-width: 680px) { main { grid-template-columns: 1fr; } }
+
+.panel {
+  background: var(--panel);
+  display: flex; flex-direction: column;
+  min-height: 0;
+}
+
+.panel-header {
+  padding: 11px 18px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-size: 10px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em;
+}
+.panel-title-tx { color: var(--amber); }
+.panel-title-rx { color: var(--green); }
+
+/* ── TX panel — chat layout ────────────────────────────────────────────── */
+.tx-body {
+  flex: 1; display: flex; flex-direction: column;
+  min-height: 0;   /* no padding here — each sub-zone owns its own */
+}
+
+/* Scrolling transcript of sent lines */
+#tx-transcript {
+  flex: 1; overflow-y: auto;
+  padding: 14px 16px;
+  font-family: var(--mono);
+  font-size: 15px; line-height: 1.7;
+  word-break: break-all; white-space: pre-wrap;
+  background: #080808;
+}
+#tx-transcript::-webkit-scrollbar { width: 5px; }
+#tx-transcript::-webkit-scrollbar-track { background: transparent; }
+#tx-transcript::-webkit-scrollbar-thumb { background: var(--border-lit); border-radius: 3px; }
+
+.tx-line {
+  color: var(--amber-dim);
+  display: block;
+  padding: 1px 0;
+}
+.tx-line::before {
+  content: '▶ ';
+  color: var(--border-lit);
+  font-size: 10px;
+}
+
+.tx-placeholder {
+  color: var(--amber-dim); opacity: .4;
+  font-size: 12px; line-height: 1.6;
+}
+
+/* Composer row — pinned to the bottom */
+.tx-composer {
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center;
+  padding: 10px 12px; gap: 10px;
+  flex-shrink: 0;
+  background: var(--panel);
+}
+
+#tx-input {
+  flex: 1;
+  background: #0a0a0a;
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  color: var(--amber);
+  font-family: var(--mono);
+  font-size: 15px;
+  line-height: 1.5;
+  padding: 7px 11px;
+  outline: none;
+  caret-color: var(--amber);
+  transition: border-color .15s, box-shadow .15s;
+}
+#tx-input::placeholder { color: var(--amber-dim); opacity: .5; }
+#tx-input:focus {
+  border-color: var(--amber-dim);
+  box-shadow: 0 0 0 2px var(--amber-glow);
+}
+#tx-input:disabled { opacity: .25; cursor: not-allowed; }
+
+.btn-stop {
+  padding: 6px 12px; border-radius: var(--r);
+  border: 1px solid var(--border-lit); background: transparent;
+  color: var(--text-dim); font-size: 11px; font-weight: 600;
+  cursor: pointer; letter-spacing: .04em; transition: all .15s;
+  flex-shrink: 0; white-space: nowrap;
+}
+.btn-stop:hover:not(:disabled) { border-color: var(--red-dim); color: var(--red); }
+.btn-stop:disabled { opacity: .25; cursor: not-allowed; }
+
+/* Speed/volume footer bar */
+.hw-controls {
+  display: flex; gap: 16px; align-items: center;
+  padding: 8px 14px;
+  border-top: 1px solid var(--border);
+  background: rgba(0,0,0,.25);
+  flex-shrink: 0; flex-wrap: wrap;
+}
+.hw-ctrl-group {
+  display: flex; align-items: center; gap: 8px;
+}
+.hw-ctrl-group label {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .08em; color: var(--text-dim); white-space: nowrap;
+}
+.hw-ctrl-group input[type=range] {
+  width: 90px; accent-color: var(--amber); cursor: pointer;
+}
+.hw-ctrl-group input[type=range]:disabled { opacity: .25; }
+.hw-val {
+  font-family: var(--mono); font-size: 12px;
+  color: var(--amber-dim); min-width: 24px; text-align: right;
+}
+
+/* ── RX panel ──────────────────────────────────────────────────────────── */
+.rx-body {
+  flex: 1; display: flex; flex-direction: column; min-height: 0;
+}
+
+#rx-output {
+  flex: 1; overflow-y: auto;
+  padding: 18px; font-family: var(--mono);
+  font-size: 17px; line-height: 1.7;
+  color: var(--green); word-break: break-all; white-space: pre-wrap;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 2px,
+      rgba(0,0,0,.04) 2px,rgba(0,0,0,.04) 4px),
+    #080808;
+}
+#rx-output::-webkit-scrollbar { width: 5px; }
+#rx-output::-webkit-scrollbar-track { background: transparent; }
+#rx-output::-webkit-scrollbar-thumb { background: var(--border-lit); border-radius: 3px; }
+
+.rx-placeholder {
+  color: var(--green-dim); opacity: .5;
+  font-size: 12px; line-height: 1.6;
+}
+
+/* Blinking cursor */
+.rx-cursor {
+  display: none; /* shown only when connected */
+  width: 9px; height: 17px; background: var(--green);
+  vertical-align: text-bottom; margin-left: 1px;
+  animation: blink-cur 1.1s step-end infinite; opacity: .8;
+}
+@keyframes blink-cur { 0%,100%{opacity:.8} 50%{opacity:0} }
+
+.rx-footer {
+  padding: 9px 18px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.btn-clear {
+  background: transparent; border: 1px solid var(--border-lit);
+  color: var(--text-dim); padding: 4px 12px;
+  border-radius: var(--r); font-size: 11px; font-weight: 600;
+  cursor: pointer; letter-spacing: .04em; transition: all .15s;
+}
+.btn-clear:hover { border-color: #555; color: var(--text); }
+
+.mode-badge {
+  font-size: 10px; font-weight: 700; letter-spacing: .07em;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 2px;
+  border: 1px solid var(--border-lit); color: var(--text-dim);
+}
+.mode-badge.active {
+  border-color: var(--green-dim); color: var(--green);
+  background: var(--green-glow);
+}
+
+.rx-char-count {
+  font-family: var(--mono); font-size: 11px;
+  color: var(--text-dim); margin-left: auto;
+}
+
+/* ── Debug strip ────────────────────────────────────────────────────────── */
+#debug-strip {
+  display: none;   /* toggled by checkbox */
+  background: #0a0a0a;
+  border-top: 1px solid var(--border);
+  padding: 8px 14px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: #777;
+  max-height: 90px;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+#debug-strip .dbg-rx  { color: #5a9; }
+#debug-strip .dbg-tx  { color: #a85; }
+#debug-strip .dbg-err { color: var(--red); }
+.debug-toggle {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; color: var(--text-dim); cursor: pointer;
+  user-select: none;
+}
+.debug-toggle input { cursor: pointer; accent-color: var(--amber-dim); }
+
+/* ── Footer log bar ────────────────────────────────────────────────────── */
+footer {
+  background: #0a0a0a; border-top: 1px solid var(--border);
+  padding: 5px 18px; display: flex; align-items: center;
+  gap: 8px; font-family: var(--mono); font-size: 11px;
+  color: var(--text-dim); min-height: 28px; flex-shrink: 0;
+}
+.log-label {
+  color: var(--amber-dim); font-weight: 700;
+  text-transform: uppercase; letter-spacing: .06em; flex-shrink: 0;
+}
+#log-text {
+  flex: 1; overflow: hidden;
+  text-overflow: ellipsis; white-space: nowrap;
+}
+.log-error { color: var(--red); }
+.log-ok    { color: var(--green); }
+.log-info  { color: var(--text-dim); }
+.log-warn  { color: var(--amber-dim); }
+
+/* ── No-support banner ─────────────────────────────────────────────────── */
+#no-support {
+  display: none;
+  margin: 12px 20px 0;
+  padding: 9px 14px;
+  background: rgba(224,80,80,.1); border: 1px solid var(--red-dim);
+  border-radius: var(--r); color: #e08080;
+  font-size: 12px; line-height: 1.5;
+}
+</style>
+</head>
+<body>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════════════════ -->
+<header>
+  <div style="display:flex;align-items:baseline;gap:10px">
+    <span class="logo-mark">Morserino-32</span>
+    <span class="logo-morse">— · — ·&nbsp;&nbsp;· · · ·</span>
+  </div>
+
+  <div id="device-info">
+    <!-- populated after PUT device/protocol/on handshake -->
+  </div>
+
+  <div class="header-right">
+    <div class="status-pill" id="status-pill">
+      <div class="status-dot"></div>
+      <span id="status-text">Disconnected</span>
+    </div>
+    <button class="btn btn-amber" id="btn-connect">Connect</button>
+    <button class="btn btn-muted" id="btn-disconnect" style="display:none">Disconnect</button>
+  </div>
+</header>
+
+<div id="no-support">
+  ⚠ Web Serial API is not available in this browser.
+  Use <strong>Chrome</strong> or <strong>Edge</strong> (desktop).
+  The page must be served over <code>https://</code> or <code>localhost</code>.
+</div>
+
+<!-- ══ MAIN TWO-PANEL LAYOUT ═══════════════════════════════════════════════ -->
+<main>
+
+  <!-- ── TX: text → Morserino CW ─────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title panel-title-tx">▲ &nbsp;Transmit — Text → CW</span>
+    </div>
+    <div class="tx-body">
+
+      <!-- Scrolling transcript of sent lines -->
+      <div id="tx-transcript">
+        <span class="tx-placeholder">Sent text appears here. Connect and type below.</span>
+      </div>
+
+      <!-- Single-line composer pinned to bottom -->
+      <div class="tx-composer">
+        <input id="tx-input" type="text" disabled
+          placeholder="Type and press Enter…"
+          spellcheck="false" autocomplete="off" autocorrect="off">
+        <button class="btn-stop" id="btn-stop" disabled>■ Stop</button>
+      </div>
+
+      <!-- Speed / volume -->
+      <div class="hw-controls">
+        <div class="hw-ctrl-group">
+          <label>Speed</label>
+          <input type="range" id="sl-speed" min="5" max="45" value="20" disabled>
+          <span class="hw-val" id="val-speed">20</span>
+          <span style="font-size:10px;color:var(--text-dim)">wpm</span>
+        </div>
+        <div class="hw-ctrl-group">
+          <label>Volume</label>
+          <input type="range" id="sl-volume" min="0" max="19" value="10" disabled>
+          <span class="hw-val" id="val-volume">10</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── RX: decoded CW → browser ────────────────────────────────────── -->
+  <div class="panel">
+    <div class="panel-header">
+      <span class="panel-title panel-title-rx">▼ &nbsp;Receive — Decoded CW</span>
+      <span class="mode-badge" id="mode-badge">No mode</span>
+    </div>
+    <div class="rx-body">
+      <div id="rx-output">
+        <span class="rx-placeholder"
+          >Decoded characters appear here when the Morserino is in
+CW Decoder or Morse Trx mode and "Serial Output" is enabled.
+Connect first, then switch the M32 to the desired mode.</span
+        ><span class="rx-cursor" id="rx-cursor"></span>
+      </div>
+    </div>
+    <div class="rx-footer">
+      <button class="btn-clear" id="btn-clear">Clear</button>
+      <span class="mode-badge active" id="active-badge" style="display:none">Active</span>
+      <span class="rx-char-count" id="rx-char-count">0 chars</span>
+      <label class="debug-toggle">
+        <input type="checkbox" id="chk-debug"> Raw debug
+      </label>
+    </div>
+    <div id="debug-strip"></div>
+  </div>
+
+</main>
+
+<!-- ══ STATUS BAR ══════════════════════════════════════════════════════════ -->
+<footer>
+  <span class="log-label">Log</span>
+  <span id="log-text" class="log-info">Ready — click Connect to open the serial port.</span>
+</footer>
+
+<!-- ══ SCRIPT ══════════════════════════════════════════════════════════════ -->
+<script>
+// ─── Constants ────────────────────────────────────────────────────────────
+const BAUD_RATE = 115200;   // M32 USB-CDC baud rate
+
+// ─── State ────────────────────────────────────────────────────────────────
+let port        = null;
+let writer      = null;
+let activeReader = null;
+let isConnected = false;
+let rxCharCount = 0;
+let speedVal    = 20;
+let volumeVal   = 10;
+let speedTimer  = null;
+let volumeTimer = null;
+
+// ─── DOM ──────────────────────────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const btnConnect    = $('btn-connect');
+const btnDisconnect = $('btn-disconnect');
+const btnStop       = $('btn-stop');
+const btnClear      = $('btn-clear');
+const txInput       = $('tx-input');
+const rxOutput      = $('rx-output');
+const rxCursor      = $('rx-cursor');
+const rxCharCountEl = $('rx-char-count');
+const statusPill    = $('status-pill');
+const statusText    = $('status-text');
+const logText       = $('log-text');
+const deviceInfo    = $('device-info');
+const modeBadge     = $('mode-badge');
+const activeBadge   = $('active-badge');
+const slSpeed       = $('sl-speed');
+const slVolume      = $('sl-volume');
+const valSpeed      = $('val-speed');
+const valVolume     = $('val-volume');
+const noSupport     = $('no-support');
+const debugStrip    = $('debug-strip');
+const chkDebug      = $('chk-debug');
+
+// ─── Logging ──────────────────────────────────────────────────────────────
+function log(msg, type = 'info') {
+  logText.textContent = msg;
+  logText.className   = `log-${type}`;
+}
+
+// ─── UI enable/disable ────────────────────────────────────────────────────
+function setConnected(state) {
+  isConnected = state;
+  statusPill.classList.toggle('connected', state);
+  statusText.textContent      = state ? 'Connected' : 'Disconnected';
+  btnConnect.style.display    = state ? 'none' : '';
+  btnDisconnect.style.display = state ? ''     : 'none';
+
+  txInput.disabled   = !state;
+  btnStop.disabled   = !state;
+  slSpeed.disabled   = !state;
+  slVolume.disabled  = !state;
+  rxCursor.style.display = state ? 'inline-block' : 'none';
+
+  if (state) {
+    txInput.focus();
+  } else {
+    deviceInfo.style.display = 'none';
+    modeBadge.textContent    = 'No mode';
+    modeBadge.classList.remove('active');
+    activeBadge.style.display = 'none';
+  }
+}
+
+// ─── Write a command line to the M32 ──────────────────────────────────────
+async function send(cmd) {
+  if (!writer) return;
+  try {
+    const encoded = new TextEncoder().encode(cmd + '\n');
+    await writer.write(encoded);
+  } catch (err) {
+    log(`Write error: ${err.message}`, 'error');
+  }
+}
+
+// ─── Connect ──────────────────────────────────────────────────────────────
+btnConnect.addEventListener('click', async () => {
+  try {
+    port = await navigator.serial.requestPort();
+    await port.open({ baudRate: BAUD_RATE });
+
+    // Direct writer — no pipeTo, so we can cancel cleanly on disconnect
+    writer = port.writable.getWriter();
+
+    log(`Port opened at ${BAUD_RATE} baud — enabling M32 protocol…`, 'info');
+    setConnected(true);
+    startReading();
+
+    // Handshake: enable M32 protocol; response arrives in the read loop
+    await send('PUT device/protocol/on');
+
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      log(`Connect failed: ${err.message}`, 'error');
+    }
+  }
+});
+
+// ─── Disconnect ────────────────────────────────────────────────────────────
+btnDisconnect.addEventListener('click', () => disconnect(true));
+
+async function disconnect(sendGoodbye = false) {
+  if (sendGoodbye && writer) {
+    try { await send('PUT device/protocol/off'); } catch (_) {}
+    await new Promise(r => setTimeout(r, 150));
+  }
+
+  // Cancel the reader first — this unblocks startReading()'s read() call
+  if (activeReader) {
+    try { await activeReader.cancel(); } catch (_) {}
+    activeReader = null;
+  }
+
+  // Release writer lock, then close the port
+  if (writer) {
+    try { writer.releaseLock(); } catch (_) {}
+    writer = null;
+  }
+  if (port) {
+    try { await port.close(); } catch (_) {}
+    port = null;
+  }
+
+  setConnected(false);
+  log('Disconnected.', 'info');
+}
+
+// ─── Cable-pull ────────────────────────────────────────────────────────────
+navigator.serial?.addEventListener('disconnect', async e => {
+  if (port && e.target === port) {
+    log('Device disconnected.', 'error');
+    activeReader = null; writer = null; port = null;
+    setConnected(false);
+  }
+});
+
+// ─── Debug helper ──────────────────────────────────────────────────────────
+function dbg(text, cls = 'dbg-rx') {
+  if (!chkDebug.checked) return;
+  const line = document.createElement('div');
+  line.className = cls;
+  line.textContent = text;
+  debugStrip.appendChild(line);
+  debugStrip.scrollTop = debugStrip.scrollHeight;
+}
+
+chkDebug.addEventListener('change', () => {
+  debugStrip.style.display = chkDebug.checked ? 'block' : 'none';
+});
+
+// ─── Read loop ─────────────────────────────────────────────────────────────
+// The M32 mixes two kinds of output on the same serial stream:
+//   • JSON objects  {"..."} — newline-terminated, for all structured events
+//   • Plain characters       — decoded/generated CW, sent WITHOUT newlines
+//
+// Strategy: accumulate into a buffer. When we see '{', start collecting a
+// JSON object (counting braces for nesting). Anything outside a JSON object
+// is forwarded immediately to the decoded-output display.
+function startReading() {
+  // getReader() directly (no pipeTo) so we can cancel() it cleanly on disconnect
+  activeReader = port.readable.getReader();
+  const reader = activeReader;
+
+  let jsonBuf   = '';   // accumulates chars inside { … }
+  let jsonDepth = 0;    // brace nesting depth
+  let inJson    = false;
+  const dec = new TextDecoder();
+
+  (async () => {
+    try {
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+
+        const text = dec.decode(value, { stream: true });
+        dbg(`← ${JSON.stringify(text)}`, 'dbg-rx');
+
+        for (const ch of text) {
+          if (!inJson) {
+            if (ch === '{') {
+              inJson    = true;
+              jsonDepth = 1;
+              jsonBuf   = ch;
+            } else if (ch === '\n' || ch === '\r') {
+              // ignore bare line endings outside JSON
+            } else {
+              // Plain decoded/generated CW character — show immediately
+              appendDecoded(ch);
+            }
+          } else {
+            jsonBuf += ch;
+            if      (ch === '{') jsonDepth++;
+            else if (ch === '}') {
+              jsonDepth--;
+              if (jsonDepth === 0) {
+                inJson = false;
+                const raw = jsonBuf;
+                jsonBuf = '';
+                try {
+                  handleJSON(JSON.parse(raw));
+                } catch (e) {
+                  dbg(`JSON parse error: ${e.message} — raw: ${raw}`, 'dbg-err');
+                }
+              }
+            }
+          }
+        }
+      }
+    } catch (err) {
+      // reader.cancel() from disconnect() causes an error here — that's expected
+      if (isConnected) {
+        log(`Read error: ${err.message}`, 'error');
+        activeReader = null; writer = null; port = null;
+        setConnected(false);
+      }
+    } finally {
+      try { reader.releaseLock(); } catch (_) {}
+    }
+  })();
+}
+
+// ─── Handle JSON objects from the M32 ──────────────────────────────────────
+function handleJSON(obj) {
+
+  // ── Device handshake response ──────────────────────────────────────────
+  if (obj.device) {
+    const d = obj.device;
+    deviceInfo.innerHTML =
+      `HW: <b>${d.hardware || '—'}</b>&nbsp;&nbsp;` +
+      `FW: <b>${d.firmware || '—'}</b>&nbsp;&nbsp;` +
+      `Protocol: <b>${d.protocol || '—'}</b>&nbsp;&nbsp;` +
+      `Build: <b>${d.build || '—'}</b>`;
+    deviceInfo.style.display = 'flex';
+    log(`M32 connected — ${d.hardware}, FW ${d.firmware}, Protocol ${d.protocol}`, 'ok');
+
+    // Read current speed and volume to sync the sliders
+    send('GET control/speed');
+    send('GET control/volume');
+    return;
+  }
+
+  // ── Goodbye (PUT device/protocol/off acknowledged) ─────────────────────
+  if (obj['end m32protocol']) {
+    log('M32 protocol disabled — goodbye.', 'info');
+    return;
+  }
+
+  // ── Menu navigation ────────────────────────────────────────────────────
+  if (obj.menu) {
+    const m = obj.menu;
+    const label = m.content || '';
+    modeBadge.textContent = label.split('/').pop() || label;
+    modeBadge.classList.add('active');
+    const isActive = m.active === true;
+    activeBadge.style.display = isActive ? '' : 'none';
+    log(`Menu: ${label}${isActive ? ' [active]' : ''}`, 'info');
+    return;
+  }
+
+  // ── Activate (mode started / stopped) ─────────────────────────────────
+  if (obj.activate) {
+    const state = obj.activate.state || '';
+    if (state === 'ON' || state === 'SET') {
+      activeBadge.style.display = '';
+      log(`Activated: ${state}`, 'ok');
+    } else if (state === 'EXIT' || state === 'CANCELLED') {
+      activeBadge.style.display = 'none';
+      log(`Mode ${state.toLowerCase()}.`, 'info');
+    } else {
+      log(`Activate: ${state}`, 'info');
+    }
+    return;
+  }
+
+  // ── Control feedback (speed/volume) ───────────────────────────────────
+  if (obj.control) {
+    const c = obj.control;
+    if (c.name === 'speed') {
+      speedVal = c.value;
+      slSpeed.value     = c.value;
+      valSpeed.textContent = c.value;
+      if (c.minimum) slSpeed.min = c.minimum;
+      if (c.maximum) slSpeed.max = c.maximum;
+      log(`Speed: ${c.value} wpm`, 'info');
+    } else if (c.name === 'volume') {
+      volumeVal = c.value;
+      slVolume.value      = c.value;
+      valVolume.textContent = c.value;
+      if (c.minimum) slVolume.min = c.minimum;
+      if (c.maximum) slVolume.max = c.maximum;
+      log(`Volume: ${c.value}`, 'info');
+    }
+    return;
+  }
+
+  // ── Config parameter change ────────────────────────────────────────────
+  if (obj.config) {
+    const c = obj.config;
+    log(`Config: ${c.name} = ${c.displayed ?? c.value}`, 'info');
+    return;
+  }
+
+  // ── OK response ────────────────────────────────────────────────────────
+  if (obj.ok) { /* silently acknowledge */ return; }
+
+  // ── Error response ─────────────────────────────────────────────────────
+  if (obj.error) {
+    log(`M32 error: ${obj.error.content}`, 'error');
+    return;
+  }
+
+  // ── Message (displayed on M32 screen) ─────────────────────────────────
+  if (obj.message) {
+    log(`M32: ${obj.message.content}`, 'warn');
+    return;
+  }
+
+  // ── Anything else: log to console for debugging ────────────────────────
+  console.debug('M32 →', obj);
+}
+
+// ─── Append decoded CW to the RX panel ─────────────────────────────────────
+function appendDecoded(chars) {
+  // Remove placeholder on first real content
+  const ph = rxOutput.querySelector('.rx-placeholder');
+  if (ph) ph.remove();
+
+  const node = document.createTextNode(chars);
+  rxOutput.insertBefore(node, rxCursor);
+
+  rxCharCount += chars.length;
+  rxCharCountEl.textContent = `${rxCharCount} chars`;
+  rxOutput.scrollTop = rxOutput.scrollHeight;
+}
+
+// ─── TX: chat-style send ───────────────────────────────────────────────────
+const txTranscript = $('tx-transcript');
+
+function appendTxLine(text) {
+  // Remove placeholder on first send
+  const ph = txTranscript.querySelector('.tx-placeholder');
+  if (ph) ph.remove();
+  const line = document.createElement('span');
+  line.className   = 'tx-line';
+  line.textContent = text;
+  txTranscript.appendChild(line);
+  txTranscript.scrollTop = txTranscript.scrollHeight;
+}
+
+txInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const text = txInput.value.trim();
+    if (!text || !isConnected) return;
+    send(`PUT cw/play/${text}`);
+    dbg(`→ PUT cw/play/${text}`, 'dbg-tx');
+    log(`Playing: "${text.slice(0,60)}${text.length>60?'…':''}"`, 'ok');
+    appendTxLine(text);
+    txInput.value = '';
+  }
+});
+
+// ─── TX: Stop ──────────────────────────────────────────────────────────────
+btnStop.addEventListener('click', async () => {
+  await send('PUT cw/stop');
+  log('CW playback stopped.', 'info');
+});
+
+// ─── Speed slider ──────────────────────────────────────────────────────────
+slSpeed.addEventListener('input', () => {
+  valSpeed.textContent = slSpeed.value;
+  clearTimeout(speedTimer);
+  speedTimer = setTimeout(async () => {
+    await send(`PUT control/speed/${slSpeed.value}`);
+    log(`Speed set to ${slSpeed.value} wpm`, 'info');
+  }, 300);
+});
+
+// ─── Volume slider ──────────────────────────────────────────────────────────
+slVolume.addEventListener('input', () => {
+  valVolume.textContent = slVolume.value;
+  clearTimeout(volumeTimer);
+  volumeTimer = setTimeout(async () => {
+    await send(`PUT control/volume/${slVolume.value}`);
+    log(`Volume set to ${slVolume.value}`, 'info');
+  }, 300);
+});
+
+// ─── Clear RX ──────────────────────────────────────────────────────────────
+btnClear.addEventListener('click', () => {
+  // Remove every node before the cursor
+  while (rxOutput.firstChild && rxOutput.firstChild !== rxCursor) {
+    rxOutput.removeChild(rxOutput.firstChild);
+  }
+  if (!isConnected) {
+    const ph = document.createElement('span');
+    ph.className   = 'rx-placeholder';
+    ph.textContent =
+      'Decoded characters appear here when the Morserino is in\n' +
+      'CW Decoder or Morse Trx mode and "Serial Output" is enabled.';
+    rxOutput.insertBefore(ph, rxCursor);
+  }
+  rxCharCount = 0;
+  rxCharCountEl.textContent = '0 chars';
+  log('RX output cleared.', 'info');
+});
+
+// ─── Browser support check ──────────────────────────────────────────────────
+if (!('serial' in navigator)) {
+  noSupport.style.display = 'block';
+  btnConnect.disabled     = true;
+  log('Web Serial API not supported in this browser.', 'error');
+}
+</script>
+</body>
+</html>

@@ -133,7 +133,18 @@ bool playTick() {
     if (toneOn) {
         MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
         toneOn = false;
-        nextEventMs = millis() + ditMs() - 7;       // -7 ms compensates for pwmNoTone latency
+        // Inter-element gap. Was `- 7`, which came out ~6 ms short of one dit:
+        // pwmTone()/pwmNoTone() each block ~6 ms doing their volume ramp
+        // ("soften the click"), and that ramp time was being counted against
+        // the gap instead of added to it. The classic iambic keyer compensates
+        // for exactly this (m32_v6.ino KEY_START/INTER_ELEMENT: its
+        // inter-element is `millis() + ditLength - 1`, i.e. 6 ms longer than
+        // this was), so match it — `- 1` adds the missing ~6 ms. This also
+        // corrects the character/word gaps, which are built on top of this one
+        // (the '0'/' ' cases below add to the gap this line already scheduled).
+        // See devdocs/cw-timing-audit/FINDINGS.md. Shared engine — also affects
+        // Fight the Pileup and Radio Cave (both strictly more spec-correct now).
+        nextEventMs = millis() + ditMs() - 1;
         return true;
     }
 

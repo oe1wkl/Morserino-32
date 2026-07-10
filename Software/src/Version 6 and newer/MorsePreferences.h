@@ -154,6 +154,7 @@ namespace MorsePreferences
   extern uint32_t loraQRG;
   extern uint8_t loraPower;
   extern boolean leftHanded;
+  extern boolean cn3Mechanical;   // CN3 connector: false = capacitive touch paddle (default), true = mechanical paddle/key
   extern uint8_t snapShots;
   extern uint8_t boardVersion;
   extern uint8_t oledBrightness;
@@ -247,6 +248,23 @@ namespace MorsePreferences
   //void kochSetup();
   void loraSystemSetup();
   void flipScreen();
+#ifdef CONFIG_CN3_PADDLE
+  void cn3PaddleConfig();     // Hardware Config menu: choose Touch / Mechanical for the CN3 connector
+
+  // Hardware-Config boot menu slots: the hwConf rotary cycles through numbered slots
+  //   0 = Cancel, 1 = Calibr. Batt., 2 = Flip Screen, 3 = Reset Defaults, [4 = LoRa Config.]
+  // The LoRa slot only exists when LoRa is enabled. The CN3 Paddle slot is appended
+  // after the last existing slot; these macros keep the label switch (getValueLine),
+  // the rotary logic (adjustKeyerPreference) and the action dispatch (setup() in the .ino)
+  // in sync.
+  #ifndef LORA_DISABLED
+    #define HWCONF_CN3_SLOT 5     // ..., 4 = LoRa Config., 5 = CN3 Paddle
+    #define HWCONF_NUM_SLOTS 6
+  #else
+    #define HWCONF_CN3_SLOT 4     // no LoRa slot, so CN3 Paddle takes slot 4
+    #define HWCONF_NUM_SLOTS 5
+  #endif
+#endif
   void determineBoardVersion();
   void calibrateVoltageMeasurement();
   void setVoltageAdjust(uint8_t);

@@ -95,6 +95,8 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#fight-the-pileup" id="toc-fight-the-pileup"><span class="toc-section-number">5.7.2</span> Fight the Pileup</a></li>
 <li><a href="#radio-cave" id="toc-radio-cave"><span class="toc-section-number">5.7.3</span> Radio Cave</a></li>
 <li><a href="#morsel" id="toc-morsel"><span class="toc-section-number">5.7.4</span> Morsel</a></li>
+<li><a href="#trailblazer" id="toc-trailblazer"><span class="toc-section-number">5.7.5</span> Trailblazer</a></li>
+<li><a href="#fox-hunt" id="toc-fox-hunt"><span class="toc-section-number">5.7.6</span> Fox Hunt</a></li>
 </ul></li>
 <li><a href="#wifi-functions" id="toc-wifi-functions"><span class="toc-section-number">5.8</span> WiFi Functions</a>
 <ul>
@@ -124,16 +126,18 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#einstellungen-zur-cw-generierung" id="toc-einstellungen-zur-cw-generierung"><span class="toc-section-number">6.3.4</span> Einstellungen zur CW-Generierung</a></li>
 <li><a href="#einstellungen-zum-echo-trainer" id="toc-einstellungen-zum-echo-trainer"><span class="toc-section-number">6.3.5</span> Einstellungen zum Echo Trainer</a></li>
 <li><a href="#einstellungen-zum-senden-dekodieren-und-qso-bot" id="toc-einstellungen-zum-senden-dekodieren-und-qso-bot"><span class="toc-section-number">6.3.6</span> Einstellungen zum Senden, Dekodieren und QSO Bot</a></li>
+<li><a href="#einstellungen-zu-rufzeichen-name-und-spielstaenden" id="toc-einstellungen-zu-rufzeichen-name-und-spielstaenden"><span class="toc-section-number">6.3.7</span> Einstellungen zu Rufzeichen, Name und Spielständen</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#anhaenge" id="toc-anhaenge"><span class="toc-section-number">7</span> Anhänge</a>
 <ul>
 <li><a href="#anhang-1-hardware-konfigurationsmenue" id="toc-anhang-1-hardware-konfigurationsmenue"><span class="toc-section-number">7.1</span> Anhang 1: Hardware-Konfigurationsmenü</a>
 <ul>
-<li><a href="#umdrehen-des-bildschirms-fuer-linkshaendige-bedienung" id="toc-umdrehen-des-bildschirms-fuer-linkshaendige-bedienung"><span class="toc-section-number">7.1.1</span> Umdrehen des Bildschirms für linkshändige Bedienung</a></li>
-<li><a href="#kalibrierung-der-akkumessung" id="toc-kalibrierung-der-akkumessung"><span class="toc-section-number">7.1.2</span> Kalibrierung der Akkumessung</a></li>
-<li><a href="#konfigurieren-von-lora-band-frequenz-und-ausgangsleistung" id="toc-konfigurieren-von-lora-band-frequenz-und-ausgangsleistung"><span class="toc-section-number">7.1.3</span> Konfigurieren von LoRa-Band, Frequenz und Ausgangsleistung</a></li>
-<li><a href="#zuruecksetzen-der-einstellungen-auf-werksstandard" id="toc-zuruecksetzen-der-einstellungen-auf-werksstandard"><span class="toc-section-number">7.1.4</span> Zurücksetzen der Einstellungen auf Werksstandard</a></li>
+<li><a href="#cn3-anschluss-touch--oder-mechanisches-paddle-nur-m32-pocket" id="toc-cn3-anschluss-touch--oder-mechanisches-paddle-nur-m32-pocket"><span class="toc-section-number">7.1.1</span> CN3-Anschluss: Touch- oder mechanisches Paddle (nur M32 Pocket)</a></li>
+<li><a href="#umdrehen-des-bildschirms-fuer-linkshaendige-bedienung" id="toc-umdrehen-des-bildschirms-fuer-linkshaendige-bedienung"><span class="toc-section-number">7.1.2</span> Umdrehen des Bildschirms für linkshändige Bedienung</a></li>
+<li><a href="#kalibrierung-der-akkumessung" id="toc-kalibrierung-der-akkumessung"><span class="toc-section-number">7.1.3</span> Kalibrierung der Akkumessung</a></li>
+<li><a href="#konfigurieren-von-lora-band-frequenz-und-ausgangsleistung" id="toc-konfigurieren-von-lora-band-frequenz-und-ausgangsleistung"><span class="toc-section-number">7.1.4</span> Konfigurieren von LoRa-Band, Frequenz und Ausgangsleistung</a></li>
+<li><a href="#zuruecksetzen-der-einstellungen-auf-werksstandard" id="toc-zuruecksetzen-der-einstellungen-auf-werksstandard"><span class="toc-section-number">7.1.5</span> Zurücksetzen der Einstellungen auf Werksstandard</a></li>
 </ul></li>
 <li><a href="#anhang-2-weitere-informationen-ueber-lora" id="toc-anhang-2-weitere-informationen-ueber-lora"><span class="toc-section-number">7.2</span> Anhang 2: Weitere Informationen über LoRa</a></li>
 <li><a href="#anhang-3-einstellen-des-audiopegels" id="toc-anhang-3-einstellen-des-audiopegels"><span class="toc-section-number">7.3</span> Anhang 3: Einstellen des Audiopegels</a></li>
@@ -1355,10 +1359,13 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li>Er erkennt deine Informationen innerhalb der üblichen Gesprächsfüllwörter – <code>de oe1wkl k</code>, <code>r ur 599 599 bk</code>, <code>qth vienna vienna</code> funktionieren alle; die Füllwörter werden ignoriert.</li>
 <li>Rapporte können als volle Zahlen oder als <strong>Cut Numbers</strong> gesendet werden (<code>5nn</code> für 599, <code>t</code> für 0, <code>a</code> für 1, <code>n</code> für 9).</li>
 <li><strong>Der Bot wartet, bis du fertig bist.</strong> Er antwortet erst, wenn du ein Ende-der-Übergabe-Zeichen sendest (<code>k</code>, <code>&lt;sk&gt;</code>, <code>&lt;ar&gt;</code>, <code>bk</code>, <code>73</code>) oder einige Sekunden pausierst – er tastet dir nicht dazwischen, während du noch sendest.</li>
-<li><strong>Um einen Fehler zu korrigieren</strong>, sende <code>&lt;err&gt;</code> (eine Reihe von Dits) oder <code>eeee</code> und danach die korrigierte Information; der Bot verwirft das Zurückgenommene und übernimmt die neue Fassung.</li>
-<li><strong>Um eine Wiederholung zu erbitten</strong>, sende <code>agn</code> oder <code>rpt</code>; der Bot wiederholt seine letzte Übergabe. Du kannst auch nach einem einzelnen Punkt fragen – <code>rpt rst</code>, <code>rpt call</code>, <code>rpt qth</code> – und der Bot wiederholt nur diesen.</li>
+<li><strong>Um einen Fehler zu korrigieren</strong>, sende <code>&lt;err&gt;</code> (eine Reihe von Dits) oder <code>eeee</code> und danach die korrigierte Information; der Bot verwirft das Zurückgenommene und übernimmt die neue Fassung. Bei einem einzelnen Wert wie einem Rapport oder einem Rufzeichen kannst du die korrigierte Fassung auch einfach später in derselben Übergabe noch einmal senden (zum Beispiel <code>599 = 579</code>) – es zählt die zuletzt gesendete.</li>
+<li><strong>Um eine Wiederholung zu erbitten</strong>, sende <code>agn</code>, <code>rpt</code> oder einfach <code>?</code>; der Bot wiederholt seine letzte Übergabe. Du kannst auch nach einem einzelnen Punkt fragen – <code>rpt rst</code>, <code>rpt call</code>, <code>rpt qth</code> – und der Bot wiederholt nur diesen.</li>
+<li><strong>Um das Tempo des Bots zu ändern</strong>, sende <code>qrs</code> (langsamer) oder <code>qrq</code> (schneller); der Bot passt sein Tempo an, und du hörst die neue Geschwindigkeit bei seiner nächsten Übergabe. Sende es erneut, um weiter nachzuregeln. Das ändert nur das Tempo des Bots, nicht dein eigenes Keyer-/Mithörton-Tempo (das du wie gewohnt mit dem Encoder einstellst).</li>
 </ul>
-<p>Tastest du etwas, das der Bot nicht zuordnen kann, oder verstummst du mittendrin, reagiert er wie ein echter Operator – <code>agn agn</code>, <code>qrz?</code> oder durch Wiederholung seiner letzten Übergabe – statt einfach stehen zu bleiben.</p>
+<p>Tastest du etwas, das der Bot nicht zuordnen kann, oder verstummst du mittendrin, reagiert er wie ein echter Operator – er bittet mit wechselnden Aufforderungen wie <code>agn agn</code>, <code>agn?</code>, <code>pse rpt</code> oder <code>qrz?</code> um eine Wiederholung, oder wiederholt seine letzte Übergabe – statt einfach stehen zu bleiben.</p>
+<p>Wie nachsichtig und wie gesprächig der Bot ist, lässt sich mit der Einstellung <strong>QSO Difficulty</strong> festlegen (<strong>Beginner</strong> / <strong>Intermediate</strong> / <strong>Advanced</strong>). Bei <strong>Beginner</strong> gibt dir der Bot mehr Zeit, erlaubt einen zusätzlichen Versuch, gibt Rapporte voll ausgeschrieben (599 statt 5nn), verwendet klare, ruhige Aufforderungen und sendet immer mit deinem eigenen Tempo. Bei <strong>Intermediate</strong> und <strong>Advanced</strong> ruft der Bot manchmal mit einem Tempo, das ein paar WpM von deinem abweicht, damit du das Erbitten von <code>qrs</code>/<code>qrq</code> übst; <strong>Advanced</strong> hält zudem ein strafferes Tempo und antwortet knapper. Das gilt für alle QSO-Bot-Modi.</p>
+<p>In einem <strong>Standard</strong>-QSO spiegelt der Bot außerdem deine Förmlichkeit: Sobald das QSO läuft, lässt der Bot die Rahmung <code>&lt;call&gt; de &lt;call&gt;</code> zwischen den Übergaben ebenfalls weg, wenn du sie weglässt. <strong>Beginner</strong> behält immer die volle Rahmung bei; <strong>Advanced</strong> lässt sie früh weg, sobald das QSO etabliert ist. Eröffnung und Schluss-Verabschiedung verwenden immer die volle Rufzeichen-Rahmung.</p>
 <h4 class="unnumbered" id="sota-pota">SOTA / POTA</h4>
 <p>Der Bot spielt eine Gipfel- oder Parkaktivierung. Ruft er CQ, ist er der Aktivierer und sendet eine Gipfel-/Parkreferenz, die zum Land seines Rufzeichens passt (<code>oe/st-002</code> für ein österreichisches Rufzeichen, <code>w6/ss-001</code> für ein US-Rufzeichen usw.); du rufst als Jäger (Chaser) an und tauschst Rapporte aus. Rufst <strong>du</strong> CQ, bist du der Aktivierer und der Bot jagt dich. Gelegentlich entpuppt sich die Station, die auf deinen CQ-Ruf antwortet, ebenfalls als Aktivierer und sendet ihre eigene Referenz – eine Summit-to-Summit- bzw. Park-to-Park-Verbindung (sie kann sogar SOTA-zu-POTA sein). Eine SOTA/POTA-Sitzung ist eine einzelne Verbindung; der Bot verabschiedet sich, wenn sie beendet ist.</p>
 <h4 class="unnumbered" id="standard">Standard</h4>
@@ -1373,7 +1380,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Die aktuell erkannte Geschwindigkeit wird in der Statuszeile als WpM angezeigt.</p>
 <p>Dieser Modus hat wenige Einstellungen (siehe Abschnitt <strong>6.2.6 Einstellungen zum Senden, Dekodieren und QSO Bot</strong>); die wichtigste ist vielleicht die Möglichkeit, die Filterbandbreite des Audio-Decoders zwischen schmal (ca. 150 Hz) und breit (ca. 600 Hz) umzuschalten. Für Signale aus einem Transceiver (wo andere Signale in der Nähe sein könnten) ist es in der Regel am besten, die Bandbreite auf <strong>Narrow</strong> zu setzen und das Signal auf 700 Hz (± 5 %) abzustimmen. Für Signale von einem FM-Transceiver, iCW oder anderen Umgebungen mit wenig Störungen empfiehlt sich die Einstellung <strong>Wide</strong> – in diesem Fall muss die Tonfrequenz nicht so nahe an 700 Hz liegen.</p>
 <h2 data-number="5.7" id="spiele"><span class="header-section-number">5.7</span> Spiele</h2>
-<p>Der Morserino Pocket bietet jetzt CW-basierte Spiele, die das Lernen und Üben des Morsecodes unterhaltsamer gestalten. Die Spiele sind unter dem Menüpunkt „<strong>Games</strong>” zu finden. Derzeit sind vier Spiele verfügbar: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong> und <strong>Morsel</strong>.</p>
+<p>Der Morserino Pocket bietet jetzt CW-basierte Spiele, die das Lernen und Üben des Morsecodes unterhaltsamer gestalten. Die Spiele sind unter dem Menüpunkt „<strong>Games</strong>” zu finden. Derzeit sind sechs Spiele verfügbar: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong>, <strong>Morsel</strong>, <strong>Trailblazer</strong> und <strong>Fox Hunt</strong>. Die beiden letzten sind ein Paar Gitter-Labyrinth-Spiele mit demselben Spielfeld — Trailblazer trainiert das Geben, Fox Hunt das Aufnehmen.</p>
 <h3 data-number="5.7.1" id="morse-invaders"><span class="header-section-number">5.7.1</span> Morse Invaders</h3>
 <p>Morse Invaders ist ein Spiel, bei dem Zeichen auf dem Farbdisplay nach unten fallen und du den richtigen Morsecode eingeben musst, um sie zu zerstören, bevor sie den unteren Rand erreichen. Es verbindet den Spaß eines klassischen Arcade-Spiels mit effektivem CW-Training.</p>
 <p>Der Zeichenpool wird durch deine aktuelle Koch-Lektion bestimmt – das Spiel verwendet genau die Zeichen, die du bisher gelernt hast, und passt sich damit automatisch deinem Niveau an. Jede Koch-Lektion bildet eine „Stufe”, innerhalb derer Sub-Level mit zunehmender Schwierigkeit (höhere Fallgeschwindigkeit, häufigeres Erscheinen neuer Zeichen) gebildet werden.</p>
@@ -1952,6 +1959,190 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Deine eigene Zeile ist gelb hervorgehoben. Die Anzeige aktualisiert sich laufend, sobald weitere Spieler fertig werden; bis zu sechs Spitzeneinträge werden gleichzeitig angezeigt, ein <code>+N more</code>-Hinweis erscheint, wenn mehr Spieler ihr Ergebnis gemeldet haben. Ein Encoder-Klick führt zurück in die Multiplayer-Lobby; ein langer Druck verlässt Morsel.</p>
 <h5 class="unnumbered" id="hinweise-zum-funkverkehr">Hinweise zum Funkverkehr</h5>
 <p>Das Protokoll ist <strong>ESP-NOW-Broadcast</strong> auf einem festen Kanal — weder ein Router noch Internet oder ein Pairing-Vorgang sind nötig; alle Geräte in Funkreichweite empfangen einander direkt. Die weiche Obergrenze liegt bei <strong>20 Spielern</strong> pro Match. Ein Client, der die Verbindung zum Server verliert, wird nach etwa 8 Sekunden aus der angezeigten Rangliste entfernt.</p>
+<h3 data-number="5.7.5" id="trailblazer"><span class="header-section-number">5.7.5</span> Trailblazer</h3>
+<p><strong>Trailblazer</strong> und <strong>Fox Hunt</strong> (nächster Abschnitt) sind ein zusammengehöriges Paar von Gitter-Labyrinth-Spielen. Beide verwenden dasselbe Spielfeld: ein Gitter aus 12 × 4 zufälligen Zeichen aus deiner aktuellen Koch-Lektion, mit einer <strong>Startzelle</strong> am linken Rand, einer <strong>Zielzelle</strong> am rechten Rand und einem verborgenen, gewundenen <strong>Pfad</strong> dazwischen. Du folgst diesem Pfad Zelle für Zelle vom Start zum Ziel. Die beiden Spiele unterscheiden sich nur darin, was du für jeden Schritt tun musst — Trailblazer trainiert das <strong>Geben</strong>, Fox Hunt das <strong>Aufnehmen</strong>.</p>
+<p>Bei <strong>Trailblazer</strong> ist die nächste Zelle des Pfads am Display <strong>hervorgehoben</strong>. Du gibst einfach dieses sichtbare Zeichen in Morse, um in die Zelle vorzurücken. Richtiges Geben bringt dich weiter und hebt die nächste Zelle hervor; ein falsches Zeichen erzeugt einen Fehlerton, und du bleibst stehen. Weil das Zielzeichen stets sichtbar ist, ist Trailblazer im Kern eine <strong>Gebeübung</strong> — das Labyrinth gibt ihr das Gefühl einer Reise mit sichtbarem Fortschritt und eine natürliche Wertungsachse (wie schnell und sauber du dich bis zum Ziel gibst).</p>
+<p>Trailblazer ist nur am M32 Pocket verfügbar. Es ist ab <strong>Koch-Lektion 6</strong> spielbar.</p>
+<h4 class="unnumbered" id="spielstart-3">Spielstart</h4>
+<p>Navigiere im Hauptmenü zu <strong>Games → Trailblazer</strong>. Zuerst erscheint eine Auswahl <strong>Single player / Multiplayer</strong> (Encoder drehen zum Wechseln, Klick zum Auswählen). <strong>Single player</strong> öffnet den Bereitschafts-Bildschirm mit Spielname, aktueller Koch-Lektion und den Bedienelementen. <strong>Berühre ein Paddle, um zu starten.</strong> (Der Mehrspielermodus ist am Ende dieses Abschnitts beschrieben.)</p>
+<p>Am Bereitschafts-Bildschirm:</p>
+<table>
+<colgroup>
+<col style="width: 65%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bedienelement</th>
+<th>Aktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddle / Taste</strong></td>
+<td>Neues Labyrinth starten</td>
+</tr>
+<tr>
+<td><strong>Encoder (Knopf)</strong></td>
+<td>Deine Gebe-WpM ändern (oder Lautstärke — siehe unten)</td>
+</tr>
+<tr>
+<td><strong>FN kurz</strong></td>
+<td>Encoder zwischen Tempo und Lautstärke umschalten</td>
+</tr>
+<tr>
+<td><strong>Encoder-Klick</strong></td>
+<td>Bestenliste anzeigen</td>
+</tr>
+<tr>
+<td><strong>Encoder lang</strong></td>
+<td>Zurück zum Hauptmenü</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="ablauf-1">Ablauf</h4>
+<p>Das gesamte Gitter wird angezeigt, deine aktuelle Position mit einem Token markiert und die <strong>nächste</strong> Pfadzelle gelb hervorgehoben. Gib das hervorgehobene Zeichen auf den Paddles. Jedes richtige Zeichen bringt dich in die Zelle, zeichnet die Spur in Cyan hinter dir und hebt die folgende Zelle hervor. Mach weiter, bis du die Zielmarke am rechten Rand erreichst — dann zeigt das Display <strong>Solved!</strong> und deine Wertung.</p>
+<p>Ein falsches Zeichen erzeugt nur einen kurzen Fehlerton und lässt dich stehen; jede Fehleingabe zählt gegen deine Wertung, sauberes Geben lohnt sich also. Es wird immer nur die Spur <strong>hinter</strong> dir gezeichnet — der Pfad voraus wird nie gezeigt, du folgst ihm Zelle für Zelle.</p>
+<p>Sobald deine Koch-Lektion sie erreicht hat, können auch Prozeichen als Gitterzellen auftreten. Sie werden als übliche zweibuchstabige Abkürzung (<code>AS</code>, <code>KA</code>, <code>KN</code>, <code>SK</code>, <code>VE</code>, <code>BK</code>, <code>AR</code>) mit Balken darüber dargestellt, genau wie in den anderen Betriebsarten; gib das Prozeichen selbst, um in eine solche Zelle vorzurücken.</p>
+<h4 class="unnumbered" id="bedienung-waehrend-des-spiels">Bedienung während des Spiels</h4>
+<table>
+<thead>
+<tr>
+<th>Bedienelement</th>
+<th>Aktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Das hervorgehobene Zeichen geben</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>Deine Gebe-WpM ändern</td>
+</tr>
+<tr>
+<td><strong>FN kurz</strong></td>
+<td>Encoder zwischen Tempo und Lautstärke umschalten</td>
+</tr>
+<tr>
+<td><strong>Encoder lang</strong></td>
+<td>Zurück zum Hauptmenü</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="wertung-und-bestenliste">Wertung und Bestenliste</h4>
+<p>Deine Wertung ist eine <strong>effektive Geschwindigkeit in Zeichen pro Minute (CPM)</strong> — höher ist besser. Sie ist die Anzahl deiner Schritte (die Pfadlänge) geteilt durch deine <strong>angepasste Zeit</strong>: die reine Lösungszeit plus einer <strong>5-Sekunden-Strafe für jede Fehleingabe</strong>. Das Teilen durch die Pfadlänge macht die Wertungen über verschieden lange Labyrinthe hinweg vergleichbar und verwandelt das Ergebnis in eine aussagekräftige CW-Kennzahl: deine effektive Gebegeschwindigkeit.</p>
+<p>Nach dem Lösen zeigt ein Ergebnis-Bildschirm die CPM, die Anzahl der Schritte, die Fehleingaben, deine Zeit und die gespielte Koch-Lektion; schafft es das Ergebnis in die Top-7-Liste, erscheint ein <code>NEW HIGH SCORE</code>-Banner. Ein Encoder-Klick öffnet die <strong>Bestenliste</strong> (für jedes Spiel getrennt, im nichtflüchtigen Speicher gesichert); ein weiterer Druck startet ein neues Labyrinth, ein langer Druck beendet das Spiel. Die Bestenliste lässt sich auch vom Bereitschafts-Bildschirm aus mit einem Encoder-Klick öffnen.</p>
+<h4 class="unnumbered" id="mehrspielermodus-1">Mehrspielermodus</h4>
+<p>Trailblazer und Fox Hunt lassen sich beide als <strong>Rennen auf demselben Labyrinth</strong> gegen andere M32 Pockets im selben Raum spielen. Ein Gerät ist der <strong>Server</strong>: Es wählt die Koch-Lektion, erzeugt das Labyrinth und überträgt es, sodass <strong>jedes Gerät dasselbe Gitter und denselben Pfad</strong> zeitgleich spielt. Wer als Erster mit der besten effektiven Geschwindigkeit das Ziel erreicht, gewinnt. Der Mehrspieler-Ablauf ist für beide Spiele gleich.</p>
+<p>Wähle bei der Auswahl <strong>Single player / Multiplayer</strong> den Punkt <strong>Multiplayer</strong>. Danach wählst du eine Rolle:</p>
+<table>
+<colgroup>
+<col style="width: 46%" />
+<col style="width: 53%" />
+</colgroup>
+<thead>
+<tr>
+<th>Rolle</th>
+<th>Aktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Start as Server</strong></td>
+<td>Öffnet die Server-Lobby. Die Sitzung startet mit dem vollen Alphabet (Koch 41), damit eine gemischte Gruppe einen gemeinsamen Zeichensatz hat; mit dem Encoder kannst du ihn herunterregeln. Die Liste füllt sich mit den beitretenden Spielern. Ein Encoder-Klick startet das Rennen.</td>
+</tr>
+<tr>
+<td><strong>Join a game</strong></td>
+<td>Öffnet die Client-Lobby. Sie sucht den Beacon eines Servers und zeigt dessen Koch-Lektion, sobald er gefunden ist. Warte, bis der Server-Bediener startet; das Labyrinth kommt dann an und dein Rennen beginnt automatisch.</td>
+</tr>
+</tbody>
+</table>
+<p>Ein langer Druck auf den Encoder geht eine Ebene zurück — von einer Server- oder Client-Lobby zur Rollenauswahl, von dort zur Auswahl Einzel-/Mehrspieler und schließlich aus dem Spiel heraus.</p>
+<p>Deine Kennung im Netz wird aus dem mit „Fight the Pileup” und Morsel geteilten <strong>Rufzeichen / Spielernamen</strong> übernommen. Ist nichts gesetzt, wird automatisch eine kurze MAC-basierte Kennung verwendet.</p>
+<div class="note">
+<p>Beim Beitritt übernimmt dein Gerät für das Rennen die Koch-Lektion des Servers, sodass das Gitter — und die Richtungstasten von Fox Hunt — für alle gleich sind. Deine eigene Trainingslektion wird beim Verlassen des Spiels wiederhergestellt.</p>
+</div>
+<p>Wenn du fertig bist, meldet dein Gerät seine Zeit und die Zahl der Fehleingaben; der Server erstellt die Rangliste (er selbst spielt als gleichberechtigter Teilnehmer mit) und überträgt einen <strong>Ranking</strong>-Bildschirm, den alle Geräte identisch anzeigen. Jede Zeile nennt Rang, Spieler, die effektive CPM, die Zeit und die Zahl der Fehleingaben; deine eigene Zeile ist gelb hervorgehoben. Ein Encoder-Klick führt zurück in die Multiplayer-Lobby für ein weiteres Rennen, ein langer Druck beendet das Spiel. Mehrspieler-Ergebnisse werden <strong>nicht</strong> in die Bestenlisten übernommen.</p>
+<p>Das Funkprotokoll ist <strong>ESP-NOW-Broadcast</strong> auf einem festen Kanal — weder Router noch Internet oder Pairing nötig; alle Geräte in Reichweite empfangen einander, mit einer weichen Obergrenze von 20 Spielern.</p>
+<h3 data-number="5.7.6" id="fox-hunt"><span class="header-section-number">5.7.6</span> Fox Hunt</h3>
+<p><strong>Fox Hunt</strong> ist das Aufnahme-Gegenstück zu Trailblazer, gespielt auf demselben 12 × 4-Gitter mit verborgenem Pfad vom linken zum rechten Rand (das gemeinsame Spielfeld ist im Trailblazer-Abschnitt beschrieben). Der Unterschied liegt darin, wie du jeden Schritt machst: Statt dir die nächste Zelle zu zeigen, <strong>spielt das Gerät ihr Zeichen in Morse</strong>. Du musst das Zeichen nach Gehör erkennen, herausfinden, welche der Nachbarzellen es enthält, und die <strong>Richtung</strong> dorthin geben. Richtige Richtung → du rückst vor, und das nächste Zeichen wird gespielt; falsch → ein Fehlerton, und du bleibst stehen.</p>
+<p>Das trainiert das <strong>Aufnehmen nach Gehör</strong> mit einer räumlichen Note — du musst das Zeichen dekodieren <em>und</em> es unter den Nachbarn verorten. Du könntest eine der vier Richtungen blind raten, aber jede Fehleingabe kostet Wertung, das Dekodieren ist also der effizientere Weg.</p>
+<p>Fox Hunt ist nur am M32 Pocket verfügbar und ab <strong>Koch-Lektion 6</strong> spielbar.</p>
+<h4 class="unnumbered" id="richtungstasten">Richtungstasten</h4>
+<p>Richtungen werden als einzelne Buchstaben nach der <strong>Kompass</strong>-Konvention gegeben — dieselbe, die Radio Cave verwendet:</p>
+<table>
+<thead>
+<tr>
+<th>Richtung</th>
+<th>Kompassbuchstabe</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Oben</td>
+<td><strong>N</strong> (Nord)</td>
+</tr>
+<tr>
+<td>Rechts</td>
+<td><strong>E</strong> (Ost)</td>
+</tr>
+<tr>
+<td>Unten</td>
+<td><strong>S</strong> (Süd)</td>
+</tr>
+<tr>
+<td>Links</td>
+<td><strong>W</strong> (West)</td>
+</tr>
+</tbody>
+</table>
+<p>Eine <strong>Legende</strong> mit vier Pfeilen wird ständig am Display gezeigt, sodass du dir die Zuordnung nie merken musst. Da die Kompassbuchstaben in der Koch-Reihenfolge nicht alle früh gelernt werden, wird jeder noch nicht gelernte automatisch durch ein anderes Zeichen deiner aktuellen Lektion <strong>ersetzt</strong>; die Legende zeigt für jede Richtung stets den tatsächlich zu gebenden Buchstaben (eine Ersatztaste ist gelb dargestellt). Du gibst die <strong>Richtung</strong>, niemals das gehörte Zeichen selbst — ein gegebener Buchstabe, der nicht in der Legende steht, gilt als Fehlzug.</p>
+<h4 class="unnumbered" id="start-und-bedienung">Start und Bedienung</h4>
+<p>Navigiere im Hauptmenü zu <strong>Games → Fox Hunt</strong> und wähle dann <strong>Single player</strong> oder <strong>Multiplayer</strong> (der Mehrspielermodus funktioniert genau wie bei Trailblazer oben — beide Spiele teilen sich eine Lobby). Berühre am Einzelspieler-Bereitschaftsbildschirm ein Paddle, um zu starten.</p>
+<table>
+<colgroup>
+<col style="width: 65%" />
+<col style="width: 34%" />
+</colgroup>
+<thead>
+<tr>
+<th>Bedienelement</th>
+<th>Aktion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Die Richtung (N/E/S/W oder Ersatz) zum gehörten Zeichen geben</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>Deine Gebe-WpM ändern (oder Lautstärke)</td>
+</tr>
+<tr>
+<td><strong>FN kurz</strong></td>
+<td>Encoder zwischen Tempo und Lautstärke umschalten</td>
+</tr>
+<tr>
+<td><strong>Encoder-Klick (Bereitschaft)</strong></td>
+<td>Bestenliste anzeigen</td>
+</tr>
+<tr>
+<td><strong>Encoder-Klick (im Spiel)</strong></td>
+<td>Das aktuelle Zeichen wiederholen</td>
+</tr>
+<tr>
+<td><strong>Encoder lang</strong></td>
+<td>Zurück zum Hauptmenü</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="ablauf-2">Ablauf</h4>
+<p>Bei Ankunft an jeder Zelle spielt das Gerät das nächste Zeichen einmal, in deinem aktuellen Gebetempo und leicht in der Tonhöhe verschoben, damit du es von deinem eigenen Mithörton unterscheiden kannst. Dekodiere es, finde die Nachbarzelle, die es enthält, und gib die Richtung dorthin. Bleibst du einige Sekunden untätig, wird das Zeichen automatisch <strong>wiederholt</strong>; du kannst es außerdem jederzeit mit einem <strong>Encoder-Klick</strong> erneut abspielen. Wie bei Trailblazer wird nur die Spur hinter dir gezeichnet — der Pfad voraus wird nie enthüllt, du musst dich also auf deine Ohren verlassen.</p>
+<h4 class="unnumbered" id="wertung-bestenliste-und-mehrspieler">Wertung, Bestenliste und Mehrspieler</h4>
+<p>Wertung, die Ergebnis- und Bestenlisten-Bildschirme sowie der Mehrspielermodus funktionieren genau wie bei Trailblazer (effektive CPM mit 5-Sekunden-Strafe je Fehleingabe; eine eigene Bestenliste für Fox Hunt; dasselbe Server/Client-Rennen auf demselben Labyrinth). Die Einzelheiten stehen im Trailblazer-Abschnitt oben.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Neben der WiFi-Transceiver-Funktionalität kannst du die WLAN-Funktion des im Morserino-32 verwendeten ESP32-Prozessors für zwei weitere Aufgaben nutzen, wenn du WLAN über einen Access Point verwendest:</p>
 <ul>
@@ -2063,7 +2254,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><strong>langer Druck</strong> auf eine der Tasten beendet die Eingabe.</li>
 </ul>
 <p>Call Sign akzeptiert Buchstaben, Ziffern und den Schrägstrich; Op Name akzeptiert Buchstaben und ein Leerzeichen. Der aktuelle Wert wird neben der Einstellung angezeigt.</p>
-<p><strong>Reset Scores</strong> löscht die gespeicherten Bestenlisten und den Spielfortschritt aller Spiele (Morse Invaders, Morsel und Radio Cave). Beim Auswählen erscheint eine Bestätigung: <strong>FN</strong> drücken zum Bestätigen, oder den ENCODER klicken zum Abbrechen.</p>
+<p><strong>Reset Scores</strong> löscht die gespeicherten Bestenlisten und den Spielfortschritt aller Spiele (Morse Invaders, Morsel, Radio Cave sowie die Gitter-Labyrinth-Spiele Trailblazer und Fox Hunt). Beim Auswählen erscheint eine Bestätigung: <strong>FN</strong> drücken zum Bestätigen, oder den ENCODER klicken zum Abbrechen.</p>
 <h2 data-number="6.3" id="liste-aller-morserino-32-einstellungen"><span class="header-section-number">6.3</span> Liste aller Morserino-32-Einstellungen</h2>
 <p><strong>Fett gedruckte Werte</strong> sind Standard- oder empfohlene Werte. Wenn du das Einstellungsmenü vom Startmenü aus aufrufst, sind alle Einstellungen verfügbar; wenn du es aus einem laufenden Modus heraus aufrufst, sind nur die für diesen Modus relevanten Einstellungen verfügbar.</p>
 <h3 data-number="6.3.1" id="allgemeine-einstellungen"><span class="header-section-number">6.3.1</span> Allgemeine Einstellungen</h3>
@@ -2403,20 +2594,67 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td>Nur relevant im <strong>Contest</strong>-Modus des QSO Bots (Abschnitt <strong>5.5.4 QSO Bot</strong>): welcher Contest-Austausch verwendet wird. <strong>CQ WW</strong> sendet 5NN + die CQ-Zone des Bot-Rufzeichens; <strong>WPX/Sprint</strong> sendet 5NN + eine Seriennummer.</td>
 <td><strong>CQ WW</strong> / WPX/Sprint</td>
 </tr>
+<tr>
+<td><strong>QSO Difficulty</strong></td>
+<td>Wie nachsichtig und wie gesprächig der QSO-Bot-Partner ist (alle QSO-Bot-Modi, Abschnitt <strong>5.5.4 QSO Bot</strong>). <strong>Beginner</strong> ist geduldig (mehr Zeit zum Antworten, ein zusätzlicher Versuch), gibt Rapporte voll ausgeschrieben (599 statt 5nn) und verwendet klare, ruhige Aufforderungen. <strong>Advanced</strong> hält ein strafferes Tempo und verwendet knappe Aufforderungen wie von einem erfahrenen Operator. <strong>Intermediate</strong> liegt dazwischen.</td>
+<td>Beginner / <strong>Intermediate</strong> / Advanced</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="6.3.7" id="einstellungen-zu-rufzeichen-name-und-spielstaenden"><span class="header-section-number">6.3.7</span> Einstellungen zu Rufzeichen, Name und Spielständen</h3>
+<p>Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen deine persönliche Identität fest, die vom Spiel <strong>Fight the Pileup</strong> und vom <strong>QSO Bot</strong> (Abschnitt <strong>5.5.4 QSO Bot</strong>) verwendet wird; der dritte löscht die gespeicherten Spielstände. Call Sign und Op Name können auch über USB über das M32-USB Serial-Protokoll gesetzt werden (z.B. mit einem Browser-Konfigurationstool).</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Einstellung</th>
+<th>Beschreibung</th>
+<th>Werte</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Call Sign</strong></td>
+<td>Dein eigenes Amateurfunk-Rufzeichen. Gib es mit dem Encoder und den Tasten ein. Es wird in Großbuchstaben gespeichert und als dein Stationsrufzeichen in <strong>Fight the Pileup</strong> und im <strong>QSO Bot</strong> verwendet.</td>
+<td>bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert)</td>
+</tr>
+<tr>
+<td><strong>Op Name</strong></td>
+<td>Dein Operatorname (z.B. dein Vorname). Gib ihn mit dem Encoder und den Tasten ein. Er wird in Großbuchstaben gespeichert und zusammen mit deinem Rufzeichen in <strong>Fight the Pileup</strong> verwendet.</td>
+<td>bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert)</td>
+</tr>
+<tr>
+<td><strong>Reset Scores</strong></td>
+<td>Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele — die Bestenliste von <strong>Morse Invaders</strong>, die Bestwerte von <strong>Morsel</strong>, den gespeicherten Fortschritt von <strong>Radio Cave</strong> sowie die Bestenlisten von <strong>Trailblazer</strong> und <strong>Fox Hunt</strong>. Du wirst gebeten, mit der <strong>FN</strong>-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.)</td>
+<td>mit FN bestätigen</td>
+</tr>
 </tbody>
 </table>
 <h1 data-number="7" id="anhaenge"><span class="header-section-number">7</span> Anhänge</h1>
 <h2 data-number="7.1" id="anhang-1-hardware-konfigurationsmenue"><span class="header-section-number">7.1</span> Anhang 1: Hardware-Konfigurationsmenü</h2>
 <p>Es gibt ein Hardware-Konfigurationsmenü, das du erreichst, indem du <strong>ein Paddle (oder ein externes Paddle oder eine Handtaste) gedrückt hältst, während du den M32 einschaltest</strong>. Du kannst dann die gewünschte Konfiguration auswählen, indem du den Drehknopf drehst und ihn drückst, sobald die richtige Option angezeigt wird.</p>
-<p>Die wählbaren Optionen sind <strong>Calibr. Batt.</strong> (Kalibrierung der Akkumessung), <strong>Flip Screen</strong> (Bildschirm umdrehen), <strong>LoRa Config.</strong> (LoRa-Konfiguration), <strong>Reset Prefs.</strong> (Einstellungen auf Werksstandard zurücksetzen) und <strong>Cancel</strong> (Abbruch; verlässt das Menü und fährt mit dem normalen Einschalten des M32 fort).</p>
-<h3 data-number="7.1.1" id="umdrehen-des-bildschirms-fuer-linkshaendige-bedienung"><span class="header-section-number">7.1.1</span> Umdrehen des Bildschirms für linkshändige Bedienung</h3>
+<p>Die wählbaren Optionen sind <strong>Calibr. Batt.</strong> (Kalibrierung der Akkumessung), <strong>Flip Screen</strong> (Bildschirm umdrehen), <strong>LoRa Config.</strong> (LoRa-Konfiguration), <strong>Reset Prefs.</strong> (Einstellungen auf Werksstandard zurücksetzen), <strong>CN3: Touch / CN3: Mechan.</strong> (nur M32 Pocket — Paddle-Typ am CN3-Anschluss) und <strong>Cancel</strong> (Abbruch; verlässt das Menü und fährt mit dem normalen Einschalten des M32 fort).</p>
+<h3 data-number="7.1.1" id="cn3-anschluss-touch--oder-mechanisches-paddle-nur-m32-pocket"><span class="header-section-number">7.1.1</span> CN3-Anschluss: Touch- oder mechanisches Paddle (nur M32 Pocket)</h3>
+<p>Der M32 Pocket hat zwei Paddle-Eingänge: die 3,5-mm-Klinkenbuchse (für ein mechanisches Paddle oder eine Handtaste) und den kleinen <strong>CN3</strong>-Anschluss, der normalerweise für die kapazitiven <strong>Touch</strong>-Paddles verwendet wird. Wenn du möchtest, kannst du stattdessen ein <strong>mechanisches</strong> Paddle oder eine Handtaste an CN3 anschließen — dazu ist keine Hardware-Änderung nötig, nur diese Einstellung.</p>
+<p>Der Menüpunkt zeigt die aktuelle Einstellung an: <strong>CN3: Touch</strong> (Standard) oder <strong>CN3: Mechan.</strong> So änderst du sie:</p>
+<ol type="1">
+<li>Starte deinen M32, während du ein Paddle (Touchpaddle, das Paddle an der 3,5-mm-Klinke oder eine Handtaste) gedrückt hältst, um in das Hardware-Konfigurationsmenü zu gelangen.</li>
+<li>Drehe den ENCODER, bis der CN3-Punkt erscheint, und drücke den ENCODER-Knopf.</li>
+<li>Wähle mit dem ENCODER <strong>Touch</strong> oder <strong>Mechanical</strong> und bestätige mit einem Druck auf den ENCODER-Knopf.</li>
+</ol>
+<p>Wenn du die Einstellung geändert hast, startet der M32 neu, damit die CN3-Pins im gewählten Modus hochfahren. Im <strong>Mechanical</strong>-Modus funktionieren die Touch-Paddles an CN3 nicht mehr (die beiden Pins werden stattdessen wie ein gewöhnliches Paddle gelesen); die 3,5-mm-Klinke funktioniert in beiden Modi. Hinweis: Ein an CN3 angeschlossenes mechanisches Paddle lässt dich auch dann in dieses Menü, wenn die Einstellung noch auf Touch steht — du kommst also immer wieder in den Umschaltdialog.</p>
+<h3 data-number="7.1.2" id="umdrehen-des-bildschirms-fuer-linkshaendige-bedienung"><span class="header-section-number">7.1.2</span> Umdrehen des Bildschirms für linkshändige Bedienung</h3>
 <p>Dies ist wahrscheinlich nur für den M32Pocket relevant! Wenn du beim M32Pocket mit der linken Hand geben möchtest, würde das Display auf dem Kopf stehen. Mit dieser Konfigurationsoption wird das Display um 180° gedreht, um linkshändige Bedienung zu ermöglichen.</p>
 <ol type="1">
 <li>Starte deinen M32, während du die Touchpaddles (oder externe Paddles oder eine Handtaste) gedrückt hältst.</li>
 <li>Wähle mit dem Drehgeber die Option <strong>Flip Screen</strong> aus und drücke den ENCODER-Knopf.</li>
 </ol>
 <p>Der M32 startet neu, wobei das Display nun um 180° gedreht ist.</p>
-<h3 data-number="7.1.2" id="kalibrierung-der-akkumessung"><span class="header-section-number">7.1.2</span> Kalibrierung der Akkumessung</h3>
+<h3 data-number="7.1.3" id="kalibrierung-der-akkumessung"><span class="header-section-number">7.1.3</span> Kalibrierung der Akkumessung</h3>
 <div class="note">
 <p>Beim M32Pocket ist eine Kalibrierung der Akkumessung nicht notwendig und daher nur bei Morserinos der 1st und 2nd Edition verfügbar.</p>
 </div>
@@ -2431,7 +2669,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <div class="note">
 <p>Wenn dein Akku relativ neu ist und du sicher weißt, dass er vollständig geladen ist (mehr als 10 Stunden Ladezeit bei Morserinos der 1st &amp; 2nd Edition, mehr als 3 Stunden beim M32Pocket), kannst du von einer Akkuspannung von 4,2 V ausgehen und diesen Wert anstelle einer Messung verwenden.</p>
 </div>
-<h3 data-number="7.1.3" id="konfigurieren-von-lora-band-frequenz-und-ausgangsleistung"><span class="header-section-number">7.1.3</span> Konfigurieren von LoRa-Band, Frequenz und Ausgangsleistung</h3>
+<h3 data-number="7.1.4" id="konfigurieren-von-lora-band-frequenz-und-ausgangsleistung"><span class="header-section-number">7.1.4</span> Konfigurieren von LoRa-Band, Frequenz und Ausgangsleistung</h3>
 <p>Dieser Abschnitt gilt natürlich nur, wenn du einen Morserino mit LoRa-Fähigkeit hast (z.B. einen Morserino der 1st oder 2nd Edition).</p>
 <p>Wenn du ein Standard-433-MHz-Heltec-Modul in deinem Morserino-32 (1st oder 2nd Edition) hast – was praktisch immer der Fall ist –, wurde es bereits für das richtige Band und eine Standardfrequenz innerhalb dieses Bands vorkonfiguriert.</p>
 <p>Wenn du entweder die LoRa-Frequenz innerhalb des Standardbandes ändern musst oder ein Heltec-Modul für die 868- und 920-MHz-Bänder verwendest, musst du deinen Morserino-32 konfigurieren, bevor du die LoRa-Funktion nutzt.</p>
@@ -2453,7 +2691,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p><em>Beachte die in deinem Land geltenden Vorschriften – es könnte eine gesetzliche Begrenzung der Ausgangsleistung geben! Außerdem gilt: Je höher die Ausgangsleistung, desto höher das Risiko, den LoRa-Transceiver zu zerstören, wenn er ohne geeigneten Abschluss (Antenne oder Kunstantenne) verwendet wird.</em></p>
 </div>
 <p>Unmittelbar danach startet der Morserino-32 normal mit den neu gewählten LoRa-Einstellungen. In der obersten Zeile des Startbildschirms siehst du die konfigurierte QRG für LoRa als fünfstellige Zahl (z.B. 43415 für den Standard im 433-MHz-Band).</p>
-<h3 data-number="7.1.4" id="zuruecksetzen-der-einstellungen-auf-werksstandard"><span class="header-section-number">7.1.4</span> Zurücksetzen der Einstellungen auf Werksstandard</h3>
+<h3 data-number="7.1.5" id="zuruecksetzen-der-einstellungen-auf-werksstandard"><span class="header-section-number">7.1.5</span> Zurücksetzen der Einstellungen auf Werksstandard</h3>
 <p>Dieser Menüpunkt setzt alle Einstellungen auf die Werkseinstellungen zurück, ändert aber keine Hardware-Konfigurationseinstellungen und löscht oder verändert keine in Schnappschüssen gespeicherten Einstellungen.</p>
 <h2 data-number="7.2" id="anhang-2-weitere-informationen-ueber-lora"><span class="header-section-number">7.2</span> Anhang 2: Weitere Informationen über LoRa</h2>
 <p>Wenn der Morsecode in ein LoRa-Datenpaket verpackt wird, werden Punkte, Striche und Pausen kodiert – es wird nicht der Klartext als ASCII-Zeichen gesendet. Daher ist es möglich, „illegale” Morsezeichen oder Zeichen zu senden, die nur in bestimmten Sprachen verwendet werden. Sie werden korrekt übertragen (erscheinen aber auf dem Display als nicht dekodierbar).</p>

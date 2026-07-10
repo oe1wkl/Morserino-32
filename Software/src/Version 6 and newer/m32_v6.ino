@@ -54,6 +54,7 @@
 #include "MorsePileup.h"
 #include "MorseRadioCave.h"
 #include "MorseMorsel.h"
+#include "MorseGridNet.h"
 #endif
 
 #ifdef CONFIG_TFT
@@ -564,7 +565,14 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
 #endif
 //DEBUG("Init display");
   // init display
-  MorsePreferences::readScreenPref();
+  MorsePreferences::readScreenPref();       // also reads cn3Mechanical (CONFIG_CN3_PADDLE)
+  // Note (CONFIG_CN3_PADDLE): the CN3 pins IO4/IO5 are claimed as INPUT_PULLUP digital
+  // inputs for mechanical mode in initSensors() below, NOT here — because checkKey()
+  // (called just after, for Hardware-Config entry) always probes them via touchRead()
+  // regardless of mode, which reconfigures them as touch pads. initSensors() runs after
+  // that probe, so it is the authoritative place to set the pin mode for the session.
+  // (A grounded mechanical contact reads as a very strong touch, so the touch probe keeps
+  // the Hardware Config menu reachable whatever paddle type is physically plugged in.)
 #if defined(CONFIG_TFT) && BL_GATE_AT_BOOT
   // Pre-seed brightness to 0 BEFORE display.init(): LovyanGFX's init_impl() ends
   // with setBrightness(_brightness) (default 127), which would otherwise light
@@ -687,8 +695,15 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
             case 3: MorsePreferences::resetDefaults();
                     ESP.restart();
                     break;
+#ifndef LORA_DISABLED
             case 4: MorsePreferences::loraSystemSetup();
                     break;
+#endif
+#ifdef CONFIG_CN3_PADDLE
+            case HWCONF_CN3_SLOT:
+                    MorsePreferences::cn3PaddleConfig();   // may reboot if the mode changed
+                    break;
+#endif
             default: break;
          }
       }
@@ -1536,9 +1551,20 @@ boolean checkPaddles() {
   */
   left = MorsePreferences::pliste[posExtPddlPolarity].value ? rightPin : leftPin;
   right = MorsePreferences::pliste[posExtPddlPolarity].value ? leftPin : rightPin;
-  sensor = readSensors(LEFT, RIGHT, false);
-  newL = (sensor >> 1);
-  newR = (sensor & 0x01);
+#ifdef CONFIG_CN3_PADDLE
+  if (MorsePreferences::cn3Mechanical) {
+    // CN3 in mechanical mode: read IO4/IO5 as active-low digital inputs (INPUT_PULLUP set in
+    // initSensors()); no touch FSM. Pin mapping matches the touch assignment (pin2 = left, pin3 =
+    // right); dit/dah orientation is handled downstream by posPolarity, exactly as for touch.
+    newL = !digitalRead(LEFT);
+    newR = !digitalRead(RIGHT);
+  } else
+#endif
+  {
+    sensor = readSensors(LEFT, RIGHT, false);
+    newL = (sensor >> 1);
+    newR = (sensor & 0x01);
+  }
                                                           // read external paddle presses
   newL = newL | (!digitalRead(left)) ;                    // tip (=left) always, to be able to use straight key to initiate echo trainer etc
   if (MorsePreferences::pliste[posCurtisMode].value != STRAIGHTKEY) {
@@ -1655,6 +1681,16 @@ uint8_t readSensors(int left, int right, boolean init) {
 
 
 void initSensors() {
+#ifdef CONFIG_CN3_PADDLE
+  if (MorsePreferences::cn3Mechanical) {
+    // mechanical CN3: no touch calibration. Claim IO4/IO5 as active-low digital inputs for
+    // the session — checkKey()'s boot-time touchRead probe leaves them configured as touch
+    // pads, so this pinMode (after that probe) is what checkPaddles() relies on.
+    pinMode(LEFT,  INPUT_PULLUP);
+    pinMode(RIGHT, INPUT_PULLUP);
+    return;
+  }
+#endif
 #ifndef TOUCHPADDLES_DISABLED
   touch_value_t v;
   lUntouched = rUntouched = 60;       /// new: we seek minimum
@@ -3048,6 +3084,16 @@ void onEspnowRecv(const uint8_t* mac, const uint8_t* data, uint8_t len, signed i
     if (MorseMorsel::morselNetMode && broadcast && len >= 5 &&
         data[0] == 'M' && data[1] == 'S' && data[2] == 'L') {
         MorseMorsel::mslNetOnRecv(mac, data, len);
+        return;
+    }
+    #endif
+
+    // Grid-maze games (Trailblazer / Fox Hunt) multiplayer: same model,
+    // protocol magic "GRD".
+    #ifdef CONFIG_CW_GAME
+    if (MorseGridNet::gridNetMode && broadcast && len >= 5 &&
+        data[0] == 'G' && data[1] == 'R' && data[2] == 'D') {
+        MorseGridNet::onRecv(mac, data, len);
         return;
     }
     #endif
