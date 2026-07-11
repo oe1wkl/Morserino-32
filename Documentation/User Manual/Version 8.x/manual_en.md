@@ -2619,7 +2619,7 @@ to all modes of the Morserino-32.
 | Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
 | Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
 | Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
-| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
+| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in section **6.2.2**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 
 
 
@@ -2639,8 +2639,8 @@ to **Straight Key** in order to use a straight key).
 | CurtisB DitT% | Timing in Curtis B mode for dits; see the section **5.1 CW Keyer** Also influences the behavior in Ultimatic mode!                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
 | AutoChar Spce | Minimum spacing between characters | Off / min. 2 / **3** / 4 dots |
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
-| BLT Kbd Output | Defines what is being sent via Bluetooth (Bluetooth keyboard functionality). The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
-| BLT \<AR> | Only relevant in **Generic Kbd** mode (see **BLT Kbd Output** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
+| Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* The last option, **BLE Serial**, instead makes the M32 Serial Protocol (see **Appendix 8**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
+| BLT \<AR> | Only relevant in **Generic Kbd** mode (see **Bluetooth Use** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
 
 
 
@@ -3246,13 +3246,56 @@ purpose:
 -   See also the description of the **Serial Output** preference in
     section **6.2.1 General Preferences**.
 
+### Using the M32 Serial Protocol over Bluetooth (BLE Serial)
+
+The M32 Serial Protocol is not tied to the USB cable: when the
+preference **Bluetooth Use** (see section **6.2.2 Preferences regarding
+Key, Paddles and Keyer**) is set to **BLE Serial**, the very same
+protocol is also available over Bluetooth Low Energy. This is particularly useful for phones and tablets — on
+iOS, for example, apps cannot open a classic serial connection over
+Bluetooth at all, while BLE works fine. An app can remote-control the
+Morserino exactly like a program connected via USB, including sending
+text that the Morserino keys as CW (`PUT cw/play/...`).
+
+After selecting this option (it takes effect on the next return to the
+main menu), the Morserino advertises itself as "**Morserino-32**"
+whenever it is at the main menu or in one of the training modes and no
+client is connected. No pairing is necessary —
+connecting works like plugging in a USB cable, and the app starts the
+session with the usual `PUT device/protocol/on` command.
+
+A few things to be aware of:
+
+-   USB and BLE sessions are independent and can even be active at the
+    same time; each is started and ended with its own
+    `PUT device/protocol/on` / `off`.
+-   Any function that needs the WiFi radio (WiFi transceiver modes,
+    multiplayer games, file upload, firmware update, WiFi
+    configuration) suspends the Bluetooth connection for the remainder
+    of that activity — a short notice ("BLE Ser. susp.") appears on the
+    display; it becomes available again when you return to the
+    main menu.
+-   The **Bluetooth Use** selector assigns the Bluetooth radio either
+    to the keyboard output (Appendix 9) or to the serial protocol, so
+    BLE Serial and the Bluetooth keyboard can never be active at the
+    same time.
+-   An active protocol session prevents the automatic power-off
+    timeout, just like a USB session does — remember this when running
+    on battery.
+
+For developers: the technical details (service UUIDs, framing,
+transport behavior) are described in the *M32 Protocol* description in
+the `Documentation/Protocol Description` folder on GitHub; a ready-made
+test and demo script (`ble_m32_test.py`, using Python and *bleak*) can
+be found in the `devdocs/ble-serial` folder.
+
 ## Appendix 9: Using the Bluetooth Keyboard functionality
 
 In "CW Keyer" mode, the M32 can send the keyed Morse code as keyboard
 codes via Bluetooth to a computer (including cell phones and tablets).
 
-To do this, the "**BLT Kbd Output**" setting must be set accordingly
-(for more information on the available options, see section  **6.2.2
+To do this, the "**Bluetooth Use**" setting must be set to one of the
+keyboard options (for more information, see section  **6.2.2
 Preferences regarding Key, Paddles and Keyer**).
 
 ::: note
@@ -3641,7 +3684,7 @@ abbreviations uncommon in English are in square brackets \[\].
 | Term | Definition |
 |------|------------|
 | Access Point | A WiFi router or base station that wireless devices connect to in order to communicate over a network. |
-| BLE | Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output. |
+| BLE | Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output and for the M32 Serial Protocol over Bluetooth (see the Bluetooth Use preference). |
 | CW | Continuous Wave — the traditional term for Morse code communication, where a radio carrier is keyed on and off. |
 | CW Keyer | A device (or mode) that automatically generates properly timed dits and dahs from paddle input. |
 | Deep Sleep | A very low power state where the microcontroller is mostly shut off. The device can be woken up by pressing the FN button. |

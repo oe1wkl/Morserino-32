@@ -12,3 +12,4 @@ Software/src/data/voice/
 # Audio-accessibility tooling: Piper venv + voice models (machine-specific / large)
 Software/tools/audio-accessibility/.venv/
 Software/tools/audio-accessibility/models/
+__pycache__/

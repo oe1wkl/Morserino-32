@@ -4,7 +4,12 @@
 	Version: 1.3
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
-The USB bus can be used for two-way communication with a connected computer. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
+	Document revision note (July 2, 2026): added the "Transports" section —
+	the protocol is now also available over Bluetooth Low Energy ("BLE
+	Serial"). The protocol version stays 1.3: no commands or properties
+	changed, BLE is a second transport for the same byte stream.
+
+The Morserino can communicate two-way with a connected computer — over the USB bus, and (with firmware that includes the "BLE Serial" feature, and the **Bluetooth Use** preference set to **BLE Serial**) over Bluetooth Low Energy; see the section "Transports" below. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
 
 	Changes in protocol version 1.3 from version 1.2:
 
@@ -46,6 +51,33 @@ The USB bus can be used for two-way communication with a connected computer. Apa
 	get file/parts — list available parts
 
 
+
+## Transports
+
+The protocol is one line-based byte stream; it is available over two transports that carry identical bytes:
+
+**USB-CDC serial** — as always: 115200 baud, commands end with `\n` (`\r` tolerated), responses are bare concatenated JSON objects, plus the raw character echo governed by the "Serial Output" parameter.
+
+**Bluetooth Low Energy ("BLE Serial")** — available when the firmware is built with `CONFIG_BLE_SERIAL` and the device preference **Bluetooth Use** is set to **BLE Serial**. The device implements a Nordic-UART-Service (NUS) GATT server:
+
+| Item | Value |
+|---|---|
+| Advertised name | `Morserino-32` (carried in the scan response; scan by service UUID) |
+| Service UUID | `6E400001-B5A3-F393-E0A9-E50E24DCCA9E` |
+| RX characteristic (client → M32) | `6E400002-B5A3-F393-E0A9-E50E24DCCA9E`, Write and Write Without Response |
+| TX characteristic (M32 → client) | `6E400003-B5A3-F393-E0A9-E50E24DCCA9E`, Notify |
+
+No pairing/bonding is used — connecting is equivalent, trust-wise, to plugging in a USB cable. One central at a time. The M32 requests a large MTU (517); notifications are chunked to the negotiated MTU and chunk boundaries are arbitrary (they may split a JSON object or a UTF-8 character), so a client must reassemble the byte stream and frame it exactly like a USB client would: JSON objects by balanced braces, everything outside braces is the raw character echo. Writes to RX may likewise be split or batched freely; the M32 reassembles until `\n`.
+
+Transport rules a client should know:
+
+- **Per-transport sessions.** Each transport has its own protocol session: `PUT device/protocol/on` on BLE starts (only) the BLE session; `PUT device/protocol/off` received over a transport ends (only) that transport's session. This command pair is matched case-insensitively on both transports.
+- **Both sessions at once.** If both transports are handshaken, both receive all responses and unsolicited objects, including the other session's command replies (protocol 1.3 clients must tolerate unknown/unsolicited objects anyway). Session-control messages are the exception and stay on their own transport: the handshake's `device` object, the `{"end m32protocol": ...}` goodbye, BLE transport errors (`BLE LINE TOO LONG`, `BLE RX OVERFLOW`) and the BLE suspend/stop notices are delivered only to the transport they concern — a goodbye you receive always means *your* session ended. A USB port that never handshakes stays byte-silent (except the character echo and debug output, as today) even while a BLE session is active.
+- **Ordering.** Commands are executed one line at a time per transport, in arrival order, with device-state changes applied between lines — batching several commands in one GATT write is fine. No ordering is guaranteed *between* the two transports within a polling cycle.
+- **WiFi suspends BLE.** Any device activity that needs the WiFi radio (WiFi transceiver, multiplayer game entry, file upload, firmware update, WiFi configuration and the WiFi menu functions — including remotely executable ones like *Disp MAC Address*, so a BLE client that executes those cuts off its own link) suspends BLE Serial: the client gets a `message` object first (best effort), then the link drops. BLE Serial re-advertises when the device returns to the top menu.
+- **Remote self-disable.** Setting the *Bluetooth Use* preference to any value other than *BLE Serial* via `PUT config` over BLE works: a `message` arrives best-effort, the `ok` response is lost, and the link drops.
+- **Sleep suppression.** As with USB, an active protocol session suppresses the auto-power-off timeout; the suspension/disconnect paths clear this reliably, but a battery-powered device with a permanently connected, handshaken client will not auto-sleep.
+- **Congestion.** Responses larger than a few KB (e.g. `GET snapshot/<n>`) are paced by notify flow control; the device never stalls CW keying for a slow client — when its transmit buffer fills, it drops the rest of the response *and everything after it* until the backlog has fully drained (the character echo is always dropped before protocol replies are). If a response arrives torn or missing, re-issue the GET. **Framing after a drop:** a dropped tail leaves *unbalanced* braces in the byte stream, so a client that frames purely by brace-counting cannot resynchronize from the stream contents alone. Use a timeout: if an object stays open with no further bytes for a second or two, discard the partial object and reset the frame state (bytes up to the next `{` are then echo, as usual). Disconnecting and reconnecting also recovers — the device fully resets the session state per connection.
 
 ## Receiving information from Morserino
 

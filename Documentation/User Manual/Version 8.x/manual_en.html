@@ -143,7 +143,10 @@ The font family used is Lato.</p>
 <li><a href="#appendix-5-updating-the-firmware-via-usb-and-an-update-program" id="toc-appendix-5-updating-the-firmware-via-usb-and-an-update-program"><span class="toc-section-number">7.5</span> Appendix 5: Updating the Firmware via USB and an update program</a></li>
 <li><a href="#appendix-6-updating-the-firmware-via-usb-and-a-browser-webserial" id="toc-appendix-6-updating-the-firmware-via-usb-and-a-browser-webserial"><span class="toc-section-number">7.6</span> Appendix 6: Updating the Firmware via USB and a Browser (Webserial)</a></li>
 <li><a href="#appendix-7-using-a-browser-to-set-up-m32-preferences-and-upload-text-files" id="toc-appendix-7-using-a-browser-to-set-up-m32-preferences-and-upload-text-files"><span class="toc-section-number">7.7</span> Appendix 7: Using a Browser to set up M32 Preferences, and upload Text Files</a></li>
-<li><a href="#appendix-8-using-the-serial-output-of-the-m32" id="toc-appendix-8-using-the-serial-output-of-the-m32"><span class="toc-section-number">7.8</span> Appendix 8: Using the Serial Output of the M32</a></li>
+<li><a href="#appendix-8-using-the-serial-output-of-the-m32" id="toc-appendix-8-using-the-serial-output-of-the-m32"><span class="toc-section-number">7.8</span> Appendix 8: Using the Serial Output of the M32</a>
+<ul>
+<li><a href="#using-the-m32-serial-protocol-over-bluetooth-ble-serial" id="toc-using-the-m32-serial-protocol-over-bluetooth-ble-serial"><span class="toc-section-number">7.8.1</span> Using the M32 Serial Protocol over Bluetooth (BLE Serial)</a></li>
+</ul></li>
 <li><a href="#appendix-9-using-the-bluetooth-keyboard-functionality" id="toc-appendix-9-using-the-bluetooth-keyboard-functionality"><span class="toc-section-number">7.9</span> Appendix 9: Using the Bluetooth Keyboard functionality</a></li>
 <li><a href="#appendix-10-list-of-common-cw-abbreviations-used-by-morserino-32" id="toc-appendix-10-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="toc-section-number">7.10</span> Appendix 10: List of common CW abbreviations used by Morserino-32</a></li>
 <li><a href="#appendix-11-glossary" id="toc-appendix-11-glossary"><span class="toc-section-number">7.11</span> Appendix 11: Glossary</a></li>
@@ -2330,7 +2333,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Serial Output</td>
-<td>Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and “generated” characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). <strong>Nothing</strong> sends out none of these characters (but certain system or error messages might still appear), while <strong>All</strong> send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also <strong>Appendix 8 Using the Serial Output of the M32</strong>.</td>
+<td>Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and “generated” characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). <strong>Nothing</strong> sends out none of these characters (but certain system or error messages might still appear), while <strong>All</strong> send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also <strong>Appendix 8 Using the Serial Output of the M32</strong>. This setting also applies to the character stream sent to an app connected over Bluetooth (see the <strong>Bluetooth Use</strong> preference in section <strong>6.2.2</strong>).</td>
 <td>Nothing / Keyer / Decoded / Keyed+Decoded / Generated / <strong>All</strong> (default since V. 4.3)</td>
 </tr>
 </tbody>
@@ -2387,13 +2390,13 @@ The font family used is Lato.</p>
 <td>A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is <strong>50%</strong>, i.e. half a dot length).</td>
 </tr>
 <tr>
-<td>BLT Kbd Output</td>
-<td>Defines what is being sent via Bluetooth (Bluetooth keyboard functionality). The VBand option allows the Morserino to be used as a VBand dongle (for VBand see <em>https://hamradio.solutions/vband/</em>), <strong>Decoded</strong> sends all decoded characters not only to the display, but also out via Bluetooth, and the <strong>Generic Kbd</strong> option does more or less the same as <strong>Decoded</strong>, but it sends the code for the “<strong>Enter</strong>” Key (New Line) when you key &lt;KA&gt; (new message), and for the “<strong>Backspace</strong>” key when you key &lt;HH&gt; (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). <em>Bluetooth keyboard output is only active in CW Keyer mode (see also <strong>Appendix 9</strong>).</em></td>
-<td><strong>Nothing</strong> / Vband Keying / Decoded / Vband+Decoded / Generic Kbd</td>
+<td>Bluetooth Use</td>
+<td>Defines what the Bluetooth radio is used for. The first four options (besides <strong>No Bluetooth</strong>) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see <em>https://hamradio.solutions/vband/</em>), <strong>Decoded output</strong> sends all decoded characters not only to the display, but also out via Bluetooth, and the <strong>Generic Kbd</strong> option does more or less the same as <strong>Decoded output</strong>, but it sends the code for the “<strong>Enter</strong>” Key (New Line) when you key &lt;KA&gt; (new message), and for the “<strong>Backspace</strong>” key when you key &lt;HH&gt; (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). <em>Bluetooth keyboard output is only active in CW Keyer mode (see also <strong>Appendix 9</strong>).</em> The last option, <strong>BLT Serial Prot.</strong>, instead makes the M32 Serial Protocol (see <strong>Appendix 8</strong>) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery.</td>
+<td><strong>No Bluetooth</strong> / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLT Serial Prot.</td>
 </tr>
 <tr>
 <td>BLT &lt;AR&gt;</td>
-<td>Only relevant in <strong>Generic Kbd</strong> mode (see <strong>BLT Kbd Output</strong> above). Determines how the &lt;AR&gt; prosign is sent over Bluetooth: as the literal character “<strong>+</strong>” or as a soft line break (Shift+Enter).</td>
+<td>Only relevant in <strong>Generic Kbd</strong> mode (see <strong>Bluetooth Use</strong> above). Determines how the &lt;AR&gt; prosign is sent over Bluetooth: as the literal character “<strong>+</strong>” or as a soft line break (Shift+Enter).</td>
 <td><strong>+</strong> / Linefeed</td>
 </tr>
 </tbody>
@@ -2827,9 +2830,20 @@ The font family used is Lato.</p>
 <li><strong>Morserino Phrases Trainer</strong> by Tommy, OZ1THC (see <em>https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer</em>).</li>
 <li>See also the description of the <strong>Serial Output</strong> preference in section <strong>6.2.1 General Preferences</strong>.</li>
 </ul>
+<h3 data-number="7.8.1" id="using-the-m32-serial-protocol-over-bluetooth-ble-serial"><span class="header-section-number">7.8.1</span> Using the M32 Serial Protocol over Bluetooth (BLE Serial)</h3>
+<p>The M32 Serial Protocol is not tied to the USB cable: when the preference <strong>Bluetooth Use</strong> (see section <strong>6.2.2 Preferences regarding Key, Paddles and Keyer</strong>) is set to <strong>BLT Serial Prot.</strong>, the very same protocol is also available over Bluetooth Low Energy. This is particularly useful for phones and tablets — on iOS, for example, apps cannot open a classic serial connection over Bluetooth at all, while BLE works fine. An app can remote-control the Morserino exactly like a program connected via USB, including sending text that the Morserino keys as CW (<code>PUT cw/play/...</code>).</p>
+<p>After selecting this option (it takes effect on the next return to the main menu), the Morserino advertises itself as “<strong>Morserino-32</strong>” whenever it is at the main menu or in one of the training modes and no client is connected. No pairing is necessary — connecting works like plugging in a USB cable, and the app starts the session with the usual <code>PUT device/protocol/on</code> command.</p>
+<p>A few things to be aware of:</p>
+<ul>
+<li>USB and BLE sessions are independent and can even be active at the same time; each is started and ended with its own <code>PUT device/protocol/on</code> / <code>off</code>.</li>
+<li>Any function that needs the WiFi radio (WiFi transceiver modes, multiplayer games, file upload, firmware update, WiFi configuration) suspends the Bluetooth connection for the remainder of that activity; it becomes available again when you return to the main menu.</li>
+<li>The <strong>Bluetooth Use</strong> selector assigns the Bluetooth radio either to the keyboard output (Appendix 9) or to the serial protocol, so BLE Serial and the Bluetooth keyboard can never be active at the same time.</li>
+<li>An active protocol session prevents the automatic power-off timeout, just like a USB session does — remember this when running on battery.</li>
+</ul>
+<p>For developers: the technical details (service UUIDs, framing, transport behavior) are described in the <em>M32 Protocol</em> description in the <code>Documentation/Protocol Description</code> folder on GitHub; a ready-made test and demo script (<code>ble_m32_test.py</code>, using Python and <em>bleak</em>) can be found in the <code>devdocs/ble-serial</code> folder.</p>
 <h2 data-number="7.9" id="appendix-9-using-the-bluetooth-keyboard-functionality"><span class="header-section-number">7.9</span> Appendix 9: Using the Bluetooth Keyboard functionality</h2>
 <p>In “CW Keyer” mode, the M32 can send the keyed Morse code as keyboard codes via Bluetooth to a computer (including cell phones and tablets).</p>
-<p>To do this, the “<strong>BLT Kbd Output</strong>” setting must be set accordingly (for more information on the available options, see section  <strong>6.2.2 Preferences regarding Key, Paddles and Keyer</strong>).</p>
+<p>To do this, the “<strong>Bluetooth Use</strong>” setting must be set to one of the keyboard options (for more information, see section  <strong>6.2.2 Preferences regarding Key, Paddles and Keyer</strong>).</p>
 <div class="note">
 <p>This feature is only active in CW Keyer mode! The keyboard will only become visible on your PC, tablet, etc. once CW Keyer has been launched!</p>
 </div>
@@ -4113,7 +4127,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>BLE</td>
-<td>Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output.</td>
+<td>Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output and for the M32 Serial Protocol over Bluetooth (see the Bluetooth Use preference).</td>
 </tr>
 <tr>
 <td>CW</td>

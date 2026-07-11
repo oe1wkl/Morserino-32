@@ -3001,7 +3001,7 @@ daher für alle Modi des Morserino-32.
 | **Headphone Output** | (Nur für M32Pocket) Legt fest, was passiert, wenn Kopfhörer oder ein anderes Gerät an den Kopfhörerausgang angeschlossen werden. Mit der Standardeinstellung erfolgt die Ausgabe über den Kopfhörer und der Lautsprecher wird stummgeschaltet. Mit „*line-out*" erfolgt die Ausgabe mit voller Lautstärke über den Kopfhörerausgang und normal über den Lautsprecher. Mit „*l-o: Var. Vol.*" ähnlich, aber die Ausgabe über den Stecker erfolgt mit der eingestellten Lautstärke. Mit „*l-o: Lsp Muted*" erfolgt die Ausgabe über den Stecker mit voller Lautstärke und der Lautsprecher wird stummgeschaltet. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted **Achtung: Bei Verwendung der line-out-Optionen niemals Kopfhörer anstecken! Da die Wiedergabe mit voller Lautstärke erfolgen kann, könnte dies das Gehör oder die Kopfhörer beschädigen!** |
 | **Theme** | (Nur für Geräte mit Farbbildschirm, z.B. M32Pocket) Du kannst ein Farbthema für das Display einstellen, sodass du nicht auf „Weiß auf Schwarz" beschränkt bist. Jedes Thema (auch Plain) zeigt zudem Morsetext in einer eigenen Akzentfarbe — abgehoben von Menü- und Statustext — und stellt die OK/ERR-Rückmeldung im Echo Trainer in Grün bzw. Rot dar. | **Plain** (= Weiß auf Schwarz) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
 | **Invader Orient.** | (Nur für M32Pocket) Du kannst die bevorzugte Displayausrichtung für Spiele wie Morse Invaders wählen: Hochformat (Standard) oder Querformat. Bei Auswahl von Querformat wird die Linkshänder-Ausrichtung verwendet, wenn diese in der Hardware-Konfiguration eingestellt ist. | **Portrait** / Landscape |
-| **Serial Output** | Legt fest, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; unterschieden wird zwischen getasteten Zeichen (**Keyer** – Ausgabe des iambischen Keyers), dekodierten Zeichen (**Decoded** – vom CW-Decoder oder einer Handtaste) und „generierten" Zeichen (**Generated** – vom CW-Generator usw., auch von der Empfangsseite der LoRa- oder WiFi-Transceiver-Modi). **Nothing** sendet keines dieser Zeichen (bestimmte System- oder Fehlermeldungen können aber trotzdem erscheinen), **All** sendet alles. Über das M32-Serielle-Protokoll können zudem weitere Informationen gesendet und empfangen werden, wenn die angeschlossene Computersoftware dies unterstützt. Siehe auch **Anhang 8 Nutzung des seriellen Ausgangs des M32**. | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (Standard seit V. 4.3) |
+| **Serial Output** | Legt fest, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; unterschieden wird zwischen getasteten Zeichen (**Keyer** – Ausgabe des iambischen Keyers), dekodierten Zeichen (**Decoded** – vom CW-Decoder oder einer Handtaste) und „generierten" Zeichen (**Generated** – vom CW-Generator usw., auch von der Empfangsseite der LoRa- oder WiFi-Transceiver-Modi). **Nothing** sendet keines dieser Zeichen (bestimmte System- oder Fehlermeldungen können aber trotzdem erscheinen), **All** sendet alles. Über das M32-Serielle-Protokoll können zudem weitere Informationen gesendet und empfangen werden, wenn die angeschlossene Computersoftware dies unterstützt. Siehe auch **Anhang 8 Nutzung des seriellen Ausgangs des M32**. Diese Einstellung gilt auch für den Zeichenstrom an eine über Bluetooth verbundene App (siehe die Einstellung **Bluetooth Use** in Abschnitt **6.2.2**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (Standard seit V. 4.3) |
 
 ### Einstellungen zu Key, Paddles und Keyer
 
@@ -3019,8 +3019,8 @@ oder die Verwendung einer externen Handtaste relevant sind (stelle
 | **CurtisB DitT%** | Timing im Curtis-B-Modus für Dits; siehe Abschnitt **5.1 CW Keyer**. Beeinflusst auch das Verhalten im Ultimatic-Modus! | 0–100, in 5er-Schritten [**55–95**] |
 | **AutoChar Spce** | Mindestabstand zwischen den Zeichen. | Off / min. 2 / **3** / 4 dots |
 | **Latency** | Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub" sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an" ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. | Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: **50 %**, d.h. eine halbe Punktlänge). |
-| **BLT Kbd Output** | Legt fest, was über Bluetooth gesendet wird (Bluetooth-Tastaturfunktion). Die Option **VBand** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Anhang 9**).* | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
-| **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **BLT Kbd Output** oben). Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
+| **Bluetooth Use** | Legt fest, wofür das Bluetooth-Funkmodul verwendet wird. Die ersten vier Optionen (neben **No Bluetooth**) sind Tastatur-Modi: Die Option **VBand Kbd** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded output** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded output**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Anhang 9**).* Die letzte Option, **BLE Serial**, stellt stattdessen das M32-Serielle-Protokoll (siehe **Anhang 8**) über Bluetooth Low Energy zur Verfügung — damit können Apps auf Smartphones und Tablets den Morserino fernsteuern und Text senden, der als CW getastet wird, ganz ohne USB-Kabel; die Auswahl wird bei der nächsten Rückkehr ins Hauptmenü wirksam. Beachte: Wie eine USB-Protokollsitzung verhindert auch eine aktive BLE-Protokollsitzung die automatische Abschaltung (Timeout) — denke daran im Akkubetrieb. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
+| **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **Bluetooth Use** oben). Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
 
 ### Einstellungen bezüglich der Koch-Zeichenfolge
 
@@ -3656,6 +3656,50 @@ zu verbessern. Derzeit gibt es vier Softwareprodukte für diesen Zweck:
 Siehe auch die Beschreibung der Einstellung **Serial Output** im
 Abschnitt **6.2.1 Allgemeine Einstellungen**.
 
+### Das M32-Serielle-Protokoll über Bluetooth nutzen (BLE Serial)
+
+Das M32-Serielle-Protokoll ist nicht an das USB-Kabel gebunden: Wenn die
+Einstellung **Bluetooth Use** (siehe Abschnitt **6.2.2 Einstellungen zu
+Key, Paddles und Keyer**) auf **BLE Serial** steht, ist dasselbe
+Protokoll auch über Bluetooth Low Energy verfügbar. Das ist besonders für Smartphones und
+Tablets nützlich — unter iOS etwa können Apps überhaupt keine
+klassische serielle Verbindung über Bluetooth öffnen, BLE hingegen
+funktioniert problemlos. Eine App kann den Morserino genauso fernsteuern
+wie ein über USB verbundenes Programm, einschließlich des Sendens von
+Text, den der Morserino als CW tastet (`PUT cw/play/...`).
+
+Nach dem Auswählen dieser Option (sie wird bei der nächsten Rückkehr
+ins Hauptmenü wirksam) meldet sich der Morserino als
+„**Morserino-32**", solange er sich im Hauptmenü oder in einem der
+Trainingsmodi befindet und keine App verbunden ist. Ein Pairing ist
+nicht erforderlich — das Verbinden funktioniert wie das Anstecken eines
+USB-Kabels, und die App startet die Sitzung mit dem üblichen Kommando
+`PUT device/protocol/on`.
+
+Ein paar Dinge sind zu beachten:
+
+-   USB- und BLE-Sitzungen sind unabhängig voneinander und können sogar
+    gleichzeitig aktiv sein; jede wird mit ihrem eigenen
+    `PUT device/protocol/on` / `off` begonnen und beendet.
+-   Jede Funktion, die das WLAN benötigt (WiFi-Transceiver-Modi,
+    Mehrspieler-Spiele, Datei-Upload, Firmware-Update,
+    WLAN-Konfiguration), unterbricht die Bluetooth-Verbindung für die
+    Dauer dieser Aktivität — ein kurzer Hinweis („BLE Ser. susp.")
+    erscheint am Display; nach der Rückkehr ins Hauptmenü steht sie
+    wieder zur Verfügung.
+-   Die Einstellung **Bluetooth Use** weist das Bluetooth-Funkmodul
+    entweder der Tastaturausgabe (Anhang 9) oder dem seriellen
+    Protokoll zu — BLE Serial und die Bluetooth-Tastatur können also
+    nie gleichzeitig aktiv sein.
+-   Eine aktive Protokollsitzung verhindert die automatische
+    Abschaltung (Timeout), genau wie eine USB-Sitzung — denke daran im
+    Akkubetrieb.
+
+Für Entwickler: Die technischen Details (Service-UUIDs, Framing,
+Transportverhalten) sind in der *M32 Protocol*-Beschreibung im Ordner
+`Documentation/Protocol Description` auf GitHub dokumentiert; ein
+fertiges Test- und Demoskript (`ble_m32_test.py`, mit Python und
+*bleak*) findet sich im Ordner `devdocs/ble-serial`.
 
 ## Anhang 9: Benutzung der Bluetooth-Tastatur-Funktion
 
@@ -3663,8 +3707,9 @@ Im Modus CW Keyer kann der M32 die getasteten Morsezeichen als
 Tastaturcodes über Bluetooth an einen Computer (einschließlich
 Mobiltelefone und Tablets) senden.
 
-Dazu muss die Einstellung **BLT Kbd Output** entsprechend gesetzt werden
-(nähere Informationen zu den verfügbaren Optionen findest du im Abschnitt
+Dazu muss die Einstellung **Bluetooth Use** auf eine der
+Tastatur-Optionen gesetzt werden (nähere Informationen zu den
+verfügbaren Optionen findest du im Abschnitt
 **6.2.2 Einstellungen zu Key, Paddles und Keyer**).
 
 ::: note
@@ -4054,7 +4099,7 @@ Klammern \[\].
 | Begriff | Definition |
 |---------|------------|
 | Access Point | Ein WLAN-Router oder eine Basisstation, mit der sich WLAN-Geräte verbinden, um über ein Netzwerk zu kommunizieren. |
-| BLE | Bluetooth Low Energy – eine energiesparende Variante von Bluetooth, die für die drahtlose Tastaturausgabe verwendet wird. |
+| BLE | Bluetooth Low Energy – eine energiesparende Variante von Bluetooth, die für die drahtlose Tastaturausgabe und für das M32-Serielle-Protokoll über Bluetooth (siehe Einstellung Bluetooth Use) verwendet wird. |
 | CW | Continuous Wave – der traditionelle Begriff für Morsecode-Kommunikation, bei der ein Radioträger ein- und ausgetastet wird. |
 | CW Keyer | Ein Gerät (oder Modus), das automatisch korrekt getimte Dits und Dahs aus der Paddle-Eingabe erzeugt. |
 | Tiefschlaf | Ein Zustand mit sehr niedrigem Stromverbrauch, in dem der Mikrocontroller größtenteils abgeschaltet ist. Das Gerät kann durch Drücken der FN-Taste geweckt werden. |

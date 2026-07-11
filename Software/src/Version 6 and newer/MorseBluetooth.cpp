@@ -211,8 +211,24 @@ void bluetoothTask(void*) {
     delay(portMAX_DELAY);
 };
 
+uint8_t MorseBluetooth::keyboardMode(void)
+{
+#ifdef CONFIG_BLE_SERIAL
+    if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT)
+        return 0;                       // selector gives BLE to the serial protocol: no keyboard mode
+#endif
+    return MorsePreferences::pliste[posBluetoothOut].value;
+}
+
 void MorseBluetooth::initializeBluetooth(void)
 {
+#ifdef CONFIG_BLE_SERIAL
+    // the "Bluetooth Use" selector gives the BLE stack to the serial
+    // protocol at value 5 — never start the keyboard's GATT server then;
+    // enforced here so every present and future call site is safe
+    if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT)
+        return;
+#endif
 	// start Bluetooth task - stack size was originally 20000m prio was 5
     if (!isBLErunning) {
 	    xReturned = xTaskCreate(bluetoothTask, "bluetooth", 10000, NULL, 3, &taskHandle);
@@ -237,7 +253,9 @@ void MorseBluetooth::stopBluetooth(void)
         // registerApp — the keyboard could never restart until reboot (every
         // keyer -> menu -> keyer cycle). deinit(false) keeps the stack
         // re-initializable; in exchange the controller BSS stays reserved
-        // for the rest of the boot.
+        // for the rest of the boot. (BLE Serial also relies on this: it must be
+        // able to (re)init the stack after a keyboard session — see
+        // devdocs/ble-serial/DESIGN.md.)
         BLEDevice::deinit(false);
         delay(100);
         MorseBluetooth::isBLErunning = false;
@@ -329,7 +347,7 @@ void MorseBluetooth::bluetoothTypeString(const String& str) {
     String modified;
     const String* toSend = &str;
 
-    if (MorsePreferences::pliste[posBluetoothOut].value >= 0x4) {
+    if (keyboardMode() >= 0x4) {
         modified = str;
         modified.replace("<ERR>", "\b");
         modified.replace("<err>", "\b");
