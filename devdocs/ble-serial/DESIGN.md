@@ -354,7 +354,11 @@ confirmed — the bench device slept between test sessions), and the
 ≥35 WpM stalled-client CW-timing soak (needs ears + paddle: D1's 40 ms loop
 latency is the proxy, not the proof). Run
 [`ble_m32_test.py`](ble_m32_test.py) (`pip install bleak`) scripted or
-`--repl`.
+`--repl`; the dual-transport regression above is
+[`round2_regression.py`](round2_regression.py) (`pip install bleak pyserial`,
+USB port via `M32_PORT`, defaults to `/dev/cu.usbmodem101`) — it needs the
+device at the top menu with the selector on *BLE Serial*, and it
+stores/clears a snapshot in the first free slot during section C.
 
 ## TODO handed to Willi
 
