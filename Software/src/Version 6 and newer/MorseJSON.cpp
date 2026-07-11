@@ -91,8 +91,8 @@ void MorseJSON::jsonMenuList(void) { // get all parameter names and their values
 	// up to ~45 chars). The old fixed 3072 silently truncated the list at ~34
 	// entries once the games/QSO-bot menus grew menuN past 40 — ArduinoJson
 	// drops adds on a full pool, so GET menus lost the whole WiFi Functions
-	// block on TFT builds (found on hardware while remotely executing
-	// Disp MAC Addr; with the fix the full list arrives again).
+	// block on BOTH variants (classic menuN = 47, TFT more; found on hardware
+	// while remotely executing Disp MAC Addr — the full list arrives again).
 	DynamicJsonDocument doc(JSON_ARRAY_SIZE(menuN) + menuN * (JSON_OBJECT_SIZE(3) + 64) + 128);
     JsonArray array = doc.createNestedArray("menus");
       for (uint8_t i = 1; i < menuN; ++i) {
