@@ -1144,7 +1144,10 @@ void MorsePreferences::resetGameScores() {
     p.begin("m32game",   false); p.clear();                      p.end();   // Invaders high-score table
     p.begin("morsel",    false); p.remove("hi"); p.remove("hv"); p.end();   // Morsel scores (keep wlen)
     p.begin("radiocave", false); p.remove("save");               p.end();   // Radio Cave save/progress
-    p.begin("gridgame",  false); p.clear();                      p.end();   // Trailblazer + Fox Hunt high scores
+    p.begin("gridgame",  false);                                            // Trailblazer + Fox Hunt + Memory Chain
+    p.remove("tb");  p.remove("tbv");  p.remove("fh");  p.remove("fhv");    //   high-score tables
+    p.remove("mc");  p.remove("mcv");  p.remove("mcc"); p.remove("mccv");   //   (keep "mcopt" — Memory Chain's lobby settings)
+    p.end();
     MorseOutput::clearScrollLines();
     MorseOutput::printOnScroll(1, BOLD, 0, "Scores cleared");
     MorseOutput::refreshDisplay();

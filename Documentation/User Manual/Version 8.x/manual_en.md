@@ -1550,10 +1550,12 @@ close to 700 Hz.
 
 The Morserino Pocket features now CW-based games that make learning and
 practicing Morse code more engaging. Games are found under the "Games"
-menu entry. Six games are currently available: **Morse Invaders**,
-**Fight the Pileup**, **Radio Cave**, **Morsel**, **Trailblazer**, and
-**Fox Hunt**. The last two are a pair of grid-maze games that share the same
-playing field — Trailblazer trains sending, Fox Hunt trains receiving.
+menu entry. Seven games are currently available: **Morse Invaders**,
+**Fight the Pileup**, **Radio Cave**, **Morsel**, **Trailblazer**,
+**Fox Hunt**, and **Memory Chain**. Trailblazer and Fox Hunt are a pair of
+grid-maze games that share the same playing field — Trailblazer trains
+sending, Fox Hunt trains receiving. Memory Chain is a memory game: key an
+ever-growing chain of characters without losing track.
 
 ### Morse Invaders
 
@@ -2186,6 +2188,54 @@ On arrival at each cell, the device plays the next character once, at your curre
 
 Scoring, the results and high-score screens, and multiplayer all work exactly as in Trailblazer (effective CPM with a 5-second penalty per wrong entry; a separate high-score table for Fox Hunt; the same server/client same-maze race). See the Trailblazer section above for the details.
 
+### Memory Chain
+
+**Memory Chain** is a memory game: the device presents a growing chain of characters, **one new character per round**, and you must key the *entire* chain from memory each time. The device never repeats the earlier part of the chain — keying it again each round is what keeps it in your head. There is no time pressure: take as much time as you like between characters.
+
+The game has two content modes:
+
+- **Characters**: the chain grows with random characters from your current Koch lesson (pro signs from the high lessons are skipped — a chain box holds a single character). **One error per round is tolerated**: the box turns red and shows the correct character, and you continue with the next position. The **second error within the same round ends the game**. Your score is the length of the last chain you completed.
+- **Call Signs**: one random call sign *is* the chain, revealed letter by letter (`O`, `OE`, `OE1`, … up to something like `OE1WKL/P`). When you have keyed the complete call, a fresh call starts with an empty chain, and the game continues call after call. Here **no error is tolerated** — the first wrong character ends the game. Your score is the number of completed calls. Call signs use the full character set (letters, digits, and the slash) regardless of your Koch lesson, and follow your call-sign preferences (continent, common prefixes). Beware of keying ahead of what has actually been revealed — after `OE1W` your brain may want to complete a familiar call, but the next letter is whatever the generator picked.
+
+The new character of each round is either **shown** on the display (big, until you start keying) or **sounded** in Morse code — your choice in the lobby. Sounded prompts play at your current keying speed and slightly shifted in pitch (like the Echo Trainer), so you can tell them from your own sidetone; they are not repeated. Sound mode is the harder — and the more useful — training.
+
+Memory Chain is only available on the M32 Pocket.
+
+#### Starting the Game {-}
+
+From the main menu, navigate to **Games → Memory Chain**. The lobby shows the two game settings and (in Characters mode) the Koch lesson; the setting the encoder currently changes is highlighted in yellow:
+
+| Control | Action |
+|---------|--------|
+| **Encoder (knob)** | Change the highlighted setting (Mode / Prompt / Koch lesson) |
+| **FN short press** | Highlight the next setting |
+| **Encoder click** | View the high-score table (of the selected mode) |
+| **Paddle / key** | Start the game |
+| **Encoder long press** | Quit back to the main menu |
+
+The Mode and Prompt choices are remembered across sessions; the Koch lesson is your global lesson, the same as everywhere else.
+
+#### Playing {-}
+
+A row of small grey boxes shows the chain — one box per character — and the newest character is shown or sounded. Key the whole chain from the beginning. Each correctly keyed character turns its box **green**; the box you are expected to key next has a yellow frame, so you never lose your place. A wrong character turns its box **red and reveals the correct character** in it — in Characters mode you simply continue with the next box (that was your one tolerated error; a red box in the row means it is used up), in Call Signs mode the game is over.
+
+When the whole row is coloured, the chain grows by one, all boxes return to grey, and the next round begins. In Call Signs mode a completed call is first shown in full for a moment, then the next call starts. The green boxes deliberately stay empty — the chain lives in your memory, not on the screen.
+
+There are **no sounds for right or wrong** — feedback is purely visual, so nothing interrupts the flow of your keying.
+
+#### Controls During the Game {-}
+
+| Control | Action |
+|---------|--------|
+| **Paddles** | Key the chain, one character at a time |
+| **Encoder** | Adjust your keying WPM (or volume — see below) |
+| **FN short press** | Toggle the encoder between speed and volume |
+| **Encoder long press** | Quit back to the main menu |
+
+#### Scoring and High Scores {-}
+
+When the game ends, the whole chain is revealed — every box shows its character, with the fatal position in red (in Call Signs mode you also see what the rest of the call would have been). In Characters mode your score is the completed chain length; in Call Signs mode it is the number of completed calls, with the letters already banked in the failed call as a tiebreak. Each mode keeps its own top-7 high-score table, recording the result, the errors used, the Koch lesson, and whether you played with displayed or sounded prompts. Click the encoder for the high-score table; a further press returns to the lobby, a long press exits.
+
 ## WiFi Functions
 
 Apart from the functionality of WiFi Transceiver, you can use the WiFi
@@ -2594,9 +2644,9 @@ Call Sign accepts letters, digits and the slash; Op Name accepts letters and a
 space. The current value is shown next to the preference.
 
 **Reset Scores** clears the saved high scores and game progress for all games
-(Morse Invaders, Morsel, Radio Cave, and the Trailblazer and Fox Hunt
-grid-maze games). Selecting it shows a confirmation: press **FN** to confirm,
-or click the ENCODER to cancel.
+(Morse Invaders, Morsel, Radio Cave, the Trailblazer and Fox Hunt grid-maze
+games, and Memory Chain). Selecting it shows a confirmation: press **FN** to
+confirm, or click the ENCODER to cancel.
 
 ## List of All Morserino-32 preferences
 
@@ -2734,7 +2784,7 @@ These items appear at the very end of the preferences list. The first two set yo
 |---|---|---|
 | Call Sign | Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in **Fight the Pileup** and the **QSO Bot**. | up to 8 characters (stored as UPPER CASE) |
 | Op Name | Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case and used together with your call sign in **Fight the Pileup**. | up to 8 characters (stored as UPPER CASE) |
-| Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, the **Radio Cave** saved progress, and the **Trailblazer** and **Fox Hunt** high-score tables. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
+| Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, the **Radio Cave** saved progress, and the **Trailblazer**, **Fox Hunt**, and **Memory Chain** high-score tables. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
 
 
 

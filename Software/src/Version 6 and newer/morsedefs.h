@@ -345,6 +345,7 @@ const uint8_t menuN = 43
     + 5    // Games, Morse Invaders, Fight the Pileup, Radio Cave, Morsel
     + 1    // Trailblazer — see MorseTrailblazer.h
     + 1    // Fox Hunt — see MorseFoxHunt.h
+    + 1    // Memory Chain — see MorseMemoryChain.h
 #endif
 #ifdef CONFIG_QSO_BOT
     + 4    // QSO Bot, SOTA/POTA, Standard, Contest
@@ -373,6 +374,7 @@ enum menuNo
 #ifdef CONFIG_CW_GAME
         , _trailblazer  // see MorseTrailblazer.h
         , _foxHunt      // see MorseFoxHunt.h
+        , _memoryChain  // see MorseMemoryChain.h
 #endif
    };
 

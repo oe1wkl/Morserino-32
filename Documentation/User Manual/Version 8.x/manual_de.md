@@ -1569,11 +1569,13 @@ Tonfrequenz nicht so nahe an 700 Hz liegen.
 
 Der Morserino Pocket bietet jetzt CW-basierte Spiele, die das Lernen
 und Üben des Morsecodes unterhaltsamer gestalten. Die Spiele sind unter
-dem Menüpunkt „**Games**" zu finden. Derzeit sind sechs Spiele verfügbar:
+dem Menüpunkt „**Games**" zu finden. Derzeit sind sieben Spiele verfügbar:
 **Morse Invaders**, **Fight the Pileup**, **Radio Cave**, **Morsel**,
-**Trailblazer** und **Fox Hunt**. Die beiden letzten sind ein Paar
-Gitter-Labyrinth-Spiele mit demselben Spielfeld — Trailblazer trainiert
-das Geben, Fox Hunt das Aufnehmen.
+**Trailblazer**, **Fox Hunt** und **Memory Chain**. Trailblazer und
+Fox Hunt sind ein Paar Gitter-Labyrinth-Spiele mit demselben Spielfeld —
+Trailblazer trainiert das Geben, Fox Hunt das Aufnehmen. Memory Chain ist
+ein Gedächtnisspiel — wie „Kofferpacken", nur in Morsezeichen: gib eine
+stetig wachsende Zeichenkette, ohne den Faden zu verlieren.
 
 ### Morse Invaders
 
@@ -2568,6 +2570,105 @@ Fehleingabe; eine eigene Bestenliste für Fox Hunt; dasselbe
 Server/Client-Rennen auf demselben Labyrinth). Die Einzelheiten stehen im
 Trailblazer-Abschnitt oben.
 
+### Memory Chain
+
+**Memory Chain** ist ein Gedächtnisspiel — im Grunde „Kofferpacken" in
+Morsezeichen: Das Gerät präsentiert eine wachsende Zeichenkette, **ein neues
+Zeichen pro Runde**, und du musst jedes Mal die *gesamte* Kette aus dem
+Gedächtnis geben. Das Gerät wiederholt den früheren Teil der Kette nie — dass
+du sie jede Runde selbst neu gibst, hält sie in deinem Kopf. Es gibt keinen
+Zeitdruck: Zwischen den Zeichen kannst du dir so viel Zeit lassen, wie du willst.
+
+Das Spiel hat zwei Inhaltsmodi:
+
+- **Characters** (Zeichen): Die Kette wächst mit zufälligen Zeichen aus deiner
+  aktuellen Koch-Lektion (die Pro-Signs der hohen Lektionen werden ausgelassen —
+  ein Kettenkästchen fasst genau ein Zeichen). **Ein Fehler pro Runde wird
+  toleriert**: Das Kästchen wird rot und zeigt das richtige Zeichen, und du
+  machst mit der nächsten Position weiter. Der **zweite Fehler innerhalb
+  derselben Runde beendet das Spiel**. Dein Ergebnis ist die Länge der letzten
+  vollständig gegebenen Kette.
+- **Call Signs** (Rufzeichen): Ein zufälliges Rufzeichen *ist* die Kette und
+  wird Buchstabe für Buchstabe enthüllt (`O`, `OE`, `OE1`, … bis etwa
+  `OE1WKL/P`). Hast du das vollständige Rufzeichen gegeben, beginnt ein neues
+  Rufzeichen mit leerer Kette, und das Spiel geht Rufzeichen um Rufzeichen
+  weiter. Hier wird **kein Fehler toleriert** — das erste falsche Zeichen
+  beendet das Spiel. Dein Ergebnis ist die Zahl der vollständig gegebenen
+  Rufzeichen. Rufzeichen verwenden unabhängig von deiner Koch-Lektion den
+  vollen Zeichensatz (Buchstaben, Ziffern und den Schrägstrich) und folgen
+  deinen Rufzeichen-Einstellungen (Kontinent, häufige Präfixe). Hüte dich
+  davor, dem tatsächlich Enthüllten vorauszueilen — nach `OE1W` möchte dein
+  Kopf vielleicht ein vertrautes Rufzeichen vervollständigen, aber der nächste
+  Buchstabe ist der, den der Generator gewählt hat.
+
+Das neue Zeichen jeder Runde wird entweder am Display **angezeigt** (groß, bis
+du zu geben beginnst) oder als Morsezeichen **hörbar gegeben** — deine Wahl in
+der Lobby. Hörbare Zeichen werden mit deiner aktuellen Gebegeschwindigkeit und
+leicht verschobener Tonhöhe gespielt (wie beim Echo Trainer), damit du sie von
+deinem eigenen Mithörton unterscheiden kannst; sie werden nicht wiederholt.
+Der Sound-Modus ist das härtere — und nützlichere — Training.
+
+Memory Chain ist nur am M32 Pocket verfügbar.
+
+#### Das Spiel starten {-}
+
+Navigiere im Hauptmenü zu **Games → Memory Chain**. Die Lobby zeigt die beiden
+Spieleinstellungen und (im Characters-Modus) die Koch-Lektion; die Einstellung,
+die der Encoder gerade verändert, ist gelb hervorgehoben:
+
+| Bedienelement | Aktion |
+|---------|--------|
+| **Encoder (Drehknopf)** | Hervorgehobene Einstellung ändern (Modus / Prompt / Koch-Lektion) |
+| **FN kurz drücken** | Nächste Einstellung hervorheben |
+| **Encoder klicken** | Bestenliste (des gewählten Modus) ansehen |
+| **Paddle / Taste** | Spiel starten |
+| **Encoder lang drücken** | Zurück ins Hauptmenü |
+
+Modus und Prompt werden dauerhaft gemerkt; die Koch-Lektion ist deine globale
+Lektion, dieselbe wie überall sonst.
+
+#### Spielverlauf {-}
+
+Eine Reihe kleiner grauer Kästchen zeigt die Kette — ein Kästchen pro
+Zeichen —, und das neueste Zeichen wird angezeigt oder hörbar gegeben. Gib die
+ganze Kette von Anfang an. Jedes richtig gegebene Zeichen färbt sein Kästchen
+**grün**; das Kästchen, das als Nächstes dran ist, hat einen gelben Rahmen —
+so verlierst du nie deine Position. Ein falsches Zeichen färbt sein Kästchen
+**rot und enthüllt darin das richtige Zeichen** — im Characters-Modus machst
+du einfach mit dem nächsten Kästchen weiter (das war dein einer tolerierter
+Fehler; ein rotes Kästchen in der Reihe heißt: er ist verbraucht), im
+Call-Signs-Modus ist das Spiel vorbei.
+
+Ist die ganze Reihe eingefärbt, wächst die Kette um eins, alle Kästchen werden
+wieder grau, und die nächste Runde beginnt. Im Call-Signs-Modus wird ein
+vollendetes Rufzeichen zunächst einen Moment vollständig angezeigt, dann
+beginnt das nächste. Die grünen Kästchen bleiben mit Absicht leer — die Kette
+lebt in deinem Gedächtnis, nicht am Bildschirm.
+
+Es gibt **keine Töne für richtig oder falsch** — die Rückmeldung ist rein
+visuell, damit nichts den Fluss deines Gebens unterbricht.
+
+#### Bedienung im Spiel {-}
+
+| Bedienelement | Aktion |
+|---------|--------|
+| **Paddles** | Die Kette geben, Zeichen für Zeichen |
+| **Encoder** | Gebegeschwindigkeit (WpM) einstellen (oder Lautstärke — siehe unten) |
+| **FN kurz drücken** | Encoder zwischen Geschwindigkeit und Lautstärke umschalten |
+| **Encoder lang drücken** | Zurück ins Hauptmenü |
+
+#### Wertung und Bestenliste {-}
+
+Endet das Spiel, wird die ganze Kette aufgedeckt — jedes Kästchen zeigt sein
+Zeichen, die fatale Position in Rot (im Call-Signs-Modus siehst du auch, wie
+der Rest des Rufzeichens gelautet hätte). Im Characters-Modus ist dein Ergebnis
+die vollendete Kettenlänge; im Call-Signs-Modus die Zahl der vollendeten
+Rufzeichen, mit den bereits gesicherten Buchstaben des angebrochenen Rufzeichens
+als Zusatzwertung. Jeder Modus führt seine eigene Top-7-Bestenliste mit
+Ergebnis, verbrauchten Fehlern, Koch-Lektion und der Angabe, ob mit angezeigtem
+oder hörbarem Prompt gespielt wurde. Klicke den Encoder für die Bestenliste;
+ein weiterer Druck führt zurück in die Lobby, ein langer Druck beendet das Spiel.
+
 ## WiFi Functions
 
 Neben der WiFi-Transceiver-Funktionalität kannst du die WLAN-Funktion
@@ -2974,8 +3075,8 @@ akzeptiert Buchstaben und ein Leerzeichen. Der aktuelle Wert wird neben der
 Einstellung angezeigt.
 
 **Reset Scores** löscht die gespeicherten Bestenlisten und den Spielfortschritt
-aller Spiele (Morse Invaders, Morsel, Radio Cave sowie die Gitter-Labyrinth-Spiele
-Trailblazer und Fox Hunt). Beim Auswählen erscheint
+aller Spiele (Morse Invaders, Morsel, Radio Cave, die Gitter-Labyrinth-Spiele
+Trailblazer und Fox Hunt sowie Memory Chain). Beim Auswählen erscheint
 eine Bestätigung: **FN** drücken zum Bestätigen, oder den ENCODER klicken zum
 Abbrechen.
 
@@ -3104,7 +3205,7 @@ Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen 
 |---|---|---|
 | **Call Sign** | Dein eigenes Amateurfunk-Rufzeichen. Gib es mit dem Encoder und den Tasten ein. Es wird in Großbuchstaben gespeichert und als dein Stationsrufzeichen in **Fight the Pileup** und im **QSO Bot** verwendet. | bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert) |
 | **Op Name** | Dein Operatorname (z.B. dein Vorname). Gib ihn mit dem Encoder und den Tasten ein. Er wird in Großbuchstaben gespeichert und zusammen mit deinem Rufzeichen in **Fight the Pileup** verwendet. | bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert) |
-| **Reset Scores** | Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele — die Bestenliste von **Morse Invaders**, die Bestwerte von **Morsel**, den gespeicherten Fortschritt von **Radio Cave** sowie die Bestenlisten von **Trailblazer** und **Fox Hunt**. Du wirst gebeten, mit der **FN**-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.) | mit FN bestätigen |
+| **Reset Scores** | Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele — die Bestenliste von **Morse Invaders**, die Bestwerte von **Morsel**, den gespeicherten Fortschritt von **Radio Cave** sowie die Bestenlisten von **Trailblazer**, **Fox Hunt** und **Memory Chain**. Du wirst gebeten, mit der **FN**-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.) | mit FN bestätigen |
 
 # Anhänge
 

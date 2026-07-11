@@ -34,6 +34,7 @@ extern bool memoryReboot;
   #include "MorseMorsel.h"
   #include "MorseTrailblazer.h"
   #include "MorseFoxHunt.h"
+  #include "MorseMemoryChain.h"
 #endif
 
 #ifdef CONFIG_QSO_BOT
@@ -130,6 +131,7 @@ const char* const menuText[menuN]  = {
 #ifdef CONFIG_CW_GAME
   , "Trailblazer"
   , "Fox Hunt"
+  , "Memory Chain"
 #endif
   } ;
 
@@ -202,7 +204,7 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #ifdef CONFIG_CW_GAME
   {0,_trx,_games,_dummy,0},                               // decoder  -e
   {0,_decode,_wifi,_dummy,_morseInvaders},                 // games
-  {1,_foxHunt,_fightPileup,_games,0},                        // morse invaders  -e (left wraps via _foxHunt)
+  {1,_memoryChain,_fightPileup,_games,0},                    // morse invaders  -e (left wraps via _memoryChain)
   {1,_morseInvaders,_radioCave,_games,0},                    // fight pileup  -e
   {1,_fightPileup,_morsel,_games,0},                         // radio cave  -e
   {1,_radioCave,_trailblazer,_games,0},                     // morsel  -e (right -> Trailblazer)
@@ -220,7 +222,8 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {0,_wifi,_keyer,_dummy,0},                            // 42 goto sleep  -e
 #ifdef CONFIG_CW_GAME
   {1,_morsel,_foxHunt,_games,0},                        // Trailblazer  -e (in the games ring after Morsel)
-  {1,_trailblazer,_morseInvaders,_games,0}              // Fox Hunt  -e (right wraps to Morse Invaders)
+  {1,_trailblazer,_memoryChain,_games,0},               // Fox Hunt  -e (right -> Memory Chain)
+  {1,_foxHunt,_morseInvaders,_games,0}                  // Memory Chain  -e (right wraps to Morse Invaders)
 #endif
 };
 
@@ -750,6 +753,13 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
                 return false;
+      case _memoryChain:
+                morseState = morseGame;
+                MorseMemoryChain::run();
+                m32state = menu_loop;
+                Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
+                return false;
 #endif
       case  _decode: /// decoder
                 MorsePreferences::setCurrentOptions(MorsePreferences::decoderOptions, MorsePreferences::decoderOptionsSize);
@@ -877,6 +887,7 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
       case _morsel:
       case _trailblazer:
       case _foxHunt:
+      case _memoryChain:
 #endif
       return false;
     }
