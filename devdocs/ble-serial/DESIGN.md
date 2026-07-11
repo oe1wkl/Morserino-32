@@ -297,13 +297,62 @@ case-insensitively; and the app must **cancel its pending connect** when the
 picker closes, or iOS completes it silently later (zombie connection the app
 doesn't show).
 
+## Second hardware run (2026-07-10, M32 Pocket, round-2 + V9.0-merged build)
+
+Scripted PLAN §8 suite (steps 1–8) **passes**; a 27-check dual-transport
+regression (USB `pyserial` + BLE `bleak` attached simultaneously) verified
+the round-2 fixes on-device: session-control isolation in both directions
+(fix 5, incl. re-ack and bogus-value intercepts), `PUT snapshot/recall`
+change-switch (fix 2, store/recall/clear round-trip with selector
+transitions), uppercase `protocol/OFF` on USB (fix d), and the congestion
+policy (fixes 3+4): during an 8× `GET configs` flood into a full TX ring the
+**USB round-trip stayed at ~40 ms** (no loop stall), the backoff DEBUG
+arrived cleanly on raw serial, and the BLE session was usable again
+immediately after the ring drained.
+
+**WiFi suspend/resume ×5 (Pocket): PASS** — remotely executed
+`Disp MAC Addr` with a handshaken USB session; all 5 cycles suspended,
+re-advertised and reconnected + re-handshaked. The BLE-side suspend notice
+arrived in 4/5 cycles (best-effort by design — it races the link teardown).
+
+**Measured per-cycle heap loss: ~3.8 KB** (init-to-init free-heap deltas
+over 5 suspend/resume cycles: 3896/3824/3848/3824/3816 B; free heap at
+BLE-init fell 77.6 KB → 58.4 KB across the run). This is the library's
+leaked server/service/characteristic/descriptor objects per
+`deinit(false)`→`init()` cycle — noticeably more than the "few hundred
+bytes to ~1 KB" estimated earlier in this file. ~15–20 WiFi round-trips in
+one power-on could exhaust enough heap that `init()` starts refusing
+(visibly, via the "NO MEM" defensive path — no crash). Acceptable for
+typical sessions; a future mitigation would need library surgery (reusing
+the server object across cycles) — out of scope here.
+
+Two additional defects found and fixed during this run:
+
+1. **Static `BLE2902` broke every re-init** (see the round-2 section above
+   — reverted to per-init `new`).
+2. **`GET menus` silently truncated at ~34 entries on TFT builds**
+   (`jsonMenuList`'s fixed 3072-byte pool vs `menuN = 43` with the games;
+   ArduinoJson drops adds on a full pool). The whole WiFi Functions block
+   was missing from the protocol menu list — pre-existing on master for
+   every game-enabled build, found because the suspend/resume test could
+   not find `Disp MAC Addr` remotely. Pool is now sized from `menuN`.
+
+Client-side observation (for the protocol doc / app authors): a response
+tail dropped under backoff leaves an **unbalanced `{` prefix** in the BLE
+stream — a client framing purely by brace-counting cannot resync from the
+stream alone; it needs a timeout-based resync or a reconnect (the session
+reset clears everything). `ble_m32_test.py`'s REPL and the regression
+harness now do timeout-resync.
+
 ## Hardware test checklist — remaining
 
-The rest of the PLAN §8 matrix is still open: WiFi suspend/resume ×5 with
-per-cycle heap deltas (both boards), mid-game multiplayer drop, suspended-
-session auto-sleep + remote self-disable, BT-keyboard interplay on the
-classic V2, ≥35 WpM stalled-client CW-timing soak, WiFi-upload-after-BLE on
-V2, snapshots, and the classic-V2 run of the scripted steps. Run
+Still open from the PLAN §8 matrix: the **classic V2** run of everything
+above (incl. WiFi-upload-after-BT with free-heap deltas — Willi's bench),
+mid-game multiplayer drop, suspended-session auto-sleep + remote
+self-disable (auto-sleep with an *un*-handshaken BLE link was incidentally
+confirmed — the bench device slept between test sessions), and the
+≥35 WpM stalled-client CW-timing soak (needs ears + paddle: D1's 40 ms loop
+latency is the proxy, not the proof). Run
 [`ble_m32_test.py`](ble_m32_test.py) (`pip install bleak`) scripted or
 `--repl`.
 
