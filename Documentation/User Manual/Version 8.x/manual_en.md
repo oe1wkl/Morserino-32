@@ -1134,8 +1134,12 @@ the new option **Custom Chars.** The Koch Trainer will then read the
 characters from the file.
 
 Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it
-will use those characters for your training. The Koch lesson setting
-**does not influence** this process.
+will use those characters for your training. The **Koch Lesson** setting
+acts as an index into your custom character set: at lesson *N*, only the
+first *N* characters of the set are used as the active training pool
+(capped at the actual length of the set, so a lesson number larger than
+your character set simply uses all of it). The lesson maximum adjusts
+automatically to the length of your custom character set.
 
 To change the character set, upload a new text file and select **Custom
 Chars **again. Even if it had been selected before, you must select

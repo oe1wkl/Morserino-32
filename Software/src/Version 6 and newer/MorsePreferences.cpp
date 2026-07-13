@@ -2359,13 +2359,23 @@ uint8_t Koch::setupLICWkochChars(uint8_t start) {  // set up the string of chara
  
 void Koch::setCustomChars(const String& chars) {          // define the custom character set
    MorsePreferences::customCharSet = chars;
+   // Koch Lesson indexes into this set for Custom Chars, so its range must track
+   // the set's actual length (capped to the adaptiveProbabilities[] capacity).
+   uint8_t len = _min((size_t) chars.length(), sizeof(adaptiveProbabilities));
+   MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = len ? len : 1;
+   MorsePreferences::kochMinimum = 1;
+   MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
 }
 
 String Koch::getNewChar() {                     // for Koch Learn New Character
+  if (MorsePreferences::useCustomChars)
+    return String(MorsePreferences::customCharSet.charAt(MorsePreferences::kochFilter - 1));
   return String(kochCharSet.charAt(MorsePreferences::kochFilter - 1));
 }
 
 String Koch::getKochChar(uint8_t i) {           // get a String consisting of a single character at pos i in kochCharSet (i starting with 0)
+  if (MorsePreferences::useCustomChars)
+    return String(MorsePreferences::customCharSet.charAt(i));
   return String(kochCharSet.charAt(i));
 }
 
@@ -2374,8 +2384,9 @@ String Koch::getRandomChar(int maxl) {                  // get a random characte
     result.reserve(7);
 
     if (MorsePreferences::useCustomChars) {
+        String activeSet = getCharSet();                       // Koch Lesson limits the pool to its first N custom characters
         for (int i = 0; i < maxl; ++i )
-            result += MorsePreferences::customCharSet.charAt(random(MorsePreferences::customCharSet.length()));
+            result += activeSet.charAt(random(activeSet.length()));
     }
     else {
         int endk =  MorsePreferences::kochFilter;               // kochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=KA+SNE@:"
@@ -2460,7 +2471,7 @@ String Koch::getInitChar(int maxl)
 String Koch::getCharSet()
 {
   if (MorsePreferences::useCustomChars)
-    return MorsePreferences::customCharSet;
+    return MorsePreferences::customCharSet.substring(0, _min((size_t) MorsePreferences::kochFilter, MorsePreferences::customCharSet.length()));
   else
     return kochCharSet.substring(0, MorsePreferences::kochFilter);
 }

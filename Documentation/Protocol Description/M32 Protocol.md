@@ -518,6 +518,11 @@ Example:
 
 This sets Koch lesson to lesson number <n>.
 
+Note: when "Koch Sequence" is set to "Custom Chars", the lesson indexes into
+the custom character set — "maximum" reflects the length of that set (instead
+of the fixed 51), and "characters" reports only its first <n> characters, i.e.
+the active training pool for the CW Generator / Echo Trainer.
+
 
 ### Custom Character Set
 
