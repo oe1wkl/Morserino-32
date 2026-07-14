@@ -1139,7 +1139,8 @@ acts as an index into your custom character set: at lesson *N*, only the
 first *N* characters of the set are used as the active training pool
 (capped at the actual length of the set, so a lesson number larger than
 your character set simply uses all of it). The lesson maximum adjusts
-automatically to the length of your custom character set.
+automatically to the length of your custom character set (up to 51
+characters; characters beyond the 51st are not reachable).
 
 To change the character set, upload a new text file and select **Custom
 Chars **again. Even if it had been selected before, you must select

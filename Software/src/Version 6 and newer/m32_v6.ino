@@ -4035,15 +4035,15 @@ void m32Put(String type, String token, String value) {                    /// PU
           MorsePreferences::useCustomChars = true;
           MorsePreferences::customCharSet = value;
         }
+        koch.setup();                                  // clamps kochFilter/bounds before we persist them
         MorsePreferences::writePreferences("morserino");
-        koch.setup();
         MorseJSON::jsonOK();
       }
       else if (token == "clear") {
         MorsePreferences::useCustomChars = false;
         MorsePreferences::customCharSet = "";
-        MorsePreferences::writePreferences("morserino");
         koch.setup();
+        MorsePreferences::writePreferences("morserino");
         MorseJSON::jsonOK();
       }
       else

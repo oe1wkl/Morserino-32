@@ -1146,7 +1146,8 @@ benutzerdefinierten Zeichensatz: bei Lektion *N* werden nur die ersten
 *N* Zeichen des Zeichensatzes als aktiver Trainings-Pool verwendet
 (begrenzt auf die tatsächliche Länge des Zeichensatzes, falls die
 Lektion größer ist). Das Lektions-Maximum passt sich dabei automatisch
-an die Länge deines Zeichensatzes an.
+an die Länge deines Zeichensatzes an (bis maximal 51 Zeichen; Zeichen
+ab Position 52 sind nicht erreichbar).
 
 Um den Zeichensatz zu ändern, lade eine neue Textdatei hoch und wähle
 **Custom Chars** erneut aus. Selbst wenn es zuvor bereits ausgewählt
