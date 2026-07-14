@@ -542,6 +542,13 @@ Example:
 
 	PUT customchars/set/mkrsuaptlowi
 
+Note: on the device, the custom character set is derived from the uploaded
+player file (`/player.txt`) — that file is the source of truth. A set injected
+with this command therefore persists only until the preferences menu is next
+exited while "Custom Chars" is active: at that moment the set is re-derived
+from the player file, replacing the injected one. To make a character set
+permanent, upload it as the player file instead (or in addition).
+
 `PUT customchars/clear`
 
 This disables and clears the custom Koch character set. The Koch trainer will revert to the sequence selected by the "Koch Sequence" parameter.
