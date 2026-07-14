@@ -748,8 +748,13 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                       break;
           case -1:    //////// long press indicates we are done with setting preferences - check if we need to store some of the preferences
 
-          exitFromHere: if (MorsePreferences::useCustomChars)
-                            koch.setCustomChars(getCustomChars()); //// get custom characters
+          exitFromHere: if (MorsePreferences::useCustomChars) {
+                            String chars = getCustomChars(); //// get custom characters
+                            if (chars.length() > 0)
+                                koch.setCustomChars(chars);
+                            // else: an empty re-upload keeps the previously active custom
+                            // set/bounds rather than silently wiping a working configuration
+                        }
                         if (m32protocol && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
 
@@ -1248,8 +1253,12 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                       temp = val + maxi - 2*mini + vstep  + t*vstep;
                       pliste[pos].value = (temp % (maxi - mini +vstep)) + mini;
                   }
-                  if (pos == posKochSeq)
-                      MorsePreferences::handleKochSequence();
+                  if (pos == posKochSeq) {
+                      if (!MorsePreferences::handleKochSequence()) {
+                          MorseOutput::printOnScroll(2, BOLD, 0, "No custom set");
+                          delay(700);
+                      }
+                  }
                   else if (pos == posCarouselStart && pliste[posKochSeq].value == 3)
                       MorsePreferences::handleCarouselChange();
 #ifdef CONFIG_SOUND_I2S 
@@ -1331,28 +1340,23 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
 }   // end of function adjustKeyerPreference
 
 
-void MorsePreferences::handleKochSequence() {
+boolean MorsePreferences::handleKochSequence() {  // returns false if Custom Chars was requested but no character set is available (yet)
     MorsePreferences::useCustomChars = false;
-    switch (MorsePreferences::pliste[posKochSeq].value) {
-      case 3:                                                 // LICW
-              handleCarouselChange();
-              break;
-      case 4:                                                 // Custom Chars
-              MorsePreferences::useCustomChars = true;
-      default:                                                // all others are treated the same
-              MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = 51;
-              MorsePreferences::kochMinimum = 1;
-              MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
-              koch.setup();
+    if (MorsePreferences::pliste[posKochSeq].value == 4) {      // Custom Chars
+        String chars = MorsePreferences::customCharSet;
+        if (chars.length() == 0)
+            chars = getCustomChars();                            // try to (re-)read it from the file player right away
+        if (chars.length() == 0)
+            return false;                                        // none available - leave the current mode/bounds untouched
+        MorsePreferences::useCustomChars = true;
+        MorsePreferences::customCharSet = chars;
     }
+    koch.setup();                                                 // setKochChars()/setCustomChars() derive the correct bounds
+    return true;
 }
 
 void MorsePreferences::handleCarouselChange() {
-      MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = koch.setupLICWkochChars(MorsePreferences::pliste[posCarouselStart].value);
-      MorsePreferences::kochMinimum = kochCharsLength > 18 ? 19 : 1;
-//DEBUG("@ 842: kMin: " + String(MorsePreferences::kochMinimum) + " kMax: " + String(MorsePreferences::kochMaximum));
-      MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
-      koch.setup();
+      koch.setup();                                               // setKochChars() case 3 derives the LICW bounds from posCarouselStart
 }
 
 
@@ -2312,17 +2316,29 @@ void Koch::setup() {                                                // create th
 }
 
 void Koch::setKochChars(uint8_t sequence) { // define the demanded Koch character set: Koch sequenze: 0 = native/JLMC, 1 = LCWO, 2 = CW Academy, 3 = LICW, 4 = Custom
+    // Bounds bookkeeping lives here (mirroring setCustomChars()) so every caller of
+    // koch.setup() gets correct kochCharsLength/kochMinimum/kochMaximum for the
+    // selected sequence, not just the ones that also call handleKochSequence()/
+    // handleCarouselChange().
     switch (sequence) {
         case 1: kochCharSet = lcwoKochChars;
                 break;
         case 2: kochCharSet = cwacKochChars;
                 break;
-        case 3: setupLICWkochChars(MorsePreferences::pliste[posCarouselStart].value);
+        case 3: {
+                uint8_t l = setupLICWkochChars(MorsePreferences::pliste[posCarouselStart].value);
                 kochCharSet = licwKochChars;
-                break;
+                MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = l;
+                MorsePreferences::kochMinimum = l > 18 ? 19 : 1;
+                MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
+                return;
+                }
         default:kochCharSet = morserinoKochChars;
                 break;
     }
+    MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = sizeof(adaptiveProbabilities) / sizeof(adaptiveProbabilities[0]);
+    MorsePreferences::kochMinimum = 1;
+    MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
 }
 
 
@@ -2362,13 +2378,33 @@ uint8_t Koch::setupLICWkochChars(uint8_t start) {  // set up the string of chara
  
 void Koch::setCustomChars(const String& chars) {          // define the custom character set
    MorsePreferences::customCharSet = chars;
+   uint8_t capacity = sizeof(adaptiveProbabilities) / sizeof(adaptiveProbabilities[0]);
+   if (chars.length() == 0) {
+       // Nothing to index into. Fall back to the full built-in range instead of
+       // clamping (and persisting) the user's saved lesson down to 1 - this branch
+       // is reachable even with useCustomChars still true (e.g. an empty NVS copy
+       // before the first file upload), so it must not discard that lesson value.
+       MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = capacity;
+       MorsePreferences::kochMinimum = 1;
+       return;
+   }
+   // Koch Lesson indexes into this set for Custom Chars, so its range must track
+   // the set's actual length (capped to the adaptiveProbabilities[] capacity).
+   uint8_t len = _min((size_t) chars.length(), (size_t) capacity);
+   MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = len;
+   MorsePreferences::kochMinimum = 1;
+   MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
 }
 
 String Koch::getNewChar() {                     // for Koch Learn New Character
+  if (MorsePreferences::useCustomChars)
+    return String(MorsePreferences::customCharSet.charAt(MorsePreferences::kochFilter - 1));
   return String(kochCharSet.charAt(MorsePreferences::kochFilter - 1));
 }
 
 String Koch::getKochChar(uint8_t i) {           // get a String consisting of a single character at pos i in kochCharSet (i starting with 0)
+  if (MorsePreferences::useCustomChars)
+    return String(MorsePreferences::customCharSet.charAt(i));
   return String(kochCharSet.charAt(i));
 }
 
@@ -2377,8 +2413,9 @@ String Koch::getRandomChar(int maxl) {                  // get a random characte
     result.reserve(7);
 
     if (MorsePreferences::useCustomChars) {
+        String activeSet = getCharSet();                       // Koch Lesson limits the pool to its first N custom characters
         for (int i = 0; i < maxl; ++i )
-            result += MorsePreferences::customCharSet.charAt(random(MorsePreferences::customCharSet.length()));
+            result += activeSet.charAt(random(activeSet.length()));
     }
     else {
         int endk =  MorsePreferences::kochFilter;               // kochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=KA+SNE@:"
@@ -2463,7 +2500,7 @@ String Koch::getInitChar(int maxl)
 String Koch::getCharSet()
 {
   if (MorsePreferences::useCustomChars)
-    return MorsePreferences::customCharSet;
+    return MorsePreferences::customCharSet.substring(0, _min((size_t) MorsePreferences::kochFilter, MorsePreferences::customCharSet.length()));
   else
     return kochCharSet.substring(0, MorsePreferences::kochFilter);
 }

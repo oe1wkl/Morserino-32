@@ -239,7 +239,7 @@ namespace MorsePreferences
   void createKochWords(uint8_t maxl, uint8_t koch);
   uint8_t wordIsKoch(String thisWord);
   void createKochAbbr(uint8_t maxl, uint8_t koch);
-  void handleKochSequence();
+  boolean handleKochSequence();
   void handleCarouselChange();
   void setCustomChars(String);
   //void kochSetup();
