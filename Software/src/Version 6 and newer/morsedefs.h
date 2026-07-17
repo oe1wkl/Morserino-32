@@ -397,6 +397,7 @@ enum KEYERSTATES
 enum prefPos : uint8_t {
   #ifdef CONFIG_SOUND_I2S
         posLineOut,
+        posSidetoneShape,
   #endif
                 posClicks, posPitch, posExtPddlPolarity, posPolarity,                                         // 0
                 posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,                              // 4

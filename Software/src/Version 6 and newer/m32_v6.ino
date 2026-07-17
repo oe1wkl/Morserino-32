@@ -743,6 +743,10 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
   #endif
 
+  #ifdef CONFIG_SOUND_I2S
+  MorseOutput::setSidetoneEnvelope(MorsePreferences::pliste[posSidetoneShape].value);  // set the CW tone envelope softness
+  #endif
+
   MorseOutput::setBrightness(MorsePreferences::oledBrightness);
 
   // to calibrate sensors, we record the values in untouched state; need to do this after checking for system config
@@ -4385,6 +4389,10 @@ boolean setParameter(String token, String value) {      // change a parameter, r
             MorsePreferences::handleKochSequence();
       else if (i == posCarouselStart)
             MorsePreferences::handleCarouselChange();
+#ifdef CONFIG_SOUND_I2S
+      else if (i == posSidetoneShape)
+            MorseOutput::setSidetoneEnvelope(MorsePreferences::pliste[i].value);
+#endif
       found = true;
       break;
     }

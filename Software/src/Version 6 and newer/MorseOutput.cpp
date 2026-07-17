@@ -1979,6 +1979,13 @@ void MorseOutput::soundSetup()
 #endif
 }
 
+#ifdef CONFIG_SOUND_I2S
+void MorseOutput::setSidetoneEnvelope(uint8_t prefValue) {   // prefValue 0..14 maps to 1..15 ms attack/release
+  float t = (prefValue + 1) / 1000.0f;
+  sidetone.setADSR(t, 0.0f, 1.0f, t);
+}
+#endif
+
 void MorseOutput::soundSuspend()
 {
 #ifdef CONFIG_WM8960

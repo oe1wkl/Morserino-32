@@ -64,6 +64,7 @@ enum prefPos : uint8_t
 const char * prefName[] = {
   #ifdef CONFIG_SOUND_I2S
             "lineOut",
+            "sidetoneShape",
   #endif
                       "encoderClicks", "sidetoneFreq", "useExtPaddle", "didah",
                       "keyermode", "curtisBTiming", "curtisBDotT", "ACSlength",
@@ -106,6 +107,13 @@ parameter MorsePreferences::pliste[] = {
             "To be used for headphones or I/O (line-out)?",
             true,
             {"Phones", "line-out", "l-o: Var. Vol.", "l-o: Lsp Muted"}
+        },
+        {
+            6, 0, 9, 1,                                                 // attack/release time of the CW sidetone envelope, in ms (value+1)
+            "Tone Softness",
+            "Softness of CW tone edges (attack/release time)",
+            true,
+            {"1 ms", "2 ms", "3 ms", "4 ms", "5 ms", "6 ms", "7 ms", "8 ms", "9 ms", "10 ms"}
         },
   #endif
   {
@@ -556,7 +564,12 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  
 
 
-#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, 
+#ifdef CONFIG_SOUND_I2S
+#define TONESOFTNESS posSidetoneShape,
+#else
+#define TONESOFTNESS
+#endif
+#define PREFPOS_COMMON_CORE posClicks, posPitch, TONESOFTNESS posTimeOut, posQuickStart, posOutputCase,
 #ifdef CONFIG_SOUND_I2S
 #define LINEOUT posLineOut,
 #else
@@ -1261,9 +1274,12 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                   }
                   else if (pos == posCarouselStart && pliste[posKochSeq].value == 3)
                       MorsePreferences::handleCarouselChange();
-#ifdef CONFIG_SOUND_I2S 
+#ifdef CONFIG_SOUND_I2S
                   else if (pos == posLineOut) {
                       MorseOutput::soundEventHandler();
+                  }
+                  else if (pos == posSidetoneShape) {
+                      MorseOutput::setSidetoneEnvelope(pliste[pos].value);
                   }
 #endif
             
