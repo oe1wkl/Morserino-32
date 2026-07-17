@@ -3102,7 +3102,7 @@ daher für alle Modi des Morserino-32.
 |---|---|---|
 | **Encoder Click** | Das Drehen des ENCODERs kann einen kurzen Ton erzeugen oder stumm sein. | Off / **On** |
 | **Tone Pitch Hz** | Die Frequenz des Mithörtons in Hz. | Eine Reihe von Tönen zwischen 233 und 932 Hz, entsprechend den Noten der F-Dur-Tonleiter von Bb3 bis Bb5 (2 Oktaven). |
-| **Tone Softness** | (Nur für M32 Pocket) Rundet Anstiegs- und Abfallflanke des Mithörtons ab, ähnlich wie ein RC-Tiefpass die Tastflanken bei einem echten Transceiver abrundet. Reduziert die Härte des Tons, besonders bei kurzen Elementen wie einem einzelnen Punkt. Wirkt sofort. | 1 – 10 ms, in Schritten von 1 ms (**7 ms**) |
+| **Tone Softness** | (Nur für M32 Pocket) Rundet Anstiegs- und Abfallflanke des Mithörtons ab, ähnlich wie ein RC-Tiefpass die Tastflanken bei einem echten Transceiver abrundet. Reduziert die Härte des Tons, besonders bei kurzen Elementen wie einem einzelnen Punkt. Wirkt sofort. | 1 – 10 ms, in Schritten von 1 ms (**5 ms**) |
 | **Time Out** | Wenn die hier eingestellte Zeit verstreicht, ohne dass das Display aktualisiert wird, wechselt das Gerät in den Tiefschlaf. Durch Drücken der FN-Taste kann es wieder gestartet werden. | No timeout / **5 min** / 10 min / 15 min |
 | **Quick Start** | Ermöglicht es, die anfängliche Menüauswahl zu umgehen: Bei aktivierter Option (**ON**) startet das Gerät beim Einschalten sofort mit dem zuletzt aktiven Modus. | ON / **OFF** |
 | **Output Case** | Ändert die Groß-/Kleinschreibung der dekodierten Zeichen auf dem Display (und auch bei der seriellen Ausgabe über USB sowie bei der Bluetooth-Tastaturausgabe!) von Kleinbuchstaben auf GROSSBUCHSTABEN. | **lower** / UPPER |

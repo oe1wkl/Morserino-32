@@ -2668,7 +2668,7 @@ to all modes of the Morserino-32.
 |---|---|---|
 | Encoder Click | Turning the encoder may generate a short tone burst, or be silent | Off / **On** |
 | Tone Pitch Hz | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the F major scale from Bb3 to Bb5 (2 octaves) |
-| Tone Softness | (Only for M32 Pocket) Softens the attack and release edges of the CW side tone, similar to what an RC low-pass filter does to the keying edges in a real transceiver. Reduces harshness, especially on short elements such as a single dit. Takes effect immediately. | 1 – 10 ms, in steps of 1 ms (**7 ms**) |
+| Tone Softness | (Only for M32 Pocket) Softens the attack and release edges of the CW side tone, similar to what an RC low-pass filter does to the keying edges in a real transceiver. Reduces harshness, especially on short elements such as a single dit. Takes effect immediately. | 1 – 10 ms, in steps of 1 ms (**5 ms**) |
 | Time Out | If the time specified in this preference passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the FN button. | No timeout / **5 min** / 10 min / 15 min |
 | Quick Start | Allows you to bypass the initial menu selection, i.e. at startup the device will immediately begin executing the mode that had been in effect before last shutdown. | ON / **OFF** |
 | Output Case | This changes the case of decoded characters on the display (and also on serial output via USB, and on Bluetooth keyboard output!) from lower case to UPPER CASE. | **lower** / UPPER |

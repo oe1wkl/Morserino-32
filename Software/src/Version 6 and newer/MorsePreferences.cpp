@@ -109,7 +109,7 @@ parameter MorsePreferences::pliste[] = {
             {"Phones", "line-out", "l-o: Var. Vol.", "l-o: Lsp Muted"}
         },
         {
-            6, 0, 9, 1,                                                 // attack/release time of the CW sidetone envelope, in ms (value+1)
+            4, 0, 9, 1,                                                 // attack/release time of the CW sidetone envelope, in ms (value+1); default matches the library's original hard-coded 5ms
             "Tone Softness",
             "Softness of CW tone edges (attack/release time)",
             true,
