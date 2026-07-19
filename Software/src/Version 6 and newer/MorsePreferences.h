@@ -233,6 +233,7 @@ namespace MorsePreferences
   void readScreenPref();
   void readVoltagePref();
   void writePreferences(const char* repository);
+  boolean storedInSnapshot(prefPos pos);               // does this preference belong in a snapshot (training settings only)?
   void resetDefaults();                                // reset all preferences to default values
   void doWriteSnapshot(uint8_t, uint8_t);
   void doReadSnapshot(uint8_t);

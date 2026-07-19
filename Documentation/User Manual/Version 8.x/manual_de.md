@@ -3022,8 +3022,27 @@ bestimmten Schnappschusses schnell wiederherstellen.
 Die gewählte „Koch-Lektion" wird im nichtflüchtigen Speicher abgelegt
 und ist nach einem Neustart verfügbar, wird aber nicht in einem
 Schnappschuss gespeichert oder überschrieben. Dasselbe gilt für
-WLAN-Einstellungen, die Einstellung **Serial Output** sowie für deine
-Geschwindigkeits- und Lautstärkeeinstellungen.
+WLAN-Einstellungen, die Einstellung **Serial Output**, den
+Bildschirm-Timeout sowie für deine Geschwindigkeits- und
+Lautstärkeeinstellungen.
+
+Schnappschüsse enthalten nur Einstellungen, die für das Training
+relevant sind. Einstellungen, die das Gerät selbst, seine Verbindungen
+oder die Spiele betreffen, werden **nicht** in Schnappschüssen
+gespeichert, und das Abrufen eines Schnappschusses verändert sie nie:
+
+-   Hardware-Einstellungen: **Paddle Polar.**, **External Pol.**
+-   Sender- und Netzwerk-Einstellungen: **Key ext TX**, **Generator
+    Tx**, der LoRa-Kanal
+-   Bluetooth-Tastatur-Einstellungen: **BLT Kbd Output**, **BLT \<AR\>**
+-   Audio-Routing: **Headphone Output**, **Decoded on IO**
+-   Geräteverhalten: **Encoder Click**, **Quick Start**
+-   Spiel-Einstellungen: **Invader Orient.** sowie die
+    QSO-Bot-Einstellungen (**Contest Type**, **QSO Difficulty**)
+
+(Schnappschüsse, die mit älteren Firmware-Versionen gespeichert wurden,
+können einige dieser Einstellungen noch enthalten; sie werden beim
+Abrufen ignoriert und beim Überschreiben des Schnappschusses entfernt.)
 
 ### Speichern eines Schnappschusses
 

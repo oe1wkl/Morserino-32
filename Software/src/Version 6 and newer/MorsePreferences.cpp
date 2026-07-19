@@ -1459,10 +1459,8 @@ void MorsePreferences::readPreferences(const char* repository) {
 //// now we read the preferences into memory that are also restored from snapshots (with two exception: posTimeOut and posSerialOut)
 
     for (uint8_t i = 0; i <= posSerialOut; ++i) {
-      if (!morserino)
-          if (i == posTimeOut || i == posSerialOut)
+      if (!morserino && !storedInSnapshot((prefPos) i))             // snapshots: only training settings are read back
             continue;
-            
 
       if ((temp = pref.getUChar(prefName[i],255)) != 255) {         // we have something in the repository
          if (i == posTimeOut && temp > 3)
@@ -1504,6 +1502,48 @@ void MorsePreferences::readVoltagePref() {
   if (temp = pref.getUChar("vAdjust"))
         MorsePreferences::vAdjust = temp;
   pref.end();
+}
+
+// Which preferences belong in a snapshot. Snapshots are training presets
+// ("different settings for different types of training", see user manual §6.1),
+// so settings that concern the device itself, its connections, or the games are
+// neither stored in snapshots nor changed when one is recalled. Used by
+// writePreferences() (which also removes such keys from old snapshots when they
+// are re-stored), readPreferences() and MorseJSON::jsonGetSnapshot().
+boolean MorsePreferences::storedInSnapshot(prefPos pos) {
+    switch (pos) {
+      case posTimeOut:                    // historic exclusions (see manual)
+      case posSerialOut:
+      // device & UI behaviour:
+      case posClicks:
+      case posQuickStart:
+      // hardware wiring:
+      case posPolarity:
+      case posExtPddlPolarity:
+      case posExtAudioOnDecode:
+      // transmit gates & connectivity:
+      case posKeyExternalTx:
+      case posLoraCwTransmit:
+      case posLoraChannel:
+#ifdef CONFIG_SOUND_I2S
+      case posLineOut:
+#endif
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+      case posBluetoothOut:
+      case posBluetoothARkey:
+#endif
+      // game / QSO Bot settings:
+#ifdef CONFIG_CW_GAME
+      case posInvaderOrient:
+#endif
+#ifdef CONFIG_QSO_BOT
+      case posQsoBotContestType:
+      case posQsoBotLevel:
+#endif
+          return false;
+      default:
+          return true;
+    }
 }
 
 void MorsePreferences::writePreferences(const char* repository) {
@@ -1607,8 +1647,10 @@ void MorsePreferences::writePreferences(const char* repository) {
   }
 
   for (uint8_t i = 0; i < posSerialOut; ++i) {                                       // for all these preferences
-        if (i == posTimeOut && !morserino)                                            // ignore timeout when writing to snapshot
+        if (!morserino && !storedInSnapshot((prefPos) i)) {                           // device/hardware/game settings stay out of snapshots;
+            pref.remove(prefName[i]);                                                 // clean them out of old snapshots on re-store
             continue;
+        }
         if (MorsePreferences::pliste[i].value != pref.getUChar(prefName[i],255) ) {     // stored value is different,
 //          DEBUG("@1347 " + String(prefName[i]) + " old: " + String(pref.getUChar(prefName[i],255)) + " new: " + String(MorsePreferences::pliste[i].value));
             pref.putUChar(prefName[i], MorsePreferences::pliste[i].value);            // so we need to store new value

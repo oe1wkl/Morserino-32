@@ -394,11 +394,12 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     custom["active"] = snapPref.getBool("useCustomChar", false);
     custom["characters"] = snapPref.getString("customCharSet", "");
 
-    // All pliste[] parameters (except posTimeOut and posSerialOut which are excluded from snapshots)
+    // All pliste[] parameters that snapshots actually contain (training settings;
+    // device/hardware/game settings are excluded — see storedInSnapshot())
     JsonArray configs = snap.createNestedArray("configs");
     for (uint8_t i = 0; i < posSerialOut; ++i) {
-        if (i == posTimeOut)
-            continue;  // not stored in snapshots
+        if (!MorsePreferences::storedInSnapshot((prefPos) i))
+            continue;  // not stored in snapshots (also hides stale keys in old snapshots)
         uint8_t val = snapPref.getUChar(prefName[i], 255);
         if (val == 255)
             continue;  // not present in this snapshot
