@@ -2539,6 +2539,59 @@ The item shown when you start this is the currently selected network configurati
 The first entry (numbered 0) lets you choose EspNow (WiFi peer-to-peer
 communication) instead of using an access point.
 
+### Practice Stats
+
+::: note
+M32 Pocket only.
+:::
+
+The Morserino quietly keeps a log of your Koch-trainer practice: how long
+you've spent at each lesson, and how often you get each character right or
+wrong when the Echo Trainer checks your response. Since the small display
+isn't a great place to browse a history, you view it in a web browser
+instead.
+
+Select **Practice Stats** under **WiFi Functions**. Like Upload File and
+Update Firmware, the Morserino connects to **your own WiFi network** as a
+client (after doing the network configuration and network selection
+described above — see **WiFi Select** just above) and shows you its IP
+address on that network. No internet access is actually required — your
+phone or computer just needs to be on the *same* WiFi network as the
+Morserino. Once connected, point a browser at *http://m32.local* (or the
+IP address shown on the display) to see:
+
+-   **Time spent per Koch lesson**, as a bar for each lesson you've
+    practiced.
+-   **Error rate per character** — which characters trip you up most often.
+-   **Session history** — a list of individual practice sessions with their
+    date, lesson, and duration.
+
+::: note
+The Morserino has no built-in clock. If your WiFi network has internet
+access, it first tries to fetch the time automatically (NTP); either way, it
+also gets the current date and time from your browser the moment you open
+this page (no internet needed for that), and remembers it across ordinary
+sleep/wake cycles (the **FN** button). Only setting the physical **power
+switch** to OFF, or fully draining the battery, clears it again — so if you
+do that between practice sessions, expect some sessions in the history to
+show up without a date until the next time you sync. Nothing is lost, only
+the date label is missing for those.
+:::
+
+A **Clear Log** button at the bottom of the page erases the whole history —
+useful if you want to start tracking fresh. This cannot be undone.
+
+You can switch this logging off entirely in the preferences menu — see
+**Practice Stats** in section **Preferences regarding Player Identity and
+Scores**.
+
+::: note
+If you mostly connect via USB rather than WiFi, the same statistics are also
+available in the **M32 Configuration Tool** (`Software/Utilities/m32_config_tool.html`)
+under the **Koch** tab, below the Custom Character Set section — no WiFi
+needed there at all.
+:::
+
 ## Go To Sleep
 
 This menu item, when selected, puts the Morserino-32 into a deep sleep
@@ -2783,13 +2836,14 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 
 ### Preferences regarding Player Identity and Scores
 
-These items appear at the very end of the preferences list. The first two set your personal identity, which is used by the **Fight the Pileup** game and by the **QSO Bot** (section **5.5.4 QSO Bot**); the third clears the stored game scores. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).
+These items appear at the very end of the preferences list. The first two set your personal identity, which is used by the **Fight the Pileup** game and by the **QSO Bot** (section **5.5.4 QSO Bot**); the third clears the stored game scores. The fourth (M32 Pocket only) switches Practice Stats logging on or off. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).
 
 | Preference Name | Description | Values |
 |---|---|---|
 | Call Sign | Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in **Fight the Pileup** and the **QSO Bot**. | up to 8 characters (stored as UPPER CASE) |
 | Op Name | Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case and used together with your call sign in **Fight the Pileup**. | up to 8 characters (stored as UPPER CASE) |
 | Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, the **Radio Cave** saved progress, and the **Trailblazer**, **Fox Hunt**, and **Memory Chain** high-score tables. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
+| Practice Stats | **M32 Pocket only.** Switches the Koch-lesson-time and per-character error-rate logging described under **Practice Stats** (section **WiFi Functions**) on or off. Turning it off does not erase what was already logged — use the Clear Log button on the Practice Stats web page for that. | **On** / Off |
 
 
 

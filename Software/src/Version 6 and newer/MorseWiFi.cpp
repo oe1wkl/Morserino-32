@@ -18,6 +18,10 @@
 #include "MorsePreferences.h"
 #include "MorseJSON.h"
 
+#ifdef CONFIG_PRACTICE_STATS
+#include "MorsePracticeStats.h"
+#endif
+
 ////////////////// Variables for file handling and WiFi functions
 
 // File file;
@@ -223,6 +227,169 @@ const char* MorseWiFi::serverIndex =
  "});"
  "</script>";
 
+#ifdef CONFIG_PRACTICE_STATS
+// Practice Stats page: self-contained (no CDN — the device's own AP has no
+// internet), fetches /api/stats.jsonl and aggregates client-side. Posts the
+// browser's clock to /api/time once on load; see MorsePracticeStats.h and
+// devdocs/practice-stats/README.md for the log format and the reasoning
+// behind syncing the clock this way instead of NTP.
+const char* MorseWiFi::statsPage = R"statspage(
+<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>M32 Practice Stats</title>
+<style>
+body{font-family:sans-serif;max-width:640px;margin:0 auto;padding:12px;background:#f4f4f4;color:#222;overflow-x:hidden}
+h1{font-size:1.2em} h2{font-size:1em;margin-top:1.6em;border-bottom:1px solid #ccc;padding-bottom:.2em}
+.row{display:flex;align-items:center;margin:.3em 0;font-size:.9em}
+.label{width:5.5em;flex-shrink:0}
+.bar{flex-grow:1;background:#ddd;border-radius:3px;height:1.1em;margin:0 .5em;overflow:hidden;display:flex}
+.bar .listen{background:#3a8a4a;height:100%}
+.bar .send{background:#2d6cb0;height:100%}
+table{width:100%;border-collapse:collapse;font-size:.85em;white-space:nowrap}
+td,th{text-align:left;padding:.25em .5em;border-bottom:1px solid #ddd}
+.scroll{overflow-x:auto;max-width:100%}
+.scrollhint{font-size:.8em;color:#888;font-style:italic;margin:.3em 0 0}
+button{padding:.5em 1em;margin-top:.5em}
+#storage{font-size:.85em;color:#555}
+.tag{display:inline-block;padding:.05em .5em;border-radius:3px;font-size:.85em;color:#fff}
+.tag.listen{background:#3a8a4a}
+.tag.send{background:#2d6cb0}
+.legend{font-size:.8em;color:#555;margin-top:.3em}
+.legend .tag{margin-right:.5em}
+</style></head><body>
+<h1>Practice Stats</h1>
+<div id="storage">loading&hellip;</div>
+
+<h2>Time per Koch Lesson</h2>
+<div class="legend"><span class="tag listen">Listen</span><span class="tag send">Send</span> &mdash; <span id="totalTime"></span></div>
+<div id="lessons"></div>
+
+<h2>Error Rate per Character</h2>
+<table id="chars"><thead><tr><th>Char</th><th>Attempts</th><th>Errors</th><th>Rate</th></tr></thead><tbody></tbody></table>
+
+<h2>Session History</h2>
+<p class="scrollhint">Scroll sideways to see all columns &rarr;</p>
+<div class="scroll"><table id="sessions"><thead><tr>
+<th>When</th><th>Lesson</th><th>Type</th><th>Words</th><th>Chr/Wd</th>
+<th>WPM</th><th>ICS</th><th>IWS</th><th>WPS</th><th>CPS</th>
+<th>Errors</th><th>Err%</th><th>Duration</th>
+</tr></thead><tbody></tbody></table></div>
+
+<button onclick="clearLog()">Clear Log</button>
+
+<script>
+function fmtDur(s){
+  if(s<60) return s+"s";
+  var m=Math.floor(s/60), h=Math.floor(m/60);
+  m=m%60;
+  return h>0 ? (h+"h "+m+"m") : (m+"m "+(s%60)+"s");
+}
+function escHtml(s){
+  return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+}
+fetch("/api/time",{method:"POST",headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({epoch:Math.floor(Date.now()/1000)})});
+
+fetch("/api/storage").then(r=>r.json()).then(function(d){
+  var pct=Math.round(100*d.used/d.total);
+  document.getElementById("storage").textContent =
+    "Storage: "+Math.round(d.used/1024)+" KB / "+Math.round(d.total/1024)+" KB used ("+pct+"%)";
+});
+
+fetch("/api/stats.jsonl").then(r=>r.text()).then(function(text){
+  var records=[];
+  text.split("\n").forEach(function(line){
+    line=line.trim();
+    if(!line) return;
+    try { records.push(JSON.parse(line)); } catch(e) { /* skip malformed line */ }
+  });
+
+  var lessonTime={}, charStats={};
+  records.forEach(function(r){
+    if(!lessonTime[r.lesson]) lessonTime[r.lesson]={listen:0,send:0};
+    lessonTime[r.lesson][r.mode==="send"?"send":"listen"]+=r.dur;
+    if(r.chars) Object.keys(r.chars).forEach(function(c){
+      var a=r.chars[c][0], e=r.chars[c][1];
+      if(!charStats[c]) charStats[c]=[0,0];
+      charStats[c][0]+=a; charStats[c][1]+=e;
+    });
+  });
+
+  var lessons=Object.keys(lessonTime).map(Number).sort(function(a,b){return a-b;});
+  var maxTime=Math.max.apply(null,lessons.map(function(l){return lessonTime[l].listen+lessonTime[l].send;}).concat([1]));
+  var grandTotal=records.reduce(function(sum,r){return sum+r.dur;},0);
+  document.getElementById("totalTime").textContent="Total: "+fmtDur(grandTotal)+" across "+records.length+" session"+(records.length===1?"":"s");
+  var lessonsDiv=document.getElementById("lessons");
+  if(lessons.length===0) lessonsDiv.textContent="No practice logged yet.";
+  lessons.forEach(function(l){
+    var lt=lessonTime[l], total=lt.listen+lt.send;
+    var listenPct=Math.round(100*lt.listen/maxTime), sendPct=Math.round(100*lt.send/maxTime);
+    var row=document.createElement("div"); row.className="row";
+    row.innerHTML='<span class="label">Lesson '+l+'</span><span class="bar">'+
+      '<div class="listen" style="width:'+listenPct+'%" title="Listen: '+fmtDur(lt.listen)+'"></div>'+
+      '<div class="send" style="width:'+sendPct+'%" title="Send: '+fmtDur(lt.send)+'"></div>'+
+      '</span><span>'+fmtDur(total)+"</span>";
+    lessonsDiv.appendChild(row);
+  });
+
+  var chars=Object.keys(charStats).sort(function(a,b){
+    var ra=charStats[a][1]/Math.max(1,charStats[a][0]), rb=charStats[b][1]/Math.max(1,charStats[b][0]);
+    return rb-ra;
+  });
+  var charsBody=document.querySelector("#chars tbody");
+  chars.forEach(function(c){
+    var a=charStats[c][0], e=charStats[c][1];
+    var rate=Math.round(100*e/Math.max(1,a));
+    var tr=document.createElement("tr");
+    tr.innerHTML="<td>"+escHtml(c)+"</td><td>"+a+"</td><td>"+e+"</td><td>"+rate+"%</td>";
+    charsBody.appendChild(tr);
+  });
+
+  records.sort(function(a,b){return b.ts-a.ts;});   // newest first (undated [ts=0] sink to the bottom)
+  var sessBody=document.querySelector("#sessions tbody");
+  var dash="&mdash;";
+  records.forEach(function(r){
+    var when = r.ts>0 ? new Date(r.ts*1000).toLocaleString() : "(undated)";
+    var isSend = r.mode==="send";
+    var words = r.words||0;
+    // tc (from wordPresented(), both modes) = actual content length — the right
+    // basis for Chr/Wd and CPS. attempts/errors (from r.chars, send only) can
+    // exceed tc when a word gets repeated after a wrong answer, so they're only
+    // used for the error rate, not as a stand-in for word length.
+    var tc = r.tc||0;
+    var attempts=0, totalErrors=0;
+    if(r.chars) Object.keys(r.chars).forEach(function(c){ attempts+=r.chars[c][0]; totalErrors+=r.chars[c][1]; });
+    var charsPerWord = words>0 ? (tc/words).toFixed(1) : dash;
+    var wps = r.dur>0 ? (words/r.dur).toFixed(2) : dash;
+    var cps = r.dur>0 ? (tc/r.dur).toFixed(2) : dash;
+    var errRate = isSend && attempts>0 ? Math.round(100*totalErrors/attempts)+"%" : dash;
+    var tr=document.createElement("tr");
+    tr.innerHTML=
+      "<td>"+when+"</td>"+
+      "<td>"+r.lesson+"</td>"+
+      "<td><span class=\"tag "+(isSend?"send":"listen")+"\">"+(isSend?"Send":"Listen")+"</span></td>"+
+      "<td>"+words+"</td>"+
+      "<td>"+charsPerWord+"</td>"+
+      "<td>"+(r.wpm||dash)+"</td>"+
+      "<td>"+(r.ics!==undefined?r.ics:dash)+"</td>"+
+      "<td>"+(r.iws!==undefined?r.iws:dash)+"</td>"+
+      "<td>"+wps+"</td>"+
+      "<td>"+cps+"</td>"+
+      "<td>"+(isSend?totalErrors:dash)+"</td>"+
+      "<td>"+errRate+"</td>"+
+      "<td>"+fmtDur(r.dur)+"</td>";
+    sessBody.appendChild(tr);
+  });
+});
+
+function clearLog(){
+  if(!confirm("Clear all practice stats? This cannot be undone.")) return;
+  fetch("/api/stats/clear",{method:"POST"}).then(function(){ location.reload(); });
+}
+</script>
+</body></html>
+)statspage";
+#endif
+
 namespace internal
 {
     String getContentType(String filename); // convert the file extension to the MIME type
@@ -397,6 +564,11 @@ void MorseWiFi::menuExec(uint8_t command) {
             case _wifi_update:
                       MorseWiFi::updateFirmware();   // run OTA update
                       break;
+#ifdef CONFIG_PRACTICE_STATS
+            case _wifi_stats:
+                      MorseWiFi::viewStats();        // serve the Practice Stats web page
+                      break;
+#endif
       }
     } else {
       MorseOutput::clearDisplay();
@@ -550,6 +722,78 @@ void MorseWiFi::updateFirmware()   {                   /// start wifi client, we
    WiFi.mode(WIFI_OFF);
 }
 
+
+#ifdef CONFIG_PRACTICE_STATS
+void MorseWiFi::viewStats() {                          /// start wifi client, web server, serve the Practice Stats page
+  if (! wifiConnect())
+    return;
+
+  MorsePracticeStats::tryNtpSync();   // best-effort; browser sync (below) covers the rest
+
+  server.on("/", HTTP_GET, []() {
+    server.sendHeader("Connection", "close");
+    server.sendHeader("Cache-Control", "no-store");   // the page changes across firmware updates; never let the browser serve a stale copy
+    server.send(200, "text/html", statsPage);
+  });
+
+  server.on("/api/time", HTTP_POST, []() {
+    StaticJsonDocument<64> doc;
+    deserializeJson(doc, server.arg("plain"));
+    time_t epoch = doc["epoch"] | 0;
+    MorsePracticeStats::setWallClock(epoch);
+    server.send(200, "text/plain", "OK");
+  });
+
+  server.on("/api/storage", HTTP_GET, []() {
+    StaticJsonDocument<64> doc;
+    doc["used"] = MorsePracticeStats::usedBytes();
+    doc["total"] = MorsePracticeStats::totalBytes();
+    String out;
+    serializeJson(doc, out);
+    server.send(200, "application/json", out);
+  });
+
+  server.on("/api/stats.jsonl", HTTP_GET, []() {
+    server.sendHeader("Cache-Control", "no-store");
+    if (!SPIFFS.exists(MorsePracticeStats::logPath)) {
+      server.send(200, "text/plain", "");
+      return;
+    }
+    File f = SPIFFS.open(MorsePracticeStats::logPath, "r");
+    server.streamFile(f, "text/plain");
+    f.close();
+  });
+
+  server.on("/api/stats/clear", HTTP_POST, []() {
+    MorsePracticeStats::clearLog();
+    server.send(200, "text/plain", "OK");
+  });
+
+  server.onNotFound(internal::handleNotFound);
+
+  server.begin();
+  MorseOutput::clearDisplay();
+  MorseOutput::printOnStatusLine( true, 0, "Practice Stats");
+  MorseOutput::printOnScroll(0, REGULAR, 0,  "URL: m32.local");
+  MorseOutput::printOnScroll(1, REGULAR, 0,  "IP:");
+  MorseOutput::printOnScroll(2, REGULAR, 0, WiFi.localIP().toString(), true);
+  unsigned long wifiTimeout = millis() + 300000UL;  // 5 minute timeout
+  while (true) {
+       server.handleClient();
+       delay(10);
+       Buttons::volButton.Update();
+       if (Buttons::volButton.clicks) {
+           break;
+       }
+       if (millis() > wifiTimeout) {
+           MorseOutput::printOnScroll(1, BOLD, 0, "Timeout!");
+           delay(1000);
+           break;
+       }
+   }
+   shutdownWiFi();
+}
+#endif
 
 boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Connect to WiFi network

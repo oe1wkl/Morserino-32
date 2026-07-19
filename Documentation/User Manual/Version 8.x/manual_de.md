@@ -2966,6 +2966,61 @@ einem langen Druck auf den ENCODER zum Menü zurück.
 Der erste Eintrag (Nummer 0) ermöglicht die Auswahl von EspNow
 (WLAN-Peer-to-Peer-Kommunikation) anstelle eines Access Points.
 
+### Practice Stats
+
+::: note
+Nur M32 Pocket.
+:::
+
+Der Morserino protokolliert im Hintergrund deinen Koch-Trainer-Fortschritt:
+wie lange du in welcher Lektion geübt hast, und wie oft du beim Echo
+Trainer ein Zeichen richtig oder falsch beantwortet hast. Da das kleine
+Display für eine solche Verlaufsansicht nicht geeignet ist, rufst du diese
+Statistik stattdessen in einem Webbrowser ab.
+
+Wähle **Practice Stats** unter **WiFi Functions**. Wie bei Upload File und
+Update Firmware verbindet sich der Morserino dabei als Client mit
+**deinem eigenen WLAN** (nach der oben beschriebenen Netzwerkkonfiguration
+und Netzwerkauswahl — siehe **WiFi Select** direkt darüber) und zeigt dir
+seine IP-Adresse in diesem Netz an. Internetzugang ist dabei nicht nötig —
+dein Handy oder Computer muss nur im *selben* WLAN wie der Morserino sein.
+Nach dem Verbinden rufst du im Browser *http://m32.local* (oder die auf
+dem Display angezeigte IP-Adresse) auf und siehst:
+
+-   **Zeit pro Koch-Lektion**, als Balken für jede geübte Lektion.
+-   **Fehlerrate pro Zeichen** — welche Zeichen dir am meisten
+    Schwierigkeiten bereiten.
+-   **Sitzungsverlauf** — eine Liste einzelner Übungssitzungen mit Datum,
+    Lektion und Dauer.
+
+::: note
+Der Morserino hat keine eingebaute Uhr. Falls dein WLAN Internetzugang hat,
+versucht er zuerst automatisch die Uhrzeit zu holen (NTP); unabhängig davon
+übernimmt er außerdem Datum und Uhrzeit von deinem Browser in dem Moment,
+in dem du diese Seite öffnest (auch dafür ist kein Internetzugang nötig),
+und behält diese Information über normale Schlaf-/Aufweck-Zyklen (die
+**FN**-Taste) hinweg. Nur wenn du den physischen **Schiebeschalter** auf OFF
+stellst oder der Akku vollständig leer läuft, geht sie wieder verloren —
+machst du das zwischen Übungssitzungen, werden manche Sitzungen im Verlauf
+so lange ohne Datum angezeigt, bis zum nächsten Sync. Es geht dabei nichts
+verloren, es fehlt nur die Datumsangabe.
+:::
+
+Ein **Clear Log**-Button am Ende der Seite löscht den gesamten Verlauf —
+praktisch, wenn du neu anfangen willst. Das kann nicht rückgängig gemacht
+werden.
+
+Du kannst diese Protokollierung im Einstellungsmenü auch ganz abschalten —
+siehe **Practice Stats** im Abschnitt **Einstellungen zu Rufzeichen, Name
+und Spielständen**.
+
+::: note
+Wenn du meist über USB statt WLAN verbunden bist: dieselbe Statistik gibt es
+auch im **M32 Configuration Tool** (`Software/Utilities/m32_config_tool.html`)
+im Reiter **Koch**, unterhalb des Custom-Character-Set-Bereichs — dafür ist
+gar kein WLAN nötig.
+:::
+
 ## Go To Sleep
 
 Wenn du diesen Menüpunkt auswählst, versetzt er den Morserino-32 in den
@@ -3205,13 +3260,14 @@ Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot
 
 ### Einstellungen zu Rufzeichen, Name und Spielständen
 
-Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen deine persönliche Identität fest, die vom Spiel **Fight the Pileup** und vom **QSO Bot** (Abschnitt **5.5.4 QSO Bot**) verwendet wird; der dritte löscht die gespeicherten Spielstände. Call Sign und Op Name können auch über USB über das M32-USB Serial-Protokoll gesetzt werden (z.B. mit einem Browser-Konfigurationstool).
+Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen deine persönliche Identität fest, die vom Spiel **Fight the Pileup** und vom **QSO Bot** (Abschnitt **5.5.4 QSO Bot**) verwendet wird; der dritte löscht die gespeicherten Spielstände. Der vierte (nur M32 Pocket) schaltet die Practice-Stats-Protokollierung ein oder aus. Call Sign und Op Name können auch über USB über das M32-USB Serial-Protokoll gesetzt werden (z.B. mit einem Browser-Konfigurationstool).
 
 | Einstellung | Beschreibung | Werte |
 |---|---|---|
 | **Call Sign** | Dein eigenes Amateurfunk-Rufzeichen. Gib es mit dem Encoder und den Tasten ein. Es wird in Großbuchstaben gespeichert und als dein Stationsrufzeichen in **Fight the Pileup** und im **QSO Bot** verwendet. | bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert) |
 | **Op Name** | Dein Operatorname (z.B. dein Vorname). Gib ihn mit dem Encoder und den Tasten ein. Er wird in Großbuchstaben gespeichert und zusammen mit deinem Rufzeichen in **Fight the Pileup** verwendet. | bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert) |
 | **Reset Scores** | Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele — die Bestenliste von **Morse Invaders**, die Bestwerte von **Morsel**, den gespeicherten Fortschritt von **Radio Cave** sowie die Bestenlisten von **Trailblazer**, **Fox Hunt** und **Memory Chain**. Du wirst gebeten, mit der **FN**-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.) | mit FN bestätigen |
+| **Practice Stats** | **Nur M32 Pocket.** Schaltet die unter **Practice Stats** (Abschnitt **WiFi Functions**) beschriebene Protokollierung von Koch-Lektionszeit und Fehlerrate pro Zeichen ein oder aus. Das Ausschalten löscht nicht, was bereits protokolliert wurde — dafür gibt es den Clear-Log-Button auf der Practice-Stats-Webseite. | **An** / Aus |
 
 # Anhänge
 

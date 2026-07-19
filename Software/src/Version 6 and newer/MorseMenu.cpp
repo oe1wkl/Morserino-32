@@ -17,6 +17,10 @@
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
 
+#ifdef CONFIG_PRACTICE_STATS
+#include "MorsePracticeStats.h"
+#endif
+
 #ifdef CONFIG_TFT
 #include "MorseGameMode.h"
 
@@ -124,8 +128,11 @@ const char* const menuText[menuN]  = {
     "Config WiFi",
     "Check WiFi",
     "Upload File",
-    "Update Firmw", 
-    "Wifi Select", 
+    "Update Firmw",
+    "Wifi Select",
+#ifdef CONFIG_PRACTICE_STATS
+    "Practice Stats",
+#endif
 
   "Go To Sleep"
 #ifdef CONFIG_CW_GAME
@@ -213,13 +220,24 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {0,_trx,_wifi,_dummy,0},                                // decoder  -e
   {0,_decode,_goToSleep,_dummy,_wifi_mac},                 // WiFi
 #endif
+#ifdef CONFIG_PRACTICE_STATS
+   {1,_wifi_stats,_wifi_config,_wifi,0},                 // 36 Disp Mac  -e!! (left now wraps via Practice Stats)
+#else
    {1,_wifi_select,_wifi_config,_wifi,0},                // 36 Disp Mac  -e!!
+#endif
   {1,_wifi_mac,_wifi_check,_wifi,0},                    // 37 Config Wifi    --NE!
   {1,_wifi_config,_wifi_upload,_wifi,0},                // 38 Check WiFi  -e!!
   {1,_wifi_check,_wifi_update,_wifi,0},                 // 39 Upload File    --NE!
+#ifdef CONFIG_PRACTICE_STATS
+  {1,_wifi_upload,_wifi_select,_wifi,0},                // 40 Update Firmware  --NE!
+  {1,_wifi_update,_wifi_stats,_wifi,0},                 // 41 Select network  --NE!! (next now wraps via Practice Stats)
+  {1,_wifi_select,_wifi_mac,_wifi,0},                   // Practice Stats  (inserted after Select network, wraps to Disp Mac)
+  {0,_wifi,_keyer,_dummy,0},                            // 42 goto sleep  -e
+#else
   {1,_wifi_upload,_wifi_select,_wifi,0},                // 40 Update Firmware  --NE!
   {1,_wifi_update,_wifi_mac,_wifi,0},                   // 41 Select network  --NE!!
   {0,_wifi,_keyer,_dummy,0},                            // 42 goto sleep  -e
+#endif
 #ifdef CONFIG_CW_GAME
   {1,_morsel,_foxHunt,_games,0},                        // Trailblazer  -e (in the games ring after Morsel)
   {1,_trailblazer,_memoryChain,_games,0},               // Fox Hunt  -e (right -> Memory Chain)
@@ -455,6 +473,9 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
 
   m32state = active_loop;
 
+#ifdef CONFIG_PRACTICE_STATS
+  MorsePracticeStats::endSegment();   // leaving whatever mode was active — flush it
+#endif
   kochActive = false;
   keyerState = IDLE_STATE;
 
@@ -585,46 +606,73 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       case  _kochGenRand: // RANDOMS
                 generatorMode = RANDOMS;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "listen");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
                 goto startGenerator;
       case  _kochGenAbb: // ABBREVS - 2
                 generatorMode = ABBREVS;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "listen");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
                 goto startGenerator;
       case  _kochGenWords: // WORDS - 3
                 generatorMode = WORDS;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "listen");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
                 goto startGenerator;
       case  _kochGenMixed: // KOCH_MIXED - 5
                 generatorMode = KOCH_MIXED;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "listen");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochGenOptions, MorsePreferences::kochGenOptionsSize);
                 goto startGenerator;
       case  _kochEchoRand: // Koch Echo Random
                 generatorMode = RANDOMS;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "send");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 goto startEcho;
       case  _kochEchoAbb: // ABBREVS - 2
                 generatorMode = ABBREVS;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "send");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 goto startEcho;
       case  _kochEchoWords: // WORDS - 3
                 generatorMode = WORDS;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "send");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 goto startEcho;
       case  _kochEchoMixed: // KOCH_MIXED - 5
                 generatorMode = KOCH_MIXED;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "send");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 goto startEcho;
       case  _kochEchoAdaptive: // Koch Echo Adaptive - 6
                 generatorMode = KOCH_ADAPTIVE;
                 kochActive = true;
+#ifdef CONFIG_PRACTICE_STATS
+                MorsePracticeStats::beginSegment(MorsePreferences::kochFilter, "send");
+#endif
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
 
                 // re-run the setup, this will reset the character probabilities
@@ -788,6 +836,9 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       case _wifi_check:
       case _wifi_upload:
       case _wifi_update:
+#ifdef CONFIG_PRACTICE_STATS
+      case _wifi_stats:
+#endif
                   MorseWiFi::menuExec((uint8_t) MorsePreferences::menuPtr);
                   break;
       case _wifi_select:
@@ -879,6 +930,9 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
       case _wifi_upload:
       case _wifi_update:
       case _wifi_select:
+#ifdef CONFIG_PRACTICE_STATS
+      case _wifi_stats:
+#endif
 #ifdef CONFIG_CW_GAME
       case _games:            // nor the games that depend on visual clues
       case _morseInvaders:

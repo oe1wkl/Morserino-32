@@ -47,12 +47,19 @@ namespace MorseWiFi
     extern const char* updateLoginIndex;
     extern const char* serverIndex;
 
+#ifdef CONFIG_PRACTICE_STATS
+    extern const char* statsPage;
+#endif
+
     void menuExec(uint8_t command);         // called from main menu, with argument from menu
     void menuNetSelect();                   // display menu of wifi networks to select from
     void startAP();
     boolean wifiConnect();
     void uploadFile();
     void updateFirmware();
+#ifdef CONFIG_PRACTICE_STATS
+    void viewStats();                       // serve the Practice Stats web page
+#endif
     String getContentType(String filename); // convert the file extension to the MIME type
     bool handleFileRead(String path);       // send the right file to the client (if it exists)
     void handleFileUpload();                // upload a new file to the SPIFFS
