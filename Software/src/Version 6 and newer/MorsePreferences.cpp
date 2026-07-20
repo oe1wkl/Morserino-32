@@ -1654,7 +1654,11 @@ void MorsePreferences::checkNvsSpace() {
     if (nvs_get_stats(NULL, &s) != ESP_OK)
         return;
     const size_t reserved = 126;                  // one 4 KB page NVS always keeps for garbage collection
-    size_t usable = (s.free_entries > reserved) ? s.free_entries - reserved : 0;
+    // Compute from LIVE entries (used), not from free_entries: erased-but-not-
+    // yet-compacted entries are missing from free_entries until garbage
+    // collection runs, which would make us cry wolf right after cleanups.
+    size_t capacity = (s.total_entries > reserved) ? s.total_entries - reserved : 0;
+    size_t usable = (capacity > s.used_entries) ? capacity - s.used_entries : 0;
     if (usable >= NVS_LOW_WATER)
         return;
     Serial.println("NVS low: only " + String(usable) + " usable entries left");
@@ -1841,41 +1845,40 @@ boolean MorsePreferences::storeSnapshot(uint8_t menu) {        // return true if
       return false;
 }
 
-boolean MorsePreferences::doWriteSnapshot(uint8_t storePos, uint8_t menuPos) {
-      String snapname; snapname.reserve(8);
-
-      MorsePreferences::menuPtr = menuPos;     // also store last menu selection
-      snapname = "snap" + String(storePos);
-
-      // serialise the snapshot into one blob (format: see decodeSnapshot)
+// Serialise one snapshot into the blob format and write it (format: see
+// decodeSnapshot). vals[] is a prefPos-indexed value map (255 = not contained).
+// On success any legacy per-key entries are removed (frees ~30 entries per
+// old-format snapshot); on failure the old content stays intact.
+static boolean storeSnapshotBlob(const char* ns, const uint8_t vals[], uint8_t lastExec,
+                                 uint8_t kochLen, uint8_t useCustom, const String &customSet) {
       uint8_t buf[SNAP_BLOB_MAX];
       uint16_t w = 0;
       buf[w++] = SNAP_BLOB_VERSION;
       uint16_t countAt = w++;                                  // patched below
-      buf[w++] = menuPos;                                      // lastExecuted
-      buf[w++] = MorsePreferences::kochCharsLength;
-      buf[w++] = MorsePreferences::useCustomChars ? 1 : 0;
-      uint8_t l = MorsePreferences::customCharSet.length() > 51 ? 51 : MorsePreferences::customCharSet.length();
+      buf[w++] = lastExec;
+      buf[w++] = kochLen;
+      buf[w++] = useCustom;
+      uint8_t l = customSet.length() > 51 ? 51 : customSet.length();
       buf[w++] = l;
       for (uint8_t i = 0; i < l; ++i)
-          buf[w++] = MorsePreferences::customCharSet[i];
+          buf[w++] = customSet[i];
       uint8_t n = 0;
       for (uint8_t i = 0; i < posSerialOut; ++i) {
-          if (!storedInSnapshot((prefPos) i))
+          if (!storedInSnapshot((prefPos) i) || vals[i] == 255)
               continue;
           uint16_t h = prefKeyHash(prefName[i]);
           buf[w++] = h & 0xFF;
           buf[w++] = h >> 8;
-          buf[w++] = pliste[i].value;
+          buf[w++] = vals[i];
           ++n;
       }
       buf[countAt] = n;
 
       Preferences snap;
       boolean ok = false;
-      if (snap.begin(snapname.c_str(), false)) {
+      if (snap.begin(ns, false)) {
           ok = (snap.putBytes("s", buf, w) == w);              // fails (0) when NVS is full — old content stays intact
-          if (ok) {                                            // only then drop any legacy per-key entries (frees ~30 per old snapshot)
+          if (ok) {                                            // only then drop any legacy per-key entries
               for (uint8_t i = 0; i <= posSerialOut; ++i)
                   snap.remove(prefName[i]);
               snap.remove("lastExecuted");
@@ -1885,6 +1888,23 @@ boolean MorsePreferences::doWriteSnapshot(uint8_t storePos, uint8_t menuPos) {
           }
           snap.end();
       }
+      return ok;
+}
+
+boolean MorsePreferences::doWriteSnapshot(uint8_t storePos, uint8_t menuPos) {
+      String snapname; snapname.reserve(8);
+
+      MorsePreferences::menuPtr = menuPos;     // also store last menu selection
+      snapname = "snap" + String(storePos);
+
+      uint8_t vals[posSerialOut];              // current settings as a value map
+      for (uint8_t i = 0; i < posSerialOut; ++i)
+          vals[i] = storedInSnapshot((prefPos) i) ? pliste[i].value : 255;
+
+      boolean ok = storeSnapshotBlob(snapname.c_str(), vals, menuPos,
+                                     MorsePreferences::kochCharsLength,
+                                     MorsePreferences::useCustomChars ? 1 : 0,
+                                     MorsePreferences::customCharSet);
 
       if (ok) {                                                // mark the slot as used only on success:
           MorsePreferences::snapShots |= (1 << storePos);      // a failed store must not create a phantom snapshot
@@ -1895,6 +1915,35 @@ boolean MorsePreferences::doWriteSnapshot(uint8_t storePos, uint8_t menuPos) {
           pref.end();
       }
       return ok;
+}
+
+// Boot-time migration: convert legacy per-key snapshots (written by older
+// firmware) to the blob format. Converted snapshots are skipped, so this is a
+// cheap no-op on every boot after the first. Each conversion transiently needs
+// ~7 free entries and then frees ~30, so it also works on a nearly full
+// partition; a failed conversion is simply retried on the next boot.
+void MorsePreferences::convertLegacySnapshots() {
+    for (uint8_t s = 0; s < 8; ++s) {
+        if (!(MorsePreferences::snapShots & (1 << s)))
+            continue;
+        String ns = "snap" + String(s);
+        Preferences p;
+        if (!p.begin(ns.c_str(), true))
+            continue;                                        // bitmap set but namespace missing — nothing to convert
+        boolean hasBlob = p.isKey("s");
+        p.end();
+        if (hasBlob)
+            continue;
+        uint8_t vals[posSerialOut];
+        uint8_t lastExec, kochLen, useCustom;
+        String customSet; customSet.reserve(52);
+        if (!decodeSnapshot(ns.c_str(), vals, lastExec, kochLen, useCustom, customSet))
+            continue;
+        boolean ok = storeSnapshotBlob(ns.c_str(), vals, lastExec, kochLen, useCustom, customSet);
+        if (!m32protocol)
+            Serial.println("NVS snapshot " + String(s + 1)
+                            + (ok ? ": converted to blob format" : ": conversion FAILED (NVS full?) - retry next boot"));
+    }
 }
 
 

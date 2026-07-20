@@ -739,6 +739,8 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   MorsePreferences::readFilePartData();
   koch.setup();
 
+  MorsePreferences::convertLegacySnapshots();  // migrate per-key snapshots to the blob format (no-op once done)
+
   #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
   #endif

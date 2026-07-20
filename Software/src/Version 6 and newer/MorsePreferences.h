@@ -237,6 +237,7 @@ namespace MorsePreferences
   boolean decodeSnapshot(const char* ns, uint8_t vals[], uint8_t &lastExec,
                          uint8_t &kochLen, uint8_t &useCustom, String &customSet);  // read snapshot (blob or legacy) into a prefPos-indexed value map
   void checkNvsSpace();                                // boot check: warn on display when NVS entries run low
+  void convertLegacySnapshots();                       // boot migration: per-key snapshots -> blob format (no-op once converted)
   void resetDefaults();                                // reset all preferences to default values
   boolean doWriteSnapshot(uint8_t, uint8_t);           // returns false if the snapshot did not reach NVS
   void doReadSnapshot(uint8_t);
