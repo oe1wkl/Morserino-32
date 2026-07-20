@@ -331,7 +331,11 @@ void MorseMenu::menu_() {
         }
 
         switch (command) {                                          // actions based on encoder button
-          case 2: if (MorsePreferences::setupPreferences(MorsePreferences::newMenuPtr))                       // all available options when called from top menu
+          case 2: // the top menu always offers ALL preferences. A cancelled mode start
+                  // (menuExec() returning false after it already set its mode-specific
+                  // options) would otherwise leave a stale subset in currentOptions.
+                  MorsePreferences::setCurrentOptions(MorsePreferences::allOptions, MorsePreferences::allOptionsSize);
+                  if (MorsePreferences::setupPreferences(MorsePreferences::newMenuPtr))                       // all available options when called from top menu
                     MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
                   MorseMenu::menuDisplay(MorsePreferences::newMenuPtr);
                   m32state = menu_loop;

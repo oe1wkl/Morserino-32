@@ -1066,7 +1066,8 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
     valueLine = String(options[choice]);
     valueLine += emptyLine.substring(0, maxLength - valueLine.length());
     MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
-    MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
+    if (m32protocol)
+        MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
 
     while (true) {
@@ -1095,7 +1096,8 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
             valueLine = String(options[choice]);
             valueLine += emptyLine.substring(0, maxLength - valueLine.length());
             MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
-            MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
+            if (m32protocol)
+                MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
 
         }
     }
