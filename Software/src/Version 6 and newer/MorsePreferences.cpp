@@ -86,7 +86,7 @@ const char * prefName[] = {
             "invaderOrient",
 #endif
 #ifdef CONFIG_QSO_BOT
-            "qsoBotContestType",
+            "qsoBotContest",     // NVS keys are limited to 15 chars: the original "qsoBotContestType" (17) could never be stored
             "qsoBotLevel",
 #endif
             "serialOut"
