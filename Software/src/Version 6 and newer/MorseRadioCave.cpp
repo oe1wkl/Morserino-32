@@ -280,7 +280,8 @@ static void saveGame() {
     blob.magic   = RC_SAVE_MAGIC;
     blob.version = RC_SAVE_FMT_VERSION;
     blob.state   = game;
-    pref.putBytes("save", &blob, sizeof(blob));
+    if (pref.putBytes("save", &blob, sizeof(blob)) != sizeof(blob))   // fails silently when NVS is full
+        Serial.println("Radio Cave: game NOT saved - NVS full?");
     pref.end();
 }
 

@@ -3054,7 +3054,17 @@ Eine weitere Option lautet **Cancel Store** und ermöglicht den Ausstieg
 ohne Speicherung. Bereits belegte Schnappschuss-Plätze sind **fett**
 dargestellt, können aber überschrieben werden. Ein Klick auf den
 ENCODER-Knopf speichert den Schnappschuss an der gewünschten Stelle und
-zeigt kurz eine Erfolgsmeldung.
+zeigt kurz eine Erfolgsmeldung: „Snap N STORED" bedeutet, dass der
+Schnappschuss geschrieben und überprüft wurde; ist der
+Einstellungsspeicher voll, erscheint stattdessen „Snap N FAILED!" — in
+diesem Fall schaffe Platz, indem du einen nicht mehr benötigten
+Schnappschuss löschst oder **Reset Scores** im Einstellungsmenü
+verwendest.
+
+Wird der Einstellungsspeicher knapp, warnt dich der Morserino direkt
+nach dem Einschalten („Settings mem. almost full!"), zusammen mit
+demselben Rat: nicht mehr benötigte Schnappschüsse löschen oder die
+Spielstände zurücksetzen.
 
 ### Abrufen eines Schnappschusses
 

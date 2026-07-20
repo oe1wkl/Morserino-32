@@ -820,9 +820,11 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
     // boards.)
     if (!memoryReboot) {
       displayStartUp(volt);
+      MorsePreferences::checkNvsSpace();     // warn on the display when settings storage runs low
     }
 #else
     displayStartUp(volt);
+    MorsePreferences::checkNvsSpace();       // warn on the display when settings storage runs low
 #endif
    // DEBUG("Startup display done");
     while (Serial.available())        // remove spurious input from Serial port
@@ -4061,8 +4063,10 @@ void m32Put(String type, String token, String value) {                    /// PU
       if (token == "store") {
         int i = value.toInt() -1;
         if (i >= 0 && i <= 7 )  {
-            MorsePreferences::doWriteSnapshot(i, MorsePreferences::menuPtr);      /// has to be a value 0 .. 7, therefore i-1
-            MorseJSON::jsonOK();
+            if (MorsePreferences::doWriteSnapshot(i, MorsePreferences::menuPtr))  /// has to be a value 0 .. 7, therefore i-1
+                MorseJSON::jsonOK();
+            else
+                MorseJSON::jsonError("SNAPSHOT STORE FAILED - NVS FULL?");
         }
         else {
             MorseJSON::jsonError("INVALID SNAPSHOT NUMBER");

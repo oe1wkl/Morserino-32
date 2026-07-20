@@ -185,19 +185,22 @@ static void loadHighScores() {
 static void saveHighScores() {
     Preferences pref;
     pref.begin("m32game", false);
+    boolean ok = true;                  // put*() returns 0 when NVS is full — that failure used to be invisible
     for (int i = 0; i < GAME_HIGH_SCORES; i++) {
         char key[12];
         snprintf(key, sizeof(key), "hs%d_s", i);
-        pref.putUInt(key, highScores[i].score);
+        ok &= (pref.putUInt(key, highScores[i].score) != 0);
         snprintf(key, sizeof(key), "hs%d_k", i);
-        pref.putUChar(key, highScores[i].kochLesson);
+        ok &= (pref.putUChar(key, highScores[i].kochLesson) != 0);
         snprintf(key, sizeof(key), "hs%d_l", i);
-        pref.putUChar(key, highScores[i].subLevel);
+        ok &= (pref.putUChar(key, highScores[i].subLevel) != 0);
         snprintf(key, sizeof(key), "hs%d_w", i);
-        pref.putUChar(key, highScores[i].wpm);
+        ok &= (pref.putUChar(key, highScores[i].wpm) != 0);
     }
-    pref.putUChar("ver", GAME_HS_VERSION);
+    ok &= (pref.putUChar("ver", GAME_HS_VERSION) != 0);
     pref.end();
+    if (!ok)
+        Serial.println("Invaders: high scores NOT saved - NVS full?");
 }
 
 // Returns rank (0-4) or -1 if not a high score

@@ -2625,7 +2625,15 @@ Store** and allows you to get out without storing a snapshot. Snapshot
 locations that are **already in use** are shown in **bold**, but you can
 overwrite those as well. Clicking on the ENCODER knob stores the
 snapshot in the desired location, and gives you a quick indication about
-its success.
+its success: "Snap N STORED" means the snapshot has been written and
+verified; if the settings storage is full, you will see "Snap N FAILED!"
+instead — in that case free up space by deleting a snapshot you no
+longer need, or by using **Reset Scores** in the preferences menu.
+
+If the settings storage is running low, the Morserino warns you right
+after switching it on ("Settings mem. almost full!"), together with the
+same advice: delete snapshots you no longer need, or reset the game
+scores.
 
 ### Recalling a snapshot
 
