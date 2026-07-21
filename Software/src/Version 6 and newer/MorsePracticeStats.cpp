@@ -73,11 +73,16 @@ bool hasWallClock() {
     return now > 1700000000;   // sanity floor (~2023-11); default epoch is 0
 }
 
+static void backfillTimestamps();
+
 void setWallClock(time_t epochSeconds) {
     if (epochSeconds <= 0)
         return;
+    bool wasSynced = hasWallClock();
     struct timeval tv = { epochSeconds, 0 };
     settimeofday(&tv, nullptr);
+    if (!wasSynced)
+        backfillTimestamps();
 }
 
 void tryNtpSync() {
@@ -86,12 +91,69 @@ void tryNtpSync() {
     configTime(0, 0, "pool.ntp.org", "time.nist.gov");   // UTC — only the epoch matters, not local time
     unsigned long deadline = millis() + 4000;
     while (millis() < deadline) {
-        if (hasWallClock())
-            return;
+        if (hasWallClock()) {
+            backfillTimestamps();   // configTime()'s SNTP client calls settimeofday() directly,
+            return;                 // bypassing setWallClock() — so this path needs its own trigger.
+        }
         delay(200);
     }
     // No internet on this network (or NTP blocked) — fine, the browser-based
     // /api/time sync (POST from the stats page) still covers this visit.
+}
+
+// Retroactively date any already-logged records (ts==0) that were flushed
+// earlier in this same boot — e.g. "practice now, check the stats page a
+// minute later" — so the wall clock only needing to arrive *eventually*,
+// not before every segment, still gets you real dates for that session.
+// Each record's "m" field is the raw millis() at flush time; if millis() now
+// is still >= that value, no reboot/deep-sleep has happened since (millis()
+// resets to 0 on wake, unlike the RTC-backed wall clock — see devdocs), so
+// elapsed time since that record is a reliable millis() difference. Records
+// from a prior boot (no "m" field, or millis() has since wrapped past it)
+// are left alone — permanently undated, as already documented.
+static void backfillTimestamps() {
+    if (!SPIFFS.exists(logPath))
+        return;
+    time_t now;
+    time(&now);
+    unsigned long nowMillis = millis();
+
+    File src = SPIFFS.open(logPath, "r");
+    File dst = SPIFFS.open(tmpPath, "w");
+    if (!src || !dst)
+        return;
+
+    bool changedAny = false;
+    while (src.available()) {
+        String line = src.readStringUntil('\n');
+        line.trim();
+        if (line.length() == 0)
+            continue;
+        DynamicJsonDocument doc(384);
+        if (deserializeJson(doc, line) == DeserializationError::Ok) {
+            if (doc["ts"] == 0 && doc.containsKey("m")) {
+                unsigned long recordMillis = doc["m"];
+                if (nowMillis >= recordMillis) {
+                    time_t backfilled = now - (time_t)((nowMillis - recordMillis) / 1000);
+                    doc["ts"] = (uint32_t) backfilled;
+                    changedAny = true;
+                }
+            }
+            serializeJson(doc, dst);
+            dst.println();
+        } else {
+            dst.println(line);   // couldn't parse — preserve the line as-is rather than dropping it
+        }
+    }
+    src.close();
+    if (!changedAny) {
+        dst.close();
+        SPIFFS.remove(tmpPath);
+        return;
+    }
+    dst.close();
+    SPIFFS.remove(logPath);
+    SPIFFS.rename(tmpPath, logPath);
 }
 
 // Drop the oldest ~25% of records (by byte count) so a following append of
@@ -182,6 +244,7 @@ void endSegment() {
     if (durMs < 1000 && segment.numChars == 0)
         return;
 
+    unsigned long flushMillis = millis();
     time_t ts = 0;
     if (hasWallClock()) {
         time_t now;
@@ -191,6 +254,7 @@ void endSegment() {
 
     DynamicJsonDocument doc(320 + segment.numChars * 32);
     doc["ts"]     = (uint32_t) ts;
+    doc["m"]      = (uint32_t) flushMillis;   // millis() at flush — lets backfillTimestamps() date this later if ts is still 0
     doc["dur"]    = (uint32_t) (durMs / 1000);
     doc["lesson"] = segment.lesson;
     doc["mode"]   = segment.mode;

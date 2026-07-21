@@ -47,12 +47,16 @@ Append-only JSON-lines at `/stats.jsonl` on SPIFFS (`MorsePracticeStats::logPath
 One record per segment:
 
 ```json
-{"ts":1737262800,"dur":312,"lesson":12,"mode":"send","words":18,"ics":3,"iws":7,"wpm":20,"chars":{"V":[6,2],"K":[4,0]}}
+{"ts":1737262800,"m":842913,"dur":312,"lesson":12,"mode":"send","words":18,"ics":3,"iws":7,"wpm":20,"chars":{"V":[6,2],"K":[4,0]}}
 ```
 
 - `ts` — Unix seconds at segment *start*, or `0` if the wall clock was never
   synced this boot (see below). Computed at flush time by subtracting the
   segment's elapsed `millis()` from `time(nullptr)`.
+- `m` — raw `millis()` at flush time, always present regardless of whether
+  `ts` is known. Exists solely so `backfillTimestamps()` (see "Retroactive
+  backfill" below) can date this record later if a wall-clock sync arrives
+  after it was written. Not shown in either UI.
 - `dur` — segment duration in seconds.
 - `lesson` — `kochFilter` value active during the segment.
 - `mode` — `"listen"` (Koch Generator — playback only, no evaluation) or
@@ -171,8 +175,25 @@ the user manual explicitly recommends the slide switch for anything beyond a
 few days of non-use (deep sleep alone still drains the battery over days),
 **undated segments (`ts:0`) are an expected, routine occurrence**, not an edge
 case — the web UI must display them gracefully (sorted last, labelled
-"(undated)"), and there is no way to retroactively backfill their date once
-logged.
+"(undated)").
+
+### Retroactive backfill
+
+The common case — practice for a bit with no clock yet, *then* open Practice
+Stats a minute later and get one of the syncs above — would otherwise leave
+those just-completed sessions permanently undated, since `endSegment()` writes
+`ts` once, at flush time. `MorsePracticeStats::backfillTimestamps()` fixes
+this: every record also carries `"m"`, the raw `millis()` at flush time. The
+first time a sync succeeds after having no wall clock (checked in both
+`setWallClock()` and `tryNtpSync()`'s success path — `configTime()`'s SNTP
+client calls `settimeofday()` directly, bypassing `setWallClock()`, so it
+needs its own trigger), a rewrite pass walks the whole log: for any record
+with `ts==0`, if the *current* `millis()` is still `>=` that record's `m`,
+no reboot/deep-sleep has happened since it was written (`millis()` resets to
+0 on wake, unlike the RTC-backed wall clock), so the gap is a reliable
+elapsed-time measurement and `ts` gets computed and rewritten. Records that
+fail that check (or predate this feature and have no `"m"` at all) are left
+at `ts:0` — permanently undated, exactly as before.
 
 ## Known limitations (phase 1)
 
