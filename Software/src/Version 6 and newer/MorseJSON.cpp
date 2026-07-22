@@ -275,6 +275,14 @@ void MorseJSON::jsonFileText(void) {
 
 #ifdef CONFIG_PRACTICE_STATS
 void MorseJSON::jsonStatsLog(void) {
+	// Unlike the WiFi stats page (only reachable by first going through the
+	// top-level menu, which already flushes any open segment via
+	// MorseMenu::menuExec()'s endSegment() call), this is read over USB/serial
+	// and so can be checked while the device is still sitting in an active
+	// Koch practice mode. Flush first so the round just completed is included
+	// instead of silently missing until the user formally exits that mode.
+	MorsePracticeStats::endSegment();
+
 	// Base64, not the escape-and-strip-braces scheme jsonFileText() uses: the
 	// M32 config tool's serial reader (waitForResponse() in m32_config_tool.html)
 	// finds the response by counting '{'/'}' in the raw stream, so a raw JSONL

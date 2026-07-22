@@ -140,6 +140,24 @@ Two commands on the existing `m32Get`/`m32Put` JSON-over-serial protocol
   to the existing `"GET stats: UNKNOWN COMMAND"` error path — the config
   tool's `loadPracticeStats()` treats a missing `data.stats` as "not
   available" and leaves the box hidden, no special-casing needed.
+
+  Calls `MorsePracticeStats::endSegment()` before reading the file. Unlike
+  the WiFi stats page — only reachable by first going through the top-level
+  menu, which already flushes any open segment via `MorseMenu::menuExec()`'s
+  own `endSegment()` call — this is read over USB/serial and so can be
+  checked *while the device is still sitting in an active Koch practice
+  mode* (the config tool doesn't touch device menu state at all). Without
+  this, a round you'd just finished and were checking via the config tool
+  wouldn't appear at all: it was still open in RAM, not yet written.
+  Reported as "no log entry at all" after a fully-completed round, distinct
+  from the "0 words" miscount above — traced with temporary `Serial` debug
+  output confirming `wordPresented()` was in fact incrementing `segment.words`
+  correctly the whole time; the record just hadn't been flushed yet. Trade-off:
+  if you check stats via the config tool *without* leaving the practice
+  screen and then keep practicing there, that continuation goes untracked
+  (no new `beginSegment()` without a menu re-entry) — acceptable, since
+  checking stats mid-round and then resuming as if nothing happened is a
+  narrow case compared to the round simply vanishing.
 - `put stats/clear` → `MorsePracticeStats::clearLog()` → the config tool's
   Clear Log button.
 
