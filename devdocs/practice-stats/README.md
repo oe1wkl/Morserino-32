@@ -69,13 +69,25 @@ One record per segment:
   `listen` segments too (which never call `recordWord()`). A repeated word
   (echo trainer retry after a wrong answer) reuses `echoTrainerWord` without
   going through that block, so it is correctly *not* recounted. Guarded with
-  `if (!stopFlag)`: the `maxSequence` auto-stop logic generates one extra word
-  on the call where it decides to stop (`wordCounter == limit+1`) that
-  `checkStopFlag()` then discards before it's ever keyed or displayed (see its
-  `lastWord` stash, only actually consumed by `generatorMode == PLAYER`) — the
-  existing "N errs (M wds)" status line already accounts for this via
-  `wordCounter - 2`; without the `!stopFlag` guard, a "5 words" round logged
-  as 6.
+  a local `statsDiscardWord` flag (not `stopFlag`, see below): the
+  `maxSequence` auto-stop logic generates one extra word on the call where it
+  decides to stop (`wordCounter == limit+1`) that `checkStopFlag()` then
+  discards before it's ever keyed or displayed (see its `lastWord` stash, only
+  actually consumed by `generatorMode == PLAYER`) — the existing
+  "N errs (M wds)" status line already accounts for this via `wordCounter - 2`;
+  without excluding it, a "5 words" round logged as 6.
+
+  First attempt at this exclusion gated on `!stopFlag` directly — wrong,
+  and it shipped briefly: `stopFlag` is a shared variable with its own
+  lifecycle (reset once per `loop()` iteration inside the `morseGenerator`/
+  `echoTrainer` cases, not owned by this feature at all), so *any* reason it
+  stayed `true` past that one call — a state-transition edge case, a paddle
+  press landing on the wrong iteration, anything — silently zeroed out
+  `wordPresented()` for the rest of that segment, not just the one phantom
+  word. Reported as "Listen sessions showing 0 words despite clearly
+  practicing." Fixed by setting a **local** `bool statsDiscardWord` only in
+  the exact `wordCounter == limit+1` branch and checking that instead — same
+  one-word exclusion, zero dependency on `stopFlag`'s broader behavior.
 - `ics`, `iws`, `wpm` — `Interchar Spc` / `InterWord Spc` (both in dits) and
   the keying speed. Read **live at flush time** (`endSegment()`), not
   snapshotted at `beginSegment()`: WPM in particular is routinely adjusted via

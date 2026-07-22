@@ -2327,6 +2327,9 @@ void fetchNewWord() {
 
       randomGenerate:       repeats = 0;
                             clearText = "";
+#ifdef CONFIG_PRACTICE_STATS
+                            bool statsDiscardWord = false;   // set only for the one phantom word below, not tied to stopFlag's own lifecycle
+#endif
                             if ((MorsePreferences::pliste[posMaxSequence].value != 0) && (generatorMode != KOCH_LEARN))
                               if ( morseState == echoTrainer || ((morseState == morseGenerator) && !MorsePreferences::pliste[posAutoStop].value) ) {
                                 // a case for maxSequence - no maxSequence in autostop mode
@@ -2341,6 +2344,9 @@ void fetchNewWord() {
                                 else if (wordCounter == (limit+1)) {
                                     stopFlag = true;
                                     echoStop = false;
+#ifdef CONFIG_PRACTICE_STATS
+                                    statsDiscardWord = true;
+#endif
                                     //wordCounter = 1;
                                 }
                             }
@@ -2391,11 +2397,15 @@ void fetchNewWord() {
                                                       break;
                                     }   // end switch (generatorMode)
 #ifdef CONFIG_PRACTICE_STATS
-                                    // stopFlag just went true above (maxSequence limit+1 case): this word was
-                                    // generated but checkStopFlag() discards it before it's ever keyed/shown
-                                    // (see checkStopFlag()'s lastWord stash, only consumed by PLAYER mode) —
-                                    // don't count what the user never actually saw or heard.
-                                    if (!stopFlag)
+                                    // statsDiscardWord is set only for the maxSequence limit+1 call above,
+                                    // whose word checkStopFlag() discards before it's ever keyed/shown (see
+                                    // its lastWord stash, only consumed by PLAYER mode) — don't count what the
+                                    // user never actually saw or heard. Deliberately NOT keyed off stopFlag
+                                    // itself: that flag has its own lifecycle (reset elsewhere, once per loop()
+                                    // iteration in the morseGenerator/echoTrainer cases) and if it were ever
+                                    // left true for an unrelated reason, gating on it here would silently zero
+                                    // out word counts for a whole session instead of just skipping one word.
+                                    if (!statsDiscardWord)
                                         MorsePracticeStats::wordPresented((uint8_t) clearText.length());
 #endif
                             }
