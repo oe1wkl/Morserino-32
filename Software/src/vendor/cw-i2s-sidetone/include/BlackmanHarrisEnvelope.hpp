@@ -2,7 +2,8 @@
 
 #include "AudioTools/CoreAudio/AudioEffects/AudioEffect.h"
 #include <cmath>
-#include <vector>
+#include <algorithm>
+#include <array>
 
 /// Audio effect that applies a Blackman-Harris windowed attack/release envelope.
 /// Produces the same smooth S-curve shape used by the ALSA simulator, which
@@ -13,6 +14,13 @@
 /// sidelobe energy (~-92 dB), producing a clean, radio-grade sidetone.
 class BlackmanHarrisEnvelope : public audio_tools::AudioEffect {
 public:
+    // Fixed capacity, good for up to ~20ms at 48kHz (current caller never asks for
+    // more than 9ms at 44.1kHz). setAttackRate()/setReleaseRate() overwrite these
+    // tables in place and publish the new length last, so process() — which runs on
+    // a separate, higher-priority core — only ever indexes a fully valid float,
+    // never a reallocated/torn buffer. See setAttackRate()/setReleaseRate().
+    static constexpr int kMaxSamples = 961;
+
     BlackmanHarrisEnvelope(float attack_s = 0.005f, float release_s = 0.005f,
                            int sample_rate = 48000)
         : sample_rate_(sample_rate)
@@ -28,6 +36,8 @@ public:
         sample_rate_    = o.sample_rate_;
         attack_table_   = o.attack_table_;
         release_table_  = o.release_table_;
+        attack_len_     = o.attack_len_;
+        release_len_    = o.release_len_;
         state_          = Idle;
         cursor_         = 0;
         copyParent((AudioEffect*)&o);
@@ -75,7 +85,7 @@ public:
             return 0;
 
         case Rise:
-            if (cursor_ < (int)attack_table_.size()) {
+            if (cursor_ < attack_len_) {
                 env = attack_table_[cursor_++];
             } else {
                 state_ = On;
@@ -88,7 +98,7 @@ public:
             break;
 
         case Fall:
-            if (cursor_ < (int)release_table_.size()) {
+            if (cursor_ < release_len_) {
                 env = release_table_[cursor_++];
             } else {
                 state_ = Idle;
@@ -106,8 +116,10 @@ private:
     State state_  = Idle;
     int   cursor_ = 0;
 
-    std::vector<float> attack_table_;   // 0 → 1
-    std::vector<float> release_table_;  // 1 → 0
+    std::array<float, kMaxSamples> attack_table_{};   // 0 → 1
+    std::array<float, kMaxSamples> release_table_{};  // 1 → 0
+    int   attack_len_  = 0;
+    int   release_len_ = 0;
 
     /// One point of the Blackman-Harris window.
     static float bh(int size, int k) {
@@ -117,21 +129,27 @@ private:
     }
 
     /// Build the attack (rise) table: values go 0 → 1 using the first half
-    /// of a Blackman-Harris window of length (2n - 1).
+    /// of a Blackman-Harris window of length (2n - 1). Overwrites the fixed
+    /// attack_table_ in place and only publishes attack_len_ once every sample
+    /// up to n has been written, so a concurrent reader on another core never
+    /// observes a partially-built table under its own length.
     void build_rise(float seconds) {
         int n = std::max(1, (int)(seconds * sample_rate_));
         if ((n & 1) == 0) ++n;
-        attack_table_.resize(n);
+        n = std::min(n, kMaxSamples);
         for (int i = 0; i < n; ++i)
             attack_table_[i] = bh(2 * n - 1, i);
+        attack_len_ = n;
     }
 
-    /// Build the release (fall) table: values go 1 → 0 using (1 - rise).
+    /// Build the release (fall) table: values go 1 → 0 using (1 - rise). Same
+    /// write-then-publish discipline as build_rise().
     void build_fall(float seconds) {
         int n = std::max(1, (int)(seconds * sample_rate_));
         if ((n & 1) == 0) ++n;
-        release_table_.resize(n);
+        n = std::min(n, kMaxSamples);
         for (int i = 0; i < n; ++i)
             release_table_[i] = 1.0f - bh(2 * n - 1, i);
+        release_len_ = n;
     }
 };

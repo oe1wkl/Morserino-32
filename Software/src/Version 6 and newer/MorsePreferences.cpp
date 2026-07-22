@@ -113,11 +113,11 @@ parameter MorsePreferences::pliste[] = {
             {"Phones", "line-out", "l-o: Var. Vol.", "l-o: Lsp Muted"}
         },
         {
-            4, 0, 9, 1,                                                 // attack/release time of the CW sidetone envelope, in ms (value+1); default matches the library's original hard-coded 5ms
+            4, 0, 8, 1,                                                 // attack/release time of the CW sidetone envelope, in ms (value+1); default matches the library's original hard-coded 5ms
             "Tone Softness",
             "Softness of CW tone edges (attack/release time)",
             true,
-            {"1 ms", "2 ms", "3 ms", "4 ms", "5 ms", "6 ms", "7 ms", "8 ms", "9 ms", "10 ms"}
+            {"1 ms", "2 ms", "3 ms", "4 ms", "5 ms", "6 ms", "7 ms", "8 ms", "9 ms"}
         },
   #endif
   {
@@ -1580,6 +1580,7 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
       case posLoraChannel:
 #ifdef CONFIG_SOUND_I2S
       case posLineOut:
+      case posSidetoneShape:
 #endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
       case posBluetoothOut:

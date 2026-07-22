@@ -107,7 +107,7 @@ namespace MorseOutput
 #endif
   void soundSuspend();
 #ifdef CONFIG_SOUND_I2S
-  void setSidetoneEnvelope(uint8_t prefValue);   // prefValue indexes sidetoneEnvelopeMs[]
+  void setSidetoneEnvelope(uint8_t prefValue);   // prefValue 0..8 maps to 1..9 ms attack/release
 #endif
   void pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut);
   void pwmNoTone(unsigned int volume);
