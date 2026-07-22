@@ -177,3 +177,79 @@ confirmed — would need its own recording focused on that exact moment.
    and a plan that accounts for Pileup and Radio Cave too.
 4. Re-measure Hypothesis C once A and B are better understood — it may
    simply disappear once the other two are addressed.
+
+---
+
+## OPEN (2026-07-22): I2S sidetone is ~6 ms heavier than the key line
+
+**Ours to fix, not a contributor's** — pre-existing since #136/#138, surfaced
+while reviewing PR #196 ("Tone Softness"). **Analysis only; not yet measured on
+hardware.**
+
+### What was found
+
+`keyOut()` (`m32_v6.ino`) asserts `keyTransmitter()` / `digitalWrite(keyerPin,
+LOW)` *after* the blocking call on **both** edges, so both shift by the same
+6 ms and cancel: **the external TX keying is correct** — keyed mark equals the
+scheduled element duration. That part is fine and needs no change.
+
+The I2S *sidetone* is not aligned with it. With `pwmTone` doing
+`sidetone.on(); delay(6);` and `pwmNoTone` doing `delay(6); sidetone.off();`,
+the tone starts 6 ms *before* the key line closes and stops *with* it:
+
+| | I2S sidetone | TX key line |
+|---|---|---|
+| `keyOut(true)` called | t₀ | t₀ |
+| on / key down | **t₀** | t₀ + 6 |
+| `keyOut(false)` called | t₀ + D | t₀ + D |
+| off / key up | **t₀ + D + 6** | t₀ + D + 6 |
+| mark | **D + 6** (+ tail) | **D** ✓ |
+
+Origin: #138 (Harald, 2026-02-25) fixed #136 by matching the *blocking time* of
+the two audio paths, so the shared constants (`corrTime = millis() - 6` in
+`KEY_START`, `MorseCwEngine`'s `-7`/`-1`) stayed valid. But it did not match
+their *acoustic* behaviour: on the PWM path those 6 ms are spent **fading** the
+tone, on I2S they are spent **holding it at full amplitude**, with the
+Blackman-Harris tail added on top. Hence the Pocket's slightly "heavy" sidetone.
+
+### The envelope itself is duration-neutral
+
+`BlackmanHarrisEnvelope::build_rise()` is not point-symmetric (the ramp sits at
+0.217, not 0.5, at its temporal midpoint), but `build_fall()` defines the
+release as `1 - bh(i)` — the same curve flipped in amplitude. Both edges
+therefore cross −6 dB at the **same** fraction of the ramp, **φ = 0.6568**
+(solved numerically from the BH coefficients). The envelope is thus a **pure
+delay of 0.657·t**: it shifts the audio later but preserves every mark and
+every gap exactly, for any `t`. So no softness-dependent *duration* correction
+is needed — adding one would introduce an error, not remove it.
+
+### Proposed fix (unverified)
+
+Split the existing delay rather than moving it, so total blocking time stays
+exactly 6 ms and **none** of `corrTime = millis() - 6`, `MorseCwEngine`'s `-7`
+or `-1` need re-deriving:
+
+```c
+// pwmTone:    delay(6-k); sidetone.on();  delay(k);
+// pwmNoTone:  delay(6-k); sidetone.off(); delay(k);
+// with k = round(0.657 * toneSoftnessMs)   // k = 3 at today's fixed 5 ms
+```
+
+The sidetone's −6 dB edges then land on the key-line edges for every softness
+value. Constraint `k ≤ 6` implies **t ≤ 9 ms** — which is why PR #196 was asked
+to cap its range at 9 ms rather than 10 (shrinking a shipped user-visible range
+later is worse than starting narrow).
+
+### How to verify
+
+**Not with a microphone** — that is exactly what made row 3 of the table above
+unreadable. Two-channel scope or logic analyser: **ch1 on `keyerPin`, ch2 on
+line-out**, one time base, no level ambiguity.
+
+Acceptance test: 12 / 20 / 35 / 60 WpM × softness 1 / 5 / 9 ms —
+
+1. `keyerPin` mark and gap = 1200/wpm ± 1 ms
+2. line-out **−6 dB** edges within ±1 ms of the `keyerPin` edges
+
+This also retroactively pins down the classic PWM path, which has never been
+measured this way either.
