@@ -4,6 +4,8 @@
 0
 0%
 1
+1 millisecond
+1 ms
 10
 10 min
 10 minutes
@@ -46,6 +48,8 @@
 195
 2
 2 dits
+2 milliseconds
+2 ms
 2 to 3
 2 to 4
 2 to 5
@@ -84,6 +88,8 @@
 294 Hz D4
 3
 3 dits
+3 milliseconds
+3 ms
 30
 30 words per minute
 30 wpm
@@ -107,6 +113,8 @@
 392 Hz G4
 4
 4 dits
+4 milliseconds
+4 ms
 40
 40 words per minute
 40 wpm
@@ -126,8 +134,10 @@
 48
 49
 5
+5 milliseconds
 5 min
 5 minutes
+5 ms
 5 words per minute
 5 wpm
 50
@@ -148,6 +158,8 @@
 587 Hz D5
 59
 6
+6 milliseconds
+6 ms
 60
 62.5%
 622 Hertz
@@ -156,25 +168,31 @@
 698 Hertz
 698 Hz F5
 7
+7 milliseconds
+7 ms
 70
 75
 75%
 784 Hertz
 784 Hz G5
 8
+8 milliseconds
+8 ms
 80
 85
 87.5%
 880 Hertz
 880 Hz A5
 9
+9 milliseconds
+9 ms
 90
 932 Hertz
 932 Hz Bb5
 95
 a umlaut
-Adaptive random
 Adaptive Random
+Adaptive random
 Adaptive speed
 Advanced
 Africa
@@ -320,8 +338,8 @@ l-o: Var. Vol.
 Landscape
 Latency
 LCWO
-Learn new character
 Learn New Character
+Learn new character
 Lemonade
 Length Abbrev
 Length Calls
@@ -416,6 +434,7 @@ Theme
 Time-out
 Tone Pitch
 Tone Shift
+Tone Softness
 Trailblazer
 Transceiver
 Transceiver channel
@@ -424,8 +443,8 @@ Ultimatic
 Uniform
 Unlimited
 Up 1 Half
-Update Firmware
 Update firmware
+Update Firmware
 Upload File
 UPPER
 Vband and Decoded

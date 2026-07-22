@@ -14,33 +14,42 @@
 # Examples (edit freely / delete):
 .- dit dah	dot dash
 -. dah dit	dash dot
+1 ms	1 millisecond
 10 min	10 minutes
 10 wpm	10 words per minute
 15 min	15 minutes
 15 wpm	15 words per minute
+2 ms	2 milliseconds
 20 wpm	20 words per minute
 233 Hz Bb3	233 Hertz
 25 wpm	25 words per minute
 262 Hz C4	262 Hertz
 294 Hz D4	294 Hertz
+3 ms	3 milliseconds
 30 wpm	30 words per minute
 311 Hz E4	311 Hertz
 349 Hz F4	349 Hertz
 35 wpm	35 words per minute
 392 Hz G4	392 Hertz
+4 ms	4 milliseconds
 40 wpm	40 words per minute
 440 Hz A4	440 Hertz
 45 wpm	45 words per minute
 466 Hz Bb4	466 Hertz
 5 min	5 minutes
+5 ms	5 milliseconds
 5 wpm	5 words per minute
 50 wpm	50 words per minute
 523 Hz C5	523 Hertz
 587 Hz D5	587 Hertz
+6 ms	6 milliseconds
 622 Hz E5	622 Hertz
 698 Hz F5	698 Hertz
+7 ms	7 milliseconds
 784 Hz G5	784 Hertz
+8 ms	8 milliseconds
 880 Hz A5	880 Hertz
+9 ms	9 milliseconds
 932 Hz Bb5	932 Hertz
 Adapt. Rand.	Adaptive Random
 All Chars	All characters
