@@ -9,9 +9,15 @@
 #
 # Usage:
 #   ./generate_audio.sh                          # Piper (alan, en-GB), 32 kbps
+#   ./generate_audio.sh --prune                  # also delete orphaned clips
 #   LENGTH_SCALE=1.3 ./generate_audio.sh         # slower speech
 #   TTS_ENGINE=espeak ./generate_audio.sh        # espeak-ng fallback
 #   BITRATE=24 SR=16 ./generate_audio.sh         # smaller fallback set
+#
+# The clips are committed to the repo (they are NOT reproducible from a clean
+# clone: the Piper voice model under models/ is gitignored), so a builder who
+# only wants to flash does not need the TTS toolchain at all -- just uploadfs.
+# Re-run this only when voice_strings.txt changes or the voice/EQ is retuned.
 #
 # Requirements: lame, plus EITHER Piper (.venv + `pip install piper-tts` + a voice
 # model under models/) OR espeak-ng. (brew install lame espeak-ng)
@@ -19,6 +25,16 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# ---- Args -------------------------------------------------------------------
+PRUNE=0
+for arg in "$@"; do
+  case "$arg" in
+    --prune)   PRUNE=1 ;;
+    -h|--help) sed -n '3,25p' "$0"; exit 0 ;;
+    *) echo "unknown option: $arg (try --help)" >&2; exit 2 ;;
+  esac
+done
 
 # ---- Fixed audio parameters (evaluated on real M32 hardware) ----------------
 VOICE="${VOICE:-en-gb}"   # British male
@@ -121,6 +137,32 @@ while IFS= read -r TEXT || [ -n "$TEXT" ]; do
   generated=$((generated+1))
 done < "$INPUT"
 
+# ---- Orphans ----------------------------------------------------------------
+# Clip filenames are md5(text), so a clip whose string is removed from
+# voice_strings.txt is never overwritten -- it just lingers, and (now that the
+# clips are committed) would sit in the repo and on SPIFFS forever. Always
+# report; delete only when asked.
+EXPECTED="$TMP/expected.txt"
+: > "$EXPECTED"
+while IFS= read -r TEXT || [ -n "$TEXT" ]; do
+  [ -z "$TEXT" ] && continue
+  clip_id "$TEXT" >> "$EXPECTED"
+done < "$INPUT"
+sort -u -o "$EXPECTED" "$EXPECTED"
+
+orphans=0 pruned=0
+while IFS= read -r f; do
+  [ -z "$f" ] && continue
+  if ! grep -qxF "$(basename "$f" .mp3)" "$EXPECTED"; then
+    orphans=$((orphans+1))
+    if [ "$PRUNE" -eq 1 ]; then
+      rm -f "$f"; pruned=$((pruned+1))
+    else
+      echo "orphan (re-run with --prune to delete): $f" >&2
+    fi
+  fi
+done < <(find "$OUTDIR" -name '*.mp3')
+
 # ---- Summary ----------------------------------------------------------------
 total_kb=$(du -sk "$OUTDIR" | awk '{print $1}')
 count=$(find "$OUTDIR" -name '*.mp3' | wc -l | tr -d ' ')
@@ -131,5 +173,9 @@ echo "format           : ${BITRATE} kbps @ ${OUT_SR} Hz, ${OUT_CH}ch (matches M3
 echo "generated now    : $generated"
 echo "skipped (exist)  : $skipped"
 echo "empty-slug skips : $empty"
+orphan_note=""
+if [ "$PRUNE" -eq 1 ]; then orphan_note=" (deleted $pruned)"
+elif [ "$orphans" -gt 0 ]; then orphan_note=" (kept -- re-run with --prune)"; fi
+echo "orphans          : ${orphans}${orphan_note}"
 echo "clips in $OUTDIR/ : $count"
 echo "total size       : ${total_kb} KB"
