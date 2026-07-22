@@ -178,6 +178,9 @@ namespace MorsePreferences
      const char *parDescript;
      const boolean isMapped;
      const char *mapping[MAX_MAP_ELEMENTS];
+     const char *spokenName;   // V9.0 audio accessibility: ear-friendly label for TTS;
+                               // nullptr ==> fall back to parName. Only the cryptic,
+                               // display-cramped parNames need to set this.
   };
 
   extern parameter pliste[];
@@ -223,7 +226,7 @@ namespace MorsePreferences
   boolean storeSnapshot(uint8_t);
   boolean setupPreferences(uint8_t);
   void displayKeyerPreferencesMenu(prefPos);
-  void displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly);
+  void displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading = true);
   String getValueLine(prefPos);
   int getValue(prefPos);
   boolean adjustKeyerPreference(prefPos);
