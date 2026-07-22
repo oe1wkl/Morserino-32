@@ -260,6 +260,8 @@ button{padding:.5em 1em;margin-top:.5em}
 .swatch{width:.8em;height:.8em;border-radius:2px;display:inline-block}
 .summary{display:flex;flex-wrap:wrap;gap:1.5em;font-size:.85em;margin:.3em 0 .8em}
 .summary b{display:block;font-size:1.2em}
+.needschip{display:inline-block;background:#f4dcd4;color:#a8402f;font-weight:bold;font-family:monospace;
+  border-radius:3px;padding:.1em .45em;margin:.25em .3em 0 0;font-size:.95em}
 .tilegrid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.8em}
 .tile{position:relative;width:2.1em;height:2.1em;border-radius:4px;display:flex;align-items:center;justify-content:center;
   font-family:monospace;font-size:1em;font-weight:bold;cursor:pointer}
@@ -410,18 +412,17 @@ Promise.all([
   if(koch && koch.characters && rows.length===0) gridDiv.textContent="No practice logged yet.";
 
   var learnedCount = koch ? Math.min(koch.value,koch.characters.length) : rows.length;
-  var totalAttempts=0, totalErrors=0, weakest=null;
-  rows.forEach(function(r){
-    if(r.attempts>0){
-      totalAttempts+=r.attempts; totalErrors+=r.errors;
-      if(!weakest || r.rate>weakest.rate || (r.rate===weakest.rate && r.attempts>weakest.attempts)) weakest=r;
-    }
-  });
+  var totalAttempts=0, totalErrors=0;
+  var sent=rows.filter(function(r){ return r.attempts>0; });
+  sent.forEach(function(r){ totalAttempts+=r.attempts; totalErrors+=r.errors; });
+  var top5=sent.slice().sort(function(a,b){
+    return b.rate-a.rate || b.attempts-a.attempts;
+  }).slice(0,5);
   var summaryDiv=document.getElementById("charSummary");
   summaryDiv.innerHTML =
     "<div>Learned<br><b>"+learnedCount+(koch?" / "+koch.characters.length:"")+"</b></div>"+
     "<div>Accuracy (sent)<br><b>"+(totalAttempts?Math.round(100*(totalAttempts-totalErrors)/totalAttempts)+"%":"&mdash;")+"</b></div>"+
-    "<div>Needs work<br><b>"+(weakest?escHtml(weakest.c)+" ("+weakest.rate+"%)":"&mdash;")+"</b></div>";
+    "<div>Needs work<br>"+(top5.length?top5.map(function(r){return "<span class=\"needschip\">"+escHtml(r.c)+" "+r.rate+"%</span>";}).join(""):"<b>&mdash;</b>")+"</div>";
 
   var charsBody=document.querySelector("#chars tbody");
   var charSortKey="rate", charSortDir=-1;

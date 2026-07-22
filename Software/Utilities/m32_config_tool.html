@@ -183,6 +183,8 @@
     .stats-table td{padding:6px 10px;border-bottom:1px solid #e0e8ee}
     .stats-summary{display:flex;flex-wrap:wrap;gap:24px;font-size:14px;margin:6px 0 14px}
     .stats-summary b{display:block;font-size:20px;font-family:'Courier New',monospace}
+    .needschip{display:inline-block;background:var(--red-bg);color:#a8402f;font-weight:700;font-family:'Courier New',monospace;
+      border-radius:4px;padding:2px 7px;margin:3px 4px 0 0;font-size:14px;border:1px solid var(--red-bdr)}
     .pstat-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
     .pstat-tile{position:relative;width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;
       font-size:16px;font-weight:700;font-family:'Courier New',monospace;cursor:pointer}
@@ -1665,17 +1667,16 @@ function renderPracticeStats(records, koch){
   if(koch && koch.characters && pstatRows.length===0) gridDiv.innerHTML='<span class="empty-msg" style="color:var(--muted);font-style:italic">No practice logged yet</span>';
 
   var learnedCount = koch ? Math.min(koch.value, koch.characters.length) : pstatRows.length;
-  var pTotalAttempts=0, pTotalErrors=0, weakest=null;
-  pstatRows.forEach(function(r){
-    if(r.attempts>0){
-      pTotalAttempts+=r.attempts; pTotalErrors+=r.errors;
-      if(!weakest || r.rate>weakest.rate || (r.rate===weakest.rate && r.attempts>weakest.attempts)) weakest=r;
-    }
-  });
+  var pTotalAttempts=0, pTotalErrors=0;
+  var pSent=pstatRows.filter(function(r){ return r.attempts>0; });
+  pSent.forEach(function(r){ pTotalAttempts+=r.attempts; pTotalErrors+=r.errors; });
+  var pTop5=pSent.slice().sort(function(a,b){
+    return b.rate-a.rate || b.attempts-a.attempts;
+  }).slice(0,5);
   document.getElementById('pstatSummary').innerHTML =
     '<div>Learned<br><b>'+learnedCount+(koch?' / '+koch.characters.length:'')+'</b></div>'+
     '<div>Accuracy (sent)<br><b>'+(pTotalAttempts?Math.round(100*(pTotalAttempts-pTotalErrors)/pTotalAttempts)+'%':dash)+'</b></div>'+
-    '<div>Needs work<br><b>'+(weakest?escHtml(weakest.c)+' ('+weakest.rate+'%)':dash)+'</b></div>';
+    '<div>Needs work<br>'+(pTop5.length?pTop5.map(function(r){return '<span class="needschip">'+escHtml(r.c)+' '+r.rate+'%</span>';}).join(''):'<b>'+dash+'</b>')+'</div>';
 
   var charsBody=document.querySelector('#statsCharsTable tbody');
   var pstatSortKey='rate', pstatSortDir=-1;
