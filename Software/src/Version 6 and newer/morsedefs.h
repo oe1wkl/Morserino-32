@@ -40,11 +40,11 @@
 const char* const PROJECTNAME = "Morserino-32";
 const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 
-#define VERSION_MAJOR 8
-#define VERSION_MINOR 2
+#define VERSION_MAJOR 9
+#define VERSION_MINOR 0
 #define VERSION_PATCH 0
 
-#define BETA false
+#define BETA true
 #define COMPILEDATE __DATE__
 
 
