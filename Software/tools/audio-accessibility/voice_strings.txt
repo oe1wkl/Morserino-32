@@ -176,6 +176,7 @@ a umlaut
 Adaptive random
 Adaptive Random
 Adaptive speed
+Advanced
 Africa
 All
 All characters
@@ -203,6 +204,7 @@ BC2: ar sk =
 BC2: k m y
 BC2: q x v
 BC2: z j /
+Beginner
 Blues
 Bluetooth A R character
 Bluetooth keyboard output
@@ -272,6 +274,7 @@ Fight Pileup
 File Player
 Flip Screen
 Forever
+Fox Hunt
 Foxtrot
 full stop
 Games
@@ -283,8 +286,8 @@ Generic Kbd
 Generic Keyboard
 Go To Sleep
 Golf
-Hardware configuration
 Hardware Configuration
+Hardware configuration
 Headphone Output
 Hotel
 Iambic A
@@ -293,6 +296,7 @@ iCW or External Transceiver
 India
 Inter-character spacing
 Inter-word spacing
+Intermediate
 Internet CW, external transceiver
 Interp+ProSn
 Interpunct.
@@ -316,8 +320,8 @@ l-o: Var. Vol.
 Landscape
 Latency
 LCWO
-Learn New Character
 Learn new character
+Learn New Character
 Lemonade
 Length Abbrev
 Length Calls
@@ -332,6 +336,7 @@ lower
 M32
 Mandarin
 Maximum number of words
+Memory Chain
 Mike
 millivolts
 Mixed
@@ -374,6 +379,7 @@ Portrait
 pro sign
 Pro Signs
 QSO Bot
+QSO Difficulty
 Quebec
 question mark
 Quick Start
@@ -410,6 +416,7 @@ Theme
 Time-out
 Tone Pitch
 Tone Shift
+Trailblazer
 Transceiver
 Transceiver channel
 u umlaut
@@ -417,8 +424,8 @@ Ultimatic
 Uniform
 Unlimited
 Up 1 Half
-Update firmware
 Update Firmware
+Update firmware
 Upload File
 UPPER
 Vband and Decoded

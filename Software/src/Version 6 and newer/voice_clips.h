@@ -155,6 +155,7 @@ static const VoiceEntry voiceLookup[] = {
   {"95", "812b4ba2"},
   {"Adapt. Rand.", "3666e983"},
   {"Adaptive speed", "93aceefc"},
+  {"Advanced", "9b6545e4"},
   {"Africa", "f5cd2629"},
   {"All", "b1c94ca2"},
   {"All Chars", "b50acc3b"},
@@ -178,6 +179,7 @@ static const VoiceEntry voiceLookup[] = {
   {"BC2: q x v", "7bc3d778"},
   {"BC2: z j /", "94cbceb9"},
   {"Bandwidth", "7d724e4b"},
+  {"Beginner", "2ddabc33"},
   {"Blues", "aca2a3c0"},
   {"Bluetooth A R character", "b4c0646b"},
   {"Bluetooth keyboard output", "5f4e4e72"},
@@ -231,6 +233,7 @@ static const VoiceEntry voiceLookup[] = {
   {"File Player", "0af9cd2b"},
   {"Flip Screen", "9c0118ac"},
   {"Forever", "97055d26"},
+  {"Fox Hunt", "c0a368cb"},
   {"Foxtrot", "69a577fa"},
   {"Games", "251bd814"},
   {"Garnet", "9a1d4889"},
@@ -248,6 +251,7 @@ static const VoiceEntry voiceLookup[] = {
   {"India", "7d31e0da"},
   {"Inter-character spacing", "73c96e56"},
   {"Inter-word spacing", "45404c43"},
+  {"Intermediate", "b57ed7a0"},
   {"Interp+ProSn", "2b4f9063"},
   {"Interpunct.", "6dfd2bbc"},
   {"Invader orientation", "2947f34b"},
@@ -275,6 +279,7 @@ static const VoiceEntry voiceLookup[] = {
   {"M32", "91a34118"},
   {"Mandarin", "76c06512"},
   {"Maximum number of words", "df97b070"},
+  {"Memory Chain", "ad6622d5"},
   {"Mike", "1b83d5da"},
   {"Mixed", "699b4f79"},
   {"Morse Invaders", "62b14d61"},
@@ -310,6 +315,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Portrait", "1c7444be"},
   {"Pro Signs", "a1edbcde"},
   {"QSO Bot", "60d3a124"},
+  {"QSO Difficulty", "c73f6a06"},
   {"Quebec", "9f9619c6"},
   {"Quick Start", "411eaaaa"},
   {"Radio Cave", "d71afeab"},
@@ -341,6 +347,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Time-out", "5b6ec483"},
   {"Tone Pitch", "f6f4f6a9"},
   {"Tone Shift", "306688bc"},
+  {"Trailblazer", "43a3ec3a"},
   {"Transceiver", "6d3a63f4"},
   {"Transceiver channel", "ae283e65"},
   {"UPPER", "9e43f529"},
@@ -393,6 +400,6 @@ static const VoiceEntry voiceLookup[] = {
   {"u umlaut", "cfdb81f4"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 385;
+static const unsigned int voiceLookupCount = 392;
 
 #endif // VOICE_CLIPS_H_

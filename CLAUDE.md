@@ -238,7 +238,49 @@ propose an addition to that document — do not improvise silently.
   because it is useful to advanced users, not just developers. When you add a
   new developer doc, put it under `devdocs/` (see `devdocs/README.md`).
 
-## 8. Definition of done (summary)
+## 8. Accessibility duty — new UI text must be voiced
+
+The **M32 Pocket Accessibility Edition** (env `pocketwroom-accessibility`, flag
+`CONFIG_AUDIO_A11Y`) speaks the user interface aloud for blind operators, from
+pre-rendered voice clips in a dedicated SPIFFS store. It is a shipping build of
+this trunk, not a side branch — so **any UI text you add is mute until it is
+given a clip.** Silence is a bug for these users.
+
+**The duty:** every new **preference**, **option value**, **menu entry**, or
+**on-screen message** must be handled for the a11y edition. The only exemption is
+code that is *compiled out* of that build (the games, `CONFIG_CW_GAME`) — those
+need nothing.
+
+Three cases, two of them nearly automatic:
+
+1. **New preference / option value / menu entry** — the extractor reads the
+   firmware's own tables (`menuText[]`, `pliste[]`, `extraItems[]`), so you only
+   have to **re-run it**. If a `parName` is a cryptic abbreviation (`Stop<Next>Rep`),
+   add a `parameter.spokenName` — that field exists precisely because the 12-char
+   display labels are unspeakable.
+2. **New on-screen message / direct screen response** — **NOT** auto-extracted.
+   Display calls are invisible to the tooling, so a new message stays silent
+   forever unless it is explicitly voiced. The agreed mechanism is the **serial
+   protocol text stream** (co-designed with Christoph Daller for this purpose):
+   voice what the device already emits over the protocol rather than scraping
+   display call sites.
+3. **Game-only text** — nothing to do (compiled out).
+
+**Procedure** (from `Software/tools/audio-accessibility/`):
+
+```
+python3 extract_voice_strings.py     # tables -> voice_strings.txt, voice_manifest.json, voice_clips.h
+./generate_audio.sh                  # renders only the MISSING clips (incremental)
+```
+Then flash **both** images — `voice_clips.h` is compiled in (`-t upload`) and the
+clips live in SPIFFS (`-t uploadfs`). Details, knobs and gotchas:
+`devdocs/audio-accessibility/HANDOFF.md`; roadmap: `PRODUCT_PLAN.md` alongside it.
+
+**The cheap check:** re-run the extractor and look at `git diff` on
+`voice_strings.txt`. Empty diff = nothing owed. Any added line = a clip is owed
+before the change is done.
+
+## 9. Definition of done (summary)
 
 A change is done when:
 
@@ -246,4 +288,5 @@ A change is done when:
 2. It follows the hard rules in §3 and the NVS conventions in §4.
 3. Its user interaction conforms to `devdocs/UX_CONVENTIONS.md`.
 4. Manuals (EN + DE) are updated or a TODO is explicitly recorded.
-5. No new ad-hoc patterns were introduced where a documented one exists.
+5. New UI text is voiced for the accessibility edition (§8), or exempt.
+6. No new ad-hoc patterns were introduced where a documented one exists.

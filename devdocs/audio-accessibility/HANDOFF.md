@@ -61,6 +61,24 @@ python3 extract_voice_strings.py     # firmware tables -> voice_strings.txt, voi
   (`.venv` + model are git-ignored; recreate per machine).
 - Requires `espeak-ng`-free toolchain: **Piper + ffmpeg + lame**.
 
+## Checklist: you added a preference / menu entry / message (CLAUDE.md §8)
+
+Master *is* the Accessibility Edition, so new UI text is mute until it has a clip.
+
+| You added | What it needs |
+|---|---|
+| Preference, option value, menu entry | Re-run the extractor + generator (above). Cryptic `parName`? add `parameter.spokenName` first. |
+| **On-screen message / status response** | **Manual work** — the extractor cannot see display calls. Voice it via the serial-protocol stream (see Open items §2). |
+| Text inside a game (`CONFIG_CW_GAME`) | Nothing — compiled out of this build. |
+
+**Cheap check:** re-run `extract_voice_strings.py`, then `git diff voice_strings.txt`.
+Empty = nothing owed; added lines = clips owed. Flash **both** images afterwards
+(`voice_clips.h` is compiled in → `-t upload`; clips live in SPIFFS → `-t uploadfs`).
+
+*Drift precedent (2026-07-06):* the V8.2→V9.0 merge brought 7 unvoiced strings —
+`QSO Difficulty` + `Beginner`/`Intermediate`/`Advanced` (a real gap: the QSO Bot ships
+in this build) plus 3 game entries. Exactly what this checklist exists to prevent.
+
 ## Architecture (one paragraph)
 
 The firmware tables (`menuText[]`, `pliste[]` with the new `parameter.spokenName`) are the
