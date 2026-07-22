@@ -42,11 +42,11 @@ namespace MorsePracticeStats {
 
     // Count a new word/group being presented (generator playback as well as
     // echo trainer prompts — call regardless of mode; a "send" segment's word
-    // count comes from this same call, not from recordWord()). `len` is the
-    // presented word's character count, so characters-per-word/CPS can be
-    // computed for "listen" segments too, which never call recordWord(). No-op
-    // if no segment is open.
-    void wordPresented(uint8_t len);
+    // count comes from this same call, not from recordWord()). Also credits
+    // each character in `text` with one "heard" — the only per-character signal
+    // "listen" segments ever get, since they never call recordWord(). No-op if
+    // no segment is open.
+    void wordPresented(const String &text);
 
     // Wall-clock sync (web UI or serial). epochSeconds must be a real Unix
     // timestamp; 0 is treated as "unknown" and never accepted.

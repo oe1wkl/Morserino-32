@@ -29,7 +29,8 @@ static const uint8_t MAX_LESSON_CHARS = 51;
 
 struct CharStat {
     char     c;
-    uint16_t attempts;
+    uint16_t heard;      // presented at all (both listen and send)
+    uint16_t attempts;   // sent (send/echo mode only)
     uint16_t errors;
 };
 
@@ -129,7 +130,10 @@ static void backfillTimestamps() {
         line.trim();
         if (line.length() == 0)
             continue;
-        DynamicJsonDocument doc(384);
+        // ArduinoJson's own rule of thumb: ~2x the minified JSON text size is
+        // enough pool for parsing it (records can now be a few KB for a
+        // fully-learned Listen segment with many distinct characters heard).
+        DynamicJsonDocument doc(128 + line.length() * 2);
         if (deserializeJson(doc, line) == DeserializationError::Ok) {
             if (doc["ts"] == 0 && doc.containsKey("m")) {
                 unsigned long recordMillis = doc["m"];
@@ -206,6 +210,7 @@ static CharStat *findOrAddChar(char c) {
         return nullptr;   // defensive: shouldn't happen, charset is bounded
     CharStat *s = &segment.chars[segment.numChars++];
     s->c = c;
+    s->heard = 0;
     s->attempts = 0;
     s->errors = 0;
     return s;
@@ -225,12 +230,17 @@ void beginSegment(uint8_t lesson, const char* mode) {
     segment.totalChars = 0;
 }
 
-void wordPresented(uint8_t len) {
+void wordPresented(const String &text) {
     if (!segment.active)
         return;
     if (segment.words < 0xFFFF)
         segment.words++;
-    segment.totalChars += len;
+    segment.totalChars += text.length();
+    for (size_t i = 0; i < text.length(); i++) {
+        CharStat *s = findOrAddChar(text.charAt(i));
+        if (s && s->heard < 0xFFFF)
+            s->heard++;
+    }
 }
 
 void endSegment() {
@@ -252,7 +262,10 @@ void endSegment() {
         ts = now - (time_t)(durMs / 1000);
     }
 
-    DynamicJsonDocument doc(320 + segment.numChars * 32);
+    // Listen segments now populate one chars[] entry per distinct character
+    // *heard* (not just sent/evaluated), so numChars can reach the full Koch
+    // charset (51) — size generously enough for that worst case.
+    DynamicJsonDocument doc(400 + segment.numChars * 56);
     doc["ts"]     = (uint32_t) ts;
     doc["m"]      = (uint32_t) flushMillis;   // millis() at flush — lets backfillTimestamps() date this later if ts is still 0
     doc["dur"]    = (uint32_t) (durMs / 1000);
@@ -272,6 +285,7 @@ void endSegment() {
         JsonObject chars = doc.createNestedObject("chars");
         for (uint8_t i = 0; i < segment.numChars; i++) {
             JsonArray a = chars.createNestedArray(String(segment.chars[i].c));
+            a.add(segment.chars[i].heard);
             a.add(segment.chars[i].attempts);
             a.add(segment.chars[i].errors);
         }

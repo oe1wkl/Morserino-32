@@ -255,6 +255,26 @@ button{padding:.5em 1em;margin-top:.5em}
 .tag.send{background:#2d6cb0}
 .legend{font-size:.8em;color:#555;margin-top:.3em}
 .legend .tag{margin-right:.5em}
+.charlegend{font-size:.8em;color:#555;margin:.3em 0 .8em;display:flex;flex-wrap:wrap;gap:.9em}
+.charlegend span{display:inline-flex;align-items:center;gap:.35em}
+.swatch{width:.8em;height:.8em;border-radius:2px;display:inline-block}
+.summary{display:flex;flex-wrap:wrap;gap:1.5em;font-size:.85em;margin:.3em 0 .8em}
+.summary b{display:block;font-size:1.2em}
+.tilegrid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:.8em}
+.tile{position:relative;width:2.1em;height:2.1em;border-radius:4px;display:flex;align-items:center;justify-content:center;
+  font-family:monospace;font-size:1em;font-weight:bold;cursor:pointer}
+.tile.good{background:#dcebe0;color:#2f6b46}
+.tile.mid{background:#f3e6cc;color:#8a5f14}
+.tile.weak{background:#f4dcd4;color:#a8402f}
+.tile.unseen{background:#e6e6e6;color:#888}
+.tile.future{background:#f4f4f4;color:#ccc;border:1px dashed #ddd;cursor:default}
+.tile.selected{outline:2px solid #2d6cb0}
+.tile .tip{position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#222;color:#fff;
+  font-family:sans-serif;font-size:.72em;padding:.3em .5em;border-radius:4px;white-space:nowrap;
+  opacity:0;pointer-events:none;transition:opacity .1s}
+.tile:hover .tip{opacity:1}
+#chars th{cursor:pointer;user-select:none}
+#chars th.sorted::after{content:" \25be"}
 </style></head><body>
 <h1>Practice Stats</h1>
 <div id="storage">loading&hellip;</div>
@@ -263,8 +283,20 @@ button{padding:.5em 1em;margin-top:.5em}
 <div class="legend"><span class="tag listen">Listen</span><span class="tag send">Send</span> &mdash; <span id="totalTime"></span></div>
 <div id="lessons"></div>
 
-<h2>Error Rate per Character</h2>
-<table id="chars"><thead><tr><th>Char</th><th>Attempts</th><th>Errors</th><th>Rate</th></tr></thead><tbody></tbody></table>
+<h2>Characters</h2>
+<div class="charlegend">
+<span><span class="swatch" style="background:#dcebe0;border:1px solid #2f6b46"></span>Solid (&lt;10% err)</span>
+<span><span class="swatch" style="background:#f3e6cc;border:1px solid #8a5f14"></span>Shaky (10&ndash;25%)</span>
+<span><span class="swatch" style="background:#f4dcd4;border:1px solid #a8402f"></span>Weak (&gt;25%)</span>
+<span><span class="swatch" style="background:#e6e6e6;border:1px solid #888"></span>Heard, not sent</span>
+<span><span class="swatch" style="background:#f4f4f4;border:1px dashed #ccc"></span>Not yet learned</span>
+</div>
+<div class="summary" id="charSummary"></div>
+<div class="tilegrid" id="charGrid">loading&hellip;</div>
+<div class="scroll"><table id="chars"><thead><tr>
+<th data-key="c">Char</th><th data-key="heard">Heard</th><th data-key="attempts">Sent</th>
+<th data-key="correct">Correct</th><th data-key="errors">Errors</th><th data-key="rate" class="sorted">Rate</th>
+</tr></thead><tbody></tbody></table></div>
 
 <h2>Session History</h2>
 <p class="scrollhint">Scroll sideways to see all columns &rarr;</p>
@@ -295,7 +327,11 @@ fetch("/api/storage").then(r=>r.json()).then(function(d){
     "Storage: "+Math.round(d.used/1024)+" KB / "+Math.round(d.total/1024)+" KB used ("+pct+"%)";
 });
 
-fetch("/api/stats.jsonl").then(r=>r.text()).then(function(text){
+Promise.all([
+  fetch("/api/koch").then(r=>r.json()).catch(()=>null),
+  fetch("/api/stats.jsonl").then(r=>r.text())
+]).then(function(results){
+  var koch=results[0], text=results[1];
   var records=[];
   text.split("\n").forEach(function(line){
     line=line.trim();
@@ -308,9 +344,9 @@ fetch("/api/stats.jsonl").then(r=>r.text()).then(function(text){
     if(!lessonTime[r.lesson]) lessonTime[r.lesson]={listen:0,send:0};
     lessonTime[r.lesson][r.mode==="send"?"send":"listen"]+=r.dur;
     if(r.chars) Object.keys(r.chars).forEach(function(c){
-      var a=r.chars[c][0], e=r.chars[c][1];
-      if(!charStats[c]) charStats[c]=[0,0];
-      charStats[c][0]+=a; charStats[c][1]+=e;
+      var h=r.chars[c][0], a=r.chars[c][1], e=r.chars[c][2];
+      if(!charStats[c]) charStats[c]={heard:0,attempts:0,errors:0};
+      charStats[c].heard+=h; charStats[c].attempts+=a; charStats[c].errors+=e;
     });
   });
 
@@ -331,17 +367,97 @@ fetch("/api/stats.jsonl").then(r=>r.text()).then(function(text){
     lessonsDiv.appendChild(row);
   });
 
-  var chars=Object.keys(charStats).sort(function(a,b){
-    var ra=charStats[a][1]/Math.max(1,charStats[a][0]), rb=charStats[b][1]/Math.max(1,charStats[b][0]);
-    return rb-ra;
+  function bucket(cs){
+    if(!cs || cs.attempts===0) return "unseen";
+    var rate=cs.errors/cs.attempts;
+    if(rate<0.10) return "good";
+    if(rate<=0.25) return "mid";
+    return "weak";
+  }
+
+  var gridDiv=document.getElementById("charGrid");
+  gridDiv.innerHTML="";
+  var rows=[];
+  if(koch && koch.characters){
+    koch.characters.forEach(function(ch,i){
+      var pos=koch.minimum+i;
+      var tile=document.createElement("span");
+      if(pos>koch.value){
+        tile.className="tile future";
+        tile.textContent=ch;
+        gridDiv.appendChild(tile);
+        return;
+      }
+      var cs=charStats[ch]||{heard:0,attempts:0,errors:0};
+      var cls=bucket(cs);
+      tile.className="tile "+cls;
+      tile.dataset.char=ch;
+      var rate=cs.attempts?Math.round(100*cs.errors/cs.attempts):null;
+      tile.innerHTML="<span>"+escHtml(ch===" "?"␣":ch)+"</span>"+
+        "<span class=\"tip\">heard "+cs.heard+" &middot; sent "+cs.attempts+
+        (cs.attempts?" &middot; "+rate+"% err":" &middot; not sent yet")+"</span>";
+      gridDiv.appendChild(tile);
+      if(cs.heard>0 || cs.attempts>0) rows.push({c:ch,heard:cs.heard,attempts:cs.attempts,correct:cs.attempts-cs.errors,errors:cs.errors,rate:cs.attempts?rate:-1});
+    });
+  } else {
+    // /api/koch unavailable — fall back to whatever characters actually showed up in the log
+    gridDiv.textContent="Lesson sequence unavailable — see the table below.";
+    Object.keys(charStats).forEach(function(ch){
+      var cs=charStats[ch];
+      rows.push({c:ch,heard:cs.heard,attempts:cs.attempts,correct:cs.attempts-cs.errors,errors:cs.errors,rate:cs.attempts?Math.round(100*cs.errors/cs.attempts):-1});
+    });
+  }
+  if(koch && koch.characters && rows.length===0) gridDiv.textContent="No practice logged yet.";
+
+  var learnedCount = koch ? Math.min(koch.value,koch.characters.length) : rows.length;
+  var totalAttempts=0, totalErrors=0, weakest=null;
+  rows.forEach(function(r){
+    if(r.attempts>0){
+      totalAttempts+=r.attempts; totalErrors+=r.errors;
+      if(!weakest || r.rate>weakest.rate || (r.rate===weakest.rate && r.attempts>weakest.attempts)) weakest=r;
+    }
   });
+  var summaryDiv=document.getElementById("charSummary");
+  summaryDiv.innerHTML =
+    "<div>Learned<br><b>"+learnedCount+(koch?" / "+koch.characters.length:"")+"</b></div>"+
+    "<div>Accuracy (sent)<br><b>"+(totalAttempts?Math.round(100*(totalAttempts-totalErrors)/totalAttempts)+"%":"&mdash;")+"</b></div>"+
+    "<div>Needs work<br><b>"+(weakest?escHtml(weakest.c)+" ("+weakest.rate+"%)":"&mdash;")+"</b></div>";
+
   var charsBody=document.querySelector("#chars tbody");
-  chars.forEach(function(c){
-    var a=charStats[c][0], e=charStats[c][1];
-    var rate=Math.round(100*e/Math.max(1,a));
-    var tr=document.createElement("tr");
-    tr.innerHTML="<td>"+escHtml(c)+"</td><td>"+a+"</td><td>"+e+"</td><td>"+rate+"%</td>";
-    charsBody.appendChild(tr);
+  var charSortKey="rate", charSortDir=-1;
+  function renderCharRows(){
+    var sorted=rows.slice().sort(function(a,b){
+      var av=a[charSortKey], bv=b[charSortKey];
+      if(typeof av==="string") return charSortDir*av.localeCompare(bv);
+      return charSortDir*(av-bv);
+    });
+    charsBody.innerHTML="";
+    sorted.forEach(function(r){
+      var cls=r.attempts?bucket({attempts:r.attempts,errors:r.errors}):"unseen";
+      var tr=document.createElement("tr");
+      tr.dataset.char=r.c;
+      tr.innerHTML="<td>"+escHtml(r.c)+"</td><td>"+r.heard+"</td><td>"+r.attempts+"</td><td>"+r.correct+"</td><td>"+r.errors+
+        "</td><td class=\""+cls+"\">"+(r.attempts?r.rate+"%":"&mdash;")+"</td>";
+      charsBody.appendChild(tr);
+    });
+  }
+  renderCharRows();
+  document.querySelectorAll("#chars thead th").forEach(function(th){
+    th.addEventListener("click",function(){
+      var key=th.dataset.key;
+      if(charSortKey===key) charSortDir*=-1; else { charSortKey=key; charSortDir=(key==="c")?1:-1; }
+      document.querySelectorAll("#chars thead th").forEach(function(t){t.classList.remove("sorted");});
+      th.classList.add("sorted");
+      renderCharRows();
+    });
+  });
+  gridDiv.addEventListener("click",function(e){
+    var tile=e.target.closest(".tile");
+    if(!tile || !tile.dataset.char) return;
+    document.querySelectorAll(".tile.selected").forEach(function(t){t.classList.remove("selected");});
+    tile.classList.add("selected");
+    var row=document.querySelector("#chars tbody tr[data-char=\""+CSS.escape(tile.dataset.char)+"\"]");
+    if(row) row.scrollIntoView({behavior:"smooth",block:"center"});
   });
 
   records.sort(function(a,b){return b.ts-a.ts;});   // newest first (undated [ts=0] sink to the bottom)
@@ -357,7 +473,7 @@ fetch("/api/stats.jsonl").then(r=>r.text()).then(function(text){
     // used for the error rate, not as a stand-in for word length.
     var tc = r.tc||0;
     var attempts=0, totalErrors=0;
-    if(r.chars) Object.keys(r.chars).forEach(function(c){ attempts+=r.chars[c][0]; totalErrors+=r.chars[c][1]; });
+    if(r.chars) Object.keys(r.chars).forEach(function(c){ attempts+=r.chars[c][1]; totalErrors+=r.chars[c][2]; });
     var charsPerWord = words>0 ? (tc/words).toFixed(1) : dash;
     var wps = r.dur>0 ? (words/r.dur).toFixed(2) : dash;
     var cps = r.dur>0 ? (tc/r.dur).toFixed(2) : dash;
@@ -748,6 +864,26 @@ void MorseWiFi::viewStats() {                          /// start wifi client, we
     StaticJsonDocument<64> doc;
     doc["used"] = MorsePracticeStats::usedBytes();
     doc["total"] = MorsePracticeStats::totalBytes();
+    String out;
+    serializeJson(doc, out);
+    server.send(200, "application/json", out);
+  });
+
+  // Koch character sequence, for the stats page's tile grid: which characters
+  // are learned (index < value) vs. not yet (index >= value). Same data as
+  // the serial protocol's "get kochlesson" (MorseJSON::jsonGetKoch()), which
+  // writes straight to Serial and so isn't reusable here — rebuilt directly
+  // from the same source (Koch::getKochChar()) for the HTTP path.
+  server.on("/api/koch", HTTP_GET, []() {
+    DynamicJsonDocument doc(2048);
+    doc["value"] = MorsePreferences::kochFilter;
+    doc["minimum"] = MorsePreferences::kochMinimum;
+    doc["maximum"] = MorsePreferences::kochMaximum;
+    JsonArray characters = doc.createNestedArray("characters");
+    for (int i = MorsePreferences::kochMinimum - 1; i < MorsePreferences::kochMaximum; ++i) {
+      String c = koch.getKochChar(i);
+      characters.add(cleanUpProSigns(c));
+    }
     String out;
     serializeJson(doc, out);
     server.send(200, "application/json", out);

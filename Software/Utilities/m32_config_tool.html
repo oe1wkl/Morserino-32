@@ -177,8 +177,28 @@
     .stats-tag.send{background:#2d6cb0}
     .stats-scroll{overflow-x:auto;max-width:100%}
     .stats-table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap;margin:10px 0 4px}
-    .stats-table th{text-align:left;padding:6px 10px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--box-border);border-bottom:2px solid var(--box-border)}
+    .stats-table th{text-align:left;padding:6px 10px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--box-border);border-bottom:2px solid var(--box-border);cursor:pointer;user-select:none}
+    .stats-table th:hover{color:var(--accent)}
+    .stats-table th.sorted::after{content:" \25be"}
     .stats-table td{padding:6px 10px;border-bottom:1px solid #e0e8ee}
+    .stats-summary{display:flex;flex-wrap:wrap;gap:24px;font-size:14px;margin:6px 0 14px}
+    .stats-summary b{display:block;font-size:20px;font-family:'Courier New',monospace}
+    .pstat-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+    .pstat-tile{position:relative;width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+      font-size:16px;font-weight:700;font-family:'Courier New',monospace;cursor:pointer}
+    .pstat-tile.good{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr)}
+    .pstat-tile.mid{background:#f3e6cc;color:#a6741f;border:1px solid #e0c48c}
+    .pstat-tile.weak{background:var(--red-bg);color:#a8402f;border:1px solid var(--red-bdr)}
+    .pstat-tile.unseen{background:#f0f0f0;color:#999;border:1px solid #ddd}
+    .pstat-tile.future{background:#f7f7f7;color:#ccc;border:1px dashed #ddd;cursor:default}
+    .pstat-tile.selected{outline:2px solid var(--accent)}
+    .pstat-tile .pstat-tip{position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#222;color:#fff;
+      font-family:Lato,Arial,sans-serif;font-size:11px;padding:4px 7px;border-radius:4px;white-space:nowrap;
+      opacity:0;pointer-events:none;transition:opacity .1s;z-index:2}
+    .pstat-tile:hover .pstat-tip{opacity:1}
+    .stats-table td.rate.good{color:var(--green);font-weight:700}
+    .stats-table td.rate.mid{color:#a6741f;font-weight:700}
+    .stats-table td.rate.weak{color:#a8402f;font-weight:700}
     .identity-field{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:14px 18px;background:#fff;border:1px solid #c8d8e4;border-radius:6px}
     .identity-label{font-size:16px;font-weight:700;color:var(--text);min-width:100px}
     .identity-input{font-family:'Courier New',monospace;font-size:18px;font-weight:700;padding:8px 12px;border:1px solid #b0c0cc;border-radius:4px;flex:1;text-transform:uppercase;background:#fff}
@@ -615,10 +635,22 @@
     <div class="stats-legend"><span class="stats-tag listen">Listen</span><span class="stats-tag send">Send</span> &mdash; <span id="statsTotalTime"></span></div>
     <div id="statsLessons"><span class="empty-msg" style="color:var(--muted);font-style:italic">Not loaded yet</span></div>
 
-    <div class="field-label" style="margin-top:16px">Error Rate per Character</div>
+    <div class="field-label" style="margin-top:16px">Characters</div>
+    <div class="stats-legend">
+      <span class="stats-tag" style="background:var(--green)">Solid &lt;10%</span>
+      <span class="stats-tag" style="background:#a6741f">Shaky 10&ndash;25%</span>
+      <span class="stats-tag" style="background:#a8402f">Weak &gt;25%</span>
+      <span class="stats-tag" style="background:#999">Heard only</span>
+      <span class="stats-tag" style="background:#ccc;color:#333">Not learned</span>
+    </div>
+    <div class="stats-summary" id="pstatSummary"></div>
+    <div class="pstat-grid" id="pstatGrid"><span class="empty-msg" style="color:var(--muted);font-style:italic">Not loaded yet</span></div>
     <div class="stats-scroll"><table class="stats-table" id="statsCharsTable">
-      <thead><tr><th>Char</th><th>Attempts</th><th>Errors</th><th>Rate</th></tr></thead>
-      <tbody><tr><td colspan="4" class="empty-msg">Not loaded yet</td></tr></tbody>
+      <thead><tr>
+        <th data-key="c">Char</th><th data-key="heard">Heard</th><th data-key="attempts">Sent</th>
+        <th data-key="correct">Correct</th><th data-key="errors">Errors</th><th data-key="rate" class="sorted">Rate</th>
+      </tr></thead>
+      <tbody><tr><td colspan="6" class="empty-msg">Not loaded yet</td></tr></tbody>
     </table></div>
 
     <div class="field-label" style="margin-top:16px">Session History</div>
@@ -1551,21 +1583,23 @@ async function loadPracticeStats(){
         try{ records.push(JSON.parse(line)); }catch(e){ /* skip malformed line */ }
       });
     }
-    renderPracticeStats(records);
+    var koch=null;
+    try{ var kd=await sendAndParse('get kochlesson',3000); koch=kd.kochlesson||null; }catch(e){ /* tile grid falls back gracefully */ }
+    renderPracticeStats(records, koch);
     log('Practice stats: '+records.length+' session(s)');
   }catch(e){log('Practice stats: '+e.message)}
   hideLoading();
 }
-function renderPracticeStats(records){
+function renderPracticeStats(records, koch){
   var dash='&mdash;';
   var lessonTime={}, charStats={};
   records.forEach(function(r){
     if(!lessonTime[r.lesson]) lessonTime[r.lesson]={listen:0,send:0};
     lessonTime[r.lesson][r.mode==='send'?'send':'listen']+=r.dur;
     if(r.chars) Object.keys(r.chars).forEach(function(c){
-      var a=r.chars[c][0], e=r.chars[c][1];
-      if(!charStats[c]) charStats[c]=[0,0];
-      charStats[c][0]+=a; charStats[c][1]+=e;
+      var h=r.chars[c][0], a=r.chars[c][1], e=r.chars[c][2];
+      if(!charStats[c]) charStats[c]={heard:0,attempts:0,errors:0};
+      charStats[c].heard+=h; charStats[c].attempts+=a; charStats[c].errors+=e;
     });
   });
 
@@ -1589,22 +1623,97 @@ function renderPracticeStats(records){
     });
   }
 
-  var chars=Object.keys(charStats).sort(function(a,b){
-    var ra=charStats[a][1]/Math.max(1,charStats[a][0]), rb=charStats[b][1]/Math.max(1,charStats[b][0]);
-    return rb-ra;
-  });
-  var charsBody=document.querySelector('#statsCharsTable tbody'); charsBody.innerHTML='';
-  if(chars.length===0){
-    charsBody.innerHTML='<tr><td colspan="4" class="empty-msg">No data yet</td></tr>';
+  function pstatBucket(cs){
+    if(!cs || cs.attempts===0) return 'unseen';
+    var rate=cs.errors/cs.attempts;
+    if(rate<0.10) return 'good';
+    if(rate<=0.25) return 'mid';
+    return 'weak';
+  }
+
+  var gridDiv=document.getElementById('pstatGrid');
+  gridDiv.innerHTML='';
+  var pstatRows=[];
+  if(koch && koch.characters){
+    koch.characters.forEach(function(ch,i){
+      var pos=(koch.minimum||1)+i;
+      var tile=document.createElement('span');
+      if(pos>koch.value){
+        tile.className='pstat-tile future';
+        tile.textContent=ch;
+        gridDiv.appendChild(tile);
+        return;
+      }
+      var cs=charStats[ch]||{heard:0,attempts:0,errors:0};
+      var cls=pstatBucket(cs);
+      tile.className='pstat-tile '+cls;
+      tile.dataset.char=ch;
+      var rate=cs.attempts?Math.round(100*cs.errors/cs.attempts):null;
+      tile.innerHTML='<span>'+escHtml(ch===' '?'␣':ch)+'</span>'+
+        '<span class="pstat-tip">heard '+cs.heard+' &middot; sent '+cs.attempts+
+        (cs.attempts?' &middot; '+rate+'% err':' &middot; not sent yet')+'</span>';
+      gridDiv.appendChild(tile);
+      if(cs.heard>0 || cs.attempts>0) pstatRows.push({c:ch,heard:cs.heard,attempts:cs.attempts,correct:cs.attempts-cs.errors,errors:cs.errors,rate:cs.attempts?rate:-1});
+    });
   } else {
-    chars.forEach(function(c){
-      var a=charStats[c][0], e=charStats[c][1];
-      var rate=Math.round(100*e/Math.max(1,a));
+    gridDiv.textContent='Lesson sequence unavailable — see the table below.';
+    Object.keys(charStats).forEach(function(ch){
+      var cs=charStats[ch];
+      pstatRows.push({c:ch,heard:cs.heard,attempts:cs.attempts,correct:cs.attempts-cs.errors,errors:cs.errors,rate:cs.attempts?Math.round(100*cs.errors/cs.attempts):-1});
+    });
+  }
+  if(koch && koch.characters && pstatRows.length===0) gridDiv.innerHTML='<span class="empty-msg" style="color:var(--muted);font-style:italic">No practice logged yet</span>';
+
+  var learnedCount = koch ? Math.min(koch.value, koch.characters.length) : pstatRows.length;
+  var pTotalAttempts=0, pTotalErrors=0, weakest=null;
+  pstatRows.forEach(function(r){
+    if(r.attempts>0){
+      pTotalAttempts+=r.attempts; pTotalErrors+=r.errors;
+      if(!weakest || r.rate>weakest.rate || (r.rate===weakest.rate && r.attempts>weakest.attempts)) weakest=r;
+    }
+  });
+  document.getElementById('pstatSummary').innerHTML =
+    '<div>Learned<br><b>'+learnedCount+(koch?' / '+koch.characters.length:'')+'</b></div>'+
+    '<div>Accuracy (sent)<br><b>'+(pTotalAttempts?Math.round(100*(pTotalAttempts-pTotalErrors)/pTotalAttempts)+'%':dash)+'</b></div>'+
+    '<div>Needs work<br><b>'+(weakest?escHtml(weakest.c)+' ('+weakest.rate+'%)':dash)+'</b></div>';
+
+  var charsBody=document.querySelector('#statsCharsTable tbody');
+  var pstatSortKey='rate', pstatSortDir=-1;
+  function renderPstatRows(){
+    var sorted=pstatRows.slice().sort(function(a,b){
+      var av=a[pstatSortKey], bv=b[pstatSortKey];
+      if(typeof av==='string') return pstatSortDir*av.localeCompare(bv);
+      return pstatSortDir*(av-bv);
+    });
+    charsBody.innerHTML='';
+    if(sorted.length===0){ charsBody.innerHTML='<tr><td colspan="6" class="empty-msg">No data yet</td></tr>'; return; }
+    sorted.forEach(function(r){
+      var cls=r.attempts?pstatBucket({attempts:r.attempts,errors:r.errors}):'unseen';
       var tr=document.createElement('tr');
-      tr.innerHTML='<td>'+escHtml(c)+'</td><td>'+a+'</td><td>'+e+'</td><td>'+rate+'%</td>';
+      tr.dataset.char=r.c;
+      tr.innerHTML='<td>'+escHtml(r.c)+'</td><td>'+r.heard+'</td><td>'+r.attempts+'</td><td>'+r.correct+'</td><td>'+r.errors+
+        '</td><td class="rate '+cls+'">'+(r.attempts?r.rate+'%':dash)+'</td>';
       charsBody.appendChild(tr);
     });
   }
+  renderPstatRows();
+  document.querySelectorAll('#statsCharsTable thead th').forEach(function(th){
+    th.addEventListener('click',function(){
+      var key=th.dataset.key;
+      if(pstatSortKey===key) pstatSortDir*=-1; else { pstatSortKey=key; pstatSortDir=(key==='c')?1:-1; }
+      document.querySelectorAll('#statsCharsTable thead th').forEach(function(t){t.classList.remove('sorted');});
+      th.classList.add('sorted');
+      renderPstatRows();
+    });
+  });
+  gridDiv.addEventListener('click',function(e){
+    var tile=e.target.closest('.pstat-tile');
+    if(!tile || !tile.dataset.char) return;
+    document.querySelectorAll('.pstat-tile.selected').forEach(function(t){t.classList.remove('selected');});
+    tile.classList.add('selected');
+    var row=document.querySelector('#statsCharsTable tbody tr[data-char="'+CSS.escape(tile.dataset.char)+'"]');
+    if(row) row.scrollIntoView({behavior:'smooth',block:'center'});
+  });
 
   records.sort(function(a,b){return b.ts-a.ts});   // newest first (undated [ts=0] sink to the bottom)
   var sessBody=document.querySelector('#statsSessionsTable tbody'); sessBody.innerHTML='';
@@ -1621,7 +1730,7 @@ function renderPracticeStats(records){
       // used for the error rate, not as a stand-in for word length.
       var tc = r.tc||0;
       var attempts=0, totalErrors=0;
-      if(r.chars) Object.keys(r.chars).forEach(function(c){ attempts+=r.chars[c][0]; totalErrors+=r.chars[c][1]; });
+      if(r.chars) Object.keys(r.chars).forEach(function(c){ attempts+=r.chars[c][1]; totalErrors+=r.chars[c][2]; });
       var charsPerWord = words>0 ? (tc/words).toFixed(1) : dash;
       var wps = r.dur>0 ? (words/r.dur).toFixed(2) : dash;
       var cps = r.dur>0 ? (tc/r.dur).toFixed(2) : dash;

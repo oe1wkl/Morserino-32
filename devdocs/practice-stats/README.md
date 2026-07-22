@@ -95,13 +95,49 @@ One record per segment:
   logged the pre-adjustment value for the whole session (the change only
   showed up in the *next* session's record). Reading fresh at flush reflects
   the speed the session actually ended at.
-- `chars` — optional; `{char: [attempts, errors]}` for every character
-  actually drilled in that segment. Absent (not empty object) when the segment
-  had no evaluated responses (always the case for `listen` segments).
+- `chars` — optional; `{char: [heard, attempts, errors]}` for every character
+  that appeared in the segment at all. Absent (not empty object) only if the
+  segment had zero words. `heard` increments in `wordPresented()` for **every**
+  character presented, in both modes — the one per-character signal `listen`
+  segments get, since they never call `recordWord()` (which only adds
+  `attempts`/`errors`, send-only, on top of the same entries). A character
+  can be `heard` with `attempts:0` (played but the user never had to answer
+  for it, or hasn't yet in a `send` segment) — the UI shows that state as
+  "heard only" rather than a false 0% or blank error rate.
+
+  Format was `[attempts, errors]` (2-tuple, send-only) before `heard` tracking
+  was added — bumped to a 3-tuple. Both UIs read the new indices unconditionally
+  (no version sniffing); old 2-tuple records left in an existing log would
+  misread index 1 (`errors`) as `attempts` and have no `errors` at all — judged
+  acceptable since this shipped well before any real release, so no upgrade
+  path was needed.
 
 The web page derives everything else client-side: characters-per-word
-(`sum(chars[*][0]) / words`), WPS/CPS (`words / dur`, `totalChars / dur`),
-and error rate (`sum(chars[*][1]) / totalChars`, blank for `listen` rows).
+(`tc / words`), WPS/CPS (`words / dur`, `tc / dur`), and error rate
+(`sum(chars[*][2]) / sum(chars[*][1])`, blank for `listen` rows or characters
+never sent).
+
+### Per-character view (tile grid)
+
+Both UIs render the Koch character sequence as a grid of tiles — not
+alphabetical, the Koch *learning* order, fetched fresh each load:
+
+- WiFi page: new `GET /api/koch` (`MorseWiFi.cpp`) → `{"value":N,"minimum":N,"maximum":N,"characters":[...]}`,
+  built directly from `MorsePreferences::kochFilter`/`kochMinimum`/`kochMaximum`
+  and `Koch::getKochChar()` + `cleanUpProSigns()`. This duplicates
+  `MorseJSON::jsonGetKoch()`'s data shape rather than calling it, because that
+  function writes straight to `Serial` and isn't reusable for an HTTP response.
+- Config tool: reuses the existing `get kochlesson` serial command (already
+  used to populate the Koch tab's lesson slider) — no new command needed there.
+
+A tile's position `i` in `characters[]` maps to Koch position `minimum + i`;
+positions `<= value` are "learned" (coloured by that character's error rate,
+or grey if `attempts:0`), positions `> value` render as dimmed "not yet
+learned" placeholders. Clicking a learned tile scrolls to and highlights its
+row in the sortable table below (click any column header to sort; default is
+error rate, worst first). If `/api/koch` / `get kochlesson` fails, both UIs
+fall back to an unordered list built from whatever characters happen to
+appear in the log, with a note that ordering is unavailable.
 
 Near-empty segments (< 1s, no characters) are dropped rather than logged —
 menu navigation churn shouldn't spam the file.

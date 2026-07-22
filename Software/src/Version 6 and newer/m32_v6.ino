@@ -2406,7 +2406,7 @@ void fetchNewWord() {
                                     // left true for an unrelated reason, gating on it here would silently zero
                                     // out word counts for a whole session instead of just skipping one word.
                                     if (!statsDiscardWord)
-                                        MorsePracticeStats::wordPresented((uint8_t) clearText.length());
+                                        MorsePracticeStats::wordPresented(clearText);
 #endif
                             }
                             firstTime = false;
