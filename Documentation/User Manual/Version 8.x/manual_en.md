@@ -2594,8 +2594,26 @@ quickly recall the settings by recalling a particular snapshot.
 The "Koch Lesson" that you selected will be stored in non-volatile
 storage and hence will be available after a restart, but it will not be
 stored or overwritten in one of the snapshots. The same is true for WiFi
-settings, the "Serial Out" preference, or your setting of speed and
-speaker volume.
+settings, the "Serial Out" preference, the screen timeout, or your
+setting of speed and speaker volume.
+
+Snapshots contain only settings that are relevant for training.
+Settings that concern the device itself, its connections, or the games
+are **not** stored in snapshots, and recalling a snapshot will never
+change them:
+
+-   Hardware settings: **Paddle Polar.**, **External Pol.**
+-   Transmitter and network settings: **Key ext TX**, **Generator Tx**,
+    the LoRa channel
+-   Bluetooth keyboard settings: **BLT Kbd Output**, **BLT \<AR\>**
+-   Audio routing: **Headphone Output**, **Decoded on IO**
+-   Device behavior: **Encoder Click**, **Quick Start**
+-   Game settings: **Invader Orient.** and the QSO Bot settings
+    (**Contest Type**, **QSO Difficulty**)
+
+(Snapshots stored with older firmware versions may still contain some of
+these settings; they are ignored when recalling, and cleaned out when
+you overwrite the snapshot.)
 
 ### Storing a snapshot
 
@@ -2607,7 +2625,15 @@ Store** and allows you to get out without storing a snapshot. Snapshot
 locations that are **already in use** are shown in **bold**, but you can
 overwrite those as well. Clicking on the ENCODER knob stores the
 snapshot in the desired location, and gives you a quick indication about
-its success.
+its success: "Snap N STORED" means the snapshot has been written and
+verified; if the settings storage is full, you will see "Snap N FAILED!"
+instead — in that case free up space by deleting a snapshot you no
+longer need, or by using **Reset Scores** in the preferences menu.
+
+If the settings storage is running low, the Morserino warns you right
+after switching it on ("Settings mem. almost full!"), together with the
+same advice: delete snapshots you no longer need, or reset the game
+scores.
 
 ### Recalling a snapshot
 

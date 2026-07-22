@@ -114,6 +114,9 @@ namespace MorseOutput
   void pwmClick(unsigned int volume);
   void soundSignalOK();
   void soundSignalERR();
+  bool voiceStart(const char* path);      // V9.0 a11y: start async clip (no-op without I2S)
+  bool voiceService();                    //   poll from loop; true while a clip is playing
+  void voiceStop();                       //   interrupt the current clip
 }
 
 #endif /* #ifndef MORSEOUTPUT_H_ */

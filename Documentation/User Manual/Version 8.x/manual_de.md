@@ -2275,8 +2275,8 @@ werden — mit einem langen Druck auf die **FN**-Taste.
 
 #### Tipps {-}
 
-- 48 WpM sind bewusst schnell — sie belohnen Decoder, die schnelles
-  CW kopieren können. Schaffst du es in der ersten Runde nicht, warte
+- 48 WpM sind bewusst schnell — sie belohnen CWisten, die schnelles
+  CW lesen können. Schaffst du es in der ersten Runde nicht, warte
   auf die nächste Wiedergabe; sie ist 5 WpM langsamer.
 
 - Der enthüllte Buchstabe ist ein starker Anker — sobald seine
@@ -2484,7 +2484,7 @@ Deine Kennung im Netz wird aus dem mit „Fight the Pileup" und Morsel geteilten
 eine kurze MAC-basierte Kennung verwendet.
 
 ::: note
-Beim Beitritt übernimmt dein Gerät für das Rennen die Koch-Lektion des Servers,
+Beim Beitritt übernimmt dein Gerät für das Spiel die Koch-Lektion des Servers,
 sodass das Gitter — und die Richtungstasten von Fox Hunt — für alle gleich
 sind. Deine eigene Trainingslektion wird beim Verlassen des Spiels
 wiederhergestellt.
@@ -2582,7 +2582,7 @@ Trailblazer-Abschnitt oben.
 Morsezeichen: Das Gerät präsentiert eine wachsende Zeichenkette, **ein neues
 Zeichen pro Runde**, und du musst jedes Mal die *gesamte* Kette aus dem
 Gedächtnis geben. Das Gerät wiederholt den früheren Teil der Kette nie — dass
-du sie jede Runde selbst neu gibst, hält sie in deinem Kopf. Es gibt keinen
+du sie jede Runde selbst neu gibst, hilft dir, sie zu merken. Es gibt keinen
 Zeitdruck: Zwischen den Zeichen kannst du dir so viel Zeit lassen, wie du willst.
 
 Das Spiel hat zwei Inhaltsmodi:
@@ -3022,8 +3022,27 @@ bestimmten Schnappschusses schnell wiederherstellen.
 Die gewählte „Koch-Lektion" wird im nichtflüchtigen Speicher abgelegt
 und ist nach einem Neustart verfügbar, wird aber nicht in einem
 Schnappschuss gespeichert oder überschrieben. Dasselbe gilt für
-WLAN-Einstellungen, die Einstellung **Serial Output** sowie für deine
-Geschwindigkeits- und Lautstärkeeinstellungen.
+WLAN-Einstellungen, die Einstellung **Serial Output**, den
+Bildschirm-Timeout sowie für deine Geschwindigkeits- und
+Lautstärkeeinstellungen.
+
+Schnappschüsse enthalten nur Einstellungen, die für das Training
+relevant sind. Einstellungen, die das Gerät selbst, seine Verbindungen
+oder die Spiele betreffen, werden **nicht** in Schnappschüssen
+gespeichert, und das Abrufen eines Schnappschusses verändert sie nie:
+
+-   Hardware-Einstellungen: **Paddle Polar.**, **External Pol.**
+-   Sender- und Netzwerk-Einstellungen: **Key ext TX**, **Generator
+    Tx**, der LoRa-Kanal
+-   Bluetooth-Tastatur-Einstellungen: **BLT Kbd Output**, **BLT \<AR\>**
+-   Audio-Routing: **Headphone Output**, **Decoded on IO**
+-   Geräteverhalten: **Encoder Click**, **Quick Start**
+-   Spiel-Einstellungen: **Invader Orient.** sowie die
+    QSO-Bot-Einstellungen (**Contest Type**, **QSO Difficulty**)
+
+(Schnappschüsse, die mit älteren Firmware-Versionen gespeichert wurden,
+können einige dieser Einstellungen noch enthalten; sie werden beim
+Abrufen ignoriert und beim Überschreiben des Schnappschusses entfernt.)
 
 ### Speichern eines Schnappschusses
 
@@ -3035,7 +3054,17 @@ Eine weitere Option lautet **Cancel Store** und ermöglicht den Ausstieg
 ohne Speicherung. Bereits belegte Schnappschuss-Plätze sind **fett**
 dargestellt, können aber überschrieben werden. Ein Klick auf den
 ENCODER-Knopf speichert den Schnappschuss an der gewünschten Stelle und
-zeigt kurz eine Erfolgsmeldung.
+zeigt kurz eine Erfolgsmeldung: „Snap N STORED" bedeutet, dass der
+Schnappschuss geschrieben und überprüft wurde; ist der
+Einstellungsspeicher voll, erscheint stattdessen „Snap N FAILED!" — in
+diesem Fall schaffe Platz, indem du einen nicht mehr benötigten
+Schnappschuss löschst oder **Reset Scores** im Einstellungsmenü
+verwendest.
+
+Wird der Einstellungsspeicher knapp, warnt dich der Morserino direkt
+nach dem Einschalten („Settings mem. almost full!"), zusammen mit
+demselben Rat: nicht mehr benötigte Schnappschüsse löschen oder die
+Spielstände zurücksetzen.
 
 ### Abrufen eines Schnappschusses
 

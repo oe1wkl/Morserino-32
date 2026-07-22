@@ -28,13 +28,13 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>User Manual</p></div>
-<div class="title-version">Version 8.x<br>June 2026</div>
+<div class="title-version">Version 8.x<br>July 2026</div>
 <div class="title-logo"><img src="images/m32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — User Manual</strong></p>
-<p>Edition V 8.x, June, 2026</p>
+<p>Edition V 8.x, July, 2026</p>
 <p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -95,6 +95,7 @@ The font family used is Lato.</p>
 <li><a href="#morsel" id="toc-morsel"><span class="toc-section-number">5.7.4</span> Morsel</a></li>
 <li><a href="#trailblazer" id="toc-trailblazer"><span class="toc-section-number">5.7.5</span> Trailblazer</a></li>
 <li><a href="#fox-hunt" id="toc-fox-hunt"><span class="toc-section-number">5.7.6</span> Fox Hunt</a></li>
+<li><a href="#memory-chain" id="toc-memory-chain"><span class="toc-section-number">5.7.7</span> Memory Chain</a></li>
 </ul></li>
 <li><a href="#wifi-functions" id="toc-wifi-functions"><span class="toc-section-number">5.8</span> WiFi Functions</a>
 <ul>
@@ -1291,7 +1292,7 @@ The font family used is Lato.</p>
 </div>
 <h4 class="unnumbered" id="koch-train-with-a-customized-set-of-characters"><strong>Koch: Train with a customized set of characters</strong></h4>
 <p>You can also use the Koch Trainer to practice with a specific set of characters. First, upload a text file to the file player that contains the characters you want to train. They can be one “word” or several words on one line or more. Then, set the preference <strong>Koch Sequence</strong> to the new option <strong>Custom Chars.</strong> The Koch Trainer will then read the characters from the file.</p>
-<p>Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use those characters for your training. The Koch lesson setting <strong>does not influence</strong> this process.</p>
+<p>Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use those characters for your training. The <strong>Koch Lesson</strong> setting acts as an index into your custom character set: at lesson <em>N</em>, only the first <em>N</em> characters of the set are used as the active training pool (capped at the actual length of the set, so a lesson number larger than your character set simply uses all of it). The lesson maximum adjusts automatically to the length of your custom character set (up to 51 characters; characters beyond the 51st are not reachable).</p>
 <p>To change the character set, upload a new text file and select <strong>Custom Chars </strong>again. Even if it had been selected before, you must select <strong>Custom Chars</strong> again to prepare the new character set. If you just upload a new text file, the custom character set will not change. You must go into preferences and select <strong>Custom Chars</strong> again.<br> <em>This is a feature, not a bug!</em><br> It means you can switch between training your characters and using a different text file for the file player. Setting <strong>Koch Sequence</strong> to M32, LCWO, LICW, or CW Academy reverts to the “normal” Koch Trainer option.</p>
 <h3 data-number="5.4.2" id="koch-learn-new-chr"><span class="header-section-number">5.4.2</span> Koch: Learn New Chr</h3>
 <p>By selecting this menu item a new character will be introduced (according to the Koch lesson selected – see the previous menu entry) – you will hear the sound, and see the sequence of dots and dashes quickly on the screen, as well as the character displayed on the screen. This will be repeated until you stop by pressing the ENCODER knob. After each occurrence you have the opportunity (but no obligation) to repeat with the paddles what you have heard, and the device will let you know if this was correct or not.</p>
@@ -1396,7 +1397,7 @@ The font family used is Lato.</p>
 <p>The current speed as detected by the decoder is displayed as WpM on the status line.</p>
 <p>This mode does not have many preferences (see the section <strong>6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot</strong>); maybe the most important is the ability to switch the filter bandwidth of the audio decoder between narrow (ca 150 Hz) and wide (ca 600 Hz). For decoding signals from a transceiver (where there might be other signals in the vicinity), it is usually best to set the bandwidth to <strong>Narrow</strong> and tune the signal to 700 Hz (± 5%). For decoding signals from an FM transceiver, or from iCW or other environments with little interference, it is better to use the <strong>Wide</strong> setting – in that case the audio frequency does not need to be very close to 700 Hz.</p>
 <h2 data-number="5.7" id="games"><span class="header-section-number">5.7</span> Games</h2>
-<p>The Morserino Pocket features now CW-based games that make learning and practicing Morse code more engaging. Games are found under the “Games” menu entry. Six games are currently available: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong>, <strong>Morsel</strong>, <strong>Trailblazer</strong>, and <strong>Fox Hunt</strong>. The last two are a pair of grid-maze games that share the same playing field — Trailblazer trains sending, Fox Hunt trains receiving.</p>
+<p>The Morserino Pocket features now CW-based games that make learning and practicing Morse code more engaging. Games are found under the “Games” menu entry. Seven games are currently available: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong>, <strong>Morsel</strong>, <strong>Trailblazer</strong>, <strong>Fox Hunt</strong>, and <strong>Memory Chain</strong>. Trailblazer and Fox Hunt are a pair of grid-maze games that share the same playing field — Trailblazer trains sending, Fox Hunt trains receiving. Memory Chain is a memory game: key an ever-growing chain of characters without losing track.</p>
 <h3 data-number="5.7.1" id="morse-invaders"><span class="header-section-number">5.7.1</span> Morse Invaders</h3>
 <p>Morse Invaders is a game where characters fall down the color display, and you must key the correct Morse code to destroy them before they reach the bottom. It combines the fun of a classic arcade game with effective CW training.</p>
 <p>The character pool is determined by your current Koch lesson setting – the game uses exactly the characters you have been learning. This means the game adapts to your level automatically. Each Koch lesson forms a “stratum” within which sub-levels of increasing difficulty are formed by raising the speed at which characters fall and how often new ones appear.</p>
@@ -2158,6 +2159,85 @@ The font family used is Lato.</p>
 <p>On arrival at each cell, the device plays the next character once, at your current keying speed and shifted slightly in pitch so you can tell it apart from your own sidetone. Decode it, find the neighbouring cell that holds it, and key the direction toward that cell. If you are idle for a few seconds, the character <strong>replays</strong> automatically; you can also replay it on demand at any time with an <strong>encoder click</strong>. As in Trailblazer, only the trail behind you is drawn — the path ahead is never revealed, so you must rely on your ears.</p>
 <h4 class="unnumbered" id="scoring-high-scores-and-multiplayer">Scoring, High Scores, and Multiplayer</h4>
 <p>Scoring, the results and high-score screens, and multiplayer all work exactly as in Trailblazer (effective CPM with a 5-second penalty per wrong entry; a separate high-score table for Fox Hunt; the same server/client same-maze race). See the Trailblazer section above for the details.</p>
+<h3 data-number="5.7.7" id="memory-chain"><span class="header-section-number">5.7.7</span> Memory Chain</h3>
+<p><strong>Memory Chain</strong> is a memory game: the device presents a growing chain of characters, <strong>one new character per round</strong>, and you must key the <em>entire</em> chain from memory each time. The device never repeats the earlier part of the chain — keying it again each round is what keeps it in your head. There is no time pressure: take as much time as you like between characters.</p>
+<p>The game has two content modes:</p>
+<ul>
+<li><strong>Characters</strong>: the chain grows with random characters from your current Koch lesson (pro signs from the high lessons are skipped — a chain box holds a single character). <strong>One error per round is tolerated</strong>: the box turns red and shows the correct character, and you continue with the next position. The <strong>second error within the same round ends the game</strong>. Your score is the length of the last chain you completed.</li>
+<li><strong>Call Signs</strong>: one random call sign <em>is</em> the chain, revealed letter by letter (<code>O</code>, <code>OE</code>, <code>OE1</code>, … up to something like <code>OE1WKL/P</code>). When you have keyed the complete call, a fresh call starts with an empty chain, and the game continues call after call. Here <strong>no error is tolerated</strong> — the first wrong character ends the game. Your score is the number of completed calls. Call signs use the full character set (letters, digits, and the slash) regardless of your Koch lesson, and follow your call-sign preferences (continent, common prefixes). Beware of keying ahead of what has actually been revealed — after <code>OE1W</code> your brain may want to complete a familiar call, but the next letter is whatever the generator picked.</li>
+</ul>
+<p>The new character of each round is either <strong>shown</strong> on the display (big, until you start keying) or <strong>sounded</strong> in Morse code — your choice in the lobby. Sounded prompts play at your current keying speed and slightly shifted in pitch (like the Echo Trainer), so you can tell them from your own sidetone; they are not repeated. Sound mode is the harder — and the more useful — training.</p>
+<p>Memory Chain is only available on the M32 Pocket.</p>
+<h4 class="unnumbered" id="starting-the-game-5">Starting the Game</h4>
+<p>From the main menu, navigate to <strong>Games → Memory Chain</strong>. The lobby shows the two game settings and (in Characters mode) the Koch lesson; the setting the encoder currently changes is highlighted in yellow:</p>
+<table>
+<colgroup>
+<col style="width: 52%" />
+<col style="width: 47%" />
+</colgroup>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Encoder (knob)</strong></td>
+<td>Change the highlighted setting (Mode / Prompt / Koch lesson)</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Highlight the next setting</td>
+</tr>
+<tr>
+<td><strong>Encoder click</strong></td>
+<td>View the high-score table (of the selected mode)</td>
+</tr>
+<tr>
+<td><strong>Paddle / key</strong></td>
+<td>Start the game</td>
+</tr>
+<tr>
+<td><strong>Encoder long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<p>The Mode and Prompt choices are remembered across sessions; the Koch lesson is your global lesson, the same as everywhere else.</p>
+<h4 class="unnumbered" id="playing-3">Playing</h4>
+<p>A row of small grey boxes shows the chain — one box per character — and the newest character is shown or sounded. Key the whole chain from the beginning. Each correctly keyed character turns its box <strong>green</strong>; the box you are expected to key next has a yellow frame, so you never lose your place. A wrong character turns its box <strong>red and reveals the correct character</strong> in it — in Characters mode you simply continue with the next box (that was your one tolerated error; a red box in the row means it is used up), in Call Signs mode the game is over.</p>
+<p>When the whole row is coloured, the chain grows by one, all boxes return to grey, and the next round begins. In Call Signs mode a completed call is first shown in full for a moment, then the next call starts. The green boxes deliberately stay empty — the chain lives in your memory, not on the screen.</p>
+<p>There are <strong>no sounds for right or wrong</strong> — feedback is purely visual, so nothing interrupts the flow of your keying.</p>
+<h4 class="unnumbered" id="controls-during-the-game-3">Controls During the Game</h4>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Action</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Paddles</strong></td>
+<td>Key the chain, one character at a time</td>
+</tr>
+<tr>
+<td><strong>Encoder</strong></td>
+<td>Adjust your keying WPM (or volume — see below)</td>
+</tr>
+<tr>
+<td><strong>FN short press</strong></td>
+<td>Toggle the encoder between speed and volume</td>
+</tr>
+<tr>
+<td><strong>Encoder long press</strong></td>
+<td>Quit back to the main menu</td>
+</tr>
+</tbody>
+</table>
+<h4 class="unnumbered" id="scoring-and-high-scores-1">Scoring and High Scores</h4>
+<p>When the game ends, the whole chain is revealed — every box shows its character, with the fatal position in red (in Call Signs mode you also see what the rest of the call would have been). In Characters mode your score is the completed chain length; in Call Signs mode it is the number of completed calls, with the letters already banked in the failed call as a tiebreak. Each mode keeps its own top-7 high-score table, recording the result, the errors used, the Koch lesson, and whether you played with displayed or sounded prompts. Click the encoder for the high-score table; a further press returns to the lobby, a long press exits.</p>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two functions of the device, when you are using WiFi through an access point, that were of high importance in teh past:</p>
 <ul>
@@ -2252,9 +2332,20 @@ The font family used is Lato.</p>
 <h2 data-number="6.1" id="snapshots"><span class="header-section-number">6.1</span> Snapshots</h2>
 <p>For different types of training you usually need different settings of the preferences – you might want to change the intercharacter- or interword spaces, or the length of character groups or words, etc. So going from one type of training to the next would require you to change various settings every time.</p>
 <p>In order to make this easier, you can use “<strong>snapshots</strong>” of the settings: once you have changed everything for your first mode of training, you store all current preferences in one of eight snapshots; then you do the same with your other training modes. You can then quickly recall the settings by recalling a particular snapshot.</p>
-<p>The “Koch Lesson” that you selected will be stored in non-volatile storage and hence will be available after a restart, but it will not be stored or overwritten in one of the snapshots. The same is true for WiFi settings, the “Serial Out” preference, or your setting of speed and speaker volume.</p>
+<p>The “Koch Lesson” that you selected will be stored in non-volatile storage and hence will be available after a restart, but it will not be stored or overwritten in one of the snapshots. The same is true for WiFi settings, the “Serial Out” preference, the screen timeout, or your setting of speed and speaker volume.</p>
+<p>Snapshots contain only settings that are relevant for training. Settings that concern the device itself, its connections, or the games are <strong>not</strong> stored in snapshots, and recalling a snapshot will never change them:</p>
+<ul>
+<li>Hardware settings: <strong>Paddle Polar.</strong>, <strong>External Pol.</strong></li>
+<li>Transmitter and network settings: <strong>Key ext TX</strong>, <strong>Generator Tx</strong>, the LoRa channel</li>
+<li>Bluetooth keyboard settings: <strong>BLT Kbd Output</strong>, <strong>BLT &lt;AR&gt;</strong></li>
+<li>Audio routing: <strong>Headphone Output</strong>, <strong>Decoded on IO</strong></li>
+<li>Device behavior: <strong>Encoder Click</strong>, <strong>Quick Start</strong></li>
+<li>Game settings: <strong>Invader Orient.</strong> and the QSO Bot settings (<strong>Contest Type</strong>, <strong>QSO Difficulty</strong>)</li>
+</ul>
+<p>(Snapshots stored with older firmware versions may still contain some of these settings; they are ignored when recalling, and cleaned out when you overwrite the snapshot.)</p>
 <h3 data-number="6.1.1" id="storing-a-snapshot"><span class="header-section-number">6.1.1</span> Storing a snapshot</h3>
-<p>First, double click to get into the preference menu. Now a <strong>long press</strong> of the <strong>FN button</strong> gives you an opportunity to select with the ENCODER at which location you want to store the current settings, from <strong>Snapshot 1</strong> to <strong>Snapshot 8</strong>; a further option reads <strong>Cancel Store</strong> and allows you to get out without storing a snapshot. Snapshot locations that are <strong>already in use</strong> are shown in <strong>bold</strong>, but you can overwrite those as well. Clicking on the ENCODER knob stores the snapshot in the desired location, and gives you a quick indication about its success.</p>
+<p>First, double click to get into the preference menu. Now a <strong>long press</strong> of the <strong>FN button</strong> gives you an opportunity to select with the ENCODER at which location you want to store the current settings, from <strong>Snapshot 1</strong> to <strong>Snapshot 8</strong>; a further option reads <strong>Cancel Store</strong> and allows you to get out without storing a snapshot. Snapshot locations that are <strong>already in use</strong> are shown in <strong>bold</strong>, but you can overwrite those as well. Clicking on the ENCODER knob stores the snapshot in the desired location, and gives you a quick indication about its success: “Snap N STORED” means the snapshot has been written and verified; if the settings storage is full, you will see “Snap N FAILED!” instead — in that case free up space by deleting a snapshot you no longer need, or by using <strong>Reset Scores</strong> in the preferences menu.</p>
+<p>If the settings storage is running low, the Morserino warns you right after switching it on (“Settings mem. almost full!”), together with the same advice: delete snapshots you no longer need, or reset the game scores.</p>
 <h3 data-number="6.1.2" id="recalling-a-snapshot"><span class="header-section-number">6.1.2</span> Recalling a snapshot</h3>
 <p>Again, you double click the ENCODER knob first to get into the preferences menu. Now <strong>a short click on the FN button</strong> lets you select with the ENCODER which of the stored snapshots you want to recall, and you recall it by clicking the ENCODER button; again, there is an option that reads <strong>Cancel Recall</strong>, which allows you to get out without recalling a snapshot. If there are no snapshots stored, you get a message “NO SNAPSHOTS” and you can leave by clicking any of the buttons.</p>
 <h3 data-number="6.1.3" id="deleting-a-snapshot"><span class="header-section-number">6.1.3</span> Deleting a snapshot</h3>
@@ -2269,7 +2360,7 @@ The font family used is Lato.</p>
 <li><strong>long-press</strong> either button when you are done.</li>
 </ul>
 <p>Call Sign accepts letters, digits and the slash; Op Name accepts letters and a space. The current value is shown next to the preference.</p>
-<p><strong>Reset Scores</strong> clears the saved high scores and game progress for all games (Morse Invaders, Morsel, Radio Cave, and the Trailblazer and Fox Hunt grid-maze games). Selecting it shows a confirmation: press <strong>FN</strong> to confirm, or click the ENCODER to cancel.</p>
+<p><strong>Reset Scores</strong> clears the saved high scores and game progress for all games (Morse Invaders, Morsel, Radio Cave, the Trailblazer and Fox Hunt grid-maze games, and Memory Chain). Selecting it shows a confirmation: press <strong>FN</strong> to confirm, or click the ENCODER to cancel.</p>
 <h2 data-number="6.3" id="list-of-all-morserino-32-preferences"><span class="header-section-number">6.3</span> List of All Morserino-32 preferences</h2>
 <p>Bold values are default or recommended ones. When called from the start menu, all preferences are available for modification, when called from a running mode, only those that are relevant for this mode are available.</p>
 <h3 data-number="6.3.1" id="general-preferences"><span class="header-section-number">6.3.1</span> General Preferences</h3>
@@ -2644,7 +2735,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Reset Scores</td>
-<td>This is an action, not a setting: it clears the stored high scores and saved progress of the games — the <strong>Morse Invaders</strong> high-score table, the <strong>Morsel</strong> high scores, the <strong>Radio Cave</strong> saved progress, and the <strong>Trailblazer</strong> and <strong>Fox Hunt</strong> high-score tables. You are asked to confirm by pressing the <strong>FN</strong> button. (Fight the Pileup keeps no persistent high score and is not affected.)</td>
+<td>This is an action, not a setting: it clears the stored high scores and saved progress of the games — the <strong>Morse Invaders</strong> high-score table, the <strong>Morsel</strong> high scores, the <strong>Radio Cave</strong> saved progress, and the <strong>Trailblazer</strong>, <strong>Fox Hunt</strong>, and <strong>Memory Chain</strong> high-score tables. You are asked to confirm by pressing the <strong>FN</strong> button. (Fight the Pileup keeps no persistent high score and is not affected.)</td>
 <td>press FN to confirm</td>
 </tr>
 </tbody>

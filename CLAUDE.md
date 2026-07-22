@@ -153,7 +153,10 @@ These were each discovered the hard way. Treat them as invariants:
   (`wpm`, `theme`, `hi`, `hs0_s`). **Snapshots are *not* stored in `morserino`:** each snapshot's
   *contents* live in its own companion namespace `snap0`..`snap7` (written by
   `doWriteSnapshot`, read by `doReadSnapshot`/`MorseJSON::jsonGetSnapshot`); only
-  the `snapShots` existence bitmap is kept in `morserino`.
+  the `snapShots` existence bitmap is kept in `morserino`. Since the 2026-07
+  rework a snapshot is **one versioned blob** (key `s`, name-hash-tagged values,
+  training settings only — see `storedInSnapshot()`/`decodeSnapshot()`); per-key
+  snapshots from older firmware remain readable and are converted on re-store.
 - **Each store is self-versioned:** `morserino` has `version_major`/`version_minor`;
   Radio Cave's blob carries `magic`+`version`; Morsel checks an `hv` key; Morse
   Invaders has a `ver` key (added Phase E). An *absent* stamp is treated as the
@@ -165,6 +168,22 @@ These were each discovered the hard way. Treat them as invariants:
   always carry a one-byte version field and treat an absent stamp as current;
   never load an unversioned blob into a changed struct. Full namespace
   consolidation (M5) was deliberately deferred — the stores already self-validate.
+- **NVS space is a hard budget — every new NVS use must be costed** (learned
+  from the 2026-07 "snapshots not stored" bug). The partition is 20 KB on both
+  variants = 630 entries, of which only **504 are usable** (one 4 KB page is
+  reserved for GC; `nvs_get_stats()` counts it as "free"). The ESP-IDF radio
+  stacks permanently take ~100–130 entries on first WiFi/BT use. Entry costs:
+  primitive = 1; string = 1 + ⌈(len+1)/32⌉; blob = 2 + ⌈len/32⌉; each namespace
+  name = 1. Rules: (a) estimate the entry cost of any new persistent data and
+  prefer **one versioned blob** over many keys (a snapshot is ~7 entries as a
+  blob vs ~34 as keys); (b) **check `put*()`/`begin()` results** — they fail
+  *silently* when NVS is full (error logs are compiled out at
+  `CORE_DEBUG_LEVEL=0`); (c) **remove keys you stop writing** — NVS never
+  shrinks by itself (the multipart player leaked up to ~70 entries this way);
+  (d) key names are **max 15 chars** — longer names fail silently on every
+  put/get (shipped once as `qsoBotContestType`). A boot-time check
+  (`MorsePreferences::checkNvsSpace()`) warns the user on the display when
+  usable free entries drop below 60.
 
 ## 5. Coding conventions
 

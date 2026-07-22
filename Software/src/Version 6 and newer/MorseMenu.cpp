@@ -16,6 +16,7 @@
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
+#include "MorseVoice.h"
 
 #ifdef CONFIG_TFT
 #include "MorseGameMode.h"
@@ -293,6 +294,9 @@ void MorseMenu::menu_() {
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
         serialEvent();
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();                 // drive async menu announcements (non-blocking)
+#endif
 
         if (disp != MorsePreferences::newMenuPtr) {
           disp = MorsePreferences::newMenuPtr;
@@ -331,7 +335,11 @@ void MorseMenu::menu_() {
         }
 
         switch (command) {                                          // actions based on encoder button
-          case 2: if (MorsePreferences::setupPreferences(MorsePreferences::newMenuPtr))                       // all available options when called from top menu
+          case 2: // the top menu always offers ALL preferences. A cancelled mode start
+                  // (menuExec() returning false after it already set its mode-specific
+                  // options) would otherwise leave a stale subset in currentOptions.
+                  MorsePreferences::setCurrentOptions(MorsePreferences::allOptions, MorsePreferences::allOptionsSize);
+                  if (MorsePreferences::setupPreferences(MorsePreferences::newMenuPtr))                       // all available options when called from top menu
                     MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
                   MorseMenu::menuDisplay(MorsePreferences::newMenuPtr);
                   m32state = menu_loop;
@@ -418,6 +426,9 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
             MorseOutput::printOnScroll(0, BOLD, 0, menuText[ptr]);
             break;
   }
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::announce(menuText[ptr]);          // a11y: speak the highlighted menu entry
+#endif
   if (m32protocol) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
       MorseJSON::jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));
@@ -444,6 +455,9 @@ String MorseMenu::getMenuPath(uint8_t ptr) {
 
 
 boolean MorseMenu::menuExec() {       // return true if we should  leave menu after execution, false if we should stay in menu
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::stop();                 // silence any pending/playing announcement before the mode starts
+#endif
 
   uint32_t wcount = 0;
 //  String peer;

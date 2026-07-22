@@ -2148,3 +2148,27 @@ void MorseOutput::soundSignalERR() {
   }
 #endif
 }
+
+// V9.0 audio accessibility: thin wrappers over the sidetone library's async clip API.
+// Non-blocking; the firmware polls voiceService() from its loops (see MorseVoice). All
+// pipeline work (file open/close, mixer routing, per-clip decoder reset) happens inside
+// the library's audio task -- the firmware never touches the decode pipeline directly.
+bool MorseOutput::voiceStart(const char* path) {
+#ifdef CONFIG_SOUND_I2S
+    return sidetone.startClip(path);
+#else
+    (void)path; return false;
+#endif
+}
+bool MorseOutput::voiceService() {
+#ifdef CONFIG_SOUND_I2S
+    return sidetone.serviceClip();
+#else
+    return false;
+#endif
+}
+void MorseOutput::voiceStop() {
+#ifdef CONFIG_SOUND_I2S
+    sidetone.stopClip();
+#endif
+}
