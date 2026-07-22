@@ -210,8 +210,12 @@ for ch in CWchars:
 char_seq["<err>"] = ["pro sign", "error"]
 
 # ── Dedupe, assign ids, write ────────────────────────────────────────────────
+# Tiebreak on the exact string: the input is a set (iteration order varies between
+# runs), so a bare .lower() key left case-only pairs -- "Adaptive Random" vs
+# "Adaptive random" -- swapping places on every run. That churn made the "empty
+# diff = nothing owed" check in CLAUDE.md section 8 unusable.
 all_texts = sorted({t for t in (phrase_texts + atom_texts + list(USER_OVERRIDES.values()))
-                    if t and t.strip()}, key=lambda s: s.lower())
+                    if t and t.strip()}, key=lambda s: (s.lower(), s))
 id_map = {}
 for t in all_texts: id_map.setdefault(clip_id(t), []).append(t)
 collisions = {k: v for k, v in id_map.items() if len(v) > 1}   # md5 collisions (expect none)

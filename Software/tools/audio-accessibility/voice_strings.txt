@@ -257,8 +257,8 @@ Curtis B dah timing
 Curtis B dit timing
 Custom Characters
 Custom Chars
-CW abbreviations
 CW Abbreviations
+CW abbreviations
 CW Academy
 CW Decoder
 CW Generator
@@ -380,8 +380,8 @@ o umlaut
 Oceania
 OFF
 Off
-On
 ON
+On
 ON (less ICS)
 ON (true WpM)
 Op Name
@@ -443,8 +443,8 @@ Ultimatic
 Uniform
 Unlimited
 Up 1 Half
-Update firmware
 Update Firmware
+Update firmware
 Upload File
 UPPER
 Vband and Decoded
