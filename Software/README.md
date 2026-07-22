@@ -7,11 +7,17 @@
 
 #### Feature Modifications:
 * Several improvements of the QSO Bot behaviour, including a new preference (difficulty level). Provides for more varied and more realistic QSOs. QSO partners may now have a different speed than you…
+* Custom character sets now behave the same as the built-in Koch character sequences - you can select Koch lesson for example, and this will be homoured for the other Koch methods.
 
 #### Bug Fixes:
+* There was a serious problem with storing snapshots, resulting in zero free NVS space, so that after a while snapshots would not be stored correctly. Fixed. Snapshots are now stored in a more memory saving manner, and at first boot after update the will be converted from the existing format into the new one. This happens only once and may take a few seconds when you currently have stored a few snapshots.
+* Under certain co0ndition the Preferences menu did not show all preferences. Fixed.
 * Audio volume was not properly restored after reboot. Fixed.
+* There was a bug in the implementation of the serial protocol, and the menu list sent was truncated because of it. Fixed.
+* The Bluetooth keyboard worked exactly once per boot. After the first keyer session, returning to the menu showed "Stop BT Kbd" and any later keyer entry silently never brought the keyboard back. Fixed.
 * QSO Bot did not allow call signs with an initial letter K. Fixed.
 * QSO Bot did not recognise calls with a prefix starting with a digit (e.g. 2E0XY). Fixed.
+
 
 ### CHANGES V. 8.1
 

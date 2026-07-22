@@ -2275,8 +2275,8 @@ werden — mit einem langen Druck auf die **FN**-Taste.
 
 #### Tipps {-}
 
-- 48 WpM sind bewusst schnell — sie belohnen Decoder, die schnelles
-  CW kopieren können. Schaffst du es in der ersten Runde nicht, warte
+- 48 WpM sind bewusst schnell — sie belohnen CWisten, die schnelles
+  CW lesen können. Schaffst du es in der ersten Runde nicht, warte
   auf die nächste Wiedergabe; sie ist 5 WpM langsamer.
 
 - Der enthüllte Buchstabe ist ein starker Anker — sobald seine
@@ -2484,7 +2484,7 @@ Deine Kennung im Netz wird aus dem mit „Fight the Pileup" und Morsel geteilten
 eine kurze MAC-basierte Kennung verwendet.
 
 ::: note
-Beim Beitritt übernimmt dein Gerät für das Rennen die Koch-Lektion des Servers,
+Beim Beitritt übernimmt dein Gerät für das Spiel die Koch-Lektion des Servers,
 sodass das Gitter — und die Richtungstasten von Fox Hunt — für alle gleich
 sind. Deine eigene Trainingslektion wird beim Verlassen des Spiels
 wiederhergestellt.
@@ -2582,7 +2582,7 @@ Trailblazer-Abschnitt oben.
 Morsezeichen: Das Gerät präsentiert eine wachsende Zeichenkette, **ein neues
 Zeichen pro Runde**, und du musst jedes Mal die *gesamte* Kette aus dem
 Gedächtnis geben. Das Gerät wiederholt den früheren Teil der Kette nie — dass
-du sie jede Runde selbst neu gibst, hält sie in deinem Kopf. Es gibt keinen
+du sie jede Runde selbst neu gibst, hilft dir, sie zu merken. Es gibt keinen
 Zeitdruck: Zwischen den Zeichen kannst du dir so viel Zeit lassen, wie du willst.
 
 Das Spiel hat zwei Inhaltsmodi:
