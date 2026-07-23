@@ -67,9 +67,11 @@ static void ensureLoaded(int g) {
 static void saveTable(int g) {
     Preferences p;
     p.begin(GRIDSCORE_NS, false);
-    p.putBytes(kData[g], tables[g], sizeof(tables[g]));
-    p.putUChar(kVer[g], GRIDSCORE_HI_VER);
+    boolean ok = (p.putBytes(kData[g], tables[g], sizeof(tables[g])) == sizeof(tables[g]));
+    ok &= (p.putUChar(kVer[g], GRIDSCORE_HI_VER) != 0);
     p.end();
+    if (!ok)                            // put*() fails silently when NVS is full
+        Serial.println("Grid games: high scores NOT saved - NVS full?");
 }
 
 //=============================================================================

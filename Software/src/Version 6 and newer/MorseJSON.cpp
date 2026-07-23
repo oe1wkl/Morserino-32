@@ -413,10 +413,14 @@ void MorseJSON::jsonGetCwStore(const String& value) { // get content of CW memor
 
 void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     // Read snapshot contents without recalling (non-destructive read)
-    // snapNumber is 0-based (0..7), corresponding to snap0..snap7
+    // snapNumber is 0-based (0..7), corresponding to snap0..snap7.
+    // decodeSnapshot() understands both the blob format and legacy
+    // per-key snapshots written by older firmware.
     String snapname = "snap" + String(snapNumber);
-    Preferences snapPref;
-    if (!snapPref.begin(snapname.c_str(), true)) {  // open read-only
+    uint8_t vals[posSerialOut];
+    uint8_t lastExec, kochLen, useCustom;
+    String customSet;
+    if (!MorsePreferences::decodeSnapshot(snapname.c_str(), vals, lastExec, kochLen, useCustom, customSet)) {
         MorseJSON::jsonError("Cannot open snapshot " + String(snapNumber + 1));
         return;
     }
@@ -425,7 +429,6 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     JsonObject snap = doc.createNestedObject("snapshot");
     snap["number"] = snapNumber + 1;  // report as 1-based to match user-facing numbering
 
-    uint8_t lastExec = snapPref.getUChar("lastExecuted", 0);
     snap["lastExecuted"] = lastExec;
     if (lastExec > 0 && lastExec < menuN)
         snap["menuName"] = MorseMenu::getMenuPath(lastExec);
@@ -434,15 +437,16 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
 
     // Custom chars stored in snapshots
     JsonObject custom = snap.createNestedObject("customChars");
-    custom["active"] = snapPref.getBool("useCustomChar", false);
-    custom["characters"] = snapPref.getString("customCharSet", "");
+    custom["active"] = (useCustom != 0);
+    custom["characters"] = customSet;
 
-    // All pliste[] parameters (except posTimeOut and posSerialOut which are excluded from snapshots)
+    // All pliste[] parameters that snapshots actually contain (training settings;
+    // device/hardware/game settings are excluded — see storedInSnapshot())
     JsonArray configs = snap.createNestedArray("configs");
     for (uint8_t i = 0; i < posSerialOut; ++i) {
-        if (i == posTimeOut)
-            continue;  // not stored in snapshots
-        uint8_t val = snapPref.getUChar(prefName[i], 255);
+        if (!MorsePreferences::storedInSnapshot((prefPos) i))
+            continue;  // not stored in snapshots (also hides stale keys in old snapshots)
+        uint8_t val = vals[i];
         if (val == 255)
             continue;  // not present in this snapshot
         JsonObject entry = configs.createNestedObject();
@@ -456,7 +460,6 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
             entry["displayed"] = String(val);
     }
 
-    snapPref.end();
     serializeJson(doc, Serial);
 }
 

@@ -2647,8 +2647,26 @@ quickly recall the settings by recalling a particular snapshot.
 The "Koch Lesson" that you selected will be stored in non-volatile
 storage and hence will be available after a restart, but it will not be
 stored or overwritten in one of the snapshots. The same is true for WiFi
-settings, the "Serial Out" preference, or your setting of speed and
-speaker volume.
+settings, the "Serial Out" preference, the screen timeout, or your
+setting of speed and speaker volume.
+
+Snapshots contain only settings that are relevant for training.
+Settings that concern the device itself, its connections, or the games
+are **not** stored in snapshots, and recalling a snapshot will never
+change them:
+
+-   Hardware settings: **Paddle Polar.**, **External Pol.**
+-   Transmitter and network settings: **Key ext TX**, **Generator Tx**,
+    the LoRa channel
+-   Bluetooth keyboard settings: **BLT Kbd Output**, **BLT \<AR\>**
+-   Audio routing: **Headphone Output**, **Decoded on IO**
+-   Device behavior: **Encoder Click**, **Quick Start**
+-   Game settings: **Invader Orient.** and the QSO Bot settings
+    (**Contest Type**, **QSO Difficulty**)
+
+(Snapshots stored with older firmware versions may still contain some of
+these settings; they are ignored when recalling, and cleaned out when
+you overwrite the snapshot.)
 
 ### Storing a snapshot
 
@@ -2660,7 +2678,15 @@ Store** and allows you to get out without storing a snapshot. Snapshot
 locations that are **already in use** are shown in **bold**, but you can
 overwrite those as well. Clicking on the ENCODER knob stores the
 snapshot in the desired location, and gives you a quick indication about
-its success.
+its success: "Snap N STORED" means the snapshot has been written and
+verified; if the settings storage is full, you will see "Snap N FAILED!"
+instead — in that case free up space by deleting a snapshot you no
+longer need, or by using **Reset Scores** in the preferences menu.
+
+If the settings storage is running low, the Morserino warns you right
+after switching it on ("Settings mem. almost full!"), together with the
+same advice: delete snapshots you no longer need, or reset the game
+scores.
 
 ### Recalling a snapshot
 
@@ -2721,6 +2747,7 @@ to all modes of the Morserino-32.
 |---|---|---|
 | Encoder Click | Turning the encoder may generate a short tone burst, or be silent | Off / **On** |
 | Tone Pitch Hz | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the F major scale from Bb3 to Bb5 (2 octaves) |
+| Tone Softness | (Only for M32 Pocket) Softens the attack and release edges of the CW side tone, similar to what an RC low-pass filter does to the keying edges in a real transceiver. Reduces harshness, especially on short elements such as a single dit. Takes effect immediately. | 1 – 10 ms, in steps of 1 ms (**5 ms**) |
 | Time Out | If the time specified in this preference passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the FN button. | No timeout / **5 min** / 10 min / 15 min |
 | Quick Start | Allows you to bypass the initial menu selection, i.e. at startup the device will immediately begin executing the mode that had been in effect before last shutdown. | ON / **OFF** |
 | Output Case | This changes the case of decoded characters on the display (and also on serial output via USB, and on Bluetooth keyboard output!) from lower case to UPPER CASE. | **lower** / UPPER |

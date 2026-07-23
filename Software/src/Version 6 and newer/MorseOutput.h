@@ -106,11 +106,17 @@ namespace MorseOutput
 
 #endif
   void soundSuspend();
+#ifdef CONFIG_SOUND_I2S
+  void setSidetoneEnvelope(uint8_t prefValue);   // prefValue 0..8 maps to 1..9 ms attack/release
+#endif
   void pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut);
   void pwmNoTone(unsigned int volume);
   void pwmClick(unsigned int volume);
   void soundSignalOK();
   void soundSignalERR();
+  bool voiceStart(const char* path);      // V9.0 a11y: start async clip (no-op without I2S)
+  bool voiceService();                    //   poll from loop; true while a clip is playing
+  void voiceStop();                       //   interrupt the current clip
 }
 
 #endif /* #ifndef MORSEOUTPUT_H_ */

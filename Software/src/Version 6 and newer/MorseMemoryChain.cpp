@@ -124,9 +124,11 @@ static void ensureLoaded(int m) {
 static void saveTable(int m) {
     Preferences p;
     p.begin(MC_NS, false);
-    p.putBytes(kData[m], hiTables[m], sizeof(hiTables[m]));
-    p.putUChar(kVer[m], MC_HI_VER);
+    boolean ok = (p.putBytes(kData[m], hiTables[m], sizeof(hiTables[m])) == sizeof(hiTables[m]));
+    ok &= (p.putUChar(kVer[m], MC_HI_VER) != 0);
     p.end();
+    if (!ok)                            // put*() fails silently when NVS is full
+        Serial.println("Memory Chain: high scores NOT saved - NVS full?");
 }
 
 // Insert if it qualifies (rank by primary, then secondary), persist on

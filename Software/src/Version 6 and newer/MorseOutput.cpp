@@ -1979,6 +1979,13 @@ void MorseOutput::soundSetup()
 #endif
 }
 
+#ifdef CONFIG_SOUND_I2S
+void MorseOutput::setSidetoneEnvelope(uint8_t prefValue) {   // prefValue 0..8 maps to 1..9 ms attack/release
+  float t = (prefValue + 1) / 1000.0f;
+  sidetone.setADSR(t, 0.0f, 1.0f, t);
+}
+#endif
+
 void MorseOutput::soundSuspend()
 {
 #ifdef CONFIG_WM8960
@@ -2139,5 +2146,29 @@ void MorseOutput::soundSignalERR() {
      delay(193);
      pwmNoTone(MorsePreferences::sidetoneVolume);
   }
+#endif
+}
+
+// V9.0 audio accessibility: thin wrappers over the sidetone library's async clip API.
+// Non-blocking; the firmware polls voiceService() from its loops (see MorseVoice). All
+// pipeline work (file open/close, mixer routing, per-clip decoder reset) happens inside
+// the library's audio task -- the firmware never touches the decode pipeline directly.
+bool MorseOutput::voiceStart(const char* path) {
+#ifdef CONFIG_SOUND_I2S
+    return sidetone.startClip(path);
+#else
+    (void)path; return false;
+#endif
+}
+bool MorseOutput::voiceService() {
+#ifdef CONFIG_SOUND_I2S
+    return sidetone.serviceClip();
+#else
+    return false;
+#endif
+}
+void MorseOutput::voiceStop() {
+#ifdef CONFIG_SOUND_I2S
+    sidetone.stopClip();
 #endif
 }

@@ -40,15 +40,15 @@
 const char* const PROJECTNAME = "Morserino-32";
 const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 
-#define VERSION_MAJOR 8
-#define VERSION_MINOR 2
+#define VERSION_MAJOR 9
+#define VERSION_MINOR 0
 #define VERSION_PATCH 0
 
 #define BETA true
 #define COMPILEDATE __DATE__
 
 
-#define IGNORE_SERIALOUT true
+#define IGNORE_SERIALOUT false
 
 // if IGNORE_SERIALOUT is true, alle DEBUG messages are on serial out, even when Serial Out is active outputting characters from Keyer, Decoder etc
 
@@ -404,6 +404,7 @@ enum KEYERSTATES
 enum prefPos : uint8_t {
   #ifdef CONFIG_SOUND_I2S
         posLineOut,
+        posSidetoneShape,
   #endif
                 posClicks, posPitch, posExtPddlPolarity, posPolarity,                                         // 0
                 posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,                              // 4
