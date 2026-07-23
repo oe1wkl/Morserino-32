@@ -49,6 +49,9 @@ namespace MorseJSON
 	void jsonGetCustomChars(void);
 	void jsonGetHardware(void);
 	void jsonGetBattery(void);
+#ifdef CONFIG_PRACTICE_STATS
+	void jsonStatsLog(void);
+#endif
 };
 
 #endif /* #ifndef MORSEJSON_H_ */

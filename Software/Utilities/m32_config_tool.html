@@ -16,7 +16,7 @@
       --tab-bg:#f4f7fa;--tab-active:#fff;--tab-hover:#e0eaf2;--icon-color:#3a5060;
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{background:#fff;color:var(--text);font-family:Lato,Arial,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased}
+    body{background:#fff;color:var(--text);font-family:Lato,Arial,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
     .banner{background:linear-gradient(135deg,#1a2e3e 0%,#2c4a5e 100%);padding:18px 24px 14px;text-align:center;color:#fff;position:sticky;top:0;z-index:100;box-shadow:0 3px 12px rgba(0,0,0,0.35)}
     .morse-header{display:flex;align-items:center;justify-content:center;gap:18px;margin-bottom:6px}
     .morse-letter{display:flex;align-items:center;gap:4px}
@@ -46,7 +46,7 @@
     .tab-btn svg{width:18px;height:18px;flex-shrink:0;stroke:currentColor}
     .tab-content{display:none;padding:24px 0}
     .tab-content.active{display:block}
-    .box{border:2px solid var(--box-border);border-radius:var(--radius);background:var(--box-bg);box-shadow:var(--box-shadow);padding:20px 24px;margin-bottom:22px}
+    .box{border:2px solid var(--box-border);border-radius:var(--radius);background:var(--box-bg);box-shadow:var(--box-shadow);padding:20px 24px;margin-bottom:22px;overflow-x:hidden}
     .section-title{font-size:24px;font-weight:900;color:var(--accent);text-align:center;margin-bottom:6px}
     .section-sub{font-size:17px;font-weight:700;text-align:center;color:var(--text);margin-bottom:18px}
     .field-label{font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--box-border);margin-bottom:6px}
@@ -166,6 +166,41 @@
     .koch-char{display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:4px;font-size:16px;font-weight:700;font-family:'Courier New',monospace}
     .koch-char.learned{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr)}
     .koch-char.unlearned{background:#f0f0f0;color:#bbb;border:1px solid #ddd}
+    .stats-row{display:flex;align-items:center;margin:.35em 0;font-size:14px}
+    .stats-label{width:6em;flex-shrink:0;color:var(--text)}
+    .stats-bar{flex-grow:1;background:#e0e8ee;border-radius:3px;height:1.2em;margin:0 .6em;overflow:hidden;display:flex}
+    .stats-bar .listen{background:#3a8a4a;height:100%}
+    .stats-bar .send{background:#2d6cb0;height:100%}
+    .stats-legend{font-size:13px;color:var(--muted);margin-bottom:8px}
+    .stats-tag{display:inline-block;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;color:#fff;margin-right:6px}
+    .stats-tag.listen{background:#3a8a4a}
+    .stats-tag.send{background:#2d6cb0}
+    .stats-scroll{overflow-x:auto;max-width:100%}
+    .stats-table{width:100%;border-collapse:collapse;font-size:13px;white-space:nowrap;margin:10px 0 4px}
+    .stats-table th{text-align:left;padding:6px 10px;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--box-border);border-bottom:2px solid var(--box-border);cursor:pointer;user-select:none}
+    .stats-table th:hover{color:var(--accent)}
+    .stats-table th.sorted::after{content:" \25be"}
+    .stats-table td{padding:6px 10px;border-bottom:1px solid #e0e8ee}
+    .stats-summary{display:flex;flex-wrap:wrap;gap:24px;font-size:14px;margin:6px 0 14px}
+    .stats-summary b{display:block;font-size:20px;font-family:'Courier New',monospace}
+    .needschip{display:inline-block;background:var(--red-bg);color:#a8402f;font-weight:700;font-family:'Courier New',monospace;
+      border-radius:4px;padding:2px 7px;margin:3px 4px 0 0;font-size:14px;border:1px solid var(--red-bdr)}
+    .pstat-grid{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+    .pstat-tile{position:relative;width:32px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;
+      font-size:16px;font-weight:700;font-family:'Courier New',monospace;cursor:pointer}
+    .pstat-tile.good{background:var(--green-bg);color:var(--green);border:1px solid var(--green-bdr)}
+    .pstat-tile.mid{background:#f3e6cc;color:#a6741f;border:1px solid #e0c48c}
+    .pstat-tile.weak{background:var(--red-bg);color:#a8402f;border:1px solid var(--red-bdr)}
+    .pstat-tile.unseen{background:#f0f0f0;color:#999;border:1px solid #ddd}
+    .pstat-tile.future{background:#f7f7f7;color:#ccc;border:1px dashed #ddd;cursor:default}
+    .pstat-tile.selected{outline:2px solid var(--accent)}
+    .pstat-tile .pstat-tip{position:absolute;bottom:120%;left:50%;transform:translateX(-50%);background:#222;color:#fff;
+      font-family:Lato,Arial,sans-serif;font-size:11px;padding:4px 7px;border-radius:4px;white-space:nowrap;
+      opacity:0;pointer-events:none;transition:opacity .1s;z-index:2}
+    .pstat-tile:hover .pstat-tip{opacity:1}
+    .stats-table td.rate.good{color:var(--green);font-weight:700}
+    .stats-table td.rate.mid{color:#a6741f;font-weight:700}
+    .stats-table td.rate.weak{color:#a8402f;font-weight:700}
     .identity-field{display:flex;align-items:center;gap:14px;margin-bottom:14px;padding:14px 18px;background:#fff;border:1px solid #c8d8e4;border-radius:6px}
     .identity-label{font-size:16px;font-weight:700;color:var(--text);min-width:100px}
     .identity-input{font-family:'Courier New',monospace;font-size:18px;font-weight:700;padding:8px 12px;border:1px solid #b0c0cc;border-radius:4px;flex:1;text-transform:uppercase;background:#fff}
@@ -587,6 +622,53 @@
     <div class="btn-row" style="justify-content:center;margin-top:10px">
       <button class="btn btn-green btn-sm" onclick="setCustomChars()" id="customCharsSetBtn" disabled>Set &amp; Enable</button>
       <button class="btn btn-red btn-sm" onclick="clearCustomChars()" id="customCharsClearBtn" disabled>Clear &amp; Disable</button>
+    </div>
+  </div>
+  <div class="box" id="statsBox" style="display:none">
+    <div class="field-label">Practice Stats</div>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:6px">Koch-lesson time and per-character error rate, logged by the Echo Trainer / CW Generator. M32 Pocket only.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">
+      <span class="status-badge" id="statsEnabledStatus" style="margin:0;padding:3px 10px;font-size:12px">Logging: &hellip;</span>
+      <button class="btn btn-outline btn-sm" onclick="togglePracticeStatsEnabled()" id="statsEnabledToggleBtn" disabled>&hellip;</button>
+    </div>
+    <div class="space-info" id="statsStorage"></div>
+
+    <div class="field-label" style="margin-top:16px">Time per Koch Lesson</div>
+    <div class="stats-legend"><span class="stats-tag listen">Listen</span><span class="stats-tag send">Send</span> &mdash; <span id="statsTotalTime"></span></div>
+    <div id="statsLessons"><span class="empty-msg" style="color:var(--muted);font-style:italic">Not loaded yet</span></div>
+
+    <div class="field-label" style="margin-top:16px">Characters</div>
+    <div class="stats-legend">
+      <span class="stats-tag" style="background:var(--green)">Solid &lt;10%</span>
+      <span class="stats-tag" style="background:#a6741f">Shaky 10&ndash;25%</span>
+      <span class="stats-tag" style="background:#a8402f">Weak &gt;25%</span>
+      <span class="stats-tag" style="background:#999">Heard only</span>
+      <span class="stats-tag" style="background:#ccc;color:#333">Not learned</span>
+    </div>
+    <div class="stats-summary" id="pstatSummary"></div>
+    <div class="pstat-grid" id="pstatGrid"><span class="empty-msg" style="color:var(--muted);font-style:italic">Not loaded yet</span></div>
+    <div class="stats-scroll"><table class="stats-table" id="statsCharsTable">
+      <thead><tr>
+        <th data-key="c">Char</th><th data-key="heard">Heard</th><th data-key="attempts">Sent</th>
+        <th data-key="correct">Correct</th><th data-key="errors">Errors</th><th data-key="rate" class="sorted">Rate</th>
+      </tr></thead>
+      <tbody><tr><td colspan="6" class="empty-msg">Not loaded yet</td></tr></tbody>
+    </table></div>
+
+    <div class="field-label" style="margin-top:16px">Session History</div>
+    <p style="font-size:13px;color:#888;font-style:italic;margin:0 0 4px">Scroll sideways to see all columns &rarr;</p>
+    <div class="stats-scroll"><table class="stats-table" id="statsSessionsTable">
+      <thead><tr>
+        <th>When</th><th>Lesson</th><th>Type</th><th>Words</th><th>Chr/Wd</th>
+        <th>WPM</th><th>ICS</th><th>IWS</th><th>WPS</th><th>CPS</th>
+        <th>Errors</th><th>Err%</th><th>Duration</th>
+      </tr></thead>
+      <tbody><tr><td colspan="13" class="empty-msg">Not loaded yet</td></tr></tbody>
+    </table></div>
+
+    <div class="btn-row" style="justify-content:center;margin-top:10px">
+      <button class="btn btn-outline btn-sm" onclick="loadPracticeStats()" id="statsRefreshBtn">Refresh</button>
+      <button class="btn btn-red btn-sm" onclick="clearPracticeStats()" id="statsClearBtn">Clear Log</button>
     </div>
   </div>
 </div>
@@ -1420,6 +1502,8 @@ async function loadKoch(){
   await loadCustomChars();
   // Also render Koch prefs if already loaded
   if(Object.keys(prefDetails).length>0) renderKochPrefs();
+  await sleep(100);
+  await loadPracticeStats();
   hideLoading();
 }
 function onKochSliderChange(val){document.getElementById('kochValue').textContent=val;document.querySelectorAll('.koch-char').forEach(function(ch,i){ch.className='koch-char '+(i<parseInt(val)?'learned':'unlearned')})}
@@ -1457,6 +1541,237 @@ async function clearCustomChars(){
     log('Custom chars cleared');
     document.getElementById('customCharsInput').value='';
     await sleep(200); await loadCustomChars();
+  }catch(e){log('Error: '+e.message)}
+}
+
+// ============================================================================
+// PRACTICE STATS (M32 Pocket only — no-op / stays hidden on Classic)
+// ============================================================================
+function fmtStatsDur(s){
+  if(s<60) return s+'s';
+  var m=Math.floor(s/60), h=Math.floor(m/60); m=m%60;
+  return h>0 ? (h+'h '+m+'m') : (m+'m '+(s%60)+'s');
+}
+async function loadPracticeStats(){
+  if(!connected) return;
+  showLoading('Loading practice stats...');
+  // Best-effort: give the device the current time so newly-logged sessions
+  // (and this visit, if it never had a wall clock) get a real date — same
+  // idea as the WiFi Practice Stats page posting the browser's clock.
+  try{ readBuffer=''; await sendLine('put time/set/'+Math.floor(Date.now()/1000)); await waitForResponse(1500); }catch(e){}
+  try{
+    readBuffer='';
+    var data=await sendAndParse('get stats/log',8000);
+    var s=data.stats;
+    if(!s){ hideLoading(); return; }   // Classic M32 / feature not built in — leave the box hidden
+    document.getElementById('statsBox').style.display='';
+    if(s.total!==undefined){
+      var pct=Math.round(100*s.used/s.total);
+      document.getElementById('statsStorage').textContent='Storage: '+formatSize(s.used)+' used / '+formatSize(s.total)+' total ('+pct+'%)';
+    }
+    if(s.enabled!==undefined){
+      var badge=document.getElementById('statsEnabledStatus'), btn=document.getElementById('statsEnabledToggleBtn');
+      badge.textContent='Logging: '+(s.enabled?'On':'Off');
+      badge.className='status-badge '+(s.enabled?'status-connected':'status-disconnected');
+      badge.style.margin='0'; badge.style.padding='3px 10px'; badge.style.fontSize='12px';
+      btn.textContent=s.enabled?'Turn Off':'Turn On';
+      btn.disabled=false;
+      btn.dataset.enabled=s.enabled?'1':'0';
+    }
+    var records=[];
+    if(s.log){
+      atob(s.log).split('\n').forEach(function(line){
+        line=line.trim(); if(!line) return;
+        try{ records.push(JSON.parse(line)); }catch(e){ /* skip malformed line */ }
+      });
+    }
+    var koch=null;
+    try{ var kd=await sendAndParse('get kochlesson',3000); koch=kd.kochlesson||null; }catch(e){ /* tile grid falls back gracefully */ }
+    renderPracticeStats(records, koch);
+    log('Practice stats: '+records.length+' session(s)');
+  }catch(e){log('Practice stats: '+e.message)}
+  hideLoading();
+}
+function renderPracticeStats(records, koch){
+  var dash='&mdash;';
+  var lessonTime={}, charStats={};
+  records.forEach(function(r){
+    if(!lessonTime[r.lesson]) lessonTime[r.lesson]={listen:0,send:0};
+    lessonTime[r.lesson][r.mode==='send'?'send':'listen']+=r.dur;
+    if(r.chars) Object.keys(r.chars).forEach(function(c){
+      var h=r.chars[c][0], a=r.chars[c][1], e=r.chars[c][2];
+      if(!charStats[c]) charStats[c]={heard:0,attempts:0,errors:0};
+      charStats[c].heard+=h; charStats[c].attempts+=a; charStats[c].errors+=e;
+    });
+  });
+
+  var lessons=Object.keys(lessonTime).map(Number).sort(function(a,b){return a-b});
+  var grandTotal=records.reduce(function(sum,r){return sum+r.dur;},0);
+  document.getElementById('statsTotalTime').textContent='Total: '+fmtStatsDur(grandTotal)+' across '+records.length+' session'+(records.length===1?'':'s');
+  var lessonsDiv=document.getElementById('statsLessons'); lessonsDiv.innerHTML='';
+  if(lessons.length===0){
+    lessonsDiv.innerHTML='<span class="empty-msg" style="color:var(--muted);font-style:italic">No practice logged yet</span>';
+  } else {
+    var maxTime=Math.max.apply(null,lessons.map(function(l){return lessonTime[l].listen+lessonTime[l].send}).concat([1]));
+    lessons.forEach(function(l){
+      var lt=lessonTime[l], total=lt.listen+lt.send;
+      var listenPct=Math.round(100*lt.listen/maxTime), sendPct=Math.round(100*lt.send/maxTime);
+      var row=document.createElement('div'); row.className='stats-row';
+      row.innerHTML='<span class="stats-label">Lesson '+l+'</span><span class="stats-bar">'+
+        '<div class="listen" style="width:'+listenPct+'%" title="Listen: '+fmtStatsDur(lt.listen)+'"></div>'+
+        '<div class="send" style="width:'+sendPct+'%" title="Send: '+fmtStatsDur(lt.send)+'"></div>'+
+        '</span><span>'+fmtStatsDur(total)+'</span>';
+      lessonsDiv.appendChild(row);
+    });
+  }
+
+  function pstatBucket(cs){
+    if(!cs || cs.attempts===0) return 'unseen';
+    var rate=cs.errors/cs.attempts;
+    if(rate<0.10) return 'good';
+    if(rate<=0.25) return 'mid';
+    return 'weak';
+  }
+
+  var gridDiv=document.getElementById('pstatGrid');
+  gridDiv.innerHTML='';
+  var pstatRows=[];
+  if(koch && koch.characters){
+    koch.characters.forEach(function(ch,i){
+      var pos=(koch.minimum||1)+i;
+      var tile=document.createElement('span');
+      if(pos>koch.value){
+        tile.className='pstat-tile future';
+        tile.textContent=ch;
+        gridDiv.appendChild(tile);
+        return;
+      }
+      var cs=charStats[ch]||{heard:0,attempts:0,errors:0};
+      var cls=pstatBucket(cs);
+      tile.className='pstat-tile '+cls;
+      tile.dataset.char=ch;
+      var rate=cs.attempts?Math.round(100*cs.errors/cs.attempts):null;
+      tile.innerHTML='<span>'+escHtml(ch===' '?'␣':ch)+'</span>'+
+        '<span class="pstat-tip">heard '+cs.heard+' &middot; sent '+cs.attempts+
+        (cs.attempts?' &middot; '+rate+'% err':' &middot; not sent yet')+'</span>';
+      gridDiv.appendChild(tile);
+      if(cs.heard>0 || cs.attempts>0) pstatRows.push({c:ch,heard:cs.heard,attempts:cs.attempts,correct:cs.attempts-cs.errors,errors:cs.errors,rate:cs.attempts?rate:-1});
+    });
+  } else {
+    gridDiv.textContent='Lesson sequence unavailable — see the table below.';
+    Object.keys(charStats).forEach(function(ch){
+      var cs=charStats[ch];
+      pstatRows.push({c:ch,heard:cs.heard,attempts:cs.attempts,correct:cs.attempts-cs.errors,errors:cs.errors,rate:cs.attempts?Math.round(100*cs.errors/cs.attempts):-1});
+    });
+  }
+  if(koch && koch.characters && pstatRows.length===0) gridDiv.innerHTML='<span class="empty-msg" style="color:var(--muted);font-style:italic">No practice logged yet</span>';
+
+  var learnedCount = koch ? Math.min(koch.value, koch.characters.length) : pstatRows.length;
+  var pTotalAttempts=0, pTotalErrors=0;
+  var pSent=pstatRows.filter(function(r){ return r.attempts>0; });
+  pSent.forEach(function(r){ pTotalAttempts+=r.attempts; pTotalErrors+=r.errors; });
+  var pTop5=pSent.slice().sort(function(a,b){
+    return b.rate-a.rate || b.attempts-a.attempts;
+  }).slice(0,5);
+  document.getElementById('pstatSummary').innerHTML =
+    '<div>Learned<br><b>'+learnedCount+(koch?' / '+koch.characters.length:'')+'</b></div>'+
+    '<div>Accuracy (sent)<br><b>'+(pTotalAttempts?Math.round(100*(pTotalAttempts-pTotalErrors)/pTotalAttempts)+'%':dash)+'</b></div>'+
+    '<div>Needs work<br>'+(pTop5.length?pTop5.map(function(r){return '<span class="needschip">'+escHtml(r.c)+' '+r.rate+'%</span>';}).join(''):'<b>'+dash+'</b>')+'</div>';
+
+  var charsBody=document.querySelector('#statsCharsTable tbody');
+  var pstatSortKey='rate', pstatSortDir=-1;
+  function renderPstatRows(){
+    var sorted=pstatRows.slice().sort(function(a,b){
+      var av=a[pstatSortKey], bv=b[pstatSortKey];
+      if(typeof av==='string') return pstatSortDir*av.localeCompare(bv);
+      return pstatSortDir*(av-bv);
+    });
+    charsBody.innerHTML='';
+    if(sorted.length===0){ charsBody.innerHTML='<tr><td colspan="6" class="empty-msg">No data yet</td></tr>'; return; }
+    sorted.forEach(function(r){
+      var cls=r.attempts?pstatBucket({attempts:r.attempts,errors:r.errors}):'unseen';
+      var tr=document.createElement('tr');
+      tr.dataset.char=r.c;
+      tr.innerHTML='<td>'+escHtml(r.c)+'</td><td>'+r.heard+'</td><td>'+r.attempts+'</td><td>'+r.correct+'</td><td>'+r.errors+
+        '</td><td class="rate '+cls+'">'+(r.attempts?r.rate+'%':dash)+'</td>';
+      charsBody.appendChild(tr);
+    });
+  }
+  renderPstatRows();
+  document.querySelectorAll('#statsCharsTable thead th').forEach(function(th){
+    th.addEventListener('click',function(){
+      var key=th.dataset.key;
+      if(pstatSortKey===key) pstatSortDir*=-1; else { pstatSortKey=key; pstatSortDir=(key==='c')?1:-1; }
+      document.querySelectorAll('#statsCharsTable thead th').forEach(function(t){t.classList.remove('sorted');});
+      th.classList.add('sorted');
+      renderPstatRows();
+    });
+  });
+  gridDiv.addEventListener('click',function(e){
+    var tile=e.target.closest('.pstat-tile');
+    if(!tile || !tile.dataset.char) return;
+    document.querySelectorAll('.pstat-tile.selected').forEach(function(t){t.classList.remove('selected');});
+    tile.classList.add('selected');
+    var row=document.querySelector('#statsCharsTable tbody tr[data-char="'+CSS.escape(tile.dataset.char)+'"]');
+    if(row) row.scrollIntoView({behavior:'smooth',block:'center'});
+  });
+
+  records.sort(function(a,b){return b.ts-a.ts});   // newest first (undated [ts=0] sink to the bottom)
+  var sessBody=document.querySelector('#statsSessionsTable tbody'); sessBody.innerHTML='';
+  if(records.length===0){
+    sessBody.innerHTML='<tr><td colspan="13" class="empty-msg">No sessions logged yet</td></tr>';
+  } else {
+    records.forEach(function(r){
+      var when = r.ts>0 ? new Date(r.ts*1000).toLocaleString() : '(undated)';
+      var isSend = r.mode==='send';
+      var words = r.words||0;
+      // tc (from wordPresented(), both modes) = actual content length — the right
+      // basis for Chr/Wd and CPS. attempts/errors (from r.chars, send only) can
+      // exceed tc when a word gets repeated after a wrong answer, so they're only
+      // used for the error rate, not as a stand-in for word length.
+      var tc = r.tc||0;
+      var attempts=0, totalErrors=0;
+      if(r.chars) Object.keys(r.chars).forEach(function(c){ attempts+=r.chars[c][1]; totalErrors+=r.chars[c][2]; });
+      var charsPerWord = words>0 ? (tc/words).toFixed(1) : dash;
+      var wps = r.dur>0 ? (words/r.dur).toFixed(2) : dash;
+      var cps = r.dur>0 ? (tc/r.dur).toFixed(2) : dash;
+      var errRate = (isSend && attempts>0) ? Math.round(100*totalErrors/attempts)+'%' : dash;
+      var tr=document.createElement('tr');
+      tr.innerHTML=
+        '<td>'+when+'</td>'+
+        '<td>'+r.lesson+'</td>'+
+        '<td><span class="stats-tag '+(isSend?'send':'listen')+'">'+(isSend?'Send':'Listen')+'</span></td>'+
+        '<td>'+words+'</td>'+
+        '<td>'+charsPerWord+'</td>'+
+        '<td>'+(r.wpm!==undefined?r.wpm:dash)+'</td>'+
+        '<td>'+(r.ics!==undefined?r.ics:dash)+'</td>'+
+        '<td>'+(r.iws!==undefined?r.iws:dash)+'</td>'+
+        '<td>'+wps+'</td>'+
+        '<td>'+cps+'</td>'+
+        '<td>'+(isSend?totalErrors:dash)+'</td>'+
+        '<td>'+errRate+'</td>'+
+        '<td>'+fmtStatsDur(r.dur)+'</td>';
+      sessBody.appendChild(tr);
+    });
+  }
+}
+async function clearPracticeStats(){
+  if(!confirm('Clear all practice stats? This cannot be undone.')) return;
+  try{
+    readBuffer=''; await sendLine('put stats/clear');
+    try{await waitForResponse(2000)}catch(e){}
+    log('Practice stats cleared');
+    await loadPracticeStats();
+  }catch(e){log('Error: '+e.message)}
+}
+async function togglePracticeStatsEnabled(){
+  var btn=document.getElementById('statsEnabledToggleBtn');
+  var turningOn = btn.dataset.enabled==='0';
+  try{
+    readBuffer=''; await sendLine('put stats/enabled/'+(turningOn?'1':'0'));
+    try{await waitForResponse(2000)}catch(e){}
+    log('Practice stats logging: '+(turningOn?'on':'off'));
+    await loadPracticeStats();
   }catch(e){log('Error: '+e.message)}
 }
 

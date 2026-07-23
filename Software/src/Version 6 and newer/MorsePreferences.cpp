@@ -20,6 +20,9 @@
 #include "MorseJSON.h"
 #include "MorseVoice.h"
 #include "MorseTextEntry.h"
+#ifdef CONFIG_PRACTICE_STATS
+#include "MorsePracticeStats.h"
+#endif
 #include "abbrev.h"
 #include "english_words.h"
 #include "ClickButton.h"   // button control library
@@ -484,7 +487,11 @@ parameter MorsePreferences::pliste[] = {
   }
 };
 
-const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores" };
+const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores"
+#ifdef CONFIG_PRACTICE_STATS
+    , "Practice Stats"
+#endif
+};
 
 #ifdef CONFIG_TFT
 themes MorsePreferences::themeList[] = {
@@ -717,6 +724,9 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posGoertzelBandwidth, posExtAudioOnDecode,
                                                    QSOBOT
                                                    posPlayerCall, posPlayerName, posResetScores,
+#ifdef CONFIG_PRACTICE_STATS
+                                                   posPracticeStatsOn,
+#endif
                                                  };
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
@@ -882,6 +892,10 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
     topLine = "Calibrate Voltage";
   else if (pos == posHwConf)
     topLine = "Hardware Config.";
+#ifdef CONFIG_PRACTICE_STATS
+  else if (pos == posPracticeStatsOn)
+    topLine = "Practice Stats:";
+#endif
   else
     topLine = "Player & Scores:";
 
@@ -999,6 +1013,11 @@ String MorsePreferences::getValueLine(prefPos pos) {
     case posResetScores:
         str = "clear all";
         break;
+#ifdef CONFIG_PRACTICE_STATS
+    case posPracticeStatsOn:
+        str = MorsePracticeStats::enabled() ? "On" : "Off";
+        break;
+#endif
     case posKochFilter:
       str = koch.getNewChar();
       cleanUpProSigns(str);
@@ -1229,6 +1248,13 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
         displayKeyerPreferencesMenu(pos);
         return false;
     }
+#ifdef CONFIG_PRACTICE_STATS
+    if (pos == posPracticeStatsOn) {
+        MorsePracticeStats::setEnabled(!MorsePracticeStats::enabled());
+        displayKeyerPreferencesMenu(pos);
+        return false;
+    }
+#endif
 
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
     uint8_t seq;
