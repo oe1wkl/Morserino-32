@@ -695,6 +695,15 @@ You can choose between the following at the second level of the menu:
     instructions how to do this), or by using the method described in
     **Appendix 7 Using a Browser to set up M32
     Preferences**.
+-   **Practice Set**: Generates random characters from a pool you pick
+    yourself, right on the device – e.g. just the few characters you
+    personally find difficult. Build (and change) the pool with the
+    **Practice Set** entry in the preferences menu (see **Preferences
+    regarding Practice Set** below); it is saved on the device and stays
+    in effect until you change it again. This is unrelated to the Koch
+    Trainer's own **Custom Chars** lesson (section **5.4.1**, last
+    paragraph) – the two character sets are stored and edited
+    separately.
 
 ::: note
 The file player mode remembers where you stopped. (Exit this mode by
@@ -880,7 +889,7 @@ In this mode, the prompt word will not normally be displayed; only your
 response will be shown.
 
 The sub-menus are the same as for the CW Generator: Random, CW Abbrevs,
-English Words, Call Signs, Mixed and File Player.
+English Words, Call Signs, Mixed, File Player and Practice Set.
 
 Like in CW Generator mode, you **start** this mode **by pressing a
 paddle** (or the ENCODER, or – if you are using one – the straight
@@ -1152,6 +1161,16 @@ It means you can switch between training your characters and using a
 different text file for the file player. Setting **Koch Sequence** to
 M32, LCWO, LICW, or CW Academy reverts to the "normal" Koch Trainer
 option.
+
+::: note
+Looking for a quicker way to just drill a handful of characters you
+find difficult, without going through a text file or the Koch lesson
+mechanism? See **Practice Set**, a separate feature reachable directly
+under **CW Generator** and **Echo Trainer** (not under Koch Trainer) –
+described where those modes are introduced, and in **Preferences
+regarding Practice Set**. It uses its own, separately stored character
+set and does not affect or get affected by **Custom Chars** here.
+:::
 
 ### Koch: Learn New Chr
 
@@ -2738,6 +2757,17 @@ select which order you want to follow.
 | Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. You can also use your customized character set by choosing Custom Chars – see the section **5.4.1 Koch: Select Lesson**, the last paragraph.   |   **M32** (native order, also used by JLMC – Just Learn Morse Code) / LCWO / CW Academy / LICW Carousel / Custom Chars / |
 | LICW Carousel | This defines the "Entry Point" into the LICW Carousel curriculum (only relevant if the preference **Koch Sequence** is set to **LICW Carousel**). When you start a course in BC1, you should set this accordingly, and also set it again when you join the carousel classes for BC2.   | **BC1: r e a** / BC1: t i n / BC1: p g s / BC1: l c d / BC1: h o f / BC1: u w b / BC2: k m y / BC2: 5 9 , / BC2: q x v / BC2: 7 3 ? / BC2: \<ar> \<sk> = / BC2: 1 6 . / BC2: z j /  BC2: 2 8 \<bk> / BC2: 4 0 |
 
+
+
+### Preferences regarding Practice Set
+
+This is unrelated to the Koch Character Sequence above – it feeds the
+**Practice Set** entries under **CW Generator** and **Echo Trainer**
+(sections **5.2** and **5.3**), not the Koch Trainer.
+
+| Preference Name | Description | Values |
+|---|---|---|
+| Practice Set | Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation, click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as "(not set)" until you have added at least one character. | *(opens the picker; not an adjustable value)* |
 
 
 
