@@ -134,6 +134,8 @@ const char* const menuText[menuN]  = {
   , "Fox Hunt"
   , "Memory Chain"
 #endif
+  , "Practice Set"    // _genPractice  - sibling of CW Generator's Random/CW Abbrevs/.../File Player
+  , "Practice Set"    // _echoPractice - sibling of Echo Trainer's Random/CW Abbrevs/.../File Player
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
@@ -144,19 +146,19 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   { 0,0,0,0,0},                                         // 0 = dummy
   {0,_goToSleep,_gen,_dummy,0},                         // 1 keyer  -e
   {0,_keyer,_echo,_dummy,_genRand},                     // 2 generator
-  {1,_genPlayer,_genAbb,_gen,0},                        // 3 gen random -e
+  {1,_genPractice,_genAbb,_gen,0},                      // 3 gen random -e (left <- Practice Set)
   {1,_genRand,_genWords,_gen,0},                        // 4 gen Abb  -e
   {1,_genAbb,_genCalls,_gen,0},                         // 5 gen words  -e
   {1,_genWords,_genMixed,_gen,0},                       // 6 gen calls  -e
   {1,_genCalls,_genPlayer,_gen,0},                      // 7 gen mixed  -e
-  {1,_genMixed,_genRand,_gen,0},                        // 8 gen player  -e
+  {1,_genMixed,_genPractice,_gen,0},                    // 8 gen player  -e (right -> Practice Set)
   {0,_gen,_koch,_dummy,_echoRand},                      // 9 echo tr
-  {1,_echoPlayer,_echoAbb,_echo,0},                     // 10 echo random  -e
+  {1,_echoPractice,_echoAbb,_echo,0},                    // 10 echo random  -e (left <- Practice Set)
   {1,_echoRand,_echoWords,_echo,0},                     // 11 echo abb  -e
   {1,_echoAbb,_echoCalls,_echo,0},                      // 12 echo words  -e
   {1,_echoWords,_echoMixed,_echo,0},                    // 13 echo calls  -e
   {1,_echoCalls,_echoPlayer,_echo,0},                   // 14 echo mixed  -e
-  {1,_echoMixed,_echoRand,_echo,0},                     // 15 echo player  -e
+  {1,_echoMixed,_echoPractice,_echo,0},                  // 15 echo player  -e (right -> Practice Set)
   {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
   {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select  -e!!?
   {1,_kochSel,_kochGen,_koch,0},                        // 18 koch learn new
@@ -224,8 +226,11 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #ifdef CONFIG_CW_GAME
   {1,_morsel,_foxHunt,_games,0},                        // Trailblazer  -e (in the games ring after Morsel)
   {1,_trailblazer,_memoryChain,_games,0},               // Fox Hunt  -e (right -> Memory Chain)
-  {1,_foxHunt,_morseInvaders,_games,0}                  // Memory Chain  -e (right wraps to Morse Invaders)
+  {1,_foxHunt,_morseInvaders,_games,0},                 // Memory Chain  -e (right wraps to Morse Invaders)
 #endif
+  {1,_genPlayer,_genRand,_gen,0},                       // Practice Set (CW Generator) - appended at enum's end;
+                                                         //   spliced into the gen ring via the _genPlayer/_genRand edits above
+  {1,_echoPlayer,_echoRand,_echo,0}                     // Practice Set (Echo Trainer) - same splice, echo ring
 };
 
 //String MorseMenu::cmdPath;   // used to create string for json
@@ -470,6 +475,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
   m32state = active_loop;
 
   kochActive = false;
+  MorsePreferences::usePracticeChars = false;
   keyerState = IDLE_STATE;
 
 #ifdef CONFIG_MCP73871
@@ -499,6 +505,16 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
      case _genCalls:
      case _genMixed:      /// generator
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 3);                   /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
+                MorsePreferences::setCurrentOptions(MorsePreferences::generatorOptions, MorsePreferences::generatorOptionsSize);
+                goto startGenerator;
+     case _genPractice:  // "Practice Set" - plain RANDOMS generation, sourced from the device-picked
+                          // practiceCharSet instead of CWchars; unrelated to Koch Trainer/kochActive.
+                if (MorsePreferences::practiceCharSet.length() == 0) {
+                    showStartDisplay("No Practice Set", "Pick chars in", "Settings menu", 900);
+                    return false;
+                }
+                generatorMode = RANDOMS;
+                MorsePreferences::usePracticeChars = true;
                 MorsePreferences::setCurrentOptions(MorsePreferences::generatorOptions, MorsePreferences::generatorOptionsSize);
                 goto startGenerator;
      case _genPlayer:
@@ -550,6 +566,15 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 MorsePreferences::setCurrentOptions(MorsePreferences::echoTrainerOptions, MorsePreferences::echoTrainerOptionsSize);
 
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 10);                /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
+                goto startEcho;
+            case  _echoPractice:  // "Practice Set" - see the CW Generator case for the rationale
+                if (MorsePreferences::practiceCharSet.length() == 0) {
+                    showStartDisplay("No Practice Set", "Pick chars in", "Settings menu", 900);
+                    return false;
+                }
+                generatorMode = RANDOMS;
+                MorsePreferences::usePracticeChars = true;
+                MorsePreferences::setCurrentOptions(MorsePreferences::echoTrainerOptions, MorsePreferences::echoTrainerOptionsSize);
                 goto startEcho;
             case  _echoPlayer:
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 10);

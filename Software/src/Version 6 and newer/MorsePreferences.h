@@ -54,6 +54,7 @@ extern void cleanStartSettings();
 extern void serialEvent();
 
 extern String getCustomChars();
+extern const char CWchars[];    // m32_v6.ino; first 51 bytes are the plain (non-Koch) RANDOMS char pool - see the ruler comment there
 
 
 #define MAX_FILE_PARTS 16
@@ -73,6 +74,13 @@ namespace MorsePreferences
 
   extern boolean useCustomChars;
   extern String  customCharSet;
+
+  // "Practice Set": a persisted, device-picked character pool for the plain
+  // CW Generator / Echo Trainer "Practice Set" leaves. Entirely separate
+  // from the Koch Trainer's useCustomChars/customCharSet lesson data above -
+  // its own NVS key ("practiceChars"), never touched by koch.setup()/Koch::*.
+  extern boolean usePracticeChars;
+  extern String  practiceCharSet;
 
   extern uint8_t version_major;
   extern uint8_t version_minor;
@@ -232,6 +240,8 @@ namespace MorsePreferences
   boolean adjustKeyerPreference(prefPos);
   void editPlayerIdentity(prefPos pos);
   void resetGameScores();
+  void editPracticeChars();
+  void setPracticeChars(const String& chars);   // assign + persist; shared with the serial "practicechars" command
   void readPreferences(const char* repository);
   void readScreenPref();
   void readVoltagePref();

@@ -484,7 +484,7 @@ parameter MorsePreferences::pliste[] = {
   }
 };
 
-const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores" };
+const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores", "Practice Set" };
 
 #ifdef CONFIG_TFT
 themes MorsePreferences::themeList[] = {
@@ -531,6 +531,9 @@ boolean MorsePreferences::cn3Mechanical = false;            // CN3 connector: fa
   uint8_t MorsePreferences::kochMaximum = 52;
   String  MorsePreferences::customCharSet = "";               // a place to store the custom character set
   boolean MorsePreferences::useCustomChars = false;           // flag if we should use custom characters
+
+  String  MorsePreferences::practiceCharSet = "";             // "Practice Set" character pool (CW Gen/Echo); own NVS key, unrelated to customCharSet above
+  boolean MorsePreferences::usePracticeChars = false;          // flag: current CW Gen/Echo run should draw from practiceCharSet
 
   uint8_t MorsePreferences::menuPtr = 1;                      // current position of menu
   uint8_t MorsePreferences::newMenuPtr = 1;                   // current position of menu when changed
@@ -709,6 +712,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLUE
                                                    posKochSeq, posCarouselStart,
+                                                   posPracticeChars,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
@@ -882,6 +886,8 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
     topLine = "Calibrate Voltage";
   else if (pos == posHwConf)
     topLine = "Hardware Config.";
+  else if (pos == posPracticeChars)              // reached via allOptions, nestled among the "Set Preferences:" items
+    topLine = "Set Preferences:";
   else
     topLine = "Player & Scores:";
 
@@ -998,6 +1004,14 @@ String MorsePreferences::getValueLine(prefPos pos) {
     }
     case posResetScores:
         str = "clear all";
+        break;
+    case posPracticeChars:
+        if (MorsePreferences::practiceCharSet.length() == 0)
+            str = "(not set)";
+        else {
+            sprintf(numBuffer, "%d chars", MorsePreferences::practiceCharSet.length());
+            str = String(numBuffer);
+        }
         break;
     case posKochFilter:
       str = koch.getNewChar();
@@ -1177,6 +1191,62 @@ void MorsePreferences::editPlayerIdentity(prefPos pos) {
     Buttons::volButton.clicks  = 0;
 }
 
+// --- "Practice Set" character picker (CW Generator / Echo Trainer) ---
+static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes;
+                                                 // excludes the trailing multi-byte äöü/H tail (m32_v6.ino),
+                                                 // which the plain RANDOMS pool doesn't use either
+static const uint8_t PRACTICE_MAX_LEN   = 24;   // generous for a "chars I struggle with" set; bounds the on-screen line
+
+// Display-only glyph for the picker wheel; never touches what gets stored.
+// CWchars mixes plain letters with uppercase single-char prosign codes that
+// reuse the same letters (a/n/k/s/e/b) - rendering both as a bare uppercase
+// letter would make e.g. the letter "s" and the <sk> prosign indistinguishable
+// once "Output Case" uppercases the letter too. Route through cleanUpProSigns()
+// (the one canonical prosign table, CLAUDE.md hard rule 4) so a prosign code
+// always draws as its tag ("<sk>", "<as>", ...); only a genuine single
+// character - i.e. not a prosign - gets the cosmetic Output Case treatment.
+static String practiceGlyph(char c) {
+    String s(c);
+    cleanUpProSigns(s);
+    if (s.length() == 1 && MorsePreferences::pliste[posOutputCase].value)
+        s.toUpperCase();
+    return s;
+}
+
+// Shared by the on-device picker below and the serial-protocol "practicechars"
+// command (m32_v6.ino): assigns + persists immediately to its own NVS key -
+// like playerCall/playerName, never part of the pliste[]-on-exit write or any
+// snapshot. Both entry points funnel through here so there is one place that
+// enforces the length cap and one place that writes the NVS key.
+void MorsePreferences::setPracticeChars(const String& chars) {
+    MorsePreferences::practiceCharSet = chars.length() > PRACTICE_MAX_LEN
+        ? chars.substring(0, PRACTICE_MAX_LEN) : chars;
+
+    Preferences p;
+    p.begin("morserino", false);
+    p.putString("practiceChars", MorsePreferences::practiceCharSet);
+    p.end();
+}
+
+void MorsePreferences::editPracticeChars() {
+    char wheel[PRACTICE_WHEEL_LEN + 1];
+    memcpy(wheel, CWchars, PRACTICE_WHEEL_LEN);
+    wheel[PRACTICE_WHEEL_LEN] = '\0';
+
+    String cur = MorsePreferences::practiceCharSet;
+    if (cur.length() > PRACTICE_MAX_LEN)             // defensive; shouldn't happen, cap matches storage
+        cur = cur.substring(0, PRACTICE_MAX_LEN);
+
+    char buf[PRACTICE_MAX_LEN + 1];
+    MorseTextEntry::enterText("Practice Set:", buf, PRACTICE_MAX_LEN, wheel, cur.c_str(),
+                               true,             // noDuplicates: each character makes sense at most once
+                               practiceGlyph);   // always on: prosign-tag expansion + cosmetic Output Case
+
+    MorsePreferences::setPracticeChars(String(buf));
+    Buttons::modeButton.clicks = 0;   // swallow the long-press that ended entry
+    Buttons::volButton.clicks  = 0;
+}
+
 void MorsePreferences::resetGameScores() {
     MorseOutput::clearScrollLines();
     MorseOutput::printOnScroll(0, BOLD,    0, "Clear scores?");
@@ -1226,6 +1296,11 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
     }
     if (pos == posResetScores) {
         resetGameScores();
+        displayKeyerPreferencesMenu(pos);
+        return false;
+    }
+    if (pos == posPracticeChars) {
+        editPracticeChars();
         displayKeyerPreferencesMenu(pos);
         return false;
     }
@@ -1502,6 +1577,7 @@ void MorsePreferences::readPreferences(const char* repository) {
 
     MorsePreferences::useCustomChars = pref.getBool("useCustomChar");
     MorsePreferences::customCharSet = pref.getString("customCharSet", "");
+    MorsePreferences::practiceCharSet = pref.getString("practiceChars", "");
     if ((temp = pref.getUChar("lastExecuted"))) {
        MorsePreferences::menuPtr = temp;
     // DEBUG("@942 read: temp = " + String(temp));
