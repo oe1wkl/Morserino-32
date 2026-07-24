@@ -17,6 +17,7 @@
   "Latency": "How long after generating the current element (dot or dash) the paddles will be deaf. 0% = must release paddle while element is still on. Up to 87.5% = paddles react only after 7/8 of a dot length.",
   "Koch Sequence": "Determines the sequence of characters for the Koch method. M32 (native/JLMC), LCWO, CW Academy, LICW Carousel, or Custom Chars. ➜ See the Koch tab for lesson selection and character display.",
   "LICW Carousel": "Entry point into the LICW Carousel curriculum. Only relevant when Koch Sequence is set to LICW Carousel. Set this when you start a BC1 or BC2 course.",
+  "Practice Set": "Your own character pool, e.g. just the few characters you find difficult. Used by the \"Practice Set\" entries under CW Generator and Echo Trainer - unrelated to the Koch Trainer's Custom Chars lesson. Plain text, case-sensitive; leave empty to clear it.",
   "Interchar Spc": "The time (in dit lengths) inserted between characters. Together with Interword Spc, this controls 'Farnsworth Speed'. Default: 3 dits. Range: 3–45.",
   "InterWord Spc": "The time (in dit lengths) inserted between words. Also affects the decoder's word boundary detection. Together with Interchar Spc, controls 'Wordsworth Speed'. Default: 7 dits. Range: 6–105.",
   "Random Groups": "For random character generation: which character subsets to include. Alpha, Numerals, Interpunctuation, Pro Signs, or combinations.",
