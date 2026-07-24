@@ -442,6 +442,13 @@ void MorseJSON::jsonGetCustomChars(void) {
     serializeJson(doc, Serial);
 }
 
+void MorseJSON::jsonGetPracticeChars(void) {
+    StaticJsonDocument<192> doc;
+    JsonObject obj = doc.createNestedObject("practicechars");
+    obj["characters"] = MorsePreferences::practiceCharSet;
+    serializeJson(doc, Serial);
+}
+
 void MorseJSON::jsonGetHardware(void) {
     StaticJsonDocument<256> doc;
     JsonObject hw = doc.createNestedObject("hardware");

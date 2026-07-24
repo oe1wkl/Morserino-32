@@ -720,6 +720,15 @@ wählen:
     Hochladen einer Textdatei**), oder mit der unter **Anhang 7
     Einrichten von M32-Einstellungen über einen Browser** beschriebenen
     Methode.
+-   **Practice Set**: Generiert zufällige Zeichen aus einem Zeichenvorrat,
+    den du direkt am Gerät selbst zusammenstellst – z.B. genau die
+    wenigen Zeichen, die dir persönlich schwerfallen. Den Vorrat legst du
+    über den Eintrag **Practice Set** im Einstellungsmenü an bzw. änderst
+    ihn dort (siehe **Einstellungen zum Practice Set** weiter unten); er
+    wird auf dem Gerät gespeichert und bleibt bestehen, bis du ihn wieder
+    änderst. Das hat nichts mit der **Custom Chars**-Lektion des Koch
+    Trainers zu tun (Abschnitt **5.4.1**, letzter Absatz) – beide
+    Zeichenvorräte werden getrennt gespeichert und bearbeitet.
 
 ::: note
 Der File Player merkt sich, wo du aufgehört hast. (Beende diesen Modus
@@ -900,7 +909,7 @@ Die Vorgabe wird normalerweise nicht angezeigt; nur deine Antwort ist
 sichtbar.
 
 Die Untermenüs sind dieselben wie beim CW Generator: Random, CW Abbrevs,
-English Words, Call Signs, Mixed und File Player.
+English Words, Call Signs, Mixed, File Player und Practice Set.
 
 Wie beim CW Generator **startest** du diesen Modus **durch Drücken eines
 Paddles** (oder des ENCODERs oder – bei Verwendung einer – der
@@ -1159,6 +1168,17 @@ Es bedeutet, dass du zwischen dem Training mit deinem Zeichensatz und
 der Verwendung einer anderen Textdatei für den File Player wechseln
 kannst. Durch Umstellen von **Koch Sequence** auf M32, LCWO, LICW oder
 CW Academy kehrst du zur „normalen" Koch-Trainer-Option zurück.
+
+::: note
+Suchst du nur einen schnellen Weg, um gezielt ein paar Zeichen zu üben,
+die dir schwerfallen, ohne den Umweg über eine Textdatei oder die
+Koch-Lektionen? Siehe **Practice Set**, eine eigenständige Funktion, die
+direkt unter **CW Generator** und **Echo Trainer** erreichbar ist (nicht
+unter Koch Trainer) – beschrieben dort, wo diese Modi vorgestellt
+werden, sowie unter **Einstellungen zum Practice Set**. Sie verwendet
+einen eigenen, getrennt gespeicherten Zeichensatz und hat mit **Custom
+Chars** hier nichts zu tun.
+:::
 
 ### Koch: Learn New Chr
 
@@ -3169,6 +3189,16 @@ kannst du auswählen, welcher Reihenfolge du folgen möchtest.
 |---|---|---|
 | **Koch Sequence** | Legt die Reihenfolge der Zeichen bei Verwendung der Koch-Methode zum Lernen und Trainieren fest. Du kannst auch deinen benutzerdefinierten Zeichensatz verwenden, indem du **Custom Chars** wählst – siehe Abschnitt **5.4.1 Koch: Select Lesson**, letzter Absatz. | **M32** (native Reihenfolge, auch von JLMC – Just Learn Morse Code verwendet) / LCWO / CW Academy / LICW Carousel / Custom Chars |
 | **LICW Carousel** | Legt den „Einstiegspunkt" in den LICW-Carousel-Lehrplan fest (nur relevant, wenn **Koch Sequence** auf **LICW Carousel** gesetzt ist). Wenn du einen Kurs in BC1 beginnst, solltest du dies entsprechend einstellen und auch wieder anpassen, wenn du in die Carousel-Kurse für BC2 einsteigst. | **BC1: r e a** / BC1: t i n / BC1: p g s / BC1: l c d / BC1: h o f / BC1: u w b / BC2: k m y / BC2: 5 9 , / BC2: q x v / BC2: 7 3 ? / BC2: \<ar> \<sk> = / BC2: 1 6 . / BC2: z j / / BC2: 2 8 \<bk> / BC2: 4 0 |
+
+### Einstellungen zum Practice Set
+
+Dies hat nichts mit der Koch-Zeichenfolge oben zu tun – es speist die
+**Practice Set**-Einträge unter **CW Generator** und **Echo Trainer**
+(Abschnitte **5.2** und **5.3**), nicht den Koch Trainer.
+
+| Einstellung | Beschreibung | Werte |
+|---|---|---|
+| **Practice Set** | Öffnet einen Zeichen-Picker direkt am Gerät, um deinen eigenen Übungs-Zeichenvorrat zusammenzustellen: mit dem ENCODER durch Buchstaben, Ziffern und Satzzeichen blättern, per Klick das markierte Zeichen hinzufügen (jedes Zeichen nur einmal), mit der FN-Taste das zuletzt hinzugefügte wieder entfernen, und mit langem Druck abschließen und speichern. Zeigt „(not set)", solange noch kein Zeichen hinzugefügt wurde. | *(öffnet den Picker; kein einstellbarer Wert)* |
 
 ### Einstellungen zur CW-Generierung
 

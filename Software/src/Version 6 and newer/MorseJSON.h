@@ -47,6 +47,7 @@ namespace MorseJSON
 	void jsonGetSnapshot(uint8_t snapNumber);
 	void jsonGetPlayer(void);
 	void jsonGetCustomChars(void);
+	void jsonGetPracticeChars(void);
 	void jsonGetHardware(void);
 	void jsonGetBattery(void);
 };

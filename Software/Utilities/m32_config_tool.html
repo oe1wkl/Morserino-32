@@ -738,6 +738,7 @@ var prefDetails={};
 var allMenus=[];
 var prefHelpTexts={};
 var prefAllExpanded=false;
+var practiceCharsValue='';   // "Practice Set" - not part of prefDetails (action item, no pliste[] entry); own get/put commands
 
 // Groups and the params within them follow the on-device preferences-menu order
 // (firmware allOptions[] in MorsePreferences.cpp), so the tool reads top-to-bottom
@@ -1104,6 +1105,10 @@ async function loadPreferences(){
       }catch(e){ prefDetails[allPrefs[i].name]=allPrefs[i]; }
     }
     log('All preference details loaded');
+    try{
+      var pcData=await sendAndParse('get practicechars',3000);
+      practiceCharsValue=(pcData.practicechars&&pcData.practicechars.characters)||'';
+    }catch(e){ practiceCharsValue=''; }
     renderPreferences();
     renderKochPrefs();
   }catch(e){log('Preferences error: '+e.message)}
@@ -1135,7 +1140,14 @@ function renderPreferences(){
   });
   var ungrouped=[];
   Object.keys(prefDetails).forEach(function(name){if(!usedNames[name])ungrouped.push(name)});
-  if(ungrouped.length>0) container.appendChild(createPrefGroupEl({name:'Other',icon:'📋',params:ungrouped},ungrouped));
+  // "Other" always renders, even with no ungrouped device prefs: Practice Set
+  // lives here too, but (like Call Sign/Name/Custom Chars) it's an action item
+  // with no pliste[] entry, so it never comes back from 'get configs' and needs
+  // its own row appended by hand rather than through the params/prefDetails path.
+  var otherEl=createPrefGroupEl({name:'Other',icon:'📋',params:ungrouped},ungrouped);
+  otherEl.querySelector('.pref-group-body').appendChild(createPracticeCharsRow());
+  otherEl.querySelector('.pref-count').textContent=ungrouped.length+1;
+  container.appendChild(otherEl);
   document.getElementById('resetDefaultsBox').style.display='';
 }
 
@@ -1213,6 +1225,40 @@ function createPrefRow(p){
     wrap.appendChild(slider); wrap.appendChild(valSpan); controlEl.appendChild(wrap);
   }
   row.appendChild(controlEl); return row;
+}
+
+// Practice Set is an action item (no pliste[] entry, see CLAUDE.md), so it
+// never comes back from 'get configs' - this row is built by hand rather than
+// via createPrefRow(), but kept visually identical so it reads as just another
+// setting inside "Other". Its own protocol pair: get/put practicechars.
+function createPracticeCharsRow(){
+  var row=document.createElement('div'); row.className='pref-row'; row.id='pref-row-Practice_Set';
+  var nameEl=document.createElement('span'); nameEl.className='pref-name';
+  nameEl.textContent='Practice Set';
+  var helpText=prefHelpTexts['Practice Set']||'Your own character pool, used by the "Practice Set" entries under CW Generator and Echo Trainer.';
+  var helpIcon=document.createElement('span'); helpIcon.className='help-icon'; helpIcon.textContent='?';
+  var balloon=document.createElement('span'); balloon.className='help-balloon'; balloon.textContent=helpText;
+  helpIcon.appendChild(balloon); nameEl.appendChild(helpIcon);
+  row.appendChild(nameEl);
+  var controlEl=document.createElement('span'); controlEl.className='pref-control';
+  var input=document.createElement('input'); input.type='text'; input.id='practiceCharsInput';
+  input.value=practiceCharsValue; input.placeholder='e.g. qzjx?/'; input.maxLength=24;
+  input.style.cssText='font-size:14px;letter-spacing:1px;width:120px;padding:4px 6px;text-align:right';
+  var setBtn=document.createElement('button'); setBtn.className='btn btn-green btn-sm'; setBtn.textContent='Set';
+  setBtn.style.marginLeft='6px'; setBtn.onclick=savePracticeChars;
+  controlEl.appendChild(input); controlEl.appendChild(setBtn);
+  row.appendChild(controlEl); return row;
+}
+async function savePracticeChars(){
+  var val=document.getElementById('practiceCharsInput').value.trim();
+  try{
+    readBuffer=''; await sendLine('put practicechars/set/'+val);
+    try{await waitForResponse(2000)}catch(e){}
+    practiceCharsValue=val;
+    log('Practice Set → '+(val?'"'+val+'"':'(cleared)'));
+    var row=document.getElementById('pref-row-Practice_Set');
+    if(row) row.classList.add('pref-modified');
+  }catch(e){log('Error: '+e.message)}
 }
 
 async function setPref(name,value){

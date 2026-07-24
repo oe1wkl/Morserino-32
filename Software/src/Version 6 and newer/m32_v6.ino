@@ -1777,6 +1777,17 @@ String getRandomChars(int maxLength, int option) {
         maxLength = random(2, maxLength - 3);
     }
  
+    // "Practice Set" — device-picked pool (CW Generator/Echo Trainer "Practice Set"
+    // leaves), independent of kochActive/the Koch Trainer entirely; guaranteed
+    // non-empty here since the menu only sets usePracticeChars after checking that.
+    if (MorsePreferences::usePracticeChars) {
+        String result; result.reserve(7);
+        const String& pool = MorsePreferences::practiceCharSet;
+        for (int i = 0; i < maxLength; ++i)
+            result += pool.charAt(random(pool.length()));
+        return result;
+    }
+
     // Koch paths — these return String from methods in MorsePreferences.cpp.
     // We can't avoid that heap allocation (it's in another file), but we
     // avoid the per-character += allocations in the non-Koch path below.
@@ -3907,6 +3918,9 @@ void m32Get(String type, String token, String value) {                    /// GE
     else if (type == "customchars") {
         MorseJSON::jsonGetCustomChars();
     }
+    else if (type == "practicechars") {
+        MorseJSON::jsonGetPracticeChars();
+    }
     else if (type == "hardware") {
         MorseJSON::jsonGetHardware();
     }
@@ -4056,6 +4070,22 @@ void m32Put(String type, String token, String value) {                    /// PU
       }
       else
         MorseJSON::jsonError("INVALID ACTION customchars " + token);
+    }
+    ////////////////// PRACTICECHARS //////////////////
+    else if (type == "practicechars") {
+      if (token == "set") {
+        // PUT practicechars/set/<character string>   — value is case-sensitive;
+        // MorsePreferences::setPracticeChars() caps length + persists to its own
+        // NVS key (unrelated to customchars above - see CLAUDE.md).
+        MorsePreferences::setPracticeChars(value);
+        MorseJSON::jsonOK();
+      }
+      else if (token == "clear") {
+        MorsePreferences::setPracticeChars("");
+        MorseJSON::jsonOK();
+      }
+      else
+        MorseJSON::jsonError("INVALID ACTION practicechars " + token);
     }
     ////////////////// CONFIG //////////////////////////
     else if (type == "config") {

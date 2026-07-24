@@ -336,8 +336,9 @@ enum morserinoMode              // the states the morserino can be in - selected
       shutDown, measureNF, invalid
   };
 
-// Base menu count: 43 entries (indices 0..42, classic M32 with LoRa, no Games, no QSO Bot)
-const uint8_t menuN = 43
+// Base menu count: 45 entries (indices 0..44, classic M32 with LoRa, no Games, no QSO Bot)
+// includes the two "Practice Set" leaves (CW Generator + Echo Trainer), unconditional on both variants
+const uint8_t menuN = 45
 #ifdef LORA_DISABLED
     - 1    // no LoRa Trx entry
 #endif
@@ -376,6 +377,8 @@ enum menuNo
         , _foxHunt      // see MorseFoxHunt.h
         , _memoryChain  // see MorseMemoryChain.h
 #endif
+        , _genPractice  // "Practice Set" - CW Generator, session/persistent character picker (appended: see menuNav wiring in MorseMenu.cpp)
+        , _echoPractice // "Practice Set" - Echo Trainer, same character source
    };
 
 enum loops
@@ -425,6 +428,7 @@ enum prefPos : uint8_t {
                 posKochFilter,                                                                                // 36
                 posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf,    // 37
                 posPlayerCall, posPlayerName, posResetScores,                                                  // Phase E: identity + score reset
+                posPracticeChars,                                                                              // session character picker for CW Gen/Echo "Practice Set"
 };
 
 enum actMessage : int {

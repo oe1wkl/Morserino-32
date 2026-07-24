@@ -394,6 +394,7 @@ Phones
 Plain
 plus
 Portrait
+Practice Set
 pro sign
 Pro Signs
 QSO Bot

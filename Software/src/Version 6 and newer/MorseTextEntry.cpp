@@ -13,8 +13,31 @@ namespace MorseTextEntry
   const char *const CHARSET_NAME     = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
 }
 
+static boolean containsChar(const char *s, char c)
+{
+  for (; *s; ++s) if (*s == c) return true;
+  return false;
+}
+
+// Renders one glyph through the optional display transform - never touches
+// what gets stored or matched, only what gets drawn. A source char may
+// expand to several drawn chars (e.g. a prosign tag).
+static String displayGlyph(char c, String (*xform)(char))
+{
+  return xform ? xform(c) : String(c);
+}
+
+static String displayText(const char *s, String (*xform)(char))
+{
+  if (!xform) return String(s);
+  String out; out.reserve(strlen(s));
+  for (; *s; ++s) out += xform(*s);
+  return out;
+}
+
 void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLen,
-                               const char *charSet, const char *initial)
+                               const char *charSet, const char *initial,
+                               boolean noDuplicates, String (*displayXform)(char))
 {
   const int charCount = strlen(charSet);
   uint8_t len = 0;
@@ -23,6 +46,11 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
   }
   result[len] = '\0';
   int charIdx = 0;
+  if (noDuplicates) {
+    int guard = charCount;
+    while (guard-- > 0 && containsChar(result, charSet[charIdx]))
+      charIdx = (charIdx + 1) % charCount;
+  }
   boolean needsRedraw = true;
 
   while (true) {
@@ -34,7 +62,7 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       MorseOutput::clearStatusLine();
       MorseOutput::printOnStatusLine(true, 0, prompt);
       MorseOutput::clearScrollLines();
-      MorseOutput::printOnScroll(0, BOLD,    0, String(result) + "[" + charSet[charIdx] + "]");
+      MorseOutput::printOnScroll(0, BOLD,    0, displayText(result, displayXform) + "[" + displayGlyph(charSet[charIdx], displayXform) + "]");
       MorseOutput::printOnScroll(1, REGULAR, 0, "click = add");
       MorseOutput::printOnScroll(2, REGULAR, 0, "FN=del hold=ok");
       MorseOutput::refreshDisplay();
@@ -45,15 +73,26 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       MorseOutput::resetTOT();
       MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
       charIdx = (charIdx + t + charCount) % charCount;
+      if (noDuplicates) {
+        int guard = charCount;
+        while (guard-- > 0 && containsChar(result, charSet[charIdx]))
+          charIdx = (charIdx + t + charCount) % charCount;
+      }
       needsRedraw = true;
     }
 
     Buttons::modeButton.Update();
     if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
-    if (Buttons::modeButton.clicks == 1 && len < maxLen) {   // click: append
+    if (Buttons::modeButton.clicks == 1 && len < maxLen &&           // click: append
+        !(noDuplicates && containsChar(result, charSet[charIdx]))) {
       result[len++] = charSet[charIdx];
       result[len] = '\0';
       charIdx = 0;
+      if (noDuplicates) {
+        int guard = charCount;
+        while (guard-- > 0 && containsChar(result, charSet[charIdx]))
+          charIdx = (charIdx + 1) % charCount;
+      }
       needsRedraw = true;
     }
     if (Buttons::modeButton.clicks == -1) { result[len] = '\0'; return; }   // long press: done
