@@ -788,7 +788,16 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                       break;
           case -1:    //////// long press indicates we are done with setting preferences - check if we need to store some of the preferences
 
-          exitFromHere: if (MorsePreferences::useCustomChars) {
+          exitFromHere: if (MorsePreferences::useCustomChars && MorsePreferences::customCharSet.length() == 0) {
+                            // Bootstrap only: pull from the file player exclusively when no
+                            // custom set is active yet (mirrors handleKochSequence()'s guard).
+                            // Previously ran unconditionally on every preferences exit, which
+                            // silently replaced an already-active custom set (however it was
+                            // set - on-device, the web tool's direct text field, ...) with
+                            // whatever /player.txt currently contains, even when the exit was
+                            // triggered by an unrelated preference change. Found via user
+                            // testing: exiting after changing Interword Space alone discarded
+                            // a working custom sequence.
                             String chars = getCustomChars(); //// get custom characters
                             if (chars.length() > 0)
                                 koch.setCustomChars(chars);
