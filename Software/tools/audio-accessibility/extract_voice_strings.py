@@ -28,7 +28,7 @@ SRC = os.environ.get("M32_SRC", os.path.normpath(
 
 POCKET_MACROS = {
     "CONFIG_TFT", "CONFIG_CW_GAME", "CONFIG_QSO_BOT", "CONFIG_SOUND_I2S",
-    "CONFIG_BLUETOOTH_KEYBOARD", "LORA_DISABLED", "CONFIG_ENGLISH_OXFORD",
+    "CONFIG_BLUETOOTH_KEYBOARD", "CONFIG_BLE_SERIAL", "LORA_DISABLED", "CONFIG_ENGLISH_OXFORD",
     "CONFIG_TLV320AIC3100", "CONFIG_MCP73871", "CONFIG_DECODER_I2S",
     "CONFIG_BATMEAS_PIN", "ARDUINO_USB_MODE", "ARDUINO_USB_CDC_ON_BOOT",
 }
@@ -210,8 +210,12 @@ for ch in CWchars:
 char_seq["<err>"] = ["pro sign", "error"]
 
 # ── Dedupe, assign ids, write ────────────────────────────────────────────────
+# Tiebreak on the exact string: the input is a set (iteration order varies between
+# runs), so a bare .lower() key left case-only pairs -- "Adaptive Random" vs
+# "Adaptive random" -- swapping places on every run. That churn made the "empty
+# diff = nothing owed" check in CLAUDE.md section 8 unusable.
 all_texts = sorted({t for t in (phrase_texts + atom_texts + list(USER_OVERRIDES.values()))
-                    if t and t.strip()}, key=lambda s: s.lower())
+                    if t and t.strip()}, key=lambda s: (s.lower(), s))
 id_map = {}
 for t in all_texts: id_map.setdefault(clip_id(t), []).append(t)
 collisions = {k: v for k, v in id_map.items() if len(v) > 1}   # md5 collisions (expect none)

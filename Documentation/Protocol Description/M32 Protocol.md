@@ -396,7 +396,11 @@ Example:
 
 `PUT snapshot/store/<n>`		
 
-Store the current parameters (and the currently selected menu item) in snapshot n (n = 1..8).
+Store the current parameters (and the currently selected menu item) in snapshot n (n = 1..8). Since firmware 8.2 the device verifies that the snapshot actually reached non-volatile storage: on success it answers with `{"ok":{"content":"OK"}}`; if the settings storage is full, the store fails with
+
+	{"error":{"content":"SNAPSHOT STORE FAILED - NVS FULL?"}}
+
+and the list of stored snapshots remains unchanged. Space can be freed by clearing a snapshot or resetting the game scores.
 
 `PUT snapshot/recall/<n>`		
 
@@ -410,16 +414,16 @@ Clear (i.e., delete) snapshot n (n = 1..8).
 
 This command returns the full contents of snapshot n (n = 1..8) without recalling it — the current device settings are not modified. This is useful for inspecting or comparing snapshot contents. The snapshot must exist (see `GET snapshots` to check which snapshots are stored).
 
-The response includes the stored menu selection, custom character set, and all parameter values with their display representations. Note that snapshots do not store the "Serial Output" and "Time-out" parameters, so these two are absent from the `configs` list of a snapshot.
+The response includes the stored menu selection, custom character set, and all parameter values with their display representations. Note that since firmware 8.2 snapshots contain only training-related settings: device, hardware, connectivity and game settings (paddle polarity, external TX keying, Generator Tx, LoRa channel, Bluetooth Use, audio routing, Encoder Click, Quick Start, Invader orientation, and the QSO Bot settings) are not stored in snapshots — like the "Serial Output" and "Time-out" parameters, they are absent from the `configs` list. Snapshots written by older firmware may still contain such entries; they are ignored on recall and dropped when the snapshot is converted or overwritten.
 
 Example:
 
 	{"snapshot":{"number":3,"lastExecuted":1,"menuName":"CW Keyer",
 	"customChars":{"active":false,"characters":""},
 	"configs":[
-	{"name":"Encoder Click","value":1,"displayed":"On"},
 	{"name":"Tone Pitch","value":10,"displayed":"622 Hz e2"},
-	{"name":"External Pol.","value":0,"displayed":"Normal"},
+	{"name":"Keyer Mode","value":2,"displayed":"Iambic B"},
+	{"name":"InterWord Spc","value":7,"displayed":"7"},
 	...
 	]}}
 
@@ -550,6 +554,11 @@ Example:
 
 This sets Koch lesson to lesson number <n>.
 
+Note: when "Koch Sequence" is set to "Custom Chars", the lesson indexes into
+the custom character set — "maximum" reflects the length of that set (instead
+of the fixed 51), and "characters" reports only its first <n> characters, i.e.
+the active training pool for the CW Generator / Echo Trainer.
+
 
 ### Custom Character Set
 
@@ -568,6 +577,13 @@ This sets and enables a custom Koch character set. The `<characters>` string con
 Example:
 
 	PUT customchars/set/mkrsuaptlowi
+
+Note: on the device, the custom character set is derived from the uploaded
+player file (`/player.txt`) — that file is the source of truth. A set injected
+with this command therefore persists only until the preferences menu is next
+exited while "Custom Chars" is active: at that moment the set is re-derived
+from the player file, replacing the injected one. To make a character set
+permanent, upload it as the player file instead (or in addition).
 
 `PUT customchars/clear`
 

@@ -250,9 +250,11 @@ static void mslSaveWlen() {
 static void mslSaveHi() {
     Preferences p;
     p.begin(MSL_NVS_NS, false);
-    p.putBytes("hi", hiTable, sizeof(hiTable));
-    p.putUChar("hv", MSL_HI_VER);
+    boolean ok = (p.putBytes("hi", hiTable, sizeof(hiTable)) == sizeof(hiTable));
+    ok &= (p.putUChar("hv", MSL_HI_VER) != 0);
     p.end();
+    if (!ok)                            // put*() fails silently when NVS is full
+        Serial.println("Morsel: high scores NOT saved - NVS full?");
 }
 
 // Insert the just-finished game into the table if it qualifies; sets

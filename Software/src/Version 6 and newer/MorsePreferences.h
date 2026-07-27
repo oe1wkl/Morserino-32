@@ -185,12 +185,6 @@ namespace MorsePreferences
 
   extern parameter pliste[];
 
-  // preferences that live only in the "morserino" store, never in snapshots —
-  // the ONE list consumed by the read loop, the write loop and jsonGetSnapshot
-  inline bool snapshotExempt(uint8_t pos) {
-    return pos == posTimeOut || pos == posSerialOut;
-  }
-
   extern  prefPos keyerOptions[];
   extern  prefPos generatorOptions[];
   extern  prefPos playerOptions[];
@@ -242,13 +236,18 @@ namespace MorsePreferences
   void readScreenPref();
   void readVoltagePref();
   void writePreferences(const char* repository);
+  boolean storedInSnapshot(prefPos pos);               // does this preference belong in a snapshot (training settings only)?
+  boolean decodeSnapshot(const char* ns, uint8_t vals[], uint8_t &lastExec,
+                         uint8_t &kochLen, uint8_t &useCustom, String &customSet);  // read snapshot (blob or legacy) into a prefPos-indexed value map
+  void checkNvsSpace();                                // boot check: warn on display when NVS entries run low
+  void convertLegacySnapshots();                       // boot migration: per-key snapshots -> blob format (no-op once converted)
   void resetDefaults();                                // reset all preferences to default values
-  void doWriteSnapshot(uint8_t, uint8_t);
+  boolean doWriteSnapshot(uint8_t, uint8_t);           // returns false if the snapshot did not reach NVS
   void doReadSnapshot(uint8_t);
   void createKochWords(uint8_t maxl, uint8_t koch);
   uint8_t wordIsKoch(String thisWord);
   void createKochAbbr(uint8_t maxl, uint8_t koch);
-  void handleKochSequence();
+  boolean handleKochSequence();
   void handleCarouselChange();
   void setCustomChars(String);
   //void kochSetup();

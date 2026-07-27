@@ -749,8 +749,14 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   MorsePreferences::readFilePartData();
   koch.setup();
 
+  MorsePreferences::convertLegacySnapshots();  // migrate per-key snapshots to the blob format (no-op once done)
+
   #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
+  #endif
+
+  #ifdef CONFIG_SOUND_I2S
+  MorseOutput::setSidetoneEnvelope(MorsePreferences::pliste[posSidetoneShape].value);  // set the CW tone envelope softness
   #endif
 
   MorseOutput::setBrightness(MorsePreferences::oledBrightness);
@@ -830,9 +836,11 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
     // boards.)
     if (!memoryReboot) {
       displayStartUp(volt);
+      MorsePreferences::checkNvsSpace();     // warn on the display when settings storage runs low
     }
 #else
     displayStartUp(volt);
+    MorsePreferences::checkNvsSpace();       // warn on the display when settings storage runs low
 #endif
    // DEBUG("Startup display done");
     while (Serial.available())        // remove spurious input from Serial port
@@ -4148,15 +4156,15 @@ void m32Put(String type, String token, String value) {                    /// PU
           MorsePreferences::useCustomChars = true;
           MorsePreferences::customCharSet = value;
         }
+        koch.setup();                                  // clamps kochFilter/bounds before we persist them
         MorsePreferences::writePreferences("morserino");
-        koch.setup();
         MorseJSON::jsonOK();
       }
       else if (token == "clear") {
         MorsePreferences::useCustomChars = false;
         MorsePreferences::customCharSet = "";
-        MorsePreferences::writePreferences("morserino");
         koch.setup();
+        MorsePreferences::writePreferences("morserino");
         MorseJSON::jsonOK();
       }
       else
@@ -4174,8 +4182,10 @@ void m32Put(String type, String token, String value) {                    /// PU
       if (token == "store") {
         int i = value.toInt() -1;
         if (i >= 0 && i <= 7 )  {
-            MorsePreferences::doWriteSnapshot(i, MorsePreferences::menuPtr);      /// has to be a value 0 .. 7, therefore i-1
-            MorseJSON::jsonOK();
+            if (MorsePreferences::doWriteSnapshot(i, MorsePreferences::menuPtr))  /// has to be a value 0 .. 7, therefore i-1
+                MorseJSON::jsonOK();
+            else
+                MorseJSON::jsonError("SNAPSHOT STORE FAILED - NVS FULL?");
         }
         else {
             MorseJSON::jsonError("INVALID SNAPSHOT NUMBER");
@@ -4510,6 +4520,10 @@ boolean setParameter(String token, String value) {      // change a parameter, r
             MorsePreferences::handleKochSequence();
       else if (i == posCarouselStart)
             MorsePreferences::handleCarouselChange();
+#ifdef CONFIG_SOUND_I2S
+      else if (i == posSidetoneShape)
+            MorseOutput::setSidetoneEnvelope(MorsePreferences::pliste[i].value);
+#endif
       found = true;
       break;
     }

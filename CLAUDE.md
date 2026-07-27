@@ -163,7 +163,10 @@ These were each discovered the hard way. Treat them as invariants:
   (`wpm`, `theme`, `hi`, `hs0_s`). **Snapshots are *not* stored in `morserino`:** each snapshot's
   *contents* live in its own companion namespace `snap0`..`snap7` (written by
   `doWriteSnapshot`, read by `doReadSnapshot`/`MorseJSON::jsonGetSnapshot`); only
-  the `snapShots` existence bitmap is kept in `morserino`.
+  the `snapShots` existence bitmap is kept in `morserino`. Since the 2026-07
+  rework a snapshot is **one versioned blob** (key `s`, name-hash-tagged values,
+  training settings only — see `storedInSnapshot()`/`decodeSnapshot()`); per-key
+  snapshots from older firmware remain readable and are converted on re-store.
 - **Each store is self-versioned:** `morserino` has `version_major`/`version_minor`;
   Radio Cave's blob carries `magic`+`version`; Morsel checks an `hv` key; Morse
   Invaders has a `ver` key (added Phase E). An *absent* stamp is treated as the
@@ -175,6 +178,22 @@ These were each discovered the hard way. Treat them as invariants:
   always carry a one-byte version field and treat an absent stamp as current;
   never load an unversioned blob into a changed struct. Full namespace
   consolidation (M5) was deliberately deferred — the stores already self-validate.
+- **NVS space is a hard budget — every new NVS use must be costed** (learned
+  from the 2026-07 "snapshots not stored" bug). The partition is 20 KB on both
+  variants = 630 entries, of which only **504 are usable** (one 4 KB page is
+  reserved for GC; `nvs_get_stats()` counts it as "free"). The ESP-IDF radio
+  stacks permanently take ~100–130 entries on first WiFi/BT use. Entry costs:
+  primitive = 1; string = 1 + ⌈(len+1)/32⌉; blob = 2 + ⌈len/32⌉; each namespace
+  name = 1. Rules: (a) estimate the entry cost of any new persistent data and
+  prefer **one versioned blob** over many keys (a snapshot is ~7 entries as a
+  blob vs ~34 as keys); (b) **check `put*()`/`begin()` results** — they fail
+  *silently* when NVS is full (error logs are compiled out at
+  `CORE_DEBUG_LEVEL=0`); (c) **remove keys you stop writing** — NVS never
+  shrinks by itself (the multipart player leaked up to ~70 entries this way);
+  (d) key names are **max 15 chars** — longer names fail silently on every
+  put/get (shipped once as `qsoBotContestType`). A boot-time check
+  (`MorsePreferences::checkNvsSpace()`) warns the user on the display when
+  usable free entries drop below 60.
 
 ## 5. Coding conventions
 
@@ -229,7 +248,49 @@ propose an addition to that document — do not improvise silently.
   because it is useful to advanced users, not just developers. When you add a
   new developer doc, put it under `devdocs/` (see `devdocs/README.md`).
 
-## 8. Definition of done (summary)
+## 8. Accessibility duty — new UI text must be voiced
+
+The **M32 Pocket Accessibility Edition** (env `pocketwroom-accessibility`, flag
+`CONFIG_AUDIO_A11Y`) speaks the user interface aloud for blind operators, from
+pre-rendered voice clips in a dedicated SPIFFS store. It is a shipping build of
+this trunk, not a side branch — so **any UI text you add is mute until it is
+given a clip.** Silence is a bug for these users.
+
+**The duty:** every new **preference**, **option value**, **menu entry**, or
+**on-screen message** must be handled for the a11y edition. The only exemption is
+code that is *compiled out* of that build (the games, `CONFIG_CW_GAME`) — those
+need nothing.
+
+Three cases, two of them nearly automatic:
+
+1. **New preference / option value / menu entry** — the extractor reads the
+   firmware's own tables (`menuText[]`, `pliste[]`, `extraItems[]`), so you only
+   have to **re-run it**. If a `parName` is a cryptic abbreviation (`Stop<Next>Rep`),
+   add a `parameter.spokenName` — that field exists precisely because the 12-char
+   display labels are unspeakable.
+2. **New on-screen message / direct screen response** — **NOT** auto-extracted.
+   Display calls are invisible to the tooling, so a new message stays silent
+   forever unless it is explicitly voiced. The agreed mechanism is the **serial
+   protocol text stream** (co-designed with Christoph Daller for this purpose):
+   voice what the device already emits over the protocol rather than scraping
+   display call sites.
+3. **Game-only text** — nothing to do (compiled out).
+
+**Procedure** (from `Software/tools/audio-accessibility/`):
+
+```
+python3 extract_voice_strings.py     # tables -> voice_strings.txt, voice_manifest.json, voice_clips.h
+./generate_audio.sh                  # renders only the MISSING clips (incremental)
+```
+Then flash **both** images — `voice_clips.h` is compiled in (`-t upload`) and the
+clips live in SPIFFS (`-t uploadfs`). Details, knobs and gotchas:
+`devdocs/audio-accessibility/HANDOFF.md`; roadmap: `PRODUCT_PLAN.md` alongside it.
+
+**The cheap check:** re-run the extractor and look at `git diff` on
+`voice_strings.txt`. Empty diff = nothing owed. Any added line = a clip is owed
+before the change is done.
+
+## 9. Definition of done (summary)
 
 A change is done when:
 
@@ -237,4 +298,5 @@ A change is done when:
 2. It follows the hard rules in §3 and the NVS conventions in §4.
 3. Its user interaction conforms to `devdocs/UX_CONVENTIONS.md`.
 4. Manuals (EN + DE) are updated or a TODO is explicitly recorded.
-5. No new ad-hoc patterns were introduced where a documented one exists.
+5. New UI text is voiced for the accessibility edition (§8), or exempt.
+6. No new ad-hoc patterns were introduced where a documented one exists.

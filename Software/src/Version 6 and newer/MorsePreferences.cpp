@@ -13,6 +13,7 @@
  *****************************************************************************************************************************/
 
 #include <Preferences.h>   // ESP 32 library for storing things in non-volatile storage
+#include <nvs.h>           // nvs_get_stats() for the NVS space check
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
@@ -43,6 +44,8 @@ Preferences pref;               // use the Preferences library for storing and r
 
 #define SizeOfArray(x)       (sizeof(x) / sizeof(x[0]))
 
+static void applySnapshot(const char* repository);   // recall a snapshot (blob or legacy format); defined near decodeSnapshot()
+
   /* ////////////////// order of preferences //////////// make sure the next twom items are in sync with the following, up to posSerislOut:
   / this has been moved to morsedefs.h
 enum prefPos : uint8_t
@@ -69,6 +72,7 @@ enum prefPos : uint8_t
 const char * prefName[] = {
   #ifdef CONFIG_SOUND_I2S
             "lineOut",
+            "sidetoneShape",
   #endif
                       "encoderClicks", "sidetoneFreq", "useExtPaddle", "didah",
                       "keyermode", "curtisBTiming", "curtisBDotT", "ACSlength",
@@ -88,7 +92,7 @@ const char * prefName[] = {
             "invaderOrient",
 #endif
 #ifdef CONFIG_QSO_BOT
-            "qsoBotContestType",
+            "qsoBotContest",     // NVS keys are limited to 15 chars: the original "qsoBotContestType" (17) could never be stored
             "qsoBotLevel",
 #endif
             "serialOut"
@@ -118,6 +122,13 @@ parameter MorsePreferences::pliste[] = {
             "To be used for headphones or I/O (line-out)?",
             true,
             {"Phones", "line-out", "l-o: Var. Vol.", "l-o: Lsp Muted"}
+        },
+        {
+            4, 0, 8, 1,                                                 // attack/release time of the CW sidetone envelope, in ms (value+1); default matches the library's original hard-coded 5ms
+            "Tone Softness",
+            "Softness of CW tone edges (attack/release time)",
+            true,
+            {"1 ms", "2 ms", "3 ms", "4 ms", "5 ms", "6 ms", "7 ms", "8 ms", "9 ms"}
         },
   #endif
   {
@@ -602,7 +613,12 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  
 
 
-#define PREFPOS_COMMON_CORE posClicks, posPitch, posTimeOut, posQuickStart, posOutputCase, 
+#ifdef CONFIG_SOUND_I2S
+#define TONESOFTNESS posSidetoneShape,
+#else
+#define TONESOFTNESS
+#endif
+#define PREFPOS_COMMON_CORE posClicks, posPitch, TONESOFTNESS posTimeOut, posQuickStart, posOutputCase,
 #ifdef CONFIG_SOUND_I2S
 #define LINEOUT posLineOut,
 #else
@@ -797,8 +813,13 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                       break;
           case -1:    //////// long press indicates we are done with setting preferences - check if we need to store some of the preferences
 
-          exitFromHere: if (MorsePreferences::useCustomChars)
-                            koch.setCustomChars(getCustomChars()); //// get custom characters
+          exitFromHere: if (MorsePreferences::useCustomChars) {
+                            String chars = getCustomChars(); //// get custom characters
+                            if (chars.length() > 0)
+                                koch.setCustomChars(chars);
+                            // else: an empty re-upload keeps the previously active custom
+                            // set/bounds rather than silently wiping a working configuration
+                        }
                         if (protocolActive() && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
 
@@ -1207,7 +1228,10 @@ void MorsePreferences::resetGameScores() {
     p.begin("m32game",   false); p.clear();                      p.end();   // Invaders high-score table
     p.begin("morsel",    false); p.remove("hi"); p.remove("hv"); p.end();   // Morsel scores (keep wlen)
     p.begin("radiocave", false); p.remove("save");               p.end();   // Radio Cave save/progress
-    p.begin("gridgame",  false); p.clear();                      p.end();   // Trailblazer + Fox Hunt high scores
+    p.begin("gridgame",  false);                                            // Trailblazer + Fox Hunt + Memory Chain
+    p.remove("tb");  p.remove("tbv");  p.remove("fh");  p.remove("fhv");    //   high-score tables
+    p.remove("mc");  p.remove("mcv");  p.remove("mcc"); p.remove("mccv");   //   (keep "mcopt" — Memory Chain's lobby settings)
+    p.end();
     MorseOutput::clearScrollLines();
     MorseOutput::printOnScroll(1, BOLD, 0, "Scores cleared");
     MorseOutput::refreshDisplay();
@@ -1311,13 +1335,20 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                       temp = val + maxi - 2*mini + vstep  + t*vstep;
                       pliste[pos].value = (temp % (maxi - mini +vstep)) + mini;
                   }
-                  if (pos == posKochSeq)
-                      MorsePreferences::handleKochSequence();
+                  if (pos == posKochSeq) {
+                      if (!MorsePreferences::handleKochSequence()) {
+                          MorseOutput::printOnScroll(2, BOLD, 0, "No custom set");
+                          delay(700);
+                      }
+                  }
                   else if (pos == posCarouselStart && pliste[posKochSeq].value == 3)
                       MorsePreferences::handleCarouselChange();
-#ifdef CONFIG_SOUND_I2S 
+#ifdef CONFIG_SOUND_I2S
                   else if (pos == posLineOut) {
                       MorseOutput::soundEventHandler();
+                  }
+                  else if (pos == posSidetoneShape) {
+                      MorseOutput::setSidetoneEnvelope(pliste[pos].value);
                   }
 #endif
             
@@ -1394,44 +1425,38 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
 }   // end of function adjustKeyerPreference
 
 
-void MorsePreferences::handleKochSequence() {
+boolean MorsePreferences::handleKochSequence() {  // returns false if Custom Chars was requested but no character set is available (yet)
     MorsePreferences::useCustomChars = false;
-    switch (MorsePreferences::pliste[posKochSeq].value) {
-      case 3:                                                 // LICW
-              handleCarouselChange();
-              break;
-      case 4:                                                 // Custom Chars
-              MorsePreferences::useCustomChars = true;
-      default:                                                // all others are treated the same
-              MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = 51;
-              MorsePreferences::kochMinimum = 1;
-              MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
-              koch.setup();
+    if (MorsePreferences::pliste[posKochSeq].value == 4) {      // Custom Chars
+        String chars = MorsePreferences::customCharSet;
+        if (chars.length() == 0)
+            chars = getCustomChars();                            // try to (re-)read it from the file player right away
+        if (chars.length() == 0)
+            return false;                                        // none available - leave the current mode/bounds untouched
+        MorsePreferences::useCustomChars = true;
+        MorsePreferences::customCharSet = chars;
     }
+    koch.setup();                                                 // setKochChars()/setCustomChars() derive the correct bounds
+    return true;
 }
 
 void MorsePreferences::handleCarouselChange() {
-      MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = koch.setupLICWkochChars(MorsePreferences::pliste[posCarouselStart].value);
-      MorsePreferences::kochMinimum = kochCharsLength > 18 ? 19 : 1;
-//DEBUG("@ 842: kMin: " + String(MorsePreferences::kochMinimum) + " kMax: " + String(MorsePreferences::kochMaximum));
-      MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
-      koch.setup();
+      koch.setup();                                               // setKochChars() case 3 derives the LICW bounds from posCarouselStart
 }
 
 
 /////////////// READING and WRITING parameters from / into Non Volatile Storage, using ESP32 preferences
 
 void MorsePreferences::readPreferences(const char* repository) {
-      uint8_t temp, tempInt;
-      boolean morserino = (strcmp(repository, "morserino") == 0);
-      pref.begin(repository, morserino ? false : true);
-      // ... rest of function unchanged, just remove repName references
-      // and use 'repository' directly wherever repName was used
+      if (strcmp(repository, "morserino") != 0) {          // snapshots have their own (blob-capable) reader
+          applySnapshot(repository);
+          return;
+      }
+      uint8_t temp;
+      uint32_t tempInt;                                    // holds loraQRG — was uint8_t, which truncated the stored QRG on read
+      pref.begin(repository, false);
 
     /// new code for reading preferences values - we check if we have a value, and if yes, we use it; if no, we use and write a default value
-    /// some things we get from permanent memory, only when NOT restoring from a snapshot
-
-    if (morserino) {                           // == NOT from snapshot
 
       MorsePreferences::wlanSSID = pref.getString("wlanSSID");
       MorsePreferences::wlanPassword = pref.getString("wlanPassword");
@@ -1465,12 +1490,12 @@ void MorsePreferences::readPreferences(const char* repository) {
 
       if ((temp = pref.getUChar("wpm")))
         MorsePreferences::wpm = temp;
-      else if (morserino)
+      else
         pref.putUChar("wpm", MorsePreferences::wpm);
 
       if ((temp = pref.getUChar("sidetoneVolume",255)) != 255)
         MorsePreferences::sidetoneVolume = temp;
-      else if (morserino)
+      else
         pref.putUChar("sidetoneVolume", MorsePreferences::sidetoneVolume);
 
       if (pref.isKey("vAdjust"))
@@ -1500,8 +1525,6 @@ void MorsePreferences::readPreferences(const char* repository) {
       updateMemory(MorsePreferences::snapShots);
 
       MorsePreferences::fileWordPointer = pref.getUInt("fileWordPtr",0); // do not read fileWordPointer from other snapshots! we never write anything there!
-    }  // endif morserino
-
 
     MorsePreferences::useCustomChars = pref.getBool("useCustomChar");
     MorsePreferences::customCharSet = pref.getString("customCharSet", "");
@@ -1512,16 +1535,12 @@ void MorsePreferences::readPreferences(const char* repository) {
 
     if ((temp = pref.getUChar("kochCharsLength")))
        MorsePreferences::kochCharsLength = temp;
-    else if (morserino)
+    else
        pref.putUChar("kochCharsLength", MorsePreferences::kochCharsLength);
 
-//// now we read the preferences into memory that are also restored from snapshots (with two exception: posTimeOut and posSerialOut)
+//// now we read all pliste preferences into memory (snapshot recall happens in applySnapshot instead)
 
     for (uint8_t i = 0; i <= posSerialOut; ++i) {
-      if (!morserino && snapshotExempt(i))
-          continue;
-
-
       if ((temp = pref.getUChar(prefName[i],255)) != 255) {         // we have something in the repository
          if (i == posTimeOut && temp > 3)
             temp = 0;
@@ -1538,7 +1557,7 @@ void MorsePreferences::readPreferences(const char* repository) {
          temp = constrain(temp, pliste[i].minimum, pliste[i].maximum);
          MorsePreferences::pliste[i].value = temp;
       }
-      else if (morserino)
+      else
          pref.putUChar(prefName[i], MorsePreferences::pliste[i].value);
     }
    pref.end();
@@ -1571,13 +1590,182 @@ void MorsePreferences::readVoltagePref() {
   pref.end();
 }
 
+// Which preferences belong in a snapshot. Snapshots are training presets
+// ("different settings for different types of training", see user manual §6.1),
+// so settings that concern the device itself, its connections, or the games are
+// neither stored in snapshots nor changed when one is recalled. Used by
+// writePreferences() (which also removes such keys from old snapshots when they
+// are re-stored), readPreferences() and MorseJSON::jsonGetSnapshot().
+boolean MorsePreferences::storedInSnapshot(prefPos pos) {
+    switch (pos) {
+      case posTimeOut:                    // historic exclusions (see manual)
+      case posSerialOut:
+      // device & UI behaviour:
+      case posClicks:
+      case posQuickStart:
+      // hardware wiring:
+      case posPolarity:
+      case posExtPddlPolarity:
+      case posExtAudioOnDecode:
+      // transmit gates & connectivity:
+      case posKeyExternalTx:
+      case posLoraCwTransmit:
+      case posLoraChannel:
+#ifdef CONFIG_SOUND_I2S
+      case posLineOut:
+      case posSidetoneShape:
+#endif
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+      case posBluetoothOut:
+      case posBluetoothARkey:
+#endif
+      // game / QSO Bot settings:
+#ifdef CONFIG_CW_GAME
+      case posInvaderOrient:
+#endif
+#ifdef CONFIG_QSO_BOT
+      case posQsoBotContestType:
+      case posQsoBotLevel:
+#endif
+          return false;
+      default:
+          return true;
+    }
+}
+
+///////// snapshot blob format (v1) ///////////////////////////////////////////
+//
+// A snapshot is one NVS blob (key "s" in namespace snap0..snap7) instead of
+// ~34 individual keys: ~7 NVS entries per snapshot instead of ~34, on a
+// partition with only 504 usable entries (see CLAUDE.md §4).
+//
+// Layout: version, count, lastExecuted, kochCharsLength, useCustomChars,
+// customCharSet (length + chars), then count x {hash-lo, hash-hi, value} for
+// every in-scope pliste pref. Values are keyed by a 16-bit FNV-1a hash of the
+// pref's NVS key name, so the format is independent of enum order and build
+// variant. Unknown hashes are skipped on read; snapshots written by older
+// firmware (per-key format, no "s" key) are still readable via the legacy
+// branch in decodeSnapshot().
+
+#define SNAP_BLOB_VERSION  1
+#define SNAP_BLOB_MAX      (6 + 51 + 3 * posSerialOut)
+
+static uint16_t prefKeyHash(const char* s) {          // FNV-1a, folded to 16 bit
+    uint32_t h = 2166136261u;
+    while (*s) { h ^= (uint8_t) *s++; h *= 16777619u; }
+    return (uint16_t) (h ^ (h >> 16));
+}
+
+// Read a snapshot's contents — blob (v1) or legacy per-key format — into a
+// value map indexed by prefPos (255 = not contained). Returns false when the
+// namespace does not exist or the blob has an unknown (future) version.
+boolean MorsePreferences::decodeSnapshot(const char* ns, uint8_t vals[], uint8_t &lastExec,
+                                         uint8_t &kochLen, uint8_t &useCustom, String &customSet) {
+    for (uint8_t i = 0; i < posSerialOut; ++i)
+        vals[i] = 255;
+    lastExec = kochLen = useCustom = 0;
+    customSet = "";
+    Preferences snap;
+    if (!snap.begin(ns, true))
+        return false;
+    if (snap.isKey("s")) {
+        uint8_t buf[SNAP_BLOB_MAX];
+        size_t len = snap.getBytes("s", buf, sizeof(buf));
+        snap.end();
+        if (len < 6 || buf[0] != SNAP_BLOB_VERSION)          // foreign format: do not guess
+            return false;
+        uint8_t n = buf[1], l = buf[5];
+        if (l > 51 || len < (size_t) (6 + l + 3 * n))
+            return false;
+        lastExec = buf[2]; kochLen = buf[3]; useCustom = buf[4];
+        uint16_t r = 6;
+        for (uint8_t i = 0; i < l; ++i)
+            customSet += (char) buf[r++];
+        for (uint8_t t = 0; t < n; ++t, r += 3) {
+            uint16_t h = buf[r] | (buf[r + 1] << 8);
+            for (uint8_t i = 0; i < posSerialOut; ++i)
+                if (storedInSnapshot((prefPos) i) && prefKeyHash(prefName[i]) == h) {
+                    vals[i] = buf[r + 2];
+                    break;
+                }
+        }
+        return true;
+    }
+    // legacy per-key snapshot, written by firmware before the blob format
+    for (uint8_t i = 0; i < posSerialOut; ++i)
+        if (storedInSnapshot((prefPos) i))
+            vals[i] = snap.getUChar(prefName[i], 255);
+    lastExec  = snap.getUChar("lastExecuted", 0);
+    kochLen   = snap.getUChar("kochCharsLength", 0);
+    useCustom = snap.getBool("useCustomChar", false) ? 1 : 0;
+    customSet = snap.getString("customCharSet", "");
+    snap.end();
+    return true;
+}
+
+// Recall: apply a snapshot to the running configuration (replaces the former
+// snapshot branch of readPreferences; the value normalisation is the same).
+static void applySnapshot(const char* repository) {
+    uint8_t vals[posSerialOut];
+    uint8_t lastExec, kochLen, useCustom;
+    String customSet; customSet.reserve(52);
+    if (!MorsePreferences::decodeSnapshot(repository, vals, lastExec, kochLen, useCustom, customSet))
+        return;
+    MorsePreferences::useCustomChars = (useCustom != 0);
+    MorsePreferences::customCharSet  = customSet;
+    if (lastExec)
+        MorsePreferences::menuPtr = lastExec;
+    if (kochLen)
+        MorsePreferences::kochCharsLength = kochLen;
+    for (uint8_t i = 0; i < posSerialOut; ++i) {
+        if (!storedInSnapshot((prefPos) i) || vals[i] == 255)
+            continue;
+        uint8_t temp = vals[i];
+        if (pliste[i].stepValue != 1)
+            if (uint8_t d = temp % pliste[i].stepValue)     // bring odd values in line with the step increment
+                temp -= d;
+        temp = constrain(temp, pliste[i].minimum, pliste[i].maximum);
+        pliste[i].value = temp;
+    }
+    handleKochSequence();
+    updateTimings();
+}
+
+///////// boot-time NVS space check ///////////////////////////////////////////
+// The usual user runs without a serial monitor, so a full NVS must be
+// announced on the display — with a remedy, not just a complaint: deleting
+// snapshots or using "Reset Scores" in the preferences frees entries.
+#define NVS_LOW_WATER 60
+
+void MorsePreferences::checkNvsSpace() {
+    nvs_stats_t s;
+    if (nvs_get_stats(NULL, &s) != ESP_OK)
+        return;
+    const size_t reserved = 126;                  // one 4 KB page NVS always keeps for garbage collection
+    // Compute from LIVE entries (used), not from free_entries: erased-but-not-
+    // yet-compacted entries are missing from free_entries until garbage
+    // collection runs, which would make us cry wolf right after cleanups.
+    size_t capacity = (s.total_entries > reserved) ? s.total_entries - reserved : 0;
+    size_t usable = (capacity > s.used_entries) ? capacity - s.used_entries : 0;
+    if (usable >= NVS_LOW_WATER)
+        return;
+    Serial.println("NVS low: only " + String(usable) + " usable entries left");
+    MorseOutput::clearStatusLine();
+    MorseOutput::clearScrollLines();
+    MorseOutput::printOnStatusLine(true, 0, "Settings mem.");
+    MorseOutput::printOnScroll(0, BOLD,    0, "almost full!");
+    MorseOutput::printOnScroll(1, REGULAR, 0, "Free: delete");
+    MorseOutput::printOnScroll(2, REGULAR, 0, "Snaps/Scores");
+    MorseOutput::refreshDisplay();
+    delay(3500);
+}
+
 void MorsePreferences::writePreferences(const char* repository) {
-  boolean morserino = (strcmp(repository, "morserino") == 0);
+  // Snapshots are written as one blob by doWriteSnapshot() since the blob
+  // format — this function only ever persists the "morserino" namespace now.
   pref.begin(repository, false);
-  // ... rest unchanged, remove repName, use repository directly
-  if (morserino) {                                                    // the following things are not stored in snapshots anymore,
-                                                                      //only in the ""Morserino" permanent memory
-     pref.putUChar("brightness", MorsePreferences::oledBrightness);  // if not snapshots, store current screen brightness
+
+     pref.putUChar("brightness", MorsePreferences::oledBrightness);  // store current screen brightness
      if (MorsePreferences::pliste[posSerialOut].value != pref.getUChar("serialOut")) {
          pref.remove("serialOut");
          pref.putUChar("serialOut", MorsePreferences::pliste[posSerialOut].value);
@@ -1633,28 +1821,8 @@ void MorsePreferences::writePreferences(const char* repository) {
           MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
       }
 #endif
-  } else {
-      pref.remove("wlanSSID");
-      pref.remove("wlanPassword");
-      pref.remove("wlanTRXPeer");
-      pref.remove("wlanSSID1");
-      pref.remove("wlanPassword1");
-      pref.remove("wlanTRXPeer1");
-      pref.remove("wlanSSID2");
-      pref.remove("wlanPassword2");
-      pref.remove("wlanTRXPeer2");
-      pref.remove("wlanSSID3");
-      pref.remove("wlanPassword3");
-      pref.remove("wlanTRXPeer3");
-      // pref.remove("serialOut");
-      pref.remove("lastExecuted");    // This is ONLY written to snapshots here (a separate function is used to store it in normal permanent memory)
-      pref.putUChar("lastExecuted", MorsePreferences::menuPtr);   // store last executed command in snapshots
-      //DEBUG("@1051: lastExecuted: " + String(pref.getUChar("lastExecuted")));
-  }
 
-
-
-  // now we write all other preferences into the respective repository
+  // now we write all other preferences into the repository
 
   if (MorsePreferences::useCustomChars != pref.getBool("useCustomChar")) {
       pref.remove("useCustomChar");
@@ -1672,37 +1840,32 @@ void MorsePreferences::writePreferences(const char* repository) {
   }
 
   for (uint8_t i = 0; i < posSerialOut; ++i) {                                       // for all these preferences
-        if (!morserino && snapshotExempt(i))                                          // some prefs are never written to snapshots
-            continue;
         if (MorsePreferences::pliste[i].value != pref.getUChar(prefName[i],255) ) {     // stored value is different,
 //          DEBUG("@1347 " + String(prefName[i]) + " old: " + String(pref.getUChar(prefName[i],255)) + " new: " + String(MorsePreferences::pliste[i].value));
             pref.putUChar(prefName[i], MorsePreferences::pliste[i].value);            // so we need to store new value
-            switch (i) {  
+            switch (i) {
                case posLoraChannel:
-                    if (morserino)
 #ifdef LORA_RADIOLIB
-                      radio.setSyncWord(MorsePreferences::pliste[posLoraChannel].value == 0 ? 0x27 : 0x66);
+                    radio.setSyncWord(MorsePreferences::pliste[posLoraChannel].value == 0 ? 0x27 : 0x66);
 #endif
                     break;
               case posGoertzelBandwidth:
-                    if (morserino)
-                      Goertzel::setup();
+                    Goertzel::setup();
                     break;
 #ifdef CONFIG_BLE_SERIAL
               case posBluetoothOut:                               // selected away from BLE Serial: stop BLE serial now;
-                    if (morserino && pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT)
+                    if (pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT)
                       MorseBleSerial::stopWithNotice("BLE serial off", 300);
                     break;                                        // selected TO it: the top-menu backstop starts it
 #endif
               case posKochSeq:
-                    if (morserino && !MorsePreferences::useCustomChars)
+                    if (!MorsePreferences::useCustomChars)
                       koch.setup();
                     break;
               case posAbbrevLength:
               case posWordLength:
               case posCarouselStart:
-                    if (morserino)
-                      koch.setup();
+                    koch.setup();
                    break;
             }     // end of "special cases"
       }           // end of "stored value is different"
@@ -1765,32 +1928,116 @@ boolean MorsePreferences::storeSnapshot(uint8_t menu) {        // return true if
     adjustKeyerPreference(posSnapStore);
     Buttons:: volButton.Update();
     if (MorsePreferences::memPtr != 8)  {
-        doWriteSnapshot(memPtr, menu);
-        text = "Snap " + String(MorsePreferences::memPtr+1) + " STORED ";
+        boolean ok = doWriteSnapshot(memPtr, menu);
+        text = "Snap " + String(MorsePreferences::memPtr+1) + (ok ? " STORED " : " FAILED!");
         if (protocolActive())
           MorseJSON::jsonCreate("message", text, "");
         MorseOutput::printOnScroll(2, BOLD, 0, text);
-        delay(1000);
-        return true;
+        delay(ok ? 1000 : 2500);
+        return ok;
       }
       return false;
 }
 
-void MorsePreferences::doWriteSnapshot(uint8_t storePos, uint8_t menuPos) {
-      uint8_t mask = 1;
+// Serialise one snapshot into the blob format and write it (format: see
+// decodeSnapshot). vals[] is a prefPos-indexed value map (255 = not contained).
+// On success any legacy per-key entries are removed (frees ~30 entries per
+// old-format snapshot); on failure the old content stays intact.
+static boolean storeSnapshotBlob(const char* ns, const uint8_t vals[], uint8_t lastExec,
+                                 uint8_t kochLen, uint8_t useCustom, const String &customSet) {
+      uint8_t buf[SNAP_BLOB_MAX];
+      uint16_t w = 0;
+      buf[w++] = SNAP_BLOB_VERSION;
+      uint16_t countAt = w++;                                  // patched below
+      buf[w++] = lastExec;
+      buf[w++] = kochLen;
+      buf[w++] = useCustom;
+      uint8_t l = customSet.length() > 51 ? 51 : customSet.length();
+      buf[w++] = l;
+      for (uint8_t i = 0; i < l; ++i)
+          buf[w++] = customSet[i];
+      uint8_t n = 0;
+      for (uint8_t i = 0; i < posSerialOut; ++i) {
+          if (!storedInSnapshot((prefPos) i) || vals[i] == 255)
+              continue;
+          uint16_t h = prefKeyHash(prefName[i]);
+          buf[w++] = h & 0xFF;
+          buf[w++] = h >> 8;
+          buf[w++] = vals[i];
+          ++n;
+      }
+      buf[countAt] = n;
+
+      Preferences snap;
+      boolean ok = false;
+      if (snap.begin(ns, false)) {
+          ok = (snap.putBytes("s", buf, w) == w);              // fails (0) when NVS is full — old content stays intact
+          if (ok) {                                            // only then drop any legacy per-key entries
+              for (uint8_t i = 0; i <= posSerialOut; ++i)
+                  snap.remove(prefName[i]);
+              snap.remove("lastExecuted");
+              snap.remove("kochCharsLength");
+              snap.remove("useCustomChar");
+              snap.remove("customCharSet");
+          }
+          snap.end();
+      }
+      return ok;
+}
+
+boolean MorsePreferences::doWriteSnapshot(uint8_t storePos, uint8_t menuPos) {
       String snapname; snapname.reserve(8);
 
       MorsePreferences::menuPtr = menuPos;     // also store last menu selection
       snapname = "snap" + String(storePos);
-      writePreferences(snapname.c_str());
-      /// insert the correct bit into p_snapShots & update memory variables
-      mask = mask << storePos;
-      MorsePreferences::snapShots = MorsePreferences::snapShots | mask;
-      updateMemory(MorsePreferences::snapShots);
-      pref.begin("morserino", false);             // open the namespace as read/write
-      pref.remove("snapShots");
-      pref.putUChar("snapShots", MorsePreferences::snapShots);
-      pref.end();
+
+      uint8_t vals[posSerialOut];              // current settings as a value map
+      for (uint8_t i = 0; i < posSerialOut; ++i)
+          vals[i] = storedInSnapshot((prefPos) i) ? pliste[i].value : 255;
+
+      boolean ok = storeSnapshotBlob(snapname.c_str(), vals, menuPos,
+                                     MorsePreferences::kochCharsLength,
+                                     MorsePreferences::useCustomChars ? 1 : 0,
+                                     MorsePreferences::customCharSet);
+
+      if (ok) {                                                // mark the slot as used only on success:
+          MorsePreferences::snapShots |= (1 << storePos);      // a failed store must not create a phantom snapshot
+          updateMemory(MorsePreferences::snapShots);
+          pref.begin("morserino", false);
+          pref.remove("snapShots");
+          pref.putUChar("snapShots", MorsePreferences::snapShots);
+          pref.end();
+      }
+      return ok;
+}
+
+// Boot-time migration: convert legacy per-key snapshots (written by older
+// firmware) to the blob format. Converted snapshots are skipped, so this is a
+// cheap no-op on every boot after the first. Each conversion transiently needs
+// ~7 free entries and then frees ~30, so it also works on a nearly full
+// partition; a failed conversion is simply retried on the next boot.
+void MorsePreferences::convertLegacySnapshots() {
+    for (uint8_t s = 0; s < 8; ++s) {
+        if (!(MorsePreferences::snapShots & (1 << s)))
+            continue;
+        String ns = "snap" + String(s);
+        Preferences p;
+        if (!p.begin(ns.c_str(), true))
+            continue;                                        // bitmap set but namespace missing — nothing to convert
+        boolean hasBlob = p.isKey("s");
+        p.end();
+        if (hasBlob)
+            continue;
+        uint8_t vals[posSerialOut];
+        uint8_t lastExec, kochLen, useCustom;
+        String customSet; customSet.reserve(52);
+        if (!decodeSnapshot(ns.c_str(), vals, lastExec, kochLen, useCustom, customSet))
+            continue;
+        boolean ok = storeSnapshotBlob(ns.c_str(), vals, lastExec, kochLen, useCustom, customSet);
+        if (!m32protocol)
+            Serial.println("NVS snapshot " + String(s + 1)
+                            + (ok ? ": converted to blob format" : ": conversion FAILED (NVS full?) - retry next boot"));
+    }
 }
 
 
@@ -2279,7 +2526,18 @@ void MorsePreferences::writeFilePartData() {
         snprintf(key, sizeof(key), "fPartN%d", i);
         pref.putString(key, fileParts[i].name);
     }
-    
+
+    // Remove keys of parts that no longer exist. They used to be left behind
+    // forever: a 16-part file followed by a 2-part file leaked 14 x 5 NVS
+    // entries — a sixth of the whole partition (removing absent keys is a no-op).
+    for (int i = filePartCount; i < MAX_FILE_PARTS; i++) {
+        char key[12];
+        snprintf(key, sizeof(key), "fPartWP%d", i); pref.remove(key);
+        snprintf(key, sizeof(key), "fPartS%d", i);  pref.remove(key);
+        snprintf(key, sizeof(key), "fPartE%d", i);  pref.remove(key);
+        snprintf(key, sizeof(key), "fPartN%d", i);  pref.remove(key);
+    }
+
     pref.end();
 }
  
@@ -2387,17 +2645,29 @@ void Koch::setup() {                                                // create th
 }
 
 void Koch::setKochChars(uint8_t sequence) { // define the demanded Koch character set: Koch sequenze: 0 = native/JLMC, 1 = LCWO, 2 = CW Academy, 3 = LICW, 4 = Custom
+    // Bounds bookkeeping lives here (mirroring setCustomChars()) so every caller of
+    // koch.setup() gets correct kochCharsLength/kochMinimum/kochMaximum for the
+    // selected sequence, not just the ones that also call handleKochSequence()/
+    // handleCarouselChange().
     switch (sequence) {
         case 1: kochCharSet = lcwoKochChars;
                 break;
         case 2: kochCharSet = cwacKochChars;
                 break;
-        case 3: setupLICWkochChars(MorsePreferences::pliste[posCarouselStart].value);
+        case 3: {
+                uint8_t l = setupLICWkochChars(MorsePreferences::pliste[posCarouselStart].value);
                 kochCharSet = licwKochChars;
-                break;
+                MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = l;
+                MorsePreferences::kochMinimum = l > 18 ? 19 : 1;
+                MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
+                return;
+                }
         default:kochCharSet = morserinoKochChars;
                 break;
     }
+    MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = sizeof(adaptiveProbabilities) / sizeof(adaptiveProbabilities[0]);
+    MorsePreferences::kochMinimum = 1;
+    MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
 }
 
 
@@ -2437,13 +2707,33 @@ uint8_t Koch::setupLICWkochChars(uint8_t start) {  // set up the string of chara
  
 void Koch::setCustomChars(const String& chars) {          // define the custom character set
    MorsePreferences::customCharSet = chars;
+   uint8_t capacity = sizeof(adaptiveProbabilities) / sizeof(adaptiveProbabilities[0]);
+   if (chars.length() == 0) {
+       // Nothing to index into. Fall back to the full built-in range instead of
+       // clamping (and persisting) the user's saved lesson down to 1 - this branch
+       // is reachable even with useCustomChars still true (e.g. an empty NVS copy
+       // before the first file upload), so it must not discard that lesson value.
+       MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = capacity;
+       MorsePreferences::kochMinimum = 1;
+       return;
+   }
+   // Koch Lesson indexes into this set for Custom Chars, so its range must track
+   // the set's actual length (capped to the adaptiveProbabilities[] capacity).
+   uint8_t len = _min((size_t) chars.length(), (size_t) capacity);
+   MorsePreferences::kochCharsLength = MorsePreferences::kochMaximum = len;
+   MorsePreferences::kochMinimum = 1;
+   MorsePreferences::kochFilter = constrain(MorsePreferences::kochFilter, MorsePreferences::kochMinimum, MorsePreferences::kochMaximum);
 }
 
 String Koch::getNewChar() {                     // for Koch Learn New Character
+  if (MorsePreferences::useCustomChars)
+    return String(MorsePreferences::customCharSet.charAt(MorsePreferences::kochFilter - 1));
   return String(kochCharSet.charAt(MorsePreferences::kochFilter - 1));
 }
 
 String Koch::getKochChar(uint8_t i) {           // get a String consisting of a single character at pos i in kochCharSet (i starting with 0)
+  if (MorsePreferences::useCustomChars)
+    return String(MorsePreferences::customCharSet.charAt(i));
   return String(kochCharSet.charAt(i));
 }
 
@@ -2452,8 +2742,9 @@ String Koch::getRandomChar(int maxl) {                  // get a random characte
     result.reserve(7);
 
     if (MorsePreferences::useCustomChars) {
+        String activeSet = getCharSet();                       // Koch Lesson limits the pool to its first N custom characters
         for (int i = 0; i < maxl; ++i )
-            result += MorsePreferences::customCharSet.charAt(random(MorsePreferences::customCharSet.length()));
+            result += activeSet.charAt(random(activeSet.length()));
     }
     else {
         int endk =  MorsePreferences::kochFilter;               // kochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=KA+SNE@:"
@@ -2538,7 +2829,7 @@ String Koch::getInitChar(int maxl)
 String Koch::getCharSet()
 {
   if (MorsePreferences::useCustomChars)
-    return MorsePreferences::customCharSet;
+    return MorsePreferences::customCharSet.substring(0, _min((size_t) MorsePreferences::kochFilter, MorsePreferences::customCharSet.length()));
   else
     return kochCharSet.substring(0, MorsePreferences::kochFilter);
 }

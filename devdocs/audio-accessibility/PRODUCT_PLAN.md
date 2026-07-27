@@ -151,6 +151,16 @@ model applied to pandoc. The pipeline is already 90% there: `build.sh` enables
 3. **Pipeline + installer** (WS 3) — manifests, CI clips, accessible page.
 4. **Docs + beta** (WS 4 + 5) — telemetry-driven polish afterwards.
 
+## Known tooling gap — extractor models the *mainline* build, not this one
+
+`extract_voice_strings.py` sets `POCKET_MACROS` including `CONFIG_CW_GAME`, i.e. it
+extracts strings for the **mainline pocketwroom** config. The a11y build unsets that
+flag, so today the clip set carries dead game entries (`Trailblazer`, `Fox Hunt`,
+`Memory Chain` — harmless, ~20 KB). The asymmetric risk is the reverse case: if the
+a11y build ever gains text the mainline lacks, the extractor would **miss** it.
+Fix when convenient: give the extractor an edition switch (mirroring the env's
+`build_unflags`) so it models the build it actually feeds. Cheap, one-line-ish.
+
 ## Open decisions for the maintainer
 
 - Config-flag name for the WiFi-update strip (`CONFIG_NO_WIFI_FLASH`?).
