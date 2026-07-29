@@ -19,8 +19,8 @@ These apply to **every** command unless an entry says otherwise.
 
 | Aspect | Specification | Source |
 |---|---|---|
-| Physical | USB‑CDC serial. | — |
-| Baud | **115200**, 8‑N‑1, no flow control. | `m32_config_tool.html:680`, `m32_file_manager.html:287` |
+| Physical | USB‑CDC serial; additionally (builds with `CONFIG_BLE_SERIAL`, preference "Bluetooth Use" set to *BLE Serial*) a **BLE Nordic‑UART‑Service transport** carrying the identical byte stream: service `6E400001-B5A3-F393-E0A9-E50E24DCCA9E`, RX write char `…0002`, TX notify char `…0003`, name `Morserino-32` in the scan response, no bonding, one central. Notifications chunk at the negotiated MTU (arbitrary split points); per‑transport handshake and `protocol/off` (case‑insensitive on both transports). | `MorseBleSerial.cpp`, `M32 Protocol.md` "Transports" |
+| Baud | **115200**, 8‑N‑1, no flow control (USB transport). | `m32_config_tool.html:680`, `m32_file_manager.html:287` |
 | Host→device framing | ASCII text line, terminated by a **single `\n` (LF, ASCII 10)**. A trailing `\r` is tolerated (the line is `trim()`‑med). | `m32_v6.ino:3699,3705,3738` |
 | Device→host framing | Exactly **one JSON object** per reply (`{ … }`), serialized with ArduinoJson. **No terminator, no leading/trailing whitespace, no newline.** Clients must frame by balanced braces or a quiet‑time timeout. | `MorseJSON.cpp` (all `serializeJson(doc, Serial)`) |
 | Encoding | Command + args are ASCII. Payload values are UTF‑8 text; binary payloads use **base64** (`file/data` only). | — |

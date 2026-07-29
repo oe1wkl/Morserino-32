@@ -16,7 +16,13 @@
 #include "MorseOutput.h"
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
+#include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
+#ifdef CONFIG_BLE_SERIAL
+#include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
+#endif
 #include "MorseVoice.h"
+
+static void suspendBleSerialForWifi();   // defined below setupWifi(); no-op without CONFIG_BLE_SERIAL
 
 #ifdef CONFIG_TFT
 #include "MorseGameMode.h"
@@ -267,7 +273,7 @@ void MorseMenu::menu_() {
       MorseOutput::clearDisplay();
       MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Stop BT Kbd");
       //MorseOutput::printOnScroll(2, REGULAR, 0, "Needs Reboot");
-      if (m32protocol)
+      if (protocolActive())
               MorseJSON::jsonCreate("message", "Stop BT Kbd", "");
       MorseOutput::refreshDisplay();
       delay (1400);
@@ -294,9 +300,19 @@ void MorseMenu::menu_() {
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
         serialEvent();
+#ifdef CONFIG_BLE_SERIAL
+        // THE top-menu backstop (the only one): every path to the top menu
+        // ends in this wait loop — menu_() falls straight through to here,
+        // and _wifi_* functions / the selector changed (locally or via PUT
+        // config) return here without re-entering menu_(). Cheap when
+        // running (one flag test); a failed init latches and won't retry.
+        if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT && !MorseBleSerial::isRunning)
+          MorseBleSerial::init();
+#endif
 #ifdef CONFIG_AUDIO_A11Y
         MorseVoice::tick();                 // drive async menu announcements (non-blocking)
 #endif
+
 
         if (disp != MorsePreferences::newMenuPtr) {
           disp = MorsePreferences::newMenuPtr;
@@ -317,7 +333,7 @@ void MorseMenu::menu_() {
             const bool announceQuickStart = true;
 #endif
             if (announceQuickStart) {
-              if (m32protocol)
+              if (protocolActive())
                 MorseJSON::jsonCreate("message", "Quick Start", "");
               MorseOutput::printOnScroll(2, REGULAR, 1, "QUICK START");
               MorseOutput::refreshDisplay();
@@ -429,7 +445,7 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
 #ifdef CONFIG_AUDIO_A11Y
   MorseVoice::announce(menuText[ptr]);          // a11y: speak the highlighted menu entry
 #endif
-  if (m32protocol) {
+  if (protocolActive()) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
       MorseJSON::jsonMenu( MorseMenu::getMenuPath(ptr), (unsigned int) ptr, (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(ptr));
   }
@@ -464,7 +480,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
 //  const char* peerHost;
   String s;
 
-  if (m32protocol && (MorsePreferences::menuPtr != _kochSel))
+  if (protocolActive() && (MorsePreferences::menuPtr != _kochSel))
       MorseJSON::jsonActivate(ACT_ON);
 
   m32state = active_loop;
@@ -479,8 +495,9 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
   switch (MorsePreferences::menuPtr) {
     case  _keyer:  /// keyer
                 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-                  if ((MorsePreferences::pliste[posBluetoothOut].value) != 0) {
-                    // Initialize Bluetooth System
+                  if (MorseBluetooth::keyboardMode() != 0) {
+                    // Initialize Bluetooth System (keyboardMode() is 0 when the
+                    // Bluetooth Use selector assigns BLE to the serial protocol)
                     MorseBluetooth::initializeBluetooth();
                   }
                 #endif
@@ -670,7 +687,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 else {
                     MorseOutput::clearDisplay();
                     MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
-                    if (m32protocol)
+                    if (protocolActive())
                       MorseJSON::jsonCreate("message", "Connecting...", "");
 
                     if (!setupWifi())
@@ -693,7 +710,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 morseState = morseTrx;
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(1, REGULAR, 0, "Start CW Trx" );
-                if (m32protocol)
+                if (protocolActive())
                   MorseJSON::jsonCreate("message", "Start CW Transceiver", "");
                 clearPaddleLatches();
                 goto setupDecoder;
@@ -782,7 +799,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 encoderState = volumeSettingMode;
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnScroll(1, REGULAR, 0, "Start Decoder" );
-                if (m32protocol)
+                if (protocolActive())
                   MorseJSON::jsonCreate("message", "Start Decoder", "");
       setupDecoder:
                 speedChanged = true;
@@ -802,9 +819,13 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       case _wifi_check:
       case _wifi_upload:
       case _wifi_update:
+                  // uniform for ALL _wifi_* functions (even display-only _wifi_mac):
+                  // one rule, no per-function special case to drift
+                  suspendBleSerialForWifi();
                   MorseWiFi::menuExec((uint8_t) MorsePreferences::menuPtr);
                   break;
       case _wifi_select:
+                  suspendBleSerialForWifi();
                   MorseWiFi::menuNetSelect();
                   break;
       case  _goToSleep: /// deep sleep
@@ -815,10 +836,23 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
   return false;
 }   /// end menuExec()
 
+#ifdef CONFIG_BLE_SERIAL
+// whenever any code path brings up the WiFi radio, BLE Serial is suspended
+// for the remainder of the session (PLAN D8; the wait-loop backstop restarts
+// it at the top menu). The radio primitives in MorseWiFi carry the same call
+// as defense in depth — these menu-level hooks are what the manuals promise
+// (uniform for every _wifi_* function, including display-only ones).
+static void suspendBleSerialForWifi() { MorseBleSerial::suspendForWifi(); }
+#else
+static inline void suspendBleSerialForWifi() {}
+#endif
+
 boolean MorseMenu::setupWifi() {
   String peer;
   peer.reserve(24);
   const char* peerHost;
+
+  suspendBleSerialForWifi();
 
 //// if not true WiFi has not been configured or is not available, hence return false!
   if (! MorseWiFi::wifiConnect()) {
@@ -857,6 +891,7 @@ void MorseMenu::wifiWarmup() {
 
 void MorseMenu::setupESPNow() {
   // init wifi for espnow
+      suspendBleSerialForWifi();
       WiFi.mode(WIFI_STA);
       WiFi.disconnect (false, true);
       EspNowIsActive = true;
@@ -880,7 +915,7 @@ void MorseMenu::showStartDisplay(const String& l0, const String& l1, const Strin
         MorseOutput::printOnScroll(1, REGULAR, 0, l1);
     if (l2.length())
         MorseOutput::printOnScroll(2, REGULAR, 0, l2);
-    if (m32protocol)
+    if (protocolActive())
         MorseJSON::jsonCreate("message", l0  + l1 + l2, "");
     delay(pause);
     cleanupScreen();
@@ -956,7 +991,7 @@ int8_t MorseMenu::selectFilePart() {
                     String(MorsePreferences::fileParts[selected + 1].name));
  
             // Report to serial client (like menuDisplay does)
-            if (m32protocol) {
+            if (protocolActive()) {
                 MorseJSON::jsonFilePart(
                     String(MorsePreferences::fileParts[selected].name),
                     selected,
@@ -979,18 +1014,18 @@ int8_t MorseMenu::selectFilePart() {
             case 1:
                 MorsePreferences::filePartSelected = selected;
                 MorsePreferences::writeFilePartData();
-                if (m32protocol)
+                if (protocolActive())
                     MorseJSON::jsonActivate(ACT_SET);
                 return selected;
             case -1:
-                if (m32protocol)
+                if (protocolActive())
                     MorseJSON::jsonActivate(ACT_CANCELLED);
                 return -1;
         }
  
         Buttons::volButton.Update();
         if (Buttons::volButton.clicks == -1) {
-            if (m32protocol)
+            if (protocolActive())
                 MorseJSON::jsonActivate(ACT_CANCELLED);
             return -1;
         }

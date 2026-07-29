@@ -187,11 +187,12 @@ static const VoiceEntry voiceLookup[] = {
   {"BC2: k m y", "49b77fe9"},
   {"BC2: q x v", "7bc3d778"},
   {"BC2: z j /", "94cbceb9"},
+  {"BLE Serial", "964032f6"},
   {"Bandwidth", "7d724e4b"},
   {"Beginner", "2ddabc33"},
   {"Blues", "aca2a3c0"},
   {"Bluetooth A R character", "b4c0646b"},
-  {"Bluetooth keyboard output", "5f4e4e72"},
+  {"Bluetooth use", "48f049df"},
   {"Bravo", "01a2da07"},
   {"C H", "63420e4f"},
   {"CQ WW", "e9292f77"},
@@ -224,6 +225,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Darkroom", "1d5c81e3"},
   {"Decoded", "503aaffc"},
   {"Decoded audio on I O port", "dee91ebc"},
+  {"Decoded output", "60b34aa1"},
   {"Delta", "db1f4ab5"},
   {"Disp MAC Addr", "5689da3f"},
   {"Display off", "6e8b9688"},
@@ -297,6 +299,7 @@ static const VoiceEntry voiceLookup[] = {
   {"NO SNAPSHOTS", "ef59a97a"},
   {"Narrow", "4a7ab319"},
   {"Never", "6e7b34fa"},
+  {"No Bluetooth", "c45fee59"},
   {"No Tone Shift", "fe361001"},
   {"No limit", "af605ea5"},
   {"No time-out", "d5a2118d"},
@@ -367,9 +370,9 @@ static const VoiceEntry voiceLookup[] = {
   {"Up 1 Half", "4f895838"},
   {"Update Firmw", "b6ec3174"},
   {"Upload File", "fbb7d719"},
+  {"VBand Kbd", "89011465"},
+  {"VBand+Decoded", "4dd3f70a"},
   {"VK/ZL", "9b1d8030"},
-  {"Vband Keying", "321a2b88"},
-  {"Vband+Decoded", "e9a4bd93"},
   {"Veggie", "6fc8ca4b"},
   {"Victor", "82233bce"},
   {"Volume", "bd7a9717"},
@@ -410,6 +413,6 @@ static const VoiceEntry voiceLookup[] = {
   {"u umlaut", "cfdb81f4"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 402;
+static const unsigned int voiceLookupCount = 405;
 
 #endif // VOICE_CLIPS_H_
