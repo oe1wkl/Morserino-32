@@ -325,6 +325,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Phones", "a7ad04a9"},
   {"Plain", "4cd84132"},
   {"Portrait", "1c7444be"},
+  {"Practice Set", "2c91ef54"},
   {"Pro Signs", "a1edbcde"},
   {"QSO Bot", "60d3a124"},
   {"QSO Difficulty", "c73f6a06"},
@@ -413,6 +414,6 @@ static const VoiceEntry voiceLookup[] = {
   {"u umlaut", "cfdb81f4"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 405;
+static const unsigned int voiceLookupCount = 406;
 
 #endif // VOICE_CLIPS_H_
