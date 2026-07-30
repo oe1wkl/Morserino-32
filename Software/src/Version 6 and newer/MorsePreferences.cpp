@@ -1319,7 +1319,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                       pliste[pos].value = (temp % (maxi - mini +vstep)) + mini;
                   }
                   if (pos == posKochSeq) {
-                      if (!MorsePreferences::handleKochSequence()) {
+                      if (!MorsePreferences::handleKochSequence(true)) {    // explicit on-device (re-)selection: force a file reload
                           MorseOutput::printOnScroll(2, BOLD, 0, "No custom set");
                           delay(700);
                       }
@@ -1408,10 +1408,15 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
 }   // end of function adjustKeyerPreference
 
 
-boolean MorsePreferences::handleKochSequence() {  // returns false if Custom Chars was requested but no character set is available (yet)
+boolean MorsePreferences::handleKochSequence(boolean forceReload) {  // returns false if Custom Chars was requested but no character set is available (yet)
     MorsePreferences::useCustomChars = false;
     if (MorsePreferences::pliste[posKochSeq].value == 4) {      // Custom Chars
-        String chars = MorsePreferences::customCharSet;
+        // forceReload (set by an explicit on-device/serial re-selection of Custom
+        // Chars) always re-reads the file player, so uploading a new player.txt and
+        // re-selecting Custom Chars reloads it, per the documented workflow
+        // (manual_en.md/manual_de.md §5.4.1). Boot/snapshot recall pass the default
+        // (false) and keep the already-loaded set untouched.
+        String chars = (forceReload) ? "" : MorsePreferences::customCharSet;
         if (chars.length() == 0)
             chars = getCustomChars();                            // try to (re-)read it from the file player right away
         if (chars.length() == 0)

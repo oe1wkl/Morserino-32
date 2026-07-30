@@ -4392,7 +4392,7 @@ boolean setParameter(String token, String value) {      // change a parameter, r
 
 
       if (i == posKochSeq)
-            MorsePreferences::handleKochSequence();
+            MorsePreferences::handleKochSequence(true);    // explicit serial (re-)selection: force a file reload
       else if (i == posCarouselStart)
             MorsePreferences::handleCarouselChange();
 #ifdef CONFIG_SOUND_I2S

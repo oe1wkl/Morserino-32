@@ -546,12 +546,14 @@ Example:
 
 	PUT customchars/set/mkrsuaptlowi
 
-Note: on the device, the custom character set is derived from the uploaded
-player file (`/player.txt`) — that file is the source of truth. A set injected
-with this command therefore persists only until the preferences menu is next
-exited while "Custom Chars" is active: at that moment the set is re-derived
-from the player file, replacing the injected one. To make a character set
-permanent, upload it as the player file instead (or in addition).
+Note: on the device, the custom character set can also be derived from the
+uploaded player file (`/player.txt`). A set injected with this command persists
+across preferences-menu visits and stays active until explicitly replaced — it
+is *not* overwritten by exiting the preferences menu. It is only re-derived
+from the player file when "Koch Sequence" is explicitly (re-)selected to
+"Custom Chars" (via the on-device menu, or via `PUT config/koch sequence/4`),
+so uploading a new player file and then re-selecting "Custom Chars" is how you
+load its content, overwriting anything injected with this command.
 
 `PUT customchars/clear`
 
