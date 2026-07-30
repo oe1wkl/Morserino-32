@@ -18,6 +18,10 @@
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
 #include "MorseJSON.h"
+#include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
+#ifdef CONFIG_BLE_SERIAL
+#include "MorseBleSerial.h"    // change-switch: stop BLE serial when the pref is turned off
+#endif
 #include "MorseVoice.h"
 #include "MorseTextEntry.h"
 #include "abbrev.h"
@@ -93,6 +97,13 @@ const char * prefName[] = {
 #endif
             "serialOut"
 					};
+
+// rule 9 (CLAUDE.md): prefName[], pliste[] and the prefPos enum are positional
+// triplets. A missing or extra entry silently shifts every following
+// preference (wrong names, wrong NVS keys, values clamped by the wrong
+// limits) — make that a compile error instead.
+static_assert(sizeof(prefName) / sizeof(prefName[0]) == posSerialOut + 1,
+              "prefName[] out of sync with the prefPos enum (rule 9)");
 
 
 
@@ -424,12 +435,23 @@ parameter MorsePreferences::pliste[] = {
   },
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   {
-    0, 0, 4, 1,                                                 // output via Bluetooth? 0 = none, 1= keyed sends CTRL key, 2 = decoded chars are sent as keystrokes, 3=both
-    "BLT Kbd Output",
-    "Select what is sent to the Bluetooth Keyboard output",
+    // one selector for everything Bluetooth: 0 = off, 1-4 = the historic
+    // keyboard modes (order is load-bearing for stored settings), 5 = the
+    // M32 serial protocol over BLE (builds with CONFIG_BLE_SERIAL only)
+#ifdef CONFIG_BLE_SERIAL
+    0, 0, 5, 1,
+#else
+    0, 0, 4, 1,
+#endif
+    "Bluetooth Use",
+    "Select what Bluetooth is used for (keyboard output or M32 serial protocol)",
     true,
-    {"Nothing", "Vband Keying", "Decoded", "Vband+Decoded", "Generic Kbd"},
-    "Bluetooth keyboard output"
+    {"No Bluetooth", "VBand Kbd", "Decoded output", "VBand+Decoded", "Generic Kbd"
+#ifdef CONFIG_BLE_SERIAL
+     , "BLE Serial"
+#endif
+    },
+    "Bluetooth use"                 // spoken name (a11y): the selector covers keyboard AND serial protocol
   },
   {
     0, 0, 1, 1,                                                 // in Generic Kbd mode: 0=send '+', 1=send Shift+Enter (soft return)
@@ -483,6 +505,9 @@ parameter MorsePreferences::pliste[] = {
     {"Nothing", "Keyed", "Decoded", "Keyed+Decoded", "Generated", "All"}
   }
 };
+
+static_assert(sizeof(MorsePreferences::pliste) / sizeof(MorsePreferences::pliste[0]) == posSerialOut + 1,
+              "pliste[] out of sync with the prefPos enum (rule 9)");
 
 const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores", "Practice Set" };
 
@@ -799,7 +824,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                             // else: an empty re-upload keeps the previously active custom
                             // set/bounds rather than silently wiping a working configuration
                         }
-                        if (m32protocol && posPtr < posKochFilter)
+                        if (protocolActive() && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
 
                         writePreferences("morserino");
@@ -815,7 +840,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             case 1:     // recall snapshot
                         if (MorsePreferences::recallSnapshot()) {
                           writePreferences("morserino");
-                          if (m32protocol) {
+                          if (protocolActive()) {
                               MorseJSON::jsonActivate(ACT_RECALLED);
                               //delay(1000);     // to allow the user to see/hear the "recalled" message on the display before we switch back to the main menu
                           }
@@ -830,10 +855,10 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             case -1:    //store snapshot
                         if (MorsePreferences::storeSnapshot(atMenu)) {
                           // writePreferences("morserino"); now in writePreferences()
-                          if (m32protocol)
+                          if (protocolActive())
                               MorseJSON::jsonActivate(ACT_SET);
                         }
-                        else if (m32protocol)
+                        else if (protocolActive())
                           MorseJSON::jsonActivate(ACT_CANCELLED);
                         while(Buttons:: volButton.clicks)
                           Buttons:: volButton.Update();
@@ -930,9 +955,10 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
             MorseVoice::announce(valueLine);                             // value only (adjusting, or action items)
     }
 #endif
-    valueLine += emptyLine.substring(0,maxLength - valueLine.length());
+    if (valueLine.length() < maxLength)             // guard: for a >14-char value the subtraction wraps
+        valueLine += emptyLine.substring(0,maxLength - valueLine.length());  // unsigned and appends the whole emptyLine
 
-    if (m32protocol) {
+    if (protocolActive()) {
       jsonValueLine = valueLine;
       jsonValueLine.trim();
       switch (pos) {
@@ -1131,7 +1157,7 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
     valueLine = String(options[choice]);
     valueLine += emptyLine.substring(0, maxLength - valueLine.length());
     MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
-    if (m32protocol)
+    if (protocolActive())                   // was ungated (pre-tee, un-handshaken USB received it) — see DESIGN.md
         MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
 
@@ -1161,7 +1187,7 @@ boolean MorsePreferences::confirmDelete(uint8_t ptr)  {
             valueLine = String(options[choice]);
             valueLine += emptyLine.substring(0, maxLength - valueLine.length());
             MorseOutput::printOnScroll(2, REGULAR, 1, valueLine);
-            if (m32protocol)
+            if (protocolActive())
                 MorseJSON::jsonConfigShort(itemLine, choice, options[choice]);
 
         }
@@ -1594,6 +1620,13 @@ void MorsePreferences::readPreferences(const char* repository) {
       if ((temp = pref.getUChar(prefName[i],255)) != 255) {         // we have something in the repository
          if (i == posTimeOut && temp > 3)
             temp = 0;
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+         if (i == posBluetoothOut && temp > pliste[i].maximum)
+            temp = 0;      // out of range = stored by a build with more selector options (e.g. 5 =
+                           // BLE Serial from a CONFIG_BLE_SERIAL build): fail safe to Off. The generic
+                           // constrain below would clamp to the maximum — turning a BLE Serial user
+                           // into "Generic Kbd", typing decoded CW at any bonded host.
+#endif
          if (pliste[i].stepValue !=1)
             if (uint8_t d = temp % pliste[i].stepValue)             // we bring odd values in line with the step increment
               temp -= d;
@@ -1895,6 +1928,12 @@ void MorsePreferences::writePreferences(const char* repository) {
               case posGoertzelBandwidth:
                     Goertzel::setup();
                     break;
+#ifdef CONFIG_BLE_SERIAL
+              case posBluetoothOut:                               // selected away from BLE Serial: stop BLE serial now;
+                    if (pliste[posBluetoothOut].value != BLT_USE_SERIAL_PROT)
+                      MorseBleSerial::stopWithNotice("BLE serial off", 300);
+                    break;                                        // selected TO it: the top-menu backstop starts it
+#endif
               case posKochSeq:
                     if (!MorsePreferences::useCustomChars)
                       koch.setup();
@@ -1937,7 +1976,7 @@ boolean  MorsePreferences::recallSnapshot() {         // return true if we selec
           if (MorsePreferences::memPtr != MorsePreferences::memCounter)  {
             doReadSnapshot(MorsePreferences::memPtr);
             MorseOutput::printOnScroll(2, BOLD, 0, text);
-            if (m32protocol)
+            if (protocolActive())
               MorseJSON::jsonCreate("message", text, "");
             delay(1500);
             return true;
@@ -1967,7 +2006,7 @@ boolean MorsePreferences::storeSnapshot(uint8_t menu) {        // return true if
     if (MorsePreferences::memPtr != 8)  {
         boolean ok = doWriteSnapshot(memPtr, menu);
         text = "Snap " + String(MorsePreferences::memPtr+1) + (ok ? " STORED " : " FAILED!");
-        if (m32protocol)
+        if (protocolActive())
           MorseJSON::jsonCreate("message", text, "");
         MorseOutput::printOnScroll(2, BOLD, 0, text);
         delay(ok ? 1000 : 2500);
@@ -2095,7 +2134,7 @@ void MorsePreferences::clearMemory(uint8_t ptr) {
 
   text = doClearMemory(ptr);
 
-  if (m32protocol)                                                            // output to m32protocol and screen
+  if (protocolActive())                                                            // output to m32protocol and screen
       MorseJSON::jsonCreate("message", text, "");
   MorseOutput::printOnScroll(2, BOLD, 0, text);
   delay(900);

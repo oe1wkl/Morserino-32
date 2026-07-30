@@ -73,7 +73,9 @@ Op Name	Operator Name
 S America	South America
 Sound & Disp	Sound and Display
 Update Firmw	Update Firmware
-Vband+Decoded	Vband and Decoded
+BLE Serial	B L E serial
+VBand Kbd	VBand Keyboard
+VBand+Decoded	VBand and Decoded
 WiFi Trx	WiFi Transceiver
 WiFi Tx OFF	WiFi transmit OFF
 WiFi Tx ON	WiFi Transmit ON

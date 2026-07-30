@@ -207,6 +207,7 @@ alpha, numerals and interpunctions
 Asia
 at sign
 Auto character spacing
+B L E serial
 Bandwidth
 BC1: h o f
 BC1: l c d
@@ -223,9 +224,10 @@ BC2: k m y
 BC2: q x v
 BC2: z j /
 Beginner
+BLE Serial
 Blues
 Bluetooth A R character
-Bluetooth keyboard output
+Bluetooth use
 Bravo
 C H
 Calibrate Battery
@@ -269,6 +271,7 @@ dash
 dash dot
 Decoded
 Decoded audio on I O port
+Decoded output
 Delta
 Disp MAC Address
 Display MAC address
@@ -363,6 +366,7 @@ Morsel
 N America
 Narrow
 Never
+No Bluetooth
 No limit
 NO SNAPSHOTS
 No time-out
@@ -448,9 +452,10 @@ Update Firmware
 Update firmware
 Upload File
 UPPER
-Vband and Decoded
-Vband Keying
-Vband+Decoded
+VBand and Decoded
+VBand Kbd
+VBand Keyboard
+VBand+Decoded
 Veggie
 Victor
 VK/ZL

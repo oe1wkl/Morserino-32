@@ -747,6 +747,15 @@ static void stateMenu() {
 //=============================================================================
 
 static void stateCountdown() {
+    // Recompute level params for the actual starting sub-level. Both entry
+    // paths into the countdown (menu "start" and game-over "Play Again") set
+    // game.subLevel to the chosen start level *after* initGameData() already
+    // computed baseSpeed/spawnInterval/maxInvaders for level 1, so without this
+    // the first round always runs at level-1 timing until the first level-up.
+    // (Level-ups recompute params themselves and go straight to GAME_PLAYING,
+    // bypassing the countdown, so this does not interfere with them.)
+    updateLevelParams();
+
     const char* counts[] = {"3", "2", "1", "GO!"};
     const uint16_t colors[] = {GC_HUD_TEXT, GC_HUD_TEXT, GC_HUD_TEXT, GC_LETTERS};
 
