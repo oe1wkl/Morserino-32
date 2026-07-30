@@ -62,11 +62,15 @@ Simply unplug the TRX so you can hear and tune and then replug this cable.
 
 ## 5. Bluetooth and VBand
 * **How to enable Bluetooth?**
-	* Use the preference **BLT Kbd Output**. 
+	* Use the preference **Bluetooth Use**. The options besides **No Bluetooth** are four keyboard modes (VBand Kbd, Decoded output, VBand+Decoded, Generic Kbd) and **BLE Serial** (the M32 Serial Protocol over BLE, see below). 
 * **How do I connect to VBand?**
     * The Morserino can connect to **VBand** (hamradio.solutions/vband) via Bluetooth. 
     * Community tips suggest ensuring your browser supports the necessary protocols and setting the VBand input to "Straight Key" if your paddles aren't recognized correctly.
 * **Bluetooth Keyboard**: The M32 Pocket can act as a **Bluetooth keyboard**. Decoded characters are sent as if typed on a US QWERTY keyboard.
+
+* **Can apps connect to the Morserino via Bluetooth (e.g. from an iPhone)?**
+	* Yes: set the preference **Bluetooth Use** to **BLE Serial** (takes effect on the next return to the main menu). The device then offers the full **M32 Serial Protocol** over Bluetooth Low Energy (visible as "Morserino-32", no pairing needed), so apps can remote-control it and send text to be keyed as CW — the same protocol that is available over USB. See Appendix 8 of the user manual.
+	* Because **Bluetooth Use** is a single selector, Bluetooth serves either the keyboard output or the serial protocol — never both at the same time. Any WiFi function (multiplayer games, upload, update, WiFi transceiver) suspends the BLE connection until you return to the main menu.
 
 * **Can I use Bluetooth to stream audio?**
 	* No, this is not possible. It would also not be useful, as Bluetooth audio introduces a noticeable delay, which makes correct keying very hard.

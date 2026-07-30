@@ -29,6 +29,7 @@ Complete list of compile-time flags that gate behavior (frequency = number of
 | `CONFIG_CW_GAME` | Compiles the four games | 37 sites; TFT-only in practice |
 | `CONFIG_MCP73871` | MCP73871 power-path / battery | 29 sites (Pocket Wroom) |
 | `CONFIG_BLUETOOTH_KEYBOARD` | BT-keyboard CW output | 28 sites |
+| `CONFIG_BLE_SERIAL` | M32 serial protocol over BLE (NUS GATT server) | added 2026-07; **both** canonical variants; see `devdocs/ble-serial/` |
 | `CONFIG_QSO_BOT` | QSO Bot mode | 22 sites; **both** variants |
 | `LORA_RADIOLIB` | LoRa present (derived: set when `LORA_DISABLED` unset) | 17 sites |
 | `CONFIG_TLV320AIC3100` | TLV320 audio codec (+`_INT`,`_RST`,`_SDA`,`_SCL`) | 15 sites |

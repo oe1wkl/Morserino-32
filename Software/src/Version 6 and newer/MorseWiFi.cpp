@@ -17,6 +17,10 @@
 #include "MorseOutput.h"
 #include "MorsePreferences.h"
 #include "MorseJSON.h"
+#include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
+#ifdef CONFIG_BLE_SERIAL
+#include "MorseBleSerial.h"    // suspendForWifi() at the radio bring-up primitives
+#endif
 
 #ifdef CONFIG_PRACTICE_STATS
 #include "MorsePracticeStats.h"
@@ -558,7 +562,7 @@ void MorseWiFi::menuNetSelect() {
       MorseOutput::clearScrollLines();
       MorseOutput::printOnScroll(0, REGULAR, 0, names[choice] );
       MorseOutput::printOnScroll(1, REGULAR, 0, peers[choice] );
-      if (m32protocol) {
+      if (protocolActive()) {
                   MorseJSON::jsonCreate("message", names[choice], "");
                   MorseJSON::jsonCreate("message", peers[choice], "");
       }
@@ -620,7 +624,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       MorseOutput::printOnStatusLine( true, 0,  WiFi.macAddress());
 
                       delay(1000);
-                      if (m32protocol) {
+                      if (protocolActive()) {
                         MorseJSON::jsonCreate("message", msg, "");
                         WiFi.disconnect(true,false);
                         return;
@@ -644,7 +648,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       MorseOutput::clearDisplay();
                       msg = "Connecting... ";
                       MorseOutput::printOnStatusLine( true, 0,  msg);
-                      if (m32protocol)
+                      if (protocolActive())
                         MorseJSON::jsonCreate("message", msg + "Please wait", "");
                       if (! MorseWiFi::wifiConnect())
                           msg = ""; //return false;
@@ -656,7 +660,7 @@ void MorseWiFi::menuExec(uint8_t command) {
                       }
                       //WiFi.mode( WIFI_MODE_NULL ); // switch off WiFi
                       delay(1000);
-                      if (m32protocol) {
+                      if (protocolActive()) {
                           if (msg != "")
                               MorseJSON::jsonCreate("message", msg, "");
                           WiFi.disconnect(true,false);
@@ -691,7 +695,7 @@ void MorseWiFi::menuExec(uint8_t command) {
       MorseOutput::clearDisplay();
       MorseOutput::printOnScroll(0, REGULAR, 0, "Not Available" ); 
       MorseOutput::printOnScroll(1, REGULAR, 0, "Using EspNow" ); 
-      if (m32protocol)
+      if (protocolActive())
           MorseJSON::jsonCreate("message", "Not available when using ESPNOW", "");
       delay(1800);                   
     }
@@ -709,7 +713,10 @@ static void shutdownWiFi() {
 
 void MorseWiFi::startAP() {
   volatile bool configDone = false;   // flag to exit the server loop
- 
+
+#ifdef CONFIG_BLE_SERIAL
+  MorseBleSerial::suspendForWifi();   // defense in depth: idempotent, and future callers of this
+#endif                                // radio primitive stay safe without knowing about BLE
   WiFi.mode(WIFI_AP);
   WiFi.setHostname(ssid);
   WiFi.softAP(ssid);
@@ -934,6 +941,9 @@ void MorseWiFi::viewStats() {                          /// start wifi client, we
 
 boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
   // Connect to WiFi network
+#ifdef CONFIG_BLE_SERIAL
+  MorseBleSerial::suspendForWifi();   // defense in depth: idempotent, and future callers of this
+#endif                                // radio primitive stay safe without knowing about BLE
   if (MorsePreferences::wlanSSID == "")
       return internal::errorConnect(String("WiFi Not Conf"));
   //DEBUG("SSID: " + MorsePreferences::wlanSSID + " PW: >" +  MorsePreferences::wlanPassword + "<");
@@ -958,7 +968,7 @@ boolean internal::errorConnect(String msg) {
   MorseOutput::printOnScroll(0, INVERSE_BOLD, 0, msg);
   MorseOutput::printOnScroll(1, REGULAR, 0, MorsePreferences::wlanSSID);
   delay(3500);
-  if (m32protocol) {
+  if (protocolActive()) {
     MorseJSON::jsonCreate("message", "Not connected " + msg, "");
   }
   return false;

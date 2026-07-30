@@ -21,6 +21,13 @@ namespace MorseBluetooth
 {
 	// Forward declarations
 	extern boolean isBLErunning;
+	// The "Bluetooth Use" selector value as a HID-keyboard bitmask. Values 0-4
+	// are the historic keyboard modes; value 5 (BLE Serial, CONFIG_BLE_SERIAL)
+	// is NOT a keyboard mode and returns 0 here — 5 = 0b101 would otherwise
+	// pass both the key-as-CTRL (bit 0) and decoded-output (bits 1-2) gates
+	// and key the torn-down HID characteristic. Every HID gate must test this,
+	// never the raw pliste value.
+	uint8_t keyboardMode(void);
 	void initializeBluetooth(void);
 	void stopBluetooth(void);
 	void bluetoothTypeLCTRL(bool ctrl);

@@ -19,6 +19,9 @@
 
 namespace MorseJSON
 {
+	void jsonSend(const JsonDocument& doc);   // serialize through a chunk buffer: one m32out.write() per
+	                                          // ~256 B instead of one per byte — use this, never
+	                                          // serializeJson(doc, m32out) directly
 	void jsonDevice(const String& brd, const String& vsn);
 	void jsonError(const String& errormessage);
 	void jsonOK(void);
