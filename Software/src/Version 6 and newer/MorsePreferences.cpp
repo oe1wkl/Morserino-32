@@ -1546,8 +1546,17 @@ boolean MorsePreferences::handleKochSequence(boolean forceReload) {  // returns 
         String chars = (forceReload) ? "" : MorsePreferences::customCharSet;
         if (chars.length() == 0)
             chars = getCustomChars();                            // try to (re-)read it from the file player right away
-        if (chars.length() == 0)
-            return false;                                        // none available - leave the current mode/bounds untouched
+        if (chars.length() == 0) {
+            // No custom set available - e.g. /player.txt was deleted (now possible
+            // over the serial protocol) with no set currently active. Don't leave
+            // Koch Sequence showing "Custom Chars" while the engine keeps running the
+            // previously active sequence: fall back to the native M32 order so the
+            // menu and the engine stay in agreement. The caller still reports "No
+            // custom set". Also self-heals an inconsistent state at boot/snapshot recall.
+            MorsePreferences::pliste[posKochSeq].value = 0;      // 0 = M32 (native sequence)
+            koch.setup();
+            return false;
+        }
         MorsePreferences::useCustomChars = true;
         MorsePreferences::customCharSet = chars;
     }
