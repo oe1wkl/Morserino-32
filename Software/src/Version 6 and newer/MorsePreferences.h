@@ -257,7 +257,7 @@ namespace MorsePreferences
   void createKochWords(uint8_t maxl, uint8_t koch);
   uint8_t wordIsKoch(String thisWord);
   void createKochAbbr(uint8_t maxl, uint8_t koch);
-  boolean handleKochSequence();
+  boolean handleKochSequence(boolean forceReload = false);   // forceReload: re-read Custom Chars from the file player even if a set is already active - used for an explicit (re-)selection of Custom Chars, e.g. after uploading a new player.txt
   void handleCarouselChange();
   void setCustomChars(String);
   //void kochSetup();
