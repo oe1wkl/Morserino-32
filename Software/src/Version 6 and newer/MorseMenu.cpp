@@ -369,24 +369,19 @@ void MorseMenu::menu_() {
                   if (menuNav[MorsePreferences::newMenuPtr][naviDown] == 0) {
                       MorsePreferences::menuPtr = MorsePreferences::newMenuPtr;
                       disp = 0;
-                      // Remember last executed for Quick Start, unless it's a WiFi function,
-                      // shutdown, or (pre-existing, unrelated to Practice Set) a grid game -
-                      // named explicitly rather than range-checked against enum order, since
-                      // _genPractice/_echoPractice (like any future append-only menu leaf)
-                      // sit after _wifi/_goToSleep in menuNo and would otherwise silently
-                      // never be remembered (found via on-device testing: Quick Start into
-                      // "CW Generator: Practice Set" fell back to "CW Generator: Random").
-                      switch (MorsePreferences::menuPtr) {
-                        case _wifi_mac: case _wifi_config: case _wifi_check:
-                        case _wifi_upload: case _wifi_update: case _wifi_select:
-                        case _goToSleep:
-#ifdef CONFIG_CW_GAME
-                        case _trailblazer: case _foxHunt: case _memoryChain:
-#endif
-                            break;
-                        default:
-                            MorsePreferences::writeLastExecuted(MorsePreferences::newMenuPtr);
-                      }
+                      // Remember last executed for Quick Start. The remembered set - the
+                      // training modes and the classic games - all sit before _wifi in
+                      // menuNo, so "< _wifi" captures them and automatically excludes every
+                      // WiFi function, shutdown, and grid game (all >= _wifi), including any
+                      // future append-only WiFi/game leaf (e.g. _wifi_stats) with no edit
+                      // needed here. The only leaves that must be remembered yet live *after*
+                      // _wifi are the two Practice Set pickers (appended at the enum's end),
+                      // so they are named explicitly (found via on-device testing: Quick Start
+                      // into "CW Generator: Practice Set" otherwise fell back to "Random").
+                      if (MorsePreferences::menuPtr < _wifi
+                          || MorsePreferences::menuPtr == _genPractice
+                          || MorsePreferences::menuPtr == _echoPractice)
+                          MorsePreferences::writeLastExecuted(MorsePreferences::newMenuPtr);
                       if (MorseMenu::menuExec())
                         return;
                   } else {
