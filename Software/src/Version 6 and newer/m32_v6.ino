@@ -65,6 +65,10 @@
 #include "MorseGameMode.h"
 #endif
 
+#ifdef CONFIG_PRACTICE_STATS
+#include "MorsePracticeStats.h"
+#endif
+
 #ifdef CONFIG_MCP73871
 #include "analog.h"
 #include "esp_timer.h" 
@@ -828,7 +832,11 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
         }
         file.close();
     }
- 
+
+#ifdef CONFIG_PRACTICE_STATS
+    MorsePracticeStats::begin();
+#endif
+
 #ifdef CONFIG_TFT
     // Skip the boot splash on a memory-clearing reboot — the user just
     // exited WiFi Trx a heartbeat ago, they don't want to see the logo
@@ -2343,6 +2351,9 @@ void fetchNewWord() {
 
       randomGenerate:       repeats = 0;
                             clearText = "";
+#ifdef CONFIG_PRACTICE_STATS
+                            bool statsDiscardWord = false;   // set only for the one phantom word below, not tied to stopFlag's own lifecycle
+#endif
                             if ((MorsePreferences::pliste[posMaxSequence].value != 0) && (generatorMode != KOCH_LEARN))
                               if ( morseState == echoTrainer || ((morseState == morseGenerator) && !MorsePreferences::pliste[posAutoStop].value) ) {
                                 // a case for maxSequence - no maxSequence in autostop mode
@@ -2357,6 +2368,9 @@ void fetchNewWord() {
                                 else if (wordCounter == (limit+1)) {
                                     stopFlag = true;
                                     echoStop = false;
+#ifdef CONFIG_PRACTICE_STATS
+                                    statsDiscardWord = true;
+#endif
                                     //wordCounter = 1;
                                 }
                             }
@@ -2406,6 +2420,18 @@ void fetchNewWord() {
                                                       }
                                                       break;
                                     }   // end switch (generatorMode)
+#ifdef CONFIG_PRACTICE_STATS
+                                    // statsDiscardWord is set only for the maxSequence limit+1 call above,
+                                    // whose word checkStopFlag() discards before it's ever keyed/shown (see
+                                    // its lastWord stash, only consumed by PLAYER mode) — don't count what the
+                                    // user never actually saw or heard. Deliberately NOT keyed off stopFlag
+                                    // itself: that flag has its own lifecycle (reset elsewhere, once per loop()
+                                    // iteration in the morseGenerator/echoTrainer cases) and if it were ever
+                                    // left true for an unrelated reason, gating on it here would silently zero
+                                    // out word counts for a whole session instead of just skipping one word.
+                                    if (!statsDiscardWord)
+                                        MorsePracticeStats::wordPresented(clearText);
+#endif
                             }
                             firstTime = false;
       }       /// end if else - we either already had something in trainer mode, or we got a new word
@@ -2630,6 +2656,9 @@ void echoTrainerEval() {
       }
       if (kochActive){
         koch.decreaseWordProbability(echoTrainerWord);
+#ifdef CONFIG_PRACTICE_STATS
+        MorsePracticeStats::recordWord(echoTrainerWord, echoResponse);
+#endif
       }
       delay(16*ditLength + interWordSpace/12);
       if (MorsePreferences::pliste[posSpeedAdapt].value)
@@ -2644,6 +2673,9 @@ void echoTrainerEval() {
           }
           if (kochActive){
             koch.increaseWordProbability(echoTrainerWord, echoResponse);
+#ifdef CONFIG_PRACTICE_STATS
+            MorsePracticeStats::recordWord(echoTrainerWord, echoResponse);
+#endif
           }
       }
       delay(16*ditLength + interWordSpace/12);
@@ -2924,6 +2956,9 @@ void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw
 
 void shutMeDown() {
   MorsePreferences::writeVolume();   // volume may have been changed without returning to the menu
+#ifdef CONFIG_PRACTICE_STATS
+  MorsePracticeStats::endSegment();  // flush any open segment so it isn't lost across deep sleep
+#endif
   MorseOutput::sleep();     /// shut down Heltec display
   if (protocolActive())
     MorseJSON::jsonError("M32 SLEEP SHUTDOWN BY USER");
@@ -4050,6 +4085,14 @@ void m32Get(String type, String token, String value) {                    /// GE
     else if (type == "kochlesson") {
       MorseJSON::jsonGetKoch();
     }
+#ifdef CONFIG_PRACTICE_STATS
+    else if (type == "stats") {
+      if (token == "log" || token == "")
+        MorseJSON::jsonStatsLog();
+      else
+        MorseJSON::jsonError("INVALID ARGUMENT");
+    }
+#endif
     else if (type == "cw") {
       if (token == "memories") {
         MorseJSON::jsonGetCwStores();
@@ -4414,6 +4457,38 @@ void m32Put(String type, String token, String value) {                    /// PU
       else
          MorseJSON::jsonError("INVALID ACTION menu " + token);
     }
+#ifdef CONFIG_PRACTICE_STATS
+    /////////////////////// TIME //////////////////////////////
+    // Serial/USB wall-clock sync — same offset MorseWiFi's Practice Stats
+    // page sets via /api/time, just reachable without WiFi. See
+    // MorsePracticeStats.h and devdocs/practice-stats/README.md.
+    else if (type == "time") {
+      if (token == "set") {
+        time_t epoch = (time_t) value.toInt();
+        if (epoch > 0) {
+          MorsePracticeStats::setWallClock(epoch);
+          MorseJSON::jsonOK();
+        }
+        else
+          MorseJSON::jsonError("INVALID EPOCH " + value);
+      }
+      else
+        MorseJSON::jsonError("INVALID ACTION time " + token);
+    }
+    /////////////////////// STATS /////////////////////////////
+    else if (type == "stats") {
+      if (token == "clear") {
+        MorsePracticeStats::clearLog();
+        MorseJSON::jsonOK();
+      }
+      else if (token == "enabled") {
+        MorsePracticeStats::setEnabled(value == "1" || value == "true");
+        MorseJSON::jsonOK();
+      }
+      else
+        MorseJSON::jsonError("INVALID ACTION stats " + token);
+    }
+#endif
     /////////////////////// KOCHLESSON //////////////////////////
     else if (type == "kochlesson") {
         uint8_t nr = (char) token.toInt();

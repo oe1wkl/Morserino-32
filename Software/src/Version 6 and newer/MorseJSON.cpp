@@ -16,6 +16,10 @@
 #include "MorseMenu.h"
 #include "MorseOutput.h"   // getPowerpathState() for the battery charge state
 #include "M32ProtocolOut.h" // m32out: delivers protocol output to every handshaken transport
+#ifdef CONFIG_PRACTICE_STATS
+#include "MorsePracticeStats.h"
+#include <mbedtls/base64.h>
+#endif
 
 ///// create json output for serial port
 using namespace MorseJSON;
@@ -306,6 +310,45 @@ void MorseJSON::jsonFileText(void) {
 	m32out.print("\"}}");
 	file.close();
 }
+
+#ifdef CONFIG_PRACTICE_STATS
+void MorseJSON::jsonStatsLog(void) {
+	// Unlike the WiFi stats page (only reachable by first going through the
+	// top-level menu, which already flushes any open segment via
+	// MorseMenu::menuExec()'s endSegment() call), this is read over USB/serial
+	// and so can be checked while the device is still sitting in an active
+	// Koch practice mode. Flush first so the round just completed is included
+	// instead of silently missing until the user formally exits that mode.
+	MorsePracticeStats::endSegment();
+
+	// Base64, not the escape-and-strip-braces scheme jsonFileText() uses: the
+	// M32 config tool's serial reader (waitForResponse() in m32_config_tool.html)
+	// finds the response by counting '{'/'}' in the raw stream, so a raw JSONL
+	// payload (which is full of '{'/'}') would desync that parser. Streamed
+	// directly to Serial in small chunks — never holds the whole file in RAM,
+	// same reasoning as jsonFileText() reading byte-by-byte.
+	m32out.print("{\"stats\":{\"log\":\"");
+	if (SPIFFS.exists(MorsePracticeStats::logPath)) {
+		File file = SPIFFS.open(MorsePracticeStats::logPath, "r");
+		unsigned char inBuf[48];
+		unsigned char outBuf[96];
+		size_t n;
+		while ((n = file.read(inBuf, sizeof(inBuf))) > 0) {
+			size_t outLen = 0;
+			mbedtls_base64_encode(outBuf, sizeof(outBuf), &outLen, inBuf, n);
+			m32out.write(outBuf, outLen);
+		}
+		file.close();
+	}
+	m32out.print("\",\"used\":");
+	m32out.print(MorsePracticeStats::usedBytes());
+	m32out.print(",\"total\":");
+	m32out.print(MorsePracticeStats::totalBytes());
+	m32out.print(",\"enabled\":");
+	m32out.print(MorsePracticeStats::enabled() ? "true" : "false");
+	m32out.print("}}");
+}
+#endif
 
 void MorseJSON::jsonFilePart(const String& name, uint8_t index, uint8_t total) {
     StaticJsonDocument<192> doc;

@@ -350,6 +350,9 @@ const uint8_t menuN = 43
 #ifdef CONFIG_QSO_BOT
     + 4    // QSO Bot, SOTA/POTA, Standard, Contest
 #endif
+#ifdef CONFIG_PRACTICE_STATS
+    + 1    // Practice Stats — see MorsePracticeStats.h
+#endif
     ;
 
 enum menuNo
@@ -370,7 +373,11 @@ enum menuNo
         _games, _morseInvaders, _fightPileup, _radioCave, _morsel,
 #endif
         _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload,
-        _wifi_update, _wifi_select, _goToSleep
+        _wifi_update, _wifi_select,
+#ifdef CONFIG_PRACTICE_STATS
+        _wifi_stats,
+#endif
+        _goToSleep
 #ifdef CONFIG_CW_GAME
         , _trailblazer  // see MorseTrailblazer.h
         , _foxHunt      // see MorseFoxHunt.h
@@ -425,6 +432,9 @@ enum prefPos : uint8_t {
                 posKochFilter,                                                                                // 36
                 posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf,    // 37
                 posPlayerCall, posPlayerName, posResetScores,                                                  // Phase E: identity + score reset
+#ifdef CONFIG_PRACTICE_STATS
+                posPracticeStatsOn,
+#endif
 };
 
 enum actMessage : int {

@@ -212,6 +212,7 @@
     "Phones": "a7ad04a9",
     "Plain": "4cd84132",
     "Portrait": "1c7444be",
+    "Practice Stats": "eaac0f5b",
     "Pro Signs": "a1edbcde",
     "QSO Bot": "60d3a124",
     "QSO Difficulty": "c73f6a06",
@@ -862,6 +863,7 @@
     "4cd84132": "Plain",
     "d7d18cfb": "plus",
     "1c7444be": "Portrait",
+    "eaac0f5b": "Practice Stats",
     "ffcdbd79": "pro sign",
     "a1edbcde": "Pro Signs",
     "60d3a124": "QSO Bot",
@@ -941,12 +943,12 @@
   },
   "id_collisions": {},
   "counts": {
-    "menu": 37,
+    "menu": 38,
     "pref_labels": 48,
     "option_values": 171,
     "actions": 16,
-    "phrases_total": 276,
+    "phrases_total": 277,
     "atoms_total": 138,
-    "clips_total": 476
+    "clips_total": 477
   }
 }

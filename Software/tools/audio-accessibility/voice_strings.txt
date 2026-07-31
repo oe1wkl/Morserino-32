@@ -398,6 +398,7 @@ Phones
 Plain
 plus
 Portrait
+Practice Stats
 pro sign
 Pro Signs
 QSO Bot
