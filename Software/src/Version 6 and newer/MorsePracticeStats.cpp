@@ -308,6 +308,7 @@ void recordWord(const String &expected, const String &received) {
 
 size_t usedBytes()  { return SPIFFS.usedBytes(); }
 size_t totalBytes() { return SPIFFS.totalBytes(); }
+size_t logBytes()   { return SPIFFS.exists(logPath) ? SPIFFS.open(logPath, "r").size() : 0; }
 
 void clearLog() {
     segment.active = false;

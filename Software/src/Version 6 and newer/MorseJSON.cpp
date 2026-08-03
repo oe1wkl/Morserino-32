@@ -344,6 +344,8 @@ void MorseJSON::jsonStatsLog(void) {
 	m32out.print(MorsePracticeStats::usedBytes());
 	m32out.print(",\"total\":");
 	m32out.print(MorsePracticeStats::totalBytes());
+	m32out.print(",\"logSize\":");
+	m32out.print(MorsePracticeStats::logBytes());
 	m32out.print(",\"enabled\":");
 	m32out.print(MorsePracticeStats::enabled() ? "true" : "false");
 	m32out.print("}}");

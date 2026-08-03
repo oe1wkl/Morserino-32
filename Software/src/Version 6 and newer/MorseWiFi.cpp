@@ -248,6 +248,13 @@ h1{font-size:1.2em} h2{font-size:1em;margin-top:1.6em;border-bottom:1px solid #c
 .bar{flex-grow:1;background:#ddd;border-radius:3px;height:1.1em;margin:0 .5em;overflow:hidden;display:flex}
 .bar .listen{background:#3a8a4a;height:100%}
 .bar .send{background:#2d6cb0;height:100%}
+.bar .log{background:#c9822c;height:100%}
+.bar .other{background:#8a8f96;height:100%}
+.storagebar{background:#ddd;border-radius:3px;height:1.3em;overflow:hidden;display:flex;margin:.4em 0 .8em}
+.storagebar .log{background:#c9822c;height:100%}
+.storagebar .other{background:#8a8f96;height:100%}
+.storage-legend{font-size:.8em;color:#666}
+.storage-legend .swatch{display:inline-block;width:.8em;height:.8em;border-radius:2px;vertical-align:-.1em;margin-right:.3em}
 table{width:100%;border-collapse:collapse;font-size:.85em;white-space:nowrap}
 td,th{text-align:left;padding:.25em .5em;border-bottom:1px solid #ddd}
 .scroll{overflow-x:auto;max-width:100%}
@@ -283,7 +290,16 @@ button{padding:.5em 1em;margin-top:.5em}
 #chars th.sorted::after{content:" \25be"}
 </style></head><body>
 <h1>Practice Stats</h1>
-<div id="storage">loading&hellip;</div>
+<h2>Storage</h2>
+<div class="storagebar" id="storageBar" style="max-width:340px">
+<div class="log" id="storageBarLog" title=""></div>
+<div class="other" id="storageBarOther" title=""></div>
+</div>
+<div class="storage-legend" style="max-width:340px">
+<span class="swatch" style="background:#c9822c"></span><span id="legLog">Practice log</span>&nbsp;&nbsp;
+<span class="swatch" style="background:#8a8f96"></span><span id="legOther">Other</span>&nbsp;&nbsp;
+<span class="swatch" style="background:#ddd"></span><span id="legFree">Free</span>
+</div>
 
 <h2>Time per Koch Lesson</h2>
 <div class="legend"><span class="tag listen">Listen</span><span class="tag send">Send</span> &mdash; <span id="totalTime"></span></div>
@@ -328,9 +344,18 @@ fetch("/api/time",{method:"POST",headers:{"Content-Type":"application/json"},
   body:JSON.stringify({epoch:Math.floor(Date.now()/1000)})});
 
 fetch("/api/storage").then(r=>r.json()).then(function(d){
-  var pct=Math.round(100*d.used/d.total);
-  document.getElementById("storage").textContent =
-    "Storage: "+Math.round(d.used/1024)+" KB / "+Math.round(d.total/1024)+" KB used ("+pct+"%)";
+  var other=d.used-d.logSize, free=d.total-d.used;
+  var logPct=100*d.logSize/d.total, otherPct=100*other/d.total, freePct=100*free/d.total;
+
+  var barLog=document.getElementById("storageBarLog"), barOther=document.getElementById("storageBarOther");
+  barLog.style.width=logPct+"%";
+  barLog.title="Practice log: "+(d.logSize/1024).toFixed(1)+" KB ("+logPct.toFixed(1)+"%)";
+  barOther.style.width=otherPct+"%";
+  barOther.title="Other: "+(other/1024).toFixed(1)+" KB ("+otherPct.toFixed(1)+"%)";
+
+  document.getElementById("legLog").textContent="Practice log: "+(d.logSize/1024).toFixed(1)+" KB ("+logPct.toFixed(1)+"%)";
+  document.getElementById("legOther").textContent="Other: "+(other/1024).toFixed(1)+" KB ("+otherPct.toFixed(1)+"%)";
+  document.getElementById("legFree").textContent="Free: "+(free/1024).toFixed(1)+" KB ("+freePct.toFixed(1)+"%)";
 });
 
 Promise.all([
@@ -872,6 +897,7 @@ void MorseWiFi::viewStats() {                          /// start wifi client, we
     StaticJsonDocument<64> doc;
     doc["used"] = MorsePracticeStats::usedBytes();
     doc["total"] = MorsePracticeStats::totalBytes();
+    doc["logSize"] = MorsePracticeStats::logBytes();
     String out;
     serializeJson(doc, out);
     server.send(200, "application/json", out);
