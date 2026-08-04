@@ -11,7 +11,7 @@ learning and training, and having fun."*
 :::
 
 
-This manual reflects the features of firmware Version 8.x of the
+This manual reflects the features of firmware Version 9.x of the
 Morserino-32. This firmware version is available for the new Morserino
 Pocket **(M32Pocket)**, as well as for the earlier 1st and 2nd editions
 of the Morserino-32. The functionality provided by this version is
@@ -3264,11 +3264,11 @@ command line.
 
 In my case that was (on a Windows machine):
 
-`update_m32 -p COM3 -f m32_V8.0.bin`
+`update_m32 -p COM3 -f m32_V9.0.bin`
 
 or on OSX or Linux, for an M32 Pocket:
 
-`./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V8.0.bin`
+`./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V9.0.bin`
 
 After a short while your Morserino should restart, showing the updated
 version number.
@@ -3278,7 +3278,7 @@ installing the firmware again; this can be useful if your device's
 permanent memory has been corrupted. To do this add the optional erase
 parameter `-e`. As an example (here for OSX or Linux):
 
-`./update_m32 -p /dev/tty[...] -f m32_V8.0.bin -e`
+`./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e`
 
 ## Appendix 6: Updating the Firmware via USB and a Browser (Webserial)
 

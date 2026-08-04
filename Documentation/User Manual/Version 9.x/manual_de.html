@@ -38,7 +38,7 @@
 <p>© Copyright 2016–2026 by Willi Kraml, OE1WKL</p>
 <p>Dieses Werk steht unter einer CC BY 4.0-Lizenz. Um eine Kopie dieser Lizenz
 einzusehen, besuche <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
-<p>Diese Dokumentation wurde für die Firmware-Version 8.x überarbeitet.
+<p>Diese Dokumentation wurde für die Firmware-Version 9.x überarbeitet.
 Die verwendete Schriftfamilie ist Lato.</p>
 <p>Die deutsche Version des Handbuchs wurde mithilfe von Claude (Anthropic)
 aus dem englischsprachigen Original übersetzt.</p>
@@ -162,7 +162,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <div class="quote">
 <p><em>„Morserino-32 – Ein multifunktionales Morsegerät, ideal zum Lernen und Trainieren – und zum Spaßhaben.”</em></p>
 </div>
-<p>Dieses Handbuch beschreibt die Funktionen der Firmware-Version 8.x des Morserino-32. Diese Firmware-Version ist sowohl für den neuen Morserino Pocket <strong>(M32Pocket)</strong> als auch für die früheren 1st und 2nd Editions des Morserino-32 erhältlich. Die Funktionalität ist im Wesentlichen für alle drei Morserino-Varianten gleich, mit der Ausnahme, dass der M32Pocket in seiner Standardkonfiguration keine LoRa-Transceiver-Fähigkeiten besitzt, dafür aber neue Funktionen wie ein Farbdisplay, Spiele und ein Batteriestatussymbol bietet.</p>
+<p>Dieses Handbuch beschreibt die Funktionen der Firmware-Version 9.x des Morserino-32. Diese Firmware-Version ist sowohl für den neuen Morserino Pocket <strong>(M32Pocket)</strong> als auch für die früheren 1st und 2nd Editions des Morserino-32 erhältlich. Die Funktionalität ist im Wesentlichen für alle drei Morserino-Varianten gleich, mit der Ausnahme, dass der M32Pocket in seiner Standardkonfiguration keine LoRa-Transceiver-Fähigkeiten besitzt, dafür aber neue Funktionen wie ein Farbdisplay, Spiele und ein Batteriestatussymbol bietet.</p>
 <p>Ich möchte mich bei allen bedanken, die durch Code, Kommentare, Vorschläge, Kritik, Rezensionen, Blogeinträge, YouTube-Videos und andere Beiträge dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den M32Pocket nicht!</p>
 <p>Was ist neu in Version 8?</p>
 <ul>
@@ -2909,12 +2909,12 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Für den M32Pocket musst du den Parameter <code>-d M32Pocket</code> zur Befehlszeile hinzufügen.</p>
 </div>
 <p>In meinem Fall war das (auf einem Windows-Rechner):</p>
-<p><code>update_m32 -p COM3 -f m32_V8.0.bin</code></p>
+<p><code>update_m32 -p COM3 -f m32_V9.0.bin</code></p>
 <p>oder unter OSX oder Linux für einen M32Pocket:</p>
-<p><code>./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V8.0.bin</code></p>
+<p><code>./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V9.0.bin</code></p>
 <p>Nach kurzer Zeit sollte dein Morserino neu starten und die aktualisierte Versionsnummer anzeigen.</p>
 <p>Es gibt auch die Möglichkeit, den permanenten Speicher des M32 vor der erneuten Firmware-Installation vollständig zu löschen; das kann nützlich sein, wenn der permanente Speicher beschädigt wurde. Dazu fügst du den optionalen Löschparameter <code>-e</code> hinzu. Beispiel (hier für OSX oder Linux):</p>
-<p><code>./update_m32 -p /dev/tty[...] -f m32_V8.0.bin -e</code></p>
+<p><code>./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e</code></p>
 <h2 data-number="7.6" id="anhang-6-aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial"><span class="header-section-number">7.6</span> Anhang 6: Aktualisieren der Firmware über USB und einen Browser (Webserial)</h2>
 <p>Einige Browser unterstützen die Webserial-Erweiterung, mit der man direkt vom Browser aus auf eine serielle Schnittstelle zugreifen kann. Derzeit sind das <strong>Google Chrome</strong> und <strong>Microsoft Edge</strong>, und zumindest auf einigen Plattformen auch <strong>Opera</strong>. Mit einem solchen Browser wird das Aktualisieren der Firmware auf die neueste Version sehr einfach – kein Firmware-Download notwendig, keine Befehlszeilen.</p>
 <p>Stelle sicher, dass du ein USB-Kabel hast, das Datenübertragung ermöglicht.</p>

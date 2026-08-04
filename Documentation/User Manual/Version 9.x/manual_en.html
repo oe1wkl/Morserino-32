@@ -38,7 +38,7 @@
 <p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
-<p>This document has been revised for firmware version 8.x.
+<p>This document has been revised for firmware version 9.x.
 The font family used is Lato.</p>
 </div>
 <header id="title-block-header">
@@ -160,7 +160,7 @@ The font family used is Lato.</p>
 <div class="quote">
 <p><em>“Morserino-32 – A multi-functional Morse Code Device, ideal for learning and training, and having fun.”</em></p>
 </div>
-<p>This manual reflects the features of firmware Version 8.x of the Morserino-32. This firmware version is available for the new Morserino Pocket <strong>(M32Pocket)</strong>, as well as for the earlier 1st and 2nd editions of the Morserino-32. The functionality provided by this version is basically the same for all three Morserino editions, with the exception that the M32Pocket does not have LoRa transceiver capabilities in its standard configuration, but offers new features such as a colour display, games, and a battery status icon.</p>
+<p>This manual reflects the features of firmware Version 9.x of the Morserino-32. This firmware version is available for the new Morserino Pocket <strong>(M32Pocket)</strong>, as well as for the earlier 1st and 2nd editions of the Morserino-32. The functionality provided by this version is basically the same for all three Morserino editions, with the exception that the M32Pocket does not have LoRa transceiver capabilities in its standard configuration, but offers new features such as a colour display, games, and a battery status icon.</p>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
 <p>What is new in Version 8?</p>
 <ul>
@@ -2921,12 +2921,12 @@ The font family used is Lato.</p>
 <p>For the M32Pocket, you need to add the parameter <code>-d M32Pocket</code> to the command line.</p>
 </div>
 <p>In my case that was (on a Windows machine):</p>
-<p><code>update_m32 -p COM3 -f m32_V8.0.bin</code></p>
+<p><code>update_m32 -p COM3 -f m32_V9.0.bin</code></p>
 <p>or on OSX or Linux, for an M32 Pocket:</p>
-<p><code>./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V8.0.bin</code></p>
+<p><code>./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V9.0.bin</code></p>
 <p>After a short while your Morserino should restart, showing the updated version number.</p>
 <p>There is also an option to fully erase the M32’s permanent memory before installing the firmware again; this can be useful if your device’s permanent memory has been corrupted. To do this add the optional erase parameter <code>-e</code>. As an example (here for OSX or Linux):</p>
-<p><code>./update_m32 -p /dev/tty[...] -f m32_V8.0.bin -e</code></p>
+<p><code>./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e</code></p>
 <h2 data-number="7.6" id="appendix-6-updating-the-firmware-via-usb-and-a-browser-webserial"><span class="header-section-number">7.6</span> Appendix 6: Updating the Firmware via USB and a Browser (Webserial)</h2>
 <p>Some browsers support the Webserial extension, which allows to access a serial port directly from the browser; currently these are <strong>Google Chrome</strong> and <strong>Microsoft Edge</strong>, and at least on some platforms also <strong>Opera</strong>. By using such a browser, updating the firmware to the latest release becomes really very easy (no firmware download necessary, and no command lines…​).</p>
 <p>Make sure you have a USB cable that allows data transfer.</p>

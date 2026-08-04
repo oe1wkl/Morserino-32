@@ -9,7 +9,7 @@ title: Morserino-32 Benutzerhandbuch
 Trainieren – und zum Spaßhaben."*
 :::
 
-Dieses Handbuch beschreibt die Funktionen der Firmware-Version 8.x des
+Dieses Handbuch beschreibt die Funktionen der Firmware-Version 9.x des
 Morserino-32. Diese Firmware-Version ist sowohl für den neuen Morserino
 Pocket **(M32Pocket)** als auch für die früheren 1st und 2nd Editions
 des Morserino-32 erhältlich. Die Funktionalität ist im Wesentlichen für
@@ -3701,11 +3701,11 @@ Befehlszeile hinzufügen.
 
 In meinem Fall war das (auf einem Windows-Rechner):
 
-`update_m32 -p COM3 -f m32_V8.0.bin`
+`update_m32 -p COM3 -f m32_V9.0.bin`
 
 oder unter OSX oder Linux für einen M32Pocket:
 
-`./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V8.0.bin`
+`./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V9.0.bin`
 
 Nach kurzer Zeit sollte dein Morserino neu starten und die aktualisierte
 Versionsnummer anzeigen.
@@ -3716,7 +3716,7 @@ sein, wenn der permanente Speicher beschädigt wurde. Dazu fügst du den
 optionalen Löschparameter `-e` hinzu. Beispiel (hier für OSX oder
 Linux):
 
-`./update_m32 -p /dev/tty[...] -f m32_V8.0.bin -e`
+`./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e`
 
 
 ## Anhang 6: Aktualisieren der Firmware über USB und einen Browser (Webserial)
