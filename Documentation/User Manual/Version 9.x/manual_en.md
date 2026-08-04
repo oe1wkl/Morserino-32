@@ -2579,6 +2579,9 @@ phone or computer just needs to be on the *same* WiFi network as the
 Morserino. Once connected, point a browser at *http://m32.local* (or the
 IP address shown on the display) to see:
 
+-   **Storage** — a labeled bar showing how much of the device's flash your
+    practice log itself takes up, separate from everything else stored on
+    the Morserino.
 -   **Time spent per Koch lesson**, as a bar for each lesson you've
     practiced.
 -   **Error rate per character** — which characters trip you up most often.

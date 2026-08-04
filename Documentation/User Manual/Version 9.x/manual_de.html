@@ -2,14 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.10.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Morserino-32 Benutzerhandbuch</title>
   <style>
-    code{white-space: pre-wrap;}
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     /* The extra [class] is a hack that increases specificity enough to
        override a similar rule in reveal.js */
@@ -1318,9 +1324,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <ul>
 <li><p>Wenn du LoRa hast, ist <strong>der erste</strong> ein eigenständiger Transceiver für die Kommunikation mit Morsecode, der die LoRa-Spreizspektrum- Funktechnologie nutzt (in der Standardversion im 433-MHz-Band).</p></li>
 <li><p><strong>Der nächste</strong> nutzt das Internetprotokoll (speziell UDP auf Port</p>
-<ol start="7373" type="1">
-<li>für die Kommunikation über ein IP-Netzwerk via WLAN mit einem Access Point.</li>
-</ol>
+<p>7373) für die Kommunikation über ein IP-Netzwerk via WLAN mit einem Access Point.</p>
 <p>Es gibt jetzt auch einen alternativen WLAN-Modus (<strong>EspNow</strong>), der eine Peer-to-Peer-Kommunikation zwischen Morserinos in unmittelbarer Nähe ohne Access Point ermöglicht.</p></li>
 <li><p><strong>Der letzte Modus</strong> ist ein Transceiver-Modus, der entweder mit einem externen Transceiver (z.B. einem Kurzwellen-Amateurfunk- Transceiver) oder mit einem Protokoll wie iCW (CW über Internet) oder VBand verwendet werden kann. In allen Fällen sind CW Keyer und Empfänger bzw. CW-Decoder gleichzeitig aktiv.</p></li>
 </ul>
@@ -2325,6 +2329,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Der Morserino protokolliert im Hintergrund deinen Koch-Trainer-Fortschritt: wie lange du in welcher Lektion geübt hast, und wie oft du beim Echo Trainer ein Zeichen richtig oder falsch beantwortet hast. Da das kleine Display für eine solche Verlaufsansicht nicht geeignet ist, rufst du diese Statistik stattdessen in einem Webbrowser ab.</p>
 <p>Wähle <strong>Practice Stats</strong> unter <strong>WiFi Functions</strong>. Wie bei Upload File und Update Firmware verbindet sich der Morserino dabei als Client mit <strong>deinem eigenen WLAN</strong> (nach der oben beschriebenen Netzwerkkonfiguration und Netzwerkauswahl — siehe <strong>WiFi Select</strong> direkt darüber) und zeigt dir seine IP-Adresse in diesem Netz an. Internetzugang ist dabei nicht nötig — dein Handy oder Computer muss nur im <em>selben</em> WLAN wie der Morserino sein. Nach dem Verbinden rufst du im Browser <em>http://m32.local</em> (oder die auf dem Display angezeigte IP-Adresse) auf und siehst:</p>
 <ul>
+<li><strong>Speicherbedarf</strong> — ein beschrifteter Balken, der zeigt, wie viel vom Flash-Speicher des Geräts das Statistik-Log selbst belegt, getrennt vom Rest des auf dem Morserino gespeicherten Inhalts.</li>
 <li><strong>Zeit pro Koch-Lektion</strong>, als Balken für jede geübte Lektion.</li>
 <li><strong>Fehlerrate pro Zeichen</strong> — welche Zeichen dir am meisten Schwierigkeiten bereiten.</li>
 <li><strong>Sitzungsverlauf</strong> — eine Liste einzelner Übungssitzungen mit Datum, Lektion und Dauer.</li>

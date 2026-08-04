@@ -248,8 +248,6 @@ h1{font-size:1.2em} h2{font-size:1em;margin-top:1.6em;border-bottom:1px solid #c
 .bar{flex-grow:1;background:#ddd;border-radius:3px;height:1.1em;margin:0 .5em;overflow:hidden;display:flex}
 .bar .listen{background:#3a8a4a;height:100%}
 .bar .send{background:#2d6cb0;height:100%}
-.bar .log{background:#c9822c;height:100%}
-.bar .other{background:#8a8f96;height:100%}
 .storagebar{background:#ddd;border-radius:3px;height:1.3em;overflow:hidden;display:flex;margin:.4em 0 .8em}
 .storagebar .log{background:#c9822c;height:100%}
 .storagebar .other{background:#8a8f96;height:100%}
@@ -260,7 +258,6 @@ td,th{text-align:left;padding:.25em .5em;border-bottom:1px solid #ddd}
 .scroll{overflow-x:auto;max-width:100%}
 .scrollhint{font-size:.8em;color:#888;font-style:italic;margin:.3em 0 0}
 button{padding:.5em 1em;margin-top:.5em}
-#storage{font-size:.85em;color:#555}
 .tag{display:inline-block;padding:.05em .5em;border-radius:3px;font-size:.85em;color:#fff}
 .tag.listen{background:#3a8a4a}
 .tag.send{background:#2d6cb0}
@@ -345,7 +342,8 @@ fetch("/api/time",{method:"POST",headers:{"Content-Type":"application/json"},
 
 fetch("/api/storage").then(r=>r.json()).then(function(d){
   var other=d.used-d.logSize, free=d.total-d.used;
-  var logPct=100*d.logSize/d.total, otherPct=100*other/d.total, freePct=100*free/d.total;
+  var safeTotal=d.total||1;   // total==0 means SPIFFS isn't mounted - avoid NaN%
+  var logPct=100*d.logSize/safeTotal, otherPct=100*other/safeTotal, freePct=100*free/safeTotal;
 
   var barLog=document.getElementById("storageBarLog"), barOther=document.getElementById("storageBarOther");
   barLog.style.width=logPct+"%";

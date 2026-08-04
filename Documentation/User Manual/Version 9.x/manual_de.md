@@ -3007,6 +3007,9 @@ dein Handy oder Computer muss nur im *selben* WLAN wie der Morserino sein.
 Nach dem Verbinden rufst du im Browser *http://m32.local* (oder die auf
 dem Display angezeigte IP-Adresse) auf und siehst:
 
+-   **Speicherbedarf** — ein beschrifteter Balken, der zeigt, wie viel vom
+    Flash-Speicher des Geräts das Statistik-Log selbst belegt, getrennt vom
+    Rest des auf dem Morserino gespeicherten Inhalts.
 -   **Zeit pro Koch-Lektion**, als Balken für jede geübte Lektion.
 -   **Fehlerrate pro Zeichen** — welche Zeichen dir am meisten
     Schwierigkeiten bereiten.

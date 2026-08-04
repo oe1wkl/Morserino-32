@@ -171,8 +171,6 @@
     .stats-bar{flex-grow:1;background:#e0e8ee;border-radius:3px;height:1.2em;margin:0 .6em;overflow:hidden;display:flex}
     .stats-bar .listen{background:#3a8a4a;height:100%}
     .stats-bar .send{background:#2d6cb0;height:100%}
-    .stats-bar .log{background:#c9822c;height:100%}
-    .stats-bar .other{background:#8a8f96;height:100%}
     .storage-bar{background:#e0e8ee;border-radius:3px;height:1.3em;overflow:hidden;display:flex;margin:.5em 0 8px;max-width:360px}
     .storage-bar .log{background:#c9822c;height:100%}
     .storage-bar .other{background:#8a8f96;height:100%}
@@ -1627,7 +1625,8 @@ async function loadPracticeStats(){
     document.getElementById('statsBox').style.display='';
     if(s.total!==undefined){
       var logSize=s.logSize||0, other=s.used-logSize, free=s.total-s.used;
-      var logPct=100*logSize/s.total, otherPct=100*other/s.total, freePct=100*free/s.total;
+      var safeTotal=s.total||1;   // total==0 means SPIFFS isn't mounted - avoid NaN%
+      var logPct=100*logSize/safeTotal, otherPct=100*other/safeTotal, freePct=100*free/safeTotal;
       var barLog=document.getElementById('storageBarLog'), barOther=document.getElementById('storageBarOther');
       barLog.style.width=logPct+'%';
       barLog.title='Practice log: '+(logSize/1024).toFixed(1)+' KB ('+logPct.toFixed(1)+'%)';
