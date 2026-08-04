@@ -695,6 +695,15 @@ You can choose between the following at the second level of the menu:
     instructions how to do this), or by using the method described in
     **Appendix 7 Using a Browser to set up M32
     Preferences**.
+-   **Practice Set**: Generates random characters from a pool you pick
+    yourself, right on the device – e.g. just the few characters you
+    personally find difficult. Build (and change) the pool with the
+    **Practice Set** entry in the preferences menu (see **Preferences
+    regarding Practice Set** below); it is saved on the device and stays
+    in effect until you change it again. This is unrelated to the Koch
+    Trainer's own **Custom Chars** lesson (section **5.4.1**, last
+    paragraph) – the two character sets are stored and edited
+    separately.
 
 ::: note
 The file player mode remembers where you stopped. (Exit this mode by
@@ -880,7 +889,7 @@ In this mode, the prompt word will not normally be displayed; only your
 response will be shown.
 
 The sub-menus are the same as for the CW Generator: Random, CW Abbrevs,
-English Words, Call Signs, Mixed and File Player.
+English Words, Call Signs, Mixed, File Player and Practice Set.
 
 Like in CW Generator mode, you **start** this mode **by pressing a
 paddle** (or the ENCODER, or – if you are using one – the straight
@@ -1152,6 +1161,16 @@ It means you can switch between training your characters and using a
 different text file for the file player. Setting **Koch Sequence** to
 M32, LCWO, LICW, or CW Academy reverts to the "normal" Koch Trainer
 option.
+
+::: note
+Looking for a quicker way to just drill a handful of characters you
+find difficult, without going through a text file or the Koch lesson
+mechanism? See **Practice Set**, a separate feature reachable directly
+under **CW Generator** and **Echo Trainer** (not under Koch Trainer) –
+described where those modes are introduced, and in **Preferences
+regarding Practice Set**. It uses its own, separately stored character
+set and does not affect or get affected by **Custom Chars** here.
+:::
 
 ### Koch: Learn New Chr
 
@@ -2539,6 +2558,59 @@ The item shown when you start this is the currently selected network configurati
 The first entry (numbered 0) lets you choose EspNow (WiFi peer-to-peer
 communication) instead of using an access point.
 
+### Practice Stats
+
+::: note
+M32 Pocket only.
+:::
+
+The Morserino quietly keeps a log of your Koch-trainer practice: how long
+you've spent at each lesson, and how often you get each character right or
+wrong when the Echo Trainer checks your response. Since the small display
+isn't a great place to browse a history, you view it in a web browser
+instead.
+
+Select **Practice Stats** under **WiFi Functions**. Like Upload File and
+Update Firmware, the Morserino connects to **your own WiFi network** as a
+client (after doing the network configuration and network selection
+described above — see **WiFi Select** just above) and shows you its IP
+address on that network. No internet access is actually required — your
+phone or computer just needs to be on the *same* WiFi network as the
+Morserino. Once connected, point a browser at *http://m32.local* (or the
+IP address shown on the display) to see:
+
+-   **Time spent per Koch lesson**, as a bar for each lesson you've
+    practiced.
+-   **Error rate per character** — which characters trip you up most often.
+-   **Session history** — a list of individual practice sessions with their
+    date, lesson, and duration.
+
+::: note
+The Morserino has no built-in clock. If your WiFi network has internet
+access, it first tries to fetch the time automatically (NTP); either way, it
+also gets the current date and time from your browser the moment you open
+this page (no internet needed for that), and remembers it across ordinary
+sleep/wake cycles (the **FN** button). Only setting the physical **power
+switch** to OFF, or fully draining the battery, clears it again — so if you
+do that between practice sessions, expect some sessions in the history to
+show up without a date until the next time you sync. Nothing is lost, only
+the date label is missing for those.
+:::
+
+A **Clear Log** button at the bottom of the page erases the whole history —
+useful if you want to start tracking fresh. This cannot be undone.
+
+You can switch this logging off entirely in the preferences menu — see
+**Practice Stats** in section **Preferences regarding Player Identity and
+Scores**.
+
+::: note
+If you mostly connect via USB rather than WiFi, the same statistics are also
+available in the **M32 Configuration Tool** (`Software/Utilities/m32_config_tool.html`)
+under the **Koch** tab, below the Custom Character Set section — no WiFi
+needed there at all.
+:::
+
 ## Go To Sleep
 
 This menu item, when selected, puts the Morserino-32 into a deep sleep
@@ -2694,13 +2766,14 @@ to all modes of the Morserino-32.
 |---|---|---|
 | Encoder Click | Turning the encoder may generate a short tone burst, or be silent | Off / **On** |
 | Tone Pitch Hz | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the F major scale from Bb3 to Bb5 (2 octaves) |
+| Tone Softness | (Only for M32 Pocket) Softens the attack and release edges of the CW side tone, similar to what an RC low-pass filter does to the keying edges in a real transceiver. Reduces harshness, especially on short elements such as a single dit. Takes effect immediately. | 1 – 10 ms, in steps of 1 ms (**5 ms**) |
 | Time Out | If the time specified in this preference passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the FN button. | No timeout / **5 min** / 10 min / 15 min |
 | Quick Start | Allows you to bypass the initial menu selection, i.e. at startup the device will immediately begin executing the mode that had been in effect before last shutdown. | ON / **OFF** |
 | Output Case | This changes the case of decoded characters on the display (and also on serial output via USB, and on Bluetooth keyboard output!) from lower case to UPPER CASE. | **lower** / UPPER |
 | Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
 | Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
 | Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
-| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
+| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in section **6.2.2**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 
 
 
@@ -2720,8 +2793,8 @@ to **Straight Key** in order to use a straight key).
 | CurtisB DitT% | Timing in Curtis B mode for dits; see the section **5.1 CW Keyer** Also influences the behavior in Ultimatic mode!                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
 | AutoChar Spce | Minimum spacing between characters | Off / min. 2 / **3** / 4 dots |
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
-| BLT Kbd Output | Defines what is being sent via Bluetooth (Bluetooth keyboard functionality). The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* | **Nothing** / Vband Keying / Decoded / Vband+Decoded / Generic Kbd |
-| BLT \<AR> | Only relevant in **Generic Kbd** mode (see **BLT Kbd Output** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
+| Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* The last option, **BLE Serial**, instead makes the M32 Serial Protocol (see **Appendix 8**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
+| BLT \<AR> | Only relevant in **Generic Kbd** mode (see **Bluetooth Use** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
 
 
 
@@ -2737,6 +2810,17 @@ select which order you want to follow.
 | Koch Sequence | This determines the sequence of characters when you use the Koch method for learning and training. You can also use your customized character set by choosing Custom Chars – see the section **5.4.1 Koch: Select Lesson**, the last paragraph.   |   **M32** (native order, also used by JLMC – Just Learn Morse Code) / LCWO / CW Academy / LICW Carousel / Custom Chars / |
 | LICW Carousel | This defines the "Entry Point" into the LICW Carousel curriculum (only relevant if the preference **Koch Sequence** is set to **LICW Carousel**). When you start a course in BC1, you should set this accordingly, and also set it again when you join the carousel classes for BC2.   | **BC1: r e a** / BC1: t i n / BC1: p g s / BC1: l c d / BC1: h o f / BC1: u w b / BC2: k m y / BC2: 5 9 , / BC2: q x v / BC2: 7 3 ? / BC2: \<ar> \<sk> = / BC2: 1 6 . / BC2: z j /  BC2: 2 8 \<bk> / BC2: 4 0 |
 
+
+
+### Preferences regarding Practice Set
+
+This is unrelated to the Koch Character Sequence above – it feeds the
+**Practice Set** entries under **CW Generator** and **Echo Trainer**
+(sections **5.2** and **5.3**), not the Koch Trainer.
+
+| Preference Name | Description | Values |
+|---|---|---|
+| Practice Set | Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation, click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as "(not set)" until you have added at least one character. | *(opens the picker; not an adjustable value)* |
 
 
 
@@ -2809,13 +2893,14 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 
 ### Preferences regarding Player Identity and Scores
 
-These items appear at the very end of the preferences list. The first two set your personal identity, which is used by the **Fight the Pileup** game and by the **QSO Bot** (section **5.5.4 QSO Bot**); the third clears the stored game scores. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).
+These items appear at the very end of the preferences list. The first two set your personal identity, which is used by the **Fight the Pileup** game and by the **QSO Bot** (section **5.5.4 QSO Bot**); the third clears the stored game scores. The fourth (M32 Pocket only) switches Practice Stats logging on or off. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).
 
 | Preference Name | Description | Values |
 |---|---|---|
 | Call Sign | Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in **Fight the Pileup** and the **QSO Bot**. | up to 8 characters (stored as UPPER CASE) |
 | Op Name | Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case and used together with your call sign in **Fight the Pileup**. | up to 8 characters (stored as UPPER CASE) |
 | Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, the **Radio Cave** saved progress, and the **Trailblazer**, **Fox Hunt**, and **Memory Chain** high-score tables. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
+| Practice Stats | **M32 Pocket only.** Switches the Koch-lesson-time and per-character error-rate logging described under **Practice Stats** (section **WiFi Functions**) on or off. Turning it off does not erase what was already logged — use the Clear Log button on the Practice Stats web page for that. | **On** / Off |
 
 
 
@@ -3327,13 +3412,56 @@ purpose:
 -   See also the description of the **Serial Output** preference in
     section **6.2.1 General Preferences**.
 
+### Using the M32 Serial Protocol over Bluetooth (BLE Serial)
+
+The M32 Serial Protocol is not tied to the USB cable: when the
+preference **Bluetooth Use** (see section **6.2.2 Preferences regarding
+Key, Paddles and Keyer**) is set to **BLE Serial**, the very same
+protocol is also available over Bluetooth Low Energy. This is particularly useful for phones and tablets — on
+iOS, for example, apps cannot open a classic serial connection over
+Bluetooth at all, while BLE works fine. An app can remote-control the
+Morserino exactly like a program connected via USB, including sending
+text that the Morserino keys as CW (`PUT cw/play/...`).
+
+After selecting this option (it takes effect on the next return to the
+main menu), the Morserino advertises itself as "**Morserino-32**"
+whenever it is at the main menu or in one of the training modes and no
+client is connected. No pairing is necessary —
+connecting works like plugging in a USB cable, and the app starts the
+session with the usual `PUT device/protocol/on` command.
+
+A few things to be aware of:
+
+-   USB and BLE sessions are independent and can even be active at the
+    same time; each is started and ended with its own
+    `PUT device/protocol/on` / `off`.
+-   Any function that needs the WiFi radio (WiFi transceiver modes,
+    multiplayer games, file upload, firmware update, WiFi
+    configuration) suspends the Bluetooth connection for the remainder
+    of that activity — a short notice ("BLE Ser. susp.") appears on the
+    display; it becomes available again when you return to the
+    main menu.
+-   The **Bluetooth Use** selector assigns the Bluetooth radio either
+    to the keyboard output (Appendix 9) or to the serial protocol, so
+    BLE Serial and the Bluetooth keyboard can never be active at the
+    same time.
+-   An active protocol session prevents the automatic power-off
+    timeout, just like a USB session does — remember this when running
+    on battery.
+
+For developers: the technical details (service UUIDs, framing,
+transport behavior) are described in the *M32 Protocol* description in
+the `Documentation/Protocol Description` folder on GitHub; a ready-made
+test and demo script (`ble_m32_test.py`, using Python and *bleak*) can
+be found in the `devdocs/ble-serial` folder.
+
 ## Appendix 9: Using the Bluetooth Keyboard functionality
 
 In "CW Keyer" mode, the M32 can send the keyed Morse code as keyboard
 codes via Bluetooth to a computer (including cell phones and tablets).
 
-To do this, the "**BLT Kbd Output**" setting must be set accordingly
-(for more information on the available options, see section  **6.2.2
+To do this, the "**Bluetooth Use**" setting must be set to one of the
+keyboard options (for more information, see section  **6.2.2
 Preferences regarding Key, Paddles and Keyer**).
 
 ::: note
@@ -3722,7 +3850,7 @@ abbreviations uncommon in English are in square brackets \[\].
 | Term | Definition |
 |------|------------|
 | Access Point | A WiFi router or base station that wireless devices connect to in order to communicate over a network. |
-| BLE | Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output. |
+| BLE | Bluetooth Low Energy — a power-efficient variant of Bluetooth used for wireless keyboard output and for the M32 Serial Protocol over Bluetooth (see the Bluetooth Use preference). |
 | CW | Continuous Wave — the traditional term for Morse code communication, where a radio carrier is keyed on and off. |
 | CW Keyer | A device (or mode) that automatically generates properly timed dits and dahs from paddle input. |
 | Deep Sleep | A very low power state where the microcontroller is mostly shut off. The device can be woken up by pressing the FN button. |
