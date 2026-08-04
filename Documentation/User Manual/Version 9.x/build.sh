@@ -17,6 +17,20 @@
 #   ./build.sh de html      # build German HTML only
 #
 
+# Always operate on the directory this script lives in, and take the major
+# version from that directory's name ("Version 9.x" -> "9"). The release
+# workflow expects m32UserManual_v<major>_{en,de}.pdf, with <major> taken from
+# the tag; deriving it here instead of hardcoding it means a new major version
+# only needs the folder copied, never this script edited.
+cd "$(dirname "${BASH_SOURCE[0]}")" || exit 1
+
+MAJOR=$(basename "$PWD" | sed -n 's/^Version \([0-9][0-9]*\)\.x$/\1/p')
+if [ -z "$MAJOR" ]; then
+    echo "ERROR: cannot derive the major version from the directory name '$(basename "$PWD")'."
+    echo "       Expected a directory named 'Version <N>.x'."
+    exit 1
+fi
+
 STYLE="style.css"
 
 build_pdf() {
@@ -24,7 +38,7 @@ build_pdf() {
     local format=${2:-pdf}
     local input="manual_${lang}.md"
     local html_output="manual_${lang}.html"
-    local pdf_output="m32UserManual_v9_${lang}.pdf"
+    local pdf_output="m32UserManual_v${MAJOR}_${lang}.pdf"
 
     # Language-specific settings
     if [ "$lang" = "de" ]; then
@@ -122,7 +136,7 @@ run_build() {
 
     echo ""
     echo "=== Build summary ==="
-    for l in "${ok[@]}";   do echo "  OK:   m32UserManual_v9_${l}.pdf"; done
+    for l in "${ok[@]}";   do echo "  OK:   m32UserManual_v${MAJOR}_${l}.pdf"; done
     for l in "${fail[@]}"; do echo "  FAIL: $l"; done
 
     [ ${#fail[@]} -eq 0 ]

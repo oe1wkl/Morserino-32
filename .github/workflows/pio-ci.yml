@@ -8,6 +8,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v5
+
+      # Catch a major-version bump that forgot the user manual. The release
+      # workflow needs "Documentation/User Manual/Version <VERSION_MAJOR>.x/"
+      # to exist and to build PDFs named for that version; without this check
+      # the mismatch only surfaces when a tag is pushed, long after the fact.
+      - name: Check user manual matches firmware major version
+        run: '"Documentation/User Manual/new-major-version.sh" --check'
+
       - uses: actions/cache@v4
         with:
           path: |

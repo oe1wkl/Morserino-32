@@ -74,6 +74,45 @@ Before you tag, make sure of these — the workflow fails fast on each:
    `.md` against `master`'s last PDF commit. Your edited `.md` must
    be on `master` for that comparison to fire.
 
+## BUMPING TO A NEW MAJOR VERSION
+
+Do this once, on `master`, at the moment the major version changes (e.g.
+V8 → V9) — **not** at tagging time. Two things have to move together:
+
+1. `#define VERSION_MAJOR` in `Software/src/Version 6 and newer/morsedefs.h`
+   (set `VERSION_MINOR`/`VERSION_PATCH` to 0 and `BETA true` if the new
+   major starts as a beta).
+2. A user manual folder `Documentation/User Manual/Version <major>.x/`.
+   The release workflow derives `<major>` from the tag and *requires* that
+   folder, and requires `build.sh` inside it to emit
+   `m32UserManual_v<major>_{en,de}.pdf`.
+
+Step 2 is scripted — after editing `morsedefs.h`, run:
+
+```sh
+"Documentation/User Manual/new-major-version.sh"
+```
+
+It copies the previous major's folder (sources only — never the built
+`.html`/`.pdf`), and rewrites the version strings that are easy to miss by
+hand: both title pages (version, edition line, "revised for firmware
+version N.x"), the intro paragraph in `manual_en.md`/`manual_de.md`, and
+the `m32_V<major>.0.bin` examples in the update instructions. `build.sh`
+needs no edit at all — since V9 it derives its version from its own folder
+name. Then write the actual new-version content into the two `.md` files
+and commit the folder.
+
+**The safety net:** `pio-ci.yml` runs `new-major-version.sh --check` on
+every push. It fails if `VERSION_MAJOR` has no matching manual folder, if
+`build.sh` there would produce the wrong PDF filenames, or if any of the
+version anchors above still names the old version. So a forgotten bump
+shows up on the next push to `master`, not when a tag is pushed weeks
+later. You can run the same check locally at any time:
+
+```sh
+"Documentation/User Manual/new-major-version.sh" --check
+```
+
 ## TAG FORMAT — DETAILS
 
 ### Stable
