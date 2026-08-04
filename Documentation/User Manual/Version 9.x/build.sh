@@ -136,7 +136,13 @@ run_build() {
 
     echo ""
     echo "=== Build summary ==="
-    for l in "${ok[@]}";   do echo "  OK:   m32UserManual_v${MAJOR}_${l}.pdf"; done
+    for l in "${ok[@]}"; do
+        if [ "$format" = "html" ]; then
+            echo "  OK:   manual_${l}.html"
+        else
+            echo "  OK:   m32UserManual_v${MAJOR}_${l}.pdf"
+        fi
+    done
     for l in "${fail[@]}"; do echo "  FAIL: $l"; done
 
     [ ${#fail[@]} -eq 0 ]
