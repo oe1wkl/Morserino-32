@@ -24,7 +24,7 @@ build_pdf() {
     local format=${2:-pdf}
     local input="manual_${lang}.md"
     local html_output="manual_${lang}.html"
-    local pdf_output="m32UserManual_v8_${lang}.pdf"
+    local pdf_output="m32UserManual_v9_${lang}.pdf"
 
     # Language-specific settings
     if [ "$lang" = "de" ]; then
@@ -122,7 +122,7 @@ run_build() {
 
     echo ""
     echo "=== Build summary ==="
-    for l in "${ok[@]}";   do echo "  OK:   m32UserManual_v8_${l}.pdf"; done
+    for l in "${ok[@]}";   do echo "  OK:   m32UserManual_v9_${l}.pdf"; done
     for l in "${fail[@]}"; do echo "  FAIL: $l"; done
 
     [ ${#fail[@]} -eq 0 ]
