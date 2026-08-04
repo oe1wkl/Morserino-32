@@ -60,8 +60,9 @@ namespace MorsePracticeStats {
     // fine, since the browser-based /api/time sync still covers that case).
     void tryNtpSync();
 
-    size_t usedBytes();
+    size_t usedBytes();     // whole SPIFFS filesystem, not just this log - includes player.txt, uploads, etc.
     size_t totalBytes();
+    size_t logBytes();      // size of /stats.jsonl alone
     void   clearLog();
 
 }  // namespace MorsePracticeStats

@@ -2,14 +2,20 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc" />
+  <meta name="generator" content="pandoc 3.10.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Morserino-32 User Manual</title>
   <style>
-    code{white-space: pre-wrap;}
+    /* Default styles provided by pandoc.
+    ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+    */
     span.smallcaps{font-variant: small-caps;}
-    div.columns{display: flex; gap: min(4vw, 1.5em);}
-    div.column{flex: auto; overflow-x: auto;}
+    div.columns{display: flex; gap: 1.5em;}
+    div.column{flex: auto;}
+    @media screen {
+    div.columns{gap: min(4vw, 1.5em);}
+    div.column{overflow-x: auto;}
+    }
     div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
     /* The extra [class] is a hack that increases specificity enough to
        override a similar rule in reveal.js */
@@ -2336,6 +2342,7 @@ The font family used is Lato.</p>
 <p>The Morserino quietly keeps a log of your Koch-trainer practice: how long you’ve spent at each lesson, and how often you get each character right or wrong when the Echo Trainer checks your response. Since the small display isn’t a great place to browse a history, you view it in a web browser instead.</p>
 <p>Select <strong>Practice Stats</strong> under <strong>WiFi Functions</strong>. Like Upload File and Update Firmware, the Morserino connects to <strong>your own WiFi network</strong> as a client (after doing the network configuration and network selection described above — see <strong>WiFi Select</strong> just above) and shows you its IP address on that network. No internet access is actually required — your phone or computer just needs to be on the <em>same</em> WiFi network as the Morserino. Once connected, point a browser at <em>http://m32.local</em> (or the IP address shown on the display) to see:</p>
 <ul>
+<li><strong>Storage</strong> — a labeled bar showing how much of the device’s flash your practice log itself takes up, separate from everything else stored on the Morserino.</li>
 <li><strong>Time spent per Koch lesson</strong>, as a bar for each lesson you’ve practiced.</li>
 <li><strong>Error rate per character</strong> — which characters trip you up most often.</li>
 <li><strong>Session history</strong> — a list of individual practice sessions with their date, lesson, and duration.</li>

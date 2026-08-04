@@ -171,6 +171,9 @@
     .stats-bar{flex-grow:1;background:#e0e8ee;border-radius:3px;height:1.2em;margin:0 .6em;overflow:hidden;display:flex}
     .stats-bar .listen{background:#3a8a4a;height:100%}
     .stats-bar .send{background:#2d6cb0;height:100%}
+    .storage-bar{background:#e0e8ee;border-radius:3px;height:1.3em;overflow:hidden;display:flex;margin:.5em 0 8px;max-width:360px}
+    .storage-bar .log{background:#c9822c;height:100%}
+    .storage-bar .other{background:#8a8f96;height:100%}
     .stats-legend{font-size:13px;color:var(--muted);margin-bottom:8px}
     .stats-tag{display:inline-block;padding:2px 10px;border-radius:4px;font-size:12px;font-weight:700;color:#fff;margin-right:6px}
     .stats-tag.listen{background:#3a8a4a}
@@ -631,7 +634,16 @@
       <span class="status-badge" id="statsEnabledStatus" style="margin:0;padding:3px 10px;font-size:12px">Logging: &hellip;</span>
       <button class="btn btn-outline btn-sm" onclick="togglePracticeStatsEnabled()" id="statsEnabledToggleBtn" disabled>&hellip;</button>
     </div>
-    <div class="space-info" id="statsStorage"></div>
+    <div class="field-label">Storage</div>
+    <div class="storage-bar" id="storageBar">
+      <div class="log" id="storageBarLog" title=""></div>
+      <div class="other" id="storageBarOther" title=""></div>
+    </div>
+    <div class="stats-legend" style="max-width:360px">
+      <span class="stats-tag" style="background:#c9822c" id="legLog">Practice log</span>
+      <span class="stats-tag" style="background:#8a8f96" id="legOther">Other</span>
+      <span class="stats-tag" style="background:#e0e8ee;color:#333" id="legFree">Free</span>
+    </div>
 
     <div class="field-label" style="margin-top:16px">Time per Koch Lesson</div>
     <div class="stats-legend"><span class="stats-tag listen">Listen</span><span class="stats-tag send">Send</span> &mdash; <span id="statsTotalTime"></span></div>
@@ -1612,8 +1624,17 @@ async function loadPracticeStats(){
     if(!s){ hideLoading(); return; }   // Classic M32 / feature not built in — leave the box hidden
     document.getElementById('statsBox').style.display='';
     if(s.total!==undefined){
-      var pct=Math.round(100*s.used/s.total);
-      document.getElementById('statsStorage').textContent='Storage: '+formatSize(s.used)+' used / '+formatSize(s.total)+' total ('+pct+'%)';
+      var logSize=s.logSize||0, other=s.used-logSize, free=s.total-s.used;
+      var safeTotal=s.total||1;   // total==0 means SPIFFS isn't mounted - avoid NaN%
+      var logPct=100*logSize/safeTotal, otherPct=100*other/safeTotal, freePct=100*free/safeTotal;
+      var barLog=document.getElementById('storageBarLog'), barOther=document.getElementById('storageBarOther');
+      barLog.style.width=logPct+'%';
+      barLog.title='Practice log: '+(logSize/1024).toFixed(1)+' KB ('+logPct.toFixed(1)+'%)';
+      barOther.style.width=otherPct+'%';
+      barOther.title='Other: '+(other/1024).toFixed(1)+' KB ('+otherPct.toFixed(1)+'%)';
+      document.getElementById('legLog').textContent='Practice log: '+(logSize/1024).toFixed(1)+' KB ('+logPct.toFixed(1)+'%)';
+      document.getElementById('legOther').textContent='Other: '+(other/1024).toFixed(1)+' KB ('+otherPct.toFixed(1)+'%)';
+      document.getElementById('legFree').textContent='Free: '+(free/1024).toFixed(1)+' KB ('+freePct.toFixed(1)+'%)';
     }
     if(s.enabled!==undefined){
       var badge=document.getElementById('statsEnabledStatus'), btn=document.getElementById('statsEnabledToggleBtn');
