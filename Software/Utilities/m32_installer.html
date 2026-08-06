@@ -301,8 +301,9 @@
   <div class="box">
     <h2 class="card-title">Requirements</h2>
     <p class="intro-text">You need a browser that supports the <strong>Web Serial API</strong>, like
-       current versions of <strong>Chrome</strong>, <strong>Edge</strong> or <strong>Opera</strong> on
-       desktop PCs, and a USB cable <em>fit for data transfer</em>, not just for charging.</p>
+       current versions of <strong>Chrome</strong>, <strong>Edge</strong>, <strong>Opera</strong> or
+       <strong>Firefox</strong> on desktop PCs, and a USB cable <em>fit for data transfer</em>, not
+       just for charging.</p>
     <p class="intro-text">Owners of a classic Morserino-32 (1st and 2nd edition) also need the driver
        for the Silicon Labs <strong>CP210x USB to serial</strong> device.</p>
   </div>
@@ -1006,8 +1007,9 @@
   (async () => {
     if (!('serial' in navigator)) {
       el.unsupported.textContent =
-        'This browser cannot talk to serial devices. Use Chrome, Edge or Opera on a ' +
-        'desktop computer — Safari and Firefox do not support the Web Serial API.';
+        'This browser cannot talk to serial devices. Use a current version of Chrome, Edge, ' +
+        'Opera or Firefox (151 or newer) on a desktop computer — Safari does not support the ' +
+        'Web Serial API.';
       el.unsupported.hidden = false;
       el.btnConnect.disabled = true;
       return;

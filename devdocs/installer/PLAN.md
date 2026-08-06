@@ -515,7 +515,7 @@ fallback** — none of the registry, layout or pipeline work depends on which en
 | Native-USB Pocket re-enumerates after the final reset; port handle dies | Expect it; end with a plain "unplug and switch on" instruction rather than trying to reuse the port |
 | 5.3 MB download on a slow line looks like a hang | Separate download and write progress, both with byte counts |
 | `esptool-js` `fileArray` data format differs by version (binary string vs `Uint8Array`) | Pin the version, verify against the pinned one, note it in the file header |
-| Web Serial is Chrome/Edge/Opera only | Detect `navigator.serial` and say so plainly, with a link to the desktop updater |
+| Web Serial is unavailable in the visitor's browser | Detect `navigator.serial` and say so plainly. **Firefox 151 (May 2026) shipped the whole `SerialPort` surface unflagged, `setSignals` included**, so the supported set is now Chrome, Edge, Opera and Firefox; Safari is the remaining hold-out. Firefox Enterprise Policies disable it by default, which is a plausible support question. |
 | Site44/Dropbox serves the 5.3 MB image slowly or with a stale cache | Version the filename (already the convention); check propagation after the first publish |
 | a11y `firmware.bin` outgrows the tighter app partition | Size guard in the release workflow (§6, item 1) |
 
@@ -544,7 +544,8 @@ device — see the reset trap in §4.4.
 | 14 | Either | Probe a blank board / device asleep | "unknown", no error shown |
 | 15 | Either | Probe, then cancel | Device not left with sleep suppressed |
 | 16 | Pocket | Whole flow with VoiceOver, keyboard only | Every step announced and operable |
-| 17 | — | Firefox / Safari | Clear "browser not supported" |
+| 17 | Either | Whole flow in **Firefox 151+** | Flashes, including the reset |
+| 18 | — | Safari, or Firefox < 151 | Clear "browser not supported" |
 
 ---
 
