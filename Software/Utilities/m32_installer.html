@@ -114,6 +114,7 @@
   }
   h2.card-title:focus { outline: 3px solid var(--accent2); outline-offset: 4px; }
   .card-sub { font-size: 16px; font-style: italic; color: var(--text); margin-bottom: 18px; }
+  .intro-text { margin-top: 12px; }
 
   /* ── Small uppercase field labels ── */
   .field-label, legend.field-label {
@@ -289,16 +290,21 @@
   <h1 class="page-title">Install firmware for Morserino-32<span class="badge-new">new</span></h1>
   <p class="page-subtitle">One installer for every Morserino — it recognises which one you plugged in.</p>
 
-  <div class="box intro">
-    <p>You need <strong>Chrome</strong>, <strong>Edge</strong> or <strong>Opera</strong> on a desktop
-       computer, and a USB cable <em>fit for data transfer</em>, not just for charging. Owners of a
-       classic Morserino-32 (1st and 2nd edition) also need the driver for the Silicon Labs
-       <strong>CP210x USB to serial</strong> device.</p>
-    <p>&nbsp;</p>
-    <p>This one page installs the firmware for the <strong>classic Morserino-32</strong> and for the
-       <strong>M32&nbsp;Pocket</strong> — including the Pocket's <strong>Accessibility Edition</strong>,
-       which speaks its menus aloud. You no longer have to know which page to start on: connect the
-       device and it works out the rest.</p>
+  <div class="box">
+    <h2 class="card-title">What this installer does</h2>
+    <p class="intro-text">This one page installs the firmware for the <strong>classic Morserino-32</strong>
+       and for the <strong>M32&nbsp;Pocket</strong> — including the Pocket's
+       <strong>Accessibility Edition</strong>, which speaks its menus aloud. You no longer have to know
+       which page to start on: connect the device and it works out the rest.</p>
+  </div>
+
+  <div class="box">
+    <h2 class="card-title">Requirements</h2>
+    <p class="intro-text">You need a browser that supports the <strong>Web Serial API</strong>, like
+       current versions of <strong>Chrome</strong>, <strong>Edge</strong> or <strong>Opera</strong> on
+       desktop PCs, and a USB cable <em>fit for data transfer</em>, not just for charging.</p>
+    <p class="intro-text">Owners of a classic Morserino-32 (1st and 2nd edition) also need the driver
+       for the Silicon Labs <strong>CP210x USB to serial</strong> device.</p>
   </div>
 
   <p id="unsupported" class="err-msg" role="alert" hidden></p>
@@ -313,7 +319,8 @@
       <div class="step"><div class="step-num" aria-hidden="true">2</div>
         <div class="step-text">Connect it to this computer with a <strong>USB data cable</strong>.</div></div>
       <div class="step"><div class="step-num" aria-hidden="true">3</div>
-        <div class="step-text">Click <strong>Connect</strong> and pick the Morserino from the pop-up.</div></div>
+        <div class="step-text">Click <strong>Connect</strong> and pick the port your Morserino is
+          connected to from the pop-up.</div></div>
     </div>
     <hr class="section-rule">
     <div class="button-row">
