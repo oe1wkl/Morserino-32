@@ -2223,28 +2223,39 @@ int pitch() {                 // find out which pitch to use for the generated C
 
 
 
+/// set by fetchNewWord(), consumed by the next dispGeneratedChar(): the character
+/// about to be shown is the first one of a new word (see the word-wrap look-ahead below)
+static boolean newWordForDisplay = false;
+
 void dispGeneratedChar() {
     static char charBuf[6];   // max 2 UTF-8 bytes + null (prosign expansion happens later)
     int charBufLen = 0;
- 
+    boolean wordStart = newWordForDisplay;      // consume it here, whether or not we display anything
+    newWordForDisplay = false;
+
     if (generatorMode == KOCH_LEARN ||
             (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_CHAR &&
             (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
             (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY))
     {
-        // CW Generator only: clearText still holds the rest of the current
-        // word (up to the next space), so -- unlike live keyed/decoded
-        // input, where we only find out a word is finished once it's over
-        // -- its length is already known before the first character is
-        // shown. Use that to wrap pre-emptively at the word boundary
-        // instead of leaving it to MorseOutput's per-character wrap, which
-        // only ever sees one token at a time and so can split a word across
-        // lines. Echo Trainer / Trx / LoRa / WiFi playback are untouched.
-        if (morseState == morseGenerator) {
+        // CW Generator only, and only for the first character of a word:
+        // clearText still holds the whole word (up to the next space), so --
+        // unlike live keyed/decoded input, where we only find out a word is
+        // finished once it's over -- its length is already known before the
+        // first character is shown. Use that to wrap pre-emptively at the
+        // word boundary instead of leaving it to MorseOutput's per-character
+        // wrap, which only ever sees one token at a time and so can split a
+        // word across lines. Echo Trainer / Trx / LoRa / WiFi playback are
+        // untouched. The line break is display-only: it deliberately does not
+        // go through displayGeneratedMorse(), which would also push a "\n"
+        // into the serial/BLE character echo and, with the Bluetooth keyboard
+        // active, type a Return on the host - a screen layout decision has no
+        // business showing up there.
+        if (wordStart && morseState == morseGenerator) {
             int nextSpace = clearText.indexOf(' ');
             uint16_t wordLen = (uint16_t) ((nextSpace == -1) ? clearText.length() : nextSpace);
             if (MorseOutput::wordNeedsWrap(wordLen)) {
-                displayGeneratedMorse(REGULAR, "\n");
+                MorseOutput::printToScroll(REGULAR, "\n", true, encoderState == scrollMode);
             }
         }
 
@@ -2476,6 +2487,7 @@ void fetchNewWord() {
       }
       CWword = generateCWword(clearText); CWwordPos = 0;
       echoTrainerWord = clearText;
+      newWordForDisplay = true;                 // next dispGeneratedChar() shows the 1st char of this word
     } /// else (= not in loraTrx or wifiTrx mode, or in PlayCW, or other generator modes)
 } // end of fetchNewWord()
 

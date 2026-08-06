@@ -920,15 +920,24 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
 /// generator, which already knows the whole word up front (in clearText)
 /// before showing its first character; live keyed/decoded input has no such
 /// look-ahead, so it still relies on the plain per-character wrap.
-/// Returns false (no point wrapping) if the line is already empty, since a
-/// word too wide for one whole line has to hard-wrap somewhere regardless.
+/// Returns false (no point wrapping) if the line is already empty, and also
+/// if the word is wider than a whole line: that one has to be hard-wrapped
+/// somewhere no matter what, so it is left to the per-character wrap - the
+/// pre-emptive break would otherwise fire again for every single character
+/// (each time the rest of the word still doesn't fit), stranding them one
+/// per line.  English Words with "unlimited" length reaches 17 characters,
+/// which is longer than the OLED's 14-column line.
 boolean MorseOutput::wordNeedsWrap(uint16_t wordLen) {
 #ifdef CONFIG_TFT
+  display.setFont(DialogInput_plain_15);        // measure in the font the scroll area is drawn in,
+                                                // whatever the last display user left behind
   uint16_t width = display.getWidth() / display.getStringWidth("A");
 #else
   uint16_t width = NoOfCharsPerLine;
 #endif
-  return (scrollScreenPos > 0) && (scrollScreenPos + wordLen > width);
+  if (scrollScreenPos == 0 || wordLen > width)
+    return false;
+  return (scrollScreenPos + wordLen > width);
 }
 
 
