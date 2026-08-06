@@ -82,6 +82,7 @@ char textBuffer[NoOfLines][2 * NoOfCharsPerLine + 1]; /// we need extra room for
 
 uint8_t linePointer = 0;    /// defines the current bottom line
 uint8_t bottomLine = 0;
+static uint8_t scrollScreenPos = 0;   /// current column on the scroll line; used by printToScroll_internal() and by wordNeedsWrap()
 
 const int8_t MorseOutput::maxPos = NoOfLines - NoOfVisibleLines;
 int8_t MorseOutput::relPos = MorseOutput::maxPos;
@@ -809,7 +810,6 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
   //unsigned char ch;
   //
   static uint8_t pos = 0;
-  static uint8_t screenPos = 0;
   static FONT_ATTRIB lastStyle = REGULAR;
   uint8_t l = text.length();
   if (l == 0) {                               // an empty string signals we should clear the buffer
@@ -817,7 +817,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
       textBuffer[i][0] = (char) 0;                    /// empty this line
     }
     refreshScrollArea((NoOfLines + bottomLine - (NoOfVisibleLines - 1)) % NoOfLines);
-    pos = screenPos = 0;                                // reset the position pointers
+    pos = scrollScreenPos = 0;                                // reset the position pointers
     return;
   }
 
@@ -831,19 +831,19 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
   }
 
 #ifdef CONFIG_TFT
-  int textTooLong = (screenPos + l > display.getWidth()/display.getStringWidth("A"));
+  int textTooLong = (scrollScreenPos + l > display.getWidth()/display.getStringWidth("A"));
 #else
-  int textTooLong = (screenPos + l > NoOfCharsPerLine);
+  int textTooLong = (scrollScreenPos + l > NoOfCharsPerLine);
 #endif
 
   if (textTooLong) {                 // we need to scroll up and start a new line
     MorseOutput::newLine(scroll);
-    pos = 0;  screenPos = 0; lastStyle = REGULAR;
+    pos = 0;  scrollScreenPos = 0; lastStyle = REGULAR;
   }
 
 #ifdef CONFIG_TFT
   // After a wrap to a new line, discard a leading space (word-wrap artefact, LCD only)
-  if (screenPos == 0 && l > 0 && stripped[0] == ' ') {
+  if (scrollScreenPos == 0 && l > 0 && stripped[0] == ' ') {
     stripped.remove(0, 1);
     l = stripped.length();
   }
@@ -901,14 +901,34 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
   if (relPos == maxPos) {                                     // we show the bottom lines on the screen, therefore we add the new stuff  immediately
     /// and send string to screen, avoiding refresh of complete line
     //DEBUG("relPos: " + String(relPos));
-    MorseOutput::printOnScroll(NoOfVisibleLines - 1, style, screenPos, t);               // these characters are 9 pixels wide,
+    MorseOutput::printOnScroll(NoOfVisibleLines - 1, style, scrollScreenPos, t);               // these characters are 9 pixels wide,
   }
   display.setFont(DialogInput_plain_15);;
-  screenPos += (display.getStringWidth(t) / C_WIDTH);
+  scrollScreenPos += (display.getStringWidth(t) / C_WIDTH);
   if (linebreak) {
     MorseOutput::newLine(scroll);
-    pos = 0;  screenPos = 0; lastStyle = REGULAR;
+    pos = 0;  scrollScreenPos = 0; lastStyle = REGULAR;
   }
+}
+
+/// Query only, no side effects: would displaying `wordLen` more columns of
+/// text overflow the current scroll line? Used by the CW Generator to
+/// decide, before it starts revealing a word character-by-character,
+/// whether to wrap at the word boundary instead of relying on
+/// printToScroll_internal's per-character wrap (which only sees one token
+/// at a time and so cannot avoid splitting a word). Only makes sense for a
+/// generator, which already knows the whole word up front (in clearText)
+/// before showing its first character; live keyed/decoded input has no such
+/// look-ahead, so it still relies on the plain per-character wrap.
+/// Returns false (no point wrapping) if the line is already empty, since a
+/// word too wide for one whole line has to hard-wrap somewhere regardless.
+boolean MorseOutput::wordNeedsWrap(uint16_t wordLen) {
+#ifdef CONFIG_TFT
+  uint16_t width = display.getWidth() / display.getStringWidth("A");
+#else
+  uint16_t width = NoOfCharsPerLine;
+#endif
+  return (scrollScreenPos > 0) && (scrollScreenPos + wordLen > width);
 }
 
 
