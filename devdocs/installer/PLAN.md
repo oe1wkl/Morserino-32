@@ -571,11 +571,51 @@ What is still genuinely open:
 
 ## 12. Documentation duties (CLAUDE.md §7)
 
-- EN + DE manual: replace the two-installer description with one, and document the
-  edition choice and what "erase everything" costs.
+This is the **written TODO** that CLAUDE.md §7 requires. Nothing below is done yet; all
+of it lands with Phase 4, except the Firefox corrections, which are true *now* and are
+independent of this installer.
+
+### 12.1 Firefox 151 supports Web Serial — the manuals say it does not
+
+Firefox 151 for Desktop (May 2026) shipped the Web Serial API; MDN's compat data has the
+whole `SerialPort` surface at 151, unflagged, `setSignals` included. Several statements in
+both manuals are now wrong. These are **not** blocked on the installer work:
+
+| File | Line | Says | Should say |
+|---|---|---|---|
+| `manual_en.md` (V9) | 3304 | "This method does NOT work with Firefox or Safari browsers!" | Safari only; Firefox works from 151 |
+| `manual_de.md` (V9) | 3745 | "funktioniert **NICHT** mit Firefox oder Safari!" | same correction |
+| `manual_en.md` | 3290 | "Chrome and Microsoft Edge, and at least on some platforms also …" | add Firefox 151+ |
+| `manual_de.md` | 3729–3730 | same passage | add Firefox 151+ |
+| `manual_en.md` | 3888 | glossary: "Webserial … supported in Chrome, Edge, and Opera" | add Firefox 151+ |
+| `manual_de.md` | 4360 | same glossary entry | add Firefox 151+ |
+| `manual_en.md` | 2282, 2398, 2733, 3326 | "Chrome, Edge or Opera" | add Firefox |
+| `manual_de.md` | 2715, 2829, 3169, 3774 | "Chrome, Edge oder Opera" | add Firefox |
+
+Worth a sentence somewhere too: **Firefox Enterprise Policies disable Web Serial by
+default**, so a managed work machine can be on 151 and still be refused.
+
+### 12.2 With Phase 4 (one installer instead of two)
+
+- **EN + DE manual, Appendix 6**: replace the two-installer description with one page;
+  document the edition choice and what "erase everything" costs. The V8.x manuals are
+  frozen — V9.x only.
+- **`Documentation/FAQ/Morserino-32 Pocket FAQ.md`**, line 83: "there are links to two
+  different instances of the firmware flasher, one for the older Morserino-32 versions,
+  and one for the M32 Pocket" — **wrong the moment Phase 4 ships.** Line 81 also names
+  only Chrome and Edge (see §12.1).
 - `Software/README.md`: changelog entry for V9.
-- `devdocs/RELEASE_AUTOMATION_DESIGN.md`: extend §5 (filenames) and the platform list
-  for the third target.
-- `devdocs/audio-accessibility/HANDOFF.md`: Phase 4 "release + user-friendly flash site"
-  points here once this is built.
+- `devdocs/RELEASE_AUTOMATION_DESIGN.md`: extend §5 (filenames) and the platform list for
+  the third target.
+- `devdocs/audio-accessibility/HANDOFF.md`: its Phase 4 ("release + user-friendly flash
+  site") points here once this is built.
 - No firmware UI strings change, so nothing is owed to the voice clips (CLAUDE.md §8).
+
+### 12.3 The FAQ needs a general review
+
+Flagged by Willi, 2026-08-06, beyond the two lines above. `Morserino-32 Pocket FAQ.md` is
+86 lines and has not had a content pass in a long time (its last commit touched it only
+incidentally). It predates a lot of V9: the Accessibility Edition, the grid games and
+Memory Chain, BLE Serial, the QSO Bot difficulty setting, the snapshot rework. It is also
+titled as a *Pocket* FAQ while covering material that applies to both variants. Worth
+deciding whether it stays Pocket-specific or becomes the general M32 FAQ.
