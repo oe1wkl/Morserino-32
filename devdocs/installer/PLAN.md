@@ -226,6 +226,21 @@ throughout, so the slow case is never a blank wait.
 
 Written with `compress: true`; `eraseAll` only when the user asks for it (§4.5).
 
+**Restarting afterwards — a real trap.** `esptool-js`'s `after('hard_reset')` does *not*
+reset anything on its own: `HardReset.reset()` only ever calls `setRTS(false)`, i.e. it
+**releases** a line it assumes is already asserted. Call it by itself and nothing happens
+— the device sits in the bootloader until the user power-cycles it by hand. The line must
+be pulled low first:
+
+```js
+await transport.setRTS(true);   // EN low — chip held in reset
+await sleep(100);
+await loader.after('hard_reset');   // chip-specific release
+```
+
+This is exactly what esp-web-tools does (`hardResetDevice()` in its `flash.ts`), which is
+why the old installers rebooted the device and the first version of this one did not.
+
 ### 4.5 Data-preservation rules
 
 Two explicit choices, defaults chosen so the safe thing happens by accident:
@@ -240,7 +255,25 @@ Two explicit choices, defaults chosen so the safe thing happens by accident:
 When the selected edition differs from what the flash geometry suggests is installed,
 warn that the file-player text will be lost (SPIFFS moves).
 
-### 4.6 Accessibility of the installer itself
+### 4.6 Visual design
+
+The page **reuses the visual language of the pages it replaces** — same Lato faces from
+`css/`, the same tokens (`--accent #cb4b16`, `--box-bg #ddedf7`, `--box-border #677a85`,
+the 8/10/4 drop shadow, 7 px radius), the same bordered boxes, numbered step circles,
+uppercase field labels, custom-styled select and checkboxes, the beta/latest/older badge
+family, the version-info strip, and the animated Morse "M32" header. Someone arriving
+from morserino.info should not notice they have left it.
+
+What marks it as new: a **`new` badge** beside the title in the accent colour (same badge
+family as `latest`/`beta`) and the subtitle *"One installer for every Morserino — it
+recognises which one you plugged in."* The step-per-card layout is itself new; the old
+pages were a single card.
+
+Two deliberate departures: custom **radio** styling had to be invented (the old pages had
+no radios), and the page is **light-only**, matching the site, rather than following the
+system dark preference. The Morse header respects `prefers-reduced-motion`.
+
+### 4.7 Accessibility of the installer itself
 
 Not optional here: the Accessibility Edition's first install is done by, or for, a
 blind operator on a device that cannot yet speak. Requirements:
@@ -392,7 +425,7 @@ Two refinements worth having:
 
 Each phase ends in something testable; nothing user-visible changes before Phase 4.
 
-**Phase 1 — parity.** ⏳ **code complete, hardware test outstanding.** New page,
+**Phase 1 — parity.** ✅ **done, confirmed on real hardware 2026-08-06.** New page,
 `esptool-js` engine, three-step flow, targets from `targets.json`, installed-version
 probe with its grace exit, `sync-to-dropbox.sh` extended.
 *Done when:* a classic M32 and a standard Pocket can be flashed with any listed
@@ -418,11 +451,22 @@ found and fixed this way: the erase-everything warning contradicting the Accessi
 note about settings, and the "Found:" line showing the wrong board once the
 other-hardware escape hatch was on.
 
+**Hardware confirmation (Willi, 2026-08-06):** all three targets — classic M32, Pocket
+Standard, Pocket Accessibility — installed quickly and cleanly from the local test site.
+§9.1 is settled: `esptool-js` picked the right reset strategy for both boards unaided.
+Two follow-ups came out of that session and are fixed:
+
+1. **The device did not restart by itself**, unlike with the old installer — the
+   `after('hard_reset')` trap described in §4.4. Now asserts RTS first, as esp-web-tools
+   does, and the completion message says the Morserino is restarting.
+2. **The page did not look like morserino.info.** Restyled onto the old pages' design
+   tokens; see §4.6.
+
 **Not yet done, and deliberately:** nothing has been published. `sync-to-dropbox.sh` was
 rewritten but not run, so the live site is untouched. Phase 4 is where publishing happens.
 
-**Still needs real hardware** — the whole of §10, and §9.1 in particular. Everything
-above the serial layer is exercised; nothing below it is.
+**Still open from §10:** the erase-everything path, an interrupted flash, the local-file
+escape hatch, a foreign chip, and the screen-reader pass.
 
 **Phase 2 — Accessibility Edition.** Third target, filesystem part, flash-size guard,
 data-preservation warnings, edition selector. Manual artifact upload for testing.
@@ -478,6 +522,9 @@ fallback** — none of the registry, layout or pipeline work depends on which en
 ---
 
 ## 10. Test matrix
+
+In every flashing row, "boots" means **by itself**, without the user re-powering the
+device — see the reset trap in §4.4.
 
 | # | Board | Scenario | Expect |
 |---|---|---|---|

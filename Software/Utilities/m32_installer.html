@@ -17,103 +17,315 @@
   Flashing:  esptool-js, vendored verbatim at the bottom of this file
              (re-vendor with  python3 vendor-esptool.py  — never edit it here).
 
+  Visual language (fonts, tokens, boxes, badges, the Morse M32 header) is taken
+  from the pages this replaces, flash.html and flash-m32pocket.html, so the
+  installer still looks like the rest of morserino.info.
+
   Source of truth is this file in the Morserino-32 repository. It is copied to
   www.morserino.info/install.html by ~/sync-to-dropbox.sh.
 -->
 <style>
+  /* ── Local font-face declarations (same as site, self-contained fallback) ── */
+  @font-face { font-family: Lato; src: url('css/Lato-Regular.woff2')    format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+  @font-face { font-family: Lato; src: url('css/Lato-Italic.woff2')     format('woff2'); font-weight: 400; font-style: italic; font-display: swap; }
+  @font-face { font-family: Lato; src: url('css/Lato-Bold.woff2')       format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: Lato; src: url('css/Lato-BoldItalic.woff2') format('woff2'); font-weight: 700; font-style: italic; font-display: swap; }
+  @font-face { font-family: Lato; src: url('css/Lato-Black.woff2')      format('woff2'); font-weight: 900; font-style: normal; font-display: swap; }
+
+  /* ── Design tokens, unchanged from the pages this replaces ── */
   :root {
-    --bg: #ffffff; --fg: #1a1a1a; --muted: #5c5c5c; --line: #d8d8d8;
-    --panel: #f6f6f6; --accent: #0a5ea8; --accent-fg: #ffffff;
-    --ok: #1c6b32; --warn: #8a5300; --err: #b3261e;
+    --text:       #404040;
+    --accent:     #cb4b16;   /* orange-red — headings, highlights */
+    --accent2:    #c02713;   /* darker red  — callouts            */
+    --link:       #268bd2;
+    --muted:      #808080;
+    --box-bg:     #ddedf7;
+    --box-border: #677a85;
+    --box-shadow: 8px 10px 4px rgba(0,0,0,0.4);
+    --radius:     7px;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #16181c; --fg: #e9e9e9; --muted: #a8a8a8; --line: #3a3d43;
-      --panel: #1f2228; --accent: #4a9eea; --accent-fg: #0b1017;
-      --ok: #63c98a; --warn: #e0b062; --err: #ff8a80;
-    }
-  }
-  * { box-sizing: border-box; }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
-    margin: 0; padding: 2rem 1rem 4rem;
-    background: var(--bg); color: var(--fg);
-    font: 16px/1.55 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: #fff;
+    color: var(--text);
+    font-family: Lato, Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  main { max-width: 46rem; margin: 0 auto; }
-  h1 { font-size: 1.6rem; margin: 0 0 .3rem; }
-  h2 { font-size: 1.15rem; margin: 0 0 .8rem; }
-  h2:focus { outline: 2px solid var(--accent); outline-offset: 3px; }
-  .lede { color: var(--muted); margin: 0 0 2rem; }
-  section {
-    border: 1px solid var(--line); border-radius: 10px;
-    padding: 1.2rem 1.3rem; margin-bottom: 1rem; background: var(--panel);
+
+  .page { max-width: 860px; margin: 0 auto; padding: 36px 24px 60px; }
+
+  .box {
+    border: 2px solid var(--box-border);
+    border-radius: var(--radius);
+    background: var(--box-bg);
+    box-shadow: var(--box-shadow);
+    padding: 22px 28px;
+    margin-bottom: 28px;
   }
-  section[hidden] { display: none; }
-  fieldset { border: 1px solid var(--line); border-radius: 8px; margin: 0 0 1rem; padding: .8rem 1rem 1rem; }
-  legend { font-weight: 600; padding: 0 .35rem; }
-  label { display: block; margin: .35rem 0; }
-  select, input[type=text], input[type=file] {
-    font: inherit; padding: .4rem .5rem; max-width: 100%;
-    background: var(--bg); color: var(--fg);
-    border: 1px solid var(--line); border-radius: 6px;
+  .box[hidden] { display: none; }
+
+  /* ── Morse "M32" logo ── */
+  .morse-header { display: flex; align-items: center; justify-content: center; gap: 22px; margin-bottom: 18px; }
+  .morse-letter { display: flex; align-items: center; gap: 5px; }
+  .md { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); flex-shrink: 0; animation: mpulse 2.4s ease-in-out infinite; }
+  .mx { width: 26px; height: 10px; border-radius: 5px;  background: var(--accent); flex-shrink: 0; animation: mpulse 2.4s ease-in-out infinite; }
+  .morse-header *:nth-child(1)  { animation-delay: 0.00s; }
+  .morse-header *:nth-child(2)  { animation-delay: 0.15s; }
+  .morse-header *:nth-child(3)  { animation-delay: 0.30s; }
+  .morse-header *:nth-child(4)  { animation-delay: 0.45s; }
+  .morse-header *:nth-child(5)  { animation-delay: 0.60s; }
+  .morse-header *:nth-child(6)  { animation-delay: 0.75s; }
+  .morse-header *:nth-child(7)  { animation-delay: 0.90s; }
+  .morse-header *:nth-child(8)  { animation-delay: 1.05s; }
+  .morse-header *:nth-child(9)  { animation-delay: 1.20s; }
+  .morse-header *:nth-child(10) { animation-delay: 1.35s; }
+  .morse-header *:nth-child(11) { animation-delay: 1.50s; }
+  .morse-header *:nth-child(12) { animation-delay: 1.65s; }
+  @keyframes mpulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.18; } }
+  @media (prefers-reduced-motion: reduce) { .md, .mx { animation: none; } }
+
+  /* ── Title ── */
+  .page-title {
+    text-align: center; font-size: 30px; font-weight: 400;
+    color: var(--text); margin-bottom: 6px;
   }
+  .page-subtitle {
+    text-align: center; font-size: 18px; font-style: italic;
+    color: var(--accent); margin-bottom: 28px;
+  }
+  .badge-new {
+    display: inline-block; vertical-align: middle;
+    background: var(--accent); color: #fff; border: 1px solid var(--accent2);
+    border-radius: 4px; padding: 2px 9px; margin-left: 10px;
+    font-size: 12px; font-weight: 900; letter-spacing: 0.1em;
+    text-transform: uppercase; white-space: nowrap;
+    position: relative; top: -4px;
+  }
+
+  /* ── Card headings ── */
+  h2.card-title {
+    font-size: 24px; font-weight: 900; color: var(--accent);
+    margin-bottom: 4px;
+  }
+  h2.card-title:focus { outline: 3px solid var(--accent2); outline-offset: 4px; }
+  .card-sub { font-size: 16px; font-style: italic; color: var(--text); margin-bottom: 18px; }
+
+  /* ── Small uppercase field labels ── */
+  .field-label, legend.field-label {
+    font-size: 13px; font-weight: 700; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--box-border);
+    margin-bottom: 6px; padding: 0;
+  }
+  fieldset { border: none; margin-bottom: 16px; }
+
+  /* ── Select ── */
+  .select-wrapper { position: relative; margin-bottom: 16px; }
+  select {
+    width: 100%; appearance: none; background: #fff; color: var(--text);
+    border: 2px solid var(--box-border); border-radius: var(--radius);
+    padding: 10px 40px 10px 14px;
+    font-family: Lato, Arial, sans-serif; font-size: 17px;
+    cursor: pointer; outline: none; transition: border-color 0.2s;
+  }
+  select:hover, select:focus { border-color: var(--accent); }
+  select:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .select-arrow {
+    pointer-events: none; position: absolute; right: 13px; top: 50%;
+    transform: translateY(-50%); color: var(--accent); font-size: 11px;
+  }
+
+  /* ── Bordered choice rows (checkboxes and radios) ── */
+  .choice-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 10px; padding: 9px 14px;
+    background: #fff; border: 2px solid var(--box-border);
+    border-radius: var(--radius); cursor: pointer; user-select: none;
+    transition: border-color 0.2s;
+  }
+  .choice-row:hover { border-color: var(--accent); }
+  .choice-row:last-child { margin-bottom: 0; }
+  .choice-row input[type=checkbox], .choice-row input[type=radio] {
+    appearance: none; width: 16px; height: 16px; margin-top: 5px;
+    border: 2px solid var(--box-border); background: #fff;
+    cursor: pointer; flex-shrink: 0; position: relative;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .choice-row input[type=checkbox] { border-radius: 3px; }
+  .choice-row input[type=radio]    { border-radius: 50%; }
+  .choice-row input:checked { background: var(--accent); border-color: var(--accent); }
+  .choice-row input[type=checkbox]:checked::after {
+    content: ''; position: absolute; left: 3px; top: 0;
+    width: 5px; height: 9px; border: 2px solid #fff;
+    border-top: none; border-left: none; transform: rotate(45deg);
+  }
+  .choice-row input[type=radio]:checked::after {
+    content: ''; position: absolute; left: 2px; top: 2px;
+    width: 4px; height: 4px; border-radius: 50%; background: #fff;
+  }
+  .choice-row input:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+  .choice-row input:disabled { opacity: .4; cursor: not-allowed; }
+  .choice-label { font-size: 15px; color: var(--text); flex: 1; line-height: 1.5; }
+  .choice-label strong { font-weight: 700; }
+  .choice-label .sub { display: block; color: var(--muted); font-size: 13px; }
+
+  /* ── Badges ── */
+  .badge-beta, .badge-latest, .badge-older {
+    border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700;
+    letter-spacing: 0.07em; text-transform: uppercase; white-space: nowrap; margin-top: 2px;
+  }
+  .badge-beta   { background: #f3e0f7; color: #8a2be2; border: 1px solid #c9a0e8; }
+  .badge-latest { background: #d4edda; color: #256535; border: 1px solid #9dcc9d; }
+  .badge-older  { background: #e9ecef; color: #555;    border: 1px solid #bbb;    }
+
+  /* ── Version info strip ── */
+  .version-info {
+    display: flex; align-items: flex-start; gap: 10px;
+    margin-bottom: 20px; padding: 11px 14px;
+    background: #fff; border: 2px solid var(--box-border);
+    border-radius: var(--radius); font-size: 15px; min-height: 46px;
+  }
+  .version-detail { flex: 1; color: var(--text); line-height: 1.5; }
+  .version-detail strong { font-weight: 700; }
+  .version-detail .filename { color: var(--muted); font-size: 13px; }
+
+  /* ── Device summary ── */
+  dl.device { display: grid; grid-template-columns: max-content 1fr; gap: 4px 16px; margin-bottom: 18px; }
+  dl.device dt { font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--box-border); padding-top: 3px; }
+  dl.device dd { font-size: 17px; font-weight: 700; color: var(--text); }
+
+  /* ── Buttons ── */
+  .button-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 4px; }
   button {
-    font: inherit; font-weight: 600; cursor: pointer;
-    padding: .6rem 1.4rem; border-radius: 8px; border: 1px solid transparent;
-    background: var(--accent); color: var(--accent-fg);
+    background: var(--accent); color: #fff; border: none;
+    border-radius: var(--radius); padding: 13px 28px;
+    font-family: Lato, Arial, sans-serif; font-size: 17px; font-weight: 700;
+    letter-spacing: 0.04em; cursor: pointer;
+    transition: background 0.2s, box-shadow 0.2s;
+    box-shadow: 3px 4px 3px rgba(0,0,0,0.3);
   }
-  button.secondary { background: transparent; color: var(--fg); border-color: var(--line); }
-  button[disabled] { opacity: .5; cursor: not-allowed; }
-  :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
-  dl.device { display: grid; grid-template-columns: max-content 1fr; gap: .25rem .9rem; margin: 0 0 1.2rem; }
-  dl.device dt { color: var(--muted); }
-  dl.device dd { margin: 0; font-weight: 600; }
-  .note   { color: var(--muted); font-size: .9rem; margin: .3rem 0 0; }
-  .ok     { color: var(--ok);   font-weight: 600; }
-  .warn   { color: var(--warn); }
-  .err    { color: var(--err);  font-weight: 600; }
-  progress { width: 100%; height: 1.1rem; margin: .5rem 0 .2rem; }
-  ol.steps { margin: 0 0 1.2rem; padding-left: 1.3rem; }
-  ol.steps li { margin: .3rem 0; }
-  details { margin-top: 1.5rem; }
-  summary { cursor: pointer; font-weight: 600; }
+  button:hover:not([disabled]) { background: var(--accent2); box-shadow: 4px 5px 5px rgba(0,0,0,0.35); }
+  button:focus-visible { outline: 3px solid var(--accent2); outline-offset: 3px; }
+  button.secondary { background: #fff; color: var(--text); border: 2px solid var(--box-border); box-shadow: none; }
+  button.secondary:hover:not([disabled]) { background: #fff; border-color: var(--accent); color: var(--accent); box-shadow: none; }
+  button[disabled] { opacity: .45; cursor: not-allowed; box-shadow: none; }
+
+  /* ── Steps ── */
+  .steps { display: flex; flex-direction: column; gap: 10px; margin-top: 6px; }
+  .step { display: flex; gap: 14px; align-items: flex-start; }
+  .step-num {
+    flex-shrink: 0; width: 26px; height: 26px; border-radius: 50%;
+    border: 2px solid var(--accent); color: var(--accent);
+    font-size: 13px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; margin-top: 1px;
+  }
+  .step-text { font-size: 16px; color: var(--text); line-height: 1.55; }
+  .step-text strong { font-weight: 700; }
+
+  /* ── Status messages ── */
+  .status-msg { padding: 8px 0; font-size: 16px; color: var(--muted); font-style: italic; }
+  .status-msg.error { color: var(--accent2); font-style: normal; font-weight: 700; }
+  .warn-msg {
+    margin: 4px 0 16px; padding: 11px 14px; font-size: 15px; line-height: 1.5;
+    background: #fff8e6; border: 2px solid #d9a441; border-radius: var(--radius); color: #6b4a12;
+  }
+  .err-msg {
+    margin: 4px 0 16px; padding: 11px 14px; font-size: 15px; line-height: 1.5; font-weight: 700;
+    background: #fdecea; border: 2px solid var(--accent2); border-radius: var(--radius); color: var(--accent2);
+  }
+  .ok-msg {
+    margin: 4px 0 16px; padding: 11px 14px; font-size: 16px; line-height: 1.5; font-weight: 700;
+    background: #d4edda; border: 2px solid #9dcc9d; border-radius: var(--radius); color: #256535;
+  }
+
+  /* ── Progress ── */
+  progress {
+    width: 100%; height: 20px; margin: 8px 0 4px; appearance: none;
+    border: 2px solid var(--box-border); border-radius: var(--radius); background: #fff;
+  }
+  progress::-webkit-progress-bar   { background: #fff; border-radius: 4px; }
+  progress::-webkit-progress-value { background: var(--accent); border-radius: 4px; }
+  progress::-moz-progress-bar      { background: var(--accent); border-radius: 4px; }
+  .progress-detail { font-size: 14px; color: var(--muted); }
+
+  /* ── Divider, details, footer ── */
+  hr.section-rule { border: none; border-top: 2px solid var(--box-border); margin: 24px 0; opacity: 0.35; }
+  details.advanced { margin-bottom: 28px; }
+  details.advanced > summary {
+    cursor: pointer; font-size: 15px; font-weight: 700; color: var(--box-border);
+    letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  details.advanced > summary:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+  details.advanced .box { margin-top: 14px; }
+  input[type=text], input[type=file] {
+    font-family: Lato, Arial, sans-serif; font-size: 16px;
+    padding: 8px 10px; max-width: 100%;
+    background: #fff; color: var(--text);
+    border: 2px solid var(--box-border); border-radius: var(--radius);
+  }
   pre#log {
-    max-height: 15rem; overflow: auto; background: var(--bg);
-    border: 1px solid var(--line); border-radius: 6px;
-    padding: .6rem; font-size: .8rem; line-height: 1.4; white-space: pre-wrap;
+    max-height: 15rem; overflow: auto; background: #fff;
+    border: 2px solid var(--box-border); border-radius: var(--radius);
+    padding: 10px; font-size: 12px; line-height: 1.45; white-space: pre-wrap;
   }
-  .row { display: flex; gap: .6rem; flex-wrap: wrap; align-items: center; }
-  footer { max-width: 46rem; margin: 2.5rem auto 0; color: var(--muted); font-size: .85rem; }
-  footer a { color: inherit; }
+  .footer-line { margin-top: 32px; text-align: center; font-size: 16px; color: var(--muted); }
+  .footer-line a { font-weight: 900; font-style: italic; text-decoration: underline; color: var(--link); }
 </style>
 </head>
 <body>
-<main>
-  <h1>Install Morserino-32 firmware</h1>
-  <p class="lede">
-    Works for both the classic Morserino-32 and the M32&nbsp;Pocket — this page
-    recognises which one you plugged in.
-  </p>
+<div class="page">
 
-  <p id="unsupported" class="err" role="alert" hidden></p>
+  <!-- ── Morse M32 decoration ──  M = --   3 = ...--   2 = ..--- -->
+  <div class="morse-header" aria-hidden="true">
+    <div class="morse-letter"><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div><div class="mx"></div></div>
+  </div>
+
+  <h1 class="page-title">Install firmware for Morserino-32<span class="badge-new">new</span></h1>
+  <p class="page-subtitle">One installer for every Morserino — it recognises which one you plugged in.</p>
+
+  <div class="box intro">
+    <p>You need <strong>Chrome</strong>, <strong>Edge</strong> or <strong>Opera</strong> on a desktop
+       computer, and a USB cable <em>fit for data transfer</em>, not just for charging. Owners of a
+       classic Morserino-32 (1st and 2nd edition) also need the driver for the Silicon Labs
+       <strong>CP210x USB to serial</strong> device.</p>
+    <p>&nbsp;</p>
+    <p>This one page installs the firmware for the <strong>classic Morserino-32</strong> and for the
+       <strong>M32&nbsp;Pocket</strong> — including the Pocket's <strong>Accessibility Edition</strong>,
+       which speaks its menus aloud. You no longer have to know which page to start on: connect the
+       device and it works out the rest.</p>
+  </div>
+
+  <p id="unsupported" class="err-msg" role="alert" hidden></p>
 
   <!-- ───────────────── Step 1 ───────────────── -->
-  <section id="step-connect" aria-labelledby="h-connect">
-    <h2 id="h-connect">1. Connect your Morserino</h2>
-    <ol class="steps">
-      <li>Switch the Morserino off.</li>
-      <li>Connect it to this computer with a USB cable that carries data.</li>
-      <li>Press <em>Connect</em> and choose the Morserino from the list your browser shows.</li>
-    </ol>
-    <div class="row">
-      <button id="btn-connect" type="button">Connect</button>
-      <span id="connect-status" aria-live="polite"></span>
+  <div class="box" id="step-connect">
+    <h2 class="card-title">1. Connect your Morserino</h2>
+    <p class="card-sub">After clicking Connect, a pop-up appears — select the correct USB port there.</p>
+    <div class="steps">
+      <div class="step"><div class="step-num" aria-hidden="true">1</div>
+        <div class="step-text">Switch the Morserino <strong>off</strong>.</div></div>
+      <div class="step"><div class="step-num" aria-hidden="true">2</div>
+        <div class="step-text">Connect it to this computer with a <strong>USB data cable</strong>.</div></div>
+      <div class="step"><div class="step-num" aria-hidden="true">3</div>
+        <div class="step-text">Click <strong>Connect</strong> and pick the Morserino from the pop-up.</div></div>
     </div>
-  </section>
+    <hr class="section-rule">
+    <div class="button-row">
+      <button id="btn-connect" type="button">Connect</button>
+      <span id="connect-status" class="status-msg" aria-live="polite"></span>
+    </div>
+  </div>
 
   <!-- ───────────────── Step 2 ───────────────── -->
-  <section id="step-choose" aria-labelledby="h-choose" hidden>
-    <h2 id="h-choose" tabindex="-1">2. Choose what to install</h2>
+  <div class="box" id="step-choose" hidden>
+    <h2 class="card-title" id="h-choose" tabindex="-1">2. Choose what to install</h2>
+    <p class="card-sub">This is what is connected right now.</p>
 
     <dl class="device">
       <dt>Found</dt><dd id="dev-hardware">—</dd>
@@ -121,99 +333,105 @@
     </dl>
 
     <fieldset id="edition-box" hidden>
-      <legend>Edition</legend>
+      <legend class="field-label">Edition</legend>
       <div id="edition-options"></div>
-      <p id="edition-note" class="note"></p>
     </fieldset>
 
-    <fieldset>
-      <legend>Firmware version</legend>
-      <label for="version-select">Version to install</label>
-      <select id="version-select"></select>
-      <p id="version-notes" class="note"></p>
-      <label id="beta-row" hidden>
-        <input type="checkbox" id="show-beta"> Also offer beta versions
-      </label>
-    </fieldset>
+    <div class="field-label" id="version-label">Firmware version</div>
+    <div class="select-wrapper">
+      <select id="version-select" aria-labelledby="version-label"></select>
+      <span class="select-arrow" aria-hidden="true">▼</span>
+    </div>
+
+    <label class="choice-row" id="beta-row" hidden>
+      <input type="checkbox" id="show-beta">
+      <span class="choice-label"><strong>Show beta versions</strong> — include pre-release firmware in the list</span>
+      <span class="badge-beta">beta</span>
+    </label>
+
+    <div class="version-info" id="version-info"></div>
 
     <fieldset>
-      <legend>Your settings</legend>
-      <label>
+      <legend class="field-label">Your settings</legend>
+      <label class="choice-row">
         <input type="radio" name="erase" value="keep" checked>
-        Keep my settings — preferences, snapshots and high scores stay as they are
+        <span class="choice-label"><strong>Keep my settings</strong>
+          <span class="sub">Preferences, snapshots and high scores stay as they are. Use this unless you have a reason not to.</span></span>
       </label>
-      <label>
+      <label class="choice-row">
         <input type="radio" name="erase" value="all">
-        Erase everything — wipes preferences, snapshots, high scores and any player text
+        <span class="choice-label"><strong>Erase everything</strong>
+          <span class="sub">Wipes preferences, snapshots, high scores and any player text.</span></span>
       </label>
     </fieldset>
 
-    <p id="choose-warning" class="warn" role="status" hidden></p>
+    <p id="choose-warning" class="warn-msg" role="status" hidden></p>
 
-    <div class="row">
+    <div class="button-row">
       <button id="btn-install" type="button">Install</button>
       <button id="btn-cancel" type="button" class="secondary">Cancel</button>
     </div>
-  </section>
+  </div>
 
   <!-- ───────────────── Step 3 ───────────────── -->
-  <section id="step-flash" aria-labelledby="h-flash" hidden>
-    <h2 id="h-flash" tabindex="-1">3. Installing</h2>
-    <p id="phase" aria-live="polite">Starting…</p>
+  <div class="box" id="step-flash" hidden>
+    <h2 class="card-title" id="h-flash" tabindex="-1">3. Installing</h2>
+    <p class="card-sub">Do not disconnect the device until this finishes.</p>
+    <p id="phase" class="status-msg" aria-live="polite">Starting…</p>
     <progress id="bar" max="100" value="0" aria-label="Installation progress"></progress>
-    <p id="bytes" class="note" aria-hidden="true"></p>
-    <p id="flash-done" class="ok" role="status" hidden></p>
-    <p id="flash-error" class="err" role="alert" hidden></p>
-    <div class="row" id="flash-again-row" hidden>
+    <p id="bytes" class="progress-detail" aria-hidden="true"></p>
+    <p id="flash-done" class="ok-msg" role="status" hidden></p>
+    <p id="flash-error" class="err-msg" role="alert" hidden></p>
+    <div class="button-row" id="flash-again-row" hidden>
       <button id="btn-restart" type="button" class="secondary">Install something else</button>
     </div>
-  </section>
+  </div>
 
   <!-- ───────────────── Advanced ───────────────── -->
-  <details id="advanced">
+  <details class="advanced">
     <summary>Advanced</summary>
 
-    <fieldset style="margin-top:1rem">
-      <legend>Other hardware</legend>
-      <label>
+    <div class="box">
+      <div class="field-label">Other hardware</div>
+      <label class="choice-row">
         <input type="checkbox" id="show-all-targets">
-        Offer every published firmware, not only the ones for the detected chip
+        <span class="choice-label"><strong>Offer every published firmware</strong>
+          <span class="sub">Not only the ones matching the detected chip. Only useful for self-built variants —
+            firmware meant for different hardware will install, but it will not run.</span></span>
       </label>
-      <p class="note">
-        Only useful for self-built variants. Flashing firmware meant for different
-        hardware will not damage the board, but it will not run properly either.
-      </p>
-    </fieldset>
 
-    <fieldset>
-      <legend>Flash a file from this computer</legend>
-      <p class="note" style="margin-top:0">
-        Connect first. The file is written as-is at the address you give — nothing
-        else on the device is touched.
+      <hr class="section-rule">
+
+      <div class="field-label">Flash a file from this computer</div>
+      <p class="step-text" style="margin-bottom:10px">Connect first. The file is written as-is at the
+         address you give — nothing else on the device is touched.</p>
+      <p style="margin-bottom:10px">
+        <label for="local-file" class="field-label" style="display:block">Binary file</label>
+        <input type="file" id="local-file" accept=".bin">
       </p>
-      <label for="local-file">Binary file</label>
-      <input type="file" id="local-file" accept=".bin">
-      <label for="local-offset" style="margin-top:.6rem">Address (hex)</label>
-      <input type="text" id="local-offset" value="0x10000" size="12" spellcheck="false">
-      <p class="row" style="margin-top:.8rem">
+      <p style="margin-bottom:14px">
+        <label for="local-offset" class="field-label" style="display:block">Address (hex)</label>
+        <input type="text" id="local-offset" value="0x10000" size="12" spellcheck="false">
+      </p>
+      <div class="button-row">
         <button id="btn-local" type="button" class="secondary" disabled>Flash this file</button>
-      </p>
-    </fieldset>
+      </div>
 
-    <fieldset>
-      <legend>Log</legend>
+      <hr class="section-rule">
+
+      <div class="field-label">Log</div>
       <pre id="log" tabindex="0" aria-label="Technical log"></pre>
-    </fieldset>
+    </div>
   </details>
-</main>
 
-<footer>
-  <p>
-    Flashing by <a href="https://github.com/espressif/esptool-js">esptool-js</a> ·
-    <a href="https://www.morserino.info">morserino.info</a> ·
+  <p class="footer-line">
+    Flashing by <a href="https://github.com/espressif/esptool-js">esptool-js</a>
+    &nbsp;&middot;&nbsp;
+    <a href="https://www.morserino.info">morserino.info</a>
+    &nbsp;&middot;&nbsp;
     <a href="https://github.com/oe1wkl/Morserino-32">GitHub</a>
   </p>
-</footer>
+</div><!-- /.page -->
 
 <script>
 (() => {
@@ -230,6 +448,8 @@
   const PROBE_SENDS_AT = [0, 1200, 2400];
   const PROBE_DEADLINE = 3400;
 
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+
   // ── DOM ──────────────────────────────────────────────────────────────────
   const $ = id => document.getElementById(id);
   const el = {
@@ -237,8 +457,8 @@
     stepConnect: $('step-connect'), btnConnect: $('btn-connect'), connectStatus: $('connect-status'),
     stepChoose: $('step-choose'), hChoose: $('h-choose'),
     devHardware: $('dev-hardware'), devInstalled: $('dev-installed'),
-    editionBox: $('edition-box'), editionOptions: $('edition-options'), editionNote: $('edition-note'),
-    versionSelect: $('version-select'), versionNotes: $('version-notes'),
+    editionBox: $('edition-box'), editionOptions: $('edition-options'),
+    versionSelect: $('version-select'), versionInfo: $('version-info'),
     betaRow: $('beta-row'), showBeta: $('show-beta'),
     chooseWarning: $('choose-warning'),
     btnInstall: $('btn-install'), btnCancel: $('btn-cancel'),
@@ -272,12 +492,13 @@
   // ── Formatting ───────────────────────────────────────────────────────────
   const fmtMB  = b => (b / 1048576).toFixed(1) + ' MB';
   const fmtHex = n => '0x' + n.toString(16).toUpperCase();
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;' }[c]));
 
   // ── Registry ─────────────────────────────────────────────────────────────
   // A target whose version list cannot be loaded is dropped rather than
   // breaking the page — that is how a target can be listed here before its
   // artifacts are published. It is logged, and if it was the *only* target for
-  // the connected chip the user is told plainly (see chooseTargets).
+  // the connected chip the user is told plainly (see renderChoose).
   async function loadRegistry() {
     const resp = await fetch(REGISTRY_URL, { cache: 'no-cache' });
     if (!resp.ok) throw new Error(`${REGISTRY_URL} — HTTP ${resp.status}`);
@@ -418,13 +639,25 @@
     }
   }
 
-  function setConnectStatus(text) { el.connectStatus.textContent = text; el.connectStatus.className = ''; }
-  function showConnectError(text) { el.connectStatus.textContent = text; el.connectStatus.className = 'err'; }
+  function setConnectStatus(text) { el.connectStatus.textContent = text; el.connectStatus.className = 'status-msg'; }
+  function showConnectError(text) { el.connectStatus.textContent = text; el.connectStatus.className = 'status-msg error'; }
+
+  // Reset the chip so the new firmware starts on its own.
+  //
+  // esptool-js's after('hard_reset') only *releases* RTS — it assumes the line
+  // is already asserted. Called on its own it is a no-op and the device sits in
+  // the bootloader until the user power-cycles it. Pull EN low first, exactly
+  // as esp-web-tools does, and after() performs the chip-specific release.
+  async function hardReset() {
+    await device.transport.setRTS(true);
+    await sleep(100);
+    await device.loader.after('hard_reset');
+  }
 
   async function disconnect(reset) {
     if (!device) return;
-    try { if (reset) await device.loader.after('hard_reset'); } catch (e) { log('Reset failed: ' + e.message); }
-    try { await device.transport.disconnect(); }                catch (e) { log('Disconnect failed: ' + e.message); }
+    try { if (reset) await hardReset(); }        catch (e) { log('Reset failed: ' + e.message); }
+    try { await device.transport.disconnect(); } catch (e) { log('Disconnect failed: ' + e.message); }
     device = null;
     el.btnLocal.disabled = true;
   }
@@ -457,10 +690,9 @@
       : 'unknown';
 
     if (candidates.length === 0) {
-      el.stepChoose.hidden = false;
       el.editionBox.hidden = true;
       el.chooseWarning.hidden = false;
-      el.chooseWarning.className = 'err';
+      el.chooseWarning.className = 'err-msg';
       el.chooseWarning.textContent =
         'This does not look like a Morserino: no published firmware fits an ' +
         device.chipFamily + '. Nothing will be installed.';
@@ -468,25 +700,33 @@
       showStep(el.stepChoose, el.hChoose);
       return;
     }
-    el.chooseWarning.className = 'warn';
+    el.chooseWarning.className = 'warn-msg';
     el.btnInstall.disabled = false;
 
     // More than one firmware for this chip -> the user chooses. One -> silence.
     if (candidates.length > 1) {
       el.editionOptions.innerHTML = '';
       candidates.forEach((t, i) => {
-        const id = 'edition-' + t.id;
+        const disabled = tooBigForFlash(t);
         const label = document.createElement('label');
+        label.className = 'choice-row';
+
         const radio = document.createElement('input');
-        radio.type = 'radio'; radio.name = 'edition'; radio.value = t.id; radio.id = id;
+        radio.type = 'radio'; radio.name = 'edition'; radio.value = t.id;
+        radio.id = 'edition-' + t.id;
         radio.checked = (i === 0);
-        radio.disabled = tooBigForFlash(t);
+        radio.disabled = disabled;
         radio.addEventListener('change', () => selectTarget(t));
+
+        const span = document.createElement('span');
+        span.className = 'choice-label';
+        span.innerHTML =
+          '<strong>' + esc(t.label) + (el.showAllTargets.checked ? ' — ' + esc(t.hardware) : '') + '</strong>' +
+          (t.note ? '<span class="sub">' + esc(t.note) + '</span>' : '') +
+          (disabled ? '<span class="sub">Needs ' + t.minFlashMB + ' MB of flash.</span>' : '');
+
         label.appendChild(radio);
-        label.appendChild(document.createTextNode(
-          ' ' + t.label + (el.showAllTargets.checked ? ` — ${t.hardware}` : '') +
-          (radio.disabled ? ` (needs ${t.minFlashMB} MB of flash)` : '')
-        ));
+        label.appendChild(span);
         el.editionOptions.appendChild(label);
       });
       el.editionBox.hidden = false;
@@ -500,11 +740,7 @@
 
   function selectTarget(t) {
     target = t;
-    el.editionNote.textContent = t.note || '';
-    el.editionNote.hidden = !t.note;
-
-    const hasBeta = t.versions.some(v => v.beta);
-    el.betaRow.hidden = !hasBeta;
+    el.betaRow.hidden = !t.versions.some(v => v.beta);
     rebuildVersions();
     updateChooseWarning();
   }
@@ -524,16 +760,23 @@
       el.versionSelect.appendChild(opt);
     });
     el.versionSelect.value = '0';
-    describeVersion();
+    renderVersionInfo();
   }
 
   function currentVersion() { return versions[parseInt(el.versionSelect.value, 10)] || versions[0]; }
 
-  function describeVersion() {
+  function renderVersionInfo() {
     const v = currentVersion();
-    if (!v) { el.versionNotes.textContent = ''; return; }
-    el.versionNotes.textContent =
-      (v.notes || '') + (v.beta ? ' — this is a beta version.' : '');
+    if (!v) { el.versionInfo.innerHTML = ''; return; }
+    const isLatest = v === target.versions.find(x => !x.beta);
+    const badge = v.beta ? '<span class="badge-beta">beta</span>'
+                : isLatest ? '<span class="badge-latest">latest</span>'
+                : '<span class="badge-older">older</span>';
+    el.versionInfo.innerHTML = badge +
+      '<span class="version-detail"><strong>V' + esc(v.version) + '</strong>' +
+      (v.notes ? ' &nbsp;&middot;&nbsp; ' + esc(v.notes) : '') + '<br>' +
+      '<span class="filename">' + esc(v.filename) +
+      (v.fs ? ' + ' + esc(v.fs) : '') + '</span></span>';
   }
 
   function updateChooseWarning() {
@@ -652,12 +895,13 @@
         },
       });
 
-      setPhase('Finishing…');
+      setPhase('Restarting the Morserino…');
       await disconnect(true);
 
       setProgress(1, '');
       el.flashDone.textContent =
-        `Done — V${version.version} is installed. Unplug the Morserino and switch it on.`;
+        `Done — V${version.version} is installed and the Morserino is restarting. ` +
+        `If the screen stays dark, switch it off and on again.`;
       el.flashDone.hidden = false;
       setPhase('Finished.');
     } catch (e) {
@@ -703,8 +947,10 @@
                       total ? Math.round(100 * written / total) + '%' : '');
         },
       });
+      setPhase('Restarting the Morserino…');
       await disconnect(true);
-      el.flashDone.textContent = `Done — ${file.name} written at ${fmtHex(offset)}. Unplug the Morserino and switch it on.`;
+      el.flashDone.textContent =
+        `Done — ${file.name} written at ${fmtHex(offset)}, and the Morserino is restarting.`;
       el.flashDone.hidden = false;
       setPhase('Finished.');
     } catch (e) {
@@ -744,7 +990,7 @@
   el.btnRestart.addEventListener('click', restart);
   el.btnLocal.addEventListener('click', flashLocalFile);
   el.showBeta.addEventListener('change', () => { rebuildVersions(); updateChooseWarning(); });
-  el.versionSelect.addEventListener('change', describeVersion);
+  el.versionSelect.addEventListener('change', renderVersionInfo);
   el.showAllTargets.addEventListener('change', () => { if (device) renderChoose(); });
   document.querySelectorAll('input[name=erase]').forEach(r =>
     r.addEventListener('change', updateChooseWarning));
