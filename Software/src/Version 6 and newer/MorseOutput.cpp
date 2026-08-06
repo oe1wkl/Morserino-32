@@ -841,13 +841,17 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     pos = 0;  scrollScreenPos = 0; lastStyle = REGULAR;
   }
 
-#ifdef CONFIG_TFT
-  // After a wrap to a new line, discard a leading space (word-wrap artefact, LCD only)
+  // After a wrap to a new line, discard a leading space: the separator blank
+  // between two words belongs to the end of the previous line, not to the
+  // start of the new one, where it would push the first word one column to
+  // the right. Was LCD-only until the word-boundary wrap made the case
+  // systematic on the OLED too - there, a line that happens to end exactly on
+  // the last column is always followed by the separator blank, so every
+  // second or third line started with an indent.
   if (scrollScreenPos == 0 && l > 0 && stripped[0] == ' ') {
     stripped.remove(0, 1);
     l = stripped.length();
   }
-#endif
 
   const String& t = stripped;   // always use stripped from here on
 

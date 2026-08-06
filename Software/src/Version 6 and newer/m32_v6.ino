@@ -2238,20 +2238,22 @@ void dispGeneratedChar() {
             (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
             (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY))
     {
-        // CW Generator only, and only for the first character of a word:
-        // clearText still holds the whole word (up to the next space), so --
-        // unlike live keyed/decoded input, where we only find out a word is
-        // finished once it's over -- its length is already known before the
-        // first character is shown. Use that to wrap pre-emptively at the
-        // word boundary instead of leaving it to MorseOutput's per-character
-        // wrap, which only ever sees one token at a time and so can split a
-        // word across lines. Echo Trainer / Trx / LoRa / WiFi playback are
-        // untouched. The line break is display-only: it deliberately does not
-        // go through displayGeneratedMorse(), which would also push a "\n"
+        // Generated text only (CW Generator, LoRa/WiFi receive, CW play), and
+        // only for the first character of a word: clearText still holds the
+        // whole word (up to the next space), so -- unlike live keyed/decoded
+        // input, where we only find out a word is finished once it's over --
+        // its length is already known before the first character is shown.
+        // Use that to wrap pre-emptively at the word boundary instead of
+        // leaving it to MorseOutput's per-character wrap, which only ever sees
+        // one token at a time and so can split a word across lines. The Echo
+        // Trainer is left out on purpose: it starts every prompt on a fresh
+        // line anyway. The line break is display-only: it deliberately does
+        // not go through displayGeneratedMorse(), which would also push a "\n"
         // into the serial/BLE character echo and, with the Bluetooth keyboard
         // active, type a Return on the host - a screen layout decision has no
         // business showing up there.
-        if (wordStart && morseState == morseGenerator) {
+        if (wordStart && (morseState == morseGenerator || morseState == loraTrx ||
+                          morseState == wifiTrx || playCW)) {
             int nextSpace = clearText.indexOf(' ');
             uint16_t wordLen = (uint16_t) ((nextSpace == -1) ? clearText.length() : nextSpace);
             if (MorseOutput::wordNeedsWrap(wordLen)) {
@@ -2320,6 +2322,7 @@ void fetchNewWord() {
 
             displayGeneratedMorse(BOLD, " ");
             clearText = CWwordToClearText(CWword);
+            newWordForDisplay = true;           // next dispGeneratedChar() shows the 1st char of this word
             // DEBUG("@1978: Received clearText: " + clearText);
             rxDitLength = 1200 /   rxWpm ;                      // set new value for length of dits and dahs and other timings
             rxDahLength = 3* rxDitLength ;                      // calculate the other timing values
@@ -2344,8 +2347,9 @@ void fetchNewWord() {
             genTimer = 3 * interWordSpace + millis();
             clearText = "";
         }
-        CWword = generateCWword(clearText); CWwordPos = 0;  
+        CWword = generateCWword(clearText); CWwordPos = 0;
         displayGeneratedMorse(REGULAR, " ");
+        newWordForDisplay = true;               // next dispGeneratedChar() shows the 1st char of this word
         return;
     }
     else {
