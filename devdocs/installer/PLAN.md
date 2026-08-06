@@ -473,9 +473,36 @@ data-preservation warnings, edition selector. Manual artifact upload for testing
 *Done when:* a Pocket goes Standard → a11y → Standard with preferences intact each
 time, and the voice clips work after the a11y install.
 
-**Phase 3 — pipeline.** §6 changes; dry-run a beta release end to end.
+**Phase 3 — pipeline.** ✅ **code complete 2026-08-06; not yet exercised by a real tag.**
 *Done when:* one tag produces all three targets, their manifests, and the archive
 commits, with no hand editing.
+
+What changed:
+
+- `rename_binaries.py` — `PLATFORMS` entries became dicts and gained `m32pa11y`
+  (`pocketwroom-accessibility` → `fw_m32pa11y`, subdir `m32p-a11y`). It now also stages
+  the filesystem image (named after the app binary, so the beta suffix carries over), the
+  target's `common/` files, and enforces `max_app_bytes` = `0x2D0000` so an oversized
+  a11y build fails the release instead of shipping a brick.
+- `update_manifest.py` — optional `--fs-filename` writes the `"fs"` field.
+- `dropbox_publish.sh` — copies the filesystem image and `common/`, passes
+  `--fs-filename`. Its per-field `python3` calls became one call emitting quoted shell
+  assignments, so the next field is a line rather than another interpreter start.
+- `release.yml` — builds `pocketwroom-accessibility` plus `-t buildfs`, archives the a11y
+  firmware for stable releases (not the 5.3 MB image — it would bloat the repo), and
+  attaches both to the GitHub release. Its asset globs also stopped uploading every
+  firmware twice: `fw_m32*.bin` already matched what `fw_m32p*.bin` matched.
+
+Verified against a throwaway Dropbox root: all three platforms staged and published, the
+a11y manifest entry carrying `"fs"`, `m32p-a11y/common/` complete and its partition table
+correctly *differing* from the Pocket's while `boot_app0.bin` matches byte for byte. Beta
+naming checked (`fw_m32pa11y_V9.0_beta_260806.bin` + matching `fs_…`). The installer was
+then pointed at that published tree and assembled the same five parts — pipeline and
+installer agree end to end.
+
+**Two traps found here, both recorded above:** `boot_app0.bin` is not a build output, and
+`idedata.json` — which does name it — is not refreshed by `pio run` and is missing
+entirely for some environments, so it cannot be used to find it.
 
 **Phase 4 — publish & redirect.** Ship `install.html`, link it from the site, convert
 the two old pages to redirects. Update EN + DE manuals and `Software/README.md`.
