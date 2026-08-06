@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "_comment": [
+    "Target registry for the Morserino-32 web installer (m32_installer.html).",
+    "Published to https://www.morserino.info/firmware/targets.json; every 'dir'",
+    "and 'versions' path below is relative to that file's own location.",
+    "",
+    "The installer detects the connected chip and keeps the targets whose",
+    "chipFamily matches. One survivor is used silently; several become the",
+    "'Edition' choice, in the order listed here. Adding a hardware variant is",
+    "an entry here, not a code change.",
+    "",
+    "Offsets are decimal. See devdocs/installer/PLAN.md for the layout and for",
+    "why boot_app0 must be written on every install (it resets the OTA",
+    "selector, which matters when switching between editions whose partition",
+    "tables differ)."
+  ],
+
+  "targets": [
+    {
+      "id": "m32",
+      "hardware": "Morserino-32 (1st / 2nd edition)",
+      "label": "Standard",
+      "chipFamily": "ESP32",
+      "dir": "",
+      "versions": "versions.json",
+      "parts": [
+        { "path": "common/bootloader.bin", "offset": 4096,  "label": "bootloader" },
+        { "path": "common/partitions.bin", "offset": 32768, "label": "partition table" },
+        { "path": "common/boot_app0.bin",  "offset": 57344, "label": "boot selector" }
+      ],
+      "appOffset": 65536
+    },
+
+    {
+      "id": "m32p",
+      "hardware": "M32 Pocket",
+      "label": "Standard",
+      "chipFamily": "ESP32-S3",
+      "dir": "m32p/",
+      "versions": "versions.json",
+      "minFlashMB": 8,
+      "parts": [
+        { "path": "common/bootloader.bin", "offset": 0,     "label": "bootloader" },
+        { "path": "common/partitions.bin", "offset": 32768, "label": "partition table" },
+        { "path": "common/boot_app0.bin",  "offset": 57344, "label": "boot selector" }
+      ],
+      "appOffset": 65536
+    },
+
+    {
+      "id": "m32p-a11y",
+      "hardware": "M32 Pocket",
+      "label": "Accessibility Edition",
+      "note": "Speaks the menus and settings aloud, for blind and partially sighted operators. The games are not included.",
+      "chipFamily": "ESP32-S3",
+      "dir": "m32p-a11y/",
+      "versions": "versions.json",
+      "minFlashMB": 8,
+      "parts": [
+        { "path": "common/bootloader.bin", "offset": 0,     "label": "bootloader" },
+        { "path": "common/partitions.bin", "offset": 32768, "label": "partition table" },
+        { "path": "common/boot_app0.bin",  "offset": 57344, "label": "boot selector" }
+      ],
+      "appOffset": 65536,
+      "fsOffset": 3014656,
+      "fsLabel": "voice clips"
+    }
+  ]
+}
