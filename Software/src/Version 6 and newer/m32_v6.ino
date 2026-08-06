@@ -2232,6 +2232,22 @@ void dispGeneratedChar() {
             (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
             (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY))
     {
+        // CW Generator only: clearText still holds the rest of the current
+        // word (up to the next space), so -- unlike live keyed/decoded
+        // input, where we only find out a word is finished once it's over
+        // -- its length is already known before the first character is
+        // shown. Use that to wrap pre-emptively at the word boundary
+        // instead of leaving it to MorseOutput's per-character wrap, which
+        // only ever sees one token at a time and so can split a word across
+        // lines. Echo Trainer / Trx / LoRa / WiFi playback are untouched.
+        if (morseState == morseGenerator) {
+            int nextSpace = clearText.indexOf(' ');
+            uint16_t wordLen = (uint16_t) ((nextSpace == -1) ? clearText.length() : nextSpace);
+            if (MorseOutput::wordNeedsWrap(wordLen)) {
+                displayGeneratedMorse(REGULAR, "\n");
+            }
+        }
+
         if (clearText.charAt(0) == (char)0xC3) {           // UTF-8 two-byte char
             charBuf[0] = clearText.charAt(0);
             charBuf[1] = clearText.charAt(1);
