@@ -345,8 +345,14 @@
     <h2 class="card-title">1. Connect your Morserino</h2>
     <p class="card-sub">After clicking Connect, a pop-up appears — select the correct USB port there.</p>
     <div class="steps">
+      <!-- The Pocket's USB only exists while the device is powered, so it must be
+           on and awake. The classic M32 enumerates from USB power either way.
+           This page cannot tell them apart until after it connects, so step 1
+           has to name both. -->
       <div class="step"><div class="step-num" aria-hidden="true">1</div>
-        <div class="step-text">Switch the Morserino <strong>off</strong>.</div></div>
+        <div class="step-text"><strong>M32&nbsp;Pocket:</strong> switch it <strong>on</strong>,
+          and make sure it has not gone to sleep — it only appears on USB while it is awake.<br>
+          <strong>Classic Morserino-32 (1st / 2nd edition):</strong> on or off, either works.</div></div>
       <div class="step"><div class="step-num" aria-hidden="true">2</div>
         <div class="step-text">Connect it to this computer with a <strong>USB data cable</strong>.</div></div>
       <div class="step"><div class="step-num" aria-hidden="true">3</div>
