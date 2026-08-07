@@ -517,20 +517,47 @@ installer.
   visible link and `rel=canonical`. Because every other page links to *those* URLs, no
   Sitely-generated page needed editing.
 
-**Caching, worth knowing before the next change.** A *new* path appears within seconds
-(`install.html` was live ~20 s after the copy). An *overwritten* path can lag: the CDN
-had a copy of `flash.html` stored under `Cache-Control: public, max-age=86400`, so the
-redirect stubs only became visible when that 24-hour entry expired — the files, Dropbox
-and the origin were all correct the whole time. `install.html` is served with
-`max-age=0`, so installer updates themselves propagate immediately; it is the
-long-established paths that carry the day-long TTL. Budget for that when replacing an
-existing page, and verify with `curl -I` (`Age` vs `max-age`) rather than assuming a
-sync failure.
+**⚠ The redirects are written and synced but NOT yet visible — open issue.**
+`flash.html` and `flash-m32pocket.html` still serve the old installers from
+www.morserino.info, more than 12 hours after being replaced.
+
+What the evidence says (2026-08-07 23:10):
+
+```
+Last-Modified: Fri, 24 Jul 2026 09:14:59 GMT      ← the OLD page
+Age: 110591                                        ← 30.7 h in cache
+Cache-Control: public, max-age=86400               ← 24 h TTL
+Via: 1.1 varnish-v4 ; X-Varnish: 7572125 13210521  ← cache HIT
+```
+
+`Age` is **past** `max-age`, so this is not a TTL that simply has not expired yet — that
+was my first reading and it was wrong. Site44's Varnish layer is holding a stale object
+and not re-fetching. A request with `Cache-Control: no-cache` changes nothing (Varnish
+normally ignores client revalidation), and a cache-busting query string returns the old
+body too.
+
+New paths are unaffected: `install.html` and `targets.json` were live ~20 s after being
+copied. So the Dropbox → site44 path works; it is specifically **replacing an existing,
+long-cached object** that is stuck.
+
+Not urgent — the old URLs currently serve the old, *working* installers, so no user is
+stranded. Options, in order of preference:
+
+1. A cache purge / republish from the site44 control panel, if it has one.
+2. Delete the two files, let the deletion propagate, then write them again — a new object
+   is what demonstrably propagates fast. Costs a brief 404 on a live URL, so it is
+   Willi's call, not something to do unilaterally.
+3. Wait longer and re-check; Varnish may re-fetch on its own eventually.
+
+**The general lesson for this site:** a *new* file appears in seconds, an *overwrite* of
+an established path may not appear at all on its own. Verify with
+`curl -I` (compare `Last-Modified` and `Age` against `max-age`) instead of assuming the
+copy worked.
 - `sync-to-dropbox.sh` carries all four files and gained `--once`, which publishes
   without restarting the watcher.
 - EN + DE Appendix 6 rewritten for one installer: the three steps, the erase choice, and
-  the Pocket edition choice. The Firefox corrections from §12.1 went in at the same time
-  (doing them separately would have collided on the same passages), so §12.1 is now
+  the Pocket edition choice. The Firefox corrections from §13.1 went in at the same time
+  (doing them separately would have collided on the same passages), so §13.1 is now
   **done**, including the enterprise-policy note.
 - `Software/README.md` has a V9.0 changelog section.
 
@@ -628,13 +655,57 @@ What is still genuinely open:
 
 ---
 
-## 12. Documentation duties (CLAUDE.md §7)
+## 12. Deferred — firmware side of the dark screen after an erase
+
+**Not installer work, deliberately parked (Willi, 2026-08-07, "no priority now").**
+Belongs on its own branch off `master`, not on `unified-installer`.
+
+**What happens.** After an *Erase everything* install, the next boot has to create a
+SPIFFS file system, and does so **before** the start screen — so the display stays dark
+much longer than usual. It reads like a dead device. The installer now warns about this
+in three places (§4.5), which is a paper fix; the device itself should say what it is
+doing.
+
+**Why the Pocket is worse than the classic.** The firmware already has a message for
+exactly this — but it is OLED-only:
+
+```
+Software/src/Version 6 and newer/m32_v6.ino:690
+    #ifndef CONFIG_TFT
+      MorseOutput::printOnStatusLine( true, 0, "Init...pse wait...");
+    #endif
+```
+
+So a classic M32 shows *"Init...pse wait..."* while it works, and an **M32 Pocket shows
+nothing at all**. Note that this early message is printed at `m32_v6.ino:691`, whereas the
+call that actually formats is much later, at `m32_v6.ino:814`
+(`SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)`). Nothing clears the display in between, which is
+why the OLED message survives across the format.
+
+**Two candidate fixes:**
+
+1. Lift the `#ifndef CONFIG_TFT` at line 690 so the Pocket shows it too. Smallest diff,
+   but it puts a display write early in `setup()` on the TFT path — and that path is
+   historically timing-sensitive (see the PR #157 / #174 dark-panel saga). Needs testing
+   on a USB-only-powered Pocket, not just a battery-powered one.
+2. Print a status line immediately **before** the formatting call at line 814, for both
+   variants. Later in `setup()`, well past all display init, so materially lower risk —
+   and it covers the case the message is actually about. Preferred.
+
+Either way: a better wording than *"Init...pse wait..."* is worth it, since this is the
+one moment a user is most likely to think the device is broken. And check the
+Accessibility Edition — it flashes a complete filesystem image, so it probably never
+formats and needs nothing; that was reasoned from the code, not observed.
+
+---
+
+## 13. Documentation duties (CLAUDE.md §7)
 
 This is the **written TODO** that CLAUDE.md §7 requires. Nothing below is done yet; all
 of it lands with Phase 4, except the Firefox corrections, which are true *now* and are
 independent of this installer.
 
-### 12.1 Firefox 151 supports Web Serial — the manuals say it does not
+### 13.1 Firefox 151 supports Web Serial — the manuals say it does not
 
 Firefox 151 for Desktop (May 2026) shipped the Web Serial API; MDN's compat data has the
 whole `SerialPort` surface at 151, unflagged, `setSignals` included. Several statements in
@@ -654,7 +725,7 @@ both manuals are now wrong. These are **not** blocked on the installer work:
 Worth a sentence somewhere too: **Firefox Enterprise Policies disable Web Serial by
 default**, so a managed work machine can be on 151 and still be refused.
 
-### 12.2 With Phase 4 (one installer instead of two)
+### 13.2 With Phase 4 (one installer instead of two)
 
 - **EN + DE manual, Appendix 6**: replace the two-installer description with one page;
   document the edition choice and what "erase everything" costs. The V8.x manuals are
@@ -662,7 +733,7 @@ default**, so a managed work machine can be on 151 and still be refused.
 - **`Documentation/FAQ/Morserino-32 Pocket FAQ.md`**, line 83: "there are links to two
   different instances of the firmware flasher, one for the older Morserino-32 versions,
   and one for the M32 Pocket" — **wrong the moment Phase 4 ships.** Line 81 also names
-  only Chrome and Edge (see §12.1).
+  only Chrome and Edge (see §13.1).
 - `Software/README.md`: changelog entry for V9.
 - `devdocs/RELEASE_AUTOMATION_DESIGN.md`: extend §5 (filenames) and the platform list for
   the third target.
@@ -670,7 +741,7 @@ default**, so a managed work machine can be on 151 and still be refused.
   site") points here once this is built.
 - No firmware UI strings change, so nothing is owed to the voice clips (CLAUDE.md §8).
 
-### 12.3 The FAQ needs a general review
+### 13.3 The FAQ needs a general review
 
 Flagged by Willi, 2026-08-06, beyond the two lines above. `Morserino-32 Pocket FAQ.md` is
 86 lines and has not had a content pass in a long time (its last commit touched it only

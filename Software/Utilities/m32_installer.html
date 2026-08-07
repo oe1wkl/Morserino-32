@@ -38,7 +38,12 @@
     --accent:     #cb4b16;   /* orange-red — headings, highlights */
     --accent2:    #c02713;   /* darker red  — callouts            */
     --link:       #268bd2;
-    --muted:      #808080;
+    /* The old pages used #808080 here. Darkened deliberately: at #808080 the
+       small print scores 3.95:1 on white and 3.30:1 on the blue boxes, both
+       under the 4.5:1 needed for normal text — and on this page that small
+       print carries the consequences ("wipes preferences…", "needs longer to
+       start"). #666 gives 5.74:1 and 4.79:1 and still reads as muted. */
+    --muted:      #666666;
     --box-bg:     #ddedf7;
     --box-border: #677a85;
     --box-shadow: 8px 10px 4px rgba(0,0,0,0.4);
@@ -310,7 +315,9 @@
     <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div><div class="mx"></div></div>
   </div>
 
-  <h1 class="page-title">Install firmware for Morserino-32<span class="badge-new">new</span></h1>
+  <!-- The space before the badge is deliberate: without it the heading's
+       accessible name runs together as "Morserino-32new". -->
+  <h1 class="page-title">Install firmware for Morserino-32 <span class="badge-new">new</span></h1>
   <p class="page-subtitle">One installer for every Morserino — it recognises which one you plugged in.</p>
 
   <div class="box">
