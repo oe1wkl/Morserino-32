@@ -3332,6 +3332,14 @@ The installer takes you through three steps:
       any text you uploaded for the File Player. Only use this if your
       device's permanent memory has been corrupted.
 
+    ::: note
+    After *Erase everything*, the Morserino has to build a new file system
+    the next time it starts. This happens **before** the start screen
+    appears, so the display stays dark for a while — considerably longer
+    than a normal start. That is normal and not a fault: let it finish, and
+    do **not** switch the device off while it is dark.
+    :::
+
 3. **Installing** — wait for the progress bar. Do not disconnect the
    device. When it finishes, the Morserino restarts by itself.
 

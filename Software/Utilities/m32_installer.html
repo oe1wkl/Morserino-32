@@ -392,7 +392,8 @@
       <label class="choice-row">
         <input type="radio" name="erase" value="all">
         <span class="choice-label"><strong>Erase everything</strong>
-          <span class="sub">Wipes preferences, snapshots, high scores and any player text.</span></span>
+          <span class="sub">Wipes preferences, snapshots, high scores and any player text.
+            The Morserino then needs longer to start the first time.</span></span>
       </label>
     </fieldset>
 
@@ -815,7 +816,9 @@
     const messages = [];
 
     if (eraseAll) {
-      messages.push('“Erase everything” will delete your preferences, snapshots, high scores and any player text.');
+      messages.push('“Erase everything” will delete your preferences, snapshots, high scores and any player text. ' +
+                    'Afterwards the Morserino has to build a new file system before it can start: the first start ' +
+                    'takes a while with the screen still dark. Let it finish — do not switch it off.');
     }
     // Switching between editions rewrites the partition layout: settings live in
     // NVS at the same place in both and survive, the filesystem does not. Only
@@ -936,9 +939,17 @@
       await disconnect(true);
 
       setProgress(1, '');
-      el.flashDone.textContent =
-        `Done — V${version.version} is installed and the Morserino is restarting. ` +
-        `If the screen stays dark, switch it off and on again.`;
+      // After a full erase the device has to build a new file system on the
+      // next boot, with the screen dark the whole time. Telling the user to
+      // power-cycle a dark screen — the right advice in the normal case — would
+      // interrupt exactly that.
+      el.flashDone.textContent = eraseAll
+        ? `Done — V${version.version} is installed and the Morserino is restarting. ` +
+          `Because you erased everything, it now has to build a new file system: the ` +
+          `screen stays dark for a while before the start screen appears. That is normal — ` +
+          `leave it alone until it finishes, and do not switch it off.`
+        : `Done — V${version.version} is installed and the Morserino is restarting. ` +
+          `If the screen stays dark, switch it off and on again.`;
       el.flashDone.hidden = false;
       setPhase('Finished.');
     } catch (e) {
@@ -1016,6 +1027,11 @@
     el.stepChoose.hidden = true;
     el.stepFlash.hidden = true;
     el.btnInstall.disabled = false;
+    // Re-arm the safe default. A destructive choice must not carry over to
+    // whatever device is plugged in next: someone who erases one Morserino and
+    // then connects another would otherwise wipe it without deciding to.
+    const keep = document.querySelector('input[name=erase][value=keep]');
+    if (keep) keep.checked = true;
     setConnectStatus('');
     el.btnConnect.focus();
   }

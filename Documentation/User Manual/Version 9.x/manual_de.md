@@ -3776,6 +3776,14 @@ Das Installationsprogramm führt dich durch drei Schritte:
       das nur, wenn der permanente Speicher deines Geräts beschädigt
       ist.
 
+    ::: note
+    Nach *Erase everything* muss der Morserino beim nächsten Start ein
+    neues Dateisystem anlegen. Das geschieht **bevor** der Startbildschirm
+    erscheint, das Display bleibt also eine Weile dunkel – deutlich länger
+    als bei einem normalen Start. Das ist normal und kein Fehler: Lass ihn
+    fertig werden und schalte das Gerät nicht aus, solange es dunkel ist.
+    :::
+
 3. **Installing** – warte, bis der Fortschrittsbalken durchgelaufen ist,
    und trenne das Gerät nicht. Danach startet der Morserino von selbst
    neu.
