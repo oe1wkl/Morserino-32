@@ -594,7 +594,21 @@ int  printToScroll_bufLen = 0;         // tracks current length
 // a heap realloc on every "+= text" call (multiple times per CW element).
 // New code: zero heap operations during accumulation. One String construction
 // at flush time (every ~10 chars), which is ~10× fewer allocations.
- 
+
+/// The most printToScroll() hands to printToScroll_internal() in one go.
+/// Bounded by the buffer itself, and by one scroll line: printToScroll_internal()
+/// *wraps* a chunk that does not fit the rest of the current line, but it never
+/// *splits* one - it memcpy's the whole chunk into textBuffer[bottomLine] and
+/// draws it with a single printOnScroll(). A chunk wider than a line would
+/// therefore be drawn past the right edge of the display (and a much wider one
+/// would run over the row in textBuffer[], which holds 2*NoOfCharsPerLine+1
+/// bytes). 14 on the OLED, 15 on the LCD - both compile-time constants, so this
+/// costs nothing in a path that runs once per CW element.
+static const int printToScroll_bufMax =
+        ((int) sizeof(printToScroll_buf) - 1 < NoOfCharsPerLine)
+        ? (int) sizeof(printToScroll_buf) - 1
+        : NoOfCharsPerLine;
+
 FONT_ATTRIB printToScroll_lastStyle = REGULAR;
 
 /////////////////////// parameters for LF tone generation and  HF (= vol ctrl) PWM
@@ -749,28 +763,53 @@ void MorseOutput::setBrightness(uint8_t brightness) {
 }
 
 
+/// Accumulate text for the scroll area, handing it to printToScroll_internal()
+/// a bufferful at a time. The buffer is purely an optimisation: generateCW()
+/// calls this once per CW element, and batching ~10 characters before building
+/// the String that printToScroll_internal() takes saves ~10x the heap traffic.
+/// It is not a limit on what a caller may print - text that does not fit is
+/// consumed in successive chunks, each flushed in turn, until all of it has
+/// been handed on.
+///
+/// It used to be clamped instead: whatever did not fit the free space in the
+/// buffer was silently dropped, so every string over 15 characters lost its
+/// tail. That cost the QSO Bot the closing bracket and the line break of
+/// "[QSO complete (no RST)]" (and the line break of "(click to exit)\n"), and
+/// truncated whole-word display in the CW Generator for words longer than 15
+/// characters - English Words at unlimited length reaches 17, and a file-player
+/// token may be up to 127.
 void MorseOutput::printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll) {
     boolean styleChanged = (style != printToScroll_lastStyle);
     int textLen = text.length();
     boolean lengthExceeded = (printToScroll_bufLen + textLen) > 10;
- 
+
     if (styleChanged || lengthExceeded) {
-        MorseOutput::flushScroll(scroll);
+        MorseOutput::flushScroll(scroll);              // still carries the previous style
     }
- 
-    // Append text to buffer (safely)
+
+    printToScroll_lastStyle = style;                   // the flushes below use the new one
+
+    // Append text to the buffer, emptying it as often as it takes. Note the
+    // loop body always makes progress: the buffer is never full on entry
+    // (either it already had room, or the flush just cleared it), so copyLen
+    // is at least 1. An empty string appends nothing - clearBuffer() relies on
+    // that to flush without adding anything.
     const char* src = text.c_str();
-    int copyLen = textLen;
-    if (printToScroll_bufLen + copyLen > (int)sizeof(printToScroll_buf) - 1)
-        copyLen = sizeof(printToScroll_buf) - 1 - printToScroll_bufLen;
-    if (copyLen > 0) {
-        memcpy(&printToScroll_buf[printToScroll_bufLen], src, copyLen);
+    int consumed = 0;
+    while (consumed < textLen) {
+        if (printToScroll_bufLen >= printToScroll_bufMax) {
+            MorseOutput::flushScroll(scroll);          // full: empty it and carry on
+            printToScroll_lastStyle = style;           // which resets the style - put it back,
+        }                                              // or every chunk but the first goes REGULAR
+        int copyLen = textLen - consumed;
+        if (copyLen > printToScroll_bufMax - printToScroll_bufLen)
+            copyLen = printToScroll_bufMax - printToScroll_bufLen;
+        memcpy(&printToScroll_buf[printToScroll_bufLen], src + consumed, copyLen);
         printToScroll_bufLen += copyLen;
         printToScroll_buf[printToScroll_bufLen] = '\0';
+        consumed += copyLen;
     }
- 
-    printToScroll_lastStyle = style;
- 
+
     if (autoflush || (textLen > 0 && src[textLen - 1] == '\n')) {
         MorseOutput::flushScroll(scroll);
     }
