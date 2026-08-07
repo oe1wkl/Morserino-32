@@ -465,8 +465,12 @@ Two follow-ups came out of that session and are fixed:
 **Not yet done, and deliberately:** nothing has been published. `sync-to-dropbox.sh` was
 rewritten but not run, so the live site is untouched. Phase 4 is where publishing happens.
 
-**Still open from §10:** the erase-everything path, an interrupted flash, the local-file
-escape hatch, a foreign chip, and the screen-reader pass.
+**§10 status.** Verified on hardware: all three targets, the erase path on both variants,
+and the whole flow in Firefox 151. Verified in the browser with the serial layer stubbed:
+an interrupted flash (error via `role=alert`, bar reset, transport disconnected, retry
+offered), the local-file escape hatch (a non-hex address is refused without writing), a
+foreign chip, and a silent device. **Still open: the screen-reader pass**, which needs a
+person and VoiceOver — the static audit is done (§4.7) but that is not the same thing.
 
 **Phase 2 — Accessibility Edition.** Third target, filesystem part, flash-size guard,
 data-preservation warnings, edition selector. Manual artifact upload for testing.
@@ -530,29 +534,34 @@ Cache-Control: public, max-age=86400               ← 24 h TTL
 Via: 1.1 varnish-v4 ; X-Varnish: 7572125 13210521  ← cache HIT
 ```
 
-`Age` is **past** `max-age`, so this is not a TTL that simply has not expired yet — that
-was my first reading and it was wrong. Site44's Varnish layer is holding a stale object
-and not re-fetching. A request with `Cache-Control: no-cache` changes nothing (Varnish
-normally ignores client revalidation), and a cache-busting query string returns the old
-body too.
+`Age` is **past** `max-age`, so this is not a TTL merely waiting to expire — that was the
+first reading and it was wrong.
 
-New paths are unaffected: `install.html` and `targets.json` were live ~20 s after being
-copied. So the Dropbox → site44 path works; it is specifically **replacing an existing,
-long-cached object** that is stuck.
+**Most likely cause: site44's backend is unhealthy and Varnish is serving stale.** Willi
+saw `Error 503 Backend fetch failed — Guru Meditation, Varnish cache server` from the site
+around the same time. That fits everything observed: in grace / stale-if-error mode
+Varnish keeps serving a cached object past its TTL when it cannot reach the backend, and
+returns 503 for paths it has no cached copy of. An object frozen at 30 h with no
+revalidation is exactly that behaviour.
 
-Not urgent — the old URLs currently serve the old, *working* installers, so no user is
-stranded. Options, in order of preference:
+Two dead ends, recorded so they are not retried: a request with `Cache-Control: no-cache`
+changes nothing (Varnish ignores client revalidation), and **a cache-busting query string
+does not reach the origin either** — `?cb=…` still returns a response with a large `Age`,
+so Varnish normalises the query away. There is therefore no way from outside to tell
+whether the origin already has the new file.
 
-1. A cache purge / republish from the site44 control panel, if it has one.
-2. Delete the two files, let the deletion propagate, then write them again — a new object
-   is what demonstrably propagates fast. Costs a brief 404 on a live URL, so it is
-   Willi's call, not something to do unilaterally.
-3. Wait longer and re-check; Varnish may re-fetch on its own eventually.
+**So: wait, and do not intervene.** Specifically, do *not* delete-and-recreate the two
+files to force a new object while the backend is flaky — that would throw away the cached
+copy that is currently the only thing keeping those URLs alive, and leave visitors with
+503s instead of the old-but-working installers. Re-check once site44 is healthy; if the
+redirects still have not appeared after that, a purge from the site44 control panel is the
+next step.
 
-**The general lesson for this site:** a *new* file appears in seconds, an *overwrite* of
-an established path may not appear at all on its own. Verify with
-`curl -I` (compare `Last-Modified` and `Age` against `max-age`) instead of assuming the
-copy worked.
+**The general lesson for this site:** a *new* file appears in seconds; an *overwrite* of
+an established path may take much longer or need the backend to be healthy. Verify with
+`curl -I` — compare `Last-Modified` and `Age` against `max-age` — rather than assuming the
+copy worked, and remember that neither `no-cache` nor a query string will get you past
+the cache.
 - `sync-to-dropbox.sh` carries all four files and gained `--once`, which publishes
   without restarting the watcher.
 - EN + DE Appendix 6 rewritten for one installer: the three steps, the erase choice, and
@@ -630,7 +639,7 @@ device — see the reset trap in §4.4.
 | 14 | Either | Probe a blank board / device asleep | "unknown", no error shown |
 | 15 | Either | Probe, then cancel | Device not left with sleep suppressed |
 | 16 | Pocket | Whole flow with VoiceOver, keyboard only | Every step announced and operable |
-| 17 | Either | Whole flow in **Firefox 151+** | Flashes, including the reset |
+| 17 | Either | Whole flow in **Firefox 151+** | Flashes, including the reset — ✅ verified 2026-08-07 |
 | 18 | — | Safari, or Firefox < 151 | Clear "browser not supported" |
 
 ---
