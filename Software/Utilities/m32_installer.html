@@ -67,7 +67,13 @@
     padding: 22px 28px;
     margin-bottom: 28px;
   }
-  .box[hidden] { display: none; }
+  /* The UA stylesheet's [hidden] { display: none } is an *author*-beatable rule:
+     any class here that sets display (.button-row, .choice-row, .box …) silently
+     wins and the element stays on screen even though el.hidden is true. Every
+     hide in the script goes through the hidden attribute, so this one rule is
+     what makes them work. Removing it makes "Install something else" appear
+     mid-install and shows the beta toggle for targets that have no betas. */
+  [hidden] { display: none !important; }
 
   /* ── Morse "M32" logo ── */
   .morse-header { display: flex; align-items: center; justify-content: center; gap: 22px; margin-bottom: 18px; }
@@ -251,6 +257,23 @@
   progress::-webkit-progress-bar   { background: #fff; border-radius: 4px; }
   progress::-webkit-progress-value { background: var(--accent); border-radius: 4px; }
   progress::-moz-progress-bar      { background: var(--accent); border-radius: 4px; }
+  /* Indeterminate: used while the chip is being erased, which reports no
+     progress at all and can run for the better part of a minute. A custom-
+     styled <progress> with no value would otherwise sit there as a blank box —
+     and leaving the previous value would show a *full* bar, which reads as
+     "finished but stuck". Moving stripes say "working, duration unknown". */
+  progress:indeterminate {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--accent) 0 10px,
+      #fff 10px 20px
+    );
+    background-size: 28.3px 100%;
+    animation: barberpole 0.8s linear infinite;
+  }
+  progress:indeterminate::-webkit-progress-bar { background: transparent; }
+  @keyframes barberpole { from { background-position: 0 0; } to { background-position: 28.3px 0; } }
+  @media (prefers-reduced-motion: reduce) { progress:indeterminate { animation: none; } }
   .progress-detail { font-size: 14px; color: var(--muted); }
 
   /* ── Divider, details, footer ── */
@@ -890,7 +913,13 @@
         }
       }
 
-      if (eraseAll) setPhase('Erasing the whole flash — this takes a while…');
+      // eraseFlash() runs before the first write and reports nothing at all,
+      // so the bar goes indeterminate rather than sitting full from the last
+      // download — a full, motionless bar reads as a hang.
+      if (eraseAll) {
+        setPhase('Erasing the whole flash — this can take up to a minute. Do not disconnect.');
+        setProgress(null, '');
+      }
       await device.loader.writeFlash({
         fileArray: parts.map(p => ({ data: p.data, address: p.offset })),
         flashSize: 'keep', flashMode: 'keep', flashFreq: 'keep',
