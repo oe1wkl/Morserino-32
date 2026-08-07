@@ -2712,8 +2712,8 @@ mit demselben WLAN-Netzwerk verbunden sein wie dein Computer.
 
 ::: note
 Beide Funktionen lassen sich mittlerweile viel einfacher durch
-Anschließen des Morserinos an einen Computer mit Chrome, Edge oder
-Opera erledigen – siehe Anhänge 6 und 7 dieses Handbuchs!
+Anschließen des Morserinos an einen Computer mit Chrome, Edge, Opera
+oder Firefox erledigen – siehe Anhänge 6 und 7 dieses Handbuchs!
 :::
 
 Um den Morserino-32 mit deinem lokalen WLAN-Netzwerk zu verbinden,
@@ -2826,7 +2826,7 @@ verschiedene Netzwerkeinstellungen abzurufen.
 
 ::: note
 Einfacher geht es, wenn du deinen Morserino über USB an einen Computer
-mit Chrome, Edge oder Opera anschließt und den Anweisungen in **Anhang 7
+mit Chrome, Edge, Opera oder Firefox anschließt und den Anweisungen in **Anhang 7
 Einrichten von M32-Einstellungen über einen Browser** folgst.
 :::
 
@@ -3166,8 +3166,8 @@ den Schnappschuss wirklich löschen möchtest. Wenn du den ENCODER auf
 Speichern und Abrufen bestätigt eine kurze Meldung den Erfolg.
 
 Am einfachsten konfigurierst du Einstellungen und Schnappschüsse, indem
-du deinen Morserino über USB mit einem Computer mit Chrome, Edge oder
-Opera verbindest und den Anweisungen in **Anhang 7 Einrichten von
+du deinen Morserino über USB mit einem Computer mit Chrome, Edge, Opera
+oder Firefox verbindest und den Anweisungen in **Anhang 7 Einrichten von
 M32-Einstellungen über einen Browser** folgst.
 
 ## Rufzeichen, Name und Spielstände
@@ -3726,10 +3726,11 @@ Linux):
 
 Einige Browser unterstützen die Webserial-Erweiterung, mit der man
 direkt vom Browser aus auf eine serielle Schnittstelle zugreifen kann.
-Derzeit sind das **Google Chrome** und **Microsoft Edge**, und zumindest
-auf einigen Plattformen auch **Opera**. Mit einem solchen Browser wird
-das Aktualisieren der Firmware auf die neueste Version sehr einfach –
-kein Firmware-Download notwendig, keine Befehlszeilen.
+Derzeit sind das **Google Chrome**, **Microsoft Edge**, **Firefox** (ab
+Version 151), und zumindest auf einigen Plattformen auch **Opera**. Mit
+einem solchen Browser wird das Aktualisieren der Firmware auf die
+neueste Version sehr einfach – kein Firmware-Download notwendig, keine
+Befehlszeilen.
 
 Stelle sicher, dass du ein USB-Kabel hast, das Datenübertragung
 ermöglicht.
@@ -3742,12 +3743,57 @@ anschließt!
 Beim M32 der 1st und 2nd Edition stelle sicher, dass du einen Treiber
 für den SiLab CP210x-Chip hast.
 
-Diese Methode funktioniert **NICHT** mit Firefox oder Safari!
+Diese Methode funktioniert **NICHT** mit Safari und auch nicht mit
+Firefox-Versionen vor 151. Auf einem Computer, der von einer Firma oder
+einer Schule verwaltet wird, kann Webserial außerdem per Richtlinie
+abgeschaltet sein.
 :::
 
 Um die Firmware zu aktualisieren, schließe deinen Morserino-32 über USB
-an deinen Computer an, gehe zu *https://www.morserino.info*, suche die
-Seite für Firmware-Updates und **folge den Anweisungen dort**.
+an deinen Computer an und gehe zu
+[`https://www.morserino.info/install.html`](https://www.morserino.info/install.html).
+
+**Eine Seite installiert jeden Morserino.** Du musst nicht mehr wissen,
+ob du einen klassischen Morserino-32 oder einen M32 Pocket besitzt: Das
+Installationsprogramm fragt den Prozessor in deinem Gerät, um welches es
+sich handelt, und bietet nur die dazu passende Firmware an.
+
+Das Installationsprogramm führt dich durch drei Schritte:
+
+1. **Connect** – klicke auf *Connect* und wähle im Fenster, das dein
+   Browser zeigt, den Port aus, an dem dein Morserino angeschlossen ist.
+
+2. **Choose what to install** – die Seite zeigt dir, was sie gefunden
+   hat, und wenn möglich auch, welche Firmware-Version gerade auf dem
+   Gerät ist. Dann wählst du die gewünschte Version. Wenn du einen M32
+   Pocket hast, wählst du hier auch die **Edition** (siehe unten).
+   Schließlich entscheidest du, was mit deinen Einstellungen geschieht:
+
+    * *Keep my settings* (der Normalfall) – deine Einstellungen,
+      Snapshots und Highscores bleiben erhalten.
+    * *Erase everything* – löscht Einstellungen, Snapshots, Highscores
+      und den Text, den du für den File Player hochgeladen hast. Nimm
+      das nur, wenn der permanente Speicher deines Geräts beschädigt
+      ist.
+
+3. **Installing** – warte, bis der Fortschrittsbalken durchgelaufen ist,
+   und trenne das Gerät nicht. Danach startet der Morserino von selbst
+   neu.
+
+::: note
+**Editionen (nur M32 Pocket).** Die *Standard*-Edition ist die normale
+Firmware, die in diesem Handbuch beschrieben wird. Die *Accessibility
+Edition* liest die Menüs und Einstellungen laut vor – für blinde und
+sehbehinderte Operatoren; die Spiele sind darin nicht enthalten. Beide
+werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen
+ihnen wechseln: Deine Einstellungen bleiben erhalten, aber die
+Accessibility Edition belegt mit ihren Sprachdateien jenen Platz, in dem
+sonst der Text für den File Player liegt.
+:::
+
+Ältere Lesezeichen, die auf die beiden bisherigen getrennten
+Installationsseiten zeigen, funktionieren weiterhin – sie leiten jetzt
+auf diese eine Seite weiter.
 
 
 ## Anhang 7: Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien
@@ -3771,8 +3817,8 @@ einen M32-Dateimanager implementiert.
   *Morse Trainer Pro* integriert.
 
 Am schnellsten geht das alles, indem du deinen Morserino über USB mit
-einem Computer mit Chrome, Edge oder Opera (oder einem anderen Browser,
-der das Webserial-Protokoll unterstützt) verbindest und eine der
+einem Computer mit Chrome, Edge, Opera oder Firefox (oder einem anderen
+Browser, der das Webserial-Protokoll unterstützt) verbindest und eine der
 folgenden Seiten aufrufst:
 
 * [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html)
@@ -4357,7 +4403,7 @@ Klammern \[\].
 | Tone Shift | Eine Einstellung, die die Tonhöhe des Mithörtons beim Senden oder Antworten um einen Halbton höher oder tiefer als den Empfangston verschiebt. Nützlich zur Unterscheidung von gesendeten und empfangenen Signalen. |
 | UDP | User Datagram Protocol – ein leichtgewichtiges Netzwerkprotokoll, das der Morserino für die WLAN-Transceiver-Kommunikation auf Port 7373 verwendet. |
 | VBand | Eine internetbasierte CW-Übungsplattform (hamradio.solutions/vband). Der Morserino kann sich über Bluetooth mit VBand verbinden. |
-| Webserial | Eine Browser-API (unterstützt in Chrome, Edge und Opera), die es Webseiten ermöglicht, direkt über USB mit seriellen Geräten zu kommunizieren. Wird für Firmware-Updates und die Einstellungskonfiguration verwendet. |
+| Webserial | Eine Browser-API (unterstützt in Chrome, Edge, Opera und Firefox ab Version 151), die es Webseiten ermöglicht, direkt über USB mit seriellen Geräten zu kommunizieren. Wird für Firmware-Updates und die Einstellungskonfiguration verwendet. |
 | Wordsworth-Abstand | Eine Trainingstechnik (ähnlich wie Farnsworth), bei der nur die Pausen zwischen Wörtern verlängert werden, während der Zeichenabstand normal bleibt. Fördert das Kopieren Wort für Wort im Kopf. |
 | WpM | Wörter pro Minute – das Standardmaß für die Morsecode-Geschwindigkeit. Das Referenzwort ist PARIS (jedes Vorkommen entspricht 50 Dit-Längen), also gilt: 1 WpM = 5 Zeichen pro Minute. |
 

@@ -2279,7 +2279,7 @@ basic web-browser functionality on that device), and your Morserino must
 be connected to the same WiFi network as your computer.
 
 ::: note
-Both these functions can now be accomplished much easier by connecting your Morserino to a computer that runs Chrome, Edge or Opera - see appendices 6 and 7 of this manual!
+Both these functions can now be accomplished much easier by connecting your Morserino to a computer that runs Chrome, Edge, Opera or Firefox - see appendices 6 and 7 of this manual!
 :::
 
 In order to connect your Morserino-32 to your local WiFi network, you
@@ -2395,7 +2395,7 @@ means you cannot use snapshots to recall different network settings.
 
 ::: note
 An easier way to configure access points is by using your Morserino
-connected via USB to a Chrome, Edge or Opera browser, and using the
+connected via USB to a Chrome, Edge, Opera or Firefox browser, and using the
 instructions in **Appendix 7 Using a Browser to set up M32
 Preferences**.
 :::
@@ -2730,7 +2730,7 @@ deleting it. There will be a confirmation dialog to make sure you really want to
 will indicate that the action was successful.
 
 The easiest way to configure your preferences and snapshots is to
-connect your Morserino via USB to a computer running Chrome, Edge or
+connect your Morserino via USB to a computer running Chrome, Edge, Firefox or
 Opera and using the instructions in **Appendix 7**Using
 a Browser to set up M32 Preferences**.
 
@@ -3287,10 +3287,10 @@ parameter `-e`. As an example (here for OSX or Linux):
 
 Some browsers support the Webserial extension, which allows to access a
 serial port directly from the browser; currently these are **Google
-Chrome** and **Microsoft Edge**, and at least on some platforms also
-**Opera**. By using such a browser, updating the firmware to the latest
-release becomes really very easy (no firmware download necessary, and no
-command lines...​).
+Chrome**, **Microsoft Edge**, **Firefox** (from version 151), and at
+least on some platforms also **Opera**. By using such a browser,
+updating the firmware to the latest release becomes really very easy (no
+firmware download necessary, and no command lines...​).
 
 Make sure you have a USB cable that allows data transfer.
 
@@ -3301,12 +3301,52 @@ be in sleep mode when you are connecting the USB cable!
 For M32 1st and 2nd edition, make sure you have a driver for the SiLab
 CP210x chip.
 
-This method does NOT work with Firefox or Safari browsers!
+This method does NOT work with the Safari browser, nor with versions of
+Firefox before 151. On a computer managed by a company or a school,
+Webserial may also be switched off by policy.
 :::
 
-For updating your firmware, you just connect your Morserino-32 to your
-computer via USB, and go to *https://www.morserino.info*, find the
-page for firmware updates **and follow the instructions there**.
+For updating your firmware, connect your Morserino-32 to your computer
+via USB and go to
+[`https://www.morserino.info/install.html`](https://www.morserino.info/install.html).
+
+**One page installs every Morserino.** You no longer have to know
+whether you own a classic Morserino-32 or an M32 Pocket: the installer
+asks the processor in your device which one it is, and offers only the
+firmware that fits it.
+
+The installer takes you through three steps:
+
+1. **Connect** — click *Connect* and pick the port your Morserino is
+   connected to from the pop-up your browser shows.
+
+2. **Choose what to install** — the page tells you what it found and,
+   where it can, which firmware version is on the device at the moment.
+   Then you pick the version you want. If you own an M32 Pocket you also
+   choose the **edition** here (see below). Finally you decide what
+   happens to your settings:
+
+    * *Keep my settings* (the normal choice) — your preferences,
+      snapshots and high scores survive the update.
+    * *Erase everything* — wipes preferences, snapshots, high scores and
+      any text you uploaded for the File Player. Only use this if your
+      device's permanent memory has been corrupted.
+
+3. **Installing** — wait for the progress bar. Do not disconnect the
+   device. When it finishes, the Morserino restarts by itself.
+
+::: note
+**Editions (M32 Pocket only).** The *Standard* edition is the normal
+firmware described by this manual. The *Accessibility Edition* speaks
+the menus and settings aloud, for blind and partially sighted operators;
+the games are not included in it. Both are offered for the same device
+and you can move between them at any time — your settings are kept, but
+the Accessibility Edition uses the space that holds the File Player's
+text for its voice clips.
+:::
+
+Older bookmarks pointing at the previous two separate installer pages
+still work; they now forward to this one page.
 
 ## Appendix 7: Using a Browser to set up M32 Preferences, and upload Text Files
 
@@ -3323,8 +3363,8 @@ as well as to upload text file for the File Player.
   *Morse Trainer Pro* application.
 
 The quickest way to do all that is to connect your Morserino via USB to
-a computer running Chrome, Edge or Opera (or any other browser that
-supports the Webserial protocol), and going to either
+a computer running Chrome, Edge, Opera or Firefox (or any other browser
+that supports the Webserial protocol), and going to either
 
 * [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html) (for the "official" configuration tool),
 
@@ -3885,6 +3925,6 @@ abbreviations uncommon in English are in square brackets \[\].
 | Tone Shift | A preference that changes the pitch of the sidetone when transmitting or responding, making it a half tone higher or lower than the received tone. Useful for distinguishing sent and received signals. |
 | UDP | User Datagram Protocol — a lightweight network protocol used by the Morserino for WiFi transceiver communication on port 7373. |
 | VBand | An Internet-based CW practice platform (hamradio.solutions/vband). The Morserino can connect to VBand via Bluetooth. |
-| Webserial | A browser API (supported in Chrome, Edge, and Opera) that allows web pages to communicate directly with serial devices via USB. Used for firmware updates and preference configuration. |
+| Webserial | A browser API (supported in Chrome, Edge, Opera, and Firefox from version 151) that allows web pages to communicate directly with serial devices via USB. Used for firmware updates and preference configuration. |
 | Wordsworth Spacing | A training technique (similar to Farnsworth) where only the pauses between words are lengthened, while inter-character spacing remains normal. Encourages head-copying word by word. |
 | WPM | Words Per Minute — the standard measure of Morse code speed. The reference word is PARIS (each occurrence equals 50 dit-lengths), so 1 WPM = 5 characters per minute. |

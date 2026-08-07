@@ -504,13 +504,45 @@ installer agree end to end.
 `idedata.json` — which does name it — is not refreshed by `pio run` and is missing
 entirely for some environments, so it cannot be used to find it.
 
-**Phase 4 — publish & redirect.** Ship `install.html`, link it from the site, convert
-the two old pages to redirects. Update EN + DE manuals and `Software/README.md`.
+**Phase 4 — publish & redirect.** ✅ **live 2026-08-07.**
 *Done when:* the old URLs land on the new installer and the manuals describe one
 installer.
 
-**Phase 5 — retire.** After one release cycle, delete the leftover Sitely code blocks
-and stale per-page assets. Decide then whether the desktop `m32update` tool stays.
+- `install.html` and `firmware/targets.json` are published and serving; the live page
+  loads, finds Web Serial, and drops the not-yet-published `m32p-a11y` target with a
+  log line and no user-visible error — the "listed before published" path working as
+  designed.
+- `flash.html` and `flash-m32pocket.html` now serve
+  `Software/Utilities/m32_installer_redirect.html`, a branded 3-second forward with a
+  visible link and `rel=canonical`. Because every other page links to *those* URLs, no
+  Sitely-generated page needed editing.
+
+**Caching, worth knowing before the next change.** A *new* path appears within seconds
+(`install.html` was live ~20 s after the copy). An *overwritten* path can lag: the CDN
+had a copy of `flash.html` stored under `Cache-Control: public, max-age=86400`, so the
+redirect stubs only became visible when that 24-hour entry expired — the files, Dropbox
+and the origin were all correct the whole time. `install.html` is served with
+`max-age=0`, so installer updates themselves propagate immediately; it is the
+long-established paths that carry the day-long TTL. Budget for that when replacing an
+existing page, and verify with `curl -I` (`Age` vs `max-age`) rather than assuming a
+sync failure.
+- `sync-to-dropbox.sh` carries all four files and gained `--once`, which publishes
+  without restarting the watcher.
+- EN + DE Appendix 6 rewritten for one installer: the three steps, the erase choice, and
+  the Pocket edition choice. The Firefox corrections from §12.1 went in at the same time
+  (doing them separately would have collided on the same passages), so §12.1 is now
+  **done**, including the enterprise-policy note.
+- `Software/README.md` has a V9.0 changelog section.
+
+**The Sitely caveat.** `flash.html` and `flash-m32pocket.html` still exist as pages
+inside `m32.sparkle`. **Publishing the site from Sitely overwrites the redirect stubs and
+brings the old installers back.** Delete or empty those two pages in Sitely to make the
+move permanent — that is the main item left for Phase 5.
+
+**Phase 5 — retire.** **Delete or empty `flash.html` and `flash-m32pocket.html` inside
+the Sitely project** — until that is done, any site publish from Sitely resurrects the
+old installers over the redirect stubs. Then remove the leftover Sitely code blocks and
+stale per-page assets. Decide at that point whether the desktop `m32update` tool stays.
 
 Rough effort: Phase 1 ≈ 2 days, Phase 2 ≈ 1 day, Phase 3 ≈ 1 day, Phase 4 ≈ ½ day plus
 manual work; hardware testing on top.
