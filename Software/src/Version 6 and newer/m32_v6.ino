@@ -289,6 +289,13 @@ boolean genIsActive= false;                       // flag for trainer mode
 boolean startFirst = true;                        // to indicate that we are starting a new sequence in the trainer modi
 boolean firstTime = true;                         /// for word doubler mode
 
+/// set by fetchNewWord() while clearText holds the fixed "vvv<ka>" pass-opener or
+/// the "+" pass-closer, read by dispGeneratedChar()/generateCW() for as long as
+/// clearText still holds characters from that word (unlike newWordForDisplay below,
+/// this is not a one-shot flag: it must stay true across all of that word's
+/// characters, not just the first)
+boolean frameWordForDisplay = false;
+
 uint8_t wordCounter = 0;                          // for maxSequence
 uint16_t errCounter = 0;                          // counting errors in echo trainer mode
 boolean stopFlag = false;                         // for maxSequence
@@ -2078,7 +2085,9 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 if (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_WORD &&
                     (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW == true))
                   {
-                      displayGeneratedMorse(morseState == morseGenerator ? REGULAR : BOLD, cleanUpProSigns(clearText));
+                      displayGeneratedMorse(
+                          (morseState == morseGenerator && !frameWordForDisplay) ? REGULAR : BOLD,
+                          cleanUpProSigns(clearText));
                       //clearText = "";
                   }
                 }
@@ -2281,7 +2290,8 @@ void dispGeneratedChar() {
         // cleanUpProSigns takes String& — construct one from our char buffer
         String charString(charBuf);
         displayGeneratedMorse(
-            (morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN)
+            ((frameWordForDisplay && morseState == morseGenerator) ||
+             morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN)
                 ? BOLD : REGULAR,
             cleanUpProSigns(charString));
         if (generatorMode == KOCH_LEARN) {
@@ -2303,6 +2313,8 @@ void dispGeneratedChar() {
 void fetchNewWord() {
   int rssi, rxWpm, rv;
   char numBuffer[16];                // for number to string conversion with sprintf()
+
+  frameWordForDisplay = false;       // only the "vvv<ka>" opener and "+" closer below turn this back on
 
 
     if (morseState == loraTrx || morseState == wifiTrx) {                     // we check the rxBuffer and see if we received something
@@ -2363,6 +2375,7 @@ void fetchNewWord() {
     }
     if (startFirst == true)  {                                 /// do the intial sequence in trainer mode, too
         clearText = "vvvA";
+        frameWordForDisplay = true;
         startFirst = false;
     } else if (morseState == morseGenerator && MorsePreferences::pliste[posWordDoubler].value != 0 && firstTime == false) {
         clearText = echoTrainerWord;
@@ -2403,6 +2416,7 @@ void fetchNewWord() {
                                 int limit = 1 + MorsePreferences::pliste[posMaxSequence].value;
                                 if (wordCounter == limit) {
                                   clearText = "+";
+                                  frameWordForDisplay = true;
                                   echoStop = true;
                                   if (echoTrainerState == REPEAT_WORD)
                                     echoTrainerState = SEND_WORD;
