@@ -2261,7 +2261,7 @@ The font family used is Lato.</p>
 </ul>
 <p>For both of these functionalities the file to be uploaded (be it a text file or the compiled binary file for the software update) must be on your computer (even a tablet or smartphone will work, as you only need basic web-browser functionality on that device), and your Morserino must be connected to the same WiFi network as your computer.</p>
 <div class="note">
-<p>Both these functions can now be accomplished much easier by connecting your Morserino to a computer that runs Chrome, Edge or Opera - see appendices 6 and 7 of this manual!</p>
+<p>Both these functions can now be accomplished much easier by connecting your Morserino to a computer that runs Chrome, Edge, Opera or Firefox - see appendices 6 and 7 of this manual!</p>
 </div>
 <p>In order to connect your Morserino-32 to your local WiFi network, you usually need to know the SSID (the “name”) of the network, and the password to connect to it, known also as the “credentials”. And you must enter these two items into your Morserino-32. As it does not have a keyboard for convenient entry of this information, we use another way of doing it, and for this end another WiFi function has been implemented: <strong>network configuration</strong> (Config WiFi), which is the first you have to use before you can use the upload or update functions.</p>
 <p>For home networks that use a list of allowed MAC addresses (for security reasons), you have to configure your router and enter the M32’s MAC address before you can connect your M32 to the network. In order to be able to do so, there is also a function implemented to show the MAC address on the display.</p>
@@ -2289,7 +2289,7 @@ The font family used is Lato.</p>
 </div>
 <p>You can configure three different network settings; from version 4.5.1 on the network configurations will not be stored in Snapshots, this means you cannot use snapshots to recall different network settings.</p>
 <div class="note">
-<p>An easier way to configure access points is by using your Morserino connected via USB to a Chrome, Edge or Opera browser, and using the instructions in <strong>Appendix 7 Using a Browser to set up M32 Preferences</strong>.</p>
+<p>An easier way to configure access points is by using your Morserino connected via USB to a Chrome, Edge, Opera or Firefox browser, and using the instructions in <strong>Appendix 7 Using a Browser to set up M32 Preferences</strong>.</p>
 </div>
 <h3 data-number="5.8.3" id="checking-your-network-connectivity"><span class="header-section-number">5.8.3</span> Checking your network connectivity</h3>
 <p>Use the sub-menu entry <strong>Check WiFi</strong> under <strong>WiFi Functions</strong> to test network connectivity.</p>
@@ -2385,7 +2385,7 @@ The font family used is Lato.</p>
 <p>Again, you double click the ENCODER knob first to get into the preferences menu. Now <strong>a short click on the FN button</strong> lets you select with the ENCODER which of the stored snapshots you want to recall, and you recall it by clicking the ENCODER button; again, there is an option that reads <strong>Cancel Recall</strong>, which allows you to get out without recalling a snapshot. If there are no snapshots stored, you get a message “NO SNAPSHOTS” and you can leave by clicking any of the buttons.</p>
 <h3 data-number="6.1.3" id="deleting-a-snapshot"><span class="header-section-number">6.1.3</span> Deleting a snapshot</h3>
 <p>You can also delete a snapshot that is no longer needed, or that was created in error. Proceed as if you wanted to recall a snapshot, select the one you want to delete, and then <strong>click the FN button</strong> for deleting it. There will be a confirmation dialog to make sure you really want to delete that snapshot. If you rotete the ENCODER to “Yes” and click it, that snapshot will be deleted, and, like with storing and recalling snapshots, a short message will indicate that the action was successful.</p>
-<p>The easiest way to configure your preferences and snapshots is to connect your Morserino via USB to a computer running Chrome, Edge or Opera and using the instructions in <strong>Appendix 7</strong>Using a Browser to set up M32 Preferences**.</p>
+<p>The easiest way to configure your preferences and snapshots is to connect your Morserino via USB to a computer running Chrome, Edge, Firefox or Opera and using the instructions in <strong>Appendix 7</strong>Using a Browser to set up M32 Preferences**.</p>
 <h2 data-number="6.2" id="player-identity-and-game-scores"><span class="header-section-number">6.2</span> Player identity and game scores</h2>
 <p>Two preferences let you tell the Morserino who you are. <strong>Call Sign</strong> and <strong>Op Name</strong> are used by the games (Fight the Pileup, Morsel) and the QSO Bot. Select either item in the preferences menu and an on-screen text editor opens (it works the same on the OLED and the LCD):</p>
 <ul>
@@ -2935,14 +2935,30 @@ The font family used is Lato.</p>
 <p>There is also an option to fully erase the M32’s permanent memory before installing the firmware again; this can be useful if your device’s permanent memory has been corrupted. To do this add the optional erase parameter <code>-e</code>. As an example (here for OSX or Linux):</p>
 <p><code>./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e</code></p>
 <h2 data-number="7.6" id="appendix-6-updating-the-firmware-via-usb-and-a-browser-webserial"><span class="header-section-number">7.6</span> Appendix 6: Updating the Firmware via USB and a Browser (Webserial)</h2>
-<p>Some browsers support the Webserial extension, which allows to access a serial port directly from the browser; currently these are <strong>Google Chrome</strong> and <strong>Microsoft Edge</strong>, and at least on some platforms also <strong>Opera</strong>. By using such a browser, updating the firmware to the latest release becomes really very easy (no firmware download necessary, and no command lines…​).</p>
+<p>Some browsers support the Webserial extension, which allows to access a serial port directly from the browser; currently these are <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Firefox</strong> (from version 151), and at least on some platforms also <strong>Opera</strong>. By using such a browser, updating the firmware to the latest release becomes really very easy (no firmware download necessary, and no command lines…​).</p>
 <p>Make sure you have a USB cable that allows data transfer.</p>
 <div class="note">
 <p>If you are using a M32Pocket, the device must be turned on and must not be in sleep mode when you are connecting the USB cable!</p>
 <p>For M32 1st and 2nd edition, make sure you have a driver for the SiLab CP210x chip.</p>
-<p>This method does NOT work with Firefox or Safari browsers!</p>
+<p>This method does NOT work with the Safari browser, nor with versions of Firefox before 151. On a computer managed by a company or a school, Webserial may also be switched off by policy.</p>
 </div>
-<p>For updating your firmware, you just connect your Morserino-32 to your computer via USB, and go to <em>https://www.morserino.info</em>, find the page for firmware updates <strong>and follow the instructions there</strong>.</p>
+<p>For updating your firmware, connect your Morserino-32 to your computer via USB and go to <a href="https://www.morserino.info/install.html"><code>https://www.morserino.info/install.html</code></a>.</p>
+<p><strong>One page installs every Morserino.</strong> You no longer have to know whether you own a classic Morserino-32 or an M32 Pocket: the installer asks the processor in your device which one it is, and offers only the firmware that fits it.</p>
+<p>The installer takes you through three steps:</p>
+<ol type="1">
+<li><p><strong>Connect</strong> — click <em>Connect</em> and pick the port your Morserino is connected to from the pop-up your browser shows.</p></li>
+<li><p><strong>Choose what to install</strong> — the page tells you what it found and, where it can, which firmware version is on the device at the moment. Then you pick the version you want. If you own an M32 Pocket you also choose the <strong>edition</strong> here (see below). Finally you decide what happens to your settings:</p>
+<ul>
+<li><em>Keep my settings</em> (the normal choice) — your preferences, snapshots and high scores survive the update.</li>
+<li><em>Erase everything</em> — wipes preferences, snapshots, high scores and any text you uploaded for the File Player. Only use this if your device’s permanent memory has been corrupted.</li>
+</ul>
+<p>::: note After <em>Erase everything</em>, the Morserino has to build a new file system the next time it starts. This happens <strong>before</strong> the start screen appears, so the display stays dark for a while — considerably longer than a normal start. That is normal and not a fault: let it finish, and do <strong>not</strong> switch the device off while it is dark. :::</p></li>
+<li><p><strong>Installing</strong> — wait for the progress bar. Do not disconnect the device. When it finishes, the Morserino restarts by itself.</p></li>
+</ol>
+<div class="note">
+<p><strong>Editions (M32 Pocket only).</strong> The <em>Standard</em> edition is the normal firmware described by this manual. The <em>Accessibility Edition</em> speaks the menus and settings aloud, for blind and partially sighted operators; the games are not included in it. Both are offered for the same device and you can move between them at any time — your settings are kept, but the Accessibility Edition uses the space that holds the File Player’s text for its voice clips.</p>
+</div>
+<p>Older bookmarks pointing at the previous two separate installer pages still work; they now forward to this one page.</p>
 <h2 data-number="7.7" id="appendix-7-using-a-browser-to-set-up-m32-preferences-and-upload-text-files"><span class="header-section-number">7.7</span> Appendix 7: Using a Browser to set up M32 Preferences, and upload Text Files</h2>
 <p>There are currently three sites that enable you to set up M32 preferences through a browser on your computer, and another one that implements an M32 File Manager.</p>
 <ul>
@@ -2950,7 +2966,7 @@ The font family used is Lato.</p>
 <li><p>Christof, <strong>OE6CHD</strong>, wrote a Javascript program that makes it very easy to set preferences, WiFi access point credentials, and keyer memories, as well as to upload text file for the File Player.</p></li>
 <li><p>Similar functionality has been integrated by Oliver, <strong>OM0RX</strong>, into his <em>Morse Trainer Pro</em> application.</p></li>
 </ul>
-<p>The quickest way to do all that is to connect your Morserino via USB to a computer running Chrome, Edge or Opera (or any other browser that supports the Webserial protocol), and going to either</p>
+<p>The quickest way to do all that is to connect your Morserino via USB to a computer running Chrome, Edge, Opera or Firefox (or any other browser that supports the Webserial protocol), and going to either</p>
 <ul>
 <li><p><a href="https://www.morserino.info/m32_config_tool.html"><code>https://www.morserino.info/m32_config_tool.html</code></a> (for the “official” configuration tool),</p></li>
 <li><p><a href="https://tegmento.org/"><code>https://tegmento.org/</code></a> (for the application by OE6CHD), or</p></li>
@@ -4411,7 +4427,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Webserial</td>
-<td>A browser API (supported in Chrome, Edge, and Opera) that allows web pages to communicate directly with serial devices via USB. Used for firmware updates and preference configuration.</td>
+<td>A browser API (supported in Chrome, Edge, Opera, and Firefox from version 151) that allows web pages to communicate directly with serial devices via USB. Used for firmware updates and preference configuration.</td>
 </tr>
 <tr>
 <td>Wordsworth Spacing</td>
