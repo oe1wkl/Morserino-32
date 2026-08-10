@@ -289,6 +289,13 @@ boolean genIsActive= false;                       // flag for trainer mode
 boolean startFirst = true;                        // to indicate that we are starting a new sequence in the trainer modi
 boolean firstTime = true;                         /// for word doubler mode
 
+/// set by fetchNewWord() while clearText holds the fixed "vvv<ka>" pass-opener or
+/// the "+" pass-closer, read by dispGeneratedChar()/generateCW() for as long as
+/// clearText still holds characters from that word (unlike newWordForDisplay below,
+/// this is not a one-shot flag: it must stay true across all of that word's
+/// characters, not just the first)
+boolean frameWordForDisplay = false;
+
 uint8_t wordCounter = 0;                          // for maxSequence
 uint16_t errCounter = 0;                          // counting errors in echo trainer mode
 boolean stopFlag = false;                         // for maxSequence
@@ -2078,7 +2085,9 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 if (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_WORD &&
                     (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW == true))
                   {
-                      displayGeneratedMorse(morseState == morseGenerator ? REGULAR : BOLD, cleanUpProSigns(clearText));
+                      displayGeneratedMorse(
+                          (morseState == morseGenerator && !frameWordForDisplay) ? REGULAR : BOLD,
+                          cleanUpProSigns(clearText));
                       //clearText = "";
                   }
                 }
@@ -2223,15 +2232,44 @@ int pitch() {                 // find out which pitch to use for the generated C
 
 
 
+/// set by fetchNewWord(), consumed by the next dispGeneratedChar(): the character
+/// about to be shown is the first one of a new word (see the word-wrap look-ahead below)
+static boolean newWordForDisplay = false;
+
 void dispGeneratedChar() {
     static char charBuf[6];   // max 2 UTF-8 bytes + null (prosign expansion happens later)
     int charBufLen = 0;
- 
+    boolean wordStart = newWordForDisplay;      // consume it here, whether or not we display anything
+    newWordForDisplay = false;
+
     if (generatorMode == KOCH_LEARN ||
             (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_CHAR &&
             (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
             (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY))
     {
+        // Generated text only (CW Generator, LoRa/WiFi receive, CW play), and
+        // only for the first character of a word: clearText still holds the
+        // whole word (up to the next space), so -- unlike live keyed/decoded
+        // input, where we only find out a word is finished once it's over --
+        // its length is already known before the first character is shown.
+        // Use that to wrap pre-emptively at the word boundary instead of
+        // leaving it to MorseOutput's per-character wrap, which only ever sees
+        // one token at a time and so can split a word across lines. The Echo
+        // Trainer is left out on purpose: it starts every prompt on a fresh
+        // line anyway. The line break is display-only: it deliberately does
+        // not go through displayGeneratedMorse(), which would also push a "\n"
+        // into the serial/BLE character echo and, with the Bluetooth keyboard
+        // active, type a Return on the host - a screen layout decision has no
+        // business showing up there.
+        if (wordStart && (morseState == morseGenerator || morseState == loraTrx ||
+                          morseState == wifiTrx || playCW)) {
+            int nextSpace = clearText.indexOf(' ');
+            uint16_t wordLen = (uint16_t) ((nextSpace == -1) ? clearText.length() : nextSpace);
+            if (MorseOutput::wordNeedsWrap(wordLen)) {
+                MorseOutput::printToScroll(REGULAR, "\n", true, encoderState == scrollMode);
+            }
+        }
+
         if (clearText.charAt(0) == (char)0xC3) {           // UTF-8 two-byte char
             charBuf[0] = clearText.charAt(0);
             charBuf[1] = clearText.charAt(1);
@@ -2252,7 +2290,8 @@ void dispGeneratedChar() {
         // cleanUpProSigns takes String& — construct one from our char buffer
         String charString(charBuf);
         displayGeneratedMorse(
-            (morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN)
+            ((frameWordForDisplay && morseState == morseGenerator) ||
+             morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN)
                 ? BOLD : REGULAR,
             cleanUpProSigns(charString));
         if (generatorMode == KOCH_LEARN) {
@@ -2275,6 +2314,8 @@ void fetchNewWord() {
   int rssi, rxWpm, rv;
   char numBuffer[16];                // for number to string conversion with sprintf()
 
+  frameWordForDisplay = false;       // only the "vvv<ka>" opener and "+" closer below turn this back on
+
 
     if (morseState == loraTrx || morseState == wifiTrx) {                     // we check the rxBuffer and see if we received something
        MorseOutput::updateSMeter(0);                                         // at end of word we set S-meter to 0 until we receive something again
@@ -2293,6 +2334,7 @@ void fetchNewWord() {
 
             displayGeneratedMorse(BOLD, " ");
             clearText = CWwordToClearText(CWword);
+            newWordForDisplay = true;           // next dispGeneratedChar() shows the 1st char of this word
             // DEBUG("@1978: Received clearText: " + clearText);
             rxDitLength = 1200 /   rxWpm ;                      // set new value for length of dits and dahs and other timings
             rxDahLength = 3* rxDitLength ;                      // calculate the other timing values
@@ -2317,8 +2359,9 @@ void fetchNewWord() {
             genTimer = 3 * interWordSpace + millis();
             clearText = "";
         }
-        CWword = generateCWword(clearText); CWwordPos = 0;  
+        CWword = generateCWword(clearText); CWwordPos = 0;
         displayGeneratedMorse(REGULAR, " ");
+        newWordForDisplay = true;               // next dispGeneratedChar() shows the 1st char of this word
         return;
     }
     else {
@@ -2332,6 +2375,7 @@ void fetchNewWord() {
     }
     if (startFirst == true)  {                                 /// do the intial sequence in trainer mode, too
         clearText = "vvvA";
+        frameWordForDisplay = true;
         startFirst = false;
     } else if (morseState == morseGenerator && MorsePreferences::pliste[posWordDoubler].value != 0 && firstTime == false) {
         clearText = echoTrainerWord;
@@ -2372,6 +2416,7 @@ void fetchNewWord() {
                                 int limit = 1 + MorsePreferences::pliste[posMaxSequence].value;
                                 if (wordCounter == limit) {
                                   clearText = "+";
+                                  frameWordForDisplay = true;
                                   echoStop = true;
                                   if (echoTrainerState == REPEAT_WORD)
                                     echoTrainerState = SEND_WORD;
@@ -2460,6 +2505,7 @@ void fetchNewWord() {
       }
       CWword = generateCWword(clearText); CWwordPos = 0;
       echoTrainerWord = clearText;
+      newWordForDisplay = true;                 // next dispGeneratedChar() shows the 1st char of this word
     } /// else (= not in loraTrx or wifiTrx mode, or in PlayCW, or other generator modes)
 } // end of fetchNewWord()
 

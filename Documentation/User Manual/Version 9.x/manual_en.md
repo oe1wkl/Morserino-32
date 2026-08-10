@@ -50,7 +50,7 @@ What is new in Version 8?
 | 1 | USB-C | Use a normal 5V USB Charger to power the device and charge its LiIon Battery. The microcontroller firmware can also be reprogrammed through USB; another method to update the Morserino-32 firmware is through a WiFi connection. You can also output keyed or decoded characters on the USB serial device to use this information in a computer program – see the preference **Serial Output** for further information. |
 | 2 | 3.5 mm Phone Jack (3 poles): External Paddle | Use this to connect either an external (mechanical) paddle (tip is left paddle, ring is right paddle, sleeve is ground), or a straight key (tip is the key). |
 | 3 | 3.5mm Phone Jack (3 poles): to TX | Connect this to your transmitter or transceiver if you would like to key them with this device. Only the tip and sleeve are being used. |
-| 4 | 3.5mm Phone Jack (4 poles): Headphones / Audio In / Line Out | Connect your headphones (with 3-pol or 4-pole plug) here. Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (for external amplifiers or PC etc.). The assignments to the jack are as follows: Tip and 1st ring – audio or headphones out; 2nd ring: ground; sleeve: audio in. See also section **6.2.1 General Preferences** for available settings regarding this connector! **Do not connect this to a transceiver with a simple 3- or 4-pole audio cable - high voltages form the audio output of the transceiver might destroy your M32Pocket! See FAQ on morserino.info how to feed audio into the M32Pocket!**|
+| 4 | 3.5mm Phone Jack (4 poles): Headphones / Audio In / Line Out | Connect your headphones (with 3-pol or 4-pole plug) here. Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (for external amplifiers or PC etc.). The assignments to the jack are as follows: Tip and 1st ring – audio or headphones out; 2nd ring: ground; sleeve: audio in. See also section **6.3.1 General Preferences** for available settings regarding this connector! **Do not connect this to a transceiver with a simple 3- or 4-pole audio cable - high voltages form the audio output of the transceiver might destroy your M32Pocket! See FAQ on morserino.info how to feed audio into the M32Pocket!**|
 | 5 | Power Switch | Connect / disconnect the LiIon battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the touch paddles, and marked with a small notch on the case. If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br> For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
 | 6 | ENCODER – Encoder and its Pushbutton switch | Can be rotated and is also a push-button switch. Used to make your selection within menus, to adjust speed, volume, or scroll the display, and to set various preferences and options. |
 | 7 | Touch paddles | These are capacitive touch paddles. Please note that for left-handed use, the display can be flipped 180°! |
@@ -474,7 +474,7 @@ paddles work in parallel, so there is no need to configure this.
 
 ::: note
 There are a number of **preferences** that determine how the automatic
-keyer works. See the section **6.2.2 Preferences regarding Key, Paddles and Keyer** for the details. The
+keyer works. See the section **6.3.2 Preferences regarding Key, Paddles and Keyer** for the details. The
 following are particularly important here:
 
 **External Pol.**: If your external key is wired "the wrong way
@@ -551,7 +551,7 @@ default is 4, or half a dot's length. If you still generate unwanted
 dits, increase this value.
 
 For the preference **AutoChar Spce** (defining a minimum length for the
-space between characters) see the section **6.2.2 Preferences regarding Key, Paddles and Keyer** for details.
+space between characters) see the section **6.3.2 Preferences regarding Key, Paddles and Keyer** for details.
 
 **Straight Key Mode**: This is not really an automatic keyer mode, but
 it enables the Morserino-32 to be used with a simple straight key.
@@ -617,7 +617,7 @@ Preferences**.
 This either generates randomized groups of characters and words for CW
 training purposes, or plays the contents of a text file in Morse code.
 You can set a number of options by choosing appropriate preferences (see
-the section **6.2.4 Preferences regarding CW Generation** below).
+the section **6.3.5 Preferences regarding CW Generation** below).
 
 You can **start** and **stop** the CW Generator by **quickly pressing a
 paddle** (either one side or both), or by **clicking the ENCODER knob**
@@ -626,7 +626,11 @@ stop the session).
 
 When it starts, it will first alert you by generating *vvv\<ka>*
 (**\...\_  \...\_  \...\_  \_.\_.\_**) in Morse code, before it actually
-begins generating groups or words.
+begins generating groups or words. On the display, this opening
+*vvv\<ka>* — and, if **Max \# of Words** is set, the closing "+" that
+marks the end of the sequence (see **6.3.5 Preferences regarding CW
+Generation**) — are shown in **bold**, so you can immediately see where
+a sequence begins and ends.
 
 Enabling the preference **Stop/Next/Rep** will cause the Morserino
 to play only one word or group of characters, after which it will stop
@@ -643,7 +647,7 @@ is back and right is forward.)
 
 ::: note
 Please note that the **Each Word 2x** and **Stop/Next/Repeat**
-options (see section **6.2.4 Preferences regarding CW
+options (see section **6.3.5 Preferences regarding CW
 Generation**) are incompatible with each other. If you set
 one to ON, the other will automatically be set to OFF.
 :::
@@ -656,7 +660,7 @@ head.
 Normally the Morserino-32 just continues to generate until you pause it
 manually, but there is a preference that can be set which makes the
 device pause after a certain number of words (or letter groups). See
-**Max \# of Words** in section **6.2.4 Preferences regarding CW
+**Max \# of Words** in section **6.3.5 Preferences regarding CW
 Generation**.
 
 ### What can be generated?
@@ -872,7 +876,7 @@ can also be generated with a smaller space (**ON less ICS**) or without
 Farnsworth Spacing (**ON true WpM**).
 
 For the less frequently used preferences **Key ext TX**, **CW Gen
-Displ** and Generator Tx see the section **6.2.4 Preferences regarding CW Generation**.
+Displ** and Generator Tx see the section **6.3.5 Preferences regarding CW Generation**.
 
 ## Echo Trainer
 
@@ -1340,7 +1344,7 @@ environments suffering from very high WiFi "noise" - when the primary
 channel does not work properly, try the secondary channel.
 
 The channels are selected through the preference **Trx Channel**, see
-section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**.
+section **6.3.7 Preferences regarding Transmitting, Decoding and QSO Bot**.
 
 #### Using standard WiFi with an access point (WiFi router) {-}
 
@@ -1394,7 +1398,7 @@ or you can use the line-out audio to either key for example an FM
 transceiver, or use CW over the Internet (iCW – this uses Mumble as an
 audio exchange protocol). Using Bluetooth, you can also connect to a
 computer and through that computer to VBand, another Internet-based CW
-facility (see the section **6.2.2 Preferences regarding Key, Paddles
+facility (see the section **6.3.2 Preferences regarding Key, Paddles
 and Keyer** for choosing the VBand bluetooth setting).
 
 Any CW signals coming in as audio through the audio-in port are being
@@ -1423,7 +1427,7 @@ QSO Bot**:
     QTH, then station details (rig, antenna, weather, age), then a sign-off.
 -   **Contest** — a continuous run of very short contest QSOs. The exchange
     format is set with the **Contest Type** preference (see
-    **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**):
+    **6.3.7 Preferences regarding Transmitting, Decoding and QSO Bot**):
     **CQ WW** (RST + CQ zone) or **WPX/Sprint** (RST + serial number).
 
 #### Display and controls {-}
@@ -1543,7 +1547,7 @@ example from a receiver. The tone should be at around 700 Hz. Optionally
 there is a pretty sharp filter (implemented in software) that detects
 just tones in a very narrow range around 700 Hz, and disregards all
 others. This is being used by selecting the preference "Narrow" (see
-the section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**).
+the section **6.3.7 Preferences regarding Transmitting, Decoding and QSO Bot**).
 
 The status line is slightly different from the other modes. First of
 all, the rotary encoder is always in the volume setting mode – speed is
@@ -1560,7 +1564,7 @@ modes.
 The current speed as detected by the decoder is displayed as WpM on the
 status line.
 
-This mode does not have many preferences (see the section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**); maybe the most important is the ability to
+This mode does not have many preferences (see the section **6.3.7 Preferences regarding Transmitting, Decoding and QSO Bot**); maybe the most important is the ability to
 switch the filter bandwidth of the audio decoder between narrow (ca 150
 Hz) and wide (ca 600 Hz). For decoding signals from a transceiver (where
 there might be other signals in the vicinity), it is usually best to set
@@ -2776,7 +2780,7 @@ to all modes of the Morserino-32.
 | Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
 | Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
 | Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
-| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in section **6.2.2**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
+| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in section **6.3.2**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 
 
 
@@ -2847,7 +2851,7 @@ Echo Trainer!
 | Call Prefixes | You can use this setting to filter out very rare prefixes, and get only call signs with more common prefixes. | **Common only** / All |
 | Length Abbrev | Select the maximum length of the randomly generated common CW abbreviations and Q groups | **Unlimited** / max. 2 – max. 6 |
 | Length Words | Select the maximum length of the randomly generated common English words | **Unlimited** / max. 2 – max. 6 |
-| Max \# of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause and wait – with a touch of a paddle (or clicking the ENCODER knob) it will continue and generate the next sequence of words. *(When "Auto Stop" is active, this preference will be ignored in CW Generator mode.)*    |                                                                                                                                                                                        **Unlimited** / 5 to 250 in steps of 5 |
+| Max \# of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause and wait – with a touch of a paddle (or clicking the ENCODER knob) it will continue and generate the next sequence of words. This closing "+", like the opening *vvv\<ka>*, is shown in bold on the display. *(When "Auto Stop" is active, this preference will be ignored in CW Generator mode.)*    |                                                                                                                                                                                        **Unlimited** / 5 to 250 in steps of 5 |
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. *This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically.* | ON / **OFF** |
 | CW Gen Displ | Select, how the CW Generator or the CW Transceivers should display what is generated or received | Display off / **Char by Char** / Word by word |
 | Randomize File | If set to „On", file player will skip n words after each word sent (n = random number between 0 and 255) | **Off** / On |
@@ -3097,7 +3101,7 @@ channel), but through the setting LoRa Channel in the preferences menu
 can be switched to 0x66 (called "Secondary" channel).
 
 The channels are selected through the preference **Trx Channel**, see
-section **6.2.6 Preferences regarding Transmitting, Decoding and QSO Bot**.
+section **6.3.7 Preferences regarding Transmitting, Decoding and QSO Bot**.
 
 #### Using different LoRa frequency bands and/or frequencies {-}
 
@@ -3461,12 +3465,12 @@ purpose:
 -   **Morserino Phrases Trainer** by Tommy, OZ1THC (see
     *https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer*).
 -   See also the description of the **Serial Output** preference in
-    section **6.2.1 General Preferences**.
+    section **6.3.1 General Preferences**.
 
 ### Using the M32 Serial Protocol over Bluetooth (BLE Serial)
 
 The M32 Serial Protocol is not tied to the USB cable: when the
-preference **Bluetooth Use** (see section **6.2.2 Preferences regarding
+preference **Bluetooth Use** (see section **6.3.2 Preferences regarding
 Key, Paddles and Keyer**) is set to **BLE Serial**, the very same
 protocol is also available over Bluetooth Low Energy. This is particularly useful for phones and tablets — on
 iOS, for example, apps cannot open a classic serial connection over
@@ -3512,7 +3516,7 @@ In "CW Keyer" mode, the M32 can send the keyed Morse code as keyboard
 codes via Bluetooth to a computer (including cell phones and tablets).
 
 To do this, the "**Bluetooth Use**" setting must be set to one of the
-keyboard options (for more information, see section  **6.2.2
+keyboard options (for more information, see section  **6.3.2
 Preferences regarding Key, Paddles and Keyer**).
 
 ::: note

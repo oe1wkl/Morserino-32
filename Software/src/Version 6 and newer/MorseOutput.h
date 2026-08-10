@@ -57,6 +57,7 @@ namespace MorseOutput
   uint8_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false);
   void printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll);
   void printToScroll_internal(FONT_ATTRIB style, const String& text, boolean scroll);
+  boolean wordNeedsWrap(uint16_t wordLen);
   void clearScrollLines();
   void clearLine(uint8_t line);
   void clearScrollBuffer();
