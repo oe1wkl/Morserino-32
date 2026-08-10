@@ -8,7 +8,7 @@ Status: **draft for review** — no code written yet. Implementation begins only
 
 Replace the current manual, multi-step release process with a tag-triggered GitHub Actions workflow that:
 
-1. Builds firmware for the two distributed hardware platforms.
+1. Builds firmware for the three distributed hardware platforms (M32 original, M32 Pocket, and — since V9 — the M32 Pocket Accessibility Edition, which also ships a filesystem image).
 2. Rebuilds the PDF user manuals from markdown.
 3. Creates a GitHub Release (stable or pre-release, auto-detected from the tag).
 4. Attaches all assets (firmware binaries, English/German manuals, Pocket FAQ).
@@ -122,6 +122,11 @@ The workflow renames PlatformIO output files using exactly these rules:
 |---|---|---|---|
 | `Software/src/.pio/build/heltec_wifi_lora_32_V2/firmware.bin` | `fw_m32_V<ver>.bin` | `fw_m32_V<ver>_beta_<YYMMDD>.bin` | `fw_m32_V<ver>_beta_<YYMMDD>.<N>.bin` |
 | `Software/src/.pio/build/pocketwroom/firmware.bin` | `fw_m32p_V<ver>.bin` | `fw_m32p_V<ver>_beta_<YYMMDD>.bin` | `fw_m32p_V<ver>_beta_<YYMMDD>.<N>.bin` |
+| `Software/src/.pio/build/pocketwroom-accessibility/firmware.bin` | `fw_m32pa11y_V<ver>.bin` | `fw_m32pa11y_V<ver>_beta_<YYMMDD>.bin` | `fw_m32pa11y_V<ver>_beta_<YYMMDD>.<N>.bin` |
+| `Software/src/.pio/build/pocketwroom-accessibility/spiffs.bin` | `fs_m32pa11y_V<ver>.bin` | `fs_m32pa11y_V<ver>_beta_<YYMMDD>.bin` | `fs_m32pa11y_V<ver>_beta_<YYMMDD>.<N>.bin` |
+
+The filesystem image's name is derived from the application binary's, so the same-day
+collision suffix carries over without a second collision check.
 
 The case of `V` in filenames matches the existing convention (uppercase).
 
@@ -212,6 +217,8 @@ Created via `gh release create` from the runner.
 |---|---|
 | `fw_m32_V<ver>[_beta_<date>].bin` | built |
 | `fw_m32p_V<ver>[_beta_<date>].bin` | built |
+| `fw_m32pa11y_V<ver>[_beta_<date>].bin` | built |
+| `fs_m32pa11y_V<ver>[_beta_<date>].bin` | built (`-t buildfs`) |
 | `m32UserManual_v<major>_en.pdf` | rebuilt from md |
 | `m32UserManual_v<major>_de.pdf` | rebuilt from md |
 | `Morserino-32 Pocket FAQ.pdf` | committed copy |
@@ -226,12 +233,36 @@ Local paths the workflow writes into:
 
 ```
 /Users/wkraml/Library/CloudStorage/Dropbox/Apps/site44/www.morserino.info/firmware/
-├── fw_m32_V<ver>[_beta_<date>].bin       ← new copy
-├── versions.json                          ← prepend new entry
-└── m32p/
-    ├── fw_m32p_V<ver>[_beta_<date>].bin   ← new copy
-    └── versions.json                      ← prepend new entry
+├── fw_m32_V<ver>[_beta_<date>].bin        ← new copy
+├── versions.json                           ← prepend new entry
+├── targets.json                            ← installer registry (synced separately, not by this workflow)
+├── m32p/
+│   ├── fw_m32p_V<ver>[_beta_<date>].bin    ← new copy
+│   └── versions.json                       ← prepend new entry
+└── m32p-a11y/                              ← Accessibility Edition
+    ├── fw_m32pa11y_V<ver>[_beta_<date>].bin  ← new copy
+    ├── fs_m32pa11y_V<ver>[_beta_<date>].bin  ← new copy (voice clips, 5.3 MB)
+    ├── common/{bootloader,partitions,boot_app0}.bin  ← refreshed every release
+    └── versions.json                       ← prepend new entry (carries an "fs" field)
 ```
+
+**One-time setup:** `m32p-a11y/` must exist before the first release that publishes it —
+`dropbox_publish.sh` deliberately refuses to create a target directory, so a typo in a
+platform's `subdir` fails loudly instead of scattering files. `versions.json` and
+`common/` inside it are created automatically.
+
+Unlike the two mainline platforms, whose `common/` files were placed by hand once and are
+long stable, the Accessibility Edition's `common/` is **republished every release**: its
+partition table comes from `m32pocket_accessibility.csv` and must always match the
+firmware beside it. `bootloader.bin` and `partitions.bin` come from the build;
+`boot_app0.bin` is not a build output and is taken from the installed Arduino framework
+package (see `find_boot_app0()` in `rename_binaries.py` — note that `idedata.json`, which
+also names it, is not refreshed by `pio run` and must not be relied on).
+
+Because those files are shared by every version in the directory, `rename_binaries.py`
+**warns** when a newly built one differs from what is published: older entries in that
+manifest would then be paired with the new file, which is a human decision, not something
+to resolve silently.
 
 The Dropbox client picks up the file system writes and syncs them to site44.
 

@@ -2248,7 +2248,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </ul>
 <p>Für beide Funktionen muss die hochzuladende Datei auf deinem Computer (auch Tablet oder Smartphone) vorhanden sein, und dein Morserino muss mit demselben WLAN-Netzwerk verbunden sein wie dein Computer.</p>
 <div class="note">
-<p>Beide Funktionen lassen sich mittlerweile viel einfacher durch Anschließen des Morserinos an einen Computer mit Chrome, Edge oder Opera erledigen – siehe Anhänge 6 und 7 dieses Handbuchs!</p>
+<p>Beide Funktionen lassen sich mittlerweile viel einfacher durch Anschließen des Morserinos an einen Computer mit Chrome, Edge, Opera oder Firefox erledigen – siehe Anhänge 6 und 7 dieses Handbuchs!</p>
 </div>
 <p>Um den Morserino-32 mit deinem lokalen WLAN-Netzwerk zu verbinden, benötigst du in der Regel die SSID (den „Namen”) des Netzwerks und das Passwort, auch als „Zugangsdaten” bekannt. Diese Daten müssen im Morserino-32 gespeichert werden. Da er keine Tastatur für die bequeme Eingabe hat, erfolgt dies über eine eigene WLAN-Funktion: die <strong>Netzwerkkonfiguration</strong> (<strong>Config WiFi</strong>), die du zuerst ausführen musst, bevor du Upload- oder Update-Funktionen nutzen kannst.</p>
 <p>Bei Heimnetzwerken, die eine Liste zulässiger MAC-Adressen verwenden (aus Sicherheitsgründen), musst du zunächst die MAC-Adresse des M32 in deinem Router eintragen, bevor der M32 eine Verbindung herstellen kann. Dafür gibt es eine Funktion zur Anzeige der MAC-Adresse auf dem Display.</p>
@@ -2276,7 +2276,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </div>
 <p>Du kannst drei verschiedene Netzwerkeinstellungen konfigurieren; ab Version 4.5.1 werden Netzwerkkonfigurationen nicht mehr in Schnappschüssen gespeichert – du kannst also keine Schnappschüsse verwenden, um verschiedene Netzwerkeinstellungen abzurufen.</p>
 <div class="note">
-<p>Einfacher geht es, wenn du deinen Morserino über USB an einen Computer mit Chrome, Edge oder Opera anschließt und den Anweisungen in <strong>Anhang 7 Einrichten von M32-Einstellungen über einen Browser</strong> folgst.</p>
+<p>Einfacher geht es, wenn du deinen Morserino über USB an einen Computer mit Chrome, Edge, Opera oder Firefox anschließt und den Anweisungen in <strong>Anhang 7 Einrichten von M32-Einstellungen über einen Browser</strong> folgst.</p>
 </div>
 <h3 data-number="5.8.3" id="ueberpruefen-der-netzwerkkonnektivitaet"><span class="header-section-number">5.8.3</span> Überprüfen der Netzwerkkonnektivität</h3>
 <p>Verwende den Untermenüeintrag <strong>Check WiFi</strong> unter <strong>WiFi Functions</strong>, um die Netzwerkverbindung zu testen.</p>
@@ -2372,7 +2372,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Doppelklicke erneut auf den ENCODER-Knopf, um in das Einstellungsmenü zu gelangen. Ein <strong>kurzer Klick auf die FN-Taste</strong> ermöglicht dir, mit dem ENCODER auszuwählen, welchen der gespeicherten Schnappschüsse du abrufen möchtest; ein Klick auf den ENCODER-Knopf ruft ihn ab. Es gibt auch eine Option <strong>Cancel Recall</strong>, die den Ausstieg ohne Abruf ermöglicht. Wenn keine Schnappschüsse gespeichert sind, erscheint die Meldung „NO SNAPSHOTS” und du kannst durch Klicken einer der Tasten das Menü verlassen.</p>
 <h3 data-number="6.1.3" id="loeschen-eines-schnappschusses"><span class="header-section-number">6.1.3</span> Löschen eines Schnappschusses</h3>
 <p>Du kannst auch einen nicht mehr benötigten oder versehentlich erstellten Schnappschuss löschen. Gehe so vor, als wolltest du einen Schnappschuss abrufen, wähle den zu löschenden Schnappschuss aus und <strong>klicke dann auf die FN-Taste</strong>, um ihn zu löschen. Ein Bestätigungsdialog fragt, ob du den Schnappschuss wirklich löschen möchtest. Wenn du den ENCODER auf „Yes” drehst und klickst, wird der Schnappschuss gelöscht; wie beim Speichern und Abrufen bestätigt eine kurze Meldung den Erfolg.</p>
-<p>Am einfachsten konfigurierst du Einstellungen und Schnappschüsse, indem du deinen Morserino über USB mit einem Computer mit Chrome, Edge oder Opera verbindest und den Anweisungen in <strong>Anhang 7 Einrichten von M32-Einstellungen über einen Browser</strong> folgst.</p>
+<p>Am einfachsten konfigurierst du Einstellungen und Schnappschüsse, indem du deinen Morserino über USB mit einem Computer mit Chrome, Edge, Opera oder Firefox verbindest und den Anweisungen in <strong>Anhang 7 Einrichten von M32-Einstellungen über einen Browser</strong> folgst.</p>
 <h2 data-number="6.2" id="rufzeichen-name-und-spielstaende"><span class="header-section-number">6.2</span> Rufzeichen, Name und Spielstände</h2>
 <p>Zwei Einstellungen sagen dem Morserino, wer du bist. <strong>Call Sign</strong> (Rufzeichen) und <strong>Op Name</strong> (Name) werden von den Spielen (Fight the Pileup, Morsel) und vom QSO-Bot verwendet. Wählst du einen dieser Einträge im Einstellungsmenü, öffnet sich ein Texteditor am Bildschirm (er funktioniert am OLED und am LCD gleich):</p>
 <ul>
@@ -2921,14 +2921,30 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Es gibt auch die Möglichkeit, den permanenten Speicher des M32 vor der erneuten Firmware-Installation vollständig zu löschen; das kann nützlich sein, wenn der permanente Speicher beschädigt wurde. Dazu fügst du den optionalen Löschparameter <code>-e</code> hinzu. Beispiel (hier für OSX oder Linux):</p>
 <p><code>./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e</code></p>
 <h2 data-number="7.6" id="anhang-6-aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial"><span class="header-section-number">7.6</span> Anhang 6: Aktualisieren der Firmware über USB und einen Browser (Webserial)</h2>
-<p>Einige Browser unterstützen die Webserial-Erweiterung, mit der man direkt vom Browser aus auf eine serielle Schnittstelle zugreifen kann. Derzeit sind das <strong>Google Chrome</strong> und <strong>Microsoft Edge</strong>, und zumindest auf einigen Plattformen auch <strong>Opera</strong>. Mit einem solchen Browser wird das Aktualisieren der Firmware auf die neueste Version sehr einfach – kein Firmware-Download notwendig, keine Befehlszeilen.</p>
+<p>Einige Browser unterstützen die Webserial-Erweiterung, mit der man direkt vom Browser aus auf eine serielle Schnittstelle zugreifen kann. Derzeit sind das <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Firefox</strong> (ab Version 151), und zumindest auf einigen Plattformen auch <strong>Opera</strong>. Mit einem solchen Browser wird das Aktualisieren der Firmware auf die neueste Version sehr einfach – kein Firmware-Download notwendig, keine Befehlszeilen.</p>
 <p>Stelle sicher, dass du ein USB-Kabel hast, das Datenübertragung ermöglicht.</p>
 <div class="note">
 <p>Wenn du einen M32Pocket verwendest, muss das Gerät eingeschaltet sein und darf sich nicht im Schlafmodus befinden, wenn du das USB-Kabel anschließt!</p>
 <p>Beim M32 der 1st und 2nd Edition stelle sicher, dass du einen Treiber für den SiLab CP210x-Chip hast.</p>
-<p>Diese Methode funktioniert <strong>NICHT</strong> mit Firefox oder Safari!</p>
+<p>Diese Methode funktioniert <strong>NICHT</strong> mit Safari und auch nicht mit Firefox-Versionen vor 151. Auf einem Computer, der von einer Firma oder einer Schule verwaltet wird, kann Webserial außerdem per Richtlinie abgeschaltet sein.</p>
 </div>
-<p>Um die Firmware zu aktualisieren, schließe deinen Morserino-32 über USB an deinen Computer an, gehe zu <em>https://www.morserino.info</em>, suche die Seite für Firmware-Updates und <strong>folge den Anweisungen dort</strong>.</p>
+<p>Um die Firmware zu aktualisieren, schließe deinen Morserino-32 über USB an deinen Computer an und gehe zu <a href="https://www.morserino.info/install.html"><code>https://www.morserino.info/install.html</code></a>.</p>
+<p><strong>Eine Seite installiert jeden Morserino.</strong> Du musst nicht mehr wissen, ob du einen klassischen Morserino-32 oder einen M32 Pocket besitzt: Das Installationsprogramm fragt den Prozessor in deinem Gerät, um welches es sich handelt, und bietet nur die dazu passende Firmware an.</p>
+<p>Das Installationsprogramm führt dich durch drei Schritte:</p>
+<ol type="1">
+<li><p><strong>Connect</strong> – klicke auf <em>Connect</em> und wähle im Fenster, das dein Browser zeigt, den Port aus, an dem dein Morserino angeschlossen ist.</p></li>
+<li><p><strong>Choose what to install</strong> – die Seite zeigt dir, was sie gefunden hat, und wenn möglich auch, welche Firmware-Version gerade auf dem Gerät ist. Dann wählst du die gewünschte Version. Wenn du einen M32 Pocket hast, wählst du hier auch die <strong>Edition</strong> (siehe unten). Schließlich entscheidest du, was mit deinen Einstellungen geschieht:</p>
+<ul>
+<li><em>Keep my settings</em> (der Normalfall) – deine Einstellungen, Snapshots und Highscores bleiben erhalten.</li>
+<li><em>Erase everything</em> – löscht Einstellungen, Snapshots, Highscores und den Text, den du für den File Player hochgeladen hast. Nimm das nur, wenn der permanente Speicher deines Geräts beschädigt ist.</li>
+</ul>
+<p>::: note Nach <em>Erase everything</em> muss der Morserino beim nächsten Start ein neues Dateisystem anlegen. Das geschieht <strong>bevor</strong> der Startbildschirm erscheint, das Display bleibt also eine Weile dunkel – deutlich länger als bei einem normalen Start. Das ist normal und kein Fehler: Lass ihn fertig werden und schalte das Gerät nicht aus, solange es dunkel ist. :::</p></li>
+<li><p><strong>Installing</strong> – warte, bis der Fortschrittsbalken durchgelaufen ist, und trenne das Gerät nicht. Danach startet der Morserino von selbst neu.</p></li>
+</ol>
+<div class="note">
+<p><strong>Editionen (nur M32 Pocket).</strong> Die <em>Standard</em>-Edition ist die normale Firmware, die in diesem Handbuch beschrieben wird. Die <em>Accessibility Edition</em> liest die Menüs und Einstellungen laut vor – für blinde und sehbehinderte Operatoren; die Spiele sind darin nicht enthalten. Beide werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln: Deine Einstellungen bleiben erhalten, aber die Accessibility Edition belegt mit ihren Sprachdateien jenen Platz, in dem sonst der Text für den File Player liegt.</p>
+</div>
+<p>Ältere Lesezeichen, die auf die beiden bisherigen getrennten Installationsseiten zeigen, funktionieren weiterhin – sie leiten jetzt auf diese eine Seite weiter.</p>
 <h2 data-number="7.7" id="anhang-7-einrichten-von-m32-einstellungen-ueber-einen-browser-und-hochladen-von-textdateien"><span class="header-section-number">7.7</span> Anhang 7: Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien</h2>
 <p>Es gibt derzeit drei Websites, auf denen du M32-Einstellungen über einen Browser auf deinem Computer vornehmen kannst, sowie eine weitere, die einen M32-Dateimanager implementiert.</p>
 <ul>
@@ -2936,7 +2952,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><p>Christof, <strong>OE6CHD</strong>, hat ein Javascript-Programm geschrieben, mit dem es sehr einfach ist, Einstellungen, WLAN-Zugangsdaten und Keyer-Speicher festzulegen sowie Textdateien für den File Player hochzuladen.</p></li>
 <li><p>Ähnliche Funktionen hat Oliver, <strong>OM0RX</strong>, in seine Anwendung <em>Morse Trainer Pro</em> integriert.</p></li>
 </ul>
-<p>Am schnellsten geht das alles, indem du deinen Morserino über USB mit einem Computer mit Chrome, Edge oder Opera (oder einem anderen Browser, der das Webserial-Protokoll unterstützt) verbindest und eine der folgenden Seiten aufrufst:</p>
+<p>Am schnellsten geht das alles, indem du deinen Morserino über USB mit einem Computer mit Chrome, Edge, Opera oder Firefox (oder einem anderen Browser, der das Webserial-Protokoll unterstützt) verbindest und eine der folgenden Seiten aufrufst:</p>
 <ul>
 <li><p><a href="https://www.morserino.info/m32_config_tool.html"><code>https://www.morserino.info/m32_config_tool.html</code></a> (das „offizielle” Konfigurationstool)</p></li>
 <li><p><a href="https://tegmento.org/"><code>https://tegmento.org/</code></a> (die Anwendung von OE6CHD)</p></li>
@@ -4398,7 +4414,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 <tr>
 <td>Webserial</td>
-<td>Eine Browser-API (unterstützt in Chrome, Edge und Opera), die es Webseiten ermöglicht, direkt über USB mit seriellen Geräten zu kommunizieren. Wird für Firmware-Updates und die Einstellungskonfiguration verwendet.</td>
+<td>Eine Browser-API (unterstützt in Chrome, Edge, Opera und Firefox ab Version 151), die es Webseiten ermöglicht, direkt über USB mit seriellen Geräten zu kommunizieren. Wird für Firmware-Updates und die Einstellungskonfiguration verwendet.</td>
 </tr>
 <tr>
 <td>Wordsworth-Abstand</td>

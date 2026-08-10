@@ -1,4 +1,13 @@
 # Change History
+### CHANGES V. 9.0
+
+#### New Features:
+* A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
+* M32 Pocket only: the installer can now also install the **Accessibility Edition**, which speaks the menus and settings aloud for blind and partially sighted operators (the games are not included in it). Standard and Accessibility Edition are offered for the same device and you can move between them at any time; your settings are kept.
+
+#### Feature Modifications:
+* The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
+
 ### CHANGES V. 8.2
 
 #### New Features:

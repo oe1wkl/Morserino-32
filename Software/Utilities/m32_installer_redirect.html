@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The firmware installer has moved</title>
+<meta http-equiv="refresh" content="3; url=install.html">
+<link rel="canonical" href="https://www.morserino.info/install.html">
+<meta name="robots" content="noindex">
+<!--
+  Stub that replaces flash.html and flash-m32pocket.html, the two
+  platform-specific installers superseded by the unified install.html.
+
+  Source of truth: Software/Utilities/m32_installer_redirect.html in the
+  Morserino-32 repository. Both live pages are copies of this one file.
+
+  NOTE: flash.html and flash-m32pocket.html are still pages inside the Sitely
+  project (m32.sparkle). Publishing the site from Sitely will overwrite these
+  stubs and bring the old installers back. Delete or empty those two pages in
+  Sitely to make the move permanent — see devdocs/installer/PLAN.md §8, Phase 5.
+-->
+<style>
+  @font-face { font-family: Lato; src: url('css/Lato-Regular.woff2') format('woff2'); font-weight: 400; font-style: normal; font-display: swap; }
+  @font-face { font-family: Lato; src: url('css/Lato-Bold.woff2')    format('woff2'); font-weight: 700; font-style: normal; font-display: swap; }
+  @font-face { font-family: Lato; src: url('css/Lato-Black.woff2')   format('woff2'); font-weight: 900; font-style: normal; font-display: swap; }
+  :root {
+    --text: #404040; --accent: #cb4b16; --link: #268bd2; --muted: #808080;
+    --box-bg: #ddedf7; --box-border: #677a85;
+    --box-shadow: 8px 10px 4px rgba(0,0,0,0.4); --radius: 7px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #fff; color: var(--text);
+    font-family: Lato, Arial, sans-serif; font-size: 18px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 640px; margin: 0 auto; padding: 60px 24px; text-align: center; }
+  .morse-header { display: flex; align-items: center; justify-content: center; gap: 22px; margin-bottom: 24px; }
+  .morse-letter { display: flex; align-items: center; gap: 5px; }
+  .md { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); }
+  .mx { width: 26px; height: 10px; border-radius: 5px;  background: var(--accent); }
+  h1 { font-size: 26px; font-weight: 400; margin-bottom: 24px; }
+  .box {
+    border: 2px solid var(--box-border); border-radius: var(--radius);
+    background: var(--box-bg); box-shadow: var(--box-shadow);
+    padding: 22px 28px; margin-bottom: 28px;
+  }
+  .box p + p { margin-top: 12px; }
+  a.button {
+    display: inline-block; background: var(--accent); color: #fff;
+    text-decoration: none; border-radius: var(--radius);
+    padding: 13px 28px; font-size: 17px; font-weight: 700; letter-spacing: 0.04em;
+    box-shadow: 3px 4px 3px rgba(0,0,0,0.3);
+  }
+  a.button:hover { background: #c02713; }
+  .note { color: var(--muted); font-size: 15px; margin-top: 20px; }
+  .note a { color: var(--link); font-weight: 900; font-style: italic; }
+</style>
+</head>
+<body>
+<div class="page">
+  <!-- M = --   3 = ...--   2 = ..--- -->
+  <div class="morse-header" aria-hidden="true">
+    <div class="morse-letter"><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div></div>
+    <div class="morse-letter"><div class="md"></div><div class="md"></div><div class="mx"></div><div class="mx"></div><div class="mx"></div></div>
+  </div>
+
+  <h1>The firmware installer has moved</h1>
+
+  <div class="box">
+    <p>There is now <strong>one installer for every Morserino</strong> — the classic
+       Morserino-32 and the M32&nbsp;Pocket alike. It recognises which one you plugged in,
+       so you no longer have to pick the right page first.</p>
+    <p>You are being taken there now.</p>
+  </div>
+
+  <p><a class="button" href="install.html">Go to the installer</a></p>
+
+  <p class="note">
+    If nothing happens, follow <a href="install.html">https://www.morserino.info/install.html</a>
+    and please update your bookmark.
+  </p>
+</div>
+</body>
+</html>

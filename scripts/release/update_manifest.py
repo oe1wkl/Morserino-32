@@ -68,14 +68,24 @@ def default_notes(channel: str, manifest_version: str) -> str:
 
 
 def build_entry(
-    channel: str, manifest_version: str, filename: str, notes: str | None
+    channel: str,
+    manifest_version: str,
+    filename: str,
+    notes: str | None,
+    fs_filename: str | None = None,
 ) -> dict:
     entry: dict = {
         "version": manifest_version,
         "filename": filename,
-        "notes": notes if notes is not None else default_notes(channel, manifest_version),
-        "beta": channel == "beta",
     }
+    # Optional: a filesystem image flashed alongside the application (the
+    # Accessibility Edition's voice clips). The installer reads this field to
+    # decide whether the target gets an extra part — see
+    # devdocs/installer/PLAN.md §5.
+    if fs_filename:
+        entry["fs"] = fs_filename
+    entry["notes"] = notes if notes is not None else default_notes(channel, manifest_version)
+    entry["beta"] = channel == "beta"
     return entry
 
 
@@ -138,6 +148,9 @@ def main(argv: list[str]) -> int:
     ap.add_argument("--notes", default=None,
                     help="Override the templated 'notes' field. If empty "
                          "string is passed, an empty notes field is stored.")
+    ap.add_argument("--fs-filename", default=None,
+                    help="Filesystem image flashed alongside the application "
+                         "(Accessibility Edition voice clips). Stored as 'fs'.")
     ap.add_argument("--dry-run", action="store_true")
     args = ap.parse_args(argv)
 
@@ -152,7 +165,9 @@ def main(argv: list[str]) -> int:
         prefix = "[dry-run] " if args.dry_run else ""
         print(prefix + msg, file=sys.stderr)
 
-    entry = build_entry(args.channel, args.version, args.filename, args.notes)
+    entry = build_entry(
+        args.channel, args.version, args.filename, args.notes, args.fs_filename
+    )
     try:
         update(args.manifest, entry, args.dry_run, log)
     except RuntimeError as e:

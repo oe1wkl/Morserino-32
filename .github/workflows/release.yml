@@ -98,13 +98,23 @@ jobs:
           } >> "$GITHUB_ENV"
 
       # ──────────────────────────────────────────────────────────────────
-      # 4 & 5. Build the two release environments
+      # 4 & 5. Build the release environments
       # ──────────────────────────────────────────────────────────────────
       - name: Build heltec_wifi_lora_32_V2 (original M32)
         run: pio run -d Software/src -e heltec_wifi_lora_32_V2
 
       - name: Build pocketwroom (M32 Pocket)
         run: pio run -d Software/src -e pocketwroom
+
+      # The Accessibility Edition also ships a SPIFFS image holding the voice
+      # clips, so it needs the filesystem target as well as the plain build.
+      # rename_binaries.py fails the release if spiffs.bin is missing, or if
+      # firmware.bin outgrows this build's tighter app partition.
+      - name: Build pocketwroom-accessibility (M32 Pocket, Accessibility Edition)
+        run: pio run -d Software/src -e pocketwroom-accessibility
+
+      - name: Build voice clip filesystem (Accessibility Edition)
+        run: pio run -d Software/src -e pocketwroom-accessibility -t buildfs
 
       # ──────────────────────────────────────────────────────────────────
       # 6. Rename + xattr-strip binaries into a staging dir
@@ -216,9 +226,12 @@ jobs:
           fi
 
           # Collect assets explicitly so spaces in filenames are safe.
+          # fw_m32*.bin covers all three firmware images (fw_m32_, fw_m32p_,
+          # fw_m32pa11y_) — it always did, which is why the old second
+          # fw_m32p*.bin entry was uploading everything twice.
           ASSETS=(
               /tmp/release-stage/fw_m32*.bin
-              /tmp/release-stage/fw_m32p*.bin
+              /tmp/release-stage/fs_m32pa11y*.bin
               /tmp/release-stage/m32UserManual_v*_en.pdf
               /tmp/release-stage/m32UserManual_v*_de.pdf
               /tmp/release-stage/Morserino-32.Pocket.FAQ.pdf
@@ -372,8 +385,14 @@ jobs:
 
           M32_FILE=$(python3 -c "import json; print(json.load(open('/tmp/rename.json'))['m32']['filename'])")
           M32P_FILE=$(python3 -c "import json; print(json.load(open('/tmp/rename.json'))['m32p']['filename'])")
+          A11Y_FILE=$(python3 -c "import json; print(json.load(open('/tmp/rename.json'))['m32pa11y']['filename'])")
           M32_DIR="Software/binary/From Version 7 onwards/M32 1st & 2nd edition"
           M32P_DIR="Software/binary/From Version 7 onwards/M32 Pocket"
+          A11Y_DIR="Software/binary/From Version 7 onwards/M32 Pocket Accessibility"
+
+          # The Accessibility Edition's voice-clip image is deliberately NOT
+          # archived here: it is 5.3 MB per release and would bloat the repo.
+          # It is published to the web installer only.
 
           if [[ ! -d "$M32_DIR" || ! -d "$M32P_DIR" ]]; then
               echo "::error::in-repo archive directories not found. Expected:" >&2
@@ -381,6 +400,7 @@ jobs:
               echo "  $M32P_DIR" >&2
               exit 1
           fi
+          mkdir -p "$A11Y_DIR"
 
           # Determine the default branch dynamically so we don't hardcode 'master'.
           DEFAULT_BRANCH=$(gh repo view --json defaultBranchRef --jq '.defaultBranchRef.name')
@@ -396,10 +416,11 @@ jobs:
 
           cp "/tmp/release-stage/$M32_FILE"  "$M32_DIR/$M32_FILE"
           cp "/tmp/release-stage/$M32P_FILE" "$M32P_DIR/$M32P_FILE"
+          cp "/tmp/release-stage/$A11Y_FILE" "$A11Y_DIR/$A11Y_FILE"
 
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add "$M32_DIR/$M32_FILE" "$M32P_DIR/$M32P_FILE"
+          git add "$M32_DIR/$M32_FILE" "$M32P_DIR/$M32P_FILE" "$A11Y_DIR/$A11Y_FILE"
 
           if git diff --cached --quiet; then
               echo "Nothing to commit — binaries already present at $DEFAULT_BRANCH HEAD."

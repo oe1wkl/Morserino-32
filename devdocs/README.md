@@ -21,6 +21,8 @@ devdocs/
 │   ├── todo-resolutions.md       ·   every TODO(audit) answered
 │   ├── divergences.md            ·   ranked refactoring backlog
 │   └── REFACTORING_PLAN.md       ·   phased plan (Phases A–G)
+├── installer/                    ← unified web installer (V9)
+│   └── PLAN.md                   ·   design + migration plan (2 installers → 1)
 └── protocol-audit/               ← USB serial protocol audit
     ├── command-matrix.md         ·   one row per command, three-corner presence
     ├── conflicts.md              ·   three-way disagreements + live resolution status
