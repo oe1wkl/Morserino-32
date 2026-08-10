@@ -626,7 +626,11 @@ stop the session).
 
 When it starts, it will first alert you by generating *vvv\<ka>*
 (**\...\_  \...\_  \...\_  \_.\_.\_**) in Morse code, before it actually
-begins generating groups or words.
+begins generating groups or words. On the display, this opening
+*vvv\<ka>* — and, if **Max \# of Words** is set, the closing "+" that
+marks the end of the sequence (see **6.2.4 Preferences regarding CW
+Generation**) — are shown in **bold**, so you can immediately see where
+a sequence begins and ends.
 
 Enabling the preference **Stop/Next/Rep** will cause the Morserino
 to play only one word or group of characters, after which it will stop
@@ -2847,7 +2851,7 @@ Echo Trainer!
 | Call Prefixes | You can use this setting to filter out very rare prefixes, and get only call signs with more common prefixes. | **Common only** / All |
 | Length Abbrev | Select the maximum length of the randomly generated common CW abbreviations and Q groups | **Unlimited** / max. 2 – max. 6 |
 | Length Words | Select the maximum length of the randomly generated common English words | **Unlimited** / max. 2 – max. 6 |
-| Max \# of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause and wait – with a touch of a paddle (or clicking the ENCODER knob) it will continue and generate the next sequence of words. *(When "Auto Stop" is active, this preference will be ignored in CW Generator mode.)*    |                                                                                                                                                                                        **Unlimited** / 5 to 250 in steps of 5 |
+| Max \# of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause and wait – with a touch of a paddle (or clicking the ENCODER knob) it will continue and generate the next sequence of words. This closing "+", like the opening *vvv\<ka>*, is shown in bold on the display. *(When "Auto Stop" is active, this preference will be ignored in CW Generator mode.)*    |                                                                                                                                                                                        **Unlimited** / 5 to 250 in steps of 5 |
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. *This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically.* | ON / **OFF** |
 | CW Gen Displ | Select, how the CW Generator or the CW Transceivers should display what is generated or received | Display off / **Char by Char** / Word by word |
 | Randomize File | If set to „On", file player will skip n words after each word sent (n = random number between 0 and 255) | **Off** / On |

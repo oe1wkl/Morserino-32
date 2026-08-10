@@ -653,7 +653,11 @@ du auch diese zum Starten und Stoppen verwenden).
 Beim Start wird zunächst *vvv\<ka>*
 (**\...\_  \...\_  \...\_  \_.\_.\_**) im Morsecode als Warnsignal
 ausgegeben, bevor die eigentliche Generierung von Gruppen oder Wörtern
-beginnt.
+beginnt. Auf dem Display wird dieses einleitende *vvv\<ka>* — und, falls
+**Max \# of Words** gesetzt ist, das abschließende "+", das das Ende der
+Sequenz markiert (siehe **6.2.4 Einstellungen zur CW-Generierung**) —
+**fett** dargestellt, damit du sofort erkennst, wo eine
+Sequenz beginnt und endet.
 
 Durch Aktivieren der Einstellung **Stop/Next/Rep** spielt der Morserino
 jeweils nur ein Wort oder eine Zeichengruppe ab und wartet dann auf eine
@@ -3279,7 +3283,7 @@ Trainer relevant!
 | **Call Prefixes** | Über diese Einstellung kannst du sehr seltene Präfixe herausfiltern und nur Rufzeichen mit geläufigeren Präfixen erhalten. | **Common only** / All |
 | **Length Abbrev** | Wähle die maximale Länge der zufällig generierten gängigen CW-Abkürzungen und Q-Gruppen. | **Unlimited** / max. 2 – max. 6 |
 | **Length Words** | Wähle die maximale Länge der zufällig generierten gängigen englischen Wörter. | **Unlimited** / max. 2 – max. 6 |
-| **Max \# of Words** | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen generiert wurde, erzeugt der Morserino-32 ein abschließendes AR-Betriebszeichen ("+"), um das Ende dieser Sequenz anzuzeigen, und hält dann an und wartet. Mit einem Paddle-Berühren (oder einem Klick auf den ENCODER-Knopf) fährt er fort und erzeugt die nächste Wortfolge. *(Wenn „Auto Stop" aktiv ist, wird diese Einstellung im Modus CW Generator ignoriert.)* | **Unlimited** / 5 bis 250 in 5er-Schritten |
+| **Max \# of Words** | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen generiert wurde, erzeugt der Morserino-32 ein abschließendes AR-Betriebszeichen ("+"), um das Ende dieser Sequenz anzuzeigen, und hält dann an und wartet. Mit einem Paddle-Berühren (oder einem Klick auf den ENCODER-Knopf) fährt er fort und erzeugt die nächste Wortfolge. Dieses abschließende "+" wird, wie das einleitende *vvv\<ka>*, fett auf dem Display dargestellt. *(Wenn „Auto Stop" aktiv ist, wird diese Einstellung im Modus CW Generator ignoriert.)* | **Unlimited** / 5 bis 250 in 5er-Schritten |
 | **Stop/Next/Rep** | Stoppt die Generierung von Morsezeichen nach jedem Wort in den Modi CW Generator und Koch Generator, um das Erlernen des Kopierens ohne Mitschreiben zu unterstützen. Fortfahren durch Berühren des rechten Paddles (nächstes Wort) oder des linken Paddles (Wort wiederholen). *Diese Option und die Option „Each Word 2x" sind nicht miteinander kompatibel: Wenn eine auf ON gesetzt wird, wird die andere automatisch auf OFF gesetzt.* | ON / **OFF** |
 | **CW Gen Displ** | Wähle, wie der CW-Generator oder die CW-Transceiver das Generierte oder Empfangene anzeigen sollen. | Display off / **Char by Char** / Word by word |
 | **Randomize File** | Wenn auf „On" gesetzt, überspringt der File Player nach jedem gesendeten Wort n Wörter (n = Zufallszahl zwischen 0 und 255). | **Off** / On |
