@@ -296,3 +296,35 @@ reach (tracked in `devdocs/consistency-audit/REFACTORING_PLAN.md` Phases D/F):
 What games **may** differ in: layout, graphics, color, HUD content, lobby design,
 game-specific settings, and per-round timeout rules (§8). Everything in §1–§2
 is mandatory and shared.
+
+## 13. Blocking waits the user cannot interrupt
+
+Rare, but they exist: work at boot that runs with the watchdog disabled and cannot
+yield, so nothing can be drawn *while* it happens. Currently one case — creating the
+SPIFFS file system on the first boot after an "erase everything" install (§7 of
+`devdocs/installer/PLAN.md`). The rules:
+
+- **Paint the whole screen before the blocking call.** There is no opportunity to
+  update mid-way, so no progress bar, no spinner, no countdown. Anything that implies
+  motion is a lie.
+- **Show it only when the wait actually happens.** Gate it on a predicate that is
+  false on an ordinary boot — never an unconditional message "just in case". An
+  always-on notice is a per-boot cost paid by every user for an event most of them
+  will never see, and on the Pocket it reads as boot flicker.
+- **Give motion before the stillness, where something is already animated.** The boot
+  splash animation runs before the block, so the user sees the device act and only
+  then pause. Motion first is what keeps a still screen from reading as a dead device
+  — it does more work than the wording does.
+- **Say what is happening, and roughly how long.** Name it in the user's terms (what
+  they chose, not what the firmware calls it) and give a bound they can wait out. Only
+  quote a figure that has been measured.
+- **Do not warn against powering off** unless losing power there is genuinely harmful.
+  For the SPIFFS case it is not — a half-written file system simply fails to mount and
+  is recreated on the next boot — and an unnecessary warning manufactures alarm.
+
+**Variants may differ here**, unusually for this document: the wait is a property of
+the hardware, not of the interaction. The classic M32 keeps its unconditional
+`Init...pse wait...` on the status line; the Pocket shows the gated splash-with-caption
+screen. This is deliberate — the classic's message costs nothing on an OLED that has no
+themed background to flicker, and changing a boot path that has worked for years buys
+nothing.

@@ -649,10 +649,39 @@ What is still genuinely open:
 
 ---
 
-## 12. Deferred — firmware side of the dark screen after an erase
+## 12. Firmware side of the dark screen after an erase — DONE
 
-**Not installer work, deliberately parked (Willi, 2026-08-07, "no priority now").**
-Belongs on its own branch off `master`, not on `unified-installer`.
+**Resolved 2026-08-10** on branch `pocket-erase-setup-screen`. The analysis below is
+kept because it is still the record of *why*; what actually shipped differs from both
+candidate fixes, and from the timing this section assumed:
+
+- **The predicate already existed.** `SPIFFS.begin(false)` at `m32_v6.ino:704` is called
+  on every boot, never formats (it sets `format_if_mount_failed = false` and skips the
+  format branch on failure), and returns false in exactly the case where the mount
+  further down will format. Its result was simply being discarded. Capturing it into
+  `spiffsWasCreated` made the message *conditional*, which is what made option 2 safe —
+  no ordinary boot pays a display write at all, on either variant.
+- **The wait is ~8 s, not "much longer than usual".** This section was written assuming
+  a long wait; it is short enough that a warning register was wrong. Measured on hardware
+  (M32 Pocket, 1.5 MB SPIFFS): **8066 / 8086 / 8172 ms** over three erase-and-format runs
+  — i.e. tight and repeatable, and rather more than the ~5 s estimated by eye, which is
+  why it was worth measuring. `M32_SETUP_SECONDS_MAX` is 10 s, an honest ceiling; a
+  `DEBUG()` line reprints the figure on any erased boot.
+- **The Pocket gets a screen, the classic keeps its line.** `dispEraseSetupScreen()`
+  draws the boot logo lifted off centre with *Starting Fresh* and the duration beneath
+  it, white-on-black via the wrapper's mono mode. The logo animation runs *before* the
+  blocking call, so the user sees motion and only then a brief stillness — which does
+  more than any wording to stop it reading as a dead device. `displayStartUp()` skips
+  its own logo on that boot so it isn't replayed seconds later.
+- **The a11y edition confirmed exempt**, and from the installer rather than by
+  inference: `m32_installer.html` only pushes a filesystem part when `t.fsOffset != null`,
+  which is the accessibility target alone. It is written a full `spiffs.bin`, mounts
+  cleanly, and never formats.
+- Conventions: `UX_CONVENTIONS.md` §13. Manuals: the *Erase everything* note in both
+  languages was **corrected** — it described a long dark screen and told the user not to
+  switch off, neither of which is true any more.
+
+Original analysis follows.
 
 **What happens.** After an *Erase everything* install, the next boot has to create a
 SPIFFS file system, and does so **before** the start screen — so the display stays dark

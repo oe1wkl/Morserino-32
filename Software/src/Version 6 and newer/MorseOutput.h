@@ -92,7 +92,8 @@ namespace MorseOutput
 #endif
 
 #ifdef CONFIG_TFT
-  void dispM32Logo();
+  void dispM32Logo(int16_t yShift = 0, float zoom = 1.0f);   // yShift lifts/lowers off centre; zoom < 1 shrinks
+  void dispEraseSetupScreen(uint8_t maxSeconds);
   void setTheme (uint8_t theme);
   void testFontLayout();
 #endif

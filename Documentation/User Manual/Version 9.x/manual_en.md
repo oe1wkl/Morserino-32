@@ -3338,10 +3338,11 @@ The installer takes you through three steps:
 
     ::: note
     After *Erase everything*, the Morserino has to build a new file system
-    the next time it starts. This happens **before** the start screen
-    appears, so the display stays dark for a while — considerably longer
-    than a normal start. That is normal and not a fault: let it finish, and
-    do **not** switch the device off while it is dark.
+    the next time it starts, **before** the start screen appears. The M32
+    Pocket shows its logo with *Starting Fresh* underneath while it works;
+    a classic Morserino-32 shows *Init...pse wait...* on the top line. It
+    takes a few seconds, it happens only on that one start, and it is not a
+    fault — just let it finish.
     :::
 
 3. **Installing** — wait for the progress bar. Do not disconnect the

@@ -1579,7 +1579,7 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
 #define M32_LOGO_STEP_MS   16              // ms paced between frames — higher = calmer
 #endif
 
-void MorseOutput::dispM32Logo() {
+void MorseOutput::dispM32Logo(int16_t yShift, float zoom) {
   // Theme-independent boot splash: a pre-rendered anti-aliased "M32 Pocket" logo
   // (white-on-black 8-bit grayscale, m32logo_aa.h) grows smoothly out of the centre
   // and eases to rest at its native size (z = 1.0, drawn 1:1, so the resting logo is
@@ -1604,12 +1604,12 @@ void MorseOutput::dispM32Logo() {
       }
     logo.setPivot(M32_AA_W / 2.0f, M32_AA_H / 2.0f);
     const float cx = lcd->width()  / 2.0f;
-    const float cy = lcd->height() / 2.0f;
+    const float cy = lcd->height() / 2.0f + yShift;
     for (int i = 1; i <= M32_LOGO_STEPS; ++i) {
       float t   = (float)i / M32_LOGO_STEPS;
       float inv = 1.0f - t;
       float e   = 1.0f - inv * inv * inv;   // easeOutCubic: grows, then settles gently
-      float z   = e;                        // ends at 1.0 → asset drawn 1:1 (crisp)
+      float z   = e * zoom;                 // ends at `zoom`; 1.0 → asset drawn 1:1 (crisp)
       if (z < 0.02f) z = 0.02f;
       logo.pushRotateZoom(lcd, cx, cy, 0.0f, z, z);
       delay(M32_LOGO_STEP_MS);
@@ -1617,10 +1617,79 @@ void MorseOutput::dispM32Logo() {
     logo.deleteSprite();
   } else {
     // fallback: the original 1-bit logo at native size, white on black
-    lcd->drawXBitmap((lcd->width() - M32c_width) / 2, (lcd->height() - M32c_height) / 2,
+    lcd->drawXBitmap((lcd->width() - M32c_width) / 2, (lcd->height() - M32c_height) / 2 + yShift,
                      M32c_bits, M32c_width, M32c_height, TFT_WHITE, TFT_BLACK);
   }
   display.display();
+}
+
+
+/// One-off screen for the boot on which the SPIFFS file system has to be created from
+/// scratch — after the installer's "erase everything", or on a virgin chip (which in
+/// practice only ever happens on the bench, so the wording addresses the erase case).
+///
+/// Creating the file system blocks for seconds with the core-0 watchdog disabled, so
+/// nothing can be drawn *while* it runs: the whole screen has to be painted up front.
+/// The logo animation therefore runs here, before the blocking call — the user sees
+/// motion first and only then a short still pause, which is what stops a motionless
+/// screen from reading as a dead device.
+///
+/// Drawn white-on-black like the boot splash it sits on: setTheme(f == b) puts the
+/// wrapper into its mono mode, so the UI fonts land as white text on the splash's black
+/// instead of painting themed background boxes over it. The theme is restored on the way
+/// out, before anything else draws.
+void MorseOutput::dispEraseSetupScreen(uint8_t maxSeconds) {
+  // Measure everything BEFORE painting: dispM32Logo() clears the screen, so the logo has
+  // to be placed already knowing how much room the caption needs.
+  //
+  // Measured on an M32 Pocket (320 x 170): the wrapper maps DialogInput_* to IntelOneMono
+  // 12pt/15pt on the TFT — NOT the pixel-sized DialogInput fonts of the OLED build — so a
+  // character is 15 px wide and a line 29 px (35 px bold). That is 21 characters to a
+  // line, and every string below is kept under 300 px. The logo asset is the full
+  // "M32 Pocket" wordmark and its ink fills all 212 x 91, so at 1:1 it leaves 79 px for a
+  // caption that needs 93: it is drawn at `zoom` instead, and the caption is placed clear
+  // of it rather than over the "Pocket" half.
+  display.setFont(DialogInput_plain_12);
+  const int16_t lh12 = display.getStringHeight("j");
+  display.setFont(DialogInput_bold_15);
+  const int16_t lh15 = display.getStringHeight("j");
+
+  const int16_t H = display.getHeight();
+  const int16_t yText = H - (lh15 + 2 * lh12 + 10);        // top of the caption block
+  const float   zoom  = 0.62f;
+  const int16_t logoH = (int16_t) (M32_AA_H * zoom);
+  // centre the shrunk logo box so its bottom clears the caption by 6 px
+  dispM32Logo((yText - 6 - logoH / 2) - H / 2, zoom);
+
+  display.setTheme(0, 0);                 // f == b -> wrapper mono mode: white on black
+  display.setColor(WHITE);
+
+  // Centre by hand. DisplayWrapper::setTextAlignment() is an empty stub and its
+  // drawString() hard-codes lgfx::top_left, so TEXT_ALIGN_CENTER would silently do
+  // nothing; and getStringWidth() returns uint8_t, so it wraps modulo 256 on any string
+  // wider than 255 px — which these lines are. Measure through LGFX (int32_t), draw
+  // through the wrapper.
+  auto *lcd = DisplayWrapper::getLGFX();
+  const int16_t w = display.getWidth();
+  auto centred = [&](int16_t y, const String& s) {
+      display.drawString((w - (int16_t) lcd->textWidth(s.c_str())) / 2, y, s);
+  };
+
+  int16_t y = yText;
+
+  display.setFont(DialogInput_bold_15);
+  centred(y, "Starting Fresh");                  // 252 px measured
+  y += lh15 + 4;
+  display.setFont(DialogInput_plain_12);
+  // Per hard rule 5 the wrap is ours to place, never the display library's. The full
+  // sentence measures 510 px — 1.6 screens — so it is compressed rather than wrapped:
+  // "from scratch" is what "Starting Fresh" above already says.
+  centred(y, "Setting up memory");               // 255 px measured
+  y += lh12;
+  centred(y, String(maxSeconds) + " seconds max.");   // 225 px measured
+
+  display.display();
+  setTheme(MorsePreferences::pliste[posTheme].value);      // back to the user's theme
 }
 #endif
 

@@ -289,6 +289,12 @@ boolean genIsActive= false;                       // flag for trainer mode
 boolean startFirst = true;                        // to indicate that we are starting a new sequence in the trainer modi
 boolean firstTime = true;                         /// for word doubler mode
 
+/// set in setup() when the SPIFFS probe finds no file system, i.e. this boot has to create
+/// one (after an "erase everything" install, or on a virgin chip). Gates the Pocket's
+/// setup screen and the timing DEBUG, and tells displayStartUp() the logo has just been
+/// shown. Stays false on every ordinary boot.
+boolean spiffsWasCreated = false;
+
 /// set by fetchNewWord() while clearText holds the fixed "vvv<ka>" pass-opener or
 /// the "+" pass-closer, read by dispGeneratedChar()/generateCW() for as long as
 /// clearText still holds characters from that word (unlike newWordForDisplay below,
@@ -701,7 +707,15 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
-  if (SPIFFS.begin(false))  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
+  // begin(false) never formats (it sets format_if_mount_failed = false and skips the
+  // format branch on failure), so this probe is free — and its result is exactly the
+  // "the mount further down will have to create the file system" predicate, known here,
+  // ~120 lines before the wait it describes. True only after an "erase everything"
+  // install, or on a virgin chip. On success SPIFFS is left mounted, which is why the
+  // begin(true) below is a no-op on every ordinary boot.
+  spiffsWasCreated = !SPIFFS.begin(false);
+
+  if (!spiffsWasCreated)  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
       if (key_was_pressed_at_start()) {
          MorsePreferences::displayKeyerPreferencesMenu(posHwConf);
          MorsePreferences::adjustKeyerPreference(posHwConf);
@@ -818,10 +832,31 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   ///////////////////////// mount (or create) SPIFFS file system
     #define FORMAT_SPIFFS_IF_FAILED true
 
+    // The figure the screen below promises the user. MEASURED on an M32 Pocket
+    // (1.5 MB SPIFFS, ESP32-S3): 8066 / 8086 / 8172 ms over three erase-and-format runs,
+    // so 10 s is an honest ceiling with a little headroom. The DEBUG line right after the
+    // mount reprints it on any erased boot, so this stays checkable. Note it is roughly
+    // proportional to the partition, so the Accessibility Edition (5.06 MB) would take
+    // materially longer — but it never formats: it is the only installer target that gets
+    // a spiffs.bin written for it.
+    #define M32_SETUP_SECONDS_MAX 10
+
+#ifdef CONFIG_TFT
+    // Only on the boot that actually creates the file system — so no ordinary boot pays a
+    // display write here, which is what made the unconditional message unacceptable on the
+    // Pocket. The classic M32 keeps its own "Init...pse wait..." on the status line
+    // (printed unconditionally much earlier) and is deliberately left untouched.
+    if (spiffsWasCreated)
+        MorseOutput::dispEraseSetupScreen(M32_SETUP_SECONDS_MAX);
+#endif
+
+    uint32_t spiffsBegan = millis();
     if(!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)){     ///// if SPIFFS cannot be mounted, it does not exist. So create  (format) it, and mount it
         DEBUG("SPIFFS Mount Failed");
         return;
     }
+    if (spiffsWasCreated)
+        DEBUG("SPIFFS created in " + String(millis() - spiffsBegan) + " ms");
   //////////////////////// create file player.txt if it does not exist|
   const char * defaultFile = "This is just an initial dummy file for the player. Dies ist nur die anfänglich enthaltene Standarddatei für den Player.\n"
                              "Did you not upload your own file? Hast du keine eigene Datei hochgeladen?";
@@ -919,8 +954,13 @@ void displayStartUp(uint16_t volt) {
   s = PROJECTNAME;
   s += " ";
   #ifdef CONFIG_TFT
-  MorseOutput::dispM32Logo();    // theme-independent white-on-black splash (clears to black itself)
-  delay(1800);
+  // On the boot that just created the file system the setup screen already showed the
+  // logo, seconds ago — replaying it here would read as a restart. Go straight to the
+  // version screen instead.
+  if (!spiffsWasCreated) {
+    MorseOutput::dispM32Logo();  // theme-independent white-on-black splash (clears to black itself)
+    delay(1800);
+  }
   MorseOutput::clearDisplay();   // restore the theme background for the version screen
   #else
   MorseOutput::clearDisplay();

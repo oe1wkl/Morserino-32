@@ -3782,10 +3782,12 @@ Das Installationsprogramm führt dich durch drei Schritte:
 
     ::: note
     Nach *Erase everything* muss der Morserino beim nächsten Start ein
-    neues Dateisystem anlegen. Das geschieht **bevor** der Startbildschirm
-    erscheint, das Display bleibt also eine Weile dunkel – deutlich länger
-    als bei einem normalen Start. Das ist normal und kein Fehler: Lass ihn
-    fertig werden und schalte das Gerät nicht aus, solange es dunkel ist.
+    neues Dateisystem anlegen, und zwar **bevor** der Startbildschirm
+    erscheint. Der M32 Pocket zeigt dabei sein Logo mit *Starting Fresh*
+    darunter, ein klassischer Morserino-32 zeigt *Init...pse wait...* in
+    der obersten Zeile. Das dauert ein paar Sekunden, passiert nur bei
+    diesem einen Start und ist kein Fehler – lass ihn einfach fertig
+    werden.
     :::
 
 3. **Installing** – warte, bis der Fortschrittsbalken durchgelaufen ist,
