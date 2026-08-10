@@ -1,7 +1,8 @@
 # Unified Web Installer — Design & Migration Plan
 
-Status: **draft for review** (2026-08-05). No code written yet.
-Branch when work starts: **`unified-installer`** (off `master`, per CLAUDE.md §1).
+Status: **built and live** (last updated 2026-08-10). Phases 1–5 complete except the
+screen-reader pass (§10 row 16) and the parked firmware fix (§12).
+Branch: **`unified-installer`** (off `master`, per CLAUDE.md §1), pushed to `origin`.
 
 ---
 
@@ -469,8 +470,13 @@ rewritten but not run, so the live site is untouched. Phase 4 is where publishin
 and the whole flow in Firefox 151. Verified in the browser with the serial layer stubbed:
 an interrupted flash (error via `role=alert`, bar reset, transport disconnected, retry
 offered), the local-file escape hatch (a non-hex address is refused without writing), a
-foreign chip, and a silent device. **Still open: the screen-reader pass**, which needs a
-person and VoiceOver — the static audit is done (§4.7) but that is not the same thing.
+foreign chip, and a silent device.
+
+**One row is still open: the screen-reader pass (row 16).** It needs a person driving
+VoiceOver; the static audit in §4.7 is done and clean, but that is not the same thing as
+someone hearing the install through. Worth pairing with the first blind user who installs
+the Accessibility Edition — they are the audience this page most has to work for. Until
+then, treat the accessibility claim as *audited, not observed*.
 
 **Phase 2 — Accessibility Edition.** Third target, filesystem part, flash-size guard,
 data-preservation warnings, edition selector. Manual artifact upload for testing.
@@ -521,64 +527,43 @@ installer.
   visible link and `rel=canonical`. Because every other page links to *those* URLs, no
   Sitely-generated page needed editing.
 
-**⚠ The redirects are written and synced but NOT yet visible — open issue.**
-`flash.html` and `flash-m32pocket.html` still serve the old installers from
-www.morserino.info, more than 12 hours after being replaced.
+**Redirect propagation — resolved 2026-08-10.** Both old URLs now serve the stub
+(`Last-Modified: Sat, 08 Aug 2026 05:31`). Worth keeping because the failure was
+confusing while it lasted: for about two days `flash.html` kept serving the July page
+with `Age` well *past* its `max-age`, i.e. not a TTL counting down. The cause was on
+site44's side — Willi hit `503 Backend fetch failed — Guru Meditation, Varnish cache
+server`. Varnish in grace / stale-if-error mode serves a cached object past its TTL when
+it cannot reach the backend, and 503s for paths it has no copy of. Once the backend
+recovered, the redirect appeared on its own.
 
-What the evidence says (2026-08-07 23:10):
+Two dead ends, recorded so they are not retried: `Cache-Control: no-cache` is ignored
+(Varnish disregards client revalidation), and **a cache-busting query string does not
+reach the origin either** — `?cb=…` still returns a large `Age`, so the query is
+normalised away. There is no way from outside to tell whether the origin has a new file.
 
-```
-Last-Modified: Fri, 24 Jul 2026 09:14:59 GMT      ← the OLD page
-Age: 110591                                        ← 30.7 h in cache
-Cache-Control: public, max-age=86400               ← 24 h TTL
-Via: 1.1 varnish-v4 ; X-Varnish: 7572125 13210521  ← cache HIT
-```
-
-`Age` is **past** `max-age`, so this is not a TTL merely waiting to expire — that was the
-first reading and it was wrong.
-
-**Most likely cause: site44's backend is unhealthy and Varnish is serving stale.** Willi
-saw `Error 503 Backend fetch failed — Guru Meditation, Varnish cache server` from the site
-around the same time. That fits everything observed: in grace / stale-if-error mode
-Varnish keeps serving a cached object past its TTL when it cannot reach the backend, and
-returns 503 for paths it has no cached copy of. An object frozen at 30 h with no
-revalidation is exactly that behaviour.
-
-Two dead ends, recorded so they are not retried: a request with `Cache-Control: no-cache`
-changes nothing (Varnish ignores client revalidation), and **a cache-busting query string
-does not reach the origin either** — `?cb=…` still returns a response with a large `Age`,
-so Varnish normalises the query away. There is therefore no way from outside to tell
-whether the origin already has the new file.
-
-**So: wait, and do not intervene.** Specifically, do *not* delete-and-recreate the two
-files to force a new object while the backend is flaky — that would throw away the cached
-copy that is currently the only thing keeping those URLs alive, and leave visitors with
-503s instead of the old-but-working installers. Re-check once site44 is healthy; if the
-redirects still have not appeared after that, a purge from the site44 control panel is the
-next step.
+Waiting was the right call: deleting and recreating the files to force a new object would
+have discarded the cached copy that was, during the outage, the only thing keeping those
+URLs serving anything at all.
 
 **The general lesson for this site:** a *new* file appears in seconds; an *overwrite* of
-an established path may take much longer or need the backend to be healthy. Verify with
-`curl -I` — compare `Last-Modified` and `Age` against `max-age` — rather than assuming the
-copy worked, and remember that neither `no-cache` nor a query string will get you past
-the cache.
-- `sync-to-dropbox.sh` carries all four files and gained `--once`, which publishes
-  without restarting the watcher.
-- EN + DE Appendix 6 rewritten for one installer: the three steps, the erase choice, and
-  the Pocket edition choice. The Firefox corrections from §13.1 went in at the same time
-  (doing them separately would have collided on the same passages), so §13.1 is now
-  **done**, including the enterprise-policy note.
-- `Software/README.md` has a V9.0 changelog section.
+an established path can take days if the backend is unwell. Verify with `curl -I` —
+compare `Last-Modified` and `Age` against `max-age` — and do not reach for a forced
+refresh before checking whether site44 itself is healthy.
 
-**The Sitely caveat.** `flash.html` and `flash-m32pocket.html` still exist as pages
-inside `m32.sparkle`. **Publishing the site from Sitely overwrites the redirect stubs and
-brings the old installers back.** Delete or empty those two pages in Sitely to make the
-move permanent — that is the main item left for Phase 5.
+**The Sitely caveat — closed.** Both pages were still in `m32.sparkle` at first, so a
+publish from Sitely would have overwritten the redirect stubs and brought the old
+installers back. Willi removed them on 2026-08-10 and a republish confirmed the stubs and
+every hand-placed file survive.
 
-**Phase 5 — retire.** **Delete or empty `flash.html` and `flash-m32pocket.html` inside
-the Sitely project** — until that is done, any site publish from Sitely resurrects the
-old installers over the redirect stubs. Then remove the leftover Sitely code blocks and
-stale per-page assets. Decide at that point whether the desktop `m32update` tool stays.
+**Phase 5 — retire.** ✅ **Sitely cleanup done 2026-08-10 (Willi).** The two old pages
+are gone from the Sitely project, so a site publish no longer resurrects the old
+installers over the redirect stubs — confirmed by a republish on 2026-08-10, after which
+every hand-placed file (`install.html`, `firmware/targets.json`, the config tool and its
+help JSON) was still in place and both stubs intact. The Sitely-built `index.html` now
+links straight to `install.html`.
+
+Remaining: decide whether the desktop `m32update` tool stays, once the web installer has
+covered a full release cycle.
 
 Rough effort: Phase 1 ≈ 2 days, Phase 2 ≈ 1 day, Phase 3 ≈ 1 day, Phase 4 ≈ ½ day plus
 manual work; hardware testing on top.
