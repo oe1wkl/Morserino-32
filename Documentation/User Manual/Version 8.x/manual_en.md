@@ -988,8 +988,9 @@ perfectly fits your needs.
 ### Koch: Select Lesson
 
 Select a "Koch lesson" between 1 and 51 (you will learn 51 characters
-in total through the Koch method). The number of the lesson and the
-character associated with that lesson will be displayed in the menu.
+in total through the Koch method). The menu displays the lesson number,
+the total number of lessons in the currently selected Koch sequence
+(e.g. `21/39:`), and the character associated with that lesson.
 
 The order of the characters learned has not been strictly defined by
 Koch, and therefore different learning courses use slightly different

@@ -1070,7 +1070,11 @@ String MorsePreferences::getValueLine(prefPos pos) {
     case posKochFilter:
       str = koch.getNewChar();
       cleanUpProSigns(str);
-      sprintf(numBuffer, "%2i char %s", MorsePreferences::kochFilter, str.c_str());
+      // "N/M: x": lesson N of M total (kochMaximum tracks the active sequence's
+      // lesson count, incl. the LICW carousel window), then the new character.
+      // Kept slash-compact - a worst-case prosign char (e.g. "<err>") plus
+      // "N/M char " would overflow the 14-char OLED value-line budget.
+      sprintf(numBuffer, "%2i/%d: %s", MorsePreferences::kochFilter, MorsePreferences::kochMaximum, str.c_str());
       str = String(numBuffer);
       break;
     case posLoraBand:

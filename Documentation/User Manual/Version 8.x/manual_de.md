@@ -1000,8 +1000,9 @@ einzustellen.
 ### Koch: Select Lesson
 
 Wähle eine „Koch-Lektion" zwischen 1 und 51 (insgesamt 51 Zeichen
-werden nach der Koch-Methode gelernt). Lektion und zugehöriges Zeichen
-werden im Menü angezeigt.
+werden nach der Koch-Methode gelernt). Im Menü werden die Lektionsnummer,
+die Gesamtzahl der Lektionen der aktuell gewählten Koch-Sequenz (z. B.
+`21/39:`) und das zugehörige Zeichen angezeigt.
 
 Die Zeichenreihenfolge wurde von Koch nicht streng festgelegt, daher
 verwenden verschiedene Lernkurse leicht unterschiedliche Reihenfolgen.
