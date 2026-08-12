@@ -54,7 +54,10 @@ namespace MorseOutput
   void clearBuffer();
   void refreshScrollArea(int relPos);
   void refreshScrollLine(int bufferLine, int displayLine);
-  uint8_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false);
+  /// returns the width of the printed string in pixels - uint16_t, not uint8_t:
+  /// a full scroll line is 306 px on the TFT and callers divide the result by the
+  /// character width to get a column count (see refreshScrollLine).
+  uint16_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false);
   void printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll);
   void printToScroll_internal(FONT_ATTRIB style, const String& text, boolean scroll);
   boolean wordNeedsWrap(uint16_t wordLen);

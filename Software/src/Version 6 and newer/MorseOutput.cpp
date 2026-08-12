@@ -56,6 +56,29 @@ LGFX display;
 DisplayWrapper display;
 #endif
 
+/// Measure a string in the *currently selected* font, in pixels.
+///
+/// Always use this instead of display.getStringWidth() for a string whose length
+/// is not a fixed one or two characters: DisplayWrapper::getStringWidth() is
+/// declared uint8_t but returns LovyanGFX's int32_t textWidth(), so it wraps
+/// modulo 256. The wrapper maps DialogInput_* to IntelOneMono 12pt/15pt on the
+/// TFT - 15 px and 18 px per character, both monospace - so the wrap starts at
+/// 18 characters in the status-line font and at 15 in the scroll-area font, well
+/// inside what a 320 px line holds. An 18-character status line measured 270 px
+/// and reported 14. Measuring through getLGFX() keeps the full width; the wrapper
+/// hands out the same lcd object it draws with, so the font state is shared and
+/// this needs no setFont() of its own.
+///
+/// The OLED build has no such defect (M32OledLGFX::getStringWidth returns
+/// uint16_t, and 128 px never overflows anyway), so it just forwards.
+static inline uint16_t stringWidth(const String& s) {
+#ifdef CONFIG_TFT
+  return (uint16_t) DisplayWrapper::getLGFX()->textWidth(s.c_str());
+#else
+  return display.getStringWidth(s);
+#endif
+}
+
 #ifdef CONFIG_SOUND_I2S
 #include "I2S_Sidetone.hpp"
 I2S_Sidetone sidetone;
@@ -947,7 +970,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     MorseOutput::printOnScroll(NoOfVisibleLines - 1, style, scrollScreenPos, t);               // these characters are 9 pixels wide,
   }
   display.setFont(DialogInput_plain_15);;
-  scrollScreenPos += (display.getStringWidth(t) / C_WIDTH);
+  scrollScreenPos += (stringWidth(t) / C_WIDTH);
   if (linebreak) {
     MorseOutput::newLine(scroll);
     pos = 0;  scrollScreenPos = 0; lastStyle = REGULAR;
@@ -1018,7 +1041,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
   boolean irFlag = false;
   FONT_ATTRIB style = REGULAR;
   int pos = 0;
-  uint8_t charsPrinted;
+  uint16_t charsPrinted;
 
   display.setColor(BLACK);
   #ifdef CONFIG_TFT
@@ -1066,8 +1089,8 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
 /// place a string onto the scroll area; line = 0 .. NoOfVisibleLines-1
 
-uint8_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small) {
-  uint8_t w;
+uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small) {
+  uint16_t w;
   int x, y;
 
   boolean inverse = (how == INVERSE_REGULAR || how == INVERSE_BOLD);
@@ -1092,7 +1115,7 @@ if (bold)
   display.setTextAlignment(TEXT_ALIGN_LEFT);
 
   // convert the array characters into a String object
-  w = display.getStringWidth(mystring);
+  w = stringWidth(mystring);
 
   x = xpos * C_WIDTH;
   y = SCROLL_TOP + line * LINE_HEIGHT;
@@ -1651,7 +1674,7 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   else
     display.setFont(DialogInput_plain_12);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
-  uint8_t w = display.getStringWidth(string);
+  uint16_t w = stringWidth(string);
   display.setColor(WHITE);
   display.fillRect(xpos * display.getStringWidth("A"), 0 , w, SCROLL_TOP);
   display.setColor(BLACK);

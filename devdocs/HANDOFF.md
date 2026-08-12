@@ -165,6 +165,37 @@ encoder and kills encoder interrupts).
 
 ---
 
+## DisplayWrapper API traps (TFT path)
+
+Two methods of the `oe1wkl/DisplayWrapper` lib fail silently. Fixing them at
+source means a library change plus a version bump, so both are worked around
+on our side; the notes below are what to do instead.
+
+**`getStringWidth()` is declared `uint8_t`** but returns LovyanGFX's `int32_t`
+`textWidth()`, so it wraps modulo 256. The wrapper maps `DialogInput_*` to
+IntelOneMono 12pt/15pt on the TFT — **15 px and 18 px per character**, both
+strictly monospace — so the wrap starts at **18 characters** in the status-line
+font and at **15** in the scroll-area font, well inside what a 320 px line
+holds. `"Continue with paddle "` measures 315 px and reports 59.
+
+Use `stringWidth()` in `MorseOutput.cpp` (measures through
+`DisplayWrapper::getLGFX()->textWidth()`, forwards to the wrapper on the OLED,
+where there is no defect) for anything longer than a character or two. Where
+the result only feeds a `fillRect()` behind text the damage is masked —
+LovyanGFX's own glyph background boxes fill exactly the same rectangle when
+fore != back colour — but where it feeds *column arithmetic* it is a real bug:
+a 15-char chunk advanced `scrollScreenPos` by 0 instead of 15, so the next
+chunk overprinted it (`printToScroll_internal`, and `charsPrinted` in
+`refreshScrollLine`).
+
+**`setTextAlignment()` is an empty stub** `{}` and `drawString()` hard-codes
+`lgfx::top_left`, so `TEXT_ALIGN_CENTER` / `TEXT_ALIGN_RIGHT` are silently
+left-aligned. Centre by hand: measure through `getLGFX()->textWidth()` and
+place the string yourself (see `dispEraseSetupScreen()`). Every in-tree caller
+today passes `TEXT_ALIGN_LEFT`, which is what the stub already does.
+
+---
+
 ## Heap budget (M32 Pocket / `pocketwroom`)
 
 | State | Free heap | Largest contiguous block |
