@@ -243,6 +243,7 @@ char
 Char by char
 character
 Character by character
+characters
 Charlie
 Check WiFi
 clear all
@@ -334,6 +335,7 @@ Keyer and Generator and receiver
 Keyer Mode
 Keyer&Gen.&RX
 Kilo
+Koch lesson
 Koch Sequence
 Koch Trainer
 l-o: Lsp Muted
@@ -353,6 +355,9 @@ line out Speaker Muted
 line out with variable volume
 line-out
 Linefeed
+LoRa Band
+LoRa frequency
+LoRa Power
 lower
 M32
 Mandarin
@@ -382,6 +387,7 @@ numerals and Interpunctions
 numerals, Interpunctions and Prosigns
 o umlaut
 Oceania
+of
 OFF
 Off
 ON
@@ -412,7 +418,7 @@ Random
 Random group length
 Random Groups
 Randomize File
-Recall Snapshot
+Recall snapshot
 Repeat each word
 Reset Defaults
 Reset Scores
@@ -433,7 +439,7 @@ Sound only
 South America
 Standard
 Stop after each word
-Store Snapshot
+Store snapshot
 Straight Key
 Tango
 Theme

@@ -27,6 +27,11 @@ namespace MorseVoice
   // Append another clip to the current (still-debouncing) utterance, e.g. the value after the
   // heading: announce("Serial Output"); announceMore("Nothing"); -> speaks both in sequence.
   void announceMore(const String& text);
+  // Append a single CHARACTER, spelled out: NATO phonetic for letters, the spoken name for
+  // digits and punctuation, "pro sign" + two phonetics for a prosign. Takes the raw firmware
+  // character (an uppercase prosign code, NOT the cleanUpProSigns() form), so a Koch lesson
+  // character can be voiced: announceMore("21"); announceMoreChar("y"); -> "21, Yankee".
+  void announceMoreChar(const String& ch);
   // Drive async playback (advance/finish current clip, fire the settled utterance). Must be
   // polled frequently from the menu / preference loops.
   void tick();
