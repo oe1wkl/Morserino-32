@@ -1070,7 +1070,15 @@ String MorsePreferences::getValueLine(prefPos pos) {
     case posKochFilter:
       str = koch.getNewChar();
       cleanUpProSigns(str);
-      sprintf(numBuffer, "%2i char %s", MorsePreferences::kochFilter, str.c_str());
+      // "N-M: x": lesson N of M total (kochMaximum tracks the active sequence's
+      // lesson count, incl. the LICW carousel window), then the new character.
+      // Kept compact: the OLED value line is printed at column 1 of a 14-char line,
+      // so only 13 columns are usable, and a prosign character costs 4 of them.
+      // NOT a slash: this value line is also emitted over the serial protocol as the
+      // last element of getMenuPath() + "/" + value, and the protocol defines menu
+      // path elements as slash-separated (M32 Protocol.md) - a "/" here would split
+      // the leaf into two bogus elements for every lesson.
+      sprintf(numBuffer, "%2i-%d: %s", MorsePreferences::kochFilter, MorsePreferences::kochMaximum, str.c_str());
       str = String(numBuffer);
       break;
     case posLoraBand:

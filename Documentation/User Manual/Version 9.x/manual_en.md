@@ -1000,9 +1000,12 @@ perfectly fits your needs.
 
 ### Koch: Select Lesson
 
-Select a "Koch lesson" between 1 and 51 (you will learn 51 characters
-in total through the Koch method). The number of the lesson and the
-character associated with that lesson will be displayed in the menu.
+Select a "Koch lesson" (with the default M32 sequence, you will learn 51
+characters in total through the Koch method; other sequences have a
+different number of lessons — see **Koch Sequence** in section **6.3.3**). The menu
+shows the number of the lesson, the total number of lessons in the currently
+selected Koch sequence, and the character associated with that lesson — for
+example `21-39: y` for lesson 21 of 39, which teaches the character "y".
 
 The order of the characters learned has not been strictly defined by
 Koch, and therefore different learning courses use slightly different
