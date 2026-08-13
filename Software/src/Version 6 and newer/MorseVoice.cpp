@@ -47,6 +47,13 @@ static const char* idFor(const String& text) {
     String s = text; s.trim();             // display strings are space-padded; decoder adds a trailing space
     return s.length() ? lookupId(s.c_str()) : nullptr;
 }
+
+static void appendId(const char *id) {     // push one clip onto the pending utterance
+    if (id && pendLen < MV_MAX) {
+        strncpy(pend[pendLen], id, 8); pend[pendLen][8] = '\0'; pendLen++;
+        pendAt = millis();
+    }
+}
 #endif
 
 void MorseVoice::announce(const String& text) {        // start a NEW pending utterance
@@ -62,13 +69,26 @@ void MorseVoice::announce(const String& text) {        // start a NEW pending ut
 
 void MorseVoice::announceMore(const String& text) {    // append to the pending utterance
 #ifdef CONFIG_AUDIO_A11Y
-    const char *id = idFor(text);
-    if (id && pendLen < MV_MAX) {
-        strncpy(pend[pendLen], id, 8); pend[pendLen][8] = '\0'; pendLen++;
-        pendAt = millis();
-    }
+    appendId(idFor(text));
 #else
     (void)text;
+#endif
+}
+
+void MorseVoice::announceMoreChar(const String& ch) {  // append one character, spelled out
+#ifdef CONFIG_AUDIO_A11Y
+    // Keyed by the RAW firmware character (before cleanUpProSigns): the uppercase prosign
+    // codes expand to "pro sign" + two phonetics, so one character can be three clips.
+    // Silent for a character with no entry -- better than mispronouncing it.
+    for (unsigned int i = 0; i < voiceCharLookupCount; i++) {
+        if (ch == voiceCharLookup[i].key) {
+            for (unsigned char k = 0; k < voiceCharLookup[i].n; k++)
+                appendId(voiceCharLookup[i].ids[k]);
+            return;
+        }
+    }
+#else
+    (void)ch;
 #endif
 }
 

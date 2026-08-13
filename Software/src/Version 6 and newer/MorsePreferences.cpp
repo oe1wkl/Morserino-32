@@ -955,6 +955,54 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
 
 
 
+#ifdef CONFIG_AUDIO_A11Y
+/// a11y: speak a preference value.
+/// Most value lines are one clip, looked up whole. The dynamic ones are assembled at runtime
+/// from a number and/or a character, so no clip can exist for the finished string -- those are
+/// COMPOSED from number / character atoms instead (see voiceCharLookup[] in voice_clips.h).
+/// Without this they were simply silent, which left a blind operator unable to tell which Koch
+/// lesson, or which snapshot slot, they were about to select.
+/// The total ("of 51") is spoken on entry only: it never changes while the encoder turns, and
+/// repeating it on all 51 detents makes the list far slower to scan by ear.
+static boolean a11yFresh;                                  // next clip starts a new utterance?
+
+static void a11ySay(const String& text) {
+    if (a11yFresh) { MorseVoice::announce(text); a11yFresh = false; }
+    else             MorseVoice::announceMore(text);
+}
+
+static void announceValue(prefPos pos, const String& valueLine, boolean withTotal) {
+    switch (pos) {
+      case posKochFilter:                                  // "21 of 51, Yankee"
+        // Built from the live values, not by parsing the display string: the character has to
+        // be the RAW one (koch.getNewChar(), before cleanUpProSigns) for the prosign clips to
+        // match, and this stays correct if the value-line format is ever reworded.
+        a11ySay(String(MorsePreferences::kochFilter));
+        if (withTotal) { a11ySay("of"); a11ySay(String(MorsePreferences::kochMaximum)); }
+        MorseVoice::announceMoreChar(koch.getNewChar());
+        return;
+      case posSnapRecall:
+      case posSnapStore:
+        if (valueLine.startsWith("Snapshot ")) {           // else "NO SNAPSHOTS" / "Cancel ..." -- one clip
+            a11ySay("Snapshot");
+            a11ySay(valueLine.substring(9));               // idFor() trims the value-line padding
+            return;
+        }
+        break;
+      case posPracticeChars:
+        if (MorsePreferences::practiceCharSet.length()) {  // else "(not set)" -- one clip
+            a11ySay(String(MorsePreferences::practiceCharSet.length()));
+            a11ySay("characters");
+            return;
+        }
+        break;
+      default:
+        break;
+    }
+    a11ySay(valueLine);                                    // everything else: the whole line is one clip
+}
+#endif
+
 void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading) {
     String valueLine; valueLine.reserve(20);
     const String emptyLine = "                    ";
@@ -970,12 +1018,15 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
         valueLine = "Unlimited";
 #ifdef CONFIG_AUDIO_A11Y
     if (!jsonOnly) {                                                      // a11y: heading+value on entry, value-only when adjusting
-        if (withHeading && pos <= posSerialOut) {
-            MorseVoice::announce(pliste[pos].spokenName ? String(pliste[pos].spokenName)
-                                                        : String(pliste[pos].parName));
-            MorseVoice::announceMore(valueLine);
-        } else
-            MorseVoice::announce(valueLine);                             // value only (adjusting, or action items)
+        a11yFresh = true;
+        if (withHeading) {                                               // extraItems have no pliste[] entry:
+            MorseVoice::announce(pos <= posSerialOut                     // they announce by their display label
+                                   ? (pliste[pos].spokenName ? String(pliste[pos].spokenName)
+                                                             : String(pliste[pos].parName))
+                                   : itemText);
+            a11yFresh = false;
+        }
+        announceValue(pos, valueLine, withHeading);                      // totals on entry only
     }
 #endif
     if (valueLine.length() < maxLength)             // guard: for a >14-char value the subtraction wraps

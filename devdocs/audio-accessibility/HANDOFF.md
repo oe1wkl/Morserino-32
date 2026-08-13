@@ -34,9 +34,17 @@ out loud. Built, flashed, and exercised on real hardware; first blind-user sessi
 - Diag build: uncomment `-D CONFIG_AUDIO_A11Y_DIAG=1` in `platformio.ini` → per-clip heap
   trace on serial (verify the leak is gone: scroll ~100 entries, heap should be flat).
 
+- **Composed value lines wired** (2026-08-13): the dynamic preference values — Koch lesson,
+  snapshot slot, practice-set size — were *silent*, because `announce()` only matches a whole
+  string and these are assembled at runtime. They are now composed from number / character
+  atoms (`MorseVoice::announceMoreChar()` + `voiceCharLookup[]`, newly emitted into
+  `voice_clips.h`). A blind operator can now hear which Koch lesson and which snapshot slot
+  they are on. Extra-item **headings** are voiced too, and the extractor now reads the
+  firmware's real `extraItems[]` instead of a hand-kept list that had drifted from it.
+
 **Known-open (see "Open items"):** verify freeze fix + new EQ on device; message coverage
-(serial-protocol texts, decided 2026-07-03); char-by-char + composed numbers; action-pref
-labels; release/flash site.
+(serial-protocol texts, decided 2026-07-03); decoder char-by-char; battery-voltage readout;
+release/flash site.
 
 ## Build & flash (USB, from `Software/src/`)
 
@@ -83,9 +91,10 @@ in this build) plus 3 game entries. Exactly what this checklist exists to preven
 
 The firmware tables (`menuText[]`, `pliste[]` with the new `parameter.spokenName`) are the
 source of truth. `extract_voice_strings.py` emits one MP3 per distinct string + a generated
-`voice_clips.h` (firmware UI string → 8-hex clip id) and `voice_manifest.json` (also char/
-prosign/number → clip-id *sequences* for composition). On device, `MorseVoice::announce()`
-binary-searches `voice_clips.h`, and `tick()` (polled from the menu + preference loops) plays
+`voice_clips.h` (firmware UI string → 8-hex clip id, **plus** `voiceCharLookup[]`: raw
+character → clip-id *sequence*) and `voice_manifest.json`. On device, `MorseVoice::announce()`
+binary-searches `voice_clips.h`, `announceMoreChar()` linear-scans `voiceCharLookup[]` to spell
+a character out, and `tick()` (polled from the menu + preference loops) plays
 `/voice/<id>.mp3` via `MorseOutput::voiceStart/Service/Stop` → the **vendored, patched**
 `cw-i2s-sidetone` library (`Software/src/vendor/`, a Pocket-scoped `symlink://` dep) which got
 non-blocking `startClip/serviceClip/stopClip`. Clips are flashed into a large SPIFFS in a
@@ -106,11 +115,17 @@ custom partition (`m32pocket_accessibility.csv`); games + WiFi-AP update are str
    `MorseVoice::announceIfKnown()` fed from the protocol-emit path, missing-clip keys logged
    to serial to harvest coverage gaps during real use; static texts get clips, dynamic parts
    compose via the sequence queue.
-3. **Char-by-char voicing** (Koch new-character, decoder output) — manifest has the data
-   (`characters` = NATO-phonetic / "pro sign" sequences); the playback hook isn't wired.
-4. **Composed numbers / snapshots** — the `MorseVoice` queue (`announce`+`announceMore`)
-   already plays sequences; wire number/snapshot readouts to it (atoms exist: 0..60, units).
-5. **Action-pref labels** (snapshots, Calibrate, etc.) — currently value-only; headings TBD.
+3. **Char-by-char voicing** — *done for the Koch lesson character* (2026-08-13):
+   `MorseVoice::announceMoreChar()` reads the generated `voiceCharLookup[]` (raw firmware
+   char → NATO-phonetic / "pro sign" sequence). **Still open: decoder output**, which needs
+   the same hook driven from the decode path rather than the preferences menu.
+4. **Composed numbers / snapshots** — *done* (2026-08-13) for Koch lesson, snapshot slot and
+   practice-set size, via `announceValue()` in `MorsePreferences.cpp`. **Still open: the
+   battery readout** (`posVAdjust`, "3980 mV") — integer atoms only go to 250, so it needs a
+   digit-spelling path.
+5. **Action-pref labels** — *done* (2026-08-13): extra items announce their heading on entry,
+   and the extractor reads `extraItems[]` from the firmware, so a cryptic display label is
+   fixed with an `ACTION_SPOKEN` entry ("RECALLSnapshot" → "Recall snapshot").
 6. **Phase 4 — release + user-friendly flash site** — publish the accessibility build as its
    own installer entry with its own `partitions.bin` + SPIFFS image (mainline partition is
    untouched, so no fleet migration). See `IMPLEMENTATION_PLAN.md` Phase 4.

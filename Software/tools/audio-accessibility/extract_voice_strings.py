@@ -65,12 +65,19 @@ MENU_SPOKEN = {
     "Update Firmw": "Update firmware",
     "Wifi Select":  "Select WiFi network",
 }
-ACTION_SPOKEN = {  # polished display label -> spoken
+ACTION_SPOKEN = {  # extraItems[] display label -> spoken
     "Calibrate Batt":"Calibrate battery", "Calibr. Batt.":"Calibrate battery",
     "Hardware Conf":"Hardware configuration",
+    "RECALLSnapshot":"Recall snapshot",   # display label runs the two words together
+    "STORE Snapshot":"Store snapshot",
+    "Koch Lesson":"Koch lesson",
+    "LoRa Frequ":"LoRa frequency",
 }
 VALUE_SPOKEN = {"+": "plus"}   # symbol-only option value (BLT <AR>) -> spoken word
-UNIT_WORDS = ["words per minute", "Volume", "char", "Snapshot", "millivolts", "pro sign", "error"]
+# "of" / "characters" join the composed value lines (see MorsePreferences::announceValue):
+# "21 of 51" for the Koch lesson, "39 characters" for the practice set.
+UNIT_WORDS = ["words per minute", "Volume", "char", "characters", "of", "Snapshot",
+              "millivolts", "pro sign", "error"]
 
 # User-editable pronunciation overrides (spoken_overrides.tsv): firmware string -> spoken text.
 # Highest priority -- lets the maintainer hand-tune how any entry / option / label is pronounced.
@@ -167,10 +174,18 @@ for entry in top_entries(pl_body):
     pref_labels.append(spoken[0] if spoken else par)
     option_values += [VALUE_SPOKEN.get(v, v) for v in QSTRING.findall(inside) if v.strip()]
 
-# ── 3) Action items (polished labels; spoken override where cryptic) ─────────
-action_items = ["Select Lesson","Recall Snapshot","Store Snapshot","Calibrate Batt",
-    "Hardware Conf","Call Sign","Op Name","Reset Scores","clear all","Cancel Recall",
-    "Cancel Store","NO SNAPSHOTS","Flip Screen","Reset Defaults","Cancel","(not set)"]
+# ── 3) Action items: the firmware's own extraItems[] (spoken override where the
+#      12-char display label is cryptic), plus the fixed value strings that
+#      getValueLine() builds inline and that live in no table. ────────────────
+# Read from the firmware rather than hand-listed: a hardcoded list silently drifted
+# ("Recall Snapshot" vs the real "RECALLSnapshot"), so those headings had no clip
+# under the string the firmware actually announces.
+extra_body = preprocess(array_body(strip_comments(load("MorsePreferences.cpp")),
+                                   r"extraItems\s*\[\s*\]\s*="), POCKET_MACROS)
+extra_items = [s for s in QSTRING.findall(extra_body) if s.strip()]
+inline_values = ["clear all","Cancel Recall","Cancel Store","NO SNAPSHOTS",
+    "Flip Screen","Reset Defaults","Cancel","(not set)"]
+action_items = extra_items + inline_values
 
 # ── Assemble PHRASES (apply menu/action spoken overrides) ────────────────────
 def spoken_of(s, table): return table.get(s, s)
@@ -209,6 +224,7 @@ for ch in CWchars:
     else:
         missing.append(ch)
 char_seq["<err>"] = ["pro sign", "error"]
+maxseq = max(len(v) for v in char_seq.values())   # C array width for voiceCharLookup[]
 
 # ── Dedupe, assign ids, write ────────────────────────────────────────────────
 # Tiebreak on the exact string: the input is a set (iteration order varies between
@@ -269,6 +285,19 @@ with open(HDR, "w", encoding="utf-8") as f:
         f.write(f'  {{"{cstr(key)}", "{clip_id(fw_lookup[key])}"}},\n')
     f.write("};\n")
     f.write(f"static const unsigned int voiceLookupCount = {len(fw_lookup)};\n\n")
+
+    # Character -> clip SEQUENCE (MorseVoice::announceMoreChar). Keyed by the RAW
+    # firmware character, i.e. before cleanUpProSigns(): the uppercase prosign codes
+    # ('S','A','N','K','E','B','H') map to "pro sign" + two phonetics, everything else
+    # to a single atom. Unsorted (56 entries, linear scan once per encoder detent).
+    f.write(f"struct VoiceCharEntry {{ const char* key; unsigned char n; const char* ids[{maxseq}]; }};\n\n")
+    f.write("static const VoiceCharEntry voiceCharLookup[] = {\n")
+    for ch in sorted(char_seq):
+        ids = [clip_id(t) for t in char_seq[ch]]
+        slots = ", ".join(f'"{i}"' for i in ids) + ", nullptr" * (maxseq - len(ids))
+        f.write(f'  {{"{cstr(ch)}", {len(ids)}, {{{slots}}}}},\n')
+    f.write("};\n")
+    f.write(f"static const unsigned int voiceCharLookupCount = {len(char_seq)};\n\n")
     f.write("#endif // VOICE_CLIPS_H_\n")
 
 print("M32 Pocket voice-clip extraction")
