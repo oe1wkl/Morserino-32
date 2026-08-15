@@ -41,6 +41,7 @@ What is new in Version 8?
 
 # Connectors and Controls
 
+::: {.pocket .pocket-a11y}
 ## M32Pocket
 
 ![](images/m32pocket.jpg)
@@ -55,9 +56,11 @@ What is new in Version 8?
 | 6 | ENCODER – Encoder and its Pushbutton switch | Can be rotated and is also a push-button switch. Used to make your selection within menus, to adjust speed, volume, or scroll the display, and to set various preferences and options. |
 | 7 | Touch paddles | These are capacitive touch paddles. Please note that for left-handed use, the display can be flipped 180°! |
 | 8 | FN Button switch (integrated into the case) | When the device has gone into deep sleep, this wakes up and restarts your Morserino. When the device is up and running (performing one of the operation modes), a short press of the FN button toggles the rotary encoder between adjusting the keyer speed and volume control. A long press of the FN button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.  See the section **4.2 Using the ENCODER Knob and FN Button** for further details.  <br> A double click of this button reduces display brightness in several steps. |
+:::
 
 
 
+::: {.classic}
 ## Morserino-32 2nd edition
 
 ![](images/m32_2nd_edition.jpg)
@@ -79,9 +82,11 @@ What is new in Version 8?
 | 13 | Reset Button | Through a small hole you can reach the Reset button of the Heltec module (not needed for normal operation). |
 | 14 | USB – Micro USB Connector | Use a normal 5V USB Charger to power the device and charge its LiPo Battery. The microcontroller firmware can also be reprogrammed through USB. You can also output keyed or decoded characters on the USB serial device to use this information in a computer program – see the preference **Serial Output** for further information. |
 | 15 | PRG Button | Through a small hole you can reach the Programming Button of the Heltec module (not needed for normal operation). |
+:::
 
 
 
+::: {.classic}
 ## Morserino-32 1st edition
 
 ![](images/m32_1st_edition.jpg)
@@ -102,6 +107,7 @@ What is new in Version 8?
 | 12 | Reset Button | Through a small hole you can reach the Reset button of the Heltec module (not needed for normal operation). |
 | 13 | USB – Micro USB Connector | Use a normal 5V USB Charger to power the device and charge its LiPo Battery. The microcontroller firmware can also be reprogrammed through USB . You can also output keyed or decoded characters on the USB serial device to use this information in a computer program – see the preference **Serial Output** for further information. |
 | 14 | PRG Button | Through a small hole you can reach the Programming Button of the Heltec module (not needed for normal operation). |
+:::
 
 
 
