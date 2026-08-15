@@ -33,6 +33,7 @@ page. That is the proof the pass broke nothing.
 ### Tools
 
 ```bash
+python3 check_tags_only.py [ref]        # strip the tags back out -> must equal the pre-tagging source
 python3 check_build_identity.py en      # the acceptance test: PDF must not move
 python3 check_build_identity.py de
 python3 check_parallelism.py            # EN and DE must stay structurally identical
@@ -86,9 +87,15 @@ and the two browser-driven WiFi functions. `{.classic .pocket}` means
 The largest single tags are the games chapter (`{.pocket}`, ~17 % of the
 English manual) and the LoRa material (`{.classic}`).
 
-**Verified:** EN 114 pages, DE 118 pages, identical text on every page against
-the pre-tagging PDFs; complete table of contents in both; English and German
-carry the same tags in the same sections in the same order.
+**Verified**, four ways:
+
+- **Nothing but tags changed** — stripping every tag back out reproduces the
+  pre-tagging sources exactly, in both languages (`check_tags_only.py`).
+- **The PDF did not move** — EN 114 pages, DE 118 pages, identical text on every
+  page against the pre-tagging PDFs (`check_build_identity.py`).
+- **The table of contents is complete** in both languages.
+- **EN and DE are parallel** — same tags, same sections, same order
+  (`check_parallelism.py`).
 
 **One content divergence stands**, reported rather than papered over: the
 *Playing the Game* section of Morse Invaders has a `::: note` in English that
