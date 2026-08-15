@@ -3353,11 +3353,17 @@ The installer takes you through three steps:
 ::: note
 **Editions (M32 Pocket only).** The *Standard* edition is the normal
 firmware described by this manual. The *Accessibility Edition* speaks
-the menus and settings aloud, for blind and partially sighted operators;
-the games are not included in it. Both are offered for the same device
-and you can move between them at any time — your settings are kept, but
-the Accessibility Edition uses the space that holds the File Player's
-text for its voice clips.
+the menus and settings aloud, for blind and partially sighted operators:
+it announces itself and the battery voltage when you switch it on, and
+it names the whole menu path — "CW Generator, Call Signs" — whenever the
+branch you are in may not be obvious, for instance right after switching
+on. The games are not included in it, and neither are the two WiFi
+functions *Upload File* and *Update Firmw*: both only open a web page
+that you would have to operate from another device — use the USB
+installer described in this appendix instead. Both editions are offered for the
+same device and you can move between them at any time — your settings
+are kept, but the Accessibility Edition uses the space that holds the
+File Player's text for its voice clips.
 :::
 
 Older bookmarks pointing at the previous two separate installer pages

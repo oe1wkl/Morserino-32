@@ -3799,7 +3799,14 @@ Das Installationsprogramm führt dich durch drei Schritte:
 **Editionen (nur M32 Pocket).** Die *Standard*-Edition ist die normale
 Firmware, die in diesem Handbuch beschrieben wird. Die *Accessibility
 Edition* liest die Menüs und Einstellungen laut vor – für blinde und
-sehbehinderte Operatoren; die Spiele sind darin nicht enthalten. Beide
+sehbehinderte Operatoren: Beim Einschalten meldet sie sich mit Version
+und Batteriespannung, und sie nennt den ganzen Menüpfad – „CW Generator,
+Call Signs“ –, wann immer der Zweig, in dem du dich befindest, nicht
+ohnehin klar ist, etwa gleich nach dem Einschalten. Die Spiele sind
+darin nicht enthalten, und auch nicht die beiden WLAN-Funktionen *Upload
+File* und *Update Firmw*: Beide öffnen nur eine Webseite, die du von
+einem anderen Gerät aus bedienen müsstest – nimm stattdessen den in
+diesem Anhang beschriebenen USB-Installer. Beide Editionen
 werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen
 ihnen wechseln: Deine Einstellungen bleiben erhalten, aber die
 Accessibility Edition belegt mit ihren Sprachdateien jenen Platz, in dem
