@@ -273,21 +273,67 @@ a11y build will want to emit for the symbol sites.
 
 ---
 
-## 8. Decisions needed before tagging starts
+## 8. Decisions taken before tagging started
 
-1. **Pending working-tree edits.** `manual_en.md`, `manual_de.md` and the
-   generated HTML/PDF have uncommitted changes (the Appendix 6 note describing
-   the Accessibility Edition's exclusions). A tagging branch cut from here would
-   sweep that prose edit into the first tagging commit. Cleanest is to commit it
-   on `master` first, so the branch contains tagging and nothing else.
-2. **`classic` granularity** — confirm §2's recommendation (one `classic` key;
-   1st-vs-2nd-edition differences stay as prose).
-3. **LoRa on the Pocket.** The manual says the Pocket has no LoRa *"in its
-   default configuration"*, and a `pocketwroom-lora` build environment exists.
-   Tagging the LoRa chapters `.classic` would delete them from the Pocket manual
-   and strand owners of a LoRa-equipped Pocket. Per §4 of the briefing ("do not
-   invent variant knowledge"), this pass leaves every LoRa block **untagged** and
-   files it as the first entry of the ambiguity inventory.
+Answered by Willi, 2026-08-15:
+
+1. **Pending working-tree edits** — committed on `master` first (`aa3d0cf`), so
+   the tagging branch contains tagging and nothing else.
+2. **`classic` granularity** — one `classic` key, as recommended. 1st-vs-2nd
+   edition differences stay as prose and are listed in the ambiguity inventory.
+3. **LoRa on the Pocket** — **tag it `.classic`.** The `pocketwroom-lora`
+   environment was a pre-production prototype, is not in production and is not
+   maintained, so no shipping Pocket has LoRa. This overrode the cautious
+   recommendation above, and it is the single biggest tag in the manual after
+   the games chapter: `LoRa Trx`, `Configuring LoRa Band…`, `Appendix 2` and
+   three glossary entries are now classic-only.
+4. **Table rows** — introduce the row-marker convention now rather than
+   deferring it (see §6.3, option 2).
+
+## 8a. Two things the briefing did not anticipate
+
+### A div may wrap at most one section — otherwise the TOC loses it, silently
+
+Found by the build-identity check while tagging *Uploading a Text File* and
+*Updating the Firmware through WiFi* in one div. Pandoc promotes a fenced div
+to `<section>` **only when it holds exactly one section**. With two or more
+sibling headings inside, the div stays a plain `<div>`, the headings never
+become sections, and `--toc` skips them — with no warning, and with section
+numbering still correct, so nothing looks wrong until you read the contents
+page. Minimal reproduction:
+
+```markdown
+# A
+## B
+::: {.x}
+### C
+### D
+:::
+### E
+```
+→ the TOC lists A, B and E. C and D are gone.
+
+`check_build_identity.py` now verifies that every H1/H2/H3 reaches the TOC, so
+this cannot happen again unnoticed.
+
+### The row-marker convention, as adopted
+
+An **empty span carrying the variant classes, at the very start of the row's
+first cell**:
+
+```markdown
+| []{.pocket .pocket-a11y}Tone Softness | … | … |
+| []{.classic}RSSI | … | … |
+```
+
+Pandoc keeps it as `Span ("",["pocket","pocket-a11y"],[]) []` in the AST and
+emits `<span class="pocket pocket-a11y"></span>` — zero width, zero visual
+footprint, verified against the reference PDF. A session-2 Lua filter walks each
+`Row`, looks for such a span in the first cell, and drops the whole row.
+
+The position is what makes it a row marker: an empty span at the start of the
+first cell. A span anywhere else in a cell stays an ordinary inline tag. That
+keeps the class vocabulary exactly as the briefing defines it.
 
 ---
 
