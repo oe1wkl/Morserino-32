@@ -34,10 +34,14 @@ ROW_MARK = re.compile(r"^\|\s*\[\]\{([^}]*)\}")
 
 
 def _classes(attr):
-    """Class names from a fenced-div attribute blob or a span's {...} body."""
-    if attr.startswith("{"):
-        attr = attr[1:-1]
-    return [c[1:] for c in attr.split() if c.startswith(".")]
+    """Class names from a fenced-div attribute blob or a span's {...} body.
+
+    Handles both forms the manual uses: the shorthand `::: note`, where the
+    bare word is the class, and `::: {.note .pocket}`.
+    """
+    if not attr.startswith("{"):
+        return [attr] if attr else []
+    return [c[1:] for c in attr[1:-1].split() if c.startswith(".")]
 
 
 def variant_classes(attr):
@@ -97,7 +101,7 @@ def parse(lang):
 
         r = ROW_MARK.match(line)
         if r:
-            v = variant_classes(r.group(1))
+            v = variant_classes("{%s}" % r.group(1))
             if v:
                 rows.append({"line": n, "classes": v,
                              "section": section["title"] if section else "?",
@@ -123,7 +127,7 @@ def parse(lang):
         return lo + 1
 
     for m in SPAN.finditer(text):
-        v = variant_classes(m.group(2))
+        v = variant_classes("{%s}" % m.group(2))
         if not v:
             continue
         n = line_of(m.start())
