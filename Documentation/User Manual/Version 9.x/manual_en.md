@@ -2801,13 +2801,13 @@ to all modes of the Morserino-32.
 |---|---|---|
 | Encoder Click | Turning the encoder may generate a short tone burst, or be silent | Off / **On** |
 | Tone Pitch Hz | The frequency of the side tone, in Hz | A series of tones between 233 and 932 Hz, corresponding to the musical notes of the F major scale from Bb3 to Bb5 (2 octaves) |
-| Tone Softness | (Only for M32 Pocket) Softens the attack and release edges of the CW side tone, similar to what an RC low-pass filter does to the keying edges in a real transceiver. Reduces harshness, especially on short elements such as a single dit. Takes effect immediately. | 1 – 10 ms, in steps of 1 ms (**5 ms**) |
+| []{.pocket .pocket-a11y}Tone Softness | (Only for M32 Pocket) Softens the attack and release edges of the CW side tone, similar to what an RC low-pass filter does to the keying edges in a real transceiver. Reduces harshness, especially on short elements such as a single dit. Takes effect immediately. | 1 – 10 ms, in steps of 1 ms (**5 ms**) |
 | Time Out | If the time specified in this preference passes without any display updates, the device will go into deep sleep mode. You can restart it by pressing the FN button. | No timeout / **5 min** / 10 min / 15 min |
 | Quick Start | Allows you to bypass the initial menu selection, i.e. at startup the device will immediately begin executing the mode that had been in effect before last shutdown. | ON / **OFF** |
 | Output Case | This changes the case of decoded characters on the display (and also on serial output via USB, and on Bluetooth keyboard output!) from lower case to UPPER CASE. | **lower** / UPPER |
-| Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
-| Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
-| Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
+| []{.pocket .pocket-a11y}Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
+| []{.pocket .pocket-a11y}Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
+| []{.pocket}Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
 | Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of LoRa or WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in section **6.3.2**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 
 
@@ -2935,7 +2935,7 @@ These items appear at the very end of the preferences list. The first two set yo
 | Call Sign | Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in **Fight the Pileup** and the **QSO Bot**. | up to 8 characters (stored as UPPER CASE) |
 | Op Name | Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case and used together with your call sign in **Fight the Pileup**. | up to 8 characters (stored as UPPER CASE) |
 | Reset Scores | This is an action, not a setting: it clears the stored high scores and saved progress of the games — the **Morse Invaders** high-score table, the **Morsel** high scores, the **Radio Cave** saved progress, and the **Trailblazer**, **Fox Hunt**, and **Memory Chain** high-score tables. You are asked to confirm by pressing the **FN** button. (Fight the Pileup keeps no persistent high score and is not affected.) | press FN to confirm |
-| Practice Stats | **M32 Pocket only.** Switches the Koch-lesson-time and per-character error-rate logging described under **Practice Stats** (section **WiFi Functions**) on or off. Turning it off does not erase what was already logged — use the Clear Log button on the Practice Stats web page for that. | **On** / Off |
+| []{.pocket .pocket-a11y}Practice Stats | **M32 Pocket only.** Switches the Koch-lesson-time and per-character error-rate logging described under **Practice Stats** (section **WiFi Functions**) on or off. Turning it off does not erase what was already logged — use the Clear Log button on the Practice Stats web page for that. | **On** / Off |
 
 
 
@@ -2955,6 +2955,7 @@ Mechan.** (M32 Pocket only — the paddle type on the CN3 connector) and
 **Cancel** (which just leaves this menu and continues with regular
 start-up of the M32).
 
+::: {.pocket .pocket-a11y}
 ### CN3 Connector: touch or mechanical paddle (M32 Pocket only)
 
 The M32 Pocket has two paddle inputs: the 3.5 mm jack (for a mechanical
@@ -2980,6 +2981,7 @@ longer work (the two pins are read as an ordinary paddle instead); the
 3.5 mm jack keeps working in both modes. Note that a mechanical paddle
 plugged into CN3 will also let you into this menu while the setting is
 still on Touch, so you can always switch modes.
+:::
 
 ### Flipping the display screen for left-hand use
 
@@ -2995,6 +2997,7 @@ allow left-hand use.
 
 The M32 will re-boot, with the display now rotated 180°.
 
+::: {.classic}
 ### Calibration of Battery Measurement
 
 ::: note
@@ -3031,7 +3034,9 @@ multimeter. Once you know this value, you perform the following steps:
 ::: note
 If your battery is reasonably new, and you know for sure that it is fully charged, as it has been in charging mode long enough (>10 hours for 1st & 2nd edition Morserinos, >3 hours for M32 Pocket), you can assume a battery voltage of 4.2V and use that value instead of measuring the battery.
 :::
+:::
 
+::: {.classic}
 ### Configuring LoRa Band, Frequency and Output Power
 
 Obviously this section is only applicable if you have a Morserino with
@@ -3090,10 +3095,12 @@ Immediately after that the Morserino-32 will start normally, with the
 now selected LoRa settings in effect. On the top line of the Startup
 Screen you will see the configured QRG for LoRa as a 5-digit number
 (e.g. 43415 for the default in the 433 MHz band).
+:::
 
 ### Resetting Preferences to their Factory Defaults
 This item resets all preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.
 
+::: {.classic}
 ## Appendix 2: More information about LoRa
 
 When morse code is packed into a LoRa data packet, dots, dashes and
@@ -3166,6 +3173,7 @@ settings.
     (= decimal 102) for secondary channel
 -   HF Output: by default 14 dBm (= 25 mW), can be increased to 20 dBm
     (100 mW)
+:::
 
 ## Appendix 3: Adjusting Audio Level
 
@@ -3178,6 +3186,7 @@ This functions behaves differently for the M32Pocket, vs. the 1st and
 2nd edition M32!
 :::
 
+::: {.classic}
 **1st and 2nd edition M32 only:** This
 starts a function to adjust the **audio input level:** make sure a tone
 signal is available on the input, for example from your shortwave
@@ -3185,6 +3194,7 @@ receiver, and a bar
 graph will indicate the voltage of the input signal. Adjust it with the
 blue trimmer potentiometer, so that the left and right ends of the solid
 bar are within the two outer rectangles.
+:::
 
 **All Morserinos**: When this function is active, a sinus signal is
 output on line-out, and the transceiver output is shortened (keying a
@@ -3193,6 +3203,7 @@ transceiver first if this is not what you want!). You can now, for
 example, adjust the level of the output signal on a connected computer,
 or check whether a transmitter is being keyed.
 
+::: {.classic}
 **1st and 2nd edition only**: A simple test
 or demo for the audio-in adjustment is to connect line-out with audio in
 (connect tip with sleeve), feeding the output sine wave into the audio
@@ -3206,6 +3217,7 @@ Now you can set the potentiometer so that the solid bar is almost
 touching the outer bounds of the rectangles. This is the optimal setting
 for the audio in level. Obviously you have to perform this for the audio
 source you are planning to use, e.g. for your radio receiver.
+:::
 
 ::: note
 Only while you are in the **menu** will the **FN button long press**
@@ -3236,6 +3248,7 @@ If you are still on version 1.x, you really should update to a newer firmware - 
 This simple update procedure for Morserinos has become possible through
 work by Matthias Jordan and Joe Wittmer.
 
+::: {.classic}
 For an M32 1st or 2nd edition make sure you have a **driver** for the
 Silicon Labs CP210x USB to serial device, used by the Heltec module for
 its USB interface. Current versions of Windows 10 install this
@@ -3248,6 +3261,7 @@ the search field in the lower left of the screen start typing
 "settings: device" and it will come up for selection). OSX or Linux
 users can use command line tools to find out which serial ports are
 available.
+:::
 
 Connect your Morserino with a USB cable to your computer. On Windows the
 device manager should update its screen and show an entry "Ports" -
@@ -3292,7 +3306,7 @@ Then enter the following command line:
 replacing \<COMx> with your COM port name, and \<binaryfilename> with
 the correct name of the Morserino binary file.
 
-::: note
+::: {.note .pocket .pocket-a11y}
 For the M32Pocket, you need to add the parameter `-d M32Pocket` to the
 command line.
 :::
@@ -3327,11 +3341,15 @@ firmware download necessary, and no command lines...​).
 Make sure you have a USB cable that allows data transfer.
 
 ::: note
+::: {.pocket .pocket-a11y}
 If you are using a M32Pocket, the device must be turned on and must not
 be in sleep mode when you are connecting the USB cable!
+:::
 
+::: {.classic}
 For M32 1st and 2nd edition, make sure you have a driver for the SiLab
 CP210x chip.
+:::
 
 This method does NOT work with the Safari browser, nor with versions of
 Firefox before 151. On a computer managed by a company or a school,
@@ -3375,7 +3393,7 @@ The installer takes you through three steps:
 3. **Installing** — wait for the progress bar. Do not disconnect the
    device. When it finishes, the Morserino restarts by itself.
 
-::: note
+::: {.note .pocket .pocket-a11y}
 **Editions (M32 Pocket only).** The *Standard* edition is the normal
 firmware described by this manual. The *Accessibility Edition* speaks
 the menus and settings aloud, for blind and partially sighted operators:
@@ -3430,7 +3448,7 @@ by OE6CHD),
 is available at *https://github.com/cdaller/morserino32-trainer*.
 :::
 
-::: important
+::: {.important .pocket .pocket-a11y}
 If you are using a M32Pocket, the device must be turned on and must not
 be in sleep mode when you are connecting the USB cable!
 :::
@@ -3472,7 +3490,7 @@ preferences, changing speed and volume, exiting and entering menus and
 even automatic CW generation). The protocol is described in a separate
 document available on GitHub.
 
-::: note
+::: {.note .pocket .pocket-a11y}
 If you are using a M32Pocket, the device must be turned on and must not
 be in sleep mode when you are connecting the USB cable!
 :::
