@@ -3972,7 +3972,7 @@ abbreviations uncommon in English are in square brackets \[\].
 | Iambic Keying | A keying mode where squeezing both paddles simultaneously produces alternating dits and dahs. Named after the poetic metre with alternating short and long syllables. |
 | iCW | Internet CW — a method of sending Morse code over the Internet using audio protocols such as Mumble. |
 | Koch Method | A learning method developed by Ludwig Koch in the 1930s. Characters are introduced one at a time in a specific order based on rhythmic similarity, rather than alphabetically. |
-| LoRa | Long Range — a spread-spectrum radio technology used for low-power, long-range communication. Used in 1st and 2nd edition Morserinos for wireless CW transceiver mode. |
+| []{.classic}LoRa | Long Range — a spread-spectrum radio technology used for low-power, long-range communication. Used in 1st and 2nd edition Morserinos for wireless CW transceiver mode. |
 | M32Pocket | The third-generation Morserino, featuring a colour TFT display, USB-C, and a compact 3D-printed case. |
 | MAC Address | Media Access Control address — a unique hardware identifier assigned to every network interface. Used to identify your Morserino on a WiFi network. |
 | mDNS | Multicast DNS — a protocol that allows devices to be found by name (e.g., *m32.local*) on a local network, without a dedicated DNS server. Supported on macOS and most Linux systems; limited support on Windows and Android. |
@@ -3980,11 +3980,11 @@ abbreviations uncommon in English are in square brackets \[\].
 | NVS | Non-Volatile Storage — persistent memory on the ESP32 that retains data across power cycles. Used to store preferences, snapshots, Koch lesson progress, and player identity. |
 | Pro Sign | Procedural signal — a special Morse code character formed by running two letters together without the normal inter-character pause. Examples: \<SK> (end of contact), \<AR> (end of message), \<KN> (go ahead, named station only). |
 | QSK | Full break-in — the ability to hear between transmitted elements. Not possible in LoRa/WiFi transceiver modes due to packet-based transmission. |
-| RSSI | Received Signal Strength Indicator — a measurement of the power level of a received radio signal. Displayed as an S-meter bar in LoRa transceiver mode. |
+| []{.classic}RSSI | Received Signal Strength Indicator — a measurement of the power level of a received radio signal. Displayed as an S-meter bar in LoRa transceiver mode. |
 | Single-lever Paddle | A Morse key with one lever that swings between two contacts — one for dits, one for dahs. Only one contact can be made at a time (no squeezing). |
 | Sideswiper | A Morse key (also called a cootie key) where the operator moves a lever side to side. Both sides produce the same output — the operator manually times dits and dahs. The Morserino's touch paddles can emulate a sideswiper in Straight Key mode. |
 | Snapshot | A saved set of all Morserino preferences. Up to eight snapshots can be stored and recalled, allowing quick switching between different training configurations. |
-| Spread Spectrum | A radio transmission technique where the signal is spread across a wider bandwidth than necessary for the data. LoRa uses this to achieve long range at low power. |
+| []{.classic}Spread Spectrum | A radio transmission technique where the signal is spread across a wider bandwidth than necessary for the data. LoRa uses this to achieve long range at low power. |
 | Straight Key | The simplest type of Morse key — a single lever that makes contact when pressed down. The operator manually times all dits, dahs, and pauses. |
 | Tone Shift | A preference that changes the pitch of the sidetone when transmitting or responding, making it a half tone higher or lower than the received tone. Useful for distinguishing sent and received signals. |
 | UDP | User Datagram Protocol — a lightweight network protocol used by the Morserino for WiFi transceiver communication on port 7373. |
