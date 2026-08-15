@@ -213,12 +213,16 @@ cootie key when the Keyer Mode is Straight Key (but not an external paddle, unle
 
 Connect USB power, switch battery switch to ON (I).
 
+::: {.classic}
 With the M32 1st or 2nd edition, an orange LED will light up very
 brightly. When the orange LED is dark, the battery is fully charged.
 When the orange LED is lit or flickering dimly, the battery is not
 connected or switched on.
+:::
 
+::: {.pocket .pocket-a11y}
 The M32Pocket will display the battery status as an icon whenever you are in a menu.
+:::
 
 # Using the M32, Step by Step
 
@@ -233,8 +237,8 @@ position.
 ::: important
 Make sure you install the battery with the correct polarity before
 turning the switch to the ON position. Reversing the polarity could
-destroy your Morserino! For the M32Pocket, it is advisable to use a
-14500 LiIon cell (3.7 V) with protection against deep discharge.
+destroy your Morserino! [For the M32Pocket, it is advisable to use a
+14500 LiIon cell (3.7 V) with protection against deep discharge.]{.pocket .pocket-a11y}
 :::
 
 When the device is off but with the battery connected (sliding power
@@ -246,10 +250,10 @@ with M32Pocket).
 **To turn the device on from deep sleep**, press the FN button briefly.
 
 When the Morserino-32 boots up, a startup screen will appear for a few
-seconds. The top line shows the LoRa frequency that the M32 is
+seconds. [The top line shows the LoRa frequency that the M32 is
 configured to use (as a five-digit number; not on the M32Pocket). At the
 bottom of the display, you will see an indication of how much battery
-power is left (not on the M32 Pocket). If the battery is low, connect your device to a USB power
+power is left (not on the M32 Pocket).]{.classic} If the battery is low, connect your device to a USB power
 source. The battery will drain even if you never turn the device on.
 Although the drain is minimal in deep sleep mode, the battery will be
 empty after a few days. Therefore, if you intend not to use the
@@ -261,6 +265,7 @@ device, an empty battery symbol will appear on the screen, and the
 device will not boot up. If you see this symbol, begin charging your
 battery as soon as possible.
 
+::: {.classic}
 First edition of M32 only: After using any of the WiFi functions,
 battery measurement does not work correctly until the Morserino-32 is
 powered down and up again (or a reset with the Reset button has been
@@ -273,6 +278,7 @@ If the display shows the empty battery symbol although sufficient power
 should still be available, it is advisable to perform a battery
 measurement calibration. This is not necessary and hence not available on the M32Pocket. See
 **Appendix 7.1.2: Calibration of Battery Measurement**.
+:::
 
 To disconnect the device from the battery (turning it off, unless you
 are USB powered), slide the sliding switch to the OFF position.
@@ -294,11 +300,13 @@ you disconnect the battery through the switch, the battery cannot be
 charged.
 :::
 
+::: {.classic}
 When charging a 1st or 2nd edition M32, the orange LED on the ESP32
 module is lit brightly, and when the battery is disconnected, this LED
 will not be lit brightly, but rather be blinking nervously or half lit.
 Once the battery has been fully charged, the orange LED will not be lit
 anymore.
+:::
 
 You can of course always use the device when it is powered by USB, if
 the battery is charging or not.
@@ -342,13 +350,13 @@ A **double click of the FN button** reduces display brightness; there
 are five levels of brightness. Once the lowest level is reached, a
 double-click resets the display to full brightness.
 
-For *M32 1st and 2nd* edition only, while you are selecting a menu (e.g.
+[For *M32 1st and 2nd* edition only, while you are selecting a menu (e.g.
 immediately after power-on), a **long press of the FN button** starts a
 function to adjust the audio input level (and possibly the output level
-on a device you connected to the Morserino-32's line-out port).<br>
-On the **M32Pocket**, a long press of the FN button just keys
+on a device you connected to the Morserino-32's line-out port).<br>]{.classic}
+[On the **M32Pocket**, a long press of the FN button just keys
 the transmitter (if you have one connected) and produces a sidetone (this might be useful for
-setting audio levels on a connected computer, for example).
+setting audio levels on a connected computer, for example).]{.pocket .pocket-a11y}
 
 A click of the FN button turns this function off again. See **Appendix 3 Adjusting Audio Level**.
 
