@@ -1280,6 +1280,7 @@ with a protocol like iCW (CW over Internet) or VBand. In all transceiver
 cases the CW keyer and a receiver or CW decoder are active at the same
 time.
 
+::: {.classic}
 ### LoRa Trx
 
 ::: note
@@ -1339,6 +1340,7 @@ packet assembled so far is being transmitted and in due course being
 played back at the indicated speed by the receiving Morserino-32.
 
 More information about LoRa can be found in **Appendix 2 More information about LoRa**.
+:::
 
 ### Wifi Trx
 
@@ -1591,6 +1593,7 @@ environments with little interference, it is better to use the **Wide**
 setting – in that case the audio frequency does not need to be very
 close to 700 Hz.
 
+::: {.pocket}
 ## Games
 
 The Morserino Pocket features now CW-based games that make learning and
@@ -2281,6 +2284,8 @@ There are **no sounds for right or wrong** — feedback is purely visual, so not
 
 When the game ends, the whole chain is revealed — every box shows its character, with the fatal position in red (in Call Signs mode you also see what the rest of the call would have been). In Characters mode your score is the completed chain length; in Call Signs mode it is the number of completed calls, with the letters already banked in the failed call as a tiebreak. Each mode keeps its own top-7 high-score table, recording the result, the errors used, the Koch lesson, and whether you played with displayed or sounded prompts. Click the encoder for the high-score table; a further press returns to the lobby, a long press exits.
 
+:::
+
 ## WiFi Functions
 
 Apart from the functionality of WiFi Transceiver, you can use the WiFi
@@ -2443,6 +2448,7 @@ If you press the FN button, this functions returns to the menu. If you
 do nothing, the Morserino will go into deep sleep, depending on the
 settings you defined for that, as usual.
 
+::: {.classic .pocket}
 ### Uploading a Text File
 
 Once you configured your Morserino-32 with your local WiFi credentials,
@@ -2495,7 +2501,9 @@ towards the external paddle connector).
 ::: note
 If it fails: Make sure you use the password **upload** and NOT **update**!
 :::
+:::
 
+::: {.classic .pocket}
 ### Updating the Morserino-32 Firmware through WiFi
 
 Updating the firmware of the Morserino-32 through WiFi is one way of
@@ -2567,6 +2575,7 @@ WiFi:
 If it fails: Make sure you use the password **update** and NOT
 **upload**!
 :::
+:::
 
 ### WiFi Select
 
@@ -2579,6 +2588,7 @@ The item shown when you start this is the currently selected network configurati
 The first entry (numbered 0) lets you choose EspNow (WiFi peer-to-peer
 communication) instead of using an access point.
 
+::: {.pocket .pocket-a11y}
 ### Practice Stats
 
 ::: note
@@ -2633,6 +2643,7 @@ If you mostly connect via USB rather than WiFi, the same statistics are also
 available in the **M32 Configuration Tool** (`Software/Utilities/m32_config_tool.html`)
 under the **Koch** tab, below the Custom Character Set section — no WiFi
 needed there at all.
+:::
 :::
 
 ## Go To Sleep

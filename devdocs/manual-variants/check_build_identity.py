@@ -14,7 +14,14 @@ actually matter:
 
   1. the rendered PDF has the same number of pages, and every page carries the
      same text as the reference PDF (nothing reflowed across a page boundary);
-  2. the HTML's visible text is byte-identical once tags are stripped.
+  2. every H1/H2/H3 in the source reaches the table of contents.
+
+Check 2 exists because of a trap that fails *silently*: a fenced div wrapping
+two or more sibling sections drops their headings from the TOC (pandoc promotes
+a div to <section> only when it holds exactly one section; otherwise the
+headings inside it never become sections and the TOC skips them). Numbering
+still looks right, pandoc says nothing, and the manual ships with holes in its
+contents list. Rule: one div wraps at most one section.
 
 Usage (from anywhere):
     python3 check_build_identity.py en [reference.pdf]
@@ -25,6 +32,7 @@ which is the right reference only as long as the tagging pass has not rebuilt
 it. Build artefacts are written to a temp dir and removed again; the committed
 manual_<lang>.html / .pdf are never touched.
 """
+import html
 import html.parser
 import os
 import re
@@ -95,6 +103,26 @@ def page_texts(path):
             for p in PdfReader(path).pages]
 
 
+def toc_gaps(lang, markup):
+    """Headings down to --toc-depth=3 that never made it into the TOC."""
+    src = os.path.join(MANUAL, "manual_%s.md" % lang)
+    wanted, fenced = [], False
+    for line in open(src, encoding="utf-8"):
+        if line.startswith("```"):
+            fenced = not fenced
+        m = re.match(r"^(#{1,3}) +(.*?)\s*(\{[^}]*\})?\s*$", line)
+        if m and not fenced:
+            wanted.append(m.group(2).strip())
+    toc = re.search(r'<nav id="TOC".*?</nav>', markup, re.S)
+    listed = (re.sub(r"\s+", " ",
+                     html.unescape(re.sub(r"<[^>]+>", "", toc.group(0))))
+              if toc else "")
+    # TOC text carries the section number ahead of the title; a title is present
+    # when its own words appear in order, so compare on the stripped title alone.
+    return [h for h in wanted
+            if re.sub(r"\s+", " ", re.sub(r"[*_`\\]", "", h)) not in listed]
+
+
 def main():
     if len(sys.argv) < 2 or sys.argv[1] not in ("en", "de"):
         sys.exit(__doc__)
@@ -121,11 +149,17 @@ def main():
         stripped.feed(markup)
         html_text = stripped.text()
 
+        missing = toc_gaps(lang, markup)
+        for h in missing:
+            problems.append("heading missing from TOC: %s" % h)
+
         print("language      : %s" % lang)
         print("reference     : %s" % os.path.relpath(ref, MANUAL))
         print("pages         : %d (reference %d)" % (len(new_pages),
                                                      len(ref_pages)))
         print("html text     : %d characters" % len(html_text))
+        print("toc           : %s" % ("complete" if not missing
+                                      else "%d heading(s) MISSING" % len(missing)))
         if problems:
             print("\nDIFFERENCES (%d):" % len(problems))
             for p in problems[:40]:
