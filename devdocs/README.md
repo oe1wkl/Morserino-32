@@ -23,6 +23,11 @@ devdocs/
 │   └── REFACTORING_PLAN.md       ·   phased plan (Phases A–G)
 ├── installer/                    ← unified web installer (V9)
 │   └── PLAN.md                   ·   design + migration plan (2 installers → 1)
+├── manual-variants/              ← V9 manual: one tagged source → 3 variants
+│   ├── SURVEY.md                 ·   source survey, decisions, pandoc traps
+│   ├── inventory-ambiguous.md    ·   what was NOT tagged, and the open questions
+│   ├── inventory-*.md            ·   menu terms / images / tables / morse (generated)
+│   └── check_*.py, *_terms.py    ·   build-identity + EN↔DE parallelism checks
 └── protocol-audit/               ← USB serial protocol audit
     ├── command-matrix.md         ·   one row per command, three-corner presence
     ├── conflicts.md              ·   three-way disagreements + live resolution status
