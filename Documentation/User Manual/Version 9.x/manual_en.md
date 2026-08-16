@@ -720,9 +720,9 @@ You can choose between the following at the second level of the menu:
     file, as soon as you upload a new one, the old one will be
     overwritten. But your file can have **up to 16 parts** (see below about encoding and creating multi-part files), and you can
     choose which of the parts you are going to use!<br/>
-    **Upload of files** works through WiFi from your PC (or Mac or tablet or
+    **Upload of files** works [through WiFi from your PC (or Mac or tablet or
     smartphone or whatever – see the section **Uploading a Text File** for
-    instructions how to do this), or by using the method described in
+    instructions how to do this), or]{.classic .pocket} by using the method described in
     **Using a Browser to set up M32
     Preferences**.
 -   **Practice Set**: Generates random characters from a pool you pick
@@ -2613,8 +2613,8 @@ wrong when the Echo Trainer checks your response. Since the small display
 isn't a great place to browse a history, you view it in a web browser
 instead.
 
-Select **Practice Stats** under **WiFi Functions**. Like Upload File and
-Update Firmware, the Morserino connects to **your own WiFi network** as a
+Select **Practice Stats** under **WiFi Functions**. As with the other WiFi
+functions, the Morserino connects to **your own WiFi network** as a
 client (after doing the network configuration and network selection
 described above — see **WiFi Select** just above) and shows you its IP
 address on that network. No internet access is actually required — your
@@ -3418,10 +3418,11 @@ the menus and settings aloud, for blind and partially sighted operators:
 it announces itself and the battery voltage when you switch it on, and
 it names the whole menu path — "CW Generator, Call Signs" — whenever the
 branch you are in may not be obvious, for instance right after switching
-on. The games are not included in it, and neither are the two WiFi
-functions *Upload File* and *Update Firmw*: both only open a web page
-that you would have to operate from another device — use the USB
-installer described in this appendix instead. Both editions are offered for the
+on. The games are not included in it, and neither are the Standard
+edition's two browser-driven WiFi entries, *Upload File* and *Update
+Firmw* — both only open a web page that you would have to operate from
+another device, so use the USB installer described in this appendix
+instead. Both editions are offered for the
 same device and you can move between them at any time — your settings
 are kept, but the Accessibility Edition uses the space that holds the
 File Player's text for its voice clips.

@@ -747,8 +747,8 @@ wählen:
     überschrieben. Deine Datei kann jedoch **bis zu 16 Teile** enthalten
     (siehe unten zur Kodierung und Erstellung mehrteiliger Dateien), und
     du kannst auswählen, welchen Teil du verwenden möchtest!<br/>
-    **Das Hochladen** erfolgt über WLAN von deinem PC (oder Mac, Tablet,
-    Smartphone usw. – Anweisungen dazu findest du im Abschnitt **Hochladen einer Textdatei**), oder mit der unter **Einrichten von M32-Einstellungen über einen Browser** beschriebenen
+    **Das Hochladen** erfolgt [über WLAN von deinem PC (oder Mac, Tablet,
+    Smartphone usw. – Anweisungen dazu findest du im Abschnitt **Hochladen einer Textdatei**), oder]{.classic .pocket} mit der unter **Einrichten von M32-Einstellungen über einen Browser** beschriebenen
     Methode.
 -   **Practice Set**: Generiert zufällige Zeichen aus einem Zeichenvorrat,
     den du direkt am Gerät selbst zusammenstellst – z.B. genau die
@@ -3045,8 +3045,8 @@ Trainer ein Zeichen richtig oder falsch beantwortet hast. Da das kleine
 Display für eine solche Verlaufsansicht nicht geeignet ist, rufst du diese
 Statistik stattdessen in einem Webbrowser ab.
 
-Wähle **Practice Stats** unter **WiFi Functions**. Wie bei Upload File und
-Update Firmware verbindet sich der Morserino dabei als Client mit
+Wähle **Practice Stats** unter **WiFi Functions**. Wie bei den anderen
+WLAN-Funktionen verbindet sich der Morserino dabei als Client mit
 **deinem eigenen WLAN** (nach der oben beschriebenen Netzwerkkonfiguration
 und Netzwerkauswahl — siehe **WiFi Select** direkt darüber) und zeigt dir
 seine IP-Adresse in diesem Netz an. Internetzugang ist dabei nicht nötig —
@@ -3867,10 +3867,11 @@ sehbehinderte Operatoren: Beim Einschalten meldet sie sich mit Version
 und Batteriespannung, und sie nennt den ganzen Menüpfad – „CW Generator,
 Call Signs“ –, wann immer der Zweig, in dem du dich befindest, nicht
 ohnehin klar ist, etwa gleich nach dem Einschalten. Die Spiele sind
-darin nicht enthalten, und auch nicht die beiden WLAN-Funktionen *Upload
-File* und *Update Firmw*: Beide öffnen nur eine Webseite, die du von
-einem anderen Gerät aus bedienen müsstest – nimm stattdessen den in
-diesem Anhang beschriebenen USB-Installer. Beide Editionen
+darin nicht enthalten, und auch nicht die beiden browsergestützten
+WLAN-Einträge der Standard-Edition, *Upload File* und *Update Firmw* –
+beide öffnen nur eine Webseite, die du von einem anderen Gerät aus
+bedienen müsstest; nimm stattdessen den in diesem Anhang beschriebenen
+USB-Installer. Beide Editionen
 werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen
 ihnen wechseln: Deine Einstellungen bleiben erhalten, aber die
 Accessibility Edition belegt mit ihren Sprachdateien jenen Platz, in dem
