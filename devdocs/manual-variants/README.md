@@ -30,6 +30,14 @@ the web, and EPUB for reflowable reading — which is also the format a screen
 reader and a braille display handle best. The accessibility edition is built in
 all three.
 
+Every EPUB is validated with **epubcheck** as it is built (`brew install
+epubcheck`); the build fails and deletes the file if it does not validate.
+Without epubcheck installed the build falls back to a plain XHTML syntax check,
+so it still works, just with weaker checking. This exists because pandoc passes
+raw HTML through unchecked: a bare `<br>` instead of `<br/>`, or a `--` inside
+an HTML comment, produces an EPUB that a reader refuses to render — both of
+which shipped once and were found in Apple Books rather than by the build.
+
 | | combined | classic | pocket | pocket-a11y |
 |---|---:|---:|---:|---:|
 | English | 114 pages | 86 | 101 | 75 |

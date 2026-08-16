@@ -5,8 +5,10 @@
 #
 # Requirements:
 #   - pandoc
-#   - weasyprint (pip install weasyprint)
-#   - Lato font installed
+#   - weasyprint (pip install weasyprint)      for PDF
+#   - Lato font installed                      for PDF
+#   - epubcheck (brew install epubcheck)       for EPUB; optional, but then the
+#                                              EPUBs are only syntax-checked
 #
 # Usage:
 #   ./build.sh                     # both languages, PDF, combined manual
@@ -220,11 +222,33 @@ build_pdf() {
             "${variant_filter[@]}" \
             $lua_filter \
             2>&1 || { echo "ERROR: pandoc failed for $lang (epub)"; return 1; }
-        # An EPUB is a zip of XHTML, and XHTML is XML: one stray <br> instead
-        # of <br/> and a reader shows "Opening and ending tag mismatch" instead
-        # of the page. Pandoc passes raw HTML through untouched and does not
-        # check it, so verify here rather than let a reader find out.
-        if command -v python3 >/dev/null 2>&1; then
+        # Validate before anyone reads it. An EPUB is a zip of XHTML, and
+        # XHTML is XML: pandoc passes raw HTML through untouched and never
+        # checks it, so a raw <br> or a "--" inside an HTML comment produces a
+        # file that a reader refuses to render. Willi found exactly that in
+        # Apple Books, which is later than anyone should find out.
+        #
+        # epubcheck is the real validator -- it checks the package, the
+        # metadata, the spine and the XHTML. --locale en keeps the output the
+        # same on a German Mac as in a CI log. --failonwarnings is deliberate:
+        # the manuals are at zero warnings today, so any new one is worth
+        # stopping for. If a benign warning ever blocks a release, drop that
+        # flag rather than ignore the output.
+        #
+        # Without epubcheck (it needs Java) fall back to parsing the XHTML with
+        # python, which still catches the malformed-markup class of error.
+        if command -v epubcheck >/dev/null 2>&1; then
+            echo "Validating $epub_output with epubcheck..."
+            if ! epubcheck --locale en --failonwarnings "$epub_output"; then
+                echo "ERROR: epubcheck rejected $epub_output"
+                echo "   Two causes account for nearly all markup failures:"
+                echo "     - a raw <br> in the Markdown, which has to be <br/>;"
+                echo "     - a '--' inside an HTML comment, which XML forbids."
+                rm -f "$epub_output"
+                return 1
+            fi
+        elif command -v python3 >/dev/null 2>&1; then
+            echo "  (epubcheck not found - falling back to an XHTML syntax check)"
             if ! python3 - "$epub_output" <<'PYCHECK'
 import sys, zipfile, xml.etree.ElementTree as ET
 bad = []
@@ -249,7 +273,7 @@ PYCHECK
                 return 1
             fi
         else
-            echo "  (python3 not found - skipping the EPUB well-formedness check)"
+            echo "  (neither epubcheck nor python3 found - EPUB not validated)"
         fi
 
         echo "Successfully created $epub_output"

@@ -38,13 +38,22 @@ Each folder holds the sources as well as the built manual:
 
 ## Building it yourself
 
-Needs `pandoc`, `weasyprint` and the Lato font.
+Needs `pandoc`; `weasyprint` and the Lato font for PDF; `epubcheck`
+(`brew install epubcheck`) to validate EPUBs — without it they are still built,
+just checked less thoroughly.
 
 ```bash
 cd "Version 9.x"
-./build.sh            # both languages, PDF
-./build.sh en html    # English, HTML only
+./build.sh                     # both languages, PDF, all models
+./build.sh en html             # English, HTML only
+./build.sh en pdf pocket       # just the Pocket manual
+./build.sh all epub all        # every language x every model, as EPUB
 ```
+
+The third argument selects the hardware variant — `combined` (the default, all
+models), `classic`, `pocket`, `pocket-a11y`, or `all`. Variants are produced by
+filtering one tagged source with `variant.lua`; see
+[`devdocs/manual-variants/`](../../devdocs/manual-variants/).
 
 ## Maintenance scripts
 
