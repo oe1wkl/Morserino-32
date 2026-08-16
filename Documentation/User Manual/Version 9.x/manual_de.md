@@ -36,12 +36,23 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=e00c298c11bf v=9 -->
+<!-- WHATSNEW:BEGIN en=837eea6f6d60 v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
 -   Nur M32 Pocket: Das Installationsprogramm kann nun auch die **Accessibility Edition** installieren, die Menüs und Einstellungen für blinde und sehbehinderte Operatoren laut vorliest (die Spiele sind darin nicht enthalten). Standard- und Accessibility Edition werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln; deine Einstellungen bleiben erhalten.
+-   Es gibt jetzt drei Ausgaben des Handbuchs, jede in zwei Sprachen (Englisch und Deutsch): eine für den „klassischen“ Morserino-32 (1st und 2nd Edition), eine für den M32 Pocket und eine für die Accessibility Edition des M32 Pocket. Jede Ausgabe lässt jene Teile weg, die für die betreffende Hardware bzw. Firmware nicht relevant sind.
+-   Das neue Firmware-Update-Programm und das Konfigurationsprogramm verweisen jetzt auf die jeweils passende Ausgabe des Handbuchs.
+-   Erweiterte BLE-Funktionen. Neben der Ausgabe als BLE-Tastatur gibt es nun auch die Möglichkeit, BLE für das serielle Protokoll zu verwenden. Damit lassen sich Programme schreiben (oder portieren), die kabellos arbeiten, auch auf tragbaren Geräten wie Smartphones oder Tablets.
+-   Nur M32 Pocket: Die Zeitkonstante der Blackman-Harris-Tonformung, die für die „Weichheit“ des CW-Audios sorgt (Ton ohne Klicks), lässt sich jetzt einstellen. Der Vorgabewert ist 5 ms, du kannst ihn zwischen 1 und 9 ms verändern (1 ms ist ziemlich hart, mit Klicks, während 9 ms für schnelles CW eindeutig zu lang ist).
+-   Nur M32 Pocket: Wenn du mit dem Koch-Trainer übst, zeichnet der M32 Pocket eine Statistik über deine Leistung auf; du kannst sie entweder über das Konfigurationsprogramm ansehen oder über den eingebauten Webserver des M32, also mit einem Browser.
+-   Nur M32 Pocket: Nach einer Firmware-Installation mit der Lösch-Option (oder einer Installation auf ein ganz neues Gerät) dauerte es bis zu 10 Sekunden, bis am Bildschirm etwas zu sehen war, während das nichtflüchtige Dateisystem vorbereitet wurde. Damit keine Panik aufkommt, wird in solchen Fällen jetzt ein abgewandelter Startbildschirm mit einem erklärenden Hinweis angezeigt.
 -   Das Installationsprogramm funktioniert jetzt auch in **Firefox** (ab Version 151, die die Unterstützung für die Webserial-API gebracht hat), zusätzlich zu Chrome, Edge und Opera. Safari unterstützt es weiterhin nicht.
+-   Custom Characters verhält sich jetzt wie jede andere eingebaute Koch-Reihenfolge: Du kannst Lektion auswählen, neues Zeichen lernen und die übrigen Koch-Modi genauso verwenden wie bei den eingebauten Koch-Sequenzen.
+-   Es gibt eine neue Funktion namens „Practice Sets“, die an die Stelle der bisherigen Custom-Zeichensätze tritt. Damit kannst du eine Auswahl einzelner Zeichen üben, die du direkt am Gerät zusammenstellst und dann im CW-Generator oder im Echo-Trainer verwendest.
+-   Am Display werden Wörter am Zeilenende nicht mehr getrennt, sondern in einer neuen Zeile begonnen, sofern die Wortlänge vorher bekannt ist (alle CW-Generator-Modi sowie Trx-Modi wie LoRa oder WiFi Trx) und das Wort nicht mehr in die aktuelle Zeile passt.
+-   „Select Lesson“ zeigt jetzt auch die Gesamtzahl der Zeichen in der gewählten Koch-Sequenz an.
+-   Ein paar weitere kosmetische Korrekturen bei der Bildschirmausgabe.
 <!-- WHATSNEW:END -->
 
 # Anschlüsse und Bedienelemente
@@ -3340,7 +3351,7 @@ daher für alle Modi des Morserino-32.
 |---|---|---|
 | **Encoder Click** | Das Drehen des ENCODERs kann einen kurzen Ton erzeugen oder stumm sein. | Off / **On** |
 | **Tone Pitch Hz** | Die Frequenz des Mithörtons in Hz. | Eine Reihe von Tönen zwischen 233 und 932 Hz, entsprechend den Noten der F-Dur-Tonleiter von Bb3 bis Bb5 (2 Oktaven). |
-| []{.pocket .pocket-a11y}**Tone Softness** | (Nur für M32 Pocket) Rundet Anstiegs- und Abfallflanke des Mithörtons ab, ähnlich wie ein RC-Tiefpass die Tastflanken bei einem echten Transceiver abrundet. Reduziert die Härte des Tons, besonders bei kurzen Elementen wie einem einzelnen Punkt. Wirkt sofort. | 1 – 10 ms, in Schritten von 1 ms (**5 ms**) |
+| []{.pocket .pocket-a11y}**Tone Softness** | (Nur für M32 Pocket) Rundet Anstiegs- und Abfallflanke des Mithörtons ab, ähnlich wie ein RC-Tiefpass die Tastflanken bei einem echten Transceiver abrundet. Reduziert die Härte des Tons, besonders bei kurzen Elementen wie einem einzelnen Punkt. Wirkt sofort. | 1 – 9 ms, in Schritten von 1 ms (**5 ms**) |
 | **Time Out** | Wenn die hier eingestellte Zeit verstreicht, ohne dass das Display aktualisiert wird, wechselt das Gerät in den Tiefschlaf. Durch Drücken der FN-Taste kann es wieder gestartet werden. | No timeout / **5 min** / 10 min / 15 min |
 | **Quick Start** | Ermöglicht es, die anfängliche Menüauswahl zu umgehen: Bei aktivierter Option (**ON**) startet das Gerät beim Einschalten sofort mit dem zuletzt aktiven Modus. | ON / **OFF** |
 | **Output Case** | Ändert die Groß-/Kleinschreibung der dekodierten Zeichen auf dem Display (und auch bei der seriellen Ausgabe über USB sowie bei der Bluetooth-Tastaturausgabe!) von Kleinbuchstaben auf GROSSBUCHSTABEN. | **lower** / UPPER |

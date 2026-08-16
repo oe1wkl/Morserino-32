@@ -4,9 +4,23 @@
 #### New Features:
 * A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
 * M32 Pocket only: the installer can now also install the **Accessibility Edition**, which speaks the menus and settings aloud for blind and partially sighted operators (the games are not included in it). Standard and Accessibility Edition are offered for the same device and you can move between them at any time; your settings are kept.
+* There are now three versions of the user manual, each in two languages (English and German): one for the "classic" Morserino-32 (1st and 2nd edition), one for M32 Pocket, and one for the Accessibility Edition of the M32 Pocket. Each variant leaves out the parts that are not relevant for that particular hardware/firmware. 
+* The new firmware update utility and the configuration utility now provide links to the respective version of the user manual.
+* Extended BLE features. Apart from BLE Keyboard output, there is now also the capability of using BLE for the serial protocol. This means utilities can be written (or ported) to use cable-less connectivity, also to portable devices like phones or tablets.
+* M32 Pocket only: It is now possible to set the time constant for the Blackman-Harris tone shaping, which is responsible for the „softness“ of CW Audio (tone without clicks). The default is 5 ms, you can change that between 1 and 9 ms (1ms is rather hard, with clicks, while 9ms is definitely too long for high speed CW).
+* M32Pocket only: When you practice with the Koch trainer, the M32Pocket will record statistics about performance; these can either be looked at through the Configuration Tool, or via the M32’s built in web server, so you can use a browser to view the statistics.
+* M32Pocket only: after a firmware install with the erase option (or a firmware install to a completely new device), it took up to 10 seconds until something was visible on the screen, while the non-volatile file system was being prepared. To avoid panic, a modified splash with some informative message is being displayed now in such cases.
 
 #### Feature Modifications:
 * The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
+* Custom Characters is now working like any other built-in Koch order, you can use select lesson, learn new character and the other Koch modes in the same way as with the built-in Koch sequences.
+* There is a new feature called „Practice Sets“ that takes the place of the previous Custom character sets, which allows you to train a subset of individual characters which you pick directly on the device and then you can use them for CW generator or Echo Trainer.
+* On the display, words are not broken up at the end of a line, but starting at a new line whenever the word length is known in advance (all CW generator modes, and Trx modes like LoRa or WiFi Trx), and the word would not fit into the current line.
+* „Select Lesson“ now also shows the total # of characters in the selected Koch sequence.
+* A few more cosmetic display output fixes.
+
+#### Bug Fixes:
+* M32 Pocket only: There was a bug in Morse Invaders - even when you started a game with a level higher than 1, the speed was initially like Level 1, and only after going into the next level, the speed was the expected one. Fixed.
 
 ### CHANGES V. 8.2
 
