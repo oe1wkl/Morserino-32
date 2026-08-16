@@ -5,12 +5,18 @@ Here on GitHub you will find both software and documentation of both hardware an
 
 ## User Manual
 
-- **English —** <https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_EN.pdf>
-- **Deutsch —** <https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_DE.pdf>
+There is one manual per Morserino, so you only read what applies to your device.
 
-Both links always give you the manual for the latest released firmware, so they
-are safe to bookmark or to pass on. Sources, older versions and the French and
-Spanish translations are in [Documentation/User Manual](Documentation/User%20Manual/).
+| Your Morserino | English | Deutsch |
+|---|---|---|
+| **Morserino-32 Pocket** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.epub) |
+| **Morserino-32, 1st / 2nd edition** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.epub) |
+| **Pocket, Accessibility Edition** | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) |
+
+Every link always gives you the manual for the latest released firmware, so they
+are safe to bookmark or to pass on. The version and the edition are printed on
+the title page. Sources, older versions and the French and Spanish translations
+are in [Documentation/User Manual](Documentation/User%20Manual/).
 
 ## Install or update the firmware
 

@@ -2,17 +2,32 @@
 
 ## Get the current manual
 
-These two links always resolve to the manual for the **latest released
-firmware**. They do not change when a new version comes out, so they are safe to
-bookmark, to put on a web page, or to post to the user group:
+The manual is built once per Morserino, so you only read what applies to your
+device. These links always resolve to the manual for the **latest released
+firmware** — they never change, so they are safe to bookmark, to put on a web
+page, or to post to the user group.
 
-- **English —** <https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_EN.pdf>
-- **Deutsch —** <https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_DE.pdf>
+| Your Morserino | English | Deutsch |
+|---|---|---|
+| **Morserino-32 Pocket** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.epub) |
+| **Morserino-32, 1st / 2nd edition** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.epub) |
+| **Pocket, Accessibility Edition** | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) |
 
-The version and the month the manual was produced are printed on its title page.
+The version, the month and which edition it is are printed on the title page.
 
-Beta releases are not picked up by these links — they always give you the
+**Which one do I want?** The Pocket is the newer, smaller model with a colour
+screen; the 1st and 2nd editions are the earlier ones with the small
+monochrome display and a LoRa antenna socket. The **Accessibility Edition**
+matches the firmware of the same name, which speaks the interface aloud for
+blind and partially sighted operators — EPUB is listed first there because a
+screen reader and a braille display handle it far better than a PDF.
+
+Beta releases are not picked up by these links: they always give you the
 current stable manual.
+
+A combined manual covering all three models is still built and kept in the
+repository (`m32UserManual_v<N>_{en,de}.pdf`), but it is not part of a
+release.
 
 ## Why there is a folder per version
 

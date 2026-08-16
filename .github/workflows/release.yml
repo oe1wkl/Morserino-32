@@ -146,43 +146,72 @@ jobs:
           ls -la /tmp/release-stage
 
       # ──────────────────────────────────────────────────────────────────
-      # 7. Rebuild PDFs (User Manual EN + DE) for the major version
+      # 7. Rebuild the user manuals for the major version
       # ──────────────────────────────────────────────────────────────────
-      - name: Rebuild User Manual PDFs
+      # One tagged source per language builds a manual per hardware variant
+      # (see devdocs/manual-variants/). The release ships those, not a single
+      # manual covering every model: a Pocket owner should not have to read
+      # past LoRa chapters their device does not have, and the accessibility
+      # edition differs again.
+      #
+      # Asset names carry no version number, which is what makes them
+      # permalinks — GitHub resolves
+      #   .../releases/latest/download/<asset-name>
+      # to the newest non-prerelease release, but only while the name stays the
+      # same from release to release. Nothing is lost by dropping the version:
+      # every manual states it on its title page, along with the build month
+      # and which variant it is.
+      #
+      #   .../releases/latest/download/Morserino-32_User_Manual_Classic_EN.pdf
+      #   .../releases/latest/download/Morserino-32_User_Manual_Pocket_EN.pdf
+      #   .../releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.epub
+      #   ... and the DE equivalents, in .pdf and .epub
+      #
+      # The combined manual is still built and committed to the repository --
+      # it is what someone browsing the tree sees, and what the build-identity
+      # check compares against -- it is simply not a release asset.
+      - name: Rebuild user manuals
         shell: bash
         run: |
           set -euo pipefail
-          MANUAL_DIR="Documentation/User Manual/Version ${{ steps.parse.outputs.major }}.x"
+          MAJOR="${{ steps.parse.outputs.major }}"
+          MANUAL_DIR="Documentation/User Manual/Version ${MAJOR}.x"
           if [[ ! -d "$MANUAL_DIR" ]]; then
               echo "User manual directory not found: $MANUAL_DIR" >&2
               echo "Add the per-major-version folder before tagging." >&2
               exit 1
           fi
-          (cd "$MANUAL_DIR" && ./build.sh)
-          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_en.pdf" /tmp/release-stage/
-          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_de.pdf" /tmp/release-stage/
 
-          # Second, version-less copy of each manual. This is what makes a
-          # permalink possible: GitHub resolves
-          #   .../releases/latest/download/<asset-name>
-          # to the newest non-prerelease release, but only if the asset name
-          # stays the same from release to release — 'm32UserManual_v9_en.pdf'
-          # would break the link at V10. So both names are uploaded: the
-          # versioned one keeps existing links working, the stable one is the
-          # address to put on morserino.info and in groups.io posts:
-          #
-          #   https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_EN.pdf
-          #   https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_DE.pdf
-          #
-          # Nothing is lost by dropping the version from the filename: the
-          # title page carries the version and the build month, and since the
-          # title pages became templates that can no longer go stale.
-          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_en.pdf" \
-             /tmp/release-stage/Morserino-32_User_Manual_EN.pdf
-          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_de.pdf" \
-             /tmp/release-stage/Morserino-32_User_Manual_DE.pdf
+          # Combined build first: step 12 syncs these back to the default branch.
+          (cd "$MANUAL_DIR" && ./build.sh all pdf combined)
+          (cd "$MANUAL_DIR" && ./build.sh all html combined)
 
-      # ──────────────────────────────────────────────────────────────────
+          # Then the three variants, as PDF and EPUB.
+          (cd "$MANUAL_DIR" && ./build.sh all pdf all)
+          (cd "$MANUAL_DIR" && ./build.sh all epub all)
+
+          # Stage under permalink names. The key is the variant, the value the
+          # name a reader downloads.
+          for lang in en de; do
+              LANG_UC=$(echo "$lang" | tr '[:lower:]' '[:upper:]')
+              for pair in "classic:Classic" "pocket:Pocket" "pocket-a11y:Pocket_Accessible"; do
+                  variant="${pair%%:*}"
+                  label="${pair##*:}"
+                  for ext in pdf epub; do
+                      src="$MANUAL_DIR/m32UserManual_v${MAJOR}_${lang}_${variant}.${ext}"
+                      dst="/tmp/release-stage/Morserino-32_User_Manual_${label}_${LANG_UC}.${ext}"
+                      if [[ ! -f "$src" ]]; then
+                          echo "Expected manual not built: $src" >&2
+                          exit 1
+                      fi
+                      cp "$src" "$dst"
+                  done
+              done
+          done
+
+          echo "--- staged manuals ---"
+          ls -1 /tmp/release-stage/Morserino-32_User_Manual_*
+
       # 8. Stage Pocket FAQ PDF (copy-as, per §6 Phase 1)
       # ──────────────────────────────────────────────────────────────────
       - name: Stage Pocket FAQ
@@ -252,10 +281,8 @@ jobs:
           ASSETS=(
               /tmp/release-stage/fw_m32*.bin
               /tmp/release-stage/fs_m32pa11y*.bin
-              /tmp/release-stage/m32UserManual_v*_en.pdf
-              /tmp/release-stage/m32UserManual_v*_de.pdf
-              /tmp/release-stage/Morserino-32_User_Manual_EN.pdf
-              /tmp/release-stage/Morserino-32_User_Manual_DE.pdf
+              /tmp/release-stage/Morserino-32_User_Manual_*.pdf
+              /tmp/release-stage/Morserino-32_User_Manual_*.epub
               /tmp/release-stage/Morserino-32.Pocket.FAQ.pdf
           )
 
