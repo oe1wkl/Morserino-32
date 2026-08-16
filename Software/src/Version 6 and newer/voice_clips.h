@@ -299,6 +299,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Mixed", "699b4f79"},
   {"Morse Invaders", "62b14d61"},
   {"Morsel", "77c0c2db"},
+  {"Morserino 32 accessibility edition", "7c18d4c3"},
   {"N America", "122c4611"},
   {"NO SNAPSHOTS", "ef59a97a"},
   {"Narrow", "4a7ab319"},
@@ -396,6 +397,9 @@ static const VoiceEntry voiceLookup[] = {
   {"Zulu", "68046733"},
   {"a umlaut", "da9f7419"},
   {"at sign", "040579cc"},
+  {"battery", "20c1d187"},
+  {"battery empty", "528b14be"},
+  {"beta", "987bcab0"},
   {"char", "a956161a"},
   {"characters", "2593c7ce"},
   {"clear all", "92e522e9"},
@@ -415,13 +419,16 @@ static const VoiceEntry voiceLookup[] = {
   {"o umlaut", "2e8ebc76"},
   {"of", "8bf8854b"},
   {"plus", "d7d18cfb"},
+  {"point", "78ee54aa"},
   {"pro sign", "ffcdbd79"},
   {"question mark", "59b40a4d"},
   {"slash", "9fbbaa4c"},
   {"u umlaut", "cfdb81f4"},
+  {"version", "2af72f10"},
+  {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 413;
+static const unsigned int voiceLookupCount = 420;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

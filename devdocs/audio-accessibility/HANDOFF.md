@@ -1,10 +1,11 @@
 # M32 Pocket Audio Accessibility — Handoff / Quick Resume
 
-**Branch `V9.0`** (off master after the 8.2-beta prep). Read this first when resuming;
+**On `master`** (the V9.0 branch was merged and retired on 2026-07-22 — master is the single
+trunk, and it *is* the Accessibility Edition's source). Read this first when resuming;
 [`IMPLEMENTATION_PLAN.md`](IMPLEMENTATION_PLAN.md) has the phase detail and
 [`FEASIBILITY_REPORT.md`](FEASIBILITY_REPORT.md) the original analysis.
 
-## Where it stands (2026-07-03)
+## Where it stands (2026-08-14)
 
 A working M32 Pocket "Accessibility" firmware that **speaks menu and preference entries**
 out loud. Built, flashed, and exercised on real hardware; first blind-user session held.
@@ -34,6 +35,30 @@ out loud. Built, flashed, and exercised on real hardware; first blind-user sessi
 - Diag build: uncomment `-D CONFIG_AUDIO_A11Y_DIAG=1` in `platformio.ini` → per-clip heap
   trace on serial (verify the leak is gone: scroll ~100 entries, heap should be flat).
 
+- **Spoken splash, spoken menu path, no browser-only entries** (2026-08-14) — three fixes to
+  what a blind operator meets first, at power-on:
+  * **The boot splash speaks** (`announceSplash()` in `m32_v6.ino`): *"Morserino 32
+    accessibility edition, version 9 point 0 beta, battery 4 point 1 volts"* — identity,
+    version and the same 50 mV-quantised voltage the screen shows, composed from number atoms
+    so no version bump or reading needs a new clip. It plays through the splash and on into
+    the menu; **any button or encoder action cuts it** (`MorseVoice::stop()` in `menu_()`),
+    so it never stands between the user and the device. The low-battery screen — which is a
+    dead end, the device sleeps right after — now says *"battery empty"*. The splash's plain
+    `delay()`s became `splashPause()`, which turns `MorseVoice::tick()` while it waits: that
+    is what actually starts and advances the clips. Content is ~12 s if heard to the end;
+    trim it by deleting lines in `announceSplash()`.
+  * **The menu names its path** when the listener cannot already know it: at power-on the
+    device can come up deep inside a branch, where a bare *"Call Signs"* said nothing about
+    CW Generator vs Echo Trainer. `menuDisplay()` now leads with the ancestors whenever the
+    branch changed *and* we did not just descend into it (`a11yMenuParent`/`a11yLastEntry`,
+    reset on entering `menu_()` and on leaving the preferences). Scrolling within a level
+    stays terse; stepping back up a level names the path again.
+  * **`Upload File` / `Update Firmw` are gone from this build** (`CONFIG_AUDIO_A11Y` in the
+    `menuNo` enum, `menuN`, `menuText[]`/`menuNav[]`, and the three `case` sites). Both only
+    raise a WiFi AP and hand the job to a browser on another device — nothing to hear or
+    operate on the M32 itself. Firmware goes over USB. Side effect: menu indices shift, so
+    `readPreferences()` now bounds the stored `lastExecuted` against `menuN` (a pointer left
+    by a *different* edition of the firmware would otherwise index past `menuNav[]`).
 - **Composed value lines wired** (2026-08-13): the dynamic preference values — Koch lesson,
   snapshot slot, practice-set size — were *silent*, because `announce()` only matches a whole
   string and these are assembled at runtime. They are now composed from number / character
@@ -43,8 +68,8 @@ out loud. Built, flashed, and exercised on real hardware; first blind-user sessi
   firmware's real `extraItems[]` instead of a hand-kept list that had drifted from it.
 
 **Known-open (see "Open items"):** verify freeze fix + new EQ on device; message coverage
-(serial-protocol texts, decided 2026-07-03); decoder char-by-char; battery-voltage readout;
-release/flash site.
+(serial-protocol texts, decided 2026-07-03); decoder char-by-char; the `posVAdjust`
+millivolt readout; release/flash site.
 
 ## Build & flash (USB, from `Software/src/`)
 
@@ -77,6 +102,7 @@ Master *is* the Accessibility Edition, so new UI text is mute until it has a cli
 |---|---|
 | Preference, option value, menu entry | Re-run the extractor + generator (above). Cryptic `parName`? add `parameter.spokenName` first. |
 | **On-screen message / status response** | **Manual work** — the extractor cannot see display calls. Voice it via the serial-protocol stream (see Open items §2). |
+| A phrase you announce from code, in no table | Add it to a list in the extractor (`SPLASH_WORDS` is the precedent — the boot splash is drawn, not table-driven), then re-run extractor + generator. |
 | Text inside a game (`CONFIG_CW_GAME`) | Nothing — compiled out of this build. |
 
 **Cheap check:** re-run `extract_voice_strings.py`, then `git diff voice_strings.txt`.
@@ -90,7 +116,8 @@ in this build) plus 3 game entries. Exactly what this checklist exists to preven
 ## Architecture (one paragraph)
 
 The firmware tables (`menuText[]`, `pliste[]` with the new `parameter.spokenName`) are the
-source of truth. `extract_voice_strings.py` emits one MP3 per distinct string + a generated
+source of truth, plus a few hand-listed phrase groups for text that lives in no table
+(`UNIT_WORDS`, `SPLASH_WORDS`). `extract_voice_strings.py` emits one MP3 per distinct string + a generated
 `voice_clips.h` (firmware UI string → 8-hex clip id, **plus** `voiceCharLookup[]`: raw
 character → clip-id *sequence*) and `voice_manifest.json`. On device, `MorseVoice::announce()`
 binary-searches `voice_clips.h`, `announceMoreChar()` linear-scans `voiceCharLookup[]` to spell
@@ -98,7 +125,8 @@ a character out, and `tick()` (polled from the menu + preference loops) plays
 `/voice/<id>.mp3` via `MorseOutput::voiceStart/Service/Stop` → the **vendored, patched**
 `cw-i2s-sidetone` library (`Software/src/vendor/`, a Pocket-scoped `symlink://` dep) which got
 non-blocking `startClip/serviceClip/stopClip`. Clips are flashed into a large SPIFFS in a
-custom partition (`m32pocket_accessibility.csv`); games + WiFi-AP update are stripped from this build.
+custom partition (`m32pocket_accessibility.csv`); games and the two WiFi-AP entries
+(Upload File / Update Firmw) are stripped from this build.
 
 ## Open items (rough priority)
 
@@ -120,9 +148,10 @@ custom partition (`m32pocket_accessibility.csv`); games + WiFi-AP update are str
    char → NATO-phonetic / "pro sign" sequence). **Still open: decoder output**, which needs
    the same hook driven from the decode path rather than the preferences menu.
 4. **Composed numbers / snapshots** — *done* (2026-08-13) for Koch lesson, snapshot slot and
-   practice-set size, via `announceValue()` in `MorsePreferences.cpp`. **Still open: the
-   battery readout** (`posVAdjust`, "3980 mV") — integer atoms only go to 250, so it needs a
-   digit-spelling path.
+   practice-set size, via `announceValue()` in `MorsePreferences.cpp`; the boot splash speaks
+   the battery the same way (2026-08-14, "4 point 1 volts" — whole volts and tenths are inside
+   the integer-atom range). **Still open: the `posVAdjust` calibration readout** ("3980 mV") —
+   integer atoms only go to 250, so that one needs a digit-spelling path.
 5. **Action-pref labels** — *done* (2026-08-13): extra items announce their heading on entry,
    and the extractor reads `extraItems[]` from the firmware, so a cryptic display label is
    fixed with an `ACTION_SPOKEN` entry ("RECALLSnapshot" → "Recall snapshot").

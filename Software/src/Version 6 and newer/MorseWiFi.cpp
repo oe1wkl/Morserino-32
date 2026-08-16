@@ -702,12 +702,14 @@ void MorseWiFi::menuExec(uint8_t command) {
                         }
                       }
                       break;
+#ifndef CONFIG_AUDIO_A11Y                              // both entries are absent from that build
             case _wifi_upload:
                       MorseWiFi::uploadFile();       // upload a text file
                       break;
             case _wifi_update:
                       MorseWiFi::updateFirmware();   // run OTA update
                       break;
+#endif
 #ifdef CONFIG_PRACTICE_STATS
             case _wifi_stats:
                       MorseWiFi::viewStats();        // serve the Practice Stats web page

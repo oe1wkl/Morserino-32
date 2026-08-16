@@ -23,7 +23,10 @@
 // phonetic letters). announce() starts a new pending utterance; announceMore() appends to it.
 // Once navigation settles, tick() plays the pending utterance clip-by-clip (no mid-clip
 // interrupt -- tearing the decoder down mid-play races the audio task). Latest pending wins.
-#define MV_MAX 8
+// 12 slots: the longest utterance is the boot splash ("Morserino 32 accessibility edition,
+// version 9 point 0 beta, battery 4 point 1 volts" = 11 clips). Anything past MV_MAX is
+// silently dropped, so keep a slot or two of headroom.
+#define MV_MAX 12
 static char     seq[MV_MAX][9];            // active utterance (ids being played)
 static int      seqLen = 0, seqPos = 0;
 static char     pend[MV_MAX][9];           // pending utterance (awaiting its settle window)

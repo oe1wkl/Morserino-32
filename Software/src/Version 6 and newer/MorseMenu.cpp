@@ -133,8 +133,10 @@ const char* const menuText[menuN]  = {
     "Disp MAC Addr",
     "Config WiFi",
     "Check WiFi",
+#ifndef CONFIG_AUDIO_A11Y                    // not in the Accessibility Edition (see morsedefs.h)
     "Upload File",
     "Update Firmw",
+#endif
     "Wifi Select",
 #ifdef CONFIG_PRACTICE_STATS
     "Practice Stats",
@@ -151,6 +153,15 @@ const char* const menuText[menuN]  = {
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
+
+// The WiFi ring's left-hand neighbour of "Wifi Select": normally "Update Firmw", but the
+// Accessibility Edition drops that entry and "Upload File" with it (see morsedefs.h), so
+// the ring closes over "Check WiFi" instead.
+#ifdef CONFIG_AUDIO_A11Y
+  #define _wifi_beforeSelect _wifi_check
+#else
+  #define _wifi_beforeSelect _wifi_update
+#endif
 
 bool EspNowIsActive = false;
 
@@ -234,16 +245,19 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
    {1,_wifi_select,_wifi_config,_wifi,0},                // 36 Disp Mac  -e!!
 #endif
   {1,_wifi_mac,_wifi_check,_wifi,0},                    // 37 Config Wifi    --NE!
+#ifdef CONFIG_AUDIO_A11Y
+  {1,_wifi_config,_wifi_select,_wifi,0},                // 38 Check WiFi  -e!! (right skips the two dropped entries)
+#else
   {1,_wifi_config,_wifi_upload,_wifi,0},                // 38 Check WiFi  -e!!
   {1,_wifi_check,_wifi_update,_wifi,0},                 // 39 Upload File    --NE!
-#ifdef CONFIG_PRACTICE_STATS
   {1,_wifi_upload,_wifi_select,_wifi,0},                // 40 Update Firmware  --NE!
-  {1,_wifi_update,_wifi_stats,_wifi,0},                 // 41 Select network  --NE!! (next now wraps via Practice Stats)
+#endif
+#ifdef CONFIG_PRACTICE_STATS
+  {1,_wifi_beforeSelect,_wifi_stats,_wifi,0},           // 41 Select network  --NE!! (next now wraps via Practice Stats)
   {1,_wifi_select,_wifi_mac,_wifi,0},                   // Practice Stats  (inserted after Select network, wraps to Disp Mac)
   {0,_wifi,_keyer,_dummy,0},                            // 42 goto sleep  -e
 #else
-  {1,_wifi_upload,_wifi_select,_wifi,0},                // 40 Update Firmware  --NE!
-  {1,_wifi_update,_wifi_mac,_wifi,0},                   // 41 Select network  --NE!!
+  {1,_wifi_beforeSelect,_wifi_mac,_wifi,0},             // 41 Select network  --NE!!
   {0,_wifi,_keyer,_dummy,0},                            // 42 goto sleep  -e
 #endif
 #ifdef CONFIG_CW_GAME
@@ -258,6 +272,15 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 
 //String MorseMenu::cmdPath;   // used to create string for json
 
+#ifdef CONFIG_AUDIO_A11Y
+// a11y: what was said last - the menu entry, and the parent it hung off (0xFF = nothing yet).
+// menuDisplay() uses the pair to decide whether the announcement needs to name the whole path.
+// Forgetting them forces the next announcement to name it - what you want after arriving from
+// somewhere else (power-on, returning from a mode, leaving the preferences menu).
+static uint8_t a11yMenuParent = 0xFF, a11yLastEntry = 0xFF;
+static void a11yForgetMenuContext() { a11yMenuParent = a11yLastEntry = 0xFF; }
+#endif
+
 ////// The MENU
 
 
@@ -271,6 +294,9 @@ void MorseMenu::menu_() {
    uint8_t disp = 0;
    int t, command;
    m32state = menu_loop;
+#ifdef CONFIG_AUDIO_A11Y
+   a11yForgetMenuContext();     // arriving from a mode (or from power-on): announce the full path
+#endif
    // Persist a volume changed in the mode we just left. The in-mode save only fires on
    // the vol-button toggle back to speed mode; every other exit (long-press to menu,
    // decoder mode, games, QSO bot) would otherwise lose the change on reboot.
@@ -372,6 +398,14 @@ void MorseMenu::menu_() {
             command = Buttons::modeButton.clicks;
         }
 
+#ifdef CONFIG_AUDIO_A11Y
+        // Any button press means the user is done listening: cut whatever is still being
+        // said, so what they do next is spoken straight away. This is what keeps the boot
+        // splash (~10 s of speech) from standing between them and the device. A no-op when
+        // nothing is playing, and the menu's own announcements are far too short to need it.
+        if (command)
+            MorseVoice::stop();
+#endif
         switch (command) {                                          // actions based on encoder button
           case 2: // the top menu always offers ALL preferences. A cancelled mode start
                   // (menuExec() returning false after it already set its mode-specific
@@ -379,6 +413,9 @@ void MorseMenu::menu_() {
                   MorsePreferences::setCurrentOptions(MorsePreferences::allOptions, MorsePreferences::allOptionsSize);
                   if (MorsePreferences::setupPreferences(MorsePreferences::newMenuPtr))                       // all available options when called from top menu
                     MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
+#ifdef CONFIG_AUDIO_A11Y
+                  a11yForgetMenuContext();      // back from the preferences menu: name the path again
+#endif
                   MorseMenu::menuDisplay(MorsePreferences::newMenuPtr);
                   m32state = menu_loop;
                   break;
@@ -411,6 +448,9 @@ void MorseMenu::menu_() {
           default: break;
         }
        if ((t=checkEncoder())) {
+#ifdef CONFIG_AUDIO_A11Y
+          MorseVoice::stop();                    // navigating: drop leftover splash speech (see above)
+#endif
           MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);         /// click
           MorsePreferences::newMenuPtr =  menuNav [MorsePreferences::newMenuPtr][(t == -1) ? naviLeft : naviRight];
           MorseMenu::menuDisplay(MorsePreferences::newMenuPtr);
@@ -475,7 +515,27 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
             break;
   }
 #ifdef CONFIG_AUDIO_A11Y
-  MorseVoice::announce(menuText[ptr]);          // a11y: speak the highlighted menu entry
+  // a11y: speak the highlighted entry - preceded by the branch it hangs off whenever the
+  // listener cannot already know that branch. A sighted user reads it off the two lines above
+  // the highlighted entry; a blind one otherwise hears a bare "Call Signs" at power-on, with
+  // no way to tell CW Generator from Echo Trainer. The path is named when the branch changed
+  // AND we did not just descend into it from its own parent entry (that one was announced a
+  // click ago), so: full path after switching on, after coming back from a mode or from the
+  // preferences, and when stepping back up a level; terse "Call Signs" while scrolling
+  // through a level, and terse "Random" right after clicking into "CW Generator".
+  {
+    const uint8_t level = menuNav[ptr][naviLevel];
+    if (level > 0 && oneUp != a11yMenuParent && oneUp != a11yLastEntry) {
+        MorseVoice::announce(menuText[level == 2 ? twoUp : oneUp]);
+        if (level == 2)
+            MorseVoice::announceMore(menuText[oneUp]);
+        MorseVoice::announceMore(menuText[ptr]);
+    }
+    else
+        MorseVoice::announce(menuText[ptr]);       // at level 0 the entry already IS the path
+    a11yMenuParent = oneUp;
+    a11yLastEntry  = ptr;
+  }
 #endif
   if (protocolActive()) {
       //cmdPath = MorseMenu::getMenuPath(ptr);
@@ -899,8 +959,10 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       case  _wifi_mac:
       case  _wifi_config:
       case _wifi_check:
+#ifndef CONFIG_AUDIO_A11Y
       case _wifi_upload:
       case _wifi_update:
+#endif
 #ifdef CONFIG_PRACTICE_STATS
       case _wifi_stats:
 #endif
@@ -1010,8 +1072,10 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
   if (menuNav[ptr][naviDown] == 0) {
     switch (ptr) {
       case _wifi_config:      // these WiFi functions cannot be executed remotely
+#ifndef CONFIG_AUDIO_A11Y
       case _wifi_upload:
       case _wifi_update:
+#endif
       case _wifi_select:
 #ifdef CONFIG_PRACTICE_STATS
       case _wifi_stats:
