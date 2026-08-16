@@ -47,28 +47,42 @@ MANUAL = os.path.normpath(os.path.join(
 
 
 def build(lang, outdir):
-    """Run the same pandoc + weasyprint invocation build.sh uses."""
-    src = os.path.join(MANUAL, "manual_%s.md" % lang)
-    tmp_html = os.path.join(MANUAL, "_identitycheck_%s.html" % lang)
-    pdf = os.path.join(outdir, "check_%s.pdf" % lang)
+    """Build via the manual's own build.sh, in a throwaway copy of the sources.
 
-    cmd = ["pandoc", src, "-o", tmp_html, "--standalone", "--toc",
-           "--toc-depth=3", "--number-sections", "--css=style.css",
-           "--resource-path=.:images",
-           "--metadata", "title=%s" % ("Morserino-32 Benutzerhandbuch"
-                                       if lang == "de"
-                                       else "Morserino-32 User Manual"),
-           "--metadata", "lang=%s" % lang,
-           "--wrap=none", "--from", "markdown+fenced_divs",
-           "--include-before-body=%s" % ("title_de.html" if lang == "de"
-                                         else "title.html")]
-    if lang == "de":
-        cmd.append("--lua-filter=normalize_ids.lua")
-    subprocess.run(cmd, cwd=MANUAL, check=True)
-    subprocess.run(["weasyprint", tmp_html, pdf], cwd=MANUAL, check=True)
-    with open(tmp_html, encoding="utf-8") as fh:
+    Calling build.sh rather than reimplementing its pandoc invocation matters:
+    an earlier version of this script duplicated the command line, and when the
+    title pages became templates (@MAJOR@, @MONTH_YEAR@) the copy kept passing
+    the raw template to --include-before-body and "verified" a manual whose
+    title page read 'Version @MAJOR@.x'. One source of truth for the build.
+
+    The copy is so that the real manual_<lang>.html and the committed PDFs are
+    never touched. The temp directory keeps the 'Version <major>.x' name
+    because build.sh derives the major version, and so the PDF filename, from
+    it.
+    """
+    workdir = os.path.join(outdir, os.path.basename(MANUAL))
+    os.makedirs(workdir, exist_ok=True)
+    for name in ("manual_en.md", "manual_de.md", "title.html", "title_de.html",
+                 "style.css", "normalize_ids.lua", "build.sh"):
+        src = os.path.join(MANUAL, name)
+        if os.path.exists(src):
+            shutil.copy2(src, workdir)
+    images = os.path.join(MANUAL, "images")
+    if os.path.isdir(images):
+        shutil.copytree(images, os.path.join(workdir, "images"),
+                        dirs_exist_ok=True)
+    os.chmod(os.path.join(workdir, "build.sh"), 0o755)
+
+    subprocess.run(["./build.sh", lang], cwd=workdir, check=True,
+                   stdout=subprocess.DEVNULL)
+
+    major = re.search(r"Version (\d+)\.x", os.path.basename(MANUAL)).group(1)
+    pdf = os.path.join(workdir, "m32UserManual_v%s_%s.pdf" % (major, lang))
+    if not os.path.exists(pdf):
+        raise SystemExit("build.sh produced no %s" % os.path.basename(pdf))
+    with open(os.path.join(workdir, "manual_%s.html" % lang),
+              encoding="utf-8") as fh:
         markup = fh.read()
-    os.remove(tmp_html)
     return markup, pdf
 
 
