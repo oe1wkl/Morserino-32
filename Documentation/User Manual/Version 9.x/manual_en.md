@@ -39,7 +39,30 @@ What is new in Version 9?
 ::: {.pocket .pocket-a11y}
 ## M32Pocket
 
-![](images/m32pocket.jpg)
+![The M32 Pocket: a black 3D-printed case, seen from above at an angle. Its top face is mostly taken up by the display window; the rotary knob sits at the far end. Numbered labels 1 to 8 mark the connectors and controls listed in the table below.](images/m32pocket.jpg)
+
+<!-- TODO(Willi): this tactile description was drafted from the photograph and
+     the table below; the positions of the touch paddles and the FN button in
+     particular need checking against a real device before release. -->
+::: {.pocket-a11y}
+**Finding your way around the M32 Pocket by touch.** The case is a flat
+rectangle, about twice as long as it is wide, with the display taking up most
+of one large face. Hold it with that face up and the rotary knob at the far
+end, away from you.
+
+- The **short edge nearest you** carries four openings in a row. Starting from
+  the left corner: the flat, wide **USB-C** slot (1), then three round 3.5 mm
+  sockets — **external paddle or key** (2), **to TX** (3), and
+  **headphones / audio** (4) closest to the right corner.
+- The **left long edge** has a small recess with the **power slide switch**
+  (5), roughly two thirds of the way towards the far end. Pushed towards the
+  touch paddles is ON.
+- The **far short end** carries the **rotary ENCODER** (6) — the knurled knob,
+  which also presses in — with the **FN button** (8) beside it, integrated into
+  the case, and the **touch paddles** (7) on the top face in front of it.
+
+Everything below is described in the same order as the numbers in the table.
+:::
 
 | # | Connector / Control | Usage |
 |:---:|---|---|
@@ -58,7 +81,7 @@ What is new in Version 9?
 ::: {.classic}
 ## Morserino-32 2nd edition
 
-![](images/m32_2nd_edition.jpg)
+![The Morserino-32 2nd edition: the circuit board in a clear acrylic case, seen from above. The loudspeaker is the round grille on the right, the display the small panel on the left. Numbered labels 1 to 15 mark the connectors and controls listed in the table below.](images/m32_2nd_edition.jpg)
 
 | # | Connector / Control | Usage |
 |:---:|---|---|
@@ -84,7 +107,7 @@ What is new in Version 9?
 ::: {.classic}
 ## Morserino-32 1st edition
 
-![](images/m32_1st_edition.jpg)
+![The Morserino-32 1st edition: the circuit board in a clear acrylic case, seen from above. The loudspeaker is the round grille on the right, the display the small panel on the left. Numbered labels 1 to 14 mark the connectors and controls listed in the table below.](images/m32_1st_edition.jpg)
 
 | # | Connector / Control | Usage |
 |:---:|---|---|
@@ -399,7 +422,7 @@ While a menu is presented to you (either the start menu, or a menu to
 select preferences), the status line tells you what to do (**Select
 Mode:** or **Set Preferences:**).
 
-![](images/status_line.png)
+![Close-up of the status line across the top of the display: the keyer-mode letter B on the left, the speed 20 WpM in the middle, and on the right the volume bar followed by the wireless-transmission symbol.](images/status_line.png)
 
 ::: {.note .pocket .pocket-a11y}
 This image shows the status line of the older Morserinos. The M32 Pocket is similar, but might display additional information under certain circumstances.

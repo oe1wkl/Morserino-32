@@ -1,0 +1,87 @@
+/* Stylesheet for the EPUB build of the Morserino-32 User Manual.
+ *
+ * style.css is for print: it is full of @page rules, absolute positioning for
+ * the title page, and centimetre measurements. None of that means anything in
+ * a reflowable EPUB, where the reader chooses the font, the size and the width.
+ *
+ * So this file is deliberately small. It sets no font family, no font size and
+ * no page width -- those belong to the reader, and overriding them is the most
+ * common way an EPUB becomes unusable on someone else's device or with a
+ * screen reader. It only styles what carries meaning: the four kinds of
+ * call-out box, tables, and code.
+ */
+
+/* ---- Headings ------------------------------------------------------------ */
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.2;
+    /* Keep a heading with the text that follows it where the reader supports it. */
+    page-break-after: avoid;
+    break-after: avoid;
+}
+h1 { margin-top: 1.5em; }
+
+/* ---- Call-out boxes -----------------------------------------------------
+ * The label is a real text prefix rather than a decorative ::before glyph, so
+ * that a screen reader announces "Note", "Important", "Warning" instead of
+ * reading out an emoji name or skipping the distinction entirely.
+ */
+div.note, div.important, div.warning, div.quote {
+    border: 1px solid #888;
+    border-left-width: 4px;
+    padding: 0.4em 0.8em;
+    margin: 1em 0;
+}
+div.note::before,
+div.important::before,
+div.warning::before,
+div.quote::before {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 0.2em;
+}
+div.note::before      { content: "Note"; color: #555; }
+div.important::before { content: "Important"; color: #0066aa; }
+div.warning::before   { content: "Warning"; color: #c00; }
+div.quote::before     { content: ""; }
+
+div.important { border-color: #0066aa; }
+div.warning   { border-color: #c00; }
+div.quote     { font-style: italic; }
+
+/* ---- Tables --------------------------------------------------------------
+ * Wide tables are the weak point of any small screen. Letting them shrink
+ * rather than forcing a fixed width keeps them readable, and the header row
+ * stays distinguishable.
+ */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+}
+th, td {
+    border: 1px solid #bbb;
+    padding: 0.3em 0.5em;
+    text-align: left;
+    vertical-align: top;
+}
+th {
+    background-color: #eee;
+    font-weight: bold;
+}
+
+/* ---- Code and Morse ------------------------------------------------------ */
+code, pre {
+    font-family: monospace;
+}
+pre {
+    padding: 0.5em;
+    background-color: #f4f4f4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+}
+
+/* ---- Images -------------------------------------------------------------- */
+img {
+    max-width: 100%;
+    height: auto;
+}

@@ -25,3 +25,4 @@ __pycache__/
 # on what the release ships is still open.
 Documentation/User Manual/Version */m32UserManual_v*_??_*.pdf
 Documentation/User Manual/Version */manual_??_*.html
+Documentation/User Manual/Version */m32UserManual_v*.epub

@@ -14,6 +14,7 @@
 #   ./build.sh de                  # German PDF
 #   ./build.sh all                 # both languages
 #   ./build.sh en html             # English HTML only
+#   ./build.sh en epub             # English EPUB
 #
 #   ./build.sh en pdf pocket       # English Pocket manual
 #   ./build.sh all pdf all         # every language x every variant (8 PDFs)
@@ -54,6 +55,7 @@ STYLE="style.css"
 # stale from then on. Both are now placeholders in title*.html, resolved here,
 # so a rebuild always dates itself correctly and no one has to remember.
 YEAR=$(date "+%Y")
+ISO_MONTH=$(date "+%Y-%m")      # dc:date in EPUB must be ISO-8601, or pandoc drops it
 MONTH_EN=$(LC_ALL=C date "+%B")
 case "$MONTH_EN" in
     January) MONTH_DE="Jänner" ;;      February) MONTH_DE="Februar" ;;
@@ -79,6 +81,21 @@ variant_name() {
         de:classic)     echo "für den Morserino-32, 1. und 2. Edition" ;;
         de:pocket)      echo "für den Morserino-32 Pocket" ;;
         de:pocket-a11y) echo "für den Morserino-32 Pocket — Accessibility Edition" ;;
+        *)              echo "" ;;
+    esac
+}
+
+# The short form of the variant name, for places where a whole phrase does not
+# fit -- an EPUB title in a reader's library, for instance.
+variant_label() {
+    local lang=$1 variant=$2
+    case "$lang:$variant" in
+        en:classic)     echo "1st and 2nd edition" ;;
+        en:pocket)      echo "Pocket" ;;
+        en:pocket-a11y) echo "Pocket, Accessibility Edition" ;;
+        de:classic)     echo "1. und 2. Edition" ;;
+        de:pocket)      echo "Pocket" ;;
+        de:pocket-a11y) echo "Pocket, Accessibility Edition" ;;
         *)              echo "" ;;
     esac
 }
@@ -115,6 +132,7 @@ build_pdf() {
     fi
     local html_output="manual_${lang}${suffix}.html"
     local pdf_output="m32UserManual_v${MAJOR}_${lang}${suffix}.pdf"
+    local epub_output="m32UserManual_v${MAJOR}_${lang}${suffix}.epub"
 
     local variant_filter=()
     if [ "$variant" != "combined" ]; then
@@ -164,6 +182,47 @@ build_pdf() {
     title_file=$(resolve_title "$title_template" "$month" \
                               "$(variant_name "$lang" "$variant")") || return 1
     trap 'rm -f "$title_file"' RETURN
+
+    if [ "$format" = "epub" ]; then
+        # EPUB is generated straight from the Markdown. It deliberately does not
+        # reuse the print title page (absolutely positioned, in centimetres) or
+        # style.css (@page rules): a reflowable book has no pages to lay out.
+        # The variant name becomes the subtitle, so an EPUB reader shows which
+        # manual this is in its library without opening it.
+        # A reader's library shows the title and little else, so a variant
+        # manual has to say which one it is there -- otherwise three EPUBs on a
+        # shelf are indistinguishable.
+        local epub_title="$meta_title"
+        local epub_desc="Version ${MAJOR}.x, ${month} ${YEAR}"
+        local label
+        label=$(variant_label "$lang" "$variant")
+        if [ -n "$label" ]; then
+            epub_title="$meta_title ($label)"
+            epub_desc="$epub_desc — $label"
+        fi
+        echo "Building EPUB from $input (V${MAJOR}.x, ${month} ${YEAR})..."
+        pandoc "$input" \
+            -o "$epub_output" \
+            --toc \
+            --toc-depth=3 \
+            --number-sections \
+            --css=epub.css \
+            --resource-path=".:images" \
+            --metadata title="$epub_title" \
+            --metadata author="Willi Kraml, OE1WKL" \
+            --metadata lang="$meta_lang" \
+            --metadata date="$ISO_MONTH" \
+            --metadata description="$epub_desc" \
+            --metadata rights="© 2016-${YEAR} Willi Kraml, OE1WKL. CC BY 4.0" \
+            --epub-cover-image=images/M32_logo.png \
+            --wrap=none \
+            --from markdown+fenced_divs \
+            "${variant_filter[@]}" \
+            $lua_filter \
+            2>&1 || { echo "ERROR: pandoc failed for $lang (epub)"; return 1; }
+        echo "Successfully created $epub_output"
+        return 0
+    fi
 
     echo "Building HTML from $input (V${MAJOR}.x, ${month} ${YEAR})..."
 
@@ -229,11 +288,11 @@ run_build() {
             local suffix=""
             [ "$variant" != "combined" ] && suffix="_${variant}"
             if build_pdf "$lang" "$format" "$variant"; then
-                if [ "$format" = "html" ]; then
-                    ok+=("manual_${lang}${suffix}.html")
-                else
-                    ok+=("m32UserManual_v${MAJOR}_${lang}${suffix}.pdf")
-                fi
+                case "$format" in
+                    html) ok+=("manual_${lang}${suffix}.html") ;;
+                    epub) ok+=("m32UserManual_v${MAJOR}_${lang}${suffix}.epub") ;;
+                    *)    ok+=("m32UserManual_v${MAJOR}_${lang}${suffix}.pdf") ;;
+                esac
             else
                 fail+=("${lang} (${variant})")
             fi
@@ -262,7 +321,7 @@ case "${1:-all}" in
     de)  run_build "${2:-pdf}" "$VARIANT" de ;;
     all) run_build "${2:-pdf}" "$VARIANT" en de ;;
     *)
-        echo "Usage: $0 [en|de|all] [html|pdf] [combined|classic|pocket|pocket-a11y|all]"
+        echo "Usage: $0 [en|de|all] [html|pdf|epub] [combined|classic|pocket|pocket-a11y|all]"
         exit 1
         ;;
 esac

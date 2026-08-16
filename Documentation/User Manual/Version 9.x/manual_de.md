@@ -40,7 +40,30 @@ Was ist neu in Version 9?
 ::: {.pocket .pocket-a11y}
 ## M32Pocket
 
-![](images/m32pocket.jpg)
+![Der M32 Pocket: ein schwarzes 3D-gedrucktes Gehäuse, schräg von oben. Die Oberseite wird größtenteils vom Displayfenster eingenommen; der Drehknopf sitzt am hinteren Ende. Die Ziffern 1 bis 8 bezeichnen die Anschlüsse und Bedienelemente aus der Tabelle darunter.](images/m32pocket.jpg)
+
+<!-- TODO(Willi): siehe englische Fassung -- Positionen von Touchpaddles und
+     FN-Taste vor der Freigabe am Gerät prüfen. -->
+::: {.pocket-a11y}
+**Orientierung am M32 Pocket durch Ertasten.** Das Gehäuse ist ein flaches
+Rechteck, etwa doppelt so lang wie breit; das Display nimmt den größten Teil
+einer der großen Flächen ein. Halte das Gerät so, dass diese Fläche nach oben
+zeigt und der Drehknopf von dir weg am hinteren Ende liegt.
+
+- An der **dir zugewandten Schmalseite** liegen vier Öffnungen nebeneinander.
+  Von der linken Ecke aus: der flache, breite **USB-C**-Schlitz (1), dann drei
+  runde 3,5-mm-Buchsen — **externes Paddle bzw. Taste** (2), **zum Sender** (3)
+  und ganz rechts **Kopfhörer / Audio** (4).
+- An der **linken Längsseite** sitzt in einer kleinen Aussparung der
+  **Schiebeschalter für den Akku** (5), etwa zwei Drittel in Richtung hinteres
+  Ende. In Richtung der Touchpaddles geschoben bedeutet EIN.
+- Am **hinteren Ende** befinden sich der **Dreh-ENCODER** (6) — der gerändelte
+  Knopf, der sich auch drücken lässt — daneben die ins Gehäuse integrierte
+  **FN-Taste** (8) und davor auf der Oberseite die **Touchpaddles** (7).
+
+Alles Weitere ist in derselben Reihenfolge beschrieben wie die Ziffern in der
+Tabelle.
+:::
 
 | # | Anschluss / Bedienelement | Verwendung |
 |:---:|---|---|
@@ -59,7 +82,7 @@ Was ist neu in Version 9?
 ::: {.classic}
 ## Morserino-32 2. Edition
 
-![](images/m32_2nd_edition.jpg)
+![Der Morserino-32 der 2. Edition: die Platine in einem transparenten Acrylgehäuse, von oben. Der Lautsprecher ist das runde Gitter rechts, das Display die kleine Anzeige links. Die Ziffern 1 bis 15 bezeichnen die Anschlüsse und Bedienelemente aus der Tabelle darunter.](images/m32_2nd_edition.jpg)
 
 | # | Anschluss / Bedienelement | Verwendung |
 |:---:|---|---|
@@ -85,7 +108,7 @@ Was ist neu in Version 9?
 ::: {.classic}
 ## Morserino-32 1. Edition
 
-![](images/m32_1st_edition.jpg)
+![Der Morserino-32 der 1. Edition: die Platine in einem transparenten Acrylgehäuse, von oben. Der Lautsprecher ist das runde Gitter rechts, das Display die kleine Anzeige links. Die Ziffern 1 bis 14 bezeichnen die Anschlüsse und Bedienelemente aus der Tabelle darunter.](images/m32_1st_edition.jpg)
 
 | # | Anschluss / Bedienelement | Verwendung |
 |:---:|---|---|
@@ -419,7 +442,7 @@ Wenn dir ein Menü angezeigt wird (entweder das Startmenü oder ein
 Einstellungsmenü), zeigt die Statuszeile an, was zu tun ist
 (**Select Mode:** oder **Set Preferences:**).
 
-![](images/status_line.png)
+![Nahaufnahme der Statuszeile am oberen Displayrand: links der Buchstabe B für den Keyer-Modus, in der Mitte die Geschwindigkeit 20 WpM, rechts der Lautstärkebalken und daneben das Symbol für Funkübertragung.](images/status_line.png)
 
 ::: {.note .pocket .pocket-a11y}
 Dieses Bild zeigt die Statuszeile der älteren Morserino-Modelle. Der
