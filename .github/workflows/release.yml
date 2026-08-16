@@ -162,6 +162,26 @@ jobs:
           cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_en.pdf" /tmp/release-stage/
           cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_de.pdf" /tmp/release-stage/
 
+          # Second, version-less copy of each manual. This is what makes a
+          # permalink possible: GitHub resolves
+          #   .../releases/latest/download/<asset-name>
+          # to the newest non-prerelease release, but only if the asset name
+          # stays the same from release to release — 'm32UserManual_v9_en.pdf'
+          # would break the link at V10. So both names are uploaded: the
+          # versioned one keeps existing links working, the stable one is the
+          # address to put on morserino.info and in groups.io posts:
+          #
+          #   https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_EN.pdf
+          #   https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_DE.pdf
+          #
+          # Nothing is lost by dropping the version from the filename: the
+          # title page carries the version and the build month, and since the
+          # title pages became templates that can no longer go stale.
+          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_en.pdf" \
+             /tmp/release-stage/Morserino-32_User_Manual_EN.pdf
+          cp "$MANUAL_DIR/m32UserManual_v${{ steps.parse.outputs.major }}_de.pdf" \
+             /tmp/release-stage/Morserino-32_User_Manual_DE.pdf
+
       # ──────────────────────────────────────────────────────────────────
       # 8. Stage Pocket FAQ PDF (copy-as, per §6 Phase 1)
       # ──────────────────────────────────────────────────────────────────
@@ -234,6 +254,8 @@ jobs:
               /tmp/release-stage/fs_m32pa11y*.bin
               /tmp/release-stage/m32UserManual_v*_en.pdf
               /tmp/release-stage/m32UserManual_v*_de.pdf
+              /tmp/release-stage/Morserino-32_User_Manual_EN.pdf
+              /tmp/release-stage/Morserino-32_User_Manual_DE.pdf
               /tmp/release-stage/Morserino-32.Pocket.FAQ.pdf
           )
 
