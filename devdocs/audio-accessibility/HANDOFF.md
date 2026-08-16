@@ -35,8 +35,9 @@ out loud. Built, flashed, and exercised on real hardware; first blind-user sessi
 - Diag build: uncomment `-D CONFIG_AUDIO_A11Y_DIAG=1` in `platformio.ini` → per-clip heap
   trace on serial (verify the leak is gone: scroll ~100 entries, heap should be flat).
 
-- **Spoken splash, spoken menu path, no browser-only entries** (2026-08-14) — three fixes to
-  what a blind operator meets first, at power-on:
+- **Spoken splash, spoken menu path, no browser-only entries** (2026-08-14, **verified on
+  Pocket hardware 2026-08-16**) — three fixes to what a blind operator meets first, at
+  power-on:
   * **The boot splash speaks** (`announceSplash()` in `m32_v6.ino`): *"Morserino 32
     accessibility edition, version 9 point 0 beta, battery 4 point 1 volts"* — identity,
     version and the same 50 mV-quantised voltage the screen shows, composed from number atoms
