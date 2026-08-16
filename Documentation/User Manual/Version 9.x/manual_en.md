@@ -64,7 +64,7 @@ What is new in Version 9?
 |:---:|---|---|
 | 1 | 3.5mm Phone Jack (3 poles): to TX | Connect this to your transmitter or transceiver if you would like to key them with this device. Only the tip and sleeve are being used. |
 | 2 | 3.5mm Phone Jack (4 poles): Audio In / Line Out | Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (pretty close to a pure sine wave) that is not influenced by setting the loudspeaker volume. The assignments to the jack are as follows: Tip and 1st ring – audio in; 2nd ring: ground; sleeve: audio out. |
-| 3 | Audio Input Level Trimmer | Adjust audio input level with the help of this potentiometer; there is a special function to help with level adjustment, see section **Appendix 3 Adjusting Audio Level**.|
+| 3 | Audio Input Level Trimmer | Adjust audio input level with the help of this potentiometer; there is a special function to help with level adjustment, see the appendix **Adjusting Audio Level**.|
 | 4 | 3.5 mm Phone Jack (3 poles): Headphones | Connect your headphones here (any stereo headphones with standard phone jacks from mobile phones should work) to listen through headphones and switch off the speaker. You cannot attach a loudspeaker directly to this jack without providing some interface (headphone out needs a DC connection to ground through 50 – 300 Ohms). |
 | 5 | Phones Level Trimmer | Used to adjust the headphone level for maximum comfort. 1st edition M32 does not have this. |
 | 6 | Power Switch | Connect / disconnect the LiPo battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the side of the antenna connector.  If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br> For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
@@ -90,7 +90,7 @@ What is new in Version 9?
 |:---:|---|---|
 | 1 | 3.5mm Phone Jack (3 poles): to TX | Connect this to your transmitter or transceiver if you would like to key them with this device. Only the tip and sleeve are being used. |
 | 2 | 3.5mm Phone Jack (4 poles): Audio In / Line Out | Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (pretty close to a pure sine wave) that is not influenced by setting the loudspeaker volume. The assignments to the jack are as follows: Tip and 1st ring – audio in; 2nd ring: ground; sleeve: audio out. |
-| 3 | Audio Input Level Trimmer | Adjust audio input level with the help of this potentiometer; there is a special function to help with level adjustment, see section **Appendix 3 Adjusting Audio Level**. |
+| 3 | Audio Input Level Trimmer | Adjust audio input level with the help of this potentiometer; there is a special function to help with level adjustment, see the appendix **Adjusting Audio Level**. |
 | 4 | 3.5 mm Phone Jack (3 poles): Headphones | Connect your headphones here (any stereo headphones with standard phone jacks from mobile phones should work) to listen through headphones and switch off the speaker. You cannot attach a loudspeaker directly to this jack without providing some interface (headphone out needs a DC connection to ground through 50 – 300 Ohms). |
 | 5 | Power Switch | Connect / disconnect the LiPo battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the side of the antenna connector.<br> If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br>For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
 | 6 | SMA female Antenna Connector | Connect an antenna suitable for the operating frequency (standard is around 433 MHz) for LoRa operation. Do not transmit LoRa without an antenna or a dummy load! |
@@ -274,7 +274,7 @@ question mark. After a power cycle everything should work OK again.
 If the display shows the empty battery symbol although sufficient power
 should still be available, it is advisable to perform a battery
 measurement calibration. This is not necessary and hence not available on the M32Pocket. See
-**Appendix 7.1.2: Calibration of Battery Measurement**.
+the section **Calibration of Battery Measurement**.
 :::
 
 To disconnect the device from the battery (turning it off, unless you
@@ -354,7 +354,7 @@ on a device you connected to the Morserino-32's line-out port).<br>]{.classic}
 the transmitter (if you have one connected) and produces a sidetone (this might be useful for
 setting audio levels on a connected computer, for example).]{.pocket .pocket-a11y}
 
-A click of the FN button turns this function off again. See **Appendix 3 Adjusting Audio Level**.
+A click of the FN button turns this function off again. See **Adjusting Audio Level**.
 
 While one of the operational modes (keyer, generator, echo trainer etc.)
 is executed the FN Button allows you to **quickly toggle between speed
@@ -461,7 +461,7 @@ normal characters, turning the rotary encoder changes the volume.
 
 You might need to change certain hardware settings, e.g. the screen
 orientation, or the calibration of the battery measurement. Or you might want to reset (almost) all preferences to their factory value. All these
-settings are covered in **Appendix 1 Hardware Configuration
+settings are covered in **Hardware Configuration
 Menu**.
 
 # Top Menu and Morserino Modes
@@ -615,7 +615,7 @@ should also terminate the use of the protocol with the command
 ::: note
 A much simpler way to store memory content is by connecting your
 Morserino with a USB cable to a computer, and follow the instructions in
-**Appendix 7 Using a Browser to set up M32
+**Using a Browser to set up M32
 Preferences**.
 :::
 
@@ -681,7 +681,7 @@ You can choose between the following at the second level of the menu:
 -   **CW Abbrevs:** Random abbreviations and Q-codes that are very
     common in CW transmissions (through a preference setting you can
     choose the maximum length of the abbreviations you want to train).
-    See **Appendix 10 List of common CW abbreviations
+    See **List of common CW abbreviations
     used by Morserino-32** for the abbreviations that can
     be generated, and their meaning.
 -   **English Words**: Random words from a list of the 5.000 most common
@@ -704,7 +704,7 @@ You can choose between the following at the second level of the menu:
     **Upload of files** works through WiFi from your PC (or Mac or tablet or
     smartphone or whatever – see the section **Uploading a Text File** for
     instructions how to do this), or by using the method described in
-    **Appendix 7 Using a Browser to set up M32
+    **Using a Browser to set up M32
     Preferences**.
 -   **Practice Set**: Generates random characters from a pool you pick
     yourself, right on the device – e.g. just the few characters you
@@ -1331,7 +1331,7 @@ pause between words (as a blank space, as it were), the whole data
 packet assembled so far is being transmitted and in due course being
 played back at the indicated speed by the receiving Morserino-32.
 
-More information about LoRa can be found in **Appendix 2 More information about LoRa**.
+More information about LoRa can be found in **More information about LoRa**.
 :::
 
 ### Wifi Trx
@@ -1639,7 +1639,7 @@ signs. Pro signs are displayed as their two-letter abbreviation with a
 bar above.
 
 ::: note
-The default for the game is portrait orientation, with the touch paddles at the bottom. You can change this to landscape with the Preference "Invader Orient.", and the landscape orientation will acknowledge your setting of "left-handed" (see Appendix 1: Hardware Configuration Menu).
+The default for the game is portrait orientation, with the touch paddles at the bottom. You can change this to landscape with the Preference "Invader Orient.", and the landscape orientation will acknowledge your setting of "left-handed" (see **Hardware Configuration Menu**).
 :::
 
 To destroy a falling character, key its Morse code using the paddles (or
@@ -2322,7 +2322,7 @@ Functions**.
 
 In software version before 2.0 the WiFi functions were not integrated
 into the main menu. In case you want to update from version 1.x to
-version 2.x through WiFi, please read **Appendix 4: Updating
+version 2.x through WiFi, please read **Updating
 the Firmware via WiFi for Versions \< 2.0**.
 
 If you have selected "EspNow" instead of an access point, the only
@@ -2415,7 +2415,7 @@ means you cannot use snapshots to recall different network settings.
 ::: note
 An easier way to configure access points is by using your Morserino
 connected via USB to a Chrome, Edge, Opera or Firefox browser, and using the
-instructions in **Appendix 7 Using a Browser to set up M32
+instructions in **Using a Browser to set up M32
 Preferences**.
 :::
 
@@ -2504,9 +2504,9 @@ doing it; you can also do this by using the Arduino IDE (or PlatformIO)
 on your computer (you also need to install a bunch of specific files and
 libraries for support of the hardware, and then compile the binary from
 the source code), or, much easier, by using a special update utility
-(see **Appendix 5 Updating the Firmware via USB and an
+(see **Updating the Firmware via USB and an
 update program**), or – and **this is the easiest way** – by
-just using a browser and USB (see **Appendix 6 Updating
+just using a browser and USB (see **Updating
 the Firmware via USB and a Browser (Webserial)**).
 
 You can update to any version, you can "jump" versions, you can also
@@ -2674,7 +2674,7 @@ Did you double click from the Start Menu, you will be presented the
 complete range of preferences.
 
 ::: note
-Almost all preferences can be reset to their factoy value through the Hardware Configuration Menu. See Appendix 1 for further information.
+Almost all preferences can be reset to their factoy value through the Hardware Configuration Menu. See **Hardware Configuration Menu** for further information.
 :::
 
 ## Snapshots
@@ -2756,8 +2756,8 @@ will indicate that the action was successful.
 
 The easiest way to configure your preferences and snapshots is to
 connect your Morserino via USB to a computer running Chrome, Edge, Firefox or
-Opera and using the instructions in **Appendix 7**Using
-a Browser to set up M32 Preferences**.
+Opera and using the instructions in the appendix **Using a Browser to set up
+M32 Preferences, and upload Text Files**.
 
 ## Player identity and game scores
 
@@ -2801,7 +2801,7 @@ to all modes of the Morserino-32.
 | []{.pocket .pocket-a11y}Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
 | []{.pocket .pocket-a11y}Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
 | []{.pocket}Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
-| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of the [LoRa or]{.classic} WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Appendix 8 Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in the section **Preferences regarding Key, Paddles and Keyer**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
+| Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of the [LoRa or]{.classic} WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in the section **Preferences regarding Key, Paddles and Keyer**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 
 
 
@@ -2821,7 +2821,7 @@ to **Straight Key** in order to use a straight key).
 | CurtisB DitT% | Timing in Curtis B mode for dits; see the section **CW Keyer** Also influences the behavior in Ultimatic mode!                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
 | AutoChar Spce | Minimum spacing between characters | Off / min. 2 / **3** / 4 dots |
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
-| Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Appendix 9**).* The last option, **BLE Serial**, instead makes the M32 Serial Protocol (see **Appendix 8**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
+| Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Using the Bluetooth Keyboard functionality**).* The last option, **BLE Serial**, instead makes the M32 Serial Protocol (see **Using the Serial Output of the M32**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
 | BLT \<AR> | Only relevant in **Generic Kbd** mode (see **Bluetooth Use** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
 
 
@@ -2934,7 +2934,7 @@ These items appear at the very end of the preferences list. The first two set yo
 
 # Appendices
 
-## Appendix 1: Hardware Configuration Menu
+## Hardware Configuration Menu
 
 There is a hardware configuration menu that can be reached by **pressing
 a paddle (or external paddle or straight key) while switching the M32
@@ -3098,7 +3098,7 @@ This item — **Reset Defaults** in the Hardware Configuration menu — resets a
 preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.
 
 ::: {.classic}
-## Appendix 2: More information about LoRa
+## More information about LoRa
 
 When morse code is packed into a LoRa data packet, dots, dashes and
 pauses are encoded; it is not so that the clear text would be sent as
@@ -3154,7 +3154,7 @@ versions of these modules used in Morserinos 1st and 2nd edition.).
 For these bands, you MUST configure your Morserino to use the correct
 band and frequency.
 
-See **Appendix 1 Hardware Configuration
+See **Hardware Configuration
 Menu** to learn how you can configure LoRa for modules that
 support the 868 and 920 MHz bands, and how to change the LoRa frequency
 settings.
@@ -3172,7 +3172,7 @@ settings.
     (100 mW)
 :::
 
-## Appendix 3: Adjusting Audio Level
+## Adjusting Audio Level
 
 You can also reach **one other function** while you are positioned
 within the Start Menu – not through a menu selection, but through **a
@@ -3226,7 +3226,7 @@ already scrolled away...​
 :::
 
 ::: {.classic}
-## Appendix 4: Updating the Firmware via WiFi for Versions < 2.0
+## Updating the Firmware via WiFi for Versions < 2.0
 
 With firmware versions **1.x** the WiFi functions were not accessible
 directly from the main menu, but **by quickly pressing the FN button three
@@ -3241,7 +3241,7 @@ If you are still on version 1.x, you really should update to a newer firmware - 
 :::
 
 
-## Appendix 5: Updating the Firmware via USB and an update program
+## Updating the Firmware via USB and an update program
 
 This simple update procedure for Morserinos has become possible through
 work by Matthias Jordan and Joe Wittmer.
@@ -3328,7 +3328,7 @@ parameter `-e`. As an example (here for OSX or Linux):
 
 `./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e`
 
-## Appendix 6: Updating the Firmware via USB and a Browser (Webserial)
+## Updating the Firmware via USB and a Browser (Webserial)
 
 Some browsers support the Webserial extension, which allows to access a
 serial port directly from the browser; currently these are **Google
@@ -3411,7 +3411,7 @@ File Player's text for its voice clips.
 Older bookmarks pointing at the previous two separate installer pages
 still work; they now forward to this one page.
 
-## Appendix 7: Using a Browser to set up M32 Preferences, and upload Text Files
+## Using a Browser to set up M32 Preferences, and upload Text Files
 
 There are currently three sites that enable you to set up M32 preferences
 through a browser on your computer, and another one that implements an M32 File Manager.
@@ -3472,7 +3472,7 @@ site, to be found at
 These feature were made possible by implementing a serial protocol into
 the Morserino; see the next appendix for more information.
 
-## Appendix 8: Using the Serial Output of the M32
+## Using the Serial Output of the M32
 
 The Morserino-32 is able to output data via the serial USB interface.
 This can be used, for example, to show the characters that are shown on
@@ -3548,7 +3548,7 @@ A few things to be aware of:
     display; it becomes available again when you return to the
     main menu.
 -   The **Bluetooth Use** selector assigns the Bluetooth radio either
-    to the keyboard output (Appendix 9) or to the serial protocol, so
+    to the keyboard output (**Using the Bluetooth Keyboard functionality**) or to the serial protocol, so
     BLE Serial and the Bluetooth keyboard can never be active at the
     same time.
 -   An active protocol session prevents the automatic power-off
@@ -3561,7 +3561,7 @@ the `Documentation/Protocol Description` folder on GitHub; a ready-made
 test and demo script (`ble_m32_test.py`, using Python and *bleak*) can
 be found in the `devdocs/ble-serial` folder.
 
-## Appendix 9: Using the Bluetooth Keyboard functionality
+## Using the Bluetooth Keyboard functionality
 
 In "CW Keyer" mode, the M32 can send the keyed Morse code as keyboard
 codes via Bluetooth to a computer (including cell phones and tablets).
@@ -3581,7 +3581,7 @@ using.
 
 
 
-## Appendix 10: List of common CW abbreviations used by Morserino-32
+## List of common CW abbreviations used by Morserino-32
 
 The list contains definitions in English and German, separated by a
 slash. Not all abbreviations are very common in all languages;
@@ -3950,7 +3950,7 @@ abbreviations uncommon in English are in square brackets \[\].
 | 99 | get lost / verschwinde! |
 
 
-## Appendix 11: Glossary
+## Glossary
 
 | Term | Definition |
 |------|------------|

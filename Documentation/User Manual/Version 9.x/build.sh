@@ -65,9 +65,27 @@ case "$MONTH_EN" in
     *)         MONTH_DE="$MONTH_EN" ;;
 esac
 
+# How each variant names itself on the title page. The title page is injected
+# with --include-before-body and so never passes through variant.lua, which is
+# why the name is substituted here rather than tagged in the sources.
+variant_name() {
+    local lang=$1 variant=$2
+    case "$lang:$variant" in
+        en:combined)    echo "for all Morserino-32 models" ;;
+        en:classic)     echo "for the Morserino-32, 1st and 2nd edition" ;;
+        en:pocket)      echo "for the Morserino-32 Pocket" ;;
+        en:pocket-a11y) echo "for the Morserino-32 Pocket — Accessibility Edition" ;;
+        de:combined)    echo "für alle Morserino-32-Modelle" ;;
+        de:classic)     echo "für den Morserino-32, 1. und 2. Edition" ;;
+        de:pocket)      echo "für den Morserino-32 Pocket" ;;
+        de:pocket-a11y) echo "für den Morserino-32 Pocket — Accessibility Edition" ;;
+        *)              echo "" ;;
+    esac
+}
+
 # Fill the title-page template for one language; prints the temp file's path.
 resolve_title() {
-    local template=$1 month=$2 out
+    local template=$1 month=$2 vname=$3 out
     out=$(mktemp "${TMPDIR:-/tmp}/m32title.XXXXXX.html") || return 1
     # The BUILD-TEMPLATE comment explains the placeholders to whoever edits the
     # template; it is not for readers, so it never reaches the published HTML.
@@ -75,6 +93,7 @@ resolve_title() {
         -e "s|@MAJOR@|${MAJOR}|g" \
         -e "s|@MONTH_YEAR@|${month} ${YEAR}|g" \
         -e "s|@YEAR@|${YEAR}|g" \
+        -e "s|@VARIANT@|${vname}|g" \
         "$template" > "$out" || { rm -f "$out"; return 1; }
     if grep -q "@[A-Z_]*@" "$out"; then
         echo "ERROR: unresolved placeholder left in $template:" >&2
@@ -142,7 +161,8 @@ build_pdf() {
     fi
 
     local title_file
-    title_file=$(resolve_title "$title_template" "$month") || return 1
+    title_file=$(resolve_title "$title_template" "$month" \
+                              "$(variant_name "$lang" "$variant")") || return 1
     trap 'rm -f "$title_file"' RETURN
 
     echo "Building HTML from $input (V${MAJOR}.x, ${month} ${YEAR})..."

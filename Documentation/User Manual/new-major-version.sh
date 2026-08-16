@@ -118,7 +118,7 @@ if [ "$CHECK_ONLY" = "1" ]; then
         check_template() {                     # file, description
             local f="$dir/$1" label="$2" ph rc=0
             [ -f "$f" ] || return 0
-            for ph in '@MAJOR@' '@MONTH_YEAR@'; do
+            for ph in '@MAJOR@' '@MONTH_YEAR@' '@VARIANT@'; do
                 if ! grep -q -- "$ph" "$f"; then
                     echo "FAIL: $1 — $label: placeholder $ph is gone."
                     echo "      build.sh fills it in; a literal value here goes stale silently."
