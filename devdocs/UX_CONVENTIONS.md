@@ -5,6 +5,8 @@ modes — the classic training modes (CW Keyer, CW Generator, Echo Trainer,
 Koch Trainer, Transceiver modes, …), the games, and the QSO Bot. A user who
 has learned one mode should be able to predict how the next one starts,
 how speed and volume are changed, how it ends, and how to get back to the menu.
+§13 adds the rules for the spoken UI of the Accessibility Edition, which is an
+output layer over this same grammar rather than a second one.
 
 > **Status: v0.3.** The `TODO(audit)` markers were resolved by the 2026-06
 > consistency audit and folded in. Where current code still diverges from a
@@ -296,3 +298,72 @@ reach (tracked in `devdocs/consistency-audit/REFACTORING_PLAN.md` Phases D/F):
 What games **may** differ in: layout, graphics, color, HUD content, lobby design,
 game-specific settings, and per-round timeout rules (§8). Everything in §1–§2
 is mandatory and shared.
+
+## 13. Spoken UI — the Accessibility Edition
+
+The **M32 Pocket Accessibility Edition** (`CONFIG_AUDIO_A11Y`, env
+`pocketwroom-accessibility`) speaks the user interface aloud from pre-rendered
+clips. It is a **shipping build of this trunk, not a fork**: everything in §1–§2
+applies to it unchanged. Speech is an **output channel** — it never adds a
+gesture, never changes what an input means, and never asks the user to wait.
+Mechanics, tooling and the clip pipeline: `devdocs/audio-accessibility/HANDOFF.md`;
+the duty to voice new UI text: `CLAUDE.md` §8.
+
+**What is spoken.** The highlighted menu entry as you scroll; a preference as
+**heading + value** when you land on it and **value only** while you turn the
+encoder through its values; values assembled at runtime (Koch lesson, snapshot
+slot, practice-set size) composed from number/character atoms rather than left
+silent; and the boot splash (§13.1). Games are exempt — they are compiled out
+of this build.
+
+**Every announcement must stand on its own.** A blind operator has no lines
+above the highlighted one to read context from, so an announcement that is
+ambiguous in isolation is a bug. Hence the menu **names its whole path**
+("CW Generator, Call Signs") whenever the listener cannot already know the
+branch — after switching on, after returning from a mode or from the
+preferences, and when stepping back up a level — and stays **terse** where they
+can: scrolling within one level, or descending into a submenu from the entry
+announced a click ago (`a11yMenuParent` / `a11yLastEntry` in `MorseMenu.cpp`).
+The same rule is why a cryptic 12-char display label gets a spoken form
+(`parameter.spokenName`, `ACTION_SPOKEN`) instead of being read out as written.
+
+**Newest wins; nothing blocks.** Announcements are asynchronous and debounced
+(120 ms): while the user keeps turning, only the latest request survives, and
+the clip in progress is allowed to **finish** rather than being chopped
+mid-word. Speech must never gate an action — the device stays fully operable
+while it talks.
+
+**A deliberate action cancels a long informational announcement.** Anything
+that runs for several seconds and is not a response to what the user just did
+(today: the boot splash) is cut by the next button press or encoder detent, so
+speech never stands between the operator and the device. Starting a mode
+silences speech outright (`MorseVoice::stop()` in `menuExec()`).
+
+**A screen that acts on its own must speak before it acts.** Where the firmware
+shows something and then does something irreversible without asking — the EMPTY
+battery screen, which is followed by deep sleep — the announcement comes first,
+with enough time to be heard. A silent dead end is the worst failure mode this
+edition can have.
+
+**The edition may drop a function, but not silently.** A function that cannot
+be operated without sight *and* has an equivalent sighted-free route may be left
+out of this build rather than presented as a dead end — as *Upload File* and
+*Update Firmw* are, both being nothing but a hand-off to a browser on another
+device (firmware goes over USB instead). Two rules follow: gate it the way the
+other variant flags do, keeping the positional menu arrays in step (`menuN`, the
+`menuNo` enum, `menuText[]`/`menuNav[]`); and **say so in both manuals** — the
+manual sources are variant-tagged (`variant.lua`, `pocket-a11y`), so content
+about a dropped function belongs behind `{.classic .pocket}`.
+
+### 13.1 Boot splash
+
+Switching on is the one moment with no menu to fall back on, so the splash
+speaks what it shows: identity and edition, firmware version, battery voltage —
+the voltage quantised exactly as the screen quantises it, so what the operator
+hears matches what a sighted helper reads. It is interruptible (above), and the
+volume the user set is applied **before** the first word, not after.
+
+**Consequence for any blocking screen that should speak:** the voice engine is
+polled, so a screen built out of `delay()` has to pump it. Use the
+`splashPause()` pattern (`m32_v6.ino`) — a delay that turns `MorseVoice::tick()`
+— rather than adding speech to a screen that then never plays it.
