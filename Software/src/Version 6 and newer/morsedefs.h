@@ -354,6 +354,9 @@ const uint8_t menuN = 45
 #ifdef CONFIG_PRACTICE_STATS
     + 1    // Practice Stats — see MorsePracticeStats.h
 #endif
+#ifdef CONFIG_AUDIO_A11Y
+    - 2    // no Upload File / Update Firmw — both are browser-driven WiFi-AP flows
+#endif
     ;
 
 enum menuNo
@@ -373,8 +376,14 @@ enum menuNo
 #ifdef CONFIG_CW_GAME
         _games, _morseInvaders, _fightPileup, _radioCave, _morsel,
 #endif
-        _wifi, _wifi_mac, _wifi_config, _wifi_check, _wifi_upload,
-        _wifi_update, _wifi_select,
+        _wifi, _wifi_mac, _wifi_config, _wifi_check,
+#ifndef CONFIG_AUDIO_A11Y
+        // Both entries only start a WiFi access point and then hand the job to a browser
+        // on another device: there is nothing on the M32 itself to hear or operate, so the
+        // Accessibility Edition leaves them out (firmware updates go over USB instead).
+        _wifi_upload, _wifi_update,
+#endif
+        _wifi_select,
 #ifdef CONFIG_PRACTICE_STATS
         _wifi_stats,
 #endif

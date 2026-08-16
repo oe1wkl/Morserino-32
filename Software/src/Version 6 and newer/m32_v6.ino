@@ -42,6 +42,7 @@
 #include "MorseDecoder.h"     // Decoder Engine
 #include "MorseJSON.h"        // JSON handling for file upload and serial communication
 #include "M32ProtocolOut.h"   // m32out tee + protocolActive(): protocol output/gating across transports
+#include "MorseVoice.h"       // spoken UI (Accessibility Edition; no-ops elsewhere)
 #ifdef CONFIG_BLE_SERIAL
 #include "MorseBleSerial.h"   // M32 protocol over BLE (Nordic UART Service)
 #endif
@@ -911,6 +912,67 @@ String  shortDate(char const *date) {
     snprintf(buff, sizeof(buff), "%02d%02d%02d", year % 100, month, day);
     return String (buff);
 }
+// Hold a boot screen for ms, keeping the a11y voice engine turning: the splash is built out of
+// plain delay()s, and tick() is what actually starts and advances the announcement clips.
+// Ordinary delay() everywhere else.
+static void splashPause(uint32_t ms) {
+#ifdef CONFIG_AUDIO_A11Y
+  uint32_t start = millis();
+  do {
+    MorseVoice::tick();
+    delay(5);
+  } while (millis() - start < ms);
+#else
+  delay(ms);
+#endif
+}
+
+#ifdef CONFIG_AUDIO_A11Y
+// The boot splash is the one screen a blind operator cannot go back to, so the Accessibility
+// Edition speaks it: which firmware is running, and how the battery is doing. Version number
+// and voltage are COMPOSED from number atoms (see MorseVoice), so a version bump or a changed
+// reading needs no new clip. The announcement plays on while the splash is displayed and, if
+// it outlasts the splash, while the first menu entry is already on screen - the menu's own
+// announcement simply queues behind it.
+static void announceSplash(uint16_t v) {
+#ifdef CONFIG_TLV320AIC3100
+  // Apply the stored volume first. soundSetup() ran before readPreferences(), so the codec is
+  // still at the *default* level, and menu_() only corrects that after the splash - without
+  // this the very first thing a blind user hears could arrive far louder than they set it.
+  MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
+#endif
+  MorseVoice::announce("Morserino 32 accessibility edition");
+  MorseVoice::announceMore("version");
+  MorseVoice::announceMore(String(VERSION_MAJOR));
+  MorseVoice::announceMore("point");
+  MorseVoice::announceMore(String(VERSION_MINOR));
+  if (VERSION_PATCH != 0) {
+      MorseVoice::announceMore("point");
+      MorseVoice::announceMore(String(VERSION_PATCH));
+  }
+  if (BETA)
+      MorseVoice::announceMore("beta");
+  if (v > 1000) {                        // "no reading" test and 50 mV quantisation exactly as in
+      int c = (v / 50) * 50;             // displayBatteryStatus(), so the spoken value always
+      int whole = c / 1000;              // agrees with the "U: 4.1 V" line a sighted helper reads
+      MorseVoice::announceMore("battery");
+      MorseVoice::announceMore(String(whole));
+      MorseVoice::announceMore("point");
+      MorseVoice::announceMore(String((c - 1000 * whole) / 100));
+      MorseVoice::announceMore("volts");
+  }
+}
+// The EMPTY screen is a dead end - the device shows it and goes to sleep. Say so, and give the
+// clip time to play before the caller starts that 4 s countdown to shutdown.
+static void announceEmptyBattery() {
+  MorseVoice::announce("battery empty");
+  splashPause(2000);
+}
+#else
+static void announceSplash(uint16_t v) { (void)v; }
+static void announceEmptyBattery() {}
+#endif
+
 // display startup screen and check battery status, also send device information if M32 serial protocol is being used
 
 void displayStartUp(uint16_t volt) {
@@ -918,9 +980,10 @@ void displayStartUp(uint16_t volt) {
   s.reserve(18);
   s = PROJECTNAME;
   s += " ";
+  announceSplash(volt);          // a11y: speak the splash (no-op on every other build)
   #ifdef CONFIG_TFT
   MorseOutput::dispM32Logo();    // theme-independent white-on-black splash (clears to black itself)
-  delay(1800);
+  splashPause(1800);
   MorseOutput::clearDisplay();   // restore the theme background for the version screen
   #else
   MorseOutput::clearDisplay();
@@ -953,12 +1016,16 @@ void displayStartUp(uint16_t volt) {
 #ifndef SKIP_BATTERY_PROTECT
 #ifdef CONFIG_MCP73871
   uint8_t powerpath_state = (digitalRead(CONFIG_MCP_STAT1_PIN)<<2) + ( digitalRead(CONFIG_MCP_STAT2_PIN) << 1) + digitalRead(CONFIG_MCP_PG_PIN);
-  if (powerpath_state == 3) // low battery
+  if (powerpath_state == 3) { // low battery
+    announceEmptyBattery();
     MorseOutput::displayEmptyBattery(shutMeDown);
+  }
   //else
 #else
-  if (volt > 1000 && volt < 3320)
+  if (volt > 1000 && volt < 3320) {
+    announceEmptyBattery();
     MorseOutput::displayEmptyBattery(shutMeDown);
+  }
   else
 #endif
 #endif
@@ -990,7 +1057,7 @@ void displayStartUp(uint16_t volt) {
       vsn += "." + String(VERSION_PATCH);
 
 //DEBUG("Display done, delay");
-delay(1800);
+splashPause(1800);
 //DEBUG("Display startup complete");
 }
 

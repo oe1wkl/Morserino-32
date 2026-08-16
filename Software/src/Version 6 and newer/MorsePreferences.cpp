@@ -1712,7 +1712,10 @@ void MorsePreferences::readPreferences(const char* repository) {
     MorsePreferences::useCustomChars = pref.getBool("useCustomChar");
     MorsePreferences::customCharSet = pref.getString("customCharSet", "");
     MorsePreferences::practiceCharSet = pref.getString("practiceChars", "");
-    if ((temp = pref.getUChar("lastExecuted"))) {
+    if ((temp = pref.getUChar("lastExecuted")) && temp < menuN) {
+       // The bound matters because menu indices differ between builds of the same device
+       // (games, QSO Bot, the Accessibility Edition's dropped WiFi entries all shift them):
+       // a pointer stored by another edition would otherwise index past menuNav[].
        MorsePreferences::menuPtr = temp;
     // DEBUG("@942 read: temp = " + String(temp));
     }
