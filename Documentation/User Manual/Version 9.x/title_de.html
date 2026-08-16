@@ -1,17 +1,24 @@
+<!-- BUILD-TEMPLATE — stripped by build.sh, not published.
+Titelseiten-Vorlage. Die Platzhalter werden von build.sh beim Bauen
+     ersetzt: @MAJOR@ aus dem Namen dieses Verzeichnisses ("Version 9.x" -> "9"),
+     @MONTH_YEAR@ und @YEAR@ aus dem Build-Datum. Hier keine Version und kein
+     Datum fest eintragen - new-major-version.sh --check schlägt fehl, wenn die
+     Platzhalter verschwinden, denn genau so ist die Titelseite früher
+     unbemerkt veraltet. -->
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>Benutzerhandbuch</p></div>
-<div class="title-version">Version 9.x<br>August 2026</div>
-<div class="title-logo"><img src="images/m32_logo.png" alt="M32 Logo"></div>
+<div class="title-version">Version @MAJOR@.x<br>@MONTH_YEAR@</div>
+<div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — Benutzerhandbuch</strong></p>
-<p>Ausgabe V 9.x, August 2026</p>
-<p>© Copyright 2016–2026 by Willi Kraml, OE1WKL</p>
+<p>Ausgabe V @MAJOR@.x, @MONTH_YEAR@</p>
+<p>© Copyright 2016–@YEAR@ by Willi Kraml, OE1WKL</p>
 <p>Dieses Werk steht unter einer CC BY 4.0-Lizenz. Um eine Kopie dieser Lizenz
 einzusehen, besuche <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
-<p>Diese Dokumentation wurde für die Firmware-Version 9.x überarbeitet.
+<p>Diese Dokumentation wurde für die Firmware-Version @MAJOR@.x überarbeitet.
 Die verwendete Schriftfamilie ist Lato.</p>
 <p>Die deutsche Version des Handbuchs wurde mithilfe von Claude (Anthropic)
 aus dem englischsprachigen Original übersetzt.</p>
