@@ -60,7 +60,11 @@ The font family used is Lato.</p>
 <li><a href="#morserino-32-2nd-edition" id="toc-morserino-32-2nd-edition"><span class="toc-section-number">2.2</span> Morserino-32 2nd edition</a></li>
 <li><a href="#morserino-32-1st-edition" id="toc-morserino-32-1st-edition"><span class="toc-section-number">2.3</span> Morserino-32 1st edition</a></li>
 </ul></li>
-<li><a href="#quick-guide-to-using-the-m32" id="toc-quick-guide-to-using-the-m32"><span class="toc-section-number">3</span> Quick Guide to Using the M32</a></li>
+<li><a href="#quick-guide-to-using-the-m32" id="toc-quick-guide-to-using-the-m32"><span class="toc-section-number">3</span> Quick Guide to Using the M32</a>
+<ul>
+<li><a href="#making-the-m32-pocket-speak-installing-the-accessibility-edition" id="toc-making-the-m32-pocket-speak-installing-the-accessibility-edition"><span class="toc-section-number">3.1</span> Making the M32 Pocket Speak: Installing the Accessibility Edition</a></li>
+<li><a href="#the-basics" id="toc-the-basics"><span class="toc-section-number">3.2</span> The Basics</a></li>
+</ul></li>
 <li><a href="#using-the-m32-step-by-step" id="toc-using-the-m32-step-by-step"><span class="toc-section-number">4</span> Using the M32, Step by Step</a>
 <ul>
 <li><a href="#powering-on-and-off-charging-the-battery" id="toc-powering-on-and-off-charging-the-battery"><span class="toc-section-number">4.1</span> Powering On and Off / Charging the Battery</a></li>
@@ -168,6 +172,9 @@ The font family used is Lato.</p>
 <p><em>“Morserino-32 – A multi-functional Morse Code Device, ideal for learning and training, and having fun.”</em></p>
 </div>
 <p>This manual reflects the features of firmware Version 9.x of the Morserino-32. <span class="classic">This edition of the manual describes the <strong>Morserino-32 1st and 2nd edition</strong>; the newer Morserino Pocket has its own edition of this manual.</span><span class="pocket pocket-a11y">This edition of the manual describes the <strong>Morserino-32 Pocket</strong>; the earlier 1st and 2nd edition Morserinos have their own edition of this manual.</span> The functionality provided by this version is basically the same for all three Morserino editions, with the exception that the M32Pocket does not have LoRa transceiver capabilities, but offers new features such as a colour display, games, and a battery status icon.</p>
+<div class="pocket-a11y">
+<p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
+</div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
 <!-- WHATSNEW:BEGIN en=e00c298c11bf v=9 -->
 <p>What is new in Version 9?</p>
@@ -447,6 +454,30 @@ The font family used is Lato.</p>
 <div class="important">
 <p>Make sure you have a suitable battery for your Morserino. <span class="classic">The M32 1st and 2nd edition use a 3.7 V LiPo battery.</span><span class="pocket pocket-a11y">The M32Pocket uses a 14500 type Li-Ion cell of 3.7 V.</span></p>
 </div>
+<section id="making-the-m32-pocket-speak-installing-the-accessibility-edition" class="pocket pocket-a11y" data-number="3.1">
+<h2 data-number="3.1"><span class="header-section-number">3.1</span> Making the M32 Pocket Speak: Installing the Accessibility Edition</h2>
+<p>If your M32 Pocket already speaks when you switch it on, you are running the Accessibility Edition and can skip this section.</p>
+<p>A new M32 Pocket is delivered with the <strong>Standard</strong> edition, and that edition is silent: it shows the menus on the display but does not read them out. The <strong>Accessibility Edition</strong> is the same firmware with a voice — it announces itself and the battery status when you switch it on, and it speaks menu entries, preferences and their values as you move through them. It costs nothing, it is installed over USB, and you can go back to the Standard edition at any time.</p>
+<p>It has to be installed from a computer; there is no way to do it on the device itself. In particular, the <strong>Update Firmw</strong> function in the WiFi menu will <strong>not</strong> install it: that function only replaces the program, while this edition also needs its voice clips and a different layout of the internal memory. Use the installer web page described here.</p>
+<p><strong>What you need</strong></p>
+<ul>
+<li>A desktop or laptop computer. Web Serial, the technique the installer uses to talk to the Morserino, does not exist on phones or tablets.</li>
+<li><strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Firefox</strong> version 151 or newer, or <strong>Opera</strong>. Safari cannot do this.</li>
+<li>A USB-C cable that carries data, not one that only charges.</li>
+</ul>
+<p><strong>Installing it</strong></p>
+<ol type="1">
+<li>Switch the M32 Pocket <strong>on</strong>, and leave it on. It has to be awake — not in sleep mode — before you plug the USB cable in.</li>
+<li>Connect it to the computer with the USB cable.</li>
+<li>Go to <a href="https://www.morserino.info/install.html"><code>https://www.morserino.info/install.html</code></a>.</li>
+<li>Choose <strong>Connect</strong>. Your browser then asks which serial port to use: pick the one your Morserino is on, and confirm.</li>
+<li>Under <strong>Edition</strong>, choose <strong>Accessibility Edition</strong>. Leave the choice about your data at <strong>Keep my settings</strong>.</li>
+<li>Choose <strong>Install</strong> and wait. Do not unplug the device while it is working. When it has finished, the Morserino restarts by itself — and this time it speaks.</li>
+</ol>
+<p>Two things are worth knowing before you start. The voice clips occupy the storage that the Standard edition uses for the File Player’s text, so the File Player has nothing to play in this edition; and the games are not included, because they cannot be played without sight. Everything else — your preferences, your snapshots and your stored speed — survives the change, and survives changing back.</p>
+<p>The same installer is also how you return to the Standard edition later: the steps are identical, you simply choose the other edition. It is described in full in the appendix <strong>Updating the Firmware via USB and a Browser (Webserial)</strong>.</p>
+</section>
+<h2 data-number="3.2" id="the-basics"><span class="header-section-number">3.2</span> The Basics</h2>
 <p><strong>Controls</strong> to be used:</p>
 <p>• ON/OFF (Battery): Sliding switch located on the back near the loudspeaker. Connects/disconnects battery.</p>
 <p>• ENCODER: The black knob that you can rotate and press.</p>

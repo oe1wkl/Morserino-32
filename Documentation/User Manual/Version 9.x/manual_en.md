@@ -21,6 +21,14 @@ is basically the same for all three Morserino editions, with the exception that
 the M32Pocket does not have LoRa transceiver capabilities, but offers new
 features such as a colour display, games, and a battery status icon.
 
+::: {.pocket-a11y}
+**If your M32 Pocket does not speak yet.** A new Pocket is delivered with the
+Standard edition, which is silent. The firmware this manual describes is
+installed from a computer over USB, and takes a few minutes: see **Making the
+M32 Pocket Speak: Installing the Accessibility Edition**, the first section of
+the chapter **Quick Guide to Using the M32**.
+:::
+
 I would like to thank all those who contributed–through code,
 comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
@@ -136,6 +144,63 @@ whole manual!**
 Make sure you have a suitable battery for your Morserino. [The M32 1st and 2nd edition use a 3.7 V LiPo battery.]{.classic}[The M32Pocket uses a 14500 type Li-Ion cell of 3.7 V.]{.pocket .pocket-a11y}
 :::
 
+::: {.pocket .pocket-a11y}
+## Making the M32 Pocket Speak: Installing the Accessibility Edition
+
+If your M32 Pocket already speaks when you switch it on, you are running the
+Accessibility Edition and can skip this section.
+
+A new M32 Pocket is delivered with the **Standard** edition, and that edition is
+silent: it shows the menus on the display but does not read them out. The
+**Accessibility Edition** is the same firmware with a voice — it announces
+itself and the battery status when you switch it on, and it speaks menu
+entries, preferences and their values as you move through them. It costs
+nothing, it is installed over USB, and you can go back to the Standard edition
+at any time.
+
+It has to be installed from a computer; there is no way to do it on the device
+itself. In particular, the **Update Firmw** function in the WiFi menu will
+**not** install it: that function only replaces the program, while this edition
+also needs its voice clips and a different layout of the internal memory. Use
+the installer web page described here.
+
+**What you need**
+
+-   A desktop or laptop computer. Web Serial, the technique the installer uses
+    to talk to the Morserino, does not exist on phones or tablets.
+-   **Google Chrome**, **Microsoft Edge**, **Firefox** version 151 or newer, or
+    **Opera**. Safari cannot do this.
+-   A USB-C cable that carries data, not one that only charges.
+
+**Installing it**
+
+1.  Switch the M32 Pocket **on**, and leave it on. It has to be awake — not in
+    sleep mode — before you plug the USB cable in.
+2.  Connect it to the computer with the USB cable.
+3.  Go to
+    [`https://www.morserino.info/install.html`](https://www.morserino.info/install.html).
+4.  Choose **Connect**. Your browser then asks which serial port to use: pick
+    the one your Morserino is on, and confirm.
+5.  Under **Edition**, choose **Accessibility Edition**. Leave the choice about
+    your data at **Keep my settings**.
+6.  Choose **Install** and wait. Do not unplug the device while it is working.
+    When it has finished, the Morserino restarts by itself — and this time it
+    speaks.
+
+Two things are worth knowing before you start. The voice clips occupy the
+storage that the Standard edition uses for the File Player's text, so the File
+Player has nothing to play in this edition; and the games are not included,
+because they cannot be played without sight. Everything else — your
+preferences, your snapshots and your stored speed — survives the change, and
+survives changing back.
+
+The same installer is also how you return to the Standard edition later: the
+steps are identical, you simply choose the other edition. It is described in
+full in the appendix **Updating the Firmware via USB and a Browser
+(Webserial)**.
+:::
+
+## The Basics
 
 **Controls** to be used:
 

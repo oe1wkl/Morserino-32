@@ -20,6 +20,15 @@ mit der Ausnahme, dass der M32Pocket keine LoRa-Transceiver-Fähigkeiten
 besitzt, dafür aber neue Funktionen wie ein Farbdisplay, Spiele und ein
 Batteriestatussymbol bietet.
 
+::: {.pocket-a11y}
+**Wenn dein M32 Pocket noch nicht spricht.** Ein neuer Pocket wird mit der
+Standard-Edition ausgeliefert, und die ist stumm. Die Firmware, die dieses
+Handbuch beschreibt, wird von einem Computer aus über USB installiert und ist in
+wenigen Minuten aufgespielt: siehe **Den M32 Pocket zum Sprechen bringen: die
+Accessibility Edition installieren**, den ersten Abschnitt des Kapitels
+**Kurzanleitung zur Benutzung des M32**.
+:::
+
 Ich möchte mich bei allen bedanken, die durch Code, Kommentare,
 Vorschläge, Kritik, Rezensionen, Blogeinträge, YouTube-Videos und andere
 Beiträge dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen
@@ -141,6 +150,65 @@ verwendest. [Der M32 der 1st und 2nd Edition benötigt einen
 3,7-V-LiPo-Akku.]{.classic}[Der M32Pocket verwendet eine 14500-Li-Ion-Zelle
 mit 3,7 V.]{.pocket .pocket-a11y}
 :::
+
+::: {.pocket .pocket-a11y}
+## Den M32 Pocket zum Sprechen bringen: die Accessibility Edition installieren
+
+Wenn dein M32 Pocket beim Einschalten bereits spricht, läuft die Accessibility
+Edition schon, und du kannst diesen Abschnitt überspringen.
+
+Ein neuer M32 Pocket wird mit der **Standard**-Edition ausgeliefert, und diese
+Edition ist stumm: Sie zeigt die Menüs am Display an, liest sie aber nicht vor.
+Die **Accessibility Edition** ist dieselbe Firmware mit Stimme — sie meldet sich
+beim Einschalten selbst mit dem Batteriestatus, und sie spricht Menüeinträge,
+Einstellungen und deren Werte, während du dich durch sie bewegst. Sie kostet
+nichts, sie wird über USB installiert, und du kannst jederzeit wieder zur
+Standard-Edition zurückkehren.
+
+Sie muss von einem Computer aus installiert werden; auf dem Gerät selbst ist das
+nicht möglich. Insbesondere die Funktion **Update Firmw** im WiFi-Menü
+installiert sie **nicht**: Diese Funktion ersetzt nur das Programm, während
+diese Edition zusätzlich ihre Sprachdateien und eine andere Aufteilung des
+internen Speichers benötigt. Verwende die hier beschriebene Installations-Webseite.
+
+**Was du brauchst**
+
+-   Einen Desktop-Rechner oder ein Notebook. Web Serial, die Technik, über die
+    das Installationsprogramm mit dem Morserino spricht, gibt es auf Smartphones
+    und Tablets nicht.
+-   **Google Chrome**, **Microsoft Edge**, **Firefox** ab Version 151 oder
+    **Opera**. Safari kann das nicht.
+-   Ein USB-C-Kabel, das Daten überträgt, und nicht eines, das nur lädt.
+
+**Die Installation**
+
+1.  Schalte den M32 Pocket **ein** und lass ihn eingeschaltet. Er muss wach sein
+    — nicht im Schlafmodus —, bevor du das USB-Kabel ansteckst.
+2.  Verbinde ihn über das USB-Kabel mit dem Computer.
+3.  Öffne
+    [`https://www.morserino.info/install.html`](https://www.morserino.info/install.html).
+4.  Wähle **Connect**. Der Browser fragt dann, welcher serielle Port verwendet
+    werden soll: Wähle jenen deines Morserino aus und bestätige.
+5.  Wähle unter **Edition** die **Accessibility Edition**. Die Wahl über deine
+    Daten bleibt auf **Keep my settings**.
+6.  Wähle **Install** und warte. Trenne das Gerät nicht ab, während es arbeitet.
+    Wenn es fertig ist, startet der Morserino von selbst neu — und diesmal
+    spricht er.
+
+Zwei Dinge solltest du vorher wissen. Die Sprachdateien belegen jenen Speicher,
+den die Standard-Edition für die Texte des File Players verwendet, der File
+Player hat in dieser Edition also nichts abzuspielen; und die Spiele sind nicht
+enthalten, weil sie sich ohne Sehvermögen nicht spielen lassen. Alles andere —
+deine Einstellungen, deine Snapshots und die gespeicherte Geschwindigkeit —
+bleibt beim Wechsel erhalten, und ebenso beim Wechsel zurück.
+
+Über dasselbe Installationsprogramm kommst du später auch wieder zur
+Standard-Edition zurück: Die Schritte sind dieselben, du wählst nur die andere
+Edition. Ausführlich beschrieben ist es im Anhang **Aktualisieren der Firmware
+über USB und einen Browser (Webserial)**.
+:::
+
+## Die Grundlagen
 
 **Zu verwendende Bedienelemente:**
 
