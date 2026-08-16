@@ -9,12 +9,27 @@
 #   - Lato font installed
 #
 # Usage:
-#   ./build.sh              # build both PDFs (default)
-#   ./build.sh en           # build English PDF
-#   ./build.sh de           # build German PDF
-#   ./build.sh all          # build both PDFs
-#   ./build.sh en html      # build English HTML only
-#   ./build.sh de html      # build German HTML only
+#   ./build.sh                     # both languages, PDF, combined manual
+#   ./build.sh en                  # English PDF
+#   ./build.sh de                  # German PDF
+#   ./build.sh all                 # both languages
+#   ./build.sh en html             # English HTML only
+#
+#   ./build.sh en pdf pocket       # English Pocket manual
+#   ./build.sh all pdf all         # every language x every variant (8 PDFs)
+#
+# The third argument selects the hardware variant, and defaults to 'combined' —
+# the manual as it has always been built, covering all three Morserinos:
+#
+#   combined      every variant's content, nothing filtered out (default)
+#   classic       Morserino-32 1st and 2nd edition (OLED)
+#   pocket        Morserino-32 Pocket (TFT)
+#   pocket-a11y   Pocket accessibility edition
+#   all           combined plus all three
+#
+# Filtering is done by variant.lua against the tags in the Markdown sources.
+# Combined output keeps the established filenames (m32UserManual_v<N>_en.pdf);
+# a variant adds its key (m32UserManual_v<N>_en_pocket.pdf).
 #
 
 # Always operate on the directory this script lives in, and take the major
@@ -73,9 +88,23 @@ resolve_title() {
 build_pdf() {
     local lang=$1
     local format=${2:-pdf}
+    local variant=${3:-combined}
     local input="manual_${lang}.md"
-    local html_output="manual_${lang}.html"
-    local pdf_output="m32UserManual_v${MAJOR}_${lang}.pdf"
+    local suffix=""
+    if [ "$variant" != "combined" ]; then
+        suffix="_${variant}"
+    fi
+    local html_output="manual_${lang}${suffix}.html"
+    local pdf_output="m32UserManual_v${MAJOR}_${lang}${suffix}.pdf"
+
+    local variant_filter=()
+    if [ "$variant" != "combined" ]; then
+        if [ ! -f "variant.lua" ]; then
+            echo "ERROR: variant.lua not found in $(pwd)"
+            return 1
+        fi
+        variant_filter=(--lua-filter=variant.lua --metadata "variant=$variant")
+    fi
 
     # Language-specific settings
     if [ "$lang" = "de" ]; then
@@ -95,7 +124,7 @@ build_pdf() {
     fi
 
     echo ""
-    echo "=== Building language: $lang ==="
+    echo "=== Building language: $lang ($variant) ==="
 
     if [ ! -f "$input" ]; then
         echo "ERROR: $input not found in $(pwd)"
@@ -131,6 +160,7 @@ build_pdf() {
         --wrap=none \
         --from markdown+fenced_divs \
         --include-before-body="$title_file" \
+        "${variant_filter[@]}" \
         $lua_filter \
         2>&1
 
@@ -160,49 +190,59 @@ build_pdf() {
     fi
 }
 
-# Build one or both languages, collect results
+# Build every requested language x variant combination, collect results
 run_build() {
-    local format=$1
-    shift
+    local format=$1 variants_arg=$2
+    shift 2
     local langs=("$@")
-    local ok=()
-    local fail=()
+    local variants=()
+    local ok=() fail=()
 
-    for lang in "${langs[@]}"; do
-        build_pdf "$lang" "$format"
-        if [ $? -eq 0 ]; then
-            ok+=("$lang")
-        else
-            fail+=("$lang")
-        fi
+    if [ "$variants_arg" = "all" ]; then
+        variants=(combined classic pocket pocket-a11y)
+    else
+        variants=("$variants_arg")
+    fi
+
+    for variant in "${variants[@]}"; do
+        for lang in "${langs[@]}"; do
+            local suffix=""
+            [ "$variant" != "combined" ] && suffix="_${variant}"
+            if build_pdf "$lang" "$format" "$variant"; then
+                if [ "$format" = "html" ]; then
+                    ok+=("manual_${lang}${suffix}.html")
+                else
+                    ok+=("m32UserManual_v${MAJOR}_${lang}${suffix}.pdf")
+                fi
+            else
+                fail+=("${lang} (${variant})")
+            fi
+        done
     done
 
     echo ""
     echo "=== Build summary ==="
-    for l in "${ok[@]}"; do
-        if [ "$format" = "html" ]; then
-            echo "  OK:   manual_${l}.html"
-        else
-            echo "  OK:   m32UserManual_v${MAJOR}_${l}.pdf"
-        fi
-    done
-    for l in "${fail[@]}"; do echo "  FAIL: $l"; done
+    for f in "${ok[@]}"; do echo "  OK:   $f"; done
+    for f in "${fail[@]}"; do echo "  FAIL: $f"; done
 
     [ ${#fail[@]} -eq 0 ]
 }
 
-case "${1:-all}" in
-    en)
-        run_build "${2:-pdf}" en
-        ;;
-    de)
-        run_build "${2:-pdf}" de
-        ;;
-    all)
-        run_build "${2:-pdf}" en de
-        ;;
+VARIANT="${3:-combined}"
+case "$VARIANT" in
+    combined|classic|pocket|pocket-a11y|all) ;;
     *)
-        echo "Usage: $0 [en|de|all] [html|pdf]"
+        echo "ERROR: unknown variant '$VARIANT'."
+        echo "       Expected combined, classic, pocket, pocket-a11y or all."
+        exit 1 ;;
+esac
+
+case "${1:-all}" in
+    en)  run_build "${2:-pdf}" "$VARIANT" en ;;
+    de)  run_build "${2:-pdf}" "$VARIANT" de ;;
+    all) run_build "${2:-pdf}" "$VARIANT" en de ;;
+    *)
+        echo "Usage: $0 [en|de|all] [html|pdf] [combined|classic|pocket|pocket-a11y|all]"
         exit 1
         ;;
 esac
