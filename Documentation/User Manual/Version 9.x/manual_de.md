@@ -1657,6 +1657,10 @@ dargestellt: grün für Buchstaben, gelb für Zahlen, orange für
 Satzzeichen und magenta für Betriebszeichen. Betriebszeichen werden
 mit ihrer zweibuchstabigen Abkürzung angezeigt.
 
+::: note
+Standardmäßig läuft das Spiel im Hochformat, mit den Touchpaddles unten. Mit der Einstellung „Invader Orient." kannst du auf Querformat umschalten; das Querformat berücksichtigt dabei deine Einstellung „linkshändig" (siehe Anhang 1: Hardware-Konfigurationsmenü).
+:::
+
 Um ein fallendes Zeichen zu zerstören, gib seinen Morsecode mit den
 Paddles (oder einem externen Schlüssel) ein. Das Spiel zielt automatisch
 auf das niedrigste – und damit dringlichste – Zeichen, das mit deiner
@@ -3366,12 +3370,12 @@ Konfiguration auswählen, indem du den Drehknopf drehst und ihn drückst,
 sobald die richtige Option angezeigt wird.
 
 Die wählbaren Optionen sind [**Calibr. Batt.** (Kalibrierung der
-Akkumessung), **Flip Screen** (Bildschirm umdrehen), **LoRa Config.**
-(LoRa-Konfiguration), **Reset Prefs.** (Einstellungen auf Werksstandard
-zurücksetzen) und **Cancel**]{.classic}[**Flip Screen** (Bildschirm
-umdrehen), **Reset Prefs.** (Einstellungen auf Werksstandard zurücksetzen),
-**CN3: Touch / CN3: Mechan.** (Paddle-Typ am CN3-Anschluss) und
-**Cancel**]{.pocket .pocket-a11y} (Abbruch; verlässt das Menü und fährt
+Akkumessung), **Flip Screen** (Bildschirm umdrehen), **Reset Defaults**
+(alle Einstellungen auf Werkswerte zurücksetzen), **LoRa Config.**
+(LoRa-Konfiguration) und **Cancel**]{.classic}[**Flip Screen** (Bildschirm
+umdrehen), **Reset Defaults** (alle Einstellungen auf Werkswerte
+zurücksetzen), **CN3: Touch / CN3: Mechan.** (Paddle-Typ am CN3-Anschluss)
+und **Cancel**]{.pocket .pocket-a11y} (Abbruch; verlässt das Menü und fährt
 mit dem normalen Einschalten des M32 fort).
 
 ::: {.pocket .pocket-a11y}
@@ -3526,8 +3530,8 @@ den Standard im 433-MHz-Band).
 
 ### Zurücksetzen der Einstellungen auf Werksstandard
 
-Dieser Menüpunkt setzt alle Einstellungen auf die Werkseinstellungen
-zurück, ändert aber keine Hardware-Konfigurationseinstellungen und löscht
+Dieser Menüpunkt — **Reset Defaults** im Hardware-Konfigurationsmenü — setzt
+alle Einstellungen auf die Werkseinstellungen zurück, ändert aber keine Hardware-Konfigurationseinstellungen und löscht
 oder verändert keine in Schnappschüssen gespeicherten Einstellungen.
 
 ::: {.classic}

@@ -109,10 +109,11 @@ English manual) and the LoRa material (`{.classic}`).
   cross-reference whose number no longer matches.
 - **The tables of contents are complete** in all eight builds.
 
-**One content divergence stands**, reported rather than papered over: the
-*Playing the Game* section of Morse Invaders has a `::: note` in English that
-the German text does not have. It is inside `{.pocket}` content, so it never
-reaches the accessibility build.
+**No content divergence remains.** The two the checks had surfaced are
+resolved: the *Playing the Game* note is translated into German, and the
+hardware-config option list now names **Reset Defaults** in both languages —
+which is what the firmware calls it, where German had "Reset Prefs." and
+English had omitted the option altogether. `check_parallelism.py` exits clean.
 
 ## What is still to do
 

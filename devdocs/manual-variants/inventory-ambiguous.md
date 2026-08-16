@@ -102,10 +102,40 @@ Appendix references were never affected: the number is part of the heading text
 | Glossary **M32Pocket**, **MOPP**, **QSK** | M32Pocket: a classic owner may still want the term defined. MOPP and QSK describe the WiFi/EspNow path too, which the Pocket has. |
 | "Flipping the display screen for left-hand use" | Per the decision above. |
 | Empty alt text on all four images | New content, not filtering. Still owed — see `inventory-images.md`. |
-| The German hardware-config list names **Reset Prefs.**, the English does not | A real EN/DE content difference, for an editorial pass. Tagging should not paper over it. |
-| The *Playing the Game* note exists in EN, not DE | The one divergence `check_parallelism.py` still reports. It is inside `{.pocket}` content, so it never reaches the accessibility build. |
 
 ---
+
+## The two EN/DE content differences — resolved
+
+Both were real, and both turned out to be more than translation slips.
+
+**The *Playing the Game* note** (Morse Invaders) existed only in English. It
+explains that the game runs in portrait by default and that *Invader Orient.*
+switches it to landscape, honouring the left-handed setting. That is
+information a German reader needs, so it is translated in rather than dropped.
+
+**The hardware-config option list.** The German list named **Reset Prefs.**,
+the English list omitted the option entirely — and the firmware calls it
+neither. `MorsePreferences.cpp` labels slot 3 **Reset Defaults**:
+
+```c
+case 1:   str = "Calibr. Batt.";
+case 2:   str = "Flip Screen";
+case 3:   str = "Reset Defaults";
+#ifndef LORA_DISABLED
+case 4:   str = "LoRa Config.";
+#endif
+```
+
+So both manuals were wrong, in different ways. Both lists now name **Reset
+Defaults**, in firmware slot order, and the section that documents it says
+which menu item it is.
+
+Checked while there: the Pocket really cannot reach battery calibration —
+`adjustKeyerPreference` skips slot 1 under `#ifdef CONFIG_MCP73871` — so the
+`{.classic}` tags on the calibration section and on that list entry are right.
+
+`check_parallelism.py` now exits clean.
 
 ## Still open for a later session
 

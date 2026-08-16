@@ -2943,8 +2943,10 @@ rotating the encoder knob, and pressing it once the right option shows
 up.
 
 The selectable options are [**Calibr. Batt.** (calibration of battery
-measurement), **Flip Screen**, **LoRa Config.** and
-**Cancel**]{.classic}[**Flip Screen**, **CN3: Touch / CN3: Mechan.** (the
+measurement), **Flip Screen**, **Reset Defaults** (reset all preferences to
+their factory values), **LoRa Config.** and
+**Cancel**]{.classic}[**Flip Screen**, **Reset Defaults** (reset all
+preferences to their factory values), **CN3: Touch / CN3: Mechan.** (the
 paddle type on the CN3 connector) and **Cancel**]{.pocket .pocket-a11y}
 (which just leaves this menu and continues with regular
 start-up of the M32).
@@ -3092,7 +3094,8 @@ Screen you will see the configured QRG for LoRa as a 5-digit number
 :::
 
 ### Resetting Preferences to their Factory Defaults
-This item resets all preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.
+This item — **Reset Defaults** in the Hardware Configuration menu — resets all
+preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.
 
 ::: {.classic}
 ## Appendix 2: More information about LoRa
