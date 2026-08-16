@@ -19,9 +19,16 @@ implied, and added the filter — so all three variants now build:
 
 ```bash
 cd "Documentation/User Manual/Version 9.x"
-./build.sh en pdf pocket       # one variant
+./build.sh en pdf pocket       # one variant, one format
 ./build.sh all pdf all         # 8 PDFs: 2 languages x combined + 3 variants
+./build.sh all epub all        # the same in EPUB
+./build.sh all html all        # and in HTML
 ```
+
+Three formats, because they are not interchangeable: PDF for print, HTML for
+the web, and EPUB for reflowable reading — which is also the format a screen
+reader and a braille display handle best. The accessibility edition is built in
+all three.
 
 | | combined | classic | pocket | pocket-a11y |
 |---|---:|---:|---:|---:|
@@ -108,6 +115,8 @@ English manual) and the LoRa material (`{.classic}`).
 - **Every variant builds with no warnings** — no dangling internal links and no
   cross-reference whose number no longer matches.
 - **The tables of contents are complete** in all eight builds.
+- **Every image has alt text**, so the EPUB declares
+  `schema:accessibilityFeature alternativeText`.
 
 **No content divergence remains.** The two the checks had surfaced are
 resolved: the *Playing the Game* note is translated into German, and the
@@ -127,8 +136,10 @@ From the original briefing, not yet done:
 - linearising the two Koch lesson grids for the accessibility build
   (`inventory-tables.md`);
 - an HTML output template: semantic headings, landmarks, scoped `<th>`;
-- per-variant image paths with a fallback to common, and **alt text for all
-  four images** — today they have none, so a screen reader announces nothing.
+- per-variant image paths with a fallback to common. (Alt text is now written
+  for all four images, and the M32 Pocket photo is followed by a tactile
+  description in the accessibility build — but that description is drafted from
+  the photograph and **needs checking against a real device**.)
 
 Found along the way and still open:
 

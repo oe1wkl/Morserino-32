@@ -219,18 +219,26 @@ def write_images(src):
         if path not in found:
             w("| `%s` | **%s** | - | - | - | %s |" % (path, cls, note))
     w("")
-    w("## What this means for session 2\n")
+    missing_alt = [p for p, rec in found.items() if not rec["alt"].strip()]
+    w("## Where this stands\n")
+    w("- **Alt text: %s.** %s"
+      % ("done" if not missing_alt else "%d image(s) still missing it" % len(missing_alt),
+         "Each image says what it shows and notes that the numbers match the "
+         "table below; pandoc now declares schema:accessibilityFeature "
+         "alternativeText in the EPUB."
+         if not missing_alt else "Missing on: " + ", ".join(missing_alt)))
     w("- Three of the four referenced images are already inside a variant div,")
     w("  so per-variant image paths are not strictly needed for them -- the")
     w("  surrounding tag already removes them.")
-    w("- `status_line.png` is the one real case: it is an OLED screenshot shown")
-    w("  to every reader, with a note apologising for it. A Pocket screenshot")
-    w("  plus a per-variant path (or two tagged image references) would let the")
-    w("  note go away.")
-    w("- **Every image reference in the manual has empty alt text.** For the")
-    w("  accessibility build that is a defect in its own right: a screen reader")
-    w("  announces nothing at all. Alt text is new content, so it is out of")
-    w("  scope here, but it belongs on the session-2 list.")
+    w("- The M32 Pocket photo is followed by a `{.pocket-a11y}` block describing")
+    w("  the device by touch, since that is the only photo a reader of the")
+    w("  accessibility edition meets. It is drafted and marked in the source with")
+    w("  a TODO: the touch-paddle and FN-button positions need checking against a")
+    w("  real device.")
+    w("- `status_line.png` is the one still-open case: an OLED screenshot shown")
+    w("  to Pocket readers too, with a note apologising for it. A Pocket")
+    w("  screenshot plus a per-variant path (or two tagged image references)")
+    w("  would let the note go away.")
     return "\n".join(out)
 
 
