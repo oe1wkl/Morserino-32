@@ -139,10 +139,13 @@ Checked while there: the Pocket really cannot reach battery calibration —
 
 ## Still open for a later session
 
-- **What the release ships.** See the decision table. Today the release still
-  builds and uploads the combined manual only.
+- ~~**What the release ships.**~~ **Decided and done:** the release ships the
+  three variant manuals per language, as PDF and EPUB, under permalink names.
+  The combined manual is still built and committed, but is no longer a release
+  asset.
 - **Device-aware links** from the firmware updater and the configuration tool,
-  so a user never has to know which manual is theirs.
+  so a user never has to know which manual is theirs — briefed in
+  [`devdocs/device-aware-manual-links/HANDOFF.md`](../device-aware-manual-links/HANDOFF.md).
 - **`status_line.png` is an OLED screenshot** shown to Pocket readers with a
   note apologising for it. A Pocket screenshot plus a per-variant image path
   would let the note go away.

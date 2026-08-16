@@ -21,6 +21,8 @@ devdocs/
 │   ├── todo-resolutions.md       ·   every TODO(audit) answered
 │   ├── divergences.md            ·   ranked refactoring backlog
 │   └── REFACTORING_PLAN.md       ·   phased plan (Phases A–G)
+├── device-aware-manual-links/    ← brief: link the right manual from the tools
+│   └── HANDOFF.md                ·   installer + config tool, what each can detect
 ├── installer/                    ← unified web installer (V9)
 │   └── PLAN.md                   ·   design + migration plan (2 installers → 1)
 ├── manual-variants/              ← V9 manual: one tagged source → 3 variants
