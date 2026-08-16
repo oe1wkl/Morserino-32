@@ -25,27 +25,13 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-Was ist neu in Version 8?
+<!-- WHATSNEW:BEGIN en=e00c298c11bf v=9 -->
+Was ist neu in Version 9?
 
--   Im Modus Echo Trainer kann jetzt eine Geschwindigkeitsbegrenzung für
-    die eigene Eingabe eingestellt werden.
--   Die Generierung zufälliger Rufzeichen wurde verbessert. Es ist nun
-    möglich, einen Filter zu setzen, um ausschließlich Rufzeichen eines
-    bestimmten Kontinents zu erhalten, oder sehr seltene Präfixe
-    auszublenden.
--   Der File Player unterstützt jetzt mehrteilige Dateien – eine
-    praktische Möglichkeit, mit einer einzigen hochgeladenen Datei
-    mehrere Textteile zu verwalten. Wird eine hochgeladene Textdatei als
-    mehrteilig erkannt, fragt der File Player beim Start, welchen Teil
-    du verwenden möchtest.
--   Nur für den M32Pocket: Akkustand und Ladestatus werden nun durch
-    ein Symbol in der obersten Displayzeile angezeigt, solange du dich
-    in einem Menü befindest.
--   Ebenfalls nur für den M32Pocket: Wir haben begonnen, Spiele zu
-    implementieren, um das Lernen und Üben des Morsecodes noch
-    unterhaltsamer zu gestalten! Das erste Spiel heißt „Morse Invaders":
-    Der Spieler muss verhindern, dass die angreifenden Buchstaben vom
-    Planeten Morse (oder war es Mars?) den Boden erreichen.
+-   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
+-   Nur M32 Pocket: Das Installationsprogramm kann nun auch die **Accessibility Edition** installieren, die Menüs und Einstellungen für blinde und sehbehinderte Operatoren laut vorliest (die Spiele sind darin nicht enthalten). Standard- und Accessibility Edition werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln; deine Einstellungen bleiben erhalten.
+-   Das Installationsprogramm funktioniert jetzt auch in **Firefox** (ab Version 151, die die Unterstützung für die Webserial-API gebracht hat), zusätzlich zu Chrome, Edge und Opera. Safari unterstützt es weiterhin nicht.
+<!-- WHATSNEW:END -->
 
 # Anschlüsse und Bedienelemente
 

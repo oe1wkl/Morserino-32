@@ -16,6 +16,14 @@ jobs:
       - name: Check user manual matches firmware major version
         run: '"Documentation/User Manual/new-major-version.sh" --check'
 
+      # The manual's "What is new" section is generated from the change history
+      # in Software/README.md. This fails when the two have drifted apart --
+      # either because the README gained entries the manual has not picked up,
+      # or because the English block was regenerated and the German translation
+      # has not caught up yet.
+      - name: Check manual "What is new" matches the change history
+        run: python3 "Documentation/User Manual/sync_whatsnew.py" --check
+
       - uses: actions/cache@v4
         with:
           path: |
