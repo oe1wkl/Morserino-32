@@ -5,14 +5,18 @@ theirs. Both browser tools already ask the device what it is — the installer
 reads the chip, the configuration tool talks the M32 serial protocol — so both
 can simply offer the right manual.
 
-**Status (2026-08-16).** Built, on branch `device-aware-manual-links`. Both
-tools offer the right manual, the firmware now says which edition it runs, and
-the §5.1 decision was taken: **option A**. What is *not* done is the only part
-that cannot be done yet — the links point at release assets that do not exist
-until the first V9 release runs the updated workflow, so **neither tool may be
-published to morserino.info before that release** (Willi's decision; see §6
-and §8). What was built, and what still has to be checked on hardware, is in
-§5.1 and §6.
+**Status (2026-08-16).** Built and **merged to master** (`83494cb`, branch
+`device-aware-manual-links`). Both tools offer the right manual, the firmware
+now says which edition it runs, and the §5.1 decision was taken: **option A**.
+What is *not* done is the only part that cannot be done yet — the links point at
+release assets that do not exist until the first V9 release runs the updated
+workflow, so **neither tool may be published to morserino.info before that
+release** (Willi's decision; see §6 and §8). What was built, and what still has
+to be checked on hardware, is in §5.1 and §6.
+
+The firmware half has to be **in** the V9 release for any of this to work: if
+`edition` does not ship, every V9 Pocket takes the config tool's "does not
+report its edition" fallback permanently.
 
 ---
 
@@ -217,9 +221,10 @@ anyone whose Pocket speaks its menus aloud. That is option **C**, but only
 where the answer is genuinely unknown — never in place of the answer.
 
 Option B (inferring from the menu tree) was not built, and the case against it
-got stronger while this was being written: the accessibility build is in the
-middle of losing its **Upload File** and **Update Firmw** entries, which is
-exactly the kind of quiet drift that would have broken the heuristic.
+proved itself while this was being written: the accessibility build **lost** its
+**Upload File** and **Update Firmw** entries in `94adfcd`, landing on master the
+same day. That is exactly the quiet drift that would have broken the heuristic —
+and it would have broken it silently, into a wrong manual rather than an error.
 
 ### 5.2 Boards that are neither classic nor Pocket
 
