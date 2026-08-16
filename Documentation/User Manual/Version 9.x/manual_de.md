@@ -42,26 +42,24 @@ Was ist neu in Version 9?
 
 ![Der M32 Pocket: ein schwarzes 3D-gedrucktes Gehäuse, schräg von oben. Die Oberseite wird größtenteils vom Displayfenster eingenommen; der Drehknopf sitzt am hinteren Ende. Die Ziffern 1 bis 8 bezeichnen die Anschlüsse und Bedienelemente aus der Tabelle darunter.](images/m32pocket.jpg)
 
-<!-- TODO(Willi): siehe englische Fassung. Positionen von Touchpaddles und
-     FN-Taste vor der Freigabe am Gerät prüfen.
-     (Kein doppelter Bindestrich in HTML-Kommentaren: XML verbietet ihn, und
-     der EPUB-Build schlägt dann fehl.) -->
 ::: {.pocket-a11y}
 **Orientierung am M32 Pocket durch Ertasten.** Das Gehäuse ist ein flaches
-Rechteck, etwa doppelt so lang wie breit; das Display nimmt den größten Teil
-einer der großen Flächen ein. Halte das Gerät so, dass diese Fläche nach oben
-zeigt und der Drehknopf von dir weg am hinteren Ende liegt.
+Rechteck, etwa doppelt so lang wie breit; das vertiefte Display nimmt den
+größten Teil einer der großen Flächen ein. Halte das Gerät so, dass diese
+Fläche nach oben zeigt und der Drehknopf rechts liegt.
 
-- An der **dir zugewandten Schmalseite** liegen vier Öffnungen nebeneinander.
-  Von der linken Ecke aus: der flache, breite **USB-C**-Schlitz (1), dann drei
-  runde 3,5-mm-Buchsen — **externes Paddle bzw. Taste** (2), **zum Sender** (3)
-  und ganz rechts **Kopfhörer / Audio** (4).
-- An der **linken Längsseite** sitzt in einer kleinen Aussparung der
-  **Schiebeschalter für den Akku** (5), etwa zwei Drittel in Richtung hinteres
-  Ende. In Richtung der Touchpaddles geschoben bedeutet EIN.
-- Am **hinteren Ende** befinden sich der **Dreh-ENCODER** (6) — der gerändelte
-  Knopf, der sich auch drücken lässt — daneben die ins Gehäuse integrierte
-  **FN-Taste** (8) und davor auf der Oberseite die **Touchpaddles** (7).
+- An der **linken Schmalseite** liegen vier Öffnungen nebeneinander. Von der
+  oberen Ecke aus: der flache, breite **USB-C**-Schlitz (1), dann drei runde
+  3,5-mm-Buchsen — **externes Paddle bzw. Taste** (2), **zum Sender** (3) und
+  **Kopfhörer / Audio** (4) am nächsten zur unteren Ecke.
+- An der **oberen Längsseite** sitzt in einer kleinen Aussparung der
+  **Schiebeschalter für den Akku** (5), etwa zwei Drittel in Richtung rechtes
+  Ende. Nach rechts geschoben (zu den Touchpaddles hin) bedeutet EIN.
+- An der **rechten Schmalseite** befindet sich der **Dreh-ENCODER** (6) — der
+  gerändelte Knopf, der sich auch drücken lässt — darunter die ins Gehäuse
+  integrierte **FN-Taste** (8) (zwischen der runden Aussparung, der
+  Lautsprecheröffnung, und dem Vorsprung, der die Touchpaddles trägt), sowie
+  die ovalen **Touchpaddles** (7) beidseits dieses Vorsprungs rechts.
 
 Alles Weitere ist in derselben Reihenfolge beschrieben wie die Ziffern in der
 Tabelle.
