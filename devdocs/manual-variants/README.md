@@ -13,18 +13,30 @@ tagged source** per language, rather than being forked:
 document: it keeps every visual reference ("the display shows…") and differs
 only where the accessibility firmware genuinely differs.
 
-**Session 1 (this directory) tagged the sources and produced the inventories.
-No filter, no template and no build change were made** — with no filter in
-place pandoc renders fenced divs and bracketed spans transparently, so both
-PDFs still build byte-for-byte the same page count with identical text on every
-page. That is the proof the pass broke nothing.
+**Session 1** tagged the sources and produced the inventories, changing nothing
+else. **Session 2** took the open decisions, applied the prose edits they
+implied, and added the filter — so all three variants now build:
+
+```bash
+cd "Documentation/User Manual/Version 9.x"
+./build.sh en pdf pocket       # one variant
+./build.sh all pdf all         # 8 PDFs: 2 languages x combined + 3 variants
+```
+
+| | combined | classic | pocket | pocket-a11y |
+|---|---:|---:|---:|---:|
+| English | 114 pages | 86 | 101 | 75 |
+| German | 120 pages | 89 | 105 | 78 |
+
+The combined manual is still what the release ships, and still builds exactly as
+before — `variant.lua` does nothing without a `variant` metadata value.
 
 ## What is here
 
 | File | What it is |
 |---|---|
 | [`SURVEY.md`](SURVEY.md) | What the sources look like, the decisions taken, and the two traps the briefing did not anticipate. **Read this first.** |
-| [`inventory-ambiguous.md`](inventory-ambiguous.md) | **The important one.** Every passage deliberately left untagged, and the question that has to be answered before it can be. |
+| [`inventory-ambiguous.md`](inventory-ambiguous.md) | **Resolved.** The decisions taken, what was fixed, and the short list of things deliberately left alone. |
 | [`inventory-menu-terms.md`](inventory-menu-terms.md) | On-device labels used in the manual, with the firmware gating that says whether they differ per variant. Generated. |
 | [`inventory-images.md`](inventory-images.md) | Image references and their variant classification. Generated. |
 | [`inventory-tables.md`](inventory-tables.md) | All 57 tables, with what session 2 needs to linearise them. Generated. |
@@ -33,10 +45,9 @@ page. That is the proof the pass broke nothing.
 ### Tools
 
 ```bash
-python3 check_tags_only.py [ref]        # strip the tags back out -> must equal the pre-tagging source
-python3 check_build_identity.py en      # the acceptance test: PDF must not move
-python3 check_build_identity.py de
 python3 check_parallelism.py            # EN and DE must stay structurally identical
+python3 check_build_identity.py en      # combined PDF must not move
+python3 check_tags_only.py <ref>        # strip the tags back out -> must equal <ref>
 python3 make_inventories.py             # regenerate the four generated inventories
 python3 tagmap.py                       # what is tagged, per language
 python3 firmware_terms.py               # the on-device vocabulary, with #ifdef gating
@@ -71,51 +82,59 @@ The paddle is connected to [CN3]{.pocket}[the 3.5 mm jack]{.classic}.
 
 ## Result
 
-37 tags per language, identical in both:
+111 tags per language, identical in both:
 
-| | `{.classic}` | `{.pocket}` | `{.classic .pocket}` | `{.pocket .pocket-a11y}` | total |
-|---|---:|---:|---:|---:|---:|
-| fenced divs | 13 | 1 | 2 | 9 | **25** |
-| bracketed spans | 2 | – | – | 2 | **4** |
-| marked table rows | 3 | 1 | – | 4 | **8** |
-| **total** | **18** | **2** | **2** | **15** | **37** |
+| | `{.classic}` | `{.pocket}` | `{.classic .pocket}` | `{.classic .pocket-a11y}` | `{.pocket .pocket-a11y}` | total |
+|---|---:|---:|---:|---:|---:|---:|
+| fenced divs | 15 | 1 | 3 | – | 10 | **29** |
+| bracketed spans | 41 | 8 | – | 1 | 24 | **74** |
+| marked table rows | 3 | 1 | – | – | 4 | **8** |
+| **total** | **59** | **10** | **3** | **1** | **38** | **111** |
 
 `{.pocket}` alone means "Pocket but not the accessibility edition" — the games
 and the two browser-driven WiFi functions. `{.classic .pocket}` means
-"everything except the accessibility edition".
+"everything except the accessibility edition", and `{.classic .pocket-a11y}`
+means "the two variants without games".
 
 The largest single tags are the games chapter (`{.pocket}`, ~17 % of the
 English manual) and the LoRa material (`{.classic}`).
 
-**Verified**, four ways:
+**Verified:**
 
-- **Nothing but tags changed** — stripping every tag back out reproduces the
-  pre-tagging sources exactly, in both languages (`check_tags_only.py`).
-- **The PDF did not move** — EN 114 pages, DE 118 pages, identical text on every
-  page against the pre-tagging PDFs (`check_build_identity.py`).
-- **The table of contents is complete** in both languages.
-- **EN and DE are parallel** — same tags, same sections, same order
-  (`check_parallelism.py`).
+- **English and German are parallel** — same tags, in the same sections, in the
+  same order (`check_parallelism.py`).
+- **The combined manual has not moved** (`check_build_identity.py`), and builds
+  without the filter doing anything.
+- **Every variant builds with no warnings** — no dangling internal links and no
+  cross-reference whose number no longer matches.
+- **The tables of contents are complete** in all eight builds.
 
 **One content divergence stands**, reported rather than papered over: the
 *Playing the Game* section of Morse Invaders has a `::: note` in English that
-the German text does not have (`manual_en.md:1650`).
+the German text does not have. It is inside `{.pocket}` content, so it never
+reaches the accessibility build.
 
-## What session 2 does
+## What is still to do
 
-From the briefing: the Lua filter for variant stripping; the `.morse` span with
-`aria-hidden` symbols plus visually-hidden dit/dah text; menu-term placeholder
-resolution from per-variant terminology files; table linearisation; an HTML
-output template with semantic headings, landmarks and scoped `<th>`; per-variant
-image paths with a fallback to common.
+From the original briefing, not yet done:
 
-Three additions this session found, in priority order:
+- the `.morse` span, with `aria-hidden` symbols plus visually-hidden dit/dah
+  text (only two sites per language — see `inventory-morse.md`);
+- menu-term placeholders resolved from per-variant terminology files
+  (`inventory-menu-terms.md` lists the 18 terms that need one, and the one
+  preference whose *values* differ);
+- linearising the two Koch lesson grids for the accessibility build
+  (`inventory-tables.md`);
+- an HTML output template: semantic headings, landmarks, scoped `<th>`;
+- per-variant image paths with a fallback to common, and **alt text for all
+  four images** — today they have none, so a screen reader announces nothing.
 
-1. **A prose pass over `inventory-ambiguous.md` §2 first.** A dozen sentences
-   name both variants in one grammatical unit and cannot be tagged without
-   rewriting. They are the single biggest source of "wrong for my device" text
-   the filter will leave behind, and they are all one- or two-sentence edits.
-2. **The filter must drop marked table rows**, and — if the whole-item span
-   convention in §6 is adopted — list items that become empty.
-3. **Alt text for the four images.** Every image reference in the manual has
-   empty alt text, so a screen reader announces nothing at all.
+Found along the way and still open:
+
+- **what the release ships** — see `inventory-ambiguous.md`;
+- **device-aware links** from the firmware updater and the configuration tool,
+  so a reader never has to know which manual is theirs;
+- **cross-references as real anchors** rather than plain text, which would let
+  the filter catch a reference into a section a variant removes. Extending
+  `normalize_ids.lua` to rewrite link targets is a prerequisite, or German
+  links will break on umlauts.

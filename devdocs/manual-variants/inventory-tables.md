@@ -19,70 +19,70 @@ These are the ones session 2 should linearise for the a11y build.
 
 | EN lines | Section | Cols | Rows | Why |
 |---|---|---|---|---|
-| 1082–1100 | Different character sequence order | 6 | 17 | Repeats the same column pair 3 times across the page. Read linearly it becomes 'Lesson 1, Character m, Lesson 18, Character 0, Lesson 35, Character 7' -- three unrelated lessons per row. Linearise for the a11y build. |
-| 1105–1123 | Different character sequence order | 6 | 17 | Repeats the same column pair 3 times across the page. Read linearly it becomes 'Lesson 1, Character m, Lesson 18, Character 0, Lesson 35, Character 7' -- three unrelated lessons per row. Linearise for the a11y build. |
+| 1075–1093 | Different character sequence order | 6 | 17 | Repeats the same column pair 3 times across the page. Read linearly it becomes 'Lesson 1, Character m, Lesson 18, Character 0, Lesson 35, Character 7' -- three unrelated lessons per row. Linearise for the a11y build. |
+| 1098–1116 | Different character sequence order | 6 | 17 | Repeats the same column pair 3 times across the page. Read linearly it becomes 'Lesson 1, Character m, Lesson 18, Character 0, Lesson 35, Character 7' -- three unrelated lessons per row. Linearise for the a11y build. |
 
 ## All tables
 
 | EN lines | DE lines | Section | Cols | Data rows | Layout only | Screen reader |
 |---|---|---|---|---|---|---|
-| 49–58 | 57–66 | M32Pocket | 3 | 8 | no | ok |
-| 68–84 | 76–92 | Morserino-32 2nd edition | 3 | 15 | no | ok |
-| 94–109 | 102–117 | Morserino-32 1st edition | 3 | 14 | no | ok |
-| 1033–1051 | 1044–1062 | Koch: Select Lesson | 6 | 17 | no | ok |
-| 1082–1100 | 1092–1110 | Different character sequence order | 6 | 17 | **yes** | poor |
-| 1105–1123 | 1114–1132 | Different character sequence order | 6 | 17 | **yes** | poor |
-| 1129–1147 | 1136–1154 | Different character sequence order | 6 | 17 | no | ok |
-| 1770–1775 | 1803–1808 | The Lobby | 4 | 4 | no | ok |
-| 1809–1814 | 1886–1891 | Scoring | 2 | 4 | no | ok |
-| 1820–1826 | 1900–1906 | Controls During Play | 2 | 5 | no | ok |
-| 1887–1901 | 2026–2040 | Commands | 2 | 13 | no | ok |
-| 1926–1933 | 2079–2086 | Controls | 2 | 6 | no | ok |
-| 1985–1991 | 2170–2176 | Lobby Settings | 2 | 5 | no | ok |
-| 2013–2017 | 2218–2222 | Playing a Word | 2 | 3 | no | ok |
-| 2042–2049 | 2272–2279 | Controls During the Game | 2 | 6 | no | ok |
-| 2096–2099 | 2358–2361 | Starting a Multiplayer Game | 2 | 2 | no | ok |
-| 2115–2121 | 2392–2398 | Ranking Screen | 2 | 5 | no | ok |
-| 2143–2149 | 2450–2456 | Starting the Game | 2 | 5 | no | ok |
-| 2161–2166 | 2480–2485 | Controls During the Game | 2 | 4 | no | ok |
-| 2180–2183 | 2517–2520 | Multiplayer | 2 | 2 | no | ok |
-| 2209–2214 | 2573–2578 | Direction Keys | 2 | 4 | no | ok |
-| 2222–2229 | 2595–2602 | Starting and Controls | 2 | 6 | no | ok |
-| 2256–2262 | 2669–2675 | Starting the Game | 2 | 5 | no | ok |
-| 2276–2281 | 2703–2708 | Controls During the Game | 2 | 4 | no | ok |
-| 2800–2811 | 3239–3250 | General Preferences | 3 | 10 | no | ok |
-| 2822–2832 | 3259–3269 | Preferences regarding Key, Paddles and Keyer | 3 | 9 | no | ok |
-| 2843–2846 | 3277–3280 | Preferences regarding Koch Character Sequence | 3 | 2 | no | ok |
-| 2856–2858 | 3288–3290 | Preferences regarding Practice Set | 3 | 1 | no | ok |
-| 2871–2886 | 3302–3317 | Preferences regarding CW Generation | 3 | 14 | no | ok |
-| 2900–2907 | 3329–3336 | Preferences regarding Echo Trainer | 3 | 6 | no | ok |
-| 2919–2927 | 3345–3353 | Preferences regarding Transmitting, Decoding and QSO Bot | 3 | 7 | no | ok |
-| 2933–2938 | 3359–3364 | Preferences regarding Player Identity and Scores | 3 | 4 | no | ok |
-| 3594–3613 | 4071–4090 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 18 | no | ok |
-| 3617–3630 | 4094–4107 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 12 | no | ok |
-| 3634–3646 | 4111–4123 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 11 | no | ok |
-| 3650–3658 | 4127–4135 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
-| 3662–3668 | 4139–4145 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 5 | no | ok |
-| 3672–3681 | 4149–4158 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 8 | no | ok |
-| 3685–3699 | 4162–4176 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 13 | no | ok |
-| 3703–3714 | 4180–4191 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 10 | no | ok |
-| 3718–3727 | 4195–4204 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 8 | no | ok |
-| 3731–3737 | 4208–4214 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 5 | no | ok |
-| 3741–3753 | 4218–4230 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 11 | no | ok |
-| 3757–3772 | 4234–4249 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 14 | no | ok |
-| 3776–3785 | 4253–4262 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 8 | no | ok |
-| 3789–3797 | 4266–4274 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
-| 3801–3809 | 4278–4286 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
-| 3813–3841 | 4290–4318 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 27 | no | ok |
-| 3845–3858 | 4322–4335 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 12 | no | ok |
-| 3862–3876 | 4339–4353 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 13 | no | ok |
-| 3880–3891 | 4357–4368 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 10 | no | ok |
-| 3895–3905 | 4372–4382 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 9 | no | ok |
-| 3909–3917 | 4386–4394 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
-| 3921–3931 | 4398–4408 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 9 | no | ok |
-| 3935–3940 | 4412–4417 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 4 | no | ok |
-| 3944–3952 | 4421–4429 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
-| 3957–3994 | 4435–4472 | Appendix 11: Glossary | 2 | 36 | no | ok |
+| 44–53 | 45–54 | M32Pocket | 3 | 8 | no | ok |
+| 63–79 | 64–80 | Morserino-32 2nd edition | 3 | 15 | no | ok |
+| 89–104 | 90–105 | Morserino-32 1st edition | 3 | 14 | no | ok |
+| 1026–1044 | 1033–1051 | Koch: Select Lesson | 6 | 17 | no | ok |
+| 1075–1093 | 1081–1099 | Different character sequence order | 6 | 17 | **yes** | poor |
+| 1098–1116 | 1103–1121 | Different character sequence order | 6 | 17 | **yes** | poor |
+| 1122–1140 | 1125–1143 | Different character sequence order | 6 | 17 | no | ok |
+| 1761–1766 | 1791–1796 | The Lobby | 4 | 4 | no | ok |
+| 1800–1805 | 1874–1879 | Scoring | 2 | 4 | no | ok |
+| 1811–1817 | 1888–1894 | Controls During Play | 2 | 5 | no | ok |
+| 1878–1892 | 2014–2028 | Commands | 2 | 13 | no | ok |
+| 1917–1924 | 2067–2074 | Controls | 2 | 6 | no | ok |
+| 1976–1982 | 2158–2164 | Lobby Settings | 2 | 5 | no | ok |
+| 2004–2008 | 2206–2210 | Playing a Word | 2 | 3 | no | ok |
+| 2033–2040 | 2260–2267 | Controls During the Game | 2 | 6 | no | ok |
+| 2087–2090 | 2346–2349 | Starting a Multiplayer Game | 2 | 2 | no | ok |
+| 2106–2112 | 2380–2386 | Ranking Screen | 2 | 5 | no | ok |
+| 2134–2140 | 2438–2444 | Starting the Game | 2 | 5 | no | ok |
+| 2152–2157 | 2468–2473 | Controls During the Game | 2 | 4 | no | ok |
+| 2171–2174 | 2505–2508 | Multiplayer | 2 | 2 | no | ok |
+| 2200–2205 | 2561–2566 | Direction Keys | 2 | 4 | no | ok |
+| 2213–2220 | 2583–2590 | Starting and Controls | 2 | 6 | no | ok |
+| 2247–2253 | 2657–2663 | Starting the Game | 2 | 5 | no | ok |
+| 2267–2272 | 2691–2696 | Controls During the Game | 2 | 4 | no | ok |
+| 2793–2804 | 3231–3242 | General Preferences | 3 | 10 | no | ok |
+| 2815–2825 | 3251–3261 | Preferences regarding Key, Paddles and Keyer | 3 | 9 | no | ok |
+| 2836–2839 | 3269–3272 | Preferences regarding Koch Character Sequence | 3 | 2 | no | ok |
+| 2849–2851 | 3280–3282 | Preferences regarding Practice Set | 3 | 1 | no | ok |
+| 2864–2879 | 3294–3309 | Preferences regarding CW Generation | 3 | 14 | no | ok |
+| 2893–2900 | 3321–3328 | Preferences regarding Echo Trainer | 3 | 6 | no | ok |
+| 2912–2920 | 3337–3345 | Preferences regarding Transmitting, Decoding and QSO Bot | 3 | 7 | no | ok |
+| 2926–2931 | 3351–3356 | Preferences regarding Player Identity and Scores | 3 | 4 | no | ok |
+| 3589–3608 | 4068–4087 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 18 | no | ok |
+| 3612–3625 | 4091–4104 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 12 | no | ok |
+| 3629–3641 | 4108–4120 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 11 | no | ok |
+| 3645–3653 | 4124–4132 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
+| 3657–3663 | 4136–4142 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 5 | no | ok |
+| 3667–3676 | 4146–4155 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 8 | no | ok |
+| 3680–3694 | 4159–4173 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 13 | no | ok |
+| 3698–3709 | 4177–4188 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 10 | no | ok |
+| 3713–3722 | 4192–4201 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 8 | no | ok |
+| 3726–3732 | 4205–4211 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 5 | no | ok |
+| 3736–3748 | 4215–4227 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 11 | no | ok |
+| 3752–3767 | 4231–4246 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 14 | no | ok |
+| 3771–3780 | 4250–4259 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 8 | no | ok |
+| 3784–3792 | 4263–4271 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
+| 3796–3804 | 4275–4283 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
+| 3808–3836 | 4287–4315 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 27 | no | ok |
+| 3840–3853 | 4319–4332 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 12 | no | ok |
+| 3857–3871 | 4336–4350 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 13 | no | ok |
+| 3875–3886 | 4354–4365 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 10 | no | ok |
+| 3890–3900 | 4369–4379 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 9 | no | ok |
+| 3904–3912 | 4383–4391 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
+| 3916–3926 | 4395–4405 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 9 | no | ok |
+| 3930–3935 | 4409–4414 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 4 | no | ok |
+| 3939–3947 | 4418–4426 | Appendix 10: List of common CW abbreviations used by Morserino-32 | 2 | 7 | no | ok |
+| 3952–3989 | 4432–4469 | Appendix 11: Glossary | 2 | 36 | no | ok |
 
 ## Other screen-reader notes
 
