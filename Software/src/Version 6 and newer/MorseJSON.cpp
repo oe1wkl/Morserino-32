@@ -68,6 +68,16 @@ void MorseJSON::jsonDevice(const String& brd, const String& vsn) { // create jso
 	device["firmware"] = vsn;
 	device["protocol"] = M32P_VERSION;
 	device["build"]    = COMPILEDATE;   // firmware compile date (__DATE__), additive build stamp
+	// Which firmware edition is running. Both Pocket editions share one HW_NAME
+	// ("M32 Pocket (Wroom)"), so "hardware" alone cannot tell a client whether it
+	// is talking to the accessibility build — which it must know to offer the
+	// right user manual. Additive: the protocol version stays 1.3, and older
+	// firmware simply omits the property.
+#ifdef CONFIG_AUDIO_A11Y
+	device["edition"]  = "accessibility";
+#else
+	device["edition"]  = "standard";
+#endif
 	MorseJSON::jsonSend(doc);
 }
 

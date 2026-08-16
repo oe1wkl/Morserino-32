@@ -254,6 +254,18 @@
     background: #d4edda; border: 2px solid #9dcc9d; border-radius: var(--radius); color: #256535;
   }
 
+  /* ── Manual links inside the finished box ──
+     The links inherit the box's dark green rather than --link: #268bd2 scores
+     only 2.97:1 on this background. The underline, not the colour, is what
+     marks them as links. */
+  .manual-links { margin-top: 12px; }
+  .manual-links .manual-head { margin-bottom: 6px; }
+  .manual-links ul { list-style: none; margin: 0; padding: 0; }
+  .manual-links li { margin: 5px 0; font-weight: 400; }
+  .manual-links a { color: inherit; text-decoration: underline; }
+  .manual-links a:hover { color: var(--accent2); }
+  .manual-links a:focus-visible { outline: 3px solid var(--accent2); outline-offset: 2px; }
+
   /* ── Progress ── */
   progress {
     width: 100%; height: 20px; margin: 8px 0 4px; appearance: none;
@@ -425,7 +437,11 @@
     <p id="phase" class="status-msg" aria-live="polite">Starting…</p>
     <progress id="bar" max="100" value="0" aria-label="Installation progress"></progress>
     <p id="bytes" class="progress-detail" aria-hidden="true"></p>
-    <p id="flash-done" class="ok-msg" role="status" hidden></p>
+    <!-- One live region for the whole "finished" message: the confirmation and
+         the manual links are filled in before it is unhidden, so a screen
+         reader announces them together. A <div>, not a <p>, because the manual
+         links are a list. -->
+    <div id="flash-done" class="ok-msg" role="status" hidden></div>
     <p id="flash-error" class="err-msg" role="alert" hidden></p>
     <div class="button-row" id="flash-again-row" hidden>
       <button id="btn-restart" type="button" class="secondary">Install something else</button>
@@ -487,6 +503,15 @@
   const FIRMWARE_ROOT = new URL('firmware/', location.href).href;
   const REGISTRY_URL  = FIRMWARE_ROOT + 'targets.json';
   const FLASH_BAUD    = 921600;   // ROM baud stays at esptool-js's 115200 default
+
+  // The user manuals are release assets under a permanent, version-less URL:
+  // "latest" resolves to the newest non-prerelease release, so a beta never
+  // hijacks it and the link never needs updating. The per-target slug lives in
+  // targets.json, so the manuals can be renamed there without touching this
+  // page — and a target that has no slug gets no link at all, which is what an
+  // installer page newer than the registry it fetched must degrade to.
+  const MANUAL_ROOT  = 'https://github.com/oe1wkl/Morserino-32/releases/latest/download/';
+  const MANUAL_LANGS = [{ code: 'EN', name: 'English' }, { code: 'DE', name: 'German' }];
 
   // Installed-version probe (see PLAN.md §4.3). Every failure is a normal
   // outcome: old firmware, a busy device, a blank board. Keep it short.
@@ -850,6 +875,58 @@
     el.chooseWarning.hidden = messages.length === 0;
   }
 
+  // ── The manual that belongs to what was just installed ───────────────────
+  // Every link carries its own full description — which device, which edition,
+  // which language, which format — because it may be read out on its own, out
+  // of the surrounding context, by a screen reader listing the page's links.
+  function manualLinks(t) {
+    if (!t || !t.manual) return [];
+    const device = t.manualName || t.hardware;
+    // EPUB first for the Accessibility Edition: a screen reader and a braille
+    // display handle it far better than a PDF, which carries no reliable
+    // reading order. The PDF stays available, second.
+    const formats = t.accessible ? ['epub', 'pdf'] : ['pdf', 'epub'];
+    const links = [];
+    for (const lang of MANUAL_LANGS) {
+      for (const fmt of formats) {
+        links.push({
+          href: `${MANUAL_ROOT}Morserino-32_User_Manual_${t.manual}_${lang.code}.${fmt}`,
+          text: `User manual for the ${device} — ${lang.name}, ${fmt.toUpperCase()}`,
+        });
+      }
+    }
+    return links;
+  }
+
+  // Appended to the "finished" box while it is still hidden, so the whole
+  // message is announced in one go when it appears.
+  function appendManualLinks(t, into) {
+    const links = manualLinks(t);
+    if (links.length === 0) return;
+
+    const box = document.createElement('div');
+    box.className = 'manual-links';
+
+    const head = document.createElement('div');
+    head.className = 'manual-head';
+    head.textContent = 'The user manual for this Morserino:';
+    box.appendChild(head);
+
+    const list = document.createElement('ul');
+    for (const l of links) {
+      const li = document.createElement('li');
+      const a = document.createElement('a');
+      a.href = l.href;
+      a.textContent = l.text;
+      // No target="_blank": GitHub serves release assets as attachments, so the
+      // click downloads the file and leaves the installer page where it is.
+      li.appendChild(a);
+      list.appendChild(li);
+    }
+    box.appendChild(list);
+    into.appendChild(box);
+  }
+
   // ── Step 3: download, then write ─────────────────────────────────────────
   function partsFor(t, version) {
     const base = FIRMWARE_ROOT + t.dir;
@@ -963,6 +1040,9 @@
           `leave it alone until it finishes, and do not switch it off.`
         : `Done — V${version.version} is installed and the Morserino is restarting. ` +
           `If the screen stays dark, switch it off and on again.`;
+      // This is the one moment the tool knows for certain what is on the
+      // device, so it is the moment to offer the matching manual.
+      appendManualLinks(target, el.flashDone);
       el.flashDone.hidden = false;
       setPhase('Finished.');
     } catch (e) {

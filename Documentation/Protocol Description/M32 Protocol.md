@@ -9,6 +9,12 @@
 	Serial"). The protocol version stays 1.3: no commands or properties
 	changed, BLE is a second transport for the same byte stream.
 
+	Document revision note (August 16, 2026): the "device" object now also
+	reports "edition" — "standard" or "accessibility" — because the M32
+	Pocket's two editions run on the same board and report the same
+	"hardware" string. The protocol version stays 1.3: the property is
+	additive, and firmware that predates it simply omits it.
+
 The Morserino can communicate two-way with a connected computer — over the USB bus, and (with firmware that includes the "BLE Serial" feature, and the **Bluetooth Use** preference set to **BLE Serial**) over Bluetooth Low Energy; see the section "Transports" below. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
 
 	Changes in protocol version 1.3 from version 1.2:
@@ -115,7 +121,7 @@ After establishing the connection physically, the M32 protocol needs to be enabl
 `
 
 As a confirmation device information is returned, e.g.:
-`{"device":{"hardware":"M32 2nd edition","firmware":"8.1","protocol":"1.3","build":"Jun 22 2026"}}`
+`{"device":{"hardware":"M32 2nd edition","firmware":"8.1","protocol":"1.3","build":"Jun 22 2026","edition":"standard"}}`
 
 From this response the connected computer program gets not only confirmation that the communication has been established, but also information about the hardware used, as well as the firmware and protocol versions.
 
@@ -132,7 +138,7 @@ The device acknowledges this with a farewell object: `{"end m32protocol":{"conte
 
 The protocol version is reported in the `device` object as the `protocol` property (currently "1.3"). Changes within a major version are **additive**: new GET/PUT commands and new properties may be added, but existing ones keep their meaning. A connected program should therefore **ignore any object or property it does not recognise**, and treat an unknown command (one that returns an "UNKNOWN COMMAND" or "NOT YET IMPLEMENTED" error) as "not supported by this firmware".
 
-To identify the firmware it is talking to, a program uses the `device` object: `firmware` (the firmware version), `protocol` (the protocol version), and `build` (the firmware compile date). In version 1.3 there is no command to enumerate the supported commands; such a `GET capabilities` query is a candidate for a future protocol version.
+To identify the firmware it is talking to, a program uses the `device` object: `firmware` (the firmware version), `protocol` (the protocol version), `build` (the firmware compile date), and `edition` (which firmware edition is running). In version 1.3 there is no command to enumerate the supported commands; such a `GET capabilities` query is a candidate for a future protocol version.
 
 
 
@@ -223,12 +229,15 @@ Example:
 `GET device`
 Returns the properties „hardware“ (e.g. "M32 1st edition", "M32 2nd edition", or a board name such as the M32 Pocket's HW_NAME)
 „firmware“ (the firmware version number),
-„protocol“ (the M32 Protocol version), and
-„build“ (the firmware compile date, e.g. "Jun 22 2026").
+„protocol“ (the M32 Protocol version),
+„build“ (the firmware compile date, e.g. "Jun 22 2026"), and
+„edition“ (which firmware edition is running: "standard", or "accessibility" for the build that speaks the user interface aloud).
+
+„edition“ exists because the hardware string does not identify the firmware on its own: the M32 Pocket's standard and Accessibility editions run on the same board and both report „hardware“ as "M32 Pocket (Wroom)". A program that has to tell them apart — to offer the matching user manual, for instance — reads „edition“. Firmware released before August 2026 omits the property; treat its absence as "not known" rather than as "standard".
 
 Example:
 
-	{"device":{"hardware":"M32 2nd edition","firmware":"8.1","protocol":"1.3","build":"Jun 22 2026"}}
+	{"device":{"hardware":"M32 2nd edition","firmware":"8.1","protocol":"1.3","build":"Jun 22 2026","edition":"standard"}}
 
 `PUT device/protocol/on`       
 This switches the M32 protocol on (you will get device information back; you will also get device info when command is sent while protocol is already ON);
