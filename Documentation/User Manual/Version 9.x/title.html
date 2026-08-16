@@ -1,16 +1,22 @@
+<!-- BUILD-TEMPLATE — stripped by build.sh, not published.
+Title page template. The placeholders are filled in by build.sh at build
+     time: @MAJOR@ from this directory's name ("Version 9.x" -> "9"),
+     @MONTH_YEAR@ and @YEAR@ from the build date. Do not hardcode a version or
+     a date here - new-major-version.sh --check fails if the placeholders go
+     missing, because that is how the title page silently went stale before. -->
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>User Manual</p></div>
-<div class="title-version">Version 9.x<br>August 2026</div>
-<div class="title-logo"><img src="images/m32_logo.png" alt="M32 Logo"></div>
+<div class="title-version">Version @MAJOR@.x<br>@MONTH_YEAR@</div>
+<div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — User Manual</strong></p>
-<p>Edition V 9.x, August 2026</p>
-<p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
+<p>Edition V @MAJOR@.x, @MONTH_YEAR@</p>
+<p>© Copyright 2016-@YEAR@ by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
-<p>This document has been revised for firmware version 9.x.
+<p>This document has been revised for firmware version @MAJOR@.x.
 The font family used is Lato.</p>
 </div>

@@ -109,12 +109,30 @@ if [ "$CHECK_ONLY" = "1" ]; then
             done
         }
 
-        check_anchor title.html    's/.*title-version">Version \([0-9][0-9]*\)\.x.*/\1/p'          'title page version'      || fail=1
-        check_anchor title.html    's/.*Edition V \([0-9][0-9]*\)\.x,.*/\1/p'                      'edition line'            || fail=1
-        check_anchor title.html    's/.*revised for firmware version \([0-9][0-9]*\)\.x.*/\1/p'    'revised-for line'        || fail=1
-        check_anchor title_de.html 's/.*title-version">Version \([0-9][0-9]*\)\.x.*/\1/p'          'Titelseiten-Version'     || fail=1
-        check_anchor title_de.html 's/.*Ausgabe V \([0-9][0-9]*\)\.x,.*/\1/p'                      'Ausgabe-Zeile'           || fail=1
-        check_anchor title_de.html 's/.*Firmware-Version \([0-9][0-9]*\)\.x überarbeitet.*/\1/p'   'überarbeitet-fuer-Zeile' || fail=1
+        # The title pages are templates now: build.sh fills @MAJOR@ from the
+        # folder name and @MONTH_YEAR@ / @YEAR@ from the build date, so their
+        # version can no longer drift and there is no value to compare. What
+        # CAN go wrong is someone "fixing" a template by typing a literal
+        # version back in, which would freeze it again — so check the opposite:
+        # that the placeholders are still there and no literal N.x crept in.
+        check_template() {                     # file, description
+            local f="$dir/$1" label="$2" ph rc=0
+            [ -f "$f" ] || return 0
+            for ph in '@MAJOR@' '@MONTH_YEAR@'; do
+                if ! grep -q -- "$ph" "$f"; then
+                    echo "FAIL: $1 — $label: placeholder $ph is gone."
+                    echo "      build.sh fills it in; a literal value here goes stale silently."
+                    rc=1
+                fi
+            done
+            if grep -q 'title-version">Version [0-9]' "$f"; then
+                echo "FAIL: $1 — $label: literal version on the title page instead of @MAJOR@."
+                rc=1
+            fi
+            return $rc
+        }
+        check_template title.html    'title page' || fail=1
+        check_template title_de.html 'Titelseite' || fail=1
         check_anchor manual_en.md  's/.*firmware Version \([0-9][0-9]*\)\.x.*/\1/p'                'intro paragraph'         || fail=1
         check_anchor manual_de.md  's/.*Firmware-Version \([0-9][0-9]*\)\.x des.*/\1/p'            'Einleitungsabsatz'       || fail=1
         check_anchor manual_en.md  's/.*m32_V\([0-9][0-9]*\)\.[0-9]*\.bin.*/\1/p'                  'update_m32 examples'     || fail=1
@@ -167,30 +185,12 @@ chmod +x "$TARGET_DIR/build.sh"
 find "$TARGET_DIR" -name "* [0-9].*" -delete
 
 # ----------------------------------------------------------------- rewrite
-MONTH_EN=$(LC_ALL=C date "+%B %Y")
-case "${MONTH_EN%% *}" in
-    January) MONTH_DE="Jänner" ;;   February) MONTH_DE="Februar" ;;
-    March)   MONTH_DE="März"   ;;   April)    MONTH_DE="April"   ;;
-    May)     MONTH_DE="Mai"    ;;   June)     MONTH_DE="Juni"    ;;
-    July)    MONTH_DE="Juli"   ;;   August)   MONTH_DE="August"  ;;
-    September) MONTH_DE="September" ;; October) MONTH_DE="Oktober" ;;
-    November)  MONTH_DE="November"  ;; December) MONTH_DE="Dezember" ;;
-esac
-MONTH_DE="$MONTH_DE ${MONTH_EN##* }"
+# The title pages need no rewriting: they are templates, and build.sh resolves
+# @MAJOR@ from the folder name and @MONTH_YEAR@ / @YEAR@ from the build date.
+# (Before that they were sed-rewritten here, which fixed the version but left
+# the month frozen at whatever day this script happened to be run.)
 
 cd "$TARGET_DIR" || exit 1
-
-"${SEDI[@]}" \
-    -e "s|Version ${SOURCE}\.x<br>[A-Za-z]* [0-9]*|Version ${TARGET}.x<br>${MONTH_EN}|" \
-    -e "s|Edition V ${SOURCE}\.x, [A-Za-z]* [0-9]*|Edition V ${TARGET}.x, ${MONTH_EN}|" \
-    -e "s|revised for firmware version ${SOURCE}\.x|revised for firmware version ${TARGET}.x|" \
-    title.html
-
-"${SEDI[@]}" \
-    -e "s|Version ${SOURCE}\.x<br>[A-Za-zÄäÖöÜü]* [0-9]*|Version ${TARGET}.x<br>${MONTH_DE}|" \
-    -e "s|Ausgabe V ${SOURCE}\.x, [A-Za-zÄäÖöÜü]* [0-9]*|Ausgabe V ${TARGET}.x, ${MONTH_DE}|" \
-    -e "s|für die Firmware-Version ${SOURCE}\.x überarbeitet|für die Firmware-Version ${TARGET}.x überarbeitet|" \
-    title_de.html
 
 "${SEDI[@]}" \
     -e "s|firmware Version ${SOURCE}\.x|firmware Version ${TARGET}.x|g" \
@@ -220,10 +220,14 @@ if [ "$TARGET" != "$FW_MAJOR" ]; then
     echo ""
 fi
 echo "Remaining, by hand:"
-echo "  1. Document the new version's changes in manual_en.md and manual_de.md."
-echo "  2. Check the month/year on the title pages if this is not the release month."
+echo "  1. Refresh the 'What is new' section:"
+echo "       Documentation/User Manual/sync_whatsnew.py --write"
+echo "     then translate the English block into manual_de.md (see --check)."
+echo "  2. Document anything else that changed in manual_en.md / manual_de.md."
 echo "  3. Build and eyeball:  (cd '$TARGET_DIR' && ./build.sh)"
 echo "  4. git add '$TARGET_DIR' && commit."
+echo ""
+echo "The title pages need no edit: version and month are filled in at build time."
 echo ""
 echo "Any leftover reference to the old version:"
 grep -rn "${SOURCE}\.x\|m32_V${SOURCE}\." "$TARGET_DIR"/title*.html "$TARGET_DIR"/manual_*.md 2>/dev/null \

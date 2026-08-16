@@ -3,6 +3,20 @@ Morserino-32 multi-functional Morse code machine, based on ESP32
 
 Here on GitHub you will find both software and documentation of both hardware and software.
 
+## User Manual
+
+- **English —** <https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_EN.pdf>
+- **Deutsch —** <https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_DE.pdf>
+
+Both links always give you the manual for the latest released firmware, so they
+are safe to bookmark or to pass on. Sources, older versions and the French and
+Spanish translations are in [Documentation/User Manual](Documentation/User%20Manual/).
+
+## Install or update the firmware
+
+One page installs every Morserino — it asks your device which one it is:
+<https://www.morserino.info/install.html>
+
 For more information about Morserino-32, and for buying a kit, go to http://bit.ly/morserino-32
 
 

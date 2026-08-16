@@ -33,6 +33,43 @@ fi
 
 STYLE="style.css"
 
+# Month and year of the build. The title pages carry "Version <major>.x" and a
+# month, and both used to be typed by hand -- the version was rewritten by
+# new-major-version.sh when the folder was created, and the month simply went
+# stale from then on. Both are now placeholders in title*.html, resolved here,
+# so a rebuild always dates itself correctly and no one has to remember.
+YEAR=$(date "+%Y")
+MONTH_EN=$(LC_ALL=C date "+%B")
+case "$MONTH_EN" in
+    January) MONTH_DE="Jänner" ;;      February) MONTH_DE="Februar" ;;
+    March)   MONTH_DE="März"   ;;      April)    MONTH_DE="April"   ;;
+    May)     MONTH_DE="Mai"    ;;      June)     MONTH_DE="Juni"    ;;
+    July)    MONTH_DE="Juli"   ;;      August)   MONTH_DE="August"  ;;
+    September) MONTH_DE="September" ;; October)  MONTH_DE="Oktober" ;;
+    November)  MONTH_DE="November"  ;; December) MONTH_DE="Dezember" ;;
+    *)         MONTH_DE="$MONTH_EN" ;;
+esac
+
+# Fill the title-page template for one language; prints the temp file's path.
+resolve_title() {
+    local template=$1 month=$2 out
+    out=$(mktemp "${TMPDIR:-/tmp}/m32title.XXXXXX.html") || return 1
+    # The BUILD-TEMPLATE comment explains the placeholders to whoever edits the
+    # template; it is not for readers, so it never reaches the published HTML.
+    sed -e '/<!-- BUILD-TEMPLATE/,/-->/d' \
+        -e "s|@MAJOR@|${MAJOR}|g" \
+        -e "s|@MONTH_YEAR@|${month} ${YEAR}|g" \
+        -e "s|@YEAR@|${YEAR}|g" \
+        "$template" > "$out" || { rm -f "$out"; return 1; }
+    if grep -q "@[A-Z_]*@" "$out"; then
+        echo "ERROR: unresolved placeholder left in $template:" >&2
+        grep -o "@[A-Z_]*@" "$out" | sort -u >&2
+        rm -f "$out"
+        return 1
+    fi
+    printf '%s' "$out"
+}
+
 build_pdf() {
     local lang=$1
     local format=${2:-pdf}
@@ -42,14 +79,16 @@ build_pdf() {
 
     # Language-specific settings
     if [ "$lang" = "de" ]; then
-        local title_file="title_de.html"
+        local title_template="title_de.html"
+        local month="$MONTH_DE"
         local meta_title="Morserino-32 Benutzerhandbuch"
         local meta_lang="de"
         # Lua filter to replace umlaut characters in heading IDs so that
         # weasyprint can resolve them as internal PDF links.
         local lua_filter="--lua-filter=normalize_ids.lua"
     else
-        local title_file="title.html"
+        local title_template="title.html"
+        local month="$MONTH_EN"
         local meta_title="Morserino-32 User Manual"
         local meta_lang="en"
         local lua_filter=""
@@ -63,8 +102,8 @@ build_pdf() {
         return 1
     fi
 
-    if [ ! -f "$title_file" ]; then
-        echo "ERROR: $title_file not found in $(pwd)"
+    if [ ! -f "$title_template" ]; then
+        echo "ERROR: $title_template not found in $(pwd)"
         return 1
     fi
 
@@ -73,7 +112,11 @@ build_pdf() {
         return 1
     fi
 
-    echo "Building HTML from $input..."
+    local title_file
+    title_file=$(resolve_title "$title_template" "$month") || return 1
+    trap 'rm -f "$title_file"' RETURN
+
+    echo "Building HTML from $input (V${MAJOR}.x, ${month} ${YEAR})..."
 
     pandoc "$input" \
         -o "$html_output" \

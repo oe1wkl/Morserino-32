@@ -24,20 +24,13 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-What is new in Version 8?
+<!-- WHATSNEW:BEGIN en=e00c298c11bf v=9 -->
+What is new in Version 9?
 
--   In Echo Trainer Mode, you can set a speed limit for keying your
-    input.
--   Generation of random call signs has been improved. You can now also
-    set a filter to only get calls from a certain continent, or also
-    filter out very rare prefixes.
--   File Player can do multi-part files now (a poor man's way of
-    supporting several files ;-) If an uploaded text file is recognized
-    as multipart, you will be asked which part you want to use when you
-    start file player.
--	For the M32 Pocket only: Battery level and charging status is now shown through an icon on the top line of the display, while you are within a menu.
-
-- Also for the M32 Pocket only: We have begun to implement games, to bring even more fun to learning and training Morse code! The first game is "Morse Invaders": the player has to prevent the invading letters from planet Morse (or was it Mars?) from reaching the ground.
+-   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
+-   M32 Pocket only: the installer can now also install the **Accessibility Edition**, which speaks the menus and settings aloud for blind and partially sighted operators (the games are not included in it). Standard and Accessibility Edition are offered for the same device and you can move between them at any time; your settings are kept.
+-   The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
+<!-- WHATSNEW:END -->
 
 # Connectors and Controls
 
