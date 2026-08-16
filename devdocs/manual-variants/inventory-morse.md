@@ -23,10 +23,10 @@ pattern.
 
 | Lang | Line | Token(s) | Notation | Source line |
 |---|---|---|---|---|
-| EN | 642 | `...-` `...-` `...-` `-.-.-` | dot + underscore, backslash-escaped | `(**\...\_  \...\_  \...\_  \_.\_.\_**) in Morse code, before it actually` |
-| EN | 2824 | `-.` `.-` | dot + hyphen | `\| Paddle Polarity \| Defines which paddle side is for dits, and which for dahs \| -. dah-dit` |
-| DE | 668 | `...-` `...-` `...-` `-.-.-` | dot + underscore, backslash-escaped | `(**\...\_  \...\_  \...\_  \_.\_.\_**) im Morsecode als Warnsignal` |
-| DE | 3261 | `-.` `.-` | dot + hyphen | `\| **Paddle Polarity** \| Legt fest, welche Paddle-Seite für Dits und welche für Dahs ist. \|` |
+| EN | 658 | `...-` `...-` `...-` `-.-.-` | dot + underscore, backslash-escaped | `(**\...\_  \...\_  \...\_  \_.\_.\_**) in Morse code, before it actually` |
+| EN | 2840 | `-.` `.-` | dot + hyphen | `\| Paddle Polarity \| Defines which paddle side is for dits, and which for dahs \| -. dah-dit` |
+| DE | 682 | `...-` `...-` `...-` `-.-.-` | dot + underscore, backslash-escaped | `(**\...\_  \...\_  \...\_  \_.\_.\_**) im Morsecode als Warnsignal` |
+| DE | 3278 | `-.` `.-` | dot + hyphen | `\| **Paddle Polarity** \| Legt fest, welche Paddle-Seite für Dits und welche für Dahs ist. \|` |
 
 **Totals: 6 tokens in EN, 6 in DE**, on 2 source lines per language.
 

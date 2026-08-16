@@ -18,24 +18,24 @@ with no manual hits is not documented at all -- also worth knowing.
 
 | Kind | Term | Exists on | Gated by | EN lines | DE lines |
 |---|---|---|---|---|---|
-| action item | `Practice Stats` | pocket, pocket-a11y | `CONFIG_PRACTICE_STATS` | 2592, 2604, 2638, 2931, 2938 | 3019, 3031, 3067, 3364 |
-| menu entry | `Fight Pileup` | pocket | `CONFIG_CW_GAME` | 1749 | 1776 |
-| menu entry | `Fox Hunt` | pocket | `CONFIG_CW_GAME` | 1603, 1605, 2131, 2176, 2190, 2197, 2199, 2203, 2220, 2237, 2785, 2937 | 1624, 1625, 1626, 2418, 2425, 2507, 2532, 2550, 2552, 2566, 2590, 2619, 3223, 3363 |
-| menu entry | `Games` | pocket | `CONFIG_CW_GAME` | 1597, 1600, 1626, 1749, 1865, 1979, 2094, 2139, 2220, 2254 | 1622, 1648, 1776, 1985, 2162, 2355, 2441, 2590, 2665 |
-| menu entry | `LoRa Trx` | classic | `!LORA_DISABLED` | 590, 1284, 3165 | 619, 1289, 3598 |
-| menu entry | `Memory Chain` | pocket | `CONFIG_CW_GAME` | 1603, 1605, 2239, 2241, 2250, 2254, 2786, 2937 | 1624, 1626, 2623, 2625, 2661, 2665, 3223, 3363 |
-| menu entry | `Morse Invaders` | pocket | `CONFIG_CW_GAME` | 40, 1601, 1608, 1610, 1622, 1626, 2785, 2937 | 46, 1623, 1630, 1632, 1644, 1648, 3222, 3249, 3363 |
-| menu entry | `Morsel` | pocket | `CONFIG_CW_GAME` | 1602, 1971, 1973, 1975, 1979, 1993, 2035, 2036, 2090, 2094, 2101, 2123, 2187, 2772, 2785, 2937 | 1623, 2147, 2149, 2158, 2162, 2182, 2258, 2261, 2346, 2355, 2363, 2405, 2526, 3207, 3222, 3363 |
-| menu entry | `Practice Stats` | pocket, pocket-a11y | `CONFIG_PRACTICE_STATS` | 2592, 2604, 2638, 2931, 2938 | 3019, 3031, 3067, 3364 |
-| menu entry | `Radio Cave` | pocket | `CONFIG_CW_GAME` | 1602, 1855, 1857, 1859, 1861, 1865, 1933, 1943, 1965, 2207, 2785, 2937 | 1623, 1964, 1966, 1981, 1985, 2086, 2102, 2134, 2571, 3222, 3363 |
-| menu entry | `Trailblazer` | pocket | `CONFIG_CW_GAME` | 1602, 1603, 1604, 2129, 2131, 2133, 2135, 2139, 2176, 2199, 2220, 2233, 2237, 2785, 2937 | 1624, 1626, 2416, 2418, 2425, 2427, 2431, 2436, 2441, 2507, 2552, 2554, 2592, 2612, 2618, 2621, 3223, 3363 |
-| menu entry | `Update Firmw` | classic, pocket | `!CONFIG_AUDIO_A11Y` | 2531, 3404 | 2962, 3849 |
-| menu entry | `Upload File` | classic, pocket | `!CONFIG_AUDIO_A11Y` | 2604, 3404 | 3031, 3848 |
-| preference | `Generator Tx` | pocket, pocket-a11y | `LORA_DISABLED` | 893, 2713, 2922 | 912, 3144, 3348 |
-| preference | `Headphone Output` | pocket, pocket-a11y | `CONFIG_SOUND_I2S` | 2716, 2808 | 3147, 3247 |
-| preference | `Invader Orient.` | pocket | `CONFIG_CW_GAME` | 1651, 2718, 2810 | 3149, 3249 |
-| preference | `Theme` | pocket, pocket-a11y | `CONFIG_TFT` | 2809 | 3248 |
-| preference | `Tone Softness` | pocket, pocket-a11y | `CONFIG_SOUND_I2S` | 2804 | 3243 |
+| action item | `Practice Stats` | pocket, pocket-a11y | `CONFIG_PRACTICE_STATS` | 2608, 2620, 2654, 2947, 2954 | 3036, 3048, 3084, 3374, 3381 |
+| menu entry | `Fight Pileup` | pocket | `CONFIG_CW_GAME` | 1763 | 1790 |
+| menu entry | `Fox Hunt` | pocket | `CONFIG_CW_GAME` | 1617, 1619, 2145, 2190, 2204, 2211, 2213, 2217, 2234, 2251, 2801, 2953 | 1634, 1635, 1636, 2432, 2439, 2521, 2546, 2564, 2566, 2580, 2604, 2633, 3240, 3380 |
+| menu entry | `Games` | pocket | `CONFIG_CW_GAME` | 1611, 1614, 1640, 1763, 1879, 1993, 2108, 2153, 2234, 2268 | 1632, 1658, 1790, 1999, 2176, 2369, 2455, 2604, 2679 |
+| menu entry | `LoRa Trx` | classic | `!LORA_DISABLED` | 606, 1280, 1299, 3185 | 633, 1280, 1299, 3617 |
+| menu entry | `Memory Chain` | pocket | `CONFIG_CW_GAME` | 1617, 1619, 2253, 2255, 2264, 2268, 2802, 2953 | 1634, 1636, 2637, 2639, 2675, 2679, 3240, 3380 |
+| menu entry | `Morse Invaders` | pocket | `CONFIG_CW_GAME` | 1615, 1622, 1624, 1636, 1640, 2801, 2953 | 1633, 1640, 1642, 1654, 1658, 3239, 3266, 3380 |
+| menu entry | `Morsel` | pocket | `CONFIG_CW_GAME` | 1616, 1985, 1987, 1989, 1993, 2007, 2049, 2050, 2104, 2108, 2115, 2137, 2201, 2788, 2801, 2953 | 1633, 2161, 2163, 2172, 2176, 2196, 2272, 2275, 2360, 2369, 2377, 2419, 2540, 3224, 3239, 3380 |
+| menu entry | `Practice Stats` | pocket, pocket-a11y | `CONFIG_PRACTICE_STATS` | 2608, 2620, 2654, 2947, 2954 | 3036, 3048, 3084, 3374, 3381 |
+| menu entry | `Radio Cave` | pocket | `CONFIG_CW_GAME` | 1616, 1869, 1871, 1873, 1875, 1879, 1947, 1957, 1979, 2221, 2801, 2953 | 1633, 1978, 1980, 1995, 1999, 2100, 2116, 2148, 2585, 3239, 3380 |
+| menu entry | `Trailblazer` | pocket | `CONFIG_CW_GAME` | 1616, 1617, 1618, 2143, 2145, 2147, 2149, 2153, 2190, 2213, 2234, 2247, 2251, 2801, 2953 | 1634, 1636, 2430, 2432, 2439, 2441, 2445, 2450, 2455, 2521, 2566, 2568, 2606, 2626, 2632, 2635, 3240, 3380 |
+| menu entry | `Update Firmw` | classic, pocket | `!CONFIG_AUDIO_A11Y` | 2547, 3426 | 2979, 3871 |
+| menu entry | `Upload File` | classic, pocket | `!CONFIG_AUDIO_A11Y` | 2620, 3426 | 3048, 3870 |
+| preference | `Generator Tx` | pocket, pocket-a11y | `LORA_DISABLED` | 909, 2729, 2938 | 924, 3161, 3365 |
+| preference | `Headphone Output` | pocket, pocket-a11y | `CONFIG_SOUND_I2S` | 2732, 2824 | 3164, 3264 |
+| preference | `Invader Orient.` | pocket | `CONFIG_CW_GAME` | 1665, 2734, 2826 | 1683, 3166, 3266 |
+| preference | `Theme` | pocket, pocket-a11y | `CONFIG_TFT` | 2825 | 3265 |
+| preference | `Tone Softness` | pocket, pocket-a11y | `CONFIG_SOUND_I2S` | 2820 | 3260 |
 
 ## Preferences whose option *values* differ per variant (1)
 
@@ -55,87 +55,87 @@ ones with no manual hits are undocumented device labels.
 | Kind | Term | EN lines | DE lines |
 |---|---|---|---|
 | action item | `Calibrate Batt` | *not documented* | *not documented* |
-| action item | `Call Sign` | 2771, 2781, 2931, 2935 | 3206, 3217, 3357, 3361 |
+| action item | `Call Sign` | 2787, 2797, 2947, 2951 | 3223, 3234, 3374, 3378 |
 | action item | `Hardware Conf` | *not documented* | *not documented* |
-| action item | `Koch Lesson` | 1167, 2701 | 1174 |
-| action item | `LoRa Band` | 3040 | *not documented* |
+| action item | `Koch Lesson` | 1183, 2717 | 1185 |
+| action item | `LoRa Band` | 3059 | *not documented* |
 | action item | `LoRa Frequ` | *not documented* | *not documented* |
 | action item | `LoRa Power` | *not documented* | *not documented* |
-| action item | `Op Name` | 2772, 2781, 2931, 2936 | 3207, 3217, 3357, 3362 |
-| action item | `Practice Set` | 716, 719, 720, 910, 1189, 1192, 2850, 2853 … | 741, 744, 745, 930, 1196, 1199, 3282, 3285 … |
+| action item | `Op Name` | 2788, 2797, 2947, 2952 | 3224, 3234, 3374, 3379 |
+| action item | `Practice Set` | 732, 735, 736, 926, 1205, 1208, 2866, 2869 … | 753, 756, 757, 941, 1207, 1210, 3299, 3302 … |
 | action item | `RECALLSnapshot` | *not documented* | *not documented* |
-| action item | `Reset Scores` | 2738, 2784, 2937 | 3170, 3221, 3363 |
+| action item | `Reset Scores` | 2754, 2800, 2947, 2953 | 3187, 3238, 3374, 3380 |
 | action item | `STORE Snapshot` | *not documented* | *not documented* |
-| menu entry | `Adapt. Rand.` | 1221, 1231 | 1228, 1231, 1239, 1262 |
-| menu entry | `CW Abbrevs` | 688, 909, 998 | 712, 929, 1013 |
-| menu entry | `CW Decoder` | 421, 1554 | 211, 448, 1575 |
-| menu entry | `CW Generator` | 413, 428, 629, 636, 830, 898, 909, 912 … | 439, 456, 655, 657, 662, 858, 919, 929 … |
-| menu entry | `CW Keyer` | 205, 418, 428, 434, 435, 480, 575, 589 … | 217, 439, 445, 455, 460, 508, 603, 617 … |
-| menu entry | `Call Signs` | 697, 910, 2246, 2268, 2270, 2285, 3401 | 720, 930, 2641, 3846 |
-| menu entry | `Check WiFi` | 2431, 2553 | 2860, 2981 |
-| menu entry | `Config WiFi` | 1383, 2317 | 1389, 2749 |
-| menu entry | `Contest` | 1447, 1448, 1542, 1544, 2719, 2926 | 856, 1454, 1455, 1476, 1562, 1564, 1565, 3150 … |
+| menu entry | `Adapt. Rand.` | 1237, 1247 | 1239, 1242, 1250, 1273 |
+| menu entry | `CW Abbrevs` | 704, 925, 1014 | 726, 940, 1024 |
+| menu entry | `CW Decoder` | 438, 1568 | 224, 462, 1585 |
+| menu entry | `CW Generator` | 431, 445, 645, 652, 846, 914, 925, 928 … | 453, 470, 669, 671, 676, 870, 930, 940 … |
+| menu entry | `CW Keyer` | 224, 435, 445, 451, 452, 497, 592, 605 … | 230, 453, 459, 469, 474, 522, 617, 631 … |
+| menu entry | `Call Signs` | 713, 926, 2260, 2282, 2284, 2299, 3423 | 734, 941, 2655, 3868 |
+| menu entry | `Check WiFi` | 2447, 2569 | 2877, 2998 |
+| menu entry | `Config WiFi` | 1397, 2334 | 1399, 2767 |
+| menu entry | `Contest` | 1461, 1462, 1556, 1558, 2735, 2942 | 868, 1464, 1465, 1486, 1572, 1574, 1575, 3167 … |
 | menu entry | `Disp MAC Addr` | *not documented* | *not documented* |
-| menu entry | `Echo Trainer` | 29, 201, 390, 413, 428, 574, 786, 895 … | 30, 214, 386, 414, 439, 456, 603, 816 … |
-| menu entry | `English Words` | 694, 910 | 717, 930 |
-| menu entry | `File Player` | 34, 706, 826, 910, 1220, 2471, 2922, 3382 … | 36, 39, 730, 752, 761, 822, 844, 854 … |
-| menu entry | `Go To Sleep` | 288, 2649 | 307, 3078 |
-| menu entry | `Koch Trainer` | 721, 980, 991, 1159, 1163, 1166, 1183, 1190 … | 994, 1005, 1165, 1170, 1172, 1198, 1214, 1238 … |
-| menu entry | `Learn New Chr` | 1196 | 1204 |
-| menu entry | `Mixed` | 704, 910, 1000 | 727, 930, 1014 |
-| menu entry | `Practice Set` | 716, 719, 720, 910, 1189, 1192, 2850, 2853 … | 741, 744, 745, 930, 1196, 1199, 3282, 3285 … |
-| menu entry | `QSO Bot` | 1366, 1429, 1431, 1440, 1449, 1454, 1460, 1509 … | 1370, 1435, 1437, 1446, 1456, 1462, 1470, 1591 … |
-| menu entry | `Random` | 684, 688, 694, 868, 909, 997, 1219, 1224 … | 709, 889, 929, 1012, 1226, 1233, 3306 |
-| menu entry | `SOTA/POTA` | 1442, 1465, 1526 | 1448, 1475, 1545 |
-| menu entry | `Select Lesson` | 744, 1015, 2845 | 773, 1027, 3279 |
-| menu entry | `Standard` | 1445, 1511, 1529, 1777, 1834, 2923, 3134, 3397 | 81, 84, 107, 109, 611, 845, 958, 1029 … |
-| menu entry | `Transceiver` | 201, 1260, 1329, 1439, 2291, 2384, 2811, 2921 … | 18, 61, 62, 78, 104, 214, 464, 487 … |
-| menu entry | `WiFi Functions` | 2289, 2326, 2431, 2474, 2531, 2604, 2938, 3236 | 2723, 2758, 2772, 2860, 2905, 2961, 3031, 3364 … |
-| menu entry | `WiFi Trx` | 590, 1355, 1378, 2922 | 619, 1350, 1357, 1383, 2817, 3348, 3349 |
+| menu entry | `Echo Trainer` | 220, 408, 431, 445, 591, 802, 911, 946 … | 227, 400, 428, 453, 470, 617, 828, 926 … |
+| menu entry | `English Words` | 710, 926 | 731, 941 |
+| menu entry | `File Player` | 722, 842, 926, 1236, 2487, 2938, 3404, 3431 … | 744, 764, 773, 834, 856, 866, 941, 1178 … |
+| menu entry | `Go To Sleep` | 308, 2665 | 321, 3095 |
+| menu entry | `Koch Trainer` | 737, 996, 1007, 1175, 1179, 1182, 1199, 1206 … | 1005, 1016, 1176, 1181, 1183, 1209, 1225, 1249 … |
+| menu entry | `Learn New Chr` | 1212 | 1215 |
+| menu entry | `Mixed` | 720, 926, 1016 | 741, 941, 1025 |
+| menu entry | `Practice Set` | 732, 735, 736, 926, 1205, 1208, 2866, 2869 … | 753, 756, 757, 941, 1207, 1210, 3299, 3302 … |
+| menu entry | `QSO Bot` | 1380, 1443, 1445, 1454, 1463, 1468, 1474, 1523 … | 1380, 1445, 1447, 1456, 1466, 1472, 1480, 1601 … |
+| menu entry | `Random` | 700, 704, 710, 884, 925, 1013, 1235, 1240 … | 723, 901, 940, 1023, 1237, 1244, 3323 |
+| menu entry | `SOTA/POTA` | 1456, 1479, 1540 | 1458, 1485, 1555 |
+| menu entry | `Select Lesson` | 738, 760, 1031, 2861 | 760, 785, 1038, 3296 |
+| menu entry | `Standard` | 33, 1459, 1525, 1543, 1791, 1848, 2939, 3154 … | 34, 92, 95, 118, 120, 625, 857, 969 … |
+| menu entry | `Transceiver` | 220, 1276, 1344, 1453, 2305, 2401, 2827, 2937 … | 19, 72, 73, 89, 115, 227, 478, 501 … |
+| menu entry | `WiFi Functions` | 2303, 2343, 2447, 2490, 2547, 2620, 2954, 3256 | 2737, 2776, 2790, 2877, 2922, 2978, 3048, 3381 … |
+| menu entry | `WiFi Trx` | 606, 1284, 1369, 1392, 2938 | 633, 1284, 1360, 1368, 1393, 2835, 3365, 3366 |
 | menu entry | `Wifi Select` | *not documented* | *not documented* |
-| menu entry | `iCW/Ext Trx` | 589, 1413 | 617, 1418 |
-| preference | `Adaptv. Speed` | 960, 2906 | 977, 3335 |
+| menu entry | `iCW/Ext Trx` | 605, 1292, 1427 | 631, 1292, 1428 |
+| preference | `Adaptv. Speed` | 976, 2922 | 988, 3352 |
 | preference | `AutoChar Spc` | *not documented* | *not documented* |
 | preference | `BLT <AR>` | *not documented* | *not documented* |
-| preference | `Bandwidth` | 2924, 3170 | 3350 |
-| preference | `Bluetooth Use` | 2811, 2831, 2832, 3525, 3551, 3570, 3960 | 3250, 3268, 3269, 3998, 4026, 4046, 4438 |
-| preference | `CW Gen Displ` | 892, 2884 | 912, 3315 |
-| preference | `Call Prefixes` | 2879 | 3310 |
-| preference | `Calls Region` | 2878 | 3309 |
-| preference | `Confrm. Tone` | 945, 2904 | 964, 3333 |
-| preference | `Contest Type` | 1448, 1544, 2719, 2926 | 1455, 1565, 3150, 3352 |
-| preference | `CurtisB DahT%` | 524, 2827 | 554, 3264 |
-| preference | `CurtisB DitT%` | 524, 2828 | 555, 3265 |
-| preference | `Decoded on IO` | 2716 | 3147 |
-| preference | `Each Word 2x` | 663, 885, 2883, 2886 | 688, 904, 3314, 3317 |
-| preference | `Echo Prompt` | 938, 2903 | 957, 3332 |
-| preference | `Echo Repeats` | 934, 2902 | 954, 3331 |
-| preference | `Echo Speed Max` | 966, 2907 | 982, 3336 |
-| preference | `Encoder Click` | 2717, 2802 | 3148, 3241 |
-| preference | `External Pol.` | 494, 2712, 2825 | 524, 3143, 3262 |
+| preference | `Bandwidth` | 2940, 3190 | 3367 |
+| preference | `Bluetooth Use` | 2827, 2847, 2848, 3547, 3573, 3592, 3981 | 3267, 3285, 3286, 4020, 4048, 4068, 4460 |
+| preference | `CW Gen Displ` | 908, 2900 | 924, 3332 |
+| preference | `Call Prefixes` | 2895 | 3327 |
+| preference | `Calls Region` | 2894 | 3326 |
+| preference | `Confrm. Tone` | 961, 2920 | 975, 3350 |
+| preference | `Contest Type` | 1462, 1558, 2735, 2942 | 1465, 1575, 3167, 3369 |
+| preference | `CurtisB DahT%` | 541, 2843 | 568, 3281 |
+| preference | `CurtisB DitT%` | 541, 2844 | 569, 3282 |
+| preference | `Decoded on IO` | 2732 | 3164 |
+| preference | `Each Word 2x` | 679, 901, 2899, 2902 | 702, 916, 3331, 3334 |
+| preference | `Echo Prompt` | 954, 2919 | 968, 3349 |
+| preference | `Echo Repeats` | 950, 2918 | 965, 3348 |
+| preference | `Echo Speed Max` | 982, 2923 | 993, 3353 |
+| preference | `Encoder Click` | 2733, 2818 | 3165, 3258 |
+| preference | `External Pol.` | 511, 2728, 2841 | 538, 3160, 3279 |
 | preference | `InterWord Spc` | *not documented* | *not documented* |
-| preference | `Interchar Spc` | 2866, 2873 | 860, 988, 3296, 3304 |
-| preference | `Key ext TX` | 892, 2713, 2921 | 911, 3144, 3347 |
-| preference | `Keyer Mode` | 202, 210, 413, 500, 573, 2819, 2826 | 215, 222, 530, 601, 3257, 3263 |
-| preference | `Koch Sequence` | 1019, 1068, 1162, 1182, 2845, 2846 | 1031, 1078, 1169, 1190, 3279, 3280 |
-| preference | `LICW Carousel` | 1071, 2845, 2846 | 1081, 3279, 3280 |
-| preference | `Latency` | 558, 2830 | 586, 3267 |
-| preference | `Length Abbrev` | 881, 2880 | 901, 3311 |
-| preference | `Length Calls` | 878, 2877 | 898, 3308 |
-| preference | `Length Rnd Gr` | 873, 2876 | 894, 3307 |
-| preference | `Length Words` | 881, 2881 | 901, 3312 |
+| preference | `Interchar Spc` | 2882, 2889 | 872, 999, 3313, 3321 |
+| preference | `Key ext TX` | 908, 2729, 2937 | 923, 3161, 3364 |
+| preference | `Keyer Mode` | 221, 229, 431, 517, 590, 2835, 2842 | 228, 235, 544, 615, 3274, 3280 |
+| preference | `Koch Sequence` | 1035, 1084, 1178, 1198, 2861, 2862 | 1042, 1089, 1180, 1201, 3296, 3297 |
+| preference | `LICW Carousel` | 1087, 2861, 2862 | 1092, 3296, 3297 |
+| preference | `Latency` | 575, 2846 | 600, 3284 |
+| preference | `Length Abbrev` | 897, 2896 | 913, 3328 |
+| preference | `Length Calls` | 894, 2893 | 910, 3325 |
+| preference | `Length Rnd Gr` | 889, 2892 | 906, 3324 |
+| preference | `Length Words` | 897, 2897 | 913, 3329 |
 | preference | `Max # of Words` | *not documented* | *not documented* |
-| preference | `Output Case` | 2807 | 3246 |
-| preference | `Paddle Polar.` | 2712 | 3143 |
-| preference | `QSO Difficulty` | 1502, 2719, 2927 | 1519, 3150, 3353 |
-| preference | `Quick Start` | 2717, 2806 | 150, 3148, 3245 |
-| preference | `Random Groups` | 868, 1219, 2875 | 889, 1226, 3306 |
-| preference | `Randomize File` | 814, 2885 | 844, 3316 |
-| preference | `Serial Output` | 51, 83, 108, 2811, 3476, 3519 | 59, 91, 116, 3134, 3250, 3992 |
+| preference | `Output Case` | 2823 | 3263 |
+| preference | `Paddle Polar.` | 2728 | 3160 |
+| preference | `QSO Difficulty` | 1516, 2735, 2943 | 1529, 3167, 3370 |
+| preference | `Quick Start` | 2733, 2822 | 163, 3165, 3262 |
+| preference | `Random Groups` | 884, 1235, 2891 | 901, 1237, 3323 |
+| preference | `Randomize File` | 830, 2901 | 856, 3333 |
+| preference | `Serial Output` | 69, 101, 126, 2827, 2847, 3498, 3541 | 70, 102, 127, 3151, 3267, 4014 |
 | preference | `Stop<Next>Rep` | *not documented* | *not documented* |
 | preference | `Time-out` | *not documented* | *not documented* |
-| preference | `Tone Pitch` | 2803 | 1331, 3242 |
-| preference | `Tone Shift` | 778, 1327, 2894, 2905, 3989 | 807, 1334, 3322, 3334, 4467 |
-| preference | `Trx Channel` | 1365, 2923, 3138 | 1369, 3349, 3571 |
+| preference | `Tone Pitch` | 2819 | 1341, 3259 |
+| preference | `Tone Shift` | 794, 1342, 2910, 2921, 4010 | 819, 1344, 3339, 3351, 4489 |
+| preference | `Trx Channel` | 1379, 1791, 2939, 3158 | 1379, 1827, 3366, 3590 |
 
 14 of these never appear in the English manual: `Disp MAC Addr`, `Wifi Select`, `AutoChar Spc`, `InterWord Spc`, `Time-out`, `Stop<Next>Rep`, `Max # of Words`, `BLT <AR>`, `LoRa Frequ`, `LoRa Power`, `RECALLSnapshot`, `STORE Snapshot`, `Calibrate Batt`, `Hardware Conf`.

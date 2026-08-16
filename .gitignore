@@ -17,3 +17,12 @@
 Software/tools/audio-accessibility/.venv/
 Software/tools/audio-accessibility/models/
 __pycache__/
+
+# Per-variant manuals (Documentation/User Manual/Version <N>.x/). The combined
+# manual -- m32UserManual_v<N>_{en,de}.pdf and manual_{en,de}.html -- is still
+# committed as before; the classic / pocket / pocket-a11y builds are produced on
+# demand by "./build.sh all pdf all" and are not committed while the decision
+# on what the release ships is still open.
+Documentation/User Manual/Version */m32UserManual_v*_??_*.pdf
+Documentation/User Manual/Version */manual_??_*.html
+Documentation/User Manual/Version */m32UserManual_v*.epub

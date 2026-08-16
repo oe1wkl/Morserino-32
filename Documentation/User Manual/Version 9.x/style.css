@@ -113,6 +113,16 @@ div.title-version {
     color: #333;
 }
 
+div.title-variant {
+    position: absolute;
+    top: calc(33% + 8.4cm);
+    left: 2.5cm;
+    right: 2.5cm;
+    font-size: 13pt;
+    font-weight: bold;
+    color: #0066aa;
+}
+
 div.title-logo {
     position: absolute;
     bottom: 3cm;

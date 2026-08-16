@@ -87,7 +87,7 @@ if [ "$CHECK_ONLY" = "1" ]; then
             echo "      It probably still carries the previous version's filenames."
             fail=1
         fi
-        for f in manual_en.md manual_de.md title.html title_de.html style.css normalize_ids.lua; do
+        for f in manual_en.md manual_de.md title.html title_de.html style.css normalize_ids.lua variant.lua epub.css; do
             [ -f "$dir/$f" ] || { echo "FAIL: $dir/$f is missing."; fail=1; }
         done
         # Only the places that MUST carry the current version are checked by
@@ -118,7 +118,7 @@ if [ "$CHECK_ONLY" = "1" ]; then
         check_template() {                     # file, description
             local f="$dir/$1" label="$2" ph rc=0
             [ -f "$f" ] || return 0
-            for ph in '@MAJOR@' '@MONTH_YEAR@'; do
+            for ph in '@MAJOR@' '@MONTH_YEAR@' '@VARIANT@'; do
                 if ! grep -q -- "$ph" "$f"; then
                     echo "FAIL: $1 — $label: placeholder $ph is gone."
                     echo "      build.sh fills it in; a literal value here goes stale silently."
@@ -171,7 +171,7 @@ mkdir -p "$TARGET_DIR"
 # Copy sources only. The .html and .pdf are build products — carrying them over
 # is how "m32UserManual_v8_en.pdf" ended up inside Version 9.x. Finder-style
 # " 2." duplicates are excluded for the same reason.
-for f in manual_en.md manual_de.md title.html title_de.html style.css normalize_ids.lua build.sh; do
+for f in manual_en.md manual_de.md title.html title_de.html style.css normalize_ids.lua variant.lua epub.css build.sh; do
     if [ -f "$SOURCE_DIR/$f" ]; then
         cp "$SOURCE_DIR/$f" "$TARGET_DIR/$f"
     else

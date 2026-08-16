@@ -17,6 +17,7 @@ which platformio    # or: which pio
 which gh            # GitHub CLI
 gh auth status      # expect: Logged in to github.com as oe1wkl
 fc-list | grep -i lato | head -1   # Lato font must be installed for PDF builds
+which epubcheck     # only needed once the release ships EPUB manuals
 ```
 
 If any is missing:
@@ -26,6 +27,10 @@ If any is missing:
 - `platformio`: `pip3 install --user platformio` (or whatever method you use locally for builds)
 - `gh`: `brew install gh && gh auth login`
 - **Lato font**: download from <https://www.latofonts.com/> and install (double-click each `.ttf` to install via Font Book), or `brew install --cask font-lato`
+- `epubcheck`: `brew install epubcheck` (pulls `openjdk`). Only needed when the
+  release starts building EPUB manuals — `build.sh` validates every EPUB it
+  produces with it, and falls back to a plain XHTML syntax check when it is
+  absent, so a runner without it still builds, just with weaker checking.
 
 Also verify the Dropbox folder exists and is writable as your user:
 
