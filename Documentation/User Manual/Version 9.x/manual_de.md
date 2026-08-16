@@ -159,17 +159,35 @@ Edition schon, und du kannst diesen Abschnitt überspringen.
 
 Ein neuer M32 Pocket wird mit der **Standard**-Edition ausgeliefert, und diese
 Edition ist stumm: Sie zeigt die Menüs am Display an, liest sie aber nicht vor.
-Die **Accessibility Edition** ist dieselbe Firmware mit Stimme — sie meldet sich
-beim Einschalten selbst mit dem Batteriestatus, und sie spricht Menüeinträge,
+Die **Accessibility Edition** spricht stattdessen — sie meldet sich beim
+Einschalten selbst mit dem Batteriestatus, und sie spricht Menüeinträge,
 Einstellungen und deren Werte, während du dich durch sie bewegst. Sie kostet
 nichts, sie wird über USB installiert, und du kannst jederzeit wieder zur
 Standard-Edition zurückkehren.
 
-Sie muss von einem Computer aus installiert werden; auf dem Gerät selbst ist das
-nicht möglich. Insbesondere die Funktion **Update Firmw** im WiFi-Menü
-installiert sie **nicht**: Diese Funktion ersetzt nur das Programm, während
-diese Edition zusätzlich ihre Sprachdateien und eine andere Aufteilung des
-internen Speichers benötigt. Verwende die hier beschriebene Installations-Webseite.
+Die beiden sind **Alternativen, nicht eine Edition mit zusätzlicher Sprache**: Es
+läuft entweder die eine oder die andere, und die sprechende kommt ohne drei Dinge
+aus.
+
+-   **Die sieben Spiele** — Morse Invaders, Fight the Pileup, Radio Cave, Morsel,
+    Trailblazer, Fox Hunt und Memory Chain. Sie werden gespielt, indem man auf den
+    Bildschirm schaut, und Sprache kann das nicht ersetzen.
+-   **Den File Player.** Genau in seinem Speicher liegen die Sprachdateien, es
+    bleibt also kein Platz für abzuspielende Textdateien.
+-   **Upload File** und **Update Firmw** im WiFi-Menü. Beide übergeben ohnehin nur
+    an einen Browser auf einem anderen Computer; diese Edition lässt sie daher
+    weg und lässt dich gleich diesen Computer verwenden.
+
+Alles andere bleibt unverändert: sämtliche Übungsmodi, der Koch-Trainer, der
+CW-Decoder, die Transceiver-Modi, der QSO Bot und jede Einstellung, die keine
+Spiel-Einstellung ist.
+
+Die Installation erfolgt von einem Computer aus; auf dem Gerät selbst ist sie
+nicht möglich. Wenn du gerade im Menü der Standard-Edition bist: Deren Funktion
+**Update Firmw** bringt dich **nicht** dorthin. Sie ersetzt nur das Programm,
+während diese Edition zusätzlich ihre Sprachdateien und eine andere Aufteilung
+des internen Speichers benötigt. Verwende die hier beschriebene
+Installations-Webseite.
 
 **Was du brauchst**
 
@@ -195,12 +213,9 @@ internen Speichers benötigt. Verwende die hier beschriebene Installations-Webse
     Wenn es fertig ist, startet der Morserino von selbst neu — und diesmal
     spricht er.
 
-Zwei Dinge solltest du vorher wissen. Die Sprachdateien belegen jenen Speicher,
-den die Standard-Edition für die Texte des File Players verwendet, der File
-Player hat in dieser Edition also nichts abzuspielen; und die Spiele sind nicht
-enthalten, weil sie sich ohne Sehvermögen nicht spielen lassen. Alles andere —
-deine Einstellungen, deine Snapshots und die gespeicherte Geschwindigkeit —
-bleibt beim Wechsel erhalten, und ebenso beim Wechsel zurück.
+Deine Einstellungen, deine Snapshots und die gespeicherte Geschwindigkeit bleiben
+beim Wechsel erhalten, und ebenso beim Wechsel zurück — nur die Texte des File
+Players nicht, denn genau deren Speicher übernehmen die Sprachdateien.
 
 Über dasselbe Installationsprogramm kommst du später auch wieder zur
 Standard-Edition zurück: Die Schritte sind dieselben, du wählst nur die andere

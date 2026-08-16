@@ -152,17 +152,32 @@ Accessibility Edition and can skip this section.
 
 A new M32 Pocket is delivered with the **Standard** edition, and that edition is
 silent: it shows the menus on the display but does not read them out. The
-**Accessibility Edition** is the same firmware with a voice — it announces
-itself and the battery status when you switch it on, and it speaks menu
-entries, preferences and their values as you move through them. It costs
-nothing, it is installed over USB, and you can go back to the Standard edition
-at any time.
+**Accessibility Edition** speaks instead — it announces itself and the battery
+status when you switch it on, and it speaks menu entries, preferences and their
+values as you move through them. It costs nothing, it is installed over USB, and
+you can go back to the Standard edition at any time.
 
-It has to be installed from a computer; there is no way to do it on the device
-itself. In particular, the **Update Firmw** function in the WiFi menu will
-**not** install it: that function only replaces the program, while this edition
-also needs its voice clips and a different layout of the internal memory. Use
-the installer web page described here.
+The two are **alternatives, not one edition with speech added on top**: you run
+one or the other, and the speaking one does without three things.
+
+-   **The seven games** — Morse Invaders, Fight the Pileup, Radio Cave, Morsel,
+    Trailblazer, Fox Hunt and Memory Chain. They are played by watching the
+    screen, and speech cannot stand in for that.
+-   **The File Player.** Its storage is exactly where the voice clips live, so
+    there is no room left for text files to play.
+-   **Upload File** and **Update Firmw** in the WiFi menu. Both only hand you
+    over to a browser on another computer, so this edition drops them and has
+    you use that computer directly.
+
+Everything else is unchanged: all the training modes, the Koch trainer, the CW
+decoder, the transceiver modes, the QSO Bot, and every preference that is not a
+game setting.
+
+The installation is done from a computer; there is no way to do it on the device
+itself. If you are looking at the Standard edition's menu right now, its
+**Update Firmw** function will **not** get you there: that one only replaces the
+program, while this edition also needs its voice clips and a different layout of
+the internal memory. Use the installer web page described here.
 
 **What you need**
 
@@ -187,12 +202,9 @@ the installer web page described here.
     When it has finished, the Morserino restarts by itself — and this time it
     speaks.
 
-Two things are worth knowing before you start. The voice clips occupy the
-storage that the Standard edition uses for the File Player's text, so the File
-Player has nothing to play in this edition; and the games are not included,
-because they cannot be played without sight. Everything else — your
-preferences, your snapshots and your stored speed — survives the change, and
-survives changing back.
+Your preferences, your snapshots and your stored speed survive the change, and
+survive changing back — only the File Player's text does not, since that is the
+storage the voice clips take over.
 
 The same installer is also how you return to the Standard edition later: the
 steps are identical, you simply choose the other edition. It is described in
