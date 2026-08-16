@@ -67,6 +67,18 @@
     .info-card{background:#fff;border:1px solid #c8d8e4;border-radius:6px;padding:12px 16px}
     .info-card-label{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:2px}
     .info-card-value{font-size:18px;font-weight:700;color:var(--text)}
+    /* ── The manual that belongs to the connected device ── */
+    .manual-links{margin-top:16px}
+    .manual-links .manual-head{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px}
+    .manual-links ul{list-style:none;margin:0;padding:0}
+    .manual-links li{margin:5px 0}
+    /* Deliberately not var(--link): #268bd2 scores 3.7:1 on white and 3.5:1 on
+       the box background, both under AA for text this size. The underline, not
+       the colour, is what marks these as links. */
+    .manual-links a{color:#155e8f;text-decoration:underline;font-weight:700}
+    .manual-links a:hover{color:var(--accent2)}
+    .manual-links a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+    .manual-links .manual-note{font-size:14px;color:var(--text);margin-top:8px}
     .control-row{display:flex;align-items:center;gap:16px;padding:14px 18px;background:#fff;border:1px solid #c8d8e4;border-radius:6px;margin-bottom:12px}
     .control-label{font-size:16px;font-weight:700;color:var(--text);min-width:90px}
     .control-slider{flex:1;-webkit-appearance:none;appearance:none;height:8px;background:#ddd;border-radius:4px;outline:none}
@@ -459,6 +471,7 @@
   <div class="box" id="deviceInfoBox" style="display:none">
     <h2 class="section-title">Device Information</h2>
     <div class="info-grid" id="deviceInfoGrid"></div>
+    <div class="manual-links" id="deviceManualLinks"></div>
   </div>
   <div class="box" id="hardwareInfoBox" style="display:none">
     <h2 class="section-title">Hardware &amp; Status</h2>
@@ -1021,6 +1034,101 @@ async function doDisconnect(){
   log('Disconnected');
 }
 
+// ── The user manual that belongs to the connected device ────────────────────
+// The manuals are release assets under a permanent, version-less URL: "latest"
+// resolves to the newest non-prerelease release, so a beta never hijacks it.
+var MANUAL_ROOT='https://github.com/oe1wkl/Morserino-32/releases/latest/download/';
+var MANUAL_INDEX='https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/User%20Manual';
+var MANUAL_LANGS=[{code:'EN',name:'English'},{code:'DE',name:'German'}];
+
+// Whole hardware strings, never substrings: "M32 Pocket (Wroom)" and "M32 DevKit
+// S3" are both ESP32-S3 boards and only one of them is a Pocket. Anything not
+// listed here goes to the manual index instead of being guessed at — the
+// WifiKit, DevKit, T190 and minipcb boards have no manual of their own.
+var MANUAL_BY_HARDWARE={
+  // Classic. The firmware derives these three from the board revision
+  // (m32_v6.ino), and only the classic build can report them; "original" is the
+  // classic env's HW_NAME, which older firmware sent before that.
+  'M32 1st edition':          {slug:'Classic',name:'Morserino-32, 1st and 2nd edition'},
+  'M32 2nd edition':          {slug:'Classic',name:'Morserino-32, 1st and 2nd edition'},
+  'unknown M32 board':        {slug:'Classic',name:'Morserino-32, 1st and 2nd edition'},
+  'original':                 {slug:'Classic',name:'Morserino-32, 1st and 2nd edition'},
+  // Pocket. The LoRa and 170x240 boards are prototypes that never became
+  // installer targets, but they run Pocket firmware, so the Pocket manual is
+  // still the right one for them.
+  'M32 Pocket (Wroom)':       {slug:'Pocket',name:'M32 Pocket'},
+  'M32 Pocket (Wroom LoRa)':  {slug:'Pocket',name:'M32 Pocket'},
+  'M32 Pocket (Wroom 170x240)':{slug:'Pocket',name:'M32 Pocket'}
+};
+
+function manualFor(dev){
+  var m=MANUAL_BY_HARDWARE[(dev&&dev.hardware)||''];
+  if(!m) return null;
+  if(m.slug!=='Pocket') return m;
+  // Both Pocket editions report the same hardware string, so only "edition"
+  // tells them apart — and firmware older than August 2026 does not send it.
+  if(dev.edition==='accessibility')
+    return {slug:'Pocket_Accessible',name:'M32 Pocket, Accessibility Edition',accessible:true};
+  if(!dev.edition) return {slug:m.slug,name:m.name,editionUnknown:true};
+  return m;
+}
+
+// Every link says which device, which edition, which language and which format,
+// because a screen reader may read it out on its own, away from this heading.
+function manualLinks(m){
+  // EPUB first for the Accessibility Edition: a screen reader and a braille
+  // display handle it far better than a PDF, which carries no reliable reading
+  // order. The PDF stays available, second.
+  var formats=m.accessible?['epub','pdf']:['pdf','epub'], out=[];
+  MANUAL_LANGS.forEach(function(lang){
+    formats.forEach(function(fmt){
+      out.push({href:MANUAL_ROOT+'Morserino-32_User_Manual_'+m.slug+'_'+lang.code+'.'+fmt,
+                text:'User manual for the '+m.name+' — '+lang.name+', '+fmt.toUpperCase()});
+    });
+  });
+  return out;
+}
+
+function showManualLinks(dev){
+  var host=document.getElementById('deviceManualLinks');
+  host.innerHTML='';
+  var m=manualFor(dev), head=document.createElement('div');
+  head.className='manual-head';
+  head.textContent='User manual';
+  host.appendChild(head);
+
+  // GitHub serves release assets as attachments, so those links download the
+  // file and leave this page — and the serial connection — alone. A link to a
+  // GitHub *page* would navigate away, so that one opens in a new tab.
+  if(!m){
+    host.appendChild(manualIndexLink('This device does not match any of the user manuals — see all Morserino-32 user manuals (opens in a new tab)'));
+    return;
+  }
+
+  var list=document.createElement('ul');
+  manualLinks(m).forEach(function(l){
+    var li=document.createElement('li'),a=document.createElement('a');
+    a.href=l.href;a.textContent=l.text;
+    li.appendChild(a);list.appendChild(li);
+  });
+  host.appendChild(list);
+
+  if(m.editionUnknown){
+    var note=document.createElement('div');
+    note.className='manual-note';
+    note.appendChild(document.createTextNode(
+      'This firmware does not report which of the two Pocket editions it runs. If your Pocket speaks its menus aloud it is the Accessibility Edition, and its manual is a different one: '));
+    note.appendChild(manualIndexLink('all Morserino-32 user manuals (opens in a new tab)'));
+    host.appendChild(note);
+  }
+}
+
+function manualIndexLink(text){
+  var a=document.createElement('a');
+  a.href=MANUAL_INDEX;a.textContent=text;a.target='_blank';a.rel='noopener';
+  return a;
+}
+
 function showDeviceInfo(dev){
   var box=document.getElementById('deviceInfoBox'), grid=document.getElementById('deviceInfoGrid');
   grid.innerHTML='';
@@ -1029,6 +1137,7 @@ function showDeviceInfo(dev){
     card.innerHTML='<div class="info-card-label">'+item.label+'</div><div class="info-card-value">'+item.value+'</div>';
     grid.appendChild(card);
   });
+  showManualLinks(dev);
   box.style.display='';
 }
 
