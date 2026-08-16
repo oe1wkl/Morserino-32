@@ -220,6 +220,38 @@ build_pdf() {
             "${variant_filter[@]}" \
             $lua_filter \
             2>&1 || { echo "ERROR: pandoc failed for $lang (epub)"; return 1; }
+        # An EPUB is a zip of XHTML, and XHTML is XML: one stray <br> instead
+        # of <br/> and a reader shows "Opening and ending tag mismatch" instead
+        # of the page. Pandoc passes raw HTML through untouched and does not
+        # check it, so verify here rather than let a reader find out.
+        if command -v python3 >/dev/null 2>&1; then
+            if ! python3 - "$epub_output" <<'PYCHECK'
+import sys, zipfile, xml.etree.ElementTree as ET
+bad = []
+with zipfile.ZipFile(sys.argv[1]) as z:
+    for name in z.namelist():
+        if name.endswith((".xhtml", ".html")):
+            try:
+                ET.fromstring(z.read(name))
+            except ET.ParseError as exc:
+                bad.append((name, exc))
+if bad:
+    print("ERROR: %d file(s) in the EPUB are not well-formed XHTML:" % len(bad))
+    for name, exc in bad:
+        print("   %s: %s" % (name, exc))
+    print("   Two causes account for nearly all of these:")
+    print("     - a raw <br> in the Markdown, which has to be <br/>;")
+    print("     - a '--' inside an HTML comment, which XML forbids.")
+    sys.exit(1)
+PYCHECK
+            then
+                rm -f "$epub_output"
+                return 1
+            fi
+        else
+            echo "  (python3 not found - skipping the EPUB well-formedness check)"
+        fi
+
         echo "Successfully created $epub_output"
         return 0
     fi

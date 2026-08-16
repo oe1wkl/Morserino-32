@@ -42,8 +42,10 @@ Was ist neu in Version 9?
 
 ![Der M32 Pocket: ein schwarzes 3D-gedrucktes Gehäuse, schräg von oben. Die Oberseite wird größtenteils vom Displayfenster eingenommen; der Drehknopf sitzt am hinteren Ende. Die Ziffern 1 bis 8 bezeichnen die Anschlüsse und Bedienelemente aus der Tabelle darunter.](images/m32pocket.jpg)
 
-<!-- TODO(Willi): siehe englische Fassung -- Positionen von Touchpaddles und
-     FN-Taste vor der Freigabe am Gerät prüfen. -->
+<!-- TODO(Willi): siehe englische Fassung. Positionen von Touchpaddles und
+     FN-Taste vor der Freigabe am Gerät prüfen.
+     (Kein doppelter Bindestrich in HTML-Kommentaren: XML verbietet ihn, und
+     der EPUB-Build schlägt dann fehl.) -->
 ::: {.pocket-a11y}
 **Orientierung am M32 Pocket durch Ertasten.** Das Gehäuse ist ein flaches
 Rechteck, etwa doppelt so lang wie breit; das Display nimmt den größten Teil
@@ -71,10 +73,10 @@ Tabelle.
 | 2 | 3,5-mm-Klinkenbuchse (3-polig): Externes Paddle | Hier kannst du entweder ein externes (mechanisches) Paddle anschließen (Spitze = linkes Paddle, Ring = rechtes Paddle, Hülse = Masse) oder eine Handtaste (Spitze = Taste). |
 | 3 | 3,5-mm-Klinkenbuchse (3-polig): an TX | Verbinde diesen Anschluss mit deinem Sender oder Transceiver, wenn du ihn mit diesem Gerät tasten möchtest. Es werden nur Spitze und Hülse verwendet. |
 | 4 | 3,5-mm-Klinkenbuchse (4-polig): Kopfhörer / Audio In / Line Out | Schließe hier deinen Kopfhörer an (mit 3- oder 4-poligem Stecker). Audioeingang für den CW-Decoder; schließe den Audioausgang eines Empfängers zum Dekodieren von CW-Signalen an. Audioausgang (für externe Verstärker oder PC usw.). Die Belegung der Buchse: Spitze und 1. Ring – Audio- oder Kopfhörerausgang; 2. Ring: Masse; Hülse: Audioeingang. Siehe auch Abschnitt **Allgemeine Einstellungen** für verfügbare Einstellungen zu diesem Anschluss! **Schließe diesen Anschluss NICHT mit einem einfachen 3- oder 4-poligen Audiokabel an einen Transceiver an – hohe Spannungen am Audioausgang des Transceivers können den M32Pocket zerstören! Wie du Audio korrekt in den M32Pocket einspeisen kannst, erfährst du in den FAQs auf morserino.info!** |
-| 5 | Netzschalter | Schließt den LiIon-Akku an das Gerät an bzw. trennt ihn davon. Bei häufiger Nutzung des Morserino-32 kann der Akku angeschlossen bleiben. Die EIN-Stellung befindet sich in Richtung der Touchpaddles und ist mit einer kleinen Kerbe am Gehäuse markiert. Wenn du das Gerät mehrere Tage nicht benutzt, trenne den Akku (über den Netzschalter), da er sich sonst langsam entlädt. <br> Zum Aufladen muss der Akku angeschlossen sein, d.h. der Schalter muss auf ON stehen! |
+| 5 | Netzschalter | Schließt den LiIon-Akku an das Gerät an bzw. trennt ihn davon. Bei häufiger Nutzung des Morserino-32 kann der Akku angeschlossen bleiben. Die EIN-Stellung befindet sich in Richtung der Touchpaddles und ist mit einer kleinen Kerbe am Gehäuse markiert. Wenn du das Gerät mehrere Tage nicht benutzt, trenne den Akku (über den Netzschalter), da er sich sonst langsam entlädt. <br/> Zum Aufladen muss der Akku angeschlossen sein, d.h. der Schalter muss auf ON stehen! |
 | 6 | ENCODER – Drehgeber und sein Druckknopfschalter | Kann gedreht und als Drucktaste gedrückt werden. Dient zur Auswahl in den Menüs, zur Einstellung von Geschwindigkeit und Lautstärke, zum Blättern auf dem Display sowie zur Wahl verschiedener Einstellungen und Optionen. |
 | 7 | Touchpaddles | Dies sind die kapazitiven Touchpaddles. Für linkshändige Bedienung kann das Display um 180° gedreht werden! |
-| 8 | FN-Tastenschalter (in das Gehäuse integriert) | Wenn das Gerät im Tiefschlaf ist, weckt ein Druck auf diese Taste den Morserino auf und startet ihn neu. Wenn das Gerät in Betrieb ist (in einem der Betriebsmodi), schaltet ein kurzer Druck auf die FN-Taste den Drehgeber zwischen Keyer-Geschwindigkeit und Lautstärkeregelung um. Ein langer Druck auf die FN-Taste ermöglicht das Blättern auf dem Display mit dem Drehgeber; ein erneuter Tastendruck wechselt die Funktion zurück zur Geschwindigkeitssteuerung. Weitere Details findest du im Abschnitt **Verwendung von ENCODER und FN-Taste**. <br> Ein Doppelklick auf diese Taste verringert die Displayhelligkeit in mehreren Stufen. |
+| 8 | FN-Tastenschalter (in das Gehäuse integriert) | Wenn das Gerät im Tiefschlaf ist, weckt ein Druck auf diese Taste den Morserino auf und startet ihn neu. Wenn das Gerät in Betrieb ist (in einem der Betriebsmodi), schaltet ein kurzer Druck auf die FN-Taste den Drehgeber zwischen Keyer-Geschwindigkeit und Lautstärkeregelung um. Ein langer Druck auf die FN-Taste ermöglicht das Blättern auf dem Display mit dem Drehgeber; ein erneuter Tastendruck wechselt die Funktion zurück zur Geschwindigkeitssteuerung. Weitere Details findest du im Abschnitt **Verwendung von ENCODER und FN-Taste**. <br/> Ein Doppelklick auf diese Taste verringert die Displayhelligkeit in mehreren Stufen. |
 :::
 
 
@@ -91,9 +93,9 @@ Tabelle.
 | 3 | Audioeingangs-Pegeltrimmer | Stelle den Audioeingangspegel mithilfe dieses Potentiometers ein; es gibt eine spezielle Funktion zur Pegelanpassung, siehe den Anhang **Einstellen des Audiopegels**. |
 | 4 | 3,5-mm-Klinkenbuchse (3-polig): Kopfhörer | Schließe hier deinen Kopfhörer an (jeder Stereo-Kopfhörer mit Standard-Klinkenstecker von Mobiltelefonen sollte funktionieren), um über Kopfhörer zu hören und den Lautsprecher auszuschalten. Du kannst einen Lautsprecher nicht direkt an diese Buchse anschließen, ohne eine entsprechende Schnittstelle bereitzustellen (der Kopfhörerausgang benötigt eine Gleichstromverbindung zur Masse über 50–300 Ohm). |
 | 5 | Kopfhörer-Pegeltrimmer | Damit kannst du den Kopfhörerpegel für maximalen Komfort einstellen. Die 1. Edition des M32 verfügt nicht über diesen Trimmer. |
-| 6 | Netzschalter | Schließt den LiPo-Akku an das Gerät an bzw. trennt ihn davon. Bei häufiger Nutzung des Morserino-32 kann der Akku angeschlossen bleiben. Die EIN-Stellung befindet sich auf der Seite des Antennenanschlusses. Wenn du das Gerät mehrere Tage nicht benutzt, trenne den Akku (über den Netzschalter), da er sich sonst langsam entlädt. <br> Zum Aufladen muss der Akku angeschlossen sein, d.h. der Schalter muss auf ON stehen! |
+| 6 | Netzschalter | Schließt den LiPo-Akku an das Gerät an bzw. trennt ihn davon. Bei häufiger Nutzung des Morserino-32 kann der Akku angeschlossen bleiben. Die EIN-Stellung befindet sich auf der Seite des Antennenanschlusses. Wenn du das Gerät mehrere Tage nicht benutzt, trenne den Akku (über den Netzschalter), da er sich sonst langsam entlädt. <br/> Zum Aufladen muss der Akku angeschlossen sein, d.h. der Schalter muss auf ON stehen! |
 | 7 | SMA-Buchse (Antennenanschluss) | Schließe eine für die Betriebsfrequenz geeignete Antenne an (Standard ca. 433 MHz) für den LoRa-Betrieb. Sende LoRa niemals ohne Antenne oder Kunstantenne! |
-| 8 | FN-Taste (ROTE Taste) | Wenn das Gerät im Tiefschlaf ist, weckt ein Druck auf diese Taste den Morserino auf und startet ihn neu. Wenn das Gerät in Betrieb ist (in einem der Betriebsmodi), schaltet ein kurzer Druck auf die FN-Taste den Drehgeber zwischen Keyer-Geschwindigkeit und Lautstärkeregelung um. Ein langer Druck auf die FN-Taste ermöglicht das Blättern auf dem Display mit dem Drehgeber; ein erneuter Druck wechselt die Funktion zurück zur Geschwindigkeitssteuerung. Im Menü startet ein langer Druck den Modus zur Anpassung des Audioeingangspegels. Weitere Details findest du im Abschnitt **Verwendung von ENCODER und FN-Taste**. <br> Ein Doppelklick auf diese Taste verringert die Displayhelligkeit in mehreren Stufen. |
+| 8 | FN-Taste (ROTE Taste) | Wenn das Gerät im Tiefschlaf ist, weckt ein Druck auf diese Taste den Morserino auf und startet ihn neu. Wenn das Gerät in Betrieb ist (in einem der Betriebsmodi), schaltet ein kurzer Druck auf die FN-Taste den Drehgeber zwischen Keyer-Geschwindigkeit und Lautstärkeregelung um. Ein langer Druck auf die FN-Taste ermöglicht das Blättern auf dem Display mit dem Drehgeber; ein erneuter Druck wechselt die Funktion zurück zur Geschwindigkeitssteuerung. Im Menü startet ein langer Druck den Modus zur Anpassung des Audioeingangspegels. Weitere Details findest du im Abschnitt **Verwendung von ENCODER und FN-Taste**. <br/> Ein Doppelklick auf diese Taste verringert die Displayhelligkeit in mehreren Stufen. |
 | 9 | ENCODER – Drehgeber und sein Druckknopfschalter | Kann gedreht und als Drucktaste gedrückt werden. Dient zur Auswahl in den Menüs, zur Einstellung von Geschwindigkeit und Lautstärke, zum Blättern auf dem Display sowie zur Wahl verschiedener Einstellungen und Optionen. |
 | 10 | Anschlüsse für Touchpaddles | Diese Platinenanschlüsse nehmen die kapazitiven Touchpaddles auf. Wenn du nur ein externes Paddle verwendest (oder für den Transport), können die Touchpaddles entfernt werden. |
 | 11 | Serielle Schnittstelle | Du kannst ein Kabel (direkt oder über eine 4-polige Stiftleiste) an ein externes serielles Gerät anschließen, z.B. ein GPS-Empfängermodul (**dies wird von der aktuellen Firmware nicht unterstützt**). Die 4 Pole sind T (Senden), R (Empfangen), + und − (3,3 V vom Heltec-Modul). |
@@ -116,9 +118,9 @@ Tabelle.
 | 2 | 3,5-mm-Klinkenbuchse (4-polig): Audio In / Line Out | Audioeingang für den CW-Decoder; schließe den Audioausgang eines Empfängers zum Dekodieren von CW-Signalen an. Audioausgang (nahezu eine reine Sinuswelle), der durch die Lautsprecherlautstärke nicht beeinflusst wird. Die Belegung der Buchse: Spitze und 1. Ring – Audioeingang; 2. Ring: Masse; Hülse: Audioausgang. |
 | 3 | Audioeingangs-Pegeltrimmer | Stelle den Audioeingangspegel mithilfe dieses Potentiometers ein; es gibt eine spezielle Funktion zur Pegelanpassung, siehe den Anhang **Einstellen des Audiopegels**. |
 | 4 | 3,5-mm-Klinkenbuchse (3-polig): Kopfhörer | Schließe hier deinen Kopfhörer an (jeder Stereo-Kopfhörer mit Standard-Klinkenstecker von Mobiltelefonen sollte funktionieren), um über Kopfhörer zu hören und den Lautsprecher auszuschalten. Du kannst einen Lautsprecher nicht direkt an diese Buchse anschließen, ohne eine entsprechende Schnittstelle bereitzustellen (der Kopfhörerausgang benötigt eine Gleichstromverbindung zur Masse über 50–300 Ohm). |
-| 5 | Netzschalter | Schließt den LiPo-Akku an das Gerät an bzw. trennt ihn davon. Bei häufiger Nutzung des Morserino-32 kann der Akku angeschlossen bleiben. Die EIN-Stellung befindet sich auf der Seite des Antennenanschlusses. Wenn du das Gerät mehrere Tage nicht benutzt, trenne den Akku (über den Netzschalter), da er sich sonst langsam entlädt. <br> Zum Aufladen muss der Akku angeschlossen sein, d.h. der Schalter muss auf ON stehen! |
+| 5 | Netzschalter | Schließt den LiPo-Akku an das Gerät an bzw. trennt ihn davon. Bei häufiger Nutzung des Morserino-32 kann der Akku angeschlossen bleiben. Die EIN-Stellung befindet sich auf der Seite des Antennenanschlusses. Wenn du das Gerät mehrere Tage nicht benutzt, trenne den Akku (über den Netzschalter), da er sich sonst langsam entlädt. <br/> Zum Aufladen muss der Akku angeschlossen sein, d.h. der Schalter muss auf ON stehen! |
 | 6 | SMA-Buchse (Antennenanschluss) | Schließe eine für die Betriebsfrequenz geeignete Antenne an (Standard ca. 433 MHz) für den LoRa-Betrieb. Sende LoRa niemals ohne Antenne oder Kunstantenne! |
-| 7 | FN-Taste (ROTE Taste) | Wenn das Gerät im Tiefschlaf ist, weckt ein Druck auf diese Taste den Morserino auf und startet ihn neu. Wenn das Gerät in Betrieb ist (in einem der Betriebsmodi), schaltet ein kurzer Druck auf die FN-Taste den Drehgeber zwischen Keyer-Geschwindigkeit und Lautstärkeregelung um. Ein langer Druck auf die FN-Taste ermöglicht das Blättern auf dem Display mit dem Drehgeber; ein erneuter Druck wechselt die Funktion zurück zur Geschwindigkeitssteuerung. Im Menü startet ein langer Druck den Modus zur Anpassung des Audioeingangspegels. Weitere Details findest du im Abschnitt **Verwendung von ENCODER und FN-Taste**. <br> Ein Doppelklick auf diese Taste verringert die Displayhelligkeit in mehreren Stufen. |
+| 7 | FN-Taste (ROTE Taste) | Wenn das Gerät im Tiefschlaf ist, weckt ein Druck auf diese Taste den Morserino auf und startet ihn neu. Wenn das Gerät in Betrieb ist (in einem der Betriebsmodi), schaltet ein kurzer Druck auf die FN-Taste den Drehgeber zwischen Keyer-Geschwindigkeit und Lautstärkeregelung um. Ein langer Druck auf die FN-Taste ermöglicht das Blättern auf dem Display mit dem Drehgeber; ein erneuter Druck wechselt die Funktion zurück zur Geschwindigkeitssteuerung. Im Menü startet ein langer Druck den Modus zur Anpassung des Audioeingangspegels. Weitere Details findest du im Abschnitt **Verwendung von ENCODER und FN-Taste**. <br/> Ein Doppelklick auf diese Taste verringert die Displayhelligkeit in mehreren Stufen. |
 | 8 | ENCODER – Drehgeber und sein Druckknopfschalter | Kann gedreht und als Drucktaste gedrückt werden. Dient zur Auswahl in den Menüs, zur Einstellung von Geschwindigkeit und Lautstärke, zum Blättern auf dem Display sowie zur Wahl verschiedener Einstellungen und Optionen. |
 | 9 | Anschlüsse für Touchpaddles | Diese Platinenanschlüsse nehmen die kapazitiven Touchpaddles auf. Wenn du nur ein externes Paddle verwendest (oder für den Transport), können die Touchpaddles entfernt werden. |
 | 10 | 3,5-mm-Klinkenbuchse (3-polig): Externes Paddle | Hier kannst du entweder ein externes (mechanisches) Paddle anschließen (Spitze = linkes Paddle, Ring = rechtes Paddle, Hülse = Masse) oder eine Handtaste (Spitze = Taste). |
@@ -388,7 +390,7 @@ setzt ein Doppelklick das Display auf volle Helligkeit zurück.
 direkt nach dem Einschalten), startet ein **langer Druck auf die FN-Taste**
 eine Funktion zum Einstellen des Audioeingangspegels (und ggf. des
 Ausgangspegels an einem Gerät, das du an den Line-Out-Anschluss des
-Morserino-32 angeschlossen hast).<br>]{.classic}
+Morserino-32 angeschlossen hast).<br/>]{.classic}
 [Beim **M32Pocket** tastet ein langer Druck auf die FN-Taste lediglich den
 Sender (sofern einer angeschlossen ist) und erzeugt einen Mithörton (was
 z.B. zum Einstellen des Audiopegels an einem angeschlossenen Computer
@@ -746,7 +748,7 @@ wählen:
     gespeichert werden; sobald du eine neue hochlädst, wird die alte
     überschrieben. Deine Datei kann jedoch **bis zu 16 Teile** enthalten
     (siehe unten zur Kodierung und Erstellung mehrteiliger Dateien), und
-    du kannst auswählen, welchen Teil du verwenden möchtest!<br>
+    du kannst auswählen, welchen Teil du verwenden möchtest!<br/>
     **Das Hochladen** erfolgt über WLAN von deinem PC (oder Mac, Tablet,
     Smartphone usw. – Anweisungen dazu findest du im Abschnitt **Hochladen einer Textdatei**), oder mit der unter **Einrichten von M32-Einstellungen über einen Browser** beschriebenen
     Methode.
@@ -953,7 +955,7 @@ deine Antwort „zurücksetzen", indem du das Zeichen für „ERROR" eingibst
 – d.h. eine Reihe von 8 Dits (manchmal auch als Betriebszeichen \<HH>
 bezeichnet; der Morserino akzeptiert jede Folge von 7 oder mehr
 aufeinanderfolgenden Dits). \<err> wird auf dem Display angezeigt, und
-du kannst die Eingabe von vorne beginnen.<br>
+du kannst die Eingabe von vorne beginnen.<br/>
 Der M32 akzeptiert auch eine Folge von viermal dem Buchstaben e
 („eeee") als Rücksetzsignal.
 
@@ -1074,7 +1076,7 @@ Diese Reihenfolge ist wie folgt:
 
 ::: note
 Es gibt noch ein weiteres Betriebszeichen, das in den Koch-Lektionen
-nicht behandelt wird:<br>
+nicht behandelt wird:<br/>
 Das Zeichen \<HH> (acht aufeinanderfolgende Dits) zeigt einen Fehler an
 (der Empfänger soll das/die vorherige(n) Zeichen ignorieren).
 :::
@@ -1093,7 +1095,7 @@ Wenn du einen Kurs bei **LICW** belegst, solltest du auch die Einstellung
 setzen (z.B. wenn du einen Kurs innerhalb von BC1 – Basic Course 1 –
 mit den Zeichen **p**, **g** und **s** beginnst, setze dies auf „BC1:
 p g s". Alle weiteren Zeichen, die du in BC1 lernst, werden in der
-gleichen Reihenfolge wie deine Koch-Lektionen im Morserino angezeigt.<br>
+gleichen Reihenfolge wie deine Koch-Lektionen im Morserino angezeigt.<br/>
 Wenn du BC1 abgeschlossen hast und in BC2 einsteigst, beginnst du z.B.
 mit den Zeichen **7**, **3** und **?** – setze die Einstellung dann
 entsprechend auf „BC2: 7 3 ?".)
@@ -1194,8 +1196,8 @@ Um den Zeichensatz zu ändern, lade eine neue Textdatei hoch und wähle
 **Custom Chars** erneut aus. Selbst wenn es zuvor bereits ausgewählt
 war, musst du **Custom Chars** erneut wählen, um den neuen Zeichensatz
 zu übernehmen. Das bloße Hochladen einer neuen Datei ändert den
-benutzerdefinierten Zeichensatz nicht.<br>
-*Das ist ein Feature, kein Bug!*<br>
+benutzerdefinierten Zeichensatz nicht.<br/>
+*Das ist ein Feature, kein Bug!*<br/>
 Es bedeutet, dass du zwischen dem Training mit deinem Zeichensatz und
 der Verwendung einer anderen Textdatei für den File Player wechseln
 kannst. Durch Umstellen von **Koch Sequence** auf M32, LCWO, LICW oder
@@ -3674,7 +3676,7 @@ durchführen, die du verwenden möchtest, z.B. deinen Funkempfänger.
 
 ::: note
 Nur wenn du dich **im Menü** befindest, aktiviert ein langer Druck auf
-die FN-Taste die Pegeleinstellungsfunktion.<br>
+die FN-Taste die Pegeleinstellungsfunktion.<br/>
 Während du einen der Morserino-Modi ausführst (Keyer, Generator, Echo
 Trainer, Transceiver usw.), aktiviert ein langer Druck auf die FN-Taste
 den **Scroll-Modus des Displays**, damit du bereits weggeschrollten Text
@@ -3712,7 +3714,7 @@ Für einen M32 der 1st oder 2nd Edition stelle sicher, dass du einen
 **Treiber** für den Silicon Labs CP210x USB-zu-Seriell-Chip hast, den
 das Heltec-Modul für seine USB-Schnittstelle verwendet. Aktuelle
 Versionen von Windows 10 installieren diesen automatisch; falls nicht,
-findest du den Treiber hier:<br>
+findest du den Treiber hier:<br/>
 *https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers*
 
 Um zu prüfen, ob du den richtigen Treiber installiert hast und an
@@ -3734,7 +3736,7 @@ Ladekabel!
 :::
 
 Lade nun das Update-Programm aus Joes GitHub-Repository herunter und
-achte darauf, die richtige Zip-Datei für dein Betriebssystem zu wählen:<br>
+achte darauf, die richtige Zip-Datei für dein Betriebssystem zu wählen:<br/>
 *https://github.com/joewittmer/Morserino-32-Firmware-Updater/releases*
 
 Entpacke die Datei. Du findest ein Programm (unter Windows)

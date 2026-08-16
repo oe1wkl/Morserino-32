@@ -70,10 +70,10 @@ Everything below is described in the same order as the numbers in the table.
 | 2 | 3.5 mm Phone Jack (3 poles): External Paddle | Use this to connect either an external (mechanical) paddle (tip is left paddle, ring is right paddle, sleeve is ground), or a straight key (tip is the key). |
 | 3 | 3.5mm Phone Jack (3 poles): to TX | Connect this to your transmitter or transceiver if you would like to key them with this device. Only the tip and sleeve are being used. |
 | 4 | 3.5mm Phone Jack (4 poles): Headphones / Audio In / Line Out | Connect your headphones (with 3-pol or 4-pole plug) here. Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (for external amplifiers or PC etc.). The assignments to the jack are as follows: Tip and 1st ring – audio or headphones out; 2nd ring: ground; sleeve: audio in. See also section **General Preferences** for available settings regarding this connector! **Do not connect this to a transceiver with a simple 3- or 4-pole audio cable - high voltages form the audio output of the transceiver might destroy your M32Pocket! See FAQ on morserino.info how to feed audio into the M32Pocket!**|
-| 5 | Power Switch | Connect / disconnect the LiIon battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the touch paddles, and marked with a small notch on the case. If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br> For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
+| 5 | Power Switch | Connect / disconnect the LiIon battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the touch paddles, and marked with a small notch on the case. If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br/> For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
 | 6 | ENCODER – Encoder and its Pushbutton switch | Can be rotated and is also a push-button switch. Used to make your selection within menus, to adjust speed, volume, or scroll the display, and to set various preferences and options. |
 | 7 | Touch paddles | These are capacitive touch paddles. Please note that for left-handed use, the display can be flipped 180°! |
-| 8 | FN Button switch (integrated into the case) | When the device has gone into deep sleep, this wakes up and restarts your Morserino. When the device is up and running (performing one of the operation modes), a short press of the FN button toggles the rotary encoder between adjusting the keyer speed and volume control. A long press of the FN button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.  See the section **Using the ENCODER Knob and FN Button** for further details.  <br> A double click of this button reduces display brightness in several steps. |
+| 8 | FN Button switch (integrated into the case) | When the device has gone into deep sleep, this wakes up and restarts your Morserino. When the device is up and running (performing one of the operation modes), a short press of the FN button toggles the rotary encoder between adjusting the keyer speed and volume control. A long press of the FN button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.  See the section **Using the ENCODER Knob and FN Button** for further details.  <br/> A double click of this button reduces display brightness in several steps. |
 :::
 
 
@@ -90,9 +90,9 @@ Everything below is described in the same order as the numbers in the table.
 | 3 | Audio Input Level Trimmer | Adjust audio input level with the help of this potentiometer; there is a special function to help with level adjustment, see the appendix **Adjusting Audio Level**.|
 | 4 | 3.5 mm Phone Jack (3 poles): Headphones | Connect your headphones here (any stereo headphones with standard phone jacks from mobile phones should work) to listen through headphones and switch off the speaker. You cannot attach a loudspeaker directly to this jack without providing some interface (headphone out needs a DC connection to ground through 50 – 300 Ohms). |
 | 5 | Phones Level Trimmer | Used to adjust the headphone level for maximum comfort. 1st edition M32 does not have this. |
-| 6 | Power Switch | Connect / disconnect the LiPo battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the side of the antenna connector.  If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br> For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
+| 6 | Power Switch | Connect / disconnect the LiPo battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the side of the antenna connector.  If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br/> For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
 | 7 | SMA female Antenna Connector | Connect an antenna suitable for the operating frequency (standard is around 433 MHz) for LoRa operation. Do not transmit LoRa without an antenna or a dummy load! |
-| 8 | FN Button (RED button) | When the device has gone into deep sleep, this wakes up and restarts your Morserino. When the device is up and running (performing one of the operation modes), a short press of the FN button toggles the rotary encoder between adjusting the keyer speed and volume control. A long press of the FN button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.  While in the menu, a long press starts the mode to adjust audio input level. See the section **Using the ENCODER Knob and FN Button** for further details.<br> A double click of this button reduces display brightness in several steps. |
+| 8 | FN Button (RED button) | When the device has gone into deep sleep, this wakes up and restarts your Morserino. When the device is up and running (performing one of the operation modes), a short press of the FN button toggles the rotary encoder between adjusting the keyer speed and volume control. A long press of the FN button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.  While in the menu, a long press starts the mode to adjust audio input level. See the section **Using the ENCODER Knob and FN Button** for further details.<br/> A double click of this button reduces display brightness in several steps. |
 | 9 | ENCODER – Encoder and its Pushbutton Switch | Can be rotated and is also a push-button switch. Used to make your selection within menus, to adjust speed, volume, or scroll the display, and to set various preferences and options. |
 | 10 | Connectors for Touch Paddles | These PCB connectors accept the capacitive touch paddles. If you are only using an external paddle (or for transport), you may remove the touch paddles. |
 | 11 | Serial Interface | You can connect a cable (directly or through a 4-pole pinhead connector) to an external serial device, e.g. a GPS receiver module (**this is currently not supported by the firmware**). The 4 poles are T (Transmit), R (Receive), + and - (3.3V power from the Heltec module). |
@@ -115,9 +115,9 @@ Everything below is described in the same order as the numbers in the table.
 | 2 | 3.5mm Phone Jack (4 poles): Audio In / Line Out | Audio input for the CW decoder; connect the audio output of a receiver for decoding CW signals. Audio output (pretty close to a pure sine wave) that is not influenced by setting the loudspeaker volume. The assignments to the jack are as follows: Tip and 1st ring – audio in; 2nd ring: ground; sleeve: audio out. |
 | 3 | Audio Input Level Trimmer | Adjust audio input level with the help of this potentiometer; there is a special function to help with level adjustment, see the appendix **Adjusting Audio Level**. |
 | 4 | 3.5 mm Phone Jack (3 poles): Headphones | Connect your headphones here (any stereo headphones with standard phone jacks from mobile phones should work) to listen through headphones and switch off the speaker. You cannot attach a loudspeaker directly to this jack without providing some interface (headphone out needs a DC connection to ground through 50 – 300 Ohms). |
-| 5 | Power Switch | Connect / disconnect the LiPo battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the side of the antenna connector.<br> If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br>For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
+| 5 | Power Switch | Connect / disconnect the LiPo battery from the device. For frequent use of the Morserino-32 you can leave the battery connected. The ON position is towards the side of the antenna connector.<br/> If you will not use the device for several days, disconnect the battery (through the Power Switch), as otherwise it will be slowly discharged. <br/>For charging, the battery needs to be connected, i.e. the switch must be in the ON position! |
 | 6 | SMA female Antenna Connector | Connect an antenna suitable for the operating frequency (standard is around 433 MHz) for LoRa operation. Do not transmit LoRa without an antenna or a dummy load! |
-| 7 | FN Button (RED button) | When the device has gone into deep sleep, this wakes up and restarts your Morserino. When the device is up and running (performing one of the operation modes), a short press of the FN button toggles the rotary encoder between adjusting the keyer speed and volume control. A long press of the FN button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.<br> While in the menu, a long press starts the mode to adjust audio input level. See the section **Using the ENCODER Knob and FN Button** for further details.<br> A double click of this button reduces display brightness in several steps. |
+| 7 | FN Button (RED button) | When the device has gone into deep sleep, this wakes up and restarts your Morserino. When the device is up and running (performing one of the operation modes), a short press of the FN button toggles the rotary encoder between adjusting the keyer speed and volume control. A long press of the FN button allows you to scroll the display with the rotary encoder, pressing the button again changes the function back to speed control.<br/> While in the menu, a long press starts the mode to adjust audio input level. See the section **Using the ENCODER Knob and FN Button** for further details.<br/> A double click of this button reduces display brightness in several steps. |
 | 8 | ENCODER – Encoder and its Pushbutton Switch | Can be rotated and is also a push-button switch. Used to make your selection within menus, to adjust speed, volume, or scroll the display, and to set various preferences and options. |
 | 9 | Connectors for Touch Paddles | These PCB connectors accept the capacitive touch paddles. If you are only using an external paddle (or for transport), you may remove the touch paddles. |
 | 10 | 3.5 mm Phone Jack (3 poles): External Paddle | Use this to connect either an external (mechanical) paddle (tip is left paddle, ring is right paddle, sleeve is ground), or a straight key (tip is the key). |
@@ -372,7 +372,7 @@ double-click resets the display to full brightness.
 [For *M32 1st and 2nd* edition only, while you are selecting a menu (e.g.
 immediately after power-on), a **long press of the FN button** starts a
 function to adjust the audio input level (and possibly the output level
-on a device you connected to the Morserino-32's line-out port).<br>]{.classic}
+on a device you connected to the Morserino-32's line-out port).<br/>]{.classic}
 [On the **M32Pocket**, a long press of the FN button just keys
 the transmitter (if you have one connected) and produces a sidetone (this might be useful for
 setting audio levels on a connected computer, for example).]{.pocket .pocket-a11y}
@@ -723,7 +723,7 @@ You can choose between the following at the second level of the menu:
     been uploaded to the Morserino-32. Currently it can hold just one
     file, as soon as you upload a new one, the old one will be
     overwritten. But your file can have **up to 16 parts** (see below about encoding and creating multi-part files), and you can
-    choose which of the parts you are going to use!<br>
+    choose which of the parts you are going to use!<br/>
     **Upload of files** works through WiFi from your PC (or Mac or tablet or
     smartphone or whatever – see the section **Uploading a Text File** for
     instructions how to do this), or by using the method described in
@@ -937,7 +937,7 @@ During your response, if you realize you made an error, you can
 "reset" your response by entering the character for "ERROR", i.e. a
 series of 8 dots (sometimes also represented as pro-Sign \<HH>; the
 Morserino accepts any series of dots equal or longer than 7 dots). \<err> will
-show on the display, and you can restart your entry from the beginning.<br>
+show on the display, and you can restart your entry from the beginning.<br/>
 The M32 also accepts a series of four times the letter e ("eeee") as a
 way to reset the response.
 
@@ -1068,7 +1068,7 @@ This order is as follows:
 
 
 ::: note
-There is another Pro Sign, not covered in the Koch lessons as such:<br>
+There is another Pro Sign, not covered in the Koch lessons as such:<br/>
 this is the sign \<HH> (eight consecutive dits), which indicates an
 error (the receiver should disregard the previous character(s)).
 :::
@@ -1088,7 +1088,7 @@ preference **LICW Carousel** according to your entry point into their
 curriculum (eg. if you start a course within BC1 – Basic Course 1 –
 with the characters **p**, **g** and **s**, set this to "BC1: p g s".
 All further characters you are going to learn in BC1 will be reflected
-in the same order as your Koch lessons in the Morserino.<br>
+in the same order as your Koch lessons in the Morserino.<br/>
 Once you have finished BC1, you will enroll in BC2, say beginning with
 characters **7**, **3** and **?**, and so you should now set this
 preference to "BC2: 7 3 ?".)
@@ -1192,8 +1192,8 @@ To change the character set, upload a new text file and select **Custom
 Chars **again. Even if it had been selected before, you must select
 **Custom Chars** again to prepare the new character set. If you just
 upload a new text file, the custom character set will not change. You
-must go into preferences and select **Custom Chars** again.<br>
-*This is a feature, not a bug!*<br>
+must go into preferences and select **Custom Chars** again.<br/>
+*This is a feature, not a bug!*<br/>
 It means you can switch between training your characters and using a
 different text file for the file player. Setting **Koch Sequence** to
 M32, LCWO, LICW, or CW Academy reverts to the "normal" Koch Trainer
@@ -2899,7 +2899,7 @@ Echo Trainer!
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. *This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically.* | ON / **OFF** |
 | CW Gen Displ | Select, how the CW Generator or the CW Transceivers should display what is generated or received | Display off / **Char by Char** / Word by word |
 | Randomize File | If set to „On", file player will skip n words after each word sent (n = random number between 0 and 255) | **Off** / On |
-| Each Word 2x | In the CW Generator mode, each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear. *This option and the option 'Stop/Next/Rep' are not compatible with each other, setting one to ON, will set the other to OFF automatically. *There are three ON settings: **ON** (if an increased inter-character space has been set, it will also be honored during the repetition; *ON less ICS*: the additional inter-character space will be reduced during the repetition; *ON true WpM*: the increased inter-character space will be ignored during the repetition. | **OFF** / ON /<br> ON (less ICS) / ON (true WpM) |
+| Each Word 2x | In the CW Generator mode, each "word" (characters between spaces) will be output twice, as a help to learn to copy by ear. *This option and the option 'Stop/Next/Rep' are not compatible with each other, setting one to ON, will set the other to OFF automatically. *There are three ON settings: **ON** (if an increased inter-character space has been set, it will also be honored during the repetition; *ON less ICS*: the additional inter-character space will be reduced during the repetition; *ON true WpM*: the increased inter-character space will be ignored during the repetition. | **OFF** / ON /<br/> ON (less ICS) / ON (true WpM) |
 
 
 
@@ -2934,11 +2934,11 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 
 | Preference Name | Description | Values |
 |---|---|---|
-| Key ext TX | Here you determine, if a connected Transmitter will be keyed when you use the device. **Gen** = generator modes, **RX** = [LoRa or]{.classic} WiFi Receiver modes. The option **Keyer & Gen.** makes the Morserino key an external transmitter also from generator mode, useful for training transmissions, for example. The option **Keyer&Gen.&RX** is useful if you want to transmit on your transmitter what the Morserino received through [LoRa or]{.classic} WiFi (for remote operations). | Never / **CW Keyer only** (and also for Transceiver modes) /<br> Keyer & Gen. / Keyer&Gen.&RX |
+| Key ext TX | Here you determine, if a connected Transmitter will be keyed when you use the device. **Gen** = generator modes, **RX** = [LoRa or]{.classic} WiFi Receiver modes. The option **Keyer & Gen.** makes the Morserino key an external transmitter also from generator mode, useful for training transmissions, for example. The option **Keyer&Gen.&RX** is useful if you want to transmit on your transmitter what the Morserino received through [LoRa or]{.classic} WiFi (for remote operations). | Never / **CW Keyer only** (and also for Transceiver modes) /<br/> Keyer & Gen. / Keyer&Gen.&RX |
 | Generator Tx | This allows the CW Generator to send, what it generates, [either via LoRa or via WiFi]{.classic}[via WiFi]{.pocket .pocket-a11y} – so you can have one device generating something, and several others receiving the same sequence. This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server, or[ via LoRa (or]{.classic} WiFi Trx using EspNow[)]{.classic} when all participants are close enough together. [*Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!*]{.classic} | [**Tx OFF** (= do not transmit generated CW) / LoRa Tx ON (transmit generated code through LoRa) / WiFi Tx ON (transmit generated code through WiFi).]{.classic}[**WiFi Tx OFF** (= do not transmit generated CW) / WiFi Tx ON (transmit generated code through WiFi).]{.pocket .pocket-a11y} |
 | Trx Channel | Selects which channel [LoRa or]{.classic} EspNow (a peer to peer Wifi mode, not using access points) will be used. [For LoRa this is a virtual channel, for EspNow it]{.classic}[It]{.pocket .pocket-a11y} actually changes the QRG between WiFi channel 6 (**Standard Ch**) and 1 (**Secondary Ch**). More infos on EspNow can be found in the section **Wifi Trx.** | **Standard Ch** / Secondary Ch |
-| Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).<br> **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; center frequency = ca 700 Hz. | **Wide** / Narrow |
-| Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON", the audio is also sent to the external audio I/O port.<br> **On the M32Pocket, this setting is ignored!** | On / **Off** |
+| Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).<br/> **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; center frequency = ca 700 Hz. | **Wide** / Narrow |
+| Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON", the audio is also sent to the external audio I/O port.<br/> **On the M32Pocket, this setting is ignored!** | On / **Off** |
 | Contest Type | Only relevant in the QSO Bot's **Contest** mode (section **QSO Bot**): which contest exchange the bot uses. **CQ WW** sends 5NN + the CQ zone of the bot's callsign; **WPX/Sprint** sends 5NN + a serial number. | **CQ WW** / WPX/Sprint |
 | QSO Difficulty | How forgiving and how chatty the QSO Bot partner is (all QSO Bot modes, section **QSO Bot**). **Beginner** is patient (more time to reply, an extra retry), spells signal reports out in full (599 rather than 5nn), and uses clear, calm prompts. **Advanced** keeps a tighter rhythm and uses curt, seasoned-operator prompts. **Intermediate** sits in between. | Beginner / **Intermediate** / Advanced |
 
@@ -3241,7 +3241,7 @@ source you are planning to use, e.g. for your radio receiver.
 
 ::: note
 Only while you are in the **menu** will the **FN button long press**
-activate the level adjustment function.<br>
+activate the level adjustment function.<br/>
 While you are executing one of the Morserino modes (Keyer, Generator,
 Echo Trainer, Transceiver etc.) a long press of the FN button activates
 the **scroll mode of the display** to enable you to read text that has
