@@ -176,7 +176,8 @@ The font family used is Lato.</p>
 <li>The installer now works in <strong>Firefox</strong> as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it. <!-- WHATSNEW:END --></li>
 </ul>
 <h1 data-number="2" id="connectors-and-controls"><span class="header-section-number">2</span> Connectors and Controls</h1>
-<h2 data-number="2.1" id="m32pocket"><span class="header-section-number">2.1</span> M32Pocket</h2>
+<section id="m32pocket" class="pocket pocket-a11y" data-number="2.1">
+<h2 data-number="2.1"><span class="header-section-number">2.1</span> M32Pocket</h2>
 <p><img src="images/m32pocket.jpg" /></p>
 <table>
 <colgroup>
@@ -234,7 +235,9 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h2 data-number="2.2" id="morserino-32-2nd-edition"><span class="header-section-number">2.2</span> Morserino-32 2nd edition</h2>
+</section>
+<section id="morserino-32-2nd-edition" class="classic" data-number="2.2">
+<h2 data-number="2.2"><span class="header-section-number">2.2</span> Morserino-32 2nd edition</h2>
 <p><img src="images/m32_2nd_edition.jpg" /></p>
 <table>
 <colgroup>
@@ -327,7 +330,9 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h2 data-number="2.3" id="morserino-32-1st-edition"><span class="header-section-number">2.3</span> Morserino-32 1st edition</h2>
+</section>
+<section id="morserino-32-1st-edition" class="classic" data-number="2.3">
+<h2 data-number="2.3"><span class="header-section-number">2.3</span> Morserino-32 1st edition</h2>
 <p><img src="images/m32_1st_edition.jpg" /></p>
 <table>
 <colgroup>
@@ -415,6 +420,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
+</section>
 <h1 data-number="3" id="quick-guide-to-using-the-m32"><span class="header-section-number">3</span> Quick Guide to Using the M32</h1>
 <div class="important">
 <p><strong>This is for the impatient, but is not a replacement for reading the whole manual!</strong></p>
@@ -454,21 +460,27 @@ The font family used is Lato.</p>
 <p>You can use the built-in capacitive touch paddles like a sideswiper / cootie key when the Keyer Mode is Straight Key (but not an external paddle, unless it is wired as a sideswiper)!</p>
 <p><strong>How To Charge the Battery</strong></p>
 <p>Connect USB power, switch battery switch to ON (I).</p>
+<div class="classic">
 <p>With the M32 1st or 2nd edition, an orange LED will light up very brightly. When the orange LED is dark, the battery is fully charged. When the orange LED is lit or flickering dimly, the battery is not connected or switched on.</p>
+</div>
+<div class="pocket pocket-a11y">
 <p>The M32Pocket will display the battery status as an icon whenever you are in a menu.</p>
+</div>
 <h1 data-number="4" id="using-the-m32-step-by-step"><span class="header-section-number">4</span> Using the M32, Step by Step</h1>
 <h2 data-number="4.1" id="powering-on-and-off-charging-the-battery"><span class="header-section-number">4.1</span> Powering On and Off / Charging the Battery</h2>
 <p>If you want to use the device with USB power, just plug a USB cable in from virtually any USB charger (it consumes a max of 200 mA, or 500 mA for the M32Pocket, when charging the battery), so any 5V charger will do).</p>
 <p>If you run it from battery power, slide the sliding switch to the ON position.</p>
 <div class="important">
-<p>Make sure you install the battery with the correct polarity before turning the switch to the ON position. Reversing the polarity could destroy your Morserino! For the M32Pocket, it is advisable to use a 14500 LiIon cell (3.7 V) with protection against deep discharge.</p>
+<p>Make sure you install the battery with the correct polarity before turning the switch to the ON position. Reversing the polarity could destroy your Morserino! <span class="pocket pocket-a11y">For the M32Pocket, it is advisable to use a 14500 LiIon cell (3.7 V) with protection against deep discharge.</span></p>
 </div>
 <p>When the device is off but with the battery connected (sliding power switch is on), it is in deep sleep – in reality: almost all functions of the microcontroller are turned off, and power consumption is minimal (less than 5% of normal operation with M32 1st or 2nd edition, around 1% with M32Pocket).</p>
 <p><strong>To turn the device on from deep sleep</strong>, press the FN button briefly.</p>
-<p>When the Morserino-32 boots up, a startup screen will appear for a few seconds. The top line shows the LoRa frequency that the M32 is configured to use (as a five-digit number; not on the M32Pocket). At the bottom of the display, you will see an indication of how much battery power is left (not on the M32 Pocket). If the battery is low, connect your device to a USB power source. The battery will drain even if you never turn the device on. Although the drain is minimal in deep sleep mode, the battery will be empty after a few days. Therefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the power switch at the back.</p>
+<p>When the Morserino-32 boots up, a startup screen will appear for a few seconds. <span class="classic">The top line shows the LoRa frequency that the M32 is configured to use (as a five-digit number; not on the M32Pocket). At the bottom of the display, you will see an indication of how much battery power is left (not on the M32 Pocket).</span> If the battery is low, connect your device to a USB power source. The battery will drain even if you never turn the device on. Although the drain is minimal in deep sleep mode, the battery will be empty after a few days. Therefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the power switch at the back.</p>
 <p>If the battery voltage is dangerously low when you try to turn on the device, an empty battery symbol will appear on the screen, and the device will not boot up. If you see this symbol, begin charging your battery as soon as possible.</p>
+<div class="classic">
 <p>First edition of M32 only: After using any of the WiFi functions, battery measurement does not work correctly until the Morserino-32 is powered down and up again (or a reset with the Reset button has been performed). This is due to a hardware problem on the Heltec board V2.0. In such cases the Morserino-32 displays “Unknown” instead of the battery voltage, and the battery symbol is shown with an inscribed question mark. After a power cycle everything should work OK again.</p>
 <p>If the display shows the empty battery symbol although sufficient power should still be available, it is advisable to perform a battery measurement calibration. This is not necessary and hence not available on the M32Pocket. See <strong>Appendix 7.1.2: Calibration of Battery Measurement</strong>.</p>
+</div>
 <p>To disconnect the device from the battery (turning it off, unless you are USB powered), slide the sliding switch to the OFF position.</p>
 <p>To put the device into deep sleep, you have two options:</p>
 <ul>
@@ -479,7 +491,9 @@ The font family used is Lato.</p>
 <div class="important">
 <p>Make sure the hardware switch of the device is ON while charging – if you disconnect the battery through the switch, the battery cannot be charged.</p>
 </div>
+<div class="classic">
 <p>When charging a 1st or 2nd edition M32, the orange LED on the ESP32 module is lit brightly, and when the battery is disconnected, this LED will not be lit brightly, but rather be blinking nervously or half lit. Once the battery has been fully charged, the orange LED will not be lit anymore.</p>
+</div>
 <p>You can of course always use the device when it is powered by USB, if the battery is charging or not.</p>
 <div class="important">
 <p>To prevent deep discharge of the battery, always turn off the Morserino-32 via the main slide switch. Do not leave it in sleep mode for extended periods of time. A couple of days is okay if the battery is fully charged.</p>
@@ -494,7 +508,7 @@ The font family used is Lato.</p>
 <p>A <strong>double click</strong> of the ENCODER brings you to the preference setting menu. If you do this from the menu, you can change all preferences. If you do this from an active operational mode, only the relevant preferences for the current mode are shown and can be changed.</p>
 <p>A <strong>long press</strong> brings you back to the menu from any of the modes, and within the menu promotes you a level up.</p>
 <p>A <strong>double click of the FN button</strong> reduces display brightness; there are five levels of brightness. Once the lowest level is reached, a double-click resets the display to full brightness.</p>
-<p>For <em>M32 1st and 2nd</em> edition only, while you are selecting a menu (e.g. immediately after power-on), a <strong>long press of the FN button</strong> starts a function to adjust the audio input level (and possibly the output level on a device you connected to the Morserino-32’s line-out port).<br> On the <strong>M32Pocket</strong>, a long press of the FN button just keys the transmitter (if you have one connected) and produces a sidetone (this might be useful for setting audio levels on a connected computer, for example).</p>
+<p><span class="classic">For <em>M32 1st and 2nd</em> edition only, while you are selecting a menu (e.g. immediately after power-on), a <strong>long press of the FN button</strong> starts a function to adjust the audio input level (and possibly the output level on a device you connected to the Morserino-32’s line-out port).<br></span> <span class="pocket pocket-a11y">On the <strong>M32Pocket</strong>, a long press of the FN button just keys the transmitter (if you have one connected) and produces a sidetone (this might be useful for setting audio levels on a connected computer, for example).</span></p>
 <p>A click of the FN button turns this function off again. See <strong>Appendix 3 Adjusting Audio Level</strong>.</p>
 <p>While one of the operational modes (keyer, generator, echo trainer etc.) is executed the FN Button allows you to <strong>quickly toggle between speed control and volume control</strong> with a single click.</p>
 <p>A <strong>long click of the FN button while a mode is active</strong> changes the display and encoder to scroll mode (the display has a buffer of 15 lines, and normally only the bottom three lines can be seen; in scroll mode you can scroll back to the previous lines; while you are in scroll mode, a scroll bar is shown at the far right side of the display, indicating roughly where you are within the 15 lines of text buffer). Clicking FN again in scroll mode changes the screen to its normal operating mode and brings the encoder back to speed control.</p>
@@ -1345,7 +1359,8 @@ The font family used is Lato.</p>
 <ul>
 <li><strong>The last one</strong> is a transceiver mode that can be used either with an external transceiver (e.g. a shortwave amateur radio transceiver) or with a protocol like iCW (CW over Internet) or VBand. In all transceiver cases the CW keyer and a receiver or CW decoder are active at the same time.</li>
 </ul>
-<h3 data-number="5.5.1" id="lora-trx"><span class="header-section-number">5.5.1</span> LoRa Trx</h3>
+<section id="lora-trx" class="classic" data-number="5.5.1">
+<h3 data-number="5.5.1"><span class="header-section-number">5.5.1</span> LoRa Trx</h3>
 <div class="note">
 <p>This is only available if your Morserino includes a hardware LoRa transceiver (as was the case with 1st and 2nd edition Morserinos, but is not the case with the M32Pocket in its default configuration)!</p>
 </div>
@@ -1357,6 +1372,7 @@ The font family used is Lato.</p>
 <p>Another feature is worth mentioning here: The frequency of the tone you are hearing when you are receiving the other station is adjusted through the “Pitch” preference, as in the other modes. When you are transmitting, the pitch of the tone can be the same, or a half tone higher or lower then the receiving tone – this is being set through the <strong>Tone Shift</strong> preference, in the same way as in Echo Trainer mode.</p>
 <p>One other thing you might want to know: the LoRa CW Transceiver does not work like a CW transceiver on shortwave, where an unmodulated carrier is being keyed, and the delay between sender and receiver is just defined by the delay in the path of the electromagnetic waves carrying the signals. LoRa uses a spread spectrum technology to send <strong>data packets</strong> – in a way a bit similar to WiFi that you use on your phone or PC. Therefore all you are keying in is being encoded into data first – essentially the speed and all the dots, dashes and pauses between characters. As soon as the pause is long enough to be recognized as a pause between words (as a blank space, as it were), the whole data packet assembled so far is being transmitted and in due course being played back at the indicated speed by the receiving Morserino-32.</p>
 <p>More information about LoRa can be found in <strong>Appendix 2 More information about LoRa</strong>.</p>
+</section>
 <h3 data-number="5.5.2" id="wifi-trx"><span class="header-section-number">5.5.2</span> Wifi Trx</h3>
 <p>You can use this transceiver mode to communicate with your CW buddy using WiFi, either on your local area network, or across the Internet, or even peer-to-peer without an access point – this method is called <em>EspNow</em>, and the Morserino uses its broadcast functionality – this is then very similar to using LoRa, and obviously the range is limited (depending on the environment, from a few meters up to maybe 50 meters if there is a clear line of sight). See further down in section <strong>5.8.6 WiFi Select</strong> how to select either an access point or EspNow for the WiFi Trx mode.</p>
 <h4 class="unnumbered" id="using-two-different-espnow-channels">Using two different EspNow Channels</h4>
@@ -1410,7 +1426,8 @@ The font family used is Lato.</p>
 <p>On the left of the status display at the top, you will see a small square or rectangle whenever the key is pressed (or a 700 Hz tone is detected), and to the right of it the letter <strong>d</strong> – this replaces the indicator for the keyer mode that is visible in the other Morserino modes.</p>
 <p>The current speed as detected by the decoder is displayed as WpM on the status line.</p>
 <p>This mode does not have many preferences (see the section <strong>6.3.7 Preferences regarding Transmitting, Decoding and QSO Bot</strong>); maybe the most important is the ability to switch the filter bandwidth of the audio decoder between narrow (ca 150 Hz) and wide (ca 600 Hz). For decoding signals from a transceiver (where there might be other signals in the vicinity), it is usually best to set the bandwidth to <strong>Narrow</strong> and tune the signal to 700 Hz (± 5%). For decoding signals from an FM transceiver, or from iCW or other environments with little interference, it is better to use the <strong>Wide</strong> setting – in that case the audio frequency does not need to be very close to 700 Hz.</p>
-<h2 data-number="5.7" id="games"><span class="header-section-number">5.7</span> Games</h2>
+<section id="games" class="pocket" data-number="5.7">
+<h2 data-number="5.7"><span class="header-section-number">5.7</span> Games</h2>
 <p>The Morserino Pocket features now CW-based games that make learning and practicing Morse code more engaging. Games are found under the “Games” menu entry. Seven games are currently available: <strong>Morse Invaders</strong>, <strong>Fight the Pileup</strong>, <strong>Radio Cave</strong>, <strong>Morsel</strong>, <strong>Trailblazer</strong>, <strong>Fox Hunt</strong>, and <strong>Memory Chain</strong>. Trailblazer and Fox Hunt are a pair of grid-maze games that share the same playing field — Trailblazer trains sending, Fox Hunt trains receiving. Memory Chain is a memory game: key an ever-growing chain of characters without losing track.</p>
 <h3 data-number="5.7.1" id="morse-invaders"><span class="header-section-number">5.7.1</span> Morse Invaders</h3>
 <p>Morse Invaders is a game where characters fall down the color display, and you must key the correct Morse code to destroy them before they reach the bottom. It combines the fun of a classic arcade game with effective CW training.</p>
@@ -2252,6 +2269,7 @@ The font family used is Lato.</p>
 </table>
 <h4 class="unnumbered" id="scoring-and-high-scores-1">Scoring and High Scores</h4>
 <p>When the game ends, the whole chain is revealed — every box shows its character, with the fatal position in red (in Call Signs mode you also see what the rest of the call would have been). In Characters mode your score is the completed chain length; in Call Signs mode it is the number of completed calls, with the letters already banked in the failed call as a tiebreak. Each mode keeps its own top-7 high-score table, recording the result, the errors used, the Koch lesson, and whether you played with displayed or sounded prompts. Click the encoder for the high-score table; a further press returns to the lobby, a long press exits.</p>
+</section>
 <h2 data-number="5.8" id="wifi-functions"><span class="header-section-number">5.8</span> WiFi Functions</h2>
 <p>Apart from the functionality of WiFi Transceiver, you can use the WiFi feature of the ESP32 processor used in the Morserino-32 for two functions of the device, when you are using WiFi through an access point, that were of high importance in teh past:</p>
 <ul>
@@ -2296,7 +2314,8 @@ The font family used is Lato.</p>
 <p>You might have to move your Morserino pretty close to your WiFi router (within the same room is usually OK)! The WiFi antenna of the Esp32 module is rather small and might not pick up very weak WiFi signals.</p>
 <p>When you get an error message although you had entered the correct credentials and the Morserino is in direct vicinity of your WiFi router, you should try again – sometimes the first try is not successful, for whatever reasons…​</p>
 <p>If you press the FN button, this functions returns to the menu. If you do nothing, the Morserino will go into deep sleep, depending on the settings you defined for that, as usual.</p>
-<h3 data-number="5.8.4" id="uploading-a-text-file"><span class="header-section-number">5.8.4</span> Uploading a Text File</h3>
+<section id="uploading-a-text-file" class="classic pocket" data-number="5.8.4">
+<h3 data-number="5.8.4"><span class="header-section-number">5.8.4</span> Uploading a Text File</h3>
 <p>Once you configured your Morserino-32 with your local WiFi credentials, you are ready to upload a text file to use for your Morse code training. Currently only one file can reside on the Morserino-32, This means, whenever you upload a new file, the old one will be overwritten.</p>
 <p>The <strong>file</strong> that you upload should be a plain ASCII text file without any formatting (no Word files, pdf documents etc.). German characters (<em>ÄÖÜäöüß</em>) encoded as UTF-8 are allowed and will be converted to <em>ae</em>, <em>oe</em>, <em>ue</em> and <em>ss</em>. The file can contain uppercase and lowercase letters, and all the characters that are part of the Koch method set, including pro-signs (51 different characters in total). Any other characters will just be disregarded when the file is played in Morse code. The file that you upload can be pretty large – you have about 1 MB space available for it (enough to store a copy of Mark Twain’s “The Adventures of Huckleberry Finn”).</p>
 <div class="note">
@@ -2311,7 +2330,9 @@ The font family used is Lato.</p>
 <div class="note">
 <p>If it fails: Make sure you use the password <strong>upload</strong> and NOT <strong>update</strong>!</p>
 </div>
-<h3 data-number="5.8.5" id="updating-the-morserino-32-firmware-through-wifi"><span class="header-section-number">5.8.5</span> Updating the Morserino-32 Firmware through WiFi</h3>
+</section>
+<section id="updating-the-morserino-32-firmware-through-wifi" class="classic pocket" data-number="5.8.5">
+<h3 data-number="5.8.5"><span class="header-section-number">5.8.5</span> Updating the Morserino-32 Firmware through WiFi</h3>
 <p>Updating the firmware of the Morserino-32 through WiFi is one way of doing it; you can also do this by using the Arduino IDE (or PlatformIO) on your computer (you also need to install a bunch of specific files and libraries for support of the hardware, and then compile the binary from the source code), or, much easier, by using a special update utility (see <strong>Appendix 5 Updating the Firmware via USB and an update program</strong>), or – and <strong>this is the easiest way</strong> – by just using a browser and USB (see <strong>Appendix 6 Updating the Firmware via USB and a Browser (Webserial)</strong>).</p>
 <p>You can update to any version, you can “jump” versions, you can also go back to an older version.</p>
 <p>Updating the firmware via WiFi is very similar to uploading a text file. You first need to get the binary file from the Morserino-32 repository on GitHub (<em>https://github.com/oe1wkl/Morserino-32</em> - look for a directory under “Software” called “Binaries”). Get the latest version and download it to your computer. The file name probably looks like this:</p>
@@ -2330,11 +2351,13 @@ The font family used is Lato.</p>
 <div class="note">
 <p>If it fails: Make sure you use the password <strong>update</strong> and NOT <strong>upload</strong>!</p>
 </div>
+</section>
 <h3 data-number="5.8.6" id="wifi-select"><span class="header-section-number">5.8.6</span> WiFi Select</h3>
 <p>Here you can select which network configurations should be used. SSID and Peer Host are being displayed, and you use the encoder to go through the available network configurations.</p>
 <p>The item shown when you start this is the currently selected network configuration. If that is what you want, just go back to the menu with a long press of the ENCODER.</p>
 <p>The first entry (numbered 0) lets you choose EspNow (WiFi peer-to-peer communication) instead of using an access point.</p>
-<h3 data-number="5.8.7" id="practice-stats"><span class="header-section-number">5.8.7</span> Practice Stats</h3>
+<section id="practice-stats" class="pocket pocket-a11y" data-number="5.8.7">
+<h3 data-number="5.8.7"><span class="header-section-number">5.8.7</span> Practice Stats</h3>
 <div class="note">
 <p>M32 Pocket only.</p>
 </div>
@@ -2354,6 +2377,7 @@ The font family used is Lato.</p>
 <div class="note">
 <p>If you mostly connect via USB rather than WiFi, the same statistics are also available in the <strong>M32 Configuration Tool</strong> (<code>Software/Utilities/m32_config_tool.html</code>) under the <strong>Koch</strong> tab, below the Custom Character Set section — no WiFi needed there at all.</p>
 </div>
+</section>
 <h2 data-number="5.9" id="go-to-sleep"><span class="header-section-number">5.9</span> Go To Sleep</h2>
 <p>This menu item, when selected, puts the Morserino-32 into a deep sleep mode, where it will consume considerable less power than when operating normally. But it will still drain the battery within a certain number of days, so this is only meant for shorter breaks between your training sessions. See the section <strong>4.1 Powering On and Off / Charging the Battery</strong> further up in this manual.</p>
 <h1 data-number="6" id="preferences"><span class="header-section-number">6</span> Preferences</h1>
@@ -2424,7 +2448,7 @@ The font family used is Lato.</p>
 <td>A series of tones between 233 and 932 Hz, corresponding to the musical notes of the F major scale from Bb3 to Bb5 (2 octaves)</td>
 </tr>
 <tr>
-<td>Tone Softness</td>
+<td><span class="pocket pocket-a11y"></span>Tone Softness</td>
 <td>(Only for M32 Pocket) Softens the attack and release edges of the CW side tone, similar to what an RC low-pass filter does to the keying edges in a real transceiver. Reduces harshness, especially on short elements such as a single dit. Takes effect immediately.</td>
 <td>1 – 10 ms, in steps of 1 ms (<strong>5 ms</strong>)</td>
 </tr>
@@ -2444,17 +2468,17 @@ The font family used is Lato.</p>
 <td><strong>lower</strong> / UPPER</td>
 </tr>
 <tr>
-<td>Headphone Output</td>
+<td><span class="pocket pocket-a11y"></span>Headphone Output</td>
 <td>(Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With “<em>line-out</em>,” output will be via the headphone output at full volume and via the speaker as normal. With “<em>l-o: Var. Vol.</em>” it is similar, but the output via the plug is at the set volume, and with “<em>l-o: Lsp Muted</em>” the output via the plug is at full volume and the speaker is muted.</td>
 <td><strong>Phones</strong> / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones!</td>
 </tr>
 <tr>
-<td>Theme</td>
+<td><span class="pocket pocket-a11y"></span>Theme</td>
 <td>(For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red.</td>
 <td><strong>Plain</strong> (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements</td>
 </tr>
 <tr>
-<td>Invader Orient.</td>
+<td><span class="pocket"></span>Invader Orient.</td>
 <td>(For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration.</td>
 <td><strong>Portrait</strong> / Landscape</td>
 </tr>
@@ -2801,7 +2825,7 @@ The font family used is Lato.</p>
 <td>press FN to confirm</td>
 </tr>
 <tr>
-<td>Practice Stats</td>
+<td><span class="pocket pocket-a11y"></span>Practice Stats</td>
 <td><strong>M32 Pocket only.</strong> Switches the Koch-lesson-time and per-character error-rate logging described under <strong>Practice Stats</strong> (section <strong>WiFi Functions</strong>) on or off. Turning it off does not erase what was already logged — use the Clear Log button on the Practice Stats web page for that.</td>
 <td><strong>On</strong> / Off</td>
 </tr>
@@ -2811,7 +2835,8 @@ The font family used is Lato.</p>
 <h2 data-number="7.1" id="appendix-1-hardware-configuration-menu"><span class="header-section-number">7.1</span> Appendix 1: Hardware Configuration Menu</h2>
 <p>There is a hardware configuration menu that can be reached by <strong>pressing a paddle (or external paddle or straight key) while switching the M32 on</strong>. You can then select the configuration you want to perform by rotating the encoder knob, and pressing it once the right option shows up.</p>
 <p>The selectable options are <strong>Calibr. Batt.</strong> (calibration of battery measurement), <strong>Flip Screen</strong>, <strong>LoRa Config.</strong>, <strong>CN3: Touch / CN3: Mechan.</strong> (M32 Pocket only — the paddle type on the CN3 connector) and <strong>Cancel</strong> (which just leaves this menu and continues with regular start-up of the M32).</p>
-<h3 data-number="7.1.1" id="cn3-connector-touch-or-mechanical-paddle-m32-pocket-only"><span class="header-section-number">7.1.1</span> CN3 Connector: touch or mechanical paddle (M32 Pocket only)</h3>
+<section id="cn3-connector-touch-or-mechanical-paddle-m32-pocket-only" class="pocket pocket-a11y" data-number="7.1.1">
+<h3 data-number="7.1.1"><span class="header-section-number">7.1.1</span> CN3 Connector: touch or mechanical paddle (M32 Pocket only)</h3>
 <p>The M32 Pocket has two paddle inputs: the 3.5 mm jack (for a mechanical paddle or key), and the small <strong>CN3</strong> connector, which is normally used for the capacitive <strong>touch</strong> paddles. If you prefer, you can instead connect a <strong>mechanical</strong> paddle or key to CN3 — no hardware modification is needed, only this setting.</p>
 <p>The menu item shows the current setting: <strong>CN3: Touch</strong> (the default) or <strong>CN3: Mechan.</strong> To change it:</p>
 <ol type="1">
@@ -2820,6 +2845,7 @@ The font family used is Lato.</p>
 <li>Rotate the ENCODER to choose <strong>Touch</strong> or <strong>Mechanical</strong>, then press the ENCODER knob to confirm.</li>
 </ol>
 <p>If you changed the setting, the M32 re-boots so the CN3 pins come up in the chosen mode. In <strong>Mechanical</strong> mode the touch paddles on CN3 no longer work (the two pins are read as an ordinary paddle instead); the 3.5 mm jack keeps working in both modes. Note that a mechanical paddle plugged into CN3 will also let you into this menu while the setting is still on Touch, so you can always switch modes.</p>
+</section>
 <h3 data-number="7.1.2" id="flipping-the-display-screen-for-left-hand-use"><span class="header-section-number">7.1.2</span> Flipping the display screen for left-hand use</h3>
 <p>This is probably only relevant for the M32Pocket! With the M32Pocket, if you want to key with your left hand, the normal display would be upside down; with this configuration option the display is rotated by 180° to allow left-hand use.</p>
 <ol type="1">
@@ -2827,7 +2853,8 @@ The font family used is Lato.</p>
 <li>Select the Option <strong>Flip Screen</strong> with the rotary encoder, and pressing the ENCODER knob.</li>
 </ol>
 <p>The M32 will re-boot, with the display now rotated 180°.</p>
-<h3 data-number="7.1.3" id="calibration-of-battery-measurement"><span class="header-section-number">7.1.3</span> Calibration of Battery Measurement</h3>
+<section id="calibration-of-battery-measurement" class="classic" data-number="7.1.3">
+<h3 data-number="7.1.3"><span class="header-section-number">7.1.3</span> Calibration of Battery Measurement</h3>
 <div class="note">
 <p>For the M32Pocket, calibrating battery measurement is not necessary, and therefore this item is only available on 1st and 2nd edition Morserinos.</p>
 </div>
@@ -2842,7 +2869,9 @@ The font family used is Lato.</p>
 <div class="note">
 <p>If your battery is reasonably new, and you know for sure that it is fully charged, as it has been in charging mode long enough (&gt;10 hours for 1st &amp; 2nd edition Morserinos, &gt;3 hours for M32 Pocket), you can assume a battery voltage of 4.2V and use that value instead of measuring the battery.</p>
 </div>
-<h3 data-number="7.1.4" id="configuring-lora-band-frequency-and-output-power"><span class="header-section-number">7.1.4</span> Configuring LoRa Band, Frequency and Output Power</h3>
+</section>
+<section id="configuring-lora-band-frequency-and-output-power" class="classic" data-number="7.1.4">
+<h3 data-number="7.1.4"><span class="header-section-number">7.1.4</span> Configuring LoRa Band, Frequency and Output Power</h3>
 <p>Obviously this section is only applicable if you have a Morserino with LoRa capability (like a 1st or 2nd edition Morserino).</p>
 <p>If you have a standard 433 MHz Heltec module in your Morserino-32 (1st or 2nd edition), which is practically always the case, it has been already preconfigured for the right band and a default frequency within that band.</p>
 <p>If you have to change either the LoRa frequency within the standard band, or you use a Heltec module for the 868 and 920 MHz bands, you have to configure your Morserino-32 before you use the LoRa capabilities.</p>
@@ -2864,9 +2893,11 @@ The font family used is Lato.</p>
 <p><em>Be aware of applicable regulations in your jurisdiction, there might be a legal limit regarding output power! Be also aware that the higher the output power, the higher the risk of destroying the LoRa transceiver when used without proper termination (a suitable antenna or a dummy load).</em></p>
 </div>
 <p>Immediately after that the Morserino-32 will start normally, with the now selected LoRa settings in effect. On the top line of the Startup Screen you will see the configured QRG for LoRa as a 5-digit number (e.g. 43415 for the default in the 433 MHz band).</p>
+</section>
 <h3 data-number="7.1.5" id="resetting-preferences-to-their-factory-defaults"><span class="header-section-number">7.1.5</span> Resetting Preferences to their Factory Defaults</h3>
 <p>This item resets all preferences to their factory default, but it does not change any hardware configuration settings, nor does it delete or modify any settings stored in snapshots.</p>
-<h2 data-number="7.2" id="appendix-2-more-information-about-lora"><span class="header-section-number">7.2</span> Appendix 2: More information about LoRa</h2>
+<section id="appendix-2-more-information-about-lora" class="classic" data-number="7.2">
+<h2 data-number="7.2"><span class="header-section-number">7.2</span> Appendix 2: More information about LoRa</h2>
 <p>When morse code is packed into a LoRa data packet, dots, dashes and pauses are encoded; it is not so that the clear text would be sent as ASCII characters. Therefore it is possible to send “illegal” morse code characters, or characters that might only be used in certain languages. They will be transmitted correctly (but shown on the display as non-decodable).</p>
 <p>Sending the code word by word means there is a significant delay between sender and receiver, and the delay depends to a large degree on the length of the words being sent, and on the speed that is being used. As most words in a typical CW conversation are rather short (7 characters or more already constitutes a very long word), this is nothing to worry about (unless you are sitting both in the same room using no headphones – then it will be really confusing). But try sending really long words, say 10 or more character long, at really low speed (5 WpM), and you will see what I am talking about!</p>
 <h4 class="unnumbered" id="using-two-different-lora-channels">Using two different LoRa “Channels”</h4>
@@ -2888,14 +2919,19 @@ The font family used is Lato.</p>
 <li>LoRa Sync Word: 0x27 (= decimal 39) for standard channel, and 0x66 (= decimal 102) for secondary channel</li>
 <li>HF Output: by default 14 dBm (= 25 mW), can be increased to 20 dBm (100 mW)</li>
 </ul>
+</section>
 <h2 data-number="7.3" id="appendix-3-adjusting-audio-level"><span class="header-section-number">7.3</span> Appendix 3: Adjusting Audio Level</h2>
 <p>You can also reach <strong>one other function</strong> while you are positioned within the Start Menu – not through a menu selection, but through <strong>a long press on the FN button</strong>:</p>
 <div class="important">
 <p>This functions behaves differently for the M32Pocket, vs. the 1st and 2nd edition M32!</p>
 </div>
+<div class="classic">
 <p><strong>1st and 2nd edition M32 only:</strong> This starts a function to adjust the <strong>audio input level:</strong> make sure a tone signal is available on the input, for example from your shortwave receiver, and a bar graph will indicate the voltage of the input signal. Adjust it with the blue trimmer potentiometer, so that the left and right ends of the solid bar are within the two outer rectangles.</p>
+</div>
 <p><strong>All Morserinos</strong>: When this function is active, a sinus signal is output on line-out, and the transceiver output is shortened (keying a transmitter, should you have one connected – disconnect your transceiver first if this is not what you want!). You can now, for example, adjust the level of the output signal on a connected computer, or check whether a transmitter is being keyed.</p>
+<div class="classic">
 <p><strong>1st and 2nd edition only</strong>: A simple test or demo for the audio-in adjustment is to connect line-out with audio in (connect tip with sleeve), feeding the output sine wave into the audio input. When you turn the potentiometer, at one end of the potentiometer range you can see the solid bar graph changing leaving just a tiny solid bar in the middle and exposing the two rectangles on both ends of the graph (essentially you are just measuring the noise on the operation amplifiers input), and on the other end of the potentiometer sweep you see the solid bar graph extending beyond the rectangles on both ends. Now you can set the potentiometer so that the solid bar is almost touching the outer bounds of the rectangles. This is the optimal setting for the audio in level. Obviously you have to perform this for the audio source you are planning to use, e.g. for your radio receiver.</p>
+</div>
 <div class="note">
 <p>Only while you are in the <strong>menu</strong> will the <strong>FN button long press</strong> activate the level adjustment function.<br> While you are executing one of the Morserino modes (Keyer, Generator, Echo Trainer, Transceiver etc.) a long press of the FN button activates the <strong>scroll mode of the display</strong> to enable you to read text that has already scrolled away…​</p>
 </div>
@@ -2907,8 +2943,10 @@ The font family used is Lato.</p>
 </div>
 <h2 data-number="7.5" id="appendix-5-updating-the-firmware-via-usb-and-an-update-program"><span class="header-section-number">7.5</span> Appendix 5: Updating the Firmware via USB and an update program</h2>
 <p>This simple update procedure for Morserinos has become possible through work by Matthias Jordan and Joe Wittmer.</p>
+<div class="classic">
 <p>For an M32 1st or 2nd edition make sure you have a <strong>driver</strong> for the Silicon Labs CP210x USB to serial device, used by the Heltec module for its USB interface. Current versions of Windows 10 install this automatically; if yours doesn’t, you can get the driver from here: <em>https://www.silabs.com/products/development-tools/software/usb-to-uart-bridge-vcp-drivers</em></p>
 <p>To check if you have the correct driver installed in Windows, and to see to which port it connects, open the Device Manager on your computer (in the search field in the lower left of the screen start typing “settings: device” and it will come up for selection). OSX or Linux users can use command line tools to find out which serial ports are available.</p>
+</div>
 <p>Connect your Morserino with a USB cable to your computer. On Windows the device manager should update its screen and show an entry “Ports” - open it and it should indicate something like: Silicon Labs CP210x …​ (COM3). Could be another COM port in your case, so please remember your correct port name.</p>
 <div class="important">
 <p>Make sure you have a cable that is a “proper” USB cable, not just a cable for a charger!</p>
@@ -2923,7 +2961,7 @@ The font family used is Lato.</p>
 <p>Then enter the following command line:</p>
 <p><code>update_m32 -p &lt;COMx&gt; -f &lt;binaryfilename&gt;</code></p>
 <p>replacing &lt;COMx&gt; with your COM port name, and &lt;binaryfilename&gt; with the correct name of the Morserino binary file.</p>
-<div class="note">
+<div class="note pocket pocket-a11y">
 <p>For the M32Pocket, you need to add the parameter <code>-d M32Pocket</code> to the command line.</p>
 </div>
 <p>In my case that was (on a Windows machine):</p>
@@ -2937,8 +2975,12 @@ The font family used is Lato.</p>
 <p>Some browsers support the Webserial extension, which allows to access a serial port directly from the browser; currently these are <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Firefox</strong> (from version 151), and at least on some platforms also <strong>Opera</strong>. By using such a browser, updating the firmware to the latest release becomes really very easy (no firmware download necessary, and no command lines…​).</p>
 <p>Make sure you have a USB cable that allows data transfer.</p>
 <div class="note">
+<div class="pocket pocket-a11y">
 <p>If you are using a M32Pocket, the device must be turned on and must not be in sleep mode when you are connecting the USB cable!</p>
+</div>
+<div class="classic">
 <p>For M32 1st and 2nd edition, make sure you have a driver for the SiLab CP210x chip.</p>
+</div>
 <p>This method does NOT work with the Safari browser, nor with versions of Firefox before 151. On a computer managed by a company or a school, Webserial may also be switched off by policy.</p>
 </div>
 <p>For updating your firmware, connect your Morserino-32 to your computer via USB and go to <a href="https://www.morserino.info/install.html"><code>https://www.morserino.info/install.html</code></a>.</p>
@@ -2954,7 +2996,7 @@ The font family used is Lato.</p>
 <p>::: note After <em>Erase everything</em>, the Morserino has to build a new file system the next time it starts. This happens <strong>before</strong> the start screen appears, so the display stays dark for a while — considerably longer than a normal start. That is normal and not a fault: let it finish, and do <strong>not</strong> switch the device off while it is dark. :::</p></li>
 <li><p><strong>Installing</strong> — wait for the progress bar. Do not disconnect the device. When it finishes, the Morserino restarts by itself.</p></li>
 </ol>
-<div class="note">
+<div class="note pocket pocket-a11y">
 <p><strong>Editions (M32 Pocket only).</strong> The <em>Standard</em> edition is the normal firmware described by this manual. The <em>Accessibility Edition</em> speaks the menus and settings aloud, for blind and partially sighted operators: it announces itself and the battery voltage when you switch it on, and it names the whole menu path — “CW Generator, Call Signs” — whenever the branch you are in may not be obvious, for instance right after switching on. The games are not included in it, and neither are the two WiFi functions <em>Upload File</em> and <em>Update Firmw</em>: both only open a web page that you would have to operate from another device — use the USB installer described in this appendix instead. Both editions are offered for the same device and you can move between them at any time — your settings are kept, but the Accessibility Edition uses the space that holds the File Player’s text for its voice clips.</p>
 </div>
 <p>Older bookmarks pointing at the previous two separate installer pages still work; they now forward to this one page.</p>
@@ -2978,7 +3020,7 @@ The font family used is Lato.</p>
 <li><p>You can also run Christof’s javascript program locally, the source code is available at <em>https://github.com/cdaller/morserino32-trainer</em>.</p></li>
 </ul>
 </div>
-<div class="important">
+<div class="important pocket pocket-a11y">
 <p>If you are using a M32Pocket, the device must be turned on and must not be in sleep mode when you are connecting the USB cable!</p>
 </div>
 <p>On these websites, you need to click a “Connect” button (in a pop-up window, you need to tell the browser which port to use); otherwise, these websites explain everything you need to know to use their functionality.</p>
@@ -2989,7 +3031,7 @@ The font family used is Lato.</p>
 <h2 data-number="7.8" id="appendix-8-using-the-serial-output-of-the-m32"><span class="header-section-number">7.8</span> Appendix 8: Using the Serial Output of the M32</h2>
 <p>The Morserino-32 is able to output data via the serial USB interface. This can be used, for example, to show the characters that are shown on the display in a computer terminal window. This way you can show the Morserino output on a big screen or projector; this could be useful for presentations or classroom use.</p>
 <p>In version 5, a full two-way protocol called “M32 Serial Protocol” was implemented. This allows (via software on a computer connected via USB) screen or voice output of menus and settings (e.g. to make the M32 usable for blind or partially sighted people), and also allows remote control of all Morserino functions from the computer (e.g. settings, preferences, changing speed and volume, exiting and entering menus and even automatic CW generation). The protocol is described in a separate document available on GitHub.</p>
-<div class="note">
+<div class="note pocket pocket-a11y">
 <p>If you are using a M32Pocket, the device must be turned on and must not be in sleep mode when you are connecting the USB cable!</p>
 </div>
 <p>A baud rate of 115200 must be selected for the serial port used on the connected computer.</p>
@@ -4357,7 +4399,7 @@ The font family used is Lato.</p>
 <td>A learning method developed by Ludwig Koch in the 1930s. Characters are introduced one at a time in a specific order based on rhythmic similarity, rather than alphabetically.</td>
 </tr>
 <tr>
-<td>LoRa</td>
+<td><span class="classic"></span>LoRa</td>
 <td>Long Range — a spread-spectrum radio technology used for low-power, long-range communication. Used in 1st and 2nd edition Morserinos for wireless CW transceiver mode.</td>
 </tr>
 <tr>
@@ -4389,7 +4431,7 @@ The font family used is Lato.</p>
 <td>Full break-in — the ability to hear between transmitted elements. Not possible in LoRa/WiFi transceiver modes due to packet-based transmission.</td>
 </tr>
 <tr>
-<td>RSSI</td>
+<td><span class="classic"></span>RSSI</td>
 <td>Received Signal Strength Indicator — a measurement of the power level of a received radio signal. Displayed as an S-meter bar in LoRa transceiver mode.</td>
 </tr>
 <tr>
@@ -4405,7 +4447,7 @@ The font family used is Lato.</p>
 <td>A saved set of all Morserino preferences. Up to eight snapshots can be stored and recalled, allowing quick switching between different training configurations.</td>
 </tr>
 <tr>
-<td>Spread Spectrum</td>
+<td><span class="classic"></span>Spread Spectrum</td>
 <td>A radio transmission technique where the signal is spread across a wider bandwidth than necessary for the data. LoRa uses this to achieve long range at low power.</td>
 </tr>
 <tr>
