@@ -74,6 +74,29 @@ Before you tag, make sure of these — the workflow fails fast on each:
    `.md` against `master`'s last PDF commit. Your edited `.md` must
    be on `master` for that comparison to fire.
 
+5. **Dropbox is awake, and every platform has its directory.** The
+   workflow now checks this itself, before the builds:
+
+   ```sh
+   python3 scripts/release/check_dropbox_targets.py
+   ```
+
+   Two things it catches. First, `$MORSERINO_DROPBOX_ROOT` lives under
+   `~/Library/CloudStorage`, a macOS file provider: while Dropbox is
+   asleep or signed out, a plain `stat()` on that path simply blocks.
+   That is what killed the first `V9.0-beta.1` run — 27 minutes inside
+   the staging step with no output at all, then the 30-minute job
+   timeout. Opening the folder in Finder once wakes it.
+
+   Second, **a newly added platform needs its directory created by
+   hand, once**: `dropbox_publish.sh` creates `common/` but refuses to
+   create the platform directory itself, so `m32p-a11y/` had to be
+   `mkdir`ed before the Accessibility Edition could ever be published.
+   Miss it and the release fails at the publish step, after the builds
+   — and worse, the published installer *silently drops* any target
+   whose `versions.json` will not load, so the edition just would not
+   appear.
+
 ## BUMPING TO A NEW MAJOR VERSION
 
 Do this once, on `master`, at the moment the major version changes (e.g.

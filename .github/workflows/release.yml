@@ -69,6 +69,29 @@ jobs:
           echo "--- (truncated) ---"
 
       # ──────────────────────────────────────────────────────────────────
+      # 2b. Verify the Dropbox publish targets (fail fast — no point building)
+      #
+      #     V9.0-beta.1 lost a whole 30-minute budget to this: m32p-a11y/ did
+      #     not exist in the Dropbox root, and the publish step will not create
+      #     a platform directory, so the release was doomed before the first
+      #     build — but it only said so after four of them. The same check also
+      #     catches a stalled ~/Library/CloudStorage file provider, which is
+      #     what actually wedged that run, and names it as such instead of
+      #     letting it look like a hung build.
+      # ──────────────────────────────────────────────────────────────────
+      - name: Verify Dropbox publish targets
+        shell: bash
+        run: |
+          set -euo pipefail
+          # MORSERINO_DROPBOX_ROOT comes from the runner's own environment
+          # (~/actions-runner/.env), exactly as the staging and publish steps
+          # read it. Do not add an `env:` mapping for it here: ${{ env.X }}
+          # reads the *workflow* context, which does not know about the
+          # runner's process environment, so it would resolve to empty and
+          # override the real value.
+          python3 scripts/release/check_dropbox_targets.py
+
+      # ──────────────────────────────────────────────────────────────────
       # 3. Read annotated-tag message (empty for lightweight tags)
       # ──────────────────────────────────────────────────────────────────
       - name: Capture tag annotation
