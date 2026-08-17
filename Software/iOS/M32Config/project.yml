@@ -1,0 +1,64 @@
+# XcodeGen spec — generates M32Config.xcodeproj from these sources.
+#
+#   brew install xcodegen
+#   cd Software/iOS/M32Config && ./sync-webtool.sh && xcodegen generate
+#
+# The generated .xcodeproj is NOT checked in (see .gitignore): it is derived,
+# and regenerating it is a one-line command. If you prefer to create the project
+# by hand in Xcode instead, README.md lists exactly what to set.
+
+name: M32Config
+
+options:
+  bundleIdPrefix: cc.kraml
+  deploymentTarget:
+    iOS: "16.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: false
+
+targets:
+  M32Config:
+    type: application
+    platform: iOS
+
+    sources:
+      - path: Sources
+      # A FOLDER reference, not a group: the bundle then contains a real "Web"
+      # directory, which is what Bundle.main.url(..., subdirectory: "Web")
+      # in BundleWeb looks for.
+      - path: Resources/Web
+        type: folder
+
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: cc.kraml.m32config
+        MARKETING_VERSION: "0.1"
+        CURRENT_PROJECT_VERSION: "1"
+        # Swift 5 language mode on purpose: Swift 6 strict concurrency turns the
+        # CoreBluetooth delegate pattern into a fight that buys this app nothing.
+        SWIFT_VERSION: "5.0"
+        TARGETED_DEVICE_FAMILY: "1,2"
+        CODE_SIGN_STYLE: Automatic
+        GENERATE_INFOPLIST_FILE: NO
+        # DEVELOPMENT_TEAM is left empty: pick your Apple ID in Xcode under
+        # Signing & Capabilities the first time you build.
+
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: M32 Config
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UISupportedInterfaceOrientations~ipad:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationPortraitUpsideDown
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        # Required since iOS 13 — without it the app is killed the moment it
+        # first touches CoreBluetooth.
+        NSBluetoothAlwaysUsageDescription:
+          M32 Config uses Bluetooth to connect to your Morserino-32 and read or
+          change its settings.
