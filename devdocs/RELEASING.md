@@ -28,14 +28,19 @@ V<major>.<minor>[.<patch>]-beta.<counter>   (beta release)
 
 Pushing a `V*` tag fires `.github/workflows/release.yml` on the
 self-hosted macOS runner (`morserino-mac`). The workflow builds
-firmware for both platforms, rebuilds the user manuals, creates a
-**draft** GitHub Release with all assets attached, publishes the
-firmware to the Dropbox folder backing the web installer, updates
-both `versions.json` manifests, and (for stable releases only)
-commits the new binaries to the in-repo archive on `master`.
+firmware for all three platforms (classic, Pocket, Pocket Accessibility
+Edition, the last with a voice-clip filesystem image), rebuilds the user
+manuals, creates a **draft** GitHub Release with all assets attached,
+publishes the firmware to the Dropbox folder backing the web installer,
+updates all three `versions.json` manifests, and (for stable releases
+only) commits the new binaries to the in-repo archive on `master`.
 
 The release is **always created as a draft**. You must review and
 **publish** it manually from the GitHub web UI.
+
+Publishing the draft does **not** make the web installer offer the new
+firmware — that is a separate, slower thing. See "THE INSTALLER LAGS THE
+RELEASE" below before concluding that a release failed.
 
 ## PRE-FLIGHT (do this before tagging)
 
@@ -220,18 +225,21 @@ git push origin V<ver>-beta.<N>
 
 # 4. Review the draft release. Open it in the web UI:
 #    https://github.com/oe1wkl/Morserino-32/releases
-#    Sanity-check that all 5 assets are attached:
-#      - fw_m32_V<ver>_beta_<date>.bin
-#      - fw_m32p_V<ver>_beta_<date>.bin
-#      - m32UserManual_v<major>_en.pdf
-#      - m32UserManual_v<major>_de.pdf
+#    Sanity-check that all 17 assets are attached:
+#      - fw_m32_V<ver>_beta_<date>.bin          (classic)
+#      - fw_m32p_V<ver>_beta_<date>.bin         (Pocket)
+#      - fw_m32pa11y_V<ver>_beta_<date>.bin     (Pocket, Accessibility Edition)
+#      - fs_m32pa11y_V<ver>_beta_<date>.bin     (its voice clips)
+#      - Morserino-32_User_Manual_{Classic,Pocket,Pocket_Accessible}_{EN,DE}
+#        .pdf and .epub                          (12 manuals)
 #      - Morserino-32.Pocket.FAQ.pdf
 #    Edit the body text if needed (it was filled in from the README).
 
 # 5. Click "Publish release".
 
-# That's it. Web installer + Dropbox already have the new firmware
-# (the workflow updated them before creating the draft).
+# Dropbox has the new firmware already (the workflow updated it before
+# creating the draft) -- but the web installer will NOT show it yet.
+# See "THE INSTALLER LAGS THE RELEASE" below: budget up to 24 hours.
 ```
 
 ### Stable
@@ -255,6 +263,70 @@ Update V<ver> docs (rebuilt from sources) [skip ci]   (only if .md changed)
 ```
 
 Run `git pull` next time you do any work to bring them down.
+
+## THE INSTALLER LAGS THE RELEASE — UP TO 24 HOURS
+
+**The workflow finishing does not mean the web installer offers the new
+firmware.** It usually will not, for a while. This is not a bug in the
+release, in Dropbox, or in the installer, and it has almost certainly
+been happening quietly since the installer existed.
+
+`www.morserino.info` is site44 (a Dropbox-backed host) fronted by a
+**Varnish cache on HTTPS**. Varnish gives an unchanged file a long TTL —
+`versions.json` came back with `Cache-Control: public, max-age=86400`
+after V9.0-beta.1 — so once a release rewrites a manifest, HTTPS keeps
+serving the *previous* one until that entry expires.
+
+What this looks like from the outside, and it is confusing:
+
+* **The new version is missing from the list**, even with *Show beta
+  versions* ticked — the cached `versions.json` predates the release.
+* **A whole edition disappears with no error.** A brand-new platform
+  directory (`m32p-a11y/` for the Accessibility Edition) gets a *cached
+  404* if anything requested it before it existed. `loadRegistry()` drops
+  a target whose version list will not load — by design, so a target can
+  be listed before its artifacts are published — and the "Edition" choice
+  only appears when two or more targets fit the connected chip. So the
+  Accessibility Edition silently is not offered at all.
+* **The firmware binaries are fine the whole time.** They are new URLs
+  with no cache entry, so they are served immediately. Only the files a
+  release *overwrites* go stale.
+
+### Checking it
+
+The origin is reachable over plain HTTP, which has no Varnish entry in
+front of it. Compare the two:
+
+```sh
+curl -s  http://www.morserino.info/firmware/m32p/versions.json  | head -3   # truth
+curl -s https://www.morserino.info/firmware/m32p/versions.json  | head -3   # what users get
+curl -sI https://www.morserino.info/firmware/m32p/versions.json | grep -iE 'age|cache-control|^date'
+```
+
+`Age` is how many seconds the cached copy has been held; the object's own
+`Date` plus `max-age` is when it expires. After V9.0-beta.1 that worked
+out to roughly 22:20 local the same evening.
+
+### What does not work
+
+* **Query strings.** `?cb=12345` returns the cached copy — Varnish here
+  does not key on the query.
+* **The installer's `cache: 'no-cache'`.** That governs the *browser*
+  cache; Varnish never sees a reason to revalidate.
+* **Rewriting or re-creating the file.** Deleting and re-creating
+  `versions.json` changed nothing: the cache key is the URL, and the URL
+  did not change.
+* **Renaming the manifests** and pointing `targets.json` at the new
+  names — `targets.json` is cached the same way, so the redirect would
+  not be seen either.
+
+### What to do
+
+Wait, or ask site44 to purge. Practically: **do not judge a release by
+the installer for the first day**, and if you need to confirm the release
+itself, check over HTTP as above. Plan announcements accordingly — a
+tester who tries the installer immediately after a release will report,
+correctly, that the new firmware is not there.
 
 ## WHAT THE WORKFLOW DOES
 
