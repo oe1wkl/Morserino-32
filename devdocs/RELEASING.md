@@ -294,8 +294,18 @@ What this looks like from the outside, and it is confusing:
 
 ### Checking it
 
-The origin is reachable over plain HTTP, which has no Varnish entry in
-front of it. Compare the two:
+**From the page itself:** both browser tools print a build stamp in the
+footer — `Build 2026-08-17 09:31` — taken from `document.lastModified`,
+so it describes the bytes that browser actually loaded. If it is older
+than the change you just published, you are looking at the cached copy.
+(It is deliberately not a hand-maintained string: the site is mirrored
+from the repo by an fswatch script, so a stamp updated by hand would be
+published unstamped the moment a file is saved, and a version stamp that
+lies is worse than none. It stays hidden when the server sends no
+`Last-Modified`, e.g. over `file://`, rather than reporting "now".)
+
+**From the shell:** the origin is reachable over plain HTTP, which has no
+Varnish entry in front of it. Compare the two:
 
 ```sh
 curl -s  http://www.morserino.info/firmware/m32p/versions.json  | head -3   # truth

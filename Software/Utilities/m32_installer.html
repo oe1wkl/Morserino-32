@@ -491,6 +491,9 @@
     <a href="https://www.morserino.info">morserino.info</a>
     &nbsp;&middot;&nbsp;
     <a href="https://github.com/oe1wkl/Morserino-32">GitHub</a>
+    <!-- Build stamp: filled in from document.lastModified, so it describes the
+         bytes this browser actually loaded. See the note where it is set. -->
+    <span id="build-stamp" hidden></span>
   </p>
 </div><!-- /.page -->
 
@@ -552,7 +555,7 @@
     phase: $('phase'), bar: $('bar'), bytes: $('bytes'),
     flashDone: $('flash-done'), flashError: $('flash-error'), flashAgainRow: $('flash-again-row'),
     btnRestart: $('btn-restart'),
-    showAllTargets: $('show-all-targets'),
+    showAllTargets: $('show-all-targets'), buildStamp: $('build-stamp'),
     localFile: $('local-file'), localOffset: $('local-offset'), btnLocal: $('btn-local'),
     log: $('log'),
   };
@@ -1166,6 +1169,32 @@
   el.showAllTargets.addEventListener('change', () => { if (device) renderChoose(); });
   document.querySelectorAll('input[name=erase]').forEach(r =>
     r.addEventListener('change', updateChooseWarning));
+
+  // ── Build stamp ──────────────────────────────────────────────────────────
+  // Which copy of this page am I looking at? Taken from document.lastModified
+  // rather than a string baked in by hand: the site is mirrored from the repo
+  // by an fswatch script, so a hand-maintained stamp would be published
+  // unstamped the moment a file is saved, and a version stamp that lies is
+  // worse than none. This one always describes the bytes the browser loaded.
+  //
+  // It doubles as a cache probe. www.morserino.info is fronted by a Varnish
+  // cache that can serve a page for up to a day (see devdocs/RELEASING.md); if
+  // this date is older than the change you just published, you are looking at
+  // the cached copy, not at your work.
+  //
+  // Browsers fall back to "now" when the server sends no Last-Modified — which
+  // is what happens over file:// — so a stamp within a minute of now is
+  // meaningless and is hidden rather than shown as today's build.
+  (() => {
+    const stamp = el.buildStamp;
+    if (!stamp) return;
+    const d = new Date(document.lastModified);
+    if (isNaN(d) || Math.abs(Date.now() - d.getTime()) < 60000) return;
+    const pad = n => String(n).padStart(2, '0');
+    stamp.textContent = ` ·  Build ${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+                        ` ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+    stamp.hidden = false;
+  })();
 
   // ── Start-up ─────────────────────────────────────────────────────────────
   (async () => {
