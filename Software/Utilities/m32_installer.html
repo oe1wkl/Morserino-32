@@ -507,13 +507,17 @@
   const REGISTRY_URL  = FIRMWARE_ROOT + 'targets.json';
   const FLASH_BAUD    = 921600;   // ROM baud stays at esptool-js's 115200 default
 
-  // The user manuals are release assets under a permanent, version-less URL:
-  // "latest" resolves to the newest non-prerelease release, so a beta never
-  // hijacks it and the link never needs updating. The per-target slug lives in
-  // targets.json, so the manuals can be renamed there without touching this
-  // page — and a target that has no slug gets no link at all, which is what an
-  // installer page newer than the registry it fetched must degrade to.
-  const MANUAL_ROOT  = 'https://github.com/oe1wkl/Morserino-32/releases/latest/download/';
+  // The V9 manuals are served from this site, next to this page, and are
+  // replaced by every release (the names carry no version).
+  //
+  // NOT from .../releases/latest/download/, which was the obvious choice and
+  // is wrong: "latest" resolves to the newest NON-prerelease release, so every
+  // link would 404 for the whole of a beta cycle — and a draft release's
+  // assets are not public at all. Serving them here keeps the manuals in step
+  // with the firmware the installer is offering, whatever state the GitHub
+  // release is in. The per-target slug still lives in targets.json, so the
+  // files can be renamed there without touching this page.
+  const MANUAL_ROOT  = 'https://www.morserino.info/manuals/';
   const MANUAL_LANGS = [{ code: 'EN', name: 'English' }, { code: 'DE', name: 'German' }];
 
   // One manual per model starts with V9: those assets come from the V9 release
@@ -947,8 +951,12 @@
       const a = document.createElement('a');
       a.href = l.href;
       a.textContent = l.text;
-      // No target="_blank": GitHub serves release assets as attachments, so the
-      // click downloads the file and leaves the installer page where it is.
+      // The manuals are served from this same origin as application/pdf with no
+      // Content-Disposition, so without this a click would open the PDF *in
+      // place* and discard a page that may be mid-install. `download` is
+      // honoured precisely because it is same-origin; it is ignored on the
+      // cross-origin V8 links, which GitHub already serves as attachments.
+      a.download = l.href.slice(l.href.lastIndexOf('/') + 1);
       li.appendChild(a);
       list.appendChild(li);
     }

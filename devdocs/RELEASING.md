@@ -427,12 +427,19 @@ Documentation/FAQ/Morserino-32 Pocket FAQ.pdf
 ## FILES THE WORKFLOW WRITES
 
 ```
-$MORSERINO_DROPBOX_ROOT/
+$MORSERINO_DROPBOX_ROOT/                       (= <site>/firmware)
     fw_m32_V<ver>...bin                ← copied here
     versions.json                      ← prepended
     m32p/
         fw_m32p_V<ver>...bin           ← copied here
         versions.json                  ← prepended
+    m32p-a11y/
+        fw_m32pa11y_V<ver>...bin       ← copied here
+        fs_m32pa11y_V<ver>...bin       ← the voice clips
+        versions.json                  ← prepended
+
+<site>/manuals/                                (beside firmware/, not inside)
+    Morserino-32_User_Manual_*.{pdf,epub}  ← all 12 overwritten every release
 
 $REPO/Documentation/User Manual/Version <major>.x/
     m32UserManual_v<major>_{en,de}.pdf ← committed to master if .md changed

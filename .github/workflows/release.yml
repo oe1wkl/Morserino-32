@@ -363,6 +363,52 @@ jobs:
           bash scripts/release/dropbox_publish.sh "${ARGS[@]}"
 
       # ──────────────────────────────────────────────────────────────────
+      # 11b. Publish the manuals to the site, next to the tools that link them
+      #
+      #      The browser tools cannot link the GitHub release assets during a
+      #      beta: .../releases/latest/download/ resolves to the newest
+      #      NON-prerelease release, so every link 404s for the whole beta
+      #      cycle, and a draft's assets are not public at all. Serving the
+      #      manuals from morserino.info sidesteps release semantics entirely —
+      #      the tools and the manuals they offer then come from one host.
+      #
+      #      The names carry no version, so each release overwrites the same
+      #      twelve files: ~42 MB, constant, no growth.
+      # ──────────────────────────────────────────────────────────────────
+      - name: Publish manuals to the site
+        shell: bash
+        run: |
+          set -euo pipefail
+          # MORSERINO_DROPBOX_ROOT points at the firmware/ directory; the site
+          # root is its parent. Derived rather than configured separately so
+          # the runner's .env stays as it is.
+          SITE_ROOT="$(dirname "$MORSERINO_DROPBOX_ROOT")"
+          MANUAL_DIR="$SITE_ROOT/manuals"
+
+          if [[ ! -d "$MANUAL_DIR" ]]; then
+              echo "Manual directory does not exist: $MANUAL_DIR" >&2
+              echo "Create it once by hand (mkdir -p), as with a new firmware platform." >&2
+              exit 1
+          fi
+
+          copied=0
+          for src in /tmp/release-stage/Morserino-32_User_Manual_*; do
+              [[ -f "$src" ]] || continue
+              cp "$src" "$MANUAL_DIR/$(basename "$src")"
+              copied=$((copied + 1))
+          done
+
+          # 3 variants x 2 languages x 2 formats. Fewer means the staging step
+          # produced less than it should have, and the site would be left with
+          # a mix of new and previous-release manuals.
+          if [[ "$copied" -ne 12 ]]; then
+              echo "Expected 12 manuals, published $copied" >&2
+              exit 1
+          fi
+          echo "Published $copied manuals to $MANUAL_DIR"
+          ls -1 "$MANUAL_DIR"
+
+      # ──────────────────────────────────────────────────────────────────
       # 12. Sync rebuilt docs (.pdf + .html, EN+DE) to default branch
       #     IF the manual_*.md sources changed since the last PDF commit.
       #     Runs for both beta and stable so the repo never lags the

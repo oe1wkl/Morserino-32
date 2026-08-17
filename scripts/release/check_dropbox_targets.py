@@ -135,12 +135,16 @@ def main(argv: list[str]) -> int:
     print(f"root ok ({elapsed:.2f}s): {args.root}", flush=True)
 
     # Then one directory per platform, taken from the same table the staging
-    # and publish steps use, so a new platform cannot be forgotten here.
+    # and publish steps use, so a new platform cannot be forgotten here —
+    # plus the site's manuals/ directory, which lives beside firmware/ rather
+    # than inside it and is where the browser tools' manual links point.
+    targets = [(key, spec["subdir"], args.root) for key, spec in PLATFORMS.items()]
+    targets.append(("manuals", "manuals", os.path.dirname(args.root.rstrip(os.sep))))
+
     failures = 0
     stalled = False
-    for key, spec in PLATFORMS.items():
-        subdir = spec["subdir"]
-        path = os.path.join(args.root, subdir) if subdir else args.root
+    for key, subdir, base in targets:
+        path = os.path.join(base, subdir) if subdir else base
         verdict, elapsed = probe(path, args.timeout)
         label = f"{key} ({subdir or '<root>'})"
 

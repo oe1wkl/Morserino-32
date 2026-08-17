@@ -1037,7 +1037,13 @@ async function doDisconnect(){
 // ── The user manual that belongs to the connected device ────────────────────
 // The manuals are release assets under a permanent, version-less URL: "latest"
 // resolves to the newest non-prerelease release, so a beta never hijacks it.
-var MANUAL_ROOT='https://github.com/oe1wkl/Morserino-32/releases/latest/download/';
+// The V9 manuals are served from this site, beside this page, and are replaced
+// by every release (their names carry no version). NOT from
+// .../releases/latest/download/, which was the obvious choice and is wrong:
+// "latest" resolves to the newest NON-prerelease release, so every link would
+// 404 for the whole of a beta cycle, and a draft release's assets are not
+// public at all.
+var MANUAL_ROOT='https://www.morserino.info/manuals/';
 var MANUAL_INDEX='https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/User%20Manual';
 var MANUAL_LANGS=[{code:'EN',name:'English'},{code:'DE',name:'German'}];
 
@@ -1140,6 +1146,7 @@ function showManualLinks(dev){
     manualLinksV8().forEach(function(l){
       var li=document.createElement('li'),a=document.createElement('a');
       a.href=l.href;a.textContent=l.text;
+      a.download=l.href.slice(l.href.lastIndexOf('/')+1);
       li.appendChild(a);v8list.appendChild(li);
     });
     host.appendChild(v8list);
@@ -1161,6 +1168,11 @@ function showManualLinks(dev){
   manualLinks(m).forEach(function(l){
     var li=document.createElement('li'),a=document.createElement('a');
     a.href=l.href;a.textContent=l.text;
+    // Served from this origin as application/pdf with no Content-Disposition,
+    // so without this a click opens the PDF in place and drops the connection.
+    // Same-origin is why `download` is honoured; it is ignored on the
+    // cross-origin V8 links, which GitHub already serves as attachments.
+    a.download=l.href.slice(l.href.lastIndexOf('/')+1);
     li.appendChild(a);list.appendChild(li);
   });
   host.appendChild(list);

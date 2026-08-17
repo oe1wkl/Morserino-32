@@ -315,8 +315,16 @@ Everything else — WifiKit V3, WifiLora V3, DevKit S3, T190, minipcb, and any
 - Do not rework the manuals, the tagging, or `variant.lua` — that work is done
   and merged; see `devdocs/manual-variants/`.
 - Do not add a language switcher to either tool.
-- Do not bundle manuals into the tools or host copies elsewhere; the release
-  assets are the single source.
+- ~~Do not bundle manuals into the tools or host copies elsewhere; the release
+  assets are the single source.~~ **Reversed 2026-08-17.** The release assets
+  cannot serve a beta: `releases/latest/download/` resolves to the newest
+  *non-prerelease* release, so every manual link 404s for a whole beta cycle,
+  and a draft release's assets are not public at all — which is what beta
+  testers hit on V9.0-beta.1. The release workflow now also publishes the
+  twelve manuals to `<site>/manuals/`, and both tools link there. This is
+  mirroring, not a second source: one producer, two destinations, exactly as
+  the firmware already works. The names carry no version, so each release
+  overwrites the same twelve files (~42 MB, constant).
 - Do not change `release.yml`'s asset names. They are permalinks now, and the
   READMEs, and in due course morserino.info, point at them.
 
