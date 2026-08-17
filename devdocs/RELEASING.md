@@ -38,9 +38,11 @@ only) commits the new binaries to the in-repo archive on `master`.
 The release is **always created as a draft**. You must review and
 **publish** it manually from the GitHub web UI.
 
-Publishing the draft does **not** make the web installer offer the new
-firmware — that is a separate, slower thing. See "THE INSTALLER LAGS THE
-RELEASE" below before concluding that a release failed.
+The web installer picks the new firmware up within seconds of the
+workflow's Dropbox publish, independently of whether you have published
+the draft. If it has not after a minute or two, see "IF THE INSTALLER
+DOES NOT SHOW THE NEW RELEASE" below — that is a site44 fault to report,
+not a release to re-run.
 
 ## PRE-FLIGHT (do this before tagging)
 
@@ -238,8 +240,10 @@ git push origin V<ver>-beta.<N>
 # 5. Click "Publish release".
 
 # Dropbox has the new firmware already (the workflow updated it before
-# creating the draft) -- but the web installer will NOT show it yet.
-# See "THE INSTALLER LAGS THE RELEASE" below: budget up to 24 hours.
+# creating the draft), and site44 should serve it within seconds. If the
+# installer still shows the old version after a minute or two, see
+# "IF THE INSTALLER DOES NOT SHOW THE NEW RELEASE" below -- that is a
+# site44 stall to report to them, not something to wait out.
 ```
 
 ### Stable
@@ -264,20 +268,36 @@ Update V<ver> docs (rebuilt from sources) [skip ci]   (only if .md changed)
 
 Run `git pull` next time you do any work to bring them down.
 
-## THE INSTALLER LAGS THE RELEASE — UP TO 24 HOURS
+## IF THE INSTALLER DOES NOT SHOW THE NEW RELEASE
 
-**The workflow finishing does not mean the web installer offers the new
-firmware.** It usually will not, for a while. This is not a bug in the
-release, in Dropbox, or in the installer, and it has almost certainly
-been happening quietly since the installer existed.
+**Normal is seconds.** `www.morserino.info` is site44, a Dropbox-backed
+host fronted by a Varnish cache. Dropbox notifies site44 of a changed
+file, site44 picks it up and **purges its own cache automatically**. That
+is the whole mechanism: there is no manual purge, and none is needed.
+Site44 support puts the normal case at "no more than a couple seconds,
+maybe a few minutes if things are slow".
 
-`www.morserino.info` is site44 (a Dropbox-backed host) fronted by a
-**Varnish cache on HTTPS**. Varnish gives an unchanged file a long TTL —
-`versions.json` came back with `Cache-Control: public, max-age=86400`
-after V9.0-beta.1 — so once a release rewrites a manifest, HTTPS keeps
-serving the *previous* one until that entry expires.
+**So if it takes more than about a minute, that is a site44 bug — report
+it.** As of August 2026 they have a known stall they are still chasing:
+the purge lands on one VM and not another, so the site flips between old
+and new content depending on which one answers. Mailing support gets it
+kicked, and they explicitly ask to be told, since anyone stalled is
+unlikely to be the only one. **Do not wait it out.** V9.0-beta.1 sat
+stale for roughly sixteen hours until an email fixed it in minutes.
 
-What this looks like from the outside, and it is confusing:
+That stall is worth recognising by sight, because it does not look like a
+cache problem:
+
+* **Requests disagree with each other.** Five fetches in a row returned
+  the stale copy, one earlier fetch had returned the fresh one, and the
+  `X-Varnish` object id was identical throughout. If a page seems to fix
+  itself once and then regress, that is this bug, not you.
+* **The stale objects carry a long TTL.** The stuck `versions.json` came
+  back with `Cache-Control: public, max-age=86400` and an `Age` climbing
+  past 58000 seconds. So a stall does not clear itself quickly — which is
+  exactly why reporting beats waiting.
+
+What it looks like from the outside, and it is confusing:
 
 * **The new version is missing from the list**, even with *Show beta
   versions* ticked — the cached `versions.json` predates the release.
@@ -317,7 +337,11 @@ curl -sI https://www.morserino.info/firmware/m32p/versions.json | grep -iE 'age|
 `Date` plus `max-age` is when it expires. After V9.0-beta.1 that worked
 out to roughly 22:20 local the same evening.
 
-### What does not work
+### What does not work — do not spend an afternoon on these
+
+All of these were tried against the stalled V9.0-beta.1 publish. None of
+them helped, because none of them is the problem: the files were correct
+in Dropbox and correct at the origin the whole time.
 
 * **Query strings.** `?cb=12345` returns the cached copy — Varnish here
   does not key on the query.
@@ -332,11 +356,17 @@ out to roughly 22:20 local the same evening.
 
 ### What to do
 
-Wait, or ask site44 to purge. Practically: **do not judge a release by
-the installer for the first day**, and if you need to confirm the release
-itself, check over HTTP as above. Plan announcements accordingly — a
-tester who tries the installer immediately after a release will report,
-correctly, that the new firmware is not there.
+1. **Confirm the release itself is fine** — compare HTTP against HTTPS as
+   above. If HTTP shows the new version, the workflow, Dropbox and the
+   origin all did their jobs and only the cache is behind. Nothing in
+   this repository needs changing.
+2. **Mail site44 support**, saying the site is serving stale content and
+   the cache appears not to have been purged. That is the only lever that
+   exists, it is the one they want you to pull, and it took minutes when
+   V9.0-beta.1 was stuck.
+3. **Then announce.** Until the footer build stamp shows your publish
+   time, testers will report — correctly — that the new firmware is not
+   there.
 
 ## WHAT THE WORKFLOW DOES
 
