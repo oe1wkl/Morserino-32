@@ -513,6 +513,22 @@
   const MANUAL_ROOT  = 'https://github.com/oe1wkl/Morserino-32/releases/latest/download/';
   const MANUAL_LANGS = [{ code: 'EN', name: 'English' }, { code: 'DE', name: 'German' }];
 
+  // One manual per model starts with V9: those assets come from the V9 release
+  // workflow, and latest/download/ resolves to the newest NON-prerelease
+  // release. Installing V8 therefore has no per-model manual to point at — the
+  // permalink would 404, and a dead link is worse than none. Link the V8
+  // manual for those installs, which is anyway the one describing what was
+  // just written. Pinned to the V8.2 tag, not to latest/download/: once V9.0
+  // becomes "latest" it no longer carries m32UserManual_v8_*.pdf.
+  const MANUAL_V8_ROOT = 'https://github.com/oe1wkl/Morserino-32/releases/download/V8.2/';
+  const MANUAL_FIRST_PER_MODEL_MAJOR = 9;
+
+  // '8.2' -> 8, '9.0 beta 260817' -> 9, anything unparseable -> null.
+  const firmwareMajor = v => {
+    const m = /^\s*(\d+)/.exec(String(v || ''));
+    return m ? parseInt(m[1], 10) : null;
+  };
+
   // Installed-version probe (see PLAN.md §4.3). Every failure is a normal
   // outcome: old firmware, a busy device, a blank board. Keep it short.
   const PROBE_SENDS_AT = [0, 1200, 2400];
@@ -879,7 +895,17 @@
   // Every link carries its own full description — which device, which edition,
   // which language, which format — because it may be read out on its own, out
   // of the surrounding context, by a screen reader listing the page's links.
-  function manualLinks(t) {
+  function manualLinks(t, installedVersion) {
+    // What was just written decides which manual applies, not what this page
+    // would prefer to offer.
+    const major = firmwareMajor(installedVersion);
+    if (major !== null && major < MANUAL_FIRST_PER_MODEL_MAJOR) {
+      return MANUAL_LANGS.map(lang => ({
+        href: `${MANUAL_V8_ROOT}m32UserManual_v8_${lang.code.toLowerCase()}.pdf`,
+        text: `User manual for firmware V8 — ${lang.name}, PDF`,
+      }));
+    }
+
     if (!t || !t.manual) return [];
     const device = t.manualName || t.hardware;
     // EPUB first for the Accessibility Edition: a screen reader and a braille
@@ -900,8 +926,8 @@
 
   // Appended to the "finished" box while it is still hidden, so the whole
   // message is announced in one go when it appears.
-  function appendManualLinks(t, into) {
-    const links = manualLinks(t);
+  function appendManualLinks(t, into, installedVersion) {
+    const links = manualLinks(t, installedVersion);
     if (links.length === 0) return;
 
     const box = document.createElement('div');
@@ -1042,7 +1068,7 @@
           `If the screen stays dark, switch it off and on again.`;
       // This is the one moment the tool knows for certain what is on the
       // device, so it is the moment to offer the matching manual.
-      appendManualLinks(target, el.flashDone);
+      appendManualLinks(target, el.flashDone, version.version);
       el.flashDone.hidden = false;
       setPhase('Finished.');
     } catch (e) {

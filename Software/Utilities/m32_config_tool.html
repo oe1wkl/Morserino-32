@@ -1041,6 +1041,26 @@ var MANUAL_ROOT='https://github.com/oe1wkl/Morserino-32/releases/latest/download
 var MANUAL_INDEX='https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/User%20Manual';
 var MANUAL_LANGS=[{code:'EN',name:'English'},{code:'DE',name:'German'}];
 
+// One manual per model is a V9 thing: those assets are produced by the V9
+// release workflow, and .../releases/latest/download/ resolves to the newest
+// NON-prerelease release. So for a device still running V8 there is no
+// per-model manual to link — the permalink would 404, and a link that 404s is
+// worse than no link. Link the V8 manual for those devices instead, which is
+// also the manual that actually describes the firmware they are running.
+//
+// Pinned to the V8.2 tag rather than to latest/download/: the moment V9.0
+// becomes "latest", it stops carrying m32UserManual_v8_*.pdf, and a
+// latest/download/ link to it would break exactly when V9 ships.
+var MANUAL_V8_ROOT='https://github.com/oe1wkl/Morserino-32/releases/download/V8.2/';
+var MANUAL_FIRST_PER_MODEL_MAJOR=9;   // first firmware whose release ships per-model manuals
+
+// "8.2" -> 8, "9.0 beta 260817" -> 9, "" -> null. Firmware older than
+// 2026-06-22 could report an empty string (the vsn bug), hence the null case.
+function firmwareMajor(v){
+  var m=/^\s*(\d+)/.exec(String(v||''));
+  return m?parseInt(m[1],10):null;
+}
+
 // Whole hardware strings, never substrings: "M32 Pocket (Wroom)" and "M32 DevKit
 // S3" are both ESP32-S3 boards and only one of them is a Pocket. Anything not
 // listed here goes to the manual index instead of being guessed at — the
@@ -1089,10 +1109,19 @@ function manualLinks(m){
   return out;
 }
 
+// The V8-and-older manual: one combined edition per language, no per-model
+// split, PDF only.
+function manualLinksV8(){
+  return MANUAL_LANGS.map(function(lang){
+    return {href:MANUAL_V8_ROOT+'m32UserManual_v8_'+lang.code.toLowerCase()+'.pdf',
+            text:'User manual for firmware V8 — '+lang.name+', PDF'};
+  });
+}
+
 function showManualLinks(dev){
   var host=document.getElementById('deviceManualLinks');
   host.innerHTML='';
-  var m=manualFor(dev), head=document.createElement('div');
+  var head=document.createElement('div');
   head.className='manual-head';
   head.textContent='User manual';
   host.appendChild(head);
@@ -1100,6 +1129,29 @@ function showManualLinks(dev){
   // GitHub serves release assets as attachments, so those links download the
   // file and leave this page — and the serial connection — alone. A link to a
   // GitHub *page* would navigate away, so that one opens in a new tab.
+  var major=firmwareMajor(dev&&dev.firmware);
+  if(major===null){
+    host.appendChild(manualIndexLink('This firmware does not report its version — see all Morserino-32 user manuals (opens in a new tab)'));
+    return;
+  }
+
+  if(major<MANUAL_FIRST_PER_MODEL_MAJOR){
+    var v8list=document.createElement('ul');
+    manualLinksV8().forEach(function(l){
+      var li=document.createElement('li'),a=document.createElement('a');
+      a.href=l.href;a.textContent=l.text;
+      li.appendChild(a);v8list.appendChild(li);
+    });
+    host.appendChild(v8list);
+    var v8note=document.createElement('div');
+    v8note.className='manual-note';
+    v8note.textContent='This is the manual for the firmware on your device (V'+
+      (dev.firmware||'?')+'). From V9 onwards there is a separate manual per model.';
+    host.appendChild(v8note);
+    return;
+  }
+
+  var m=manualFor(dev);
   if(!m){
     host.appendChild(manualIndexLink('This device does not match any of the user manuals — see all Morserino-32 user manuals (opens in a new tab)'));
     return;

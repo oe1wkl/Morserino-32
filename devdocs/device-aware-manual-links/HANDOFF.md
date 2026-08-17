@@ -8,11 +8,13 @@ can simply offer the right manual.
 **Status (2026-08-16).** Built and **merged to master** (`83494cb`, branch
 `device-aware-manual-links`). Both tools offer the right manual, the firmware
 now says which edition it runs, and the §5.1 decision was taken: **option A**.
-What is *not* done is the only part that cannot be done yet — the links point at
-release assets that do not exist until the first V9 release runs the updated
-workflow, so **neither tool may be published to morserino.info before that
-release** (Willi's decision; see §6 and §8). What was built, and what still has
-to be checked on hardware, is in §5.1 and §6.
+**Update 2026-08-17: both tools are published and live.** They went out before
+the V9 release, so the per-model permalinks 404ed for every user — a freshly
+configured V8.2 device was offered four dead links. They now link **the manual
+matching the firmware on the device**: V8 and older get the V8 manual pinned to
+the V8.2 tag, V9 and newer get the per-model permalinks. Every link a user can
+be shown resolves today, with one accepted exception (a 9.0-beta tester). See
+§8. What still has to be checked on hardware is in §6.
 
 The firmware half has to be **in** the V9 release for any of this to work: if
 `edition` does not ship, every V9 Pocket takes the config tool's "does not
@@ -327,10 +329,37 @@ logic, so **commit before publishing**. `targets.json` is served from
 stale copy in a browser is not the usual failure, an unpublished copy is.
 `scripts/release/dropbox_publish.sh` handles the firmware side during a release.
 
-**Gate (Willi's decision, 2026-08-16): do not publish either tool until the
-first V9 release has run.** The manual links are correct but the assets they
-point at do not exist yet, and a user who clicks one before the release gets a
-GitHub 404. Publishing after the release costs nothing and the links are right
+**Superseded 2026-08-17 — the gate was overtaken by events, and the code now
+handles it.** Both tools went out on 2026-08-16 (the live `targets.json` carries
+the `manual` keys, and both pages carry the link code), so the 404s reached real
+users: a freshly configured V8.2 device offered four manual links, none of which
+resolved.
+
+The fix is to link **the manual for the firmware actually on the device**, which
+is both honest and more correct than always offering the newest:
+
+- firmware major < 9 → the V8 combined manual, pinned to the **V8.2 tag**
+  (`releases/download/V8.2/m32UserManual_v8_{en,de}.pdf`). Deliberately not
+  `latest/download/`: the moment V9.0 becomes "latest" it stops carrying that
+  asset, so a latest-based link would break precisely when V9 ships.
+- firmware major ≥ 9 → the per-model permalinks, as designed.
+- firmware version unreportable (the pre-2026-06-22 empty-`vsn` bug) or hardware
+  unrecognised → the manual index, which always resolves.
+
+**A browser cannot probe its way out of this.** GitHub's release-asset responses
+carry no `Access-Control-Allow-Origin`, so a `fetch()` from morserino.info is
+blocked and `no-cors` returns an opaque status — "does this manual exist?" is
+not answerable client-side. Hence the version rule rather than a liveness check.
+
+One gap remains by choice: someone running a **9.0 *beta*** sees V9 permalinks
+that 404 until V9.0 final, because "has a non-prerelease release shipped the
+per-model manuals yet?" is exactly what the page cannot know. Beta testers are
+the audience best placed to cope with it.
+
+The original gate, for the record: *do not publish either tool until the first
+V9 release has run* — the manual links were correct but the assets they point at
+did not exist yet, and a user who clicked one before the release got a GitHub
+404. Publishing after the release costs nothing and the links are right
 from the first moment anyone can see them. Two files have to go out together —
 `m32_installer.html` **and** `firmware/targets.json` — because the installer
 reads the `manual` slugs from the registry at runtime: publishing the page
