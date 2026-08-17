@@ -430,8 +430,9 @@ enum prefPos : uint8_t {
 				posBluetoothOut, posBluetoothARkey,
 #endif
 #ifdef CONFIG_TFT
-        posTheme, 
+        posTheme,
 #endif
+        posScrollFont,
 #ifdef CONFIG_CW_GAME
         posInvaderOrient,
 #endif

@@ -48,6 +48,7 @@ and QSO Bot conform to them, not vice versa.
 | **Red button — single click** | **Toggle the encoder between speed and volume**; also exits scroll-back mode. |
 | **Red button — long press** | **Scroll-back mode** (review scroll history with the encoder). |
 | **Red button — double click** | Step **screen brightness**. |
+| **Red button — triple click** | Toggle **scroll-area font size** (normal / small — more chars per line). |
 | **Paddle / key** | CW input where the mode accepts it; paddle activity counts as user activity (TOT reset). |
 
 Rules:
@@ -92,8 +93,9 @@ These are exercised in every mode, so they must be identical everywhere:
   running state and from the QSO Bot. In Generator/Echo it stops the current run
   first. A game that cannot allow it mid-round offers it from the lobby/result
   screen instead.
-- **Persistence:** volume, brightness, file-player word pointer, last-executed
-  menu item, game high scores, and player identity are written **immediately**;
+- **Persistence:** volume, brightness, scroll-area font size, file-player word
+  pointer, last-executed menu item, game high scores, and player identity are
+  written **immediately**;
   all `pliste[]` preference values are written **on preferences exit**; WPM is
   held in RAM during a session and persisted with preferences/snapshots.
 

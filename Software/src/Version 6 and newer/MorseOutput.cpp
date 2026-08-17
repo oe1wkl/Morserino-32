@@ -19,11 +19,24 @@
 
 
 #ifndef CONFIG_TFT
-/// circular buffer: 14 chars by NoOfLines lines (bottom NoOfVisibleLines are visible)
-#define NoOfCharsPerLine 14
+/// circular buffer: NoOfLines lines (bottom NoOfVisibleLines are visible).
+/// 20 chars/line is above the real max at the small scroll font (128 px /
+/// ~7 px per character ~= 18); the actual per-line wrap point is computed
+/// dynamically (see wordNeedsWrap()/printToScroll_internal()), this is just
+/// buffer capacity headroom - mirrors the TFT branch below.
+#define NoOfCharsPerLine 20
+/// The narrowest a scroll line can ever be, i.e. its width at the *default*
+/// (large) font: 128 px / ~9 px per character. printToScroll_bufMax (below)
+/// must never exceed this - printToScroll_internal() wraps a chunk that
+/// doesn't fit the current line, but never *splits* one, so a chunk wider
+/// than the narrowest active font's line would still overflow even after
+/// wrapping to a fresh line. Deliberately independent of NoOfCharsPerLine,
+/// which only sizes buffer storage and is now larger than this to leave
+/// headroom for the small font.
+#define MinLineChars 14
 #define LINE_HEIGHT 16
 #define DESCENDER_LENGTH 0
-#define C_WIDTH 9
+#define C_WIDTH display.getStringWidth("A")
 #else
 /// circular buffer: LCD uses 4 visible lines; 24 chars/line is well above
 /// the longest static printOnScroll() text (~14 chars at the largest fonts).
@@ -31,6 +44,10 @@
 /// anywhere near that much; longer dynamic strings are still gracefully
 /// wrapped by the existing screenPos+l > NoOfCharsPerLine check.
 #define NoOfCharsPerLine 24
+/// Narrowest line width at the default (15pt) font: 320 px / ~18 px per
+/// character. See the OLED branch above for why this must stay decoupled
+/// from NoOfCharsPerLine.
+#define MinLineChars 17
 #define LINE_HEIGHT (display.getStringHeight("j"))
 #define C_WIDTH display.getStringWidth("A")
 #endif
@@ -53,6 +70,7 @@ LGFX display;
 // path is the only one that keeps the panel alive.
 #include "DisplayWrapper.h"
 #include "m32logo_aa.h"          // pre-rendered anti-aliased boot-splash logo (white-on-black)
+#include "IntelOneMono12ptAscii.h"   // ASCII-range small scroll font (see that file for why)
 DisplayWrapper display;
 #endif
 
@@ -78,6 +96,33 @@ static inline uint16_t stringWidth(const String& s) {
   return display.getStringWidth(s);
 #endif
 }
+
+/// Select the plain-weight font used for scroll-area text that doesn't force
+/// a particular size (i.e. calls to printOnScroll() with small == false),
+/// honouring the Font Size preference (MorsePreferences::pliste[posScrollFont]).
+/// printOnScroll() may leave a different font active (bold, or a caller-forced
+/// small size) - callers that need to measure against the *default* scroll
+/// font (the wrap-width checks in printToScroll_internal() and
+/// wordNeedsWrap()) must call this first rather than relying on whatever
+/// font happens to be active.
+///
+/// TFT's small size uses the ASCII-range IntelOneMono12ptAscii.h variant, not
+/// the IntelOneMono 12pt used for a caller-forced small=true (e.g. a narrow
+/// IP-address line) - see that header for why.
+static inline void setDefaultScrollFont() {
+#ifdef CONFIG_TFT
+  if (MorsePreferences::pliste[posScrollFont].value)
+    display.setFont(&IntelOneMono_Regular12pt8b_Ascii);
+  else
+    display.setFont(DialogInput_plain_15);
+#else
+  display.setFont(MorsePreferences::pliste[posScrollFont].value ? DialogInput_plain_12 : DialogInput_plain_15);
+#endif
+}
+
+#ifdef CONFIG_TFT
+uint8_t NoOfVisibleLines = NoOfVisibleLinesNormal;
+#endif
 
 #ifdef CONFIG_SOUND_I2S
 #include "I2S_Sidetone.hpp"
@@ -107,7 +152,7 @@ uint8_t linePointer = 0;    /// defines the current bottom line
 uint8_t bottomLine = 0;
 static uint8_t scrollScreenPos = 0;   /// current column on the scroll line; used by printToScroll_internal() and by wordNeedsWrap()
 
-const int8_t MorseOutput::maxPos = NoOfLines - NoOfVisibleLines;
+int8_t MorseOutput::maxPos = NoOfLines - NoOfVisibleLines;
 int8_t MorseOutput::relPos = MorseOutput::maxPos;
 
 #ifndef CONFIG_TFT
@@ -625,12 +670,14 @@ int  printToScroll_bufLen = 0;         // tracks current length
 /// draws it with a single printOnScroll(). A chunk wider than a line would
 /// therefore be drawn past the right edge of the display (and a much wider one
 /// would run over the row in textBuffer[], which holds 2*NoOfCharsPerLine+1
-/// bytes). 14 on the OLED, 15 on the LCD - both compile-time constants, so this
-/// costs nothing in a path that runs once per CW element.
+/// bytes). Capped at MinLineChars (14 on the OLED, 17 on the LCD), not
+/// NoOfCharsPerLine, so a chunk always fits even the narrowest (default-font)
+/// line - both are compile-time constants, so this costs nothing in a path
+/// that runs once per CW element.
 static const int printToScroll_bufMax =
-        ((int) sizeof(printToScroll_buf) - 1 < NoOfCharsPerLine)
+        ((int) sizeof(printToScroll_buf) - 1 < MinLineChars)
         ? (int) sizeof(printToScroll_buf) - 1
-        : NoOfCharsPerLine;
+        : MinLineChars;
 
 FONT_ATTRIB printToScroll_lastStyle = REGULAR;
 
@@ -785,6 +832,45 @@ void MorseOutput::setBrightness(uint8_t brightness) {
   display.setBrightness(brightness);
 }
 
+/// Toggle the scroll-area font between normal and small (more chars/line),
+/// persist the choice, and repaint what's currently on screen with it.
+#ifdef CONFIG_TFT
+/// (Re)derive the visible-line count and scrollback depth from the current
+/// Font Size preference. Needed in three places: right after toggleScrollFont()
+/// flips it, right after the preferences menu's encoder-adjust changes it, and
+/// once at boot - NVS may have loaded posScrollFont's stored value as Small
+/// from an earlier session, but NoOfVisibleLines is statically initialised to
+/// the normal (4-line) default and nothing else re-derives it, so a device
+/// that boots with the small font already saved would render small text but
+/// still only show 4 lines until the user re-toggled it.
+void MorseOutput::applyScrollFontGeometry() {
+  NoOfVisibleLines = MorsePreferences::pliste[posScrollFont].value ? NoOfVisibleLinesSmall : NoOfVisibleLinesNormal;
+  maxPos = NoOfLines - NoOfVisibleLines;
+  relPos = maxPos;
+}
+#endif
+
+/// Toggle the scroll-area font between normal and small (more chars/line),
+/// persist the choice, and repaint what's currently on screen with it.
+void MorseOutput::toggleScrollFont() {
+  MorsePreferences::pliste[posScrollFont].value = !MorsePreferences::pliste[posScrollFont].value;
+  MorsePreferences::writePrefPosNow(posScrollFont);
+#ifdef CONFIG_TFT
+  applyScrollFontGeometry();
+#endif
+  // refreshScrollArea() below only clears each redrawn line's own band at its
+  // *current* font's line height; on TFT that height depends on which font is
+  // active (display.getStringHeight()), so switching sizes changes every visible
+  // line's total footprint even though the line *count* doesn't change - without
+  // this, a strip at the bottom (previously covered by the larger font's last
+  // line) would never get cleared when shrinking. Wipe the whole scroll region
+  // first (independent of which font is active) so either direction starts from
+  // a clean slate.
+  display.setColor(BLACK);
+  display.fillRect(0, SCROLL_TOP, display.getWidth() - 1, display.getHeight() - SCROLL_TOP);
+  MorseOutput::refreshScrollArea(MorseOutput::relPos);
+}
+
 
 /// Accumulate text for the scroll area, handing it to printToScroll_internal()
 /// a bufferful at a time. The buffer is purely an optimisation: generateCW()
@@ -892,11 +978,10 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     stripped = text;   // stripped always holds the working copy
   }
 
-#ifdef CONFIG_TFT
+  // measure against the *default* scroll font, not whatever printOnScroll()
+  // (or unrelated code, e.g. the status line) last left active
+  setDefaultScrollFont();
   int textTooLong = (scrollScreenPos + l > display.getWidth()/display.getStringWidth("A"));
-#else
-  int textTooLong = (scrollScreenPos + l > NoOfCharsPerLine);
-#endif
 
   if (textTooLong) {                 // we need to scroll up and start a new line
     MorseOutput::newLine(scroll);
@@ -969,7 +1054,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     //DEBUG("relPos: " + String(relPos));
     MorseOutput::printOnScroll(NoOfVisibleLines - 1, style, scrollScreenPos, t);               // these characters are 9 pixels wide,
   }
-  display.setFont(DialogInput_plain_15);;
+  setDefaultScrollFont();
   scrollScreenPos += (stringWidth(t) / C_WIDTH);
   if (linebreak) {
     MorseOutput::newLine(scroll);
@@ -991,16 +1076,11 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
 /// somewhere no matter what, so it is left to the per-character wrap - the
 /// pre-emptive break would otherwise fire again for every single character
 /// (each time the rest of the word still doesn't fit), stranding them one
-/// per line.  English Words with "unlimited" length reaches 17 characters,
-/// which is longer than the OLED's 14-column line.
+/// per line.  English Words with "unlimited" length reach 17 characters,
+/// which can be longer than a line at the OLED's default column count.
 boolean MorseOutput::wordNeedsWrap(uint16_t wordLen) {
-#ifdef CONFIG_TFT
-  display.setFont(DialogInput_plain_15);        // measure in the font the scroll area is drawn in,
-                                                // whatever the last display user left behind
+  setDefaultScrollFont();        // measure in the font the scroll area is drawn in
   uint16_t width = display.getWidth() / display.getStringWidth("A");
-#else
-  uint16_t width = NoOfCharsPerLine;
-#endif
   if (scrollScreenPos == 0 || wordLen > width)
     return false;
   return (scrollScreenPos + wordLen > width);
@@ -1056,7 +1136,11 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
       if (irFlag)         /// at the end of an emphasized string
       {
             //DEBUG("irFl>>" + temp + "<<");
-        charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
+        // split across two statements: C_WIDTH must be evaluated *after* printOnScroll()
+        // has picked the font it just drew with (evaluation order of / operands is
+        // otherwise unspecified, and printOnScroll() sets the font as a side effect)
+        uint16_t printedWidth = MorseOutput::printOnScroll(displayLine, style, pos, temp);
+        charsPrinted = printedWidth / C_WIDTH;
         style = REGULAR;
         pos += charsPrinted;
         temp = "";
@@ -1067,7 +1151,10 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
         if (temp.length()) {
               //DEBUG("noFl>>" + temp + "<<");
 
-          charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
+          // see the matching comment above: force printOnScroll() to run (and pick its
+          // font) before C_WIDTH is evaluated against it
+          uint16_t printedWidth = MorseOutput::printOnScroll(displayLine, style, pos, temp);
+          charsPrinted = printedWidth / C_WIDTH;
           style = REGULAR;
           pos += charsPrinted;
           temp = "";
@@ -1089,7 +1176,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
 /// place a string onto the scroll area; line = 0 .. NoOfVisibleLines-1
 
-uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small) {
+uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small, boolean forceNormal) {
   uint16_t w;
   int x, y;
 
@@ -1100,8 +1187,23 @@ uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos,
     display.setColor(WHITE);
   else
     display.setColor(BLACK);
-if (small) {
-if (bold)
+  // an explicit small=true always wins (callers use it to force a narrow fit,
+  // e.g. an IP address line) and always keeps the original (full-range)
+  // IntelOneMono 12pt regardless of the Font Size preference; only the
+  // *default* size (small==false) follows it, and on TFT that means the
+  // ASCII-range variant, not the original - see setDefaultScrollFont().
+#ifdef CONFIG_TFT
+  if (small) {
+    display.setFont(bold ? DialogInput_bold_12 : DialogInput_plain_12);
+  } else if (forceNormal || !MorsePreferences::pliste[posScrollFont].value) {
+    display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
+  } else {
+    display.setFont(bold ? &IntelOneMono_Bold12pt8b_Ascii : &IntelOneMono_Regular12pt8b_Ascii);
+  }
+#else
+  boolean useSmall = small || MorsePreferences::pliste[posScrollFont].value;
+  if (useSmall) {
+    if (bold)
       display.setFont(DialogInput_bold_12);
     else
       display.setFont(DialogInput_plain_12);
@@ -1111,6 +1213,7 @@ if (bold)
     else
       display.setFont(DialogInput_plain_15);
   }
+#endif
 
   display.setTextAlignment(TEXT_ALIGN_LEFT);
 
@@ -1711,7 +1814,10 @@ void MorseOutput::clearStatusLine() {
 /// clear all visible lines of the scroll area
 
 void MorseOutput::clearScrollLines() {
-  display.setFont(DialogInput_plain_15);
+  // must match whatever font printOnScroll() will use to redraw these lines
+  // right after - on TFT, LINE_HEIGHT depends on the active font, so clearing
+  // at the wrong size leaves stray pixels or clips the freshly-drawn text.
+  setDefaultScrollFont();
   for (int i = 0; i < NoOfVisibleLines; ++i) {
     MorseOutput::clearLine(i);
   }

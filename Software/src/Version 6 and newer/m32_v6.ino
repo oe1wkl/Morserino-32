@@ -765,6 +765,11 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
 
   #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
+  // NoOfVisibleLines is statically initialised to the normal (4-line) default;
+  // sync it to whatever Font Size readPreferences() just loaded from NVS (a
+  // device that last saved Small would otherwise render small text but still
+  // only show 4 lines until manually re-toggled).
+  MorseOutput::applyScrollFontGeometry();
   #endif
 
   #ifdef CONFIG_SOUND_I2S
@@ -1008,8 +1013,11 @@ void displayStartUp(uint16_t volt) {
     s += shortDate(COMPILEDATE);
   }
 
-  MorseOutput::printOnScroll(0, REGULAR, 0, s);
-  MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT);
+  // forceNormal: the small font is ASCII-only (IntelOneMono12ptAscii.h) and
+  // can't render the "(c)" in COPYRIGHT - keep this one splash screen at the
+  // normal size regardless of the Font Size preference.
+  MorseOutput::printOnScroll(0, REGULAR, 0, s, false, true);
+  MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT, false, true);
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
 
@@ -1254,6 +1262,8 @@ if (morseState == morseKeyer &&
                 }
                 break;
       case 2:   MorseOutput::decreaseBrightness();                                                                                       // step through screen brightness levels
+                break;
+      case 3:   MorseOutput::toggleScrollFont();                                                                                         // toggle scroll-area font size (normal / small = more chars per line)
                 break;
     }
 

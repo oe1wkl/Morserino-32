@@ -140,6 +140,7 @@
     "Fight Pileup": "bad4eb31",
     "File Player": "0af9cd2b",
     "Flip Screen": "9c0118ac",
+    "Font Size": "45f0d4fa",
     "Forever": "97055d26",
     "Fox Hunt": "c0a368cb",
     "Games": "251bd814",
@@ -239,6 +240,7 @@
     "Select Lesson": "b02a4e7b",
     "Select WiFi network": "d3df4241",
     "Serial Output": "e6f5a24a",
+    "Small": "2660064e",
     "Snapshot": "d4e2713d",
     "Sound & Disp": "511885d6",
     "Sound only": "af6a83b8",
@@ -777,6 +779,7 @@
     "bad4eb31": "Fight Pileup",
     "0af9cd2b": "File Player",
     "9c0118ac": "Flip Screen",
+    "45f0d4fa": "Font Size",
     "97055d26": "Forever",
     "c0a368cb": "Fox Hunt",
     "69a577fa": "Foxtrot",
@@ -915,6 +918,7 @@
     "e6f5a24a": "Serial Output",
     "0a56738a": "Sierra",
     "9fbbaa4c": "slash",
+    "2660064e": "Small",
     "d4e2713d": "Snapshot",
     "34c9f68f": "SOTA/POTA",
     "511885d6": "Sound & Disp",
@@ -972,11 +976,11 @@
   "id_collisions": {},
   "counts": {
     "menu": 39,
-    "pref_labels": 48,
-    "option_values": 171,
+    "pref_labels": 49,
+    "option_values": 172,
     "actions": 21,
-    "phrases_total": 291,
+    "phrases_total": 293,
     "atoms_total": 138,
-    "clips_total": 491
+    "clips_total": 493
   }
 }

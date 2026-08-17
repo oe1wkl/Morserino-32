@@ -91,6 +91,7 @@ const char * prefName[] = {
 #ifdef CONFIG_TFT
             "theme",
 #endif
+            "scrollFont",
 #ifdef CONFIG_CW_GAME
             "invaderOrient",
 #endif
@@ -474,6 +475,13 @@ parameter MorsePreferences::pliste[] = {
     {"Plain", "Blues", "ePaper", "Mandarin", "Darkroom", "Veggie", "Garnet", "Lemonade", "Complements"}
   },
 #endif   // CONFIG_TFT (closes the Theme entry)
+  {
+    0, 0, 1, 1,
+    "Font Size",
+    "Scroll area text size: Normal, or Small for more characters per line",
+    true,
+    {"Normal", "Small"}
+  },
 #ifdef CONFIG_CW_GAME
   {
     0, 0, 1, 1,
@@ -637,8 +645,9 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #ifdef CONFIG_TFT
 #define THEME posTheme,
 #else
-#define THEME 
-#endif 
+#define THEME
+#endif
+#define SCROLLFONT posScrollFont,
 #ifdef CONFIG_CW_GAME
 #define INVORIENT posInvaderOrient,
 #else
@@ -656,71 +665,71 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #endif
 
 
-  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency
                                                  };
-  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
- prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
 
- prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
- prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
- prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posKochSeq, posCarouselStart, posInterCharSpace,  posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
 
- prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
- prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
                                                    posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
                                                    posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
                                                  };
 
- prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
 
 #ifdef CONFIG_QSO_BOT
- prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
                                                    posGoertzelBandwidth,
@@ -728,7 +737,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                  };
 #endif
 
- prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
                                                  };
@@ -740,7 +749,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
  // BLUE, QSOBOT) are macro-expanded into their groups so the order stays
  // stable across build configurations.
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME INVORIENT posSerialOut, posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLUE
                                                    posKochSeq, posCarouselStart,
@@ -1058,6 +1067,14 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
               (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr));
     }
     if (! jsonOnly) {
+      // printOnScroll()'s own clear rect is only as wide as the text it's about
+      // to draw (valueLine is padded to a fixed *character* count, not pixel
+      // width) - adjusting posScrollFont changes the font used to draw this
+      // very row, so a value redrawn narrower-per-character than the previous
+      // one left part of the old, wider text uncleared. Wipe the whole row
+      // first, which is correct (and cheap) regardless of which preference is
+      // being shown.
+      MorseOutput::clearLine(2);
       if (pos == posSnapStore) {
         uint8_t mask = 1;
         mask = mask << MorsePreferences::memPtr;
@@ -1582,6 +1599,20 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                   break;
                   }
             }
+#ifdef CONFIG_TFT
+            if (pos == posScrollFont) {
+                // on TFT, row spacing (LINE_HEIGHT) tracks the active font, so
+                // changing this preference moves every row's Y position - the
+                // item label (row 1) was drawn at the *old* spacing and stays
+                // put otherwise, colliding with the value (row 2) redrawn below
+                // at the *new* one. Sync the visible-line count/scrollback depth
+                // first (clearScrollLines() loops over it), then repaint the
+                // whole screen at the new spacing.
+                MorseOutput::applyScrollFontGeometry();
+                MorseOutput::clearScrollLines();
+                MorseOutput::printOnScroll(1, BOLD, 0, itemLine);
+            }
+#endif
             displayValueLine(pos, itemLine, false, false);   /// now display the value (value only, no heading)
 	          MorseOutput::refreshDisplay(); // update the display
          }      // end if     (checkEncoder)
@@ -2307,9 +2338,21 @@ void MorsePreferences::determineBoardVersion() {
 
 ///////// write brightness preference into NVS memory
 void MorsePreferences::writeBrightnessPreference(uint8_t val) {
- 
+
     pref.begin("morserino", false);             // open the namespace as read/write
     pref.putUChar("brightness", val);          // store the new value
+    pref.end();
+}
+
+///////// immediately persist a single pliste[] value into NVS memory.
+/// writePreferences() saves all of pliste[] together on preferences-menu
+/// exit; a preference that can also change from outside the menu (e.g. the
+/// FN-button scroll-font toggle) needs to save its own value right away,
+/// under the same name-keyed slot the generic mechanism uses.
+void MorsePreferences::writePrefPosNow(prefPos pos) {
+
+    pref.begin("morserino", false);             // open the namespace as read/write
+    pref.putUChar(prefName[pos], MorsePreferences::pliste[pos].value);
     pref.end();
 }
 
