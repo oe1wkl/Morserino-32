@@ -22,8 +22,12 @@
   #define NoOfVisibleLines 3
 #else
   #define NoOfLines 18
-  #define NoOfVisibleLinesNormal 4
-  #define NoOfVisibleLinesSmall 5   // one more line fits at the small scroll font's genuinely tighter (ASCII-only) line pitch
+  #ifdef CONFIG_SCROLL_FONT_SIZE
+    #define NoOfVisibleLinesNormal 4
+    #define NoOfVisibleLinesSmall 5   // one more line fits at the small scroll font's genuinely tighter (ASCII-only) line pitch
+  #else
+    #define NoOfVisibleLines 4
+  #endif
 #endif
 
 enum FONT_ATTRIB
@@ -37,10 +41,11 @@ enum FONT_ATTRIB
 
 extern uint8_t scrollTop;
 
-#ifdef CONFIG_TFT
+#ifdef CONFIG_SCROLL_FONT_SIZE
 // runtime visible-line count (NoOfVisibleLinesNormal or NoOfVisibleLinesSmall,
-// see toggleScrollFont()/applyScrollFontGeometry()); OLED's NoOfVisibleLines
-// stays the #define above, it never varies.
+// see toggleScrollFont()/applyScrollFontGeometry()); everywhere else (OLED,
+// and TFT without the Font Size preference) NoOfVisibleLines stays the
+// #define above, it never varies.
 extern uint8_t NoOfVisibleLines;
 #endif
 
@@ -57,8 +62,8 @@ namespace MorseOutput
   void refreshDisplay();
   void decreaseBrightness();
   void setBrightness(uint8_t brightness);
+#ifdef CONFIG_SCROLL_FONT_SIZE
   void toggleScrollFont();
-#ifdef CONFIG_TFT
   void applyScrollFontGeometry();
 #endif
   void sleep();

@@ -48,7 +48,7 @@ and QSO Bot conform to them, not vice versa.
 | **Red button — single click** | **Toggle the encoder between speed and volume**; also exits scroll-back mode. |
 | **Red button — long press** | **Scroll-back mode** (review scroll history with the encoder). |
 | **Red button — double click** | Step **screen brightness**. |
-| **Red button — triple click** | Toggle **scroll-area font size** (normal / small — more chars per line). |
+| **Red button — triple click** | M32 Pocket only, and not on the Accessibility Edition (`CONFIG_SCROLL_FONT_SIZE`): toggle **scroll-area font size** (normal / small — more chars per line). The only global gesture that isn't universal across variants - a deliberate exception, not drift; see the PR discussion. |
 | **Paddle / key** | CW input where the mode accepts it; paddle activity counts as user activity (TOT reset). |
 
 Rules:

@@ -91,7 +91,9 @@ const char * prefName[] = {
 #ifdef CONFIG_TFT
             "theme",
 #endif
+#ifdef CONFIG_SCROLL_FONT_SIZE
             "scrollFont",
+#endif
 #ifdef CONFIG_CW_GAME
             "invaderOrient",
 #endif
@@ -474,7 +476,7 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"Plain", "Blues", "ePaper", "Mandarin", "Darkroom", "Veggie", "Garnet", "Lemonade", "Complements"}
   },
-#endif   // CONFIG_TFT (closes the Theme entry)
+#ifdef CONFIG_SCROLL_FONT_SIZE
   {
     0, 0, 1, 1,
     "Font Size",
@@ -482,6 +484,8 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"Normal", "Small"}
   },
+#endif
+#endif   // CONFIG_TFT (closes the Theme + Font Size entries)
 #ifdef CONFIG_CW_GAME
   {
     0, 0, 1, 1,
@@ -647,7 +651,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define THEME
 #endif
+#ifdef CONFIG_SCROLL_FONT_SIZE
 #define SCROLLFONT posScrollFont,
+#else
+#define SCROLLFONT
+#endif
 #ifdef CONFIG_CW_GAME
 #define INVORIENT posInvaderOrient,
 #else
@@ -1599,7 +1607,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                                   break;
                   }
             }
-#ifdef CONFIG_TFT
+#ifdef CONFIG_SCROLL_FONT_SIZE
             if (pos == posScrollFont) {
                 // on TFT, row spacing (LINE_HEIGHT) tracks the active font, so
                 // changing this preference moves every row's Y position - the

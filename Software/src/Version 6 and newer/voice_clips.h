@@ -243,7 +243,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Fight Pileup", "bad4eb31"},
   {"File Player", "0af9cd2b"},
   {"Flip Screen", "9c0118ac"},
-  {"Font Size", "45f0d4fa"},
   {"Forever", "97055d26"},
   {"Fox Hunt", "c0a368cb"},
   {"Foxtrot", "69a577fa"},
@@ -356,7 +355,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Select Lesson", "b02a4e7b"},
   {"Serial Output", "e6f5a24a"},
   {"Sierra", "0a56738a"},
-  {"Small", "2660064e"},
   {"Snapshot", "d4e2713d"},
   {"Sound & Disp", "3d359afb"},
   {"Sound only", "af6a83b8"},
@@ -430,7 +428,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 422;
+static const unsigned int voiceLookupCount = 420;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

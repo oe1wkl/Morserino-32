@@ -432,7 +432,13 @@ enum prefPos : uint8_t {
 #ifdef CONFIG_TFT
         posTheme,
 #endif
+// Scroll-area "Font Size" preference (Normal/Small): M32 Pocket only, and not
+// on the Accessibility Edition - a purely visual density toggle with no
+// benefit there, and Willi flagged the OLED small-font asset as unsuited to
+// being the *default* reading size (not just narrow special cases).
+#ifdef CONFIG_SCROLL_FONT_SIZE
         posScrollFont,
+#endif
 #ifdef CONFIG_CW_GAME
         posInvaderOrient,
 #endif

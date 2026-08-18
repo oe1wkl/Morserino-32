@@ -298,7 +298,6 @@ External polarity
 Fight Pileup
 File Player
 Flip Screen
-Font Size
 Forever
 Fox Hunt
 Foxtrot
@@ -437,7 +436,6 @@ Select WiFi network
 Serial Output
 Sierra
 slash
-Small
 Snapshot
 SOTA/POTA
 Sound & Disp

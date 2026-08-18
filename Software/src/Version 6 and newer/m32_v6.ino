@@ -765,6 +765,8 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
 
   #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
+  #endif
+  #ifdef CONFIG_SCROLL_FONT_SIZE
   // NoOfVisibleLines is statically initialised to the normal (4-line) default;
   // sync it to whatever Font Size readPreferences() just loaded from NVS (a
   // device that last saved Small would otherwise render small text but still
@@ -1263,8 +1265,10 @@ if (morseState == morseKeyer &&
                 break;
       case 2:   MorseOutput::decreaseBrightness();                                                                                       // step through screen brightness levels
                 break;
+#ifdef CONFIG_SCROLL_FONT_SIZE
       case 3:   MorseOutput::toggleScrollFont();                                                                                         // toggle scroll-area font size (normal / small = more chars per line)
                 break;
+#endif
     }
 
     switch (Buttons::modeButton.clicks) {                                // actions based on encoder button
