@@ -113,8 +113,11 @@ These were each discovered the hard way. Treat them as invariants:
    LovyanGFX auto-wrap caused misplaced characters; wrapping is handled by our
    own code (`DisplayWrapper`), which also handles the leading-space-after-wrap
    case. Use the wrapper, not raw display calls.
-6. **Visible scroll lines are governed by the `NoOfVisibleLines` constant**
-   (currently 4 on the LCD, 3 on the OLED). Never hardcode line counts.
+6. **Visible scroll lines are governed by `NoOfVisibleLines`** (3 on the OLED,
+   always a compile-time constant; 4 or 5 on the M32 Pocket non-Accessibility
+   build, where it's a runtime `uint8_t` that tracks the Font Size preference
+   via `MorseOutput::applyScrollFontGeometry()` - constant everywhere else).
+   Never hardcode line counts.
 7. **Call sign generation:** prefix-length filtering must respect
    `maxPfxLen = (maxLength > 0) ? maxLength : 99` semantics (bug fixed in
    `getRandomCall()`); be careful when touching this code.

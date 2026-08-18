@@ -20,11 +20,14 @@
 // bottom pixel row, since actual glyph *positioning* also comes from this
 // same whole-range metric, not just the reported height).
 //
-// GFXfont::getGlyph() indexes into the glyph array as (codepoint - first)
-// regardless of `last` (lgfx_fonts.cpp), so reusing the identical bitmap/
-// glyph data with a truncated `last` renders every ASCII character exactly
-// as before - this is a metadata-only reinterpretation, not a new font
-// asset. The #include below duplicates ~7KB of already-shipped bitmap data
+// GFXfont::getGlyph() range-checks the codepoint against [first, last] and
+// returns nullptr (rendered as blank) outside it (lgfx_fonts.cpp); inside the
+// range it indexes into the glyph array as (codepoint - first), same as
+// before. So reusing the identical bitmap/glyph data with a truncated `last`
+// renders every character still in range exactly as before, and anything
+// beyond it as blank rather than a wrong glyph (see the (c) trade-off below)
+// - this is a metadata-only reinterpretation, not a new font asset. The
+// #include below duplicates ~7KB of already-shipped bitmap data
 // into this translation unit rather than reusing DisplayWrapper.cpp's copy:
 // those arrays are plain `const` at namespace scope, which in C++ (unlike
 // C) defaults to internal linkage, so they aren't visible outside the file
@@ -39,6 +42,13 @@
 // the small scroll font is active; everything else in the printable-ASCII
 // range this app ever draws is unaffected.
 
+// These quoted includes resolve to the in-tree copies in this same directory
+// (pre-existing, left over from #157), not DisplayWrapper's - the compiler's
+// same-directory-first lookup wins over the library search path. The two are
+// byte-identical today, but that's now something to maintain: if the library
+// ever updates these fonts, the in-tree copies used here won't follow unless
+// someone re-syncs them by hand. Treat the in-tree copies as the source of
+// truth for what this header renders.
 #include <LovyanGFX.hpp>
 #include "IntelOneMono_Regular12pt8b.h"   // -> IntelOneMono_Regular12pt8bBitmaps/Glyphs (+ the unused full-range IntelOneMono_Regular12pt8b, dropped at link time)
 #include "IntelOneMono_Bold12pt8b.h"      // -> IntelOneMono_Bold12pt8bBitmaps/Glyphs    (+ the unused full-range IntelOneMono_Bold12pt8b, dropped at link time)

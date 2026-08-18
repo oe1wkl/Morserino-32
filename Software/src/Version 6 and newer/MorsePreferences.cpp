@@ -1075,14 +1075,6 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
               (m32state == menu_loop ? false : true), MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr));
     }
     if (! jsonOnly) {
-      // printOnScroll()'s own clear rect is only as wide as the text it's about
-      // to draw (valueLine is padded to a fixed *character* count, not pixel
-      // width) - adjusting posScrollFont changes the font used to draw this
-      // very row, so a value redrawn narrower-per-character than the previous
-      // one left part of the old, wider text uncleared. Wipe the whole row
-      // first, which is correct (and cheap) regardless of which preference is
-      // being shown.
-      MorseOutput::clearLine(2);
       if (pos == posSnapStore) {
         uint8_t mask = 1;
         mask = mask << MorsePreferences::memPtr;
@@ -1822,6 +1814,13 @@ void MorsePreferences::readVoltagePref() {
 // neither stored in snapshots nor changed when one is recalled. Used by
 // writePreferences() (which also removes such keys from old snapshots when they
 // are re-stored), readPreferences() and MorseJSON::jsonGetSnapshot().
+//
+// Exception, by design rather than oversight: purely visual appearance
+// settings - posTheme, and (on Pocket) posScrollFont - stay INCLUDED (i.e.
+// absent from the exclusion list below) even though they're arguably "about
+// the device" too. A snapshot's colour scheme (and, since it's the same kind
+// of at-a-glance cue, its font density) lets the display itself signal which
+// preset is currently active, which is a real feature, not an accident.
 boolean MorsePreferences::storedInSnapshot(prefPos pos) {
     switch (pos) {
       case posTimeOut:                    // historic exclusions (see manual)
@@ -2093,6 +2092,27 @@ void MorsePreferences::writePreferences(const char* repository) {
               case posCarouselStart:
                     koch.setup();
                    break;
+#ifdef CONFIG_SCROLL_FONT_SIZE
+              case posScrollFont:
+                    // Reached from every path that can change this value without
+                    // going through the menu's live-preview adjust handler too -
+                    // snapshot recall (applySnapshot()) and the serial protocol's
+                    // setParameter() both land here. Without this, NoOfVisibleLines/
+                    // maxPos would keep whatever geometry was active before the
+                    // change, e.g. 5 lines at Normal's wider pitch after recalling
+                    // a Small snapshot while running Normal.
+                    MorseOutput::applyScrollFontGeometry();
+                    // refreshScrollLine() draws textBuffer[] content at whatever
+                    // font is *currently* active, not the one it was wrapped
+                    // under when written - already-buffered lines would have
+                    // their tail clipped (no re-wrap on redraw) the next time
+                    // anything repaints them: scrolling back through history in
+                    // any mode, or QSO Bot's own post-menu refreshScrollArea().
+                    // Re-wrapping in place isn't worth it for a settings change;
+                    // start the scroll area clean instead.
+                    MorseOutput::clearScroll();
+                    break;
+#endif
             }     // end of "special cases"
       }           // end of "stored value is different"
   }               // end of "for all these preferences"
@@ -2349,18 +2369,6 @@ void MorsePreferences::writeBrightnessPreference(uint8_t val) {
 
     pref.begin("morserino", false);             // open the namespace as read/write
     pref.putUChar("brightness", val);          // store the new value
-    pref.end();
-}
-
-///////// immediately persist a single pliste[] value into NVS memory.
-/// writePreferences() saves all of pliste[] together on preferences-menu
-/// exit; a preference that can also change from outside the menu (e.g. the
-/// FN-button scroll-font toggle) needs to save its own value right away,
-/// under the same name-keyed slot the generic mechanism uses.
-void MorsePreferences::writePrefPosNow(prefPos pos) {
-
-    pref.begin("morserino", false);             // open the namespace as read/write
-    pref.putUChar(prefName[pos], MorsePreferences::pliste[pos].value);
     pref.end();
 }
 

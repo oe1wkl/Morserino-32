@@ -82,30 +82,36 @@ static inline uint16_t stringWidth(const String& s) {
 #endif
 }
 
-/// Select the plain-weight font used for scroll-area text that doesn't force
-/// a particular size (i.e. calls to printOnScroll() with small == false).
-/// printOnScroll() may leave a different font active (bold, or a caller-forced
-/// small size) - callers that need to measure against the *default* scroll
-/// font (the wrap-width checks in printToScroll_internal() and
-/// wordNeedsWrap()) must call this first rather than relying on whatever
-/// font happens to be active.
-///
-/// M32 Pocket (non-Accessibility) honours the Font Size preference
-/// (MorsePreferences::pliste[posScrollFont]) and, when Small, uses the
-/// ASCII-range IntelOneMono12ptAscii.h variant rather than the IntelOneMono
-/// 12pt used for a caller-forced small=true (e.g. a narrow IP-address line) -
-/// see that header for why. Everywhere else (OLED, and the Accessibility
-/// Edition) this is always the normal (large) font; posScrollFont doesn't
-/// exist in those builds.
-static inline void setDefaultScrollFont() {
+/// Select the font for the scroll area's *default* size (i.e. printOnScroll()
+/// callers that don't pass small=true): the Font Size preference's Normal/
+/// Small choice on the M32 Pocket (non-Accessibility), or always the normal
+/// 15pt font everywhere else. Small uses the ASCII-range
+/// IntelOneMono12ptAscii.h variant rather than the IntelOneMono 12pt used for
+/// a caller-forced small=true (e.g. a narrow IP-address line) - see that
+/// header for why. forceNormal overrides the preference (used by the boot
+/// splash, whose (c) glyph falls outside the small ASCII font's declared
+/// range). Everywhere else (OLED, and the Accessibility Edition) this is
+/// always the normal (large) font; posScrollFont doesn't exist in those
+/// builds. Shared by setDefaultScrollFont() and printOnScroll() so the two
+/// font-selection rules can't drift apart.
+static inline void scrollFont(boolean bold, boolean forceNormal) {
 #ifdef CONFIG_SCROLL_FONT_SIZE
-  if (MorsePreferences::pliste[posScrollFont].value)
-    display.setFont(&IntelOneMono_Regular12pt8b_Ascii);
+  if (forceNormal || !MorsePreferences::pliste[posScrollFont].value)
+    display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
   else
-    display.setFont(DialogInput_plain_15);
+    display.setFont(bold ? &IntelOneMono_Bold12pt8b_Ascii : &IntelOneMono_Regular12pt8b_Ascii);
 #else
-  display.setFont(DialogInput_plain_15);
+  display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
 #endif
+}
+
+/// Plain-weight, non-forced-small shorthand for scrollFont(). printOnScroll()
+/// may leave a different font active (bold, or a caller-forced small size) -
+/// callers that need to measure against the *default* scroll font (the
+/// wrap-width checks in printToScroll_internal() and wordNeedsWrap()) must
+/// call this first rather than relying on whatever font happens to be active.
+static inline void setDefaultScrollFont() {
+  scrollFont(false, false);
 }
 
 #ifdef CONFIG_SCROLL_FONT_SIZE
@@ -830,7 +836,13 @@ void MorseOutput::setBrightness(uint8_t brightness) {
 void MorseOutput::applyScrollFontGeometry() {
   NoOfVisibleLines = MorsePreferences::pliste[posScrollFont].value ? NoOfVisibleLinesSmall : NoOfVisibleLinesNormal;
   maxPos = NoOfLines - NoOfVisibleLines;
-  relPos = maxPos;
+  // Keep whatever scrollback position the user is currently at, just clamped
+  // to the new (possibly smaller) range - this runs any time the preference
+  // changes, including from a snapshot recall or the serial protocol while a
+  // mode is actively scrolled back, not just from the menu. Callers that
+  // specifically want to jump to the bottom (boot, with an empty buffer) do
+  // that explicitly afterwards.
+  relPos = constrain(relPos, 0, maxPos);
 }
 #endif
 
@@ -1162,28 +1174,12 @@ uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos,
   // e.g. an IP address line) and always keeps the original (full-range)
   // IntelOneMono 12pt regardless of the Font Size preference; only the
   // *default* size (small==false) follows it, and only on the M32 Pocket
-  // (non-Accessibility) - see setDefaultScrollFont().
-#ifdef CONFIG_SCROLL_FONT_SIZE
+  // (non-Accessibility) - see scrollFont().
   if (small) {
     display.setFont(bold ? DialogInput_bold_12 : DialogInput_plain_12);
-  } else if (forceNormal || !MorsePreferences::pliste[posScrollFont].value) {
-    display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
   } else {
-    display.setFont(bold ? &IntelOneMono_Bold12pt8b_Ascii : &IntelOneMono_Regular12pt8b_Ascii);
+    scrollFont(bold, forceNormal);
   }
-#else
-  if (small) {
-    if (bold)
-      display.setFont(DialogInput_bold_12);
-    else
-      display.setFont(DialogInput_plain_12);
-  } else {
-    if (bold)
-      display.setFont(DialogInput_bold_15);
-    else
-      display.setFont(DialogInput_plain_15);
-  }
-#endif
 
   display.setTextAlignment(TEXT_ALIGN_LEFT);
 

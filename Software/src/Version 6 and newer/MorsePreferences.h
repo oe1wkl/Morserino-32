@@ -289,7 +289,6 @@ namespace MorsePreferences
   void writeWifiInfo(const String&, const String&, const String&);
   void writeWifiInfoMultiple(const String&, const String&, const String&, const String&, const String&, const String&, const String&, const String&, const String&);
   void writeBrightnessPreference(uint8_t);
-  void writePrefPosNow(prefPos);
   void fireCharSeen(boolean wpmOnly);
   void setCurrentOptions(prefPos *current, int size);
   void setCwMem(uint8_t, String);

@@ -770,8 +770,9 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   // NoOfVisibleLines is statically initialised to the normal (4-line) default;
   // sync it to whatever Font Size readPreferences() just loaded from NVS (a
   // device that last saved Small would otherwise render small text but still
-  // only show 4 lines until manually re-toggled).
+  // only show 4 lines until the preference was visited again in the menu).
   MorseOutput::applyScrollFontGeometry();
+  MorseOutput::relPos = MorseOutput::maxPos;   // buffer is empty at boot - start at the bottom
   #endif
 
   #ifdef CONFIG_SOUND_I2S
