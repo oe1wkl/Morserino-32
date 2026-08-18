@@ -10,6 +10,7 @@
 * M32 Pocket only: It is now possible to set the time constant for the Blackman-Harris tone shaping, which is responsible for the „softness“ of CW Audio (tone without clicks). The default is 5 ms, you can change that between 1 and 9 ms (1ms is rather hard, with clicks, while 9ms is definitely too long for high speed CW).
 * M32Pocket only: When you practice with the Koch trainer, the M32Pocket will record statistics about performance; these can either be looked at through the Configuration Tool, or via the M32’s built in web server, so you can use a browser to view the statistics.
 * M32Pocket only: after a firmware install with the erase option (or a firmware install to a completely new device), it took up to 10 seconds until something was visible on the screen, while the non-volatile file system was being prepared. To avoid panic, a modified splash with some informative message is being displayed now in such cases.
+* M32Pocket only: a new preference **Font Size** lets you switch the scrolling display area between the normal text size and a smaller one, which fits more characters per line and shows five lines instead of four. Handy at higher speeds or with longer words, when you want to see more of what has just been sent.
 
 #### Feature Modifications:
 * The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
