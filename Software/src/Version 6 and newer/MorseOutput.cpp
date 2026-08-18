@@ -820,36 +820,17 @@ void MorseOutput::setBrightness(uint8_t brightness) {
 
 #ifdef CONFIG_SCROLL_FONT_SIZE
 /// (Re)derive the visible-line count and scrollback depth from the current
-/// Font Size preference. Needed in three places: right after toggleScrollFont()
-/// flips it, right after the preferences menu's encoder-adjust changes it, and
-/// once at boot - NVS may have loaded posScrollFont's stored value as Small
-/// from an earlier session, but NoOfVisibleLines is statically initialised to
-/// the normal (4-line) default and nothing else re-derives it, so a device
-/// that boots with the small font already saved would render small text but
-/// still only show 4 lines until the user re-toggled it.
+/// Font Size preference. Needed in two places: right after the preferences
+/// menu's encoder-adjust changes it, and once at boot - NVS may have loaded
+/// posScrollFont's stored value as Small from an earlier session, but
+/// NoOfVisibleLines is statically initialised to the normal (4-line) default
+/// and nothing else re-derives it, so a device that boots with the small font
+/// already saved would render small text but still only show 4 lines until
+/// the user re-visited the preference.
 void MorseOutput::applyScrollFontGeometry() {
   NoOfVisibleLines = MorsePreferences::pliste[posScrollFont].value ? NoOfVisibleLinesSmall : NoOfVisibleLinesNormal;
   maxPos = NoOfLines - NoOfVisibleLines;
   relPos = maxPos;
-}
-
-/// Toggle the scroll-area font between normal and small (more chars/line),
-/// persist the choice, and repaint what's currently on screen with it.
-void MorseOutput::toggleScrollFont() {
-  MorsePreferences::pliste[posScrollFont].value = !MorsePreferences::pliste[posScrollFont].value;
-  MorsePreferences::writePrefPosNow(posScrollFont);
-  applyScrollFontGeometry();
-  // refreshScrollArea() below only clears each redrawn line's own band at its
-  // *current* font's line height; on TFT that height depends on which font is
-  // active (display.getStringHeight()), so switching sizes changes every visible
-  // line's total footprint even though the line *count* doesn't change - without
-  // this, a strip at the bottom (previously covered by the larger font's last
-  // line) would never get cleared when shrinking. Wipe the whole scroll region
-  // first (independent of which font is active) so either direction starts from
-  // a clean slate.
-  display.setColor(BLACK);
-  display.fillRect(0, SCROLL_TOP, display.getWidth() - 1, display.getHeight() - SCROLL_TOP);
-  MorseOutput::refreshScrollArea(MorseOutput::relPos);
 }
 #endif
 

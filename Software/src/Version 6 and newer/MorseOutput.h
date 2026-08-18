@@ -43,9 +43,9 @@ extern uint8_t scrollTop;
 
 #ifdef CONFIG_SCROLL_FONT_SIZE
 // runtime visible-line count (NoOfVisibleLinesNormal or NoOfVisibleLinesSmall,
-// see toggleScrollFont()/applyScrollFontGeometry()); everywhere else (OLED,
-// and TFT without the Font Size preference) NoOfVisibleLines stays the
-// #define above, it never varies.
+// see applyScrollFontGeometry()); everywhere else (OLED, and TFT without the
+// Font Size preference) NoOfVisibleLines stays the #define above, it never
+// varies.
 extern uint8_t NoOfVisibleLines;
 #endif
 
@@ -63,7 +63,6 @@ namespace MorseOutput
   void decreaseBrightness();
   void setBrightness(uint8_t brightness);
 #ifdef CONFIG_SCROLL_FONT_SIZE
-  void toggleScrollFont();
   void applyScrollFontGeometry();
 #endif
   void sleep();
