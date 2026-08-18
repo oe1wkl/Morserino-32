@@ -1244,7 +1244,20 @@ uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos,
   w = stringWidth(mystring);
 
   x = xpos * C_WIDTH;
-  y = SCROLL_ROW_TOP + line * LINE_STEP;
+  // The centred layout (scrollTopPad + scrollLineStep) is computed for the
+  // *default* scroll font, so its step is only guaranteed to clear that font's
+  // glyph box. A row drawn in a different font - a caller-forced small size, or
+  // forceNormal - has a taller box than the step allows, and consecutive such
+  // rows overlap: the boot splash's two forceNormal lines sat 27px apart with a
+  // 35px box, so the copyright line's background fill ate 8px off the bottom of
+  // the version line. Those callers get the plain packed layout matching the
+  // font they actually draw in, which is what they had before centring. (In
+  // builds without the Font Size preference both branches are identical -
+  // SCROLL_ROW_TOP/LINE_STEP fall back to SCROLL_TOP/LINE_HEIGHT.)
+  if (small || forceNormal)
+    y = SCROLL_TOP + line * LINE_HEIGHT;
+  else
+    y = SCROLL_ROW_TOP + line * LINE_STEP;
 
   // clear the print area
   #ifdef CONFIG_TFT
