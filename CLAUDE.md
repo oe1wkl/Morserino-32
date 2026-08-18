@@ -76,9 +76,12 @@ Firmware source lives in `Software/src/Version 6 and newer/`. Key locations
 - **On-device text entry** — `MorseTextEntry.cpp/.h`: cross-variant encoder
   char-picker (renders via `MorseOutput`, works OLED + TFT). Reuse it for any
   on-device string entry (call/name, WiFi credentials, keyer memories) — don't fork.
-- **Display abstraction** — TFT: `oe1wkl/DisplayWrapper` (external lib). OLED:
-  `M32OledLGFX.h` (in-tree). `M32PocketLGFX.h` is orphaned dead code (reverted
-  #157).
+- **Display abstraction** — TFT: `haklein/DisplayWrapper` (external lib, pinned
+  to a tag in `platformio.ini`). OLED: `M32OledLGFX.h` (in-tree).
+  `M32PocketLGFX.h` is orphaned dead code (reverted #157). The `oe1wkl` fork of
+  DisplayWrapper is **retired and archived** (2026-08-18) — it carried no
+  functional divergence. Library fixes now go upstream as a PR, then the pin is
+  bumped; see §3 rule 5 and `devdocs/HANDOFF.md`.
 - **Menu / preferences / NVS** — `MorseMenu.cpp/.h`, `MorsePreferences.cpp/.h`;
   serial protocol `MorseJSON.cpp/.h`.
 - **Games** (TFT only) — `MorseGame.cpp` (Morse Invaders), `MorsePileup.cpp`
