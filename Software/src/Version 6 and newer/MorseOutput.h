@@ -22,7 +22,12 @@
   #define NoOfVisibleLines 3
 #else
   #define NoOfLines 18
-  #define NoOfVisibleLines 4
+  #ifdef CONFIG_SCROLL_FONT_SIZE
+    #define NoOfVisibleLinesNormal 4
+    #define NoOfVisibleLinesSmall 5   // one more line fits at the small scroll font's genuinely tighter (ASCII-only) line pitch
+  #else
+    #define NoOfVisibleLines 4
+  #endif
 #endif
 
 enum FONT_ATTRIB
@@ -36,9 +41,17 @@ enum FONT_ATTRIB
 
 extern uint8_t scrollTop;
 
+#ifdef CONFIG_SCROLL_FONT_SIZE
+// runtime visible-line count (NoOfVisibleLinesNormal or NoOfVisibleLinesSmall,
+// see applyScrollFontGeometry()); everywhere else (OLED, and TFT without the
+// Font Size preference) NoOfVisibleLines stays the #define above, it never
+// varies.
+extern uint8_t NoOfVisibleLines;
+#endif
+
 namespace MorseOutput
 {
-  extern const int8_t maxPos;
+  extern int8_t maxPos;
   extern int8_t relPos;
   extern volatile uint64_t TOTcounter;
   const int notes[] =
@@ -49,6 +62,9 @@ namespace MorseOutput
   void refreshDisplay();
   void decreaseBrightness();
   void setBrightness(uint8_t brightness);
+#ifdef CONFIG_SCROLL_FONT_SIZE
+  void applyScrollFontGeometry();
+#endif
   void sleep();
   void printOnStatusLine(boolean strong, uint8_t xpos, const String& string);
   void clearBuffer();
@@ -57,7 +73,11 @@ namespace MorseOutput
   /// returns the width of the printed string in pixels - uint16_t, not uint8_t:
   /// a full scroll line is 306 px on the TFT and callers divide the result by the
   /// character width to get a column count (see refreshScrollLine).
-  uint16_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false);
+  /// forceNormal overrides the Font Size preference to always draw the normal
+  /// (large) size - for text that needs a glyph the small font doesn't have,
+  /// e.g. the boot splash's copyright "(c)" (TFT's small font is ASCII-only,
+  /// see IntelOneMono12ptAscii.h). Ignored when small is also true.
+  uint16_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false, boolean forceNormal = false);
   void printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll);
   void printToScroll_internal(FONT_ATTRIB style, const String& text, boolean scroll);
   boolean wordNeedsWrap(uint16_t wordLen);

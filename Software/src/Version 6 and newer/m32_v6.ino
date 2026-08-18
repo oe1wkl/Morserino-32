@@ -766,6 +766,17 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
   #endif
+  #ifdef CONFIG_SCROLL_FONT_SIZE
+  // NoOfVisibleLines is statically initialised to the normal (4-line) default;
+  // sync it to whatever Font Size readPreferences() just loaded from NVS (a
+  // device that last saved Small would otherwise render small text but still
+  // only show 4 lines until the preference was visited again in the menu).
+  // relPos/maxPos are both still at their static-init values at this point
+  // (equal, by construction), so applyScrollFontGeometry() sees a "glued to
+  // the bottom" view and lands relPos on the freshly computed maxPos - the
+  // right outcome for an empty buffer, with no extra line needed here.
+  MorseOutput::applyScrollFontGeometry();
+  #endif
 
   #ifdef CONFIG_SOUND_I2S
   MorseOutput::setSidetoneEnvelope(MorsePreferences::pliste[posSidetoneShape].value);  // set the CW tone envelope softness
@@ -1008,8 +1019,11 @@ void displayStartUp(uint16_t volt) {
     s += shortDate(COMPILEDATE);
   }
 
-  MorseOutput::printOnScroll(0, REGULAR, 0, s);
-  MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT);
+  // forceNormal: the small font is ASCII-only (IntelOneMono12ptAscii.h) and
+  // can't render the "(c)" in COPYRIGHT - keep this one splash screen at the
+  // normal size regardless of the Font Size preference.
+  MorseOutput::printOnScroll(0, REGULAR, 0, s, false, true);
+  MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT, false, true);
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
 
