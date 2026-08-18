@@ -1,0 +1,175 @@
+# Protocol 1.4 — bulk preference read
+
+*Draft for sign-off, 2026-08-17. Opens the 1.4 slot recorded in
+[RESOLUTION_PLAN.md](RESOLUTION_PLAN.md); the two items already parked there
+(game scores, `GET capabilities`) are siblings of this one and should ship in
+the same bump.*
+
+## The problem, with measurements
+
+A client that wants to render the preferences must today issue **one command per
+parameter**:
+
+```
+GET configs                 -> 48 names + values + displayed strings
+GET config/<name>           -> ×48, for minimum/maximum/step/isMapped/mapped values
+```
+
+Measured on an M32 Pocket (Wroom), firmware 9.0, over BLE:
+
+| | |
+|---|---|
+| `GET configs` (all 48 entries, one reply) | **0.12 s** |
+| `GET hardware` (small reply, round-trip floor) | **0.06 s** |
+| Config tool's Preferences tab, end to end | **~10 s** |
+| The same tab over USB | ~2 s |
+
+The transport is not the bottleneck: 0.12 s for the whole list means roughly
+24 KB/s and a round-trip floor near two BLE connection intervals. The 10 s is
+48 sequential round trips, plus the `await sleep(50)` the tool puts between them
+(~2.4 s of the total — see [the separate note on that sleep](#the-50-ms-sleep)).
+
+**What one bulk reply would cost.** Summing the actual `prefParam` table
+(`MorsePreferences.cpp`, 48 entries) at the shape `jsonGetConfig` emits:
+
+- **~10.3 KB** serialized in total, mean **218 bytes** per parameter
+- largest single parameter **361 B** (`LICW Carousel`, 14 mapped values)
+- descriptions account for **2.1 KB** of the 10.3 KB
+
+At the measured 24 KB/s that is **~0.45 s of wire time** — against 7–9 s today.
+
+## Options considered
+
+**A. One monolithic reply.** `GET configs/details` returns all 48 objects in a
+single JSON document.
+
+*Rejected.* Two reasons, either sufficient. Heap: `const char*` members are
+stored by pointer, not copied, so the cost is node overhead — roughly
+48 × (8 members + ~10 array elements) × ~20 B ≈ **18–20 KB** of
+`DynamicJsonDocument`, allocated while Bluedroid is up. Today's largest
+comparable allocation is the 4096 B for `GET configs`. It would *probably* work
+and would fail in the field when it did not. Recovery: a torn multi-KB reply is
+documented protocol behaviour that the client answers by re-issuing the GET —
+re-fetching 10.3 KB per tear is a bad recovery story over BLE.
+
+**B. Monolithic but trimmed** — drop `description` (2.1 KB, and the config tool
+only uses it as a fallback when `m32_pref_help.json` has no entry).
+
+*Rejected.* Saves 20 % of the bytes and none of the heap risk, at the cost of
+making a parameter's representation depend on which command you asked. Not worth
+the divergence.
+
+**C. Paginated, full fidelity — recommended.** The firmware chooses the page
+size; the client follows a continuation marker. Bounded memory, bounded tear
+cost, and each item is byte-for-byte what `GET config/<name>` already returns.
+
+## Recommended design
+
+```
+GET configs/details             — first page
+GET configs/details/<from>      — page starting at parameter index <from>
+```
+
+Reply, one page per command:
+
+```json
+{"configdetails":{
+  "from":0, "count":8, "total":48, "more":true,
+  "items":[
+    {"name":"Keyer Mode","value":2,
+     "description":"Iambic Modes, Non-squeeze mode, Straight Key mode",
+     "minimum":1,"maximum":5,"step":1,"isMapped":true,
+     "mapped values":["","Iambic A","Iambic B","Ultimatic","Non-Squeeze","Straight Key"]},
+    …
+  ]}}
+```
+
+Points that matter:
+
+- **`items[]` entries are exactly the object `GET config/<name>` returns**, minus
+  its `{"config":…}` wrapper. One truth about a parameter's representation; no
+  client needs to know which fields live where.
+- **The firmware picks `count`, not the client.** A page of 8 is ~1.7 KB
+  serialized and ~3.5 KB of document — the same order as today's `GET configs`,
+  so no new memory ground is broken. Six pages for 48 parameters. Because the
+  client just follows `more` and `from + count`, the firmware can retune the page
+  size later without breaking anybody.
+- **`total` is the count on *this* device**, which varies by hardware variant and
+  build. It is advisory (for progress display); `more` is the authority.
+- **Ordering is `allOptions[]` order**, i.e. the on-device preferences-menu
+  order, so a client can render top-to-bottom without sorting. Index `<from>` is
+  an index into that same sequence.
+- **Out-of-range `<from>`** returns the existing `INVALID PARAMETER` error rather
+  than an empty page, so a desynchronised client fails loudly.
+
+Expected end to end: 6 round trips ≈ **0.6–0.9 s over BLE**, ~0.2 s over USB.
+
+## Firmware sketch
+
+One new function beside `jsonGetConfig` in `MorseJSON.cpp`, plus a dispatch
+entry in the `m32Get` `configs` branch:
+
+- reuse the per-parameter emit loop of `jsonGetConfig` (extract its body into a
+  helper that fills a `JsonObject`, rather than forking it — CLAUDE.md §5);
+- `DynamicJsonDocument doc(4096)` for a page of 8, matching the existing
+  `GET configs` sizing;
+- walk `MorsePreferences::allOptions[]` from `<from>`, stopping at the page size
+  or the end of the array;
+- output through `m32out` under `protocolActive()` like everything else
+  (CLAUDE.md §3.9) — `MorseJSON::jsonSend` already chunks at ~256 B.
+
+No new preference, so no `prefPos` triple. No new on-screen text, so the
+accessibility duty (CLAUDE.md §8) is satisfied by inspection — worth stating in
+the commit message so the next reader does not have to re-derive it.
+
+## Client side
+
+The config tool's `loadPreferences()` replaces its 48-iteration loop with a page
+loop. **It must keep the old path as a fallback**, because a 1.4 tool will be
+pointed at 1.3 firmware for years:
+
+1. try `GET configs/details`;
+2. on `INVALID COMMAND` (or any error), fall back to the existing per-name loop.
+
+This is exactly the case `GET capabilities` — the other parked 1.4 item — exists
+to remove. If both ship together, a client can ask once instead of probing. That
+argues for doing them in one release rather than two.
+
+**The `await sleep(50)` at the head of that loop goes with it** (decided
+2026-08-17). It is 48 × 50 ms = 2.4 s of pure padding: `sendAndParse` has
+already awaited the complete reply, so the device has finished dispatching by
+the time the sleep runs. It could be deleted today — no preference string in
+`MorsePreferences.cpp` contains a brace, so the framing hazard below cannot fire
+from a `GET config/<name>` reply — but there is no point doing it twice when the
+loop itself is about to disappear.
+
+> **Do not generalise that deletion to the other loops.** The identical
+> `await sleep(50)` in the **CW memories** loop is load-bearing for as long as
+> **C-BRACE** is open: `waitForResponse` counts raw braces, so a `}` inside a
+> user-entered memory can frame a reply early, and the sleep is what lets the
+> remainder land before the next `sendAndParse` clears `readBuffer`. Same for the
+> `sleep(100)`s that follow a fire-and-forget `sendLine` — nothing is awaited
+> there, so they genuinely pace the device.
+
+The iOS app inherits the fix for free: it hosts the same tool.
+
+## Versioning and duties
+
+- Additive only; no existing command changes shape. Bump `M32P_VERSION` to
+  **1.4** and add a 1.4 changelog block.
+- `Documentation/Protocol Description/M32 Protocol.md` — new subsection under
+  *Configuration (Parameters)*, plus the changelog. (The protocol description is
+  the deliberate exception that lives under `Documentation/`, not `devdocs/` —
+  CLAUDE.md §7.)
+- User manuals: **not affected**, no user-visible device behaviour changes.
+
+## Open questions for sign-off
+
+1. **Page size 8, or larger?** 8 keeps the document at today's proven 4096 B. 12
+   would be 4 pages and ~2.6 KB per page — still modest, one fewer round trip
+   pair. Worth measuring once rather than guessing.
+2. **`GET configs/details` or `GET configdetails`?** The protocol uses both
+   styles (`GET config/<name>`, `GET stats/log` vs `GET kochlesson`,
+   `GET customchars`). Grouping under `configs/` reads better to me; the reply
+   key `configdetails` follows the one-word convention either way.
+3. **Ship with `GET capabilities`?** Recommended — see the client section.

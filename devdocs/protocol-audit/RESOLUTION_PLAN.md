@@ -57,7 +57,7 @@ byte limit — was left as a future nicety; the ceiling itself is documented.)
 ## Phase 3 — Config-tool robustness
 
 - [ ] **C-ERR-HANDLING** — `sendAndParse` detects an `{"error":{…}}` reply and surfaces the message to the user (read both `content` and `name`).
-- [ ] **C-BRACE** — make `waitForResponse` framing string/escape-aware (or "read until it parses"), so a `{`/`}` inside a CW memory / SSID / call-name can't desync it.
+- [ ] **C-BRACE** — make `waitForResponse` framing string/escape-aware (or "read until it parses"), so a `{`/`}` inside a CW memory / SSID / call-name can't desync it. *Until this lands, the `await sleep(50)` in the CW-memories loop must stay:* it is what lets a prematurely-framed reply's tail arrive before the next `sendAndParse` clears `readBuffer`. Don't let a tidy-up delete it.
 
 ## Phase 4 — Optional firmware robustness
 
@@ -74,6 +74,10 @@ changelog block, document each:
   can capture and reset Invaders / Morsel / Radio Cave state.
 - **C-VER (2)** — `GET capabilities`: returns the list of supported objects/commands, so a tool can
   adapt to firmware versions without trial-and-error.
+- **C-BULK** — `GET configs/details`: a paginated bulk preference read, so a client no longer needs
+  one round trip per parameter (48 of them today, ~10 s over BLE and ~2 s over USB). Designed in
+  [PROTOCOL_1.4_DESIGN.md](PROTOCOL_1.4_DESIGN.md), awaiting sign-off. It pairs naturally with
+  C-VER (2): capability discovery is what saves a 1.4 client from probing 1.3 firmware.
 
 (The broader `utility-enhancements.md` track — host-side **file backup/restore**, diff, selective
 restore — is separate from the conflict list and can proceed in parallel whenever wanted.)
