@@ -118,6 +118,35 @@ static inline void setDefaultScrollFont() {
 uint8_t NoOfVisibleLines = NoOfVisibleLinesNormal;
 #endif
 
+// Row-to-row Y step used in place of LINE_HEIGHT wherever a scroll row's
+// position (not its glyph/clear-rect size, which stays LINE_HEIGHT) is
+// computed, plus a matching top margin (scrollTopPad) added once before the
+// first row - together they spread NoOfVisibleLines rows evenly across the
+// whole available height, split into NoOfVisibleLines+1 equal gaps (before
+// the first row, between each pair, after the last), instead of packing
+// tight at the honest per-glyph pitch and leaving every unused pixel as one
+// lump below the last row (or, with only the inter-row step enlarged and no
+// top margin, still visibly hugging the top). Left untouched (both fall back
+// to plain SCROLL_TOP/LINE_HEIGHT via SCROLL_ROW_TOP/LINE_STEP below)
+// everywhere NoOfVisibleLines is a fixed compile-time constant (OLED, and
+// TFT without the Font Size preference) - there the existing layout is
+// already tuned to fill the area with nothing left over. Recomputed only in
+// applyScrollFontGeometry(), where NoOfVisibleLines itself is (re)computed,
+// not on every draw - LINE_HEIGHT is a live macro that reads whatever font
+// happens to be active *right now*, so reading it there (right after
+// explicitly selecting the default scroll font) is the one place guaranteed
+// to reflect the font this spacing is meant for.
+static uint8_t scrollLineStep = 0;
+static uint8_t scrollTopPad = 0;
+
+#ifdef CONFIG_SCROLL_FONT_SIZE
+#define LINE_STEP scrollLineStep
+#define SCROLL_ROW_TOP (SCROLL_TOP + scrollTopPad)
+#else
+#define LINE_STEP LINE_HEIGHT
+#define SCROLL_ROW_TOP SCROLL_TOP
+#endif
+
 #ifdef CONFIG_SOUND_I2S
 #include "I2S_Sidetone.hpp"
 I2S_Sidetone sidetone;
@@ -854,6 +883,23 @@ void MorseOutput::applyScrollFontGeometry() {
   // range - close enough for the rare case of a snapshot recall or protocol
   // change landing while someone happens to be reviewing history.
   relPos = wasAtBottom ? maxPos : constrain(relPos, 0, maxPos);
+  // Give the rows a small amount of extra breathing room between them (up to
+  // +2px over the honest per-glyph pitch), then centre the resulting block -
+  // rows-plus-gaps together - top and bottom margin exactly equal, by
+  // construction (both computed from the same actual content height, not
+  // estimated separately - a first attempt at this used the raw gap size
+  // as the top margin directly, which isn't the same number and left the
+  // block still visibly closer to the top). setDefaultScrollFont() first so
+  // LINE_HEIGHT (a live macro reading whatever font is *currently* active)
+  // reflects the font this geometry is for, not whatever was last set by an
+  // unrelated caller (e.g. the status line).
+  setDefaultScrollFont();
+  int available = display.getHeight() - SCROLL_TOP;
+  int leftover = available - NoOfVisibleLines * LINE_HEIGHT;
+  int gap = leftover > 0 ? min(2, leftover / (NoOfVisibleLines + 1)) : 0;
+  scrollLineStep = LINE_HEIGHT + gap;
+  int contentHeight = NoOfVisibleLines * scrollLineStep - gap;   // no trailing gap after the last row
+  scrollTopPad = (available - contentHeight) / 2;
 }
 #endif
 
@@ -1119,7 +1165,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
   display.setColor(BLACK);
   #ifdef CONFIG_TFT
-  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT); // black out the line on screen
+  display.fillRect(0, SCROLL_ROW_TOP + displayLine * LINE_STEP , display.getWidth()-1, LINE_HEIGHT); // black out the line on screen
   #else
   display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT+1); // black out the line on screen
 
@@ -1198,7 +1244,7 @@ uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos,
   w = stringWidth(mystring);
 
   x = xpos * C_WIDTH;
-  y = SCROLL_TOP + line * LINE_HEIGHT;
+  y = SCROLL_ROW_TOP + line * LINE_STEP;
 
   // clear the print area
   #ifdef CONFIG_TFT
@@ -1383,7 +1429,7 @@ void MorseOutput::displayBatteryStatus(int v) {
   #define BATT_PAD     2
   #define BATT_NUB_X   (BATT_X + BATT_W)
  
-  int batt_y = SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 3;
+  int batt_y = SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 3;
   int nub_y  = batt_y + (BATT_H - BATT_NUB_H) / 2;
   int fill_x = BATT_X + BATT_PAD;
   int fill_y = batt_y + BATT_PAD;
@@ -1791,6 +1837,18 @@ void MorseOutput::clearStatusLine() {
 /// clear all visible lines of the scroll area
 
 void MorseOutput::clearScrollLines() {
+  // A single rect over the whole scroll area, not N calls to clearLine() -
+  // those only cover each row's own tight LINE_HEIGHT band, leaving the
+  // gaps *between* rows (scrollTopPad before the first row, the small
+  // per-row step above LINE_HEIGHT introduced by applyScrollFontGeometry()
+  // to spread rows evenly) untouched. Switching Font Size changes those gaps
+  // too, so a leftover fragment of the previous font's text could sit
+  // exactly in a gap that used to not exist and never get cleared.
+  #ifdef CONFIG_TFT
+  display.setColor(BLACK);
+  display.fillRect(0, SCROLL_TOP, display.getWidth() - 1, display.getHeight() - SCROLL_TOP);
+  display.setColor(WHITE);
+  #else
   // must match whatever font printOnScroll() will use to redraw these lines
   // right after - on TFT, LINE_HEIGHT depends on the active font, so clearing
   // at the wrong size leaves stray pixels or clips the freshly-drawn text.
@@ -1798,11 +1856,12 @@ void MorseOutput::clearScrollLines() {
   for (int i = 0; i < NoOfVisibleLines; ++i) {
     MorseOutput::clearLine(i);
   }
+  #endif
 }
 
 void MorseOutput::clearLine(uint8_t line) {                                              /// clear a line - display is done somewhere else!
   int y, l;
-  y = SCROLL_TOP + line * LINE_HEIGHT;
+  y = SCROLL_ROW_TOP + line * LINE_STEP;
   l = display.getWidth()-1;
   display.setColor(BLACK);
   #ifdef CONFIG_TFT
@@ -1821,9 +1880,9 @@ void MorseOutput::showVolumeScope(uint16_t mini, uint16_t maxi)
   b = map(maxi, 0, 4000, 0, 125);
   c = b - a;
   MorseOutput::clearLine(NoOfVisibleLines - 1);
-  display.drawRect(5, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 5, 102, LINE_HEIGHT - 8);
-  display.drawRect(30, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 5, 52, LINE_HEIGHT - 8);
-  display.fillRect(a, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 7, c, LINE_HEIGHT - 11);
+  display.drawRect(5, SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 5, 102, LINE_HEIGHT - 8);
+  display.drawRect(30, SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 5, 52, LINE_HEIGHT - 8);
+  display.fillRect(a, SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 7, c, LINE_HEIGHT - 11);
   display.display();
 }
 
