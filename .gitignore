@@ -26,3 +26,22 @@ __pycache__/
 Documentation/User Manual/Version */m32UserManual_v*_??_*.pdf
 Documentation/User Manual/Version */manual_??_*.html
 Documentation/User Manual/Version */m32UserManual_v*.epub
+
+# iOS config app (Software/iOS/M32Config). These rules live HERE rather than in
+# a .gitignore inside the app directory because a per-directory .gitignore
+# travels with its branch: checking out a branch that predates the app leaves
+# its build output behind as untracked files, one `git add .` away from being
+# committed to the wrong branch. Scoped to the app's path so an unrelated
+# build/ or DerivedData/ elsewhere in the tree is unaffected.
+Software/iOS/M32Config/M32Config.xcodeproj/
+Software/iOS/M32Config/Generated/
+Software/iOS/M32Config/build/
+Software/iOS/M32Config/DerivedData/
+Software/iOS/M32Config/**/xcuserdata/
+Software/iOS/M32Config/**/*.xcuserstate
+
+# Copied out of Software/Utilities by sync-webtool.sh at build time -- the tool
+# there is the single source of truth. bridge.js sits in the same directory and
+# IS committed.
+Software/iOS/M32Config/Resources/Web/m32_config_tool.html
+Software/iOS/M32Config/Resources/Web/m32_pref_help.json

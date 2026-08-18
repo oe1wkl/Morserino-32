@@ -3,9 +3,10 @@
 #   brew install xcodegen
 #   cd Software/iOS/M32Config && ./sync-webtool.sh && xcodegen generate
 #
-# The generated .xcodeproj is NOT checked in (see .gitignore): it is derived,
-# and regenerating it is a one-line command. If you prefer to create the project
-# by hand in Xcode instead, README.md lists exactly what to set.
+# The generated .xcodeproj is NOT checked in -- the repo-root .gitignore covers
+# it: it is derived, and regenerating it is a one-line command. If you prefer to
+# create the project by hand in Xcode instead, README.md lists exactly what to
+# set.
 
 name: M32Config
 
