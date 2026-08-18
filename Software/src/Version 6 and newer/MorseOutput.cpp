@@ -834,15 +834,26 @@ void MorseOutput::setBrightness(uint8_t brightness) {
 /// already saved would render small text but still only show 4 lines until
 /// the user re-visited the preference.
 void MorseOutput::applyScrollFontGeometry() {
+  // relPos == maxPos is the "glued to the live bottom" state that
+  // printToScroll_internal() checks to decide whether to live-print each new
+  // character as it arrives (relPos == maxPos) or leave the display alone
+  // because the user is looking at scrolled-back history (relPos != maxPos).
+  // maxPos itself is about to change below, so capture whether we were glued
+  // *before* recomputing it - otherwise a plain constrain() would silently
+  // un-glue an actively-watched live view (e.g. mid CW Generator output)
+  // merely because Small->Normal made maxPos larger: the old relPos value is
+  // still in [0, new maxPos], so constrain() would leave it unchanged, and it
+  // would then equal the new maxPos only by coincidence. When it doesn't
+  // (this direction), every future character stops appearing at all, since
+  // the live-print fast path only fires while glued.
+  boolean wasAtBottom = (relPos == maxPos);
   NoOfVisibleLines = MorsePreferences::pliste[posScrollFont].value ? NoOfVisibleLinesSmall : NoOfVisibleLinesNormal;
   maxPos = NoOfLines - NoOfVisibleLines;
-  // Keep whatever scrollback position the user is currently at, just clamped
-  // to the new (possibly smaller) range - this runs any time the preference
-  // changes, including from a snapshot recall or the serial protocol while a
-  // mode is actively scrolled back, not just from the menu. Callers that
-  // specifically want to jump to the bottom (boot, with an empty buffer) do
-  // that explicitly afterwards.
-  relPos = constrain(relPos, 0, maxPos);
+  // Glued view stays glued (jumps to the new bottom); a scrolled-back view
+  // keeps its numeric position, just clamped to the new (possibly smaller)
+  // range - close enough for the rare case of a snapshot recall or protocol
+  // change landing while someone happens to be reviewing history.
+  relPos = wasAtBottom ? maxPos : constrain(relPos, 0, maxPos);
 }
 #endif
 
