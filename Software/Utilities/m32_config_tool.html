@@ -1022,20 +1022,42 @@ function hasFeature(name){
 // ============================================================================
 // CONNECT / DISCONNECT
 // ============================================================================
+// ---- Transport seam -------------------------------------------------------
+// Everything USB-specific about OPENING a link lives in openTransport() and
+// nowhere else, so a host that carries this tool over a different transport can
+// replace this one function instead of copying doConnect(). The iOS app
+// (Software/iOS/M32Config) does exactly that, over Bluetooth LE — and because
+// it overrides only this, every later change to the connect sequence below
+// reaches it without anyone remembering to copy it across.
+//
+// Contract for a replacement: leave `writer` usable by sendLine(), arrange for
+// incoming text to reach `readBuffer` (and ttyProcessChunk, for the TTY tab),
+// and return {label, noReplyHint} — how to name the link in the log, and what
+// to suggest if the device never answers the handshake. Throw to report
+// failure. Closing needs no seam: every step in doDisconnect() is null-guarded,
+// so the USB teardown is inert for a transport that never set those globals.
+async function openTransport(){
+  port=await navigator.serial.requestPort();
+  await port.open({baudRate:115200});
+  abortController=new AbortController();
+  var dec=new TextDecoderStream();
+  readableStreamClosed=port.readable.pipeTo(dec.writable,{signal:abortController.signal});
+  reader=dec.readable.getReader();
+  var enc=new TextEncoderStream();
+  writableStreamClosed=enc.readable.pipeTo(port.writable);
+  writer=enc.writable.getWriter();
+  readLoop();
+  return {
+    label:'USB connected',
+    noReplyHint:'No M32 response on this port. Is this the right serial port, and is the M32 powered on and not held open by another program (e.g. a serial monitor)?'
+  };
+}
+
 async function doConnect(){
   try{
-    port=await navigator.serial.requestPort();
-    await port.open({baudRate:115200});
-    abortController=new AbortController();
-    var dec=new TextDecoderStream();
-    readableStreamClosed=port.readable.pipeTo(dec.writable,{signal:abortController.signal});
-    reader=dec.readable.getReader();
-    var enc=new TextEncoderStream();
-    writableStreamClosed=enc.readable.pipeTo(port.writable);
-    writer=enc.writable.getWriter();
-    readLoop();
+    var link=await openTransport();
     setStatus('Activating...','working');
-    log('USB connected — activating M32 protocol...');
+    log(link.label+' — activating M32 protocol...');
 
     await sendLine('put device/protocol/on');
     await sleep(600);
@@ -1051,7 +1073,7 @@ async function doConnect(){
     }catch(e){ /* no / non-JSON reply — handled below */ }
 
     if(!devData || !devData.device){
-      log('No M32 response on this port. Is this the right serial port, and is the M32 powered on and not held open by another program (e.g. a serial monitor)?');
+      log(link.noReplyHint);
       await doDisconnect();
       setStatus('No M32 found','disconnected');
       return;
