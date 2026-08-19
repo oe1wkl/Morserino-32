@@ -512,16 +512,6 @@
       <button class="btn btn-accent btn-sm" onclick="menuStartNow()" id="menuStartNowBtn" disabled title="Start immediately (no paddle press needed for CW Generator)">Start Now</button>
     </div>
   </div>
-  <!-- Games exist only on the M32 Pocket, and reading their scores needs
-       protocol 1.4 — the box stays hidden otherwise. -->
-  <div class="box" id="gameScoresBox" style="display:none">
-    <div class="field-label">Game Scores</div>
-    <div id="gameScoresContainer"></div>
-    <div class="control-row" style="margin-top:14px">
-      <button class="btn btn-red btn-sm" onclick="clearGameScores()">Clear All Game Scores</button>
-      <span class="control-unit">also clears the Radio Cave saved game</span>
-    </div>
-  </div>
 </div>
 
 <!-- PREFERENCES -->
@@ -612,6 +602,18 @@
       <button class="btn btn-green btn-sm" onclick="setPlayerName()" id="playerNameBtn" disabled>Set</button>
     </div>
     <p class="identity-note" style="text-align:center;margin-top:8px">Maximum 8 characters. Stored as uppercase.</p>
+  </div>
+  <!-- Scores belong with the identity they were earned under. Games exist only
+       on the M32 Pocket, and reading their scores needs protocol 1.4 — the box
+       stays hidden otherwise. -->
+  <div class="box" id="gameScoresBox" style="display:none">
+    <h2 class="section-title">Game Scores</h2>
+    <p class="section-sub">High scores stored on the device</p>
+    <div id="gameScoresContainer"></div>
+    <div class="control-row" style="margin-top:14px">
+      <button class="btn btn-red btn-sm" onclick="clearGameScores()">Clear All Game Scores</button>
+      <span class="control-unit">also clears the Radio Cave saved game</span>
+    </div>
   </div>
 </div>
 
@@ -1376,11 +1378,12 @@ async function loadDashboard(){
       if(md.menus){ allMenus=md.menus; renderMenuSelect(); log('Loaded '+allMenus.length+' menu items'); }
     }catch(e){ log('Load menus: '+e.message); }
   }
-  await loadGameScores();
   hideLoading();
 }
 
 // ---- Game scores (protocol 1.4, builds with the games) --------------------
+// Lives on the User Identity tab: the scores belong to the call sign and name
+// set there, which is also what Fight the Pileup plays under.
 // Every game scores differently, so the columns of a table are taken from the
 // keys the device actually sent rather than hard-coded here — a game added
 // later shows up without changing this tool.
@@ -2343,6 +2346,7 @@ async function loadPlayer(){
       log('Player: '+(data.player.call||'(none)')+' / '+(data.player.name||'(none)'));
     }
   }catch(e){log('Player: '+e.message)}
+  await loadGameScores();
   hideLoading();
 }
 async function setPlayerCall(){var val=document.getElementById('playerCall').value.trim().toUpperCase();if(!val)return;document.getElementById('playerCall').value=val;try{await sendLine('put player/call/'+val);try{await waitForResponse(2000)}catch(e){}log('Callsign → '+val)}catch(e){log('Error: '+e.message)}}

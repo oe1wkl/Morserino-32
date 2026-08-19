@@ -92,7 +92,8 @@ and the three new sections are in `Documentation/Protocol Description/M32 Protoc
   points that changed during implementation and the measured results.
 
 **Config tool** got the page loop (with a fallback to the per-parameter loop for pre-1.4 firmware),
-the capability query at connect, and a Game Scores panel on the Dashboard tab.
+the capability query at connect, and a Game Scores panel on the **User Identity** tab — with the call sign and name the
+scores were earned under, which is where Willi looked for it first.
 
 **Hardware status (M32 Pocket, firmware 9.0, 2026-08-19):** flashed and verified **over USB** —
 handshake reports protocol 1.4; `GET capabilities` lists `configs/details`, `game/scores`,
