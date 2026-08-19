@@ -4014,6 +4014,100 @@ void serialEvent() {
 #ifdef CONFIG_BLE_SERIAL
 
 /////////////////////
+// BLE Serial access control — devdocs/ble-serial/ACCESS_CONTROL.md.
+//
+// A BLE client can reach us from anywhere in range, so admitting one is gated
+// on PRESENCE: the operator confirms on the device itself. Over BLE, range and
+// physical presence are the same thing, so this costs the legitimate operator
+// one button press and costs a remote attacker everything — with no secret to
+// store, no NVS entry, and no recovery path.
+//
+// Consent is asked ONLY at the top menu (decision D2). The prompt blocks, which
+// would freeze CW generation mid-mode, and in a running mode the black-knob
+// click already means start/stop — a modal borrowing it would put approval one
+// careless click away. Requests seen from any other polling site are refused
+// outright, which also means a device in use cannot be taken over at all.
+//
+// USB is deliberately exempt: a cable is itself proof of presence, and this
+// whole path lives in the BLE-only branch of bleSerialEvent().
+/////////////////////
+
+static const uint32_t BLE_CONSENT_TIMEOUT_MS = 20000;  // unanswered = refused (fail closed)
+static const uint32_t BLE_CONSENT_GRACE_MS   = 60000;  // see the grace note below
+
+static boolean  bleAtTopMenu      = false;   // true only during the top menu's own serialEvent() poll
+static boolean  bleConsentPending = false;   // a request is waiting for the prompt to be raised
+static boolean  bleConsentAsking  = false;   // the prompt is on screen right now
+static boolean  bleConsentGranted = false;   // ever granted (guards the grace window at boot)
+static uint32_t bleConsentAt      = 0;       // millis() of the last grant
+
+// Ask the operator. Blocking, and safe to block only because the caller is the
+// top-menu wait loop. Modelled on MorsePreferences::resetGameScores(), the one
+// existing yes/no confirmation in this firmware — same layout, same mapping
+// (FN = yes, encoder click = no), so the gesture is already learned.
+static void bleConsentPrompt() {
+  bleConsentPending = false;
+  bleConsentAsking  = true;
+
+  MorseOutput::clearScrollLines();
+  MorseOutput::printOnScroll(0, BOLD,    0, "Allow connect?");
+  MorseOutput::printOnScroll(1, REGULAR, 0, "FN = yes");
+  MorseOutput::printOnScroll(2, REGULAR, 0, "click = no");
+  MorseOutput::refreshDisplay();
+  // NOT the protocol text stream that CLAUDE.md §8 case 2 prescribes: the
+  // protocol session is precisely what is being authorized and does not exist
+  // yet. A pre-rendered clip is the only way this reaches a blind operator, and
+  // it names the button because they cannot read lines 2 and 3.
+  MorseVoice::announce("Allow Bluetooth connection? F N for yes, click for no.");
+
+  Buttons::modeButton.clicks = 0;
+  Buttons::volButton.clicks  = 0;
+  boolean allowed = false;
+  uint32_t started = millis();
+
+  while (millis() - started < BLE_CONSENT_TIMEOUT_MS) {
+    Buttons::modeButton.Update();
+    if (Buttons::modeButton.clicks != 0) break;                       // encoder click = refuse
+    Buttons::volButton.Update();
+    if (Buttons::volButton.clicks != 0) { allowed = true; break; }    // FN = allow
+    if (!MorseBleSerial::linkUp()) break;                             // client gave up or went away
+    serialEvent();                    // USB must keep working through the wait; a BLE line
+                                      // still cannot execute (bleProtocol is false) and a
+                                      // repeat handshake is swallowed by bleConsentAsking
+    checkShutDown(false);
+    delay(20);
+  }
+  Buttons::modeButton.clicks = 0;
+  Buttons::volButton.clicks  = 0;
+  bleConsentAsking = false;
+
+  M32TargetScope bleOnly(M32Target::BleOnly);   // concerns this client alone
+  if (allowed) {
+    bleConsentGranted = true;
+    bleConsentAt      = millis();
+    bleProtocol       = true;
+    MorseJSON::jsonDevice(brd, vsn);            // the normal handshake reply, just later
+    MorseVoice::announce("Connection allowed.");
+  }
+  else {
+    MorseJSON::jsonError("CONNECTION DECLINED");
+    MorseVoice::announce("Connection refused.");
+  }
+}
+
+// Called from THE top-menu wait loop in place of serialEvent(). Returns true
+// when the prompt took over the screen, so the caller repaints the menu.
+boolean bleTopMenuService() {
+  bleAtTopMenu = true;
+  serialEvent();
+  bleAtTopMenu = false;
+  if (!bleConsentPending)
+    return false;
+  bleConsentPrompt();
+  return true;
+}
+
+/////////////////////
 // the BLE twin of serialEvent() above: assemble bytes from the BLE RX ring
 // into lines and dispatch them through the same protocol engine. Deliberate
 // mirror of serialEvent()'s line assembly — keep the two in sync.
@@ -4048,9 +4142,27 @@ void bleSerialEvent() {
     bleInputString.trim();
     if (!bleProtocol) {                                     // pre-handshake: only the protocol/on probe is recognized
       if (bleInputString.equalsIgnoreCase("put device/protocol/on")) {
-        bleProtocol = true;
-        M32TargetScope bleOnly(M32Target::BleOnly);         // handshake reply: a live USB session must not see it
-        MorseJSON::jsonDevice(brd, vsn);
+        M32TargetScope bleOnly(M32Target::BleOnly);         // every answer here concerns this client alone
+        if (bleConsentAsking) {
+          // The operator is being asked right now. A client that gave up and
+          // retried must not stack a second prompt or restart the clock —
+          // checked FIRST, because this poll can come from inside the prompt.
+        }
+        else if (bleConsentGranted && (millis() - bleConsentAt < BLE_CONSENT_GRACE_MS)) {
+          // Consent was just given. A client that dropped and came straight
+          // back — an app that backgrounded, or an older one that gave up
+          // waiting and was tapped again — is not made to ask twice for the
+          // same session (decision D3).
+          bleProtocol = true;
+          MorseJSON::jsonDevice(brd, vsn);
+        }
+        else if (!bleAtTopMenu) {
+          MorseJSON::jsonError("DEVICE BUSY");              // D2: no prompt while a mode runs
+        }
+        else {
+          bleConsentPending = true;                         // the top-menu loop raises the prompt
+          MorseJSON::jsonCreate("message", "CONFIRM ON DEVICE", "");
+        }
       }
     }
     else if (bleInputString.equalsIgnoreCase("put device/protocol/off")) {

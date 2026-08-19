@@ -199,6 +199,7 @@ Africa
 All
 All characters
 All Chars
+Allow Bluetooth connection? F N for yes, click for no.
 Alph+Num+Int
 Alpha
 Alpha + Num
@@ -256,6 +257,8 @@ Common only
 Complements
 Configure WiFi
 Confirmation tone
+Connection allowed.
+Connection refused.
 Contest
 Contest Type
 CQ WW

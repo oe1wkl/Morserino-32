@@ -53,6 +53,11 @@ extern void audioLevelAdjust();
 extern void onWifiReceive(AsyncUDPPacket);
 extern void onEspnowRecv(const uint8_t*, const uint8_t*, uint8_t, signed int, boolean);
 extern void serialEvent();
+#ifdef CONFIG_BLE_SERIAL
+// m32_v6.ino: serialEvent() for the top-menu wait loop, plus the BLE consent
+// prompt. True = the prompt repainted the screen, so the menu must be redrawn.
+extern boolean bleTopMenuService();
+#endif
 
 
 namespace MorseMenu

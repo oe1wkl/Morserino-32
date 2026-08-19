@@ -70,6 +70,7 @@
     "Africa": "f5cd2629",
     "All": "b1c94ca2",
     "All Chars": "df5075fa",
+    "Allow Bluetooth connection? F N for yes, click for no.": "f2a105d0",
     "Alph+Num+Int": "db720f63",
     "Alpha": "6132295f",
     "Alpha + Num": "41ccff3e",
@@ -116,6 +117,8 @@
     "Complements": "29942e7e",
     "Configure WiFi": "48b63831",
     "Confirmation tone": "2fc03d0b",
+    "Connection allowed.": "89f693ee",
+    "Connection refused.": "015d206e",
     "Contest": "57fb27de",
     "Contest Type": "f9530141",
     "Curtis B dah timing": "619984cf",
@@ -678,6 +681,7 @@
     "b1c94ca2": "All",
     "b50acc3b": "All characters",
     "df5075fa": "All Chars",
+    "f2a105d0": "Allow Bluetooth connection? F N for yes, click for no.",
     "db720f63": "Alph+Num+Int",
     "6132295f": "Alpha",
     "41ccff3e": "Alpha + Num",
@@ -735,6 +739,8 @@
     "29942e7e": "Complements",
     "48b63831": "Configure WiFi",
     "2fc03d0b": "Confirmation tone",
+    "89f693ee": "Connection allowed.",
+    "015d206e": "Connection refused.",
     "57fb27de": "Contest",
     "f9530141": "Contest Type",
     "e9292f77": "CQ WW",
@@ -975,8 +981,8 @@
     "pref_labels": 48,
     "option_values": 171,
     "actions": 21,
-    "phrases_total": 291,
+    "phrases_total": 294,
     "atoms_total": 138,
-    "clips_total": 491
+    "clips_total": 494
   }
 }

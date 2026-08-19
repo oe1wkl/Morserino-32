@@ -229,18 +229,32 @@ an authorized session in the clear — call sign, WiFi SSIDs, CW memories. Only
 link-layer encryption (bonding) fixes that, and nothing here forecloses adding
 it later.
 
-## Open questions for sign-off
+## Decisions (signed off 2026-08-19)
 
-1. **O1 — which gesture allows?** `resetGameScores()` consistency says FN = yes
-   / click = no. An argument exists for demanding something more deliberate
-   (a long press) on a security prompt, at the cost of a second idiom.
-2. **O2 — is the top-menu-only restriction acceptable?** It is the simplest and
-   safest rule, but it means exiting a running mode before connecting.
-3. **O3 — protocol versioning.** `CONFIRM ON DEVICE`, `CONNECTION DECLINED` and
-   `DEVICE BUSY` are new pre-handshake replies. Additive, but they need
-   documenting in the protocol description; whether they justify a version bump
-   is a judgement call.
-4. **O4 — an opt-out?** A preference to disable the confirmation for operators
-   who find it tiresome would restore today's behaviour for anyone who wants
-   it. It also gives an attacker a setting to switch off once they are in.
-   Recommendation: do not add one until someone asks.
+1. **D1 — gesture: FN click allows, encoder click denies.** The mapping
+   `resetGameScores()` already uses. One learned idiom; no new convention.
+2. **D2 — top menu only.** A request arriving during any interactive mode is
+   refused with `DEVICE BUSY` and no prompt at all.
+3. **D3 — tolerate existing clients.** A V9-era client that gives up while the
+   prompt is up is not punished: the prompt stays open, and once the operator
+   presses FN the client's next connect attempt handshakes normally. No protocol
+   version gate — the pre-handshake state cannot be negotiated anyway (a client
+   would have to handshake to learn it needs to handshake differently).
+4. **D4 — no opt-out preference.** A setting to disable confirmation is also a
+   setting an attacker can switch off once inside. Add it only if the prompt
+   proves tiresome in practice.
+
+### Why D3 matters more than it looks
+
+The pre-reply `{"message":{"content":"CONFIRM ON DEVICE"}}` **breaks an existing
+client's first attempt**: the config tool's `doConnect()` parses any reply,
+finds no `.device`, and declares failure. That is a behaviour change, not a
+purely additive one, so "additive within a major version" does not cover it.
+D3 makes the failure recoverable rather than terminal — old client fails once,
+operator presses FN, next attempt works — and updated clients (which understand
+the pre-reply and extend their wait) never see it at all.
+
+## Open questions — all resolved
+
+O1–O4 were answered on 2026-08-19; see **Decisions** above. Kept here only as a
+pointer, so a reader arriving from an old link is not left looking for them.
