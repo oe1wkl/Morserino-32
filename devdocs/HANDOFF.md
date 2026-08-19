@@ -154,22 +154,34 @@ unaffected, which masks the bug.
 
 Root cause was bisected to swapping `DisplayWrapper` (a `lib_dep` LovyanGFX
 wrapper) for an in-tree `LGFX` class. ~19 fix-forward attempts failed; only
-restoring the `oe1wkl/DisplayWrapper` `lib_dep` path fixes it.
+restoring the `DisplayWrapper` `lib_dep` path fixes it.
 
-**DO NOT** remove `oe1wkl/DisplayWrapper` from `platformio.ini` or replace it
+**DO NOT** remove `DisplayWrapper` from `platformio.ini` or replace it
 with an in-tree LGFX wrapper for the TFT Pocket path. All game display goes
 through `display.enterGameMode()` / `pushGameFrame()` / `exitGameMode()`.
 Never call `lcd.begin()` (it reconfigures the SPI pins 38/39 shared with the
 encoder and kills encoder interrupts).
 (See `memory/tft-pocket-displaywrapper-required.md`.)
 
+What this does **not** forbid is changing the library itself, or which remote it
+comes from. Both were done on 2026-08-18 and both passed the USB-only cold-boot
+test: `lib_deps` moved from the (now archived) `oe1wkl/DisplayWrapper` fork to
+upstream `haklein/DisplayWrapper#v1.0.4`, with identical compiled output. What
+broke the panel in #157 was *replacing* the library with in-tree code, not
+editing or re-sourcing it.
+
 ---
 
 ## DisplayWrapper API traps (TFT path)
 
-Two methods of the `oe1wkl/DisplayWrapper` lib fail silently. Fixing them at
-source means a library change plus a version bump, so both are worked around
-on our side; the notes below are what to do instead.
+Two methods of the `DisplayWrapper` lib fail silently. Both are worked around on
+our side and the notes below are what to do instead — but the reason for working
+around them rather than fixing them ("a library change plus a version bump") no
+longer holds: since 2026-08-18 we consume upstream directly, fixes go over as a
+PR (see `haklein/DisplayWrapper#3` for the shape of one), and the tag pin makes
+a bump routine and traceable. Both traps are genuine upstream API bugs and are
+worth sending over. Note that neither is urgent: every in-tree caller already
+avoids them.
 
 **`getStringWidth()` is declared `uint8_t`** but returns LovyanGFX's `int32_t`
 `textWidth()`, so it wraps modulo 256. The wrapper maps `DialogInput_*` to

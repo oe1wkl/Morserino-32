@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=837eea6f6d60 v=9 -->
+<!-- WHATSNEW:BEGIN en=2f8f7ccf7c79 v=9 -->
 What is new in Version 9?
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
@@ -45,12 +45,16 @@ What is new in Version 9?
 -   M32 Pocket only: It is now possible to set the time constant for the Blackman-Harris tone shaping, which is responsible for the „softness“ of CW Audio (tone without clicks). The default is 5 ms, you can change that between 1 and 9 ms (1ms is rather hard, with clicks, while 9ms is definitely too long for high speed CW).
 -   M32Pocket only: When you practice with the Koch trainer, the M32Pocket will record statistics about performance; these can either be looked at through the Configuration Tool, or via the M32’s built in web server, so you can use a browser to view the statistics.
 -   M32Pocket only: after a firmware install with the erase option (or a firmware install to a completely new device), it took up to 10 seconds until something was visible on the screen, while the non-volatile file system was being prepared. To avoid panic, a modified splash with some informative message is being displayed now in such cases.
+-   M32Pocket only: a new preference **Font Size** lets you switch the scrolling display area between the normal text size and a smaller one, which fits more characters per line and shows five lines instead of four. Handy at higher speeds or with longer words, when you want to see more of what has just been sent.
+-   The serial protocol used by the Configuration Tool and other utilities has been extended to **version 1.4**. A connected program can now read the full details of all preferences in a handful of requests instead of one request per preference, ask the device which of the optional commands it actually supports (instead of trying them out to find out), and read or clear the stored game scores. Everything from version 1.3 keeps working unchanged, so programs written for it need no adaptation. The protocol is described in the separate *M32 Protocol* document.
+-   M32 Pocket only: the Configuration Tool now shows the **game scores** stored on your device - the high score tables of all games, and whether Radio Cave has a saved game - on the User Identity tab, next to the call sign and name they were played under. A button there clears them all, doing the same as „Reset Scores“ in the preferences menu on the device.
 -   The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
 -   Custom Characters is now working like any other built-in Koch order, you can use select lesson, learn new character and the other Koch modes in the same way as with the built-in Koch sequences.
 -   There is a new feature called „Practice Sets“ that takes the place of the previous Custom character sets, which allows you to train a subset of individual characters which you pick directly on the device and then you can use them for CW generator or Echo Trainer.
 -   On the display, words are not broken up at the end of a line, but starting at a new line whenever the word length is known in advance (all CW generator modes, and Trx modes like LoRa or WiFi Trx), and the word would not fit into the current line.
 -   „Select Lesson“ now also shows the total # of characters in the selected Koch sequence.
 -   A few more cosmetic display output fixes.
+-   The Configuration Tool's Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.
 <!-- WHATSNEW:END -->
 
 # Connectors and Controls
@@ -639,9 +643,14 @@ you want a higher percentage for dits to feel comfortable).
 **Ultimatic Mode**: In Ultimatic mode, pressing both paddles generates a
 dit or dah. The type of sound generated depends on which paddle is hit
 first. Afterwards, the opposite sound is generated continuously. This is
-advantageous for characters like J, B, 1, 2, 6, and 7. This mode also
-responds to entries activated on the opposite paddle with the same
-timing preferences defined for Iambic B mode.
+advantageous for characters like J, B, 1, 2, 6, and 7. Control always
+belongs to the paddle that was closed *last*: with both paddles held
+down, briefly releasing one of them and closing it again — just a flick —
+hands control back to that paddle, which then keeps sending its own
+element type until you release it again or flick the other one. This
+works for either paddle, including the one that started the character.
+This mode also responds to entries activated on the opposite paddle with
+the same timing preferences defined for Iambic B mode.
 
 **Non-Squeeze Mode:** This simulates the behavior of a single-lever
 paddle when using a dual-lever paddle. Operators who are accustomed to
@@ -2907,6 +2916,7 @@ to all modes of the Morserino-32.
 | Output Case | This changes the case of decoded characters on the display (and also on serial output via USB, and on Bluetooth keyboard output!) from lower case to UPPER CASE. | **lower** / UPPER |
 | []{.pocket .pocket-a11y}Headphone Output | (Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With "*line-out*," output will be via the headphone output at full volume and via the speaker as normal. With "*l-o: Var. Vol.*" it is similar, but the output via the plug is at the set volume, and with "*l-o: Lsp Muted*" the output via the plug is at full volume and the speaker is muted. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones! |
 | []{.pocket .pocket-a11y}Theme | (For devices with a color screen only, e.g. M32Pocket) You can set a color theme for the display, so you are not confined to white on black. Each theme (Plain included) also shows Morse-code text in its own accent colour — set apart from menu and status text — and renders the Echo Trainer OK/ERR results in green and red. | **Plain** (= white on black) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
+| []{.pocket}Font Size | Size of the text in the scrolling display area (and in menus and other screens using the same area): Normal, or Small for more characters per line. | **Normal** / Small |
 | []{.pocket}Invader Orient. | (For M32 Pocket only) You can select your favorite orientation for games like the Morse Invader game, Portrait (default) or Landscape. If you select Landscape, it uses left-handed orientation if you have set this in the Hardware Configuration. | **Portrait** / Landscape |
 | Serial Output | Here you control what is being sent to serial port (USB connector); distinction is made between keyed characters (output from the iambic keyer), decoded characters (from CW decoder or using a straight key), and "generated" characters (from CW Generator etc., also from the receiver side of the [LoRa or]{.classic} WiFi Transceiver modes). **Nothing** sends out none of these characters (but certain system or error messages might still appear), while **All** send out everything. In addition, other information can be sent and received via the serial port through the M32 Serial protocol, if the connected computer software supports this. See also **Using the Serial Output of the M32**. This setting also applies to the character stream sent to an app connected over Bluetooth (see the **Bluetooth Use** preference in the section **Preferences regarding Key, Paddles and Keyer**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (default since V. 4.3) |
 

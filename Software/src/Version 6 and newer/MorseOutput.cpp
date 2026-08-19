@@ -53,6 +53,9 @@ LGFX display;
 // path is the only one that keeps the panel alive.
 #include "DisplayWrapper.h"
 #include "m32logo_aa.h"          // pre-rendered anti-aliased boot-splash logo (white-on-black)
+#ifdef CONFIG_SCROLL_FONT_SIZE
+#include "IntelOneMono12ptAscii.h"   // ASCII-range small scroll font (see that file for why)
+#endif
 DisplayWrapper display;
 #endif
 
@@ -78,6 +81,71 @@ static inline uint16_t stringWidth(const String& s) {
   return display.getStringWidth(s);
 #endif
 }
+
+/// Select the font for the scroll area's *default* size (i.e. printOnScroll()
+/// callers that don't pass small=true): the Font Size preference's Normal/
+/// Small choice on the M32 Pocket (non-Accessibility), or always the normal
+/// 15pt font everywhere else. Small uses the ASCII-range
+/// IntelOneMono12ptAscii.h variant rather than the IntelOneMono 12pt used for
+/// a caller-forced small=true (e.g. a narrow IP-address line) - see that
+/// header for why. forceNormal overrides the preference (used by the boot
+/// splash, whose (c) glyph falls outside the small ASCII font's declared
+/// range). Everywhere else (OLED, and the Accessibility Edition) this is
+/// always the normal (large) font; posScrollFont doesn't exist in those
+/// builds. Shared by setDefaultScrollFont() and printOnScroll() so the two
+/// font-selection rules can't drift apart.
+static inline void scrollFont(boolean bold, boolean forceNormal) {
+#ifdef CONFIG_SCROLL_FONT_SIZE
+  if (forceNormal || !MorsePreferences::pliste[posScrollFont].value)
+    display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
+  else
+    display.setFont(bold ? &IntelOneMono_Bold12pt8b_Ascii : &IntelOneMono_Regular12pt8b_Ascii);
+#else
+  display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
+#endif
+}
+
+/// Plain-weight, non-forced-small shorthand for scrollFont(). printOnScroll()
+/// may leave a different font active (bold, or a caller-forced small size) -
+/// callers that need to measure against the *default* scroll font (the
+/// wrap-width checks in printToScroll_internal() and wordNeedsWrap()) must
+/// call this first rather than relying on whatever font happens to be active.
+static inline void setDefaultScrollFont() {
+  scrollFont(false, false);
+}
+
+#ifdef CONFIG_SCROLL_FONT_SIZE
+uint8_t NoOfVisibleLines = NoOfVisibleLinesNormal;
+#endif
+
+// Row-to-row Y step used in place of LINE_HEIGHT wherever a scroll row's
+// position (not its glyph/clear-rect size, which stays LINE_HEIGHT) is
+// computed, plus a matching top margin (scrollTopPad) added once before the
+// first row - together they spread NoOfVisibleLines rows evenly across the
+// whole available height, split into NoOfVisibleLines+1 equal gaps (before
+// the first row, between each pair, after the last), instead of packing
+// tight at the honest per-glyph pitch and leaving every unused pixel as one
+// lump below the last row (or, with only the inter-row step enlarged and no
+// top margin, still visibly hugging the top). Left untouched (both fall back
+// to plain SCROLL_TOP/LINE_HEIGHT via SCROLL_ROW_TOP/LINE_STEP below)
+// everywhere NoOfVisibleLines is a fixed compile-time constant (OLED, and
+// TFT without the Font Size preference) - there the existing layout is
+// already tuned to fill the area with nothing left over. Recomputed only in
+// applyScrollFontGeometry(), where NoOfVisibleLines itself is (re)computed,
+// not on every draw - LINE_HEIGHT is a live macro that reads whatever font
+// happens to be active *right now*, so reading it there (right after
+// explicitly selecting the default scroll font) is the one place guaranteed
+// to reflect the font this spacing is meant for.
+static uint8_t scrollLineStep = 0;
+static uint8_t scrollTopPad = 0;
+
+#ifdef CONFIG_SCROLL_FONT_SIZE
+#define LINE_STEP scrollLineStep
+#define SCROLL_ROW_TOP (SCROLL_TOP + scrollTopPad)
+#else
+#define LINE_STEP LINE_HEIGHT
+#define SCROLL_ROW_TOP SCROLL_TOP
+#endif
 
 #ifdef CONFIG_SOUND_I2S
 #include "I2S_Sidetone.hpp"
@@ -107,7 +175,7 @@ uint8_t linePointer = 0;    /// defines the current bottom line
 uint8_t bottomLine = 0;
 static uint8_t scrollScreenPos = 0;   /// current column on the scroll line; used by printToScroll_internal() and by wordNeedsWrap()
 
-const int8_t MorseOutput::maxPos = NoOfLines - NoOfVisibleLines;
+int8_t MorseOutput::maxPos = NoOfLines - NoOfVisibleLines;
 int8_t MorseOutput::relPos = MorseOutput::maxPos;
 
 #ifndef CONFIG_TFT
@@ -785,6 +853,56 @@ void MorseOutput::setBrightness(uint8_t brightness) {
   display.setBrightness(brightness);
 }
 
+#ifdef CONFIG_SCROLL_FONT_SIZE
+/// (Re)derive the visible-line count and scrollback depth from the current
+/// Font Size preference. Needed in two places: right after the preferences
+/// menu's encoder-adjust changes it, and once at boot - NVS may have loaded
+/// posScrollFont's stored value as Small from an earlier session, but
+/// NoOfVisibleLines is statically initialised to the normal (4-line) default
+/// and nothing else re-derives it, so a device that boots with the small font
+/// already saved would render small text but still only show 4 lines until
+/// the user re-visited the preference.
+void MorseOutput::applyScrollFontGeometry() {
+  // relPos == maxPos is the "glued to the live bottom" state that
+  // printToScroll_internal() checks to decide whether to live-print each new
+  // character as it arrives (relPos == maxPos) or leave the display alone
+  // because the user is looking at scrolled-back history (relPos != maxPos).
+  // maxPos itself is about to change below, so capture whether we were glued
+  // *before* recomputing it - otherwise a plain constrain() would silently
+  // un-glue an actively-watched live view (e.g. mid CW Generator output)
+  // merely because Small->Normal made maxPos larger: the old relPos value is
+  // still in [0, new maxPos], so constrain() would leave it unchanged, and it
+  // would then equal the new maxPos only by coincidence. When it doesn't
+  // (this direction), every future character stops appearing at all, since
+  // the live-print fast path only fires while glued.
+  boolean wasAtBottom = (relPos == maxPos);
+  NoOfVisibleLines = MorsePreferences::pliste[posScrollFont].value ? NoOfVisibleLinesSmall : NoOfVisibleLinesNormal;
+  maxPos = NoOfLines - NoOfVisibleLines;
+  // Glued view stays glued (jumps to the new bottom); a scrolled-back view
+  // keeps its numeric position, just clamped to the new (possibly smaller)
+  // range - close enough for the rare case of a snapshot recall or protocol
+  // change landing while someone happens to be reviewing history.
+  relPos = wasAtBottom ? maxPos : constrain(relPos, 0, maxPos);
+  // Give the rows a small amount of extra breathing room between them (up to
+  // +2px over the honest per-glyph pitch), then centre the resulting block -
+  // rows-plus-gaps together - top and bottom margin exactly equal, by
+  // construction (both computed from the same actual content height, not
+  // estimated separately - a first attempt at this used the raw gap size
+  // as the top margin directly, which isn't the same number and left the
+  // block still visibly closer to the top). setDefaultScrollFont() first so
+  // LINE_HEIGHT (a live macro reading whatever font is *currently* active)
+  // reflects the font this geometry is for, not whatever was last set by an
+  // unrelated caller (e.g. the status line).
+  setDefaultScrollFont();
+  int available = display.getHeight() - SCROLL_TOP;
+  int leftover = available - NoOfVisibleLines * LINE_HEIGHT;
+  int gap = leftover > 0 ? min(2, leftover / (NoOfVisibleLines + 1)) : 0;
+  scrollLineStep = LINE_HEIGHT + gap;
+  int contentHeight = NoOfVisibleLines * scrollLineStep - gap;   // no trailing gap after the last row
+  scrollTopPad = (available - contentHeight) / 2;
+}
+#endif
+
 
 /// Accumulate text for the scroll area, handing it to printToScroll_internal()
 /// a bufferful at a time. The buffer is purely an optimisation: generateCW()
@@ -893,6 +1011,9 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
   }
 
 #ifdef CONFIG_TFT
+  // measure against the *default* scroll font, not whatever printOnScroll()
+  // (or unrelated code, e.g. the status line) last left active
+  setDefaultScrollFont();
   int textTooLong = (scrollScreenPos + l > display.getWidth()/display.getStringWidth("A"));
 #else
   int textTooLong = (scrollScreenPos + l > NoOfCharsPerLine);
@@ -969,7 +1090,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
     //DEBUG("relPos: " + String(relPos));
     MorseOutput::printOnScroll(NoOfVisibleLines - 1, style, scrollScreenPos, t);               // these characters are 9 pixels wide,
   }
-  display.setFont(DialogInput_plain_15);;
+  setDefaultScrollFont();
   scrollScreenPos += (stringWidth(t) / C_WIDTH);
   if (linebreak) {
     MorseOutput::newLine(scroll);
@@ -995,8 +1116,7 @@ void MorseOutput::printToScroll_internal(FONT_ATTRIB style, const String& text, 
 /// which is longer than the OLED's 14-column line.
 boolean MorseOutput::wordNeedsWrap(uint16_t wordLen) {
 #ifdef CONFIG_TFT
-  display.setFont(DialogInput_plain_15);        // measure in the font the scroll area is drawn in,
-                                                // whatever the last display user left behind
+  setDefaultScrollFont();        // measure in the font the scroll area is drawn in
   uint16_t width = display.getWidth() / display.getStringWidth("A");
 #else
   uint16_t width = NoOfCharsPerLine;
@@ -1045,7 +1165,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
   display.setColor(BLACK);
   #ifdef CONFIG_TFT
-  display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT); // black out the line on screen
+  display.fillRect(0, SCROLL_ROW_TOP + displayLine * LINE_STEP , display.getWidth()-1, LINE_HEIGHT); // black out the line on screen
   #else
   display.fillRect(0, SCROLL_TOP + displayLine * LINE_HEIGHT , display.getWidth()-1, LINE_HEIGHT+1); // black out the line on screen
 
@@ -1056,7 +1176,11 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
       if (irFlag)         /// at the end of an emphasized string
       {
             //DEBUG("irFl>>" + temp + "<<");
-        charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
+        // split across two statements: C_WIDTH must be evaluated *after* printOnScroll()
+        // has picked the font it just drew with (evaluation order of / operands is
+        // otherwise unspecified, and printOnScroll() sets the font as a side effect)
+        uint16_t printedWidth = MorseOutput::printOnScroll(displayLine, style, pos, temp);
+        charsPrinted = printedWidth / C_WIDTH;
         style = REGULAR;
         pos += charsPrinted;
         temp = "";
@@ -1067,7 +1191,10 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
         if (temp.length()) {
               //DEBUG("noFl>>" + temp + "<<");
 
-          charsPrinted = MorseOutput::printOnScroll(displayLine, style, pos, temp) / C_WIDTH;
+          // see the matching comment above: force printOnScroll() to run (and pick its
+          // font) before C_WIDTH is evaluated against it
+          uint16_t printedWidth = MorseOutput::printOnScroll(displayLine, style, pos, temp);
+          charsPrinted = printedWidth / C_WIDTH;
           style = REGULAR;
           pos += charsPrinted;
           temp = "";
@@ -1089,7 +1216,7 @@ void MorseOutput::refreshScrollLine(int bufferLine, int displayLine) {
 
 /// place a string onto the scroll area; line = 0 .. NoOfVisibleLines-1
 
-uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small) {
+uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small, boolean forceNormal) {
   uint16_t w;
   int x, y;
 
@@ -1100,16 +1227,15 @@ uint16_t MorseOutput::printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos,
     display.setColor(WHITE);
   else
     display.setColor(BLACK);
-if (small) {
-if (bold)
-      display.setFont(DialogInput_bold_12);
-    else
-      display.setFont(DialogInput_plain_12);
+  // an explicit small=true always wins (callers use it to force a narrow fit,
+  // e.g. an IP address line) and always keeps the original (full-range)
+  // IntelOneMono 12pt regardless of the Font Size preference; only the
+  // *default* size (small==false) follows it, and only on the M32 Pocket
+  // (non-Accessibility) - see scrollFont().
+  if (small) {
+    display.setFont(bold ? DialogInput_bold_12 : DialogInput_plain_12);
   } else {
-    if (bold)
-      display.setFont(DialogInput_bold_15);
-    else
-      display.setFont(DialogInput_plain_15);
+    scrollFont(bold, forceNormal);
   }
 
   display.setTextAlignment(TEXT_ALIGN_LEFT);
@@ -1118,7 +1244,20 @@ if (bold)
   w = stringWidth(mystring);
 
   x = xpos * C_WIDTH;
-  y = SCROLL_TOP + line * LINE_HEIGHT;
+  // The centred layout (scrollTopPad + scrollLineStep) is computed for the
+  // *default* scroll font, so its step is only guaranteed to clear that font's
+  // glyph box. A row drawn in a different font - a caller-forced small size, or
+  // forceNormal - has a taller box than the step allows, and consecutive such
+  // rows overlap: the boot splash's two forceNormal lines sat 27px apart with a
+  // 35px box, so the copyright line's background fill ate 8px off the bottom of
+  // the version line. Those callers get the plain packed layout matching the
+  // font they actually draw in, which is what they had before centring. (In
+  // builds without the Font Size preference both branches are identical -
+  // SCROLL_ROW_TOP/LINE_STEP fall back to SCROLL_TOP/LINE_HEIGHT.)
+  if (small || forceNormal)
+    y = SCROLL_TOP + line * LINE_HEIGHT;
+  else
+    y = SCROLL_ROW_TOP + line * LINE_STEP;
 
   // clear the print area
   #ifdef CONFIG_TFT
@@ -1303,7 +1442,7 @@ void MorseOutput::displayBatteryStatus(int v) {
   #define BATT_PAD     2
   #define BATT_NUB_X   (BATT_X + BATT_W)
  
-  int batt_y = SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 3;
+  int batt_y = SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 3;
   int nub_y  = batt_y + (BATT_H - BATT_NUB_H) / 2;
   int fill_x = BATT_X + BATT_PAD;
   int fill_y = batt_y + BATT_PAD;
@@ -1711,15 +1850,31 @@ void MorseOutput::clearStatusLine() {
 /// clear all visible lines of the scroll area
 
 void MorseOutput::clearScrollLines() {
-  display.setFont(DialogInput_plain_15);
+  // A single rect over the whole scroll area, not N calls to clearLine() -
+  // those only cover each row's own tight LINE_HEIGHT band, leaving the
+  // gaps *between* rows (scrollTopPad before the first row, the small
+  // per-row step above LINE_HEIGHT introduced by applyScrollFontGeometry()
+  // to spread rows evenly) untouched. Switching Font Size changes those gaps
+  // too, so a leftover fragment of the previous font's text could sit
+  // exactly in a gap that used to not exist and never get cleared.
+  #ifdef CONFIG_TFT
+  display.setColor(BLACK);
+  display.fillRect(0, SCROLL_TOP, display.getWidth() - 1, display.getHeight() - SCROLL_TOP);
+  display.setColor(WHITE);
+  #else
+  // must match whatever font printOnScroll() will use to redraw these lines
+  // right after - on TFT, LINE_HEIGHT depends on the active font, so clearing
+  // at the wrong size leaves stray pixels or clips the freshly-drawn text.
+  setDefaultScrollFont();
   for (int i = 0; i < NoOfVisibleLines; ++i) {
     MorseOutput::clearLine(i);
   }
+  #endif
 }
 
 void MorseOutput::clearLine(uint8_t line) {                                              /// clear a line - display is done somewhere else!
   int y, l;
-  y = SCROLL_TOP + line * LINE_HEIGHT;
+  y = SCROLL_ROW_TOP + line * LINE_STEP;
   l = display.getWidth()-1;
   display.setColor(BLACK);
   #ifdef CONFIG_TFT
@@ -1738,9 +1893,9 @@ void MorseOutput::showVolumeScope(uint16_t mini, uint16_t maxi)
   b = map(maxi, 0, 4000, 0, 125);
   c = b - a;
   MorseOutput::clearLine(NoOfVisibleLines - 1);
-  display.drawRect(5, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 5, 102, LINE_HEIGHT - 8);
-  display.drawRect(30, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 5, 52, LINE_HEIGHT - 8);
-  display.fillRect(a, SCROLL_TOP + (NoOfVisibleLines - 1) * LINE_HEIGHT + 7, c, LINE_HEIGHT - 11);
+  display.drawRect(5, SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 5, 102, LINE_HEIGHT - 8);
+  display.drawRect(30, SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 5, 52, LINE_HEIGHT - 8);
+  display.fillRect(a, SCROLL_ROW_TOP + (NoOfVisibleLines - 1) * LINE_STEP + 7, c, LINE_HEIGHT - 11);
   display.display();
 }
 

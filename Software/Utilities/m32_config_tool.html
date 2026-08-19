@@ -603,6 +603,18 @@
     </div>
     <p class="identity-note" style="text-align:center;margin-top:8px">Maximum 8 characters. Stored as uppercase.</p>
   </div>
+  <!-- Scores belong with the identity they were earned under. Games exist only
+       on the M32 Pocket, and reading their scores needs protocol 1.4 — the box
+       stays hidden otherwise. -->
+  <div class="box" id="gameScoresBox" style="display:none">
+    <h2 class="section-title">Game Scores</h2>
+    <p class="section-sub">High scores stored on the device</p>
+    <div id="gameScoresContainer"></div>
+    <div class="control-row" style="margin-top:14px">
+      <button class="btn btn-red btn-sm" onclick="clearGameScores()">Clear All Game Scores</button>
+      <span class="control-unit">also clears the Radio Cave saved game</span>
+    </div>
+  </div>
 </div>
 
 <!-- KOCH -->
@@ -840,6 +852,10 @@ var abortController=null, readableStreamClosed=null, writableStreamClosed=null;
 var connected=false;
 var CHUNK_SIZE=180;
 var deviceInfo={};
+// Protocol 1.4 GET capabilities: {protocol:"1.4", features:[...]}. Stays null
+// on firmware older than 1.4, which has no such command — every feature test
+// then falls back to trying the command and tolerating the error.
+var deviceCaps=null;
 var allPrefs=[];
 var prefDetails={};
 var allMenus=[];
@@ -930,13 +946,32 @@ function toggleLog(){document.getElementById('logToggle').classList.toggle('open
 // ============================================================================
 async function readLoop(){try{while(true){var r=await reader.read();if(r.done)break;if(r.value)readBuffer+=r.value}}catch(e){}}
 
+// Find one complete JSON object in the raw stream by counting braces — but
+// only braces that are NOT inside a JSON string, and honouring backslash
+// escapes. A naive count breaks on real user data: a CW memory, an SSID or an
+// operator name may itself contain "{" or "}", and a reply carrying one used
+// to be framed short, leaving its tail in the buffer to corrupt the NEXT
+// reply. Characters before the first "{" (the device also echoes typed
+// characters) are ignored.
 async function waitForResponse(timeoutMs){
   timeoutMs=timeoutMs||3000; var start=Date.now();
   while(Date.now()-start<timeoutMs){
-    var bc=0,js=-1;
+    var bc=0,js=-1,inStr=false,esc=false;
     for(var i=0;i<readBuffer.length;i++){
-      if(readBuffer[i]==='{'){if(js<0)js=i;bc++}
-      else if(readBuffer[i]==='}'){bc--;if(bc===0&&js>=0){var resp=readBuffer.substring(js,i+1);readBuffer=readBuffer.substring(i+1);return resp}}
+      var c=readBuffer[i];
+      if(js<0){ if(c==='{'){js=i;bc=1} continue }      // still looking for the start
+      if(esc){ esc=false; continue }
+      if(inStr){
+        if(c==='\\') esc=true;
+        else if(c==='"') inStr=false;
+        continue;
+      }
+      if(c==='"') inStr=true;
+      else if(c==='{') bc++;
+      else if(c==='}'){
+        bc--;
+        if(bc===0){var resp=readBuffer.substring(js,i+1);readBuffer=readBuffer.substring(i+1);return resp}
+      }
     }
     await sleep(15);
   }
@@ -944,29 +979,85 @@ async function waitForResponse(timeoutMs){
   throw new Error('Timeout (partial: '+p+')');
 }
 
-async function sendAndParse(cmd,timeout){
+// Sends a command and returns the parsed reply. An {"error":...} reply is
+// raised as an exception rather than handed back looking like data — callers
+// used to check for their own key ("configs", "snapshot", ...) and silently do
+// nothing when it was absent, so a device error showed up as an empty panel
+// with no explanation. Pass {quiet:true} when an error is an EXPECTED answer
+// (probing whether a command exists on older firmware) to keep it out of the log.
+async function sendAndParse(cmd,timeout,opts){
   readBuffer=''; await sendLine(cmd);
   var resp=await waitForResponse(timeout||3000);
-  return JSON.parse(resp);
+  var data=JSON.parse(resp);
+  if(data&&data.error){
+    // the firmware puts the text in "content"; read "name" too, for tolerance
+    var msg=data.error.content||data.error.name||'unknown error';
+    if(!(opts&&opts.quiet)) log('Device error: '+msg+'   (command: '+cmd+')');
+    var err=new Error(msg); err.deviceError=data.error; throw err;
+  }
+  return data;
+}
+
+// ---- Feature discovery (protocol 1.4) -------------------------------------
+// Asked once per connection. Firmware older than 1.4 answers with an error,
+// which is the answer: deviceCaps stays null and hasFeature() reports "don't
+// know", so callers fall back to trying the command.
+async function loadCapabilities(){
+  deviceCaps=null;
+  try{
+    var d=await sendAndParse('get capabilities',3000,{quiet:true});
+    if(d.capabilities&&Array.isArray(d.capabilities.features)){
+      deviceCaps=d.capabilities;
+      log('Device capabilities: '+(deviceCaps.features.join(', ')||'(none)'));
+    }
+  }catch(e){ log('No capability list (firmware predates protocol 1.4) — probing instead'); }
+}
+
+// true / false when the device told us; null when it could not be asked.
+function hasFeature(name){
+  if(!deviceCaps) return null;
+  return deviceCaps.features.indexOf(name)>=0;
 }
 
 // ============================================================================
 // CONNECT / DISCONNECT
 // ============================================================================
+// ---- Transport seam -------------------------------------------------------
+// Everything USB-specific about OPENING a link lives in openTransport() and
+// nowhere else, so a host that carries this tool over a different transport can
+// replace this one function instead of copying doConnect(). The iOS app
+// (Software/iOS/M32Config) does exactly that, over Bluetooth LE — and because
+// it overrides only this, every later change to the connect sequence below
+// reaches it without anyone remembering to copy it across.
+//
+// Contract for a replacement: leave `writer` usable by sendLine(), arrange for
+// incoming text to reach `readBuffer` (and ttyProcessChunk, for the TTY tab),
+// and return {label, noReplyHint} — how to name the link in the log, and what
+// to suggest if the device never answers the handshake. Throw to report
+// failure. Closing needs no seam: every step in doDisconnect() is null-guarded,
+// so the USB teardown is inert for a transport that never set those globals.
+async function openTransport(){
+  port=await navigator.serial.requestPort();
+  await port.open({baudRate:115200});
+  abortController=new AbortController();
+  var dec=new TextDecoderStream();
+  readableStreamClosed=port.readable.pipeTo(dec.writable,{signal:abortController.signal});
+  reader=dec.readable.getReader();
+  var enc=new TextEncoderStream();
+  writableStreamClosed=enc.readable.pipeTo(port.writable);
+  writer=enc.writable.getWriter();
+  readLoop();
+  return {
+    label:'USB connected',
+    noReplyHint:'No M32 response on this port. Is this the right serial port, and is the M32 powered on and not held open by another program (e.g. a serial monitor)?'
+  };
+}
+
 async function doConnect(){
   try{
-    port=await navigator.serial.requestPort();
-    await port.open({baudRate:115200});
-    abortController=new AbortController();
-    var dec=new TextDecoderStream();
-    readableStreamClosed=port.readable.pipeTo(dec.writable,{signal:abortController.signal});
-    reader=dec.readable.getReader();
-    var enc=new TextEncoderStream();
-    writableStreamClosed=enc.readable.pipeTo(port.writable);
-    writer=enc.writable.getWriter();
-    readLoop();
+    var link=await openTransport();
     setStatus('Activating...','working');
-    log('USB connected — activating M32 protocol...');
+    log(link.label+' — activating M32 protocol...');
 
     await sendLine('put device/protocol/on');
     await sleep(600);
@@ -982,7 +1073,7 @@ async function doConnect(){
     }catch(e){ /* no / non-JSON reply — handled below */ }
 
     if(!devData || !devData.device){
-      log('No M32 response on this port. Is this the right serial port, and is the M32 powered on and not held open by another program (e.g. a serial monitor)?');
+      log(link.noReplyHint);
       await doDisconnect();
       setStatus('No M32 found','disconnected');
       return;
@@ -995,6 +1086,9 @@ async function doConnect(){
     enableUI(true);
     setStatus('Connected','connected');
     log('M32 protocol active ('+(devData.device.hardware||'?')+' · firmware '+(devData.device.firmware||'?')+' · protocol '+(devData.device.protocol||'?')+')');
+
+    // Ask once what this firmware can do, so the tabs below need not probe.
+    await loadCapabilities();
 
     // Load hardware and battery info now that connected=true
     await loadHardwareInfo();
@@ -1017,6 +1111,7 @@ async function doDisconnect(){
     if(port){await port.close();port=null}
   }catch(e){reader=null;writer=null;abortController=null;readableStreamClosed=null;writableStreamClosed=null;port=null}
   readBuffer='';
+  deviceCaps=null;
   enableUI(false);
   setStatus('Disconnected','disconnected');
   document.getElementById('deviceInfoBox').style.display='none';
@@ -1024,6 +1119,7 @@ async function doDisconnect(){
   document.getElementById('resetDefaultsBox').style.display='none';
   document.getElementById('snapDetailBox').style.display='none';
   document.getElementById('customCharsBox').style.display='none';
+  document.getElementById('gameScoresBox').style.display='none';
   document.getElementById('speedValue').textContent='—';
   document.getElementById('volumeValue').textContent='—';
   document.getElementById('currentMenu').textContent='—';
@@ -1307,6 +1403,90 @@ async function loadDashboard(){
   hideLoading();
 }
 
+// ---- Game scores (protocol 1.4, builds with the games) --------------------
+// Lives on the User Identity tab: the scores belong to the call sign and name
+// set there, which is also what Fight the Pileup plays under.
+// Every game scores differently, so the columns of a table are taken from the
+// keys the device actually sent rather than hard-coded here — a game added
+// later shows up without changing this tool.
+var GAME_SCORE_LABELS={score:'Score',koch:'Koch',level:'Level',wpm:'WpM',time:'Time',
+  guesses:'Guesses',length:'Length',solved:'Solved',total:'Words',cpm:'CPM',wrong:'Wrong',
+  steps:'Steps',chain:'Chain',boxes:'Boxes',errors:'Errors',calls:'Calls',letters:'Letters',
+  prompt:'Prompt'};
+
+function fmtGameScoreCell(key,v){
+  if(key==='time'&&typeof v==='number'){          // milliseconds -> m:ss
+    var s=Math.round(v/1000);
+    return Math.floor(s/60)+':'+('0'+(s%60)).slice(-2);
+  }
+  return String(v);
+}
+
+async function loadGameScores(){
+  var box=document.getElementById('gameScoresBox');
+  if(hasFeature('game/scores')===false){ box.style.display='none'; return; }
+  try{
+    // quiet when we could not ask: on pre-1.4 or classic firmware the error
+    // IS the answer, and is not worth a line in the log
+    var d=await sendAndParse('get game/scores',5000,{quiet:hasFeature('game/scores')===null});
+    if(!d.gamescores||!d.gamescores.games){ box.style.display='none'; return; }
+    renderGameScores(d.gamescores.games);
+    box.style.display='';
+  }catch(e){ box.style.display='none'; }
+}
+
+function renderGameScores(games){
+  var c=document.getElementById('gameScoresContainer'); c.innerHTML='';
+  var anyPlayed=false;
+  games.forEach(function(g){
+    var rows=g.scores||[];
+    var head=document.createElement('div');
+    head.className='field-label';
+    head.style.marginTop='14px';
+    head.textContent=g.name||g.id||'?';
+    c.appendChild(head);
+    if(g.saved!==undefined){                       // Radio Cave: a save, not a table
+      var p=document.createElement('div'); p.className='control-row';
+      p.innerHTML='<span class="control-label" style="min-width:auto">'+(g.saved?'Saved game stored':'No saved game')+'</span>';
+      c.appendChild(p);
+      if(g.saved) anyPlayed=true;
+      return;
+    }
+    if(rows.length===0){
+      var e=document.createElement('div'); e.className='control-row';
+      e.innerHTML='<span class="control-unit">not played yet</span>';
+      c.appendChild(e);
+      return;
+    }
+    anyPlayed=true;
+    var keys=[];
+    rows.forEach(function(r){Object.keys(r).forEach(function(k){if(keys.indexOf(k)<0)keys.push(k)})});
+    var t=document.createElement('table'); t.className='mem-table';
+    var th='<tr><th>#</th>';
+    keys.forEach(function(k){th+='<th>'+escHtml(GAME_SCORE_LABELS[k]||k)+'</th>'});
+    t.innerHTML=th+'</tr>';
+    rows.forEach(function(r,i){
+      var tr=document.createElement('tr');
+      var html='<td>'+(i+1)+'</td>';
+      keys.forEach(function(k){html+='<td>'+(r[k]===undefined?'—':escHtml(fmtGameScoreCell(k,r[k])))+'</td>'});
+      tr.innerHTML=html; t.appendChild(tr);
+    });
+    c.appendChild(t);
+  });
+  if(!anyPlayed){
+    c.innerHTML='<p style="color:var(--muted);font-style:italic;padding:6px 0">No game scores stored yet.</p>';
+  }
+}
+
+async function clearGameScores(){
+  if(!confirm('Clear ALL game high scores and the Radio Cave saved game?\n\nThis cannot be undone.')) return;
+  try{
+    await sendAndParse('put game/scores/clear',3000);
+    log('Game scores cleared');
+    await loadGameScores();
+  }catch(e){ log('Clear game scores: '+e.message); }
+}
+
 function renderMenuSelect(){
   var sel=document.getElementById('menuSelect'); sel.innerHTML='';
   allMenus.forEach(function(m){
@@ -1352,6 +1532,38 @@ async function menuStartNow(){
 // ============================================================================
 // PREFERENCES
 // ============================================================================
+// Protocol 1.4: read the parameter descriptions a page at a time. The device
+// chooses the page size, so follow "more" and "from"+"count" rather than
+// assuming a fixed step. Six round trips instead of one per parameter.
+async function fetchPrefDetailsPaged(){
+  var details={}, from=0, n=0, pages=0;
+  while(pages++ < 64){                                  // cannot spin forever on a confused device
+    var d=await sendAndParse('get configs/details'+(from?('/'+from):''),5000);
+    var cd=d.configdetails;
+    if(!cd||!cd.items) throw new Error('malformed configdetails reply');
+    cd.items.forEach(function(it){ if(it&&it.name){details[it.name]=it; n++} });
+    if(!cd.more) break;
+    if(!cd.count) throw new Error('configdetails page made no progress');
+    from=cd.from+cd.count;
+  }
+  log('Loaded '+n+' parameter details in '+pages+' page(s)');
+  return details;
+}
+
+// The pre-1.4 path: one round trip per parameter. Kept because a current tool
+// will be pointed at older firmware for years yet.
+async function fetchPrefDetailsOneByOne(){
+  var details={};
+  for(var i=0;i<allPrefs.length;i++){
+    try{
+      var detail=await sendAndParse('get config/'+allPrefs[i].name,3000);
+      if(detail.config) details[detail.config.name]=detail.config;
+    }catch(e){ details[allPrefs[i].name]=allPrefs[i]; }   // fall back to name+value only
+  }
+  log('Loaded '+Object.keys(details).length+' parameter details one by one');
+  return details;
+}
+
 async function loadPreferences(){
   if(!connected) return;
   // Skip if already loaded (re-load only on explicit Reload button)
@@ -1364,14 +1576,18 @@ async function loadPreferences(){
     allPrefs=data.configs;
     log('Loaded '+allPrefs.length+' parameters. Fetching details...');
     prefDetails={};
-    for(var i=0;i<allPrefs.length;i++){
-      await sleep(50);
+    // hasFeature() returns null on pre-1.4 firmware, which has no capability
+    // list; try the bulk read anyway then, and fall back on any error.
+    if(hasFeature('configs/details')!==false){
       try{
-        var detail=await sendAndParse('get config/'+allPrefs[i].name,3000);
-        if(detail.config) prefDetails[detail.config.name]=detail.config;
-      }catch(e){ prefDetails[allPrefs[i].name]=allPrefs[i]; }
+        prefDetails=await fetchPrefDetailsPaged();
+      }catch(e){
+        log('Bulk parameter read unavailable ('+e.message+') — reading one by one');
+        prefDetails=await fetchPrefDetailsOneByOne();
+      }
+    } else {
+      prefDetails=await fetchPrefDetailsOneByOne();
     }
-    log('All preference details loaded');
     try{
       var pcData=await sendAndParse('get practicechars',3000);
       practiceCharsValue=(pcData.practicechars&&pcData.practicechars.characters)||'';
@@ -1638,7 +1854,11 @@ async function loadCwMemories(){
     for(var i=1;i<=8;i++){
       var content='';
       if(inUse.indexOf(i)!==-1){
-        await sleep(50);
+        // (The 50 ms pause that used to sit here was a workaround for the
+        // brace-counting reply framing: a "}" inside a memory framed the reply
+        // early and the pause let its tail land before the next command
+        // cleared the buffer. waitForResponse is string-aware now, so the
+        // reply is framed correctly in the first place.)
         try{var memData=await sendAndParse('get cw/memory/'+i,3000);if(memData['CW Memory'])content=memData['CW Memory'].content||''}catch(e){}
       }
       var tr=document.createElement('tr');
@@ -1790,9 +2010,13 @@ async function loadPracticeStats(){
   // (and this visit, if it never had a wall clock) get a real date — same
   // idea as the WiFi Practice Stats page posting the browser's clock.
   try{ readBuffer=''; await sendLine('put time/set/'+Math.floor(Date.now()/1000)); await waitForResponse(1500); }catch(e){}
+  // Practice statistics are compiled out of some builds. On protocol 1.4+ the
+  // capability list says so outright; on older firmware, ask quietly and read
+  // the error as the answer, rather than logging it as a fault.
+  if(hasFeature('stats/log')===false){ hideLoading(); return; }   // box stays hidden
   try{
     readBuffer='';
-    var data=await sendAndParse('get stats/log',8000);
+    var data=await sendAndParse('get stats/log',8000,{quiet:hasFeature('stats/log')===null});
     var s=data.stats;
     if(!s){ hideLoading(); return; }   // Classic M32 / feature not built in — leave the box hidden
     document.getElementById('statsBox').style.display='';
@@ -2144,6 +2368,7 @@ async function loadPlayer(){
       log('Player: '+(data.player.call||'(none)')+' / '+(data.player.name||'(none)'));
     }
   }catch(e){log('Player: '+e.message)}
+  await loadGameScores();
   hideLoading();
 }
 async function setPlayerCall(){var val=document.getElementById('playerCall').value.trim().toUpperCase();if(!val)return;document.getElementById('playerCall').value=val;try{await sendLine('put player/call/'+val);try{await waitForResponse(2000)}catch(e){}log('Callsign → '+val)}catch(e){log('Error: '+e.message)}}

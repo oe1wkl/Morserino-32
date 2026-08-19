@@ -131,6 +131,34 @@ static void saveTable(int m) {
         Serial.println("Memory Chain: high scores NOT saved - NVS full?");
 }
 
+// Protocol 1.4: hand a stored table to the serial protocol. An all-zero row is
+// an empty slot, not a result — the same test recordScore() refuses to store.
+// The field names follow the mode, because "primary"/"secondary" mean
+// different things in each (see the ChainScore comments above).
+void MorseMemoryChain::exportHighScores(Mode m, JsonArray arr) {
+    ensureLoaded(m);
+    for (int i = 0; i < MC_HI_N; ++i) {
+        const ChainScore &s = hiTables[m][i];
+        if (s.primary == 0 && s.secondary == 0)
+            continue;
+        JsonObject o = arr.createNestedObject();
+        if (m == CHARACTERS) {
+            o["chain"]  = s.primary;                 // completed chain length
+            o["boxes"]  = s.secondary;               // boxes reached in the failed round
+            o["errors"] = s.errs;                    // tolerated errors used
+            o["koch"]   = s.koch;
+        } else {
+            o["calls"]   = s.primary;                // completed call signs
+            o["letters"] = s.secondary;              // letters banked in the failed call
+        }
+        o["prompt"] = s.prompt ? "Sound" : "Display";
+    }
+}
+
+void MorseMemoryChain::forgetHighScores() {
+    hiLoaded[0] = hiLoaded[1] = false;
+}
+
 // Insert if it qualifies (rank by primary, then secondary), persist on
 // qualification, return the 0-based rank or -1. An all-zero score (died on
 // the very first character) never displaces an empty slot.

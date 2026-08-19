@@ -26,18 +26,20 @@ The detailed entries below are the original audit record; this table is the live
 | C3 | ✅ resolved — doc aligned to the firmware's `content` key |
 | C4 | ✅ resolved — `GET control/volume` min/max swap fixed in firmware |
 | C5 | ✅ documented — WiFi password write-only is intentional (security) |
-| C6 | 📋 deferred to **1.4** — game-score commands; documented as planned |
+| C6 | ✅ resolved in **1.4** — `GET game/scores` + `PUT game/scores/clear` |
 | C7 | ✅ documented — hardware settings stay read-only |
 | C8, C10, C11, C12, C14, C17 | ✅ documented — protocol-doc gaps filled |
 | C9, C16 | ✅ resolved — hardware string + stale examples refreshed |
 | C13 | ✅ documented — parameter set is build-dependent; restore tolerates `INVALID PARAMETER` |
-| C-VER | ✅ (1) compatibility rule documented · 📋 (2) `GET capabilities` deferred to **1.4** |
+| C-VER | ✅ (1) compatibility rule documented · ✅ (2) `GET capabilities` shipped in **1.4** |
 | C-NVS-NAMESPACE | ✅ resolved — snapshot/Morsel namespaces fixed in CLAUDE.md + mode-matrix |
 | C15 | ⏳ open — optional firmware input-length cap (plan Phase 4) |
-| C-ERR-HANDLING, C-BRACE | ⏳ open — config-tool robustness (plan Phase 3) |
+| C-ERR-HANDLING, C-BRACE | ✅ resolved 2026-08-19 — config tool (and file manager) framing + error display |
+| C-BULK | ✅ resolved in **1.4** — `GET configs/details`, paginated |
 
-After Phases 1–2 the only items left are the two **1.4** deferrals and the optional tool-robustness
-work; everything resolvable at protocol 1.3 is closed.
+**Status 2026-08-19: the list is closed apart from C15.** Protocol 1.4 shipped the three deferrals
+(C6, C-VER (2), C-BULK) and Phase 3 landed the config-tool robustness work; only the optional
+input-length cap (C15, plan Phase 4) is still open.
 
 ---
 

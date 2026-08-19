@@ -10,6 +10,9 @@
 * M32 Pocket only: It is now possible to set the time constant for the Blackman-Harris tone shaping, which is responsible for the „softness“ of CW Audio (tone without clicks). The default is 5 ms, you can change that between 1 and 9 ms (1ms is rather hard, with clicks, while 9ms is definitely too long for high speed CW).
 * M32Pocket only: When you practice with the Koch trainer, the M32Pocket will record statistics about performance; these can either be looked at through the Configuration Tool, or via the M32’s built in web server, so you can use a browser to view the statistics.
 * M32Pocket only: after a firmware install with the erase option (or a firmware install to a completely new device), it took up to 10 seconds until something was visible on the screen, while the non-volatile file system was being prepared. To avoid panic, a modified splash with some informative message is being displayed now in such cases.
+* M32Pocket only: a new preference **Font Size** lets you switch the scrolling display area between the normal text size and a smaller one, which fits more characters per line and shows five lines instead of four. Handy at higher speeds or with longer words, when you want to see more of what has just been sent.
+* The serial protocol used by the Configuration Tool and other utilities has been extended to **version 1.4**. A connected program can now read the full details of all preferences in a handful of requests instead of one request per preference, ask the device which of the optional commands it actually supports (instead of trying them out to find out), and read or clear the stored game scores. Everything from version 1.3 keeps working unchanged, so programs written for it need no adaptation. The protocol is described in the separate *M32 Protocol* document.
+* M32 Pocket only: the Configuration Tool now shows the **game scores** stored on your device - the high score tables of all games, and whether Radio Cave has a saved game - on the User Identity tab, next to the call sign and name they were played under. A button there clears them all, doing the same as „Reset Scores“ in the preferences menu on the device.
 
 #### Feature Modifications:
 * The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
@@ -18,9 +21,13 @@
 * On the display, words are not broken up at the end of a line, but starting at a new line whenever the word length is known in advance (all CW generator modes, and Trx modes like LoRa or WiFi Trx), and the word would not fit into the current line.
 * „Select Lesson“ now also shows the total # of characters in the selected Koch sequence.
 * A few more cosmetic display output fixes.
+* The Configuration Tool's Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.
 
 #### Bug Fixes:
 * M32 Pocket only: There was a bug in Morse Invaders - even when you started a game with a level higher than 1, the speed was initially like Level 1, and only after going into the next level, the speed was the expected one. Fixed.
+* The Configuration Tool could be thrown off by a curly brace („{“ or „}“) inside one of your own texts - a CW memory, a WiFi network name, or your operator name - which cut the device's answer short and then garbled the one after it. Fixed (the file manager had the same problem and is fixed as well).
+* When the M32 answered the Configuration Tool with an error, the tool ignored it silently and simply showed nothing, leaving you to guess what had gone wrong. It now tells you what the device said.
+* The **Ultimatic** keyer mode did not do everything an Ultimatic is supposed to do. With both paddles held down, briefly releasing one of them and closing it again (a „flick“) should hand control back to that paddle - the classic Ultimatic „sequence seizure“ described when the mode was first published in QST in 1955. The Morserino only did this for the paddle you squeezed in second; a flick of the paddle that had started the character was ignored, and it just kept sending the other one's element. Now either paddle can seize control back, at any point in a character. Ordinary squeezing is unchanged. Thanks to Paweł, SP5DNA, for spotting this and for going back to the original 1955 description to pin it down.
 
 ### CHANGES V. 8.2
 

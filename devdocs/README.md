@@ -30,12 +30,15 @@ devdocs/
 │   ├── inventory-ambiguous.md    ·   what was NOT tagged, and the open questions
 │   ├── inventory-*.md            ·   menu terms / images / tables / morse (generated)
 │   └── check_*.py, *_terms.py    ·   build-identity + EN↔DE parallelism checks
-└── protocol-audit/               ← USB serial protocol audit
-    ├── command-matrix.md         ·   one row per command, three-corner presence
-    ├── conflicts.md              ·   three-way disagreements + live resolution status
-    ├── PROTOCOL_SPEC.draft.md    ·   draft normative spec
-    ├── utility-enhancements.md   ·   config-tool enhancement notes
-    └── RESOLUTION_PLAN.md        ·   phased plan to close the conflicts
+├── protocol-audit/               ← USB serial protocol audit
+│   ├── command-matrix.md         ·   one row per command, three-corner presence
+│   ├── conflicts.md              ·   three-way disagreements + live resolution status
+│   ├── PROTOCOL_SPEC.draft.md    ·   draft normative spec
+│   ├── utility-enhancements.md   ·   config-tool enhancement notes
+│   └── RESOLUTION_PLAN.md        ·   phased plan to close the conflicts
+└── ultimatic/                    ← Ultimatic keyer mode vs. the 1955 original
+    ├── FINDINGS.md               ·   the QST source, the bug, the fix, bench to-do
+    └── keyer_sim.cpp             ·   host-side keyer simulator, old vs. new logic
 ```
 
 ## Conventions

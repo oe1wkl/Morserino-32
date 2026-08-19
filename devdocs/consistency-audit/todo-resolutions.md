@@ -95,7 +95,7 @@ see `divergences.md` → "Stray `m32_v6.ino 2.cpp`".
 | Decoder | `MorseDecoder.cpp/.h` (`Decoder` class); tone detect `goertzel.cpp/.h`, `analog.c/.h` |
 | Koch tables + word/call sources | `Koch` class in `MorsePreferences.cpp/.h`; `english_words.h/.cpp`, `abbrev.h`, `callsign_prefixes.h`; `getRandomCall()` etc. in `m32_v6.ino` |
 | Output layer (display, sound, scroll, TOT) | `MorseOutput.cpp/.h` (`pwmTone`, `printToScroll`, `resetTOT`) |
-| Display abstraction | TFT: **`oe1wkl/DisplayWrapper`** (external lib). OLED: `M32OledLGFX.h` (in-tree LGFX). **`M32PocketLGFX.h` = orphaned dead code** (reverted #157, included nowhere) |
+| Display abstraction | TFT: **`haklein/DisplayWrapper`** (external lib, tag-pinned; the `oe1wkl` fork this table originally named was retired and archived 2026-08-18). OLED: `M32OledLGFX.h` (in-tree LGFX). **`M32PocketLGFX.h` = orphaned dead code** (reverted #157, included nowhere) |
 | Menu / preferences / NVS | `MorseMenu.cpp/.h`; `MorsePreferences.cpp/.h` |
 | Serial (M32) protocol | `MorseJSON.cpp/.h`; `serialEvent()`/`serialDecode()` in `m32_v6.ino` |
 | Games | `MorseGame.cpp` (Morse Invaders), `MorsePileup.cpp` (Fight the Pileup), `MorseRadioCave.cpp` (Radio Cave), `MorseMorsel.cpp` (Morsel); shared: `MorseGameMode.cpp/.h`, `GameSprite.cpp/.h`, `GamePalette.h` |

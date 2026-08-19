@@ -7,6 +7,11 @@
 > **Resolution status** table in [`conflicts.md`](conflicts.md) and [`RESOLUTION_PLAN.md`](RESOLUTION_PLAN.md);
 > The inline `PENDING-DECISION` markers below are kept for traceability but are all resolved or deferred per that table (C3→`content`; C4 fixed; C5/C7/C13 documented; C6 and `GET capabilities` → 1.4).
 >
+> **Update 2026-08-19:** protocol **1.4** has since shipped (`GET configs/details`,
+> `GET capabilities`, `GET game/scores`, `PUT game/scores/clear`). This draft still describes 1.3
+> and has not been extended; the shipped, authoritative description of the new commands is in
+> `Documentation/Protocol Description/M32 Protocol.md`.
+>
 > Every statement here was derived from the **firmware code** at audit HEAD `765a596`
 > (`Software/src/Version 6 and newer/`), cross‑checked against the document and the two host tools
 > in `Software/Utilities/`.

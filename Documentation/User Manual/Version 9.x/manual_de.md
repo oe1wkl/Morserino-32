@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=837eea6f6d60 v=9 -->
+<!-- WHATSNEW:BEGIN en=2f8f7ccf7c79 v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
@@ -47,12 +47,16 @@ Was ist neu in Version 9?
 -   Nur M32 Pocket: Die Zeitkonstante der Blackman-Harris-Tonformung, die für die „Weichheit“ des CW-Audios sorgt (Ton ohne Klicks), lässt sich jetzt einstellen. Der Vorgabewert ist 5 ms, du kannst ihn zwischen 1 und 9 ms verändern (1 ms ist ziemlich hart, mit Klicks, während 9 ms für schnelles CW eindeutig zu lang ist).
 -   Nur M32 Pocket: Wenn du mit dem Koch-Trainer übst, zeichnet der M32 Pocket eine Statistik über deine Leistung auf; du kannst sie entweder über das Konfigurationsprogramm ansehen oder über den eingebauten Webserver des M32, also mit einem Browser.
 -   Nur M32 Pocket: Nach einer Firmware-Installation mit der Lösch-Option (oder einer Installation auf ein ganz neues Gerät) dauerte es bis zu 10 Sekunden, bis am Bildschirm etwas zu sehen war, während das nichtflüchtige Dateisystem vorbereitet wurde. Damit keine Panik aufkommt, wird in solchen Fällen jetzt ein abgewandelter Startbildschirm mit einem erklärenden Hinweis angezeigt.
+-   Nur M32 Pocket: Eine neue Einstellung **Font Size** schaltet den Scrollbereich zwischen der normalen Textgröße und einer kleineren um, die mehr Zeichen pro Zeile unterbringt und fünf statt vier Zeilen anzeigt. Praktisch bei höheren Geschwindigkeiten oder bei längeren Wörtern, wenn du mehr von dem sehen möchtest, was gerade gesendet wurde.
+-   Das serielle Protokoll, das vom Konfigurationsprogramm und von anderen Hilfsprogrammen verwendet wird, wurde auf **Version 1.4** erweitert. Ein verbundenes Programm kann nun alle Einstellungen samt ihren Details mit wenigen Abfragen lesen statt mit einer Abfrage je Einstellung, es kann das Gerät fragen, welche der optionalen Befehle es tatsächlich beherrscht (statt sie zum Ausprobieren einfach abzuschicken), und es kann die gespeicherten Spielergebnisse lesen oder löschen. Alles aus Version 1.3 funktioniert unverändert weiter, bestehende Programme müssen also nicht angepasst werden. Beschrieben ist das Protokoll im eigenen Dokument *M32 Protocol*.
+-   Nur M32 Pocket: Das Konfigurationsprogramm zeigt jetzt die am Gerät gespeicherten **Spielergebnisse** an – die Bestenlisten aller Spiele und ob für Radio Cave ein gespeicherter Spielstand vorliegt –, und zwar auf der Seite „User Identity“, gleich neben dem Rufzeichen und dem Namen, unter denen sie erspielt wurden. Eine Schaltfläche dort löscht sie alle, mit derselben Wirkung wie „Reset Scores“ im Preferences-Menü am Gerät.
 -   Das Installationsprogramm funktioniert jetzt auch in **Firefox** (ab Version 151, die die Unterstützung für die Webserial-API gebracht hat), zusätzlich zu Chrome, Edge und Opera. Safari unterstützt es weiterhin nicht.
 -   Custom Characters verhält sich jetzt wie jede andere eingebaute Koch-Reihenfolge: Du kannst Lektion auswählen, neues Zeichen lernen und die übrigen Koch-Modi genauso verwenden wie bei den eingebauten Koch-Sequenzen.
 -   Es gibt eine neue Funktion namens „Practice Sets“, die an die Stelle der bisherigen Custom-Zeichensätze tritt. Damit kannst du eine Auswahl einzelner Zeichen üben, die du direkt am Gerät zusammenstellst und dann im CW-Generator oder im Echo-Trainer verwendest.
 -   Am Display werden Wörter am Zeilenende nicht mehr getrennt, sondern in einer neuen Zeile begonnen, sofern die Wortlänge vorher bekannt ist (alle CW-Generator-Modi sowie Trx-Modi wie LoRa oder WiFi Trx) und das Wort nicht mehr in die aktuelle Zeile passt.
 -   „Select Lesson“ zeigt jetzt auch die Gesamtzahl der Zeichen in der gewählten Koch-Sequenz an.
 -   Ein paar weitere kosmetische Korrekturen bei der Bildschirmausgabe.
+-   Die Seite „Preferences“ im Konfigurationsprogramm lädt jetzt in einem Bruchteil der bisherigen Zeit, weil sie die Einstellungen mit wenigen Abfragen liest statt mit einer je Einstellung. Am deutlichsten ist der Unterschied über Bluetooth.
 <!-- WHATSNEW:END -->
 
 # Anschlüsse und Bedienelemente
@@ -675,7 +679,13 @@ Dahs beträgt).
 **Ultimatic-Modus**: Durch Drücken beider Paddles wird ein Dit oder Dah
 erzeugt. Was zuerst kommt, hängt davon ab, welches Paddle zuerst
 gedrückt wurde. Danach wird kontinuierlich der entgegengesetzte Ton
-erzeugt. Vorteilhaft für Zeichen wie J, B, 1, 2, 6 und 7. Dieser
+erzeugt. Vorteilhaft für Zeichen wie J, B, 1, 2, 6 und 7. Die Kontrolle
+hat immer jenes Paddle, das *zuletzt* geschlossen wurde: Sind beide
+Paddles gedrückt und man lässt eines davon kurz los und schließt es
+wieder — ein kurzes Antippen genügt —, so übernimmt dieses Paddle wieder
+die Kontrolle und sendet seinen eigenen Elementtyp so lange, bis man es
+erneut loslässt oder das andere Paddle antippt. Das gilt für beide
+Paddles, auch für jenes, mit dem das Zeichen begonnen wurde. Dieser
 Modus reagiert auch auf das gegenüberliegende Paddle mit denselben
 Zeiteinstellungen wie Iambic B.
 
@@ -3357,6 +3367,7 @@ daher für alle Modi des Morserino-32.
 | **Output Case** | Ändert die Groß-/Kleinschreibung der dekodierten Zeichen auf dem Display (und auch bei der seriellen Ausgabe über USB sowie bei der Bluetooth-Tastaturausgabe!) von Kleinbuchstaben auf GROSSBUCHSTABEN. | **lower** / UPPER |
 | []{.pocket .pocket-a11y}**Headphone Output** | (Nur für M32Pocket) Legt fest, was passiert, wenn Kopfhörer oder ein anderes Gerät an den Kopfhörerausgang angeschlossen werden. Mit der Standardeinstellung erfolgt die Ausgabe über den Kopfhörer und der Lautsprecher wird stummgeschaltet. Mit „*line-out*" erfolgt die Ausgabe mit voller Lautstärke über den Kopfhörerausgang und normal über den Lautsprecher. Mit „*l-o: Var. Vol.*" ähnlich, aber die Ausgabe über den Stecker erfolgt mit der eingestellten Lautstärke. Mit „*l-o: Lsp Muted*" erfolgt die Ausgabe über den Stecker mit voller Lautstärke und der Lautsprecher wird stummgeschaltet. | **Phones** / line-out / l-o: Var. Vol. / l-o: Lsp Muted **Achtung: Bei Verwendung der line-out-Optionen niemals Kopfhörer anstecken! Da die Wiedergabe mit voller Lautstärke erfolgen kann, könnte dies das Gehör oder die Kopfhörer beschädigen!** |
 | []{.pocket .pocket-a11y}**Theme** | (Nur für Geräte mit Farbbildschirm, z.B. M32Pocket) Du kannst ein Farbthema für das Display einstellen, sodass du nicht auf „Weiß auf Schwarz" beschränkt bist. Jedes Thema (auch Plain) zeigt zudem Morsetext in einer eigenen Akzentfarbe — abgehoben von Menü- und Statustext — und stellt die OK/ERR-Rückmeldung im Echo Trainer in Grün bzw. Rot dar. | **Plain** (= Weiß auf Schwarz) / Blues / ePaper / Mandarin / Darkroom / Veggie / Garnet / Lemonade / Complements |
+| []{.pocket}**Font Size** | Größe der Schrift im Scrollbereich (sowie in Menüs und anderen Anzeigen, die denselben Bereich nutzen): Normal oder Small für mehr Zeichen pro Zeile. | **Normal** / Small |
 | []{.pocket}**Invader Orient.** | (Nur für M32Pocket) Du kannst die bevorzugte Displayausrichtung für Spiele wie Morse Invaders wählen: Hochformat (Standard) oder Querformat. Bei Auswahl von Querformat wird die Linkshänder-Ausrichtung verwendet, wenn diese in der Hardware-Konfiguration eingestellt ist. | **Portrait** / Landscape |
 | **Serial Output** | Legt fest, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; unterschieden wird zwischen getasteten Zeichen (**Keyer** – Ausgabe des iambischen Keyers), dekodierten Zeichen (**Decoded** – vom CW-Decoder oder einer Handtaste) und „generierten" Zeichen (**Generated** – vom CW-Generator usw., auch von der Empfangsseite der[ LoRa- oder]{.classic} WiFi-Transceiver-Modi). **Nothing** sendet keines dieser Zeichen (bestimmte System- oder Fehlermeldungen können aber trotzdem erscheinen), **All** sendet alles. Über das M32-Serielle-Protokoll können zudem weitere Informationen gesendet und empfangen werden, wenn die angeschlossene Computersoftware dies unterstützt. Siehe auch **Nutzung des seriellen Ausgangs des M32**. Diese Einstellung gilt auch für den Zeichenstrom an eine über Bluetooth verbundene App (siehe die Einstellung **Bluetooth Use** im Abschnitt **Einstellungen zu Key, Paddles und Keyer**). | Nothing / Keyer / Decoded / Keyed+Decoded / Generated / **All** (Standard seit V. 4.3) |
 

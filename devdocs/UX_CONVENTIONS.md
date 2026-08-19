@@ -92,8 +92,9 @@ These are exercised in every mode, so they must be identical everywhere:
   running state and from the QSO Bot. In Generator/Echo it stops the current run
   first. A game that cannot allow it mid-round offers it from the lobby/result
   screen instead.
-- **Persistence:** volume, brightness, file-player word pointer, last-executed
-  menu item, game high scores, and player identity are written **immediately**;
+- **Persistence:** volume, brightness, scroll-area font size, file-player word
+  pointer, last-executed menu item, game high scores, and player identity are
+  written **immediately**;
   all `pliste[]` preference values are written **on preferences exit**; WPM is
   held in RAM during a session and persisted with preferences/snapshots.
 

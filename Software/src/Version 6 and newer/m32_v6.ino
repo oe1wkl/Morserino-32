@@ -244,7 +244,11 @@ unsigned char keyerControl = 0; // this holds the latches for the paddles and th
 
 //enum KEYERSTATES {IDLE_STATE, DIT, DAH, KEY_START, KEYED, INTER_ELEMENT };
 
-boolean DIT_FIRST = false; // first latched was dit?
+boolean DIT_FIRST = false; // first latched was dit?          (used by Non-Squeeze mode)
+boolean DIT_LAST_CLOSED = false; // was the most recent paddle *closure* the dit paddle?
+                                 // Ultimatic tracks this live, on every rising edge - not to be
+                                 // confused with the DIT_LAST latch bit, which says which
+                                 // *element* was sent last. See doPaddleIambic().
 unsigned int ditLength ;        // dit length in milliseconds - 100ms = 60bpm = 12 wpm
 unsigned int dahLength ;        // dahs are 3 dits long
 KEYERSTATES keyerState;
@@ -766,6 +770,17 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   #ifdef CONFIG_TFT
   MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);  // set the theme
   #endif
+  #ifdef CONFIG_SCROLL_FONT_SIZE
+  // NoOfVisibleLines is statically initialised to the normal (4-line) default;
+  // sync it to whatever Font Size readPreferences() just loaded from NVS (a
+  // device that last saved Small would otherwise render small text but still
+  // only show 4 lines until the preference was visited again in the menu).
+  // relPos/maxPos are both still at their static-init values at this point
+  // (equal, by construction), so applyScrollFontGeometry() sees a "glued to
+  // the bottom" view and lands relPos on the freshly computed maxPos - the
+  // right outcome for an empty buffer, with no extra line needed here.
+  MorseOutput::applyScrollFontGeometry();
+  #endif
 
   #ifdef CONFIG_SOUND_I2S
   MorseOutput::setSidetoneEnvelope(MorsePreferences::pliste[posSidetoneShape].value);  // set the CW tone envelope softness
@@ -1008,8 +1023,11 @@ void displayStartUp(uint16_t volt) {
     s += shortDate(COMPILEDATE);
   }
 
-  MorseOutput::printOnScroll(0, REGULAR, 0, s);
-  MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT);
+  // forceNormal: the small font is ASCII-only (IntelOneMono12ptAscii.h) and
+  // can't render the "(c)" in COPYRIGHT - keep this one splash screen at the
+  // normal size regardless of the Font Size preference.
+  MorseOutput::printOnScroll(0, REGULAR, 0, s, false, true);
+  MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT, false, true);
 
   // uint16_t volt = batteryVoltage(); // has been measured early in setup()
 
@@ -1437,6 +1455,18 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
       paddleSwap = dit; dit = dah; dah = paddleSwap;
   }
 
+  /// Ultimatic needs to know which paddle was closed *most recently*, which the latches alone
+  /// cannot tell us: they only record that a paddle is (or was) down, not that it went down again.
+  /// So we watch for rising edges on every call. QST 5/1955 ("Summary of Actions of the Keys",
+  /// point 6): releasing and re-closing a paddle - even the one that opened the character, with the
+  /// other paddle held down all the while - re-arms its memory and seizes control of the sequencer.
+  /// On a simultaneous closure the dah wins here, while IDLE_STATE below starts with the dit: that
+  /// is the long-standing M32 behaviour for a squeeze (one dit, then a series of dahs).
+  static boolean prevDit = false, prevDah = false;
+  if (dit && !prevDit)  DIT_LAST_CLOSED = true;
+  if (dah && !prevDah)  DIT_LAST_CLOSED = false;
+  prevDit = dit; prevDah = dah;
+
 
   switch (keyerState) {                                         // this is the keyer state machine
      case IDLE_STATE:
@@ -1580,10 +1610,10 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                                         else                                // but when first element was a DAH
                                                                setDAHstate();            // the next element is a DAH again!
                                                         break;
-                                      case ULTIMATIC:   if (DIT_FIRST)                      // when first element was a DIT
-                                                               setDAHstate();            // next element is a DAH
-                                                        else                                // but when first element was a DAH
-                                                               setDITstate();            // the next element is a DIT!
+                                      case ULTIMATIC:   if (DIT_LAST_CLOSED)                 // control belongs to the paddle
+                                                               setDITstate();            // closed last: it keeps sending its
+                                                        else                                // own element type until it is
+                                                               setDAHstate();            // released or the other one is flicked
                                                         break;
                                       default:          if (keyerControl & DIT_LAST)     // Iambic: last element was a dit - this is case 7, really
                                                             setDAHstate();               // next element will be a DAH
@@ -4154,8 +4184,34 @@ void m32Get(String type, String token, String value) {                    /// GE
         MorseJSON::jsonMenuList();
     else if (type == "config")
         MorseJSON::jsonParameter(token);
-    else if (type == "configs")
-        MorseJSON::jsonParameterList();
+    else if (type == "configs") {
+        // GET configs            -> names + values only (unchanged)
+        // GET configs/details    -> first page of the full descriptions (1.4)
+        // GET configs/details/<n>-> the page starting at parameter index <n>
+        if (token == "")
+            MorseJSON::jsonParameterList();
+        else if (token == "details") {
+            boolean numeric = true;                  // an explicit non-numeric start is a client bug, not page 0
+            for (unsigned int k = 0; k < value.length(); ++k)
+                if (!isDigit(value.charAt(k))) { numeric = false; break; }
+            if (numeric)
+                MorseJSON::jsonParameterDetails((uint8_t)value.toInt());   // "" -> 0, the first page
+            else
+                MorseJSON::jsonError("INVALID PARAMETER");
+        }
+        else
+            MorseJSON::jsonError("INVALID ARGUMENT");
+    }
+    else if (type == "capabilities")
+        MorseJSON::jsonCapabilities();
+#ifdef CONFIG_CW_GAME
+    else if (type == "game") {
+        if (token == "scores")
+            MorseJSON::jsonGameScores();
+        else
+            MorseJSON::jsonError("INVALID ARGUMENT");
+    }
+#endif
     else if (type == "snapshots")
         MorseJSON::jsonSnapshots();
     else if (type == "snapshot") {
@@ -4363,6 +4419,29 @@ void m32Put(String type, String token, String value) {                    /// PU
       else
         MorseJSON::jsonOK();
     }
+#ifdef CONFIG_CW_GAME
+    ////////////////// GAME SCORES /////////////////////
+    // PUT game/scores/clear — the protocol twin of Reset Scores in the
+    // preferences menu, and the same wipe (MorsePreferences::clearGameScores),
+    // so the two can never disagree about which keys go. There is deliberately
+    // no way to WRITE a score back: nothing over the wire should be able to
+    // forge a high score.
+    else if (type == "game") {
+      if (token == "scores" && value.equalsIgnoreCase("clear")) {
+        // Not while a game is running: the games hold their table in RAM and
+        // save it on the next qualifying result, so a wipe now would simply be
+        // written back a moment later and look as if it had not worked.
+        if (morseState == morseGame)
+          MorseJSON::jsonError("GAME IN PROGRESS");
+        else {
+          MorsePreferences::clearGameScores();
+          MorseJSON::jsonOK();
+        }
+      }
+      else
+        MorseJSON::jsonError("INVALID ACTION game/" + token);
+    }
+#endif
     ////////////////// SNAPSHOT ///////////////////////
     else if (type == "snapshot") {
       if (token == "store") {
