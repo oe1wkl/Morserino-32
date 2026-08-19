@@ -300,6 +300,12 @@ static bool hasSave() {
     return exists;
 }
 
+// Protocol 1.4: the serial protocol reports only whether a save exists — the
+// blob itself is an internal game-state layout, not a score.
+bool MorseRadioCave::hasSavedGame() {
+    return hasSave();
+}
+
 static inline bool roomVisited(uint8_t r) {
     return (game.visited & (1u << r)) != 0;
 }

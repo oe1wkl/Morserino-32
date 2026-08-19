@@ -240,6 +240,7 @@ namespace MorsePreferences
   boolean adjustKeyerPreference(prefPos);
   void editPlayerIdentity(prefPos pos);
   void resetGameScores();
+  void clearGameScores();   // the wipe without the confirm UI (protocol PUT game/scores/clear)
   void editPracticeChars();
   void setPracticeChars(const String& chars);   // assign + persist; shared with the serial "practicechars" command
   void readPreferences(const char* repository);

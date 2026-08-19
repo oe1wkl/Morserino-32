@@ -1,7 +1,7 @@
 # The M32 Serial Protocol
 
-	Date: June 22, 2026
-	Version: 1.3
+	Date: August 19, 2026
+	Version: 1.4
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
 	Document revision note (July 2, 2026): added the "Transports" section —
@@ -16,6 +16,27 @@
 	additive, and firmware that predates it simply omits it.
 
 The Morserino can communicate two-way with a connected computer — over the USB bus, and (with firmware that includes the "BLE Serial" feature, and the **Bluetooth Use** preference set to **BLE Serial**) over Bluetooth Low Energy; see the section "Transports" below. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
+
+	Changes in protocol version 1.4 from version 1.3:
+
+	New GET commands:
+
+	GET configs/details — read the full description of every parameter in a
+	    few pages, instead of one round trip per parameter
+	GET configs/details/<n> — the page of parameter descriptions that starts
+	    at parameter index <n>
+	GET capabilities — which of the build-dependent commands this firmware
+	    actually has, so a program need not probe for them
+	GET game/scores — the stored game high-score tables (builds with the
+	    games only)
+
+	New PUT command:
+
+	PUT game/scores/clear — clear all stored game scores and saved games,
+	    exactly as "Reset Scores" in the preferences menu does
+
+	Everything is additive: no command or property from 1.3 changed its
+	shape or its meaning.
 
 	Changes in protocol version 1.3 from version 1.2:
 
@@ -136,9 +157,13 @@ The device acknowledges this with a farewell object: `{"end m32protocol":{"conte
 
 ## Versioning and Compatibility
 
-The protocol version is reported in the `device` object as the `protocol` property (currently "1.3"). Changes within a major version are **additive**: new GET/PUT commands and new properties may be added, but existing ones keep their meaning. A connected program should therefore **ignore any object or property it does not recognise**, and treat an unknown command (one that returns an "UNKNOWN COMMAND" or "NOT YET IMPLEMENTED" error) as "not supported by this firmware".
+The protocol version is reported in the `device` object as the `protocol` property (currently "1.4"). Changes within a major version are **additive**: new GET/PUT commands and new properties may be added, but existing ones keep their meaning. A connected program should therefore **ignore any object or property it does not recognise**, and treat an unknown command (one that returns an "UNKNOWN COMMAND" or "NOT YET IMPLEMENTED" error) as "not supported by this firmware".
 
-To identify the firmware it is talking to, a program uses the `device` object: `firmware` (the firmware version), `protocol` (the protocol version), `build` (the firmware compile date), and `edition` (which firmware edition is running). In version 1.3 there is no command to enumerate the supported commands; such a `GET capabilities` query is a candidate for a future protocol version.
+To identify the firmware it is talking to, a program uses the `device` object: `firmware` (the firmware version), `protocol` (the protocol version), `build` (the firmware compile date), and `edition` (which firmware edition is running).
+
+Not every command exists in every firmware, because some features are compiled out of some builds — the games, for instance, exist only on the M32 Pocket. Since version 1.4 a program can ask instead of probing: `GET capabilities` lists the build-dependent commands the connected firmware actually has (see "Capabilities" below). Commands that are *not* build-dependent are implied by the reported protocol version and are not listed there.
+
+A program that must also work with firmware older than 1.4 should fall back gracefully: if `GET capabilities` returns an error, the firmware predates 1.4, and the program can use the 1.3 commands and treat every error reply as "not supported".
 
 
 
@@ -237,7 +262,7 @@ Returns the properties „hardware“ (e.g. "M32 1st edition", "M32 2nd edition"
 
 Example:
 
-	{"device":{"hardware":"M32 2nd edition","firmware":"8.1","protocol":"1.3","build":"Jun 22 2026","edition":"standard"}}
+	{"device":{"hardware":"M32 2nd edition","firmware":"9.0","protocol":"1.4","build":"Aug 19 2026","edition":"standard"}}
 
 `PUT device/protocol/on`       
 This switches the M32 protocol on (you will get device information back; you will also get device info when command is sent while protocol is already ON);
@@ -251,6 +276,30 @@ This resets all configurable parameters to their factory default values. Snapsho
 
 The reset can only be carried out during start-up (before the stored values are loaded), so the device acknowledges the command, then **reboots** to perform it. The reboot switches the M32 protocol off and drops the serial connection; the connected program must reconnect and send `PUT device/protocol/on` again to continue.
 
+
+
+### Capabilities
+
+`GET capabilities`
+
+*(protocol version 1.4)*
+
+Returns the properties "protocol" (the protocol version, the same value as in the `device` object) and "features" (type Array of Strings): the **build-dependent** commands this particular firmware has.
+
+Example:
+
+	{"capabilities":{"protocol":"1.4",
+	"features":["configs/details","game/scores","stats/log"]}}
+
+Only commands that some builds *lack* appear in "features"; everything else the protocol version documents is always present. Today that list can contain:
+
+* `configs/details` — the bulk parameter read (present in every 1.4 firmware),
+* `game/scores` — the game high-score commands (builds with the games, i.e. the M32 Pocket),
+* `stats/log` — the practice-statistics log (builds with practice statistics).
+
+A program written for 1.4 or later should call this once after `PUT device/protocol/on` instead of probing commands and reading error replies. Firmware older than 1.4 answers `GET capabilities` with an error — that itself identifies it as pre-1.4.
+
+Note that the *parameter* set is build-dependent in the same way, but it is not described here: read it from `GET configs` (or `GET configs/details`), which reports what the device actually has.
 
 
 
@@ -390,6 +439,45 @@ This sets the named parameter to the specified value - the value must be the NUM
 Example to set Keyer Mode to Iambic B:
 
 	PUT config/keyer mode/2
+
+
+`GET configs/details`
+`GET configs/details/<n>`
+
+*(protocol version 1.4)*
+
+This returns the **full details of many parameters at once** — the same information `GET config/<parameter name>` gives, but for a whole page of parameters per command instead of one. A program that builds a preferences view needed one round trip per parameter before; with about 48 parameters that is some ten seconds over BLE, and this reduces it to a handful of commands.
+
+The reply is one page. `GET configs/details` returns the first page; `GET configs/details/<n>` returns the page that starts at parameter index `<n>`. The properties are:
+
+* "from" (type Number): the parameter index this page starts at,
+* "count" (type Number): how many parameters this page contains,
+* "total" (type Number): how many parameters the device has altogether — advisory, useful for a progress display,
+* "more" (type Boolean): "true" if there are further pages,
+* "items" (type Array of Objects): the parameters themselves. **Each item is exactly what `GET config/<parameter name>` returns**, without its enclosing `{"config": … }`.
+
+To read them all, start at `GET configs/details` and, as long as "more" is true, ask for the next page at index "from" + "count".
+
+Example:
+
+	GET configs/details
+	-> {"configdetails":{"from":0,"count":8,"total":48,"more":true,
+	"items":[{"name":"Keyer Mode","value":2,
+	"description":"Iambic Modes, Non-squeeze mode, Straight Key mode",
+	"minimum":1,"maximum":5,"step":1,"isMapped":true,
+	"mapped values":["","Iambic A","Iambic B","Ultimatic",
+	"Non-Squeeze","Straight Key"]}, … ]}}
+
+	GET configs/details/8
+	-> {"configdetails":{"from":8,"count":8,"total":48,"more":true, … }}
+
+The parameters come in the same order, and are the same set, as in `GET configs` — so index `<n>` means the same parameter in both commands.
+
+*Notes*:
+
+* **The device chooses the page size, not the program.** Always take the next page from "from" + "count", and stop when "more" is false; never assume a fixed number of items per page, because the device may return fewer.
+* "total" depends on the hardware variant and the firmware build, exactly as the parameter set itself does.
+* An out-of-range `<n>` returns `{"error":{"content":"INVALID PARAMETER"}}` rather than an empty page, so that a program which has lost its place finds out.
 
 
 
@@ -711,9 +799,79 @@ Content stored in permanent memory can be recalled ("played") in Morserino-32's 
 
 
 
-## Planned for a future protocol version (1.4)
+### Practice Statistics
 
-These are not part of protocol version 1.3, but are recorded here so they are not forgotten:
+*(only on firmware that includes practice statistics — check for `stats/log` in `GET capabilities`)*
 
-* **Game scores** — commands to read and clear the stored game state (Morse Invaders high-score table, Morsel scores, Radio Cave saved progress), so that a backup tool could include and reset them. At present this game state is not reachable via the protocol.
-* **`GET capabilities`** — a command that returns the list of commands/objects a given firmware supports, so that a connected program can adapt to different firmware versions without trial and error (see "Versioning and Compatibility").
+The device can keep a log of practice sessions in its file system (`/stats.jsonl`, one JSON object per line).
+
+`GET stats/log`
+
+Returns the properties "log" (type String): the whole log file, **Base64-encoded**; "used" (type Number): bytes used by the entire file system, not just this log; "total" (type Number): the file system's size; "logSize" (type Number): the size of the log file itself; and "enabled" (type Boolean): whether logging is currently switched on.
+
+The log is Base64-encoded rather than sent as text because its raw content is itself full of `{` and `}` — a program that finds the end of a reply by counting braces would lose its place (see "Syntax of commands"). Decode "log" to get the JSON-lines text.
+
+Example:
+
+	{"stats":{"log":"eyJ0IjoxNzUw…","used":198412,"total":1310720,
+	"logSize":4096,"enabled":true}}
+
+Before answering, the device closes any practice segment still in progress, so a session that is under way at that moment is included rather than missing.
+
+`PUT stats/clear`
+
+Deletes the log.
+
+`PUT stats/enabled/<value>`
+
+Switches logging on ("1" or "true") or off (any other value).
+
+
+
+### Game Scores
+
+*(protocol version 1.4; only on firmware that includes the games — check for `game/scores` in `GET capabilities`)*
+
+`GET game/scores`
+
+Returns the stored high-score tables of all games, and whether Radio Cave has a saved game. Each entry in "games" has:
+
+* "id" (type String): a stable name for the game, safe to match on — "invaders", "morsel", "trailblazer", "foxhunt", "memorychain-chars", "memorychain-calls", "radiocave",
+* "name" (type String): the game's name as shown on the device,
+* "scores" (type Array of Objects): the stored rows, best first. Empty table entries are left out, so a game that was never played returns an empty array.
+
+**The fields of a score row differ from game to game**, because the games are scored differently:
+
+| Game | Fields of one score row |
+|---|---|
+| Morse Invaders | "score", "koch" (Koch lesson), "level", "wpm" |
+| Morsel | "time" (adjusted time in ms, lower is better), "guesses", "length" (word-length setting), "koch", "solved", "total" |
+| Trailblazer, Fox Hunt | "cpm" (effective characters per minute, the ranking key), "time" (raw solve time in ms), "wrong", "steps", "koch" |
+| Memory Chain (Characters) | "chain" (chain length reached), "boxes", "errors", "koch", "prompt" ("Display" or "Sound") |
+| Memory Chain (Call Signs) | "calls", "letters", "prompt" |
+| Radio Cave | no score table; the entry carries "saved" (type Boolean) instead |
+
+Example:
+
+	{"gamescores":{"games":[
+	{"id":"invaders","name":"Morse Invaders",
+	 "scores":[{"score":2480,"koch":21,"level":3,"wpm":18}]},
+	{"id":"morsel","name":"Morsel","scores":[]},
+	{"id":"trailblazer","name":"Trailblazer",
+	 "scores":[{"cpm":37,"time":29400,"wrong":1,"steps":18,"koch":21}]},
+	{"id":"foxhunt","name":"Fox Hunt","scores":[]},
+	{"id":"memorychain-chars","name":"Memory Chain (Characters)","scores":[]},
+	{"id":"memorychain-calls","name":"Memory Chain (Call Signs)","scores":[]},
+	{"id":"radiocave","name":"Radio Cave","scores":[],"saved":true}
+	]}}
+
+`PUT game/scores/clear`
+
+Clears **all** game high-score tables and the Radio Cave saved game — exactly what "Reset Scores" in the preferences menu does, and just as irreversibly. Morsel's word-length setting and Memory Chain's lobby settings are preferences, not scores, and are kept.
+
+	put game/scores/clear
+	-> {"ok":{"content":"OK"}}
+
+While a game is actually being played the command is refused with `{"error":{"content":"GAME IN PROGRESS"}}` — a game holds its table in memory and writes it out again at the end of a round, so a wipe at that moment would simply reappear. Leave the game first.
+
+*Note*: scores can be read and cleared, but **not written**. There is deliberately no command to store a score, so a connected program cannot invent one.

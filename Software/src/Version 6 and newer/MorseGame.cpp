@@ -203,6 +203,22 @@ static void saveHighScores() {
         Serial.println("Invaders: high scores NOT saved - NVS full?");
 }
 
+// Protocol 1.4: hand the stored table to the serial protocol. Loads from NVS
+// rather than trusting the static table, which is only filled while the game
+// is running. Rows with a zero score are empty slots, not results.
+void MorseGame::exportHighScores(JsonArray arr) {
+    loadHighScores();
+    for (int i = 0; i < GAME_HIGH_SCORES; i++) {
+        if (highScores[i].score == 0)
+            continue;
+        JsonObject o = arr.createNestedObject();
+        o["score"]  = highScores[i].score;
+        o["koch"]   = highScores[i].kochLesson;
+        o["level"]  = highScores[i].subLevel;
+        o["wpm"]    = highScores[i].wpm;
+    }
+}
+
 // Returns rank (0-4) or -1 if not a high score
 static int8_t insertHighScore() {
     int pos = -1;

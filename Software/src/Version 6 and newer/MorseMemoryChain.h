@@ -21,8 +21,24 @@
 
 #ifdef CONFIG_CW_GAME
 
+#include <ArduinoJson.h>   // JsonArray, for the protocol high-score export
+
 namespace MorseMemoryChain {
     void run();
+
+    // The two content modes, which keep separate high-score tables.
+    enum Mode : uint8_t { CHARACTERS = 0, CALLSIGNS = 1 };
+
+    // Protocol 1.4 (GET game/scores): append one mode's high-score rows to
+    // `arr`. Empty rows are skipped, so an untouched table yields [].
+    void exportHighScores(Mode m, JsonArray arr);
+
+    // Drop the in-RAM cache so the next ensureLoaded() re-reads NVS. Must be
+    // called whenever the stored tables are cleared behind this module's back
+    // (Reset Scores in the preferences menu, PUT game/scores/clear) —
+    // otherwise the sticky cache would show, and re-save, the scores that
+    // were just wiped.
+    void forgetHighScores();
 }
 
 #endif  // CONFIG_CW_GAME

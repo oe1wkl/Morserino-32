@@ -257,6 +257,24 @@ static void mslSaveHi() {
         Serial.println("Morsel: high scores NOT saved - NVS full?");
 }
 
+// Protocol 1.4: hand the stored table to the serial protocol. Loads from NVS
+// rather than trusting the static table, which is only filled while the game
+// is running. adjMs == 0xFFFFFFFF marks an empty slot.
+void MorseMorsel::exportHighScores(JsonArray arr) {
+    mslLoadPrefs();
+    for (int i = 0; i < MSL_HI_N; ++i) {
+        if (hiTable[i].adjMs == 0xFFFFFFFFUL)
+            continue;
+        JsonObject o = arr.createNestedObject();
+        o["time"]    = hiTable[i].adjMs;             // adjusted time in ms; lower is better
+        o["guesses"] = hiTable[i].guesses;
+        o["length"]  = wlenLabel[hiTable[i].wlen < MSL_WLEN_OPTS ? hiTable[i].wlen : 0];
+        o["koch"]    = hiTable[i].koch;
+        o["solved"]  = hiTable[i].solved;
+        o["total"]   = hiTable[i].total;
+    }
+}
+
 // Insert the just-finished game into the table if it qualifies; sets
 // lastRank to the 0-based rank, or -1. Persists on qualification.
 static void mslRecordScore() {

@@ -163,13 +163,43 @@ The iOS app inherits the fix for free: it hosts the same tool.
   CLAUDE.md §7.)
 - User manuals: **not affected**, no user-visible device behaviour changes.
 
-## Open questions for sign-off
+## Sign-off (2026-08-19) and what changed in implementation
 
-1. **Page size 8, or larger?** 8 keeps the document at today's proven 4096 B. 12
-   would be 4 pages and ~2.6 KB per page — still modest, one fewer round trip
-   pair. Worth measuring once rather than guessing.
-2. **`GET configs/details` or `GET configdetails`?** The protocol uses both
-   styles (`GET config/<name>`, `GET stats/log` vs `GET kochlesson`,
-   `GET customchars`). Grouping under `configs/` reads better to me; the reply
-   key `configdetails` follows the one-word convention either way.
-3. **Ship with `GET capabilities`?** Recommended — see the client section.
+Willi signed off on all three recommendations: **`GET configs/details`** as the
+command name, **page size 8**, and **shipping alongside `GET capabilities`** —
+plus `GET game/scores` (C6), so 1.4 carries all three parked items at once.
+
+Two details of this design changed while it was being built:
+
+**1. Ordering is `pliste[]`, not `allOptions[]`.** The draft above proposed the
+preferences-menu order so a client could "render top-to-bottom without
+sorting". Two findings killed that:
+
+- `allOptions[]` is not a list of parameters. It also carries the action items
+  — Call Sign, Op Name, Reset Scores, Practice Set — which have **no `pliste[]`
+  entry at all** (CLAUDE.md §3.10). Paging over it would mean paging over a
+  sequence whose members are not all emittable, and an index `<from>` into it
+  would not mean what `GET configs` means by the same index.
+- The rationale did not hold anyway: the config tool does **not** render in
+  device order. It lays the parameters out in its own `PREF_GROUPS`, each an
+  explicit list of names. No client we have wants menu order.
+
+So `GET configs/details` walks `pliste[0..posSerialOut]` — **the same set, in
+the same order, as `GET configs`** — and index `<from>` means the same
+parameter in both commands. That is the stronger guarantee.
+
+**2. The page size is a ceiling, not a promise.** Eight parameters is the cap,
+but the loop also stops early if the document is within ~420 B (one worst-case
+parameter) of its 4096 B capacity. ArduinoJson drops `add`s *silently* when its
+pool is full — that is exactly how `GET menus` once lost its whole tail — so
+the page is bounded by memory as well as by count. With 48 parameters the guard
+never fires; it is there so that a future parameter table cannot turn a page
+into a silently truncated one. Clients are unaffected: they were already told to
+follow `count` and `more` rather than assume a fixed step.
+
+## Result
+
+Six round trips instead of 49 on the Pocket's 48 parameters. The firmware and
+client paging arithmetic were checked against each other for table sizes 1, 2,
+8, 9, 10, 48, 49 and 56 — including the exact-multiple case, which must not
+emit a trailing empty page.

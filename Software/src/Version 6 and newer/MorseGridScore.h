@@ -17,6 +17,7 @@
 #ifdef CONFIG_CW_GAME
 
 #include <LovyanGFX.hpp>
+#include <ArduinoJson.h>   // JsonArray, for the protocol high-score export
 
 namespace MorseGridScore {
 
@@ -56,6 +57,16 @@ namespace MorseGridScore {
   // Blocking standalone high-score table viewer (no game just played) — for
   // opening the table from a game's ready screen. Any press/paddle returns.
   void viewHiscores(LGFX_Sprite *canvas, Game g);
+
+  // Protocol 1.4 (GET game/scores): append game g's high-score rows to `arr`.
+  // Empty rows (cpm 0) are skipped, so an untouched table yields [].
+  void exportHighScores(Game g, JsonArray arr);
+
+  // Drop the in-RAM cache so the next ensureLoaded() re-reads NVS. Must be
+  // called whenever the stored tables are cleared behind this module's back
+  // (Reset Scores in the preferences menu, PUT game/scores/clear) — otherwise
+  // the sticky cache would show, and re-save, the scores that were just wiped.
+  void forgetHighScores();
 
 } // namespace MorseGridScore
 
