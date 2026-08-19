@@ -197,9 +197,32 @@ never fires; it is there so that a future parameter table cannot turn a page
 into a silently truncated one. Clients are unaffected: they were already told to
 follow `count` and `more` rather than assume a fixed step.
 
-## Result
+## Result — measured on hardware, 2026-08-19
 
-Six round trips instead of 49 on the Pocket's 48 parameters. The firmware and
-client paging arithmetic were checked against each other for table sizes 1, 2,
-8, 9, 10, 48, 49 and 56 — including the exact-multiple case, which must not
-emit a trailing empty page.
+Firmware 9.0 on an M32 Pocket (Wroom), over USB. The build has **49**
+parameters, not the 48 this document estimated (that count came from the
+accessibility edition's table, which is one shorter — it unflags the Font Size
+preference), so the full read is **7 pages**, the last carrying a single item.
+
+| | |
+|---|---|
+| `GET capabilities` | 0.025 s |
+| `GET configs` (49 names) | 0.069 s |
+| `GET configs/details`, all 7 pages | **0.314 s** |
+| 8 × `GET config/<name>` | 0.196 s → ~1.2 s for all 49 |
+| `GET game/scores` (7 games) | 0.025 s |
+
+So **3.8× fewer seconds of device time** over USB — and rather more than that
+in the config tool, which additionally dropped 49 × 50 ms of `await sleep(50)`
+along with the loop. The BLE figure was not measured.
+
+Verified on the device: every page's `from` matches what was asked; `count`
+matches `items.length`; the 49 items are the same set **and the same order** as
+`GET configs`; and three probed items (first, middle, last) are byte-identical
+to what `GET config/<name>` returns for them. An out-of-range page, a
+non-numeric page and an unknown `configs/…` sub-command all return errors, and
+the next valid page still works afterwards.
+
+The firmware and client paging arithmetic were also checked against each other
+off-device for table sizes 1, 2, 8, 9, 10, 48, 49 and 56 — including the
+exact-multiple case, which must not emit a trailing empty page.

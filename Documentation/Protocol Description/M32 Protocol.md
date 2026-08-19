@@ -447,7 +447,7 @@ Example to set Keyer Mode to Iambic B:
 
 *(protocol version 1.4)*
 
-This returns the **full details of many parameters at once** — the same information `GET config/<parameter name>` gives, but for a whole page of parameters per command instead of one. A program that builds a preferences view needed one round trip per parameter before; with about 48 parameters that is some ten seconds over BLE, and this reduces it to a handful of commands.
+This returns the **full details of many parameters at once** — the same information `GET config/<parameter name>` gives, but for a whole page of parameters per command instead of one. A program that builds a preferences view needed one round trip per parameter before; with some fifty parameters that is several seconds over USB and about ten over BLE, and this reduces it to a handful of commands.
 
 The reply is one page. `GET configs/details` returns the first page; `GET configs/details/<n>` returns the page that starts at parameter index `<n>`. The properties are:
 
@@ -462,7 +462,7 @@ To read them all, start at `GET configs/details` and, as long as "more" is true,
 Example:
 
 	GET configs/details
-	-> {"configdetails":{"from":0,"count":8,"total":48,"more":true,
+	-> {"configdetails":{"from":0,"count":8,"total":49,"more":true,
 	"items":[{"name":"Keyer Mode","value":2,
 	"description":"Iambic Modes, Non-squeeze mode, Straight Key mode",
 	"minimum":1,"maximum":5,"step":1,"isMapped":true,
@@ -470,7 +470,10 @@ Example:
 	"Non-Squeeze","Straight Key"]}, … ]}}
 
 	GET configs/details/8
-	-> {"configdetails":{"from":8,"count":8,"total":48,"more":true, … }}
+	-> {"configdetails":{"from":8,"count":8,"total":49,"more":true, … }}
+
+	GET configs/details/48
+	-> {"configdetails":{"from":48,"count":1,"total":49,"more":false, … }}
 
 The parameters come in the same order, and are the same set, as in `GET configs` — so index `<n>` means the same parameter in both commands.
 

@@ -86,17 +86,23 @@ and the three new sections are in `Documentation/Protocol Description/M32 Protoc
   the *build-dependent* commands (`configs/details`, `game/scores`, `stats/log`). Everything else
   is implied by the protocol version. Firmware older than 1.4 answers with an error, which is
   itself the answer.
-- **C-BULK** — `GET configs/details[/<from>]`, paginated, 8 parameters per page; 6 round trips
-  instead of 49 for the Pocket's 48 parameters. Designed in
-  [PROTOCOL_1.4_DESIGN.md](PROTOCOL_1.4_DESIGN.md); see its epilogue for the two design points that
-  changed during implementation.
+- **C-BULK** — `GET configs/details[/<from>]`, paginated, 8 parameters per page; **7 round trips
+  instead of 50** for the Pocket's 49 parameters (0.31 s vs ~1.2 s of device time over USB).
+  Designed in [PROTOCOL_1.4_DESIGN.md](PROTOCOL_1.4_DESIGN.md); see its epilogue for the two design
+  points that changed during implementation and the measured results.
 
 **Config tool** got the page loop (with a fallback to the per-parameter loop for pre-1.4 firmware),
 the capability query at connect, and a Game Scores panel on the Dashboard tab.
 
-**Still to verify on hardware:** all three commands over both USB and BLE; and that a *cleared*
-score table stays cleared when a grid game or Memory Chain is started again in the same session
-(that cache invalidation is a fix this branch also made to the on-device *Reset Scores*).
+**Hardware status (M32 Pocket, firmware 9.0, 2026-08-19):** flashed and verified **over USB** —
+handshake reports protocol 1.4; `GET capabilities` lists `configs/details`, `game/scores`,
+`stats/log`; the paged read returns the same 49 parameters in the same order as `GET configs`, with
+items byte-identical to `GET config/<name>`; error paths and recovery behave; `GET game/scores`
+returns all seven games. **Still unverified:** the same commands **over BLE**; `PUT
+game/scores/clear` (not run — it would destroy real scores; the device's tables were empty anyway,
+so it would not have proved much); and that a cleared table stays cleared when a grid game or
+Memory Chain is started again in the same session (the cache-invalidation fix this branch also made
+to the on-device *Reset Scores*).
 
 (The broader `utility-enhancements.md` track — host-side **file backup/restore**, diff, selective
 restore — is separate from the conflict list and can proceed in parallel whenever wanted.)
