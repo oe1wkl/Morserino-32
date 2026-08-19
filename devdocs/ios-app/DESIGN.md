@@ -24,7 +24,8 @@ this app.)
 |---|---|
 | `sendLine(t)` | `writer.write(t + '\n')` |
 | `readLoop()` | appends decoded text to `readBuffer` |
-| `doConnect()` / `doDisconnect()` | `navigator.serial` lifecycle |
+| `openTransport()` | opens the link — the tool's deliberate transport seam |
+| `doDisconnect()` | closes writer/reader/port, every step null-guarded |
 
 Everything else — preferences, snapshots, CW memories, WiFi credentials, Koch,
 file upload/download, the TTY — is *send a line, read a JSON object*. Even file
@@ -32,8 +33,16 @@ transfer is in-band (`put file/begin` → base64 `put file/data` → `put file/e
 so nothing in the tool needs USB specifically.
 
 So the app supplies a `writer` object and feeds `readBuffer`, and the tool works
-unchanged. Only `doConnect()` is genuinely replaced, because BLE has no
-equivalent of `requestPort()`. That is what `Resources/Web/bridge.js` does.
+unchanged. Opening the link is the one genuinely transport-specific step, and
+the tool factors it into **`openTransport()`** precisely so another host can
+replace that one function; `Resources/Web/bridge.js` does exactly that.
+
+`bridge.js` originally replaced the whole of `doConnect()` with a copy, and that
+copy drifted within one release: protocol 1.4 added `await loadCapabilities()`
+to `doConnect()`, the copy never got it, and the app would have quietly probed
+for every feature it could have asked about once. The seam (added on master in
+`a242d39`) exists so that cannot recur — **never go back to overriding
+`doConnect()`**.
 
 **Consequence to protect:** the tool is not forked. `sync-webtool.sh` copies it
 from `Software/Utilities/` at build time and the copy is git-ignored. If someone

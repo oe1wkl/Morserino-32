@@ -9,7 +9,7 @@ and replacing only its transport with CoreBluetooth.
         │
         ├── WebToolView ──── WKWebView ──── m32_config_tool.html   (unchanged)
         │                        │                 ▲
-        │                        │   bridge.js ────┘  swaps `writer`, `doConnect`
+        │                        │   bridge.js ────┘  swaps `writer`, `openTransport`
         │                        ▼
         └── M32BleTransport ── CoreBluetooth ── Nordic UART ── Morserino-32
                     │

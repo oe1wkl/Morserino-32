@@ -5,21 +5,27 @@
 // it stays byte-for-byte the file that is served from the web, so the browser
 // version and this app never drift apart.
 //
-// How little has to change: the tool's whole USB surface is three globals.
+// How little has to change: the tool's whole USB surface is four globals.
 //
+//   openTransport()  -> opens the link             ... the one we replace
 //   sendLine(t)      -> writer.write(t + '\n')     ... so we swap in a writer
 //   doDisconnect()   -> closes writer/reader/port  ... so our writer needs close()
 //   readLoop()       -> appends to readBuffer      ... so we append to it ourselves
 //
-// Only doConnect() is genuinely replaced, because BLE has nothing resembling
-// navigator.serial.requestPort().
+// openTransport() is the tool's deliberate transport seam. We override it and
+// nothing else about connecting, so every later change to doConnect() -- the
+// handshake, the 1.4 capability query, whatever comes next -- reaches this app
+// on its own. Do NOT go back to replacing doConnect(): that copy drifted once
+// already and lost `await loadCapabilities()` without a symptom.
 
 (function () {
   'use strict';
 
   if (window.__m32BridgeInstalled) return;
-  if (typeof sendLine !== 'function' || typeof waitForResponse !== 'function') {
-    console.error('bridge.js: this does not look like the M32 config tool.');
+  if (typeof sendLine !== 'function' || typeof waitForResponse !== 'function'
+      || typeof openTransport !== 'function') {
+    console.error('bridge.js: this is not the M32 config tool, or it predates the '
+                + 'openTransport() seam. Re-run sync-webtool.sh.');
     return;
   }
   window.__m32BridgeInstalled = true;
@@ -96,52 +102,25 @@
     return origWaitForResponse((timeoutMs || 3000) * BLE_TIMEOUT_FACTOR);
   };
 
-  // Mirrors the tool's own doConnect(), with the port dialogue replaced by a
-  // scan. The handshake below is deliberately identical: an open link is not an
-  // M32, only a parseable {"device":{…}} reply is.
-  doConnect = async function () {
-    try {
-      setStatus('Scanning...', 'working');
-      var name = await callNative('connect');
-      log('Bluetooth link up: ' + name);
-
-      installWriter();
-      readBuffer = '';
-
-      setStatus('Activating...', 'working');
-      await sendLine('put device/protocol/on');
-      await sleep(600);
-
-      var devData = null;
-      try {
-        devData = JSON.parse(await waitForResponse(2000));
-      } catch (e) { /* no / non-JSON reply — handled below */ }
-
-      if (!devData || !devData.device) {
-        log('The device answered the Bluetooth connection but not the protocol handshake. '
-          + 'Check that "Bluetooth Use" is set to "BLE Serial" in the M32 preferences, '
-          + 'and that no other phone or computer is already connected to it.');
-        await doDisconnect();
-        setStatus('No M32 protocol', 'disconnected');
-        return;
-      }
-
-      deviceInfo = devData.device;
-      showDeviceInfo(devData.device);
-
-      enableUI(true);
-      setStatus('Connected', 'connected');
-      log('M32 protocol active (' + (devData.device.hardware || '?')
-        + ' · firmware ' + (devData.device.firmware || '?')
-        + ' · protocol ' + (devData.device.protocol || '?') + ')');
-
-      await loadHardwareInfo();
-
-    } catch (err) {
-      log('Connection error: ' + err.message);
-      setStatus('Failed', 'disconnected');
-      try { await doDisconnect(); } catch (e) { /* already down */ }
-    }
+  // Replaces ONLY the tool's transport-opening step. Everything after it in
+  // doConnect() is the tool's own code, shared with the USB build.
+  //
+  // Contract (see openTransport() in the tool): leave `writer` usable by
+  // sendLine(), get incoming text into readBuffer, return {label, noReplyHint}.
+  // Throwing is how failure is reported -- doConnect()'s catch logs it and
+  // tears down.
+  openTransport = async function () {
+    setStatus('Scanning...', 'working');
+    var name = await callNative('connect');
+    installWriter();
+    readBuffer = '';
+    return {
+      label: 'Bluetooth link up: ' + name,
+      noReplyHint: 'The device answered over Bluetooth but not the protocol handshake. '
+                 + 'Check that "Bluetooth Use" is set to "BLE Serial" in the M32 '
+                 + 'preferences, and that no other phone or computer is already '
+                 + 'connected to it.'
+    };
   };
 
   var origDoDisconnect = doDisconnect;
