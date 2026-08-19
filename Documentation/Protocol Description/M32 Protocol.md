@@ -4,17 +4,6 @@
 	Version: 1.4
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
-	Document revision note (July 2, 2026): added the "Transports" section —
-	the protocol is now also available over Bluetooth Low Energy ("BLE
-	Serial"). The protocol version stays 1.3: no commands or properties
-	changed, BLE is a second transport for the same byte stream.
-
-	Document revision note (August 16, 2026): the "device" object now also
-	reports "edition" — "standard" or "accessibility" — because the M32
-	Pocket's two editions run on the same board and report the same
-	"hardware" string. The protocol version stays 1.3: the property is
-	additive, and firmware that predates it simply omits it.
-
 The Morserino can communicate two-way with a connected computer — over the USB bus, and (with firmware that includes the "BLE Serial" feature, and the **Bluetooth Use** preference set to **BLE Serial**) over Bluetooth Low Energy; see the section "Transports" below. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
 
 	Changes in protocol version 1.4 from version 1.3:
@@ -37,6 +26,18 @@ The Morserino can communicate two-way with a connected computer — over the USB
 
 	Everything is additive: no command or property from 1.3 changed its
 	shape or its meaning.
+
+	Additions made within protocol version 1.3, which did not change the
+	version number:
+
+	July 2, 2026: the "Transports" section was added — the protocol is now
+	also available over Bluetooth Low Energy ("BLE Serial"). No command or
+	property changed; BLE is a second transport for the same byte stream.
+
+	August 16, 2026: the "device" object also reports "edition" —
+	"standard" or "accessibility" — because the M32 Pocket's two editions
+	run on the same board and report the same "hardware" string. The
+	property is additive, and firmware that predates it simply omits it.
 
 	Changes in protocol version 1.3 from version 1.2:
 
