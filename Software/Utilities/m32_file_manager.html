@@ -326,14 +326,31 @@ async function disconnect(){
 
 async function readLoop(){try{while(true){var r=await reader.read();if(r.done)break;if(r.value)readBuffer+=r.value}}catch(e){}}
 
+// Find one complete JSON object in the raw stream by counting braces — but
+// only braces that are NOT inside a JSON string, and honouring backslash
+// escapes. A naive count breaks on real data: a file name containing "{" or
+// "}" used to frame the reply short, leaving its tail in the buffer to corrupt
+// the next one. (Same fix as in m32_config_tool.html.)
 async function waitForResponse(timeoutMs){
   timeoutMs=timeoutMs||3000;
   var start=Date.now();
   while(Date.now()-start<timeoutMs){
-    var bc=0,js=-1;
+    var bc=0,js=-1,inStr=false,esc=false;
     for(var i=0;i<readBuffer.length;i++){
-      if(readBuffer[i]==='{'){if(js<0)js=i;bc++}
-      else if(readBuffer[i]==='}'){bc--;if(bc===0&&js>=0){var resp=readBuffer.substring(js,i+1);readBuffer=readBuffer.substring(i+1);return resp}}
+      var c=readBuffer[i];
+      if(js<0){ if(c==='{'){js=i;bc=1} continue }      // still looking for the start
+      if(esc){ esc=false; continue }
+      if(inStr){
+        if(c==='\\') esc=true;
+        else if(c==='"') inStr=false;
+        continue;
+      }
+      if(c==='"') inStr=true;
+      else if(c==='{') bc++;
+      else if(c==='}'){
+        bc--;
+        if(bc===0){var resp=readBuffer.substring(js,i+1);readBuffer=readBuffer.substring(i+1);return resp}
+      }
     }
     await sleep(15);
   }

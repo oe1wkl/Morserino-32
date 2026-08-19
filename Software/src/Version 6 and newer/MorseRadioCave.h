@@ -117,6 +117,11 @@ enum RcState : uint8_t {
 namespace MorseRadioCave {
     void run();
 
+    // Protocol 1.4 (GET game/scores): Radio Cave keeps no score table, only a
+    // saved game. True when a resumable save is stored. Reads NVS directly,
+    // so it needs no cache invalidation after a score reset.
+    bool hasSavedGame();
+
     // Call once at boot, after MorseOutput::initDisplay() and
     // MorseGameMode::warmup(). Pre-grows the module's static Arduino String
     // buffers (wrappedLines, lastCommand, lastClue) so that their first use

@@ -20,9 +20,29 @@
 #include "MorsePracticeStats.h"
 #include <mbedtls/base64.h>
 #endif
+#ifdef CONFIG_CW_GAME
+// GET game/scores: each game owns the layout of its own high-score table, so
+// each exports its own rows rather than having that knowledge re-implemented
+// here (CLAUDE.md §5).
+#include "MorseGame.h"
+#include "MorseMorsel.h"
+#include "MorseGridScore.h"
+#include "MorseMemoryChain.h"
+#include "MorseRadioCave.h"
+#endif
 
 ///// create json output for serial port
 using namespace MorseJSON;
+
+// Parameters per page of GET configs/details (protocol 1.4). Eight of them
+// serialize to ~1.7 KB and occupy ~3.5 KB of document - the same order as the
+// long-established GET configs, so no new memory ground is broken. Purely an
+// implementation choice: the reply carries "count" and "more", so this can be
+// retuned without touching any client.
+#define CONFIG_DETAILS_PAGE 8
+
+// Defined next to jsonConfigLong, its other caller (see the comment there).
+static void fillConfigObject(JsonObject conf, const MorsePreferences::parameter &p);
 
 // Chunked Print adapter: ArduinoJson's serializeJson(doc, Print&) emits one
 // write() call per byte; through the tee that is one Serial.write AND one BLE
@@ -154,6 +174,114 @@ void MorseJSON::jsonParameterList(void) { // get all parameter names and their v
        MorseJSON::jsonSend(doc);
 }
 
+// Protocol 1.4: paginated bulk read of the full parameter descriptions.
+// Without it a client needs one round trip per parameter to build its
+// preferences view - 48 of them, about 10 s over BLE. The firmware picks the
+// page size and the client just follows "more" and "from"+"count", so the
+// page can be retuned later without breaking any client.
+//
+// Order and membership are exactly those of GET configs, i.e. pliste[]
+// 0..posSerialOut, so a client can index one sequence across both commands.
+// (The preferences-MENU order, allOptions[], is deliberately NOT used: it also
+// carries the action items - Call Sign, Op Name, Reset Scores, Practice Set -
+// which have no pliste[] entry and are not parameters at all.)
+void MorseJSON::jsonParameterDetails(uint8_t from) {
+	if (from > posSerialOut) {                       // desynchronised client: fail loudly
+		MorseJSON::jsonError("INVALID PARAMETER");
+		return;
+	}
+	DynamicJsonDocument doc(4096);                   // same sizing as GET configs
+	JsonObject det = doc.createNestedObject("configdetails");
+	det["from"]  = from;
+	det["count"] = 0;                                // both filled in once the page is built
+	det["total"] = (int)posSerialOut + 1;            // build-dependent: advisory, "more" is the authority
+	det["more"]  = false;
+	JsonArray items = det.createNestedArray("items");
+	uint8_t i = from;
+	for (; i <= posSerialOut && (i - from) < CONFIG_DETAILS_PAGE; ++i) {
+		// A fully-mapped parameter costs roughly 400 B of document. Stop before
+		// the pool can overflow: ArduinoJson drops adds SILENTLY when it is
+		// full, which is exactly how GET menus once lost its whole tail.
+		if (i > from && doc.memoryUsage() + 420 > doc.capacity())
+			break;
+		fillConfigObject(items.createNestedObject(), MorsePreferences::pliste[i]);
+	}
+	det["count"] = i - from;
+	det["more"]  = (i <= posSerialOut);
+	MorseJSON::jsonSend(doc);
+}
+
+// Protocol 1.4: feature discovery. Everything documented for the reported
+// protocol version is present EXCEPT the build-dependent commands - the games
+// and the practice-statistics log are compiled out of some builds. Listing
+// them here saves a client from probing and reading an error reply.
+void MorseJSON::jsonCapabilities(void) {
+	StaticJsonDocument<384> doc;
+	JsonObject cap = doc.createNestedObject("capabilities");
+	cap["protocol"] = M32P_VERSION;
+	JsonArray feat = cap.createNestedArray("features");
+	feat.add("configs/details");                     // 1.4 bulk parameter read
+#ifdef CONFIG_CW_GAME
+	feat.add("game/scores");                         // 1.4 game high-score read/clear
+#endif
+#ifdef CONFIG_PRACTICE_STATS
+	feat.add("stats/log");
+#endif
+	MorseJSON::jsonSend(doc);
+}
+
+#ifdef CONFIG_CW_GAME
+// Protocol 1.4: the game high-score tables, which were previously reachable
+// only on the device itself. Read-only — PUT game/scores/clear wipes them, but
+// nothing writes a score back over the wire.
+//
+// The row FIELDS differ per game, because the games score differently (time,
+// effective speed, chain length, ...); "id" is the stable machine name and
+// "name" the display one. Radio Cave keeps no table at all, only a saved game.
+void MorseJSON::jsonGameScores(void) {
+	// Worst case is ~4.4 KB of document with every table full; 6 KB leaves
+	// headroom and still stays under the long-standing GET menus allocation.
+	DynamicJsonDocument doc(6144);
+	JsonObject root = doc.createNestedObject("gamescores");
+	JsonArray games = root.createNestedArray("games");
+
+	JsonObject g = games.createNestedObject();
+	g["id"] = "invaders";  g["name"] = "Morse Invaders";
+	MorseGame::exportHighScores(g.createNestedArray("scores"));
+
+	g = games.createNestedObject();
+	g["id"] = "morsel";    g["name"] = "Morsel";
+	MorseMorsel::exportHighScores(g.createNestedArray("scores"));
+
+	g = games.createNestedObject();
+	g["id"] = "trailblazer"; g["name"] = "Trailblazer";
+	MorseGridScore::exportHighScores(MorseGridScore::TRAILBLAZER, g.createNestedArray("scores"));
+
+	g = games.createNestedObject();
+	g["id"] = "foxhunt";   g["name"] = "Fox Hunt";
+	MorseGridScore::exportHighScores(MorseGridScore::FOXHUNT, g.createNestedArray("scores"));
+
+	g = games.createNestedObject();
+	g["id"] = "memorychain-chars"; g["name"] = "Memory Chain (Characters)";
+	MorseMemoryChain::exportHighScores(MorseMemoryChain::CHARACTERS, g.createNestedArray("scores"));
+
+	g = games.createNestedObject();
+	g["id"] = "memorychain-calls"; g["name"] = "Memory Chain (Call Signs)";
+	MorseMemoryChain::exportHighScores(MorseMemoryChain::CALLSIGNS, g.createNestedArray("scores"));
+
+	g = games.createNestedObject();
+	g["id"] = "radiocave"; g["name"] = "Radio Cave";
+	g.createNestedArray("scores");                   // no score table, only a save
+	g["saved"] = MorseRadioCave::hasSavedGame();
+
+	if (doc.overflowed()) {                          // never ship a silently truncated table
+		MorseJSON::jsonError("GAME SCORES TOO LARGE");
+		return;
+	}
+	MorseJSON::jsonSend(doc);
+}
+#endif  // CONFIG_CW_GAME
+
 void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and associated values
 	StaticJsonDocument<1536> doc;
 	StaticJsonDocument<1024> arr;
@@ -172,10 +300,12 @@ void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and asso
 	MorseJSON::jsonSend(doc);
 }
 
-void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
-	StaticJsonDocument<512> doc;
-	StaticJsonDocument<256> arr;
-	JsonObject conf = doc.createNestedObject("config");
+// The single truth about how one parameter is represented on the wire: filled
+// in by GET config/<name> (jsonConfigLong) and, unchanged, by every item of
+// the 1.4 bulk read (jsonParameterDetails). Both go through here so the two
+// commands can never drift apart. All the strings are const char* literals
+// from pliste[], so ArduinoJson stores pointers to them and copies nothing.
+static void fillConfigObject(JsonObject conf, const MorsePreferences::parameter &p) {
 	conf["name"] = p.parName;
 	conf["value"] = p.value;
 	conf["description"] = p.parDescript;
@@ -185,13 +315,18 @@ void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
 	conf["isMapped"] = p.isMapped; //? "true" : "false";
 	if (p.isMapped)
 	{
-		JsonArray array = arr.to<JsonArray>();
+		JsonArray array = conf.createNestedArray("mapped values");
 		for (int i = 0; i <= p.maximum; ++i)
 		{
 			array.add(p.mapping[i]);
 		}
-		conf["mapped values"] = array;
 	}
+}
+
+void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
+	StaticJsonDocument<512> doc;
+	JsonObject conf = doc.createNestedObject("config");
+	fillConfigObject(conf, p);
 	MorseJSON::jsonSend(doc);
 }
 

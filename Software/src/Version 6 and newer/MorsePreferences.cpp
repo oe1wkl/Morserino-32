@@ -24,6 +24,10 @@
 #endif
 #include "MorseVoice.h"
 #include "MorseTextEntry.h"
+#ifdef CONFIG_CW_GAME
+#include "MorseGridScore.h"    // forgetHighScores(): drop the RAM caches when scores are cleared
+#include "MorseMemoryChain.h"
+#endif
 #ifdef CONFIG_PRACTICE_STATS
 #include "MorsePracticeStats.h"
 #endif
@@ -1377,6 +1381,27 @@ void MorsePreferences::editPracticeChars() {
     Buttons::volButton.clicks  = 0;
 }
 
+// The wipe itself, with no UI: shared by the preferences-menu item below and
+// by the protocol's PUT game/scores/clear, so the two can never clear
+// different sets of keys.
+void MorsePreferences::clearGameScores() {
+    Preferences p;
+    p.begin("m32game",   false); p.clear();                      p.end();   // Invaders high-score table
+    p.begin("morsel",    false); p.remove("hi"); p.remove("hv"); p.end();   // Morsel scores (keep wlen)
+    p.begin("radiocave", false); p.remove("save");               p.end();   // Radio Cave save/progress
+    p.begin("gridgame",  false);                                            // Trailblazer + Fox Hunt + Memory Chain
+    p.remove("tb");  p.remove("tbv");  p.remove("fh");  p.remove("fhv");    //   high-score tables
+    p.remove("mc");  p.remove("mcv");  p.remove("mcc"); p.remove("mccv");   //   (keep "mcopt" — Memory Chain's lobby settings)
+    p.end();
+#ifdef CONFIG_CW_GAME
+    // Those two modules cache their tables in RAM behind a sticky "loaded"
+    // flag, so without this they would keep showing — and, on the next
+    // qualifying run, re-save — the scores just wiped from NVS.
+    MorseGridScore::forgetHighScores();
+    MorseMemoryChain::forgetHighScores();
+#endif
+}
+
 void MorsePreferences::resetGameScores() {
     MorseOutput::clearScrollLines();
     MorseOutput::printOnScroll(0, BOLD,    0, "Clear scores?");
@@ -1398,14 +1423,7 @@ void MorsePreferences::resetGameScores() {
     Buttons::modeButton.clicks = 0;
     Buttons::volButton.clicks  = 0;
     if (!confirmed) return;
-    Preferences p;
-    p.begin("m32game",   false); p.clear();                      p.end();   // Invaders high-score table
-    p.begin("morsel",    false); p.remove("hi"); p.remove("hv"); p.end();   // Morsel scores (keep wlen)
-    p.begin("radiocave", false); p.remove("save");               p.end();   // Radio Cave save/progress
-    p.begin("gridgame",  false);                                            // Trailblazer + Fox Hunt + Memory Chain
-    p.remove("tb");  p.remove("tbv");  p.remove("fh");  p.remove("fhv");    //   high-score tables
-    p.remove("mc");  p.remove("mcv");  p.remove("mcc"); p.remove("mccv");   //   (keep "mcopt" — Memory Chain's lobby settings)
-    p.end();
+    clearGameScores();
     MorseOutput::clearScrollLines();
     MorseOutput::printOnScroll(1, BOLD, 0, "Scores cleared");
     MorseOutput::refreshDisplay();

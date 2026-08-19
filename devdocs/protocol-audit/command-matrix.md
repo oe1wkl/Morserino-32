@@ -15,6 +15,12 @@ from **code**, not from the document's claims. Companion files:
 [`conflicts.md`](conflicts.md), [`PROTOCOL_SPEC.draft.md`](PROTOCOL_SPEC.draft.md),
 [`utility-enhancements.md`](utility-enhancements.md).
 
+> **Status note (2026-08-19).** This file is the point-in-time audit record and is deliberately
+> **not** rewritten. Several findings below have since been fixed — in particular protocol **1.4**
+> added `GET configs/details`, `GET capabilities` and `GET game/scores` / `PUT game/scores/clear`,
+> which close the "game state is unreachable" and "no protocol versioning handshake" gaps. See
+> [`conflicts.md`](conflicts.md) for the live status.
+
 ---
 
 ## Summary — the headline findings

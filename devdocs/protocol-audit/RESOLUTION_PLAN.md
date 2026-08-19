@@ -54,10 +54,17 @@ byte limit — was left as a future nicety; the ceiling itself is documented.)
 - [x] **C4** — fix `GET control/volume`: swap the min/max args so it reports `minimum:0, maximum:19`
   (`m32_v6.ino:3821`; the inert swap at `:2641` fixed too for consistency). Built clean both variants.
 
-## Phase 3 — Config-tool robustness
+## Phase 3 — Config-tool robustness · ✅ DONE 2026-08-19
 
-- [ ] **C-ERR-HANDLING** — `sendAndParse` detects an `{"error":{…}}` reply and surfaces the message to the user (read both `content` and `name`).
-- [ ] **C-BRACE** — make `waitForResponse` framing string/escape-aware (or "read until it parses"), so a `{`/`}` inside a CW memory / SSID / call-name can't desync it. *Until this lands, the `await sleep(50)` in the CW-memories loop must stay:* it is what lets a prematurely-framed reply's tail arrive before the next `sendAndParse` clears `readBuffer`. Don't let a tidy-up delete it.
+- [x] **C-ERR-HANDLING** — `sendAndParse` now raises an `{"error":{…}}` reply as an exception
+  (reading `content`, falling back to `name`) and logs it with the command that caused it, instead
+  of handing it back to callers that only checked for their own key. Probes that *expect* an error
+  (feature detection on older firmware) pass `{quiet:true}` to keep the log clean.
+- [x] **C-BRACE** — `waitForResponse` is string- and escape-aware: braces inside a JSON string no
+  longer count toward the framing, so a `{`/`}` in a CW memory / SSID / call name can't desync it.
+  The same naive counter in `m32_file_manager.html` was fixed with it. **With that, the
+  `await sleep(50)` in the CW-memories loop is no longer load-bearing and was removed** — the
+  reply is framed correctly in the first place, so there is no tail to wait for.
 
 ## Phase 4 — Optional firmware robustness
 
@@ -65,19 +72,38 @@ byte limit — was left as a future nicety; the ceiling itself is documented.)
 
 ---
 
-## Deferred to protocol 1.4 (recorded so it isn't forgotten)
+## Protocol 1.4 · ✅ SHIPPED 2026-08-19 (branch `protocol-1.4`)
 
-When a 1.4 is opened, these become real, additive commands — bump `M32P_VERSION`, add a 1.4
-changelog block, document each:
+All three deferrals went in one bump, as designed. `M32P_VERSION` is `"1.4"`; the changelog block
+and the three new sections are in `Documentation/Protocol Description/M32 Protocol.md`.
 
-- **C6** — game-score access: e.g. `GET game/scores` and `PUT game/scores/clear`, so a backup tool
-  can capture and reset Invaders / Morsel / Radio Cave state.
-- **C-VER (2)** — `GET capabilities`: returns the list of supported objects/commands, so a tool can
-  adapt to firmware versions without trial-and-error.
-- **C-BULK** — `GET configs/details`: a paginated bulk preference read, so a client no longer needs
-  one round trip per parameter (48 of them today, ~10 s over BLE and ~2 s over USB). Designed in
-  [PROTOCOL_1.4_DESIGN.md](PROTOCOL_1.4_DESIGN.md), awaiting sign-off. It pairs naturally with
-  C-VER (2): capability discovery is what saves a 1.4 client from probing 1.3 firmware.
+- **C6** — `GET game/scores` returns every game's high-score table (Invaders, Morsel, Trailblazer,
+  Fox Hunt, both Memory Chain modes) plus whether Radio Cave has a saved game; `PUT
+  game/scores/clear` wipes them through the very same code the menu's *Reset Scores* runs
+  (`MorsePreferences::clearGameScores`). **Read and clear only — nothing writes a score back**, so
+  a host cannot forge one. Both are `CONFIG_CW_GAME`-only, i.e. Pocket builds.
+- **C-VER (2)** — `GET capabilities` returns `{protocol, features[]}`, where `features` lists only
+  the *build-dependent* commands (`configs/details`, `game/scores`, `stats/log`). Everything else
+  is implied by the protocol version. Firmware older than 1.4 answers with an error, which is
+  itself the answer.
+- **C-BULK** — `GET configs/details[/<from>]`, paginated, 8 parameters per page; **7 round trips
+  instead of 50** for the Pocket's 49 parameters (0.31 s vs ~1.2 s of device time over USB).
+  Designed in [PROTOCOL_1.4_DESIGN.md](PROTOCOL_1.4_DESIGN.md); see its epilogue for the two design
+  points that changed during implementation and the measured results.
+
+**Config tool** got the page loop (with a fallback to the per-parameter loop for pre-1.4 firmware),
+the capability query at connect, and a Game Scores panel on the **User Identity** tab — with the call sign and name the
+scores were earned under, which is where Willi looked for it first.
+
+**Hardware status (M32 Pocket, firmware 9.0, 2026-08-19):** flashed and verified **over USB** —
+handshake reports protocol 1.4; `GET capabilities` lists `configs/details`, `game/scores`,
+`stats/log`; the paged read returns the same 49 parameters in the same order as `GET configs`, with
+items byte-identical to `GET config/<name>`; error paths and recovery behave; `GET game/scores`
+returns all seven games. **Still unverified:** the same commands **over BLE**; `PUT
+game/scores/clear` (not run — it would destroy real scores; the device's tables were empty anyway,
+so it would not have proved much); and that a cleared table stays cleared when a grid game or
+Memory Chain is started again in the same session (the cache-invalidation fix this branch also made
+to the on-device *Reset Scores*).
 
 (The broader `utility-enhancements.md` track — host-side **file backup/restore**, diff, selective
 restore — is separate from the conflict list and can proceed in parallel whenever wanted.)

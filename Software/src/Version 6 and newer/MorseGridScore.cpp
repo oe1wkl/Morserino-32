@@ -74,6 +74,26 @@ static void saveTable(int g) {
         Serial.println("Grid games: high scores NOT saved - NVS full?");
 }
 
+// Protocol 1.4: hand a stored table to the serial protocol. A row with cpm 0
+// is an empty slot, not a result.
+void MorseGridScore::exportHighScores(Game g, JsonArray arr) {
+    ensureLoaded(g);
+    for (int i = 0; i < GRIDSCORE_HI_N; ++i) {
+        if (tables[g][i].cpm == 0)
+            continue;
+        JsonObject o = arr.createNestedObject();
+        o["cpm"]   = tables[g][i].cpm;               // effective chars/min - the ranking key
+        o["time"]  = tables[g][i].elapsedMs;         // raw solve time in ms
+        o["wrong"] = tables[g][i].wrong;
+        o["steps"] = tables[g][i].steps;
+        o["koch"]  = tables[g][i].koch;
+    }
+}
+
+void MorseGridScore::forgetHighScores() {
+    loaded[0] = loaded[1] = false;
+}
+
 //=============================================================================
 // Scoring
 //=============================================================================

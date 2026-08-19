@@ -4168,8 +4168,34 @@ void m32Get(String type, String token, String value) {                    /// GE
         MorseJSON::jsonMenuList();
     else if (type == "config")
         MorseJSON::jsonParameter(token);
-    else if (type == "configs")
-        MorseJSON::jsonParameterList();
+    else if (type == "configs") {
+        // GET configs            -> names + values only (unchanged)
+        // GET configs/details    -> first page of the full descriptions (1.4)
+        // GET configs/details/<n>-> the page starting at parameter index <n>
+        if (token == "")
+            MorseJSON::jsonParameterList();
+        else if (token == "details") {
+            boolean numeric = true;                  // an explicit non-numeric start is a client bug, not page 0
+            for (unsigned int k = 0; k < value.length(); ++k)
+                if (!isDigit(value.charAt(k))) { numeric = false; break; }
+            if (numeric)
+                MorseJSON::jsonParameterDetails((uint8_t)value.toInt());   // "" -> 0, the first page
+            else
+                MorseJSON::jsonError("INVALID PARAMETER");
+        }
+        else
+            MorseJSON::jsonError("INVALID ARGUMENT");
+    }
+    else if (type == "capabilities")
+        MorseJSON::jsonCapabilities();
+#ifdef CONFIG_CW_GAME
+    else if (type == "game") {
+        if (token == "scores")
+            MorseJSON::jsonGameScores();
+        else
+            MorseJSON::jsonError("INVALID ARGUMENT");
+    }
+#endif
     else if (type == "snapshots")
         MorseJSON::jsonSnapshots();
     else if (type == "snapshot") {
@@ -4377,6 +4403,29 @@ void m32Put(String type, String token, String value) {                    /// PU
       else
         MorseJSON::jsonOK();
     }
+#ifdef CONFIG_CW_GAME
+    ////////////////// GAME SCORES /////////////////////
+    // PUT game/scores/clear — the protocol twin of Reset Scores in the
+    // preferences menu, and the same wipe (MorsePreferences::clearGameScores),
+    // so the two can never disagree about which keys go. There is deliberately
+    // no way to WRITE a score back: nothing over the wire should be able to
+    // forge a high score.
+    else if (type == "game") {
+      if (token == "scores" && value.equalsIgnoreCase("clear")) {
+        // Not while a game is running: the games hold their table in RAM and
+        // save it on the next qualifying result, so a wipe now would simply be
+        // written back a moment later and look as if it had not worked.
+        if (morseState == morseGame)
+          MorseJSON::jsonError("GAME IN PROGRESS");
+        else {
+          MorsePreferences::clearGameScores();
+          MorseJSON::jsonOK();
+        }
+      }
+      else
+        MorseJSON::jsonError("INVALID ACTION game/" + token);
+    }
+#endif
     ////////////////// SNAPSHOT ///////////////////////
     else if (type == "snapshot") {
       if (token == "store") {

@@ -56,8 +56,12 @@ const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 // using the M32 serial protocol
 //define M32Protocol version 1.1 updateTimings(), 1.2 add bulk file upload file list and delete
 // 1.3 add snapshot/player/customchars/hardware/battery reads + reset/defaults
-//     (within 1.3: reset/defaults reboots to apply; "firmware" field now populated)
-#define M32P_VERSION "1.3"
+//     (within 1.3: reset/defaults reboots to apply; "firmware" field now populated;
+//      "device" gained the additive "edition" property)
+// 1.4 add configs/details (paginated bulk parameter read), capabilities
+//     (feature discovery, so a client need not probe), and game/scores
+//     (read + clear the game high-score tables; CONFIG_CW_GAME builds only)
+#define M32P_VERSION "1.4"
 
 /////// protocol version for IP (and LoRa) - for the time being this is B01
 /////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)

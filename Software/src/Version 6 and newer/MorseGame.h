@@ -23,6 +23,8 @@ extern bool qsoBotMode;
 
 #ifdef CONFIG_CW_GAME
 
+#include <ArduinoJson.h>   // JsonArray, for the protocol high-score export
+
 #include <Preferences.h>
 
 // ---- Game constants ----
@@ -120,6 +122,11 @@ struct GameHighScore {
 // ---- Public interface ----
 namespace MorseGame {
     void run();
+
+    // Protocol 1.4 (GET game/scores): append this game's high-score rows to
+    // `arr`. Reads NVS itself - the in-RAM table is only populated while the
+    // game runs. Empty rows are skipped, so an untouched table yields [].
+    void exportHighScores(JsonArray arr);
 }
 
 #endif  // CONFIG_CW_GAME

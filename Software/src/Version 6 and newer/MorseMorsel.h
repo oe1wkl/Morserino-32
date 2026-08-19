@@ -22,6 +22,8 @@
 
 #ifdef CONFIG_CW_GAME
 
+#include <ArduinoJson.h>   // JsonArray, for the protocol high-score export
+
 // ---- Screen layout (304x170 landscape) ----
 // 320 panel cols, but the sprite is trimmed by MORSE_GAMEMODE_SPRITE_TRIM
 // (see MorseGameMode.cpp) to leave heap headroom. UI must lay out within
@@ -60,6 +62,11 @@ enum MslState : uint8_t {
 // ---- Public interface ----
 namespace MorseMorsel {
     void run();
+
+    // Protocol 1.4 (GET game/scores): append this game's high-score rows to
+    // `arr`. Reads NVS itself - the in-RAM table is only populated while the
+    // game runs. Empty rows are skipped, so an untouched table yields [].
+    void exportHighScores(JsonArray arr);
 
     // True only while Morsel multiplayer networking is active. Gates the
     // Morsel branch of the global ESP-NOW receive callback (m32_v6.ino) so

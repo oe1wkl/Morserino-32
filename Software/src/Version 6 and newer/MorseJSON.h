@@ -53,6 +53,12 @@ namespace MorseJSON
 	void jsonGetPracticeChars(void);
 	void jsonGetHardware(void);
 	void jsonGetBattery(void);
+	// Protocol v1.4 extensions
+	void jsonParameterDetails(uint8_t from);   // paginated bulk parameter read
+	void jsonCapabilities(void);               // build-dependent feature discovery
+#ifdef CONFIG_CW_GAME
+	void jsonGameScores(void);                 // game high-score tables (read-only)
+#endif
 #ifdef CONFIG_PRACTICE_STATS
 	void jsonStatsLog(void);
 #endif

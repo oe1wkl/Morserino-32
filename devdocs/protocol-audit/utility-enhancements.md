@@ -79,8 +79,8 @@ What the protocol can and cannot reach, per NVS namespace (cross‑referenced wi
 | **WiFi passwords** | `morserino` | ✗ (write‑only) | ✓ | **C5 — can't back up** |
 | **Brightness / leftHanded / vAdjust / LoRa RF** | `morserino` | ✓ `get hardware` | ✗ (no writer) | **C7 — can't restore** |
 | Snapshots 1–8 (contents) | `snapN` | ✓ `get snapshot/<n>` | ✗ (only store‑from‑current) | partial — can read, can't push contents |
-| **Invaders high scores** | `m32game` | ✗ | ✗ | **C6 — unreachable** |
-| **Morsel scores (`hi`/`hv`/`wlen`)** | `morsel` | ✗ | ✗ | **C6 — unreachable** |
+| **Invaders high scores** | `m32game` | ✗ | ✗ | C6 — readable since 1.4 (`GET game/scores`) |
+| **Morsel scores (`hi`/`hv`/`wlen`)** | `morsel` | ✗ | ✗ | C6 — readable since 1.4 (`GET game/scores`) |
 | **Radio Cave save** | `radiocave` | ✗ | ✗ | **C6 — unreachable** |
 
 **Implication for "backup":** a faithful backup today can include parameters, koch/custom chars,
@@ -153,6 +153,9 @@ from host data. The tool/spec should state this honestly rather than imply a com
   `m32_config_tool.html:1636`) so a backup is also documentation.
 - **[NICE‑TO‑HAVE] Snapshot inspection/compare.** `get snapshot/<n>` already returns full contents
   (`m32_config_tool.html:1076‑1083`); add a side‑by‑side of a snapshot vs current settings.
+- **[DONE 2026-08-19] Capability probe.** Superseded: protocol **1.4** added `GET capabilities`, and
+  the tool now asks once at connect (`loadCapabilities()`), falling back to probing only on older
+  firmware. The original note follows.
 - **[NICE‑TO‑HAVE] Capability probe.** Until a `GET capabilities` exists (spec §3), the tool can probe
   optional commands once at connect (e.g. `get battery`, `get hardware` LoRa fields) and hide UI for
   what the variant doesn't support, instead of showing blank rows.
