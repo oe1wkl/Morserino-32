@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=837eea6f6d60 v=9 -->
+<!-- WHATSNEW:BEGIN en=4dc2f4dae81e v=9 -->
 What is new in Version 9?
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
@@ -45,6 +45,7 @@ What is new in Version 9?
 -   M32 Pocket only: It is now possible to set the time constant for the Blackman-Harris tone shaping, which is responsible for the „softness“ of CW Audio (tone without clicks). The default is 5 ms, you can change that between 1 and 9 ms (1ms is rather hard, with clicks, while 9ms is definitely too long for high speed CW).
 -   M32Pocket only: When you practice with the Koch trainer, the M32Pocket will record statistics about performance; these can either be looked at through the Configuration Tool, or via the M32’s built in web server, so you can use a browser to view the statistics.
 -   M32Pocket only: after a firmware install with the erase option (or a firmware install to a completely new device), it took up to 10 seconds until something was visible on the screen, while the non-volatile file system was being prepared. To avoid panic, a modified splash with some informative message is being displayed now in such cases.
+-   M32Pocket only: a new preference **Font Size** lets you switch the scrolling display area between the normal text size and a smaller one, which fits more characters per line and shows five lines instead of four. Handy at higher speeds or with longer words, when you want to see more of what has just been sent.
 -   The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
 -   Custom Characters is now working like any other built-in Koch order, you can use select lesson, learn new character and the other Koch modes in the same way as with the built-in Koch sequences.
 -   There is a new feature called „Practice Sets“ that takes the place of the previous Custom character sets, which allows you to train a subset of individual characters which you pick directly on the device and then you can use them for CW generator or Echo Trainer.

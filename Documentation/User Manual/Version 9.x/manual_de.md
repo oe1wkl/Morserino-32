@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=837eea6f6d60 v=9 -->
+<!-- WHATSNEW:BEGIN en=4dc2f4dae81e v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
@@ -47,6 +47,7 @@ Was ist neu in Version 9?
 -   Nur M32 Pocket: Die Zeitkonstante der Blackman-Harris-Tonformung, die für die „Weichheit“ des CW-Audios sorgt (Ton ohne Klicks), lässt sich jetzt einstellen. Der Vorgabewert ist 5 ms, du kannst ihn zwischen 1 und 9 ms verändern (1 ms ist ziemlich hart, mit Klicks, während 9 ms für schnelles CW eindeutig zu lang ist).
 -   Nur M32 Pocket: Wenn du mit dem Koch-Trainer übst, zeichnet der M32 Pocket eine Statistik über deine Leistung auf; du kannst sie entweder über das Konfigurationsprogramm ansehen oder über den eingebauten Webserver des M32, also mit einem Browser.
 -   Nur M32 Pocket: Nach einer Firmware-Installation mit der Lösch-Option (oder einer Installation auf ein ganz neues Gerät) dauerte es bis zu 10 Sekunden, bis am Bildschirm etwas zu sehen war, während das nichtflüchtige Dateisystem vorbereitet wurde. Damit keine Panik aufkommt, wird in solchen Fällen jetzt ein abgewandelter Startbildschirm mit einem erklärenden Hinweis angezeigt.
+-   Nur M32 Pocket: Eine neue Einstellung **Font Size** schaltet den Scrollbereich zwischen der normalen Textgröße und einer kleineren um, die mehr Zeichen pro Zeile unterbringt und fünf statt vier Zeilen anzeigt. Praktisch bei höheren Geschwindigkeiten oder bei längeren Wörtern, wenn du mehr von dem sehen möchtest, was gerade gesendet wurde.
 -   Das Installationsprogramm funktioniert jetzt auch in **Firefox** (ab Version 151, die die Unterstützung für die Webserial-API gebracht hat), zusätzlich zu Chrome, Edge und Opera. Safari unterstützt es weiterhin nicht.
 -   Custom Characters verhält sich jetzt wie jede andere eingebaute Koch-Reihenfolge: Du kannst Lektion auswählen, neues Zeichen lernen und die übrigen Koch-Modi genauso verwenden wie bei den eingebauten Koch-Sequenzen.
 -   Es gibt eine neue Funktion namens „Practice Sets“, die an die Stelle der bisherigen Custom-Zeichensätze tritt. Damit kannst du eine Auswahl einzelner Zeichen üben, die du direkt am Gerät zusammenstellst und dann im CW-Generator oder im Echo-Trainer verwendest.
