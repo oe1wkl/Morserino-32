@@ -163,22 +163,24 @@ Two things worth knowing if you extend the simulator:
   is flicked in by the second key". An early draft of these tests asserted
   alternation and was wrong.
 
-## 6. Still to do — on the bench
+## 6. Bench verification
 
-The change is verified by simulation and builds clean for both variants; it has
-**not** been tried on hardware yet. Worth checking:
+**Confirmed on the M32 Pocket, 2026-08-19** (OE1WKL, capacitive touch paddles):
+the flick seizes control back as it should, and ordinary sending is unchanged —
+"feels correct". Committed as `54ce495`.
 
-1. **Mechanical paddle on the 3.5 mm jack** — the primary case. Hold one paddle,
-   squeeze and hold the other, then flick the first: an element of the first type
-   must appear, and keep repeating until that paddle is released again.
-2. **Capacitive touch paddles** — does a flick actually produce a clean release
-   through `readSensors()` + the 0.512 ms debounce, or is the pad still "warm"?
-   Also the converse: while both pads are held, a momentary *dropout* of one pad
-   now injects one element of that type, where before it was harmless. If touch
-   turns out to be twitchy here, the mitigation is a minimum-open time before a
-   re-closure counts as an edge — not a revert.
-3. **Ordinary sending unchanged** — plain squeezed characters (C, K, R, period,
-   AR) should feel exactly as before; TSQ says they are identical, but confirm by
-   ear.
-4. Both paddle polarities, and the external-paddle polarity preference, since the
-   edge tracking sits after the swap.
+What that does *not* yet cover, in rough order of how much it matters:
+
+1. **The classic M32 (OLED) on hardware.** Untested. The keyer is shared code and
+   the variant builds clean, so the risk is low, but the touch hardware differs.
+2. **Touch dropout over a long session.** While both pads are held, a momentary
+   *dropout* of one pad now injects one element of that type, where before it was
+   harmless. A short bench session would not surface this; a long QSO might. If it
+   ever does, the mitigation is a minimum-open time before a re-closure counts as
+   an edge — not a revert.
+3. **Mechanical paddle on the 3.5 mm jack.** Should be the *easier* case (clean
+   contacts, no capacitive tail), but it is the one an Ultimatic user is most
+   likely to be using, so it deserves its own try.
+4. **Both paddle polarities**, and the external-paddle polarity preference — the
+   edge tracking sits after the swap, so a polarity bug would show up as the flick
+   working on one side only.
