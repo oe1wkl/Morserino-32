@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=4dc2f4dae81e v=9 -->
+<!-- WHATSNEW:BEGIN en=2f8f7ccf7c79 v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
@@ -48,12 +48,15 @@ Was ist neu in Version 9?
 -   Nur M32 Pocket: Wenn du mit dem Koch-Trainer übst, zeichnet der M32 Pocket eine Statistik über deine Leistung auf; du kannst sie entweder über das Konfigurationsprogramm ansehen oder über den eingebauten Webserver des M32, also mit einem Browser.
 -   Nur M32 Pocket: Nach einer Firmware-Installation mit der Lösch-Option (oder einer Installation auf ein ganz neues Gerät) dauerte es bis zu 10 Sekunden, bis am Bildschirm etwas zu sehen war, während das nichtflüchtige Dateisystem vorbereitet wurde. Damit keine Panik aufkommt, wird in solchen Fällen jetzt ein abgewandelter Startbildschirm mit einem erklärenden Hinweis angezeigt.
 -   Nur M32 Pocket: Eine neue Einstellung **Font Size** schaltet den Scrollbereich zwischen der normalen Textgröße und einer kleineren um, die mehr Zeichen pro Zeile unterbringt und fünf statt vier Zeilen anzeigt. Praktisch bei höheren Geschwindigkeiten oder bei längeren Wörtern, wenn du mehr von dem sehen möchtest, was gerade gesendet wurde.
+-   Das serielle Protokoll, das vom Konfigurationsprogramm und von anderen Hilfsprogrammen verwendet wird, wurde auf **Version 1.4** erweitert. Ein verbundenes Programm kann nun alle Einstellungen samt ihren Details mit wenigen Abfragen lesen statt mit einer Abfrage je Einstellung, es kann das Gerät fragen, welche der optionalen Befehle es tatsächlich beherrscht (statt sie zum Ausprobieren einfach abzuschicken), und es kann die gespeicherten Spielergebnisse lesen oder löschen. Alles aus Version 1.3 funktioniert unverändert weiter, bestehende Programme müssen also nicht angepasst werden. Beschrieben ist das Protokoll im eigenen Dokument *M32 Protocol*.
+-   Nur M32 Pocket: Das Konfigurationsprogramm zeigt jetzt die am Gerät gespeicherten **Spielergebnisse** an – die Bestenlisten aller Spiele und ob für Radio Cave ein gespeicherter Spielstand vorliegt –, und zwar auf der Seite „User Identity“, gleich neben dem Rufzeichen und dem Namen, unter denen sie erspielt wurden. Eine Schaltfläche dort löscht sie alle, mit derselben Wirkung wie „Reset Scores“ im Preferences-Menü am Gerät.
 -   Das Installationsprogramm funktioniert jetzt auch in **Firefox** (ab Version 151, die die Unterstützung für die Webserial-API gebracht hat), zusätzlich zu Chrome, Edge und Opera. Safari unterstützt es weiterhin nicht.
 -   Custom Characters verhält sich jetzt wie jede andere eingebaute Koch-Reihenfolge: Du kannst Lektion auswählen, neues Zeichen lernen und die übrigen Koch-Modi genauso verwenden wie bei den eingebauten Koch-Sequenzen.
 -   Es gibt eine neue Funktion namens „Practice Sets“, die an die Stelle der bisherigen Custom-Zeichensätze tritt. Damit kannst du eine Auswahl einzelner Zeichen üben, die du direkt am Gerät zusammenstellst und dann im CW-Generator oder im Echo-Trainer verwendest.
 -   Am Display werden Wörter am Zeilenende nicht mehr getrennt, sondern in einer neuen Zeile begonnen, sofern die Wortlänge vorher bekannt ist (alle CW-Generator-Modi sowie Trx-Modi wie LoRa oder WiFi Trx) und das Wort nicht mehr in die aktuelle Zeile passt.
 -   „Select Lesson“ zeigt jetzt auch die Gesamtzahl der Zeichen in der gewählten Koch-Sequenz an.
 -   Ein paar weitere kosmetische Korrekturen bei der Bildschirmausgabe.
+-   Die Seite „Preferences“ im Konfigurationsprogramm lädt jetzt in einem Bruchteil der bisherigen Zeit, weil sie die Einstellungen mit wenigen Abfragen liest statt mit einer je Einstellung. Am deutlichsten ist der Unterschied über Bluetooth.
 <!-- WHATSNEW:END -->
 
 # Anschlüsse und Bedienelemente

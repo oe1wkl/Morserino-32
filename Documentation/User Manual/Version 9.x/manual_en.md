@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=4dc2f4dae81e v=9 -->
+<!-- WHATSNEW:BEGIN en=2f8f7ccf7c79 v=9 -->
 What is new in Version 9?
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
@@ -46,12 +46,15 @@ What is new in Version 9?
 -   M32Pocket only: When you practice with the Koch trainer, the M32Pocket will record statistics about performance; these can either be looked at through the Configuration Tool, or via the M32’s built in web server, so you can use a browser to view the statistics.
 -   M32Pocket only: after a firmware install with the erase option (or a firmware install to a completely new device), it took up to 10 seconds until something was visible on the screen, while the non-volatile file system was being prepared. To avoid panic, a modified splash with some informative message is being displayed now in such cases.
 -   M32Pocket only: a new preference **Font Size** lets you switch the scrolling display area between the normal text size and a smaller one, which fits more characters per line and shows five lines instead of four. Handy at higher speeds or with longer words, when you want to see more of what has just been sent.
+-   The serial protocol used by the Configuration Tool and other utilities has been extended to **version 1.4**. A connected program can now read the full details of all preferences in a handful of requests instead of one request per preference, ask the device which of the optional commands it actually supports (instead of trying them out to find out), and read or clear the stored game scores. Everything from version 1.3 keeps working unchanged, so programs written for it need no adaptation. The protocol is described in the separate *M32 Protocol* document.
+-   M32 Pocket only: the Configuration Tool now shows the **game scores** stored on your device - the high score tables of all games, and whether Radio Cave has a saved game - on the User Identity tab, next to the call sign and name they were played under. A button there clears them all, doing the same as „Reset Scores“ in the preferences menu on the device.
 -   The installer now works in **Firefox** as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.
 -   Custom Characters is now working like any other built-in Koch order, you can use select lesson, learn new character and the other Koch modes in the same way as with the built-in Koch sequences.
 -   There is a new feature called „Practice Sets“ that takes the place of the previous Custom character sets, which allows you to train a subset of individual characters which you pick directly on the device and then you can use them for CW generator or Echo Trainer.
 -   On the display, words are not broken up at the end of a line, but starting at a new line whenever the word length is known in advance (all CW generator modes, and Trx modes like LoRa or WiFi Trx), and the word would not fit into the current line.
 -   „Select Lesson“ now also shows the total # of characters in the selected Koch sequence.
 -   A few more cosmetic display output fixes.
+-   The Configuration Tool's Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.
 <!-- WHATSNEW:END -->
 
 # Connectors and Controls
