@@ -244,7 +244,11 @@ unsigned char keyerControl = 0; // this holds the latches for the paddles and th
 
 //enum KEYERSTATES {IDLE_STATE, DIT, DAH, KEY_START, KEYED, INTER_ELEMENT };
 
-boolean DIT_FIRST = false; // first latched was dit?
+boolean DIT_FIRST = false; // first latched was dit?          (used by Non-Squeeze mode)
+boolean DIT_LAST_CLOSED = false; // was the most recent paddle *closure* the dit paddle?
+                                 // Ultimatic tracks this live, on every rising edge - not to be
+                                 // confused with the DIT_LAST latch bit, which says which
+                                 // *element* was sent last. See doPaddleIambic().
 unsigned int ditLength ;        // dit length in milliseconds - 100ms = 60bpm = 12 wpm
 unsigned int dahLength ;        // dahs are 3 dits long
 KEYERSTATES keyerState;
@@ -1451,6 +1455,18 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
       paddleSwap = dit; dit = dah; dah = paddleSwap;
   }
 
+  /// Ultimatic needs to know which paddle was closed *most recently*, which the latches alone
+  /// cannot tell us: they only record that a paddle is (or was) down, not that it went down again.
+  /// So we watch for rising edges on every call. QST 5/1955 ("Summary of Actions of the Keys",
+  /// point 6): releasing and re-closing a paddle - even the one that opened the character, with the
+  /// other paddle held down all the while - re-arms its memory and seizes control of the sequencer.
+  /// On a simultaneous closure the dah wins here, while IDLE_STATE below starts with the dit: that
+  /// is the long-standing M32 behaviour for a squeeze (one dit, then a series of dahs).
+  static boolean prevDit = false, prevDah = false;
+  if (dit && !prevDit)  DIT_LAST_CLOSED = true;
+  if (dah && !prevDah)  DIT_LAST_CLOSED = false;
+  prevDit = dit; prevDah = dah;
+
 
   switch (keyerState) {                                         // this is the keyer state machine
      case IDLE_STATE:
@@ -1594,10 +1610,10 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                                         else                                // but when first element was a DAH
                                                                setDAHstate();            // the next element is a DAH again!
                                                         break;
-                                      case ULTIMATIC:   if (DIT_FIRST)                      // when first element was a DIT
-                                                               setDAHstate();            // next element is a DAH
-                                                        else                                // but when first element was a DAH
-                                                               setDITstate();            // the next element is a DIT!
+                                      case ULTIMATIC:   if (DIT_LAST_CLOSED)                 // control belongs to the paddle
+                                                               setDITstate();            // closed last: it keeps sending its
+                                                        else                                // own element type until it is
+                                                               setDAHstate();            // released or the other one is flicked
                                                         break;
                                       default:          if (keyerControl & DIT_LAST)     // Iambic: last element was a dit - this is case 7, really
                                                             setDAHstate();               // next element will be a DAH

@@ -27,6 +27,7 @@
 * M32 Pocket only: There was a bug in Morse Invaders - even when you started a game with a level higher than 1, the speed was initially like Level 1, and only after going into the next level, the speed was the expected one. Fixed.
 * The Configuration Tool could be thrown off by a curly brace („{“ or „}“) inside one of your own texts - a CW memory, a WiFi network name, or your operator name - which cut the device's answer short and then garbled the one after it. Fixed (the file manager had the same problem and is fixed as well).
 * When the M32 answered the Configuration Tool with an error, the tool ignored it silently and simply showed nothing, leaving you to guess what had gone wrong. It now tells you what the device said.
+* The **Ultimatic** keyer mode did not do everything an Ultimatic is supposed to do. With both paddles held down, briefly releasing one of them and closing it again (a „flick“) should hand control back to that paddle - the classic Ultimatic „sequence seizure“ described when the mode was first published in QST in 1955. The Morserino only did this for the paddle you squeezed in second; a flick of the paddle that had started the character was ignored, and it just kept sending the other one's element. Now either paddle can seize control back, at any point in a character. Ordinary squeezing is unchanged. Thanks to Paweł, SP5DNA, for spotting this and for going back to the original 1955 description to pin it down.
 
 ### CHANGES V. 8.2
 

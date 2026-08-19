@@ -679,7 +679,13 @@ Dahs beträgt).
 **Ultimatic-Modus**: Durch Drücken beider Paddles wird ein Dit oder Dah
 erzeugt. Was zuerst kommt, hängt davon ab, welches Paddle zuerst
 gedrückt wurde. Danach wird kontinuierlich der entgegengesetzte Ton
-erzeugt. Vorteilhaft für Zeichen wie J, B, 1, 2, 6 und 7. Dieser
+erzeugt. Vorteilhaft für Zeichen wie J, B, 1, 2, 6 und 7. Die Kontrolle
+hat immer jenes Paddle, das *zuletzt* geschlossen wurde: Sind beide
+Paddles gedrückt und man lässt eines davon kurz los und schließt es
+wieder — ein kurzes Antippen genügt —, so übernimmt dieses Paddle wieder
+die Kontrolle und sendet seinen eigenen Elementtyp so lange, bis man es
+erneut loslässt oder das andere Paddle antippt. Das gilt für beide
+Paddles, auch für jenes, mit dem das Zeichen begonnen wurde. Dieser
 Modus reagiert auch auf das gegenüberliegende Paddle mit denselben
 Zeiteinstellungen wie Iambic B.
 

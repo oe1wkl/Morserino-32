@@ -643,9 +643,14 @@ you want a higher percentage for dits to feel comfortable).
 **Ultimatic Mode**: In Ultimatic mode, pressing both paddles generates a
 dit or dah. The type of sound generated depends on which paddle is hit
 first. Afterwards, the opposite sound is generated continuously. This is
-advantageous for characters like J, B, 1, 2, 6, and 7. This mode also
-responds to entries activated on the opposite paddle with the same
-timing preferences defined for Iambic B mode.
+advantageous for characters like J, B, 1, 2, 6, and 7. Control always
+belongs to the paddle that was closed *last*: with both paddles held
+down, briefly releasing one of them and closing it again — just a flick —
+hands control back to that paddle, which then keeps sending its own
+element type until you release it again or flick the other one. This
+works for either paddle, including the one that started the character.
+This mode also responds to entries activated on the opposite paddle with
+the same timing preferences defined for Iambic B mode.
 
 **Non-Squeeze Mode:** This simulates the behavior of a single-lever
 paddle when using a dual-lever paddle. Operators who are accustomed to
