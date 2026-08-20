@@ -171,6 +171,20 @@
     var sub = document.querySelector('.banner-sub');
     if (sub) sub.textContent = 'Morserino-32 · Device Management via Bluetooth LE';
 
+    // "USB · Chrome/Edge/Firefox" is true of the browser build and meaningless here.
+    var hint = document.querySelector('.conn-hint');
+    if (hint) hint.textContent = 'Bluetooth LE';
+
+    // The page decided at load time that this browser has no Web Serial and
+    // said so in the log. Correct, and irrelevant: this app does not use it.
+    // Drop the line rather than leave a "not supported" notice sitting in the
+    // log of an app that works.
+    var logEl = document.getElementById('log');
+    if (logEl && /Web ?Serial/i.test(logEl.textContent)) {
+      logEl.textContent = logEl.textContent.split('\n')
+        .filter(function (line) { return !/Web ?Serial/i.test(line); }).join('\n');
+    }
+
     var placeholder = document.getElementById('connPlaceholder');
     if (placeholder) {
       placeholder.textContent =

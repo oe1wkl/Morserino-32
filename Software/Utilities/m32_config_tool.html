@@ -481,7 +481,7 @@
   <span class="status-badge status-disconnected" id="statusBadge">Not connected</span>
   <button class="btn btn-accent" id="connectBtn" onclick="doConnect()">Connect</button>
   <button class="btn btn-red" id="disconnectBtn" onclick="doDisconnect()" disabled>Disconnect</button>
-  <span class="conn-hint">USB · Chrome/Edge</span>
+  <span class="conn-hint">USB · Chrome/Edge/Firefox</span>
 </div>
 
 <!-- CONNECTION -->
@@ -2950,7 +2950,7 @@ switchTab = function(tabId){
 // ============================================================================
 // INIT
 // ============================================================================
-if(!('serial' in navigator)){document.getElementById('connectBtn').disabled=true;log('WebSerial not supported. Use Chrome or Edge.')}
+if(!('serial' in navigator)){document.getElementById('connectBtn').disabled=true;log('This browser has no Web Serial. Use Chrome, Edge, Opera, or Firefox 151 or newer.')}
 </script>
 </body>
 </html>
