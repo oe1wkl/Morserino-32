@@ -277,7 +277,8 @@
     .fb-chars{font-family:'Courier New',monospace;font-size:11px;color:var(--muted);opacity:.7}
     .fb-actions{display:flex;gap:4px}
     .fb-btn-icon{background:#fff;border:1px solid #c8d8e4;color:var(--muted);width:30px;height:30px;border-radius:4px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s}
-    .fb-btn-icon:hover{border-color:var(--accent);color:var(--accent)}
+    .fb-btn-icon:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+    .fb-btn-icon:disabled{opacity:.35;cursor:default}
     .fb-preview{background:#f8fafb;border:1px solid #c8d8e4;border-radius:var(--radius);padding:16px;font-family:'Courier New',monospace;font-size:13px;line-height:1.6;color:var(--text);max-height:300px;overflow-y:auto;white-space:pre-wrap;word-break:break-word;margin-bottom:16px}
     .fb-sep{color:var(--accent);font-weight:700}
     .fb-txt{color:var(--muted)}
@@ -2403,7 +2404,15 @@ pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/p
   dz.addEventListener('dragover',function(e){e.preventDefault();dz.classList.add('drag-over')});
   dz.addEventListener('dragleave',function(){dz.classList.remove('drag-over')});
   dz.addEventListener('drop',function(e){e.preventDefault();dz.classList.remove('drag-over');fbHandleFiles(e.dataTransfer.files)});
-  fi.addEventListener('change',function(e){fbHandleFiles(e.target.files);e.target.value=''});
+  fi.addEventListener('change',function(e){
+    // Snapshot the list BEFORE clearing the input. Clearing is what lets the
+    // same file be picked twice in a row, but it empties the live FileList --
+    // and fbHandleFiles is async, so it would resume its loop against an empty
+    // list and take only the first file, however many were selected.
+    var picked=Array.prototype.slice.call(e.target.files);
+    e.target.value='';
+    fbHandleFiles(picked);
+  });
 })();
 
 function fbDetectType(ext){
@@ -2547,7 +2556,10 @@ function fbRender(){
       +'<span class="fb-filename">'+escHtml(part.fileName)+'</span>'
       +(part.loading?'<span class="fb-spinner"></span>':'<span class="fb-chars">'+part.text.length.toLocaleString()+' chars</span>')
       +'</div></div>'
-      +'<div class="fb-actions"><button class="fb-btn-icon" title="Preview" onclick="fbPreviewPart(\''+part.id+'\')">👁</button>'
+      +'<div class="fb-actions">'
+      +'<button class="fb-btn-icon" title="Move up" onclick="fbMove(\''+part.id+'\',-1)"'+(idx===0?' disabled':'')+'>▲</button>'
+      +'<button class="fb-btn-icon" title="Move down" onclick="fbMove(\''+part.id+'\',1)"'+(idx===fbParts.length-1?' disabled':'')+'>▼</button>'
+      +'<button class="fb-btn-icon" title="Preview" onclick="fbPreviewPart(\''+part.id+'\')">👁</button>'
       +'<button class="fb-btn-icon" title="Remove" onclick="fbRemove(\''+part.id+'\')">✕</button></div>';
 
     var ni=card.querySelector('.fb-name-input');
@@ -2574,6 +2586,18 @@ function fbPreviewPart(id){
   var part=fbParts.find(function(p){return p.id===id});if(!part)return;
   var box=document.getElementById('fbPreview');
   box.innerHTML='<span class="fb-sep">&lt;c&gt;$ '+escHtml(part.name)+'</span>\n<span class="fb-txt">'+escHtml(part.text.slice(0,3000))+(part.text.length>3000?'\n\n[... truncated ...]':'')+'</span>';
+}
+
+// Reordering by dragging the grip is mouse-only: HTML5 drag-and-drop events are
+// never generated from a finger, so on a phone or tablet the grip does nothing
+// at all. These do the same job with a tap, and with a keyboard.
+function fbMove(id,delta){
+  var i=fbParts.findIndex(function(p){return p.id===id});
+  if(i<0) return;
+  var j=i+delta;
+  if(j<0||j>=fbParts.length) return;
+  fbParts.splice(j,0,fbParts.splice(i,1)[0]);
+  fbRender();
 }
 
 // --- Download ---
