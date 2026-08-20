@@ -136,25 +136,25 @@ Already in place, and verified in the built bundle:
   unencrypted because the firmware uses no bonding.
 - **iPhone only** (`TARGETED_DEVICE_FAMILY: "1"`) — declaring iPad would oblige
   a second full set of 13-inch screenshots.
+- **The app icon** — `Resources/Assets.xcassets`, built from the M32 wordmark
+  (white on near-black). A single 1024×1024 source is enough since Xcode 14;
+  `Resources/AppIcon.svg` is what it was rendered from and carries the
+  regeneration recipe, including the alpha-stripping step the build needs.
 
 Still to do, roughly in order:
 
-1. **An app icon.** There is no `Assets.xcassets` at all, and submission fails
-   without one. A 1024×1024 PNG is the minimum. `M32P.png` in the repo root is a
-   3636×3024 *photograph* of the device — fine for a manual, wrong for an icon,
-   which needs flat artwork that survives being 60 px wide.
-2. **Enrol in the Apple Developer Program** ($99/year). Needed for TestFlight as
+1. **Enrol in the Apple Developer Program** ($99/year). Needed for TestFlight as
    well as the store, so it is unavoidable either way. Decide individual vs
    organization first — an individual listing carries your personal legal name,
    and switching later is a support ticket, not a checkbox.
-3. **Screenshots, from real hardware.** The simulator has no Bluetooth, so it
+2. **Screenshots, from real hardware.** The simulator has no Bluetooth, so it
    can never show a connected state. 6.9-inch iPhone sizes.
-4. **A privacy policy URL.** Mandatory for every app, even one that collects
+3. **A privacy policy URL.** Mandatory for every app, even one that collects
    nothing. A short page on morserino.info is enough.
-5. **Reviewer notes and a demo video.** The reviewer has no Morserino, so
+4. **Reviewer notes and a demo video.** The reviewer has no Morserino, so
    guideline 2.1 ("we could not test your app") is the likely first rejection.
    Say plainly that it configures a physical CW device, and link a video.
-6. **Be ready for guideline 4.2** (repackaged website). This app is defensible:
+5. **Be ready for guideline 4.2** (repackaged website). This app is defensible:
    it loads **no remote content** — the tool is bundled — and its core function
    is native CoreBluetooth doing something no website can do on iOS. Put that in
    the reviewer notes rather than waiting to be asked.
@@ -171,6 +171,7 @@ Still to do, roughly in order:
 | `Resources/Web/bridge.js` | The ninety lines that re-point the tool at Bluetooth. |
 | `sync-webtool.sh` | Copies the tool out of `Software/Utilities/`. |
 | `Local.xcconfig.example` | Template for your signing Team ID; copy to the git-ignored `Local.xcconfig`. |
+| `Resources/Assets.xcassets` | App icon. Regenerate from `Resources/AppIcon.svg`. |
 
 Design rationale and the firmware constraints this all has to respect:
 [`devdocs/ios-app/DESIGN.md`](../../../devdocs/ios-app/DESIGN.md).

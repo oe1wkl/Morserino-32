@@ -34,6 +34,10 @@ targets:
       # rather than part of the Web folder reference.
       - path: Resources/PrivacyInfo.xcprivacy
         buildPhase: resources
+      # App icon. A single 1024x1024 source is enough since Xcode 14 -- actool
+      # derives every other size from it. AppIcon.svg beside it is what that PNG
+      # was rendered from; see README.
+      - path: Resources/Assets.xcassets
 
     settings:
       base:
@@ -50,6 +54,7 @@ targets:
         TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: NO
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         # DEVELOPMENT_TEAM deliberately lives in Local.xcconfig, not here: a
         # Team ID identifies a specific developer account and this repo is
         # public, and keeping it out of the generated project is what stops
