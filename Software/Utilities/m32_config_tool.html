@@ -1066,16 +1066,32 @@ async function doConnect(){
     // Opening a serial port always succeeds (any port — e.g. a debug console —
     // opens at 115200), so an open port does NOT mean an M32 is on the other end.
     // Only a parseable {"device":{...}} reply to device/protocol/on confirms it.
-    var devData=null;
-    try{
-      var devResp=await waitForResponse(2000);
-      devData=JSON.parse(devResp);
-    }catch(e){ /* no / non-JSON reply — handled below */ }
+    // A transport may be consent-gated: BLE Serial asks its operator on the
+    // device before it hands over a session, and says so with a CONFIRM ON
+    // DEVICE message first. Keep waiting when that arrives — the reply we want
+    // comes after a human has reacted. USB never takes this branch.
+    var devData=null, refusal='';
+    var waitMs=2000;
+    while(true){
+      var resp=null;
+      try{ resp=JSON.parse(await waitForResponse(waitMs)); }
+      catch(e){ break; }                       // nothing, or not JSON — handled below
+      if(resp&&resp.device){ devData=resp; break; }
+      if(resp&&resp.message&&/CONFIRM ON DEVICE/i.test(resp.message.content||'')){
+        log('Allow the connection on the Morserino itself: press FN (the red button).');
+        setStatus('Confirm on device','working');
+        waitMs=25000;                          // now it is a person we are waiting for
+        continue;
+      }
+      if(resp&&resp.error) refusal=resp.error.content||resp.error.name||'';
+      break;
+    }
 
     if(!devData || !devData.device){
-      log(link.noReplyHint);
+      log(refusal ? ('The device did not accept the connection: '+refusal)
+                  : link.noReplyHint);
       await doDisconnect();
-      setStatus('No M32 found','disconnected');
+      setStatus(refusal||'No M32 found','disconnected');
       return;
     }
 

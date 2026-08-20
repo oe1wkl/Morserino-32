@@ -4070,7 +4070,13 @@ static void bleConsentPrompt() {
     if (Buttons::modeButton.clicks != 0) break;                       // encoder click = refuse
     Buttons::volButton.Update();
     if (Buttons::volButton.clicks != 0) { allowed = true; break; }    // FN = allow
-    if (!MorseBleSerial::linkUp()) break;                             // client gave up or went away
+    // NOT abandoned when the link drops. A client that does not understand the
+    // CONFIRM ON DEVICE pre-reply treats it as a failed handshake and
+    // disconnects within a second — tearing the prompt off the screen before
+    // the operator can even read it. The operator is standing here being asked,
+    // so the question stays up and their answer still counts: granting opens
+    // the grace window, and the client's next attempt is admitted without
+    // asking again. That is decision D3 doing its job.
     serialEvent();                    // USB must keep working through the wait; a BLE line
                                       // still cannot execute (bleProtocol is false) and a
                                       // repeat handshake is swallowed by bleConsentAsking
@@ -4085,12 +4091,20 @@ static void bleConsentPrompt() {
   if (allowed) {
     bleConsentGranted = true;
     bleConsentAt      = millis();
-    bleProtocol       = true;
-    MorseJSON::jsonDevice(brd, vsn);            // the normal handshake reply, just later
+    if (MorseBleSerial::linkUp()) {             // still here: hand the session over now
+      bleProtocol = true;
+      MorseJSON::jsonDevice(brd, vsn);          // the normal handshake reply, just later
+    }
+    // Otherwise the client gave up before the operator answered, and there is
+    // nothing to reply to. Do NOT set bleProtocol here: onDisconnect cleared it
+    // with the link, and re-raising it for a session that no longer exists
+    // would hand the next central to connect a handshaken session it never
+    // asked for. The grace window admits the returning client instead.
     MorseVoice::announce("Connection allowed.");
   }
   else {
-    MorseJSON::jsonError("CONNECTION DECLINED");
+    if (MorseBleSerial::linkUp())
+      MorseJSON::jsonError("CONNECTION DECLINED");
     MorseVoice::announce("Connection refused.");
   }
 }
