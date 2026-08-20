@@ -244,6 +244,18 @@ it later.
    setting an attacker can switch off once inside. Add it only if the prompt
    proves tiresome in practice.
 
+### The grace window deliberately outranks "top menu only"
+
+The grace check sits **before** the top-menu check, so a client returning
+within the window is admitted even while an interactive mode is running.
+Confirmed on the bench 2026-08-19 and kept on purpose: an app that backgrounds
+and comes back, or a link that drops mid-practice, must be able to restore
+itself — a session that dies the moment you start a mode would be useless. The
+operator consented seconds ago and the device has not left their hands.
+
+It is not a hole in D2: without a grant inside the last 60 s, a mid-mode
+request is still refused outright. Do not "fix" the ordering.
+
 ### Why D3 matters more than it looks
 
 The pre-reply `{"message":{"content":"CONFIRM ON DEVICE"}}` **breaks an existing
