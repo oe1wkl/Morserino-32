@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=2f8f7ccf7c79 v=9 -->
+<!-- WHATSNEW:BEGIN en=b50904b6c887 v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
@@ -57,6 +57,7 @@ Was ist neu in Version 9?
 -   „Select Lesson“ zeigt jetzt auch die Gesamtzahl der Zeichen in der gewählten Koch-Sequenz an.
 -   Ein paar weitere kosmetische Korrekturen bei der Bildschirmausgabe.
 -   Die Seite „Preferences“ im Konfigurationsprogramm lädt jetzt in einem Bruchteil der bisherigen Zeit, weil sie die Einstellungen mit wenigen Abfragen liest statt mit einer je Einstellung. Am deutlichsten ist der Unterschied über Bluetooth.
+-   Eine Bluetooth-Verbindung (BLE Serial) muss jetzt am Morserino selbst zugelassen werden. Wenn eine App eine Sitzung anfordert, zeigt das Gerät „Allow connect?“ und wartet darauf, dass du FN drückst – ein USB-Kabel muss jemand anstecken, der neben deinem Gerät steht, über Bluetooth kann sich hingegen alles verbinden, was in Funkreichweite ist; deshalb fragt der Morserino, bevor er die Kontrolle aus der Hand gibt. Gefragt wirst du nur im Hauptmenü (in einem Trainingsmodus wird die Anfrage abgelehnt, ohne dich zu unterbrechen), eine App, die sich innerhalb einer Minute erneut verbindet, wird ohne Nachfrage wieder zugelassen, und solange eine Sitzung offen ist, zeigt ein kleines Bluetooth-Symbol in der obersten Zeile, dass etwas verbunden ist.
 <!-- WHATSNEW:END -->
 
 # Anschlüsse und Bedienelemente
@@ -4136,9 +4137,44 @@ Nach dem Auswählen dieser Option (sie wird bei der nächsten Rückkehr
 ins Hauptmenü wirksam) meldet sich der Morserino als
 „**Morserino-32**", solange er sich im Hauptmenü oder in einem der
 Trainingsmodi befindet und keine App verbunden ist. Ein Pairing ist
-nicht erforderlich — das Verbinden funktioniert wie das Anstecken eines
-USB-Kabels, und die App startet die Sitzung mit dem üblichen Kommando
-`PUT device/protocol/on`.
+nicht erforderlich, aber das Verbinden ist doch nicht ganz wie das
+Anstecken eines USB-Kabels: Ein Kabel kann niemand anstecken, ohne neben
+deinem Morserino zu stehen — verbinden kann sich hingegen alles, was in
+Funkreichweite ist. Der Morserino fragt dich deshalb, bevor er die
+Kontrolle aus der Hand gibt.
+
+Wenn eine App die Sitzung mit dem üblichen Kommando
+`PUT device/protocol/on` startet, zeigt der Morserino
+
+    Allow connect?
+    FN = yes
+    click = no
+
+Drücke **FN** (die rote Taste), um die Verbindung zuzulassen. Ein Klick
+auf den schwarzen Drehknopf lehnt sie ab — und ebenso, wenn du etwa 20
+Sekunden lang einfach nichts tust: Die Verbindung wird nie versehentlich
+erteilt. Die App zeigt dir an, dass sie darauf wartet.
+
+Drei Dinge sind dabei zu beachten:
+
+-   Gefragt wirst du nur im **Hauptmenü**. Bist du in einem
+    Trainingsmodus, wird die Anfrage sofort abgelehnt, ohne dich zu
+    unterbrechen: Die App meldet „DEVICE BUSY", und du kehrst ins
+    Hauptmenü zurück und versuchst es erneut.
+-   Hast du eine Verbindung einmal zugelassen, wird eine App, die sich
+    innerhalb der nächsten Minute erneut verbindet, ohne weitere
+    Nachfrage akzeptiert. Das sorgt dafür, dass eine App, die kurz im
+    Hintergrund war, oder eine abgerissene Verbindung dort weitermachen
+    kann, wo sie aufgehört hat — auch während du in einem
+    Trainingsmodus bist.
+-   Eine App, die älter als diese Funktion ist, meldet beim ersten Mal
+    möglicherweise eine fehlgeschlagene Verbindung. Drücke trotzdem
+    **FN** und verbinde dich noch einmal: Der zweite Versuch gelingt.
+
+Solange eine Sitzung offen ist, erscheint rechts in der obersten Zeile
+ein kleines Bluetooth-Symbol — im Hauptmenü ebenso wie in den
+Trainingsmodi —, sodass du immer siehst, dass etwas verbunden ist. Es
+verschwindet, sobald die App die Verbindung trennt.
 
 Ein paar Dinge sind zu beachten:
 
