@@ -1,4 +1,4 @@
-# M32 Config — iPhone app (scaffold)
+# M32 Config — iPhone app
 
 An iOS app that does what `m32_config_tool.html` does, but over **Bluetooth LE**
 instead of USB. It works by hosting the *unmodified* web tool in a `WKWebView`
@@ -20,12 +20,13 @@ The web tool is **not forked**. `sync-webtool.sh` copies it out of
 `Software/Utilities/` at build time, so the browser version and the app version
 can never drift apart.
 
-> **Status: scaffold, never compiled.** It was written on a machine with only
-> the Command Line Tools installed, so no iOS target could be built. The
-> platform-neutral half (`M32BleTransport`, `M32Client`, `BundleSchemeHandler`)
-> *does* type-check against the macOS SDK, and `bridge.js` parses; the SwiftUI
-> files and the whole app have never been through a compiler. Expect to fix a
-> few small things on the first build.
+> **Status: working, bench-tested, not yet submitted.** It builds, signs and
+> runs on an iPhone against real hardware. Exercised on the bench: connecting
+> and the on-device consent prompt, reading and changing preferences, the File
+> Builder end to end, and the power/battery reporting. The App Store groundwork
+> below is done; the submission itself has not been made.
+>
+> Untested: pushing a large file (an MP3) to the device over BLE.
 
 ## What you need
 
@@ -106,13 +107,10 @@ before running the link test.
 
 ## Known rough edges
 
-- **The Preferences tab will be slow.** The tool fetches every preference's
-  detail individually — around sixty round trips with a 50 ms pause between them
-  ([`loadPreferences`](../../Utilities/m32_config_tool.html)). That is tolerable
-  over USB and tedious over BLE. The obvious fix is a protocol addition (a bulk
-  detail read), not a client-side workaround.
 - **All timeouts are multiplied by 3** in `bridge.js` (`BLE_TIMEOUT_FACTOR`)
-  rather than tuned per command. Revisit once the link test gives real numbers.
+  rather than tuned per command. Measured on an M32 Pocket: a small command
+  round-trips in ~0.06 s and `get configs` returns in 0.12 s, so the margin is
+  ample and there has been no reason to tune it per command.
 - **Device picking is automatic**: strongest signal after a short settle window.
   With two Morserinos on the bench you get the nearer one, with no say in it.
   `M32BleTransport.discovered` already publishes the full list — a picker sheet

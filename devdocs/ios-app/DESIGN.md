@@ -102,16 +102,16 @@ From `MorseBleSerial.cpp` and [`devdocs/ble-serial/DESIGN.md`](../ble-serial/DES
 
 ## Open questions
 
-1. **Is BLE fast enough for the Preferences tab?** `loadPreferences()` does
-   ~60 sequential `get config/<name>` round trips with a 50 ms pause between
-   them. Over USB that is a second or two; over BLE it may be tens of seconds.
-   The clean fix is a protocol addition (bulk preference detail), which would be
-   a **1.4** item, not a client hack. Measure with the Link test tab first.
-2. **Distribution.** Sideloading with a free Apple ID expires every 7 days — fine
-   for the maintainer, useless for users. TestFlight needs the $99/year
-   programme but suits a community device well (up to 10,000 testers, no App
-   Review theatre per build). App Store review of a hardware companion app
-   usually asks for a demo video since the reviewer has no Morserino.
+1. ~~**Is BLE fast enough for the Preferences tab?**~~ **Answered.** The Link
+   test measured a small command at ~0.06 s and `get configs` at 0.12 s, so the
+   transport was never the problem — the ~60 sequential `get config/<name>`
+   round trips were. Protocol **1.4** added the bulk read (`GET configs/details`,
+   `devdocs/protocol-audit/PROTOCOL_1.4_DESIGN.md`) and the tab now loads in
+   about a second.
+2. ~~**Distribution.**~~ **Decided:** the Apple Developer Program, heading for
+   the App Store. Store copy and the reviewer notes that answer guidelines 2.1
+   and 4.2 live in `Software/iOS/M32Config/store-listing.md`. TestFlight remains
+   available on the same enrolment if a beta round is ever wanted.
 3. **Does it want a native UI eventually?** The tool's eleven-tab desktop layout
    is cramped on a phone. The transport and `M32Client` are deliberately free of
    any WebKit dependency so a native UI can be grown incrementally beside the
