@@ -29,6 +29,11 @@ targets:
       # in BundleWeb looks for.
       - path: Resources/Web
         type: folder
+      # Apple's privacy manifest, required for App Store submission and checked
+      # at upload. Must sit at the bundle root, so it is a plain resource file
+      # rather than part of the Web folder reference.
+      - path: Resources/PrivacyInfo.xcprivacy
+        buildPhase: resources
 
     settings:
       base:
@@ -38,7 +43,11 @@ targets:
         # Swift 5 language mode on purpose: Swift 6 strict concurrency turns the
         # CoreBluetooth delegate pattern into a fight that buys this app nothing.
         SWIFT_VERSION: "5.0"
-        TARGETED_DEVICE_FAMILY: "1,2"
+        # iPhone only. Declaring iPad support would oblige a second full set of
+        # 13-inch screenshots for the store listing, for a layout nobody has
+        # designed for the iPad. It still runs on an iPad in iPhone
+        # compatibility mode; change back to "1,2" to support it properly.
+        TARGETED_DEVICE_FAMILY: "1"
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: NO
         # DEVELOPMENT_TEAM deliberately lives in Local.xcconfig, not here: a
@@ -61,13 +70,13 @@ targets:
           - UIInterfaceOrientationPortrait
           - UIInterfaceOrientationLandscapeLeft
           - UIInterfaceOrientationLandscapeRight
-        UISupportedInterfaceOrientations~ipad:
-          - UIInterfaceOrientationPortrait
-          - UIInterfaceOrientationPortraitUpsideDown
-          - UIInterfaceOrientationLandscapeLeft
-          - UIInterfaceOrientationLandscapeRight
         # Required since iOS 13 — without it the app is killed the moment it
         # first touches CoreBluetooth.
+        # Answered here so App Store Connect stops asking on every single
+        # upload. The app implements no encryption of its own, and the BLE link
+        # is unencrypted (the firmware uses no bonding), so there is nothing
+        # non-exempt to declare. Revisit if that ever changes.
+        ITSAppUsesNonExemptEncryption: false
         NSBluetoothAlwaysUsageDescription:
           M32 Config uses Bluetooth to connect to your Morserino-32 and read or
           change its settings.

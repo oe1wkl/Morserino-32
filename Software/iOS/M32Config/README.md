@@ -123,6 +123,42 @@ before running the link test.
   chunks are 180 bytes, comfortably under the firmware's 400-character line
   limit — but nobody has pushed an MP3 through it yet.
 
+## Before submitting to the App Store
+
+Already in place, and verified in the built bundle:
+
+- **`Resources/PrivacyInfo.xcprivacy`** — declares the one required-reason API
+  the app touches (`UserDefaults`, reason `CA92.1`, for remembering the last
+  device). Collects nothing, tracks nobody. Its own comment says what a future
+  version would have to add.
+- **`ITSAppUsesNonExemptEncryption = false`** — so App Store Connect stops
+  asking at every upload. The app implements no encryption, and the BLE link is
+  unencrypted because the firmware uses no bonding.
+- **iPhone only** (`TARGETED_DEVICE_FAMILY: "1"`) — declaring iPad would oblige
+  a second full set of 13-inch screenshots.
+
+Still to do, roughly in order:
+
+1. **An app icon.** There is no `Assets.xcassets` at all, and submission fails
+   without one. A 1024×1024 PNG is the minimum. `M32P.png` in the repo root is a
+   3636×3024 *photograph* of the device — fine for a manual, wrong for an icon,
+   which needs flat artwork that survives being 60 px wide.
+2. **Enrol in the Apple Developer Program** ($99/year). Needed for TestFlight as
+   well as the store, so it is unavoidable either way. Decide individual vs
+   organization first — an individual listing carries your personal legal name,
+   and switching later is a support ticket, not a checkbox.
+3. **Screenshots, from real hardware.** The simulator has no Bluetooth, so it
+   can never show a connected state. 6.9-inch iPhone sizes.
+4. **A privacy policy URL.** Mandatory for every app, even one that collects
+   nothing. A short page on morserino.info is enough.
+5. **Reviewer notes and a demo video.** The reviewer has no Morserino, so
+   guideline 2.1 ("we could not test your app") is the likely first rejection.
+   Say plainly that it configures a physical CW device, and link a video.
+6. **Be ready for guideline 4.2** (repackaged website). This app is defensible:
+   it loads **no remote content** — the tool is bundled — and its core function
+   is native CoreBluetooth doing something no website can do on iOS. Put that in
+   the reviewer notes rather than waiting to be asked.
+
 ## File map
 
 | File | What it is |

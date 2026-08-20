@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  Apple's privacy manifest. Required for App Store submission, and checked at
+  upload: an app that touches a "required reason" API without declaring it here
+  is flagged.
+
+  This app collects nothing and tracks nobody. The single declarable thing it
+  does is remember which Morserino it last connected to, in UserDefaults
+  (M32BleTransport.lastDeviceKey), so it can reconnect without a scan. That is
+  reason CA92.1 - "access info from the same app". Nothing leaves the device.
+
+  If a future version reads file timestamps, free disk space, system uptime or
+  the active keyboard, each needs its own entry here.
+-->
+<plist version="1.0">
+<dict>
+	<key>NSPrivacyTracking</key>
+	<false/>
+	<key>NSPrivacyTrackingDomains</key>
+	<array/>
+	<key>NSPrivacyCollectedDataTypes</key>
+	<array/>
+	<key>NSPrivacyAccessedAPITypes</key>
+	<array>
+		<dict>
+			<key>NSPrivacyAccessedAPIType</key>
+			<string>NSPrivacyAccessedAPICategoryUserDefaults</string>
+			<key>NSPrivacyAccessedAPITypeReasons</key>
+			<array>
+				<string>CA92.1</string>
+			</array>
+		</dict>
+	</array>
+</dict>
+</plist>
