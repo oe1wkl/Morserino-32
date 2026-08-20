@@ -1754,8 +1754,18 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
 
 #ifdef CONFIG_BLE_SERIAL
 void MorseOutput::dispBleLogo() {      // display a small logo in the top right corner while a BLE Serial client is connected
+  int x = display.getWidth() - logoWidth;
+#ifdef CONFIG_MCP73871
+  // On builds with a charge controller the battery icon lives at the right-hand
+  // end of the STATUS line, and the LoRa/WiFi slot sits on top of it. Those two
+  // never overlap it in practice (LoRa is disabled on this hardware, and WiFi
+  // bring-up suspends BLE) but a session indicator is up for minutes at a time,
+  // so it steps left of the strip paintStatusBackground() reserves.
+  if (batteryIconVisible)
+      x = display.getWidth() - 34 - ble_width - 4;     // 34 = that reserved width
+#endif
   display.setColor(BLACK);
-  display.drawXbm(display.getWidth()-logoWidth, 2, ble_width, ble_height, ble_bits);
+  display.drawXbm(x, 2, ble_width, ble_height, ble_bits);
   display.setColor(WHITE);
   display.display();
 }
