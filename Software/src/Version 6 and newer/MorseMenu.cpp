@@ -347,7 +347,15 @@ void MorseMenu::menu_() {
     MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
+#ifdef CONFIG_BLE_SERIAL
+        // serialEvent(), plus the ONE place a BLE client may ask to be let in
+        // (devdocs/ble-serial/ACCESS_CONTROL.md D2 — everywhere else refuses).
+        // Returns true when the consent prompt took the screen, so repaint.
+        if (bleTopMenuService())
+            MorseMenu::menuDisplay(disp);
+#else
         serialEvent();
+#endif
 #ifdef CONFIG_BLE_SERIAL
         // THE top-menu backstop (the only one): every path to the top menu
         // ends in this wait loop — menu_() falls straight through to here,

@@ -84,6 +84,13 @@ UNIT_WORDS = ["words per minute", "Volume", "char", "characters", "of", "Snapsho
 # "9" + "point" + "0" + "beta"), so neither a version bump nor a new reading needs a clip.
 SPLASH_WORDS = ["Morserino 32 accessibility edition", "version", "point", "beta",
                 "battery", "volts", "battery empty"]
+# BLE Serial consent prompt (bleConsentPrompt() in m32_v6.ino) -- see
+# devdocs/ble-serial/ACCESS_CONTROL.md. Drawn, not table-driven, and it cannot use the
+# protocol text stream that CLAUDE.md §8 case 2 prescribes: the protocol session is
+# precisely what the operator is being asked to authorize, so it does not exist yet.
+# Without these clips the prompt is a lock a blind operator cannot open.
+CONSENT_WORDS = ["Allow Bluetooth connection? F N for yes, click for no.",
+                 "Connection allowed.", "Connection refused."]
 
 # User-editable pronunciation overrides (spoken_overrides.tsv): firmware string -> spoken text.
 # Highest priority -- lets the maintainer hand-tune how any entry / option / label is pronounced.
@@ -200,8 +207,12 @@ phrase_texts = (
     pref_labels +
     option_values +
     [spoken_of(s, ACTION_SPOKEN) for s in action_items] +
-    UNIT_WORDS + SPLASH_WORDS
+    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS
 )
+# NOTE: a non-table word list must appear TWICE -- here, which schedules the clip for
+# rendering, and in the fw_add() loop below, which maps the firmware string to that clip.
+# Only one of the two and the string is silent with no error anywhere: voice_clips.h names
+# a clip that generate_audio.sh was never asked to render.
 
 # ── ATOMS: NATO letters, punctuation, numbers ────────────────────────────────
 letters   = list(NATO.values())                                    # Alpha..Zulu
@@ -276,7 +287,7 @@ for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spok
 for lbl in pref_labels: fw_add(lbl, lbl)
 for v in option_values: fw_add(v, v)
 for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
-for t in UNIT_WORDS + SPLASH_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
+for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
 
 def cstr(s): return s.replace("\\", "\\\\").replace('"', '\\"')
 HDR = os.path.join(SRC, "voice_clips.h")

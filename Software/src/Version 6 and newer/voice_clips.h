@@ -168,6 +168,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Africa", "f5cd2629"},
   {"All", "b1c94ca2"},
   {"All Chars", "b50acc3b"},
+  {"Allow Bluetooth connection? F N for yes, click for no.", "f2a105d0"},
   {"Alph+Num+Int", "86492718"},
   {"Alpha", "6132295f"},
   {"Alpha + Num", "be2096dd"},
@@ -217,6 +218,8 @@ static const VoiceEntry voiceLookup[] = {
   {"Complements", "29942e7e"},
   {"Config WiFi", "48b63831"},
   {"Confirmation tone", "2fc03d0b"},
+  {"Connection allowed.", "89f693ee"},
+  {"Connection refused.", "015d206e"},
   {"Contest", "57fb27de"},
   {"Contest Type", "f9530141"},
   {"Curtis B dah timing", "619984cf"},
@@ -428,7 +431,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 420;
+static const unsigned int voiceLookupCount = 423;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

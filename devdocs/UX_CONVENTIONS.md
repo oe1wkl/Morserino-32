@@ -254,6 +254,18 @@ disconnection are silent on the device screen; state changes the user must
 know about (e.g. suspension for WiFi) are shown once as a short splash and
 mirrored as an M32-protocol `message` object.
 
+**Consent.** A service that grants an outside party control of the device
+requires the operator's explicit consent, because radio range is not a trust
+boundary. A connection request is confirmed **on the device** (FN = yes,
+encoder click = no, following the confirmation idiom of §1), refused if
+unanswered, and asked **only at the top menu** — a request arriving while an
+interactive mode is running is refused without prompting, since a blocking
+prompt would interrupt CW and the black-knob click is already spoken for
+there. Consent is proof of presence, not a password: nothing is stored, and it
+is asked again for each new session. (BLE Serial only; USB needs no consent,
+as a cable is itself proof of presence. Design:
+`devdocs/ble-serial/ACCESS_CONTROL.md`.)
+
 ## 11. Manual parity
 
 Every convention here corresponds to a sentence in the user manual. When a
