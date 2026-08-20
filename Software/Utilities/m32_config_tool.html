@@ -1344,7 +1344,6 @@ async function loadHardwareInfo(){
     if(hw.hardware){
       items.push({label:'Brightness',value:hw.hardware.brightness});
       items.push({label:'Left-Handed',value:hw.hardware.leftHanded?'Yes':'No'});
-      items.push({label:'V Adjust',value:hw.hardware.vAdjust});
       if(hw.hardware.loraBand!==undefined){
         var bands=['433 MHz','868 MHz','920 MHz'];
         items.push({label:'LoRa Band',value:bands[hw.hardware.loraBand]||hw.hardware.loraBand});
@@ -1357,11 +1356,14 @@ async function loadHardwareInfo(){
   try{
     var bat=await sendAndParse('get battery',2000);
     if(bat.battery){
-      // Over USB (which this protocol requires) the cell is normally charging, so the
-      // reported voltage is the charging voltage (~4.2 V), NOT the battery's state of
-      // charge — showing it would be misleading. Show only the power/charge status.
+      // The voltage is only worth showing when the device is running off the cell.
+      // While an external supply is connected it is the charging voltage (~4.2 V
+      // almost immediately), not the state of charge, and showing it misleads.
       var s=bat.battery.status||'—';
-      var disp = s==='charging' ? 'USB — charging' :
+      var mv=bat.battery.voltage;
+      var volts=(typeof mv==='number'&&mv>1000)?(mv/1000).toFixed(2)+' V':'';
+      var disp = s==='battery'  ? ('On battery'+(volts?' — '+volts:'')) :
+                 s==='charging' ? 'USB — charging' :
                  s==='full'     ? 'USB — battery full' :
                  s==='no battery' ? 'USB powered (no battery)' :
                  s==='usb powered' ? 'USB powered' : s;

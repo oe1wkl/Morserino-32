@@ -702,13 +702,26 @@ void MorseJSON::jsonGetBattery(void) {
     // Charge state from the MCP73871 status pins — the same source the device's own
     // battery icon uses. A voltage threshold is unreliable: while charging over USB the
     // cell voltage already sits near 4.2 V long before the charger reports "complete".
-    switch (MorseOutput::getPowerpathState()) {
+    //
+    // Bit 0 is PG (power good), LOW while an external supply is present -- every
+    // mapped state below has it low. HIGH means there is no supply and the device
+    // is running off the cell. That case used to fall into the "charging"
+    // default, which was a safe assumption only while this protocol required a
+    // USB cable. Over BLE it is not: a phone talking to a device on battery was
+    // told "USB - charging" (seen on hardware, M32 Pocket, 2026-08-20).
+    uint8_t pp = MorseOutput::getPowerpathState();
+    if (pp & 1) {
+        bat["status"] = "battery";                      // no external supply: on the cell
+    } else switch (pp) {
         case 4:  bat["status"] = "full";        break;   // charge complete
         case 6:  bat["status"] = "no battery";  break;   // running on USB, no cell installed
         case 2:
-        default: bat["status"] = "charging";    break;   // charging (and safe default while on USB)
+        default: bat["status"] = "charging";    break;   // charging
     }
 #else
+    // No charge controller to ask on this hardware, and no PG pin: a classic M32
+    // running on battery cannot be told apart from one on USB, so this stays as
+    // it was rather than guessing.
     bat["status"] = "usb powered";
 #endif
     MorseJSON::jsonSend(doc);

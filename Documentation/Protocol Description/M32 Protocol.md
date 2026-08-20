@@ -24,6 +24,13 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	PUT game/scores/clear — clear all stored game scores and saved games,
 	    exactly as "Reset Scores" in the preferences menu does
 
+	Changed:
+
+	GET battery can now report status "battery" -- no external supply, running
+	    on the cell, and the only case where "voltage" means state of charge.
+	    Earlier firmware reported "charging" in that situation, which was a
+	    safe assumption only while the protocol required a USB cable.
+
 	Changed, on the BLE transport only:
 
 	PUT device/protocol/on now asks the Morserino's operator to confirm the
@@ -766,13 +773,28 @@ Example (M32 Pocket, no LoRa):
 
 `GET battery`
 
-This returns information about the power / battery status. Note that when connected via USB (which is required for the serial protocol), the battery is typically being charged, so the voltage reading reflects charging voltage rather than actual battery level.
+This returns information about the power / battery status.
 
-On devices with battery monitoring hardware (e.g. M32 Pocket), the response includes "voltage" (type Number; millivolts) and "status" (type String). The status is read from the charge-controller status pins (the same source the device's own battery icon uses, *not* a voltage threshold) and is one of "charging", "full" (charge complete) or "no battery". Because the voltage sits near 4.2 V throughout charging, it is not a reliable indicator of charge level — use "status", not "voltage", to tell charging from full. On other devices (no battery monitoring), the status is "usb powered".
+On devices with battery monitoring hardware (e.g. M32 Pocket), the response includes "voltage" (type Number; millivolts) and "status" (type String). The status is read from the charge-controller status pins — the same source the device's own battery icon uses, *not* a voltage threshold — and is one of:
+
+* `"battery"` — no external supply: the device is running off the cell. **Here, and only here, is "voltage" a meaningful state of charge.**
+* `"charging"` — an external supply is present and the cell is charging.
+* `"full"` — an external supply is present and charging is complete.
+* `"no battery"` — an external supply is present and no cell is installed.
+
+While anything other than `"battery"` is reported, the voltage sits near 4.2 V almost immediately and says nothing about charge level: use "status", not "voltage", to tell charging from full.
+
+`"battery"` exists because BLE removed the assumption that a client implies a cable. Firmware that predates it reports `"charging"` when running on the cell — a client that must work with older firmware should treat "charging" as "powered, state unknown".
+
+On devices without battery monitoring (classic M32) the status is always `"usb powered"`: there is no power-good signal to read, so a classic M32 running on its battery cannot be distinguished from one on USB.
 
 Example (M32 Pocket):
 
 	{"battery":{"voltage":4050,"status":"charging"}}
+
+Example (M32 Pocket, no cable connected):
+
+	{"battery":{"voltage":3870,"status":"battery"}}
 
 Example (classic M32):
 
