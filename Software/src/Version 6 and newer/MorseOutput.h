@@ -102,6 +102,7 @@ namespace MorseOutput
   void dispWifiLogo();
 #ifdef CONFIG_BLE_SERIAL
   void dispBleLogo();                  // a BLE Serial client holds a session
+  void clearBleLogo();                 // ... and that session has ended
 #endif
 #ifdef CONFIG_MCP73871
   extern uint8_t  ppCurrentState;
