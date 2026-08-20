@@ -45,3 +45,8 @@ Software/iOS/M32Config/**/*.xcuserstate
 # IS committed.
 Software/iOS/M32Config/Resources/Web/m32_config_tool.html
 Software/iOS/M32Config/Resources/Web/m32_pref_help.json
+
+# Per-developer signing (Apple Team ID). Committed as Local.xcconfig.example;
+# the real file stays out of a public repo, and keeping it out of the generated
+# .xcodeproj is what stops `xcodegen generate` from wiping the setting.
+Software/iOS/M32Config/Local.xcconfig

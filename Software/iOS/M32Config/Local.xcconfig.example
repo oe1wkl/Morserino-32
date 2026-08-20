@@ -1,0 +1,18 @@
+// Local.xcconfig.example -- copy to Local.xcconfig and fill in your own team.
+//
+//   cp Local.xcconfig.example Local.xcconfig
+//
+// Local.xcconfig is git-ignored on purpose: an Apple Team ID identifies a
+// specific developer account, and this repository is public. Keeping it out of
+// project.yml also means `xcodegen generate` no longer wipes your signing
+// selection every time the project is regenerated -- Xcode reads the value from
+// here, not from the generated .xcodeproj.
+//
+// Your Team ID is the code in parentheses in:
+//   security find-identity -v -p codesigning
+// e.g. "Apple Development: you@example.com (ABCDE12345)" -> ABCDE12345
+//
+// Leaving it empty is fine for a simulator build; a build to a real device
+// needs it (or pick the team by hand in Signing & Capabilities).
+
+DEVELOPMENT_TEAM =

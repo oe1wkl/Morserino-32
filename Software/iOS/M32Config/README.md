@@ -44,13 +44,20 @@ brew install xcodegen
 ```
 
 ```bash
-cd "Software/iOS/M32Config" && ./sync-webtool.sh && xcodegen generate && open M32Config.xcodeproj
+cd "Software/iOS/M32Config" && cp -n Local.xcconfig.example Local.xcconfig; ./sync-webtool.sh && xcodegen generate && open M32Config.xcodeproj
 ```
+
+The `cp -n` is there because `xcodegen generate` refuses to run without
+`Local.xcconfig`; it never overwrites an existing one, so it is safe to leave in
+the command you run every time.
 
 Then in Xcode:
 
 1. Select the **M32Config** target → **Signing & Capabilities**.
 2. Set **Team** to your Apple ID (*Add an Account…* if it is not listed yet).
+   Then put the Team ID into `Local.xcconfig` so it survives the next
+   `xcodegen generate` — the file is git-ignored and exists precisely for this.
+   `security find-identity -v -p codesigning` prints it in parentheses.
 3. If it complains that the bundle identifier is taken, change
    `cc.kraml.m32config` to anything unique.
 4. Plug in your iPhone, pick it in the device menu at the top, and press ▶.
@@ -127,6 +134,7 @@ before running the link test.
 | `Sources/ContentView.swift` | Two tabs: the tool, and the link test. |
 | `Resources/Web/bridge.js` | The ninety lines that re-point the tool at Bluetooth. |
 | `sync-webtool.sh` | Copies the tool out of `Software/Utilities/`. |
+| `Local.xcconfig.example` | Template for your signing Team ID; copy to the git-ignored `Local.xcconfig`. |
 
 Design rationale and the firmware constraints this all has to respect:
 [`devdocs/ios-app/DESIGN.md`](../../../devdocs/ios-app/DESIGN.md).

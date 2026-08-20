@@ -41,8 +41,16 @@ targets:
         TARGETED_DEVICE_FAMILY: "1,2"
         CODE_SIGN_STYLE: Automatic
         GENERATE_INFOPLIST_FILE: NO
-        # DEVELOPMENT_TEAM is left empty: pick your Apple ID in Xcode under
-        # Signing & Capabilities the first time you build.
+        # DEVELOPMENT_TEAM deliberately lives in Local.xcconfig, not here: a
+        # Team ID identifies a specific developer account and this repo is
+        # public, and keeping it out of the generated project is what stops
+        # `xcodegen generate` from wiping your signing selection every time.
+
+    # Read at BUILD time by Xcode, so regenerating the project cannot lose it.
+    # Git-ignored; copy Local.xcconfig.example if you do not have one yet.
+    configFiles:
+      Debug: Local.xcconfig
+      Release: Local.xcconfig
 
     info:
       path: Generated/Info.plist
