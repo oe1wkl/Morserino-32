@@ -292,6 +292,10 @@ void MorseMenu::menu_() {
    // then, resuming directly into the requested game.
    MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
    uint8_t disp = 0;
+#ifdef CONFIG_BLE_SERIAL
+   boolean bleSessionShown = bleProtocol;   // what the indicator currently claims; seeded from
+                                            // reality so entering the menu paints it just once
+#endif
    int t, command;
    m32state = menu_loop;
 #ifdef CONFIG_AUDIO_A11Y
@@ -374,6 +378,16 @@ void MorseMenu::menu_() {
           disp = MorsePreferences::newMenuPtr;
           MorseMenu::menuDisplay(disp);
         }
+#ifdef CONFIG_BLE_SERIAL
+        // Repaint when a session comes or goes: menuDisplay() otherwise runs
+        // only when the highlighted entry changes, and a session can open
+        // (grace window) or drop while the menu sits perfectly still. Placed
+        // AFTER the sync above so `disp` is never the stale 0 it starts as.
+        if (bleProtocol != bleSessionShown) {
+            bleSessionShown = bleProtocol;
+            MorseMenu::menuDisplay(disp);
+        }
+#endif
         if (quickStart) {
             quickStart = false;
             command = 1;
@@ -497,6 +511,15 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
 
   MorseOutput::clearStatusLine();
   MorseOutput::printOnStatusLine( true, 0,  "Select Mode:      ");
+#ifdef CONFIG_BLE_SERIAL
+  // A session opened over the air is the one thing about this device the
+  // operator cannot otherwise see, so say so wherever they are looking. In a
+  // running mode the same glyph rides in the top bar (updateTopLine()).
+  if (bleProtocol)
+      MorseOutput::dispBleLogo();
+  else
+      MorseOutput::clearBleLogo();     // never leave a finished session on screen
+#endif
 
   // delete previous content
   MorseOutput::clearScrollLines();

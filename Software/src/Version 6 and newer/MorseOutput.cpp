@@ -191,6 +191,14 @@ static unsigned char lora_bits[] = {
 static unsigned char wifi_bits[] = {
   0xc0,0xc8,0xd0,0xe4,0xe8,0xeb,0xe8,0xe4,0xd0,0xc8,0xc0 };
 
+#define ble_width 6         /// shown while a BLE Serial client holds a session, stored in XBM format
+#define ble_height 11
+// The Bluetooth rune, reduced to stem + the two right-hand triangles. The real
+// rune's crossing diagonals need a left arm that degenerates into two isolated
+// pixels at six columns wide, which reads as dirt rather than as a symbol.
+static unsigned char ble_bits[] = {
+  0x04,0x0c,0x0c,0x14,0x0c,0x04,0x0c,0x14,0x0c,0x0c,0x04 };
+
 #else
 
 //fg = 0x6345;
@@ -213,6 +221,18 @@ static unsigned char wifi_bits[] = {
  0x90,0xe8,0x10,0xe9,0x24,0xe9,0x24,0xf2,0x48,0xf2,0x4b,0xf2,
  0x48,0xf2,0x24,0xf2,0x24,0xf2,0x10,0xe9,0x10,0xe9,0x80,0xe8,
  0x80,0xe4,0x40,0xe4,0x00,0xe2,0x00,0xe1,0x00,0xe0,0x00,0xe0
+};
+
+#define ble_width 13         /// shown while a BLE Serial client holds a session, stored in XBM format
+#define ble_height 24
+// The full Bluetooth rune: stem, plus two strokes that each run from a stem end
+// out to the right and then diagonally across to the opposite side. There is
+// room for the crossings at this size, unlike on the OLED.
+static unsigned char ble_bits[] = {
+  0x40,0x00,0xc0,0x00,0xc0,0x00,0x40,0x01,0x40,0x02,0x40,0x02,
+ 0x44,0x04,0x48,0x02,0x48,0x02,0x50,0x01,0xe0,0x00,0x40,0x00,
+ 0x40,0x00,0xe0,0x00,0x50,0x01,0x48,0x02,0x48,0x02,0x44,0x04,
+ 0x40,0x02,0x40,0x02,0x40,0x01,0xc0,0x00,0xc0,0x00,0x40,0x00
 };
 
 /// logo for start-up screen
@@ -1731,6 +1751,41 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
   display.setColor(WHITE);
   display.display();
 }
+
+#ifdef CONFIG_BLE_SERIAL
+// Where the session glyph lives. On builds with a charge controller the battery
+// icon owns the right-hand end of the STATUS line, so the glyph steps left of the
+// strip paintStatusBackground() reserves. Deliberately NOT conditional on
+// batteryIconVisible: menu_() calls clearDisplay() on entry, which clears that
+// flag, so a glyph drawn during that window would land in the battery's place
+// and be painted over the moment the icon is redrawn -- which looked exactly
+// like the indicator failing to appear at all after leaving a mode.
+static int bleLogoX() {
+#ifdef CONFIG_MCP73871
+  return display.getWidth() - 34 - ble_width - 4;      // 34 = that reserved width
+#else
+  return display.getWidth() - logoWidth;               // classic: battery is in the scroll area
+#endif
+}
+
+void MorseOutput::dispBleLogo() {      // display a small logo in the top right corner while a BLE Serial client is connected
+  display.setColor(BLACK);
+  display.drawXbm(bleLogoX(), 2, ble_width, ble_height, ble_bits);
+  display.setColor(WHITE);
+  display.display();
+}
+
+void MorseOutput::clearBleLogo() {     // erase it when the session ends
+  // Its own operation, because printOnStatusLine() short-circuits when asked to
+  // draw text that is already on screen: coming back to the menu with the same
+  // "Select Mode:" line repaints no background whatsoever, so a glyph left over
+  // from a finished session would sit there forever.
+  display.setColor(WHITE);
+  display.fillRect(bleLogoX(), 2, ble_width, ble_height);
+  display.setColor(WHITE);
+  display.display();
+}
+#endif
 
 #ifdef CONFIG_TFT
 // Boot-splash tuning (tweakable):

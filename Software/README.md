@@ -22,6 +22,7 @@
 * „Select Lesson“ now also shows the total # of characters in the selected Koch sequence.
 * A few more cosmetic display output fixes.
 * The Configuration Tool's Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.
+* A Bluetooth (BLE Serial) connection now has to be allowed on the Morserino itself. When an app asks for a session, the device shows „Allow connect?“ and waits for you to press FN - a USB cable has to be plugged in by someone standing next to your device, while anything within radio range can connect over Bluetooth, so the Morserino asks before it hands over control. You are only asked in the main menu (in a training mode the request is refused without interrupting you), an app that reconnects within a minute is let straight back in, and while a session is open a small Bluetooth symbol in the top line shows that something is connected.
 
 #### Bug Fixes:
 * M32 Pocket only: There was a bug in Morse Invaders - even when you started a game with a level higher than 1, the speed was initially like Level 1, and only after going into the next level, the speed was the expected one. Fixed.

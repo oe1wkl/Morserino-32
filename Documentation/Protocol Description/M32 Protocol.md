@@ -24,7 +24,13 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	PUT game/scores/clear — clear all stored game scores and saved games,
 	    exactly as "Reset Scores" in the preferences menu does
 
-	Everything is additive: no command or property from 1.3 changed its
+	Changed, on the BLE transport only:
+
+	PUT device/protocol/on now asks the Morserino's operator to confirm the
+	    connection on the device itself before the session begins — see
+	    "Consent on BLE" below. Over USB nothing changed.
+
+	Everything else is additive: no command or property from 1.3 changed its
 	shape or its meaning.
 
 	Additions made within protocol version 1.3, which did not change the
@@ -95,11 +101,12 @@ The protocol is one line-based byte stream; it is available over two transports 
 | RX characteristic (client → M32) | `6E400002-B5A3-F393-E0A9-E50E24DCCA9E`, Write and Write Without Response |
 | TX characteristic (M32 → client) | `6E400003-B5A3-F393-E0A9-E50E24DCCA9E`, Notify |
 
-No pairing/bonding is used — connecting is equivalent, trust-wise, to plugging in a USB cable. One central at a time. The M32 requests a large MTU (517); notifications are chunked to the negotiated MTU and chunk boundaries are arbitrary (they may split a JSON object or a UTF-8 character), so a client must reassemble the byte stream and frame it exactly like a USB client would: JSON objects by balanced braces, everything outside braces is the raw character echo. Writes to RX may likewise be split or batched freely; the M32 reassembles until `\n`.
+No pairing/bonding is used, but connecting is **not** by itself enough to obtain a session: because anything in radio range can connect, the operator is asked to confirm on the device (see "Consent on BLE" below). One central at a time. The M32 requests a large MTU (517); notifications are chunked to the negotiated MTU and chunk boundaries are arbitrary (they may split a JSON object or a UTF-8 character), so a client must reassemble the byte stream and frame it exactly like a USB client would: JSON objects by balanced braces, everything outside braces is the raw character echo. Writes to RX may likewise be split or batched freely; the M32 reassembles until `\n`.
 
 Transport rules a client should know:
 
 - **Per-transport sessions.** Each transport has its own protocol session: `PUT device/protocol/on` on BLE starts (only) the BLE session; `PUT device/protocol/off` received over a transport ends (only) that transport's session. This command pair is matched case-insensitively on both transports.
+- **Consent on BLE.** `PUT device/protocol/on` over BLE does not open a session on its own; it asks the Morserino's operator. A client must expect a `CONFIRM ON DEVICE` message and keep waiting, and must handle refusal. USB is unaffected — a cable is itself proof of presence.
 - **Both sessions at once.** If both transports are handshaken, both receive all responses and unsolicited objects, including the other session's command replies (protocol 1.3 clients must tolerate unknown/unsolicited objects anyway). Session-control messages are the exception and stay on their own transport: the handshake's `device` object, the `{"end m32protocol": ...}` goodbye, BLE transport errors (`BLE LINE TOO LONG`, `BLE RX OVERFLOW`) and the BLE suspend/stop notices are delivered only to the transport they concern — a goodbye you receive always means *your* session ended. A USB port that never handshakes stays byte-silent (except the character echo and debug output, as today) even while a BLE session is active.
 - **Ordering.** Commands are executed one line at a time per transport, in arrival order, with device-state changes applied between lines — batching several commands in one GATT write is fine. No ordering is guaranteed *between* the two transports within a polling cycle.
 - **WiFi suspends BLE.** Any device activity that needs the WiFi radio (WiFi transceiver, multiplayer game entry, file upload, firmware update, WiFi configuration and the WiFi menu functions — including remotely executable ones like *Disp MAC Address*, so a BLE client that executes those cuts off its own link) suspends BLE Serial: the client gets a `message` object first (best effort), then the link drops. BLE Serial re-advertises when the device returns to the top menu.
@@ -153,6 +160,21 @@ The protocol can also be disabled with the command:
 `PUT device/protocol/off`
 
 The device acknowledges this with a farewell object: `{"end m32protocol":{"content":"Goodbye!"}}`.
+
+### Consent on BLE
+
+Over USB the cable is the authorisation: whoever can plug it in can already do anything to the device. Over Bluetooth that is not true — anything within radio range can connect — so `PUT device/protocol/on` received over BLE does not open a session by itself. It asks the Morserino's operator, and the session begins only if they agree. **Over USB none of this applies** and the handshake behaves exactly as before.
+
+A BLE client must therefore be ready for four replies instead of one. All of them are sent to the BLE session alone:
+
+* `{"message":{"content":"CONFIRM ON DEVICE"}}` — the device is now asking its operator. Tell the user to press **FN** (the red button) on the Morserino, and go on waiting: the next object is the answer. Allow about 20 seconds; the device refuses if nobody answers in that time.
+* `{"device":{ … }}` — allowed. This is the ordinary handshake response, just later than usual, and the session is open.
+* `{"error":{"content":"CONNECTION DECLINED"}}` — the operator refused, or nobody answered in time.
+* `{"error":{"content":"DEVICE BUSY"}}` — the Morserino is running an interactive mode, and a request is only ever put to the operator at the top menu, so it was refused without asking. Tell the user to return the device to its main menu and try again.
+
+Once consent has been given, a client reconnecting within **60 seconds** is admitted without the operator being asked again. That is what lets a dropped link, or an app that was merely backgrounded, resume without troubling them; the window also applies while an interactive mode is running, so a session that drops mid-practice can restore itself.
+
+**Older clients are not locked out.** A client written before this existed will usually treat the `CONFIRM ON DEVICE` message as a failed handshake and disconnect. The Morserino keeps the question on its screen regardless of what the client does, so the operator can still press FN — and the client's next connection attempt is then admitted through the 60-second window. The effect is one extra connect attempt, not a lockout.
 
 
 

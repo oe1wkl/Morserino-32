@@ -2779,6 +2779,10 @@ void updateTopLine() {
     MorseOutput::dispLoraLogo();
   else if ((morseState == wifiTrx) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 1))
       MorseOutput::dispWifiLogo();
+#ifdef CONFIG_BLE_SERIAL
+  else if (bleProtocol)                                 // one slot, so RF wins: "I am transmitting"
+      MorseOutput::dispBleLogo();                       // is more urgent than "a client is attached"
+#endif
 
   MorseOutput::displayVolume(encoderState == speedSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
   MorseOutput::refreshDisplay();

@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=2f8f7ccf7c79 v=9 -->
+<!-- WHATSNEW:BEGIN en=b50904b6c887 v=9 -->
 What is new in Version 9?
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
@@ -55,6 +55,7 @@ What is new in Version 9?
 -   „Select Lesson“ now also shows the total # of characters in the selected Koch sequence.
 -   A few more cosmetic display output fixes.
 -   The Configuration Tool's Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.
+-   A Bluetooth (BLE Serial) connection now has to be allowed on the Morserino itself. When an app asks for a session, the device shows „Allow connect?“ and waits for you to press FN - a USB cable has to be plugged in by someone standing next to your device, while anything within radio range can connect over Bluetooth, so the Morserino asks before it hands over control. You are only asked in the main menu (in a training mode the request is refused without interrupting you), an app that reconnects within a minute is let straight back in, and while a session is open a small Bluetooth symbol in the top line shows that something is connected.
 <!-- WHATSNEW:END -->
 
 # Connectors and Controls
@@ -3650,9 +3651,42 @@ text that the Morserino keys as CW (`PUT cw/play/...`).
 After selecting this option (it takes effect on the next return to the
 main menu), the Morserino advertises itself as "**Morserino-32**"
 whenever it is at the main menu or in one of the training modes and no
-client is connected. No pairing is necessary —
-connecting works like plugging in a USB cable, and the app starts the
-session with the usual `PUT device/protocol/on` command.
+client is connected. No pairing is necessary, but connecting is not
+quite like plugging in a USB cable: nobody can plug in a cable without
+standing next to your Morserino, whereas anything within radio range can
+connect. The Morserino therefore asks you before it hands over control.
+
+When an app starts a session with the usual `PUT device/protocol/on`
+command, the Morserino shows
+
+    Allow connect?
+    FN = yes
+    click = no
+
+Press **FN** (the red button) to allow the connection. A click on the
+black knob refuses it, and so does simply doing nothing for about 20
+seconds — the connection is never granted by accident. The app will tell
+you that it is waiting for this.
+
+Three things are worth knowing:
+
+-   You are only asked at the **main menu**. If you are in a training
+    mode the request is refused immediately, without interrupting you:
+    the app reports "DEVICE BUSY", and you return to the main menu and
+    try again.
+-   Once you have allowed a connection, an app that reconnects within
+    the next minute is admitted without asking you again. That is what
+    lets an app which was briefly in the background, or a link that
+    dropped, pick up where it left off — including while you are in a
+    training mode.
+-   An app written before this feature existed may report a failed
+    connection the first time. Press **FN** anyway, then connect again:
+    the second attempt succeeds.
+
+While a session is open, a small Bluetooth symbol appears at the right
+of the top line, both in the main menu and in the training modes, so you
+can always see that something is connected. It disappears as soon as the
+app disconnects.
 
 A few things to be aware of:
 
