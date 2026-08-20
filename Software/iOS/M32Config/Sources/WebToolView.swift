@@ -98,6 +98,17 @@ struct WebToolView: UIViewRepresentable {
                 transport.disconnect()
                 reply(id, ok: true, payload: "")
 
+            case "saveFile":
+                // The web tool saves by clicking an <a download>, which a
+                // WKWebView silently ignores. On a phone "save a file" means the
+                // share sheet, so write it out and hand it to iOS.
+                guard let name = body["name"] as? String,
+                      let text = body["text"] as? String else {
+                    reply(id, ok: false, payload: "saveFile without name or text")
+                    return
+                }
+                presentShareSheet(named: name, text: text, id: id)
+
             case "write":
                 guard let text = body["text"] as? String else {
                     reply(id, ok: false, payload: "write without text")
@@ -111,6 +122,42 @@ struct WebToolView: UIViewRepresentable {
             default:
                 reply(id, ok: false, payload: "unknown bridge command \"\(command)\"")
             }
+        }
+
+        // MARK: Saving
+
+        private func presentShareSheet(named name: String, text: String, id: Int) {
+            // The name comes from a text field in the page: keep it to a
+            // filename so it cannot climb out of the temporary directory.
+            let safe = (name as NSString).lastPathComponent
+            let filename = safe.isEmpty ? "multipart.txt" : safe
+            let url = FileManager.default.temporaryDirectory.appendingPathComponent(filename)
+
+            do {
+                try text.write(to: url, atomically: true, encoding: .utf8)
+            } catch {
+                reply(id, ok: false, payload: error.localizedDescription)
+                return
+            }
+
+            // Present from whatever is frontmost: the share sheet itself may
+            // already be up, and presenting on top of a presenting controller
+            // throws it away silently.
+            guard var presenter = webView?.window?.rootViewController else {
+                reply(id, ok: false, payload: "no window to present from")
+                return
+            }
+            while let above = presenter.presentedViewController { presenter = above }
+
+            let sheet = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            // An iPad presents this as a popover and traps without an anchor.
+            if let host = webView {
+                sheet.popoverPresentationController?.sourceView = host
+                sheet.popoverPresentationController?.sourceRect =
+                    CGRect(x: host.bounds.midX, y: host.bounds.midY, width: 0, height: 0)
+            }
+            presenter.present(sheet, animated: true)
+            reply(id, ok: true, payload: filename)
         }
 
         // MARK: native → JS
