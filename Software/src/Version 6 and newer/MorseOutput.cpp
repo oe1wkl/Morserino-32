@@ -1984,7 +1984,7 @@ float calcVolume(uint8_t v) { // v = 0 - 19
 void soundEnableHeadphone(void) {
     codec.enableHeadphoneAmp();
     // codec.setHeadphoneVolume(-30.0f,-30.0f); // volume regulated by encoder
-    codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-12.0,calcVolume(MorsePreferences::sidetoneVolume)-12.0);
+    codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-3.0,calcVolume(MorsePreferences::sidetoneVolume)-3.0);
     codec.setHeadphoneGain(9.0f,9.0f); // valid db: 0 - 9 (max); was 0dB, raised after the setDACVolume fix below left headroom unused
     codec.setHeadphoneMute(false); // unmute hp
     codec.setSpeakerMute(true); // mute class d speaker amp
@@ -1992,7 +1992,7 @@ void soundEnableHeadphone(void) {
 
 void soundEnableSpeaker(void) {
     codec.enableSpeakerAmp();
-    codec.setSpeakerGain(18.0f); // valid db: 6, 12, 18, 24; was 6dB (the minimum step)
+    codec.setSpeakerGain(12.0f); // valid db: 6, 12, 18, 24; 18 was still too loud at full Tone Volume
     // codec.setSpeakerVolume(-13.0f); // volume set by encoder
     codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume));
     codec.setSpeakerMute(false); // unmute class d speaker amp
@@ -2012,7 +2012,7 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
       codec.setHeadphoneVolume(0.0, 0.0); // volume 0db on line-out
     }
     else
-      codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-12.0,calcVolume(MorsePreferences::sidetoneVolume)-12.0);
+      codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-3.0,calcVolume(MorsePreferences::sidetoneVolume)-3.0);
 
     if (muted)
           codec.setSpeakerMute(true); // mute class d speaker amp
@@ -2020,7 +2020,7 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
       {
         //DEBUG ("Not muted!");
         codec.enableSpeakerAmp();
-        codec.setSpeakerGain(18.0f); // valid db: 6, 12, 18, 24; was 6dB (the minimum step)
+        codec.setSpeakerGain(12.0f); // valid db: 6, 12, 18, 24; 18 was still too loud at full Tone Volume
         // codec.setSpeakerVolume(-10.0f); // volume set by encoder
         codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume));
         codec.setSpeakerMute(false); // unmute class d speaker amp
@@ -2037,7 +2037,7 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
             codec.setHeadphoneMute(true); // mute hp
         else  
             codec.setHeadphoneMute(false);
-        codec.setHeadphoneVolume(calcVolume(v)-12.0, calcVolume(v)-12.0); // reduce headphone volume by 6dB to match speaker volume
+        codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
         break;
       case 1: // line-out, speaker not muted, fixed l-o gain
         if (v==0)
@@ -2057,7 +2057,7 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
             codec.setHeadphoneMute(false);
         }
         codec.setSpeakerVolume(calcVolume(v));
-        codec.setHeadphoneVolume(calcVolume(v)-12.0, calcVolume(v)-12.0); // reduce headphone volume by 6dB to match speaker volume
+        codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
         break;
       case 3: // line-out, speaker muted, fixed l-o gain
         break;
@@ -2068,7 +2068,7 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
       codec.setHeadphoneMute(true); // mute hp
     else  
       codec.setHeadphoneMute(false);
-    codec.setHeadphoneVolume(calcVolume(v)-12.0, calcVolume(v)-12.0); // reduce headphone volume by 6dB to match speaker volume
+    codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
   } */ 
   else {
     if (v==0)
@@ -2275,7 +2275,9 @@ void MorseOutput::soundSetup()
       // driven by the Tone Volume preference). +20 dB of digital gain here was
       // clipping every tone internally, before it ever reached that analog stage
       // -- audible as a harsh, harmonic-heavy tone regardless of Tone Volume.
-      codec.setDACVolume(0.0f,0.0f);
+      // +2 dB: the last bit of headroom before the 0.7-scaled sidetone would
+      // start clipping again (20*log10(1/0.7) ~= 3.1 dB ceiling).
+      codec.setDACVolume(2.0f,2.0f);
       codec.enableADC();
       codec.setADCGain(-12.0f);
       // Enable the speaker and then run soundEventHandler once to mute/unmute HP/Spk depending on HS plug state
