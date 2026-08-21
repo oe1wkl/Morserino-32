@@ -1985,14 +1985,14 @@ void soundEnableHeadphone(void) {
     codec.enableHeadphoneAmp();
     // codec.setHeadphoneVolume(-30.0f,-30.0f); // volume regulated by encoder
     codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-12.0,calcVolume(MorsePreferences::sidetoneVolume)-12.0);
-    codec.setHeadphoneGain(0.0f,0.0f); // valid db: 0 - 9
+    codec.setHeadphoneGain(9.0f,9.0f); // valid db: 0 - 9 (max); was 0dB, raised after the setDACVolume fix below left headroom unused
     codec.setHeadphoneMute(false); // unmute hp
     codec.setSpeakerMute(true); // mute class d speaker amp
 }
 
 void soundEnableSpeaker(void) {
     codec.enableSpeakerAmp();
-    codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
+    codec.setSpeakerGain(18.0f); // valid db: 6, 12, 18, 24; was 6dB (the minimum step)
     // codec.setSpeakerVolume(-13.0f); // volume set by encoder
     codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume));
     codec.setSpeakerMute(false); // unmute class d speaker amp
@@ -2020,7 +2020,7 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
       {
         //DEBUG ("Not muted!");
         codec.enableSpeakerAmp();
-        codec.setSpeakerGain(6.0f); // valid db: 6, 12, 18, 24
+        codec.setSpeakerGain(18.0f); // valid db: 6, 12, 18, 24; was 6dB (the minimum step)
         // codec.setSpeakerVolume(-10.0f); // volume set by encoder
         codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume));
         codec.setSpeakerMute(false); // unmute class d speaker amp
@@ -2269,7 +2269,13 @@ void MorseOutput::soundSetup()
       // codec.writeRegister(AIC31XX_MICBIAS,11);
       codec.enableDAC();
       codec.setDACMute(false);
-      codec.setDACVolume(20.0f,20.0f);
+      // Unity gain: the sidetone already arrives close to full scale (see
+      // sidetone.setVolume(0.7) below), and actual loudness is set downstream
+      // by the analog headphone/speaker stage (setHeadphoneVolume/setSpeakerVolume,
+      // driven by the Tone Volume preference). +20 dB of digital gain here was
+      // clipping every tone internally, before it ever reached that analog stage
+      // -- audible as a harsh, harmonic-heavy tone regardless of Tone Volume.
+      codec.setDACVolume(0.0f,0.0f);
       codec.enableADC();
       codec.setADCGain(-12.0f);
       // Enable the speaker and then run soundEventHandler once to mute/unmute HP/Spk depending on HS plug state
