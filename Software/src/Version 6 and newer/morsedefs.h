@@ -427,7 +427,7 @@ enum prefPos : uint8_t {
                 posEchoToneShift, posInterWordSpace, posInterCharSpace, posRandomOption,                      // 8
                 posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength, posWordLength,                               // 12
                 posGeneratorDisplay, posWordDoubler, posEchoDisplay, posEchoRepeats,  posEchoConf,            // 16
-                posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, posSpeedAdapt, posEchoSpeedMax,                    // 21
+                posKeyExternalTx, posLoraCwTransmit, posGoertzelBandwidth, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,  // 21
                 posKochSeq, posCarouselStart, posLatency, posRandomFile, posExtAudioOnDecode, posTimeOut,     // 25
                 posQuickStart, posOutputCase, posAutoStop, posMaxSequence, posLoraChannel,                    // 31
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
