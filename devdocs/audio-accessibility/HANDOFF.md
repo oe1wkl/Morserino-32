@@ -120,21 +120,43 @@ is far denser than the same speech peaking cleanly at the same ceiling. At a fix
 RMS is bounded by speech's own ~13 dB crest factor. Pushing `GAIN_DB` higher only
 re-creates the distortion that was just removed — **do not "fix" quiet speech that way.**
 
-If speech is still too quiet on the bench, the remaining levers are **analog**, and both
-are firmware changes, not clip changes:
+### Where the levels actually landed (bench-verified 2026-08-22)
 
-1. **Bump the speaker amp one step during clip playback** — `setSpeakerGain(18)` while a
-   clip plays, back to 12 after (valid steps 6/12/18/24). Worth +6 dB for speech only, so
-   CW is untouched. Risk: an audible step/click at each announcement boundary; needs a listen.
-2. **A dedicated "Voice Volume" preference** for the accessibility edition, so speech level
-   is set independently of the CW sidetone. More work (a `prefPos` + clips + manual), but it
-   is the better answer long-term — blind users differ a lot in what they need, and today
-   one control moves both.
+After the retune, two more passes on real hardware settled the analog side. All three
+constants live together at the top of the audio section in `MorseOutput.cpp`:
+
+| constant | value | effect |
+|---|---|---|
+| `SIDETONE_LEVEL` | 0.79 | shared post-mixer VolumeStream. The **digital ceiling**: the sine is full scale and the DAC adds +2 dB, so 0.79 × 1.259 = 0.995. Do not raise it. |
+| `SPEAKER_TRIM_DB` | 3.0 | speaker runs one gain step up (18 dB) with this trim on the volume control = **+3 dB net** |
+| `HEADPHONE_GAIN_DB` | 6.0 | headphone driver gain (valid 0–9), **−3 dB** from the 9 dB PR #208 set |
+
+Net vs. PR #208: CW **+4 dB on the speaker**, +1 dB on headphones; phones sit **6 dB down
+relative to the speaker** (3 dB from each side). Verified by ear: speech right, CW right,
+speaker/headphone balance right.
+
+**Why CW needed raising at all**, when the measurements said it had got *louder*: the old
+sidetone was a clipped **square** wave whose harmonics at 1.8 / 3 / 4.2 kHz sat exactly
+where this micro-speaker is efficient and the ear is most sensitive. De-clipping removed
+them, so a clean 600 Hz sine reads as quieter on the speaker despite a higher RMS. On
+headphones, which reproduce 600 Hz perfectly well, the effect does not apply — which is
+why the speaker got +3 dB of analog and the headphone path did not.
+
+**Trim the headphone side on the GAIN, never the volume control.** The volume control is
+an attenuator ahead of the driver, so trimming there lowers the signal but not the driver's
+own noise, and the floor becomes audible once Tone Volume is turned up to compensate — a
+−6 dB volume offset did exactly that during the PR #208 bench work. Driver gain scales
+signal and upstream noise together.
+
+If speech alone ever needs to move independently of CW, the analog stage is shared, so the
+answer is **a dedicated "Voice Volume" preference** for this edition (a `prefPos` + clips +
+manual). Worth doing eventually — blind users differ a lot in what they need, and today one
+control moves speech and sidetone together.
 
 **Two things not to undo:**
 - **`HPF_HZ=250` stays.** The micro-speaker excursion argument behind it is a separate,
-  real, physical effect — and PR #208 also raised the speaker amp gain 6 → 12 dB, so
-  excursion risk went *up*. Relaxing the high-pass adds cone travel far more than loudness
+  real, physical effect — and the speaker amp has since gone 6 → 12 → 18 dB, so excursion
+  risk went *up* substantially. Relaxing the high-pass adds cone travel far more than loudness
   (the speaker cannot usefully reproduce Alan's ~110 Hz fundamental anyway).
 - **The post-encode peak check.** 32 kbps MP3 encoding moves peaks unpredictably (±3 dB
   observed), so a clip can leave the encoder hotter than the pre-encode limiter allowed and
@@ -142,10 +164,18 @@ are firmware changes, not clip changes:
   every clip it writes and re-encodes with a trim if it lands over `PEAK_CEILING` (0.95),
   converging over up to 3 passes. The summary line reports how many were trimmed.
 
-Firmware side, `soundSetup()` now pins the shared post-mixer VolumeStream to 0.7. The
+Firmware side, `soundSetup()` now pins the shared post-mixer VolumeStream to `SIDETONE_LEVEL`. The
 library's `begin()` leaves it at 0.8 and only `pwmTone()` lowered it, so anything played
 before the first tone ran 1.2 dB hot — and the boot announcement is the first sound of
 every session on this edition.
+
+**Flashing gotcha that cost an hour here:** `pocketwroom` is `default_envs`, so a `pio run
+-t upload` without an explicit `-e` flashes the NON-accessibility build — where
+`MorseVoice::announce()` is a compiled-out no-op. Symptom: perfect CW, zero speech on both
+speaker and headphones, whatever is in SPIFFS. Tell-tale: the CW Games entry is present in
+the menu (the a11y build unflags `CONFIG_CW_GAME`). Always pass `-e
+pocketwroom-accessibility`, and run `upload` and `uploadfs` as **separate** commands — this
+is an ESP32-S3 on native USB and the port re-enumerates on the reboot after `upload`.
 
 ## Checklist: you added a preference / menu entry / message (CLAUDE.md §8)
 
