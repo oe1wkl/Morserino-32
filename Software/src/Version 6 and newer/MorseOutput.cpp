@@ -1979,6 +1979,15 @@ static const float SIDETONE_LEVEL = 0.79f;
 // so a clean 600 Hz sine reads as quieter on the speaker even at higher RMS -- while on
 // headphones, which reproduce 600 Hz perfectly well, CW is already far louder than before.
 static const float SPEAKER_TRIM_DB = 3.0f;
+// Headphone driver gain (valid 0..9 dB). PR #208 put this at the 9 dB maximum to close a
+// ~21 dB speaker/headphone gap; with the speaker since raised by SPEAKER_TRIM_DB, phones
+// came out louder than the speaker on the bench, so back off 3 dB. Take it off the GAIN
+// and not off the volume control: the volume control is an attenuator ahead of the driver,
+// so trimming there leaves the driver's own noise untouched and the noise floor becomes
+// audible once Tone Volume is turned up to compensate (that is exactly what a -6 dB volume
+// offset did during the PR #208 bench work). Lowering the driver gain scales signal and
+// upstream noise together, so the floor rides down with it.
+static const float HEADPHONE_GAIN_DB = 6.0f;
 
 float calcVolume(uint8_t v) { // v = 0 - 19
   // we map the volume levels 0 - 19 to dB values for the codec
@@ -1999,7 +2008,7 @@ void soundEnableHeadphone(void) {
     codec.enableHeadphoneAmp();
     // codec.setHeadphoneVolume(-30.0f,-30.0f); // volume regulated by encoder
     codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-3.0,calcVolume(MorsePreferences::sidetoneVolume)-3.0);
-    codec.setHeadphoneGain(9.0f,9.0f); // valid db: 0 - 9 (max); was 0dB, raised after the setDACVolume fix below left headroom unused
+    codec.setHeadphoneGain(HEADPHONE_GAIN_DB,HEADPHONE_GAIN_DB); // valid db: 0 - 9; see HEADPHONE_GAIN_DB
     codec.setHeadphoneMute(false); // unmute hp
     codec.setSpeakerMute(true); // mute class d speaker amp
 }
