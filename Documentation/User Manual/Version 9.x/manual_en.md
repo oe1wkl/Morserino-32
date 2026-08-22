@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=b50904b6c887 v=9 -->
+<!-- WHATSNEW:BEGIN en=a675d4d638b3 v=9 -->
 What is new in Version 9?
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
@@ -55,6 +55,7 @@ What is new in Version 9?
 -   „Select Lesson“ now also shows the total # of characters in the selected Koch sequence.
 -   A few more cosmetic display output fixes.
 -   The Configuration Tool's Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.
+-   M32 Pocket only: all sound is cleaner. The audio chip's internal gain was set so high that every tone was being clipped inside the chip, before it ever reached the volume control - audible as a harsh, buzzy tone that no Tone Volume setting could cure. The CW sidetone, the spoken menus of the Accessibility Edition and your own uploaded success/error sounds are now all reproduced undistorted. Two things follow from this that you will notice: the sidetone is a clean sine now instead of the harmonically rich sound it was, which on the small built-in loudspeaker can seem slightly less penetrating even though it is not quieter; and sounds you uploaded yourself will be quieter than before, because they are no longer being distorted (see the note in the Echo Trainer section of the manual). Loudspeaker and headphone levels have been rebalanced against each other. Thanks to Christian for finding this.
 -   A Bluetooth (BLE Serial) connection now has to be allowed on the Morserino itself. When an app asks for a session, the device shows „Allow connect?“ and waits for you to press FN - a USB cable has to be plugged in by someone standing next to your device, while anything within radio range can connect over Bluetooth, so the Morserino asks before it hands over control. You are only asked in the main menu (in a training mode the request is refused without interrupting you), an app that reconnects within a minute is let straight back in, and while a session is open a small Bluetooth symbol in the top line shows that something is connected.
 <!-- WHATSNEW:END -->
 
@@ -1012,6 +1013,20 @@ what was generated, an error is indicated on the display and by sound,
 and the prompt word is repeated. If you enter the correct characters,
 this is indicated acoustically and on the screen. Then, you are prompted
 for the next word.
+
+::: {.note .pocket .pocket-a11y}
+The two sounds that confirm a correct or a faulty response can be replaced by
+your own: upload an MP3 file as */sounds/success.mp3* or */sounds/error.mp3*
+with the Configuration Tool, and it will be played instead of the built-in
+beeps. If no such file is present, the built-in beeps are used.
+
+From version 9.0 on, the audio path no longer overdrives the sound chip, so your
+own sounds are reproduced cleanly – but they will also be quieter than they were
+on earlier firmware, where they were being distorted. If that bothers you,
+prepare them a little louder. Keep their peak level at or just below –1 dBFS: a
+file normalised to the full 0 dBFS will still distort, because the MP3 decoder
+runs out of headroom before the sound chip does.
+:::
 
 In this mode, the prompt word will not normally be displayed; only your
 response will be shown.

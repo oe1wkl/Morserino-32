@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=b50904b6c887 v=9 -->
+<!-- WHATSNEW:BEGIN en=a675d4d638b3 v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
@@ -57,6 +57,7 @@ Was ist neu in Version 9?
 -   „Select Lesson“ zeigt jetzt auch die Gesamtzahl der Zeichen in der gewählten Koch-Sequenz an.
 -   Ein paar weitere kosmetische Korrekturen bei der Bildschirmausgabe.
 -   Die Seite „Preferences“ im Konfigurationsprogramm lädt jetzt in einem Bruchteil der bisherigen Zeit, weil sie die Einstellungen mit wenigen Abfragen liest statt mit einer je Einstellung. Am deutlichsten ist der Unterschied über Bluetooth.
+-   Nur M32 Pocket: Der gesamte Klang ist sauberer. Die interne Verstärkung des Audio-Chips war so hoch eingestellt, dass jeder Ton bereits im Chip übersteuert wurde, noch bevor er überhaupt die Lautstärkeregelung erreichte – hörbar als harter, schnarrender Ton, den keine Einstellung von „Tone Volume“ beheben konnte. Der CW-Mithörton, die gesprochenen Menüs der Accessibility Edition und deine selbst hochgeladenen Success-/Error-Töne werden jetzt alle unverzerrt wiedergegeben. Zwei Dinge, die daraus folgen, wirst du bemerken: Der Mithörton ist nun ein sauberer Sinus statt des zuvor obertonreichen Klangs, was über den kleinen eingebauten Lautsprecher etwas weniger durchdringend wirken kann, obwohl er nicht leiser ist; und selbst hochgeladene Töne sind leiser als zuvor, weil sie nicht mehr verzerrt werden (siehe die Anmerkung im Abschnitt Echo Trainer). Die Pegel von Lautsprecher und Kopfhörer wurden aufeinander abgestimmt. Danke an Christian für das Aufspüren.
 -   Eine Bluetooth-Verbindung (BLE Serial) muss jetzt am Morserino selbst zugelassen werden. Wenn eine App eine Sitzung anfordert, zeigt das Gerät „Allow connect?“ und wartet darauf, dass du FN drückst – ein USB-Kabel muss jemand anstecken, der neben deinem Gerät steht, über Bluetooth kann sich hingegen alles verbinden, was in Funkreichweite ist; deshalb fragt der Morserino, bevor er die Kontrolle aus der Hand gibt. Gefragt wirst du nur im Hauptmenü (in einem Trainingsmodus wird die Anfrage abgelehnt, ohne dich zu unterbrechen), eine App, die sich innerhalb einer Minute erneut verbindet, wird ohne Nachfrage wieder zugelassen, und solange eine Sitzung offen ist, zeigt ein kleines Bluetooth-Symbol in der obersten Zeile, dass etwas verbunden ist.
 <!-- WHATSNEW:END -->
 
@@ -1038,6 +1039,21 @@ oder deine Antwort nicht mit der Vorgabe übereinstimmt, wird ein Fehler
 auf dem Display und durch einen Ton angezeigt, und die Vorgabe wird
 wiederholt. Wenn du die richtigen Zeichen eingibst, wird dies akustisch
 und auf dem Display bestätigt. Dann wird die nächste Vorgabe ausgegeben.
+
+::: {.note .pocket .pocket-a11y}
+Die beiden Töne, die eine richtige oder eine fehlerhafte Antwort bestätigen,
+kannst du durch eigene ersetzen: Lade mit dem Konfigurationswerkzeug eine
+MP3-Datei als */sounds/success.mp3* bzw. */sounds/error.mp3* hoch, dann wird
+diese anstelle der eingebauten Signaltöne abgespielt. Ist keine solche Datei
+vorhanden, werden die eingebauten Töne verwendet.
+
+Ab Version 9.0 wird der Audio-Chip nicht mehr übersteuert, deine eigenen Töne
+werden also sauber wiedergegeben – sie sind dadurch aber auch leiser als unter
+früherer Firmware, wo sie verzerrt wurden. Wenn dich das stört, bereite sie
+etwas lauter auf. Halte den Spitzenpegel bei oder knapp unter –1 dBFS: eine auf
+volle 0 dBFS normalisierte Datei verzerrt weiterhin, weil dem MP3-Decoder schon
+vor dem Audio-Chip der Aussteuerungsspielraum ausgeht.
+:::
 
 Die Vorgabe wird normalerweise nicht angezeigt; nur deine Antwort ist
 sichtbar.
