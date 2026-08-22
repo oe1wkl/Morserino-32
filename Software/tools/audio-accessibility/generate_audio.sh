@@ -58,7 +58,23 @@ LENGTH_SCALE="${LENGTH_SCALE:-1.1}"   # piper phoneme length; >1.0 = slower (1.1
 BITRATE="${BITRATE:-32}"  # kbps, CBR
 OUT_SR="${OUT_SR:-44100}" # Hz       -- must equal the I2S sample rate
 OUT_CH="${OUT_CH:-2}"     # channels -- must equal the I2S channel count (stereo)
-# Loudness + micro-speaker EQ. The "clipped" sound on hardware was NOT file clipping (peaks
+# Loudness + micro-speaker EQ.
+#
+# 2026-08-22 UPDATE -- the 2026-07-03 diagnosis below was only half the story. PR #208
+# found the REAL dominant cause: the TLV320 codec's digital DAC gain was set to +20 dB,
+# which clipped every tone and every voice clip INSIDE the chip, downstream of these
+# files and upstream of the volume control. Measured over 100 shipped clips, an average
+# 18 % of all samples were pinned at full scale. That is why the file-level analysis
+# below correctly found "no flat-topping in the files" and still heard flat-topping on
+# the device. The DAC now runs at +2 dB and the path is clean.
+# Consequence for THIS chain: it was tuned defensively against that clipping, and the
+# de-clipped path is ~13 dB quieter in RMS for speech (vs only ~4 dB for the CW sidetone),
+# so GAIN_DB was raised 6 -> 10 (see below). The micro-speaker excursion argument is kept
+# -- it is a separate, real, physical effect, and PR #208 also raised the speaker amp gain
+# 6 -> 12 dB, so excursion risk went UP, not down. Do not relax HPF_HZ without listening.
+#
+# ORIGINAL (2026-07-03) analysis, still valid as far as it goes:
+# The "clipped" sound on hardware was NOT file clipping (peaks
 # ~-2 dBFS, zero flat-topping): spectrogram analysis of a speaker recording (2026-07-03)
 # showed vowel harmonics smeared up to 8-16 kHz = the micro-speaker driven past its
 # excursion limit. Alan's fundamental is ~110 Hz; energy below ~250 Hz produces no audible
@@ -78,7 +94,28 @@ COMP_MAKEUP="${COMP_MAKEUP:-4}"  # compressor make-up gain, dB
 # GAIN_DB=6 with THIS chain is NOT the old "clipped" 6: the HPF removed the excursion-
 # burning low band and the compressor tamed the peaks first. Measured on "CW Keyer":
 # >250 Hz band RMS -20.5 dB (~+2 dB louder than the gain-3 set), peak -2.6 dBFS.
-GAIN_DB="${GAIN_DB:-6}"
+# 2026-08-22: raised 6 -> 10 to win back part of what de-clipping the DAC cost (above).
+# This gain drives the limiter, which is what buys loudness here: the compressor route
+# was tried and is WORSE in ffmpeg (a lower threshold attenuates more than the make-up
+# restores). Swept 6/8/10/12/14 dB against RMS at the DAC, limiter workload and decoder
+# saturation, modelling the real chain (Helix int16 decode -> VolumeStream 0.7 -> DAC +2 dB):
+#   6 -> +0.00 dB RMS, 0.14 % of samples limited     10 -> +2.05 dB, 1.67 %   <- chosen
+#   8 -> +1.18 dB RMS, 0.56 %                        12 -> +2.70 dB, 3.82 %
+#                                                    14 -> +3.18 dB, 7.37 % AND the MP3
+#                                                          decoder saturates. Do not.
+# 10 dB is the knee: 12 buys 0.65 dB more for over double the limiting. Note this only
+# recovers ~2 dB of the ~9 dB that de-clipping cost -- the rest is not available in the
+# digital domain (see PEAK_CEILING) and needs an analog-side decision. Loudness beyond
+# this must NOT be bought by pushing GAIN_DB up; that just re-creates the old distortion.
+GAIN_DB="${GAIN_DB:-10}"
+# Post-encode safety ceiling on the DECODED peak, in the int16 domain the on-device Helix
+# decoder actually produces. 32 kbps MP3 encoding moves peaks unpredictably (+/- 3 dB
+# observed), so a clip can come out of the encoder hotter than the pre-encode limiter
+# allowed and saturate the DECODER -- 2 of every 100 shipped clips did exactly that.
+# Every clip is measured after encoding and re-encoded with a trim if it lands over this.
+# 0.95 leaves headroom below full scale; the codec DAC cannot clip below it (the sidetone
+# path scales by 0.7 and the DAC adds +2 dB, so 0.95 * 0.7 * 1.259 = 0.84).
+PEAK_CEILING="${PEAK_CEILING:-0.95}"
 # Silence padding. The async player hands the mixer back the instant a clip's file is read,
 # leaving ~80 ms of decoded tail that plays at the START of the NEXT clip. Trailing silence
 # makes that residue (and the cut) inaudible; a little leading silence hides MP3 decoder priming.
@@ -109,7 +146,9 @@ clip_id() {
   else printf '%s' "$1" | md5sum | cut -c1-8; fi
 }
 
-generated=0 skipped=0 empty=0
+generated=0 skipped=0 empty=0 trimmed=0
+# PEAK_CEILING is linear (0..1); the peak check below works in dB.
+CEIL_DB="$(awk -v c="$PEAK_CEILING" 'BEGIN{printf "%.2f", 20*log(c)/log(10)}')"
 # NB: filename-slug collisions (distinct texts that map to one file) are reported
 # by extract_voice_strings.py in voice_manifest.json -- see "collisions".
 
@@ -129,10 +168,46 @@ while IFS= read -r TEXT || [ -n "$TEXT" ]; do
   fi
   # Encode to MP3 at the M32 I2S format (44100 Hz stereo); -ac 2 duplicates the mono voice.
   # Chain: micro-speaker EQ (high-pass + presence) -> speech compression -> gain ->
-  # brick-wall limiter -> lead/trail silence (hides the async cut + decoder priming).
-  ffmpeg -y -i "$TMP/${FNAME}.wav" \
-         -af "highpass=f=${HPF_HZ},highpass=f=${HPF_HZ},equalizer=f=3000:t=q:w=1.0:g=${PRESENCE_DB},acompressor=threshold=-18dB:ratio=2.5:attack=4:release=140:makeup=${COMP_MAKEUP}dB,volume=${GAIN_DB}dB,alimiter=limit=0.95,adelay=${LEAD_MS}|${LEAD_MS},apad=pad_dur=${TRAIL_S}" \
-         -ar "$OUT_SR" -ac "$OUT_CH" -b:a "${BITRATE}k" "$OUT" 2>/dev/null
+  # brick-wall limiter -> post-encode trim -> lead/trail silence (hides the async cut +
+  # decoder priming). $1 = trim in dB applied after the limiter (0 on the first pass).
+  encode_clip() {
+    ffmpeg -y -i "$TMP/${FNAME}.wav" \
+           -af "highpass=f=${HPF_HZ},highpass=f=${HPF_HZ},equalizer=f=3000:t=q:w=1.0:g=${PRESENCE_DB},acompressor=threshold=-18dB:ratio=2.5:attack=4:release=140:makeup=${COMP_MAKEUP}dB,volume=${GAIN_DB}dB,alimiter=limit=0.95,volume=${1}dB,adelay=${LEAD_MS}|${LEAD_MS},apad=pad_dur=${TRAIL_S}" \
+           -ar "$OUT_SR" -ac "$OUT_CH" -b:a "${BITRATE}k" "$OUT" 2>/dev/null
+  }
+  # Peak of the encoded file as the DEVICE will decode it. volumedetect runs on the
+  # decoder's own (unclamped, float) output, so an overshoot is reported instead of
+  # being silently flattened -- which is what lets us compute the trim in one step.
+  decoded_peak_db() {
+    # NB: volumedetect reports at log level "info" -- with -v quiet the summary is
+    # suppressed and this silently returns nothing, disabling the whole check.
+    ffmpeg -hide_banner -nostats -i "$OUT" -af volumedetect -f null - 2>&1 \
+      | sed -n 's/.*max_volume: \(.*\) dB/\1/p' | tail -1
+  }
+
+  # Re-encode with a trim if the encoder pushed this clip past the ceiling. MP3 decode is
+  # very nearly linear in the input scale, so the first correction lands close -- but not
+  # exactly (trimming the input shifts the encoder's quantisation decisions), so converge
+  # over a couple of passes. Fires on only a handful of clips at the shipping GAIN_DB.
+  TRIM=0; encode_clip "$TRIM"
+  for pass in 1 2 3; do
+    PEAK_DB="$(decoded_peak_db)"
+    if [ -z "$PEAK_DB" ]; then
+      echo "warning: $FNAME -- no peak reading, left untrimmed" >&2; break
+    fi
+    # Under the ceiling: done, whichever pass we are on.
+    awk -v p="$PEAK_DB" -v c="$CEIL_DB" 'BEGIN{exit !(p>c)}' || break
+    TRIM="$(awk -v t="$TRIM" -v p="$PEAK_DB" -v c="$CEIL_DB" 'BEGIN{printf "%.2f", t+(c-p)}')"
+    encode_clip "$TRIM"
+    if [ "$pass" -eq 1 ]; then trimmed=$((trimmed+1)); fi
+    # Warn only if the LAST pass still left it over -- re-measure, don't assume.
+    if [ "$pass" -eq 3 ]; then
+      FINAL_DB="$(decoded_peak_db)"
+      if [ -n "$FINAL_DB" ] && awk -v p="$FINAL_DB" -v c="$CEIL_DB" 'BEGIN{exit !(p>c)}'; then
+        echo "warning: $FNAME still ${FINAL_DB} dBFS after ${TRIM} dB (ceiling ${CEIL_DB})" >&2
+      fi
+    fi
+  done
   rm -f "$TMP/${FNAME}.wav"
   generated=$((generated+1))
 done < "$INPUT"
@@ -170,7 +245,9 @@ echo "----------------------------------------------"
 echo "input            : $INPUT"
 echo "engine           : $TTS_ENGINE${TTS_ENGINE:+ }$([ "$TTS_ENGINE" = piper ] && echo "(alan, length-scale ${LENGTH_SCALE})")"
 echo "format           : ${BITRATE} kbps @ ${OUT_SR} Hz, ${OUT_CH}ch (matches M32 I2S)"
+echo "loudness         : gain ${GAIN_DB} dB, HPF ${HPF_HZ} Hz, decoded-peak ceiling ${PEAK_CEILING} (${CEIL_DB} dBFS)"
 echo "generated now    : $generated"
+echo "peak-trimmed     : $trimmed  (encoder overshoot pulled back under the ceiling)"
 echo "skipped (exist)  : $skipped"
 echo "empty-slug skips : $empty"
 orphan_note=""

@@ -2289,6 +2289,14 @@ void MorseOutput::soundSetup()
 #endif
   sidetone.begin(44100,16,2,128); //  defaults to 44100, 16, 2, 32
   sidetone.setFrequency(600.0);
+#ifdef CONFIG_TLV320AIC3100
+  // The library's begin() leaves the shared post-mixer VolumeStream at 0.8, and only
+  // pwmTone() drops it to the 0.7 this path assumes -- so anything played BEFORE the
+  // first tone ran 1.2 dB hotter than everything after it. That is not hypothetical:
+  // the accessibility edition's boot announcement is the first sound of every session.
+  // Set it here so MP3 clips and the sidetone share one level from the first sample on.
+  sidetone.setVolume(0.7);
+#endif
 #endif
 }
 

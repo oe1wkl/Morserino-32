@@ -95,6 +95,58 @@ python3 extract_voice_strings.py     # firmware tables -> voice_strings.txt, voi
   (`.venv` + model are git-ignored; recreate per machine).
 - Requires `espeak-ng`-free toolchain: **Piper + ffmpeg + lame**.
 
+## Clip loudness: what PR #208 changed (2026-08-22)
+
+PR #208 fixed a TLV320 codec bug — the digital DAC gain sat at **+20 dB**, clipping
+everything *inside the chip*, downstream of the clips and upstream of Tone Volume. It
+now runs at **+2 dB**. That fix is right, but it hit the voice clips harder than the CW
+sidetone, so the clips were re-tuned in the same breath.
+
+**Measured over 100 shipped clips**, modelling the real chain (Helix int16 decode →
+InputMixer → VolumeStream 0.7 → codec DAC):
+
+| | before (+20 dB) | after (+2 dB) |
+|---|---|---|
+| voice clips | **18 % of all samples pinned at full scale** | clean, 0/100 clip |
+| voice RMS at the DAC | −4.1 dBFS | −17.4 dBFS (**−13.2 dB**) |
+| CW sidetone RMS | −0.2 dBFS | −4.1 dBFS (**−3.8 dB**) |
+
+Speech therefore fell **9.4 dB behind CW**. The retune wins back ~2 dB of that by raising
+`GAIN_DB` 6 → 10 (chosen from a sweep — see the comment block in `generate_audio.sh`).
+
+**The rest is not available in the digital domain, and that is not a tuning failure.**
+The old loudness came *from* the clipping: a signal with 18 % of its samples flat-topped
+is far denser than the same speech peaking cleanly at the same ceiling. At a fixed peak,
+RMS is bounded by speech's own ~13 dB crest factor. Pushing `GAIN_DB` higher only
+re-creates the distortion that was just removed — **do not "fix" quiet speech that way.**
+
+If speech is still too quiet on the bench, the remaining levers are **analog**, and both
+are firmware changes, not clip changes:
+
+1. **Bump the speaker amp one step during clip playback** — `setSpeakerGain(18)` while a
+   clip plays, back to 12 after (valid steps 6/12/18/24). Worth +6 dB for speech only, so
+   CW is untouched. Risk: an audible step/click at each announcement boundary; needs a listen.
+2. **A dedicated "Voice Volume" preference** for the accessibility edition, so speech level
+   is set independently of the CW sidetone. More work (a `prefPos` + clips + manual), but it
+   is the better answer long-term — blind users differ a lot in what they need, and today
+   one control moves both.
+
+**Two things not to undo:**
+- **`HPF_HZ=250` stays.** The micro-speaker excursion argument behind it is a separate,
+  real, physical effect — and PR #208 also raised the speaker amp gain 6 → 12 dB, so
+  excursion risk went *up*. Relaxing the high-pass adds cone travel far more than loudness
+  (the speaker cannot usefully reproduce Alan's ~110 Hz fundamental anyway).
+- **The post-encode peak check.** 32 kbps MP3 encoding moves peaks unpredictably (±3 dB
+  observed), so a clip can leave the encoder hotter than the pre-encode limiter allowed and
+  saturate the *decoder* — 2 of every 100 shipped clips did. `generate_audio.sh` now decodes
+  every clip it writes and re-encodes with a trim if it lands over `PEAK_CEILING` (0.95),
+  converging over up to 3 passes. The summary line reports how many were trimmed.
+
+Firmware side, `soundSetup()` now pins the shared post-mixer VolumeStream to 0.7. The
+library's `begin()` leaves it at 0.8 and only `pwmTone()` lowered it, so anything played
+before the first tone ran 1.2 dB hot — and the boot announcement is the first sound of
+every session on this edition.
+
 ## Checklist: you added a preference / menu entry / message (CLAUDE.md §8)
 
 Master *is* the Accessibility Edition, so new UI text is mute until it has a clip.
@@ -174,6 +226,9 @@ custom partition (`m32pocket_accessibility.csv`); games and the two WiFi-AP entr
   `end()/begin()`) races it → the historical freezes and crashes. Since `9d66535`,
   `startClip/stopClip` only post to a mailbox and ALL pipeline work lives in
   `audioLoop()`/`teardownClip()` (audio-task context). Keep it that way.
+- **`volumedetect` reports at log level `info`** — running it under `ffmpeg -v quiet`
+  silently returns *nothing*, which reads as "no overshoot" and disables the peak check
+  entirely. Use `-hide_banner -nostats`. Cost an hour of a check that looked like it passed.
 - **iCloud**: the repo lives under `~/Documents` (iCloud-synced). This causes `… 2.mp3`
   duplicate clip files and flaky/`.sconsign` build failures. Mitigations used: clean dupes
   (keep only `voice_strings.txt` ids), and `PLATFORMIO_BUILD_DIR=/tmp/m32build` for reliable
