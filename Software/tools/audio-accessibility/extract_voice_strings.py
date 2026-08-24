@@ -254,6 +254,19 @@ id_map = {}
 for t in all_texts: id_map.setdefault(clip_id(t), []).append(t)
 collisions = {k: v for k, v in id_map.items() if len(v) > 1}   # md5 collisions (expect none)
 
+# ── Pack stamp: which clip set is this? ──────────────────────────────────────
+# Clip names are content hashes, so a firmware whose strings changed looks for ids that
+# an older pack simply does not contain -- and the device goes quiet on exactly those
+# entries, with nothing to show for it. The stamp lets the firmware notice: it is
+# compiled in (VOICE_PACK_STAMP below) and written into the pack itself as
+# /voice/pack.txt by generate_audio.sh, which compares them at boot.
+#
+# The rule is fixed so the shell script can reproduce it without parsing anything:
+#     first 8 hex of md5( each unique clip id, sorted, one per line, trailing newline )
+# i.e. exactly `LC_ALL=C sort -u <ids> | md5`. Keep the two in step (generate_audio.sh).
+PACK_STAMP = hashlib.md5(
+    ("\n".join(sorted(id_map)) + "\n").encode("utf-8")).hexdigest()[:8]
+
 with open(os.path.join(HERE, "voice_strings.txt"), "w", encoding="utf-8") as f:
     f.write("\n".join(all_texts) + "\n")
 
@@ -263,6 +276,7 @@ manifest = {
     "characters": {c: [clip_id(t) for t in seq] for c, seq in char_seq.items()},
     "clips": {clip_id(t): t for t in all_texts},   # id -> text (firmware reverse map / debug)
     "id_collisions": collisions,
+    "pack_stamp": PACK_STAMP,
     "counts": {
         "menu": len(set(menu_entries)), "pref_labels": len(set(pref_labels)),
         "option_values": len(set(option_values)), "actions": len(set(action_items)),
@@ -296,6 +310,11 @@ with open(HDR, "w", encoding="utf-8") as f:
     f.write("// Do not edit by hand. Maps a firmware-facing UI string -> SPIFFS clip id (/voice/<id>.mp3).\n")
     f.write("// Sorted by strcmp() byte order for binary search (see MorseVoice::announce).\n")
     f.write("#ifndef VOICE_CLIPS_H_\n#define VOICE_CLIPS_H_\n\n")
+    f.write("// Identifies the clip set this firmware expects. generate_audio.sh writes the same\n")
+    f.write("// value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at\n")
+    f.write("// boot, so a pack left over from an older firmware is reported instead of silently\n")
+    f.write("// missing whichever clips changed.\n")
+    f.write(f'#define VOICE_PACK_STAMP "{PACK_STAMP}"\n\n')
     f.write("struct VoiceEntry { const char* key; const char* id; };\n\n")
     f.write("static const VoiceEntry voiceLookup[] = {\n")
     for key in sorted(fw_lookup):                                  # code-point order == strcmp for ASCII
@@ -322,4 +341,5 @@ print("="*40)
 for k,v in manifest["counts"].items(): print(f"  {k:<16} {v:>4}")
 print(f"  md5 id collisions {len(collisions):>3}  {list(collisions.values())}")
 if missing: print(f"  !! chars with no voicing: {missing}")
+print(f"  pack stamp        {PACK_STAMP}")
 print(f"wrote voice_strings.txt + voice_manifest.json + voice_clips.h ({len(fw_lookup)} fw keys)")

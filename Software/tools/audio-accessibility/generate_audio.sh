@@ -238,6 +238,38 @@ while IFS= read -r f; do
   fi
 done < <(find "$OUTDIR" -name '*.mp3')
 
+# ---- Pack stamp -------------------------------------------------------------
+# Clip names are content hashes, so a firmware whose strings changed looks for ids an
+# older pack does not contain, and simply goes quiet on those entries. /voice/pack.txt
+# names the clip set, the firmware carries the same value (VOICE_PACK_STAMP in
+# voice_clips.h), and MorseVoice compares them at boot.
+#
+# The rule must match extract_voice_strings.py exactly:
+#   first 8 hex of md5( each unique clip id, sorted, one per line, trailing newline )
+# $EXPECTED is already that list, LC_ALL=C-sorted and unique.
+#
+# Written ONLY when every expected clip is actually present: a stamp on an incomplete
+# pack would claim a completeness it does not have, which is worse than no stamp at all
+# (the firmware treats a missing stamp as "cannot tell", and stays quiet about it).
+missing_clips=0
+while IFS= read -r id; do
+  [ -z "$id" ] && continue
+  [ -f "$OUTDIR/$id.mp3" ] || missing_clips=$((missing_clips+1))
+done < "$EXPECTED"
+
+if [ "$missing_clips" -eq 0 ]; then
+  if command -v md5 >/dev/null 2>&1; then
+    pack_stamp=$(LC_ALL=C sort -u "$EXPECTED" | md5 -q | cut -c1-8)
+  else
+    pack_stamp=$(LC_ALL=C sort -u "$EXPECTED" | md5sum | cut -c1-8)
+  fi
+  printf '%s\n' "$pack_stamp" > "$OUTDIR/pack.txt"
+else
+  rm -f "$OUTDIR/pack.txt"
+  echo "WARNING: $missing_clips expected clip(s) missing - pack.txt not written" >&2
+  pack_stamp="(not written: $missing_clips clip(s) missing)"
+fi
+
 # ---- Summary ----------------------------------------------------------------
 total_kb=$(du -sk "$OUTDIR" | awk '{print $1}')
 count=$(find "$OUTDIR" -name '*.mp3' | wc -l | tr -d ' ')
@@ -255,4 +287,5 @@ if [ "$PRUNE" -eq 1 ]; then orphan_note=" (deleted $pruned)"
 elif [ "$orphans" -gt 0 ]; then orphan_note=" (kept -- re-run with --prune)"; fi
 echo "orphans          : ${orphans}${orphan_note}"
 echo "clips in $OUTDIR/ : $count"
+echo "pack stamp       : $pack_stamp"
 echo "total size       : ${total_kb} KB"
