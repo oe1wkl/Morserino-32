@@ -4,7 +4,32 @@ This FAQ is compiled from the official user manual and from community discussion
 
 Answers reflect **firmware version 9.0**.
 
-## 1. Power Supply, Battery, and Charging
+## 1. Coming from a 1st or 2nd Edition Morserino
+
+* **I have an older (1st or 2nd edition) Morserino. Should I get an M32 Pocket?**
+    * There is no need to replace a working one. Both models run the **same firmware**, from the same release, and get the same updates. Every training mode is on both: the Koch trainer, CW Generator, Echo Trainer, the transceiver modes, the QSO Bot, the Bluetooth keyboard and BLE Serial, the WiFi/ESP-NOW transceiver, and the serial protocol with the Configuration Tool.
+    * **What the M32 Pocket gives you that the older models cannot:**
+        * A colour display showing four or five lines of text instead of three on a monochrome OLED, with selectable colour themes and a **Font Size** setting.
+        * Noticeably better audio: a dedicated audio codec instead of a PWM-generated tone, so the sidetone is a clean sine, its edge shaping is adjustable (**Tone Softness**), and you can upload your own Echo Trainer sounds.
+        * The seven **games**, and **practice statistics** for the Koch trainer.
+        * The **Accessibility Edition**, which reads the interface aloud — available only for the Pocket.
+        * A smaller device, and USB-C instead of Micro USB.
+    * **What you would give up:**
+        * **LoRa.** The 1st and 2nd editions have a LoRa transceiver with an SMA antenna connector (around 433 MHz); the M32 Pocket does not. If you use the LoRa transceiver modes to work other Morserinos with no infrastructure in between, that single point may settle the question on its own. The WiFi transceiver works on both, but it needs either a network or an ESP-NOW partner in range.
+        * The **trimmer potentiometers** — the audio input level trimmer, and on the 2nd edition the headphone level trimmer. The Pocket has neither.
+    * **An honest summary**: if your Morserino works, and you do not particularly want the games, the statistics, the spoken menus or the better sound, there is no compelling reason to buy a second device. You are not missing out on the CW training itself, which is what both machines are for. Buy the Pocket for its size, its display and its audio, or because you need the Accessibility Edition. Keep the classic if you depend on LoRa — and note that a good many owners simply keep both.
+
+* **I have (or had) an older Morserino and now have an M32 Pocket. What are the important gotchas?**
+    * **The audio jack is wired differently, and getting this wrong can destroy the device.** On the 1st and 2nd editions the **sleeve is audio out**. On the M32 Pocket the jack is 4-pole (TRRS) and the **sleeve is audio in**. Do not reuse a cable or adapter that worked on your old Morserino — it would feed your receiver's audio straight into the Pocket's output. Section 5 describes the splitter cable you actually need.
+    * **A different battery.** The 1st and 2nd editions use a flat 3.7 V LiPo cell. The M32 Pocket takes a **14500 Li-Ion cell** — AA form factor, 3.6–3.7 V, at most 52 mm long and 14.5 mm across, and a protected cell is recommended. They are not interchangeable in either direction.
+    * **A different USB connector.** Micro USB on the older models, **USB-C** on the Pocket. The Pocket also draws more while charging: up to about 500–600 mA, against about 200 mA.
+    * **No LoRa.** The LoRa transceiver modes are simply not there; use the WiFi transceiver instead.
+    * **No trimmers.** There is no audio input level potentiometer to turn — you set the level at the source instead, as described in section 5.
+    * **The FN button is a cut-out in the case**, to the lower right of the encoder, rather than a protruding red button. More than one owner has spent a while looking for it.
+    * **One gesture means something different.** A long press of FN while in a menu starts the audio input level adjustment on the older models; on the Pocket it keys the transmitter and produces a sidetone.
+    * **Your settings do not come across.** There is no backup-and-restore between devices, so a new Pocket starts on factory settings: expect to set your call sign, Koch lesson, speed and preferences again. Snapshots do not transfer either.
+
+## 2. Power Supply, Battery, and Charging
 
 * **What type of battery should I use?**
     * Use a **14500 Li-Ion (3.7 V) cell**. 14500 cells have the same form factor as common AA batteries, but we need 3.6–3.7 V cells, i.e. Li-Ion. The maximum size is a length of 52 mm and a width of 14.5 mm.
@@ -19,7 +44,7 @@ Answers reflect **firmware version 9.0**.
     * **Status indication**: The M32 Pocket displays a battery/charging icon on the top line of the display whenever you are in a menu.
 * **Low battery "gotcha"**: If the battery voltage is dangerously low, an empty battery symbol will appear and the device will not boot. Symptoms like loss of audio during keying suggest that the battery voltage is too low and the battery needs recharging.
 
-## 2. Cases and 3D Printing
+## 3. Cases and 3D Printing
 
 * **Where can I find 3D printing files?**
     * While the manual doesn't list URLs, community members point to **Printables** (e.g. Model 1550518 by Michael K Johnson/KZ4LY) for FreeCAD, STEP, and STL files for the M32 Pocket.
@@ -28,7 +53,7 @@ Answers reflect **firmware version 9.0**.
     * **Process**: The PCB material is glued to the case — a bit of acetone can be used to weaken the glue so that you can carefully remove the PCBs from the original case and attach them to the new one. Be careful to reconnect the wires in the same way as they were with the old case.
 * **The "missing" red button**: On the M32 Pocket, the "red button" (FN button) is **integrated into the case** rather than being a separate protruding part. It is a cut-out in the case, located to the lower right of the rotary encoder.
 
-## 3. External Keys and Connections
+## 4. External Keys and Connections
 
 * **Which jack do I use for external keys?**
     * Use the **3.5 mm 3-pole (TRS) jack** labelled "External Paddle". It is the jack closest to the USB connector.
@@ -39,7 +64,7 @@ Answers reflect **firmware version 9.0**.
 * **Can I connect a mechanical key to the internal paddle connector?**
     * Yes, though this is still **experimental**. The connector on the PCB that normally serves the Pocket's capacitive touch paddles (CN3) can be switched to accept a mechanical key or paddle instead, via the **Hardware Config** menu. This is useful if you want to build a mechanical key into a case together with the M32 Pocket.
 
-## 4. Audio Input and Output
+## 5. Audio Input and Output
 
 * **What is the pinout for the Audio I/O jack?**
     * The M32 Pocket uses a **3.5 mm 4-pole (TRRS) jack**.
@@ -71,7 +96,7 @@ Answers reflect **firmware version 9.0**.
 * **The CW sidetone sounds different since version 9.**
     * Also the same fix. The sidetone is a clean sine wave now instead of the harmonically rich sound it used to be. On the small built-in loudspeaker that can seem slightly less penetrating, even though it is not actually quieter.
 
-## 5. Bluetooth and VBand
+## 6. Bluetooth and VBand
 
 * **How do I enable Bluetooth?**
     * Use the preference **Bluetooth Use**. Besides **No Bluetooth**, the options are four keyboard modes (VBand Kbd, Decoded output, VBand+Decoded, Generic Kbd) and **BLE Serial** (the M32 Serial Protocol over Bluetooth, see below).
@@ -93,7 +118,7 @@ Answers reflect **firmware version 9.0**.
 * **Can I use Bluetooth to stream audio?**
     * No, and it would not be useful either: Bluetooth audio introduces a noticeable delay, which makes correct keying very hard.
 
-## 6. The Accessibility Edition (M32 Pocket only)
+## 7. The Accessibility Edition (M32 Pocket only)
 
 * **What is it?**
     * A separate edition of the firmware that **speaks the menus and settings aloud**, for blind and partially sighted operators. The games are not included in it; everything else is.
@@ -108,7 +133,7 @@ Answers reflect **firmware version 9.0**.
     * The remedy in both cases is to run the installer again, choosing the **Accessibility Edition** and **Keep my settings**. That installs the program and its matching voice clips together.
     * The alarm is deliberately neither speech nor Morse code: it has to work when speech is exactly what is missing, and it must not assume you can already read Morse.
 
-## 7. Firmware Updates
+## 8. Firmware Updates
 
 * **What is the easiest update method?**
     * **Webserial**: visit `morserino.info/install.html` in a supported browser. It requires no command-line tools and no separate firmware download.
@@ -122,7 +147,7 @@ Answers reflect **firmware version 9.0**.
     * **Cable quality**: Use a **data-capable USB cable**, not a "charging-only" one.
     * **A dark screen right after an erase is normal**: after an install with the erase option — or on a brand-new device — the Pocket can take up to about ten seconds to show anything while it prepares its file system. Since version 9 it displays an informative splash screen while this happens, so you can tell it apart from a failure.
 
-## 8. Training Features and Settings
+## 9. Training Features and Settings
 
 * **What are "Practice Sets"?**
     * They replace the earlier custom character sets. You pick a subset of individual characters directly on the device, then train just those in the CW Generator or the Echo Trainer.
@@ -139,7 +164,7 @@ Answers reflect **firmware version 9.0**.
 * **My snapshots behaved oddly on an older firmware.**
     * There was a bug that could fill the device's settings storage and stop snapshots being saved correctly. It is fixed, and snapshots are now stored much more economically. At the first boot after updating, existing snapshots are converted once to the new format — this can take a few seconds, and happens only that one time.
 
-## 9. Games (M32 Pocket only)
+## 10. Games (M32 Pocket only)
 
 * **Which games are there?**
     * Seven: **Morse Invaders**, **Fight the Pileup**, **Radio Cave**, **Morsel**, **Trailblazer**, **Fox Hunt** and **Memory Chain**. They are described in the user manual.
