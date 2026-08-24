@@ -37,6 +37,7 @@
 
 #### New Features:
 * M32 Pocket only: Two more games, both playable as single and multi player games: Trailblazer and Fox Hunt (both inspired by ideas of Theresa, DC1TH, who made similar Morse code games for Android phones - special thanks to her for letting me steal her ideas!). Follow the path through a maze, visually in the one game and hearing the Morse code in the other - both games acknowledge your current Koch lesson settings.
+* M32 Pocket only: And one more game, Memory Chain. The device adds one character per round to a growing chain, and you have to key the whole chain from memory every time - it is never replayed for you. In Characters mode the chain grows out of your current Koch lesson, and one error per round is forgiven; in Call Signs mode a single call sign is the chain, revealed letter by letter, and the first mistake ends the game. The new character of each round is either shown on the display or sounded in Morse code - the latter is the harder and the more useful practice.
 * M32 Pocket only - experimental at the moment: A Hardware Config. option to use the paddle connector on the PCB (normally used to connect the Pocket’s capacitive touch paddles) for mechanical keys / paddles) - useful if you want to integrate a mechanical key into a case with the M32 Pocket. This can be reached via the „Hardware Config“ menu.
 
 #### Feature Modifications:
