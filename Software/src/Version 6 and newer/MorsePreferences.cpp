@@ -1547,10 +1547,14 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                   }
                   else if (pos == posCarouselStart && pliste[posKochSeq].value == 3)
                       MorsePreferences::handleCarouselChange();
-#ifdef CONFIG_SOUND_I2S
+#ifdef CONFIG_TLV320AIC3100
+                  /// re-routing speaker/headphone is a TLV320 affair - the WM8960
+                  /// builds share CONFIG_SOUND_I2S but have no soundEventHandler()
                   else if (pos == posLineOut) {
                       MorseOutput::soundEventHandler();
                   }
+#endif
+#ifdef CONFIG_SOUND_I2S
                   else if (pos == posSidetoneShape) {
                       MorseOutput::setSidetoneEnvelope(pliste[pos].value);
                   }
