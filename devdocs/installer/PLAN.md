@@ -693,6 +693,58 @@ formats and needs nothing; that was reasoned from the code, not observed.
 
 ---
 
+## 12b. Overlapping edition filesystems, and the clean-on-switch (2026-08-23)
+
+**Found on hardware by Willi.** Install the Standard edition over the Accessibility
+Edition, then flash the a11y firmware again from PlatformIO (firmware only, no
+`-t uploadfs`) — and it comes up **speaking**. It should have had no clips at all.
+
+**Why.** The two Pocket layouts overlap; the Standard SPIFFS is a subrange at the tail of
+the a11y one:
+
+| | app0 | spiffs |
+|---|---|---|
+| a11y (`m32pocket_accessibility.csv`) | 0x010000–0x2E0000 | **0x2E0000–0x7F0000** (5184 KB) |
+| Standard (board default) | 0x010000–0x340000 | **0x670000–0x7F0000** (1536 KB) |
+
+`targets.json`'s `m32p` target has **no `fsOffset`**, so a Standard install writes exactly
+four images (bootloader, partition table, boot selector, app) and — with "keep my
+settings", i.e. `eraseAll: false` — esptool erases nothing else. The Standard app is
+2,344,976 bytes, ending at **0x24C810**, far below 0x2E0000: it never touches the clips.
+The Standard firmware then fails to mount 1536 KB at 0x670000 (the region holds a
+5184 KB-geometry filesystem) and `FORMAT_SPIFFS_IF_FAILED` reformats only that tail.
+
+Net: **0x2E0000–0x670000 = 3.6 MB, about 70% of the voice clips, survives byte-for-byte.**
+A later firmware-only a11y flash restores the a11y partition table (PlatformIO's `upload`
+writes `FLASH_EXTRA_IMAGES` — bootloader, partitions, boot_app0 — alongside the app), that
+filesystem mounts, and the device speaks from a pack it was never built for.
+
+**Fix (`m32_installer.html`).** `connect()` now reads the on-device partition table
+(`loader.readFlash(0x8000, 3072)`; blank flash and unreadable devices give `null` and are
+left alone). `install()` compares it with the partition table it is about to write: equal
+means an ordinary update, so the existing filesystem is that edition's and is kept (the
+file player's text lives there). Different means a layout change, and everything above the
+incoming app image that the install does not itself write is blanked with 0xFF —
+`blankingParts()`. NVS (0x9000–0xE000) is below the app and never touched, so "your
+settings are kept" stays true.
+
+Measured ranges (unit-tested in a browser against the real image sizes):
+
+- Standard install after a11y: one range **0x24D000–0x800000** (5,976,064 B).
+- a11y install: **0x22A000–0x2E0000** (745,472 B, the unused app0 tail) and
+  **0x7F0000–0x800000** (64 KB). The voice image covers the rest, so it is excluded.
+
+Range starts are rounded **up** to a 4 KB sector — esptool erases whole sectors before
+writing, and rounding down would take the app image's last sector with it. 0xFF compresses
+to nothing on the wire; the cost is the flash erase, which any write pays. An edition
+switch therefore gets slower by roughly the time an a11y install already takes.
+
+**Not bench-tested** — written and unit-tested without hardware. See the test matrix.
+
+**Belt and braces:** the firmware also carries a voice-pack stamp now
+(`/voice/pack.txt` vs `VOICE_PACK_STAMP`), so a mismatched pack arriving by any other
+route is reported rather than trusted. See `devdocs/audio-accessibility/HANDOFF.md`.
+
 ## 13. Documentation duties (CLAUDE.md §7)
 
 This is the **written TODO** that CLAUDE.md §7 requires. Nothing below is done yet; all

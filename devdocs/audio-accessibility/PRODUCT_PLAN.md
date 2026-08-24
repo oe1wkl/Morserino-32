@@ -82,7 +82,14 @@ What separates "prototype" from "product". In priority order:
 - **Firmware ↔ voice-pack pairing:** clips are content-hash ids, so a firmware update
   with changed strings can silently miss clips. Ship a version stamp in the FS image
   (e.g. `/voice/pack.txt`), check at boot (fallback: beep pattern + screen message),
-  and rely on the missing-clip serial log. Installer flashes matching pairs only;
+  and rely on the missing-clip serial log.
+  **Done (2026-08-23)**, except the installer half: the beep pattern, the screen message
+  and the serial log exist; boot detects an *absent or gutted* store **and** a pack that
+  does not match this firmware (`/voice/pack.txt` vs `VOICE_PACK_STAMP`). See HANDOFF.md
+  "Missing clip store: the boot alarm". **Still to do:** have the installer refuse to
+  flash a firmware and a voice pack whose stamps disagree (today it always ships matching
+  pairs from one release directory, so the risk is a hand-assembled install, not the
+  normal path). Installer flashes matching pairs only;
   "firmware only" update is allowed but surfaces the pack-version check.
 - **Identity:** the a11y build reports itself in the protocol's `build` field
   (protocol 1.3) so config tools — including the cdaller trainer — can adapt.
