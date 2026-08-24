@@ -745,6 +745,33 @@ switch therefore gets slower by roughly the time an a11y install already takes.
 (`/voice/pack.txt` vs `VOICE_PACK_STAMP`), so a mismatched pack arriving by any other
 route is reported rather than trusted. See `devdocs/audio-accessibility/HANDOFF.md`.
 
+## 12c. Local test rig for `m32_installer.html`
+
+The published installer fetches its firmware images from `morserino.info/firmware/`,
+so `m32_installer.html` opened straight from the repo has nothing to install. The
+script `make_installer_rig.sh` (in this directory) builds a **local** mirror of that
+server layout from the current worktree — bootloader, partitions, boot_app0, firmware,
+and (for the a11y edition) the SPIFFS voice image — and symlinks the installer page
+and `targets.json` so both track the source. The version stamps `V9.0b-TESTRIG` on
+purpose, so a rig install cannot be mistaken for a real one.
+
+Prerequisites:
+```
+cd Software/src && pio run -e heltec_wifi_lora_32_V2 -e pocketwroom -e pocketwroom-accessibility
+cd Software/src && pio run -e pocketwroom-accessibility -t buildfs   # AFTER the run above
+```
+
+Build and serve:
+```
+bash devdocs/installer/make_installer_rig.sh
+(cd /tmp/m32-installer-rig && python3 -m http.server 8791)
+```
+
+Then open `http://127.0.0.1:8791/m32_installer.html` in Chrome / Edge / Firefox 151+.
+Set `RIG=` to a different path if `/tmp/m32-installer-rig` doesn't suit. Used to
+bench-test the clean-on-switch (§12b) and the Cancel-leaves-firmware-running behaviour;
+the round trip that reproduces the original bug is documented under those headings.
+
 ## 13. Documentation duties (CLAUDE.md §7)
 
 This is the **written TODO** that CLAUDE.md §7 requires. Nothing below is done yet; all
