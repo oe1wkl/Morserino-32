@@ -555,6 +555,14 @@ void setup()
 #define BL_GATE_AT_BOOT 1
 #endif
 
+// Backlight PWM as DisplayWrapper configures it (identical in its ST7789.h and
+// ILI9341.h) and as LovyanGFX's Light_PWM fixes the resolution (PWM_BITS). Only
+// used to claim the channel before the brightness pre-seed below - Light_PWM::init()
+// configures it again for itself a moment later.
+#define BL_LEDC_CHANNEL 7
+#define BL_LEDC_FREQ    44100
+#define BL_LEDC_BITS    9
+
 #ifdef PIN_VEXT
 pinMode(PIN_VEXT, OUTPUT);
 #endif
@@ -605,6 +613,15 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   // the panel during init. We need it to stay dark not just through init but
   // through the warmup() push below, until the first themed clear — so pre-seed
   // 0 here and light the panel only after that clear. (Phase G/M4)
+  //
+  // Claim the backlight LEDC channel first. setBrightness() sets _brightness (the
+  // part we are after) and then writes the duty through to the hardware, because
+  // the panel is already attached from the LGFX constructor. That write used to
+  // land before Light_PWM::init() had run ledcSetup(), so it failed and printed
+  // "LEDC is not initialized" twice on every boot. Setting the channel up here
+  // makes it succeed and drive the backlight to duty 0 - the state we want anyway.
+  ledcSetup(BL_LEDC_CHANNEL, BL_LEDC_FREQ, BL_LEDC_BITS);
+  ledcAttachPin(TFT_BL, BL_LEDC_CHANNEL);
   MorseOutput::setBrightness(0);
 #endif
   MorseOutput::initDisplay();
