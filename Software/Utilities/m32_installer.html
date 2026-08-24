@@ -789,9 +789,18 @@
       ? `${detected[0].hardware} (${chipDetail})`
       : chipDetail;
 
+    // The edition is the one thing "hardware" cannot tell you: both Pocket editions
+    // report the same HW_NAME, so only device.edition distinguishes Standard from the
+    // speaking Accessibility Edition. Firmware from before this field simply omits it,
+    // so the map yields undefined and nothing is shown — same additive contract as the
+    // firmware side (MorseJSON::jsonDevice).
+    const editionName = device.installed && {
+      accessibility: 'Accessibility Edition', standard: 'Standard edition',
+    }[device.installed.edition];
     el.devInstalled.textContent = device.installed
       ? `V${device.installed.firmware}` +
         (device.installed.build ? ` (build ${device.installed.build})` : '') +
+        (editionName ? `, ${editionName}` : '') +
         (device.installed.hardware ? ` — reports itself as “${device.installed.hardware}”` : '')
       : 'unknown';
 
@@ -1271,7 +1280,13 @@
   }
 
   async function restart() {
-    await disconnect(false);
+    // reset:true — this is a user-initiated Cancel or "Install something else". The
+    // device is sitting in the ROM bootloader with the screen dark (loader.main() at
+    // connect time put it there), and the user's expectation is that Cancel simply
+    // leaves whatever they already had running. A hard reset boots the existing
+    // firmware; without it they would have to unplug and re-plug the device to see
+    // it come back — the very confusion Cancel exists to avoid.
+    await disconnect(true);
     el.stepChoose.hidden = true;
     el.stepFlash.hidden = true;
     el.btnInstall.disabled = false;

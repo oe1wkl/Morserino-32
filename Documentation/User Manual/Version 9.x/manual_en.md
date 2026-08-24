@@ -3541,6 +3541,15 @@ The installer takes you through three steps:
 1. **Connect** — click *Connect* and pick the port your Morserino is
    connected to from the pop-up your browser shows.
 
+    ::: note
+    The Morserino's screen goes **dark** the moment the browser connects to
+    it. That is normal: talking to the flash chip means putting the device
+    into its ROM update mode, and the firmware — and its display — are not
+    running while that mode is on. If you decide not to install after all,
+    press *Cancel* on the page: the Morserino restarts and the screen
+    comes back on its own.
+    :::
+
 2. **Choose what to install** — the page tells you what it found and,
    where it can, which firmware version is on the device at the moment.
    Then you pick the version you want. If you own an M32 Pocket you also

@@ -3999,6 +3999,16 @@ Das Installationsprogramm führt dich durch drei Schritte:
 1. **Connect** – klicke auf *Connect* und wähle im Fenster, das dein
    Browser zeigt, den Port aus, an dem dein Morserino angeschlossen ist.
 
+    ::: note
+    Der Bildschirm des Morserino wird **dunkel**, sobald der Browser die
+    Verbindung herstellt. Das ist normal: Für den Zugriff auf den
+    Flash-Speicher wird das Gerät in den ROM-Update-Modus versetzt, und
+    solange dieser Modus läuft, arbeitet die Firmware — und damit auch
+    das Display — nicht. Wenn du dich anders entscheidest und doch nicht
+    installieren möchtest, klicke auf *Cancel*: Der Morserino startet neu
+    und der Bildschirm kommt von selbst wieder.
+    :::
+
 2. **Choose what to install** – die Seite zeigt dir, was sie gefunden
    hat, und wenn möglich auch, welche Firmware-Version gerade auf dem
    Gerät ist. Dann wählst du die gewünschte Version. Wenn du einen M32
