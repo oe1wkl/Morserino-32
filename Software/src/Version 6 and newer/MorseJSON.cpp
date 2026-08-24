@@ -447,12 +447,27 @@ void MorseJSON::jsonFileFirstLine(void) {
 	while (file.available())
 	{
 		char c = file.read();
-		if (c == '{' || c == '}')
-			continue;
-		if (c == '\n')
+		// The line ends the reply here instead of being escaped - that is the
+		// only intended difference from jsonFileText() below. Everything else
+		// has to follow its escape-and-strip-braces scheme: a quote or a
+		// backslash in the first line used to go out raw and tear the JSON
+		// apart, and so did a lone CR from a CRLF file.
+		if (c == '\n' || c == '\r')
 			break;
-		else
-			out.write(c);
+		switch (c) {
+			case '"':  out.print("\\\""); break;
+			case '\\': out.print("\\\\"); break;
+			case '\t': out.print("\\t");  break;
+			case '{':  break;  // skip curly braces
+			case '}':  break;
+			default:
+				// Control characters go, UTF-8 continuation bytes (>= 0x80) stay.
+				// char is unsigned on the Xtensa toolchain, so the cast changes
+				// nothing today - it just says which of the two is meant.
+				if ((uint8_t) c >= 0x20)
+					out.write(c);
+				break;
+		}
 	}
 	out.print("\"}}");
 	out.flushChunk();
