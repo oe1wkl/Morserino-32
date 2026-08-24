@@ -716,7 +716,20 @@
         log('Could not read the flash size: ' + e.message);
       }
 
-      device = { port, transport, loader, chipFamily: loader.chip.CHIP_NAME, flashMB, installed };
+      // What layout is on the device right now? Needed to tell an edition SWITCH from an
+      // ordinary update — see blankingParts(). A device that cannot be read, or has never
+      // been programmed, simply gets no cleaning (null).
+      let partitionTable = null;
+      try {
+        const raw = await loader.readFlash(PART_TABLE_OFFSET, PART_TABLE_SIZE);
+        partitionTable = looksLikePartitionTable(raw) ? raw : null;
+        if (!partitionTable) log('No partition table on the device yet — nothing to clean up.');
+      } catch (e) {
+        log('Could not read the partition table: ' + e.message);
+      }
+
+      device = { port, transport, loader, chipFamily: loader.chip.CHIP_NAME, flashMB, installed,
+                 partitionTable };
       setConnectStatus('');
       renderChoose();
     } catch (e) {
@@ -776,9 +789,18 @@
       ? `${detected[0].hardware} (${chipDetail})`
       : chipDetail;
 
+    // The edition is the one thing "hardware" cannot tell you: both Pocket editions
+    // report the same HW_NAME, so only device.edition distinguishes Standard from the
+    // speaking Accessibility Edition. Firmware from before this field simply omits it,
+    // so the map yields undefined and nothing is shown — same additive contract as the
+    // firmware side (MorseJSON::jsonDevice).
+    const editionName = device.installed && {
+      accessibility: 'Accessibility Edition', standard: 'Standard edition',
+    }[device.installed.edition];
     el.devInstalled.textContent = device.installed
       ? `V${device.installed.firmware}` +
         (device.installed.build ? ` (build ${device.installed.build})` : '') +
+        (editionName ? `, ${editionName}` : '') +
         (device.installed.hardware ? ` — reports itself as “${device.installed.hardware}”` : '')
       : 'unknown';
 
@@ -965,6 +987,82 @@
   }
 
   // ── Step 3: download, then write ─────────────────────────────────────────
+  // ── Leftovers from the edition you are leaving ───────────────────────────
+  // The two editions' filesystems OVERLAP. On an M32 Pocket the Standard edition keeps its
+  // SPIFFS in 0x670000–0x7F0000; the Accessibility Edition keeps 5184 KB in 0x2E0000–
+  // 0x7F0000. An install writes only the images it ships, and with "keep my settings"
+  // esptool erases nothing else — so going from the Accessibility Edition to Standard
+  // leaves about 3.6 MB of voice clips physically intact above the Standard app, because
+  // the Standard app is far too small to reach them.
+  //
+  // That is harmless while Standard runs (it never addresses those bytes). It stops being
+  // harmless the moment the Accessibility firmware is flashed again WITHOUT its clips — a
+  // hand flash from PlatformIO, or any future "firmware only" update: the old partition
+  // table comes back, that stale filesystem mounts, and the device speaks from a pack it
+  // was never built for. Measured, not theoretical: roughly 70% of the clips survive the
+  // round trip, enough that everything looks fine.
+  //
+  // So when the layout changes, blank everything above the incoming app image that the
+  // install does not overwrite itself. NVS (0x9000–0xE000) sits BELOW the app and is never
+  // touched, so "your settings are kept" stays true; only the outgoing edition's
+  // filesystem goes, which is exactly what changing edition already means.
+  const PART_TABLE_OFFSET = 0x8000;
+  const PART_TABLE_SIZE   = 3072;
+  const FLASH_SECTOR      = 4096;
+
+  // A partition table starts with at least one entry bearing the 0x50AA magic. Blank flash
+  // reads as 0xFF, so this also answers "has this device ever been programmed".
+  function looksLikePartitionTable(raw) {
+    return !!raw && raw.length >= 2 && raw[0] === 0xAA && raw[1] === 0x50;
+  }
+
+  function sameBytes(a, b) {
+    if (!a || !b || a.length !== b.length) return false;
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) return false;
+    return true;
+  }
+
+  // The [start, end) ranges `parts` will write, sorted and merged.
+  function writtenRanges(parts) {
+    const sorted = parts.map(p => [p.offset, p.offset + p.data.length])
+                        .sort((x, y) => x[0] - y[0]);
+    const merged = [];
+    for (const cur of sorted) {
+      const last = merged[merged.length - 1];
+      if (last && cur[0] <= last[1]) last[1] = Math.max(last[1], cur[1]);
+      else merged.push(cur.slice());
+    }
+    return merged;
+  }
+
+  // 0xFF-filled parts covering [from, to) minus everything `parts` already writes. 0xFF is
+  // what erased flash reads as, and esptool compresses a run of it to almost nothing on the
+  // wire — the cost is the flash erase, which any write pays anyway.
+  //
+  // Starts are rounded UP to a sector: esptool erases whole sectors before writing, and
+  // rounding down would take the last sector of the app image with it.
+  function blankingParts(parts, from, to) {
+    const gaps = [];
+    let at = from;
+    for (const [s, e] of writtenRanges(parts)) {
+      if (e <= at) continue;
+      if (s >= to) break;
+      if (s > at) gaps.push([at, Math.min(s, to)]);
+      at = Math.max(at, e);
+      if (at >= to) break;
+    }
+    if (at < to) gaps.push([at, to]);
+
+    const out = [];
+    for (const [s, e] of gaps) {
+      const start = Math.ceil(s / FLASH_SECTOR) * FLASH_SECTOR;
+      if (e <= start) continue;
+      out.push({ offset: start, data: new Uint8Array(e - start).fill(0xFF),
+                 label: 'clearing the previous edition' });
+    }
+    return out;
+  }
+
   function partsFor(t, version) {
     const base = FIRMWARE_ROOT + t.dir;
     const parts = t.parts.map(p => ({ url: base + p.path, offset: p.offset, label: p.label }));
@@ -1023,9 +1121,36 @@
     showStep(el.stepFlash, el.hFlash);
 
     const parts = partsFor(target, version);
+    let cleaned = 0;
     try {
       for (let i = 0; i < parts.length; i++) {
         parts[i].data = await download(parts[i], i, parts.length);
+      }
+
+      // Is this an edition switch? The partition table we are about to write is the whole
+      // answer: byte-identical means the same layout, so the filesystem that is already
+      // there belongs to this edition and must be left alone (it holds the file player's
+      // text). Anything else is a layout change — clear what the outgoing edition left
+      // above the new app. Skipped when the whole chip is being erased anyway, and when we
+      // could not read the device (no guessing: an unnecessary clean would throw away a
+      // user's player text on an ordinary update).
+      //
+      // Byte comparison, so both tables must be the same length — ESP-IDF pads every
+      // partition table to 3072 bytes, so they are. A target with only one edition can
+      // still land here if a release ever changes its layout; clearing the filesystem is
+      // the right answer then too, since the old one no longer fits the new map.
+      if (!eraseAll && device.partitionTable && device.flashMB) {
+        const incoming = parts.find(p => p.offset === PART_TABLE_OFFSET);
+        const app      = parts.find(p => p.offset === target.appOffset);
+        if (incoming && app && !sameBytes(incoming.data, device.partitionTable)) {
+          const blanks = blankingParts(parts, app.offset + app.data.length,
+                                       device.flashMB * 1048576);
+          for (const b of blanks) {
+            cleaned += b.data.length;
+            parts.push(b);
+          }
+          log(`Edition switch: clearing ${fmtMB(cleaned)} left by the previous edition.`);
+        }
       }
 
       // Nothing may run past the end of the flash chip. esptool-js only checks
@@ -1076,6 +1201,8 @@
           `screen stays dark for a while before the start screen appears. That is normal — ` +
           `leave it alone until it finishes, and do not switch it off.`
         : `Done — V${version.version} is installed and the Morserino is restarting. ` +
+          (cleaned ? `The previous edition's file system was cleared, so the Morserino ` +
+                     `builds a new one on this first start: give it a moment. ` : '') +
           `If the screen stays dark, switch it off and on again.`;
       // This is the one moment the tool knows for certain what is on the
       // device, so it is the moment to offer the matching manual.
@@ -1153,7 +1280,13 @@
   }
 
   async function restart() {
-    await disconnect(false);
+    // reset:true — this is a user-initiated Cancel or "Install something else". The
+    // device is sitting in the ROM bootloader with the screen dark (loader.main() at
+    // connect time put it there), and the user's expectation is that Cancel simply
+    // leaves whatever they already had running. A hard reset boots the existing
+    // firmware; without it they would have to unplug and re-plug the device to see
+    // it come back — the very confusion Cancel exists to avoid.
+    await disconnect(true);
     el.stepChoose.hidden = true;
     el.stepFlash.hidden = true;
     el.btnInstall.disabled = false;

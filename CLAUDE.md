@@ -289,7 +289,11 @@ python3 extract_voice_strings.py     # tables -> voice_strings.txt, voice_manife
 ./generate_audio.sh                  # renders only the MISSING clips (incremental)
 ```
 Then flash **both** images — `voice_clips.h` is compiled in (`-t upload`) and the
-clips live in SPIFFS (`-t uploadfs`). Details, knobs and gotchas:
+clips live in SPIFFS (`-t uploadfs`). The two are paired by a **voice-pack stamp**
+(`VOICE_PACK_STAMP` in `voice_clips.h` vs `/voice/pack.txt`, both written by the tools
+above), and the device reports a mismatch at boot — so re-running the extractor without
+re-running the generator, or flashing only one of the two images, is now caught instead
+of showing up as a few silent menu entries. Details, knobs and gotchas:
 `devdocs/audio-accessibility/HANDOFF.md`; roadmap: `PRODUCT_PLAN.md` alongside it.
 
 **The cheap check:** re-run the extractor and look at `git diff` on

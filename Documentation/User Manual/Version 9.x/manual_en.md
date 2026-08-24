@@ -34,11 +34,12 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=9c90585dfa45 v=9 -->
+<!-- WHATSNEW:BEGIN en=a1decfea009a v=9 -->
 What is new in Version 9?
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
 -   M32 Pocket only: the installer can now also install the **Accessibility Edition**, which speaks the menus and settings aloud for blind and partially sighted operators (the games are not included in it). Standard and Accessibility Edition are offered for the same device and you can move between them at any time; your settings are kept.
+-   M32 Pocket, Accessibility Edition only: the device now tells you when something is wrong with its voice clips, instead of simply staying quiet about it. The clips are stored separately from the program, so re-installing the program on its own - or an installation that is interrupted part-way - can leave a Morserino that runs perfectly well but has nothing left to speak with, or only the clips of an older version. Either way you now hear four pairs of alternating high and low tones on switching on, and the screen says which it is: „No voice clips!“ (nothing there, the device stays silent) or „Wrong voice pack!“ (clips from another version - it goes on speaking, but whatever was added or reworded since those clips were made stays silent). Running the installer again puts it right. The warning is deliberately neither speech nor Morse code: it has to work when speech is exactly what is missing, and it must not assume you can already read Morse.
 -   There are now three versions of the user manual, each in two languages (English and German): one for the "classic" Morserino-32 (1st and 2nd edition), one for M32 Pocket, and one for the Accessibility Edition of the M32 Pocket. Each variant leaves out the parts that are not relevant for that particular hardware/firmware.
 -   The new firmware update utility and the configuration utility now provide links to the respective version of the user manual.
 -   Extended BLE features. Apart from BLE Keyboard output, there is now also the capability of using BLE for the serial protocol. This means utilities can be written (or ported) to use cable-less connectivity, also to portable devices like phones or tablets.
@@ -227,6 +228,44 @@ The same installer is also how you return to the Standard edition later: the
 steps are identical, you simply choose the other edition. It is described in
 full in the appendix **Updating the Firmware via USB and a Browser
 (Webserial)**.
+:::
+
+::: {.pocket-a11y}
+## If the Morserino Stops Speaking
+
+The voice clips are not part of the program. They live in a separate area of
+the device's internal storage, which means the two can come apart: re-install
+the program on its own, or let an installation be interrupted part-way, and the
+Morserino ends up running perfectly well — keyer, generator, decoder, CW and
+all — with nothing left to speak with, or with the clips of an older version.
+
+A Morserino in that state would simply say nothing at all, and silence is
+exactly what broken speech and a dead device have in common. So this edition
+tells you. When you switch it on you hear, in place of or ahead of the usual
+announcement, **four pairs of alternating high and low tones** — a short
+two-tone alarm of about two seconds.
+
+The alarm means one of two things, and the start-up screen says which, under
+the version number, for anyone able to look:
+
+-   **"No voice clips!"** — there are no clips at all. The Morserino stays
+    silent apart from the alarm.
+-   **"Wrong voice pack!"** — the clips belong to a different version of the
+    program. Most of them still fit, so the Morserino goes on speaking normally
+    after the alarm; what it cannot say are the entries that were added or
+    reworded since those clips were made, and those simply stay silent.
+
+The alarm is deliberately neither speech nor Morse code: it has to work when
+speech is precisely what is missing, and it must not assume that you can already
+read Morse. It is the same signal in both cases — one sound to learn, meaning
+"my speech is not right".
+
+Nothing on the device needs repairing, and nothing is harmed by carrying on:
+everything except the spoken menus still works. To put it right, run the
+installer again exactly as described in **Making the M32 Pocket Speak:
+Installing the Accessibility Edition**, choosing the **Accessibility Edition**
+and **Keep my settings**. That installs the program and the matching voice clips
+together, and your settings and snapshots survive it.
 :::
 
 ## The Basics
@@ -3501,6 +3540,15 @@ The installer takes you through three steps:
 
 1. **Connect** — click *Connect* and pick the port your Morserino is
    connected to from the pop-up your browser shows.
+
+    ::: note
+    The Morserino's screen goes **dark** the moment the browser connects to
+    it. That is normal: talking to the flash chip means putting the device
+    into its ROM update mode, and the firmware — and its display — are not
+    running while that mode is on. If you decide not to install after all,
+    press *Cancel* on the page: the Morserino restarts and the screen
+    comes back on its own.
+    :::
 
 2. **Choose what to install** — the page tells you what it found and,
    where it can, which firmware version is on the device at the moment.

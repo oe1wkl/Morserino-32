@@ -177,6 +177,65 @@ the menu (the a11y build unflags `CONFIG_CW_GAME`). Always pass `-e
 pocketwroom-accessibility`, and run `upload` and `uploadfs` as **separate** commands — this
 is an ESP32-S3 on native USB and the port re-enumerates on the reboot after `upload`.
 
+## Missing clip store: the boot alarm (2026-08-23)
+
+The clips live in SPIFFS, the firmware in flash, and they come apart easily — flash the
+image without `-t uploadfs`, or let `SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)` reformat a
+half-written filesystem, and every `announce()` becomes a silent no-op while CW keeps
+working perfectly. For this build's audience a mute device and a dead device are the same
+device, so boot now checks and reports.
+
+- **Detection** — `MorseVoice::clipStoreOk()`: `SPIFFS.exists()` on 8 ids spread across
+  `voiceLookup[]` (the same test `startClip()` makes), cached after the first call. Verdict
+  is "gutted" only when **fewer than half** the sample is present. That threshold is
+  deliberate: one clip that failed to render must never nag on every boot for the life of
+  the device, and a spread sample still catches a truncated upload.
+- **Report** — `MorseVoice::warnClipStore()` keys **four high/low tone pairs** (1200/600 Hz,
+  180 ms each, ~2.1 s total) through `MorseOutput::pwmTone`, driven by the same `tick()` as
+  the clips and cut by the same `stop()`. It runs inside the splash's existing
+  `splashPause()` windows, so boot gets no longer. `displayStartUp()` puts
+  `clipStoreDisplayText()` ("No voice clips!") on scroll line 2 for a sighted helper, and
+  the fix goes to the serial log.
+- **Why tones and not CW or speech.** Speech is the thing that is missing. Morse was
+  considered and **rejected by Willi**: it assumes CW literacy and a copyable speed, and
+  this build's users include complete beginners. 1200 Hz sits above the whole sidetone range
+  (`MorseOutput::notes[]` tops out at 932 Hz), so the alarm cannot be mistaken for CW at any
+  Pitch setting. Meaning is documented in both manuals ("If the Morserino Stops Speaking" /
+  "Wenn der Morserino nicht mehr spricht") — a signal has to be learned, so it must be
+  written down.
+- **The display line is deliberately NOT voiced**, and must stay that way: a clip for it
+  would be missing in exactly the situation it exists to report. This is CLAUDE.md §8's
+  documented exception, not a gap — the note is in the code at both call sites so nobody
+  "fixes" it later.
+- **Pack-version check (added the same day).** Content-hash clip ids mean a firmware whose
+  strings changed looks for ids an older pack never held, and goes quiet on exactly those
+  entries with nothing to show for it. So the pack now names itself:
+  - `extract_voice_strings.py` computes **`PACK_STAMP`** = first 8 hex of
+    `md5(each unique clip id, sorted, one per line, trailing newline)` and emits
+    `#define VOICE_PACK_STAMP` into `voice_clips.h` (plus `pack_stamp` in the manifest).
+  - `generate_audio.sh` writes the same value to **`data/voice/pack.txt`** — computed
+    independently from `$EXPECTED` as `LC_ALL=C sort -u | md5 | cut -c1-8`, which is the
+    same rule by construction. **Keep the two in step.** It writes the file only when
+    every expected clip is actually on disk, and *deletes* it otherwise: a stamp on an
+    incomplete pack would claim a completeness it does not have.
+  - `probeClipStore()` reads it after the existence probe passes and returns `CV_STALE` on
+    a mismatch. **An absent `pack.txt` is treated as fine** — a pre-stamp pack, or one the
+    generator would not vouch for; we cannot tell right from wrong, so we do not cry wolf
+    (same rule as an absent NVS version stamp, CLAUDE.md §4).
+  - Behaviour differs by verdict: `CV_MISSING` → alarm, and the splash is not even
+    attempted. `CV_STALE` → alarm, **then the splash is spoken anyway** — most of a
+    mismatched pack still plays, and only the entries added since it stay silent.
+    `clipStoreUsable()` is that distinction; `clipStoreDisplayText()` returns
+    "No voice clips!" or "Wrong voice pack!".
+  - Same alarm for both, deliberately: one signal to learn, meaning "my speech is not
+    right". The display line and the serial log carry the distinction.
+
+- **Related, same day: the installer left the *other* edition's filesystem behind.** The
+  Pocket layouts overlap, so switching a11y → Standard left ~3.6 MB of clips physically
+  intact, and a later firmware-only a11y flash resurrected them — a device speaking from a
+  pack it was never built for. Full measurements and the clean-on-switch fix are in
+  `devdocs/installer/PLAN.md` §12b. The pack stamp above is the belt to that fix's braces.
+
 ## Checklist: you added a preference / menu entry / message (CLAUDE.md §8)
 
 Master *is* the Accessibility Edition, so new UI text is mute until it has a clip.

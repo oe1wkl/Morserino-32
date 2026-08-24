@@ -36,11 +36,12 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=9c90585dfa45 v=9 -->
+<!-- WHATSNEW:BEGIN en=a1decfea009a v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
 -   Nur M32 Pocket: Das Installationsprogramm kann nun auch die **Accessibility Edition** installieren, die Menüs und Einstellungen für blinde und sehbehinderte Operatoren laut vorliest (die Spiele sind darin nicht enthalten). Standard- und Accessibility Edition werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln; deine Einstellungen bleiben erhalten.
+-   Nur M32 Pocket, Accessibility Edition: Das Gerät meldet jetzt, wenn mit seinen Sprachdateien etwas nicht stimmt, statt einfach stumm darüber hinwegzugehen. Die Sprachdateien liegen getrennt vom Programm, deshalb kann ein Neuaufspielen nur des Programms — oder eine mittendrin abgebrochene Installation — einen Morserino hinterlassen, der einwandfrei läuft, aber nichts mehr hat, womit er sprechen könnte, oder nur noch die Sprachdateien einer älteren Version. In beiden Fällen hörst du beim Einschalten jetzt vier Paare aus abwechselnd hohem und tiefem Ton, und im Display steht, worum es sich handelt: „No voice clips!“ (gar nichts vorhanden, das Gerät bleibt stumm) oder „Wrong voice pack!“ (Sprachdateien einer anderen Version — es spricht weiter, aber was seit diesen Dateien dazugekommen oder umformuliert wurde, bleibt stumm). Ein nochmaliger Lauf des Installationsprogramms bringt es in Ordnung. Das Warnsignal ist mit Absicht weder Sprache noch Morsezeichen: Es muss funktionieren, wenn gerade die Sprache fehlt, und es darf nicht voraussetzen, dass du schon Morsezeichen lesen kannst.
 -   Es gibt jetzt drei Ausgaben des Handbuchs, jede in zwei Sprachen (Englisch und Deutsch): eine für den „klassischen“ Morserino-32 (1st und 2nd Edition), eine für den M32 Pocket und eine für die Accessibility Edition des M32 Pocket. Jede Ausgabe lässt jene Teile weg, die für die betreffende Hardware bzw. Firmware nicht relevant sind.
 -   Das neue Firmware-Update-Programm und das Konfigurationsprogramm verweisen jetzt auf die jeweils passende Ausgabe des Handbuchs.
 -   Erweiterte BLE-Funktionen. Neben der Ausgabe als BLE-Tastatur gibt es nun auch die Möglichkeit, BLE für das serielle Protokoll zu verwenden. Damit lassen sich Programme schreiben (oder portieren), die kabellos arbeiten, auch auf tragbaren Geräten wie Smartphones oder Tablets.
@@ -238,6 +239,48 @@ Players nicht, denn genau deren Speicher übernehmen die Sprachdateien.
 Standard-Edition zurück: Die Schritte sind dieselben, du wählst nur die andere
 Edition. Ausführlich beschrieben ist es im Anhang **Aktualisieren der Firmware
 über USB und einen Browser (Webserial)**.
+:::
+
+::: {.pocket-a11y}
+## Wenn der Morserino nicht mehr spricht
+
+Die Sprachdateien sind nicht Teil des Programms. Sie liegen in einem eigenen
+Bereich des internen Speichers, und deshalb können die beiden auseinandergeraten:
+Wird nur das Programm neu aufgespielt, oder bricht eine Installation mittendrin
+ab, dann läuft der Morserino zwar einwandfrei weiter — Keyer, Generator,
+Decoder, CW und alles andere —, hat aber nichts mehr, womit er sprechen könnte,
+oder nur noch die Sprachdateien einer älteren Version.
+
+Ein Morserino in diesem Zustand würde einfach gar nichts sagen, und Stille ist
+genau das, was eine defekte Sprachausgabe und ein totes Gerät gemeinsam haben.
+Darum sagt diese Edition Bescheid: Beim Einschalten hörst du anstelle der
+gewohnten Ansage — oder vor ihr — **vier Paare aus abwechselnd hohem und tiefem
+Ton**, ein kurzes Zweiklang-Warnsignal von etwa zwei Sekunden.
+
+Das Warnsignal bedeutet eines von zwei Dingen, und der Startbildschirm sagt
+unterhalb der Versionsnummer, welches davon — für alle, die hinsehen können:
+
+-   **„No voice clips!“** — es sind überhaupt keine Sprachdateien vorhanden. Der
+    Morserino bleibt außer dem Warnsignal stumm.
+-   **„Wrong voice pack!“** — die Sprachdateien gehören zu einer anderen Version
+    des Programms. Die meisten passen noch, deshalb spricht der Morserino nach
+    dem Warnsignal ganz normal weiter; nicht sagen kann er jene Einträge, die
+    seit diesen Sprachdateien dazugekommen oder umformuliert worden sind — die
+    bleiben einfach stumm.
+
+Das Warnsignal ist mit Absicht weder Sprache noch Morsezeichen: Es muss
+funktionieren, wenn gerade die Sprache fehlt, und es darf nicht voraussetzen,
+dass du schon Morsezeichen lesen kannst. Es ist in beiden Fällen dasselbe Signal
+— ein einziger Klang, den man sich merken muss, und er heißt: „Mit meiner
+Sprachausgabe stimmt etwas nicht.“
+
+Am Gerät selbst ist nichts zu reparieren, und es geht nichts kaputt, wenn du es
+weiter benutzt: Alles außer den gesprochenen Menüs funktioniert nach wie vor. Um
+das in Ordnung zu bringen, führst du das Installationsprogramm noch einmal genau
+so aus wie unter **Den M32 Pocket zum Sprechen bringen: die Accessibility
+Edition installieren** beschrieben, mit **Accessibility Edition** und **Keep my
+settings**. Damit werden Programm und passende Sprachdateien gemeinsam
+aufgespielt, und deine Einstellungen und Snapshots bleiben dabei erhalten.
 :::
 
 ## Die Grundlagen
@@ -3955,6 +3998,16 @@ Das Installationsprogramm führt dich durch drei Schritte:
 
 1. **Connect** – klicke auf *Connect* und wähle im Fenster, das dein
    Browser zeigt, den Port aus, an dem dein Morserino angeschlossen ist.
+
+    ::: note
+    Der Bildschirm des Morserino wird **dunkel**, sobald der Browser die
+    Verbindung herstellt. Das ist normal: Für den Zugriff auf den
+    Flash-Speicher wird das Gerät in den ROM-Update-Modus versetzt, und
+    solange dieser Modus läuft, arbeitet die Firmware — und damit auch
+    das Display — nicht. Wenn du dich anders entscheidest und doch nicht
+    installieren möchtest, klicke auf *Cancel*: Der Morserino startet neu
+    und der Bildschirm kommt von selbst wieder.
+    :::
 
 2. **Choose what to install** – die Seite zeigt dir, was sie gefunden
    hat, und wenn möglich auch, welche Firmware-Version gerade auf dem

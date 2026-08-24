@@ -4,6 +4,12 @@
 #ifndef VOICE_CLIPS_H_
 #define VOICE_CLIPS_H_
 
+// Identifies the clip set this firmware expects. generate_audio.sh writes the same
+// value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
+// boot, so a pack left over from an older firmware is reported instead of silently
+// missing whichever clips changed.
+#define VOICE_PACK_STAMP "9bc3f9c0"
+
 struct VoiceEntry { const char* key; const char* id; };
 
 static const VoiceEntry voiceLookup[] = {
