@@ -1,6 +1,6 @@
 # The M32 Serial Protocol
 
-	Date: August 19, 2026
+	Date: August 23, 2026
 	Version: 1.4
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
@@ -30,6 +30,18 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	    on the cell, and the only case where "voltage" means state of charge.
 	    Earlier firmware reported "charging" in that situation, which was a
 	    safe assumption only while the protocol required a USB cable.
+
+	GET file/list now really does list every file. Earlier firmware built the
+	    reply in a fixed buffer and stopped once it was full: the listing broke
+	    off after some 30 files, the last entry lost its "size", and the
+	    "total"/"used"/"free" properties never arrived at all. The shape of the
+	    reply is unchanged.
+
+	On the BLE transport, the responses that stream (GET file/list, GET
+	    file/text, GET file/firstline, GET stats/log) now pace themselves
+	    against the client instead of overrunning the device's transmit buffer,
+	    so they arrive whole rather than torn. See "Congestion" under
+	    "Transports".
 
 	Changed, on the BLE transport only:
 
@@ -119,7 +131,7 @@ Transport rules a client should know:
 - **WiFi suspends BLE.** Any device activity that needs the WiFi radio (WiFi transceiver, multiplayer game entry, file upload, firmware update, WiFi configuration and the WiFi menu functions — including remotely executable ones like *Disp MAC Address*, so a BLE client that executes those cuts off its own link) suspends BLE Serial: the client gets a `message` object first (best effort), then the link drops. BLE Serial re-advertises when the device returns to the top menu.
 - **Remote self-disable.** Setting the *Bluetooth Use* preference to any value other than *BLE Serial* via `PUT config` over BLE works: a `message` arrives best-effort, the `ok` response is lost, and the link drops.
 - **Sleep suppression.** As with USB, an active protocol session suppresses the auto-power-off timeout; the suspension/disconnect paths clear this reliably, but a battery-powered device with a permanently connected, handshaken client will not auto-sleep.
-- **Congestion.** Responses larger than a few KB (e.g. `GET snapshot/<n>`) are paced by notify flow control; the device never stalls CW keying for a slow client — when its transmit buffer fills, it drops the rest of the response *and everything after it* until the backlog has fully drained (the character echo is always dropped before protocol replies are). If a response arrives torn or missing, re-issue the GET. **Framing after a drop:** a dropped tail leaves *unbalanced* braces in the byte stream, so a client that frames purely by brace-counting cannot resynchronize from the stream contents alone. Use a timeout: if an object stays open with no further bytes for a second or two, discard the partial object and reset the frame state (bytes up to the next `{` are then echo, as usual). Disconnecting and reconnecting also recovers — the device fully resets the session state per connection.
+- **Congestion.** Every response is paced by notify flow control. A **streamed** response — `GET file/list`, `GET file/text`, `GET file/firstline`, `GET stats/log` — is larger than the device's transmit buffer, so the device waits, briefly, for the client to take what has already been sent: such a response arrives whole as long as the client keeps reading. A client that stops reading is given up on (after about half a second), and from there the old behaviour applies: the rest of that response *and everything after it* is dropped until the backlog has fully drained. Every other response is built in memory and fits the buffer, and is never waited for — output produced on the keying path (the character echo, and objects such as `control` sent while the operator is keying) is dropped rather than delay a single dit, and the echo is always dropped before protocol replies are. If a response arrives torn or missing, re-issue the GET. **Framing after a drop:** a dropped tail leaves *unbalanced* braces in the byte stream, so a client that frames purely by brace-counting cannot resynchronize from the stream contents alone. Use a timeout: if an object stays open with no further bytes for a second or two, discard the partial object and reset the frame state (bytes up to the next `{` are then echo, as usual). Disconnecting and reconnecting also recovers — the device fully resets the session state per connection.
 
 ## Receiving information from Morserino
 
@@ -626,7 +638,13 @@ This closes the file, and reports the final size.
 
 `GET file/list`
 
-This command returns a JSON with all files, their sizes, and SPIFFS space info.
+This command returns a JSON with all files, their sizes, and SPIFFS space info:
+
+	{"files":[{"name":"/player.txt","size":14233},
+	{"name":"/sounds/success.mp3","size":8102}],
+	"total":4718592,"used":4468122,"free":250470}
+
+The reply is streamed and lists **every** file on the device. On the Accessibility Edition that includes the roughly 500 speech clips in `/voice/`, which makes for a reply of about 20 KB: a program should allow for that in its read timeout, and is well advised to keep those clips out of the file list it shows the user (they belong to the firmware, not to the operator).
 
 `PUT file/delete/<filename>`
 

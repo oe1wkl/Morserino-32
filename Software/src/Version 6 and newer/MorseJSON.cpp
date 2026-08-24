@@ -16,6 +16,9 @@
 #include "MorseMenu.h"
 #include "MorseOutput.h"   // getPowerpathState() for the battery charge state
 #include "M32ProtocolOut.h" // m32out: delivers protocol output to every handshaken transport
+#ifdef CONFIG_BLE_SERIAL
+#include "MorseBleSerial.h" // txMakeRoom(): keeps a bulk reply whole on the BLE transport
+#endif
 #ifdef CONFIG_PRACTICE_STATS
 #include "MorsePracticeStats.h"
 #include <mbedtls/base64.h>
@@ -49,9 +52,20 @@ static void fillConfigObject(JsonObject conf, const MorsePreferences::parameter 
 // txEnqueue call chain PER BYTE — thousands of them for a multi-KB GET
 // response, in the same loop pass as the keyer. Collect ~256-byte chunks and
 // hand those to m32out instead.
+//
+// Bulk mode is for the replies that stream unbounded data — the file listing,
+// player.txt, the practice log. Those are many times the size of the 4 KB BLE
+// TX ring, which without help fills up and drops the rest of the reply (torn
+// JSON, client re-issues the GET). In bulk mode each chunk first waits, briefly,
+// for the client to take what is already queued. A reply built from a
+// JsonDocument is NOT bulk: those fit the ring, and jsonSend() is also on the
+// keying path (a jsonControl while the operator is sending), where txEnqueue's
+// never-wait rule holds.
 namespace {
 class ChunkedM32Out : public Print {
   public:
+    explicit ChunkedM32Out(bool bulk = false) : bulk(bulk) {}
+    ~ChunkedM32Out() { flushChunk(); }   // no emitter can end up truncated by a forgotten flush
     size_t write(uint8_t c) override {
         buf[n++] = c;
         if (n == sizeof(buf))
@@ -65,11 +79,22 @@ class ChunkedM32Out : public Print {
     }
     void flushChunk() {
         if (n) {
+#ifdef CONFIG_BLE_SERIAL
+            // One timeout is all the evidence needed that this client is not
+            // keeping up: stop waiting for the remainder of THIS reply and let the
+            // ring's own backoff drop it, rather than stalling the loop chunk after
+            // chunk. A healthy link never gets here: making room for 256 bytes
+            // takes ~100 ms even at a 20-byte MTU, well inside the 500.
+            if (bulk && bleWait && !MorseBleSerial::txMakeRoom(n, 500))
+                bleWait = false;
+#endif
             m32out.write(buf, n);
             n = 0;
         }
     }
   private:
+    const bool bulk;
+    bool bleWait = true;                 // cleared once the BLE client has shown it cannot keep up
     uint8_t buf[256];
     size_t n = 0;
 };
@@ -416,8 +441,9 @@ void MorseJSON::jsonFileStats(void) { // get info about SPIFFS file system
 }
 
 void MorseJSON::jsonFileFirstLine(void) {
+	ChunkedM32Out out(true);            // bulk: a player.txt without a newline IS its first line
 	File file = SPIFFS.open("/player.txt", "r"); // Open the file for reading in SPIFFS - no error handling, file must exist
-	m32out.print("{\"file\":{\"first line\":\"");
+	out.print("{\"file\":{\"first line\":\"");
 	while (file.available())
 	{
 		char c = file.read();
@@ -426,33 +452,36 @@ void MorseJSON::jsonFileFirstLine(void) {
 		if (c == '\n')
 			break;
 		else
-			m32out.write(c);
+			out.write(c);
 	}
-	m32out.print("\"}}");
+	out.print("\"}}");
+	out.flushChunk();
 	file.close();
 }
 
 void MorseJSON::jsonFileText(void) {
+	ChunkedM32Out out(true);            // bulk: player.txt is as long as the user made it
 	File file = SPIFFS.open("/player.txt", "r");
-	m32out.print("{\"file\":{\"text\":\"");
+	out.print("{\"file\":{\"text\":\"");
 	while (file.available())
 	{
 		char c = file.read();
 		switch (c) {
-			case '"':  m32out.print("\\\""); break;
-			case '\\': m32out.print("\\\\"); break;
-			case '\n': m32out.print("\\n");  break;
-			case '\r': m32out.print("\\r");  break;
-			case '\t': m32out.print("\\t");  break;
+			case '"':  out.print("\\\""); break;
+			case '\\': out.print("\\\\"); break;
+			case '\n': out.print("\\n");  break;
+			case '\r': out.print("\\r");  break;
+			case '\t': out.print("\\t");  break;
 			case '{':  break;  // skip curly braces
 			case '}':  break;
 			default:
 				if (c >= 0x20)   // skip other control characters
-					m32out.write(c);
+					out.write(c);
 				break;
 		}
 	}
-	m32out.print("\"}}");
+	out.print("\"}}");
+	out.flushChunk();
 	file.close();
 }
 
@@ -470,9 +499,10 @@ void MorseJSON::jsonStatsLog(void) {
 	// M32 config tool's serial reader (waitForResponse() in m32_config_tool.html)
 	// finds the response by counting '{'/'}' in the raw stream, so a raw JSONL
 	// payload (which is full of '{'/'}') would desync that parser. Streamed
-	// directly to Serial in small chunks — never holds the whole file in RAM,
-	// same reasoning as jsonFileText() reading byte-by-byte.
-	m32out.print("{\"stats\":{\"log\":\"");
+	// out through the chunker in ~256-byte pieces — never holds the whole file
+	// in RAM, same reasoning as jsonFileText() reading byte-by-byte.
+	ChunkedM32Out out(true);            // bulk: the whole practice log, base64
+	out.print("{\"stats\":{\"log\":\"");
 	if (SPIFFS.exists(MorsePracticeStats::logPath)) {
 		File file = SPIFFS.open(MorsePracticeStats::logPath, "r");
 		unsigned char inBuf[48];
@@ -481,19 +511,20 @@ void MorseJSON::jsonStatsLog(void) {
 		while ((n = file.read(inBuf, sizeof(inBuf))) > 0) {
 			size_t outLen = 0;
 			mbedtls_base64_encode(outBuf, sizeof(outBuf), &outLen, inBuf, n);
-			m32out.write(outBuf, outLen);
+			out.write(outBuf, outLen);
 		}
 		file.close();
 	}
-	m32out.print("\",\"used\":");
-	m32out.print(MorsePracticeStats::usedBytes());
-	m32out.print(",\"total\":");
-	m32out.print(MorsePracticeStats::totalBytes());
-	m32out.print(",\"logSize\":");
-	m32out.print(MorsePracticeStats::logBytes());
-	m32out.print(",\"enabled\":");
-	m32out.print(MorsePracticeStats::enabled() ? "true" : "false");
-	m32out.print("}}");
+	out.print("\",\"used\":");
+	out.print(MorsePracticeStats::usedBytes());
+	out.print(",\"total\":");
+	out.print(MorsePracticeStats::totalBytes());
+	out.print(",\"logSize\":");
+	out.print(MorsePracticeStats::logBytes());
+	out.print(",\"enabled\":");
+	out.print(MorsePracticeStats::enabled() ? "true" : "false");
+	out.print("}}");
+	out.flushChunk();
 }
 #endif
 
@@ -506,22 +537,58 @@ void MorseJSON::jsonFilePart(const String& name, uint8_t index, uint8_t total) {
     MorseJSON::jsonSend(doc);
 }
 
+// File names come out of the flash, and PUT file/begin accepts whatever name a
+// client sends, so a quote or a backslash can end up in one. ArduinoJson used to
+// escape those for us; a streamed reply has to do it itself, or one odd name
+// breaks the JSON for everything after it.
+static void printJsonEscaped(Print &out, const char *s) {
+    for (; *s; ++s) {
+        if (*s == '"' || *s == '\\') {
+            out.print('\\');
+            out.print(*s);
+        } else if ((uint8_t) *s < 0x20) {
+            char esc[8];
+            snprintf(esc, sizeof(esc), "\\u%04x", *s);
+            out.print(esc);
+        } else
+            out.print(*s);
+    }
+}
+
+// Streamed rather than serialized from a JsonDocument: the Accessibility Edition
+// keeps ~500 speech clips in /voice/, and listing them is ~20 KB. ArduinoJson
+// fails SILENTLY once its document is full, so the old 2 KB document stopped
+// after some 30 files, dropped the size of the entry that straddled the end (it
+// reached the client as "NaN KB") and lost the total/used/free trailer with it.
+// No fixed size is right for a flash whose contents the user chooses, so this
+// streams the way jsonFileText() and jsonStatsLog() do - through the 256-byte
+// chunker, because a per-byte tee write costs one Serial.write AND one BLE
+// enqueue each. The reply shape is unchanged.
 void MorseJSON::jsonFileList(void) {
-    DynamicJsonDocument doc(2048);
-    JsonArray array = doc.createNestedArray("files");
+    ChunkedM32Out out(true);            // bulk: ~20 KB on the Accessibility Edition
+    out.print("{\"files\":[");
 
     File root = SPIFFS.open("/");
     File f = root.openNextFile();
+    bool first = true;
     while (f) {
-        JsonObject entry = array.createNestedObject();
-        entry["name"] = String(f.path());    // ← was f.name(), which strips the directory
-        entry["size"] = f.size();
+        out.print(first ? "{\"name\":\"" : ",{\"name\":\"");
+        first = false;
+        printJsonEscaped(out, f.path());    // f.name() would strip the directory
+        out.print("\",\"size\":");
+        out.print(f.size());
+        out.print('}');
         f = root.openNextFile();
     }
-    doc["total"] = SPIFFS.totalBytes();
-    doc["used"] = SPIFFS.usedBytes();
-    doc["free"] = SPIFFS.totalBytes() - SPIFFS.usedBytes();
-    MorseJSON::jsonSend(doc);
+
+    out.print("],\"total\":");
+    out.print(SPIFFS.totalBytes());
+    out.print(",\"used\":");
+    out.print(SPIFFS.usedBytes());
+    out.print(",\"free\":");
+    out.print(SPIFFS.totalBytes() - SPIFFS.usedBytes());
+    out.print('}');
+    out.flushChunk();
 }
 
 void MorseJSON::jsonUploadComplete(const String& filename, uint32_t size) {

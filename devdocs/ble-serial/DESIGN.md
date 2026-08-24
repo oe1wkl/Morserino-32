@@ -77,7 +77,8 @@ BLE Serial; the top-menu backstop in `menu_()` restarts it.
   `stop()` runs inside the dispatch chain) safe. Callers that want the TX
   ring delivered flush **before** stopping (`txFlush(300/500)`); `stop()`
   itself does not flush.
-- **Nothing on the TX side ever waits (revised 2026-07-10, review round 2).**
+- **Nothing on the TX side ever waits (revised 2026-07-10, review round 2 —
+  amended 2026-08-23 for bulk replies, next bullet).**
   `txEnqueueEcho` (the `SerialOutMorse` copy) drops immediately when the ring
   is full; a dit at 40 WpM is ~30 ms. Protocol replies (`txEnqueue`) used to
   self-drain for up to 20 ms, but that deadline sat inside the CW keying path
@@ -89,6 +90,25 @@ BLE Serial; the top-menu backstop in `menu_()` restarts it.
   fully drained the ring. `pump()` — called from every polling site — is the
   only drainer. JSON additionally reaches the tee in ~256-byte chunks
   (`MorseJSON::jsonSend`), not one `write()` per byte.
+- **Amended 2026-08-23: bulk replies DO wait — off the keying path.** A streamed
+  reply (`get file/list`, `get file/text`, `get file/firstline`, `get stats/log`)
+  is many times the 4 KB ring, so the ring is not a buffer for it but a window
+  that has to be re-opened as the client drains. Without help its tail was always
+  dropped: the ~20 KB file listing of the Accessibility Edition never had a
+  chance of arriving whole. `ChunkedM32Out` in **bulk mode** therefore calls
+  `MorseBleSerial::txMakeRoom(n, 500)` before handing a chunk to the tee — it
+  services the credit gate and drains through the very same `txServiceAndDrain()`
+  that `pump()` uses, until the chunk fits (and until the `txBackoff` latch is
+  clear, or the enqueue would be dropped anyway). The keying-path rule is
+  untouched: `txEnqueueEcho` and every `jsonSend` reply still never wait, and only
+  those four streaming emitters pass `bulk = true`. The wait is bounded twice
+  over — 500 ms per chunk, and the first timeout latches waiting **off** for the
+  rest of that reply, so a client that stopped reading costs the loop half a
+  second once, not once per chunk. `txMakeRoom()` deliberately calls
+  `txServiceAndDrain()` and not `pump()`: it runs *inside* a protocol object,
+  where `pump()`'s backoff `DEBUG()` would land in the middle of the JSON on the
+  USB stream, and where a session reset is better left to the next real `pump()`
+  (`linkUp()` goes false the moment one is pending, which ends the wait).
 - **Session-scoped messages are single-transport (added 2026-07-10).**
   Handshake replies, `end m32protocol`/"Goodbye!", the BLE
   `LINE TOO LONG`/`RX OVERFLOW` errors and the suspend/stop notices concern

@@ -48,8 +48,9 @@ namespace MorseBleSerial
 	bool readByte(uint8_t &b);                             // consume one RX byte (loop task); false after stop()
 	bool takeLineReset();                                  // read-and-clear: caller must discard its partial input line
 	bool takeRxOverflow();                                 // read-and-clear: RX ring overflowed, current line is torn
-	size_t txEnqueue(const uint8_t *buf, size_t len);      // protocol replies: bounded self-drain, then drop
+	size_t txEnqueue(const uint8_t *buf, size_t len);      // protocol replies: what fits, never waits, then drops the episode
 	size_t txEnqueueEcho(const uint8_t *buf, size_t len);  // echo channel: drop-immediately (keying path — must never stall)
+	bool txMakeRoom(size_t bytes, uint32_t timeoutMs);     // bulk replies only: drain until `bytes` fit; false on timeout
 	void txFlush(uint32_t timeoutMs);                      // pump until TX empty or timeout; no-op after stop()
 };
 

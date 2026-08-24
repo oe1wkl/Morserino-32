@@ -273,7 +273,8 @@
     .fb-sep{color:var(--accent);font-weight:700}
     .fb-txt{color:var(--muted)}
     .fb-toggle{display:flex;align-items:center;gap:10px;padding:10px 14px;background:#fff;border:1px solid #c8d8e4;border-radius:6px;margin-bottom:14px;cursor:pointer;user-select:none;font-size:14px;color:var(--text)}
-    .fb-toggle input{display:none}
+    .fb-toggle input{position:absolute;width:1px;height:1px;opacity:0;margin:0}
+    .fb-toggle input:focus-visible+.fb-switch{outline:2px solid var(--accent);outline-offset:3px}
     .fb-switch{width:34px;height:18px;background:#c8d8e4;border-radius:9px;position:relative;transition:background .2s;flex-shrink:0}
     .fb-switch::after{content:'';position:absolute;width:14px;height:14px;background:#fff;border-radius:50%;top:2px;left:2px;transition:all .2s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
     .fb-toggle input:checked+.fb-switch{background:var(--accent)}
@@ -291,7 +292,7 @@
       .info-grid{grid-template-columns:1fr 1fr}
       .help-balloon{left:0;transform:none;width:250px}
     }
-    /* ── M32 TTY tab ─────────────────────────────────────────────────────── */
+    /* ── Warning notice (M32 TTY tab, Files tab) ─────────────────────────── */
     .tty-notice{display:flex;align-items:flex-start;gap:12px;padding:14px 18px;
       background:#fffbf0;border:2px solid #e8c060;border-radius:var(--radius);
       margin-bottom:18px;font-size:14px;line-height:1.55;color:#5a4000}
@@ -766,6 +767,12 @@
   <div class="box">
     <h2 class="section-title">File Manager</h2>
     <p class="section-sub">Manage files on the Morserino's internal storage</p>
+    <div class="tty-notice" id="fileListNote" style="display:none"></div>
+    <label class="fb-toggle" id="voiceToggle" style="display:none">
+      <input type="checkbox" id="showVoiceCb" onchange="renderFileList()" />
+      <span class="fb-switch"></span>
+      <span id="voiceToggleLabel">Show voice clips</span>
+    </label>
     <table class="file-table">
       <thead><tr><th>Filename</th><th class="col-size">Size</th><th class="col-action"></th></tr></thead>
       <tbody id="fileList"><tr><td colspan="3" class="empty-msg">Connect to see files</td></tr></tbody>
@@ -903,7 +910,9 @@ function log(msg){var el=document.getElementById('log');el.textContent+='['+new 
 function setStatus(t,c){var el=document.getElementById('statusBadge');el.textContent=t;el.className='status-badge status-'+c}
 function setProgress(p){var b=document.getElementById('progressBar'),f=document.getElementById('progressFill');b.style.display='block';f.style.width=p+'%';f.textContent=Math.round(p)+'%'}
 function hideProgress(){document.getElementById('progressBar').style.display='none'}
-function formatSize(b){return b<1024?b+' B':(b/1024).toFixed(1)+' KB'}
+// MB as well as KB: the Accessibility Edition's voice store is several megabytes,
+// and "4363.4 KB used / 4608.0 KB total" is not a sentence anyone can read.
+function formatSize(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':(b/1048576).toFixed(2)+' MB'}
 function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function sendLine(t){if(!writer)throw new Error('Not connected');return writer.write(t+'\n')}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
@@ -1160,6 +1169,11 @@ async function doDisconnect(){
   document.getElementById('menuSelect').innerHTML='<option value="">—</option>';
   document.getElementById('playerCall').value='';
   document.getElementById('playerName').value='';
+  fileListData=null;
+  document.getElementById('fileList').innerHTML='<tr><td colspan="3" class="empty-msg">Connect to see files</td></tr>';
+  document.getElementById('voiceToggle').style.display='none';
+  document.getElementById('fileListNote').style.display='none';
+  document.getElementById('spaceInfo').textContent='';
   allMenus=[];
   log('Disconnected');
 }
@@ -1323,10 +1337,19 @@ function manualIndexLink(text){
   return a;
 }
 
+// Both Pocket editions report the same "hardware", so the edition is the only
+// thing that tells the standard build from the one that speaks its menus aloud.
+// Firmware older than V9 does not report it at all.
+function editionName(edition){
+  return edition==='accessibility' ? 'Accessibility' :
+         edition==='standard'      ? 'Standard'      :
+         edition ? edition : 'not reported';
+}
+
 function showDeviceInfo(dev){
   var box=document.getElementById('deviceInfoBox'), grid=document.getElementById('deviceInfoGrid');
   grid.innerHTML='';
-  [{label:'Hardware',value:dev.hardware||'—'},{label:'Firmware',value:dev.firmware||'—'},{label:'Build',value:dev.build||'—'},{label:'Protocol',value:dev.protocol||'—'}].forEach(function(item){
+  [{label:'Hardware',value:dev.hardware||'—'},{label:'Edition',value:editionName(dev.edition)},{label:'Firmware',value:dev.firmware||'—'},{label:'Build',value:dev.build||'—'},{label:'Protocol',value:dev.protocol||'—'}].forEach(function(item){
     var card=document.createElement('div');card.className='info-card';
     card.innerHTML='<div class="info-card-label">'+item.label+'</div><div class="info-card-value">'+item.value+'</div>';
     grid.appendChild(card);
@@ -2278,28 +2301,91 @@ async function togglePracticeStatsEnabled(){
 // ============================================================================
 // FILE MANAGER
 // ============================================================================
+// What the device last reported, so the voice-clip toggle can redraw the table
+// without reading the flash all over again.
+var fileListData=null;
+
+// The Accessibility Edition keeps some 500 speech clips in /voice/. They belong
+// to the firmware rather than to the user, and they bury the handful of files
+// this tab is really about, so they are folded away behind a toggle. The test is
+// the /voice/ path and NOT the .mp3 extension, deliberately: /sounds/success.mp3
+// and /sounds/error.mp3 are upload targets of this very tab and must stay in view.
+function isVoiceClip(name){return /^\/?voice\//i.test(name||'')}
+
 async function listFiles(){
   if(!connected) return;
   showLoading('Loading files...');
-  readBuffer=''; await sendLine('get file/list');
   try{
-    var resp=await waitForResponse(4000); var data=JSON.parse(resp);
-    var tbody=document.getElementById('fileList'); tbody.innerHTML='';
-    if(data.files&&data.files.length>0){
-      for(var k=0;k<data.files.length;k++){
-        var f=data.files[k], tr=document.createElement('tr'), esc=f.name.replace(/'/g,"\\'");
-        var actions='';
-        if(f.name==='/player.txt'||f.name==='player.txt') actions='<button class="btn btn-outline btn-sm" onclick="viewPlayerText()" style="margin-right:6px">View</button>';
-        actions+='<button class="btn btn-red btn-sm" onclick="deleteFile(\''+esc+'\')">Delete</button>';
-        tr.innerHTML='<td>'+f.name+'</td><td class="col-size">'+formatSize(f.size)+'</td><td class="col-action" style="white-space:nowrap">'+actions+'</td>';
-        tbody.appendChild(tr);
-      }
-    } else tbody.innerHTML='<tr><td colspan="3" class="empty-msg">No files found</td></tr>';
-    if(data.total!==undefined) document.getElementById('spaceInfo').textContent='Storage: '+formatSize(data.used)+' used / '+formatSize(data.total)+' total ('+formatSize(data.free)+' free)';
-    log('Files: '+(data.files?data.files.length:0));
-  }catch(e){log('Files: '+e.message)}
+    // An Accessibility Edition answers with ~500 entries (some 20 KB), which
+    // takes a good deal longer than the fraction of a second a reply usually does.
+    var data=await sendAndParse('get file/list',15000);
+    fileListData=data;
+    renderFileList();
+    log('Files: '+((data.files&&data.files.length)||0));
+  }catch(e){fileListData=null;log('Files: '+e.message)}
   hideLoading();
 }
+
+// Draws the listing held in fileListData: voice clips in or out, and a word of
+// explanation when the firmware could not deliver the whole list.
+function renderFileList(){
+  var data=fileListData||{}, files=data.files||[];
+  var clips=files.filter(function(f){return isVoiceClip(f.name)});
+  var shown=document.getElementById('showVoiceCb').checked
+              ? files : files.filter(function(f){return !isVoiceClip(f.name)});
+
+  var toggle=document.getElementById('voiceToggle');
+  toggle.style.display=clips.length?'':'none';
+  document.getElementById('voiceToggleLabel').textContent=
+    'Show the '+clips.length+' voice clips of the Accessibility Edition (/voice/)';
+
+  var tbody=document.getElementById('fileList'); tbody.innerHTML='';
+  if(shown.length===0){
+    tbody.innerHTML='<tr><td colspan="3" class="empty-msg">'+
+      (files.length?'Nothing but voice clips on this Morserino — switch them on above'
+                   :'No files found')+'</td></tr>';
+  }else{
+    var frag=document.createDocumentFragment();
+    shown.forEach(function(f){
+      var tr=document.createElement('tr');
+      var name=document.createElement('td'); name.textContent=f.name; tr.appendChild(name);
+      var size=document.createElement('td'); size.className='col-size';
+      // "?" rather than "NaN KB" for an entry that arrived without its size.
+      size.textContent=(typeof f.size==='number')?formatSize(f.size):'?';
+      tr.appendChild(size);
+      var act=document.createElement('td'); act.className='col-action'; act.style.whiteSpace='nowrap';
+      if(f.name==='/player.txt'||f.name==='player.txt'){
+        var view=document.createElement('button');
+        view.className='btn btn-outline btn-sm'; view.style.marginRight='6px';
+        view.textContent='View'; view.onclick=function(){viewPlayerText()};
+        act.appendChild(view);
+      }
+      var del=document.createElement('button');
+      del.className='btn btn-red btn-sm'; del.textContent='Delete';
+      del.onclick=function(){deleteFile(f.name)};
+      act.appendChild(del); tr.appendChild(act);
+      frag.appendChild(tr);
+    });
+    tbody.appendChild(frag);
+  }
+
+  document.getElementById('spaceInfo').textContent=(data.total!==undefined)
+    ? 'Storage: '+formatSize(data.used)+' used / '+formatSize(data.total)+
+      ' total ('+formatSize(data.free)+' free)'
+    : '';
+
+  // Firmware older than V9.0 built this reply in a fixed 2 KB buffer and, once
+  // that was full, stopped without a word: the listing breaks off after some 30
+  // files, the last entry loses its size, and the storage figures never arrive
+  // at all — which is the tell we test for here.
+  var note=document.getElementById('fileListNote');
+  var truncated=files.length>0&&data.total===undefined;
+  note.style.display=truncated?'':'none';
+  if(truncated) note.innerHTML='<span class="tty-notice-icon">⚠️</span><div>Your Morserino could only '+
+    'report the first '+files.length+' files — its firmware runs out of buffer on a long listing. '+
+    '<strong>Update the firmware</strong> to see all of them.</div>';
+}
+
 async function deleteFile(name){if(!confirm('Delete '+name+'?'))return;readBuffer='';await sendLine('put file/delete/'+name);try{await waitForResponse(2000);log('Deleted: '+name)}catch(e){log('Delete sent')}await listFiles()}
 
 async function viewPlayerText(){

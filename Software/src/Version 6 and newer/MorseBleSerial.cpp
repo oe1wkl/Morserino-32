@@ -293,6 +293,29 @@ void MorseBleSerial::stop() {
     txChar = nullptr;                   // our own callback instances are static, no churn from us
 }
 
+// The flow-gated TX drain, shared by pump() and txMakeRoom(): service the credit
+// watchdog, lift a finished congestion episode, then hand at most maxChunks
+// notifications to the stack. Deliberately none of pump()'s other business
+// (backoff DEBUG, session reset, advertising): txMakeRoom() calls this from
+// INSIDE a protocol object, where a DEBUG line would land in the middle of the
+// JSON on the USB stream, and where a session reset is better left to the next
+// real pump() — linkUp() already goes false the moment one is pending.
+static void txServiceAndDrain(uint8_t maxChunks) {
+    flow.service(millis());             // watchdog: resync credits if confirmations stopped
+    if (txBackoff && txRing.used() == 0)
+        txBackoff = false;              // congestion episode over: ring fully drained
+    uint8_t chunks = 0;
+    while (chunks < maxChunks && MorseBleSerial::linkUp() && flow.canSend() && txRing.used() > 0) {
+        uint16_t n = bleStageChunk(txRing, staging, mtuPayload);
+        if (n == 0)
+            break;
+        txChar->setValue(staging, n);
+        txChar->notify();               // returns void on error too — flow control paces us regardless
+        flow.onNotified();
+        chunks++;
+    }
+}
+
 void MorseBleSerial::pump() {
     if (!isRunning)
         return;
@@ -319,19 +342,7 @@ void MorseBleSerial::pump() {
     }
     if (!isConnected)                   // idle/advertising is the dominant state, and pump() runs at every
         return;                         // polling site — everything below only matters with a live central
-    flow.service(millis());             // watchdog: resync credits if confirmations stopped
-    if (txBackoff && txRing.used() == 0)
-        txBackoff = false;              // congestion episode over: ring fully drained
-    uint8_t chunks = 0;
-    while (chunks < 2 && linkUp() && flow.canSend() && txRing.used() > 0) {
-        uint16_t n = bleStageChunk(txRing, staging, mtuPayload);
-        if (n == 0)
-            break;
-        txChar->setValue(staging, n);
-        txChar->notify();               // returns void on error too — flow control paces us regardless
-        flow.onNotified();
-        chunks++;
-    }
+    txServiceAndDrain(2);
 }
 
 bool MorseBleSerial::readByte(uint8_t &b) {
@@ -384,6 +395,29 @@ size_t MorseBleSerial::txEnqueueEcho(const uint8_t *buf, size_t len) {
         return len;
     txRing.produceSome(buf, (uint16_t) len);
     return len;
+}
+
+bool MorseBleSerial::txMakeRoom(size_t bytes, uint32_t timeoutMs) {
+    // A bulk reply (a file listing, player.txt, the practice log) is many times
+    // the size of the TX ring, so the ring cannot buffer it — it is a window that
+    // has to be re-opened as the client drains it. Waiting here is what keeps such
+    // a reply whole: without it the ring fills, txEnqueue() drops the remainder of
+    // the episode, and the client gets torn JSON. Called only from the streaming
+    // emitters, between chunks — NEVER from the keying path, where txEnqueue()'s
+    // no-wait rule stands. `bytes` must fit the empty ring (chunks are 256).
+    if (!isRunning || !linkUp())
+        return true;                    // no BLE client behind this write: nothing to wait for
+    uint32_t start = millis();
+    for (;;) {
+        txServiceAndDrain(2);
+        // the backoff latch matters as much as the free space: while it is set,
+        // txEnqueue() drops everything however much room the ring has
+        if (!txBackoff && txRing.free_() >= bytes)
+            return true;
+        if (!linkUp() || (uint32_t)(millis() - start) >= timeoutMs)
+            return false;               // client is not keeping up — caller stops waiting for this reply
+        delay(1);                       // let the Bluedroid task confirm notifications
+    }
 }
 
 void MorseBleSerial::txFlush(uint32_t timeoutMs) {
