@@ -2020,8 +2020,7 @@ void MorsePreferences::writePreferences(const char* repository) {
 
      if (MorsePreferences::kochFilter != pref.getUChar("kochFilter")) {
         pref.putUChar("kochFilter", MorsePreferences::kochFilter);
-        if (!MorsePreferences::useCustomChars)                          // we update these only if we do not use a custom character set!
-          koch.setup();
+        koch.setup();
      }
 
      if (MorsePreferences::wlanSSID != pref.getString("wlanSSID")) {
@@ -2891,8 +2890,8 @@ void Koch::setup() {                                                // create th
   else
     setKochChars(MorsePreferences::pliste[posKochSeq].value);
   //// populate the array for abbreviations and words according to length and Koch filter
-  createWords(MorsePreferences::pliste[posWordLength].value, MorsePreferences::useCustomChars ? kochCharsLength+1 : MorsePreferences::kochFilter) ;  //
-  createAbbr(MorsePreferences::pliste[posAbbrevLength].value, MorsePreferences::useCustomChars ? kochCharsLength+1 : MorsePreferences::kochFilter);
+  createWords(MorsePreferences::pliste[posWordLength].value, MorsePreferences::kochFilter) ;  //
+  createAbbr(MorsePreferences::pliste[posAbbrevLength].value, MorsePreferences::kochFilter);
 
   String charSet = getCharSet();
   uint8_t probability = 0;
