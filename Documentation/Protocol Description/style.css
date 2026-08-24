@@ -1,0 +1,167 @@
+/* Print stylesheet for "The M32 Serial Protocol".
+ *
+ * Deliberately much smaller than the user manual's style.css: this document has
+ * no title page, no variants and no images - it is a reference text with a lot
+ * of code. The visual language (A4, Lato, Menlo, #f5f5f5 code) is kept the same
+ * so the two PDFs look like they belong to the same project.
+ */
+
+@page {
+    size: A4;
+    margin: 2.2cm;
+
+    @top-left {
+        content: string(section-title);
+        font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+        font-size: 9pt;
+        color: #666;
+    }
+    @top-right {
+        content: "The M32 Serial Protocol";
+        font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+        font-size: 9pt;
+        color: #666;
+    }
+    @bottom-center {
+        content: counter(page);
+        font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+        font-size: 9pt;
+        color: #666;
+    }
+}
+
+/* The contents page carries no running head. */
+@page :first {
+    @top-left  { content: none; }
+    @top-right { content: none; }
+}
+
+body {
+    font-family: 'Lato', 'Helvetica Neue', Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.45;
+    color: #222;
+    hyphens: none;
+}
+
+/* ---- Headings ---- */
+
+h1 {
+    font-size: 20pt;
+    margin: 0 0 0.2em 0;
+    color: #111;
+}
+
+h2 {
+    /* feeds the running head */
+    string-set: section-title content();
+    font-size: 14pt;
+    margin: 1.6em 0 0.4em 0;
+    padding-bottom: 0.15em;
+    border-bottom: 1px solid #ccc;
+    color: #111;
+    break-after: avoid;
+}
+
+h3 {
+    font-size: 11.5pt;
+    margin: 1.2em 0 0.3em 0;
+    color: #111;
+    break-after: avoid;
+}
+
+h4 {
+    font-size: 10.5pt;
+    margin: 1em 0 0.2em 0;
+    break-after: avoid;
+}
+
+p { margin: 0.45em 0; orphans: 2; widows: 2; }
+
+/* ---- Code ---- */
+
+code {
+    font-family: 'Menlo', 'Courier New', monospace;
+    font-size: 9pt;
+    background-color: #f5f5f5;
+    padding: 1px 3px;
+    border-radius: 2px;
+    /* Command syntax like PUT config/<parameter name>/<value> must be allowed to
+     * break, or a long inline code span pushes past the right margin. */
+    overflow-wrap: break-word;
+}
+
+pre {
+    font-family: 'Menlo', 'Courier New', monospace;
+    font-size: 8.5pt;
+    line-height: 1.35;
+    background-color: #f5f5f5;
+    border-left: 3px solid #d0d0d0;
+    padding: 0.5em 0.7em;
+    margin: 0.6em 0;
+    /* The JSON examples are long single lines; wrap rather than clip them, since
+     * a PDF page cannot be scrolled sideways. */
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+}
+
+pre code {
+    background: none;
+    padding: 0;
+    font-size: inherit;
+}
+
+/* ---- Lists and tables ---- */
+
+ul, ol { margin: 0.45em 0; padding-left: 1.4em; }
+li { margin: 0.15em 0; }
+
+table {
+    border-collapse: collapse;
+    margin: 0.7em 0;
+    font-size: 9.5pt;
+}
+th, td {
+    border: 1px solid #ccc;
+    padding: 3px 7px;
+    text-align: left;
+    vertical-align: top;
+}
+th { background-color: #f5f5f5; }
+
+/* ---- Contents ---- */
+
+nav#TOC {
+    break-after: page;
+}
+
+nav#TOC::before {
+    content: "Contents";
+    display: block;
+    font-size: 20pt;
+    color: #111;
+    margin-bottom: 0.6em;
+}
+
+nav#TOC ul {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+nav#TOC ul ul { padding-left: 1.2em; }
+
+nav#TOC li { margin: 0.12em 0; }
+
+nav#TOC a {
+    text-decoration: none;
+    color: #222;
+}
+
+/* Leader dots + page number, so the contents list is usable on paper. */
+nav#TOC a::after {
+    content: " " leader('.') " " target-counter(attr(href), page);
+    color: #666;
+}
+
+a { color: #1a4f7a; text-decoration: none; }
