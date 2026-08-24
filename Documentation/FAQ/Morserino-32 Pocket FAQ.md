@@ -9,13 +9,14 @@ Answers reflect **firmware version 9.0**.
 * **I have an older (1st or 2nd edition) Morserino. Should I get an M32 Pocket?**
     * There is no need to replace a working one. Both models run the **same firmware**, from the same release, and get the same updates. Every training mode is on both: the Koch trainer, CW Generator, Echo Trainer, the transceiver modes, the QSO Bot, the Bluetooth keyboard and BLE Serial, the WiFi/ESP-NOW transceiver, and the serial protocol with the Configuration Tool.
     * **What the M32 Pocket gives you that the older models cannot:**
+        * It is smaller, and it has a closed case — so it really does go in a pocket.
         * A colour display showing four or five lines of text instead of three on a monochrome OLED, with selectable colour themes and a **Font Size** setting.
         * Noticeably better audio: a dedicated audio codec instead of a PWM-generated tone, so the sidetone is a clean sine, its edge shaping is adjustable (**Tone Softness**), and you can upload your own Echo Trainer sounds.
         * The seven **games**, and **practice statistics** for the Koch trainer.
         * The **Accessibility Edition**, which reads the interface aloud — available only for the Pocket.
-        * A smaller device, and USB-C instead of Micro USB.
+        * USB-C instead of Micro USB.
     * **What you would give up:**
-        * **LoRa.** The 1st and 2nd editions have a LoRa transceiver with an SMA antenna connector (around 433 MHz); the M32 Pocket does not. If you use the LoRa transceiver modes to work other Morserinos with no infrastructure in between, that single point may settle the question on its own. The WiFi transceiver works on both, but it needs either a network or an ESP-NOW partner in range.
+        * **LoRa.** The 1st and 2nd editions have a LoRa transceiver with an SMA antenna connector (around 433 MHz); the M32 Pocket does not. Since both the older Morserinos and the Pocket offer comparable functionality over ESP-NOW, this will rarely sway your decision.
         * The **trimmer potentiometers** — the audio input level trimmer, and on the 2nd edition the headphone level trimmer. The Pocket has neither.
     * **An honest summary**: if your Morserino works, and you do not particularly want the games, the statistics, the spoken menus or the better sound, there is no compelling reason to buy a second device. You are not missing out on the CW training itself, which is what both machines are for. Buy the Pocket for its size, its display and its audio, or because you need the Accessibility Edition. Keep the classic if you depend on LoRa — and note that a good many owners simply keep both.
 
@@ -26,7 +27,7 @@ Answers reflect **firmware version 9.0**.
     * **No LoRa.** The LoRa transceiver modes are simply not there; use the WiFi transceiver instead.
     * **No trimmers.** There is no audio input level potentiometer to turn — you set the level at the source instead, as described in section 5.
     * **The FN button is a cut-out in the case**, to the lower right of the encoder, rather than a protruding red button. More than one owner has spent a while looking for it.
-    * **One gesture means something different.** A long press of FN while in a menu starts the audio input level adjustment on the older models; on the Pocket it keys the transmitter and produces a sidetone.
+    * **One gesture means something different.** A long press of FN while in a menu starts the audio input level adjustment on the older models; on the Pocket it merely keys the transmitter and produces a sidetone.
     * **Your settings do not come across.** There is no backup-and-restore between devices, so a new Pocket starts on factory settings: expect to set your call sign, Koch lesson, speed and preferences again. Snapshots do not transfer either.
 
 ## 2. Power Supply, Battery, and Charging
@@ -168,8 +169,8 @@ Answers reflect **firmware version 9.0**.
 
 * **Which games are there?**
     * Seven: **Morse Invaders**, **Fight the Pileup**, **Radio Cave**, **Morsel**, **Trailblazer**, **Fox Hunt** and **Memory Chain**. They are described in the user manual.
-    * Most of them respect your current Koch lesson settings, so they train the characters you are actually working on (Fight the Pileup is the exception — it works with call signs).
-    * Four of them — Fight the Pileup, Morsel, Trailblazer and Fox Hunt — can also be played against a second Morserino.
+    * Most of them respect your current Koch lesson settings, so they train the characters you are actually working on (the exceptions are Fight the Pileup, which works with call signs, and Radio Cave).
+    * Four of them — Fight the Pileup, Morsel, Trailblazer and Fox Hunt — can also be played against a second Morserino, or against several.
 * **Why does my device have no games?**
     * Either it is a classic Morserino-32 (the games are M32 Pocket only), or it is running the **Accessibility Edition**, which does not include them.
 * **How do I clear the high scores?**

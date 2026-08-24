@@ -11,13 +11,14 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 * **Ich habe einen älteren Morserino (1. oder 2. Edition). Soll ich mir einen M32 Pocket zulegen?**
     * Ein funktionierendes Gerät muss man deswegen nicht ersetzen. Beide Modelle laufen mit **derselben Firmware** aus demselben Release und bekommen dieselben Updates. Alle Übungs-Betriebsarten gibt es auf beiden: Koch-Trainer, CW-Generator, Echo Trainer, die Transceiver-Betriebsarten, den QSO Bot, die Bluetooth-Tastatur und BLE Serial, den WiFi-/ESP-NOW-Transceiver sowie das serielle Protokoll mit dem Configuration Tool.
     * **Was der M32 Pocket kann und die älteren Modelle nicht:**
+        * Er ist kleiner und hat ein geschlossenes Gehäuse — damit passt er wirklich in die Tasche.
         * Ein Farbdisplay mit vier oder fünf Textzeilen statt drei auf einem monochromen OLED, dazu wählbare Farbschemata und die Einstellung **Font Size**.
         * Deutlich besseres Audio: ein eigener Audio-Codec statt eines per PWM erzeugten Tons — der Mithörton ist ein sauberer Sinus, seine Flankenformung ist einstellbar (**Tone Softness**), und du kannst eigene Klänge für den Echo Trainer hochladen.
         * Die sieben **Spiele** und die **Übungsstatistik** für den Koch-Trainer.
         * Die **Accessibility Edition**, die die Bedienoberfläche laut vorliest — es gibt sie nur für den Pocket.
-        * Ein kleineres Gerät, und USB-C statt Micro-USB.
+        * USB-C statt Micro-USB.
     * **Worauf du verzichten würdest:**
-        * **LoRa.** Die 1. und 2. Edition haben einen LoRa-Transceiver mit SMA-Antennenanschluss (um 433 MHz), der M32 Pocket nicht. Wenn du die LoRa-Transceiver-Betriebsarten nutzt, um ohne jede Infrastruktur mit anderen Morserinos zu arbeiten, kann dieser eine Punkt die Frage schon allein entscheiden. Den WiFi-Transceiver gibt es auf beiden, er braucht aber entweder ein Netzwerk oder einen ESP-NOW-Partner in Reichweite.
+        * **LoRa.** Die 1. und 2. Edition haben einen LoRa-Transceiver mit SMA-Antennenanschluss (um 433 MHz), der M32 Pocket nicht. Da sowohl die älteren Morserinos als auch der Pocket mit ESP-NOW vergleichbare Funktionalität liefern, wird dies nur selten deine Entscheidung beeinflussen.
         * Die **Trimmpotentiometer** — den Trimmer für den Audio-Eingangspegel und, bei der 2. Edition, den für den Kopfhörerpegel. Der Pocket hat beides nicht.
     * **Ehrliches Fazit**: Wenn dein Morserino funktioniert und du weder die Spiele noch die Statistik, die gesprochenen Menüs oder das bessere Audio besonders brauchst, gibt es keinen zwingenden Grund für ein zweites Gerät. Beim eigentlichen CW-Training — und dafür sind beide da — entgeht dir nichts. Kauf den Pocket wegen der Größe, des Displays und des Klangs, oder weil du die Accessibility Edition brauchst. Behalte den klassischen, wenn du auf LoRa angewiesen bist — und nicht wenige Besitzer haben schlicht beide.
 
@@ -28,7 +29,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * **Kein LoRa.** Die LoRa-Transceiver-Betriebsarten gibt es schlicht nicht; nimm stattdessen den WiFi-Transceiver.
     * **Keine Trimmer.** Es gibt kein Potentiometer für den Audio-Eingangspegel — den Pegel stellst du stattdessen an der Quelle ein, siehe Abschnitt 5.
     * **Die FN-Taste ist eine Aussparung im Gehäuse**, rechts unterhalb des Drehgebers, und kein hervorstehender roter Knopf. Mehr als ein Besitzer hat sie erst einmal gesucht.
-    * **Eine Geste bedeutet etwas anderes.** Ein langer Druck auf FN im Menü startet bei den älteren Modellen die Einstellung des Audio-Eingangspegels; beim Pocket tastet er den Sender und erzeugt einen Mithörton.
+    * **Eine Geste bedeutet etwas anderes.** Ein langer Druck auf FN im Menü startet bei den älteren Modellen die Einstellung des Audio-Eingangspegels; beim Pocket tastet er nur den Sender und erzeugt einen Mithörton.
     * **Deine Einstellungen wandern nicht mit.** Es gibt keine Sicherung und Wiederherstellung zwischen Geräten — ein neuer Pocket startet mit den Werkseinstellungen. Rechne damit, Rufzeichen, Koch-Lektion, Geschwindigkeit und Einstellungen neu zu setzen. Auch Schnappschüsse werden nicht übertragen.
 
 ## 2. Stromversorgung, Akku und Laden
@@ -170,8 +171,8 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 
 * **Welche Spiele gibt es?**
     * Sieben: **Morse Invaders**, **Fight the Pileup**, **Radio Cave**, **Morsel**, **Trailblazer**, **Fox Hunt** und **Memory Chain**. Sie sind im Benutzerhandbuch beschrieben.
-    * Die meisten berücksichtigen deine aktuellen Koch-Einstellungen, üben also die Zeichen, an denen du gerade arbeitest (Ausnahme ist Fight the Pileup, das mit Rufzeichen arbeitet).
-    * Vier davon — Fight the Pileup, Morsel, Trailblazer und Fox Hunt — lassen sich auch gegen einen zweiten Morserino spielen.
+    * Die meisten berücksichtigen deine aktuellen Koch-Einstellungen, üben also die Zeichen, an denen du gerade arbeitest (Ausnahme sind Fight the Pileup, das mit Rufzeichen arbeitet, und Radio Cave).
+    * Vier davon — Fight the Pileup, Morsel, Trailblazer und Fox Hunt — lassen sich auch gegen einen zweiten oder mehrere Morserinos spielen.
 * **Warum hat mein Gerät keine Spiele?**
     * Entweder ist es ein klassischer Morserino-32 (die Spiele gibt es nur für den M32 Pocket), oder es läuft die **Accessibility Edition**, in der sie nicht enthalten sind.
 * **Wie lösche ich die Highscores?**
