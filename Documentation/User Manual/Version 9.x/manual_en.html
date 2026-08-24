@@ -63,7 +63,8 @@ The font family used is Lato.</p>
 <li><a href="#quick-guide-to-using-the-m32" id="toc-quick-guide-to-using-the-m32"><span class="toc-section-number">3</span> Quick Guide to Using the M32</a>
 <ul>
 <li><a href="#making-the-m32-pocket-speak-installing-the-accessibility-edition" id="toc-making-the-m32-pocket-speak-installing-the-accessibility-edition"><span class="toc-section-number">3.1</span> Making the M32 Pocket Speak: Installing the Accessibility Edition</a></li>
-<li><a href="#the-basics" id="toc-the-basics"><span class="toc-section-number">3.2</span> The Basics</a></li>
+<li><a href="#if-the-morserino-stops-speaking" id="toc-if-the-morserino-stops-speaking"><span class="toc-section-number">3.2</span> If the Morserino Stops Speaking</a></li>
+<li><a href="#the-basics" id="toc-the-basics"><span class="toc-section-number">3.3</span> The Basics</a></li>
 </ul></li>
 <li><a href="#using-the-m32-step-by-step" id="toc-using-the-m32-step-by-step"><span class="toc-section-number">4</span> Using the M32, Step by Step</a>
 <ul>
@@ -176,11 +177,12 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=2f8f7ccf7c79 v=9 -->
+<!-- WHATSNEW:BEGIN en=a1decfea009a v=9 -->
 <p>What is new in Version 9?</p>
 <ul>
 <li>A single firmware installer for every Morserino, at <a href="https://www.morserino.info/install.html">https://www.morserino.info/install.html</a>. It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.</li>
 <li>M32 Pocket only: the installer can now also install the <strong>Accessibility Edition</strong>, which speaks the menus and settings aloud for blind and partially sighted operators (the games are not included in it). Standard and Accessibility Edition are offered for the same device and you can move between them at any time; your settings are kept.</li>
+<li>M32 Pocket, Accessibility Edition only: the device now tells you when something is wrong with its voice clips, instead of simply staying quiet about it. The clips are stored separately from the program, so re-installing the program on its own - or an installation that is interrupted part-way - can leave a Morserino that runs perfectly well but has nothing left to speak with, or only the clips of an older version. Either way you now hear four pairs of alternating high and low tones on switching on, and the screen says which it is: „No voice clips!“ (nothing there, the device stays silent) or „Wrong voice pack!“ (clips from another version - it goes on speaking, but whatever was added or reworded since those clips were made stays silent). Running the installer again puts it right. The warning is deliberately neither speech nor Morse code: it has to work when speech is exactly what is missing, and it must not assume you can already read Morse.</li>
 <li>There are now three versions of the user manual, each in two languages (English and German): one for the “classic” Morserino-32 (1st and 2nd edition), one for M32 Pocket, and one for the Accessibility Edition of the M32 Pocket. Each variant leaves out the parts that are not relevant for that particular hardware/firmware.</li>
 <li>The new firmware update utility and the configuration utility now provide links to the respective version of the user manual.</li>
 <li>Extended BLE features. Apart from BLE Keyboard output, there is now also the capability of using BLE for the serial protocol. This means utilities can be written (or ported) to use cable-less connectivity, also to portable devices like phones or tablets.</li>
@@ -196,7 +198,9 @@ The font family used is Lato.</p>
 <li>On the display, words are not broken up at the end of a line, but starting at a new line whenever the word length is known in advance (all CW generator modes, and Trx modes like LoRa or WiFi Trx), and the word would not fit into the current line.</li>
 <li>„Select Lesson“ now also shows the total # of characters in the selected Koch sequence.</li>
 <li>A few more cosmetic display output fixes.</li>
-<li>The Configuration Tool’s Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth. <!-- WHATSNEW:END --></li>
+<li>The Configuration Tool’s Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.</li>
+<li>M32 Pocket only: all sound is cleaner. The audio chip’s internal gain was set so high that every tone was being clipped inside the chip, before it ever reached the volume control - audible as a harsh, buzzy tone that no Tone Volume setting could cure. The CW sidetone, the spoken menus of the Accessibility Edition and your own uploaded success/error sounds are now all reproduced undistorted. Two things follow from this that you will notice: the sidetone is a clean sine now instead of the harmonically rich sound it was, which on the small built-in loudspeaker can seem slightly less penetrating even though it is not quieter; and sounds you uploaded yourself will be quieter than before, because they are no longer being distorted (see the note in the Echo Trainer section of the manual). Loudspeaker and headphone levels have been rebalanced against each other. Thanks to Christian, OE1CKO, for finding this.</li>
+<li>A Bluetooth (BLE Serial) connection now has to be allowed on the Morserino itself. When an app asks for a session, the device shows „Allow connect?“ and waits for you to press FN - a USB cable has to be plugged in by someone standing next to your device, while anything within radio range can connect over Bluetooth, so the Morserino asks before it hands over control. You are only asked in the main menu (in a training mode the request is refused without interrupting you), an app that reconnects within a minute is let straight back in, and while a session is open a small Bluetooth symbol in the top line shows that something is connected. <!-- WHATSNEW:END --></li>
 </ul>
 <h1 data-number="2" id="connectors-and-controls"><span class="header-section-number">2</span> Connectors and Controls</h1>
 <section id="m32pocket" class="pocket pocket-a11y" data-number="2.1">
@@ -499,7 +503,19 @@ The font family used is Lato.</p>
 <p>Your preferences, your snapshots and your stored speed survive the change, and survive changing back — only the File Player’s text does not, since that is the storage the voice clips take over.</p>
 <p>The same installer is also how you return to the Standard edition later: the steps are identical, you simply choose the other edition. It is described in full in the appendix <strong>Updating the Firmware via USB and a Browser (Webserial)</strong>.</p>
 </section>
-<h2 data-number="3.2" id="the-basics"><span class="header-section-number">3.2</span> The Basics</h2>
+<section id="if-the-morserino-stops-speaking" class="pocket-a11y" data-number="3.2">
+<h2 data-number="3.2"><span class="header-section-number">3.2</span> If the Morserino Stops Speaking</h2>
+<p>The voice clips are not part of the program. They live in a separate area of the device’s internal storage, which means the two can come apart: re-install the program on its own, or let an installation be interrupted part-way, and the Morserino ends up running perfectly well — keyer, generator, decoder, CW and all — with nothing left to speak with, or with the clips of an older version.</p>
+<p>A Morserino in that state would simply say nothing at all, and silence is exactly what broken speech and a dead device have in common. So this edition tells you. When you switch it on you hear, in place of or ahead of the usual announcement, <strong>four pairs of alternating high and low tones</strong> — a short two-tone alarm of about two seconds.</p>
+<p>The alarm means one of two things, and the start-up screen says which, under the version number, for anyone able to look:</p>
+<ul>
+<li><strong>“No voice clips!”</strong> — there are no clips at all. The Morserino stays silent apart from the alarm.</li>
+<li><strong>“Wrong voice pack!”</strong> — the clips belong to a different version of the program. Most of them still fit, so the Morserino goes on speaking normally after the alarm; what it cannot say are the entries that were added or reworded since those clips were made, and those simply stay silent.</li>
+</ul>
+<p>The alarm is deliberately neither speech nor Morse code: it has to work when speech is precisely what is missing, and it must not assume that you can already read Morse. It is the same signal in both cases — one sound to learn, meaning “my speech is not right”.</p>
+<p>Nothing on the device needs repairing, and nothing is harmed by carrying on: everything except the spoken menus still works. To put it right, run the installer again exactly as described in <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, choosing the <strong>Accessibility Edition</strong> and <strong>Keep my settings</strong>. That installs the program and the matching voice clips together, and your settings and snapshots survive it.</p>
+</section>
+<h2 data-number="3.3" id="the-basics"><span class="header-section-number">3.3</span> The Basics</h2>
 <p><strong>Controls</strong> to be used:</p>
 <p>• ON/OFF (Battery): Sliding switch located on the back near the loudspeaker. Connects/disconnects battery.</p>
 <p>• ENCODER: The black knob that you can rotate and press.</p>
@@ -723,6 +739,10 @@ The font family used is Lato.</p>
 <p>For the less frequently used preferences <strong>Key ext TX</strong>, <strong>CW Gen Displ</strong> and Generator Tx see the section <strong>Preferences regarding CW Generation</strong>.</p>
 <h2 data-number="5.3" id="echo-trainer"><span class="header-section-number">5.3</span> Echo Trainer</h2>
 <p>In this mode the Morserino-32 generates a word or group of characters as a prompt. You have the same selection options as with the CW Generator. Then, it waits for you to repeat these characters using the paddle (or a straight key). If you wait too long or your response is not identical to what was generated, an error is indicated on the display and by sound, and the prompt word is repeated. If you enter the correct characters, this is indicated acoustically and on the screen. Then, you are prompted for the next word.</p>
+<div class="note pocket pocket-a11y">
+<p>The two sounds that confirm a correct or a faulty response can be replaced by your own: upload an MP3 file as <em>/sounds/success.mp3</em> or <em>/sounds/error.mp3</em> with the Configuration Tool, and it will be played instead of the built-in beeps. If no such file is present, the built-in beeps are used.</p>
+<p>From version 9.0 on, the audio path no longer overdrives the sound chip, so your own sounds are reproduced cleanly – but they will also be quieter than they were on earlier firmware, where they were being distorted. If that bothers you, prepare them a little louder. Keep their peak level at or just below –1 dBFS: a file normalised to the full 0 dBFS will still distort, because the MP3 decoder runs out of headroom before the sound chip does.</p>
+</div>
 <p>In this mode, the prompt word will not normally be displayed; only your response will be shown.</p>
 <p>The sub-menus are the same as for the CW Generator: Random, CW Abbrevs, English Words, Call Signs, Mixed, File Player and Practice Set.</p>
 <p>Like in CW Generator mode, you <strong>start</strong> this mode <strong>by pressing a paddle</strong> (or the ENCODER, or – if you are using one – the straight key), and then the sequence “vvv&lt;ka&gt;” will be generated as an alert before the echo training starts. You cannot stop or interrupt this mode by pressing the paddle or the straight key – after all, you use the paddle (or straight key) to generate your responses! <strong>So the only way to stop this mode is a click of the ENCODER button.</strong></p>
@@ -3072,7 +3092,8 @@ The font family used is Lato.</p>
 <p><strong>One page installs every Morserino.</strong> You no longer have to know whether you own a classic Morserino-32 or an M32 Pocket: the installer asks the processor in your device which one it is, and offers only the firmware that fits it.</p>
 <p>The installer takes you through three steps:</p>
 <ol type="1">
-<li><p><strong>Connect</strong> — click <em>Connect</em> and pick the port your Morserino is connected to from the pop-up your browser shows.</p></li>
+<li><p><strong>Connect</strong> — click <em>Connect</em> and pick the port your Morserino is connected to from the pop-up your browser shows.</p>
+<p>::: note The Morserino’s screen goes <strong>dark</strong> the moment the browser connects to it. That is normal: talking to the flash chip means putting the device into its ROM update mode, and the firmware — and its display — are not running while that mode is on. If you decide not to install after all, press <em>Cancel</em> on the page: the Morserino restarts and the screen comes back on its own. :::</p></li>
 <li><p><strong>Choose what to install</strong> — the page tells you what it found and, where it can, which firmware version is on the device at the moment. Then you pick the version you want. If you own an M32 Pocket you also choose the <strong>edition</strong> here (see below). Finally you decide what happens to your settings:</p>
 <ul>
 <li><em>Keep my settings</em> (the normal choice) — your preferences, snapshots and high scores survive the update.</li>
@@ -3130,7 +3151,19 @@ The font family used is Lato.</p>
 </ul>
 <h3 data-number="7.8.1" id="using-the-m32-serial-protocol-over-bluetooth-ble-serial"><span class="header-section-number">7.8.1</span> Using the M32 Serial Protocol over Bluetooth (BLE Serial)</h3>
 <p>The M32 Serial Protocol is not tied to the USB cable: when the preference <strong>Bluetooth Use</strong> (see section <strong>Preferences regarding Key, Paddles and Keyer</strong>) is set to <strong>BLE Serial</strong>, the very same protocol is also available over Bluetooth Low Energy. This is particularly useful for phones and tablets — on iOS, for example, apps cannot open a classic serial connection over Bluetooth at all, while BLE works fine. An app can remote-control the Morserino exactly like a program connected via USB, including sending text that the Morserino keys as CW (<code>PUT cw/play/...</code>).</p>
-<p>After selecting this option (it takes effect on the next return to the main menu), the Morserino advertises itself as “<strong>Morserino-32</strong>” whenever it is at the main menu or in one of the training modes and no client is connected. No pairing is necessary — connecting works like plugging in a USB cable, and the app starts the session with the usual <code>PUT device/protocol/on</code> command.</p>
+<p>After selecting this option (it takes effect on the next return to the main menu), the Morserino advertises itself as “<strong>Morserino-32</strong>” whenever it is at the main menu or in one of the training modes and no client is connected. No pairing is necessary, but connecting is not quite like plugging in a USB cable: nobody can plug in a cable without standing next to your Morserino, whereas anything within radio range can connect. The Morserino therefore asks you before it hands over control.</p>
+<p>When an app starts a session with the usual <code>PUT device/protocol/on</code> command, the Morserino shows</p>
+<pre><code>Allow connect?
+FN = yes
+click = no</code></pre>
+<p>Press <strong>FN</strong> (the red button) to allow the connection. A click on the black knob refuses it, and so does simply doing nothing for about 20 seconds — the connection is never granted by accident. The app will tell you that it is waiting for this.</p>
+<p>Three things are worth knowing:</p>
+<ul>
+<li>You are only asked at the <strong>main menu</strong>. If you are in a training mode the request is refused immediately, without interrupting you: the app reports “DEVICE BUSY”, and you return to the main menu and try again.</li>
+<li>Once you have allowed a connection, an app that reconnects within the next minute is admitted without asking you again. That is what lets an app which was briefly in the background, or a link that dropped, pick up where it left off — including while you are in a training mode.</li>
+<li>An app written before this feature existed may report a failed connection the first time. Press <strong>FN</strong> anyway, then connect again: the second attempt succeeds.</li>
+</ul>
+<p>While a session is open, a small Bluetooth symbol appears at the right of the top line, both in the main menu and in the training modes, so you can always see that something is connected. It disappears as soon as the app disconnects.</p>
 <p>A few things to be aware of:</p>
 <ul>
 <li>USB and BLE sessions are independent and can even be active at the same time; each is started and ended with its own <code>PUT device/protocol/on</code> / <code>off</code>.</li>

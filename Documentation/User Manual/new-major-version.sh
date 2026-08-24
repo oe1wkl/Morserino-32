@@ -137,6 +137,12 @@ if [ "$CHECK_ONLY" = "1" ]; then
         check_anchor manual_de.md  's/.*Firmware-Version \([0-9][0-9]*\)\.x des.*/\1/p'            'Einleitungsabsatz'       || fail=1
         check_anchor manual_en.md  's/.*m32_V\([0-9][0-9]*\)\.[0-9]*\.bin.*/\1/p'                  'update_m32 examples'     || fail=1
         check_anchor manual_de.md  's/.*m32_V\([0-9][0-9]*\)\.[0-9]*\.bin.*/\1/p'                  'update_m32 Beispiele'    || fail=1
+        # The PDF running head is set in CSS, so it is invisible in the sources and
+        # was missed when this folder was copied: every page of the V9 manuals went
+        # out saying "V.8.x". It is a literal version by necessity - @page content
+        # cannot be filled in by build.sh the way the title pages are - so it is
+        # checked here instead.
+        check_anchor style.css     's/.*User Manual V\.\([0-9][0-9]*\)\.x.*/\1/p'                   'PDF running header'      || fail=1
     fi
 
     [ "$fail" = "0" ] && echo "OK: user manual folder matches firmware V${FW_MAJOR}."
@@ -230,6 +236,6 @@ echo ""
 echo "The title pages need no edit: version and month are filled in at build time."
 echo ""
 echo "Any leftover reference to the old version:"
-grep -rn "${SOURCE}\.x\|m32_V${SOURCE}\." "$TARGET_DIR"/title*.html "$TARGET_DIR"/manual_*.md 2>/dev/null \
+grep -rn "${SOURCE}\.x\|m32_V${SOURCE}\." "$TARGET_DIR"/title*.html "$TARGET_DIR"/manual_*.md "$TARGET_DIR"/style.css 2>/dev/null \
     | grep -v "Version [1-9]*\.x of the manual" | head -20
 echo "(nothing listed above means the rewrite was complete)"
