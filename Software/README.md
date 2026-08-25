@@ -35,6 +35,8 @@
 * When you train with a **Custom Character Set**, the Koch lesson was ignored by the word-based modes: **English Words**, **CW Abbrevs** and **Mixed** drew on the whole English word list regardless of the lesson you had set - and in fact regardless of your custom set - so you could be given words full of characters you had never asked to learn. Select Lesson, Learn New Character and the random-character modes were correct all along. At lesson N you now only get words and abbreviations that can be built from the first N characters of your set. Thanks to Christian, OE1CKO, for finding this and fixing it.
 * Setting the Koch lesson from the Configuration Tool (or any other program using the serial protocol) did not really take effect: the trainer went on using the previous lesson's words until you next opened the preferences menu on the device, and the new lesson was forgotten again at the next switch-on. Built-in Koch sequences were affected just as much as custom ones. Fixed.
 
+* The Configuration Tool marked the wrong characters as learned when **Koch Sequence** was set to **LICW Carousel** with one of the **BC2** entry points: the 18 characters of the Basic Course 1 core were missing from the display altogether, and among those shown, characters you had not reached yet were shown as already learned. The Morserino was only reporting part of the sequence to the tool. Fixed - the whole sequence is reported now. The other Koch sequences were never affected.
+
 
 ### CHANGES V. 8.2
 

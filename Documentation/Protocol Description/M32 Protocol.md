@@ -37,6 +37,15 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	    "total"/"used"/"free" properties never arrived at all. The shape of the
 	    reply is unchanged.
 
+	GET kochlesson now returns the whole character sequence in "characters",
+	    starting at its first character. Earlier firmware started the array at
+	    "minimum" instead, which mattered for exactly one sequence - LICW
+	    Carousel with a start of 6 or more, whose minimum is 19 rather than 1.
+	    There the 18 characters of the BC1 core were missing from the reply, so
+	    a client lining "characters" up against "value" marked the wrong ones as
+	    learned. "value", "minimum" and "maximum" are unchanged, and so is the
+	    reply for every other sequence.
+
 	On the BLE transport, the responses that stream (GET file/list, GET
 	    file/text, GET file/firstline, GET stats/log) now pace themselves
 	    against the client instead of overrunning the device's transmit buffer,
@@ -702,10 +711,14 @@ Example:
 
 This sets Koch lesson to lesson number <n>.
 
-Note: when "Koch Sequence" is set to "Custom Chars", the lesson indexes into
-the custom character set — "maximum" reflects the length of that set (instead
-of the fixed 51), and "characters" reports only its first <n> characters, i.e.
-the active training pool for the CW Generator / Echo Trainer.
+Note: "characters" always lists the whole character sequence, from its first
+character, and not only the part already learned — "value" says how far into it
+the current lesson reaches, so a client can show the sequence entire and mark
+the first "value" characters as learned. When "Koch Sequence" is set to "Custom
+Chars" the lesson indexes into the custom character set instead: "maximum" and
+"characters" then describe that set rather than the fixed 51, and the active
+training pool for the CW Generator / Echo Trainer is its first "value"
+characters.
 
 
 ### Custom Character Set

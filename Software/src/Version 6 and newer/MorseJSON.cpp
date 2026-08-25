@@ -316,7 +316,13 @@ void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and asso
 	kochlesson["maximum"] = MorsePreferences::kochMaximum;
 	// int diff = MorsePreferences::kochMaximum - MorsePreferences::kochMinimum;
 	JsonArray array = arr.to<JsonArray>();
-	for (int i = MorsePreferences::kochMinimum - 1; i < MorsePreferences::kochMaximum; ++i)
+	// The whole sequence, always from its first character - "value" and "maximum"
+	// are absolute positions in it, so this array has to be too, or a client cannot
+	// line the three up. Starting at kochMinimum-1 truncated the list for LICW
+	// Carousel with a start of 6 or more (the only sequence whose minimum is not 1):
+	// the 18 characters of the BC1 core went missing, and the config tool - which
+	// marks the first "value" entries as learned - then mislabelled the rest.
+	for (int i = 0; i < MorsePreferences::kochMaximum; ++i)
 	{
 		String s = koch.getKochChar(i);
 		array.add(cleanUpProSigns(s));
