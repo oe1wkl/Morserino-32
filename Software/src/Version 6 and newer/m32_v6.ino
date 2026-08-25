@@ -4047,6 +4047,11 @@ void serialEvent() {
                   MorseJSON::jsonDevice(brd,vsn);
                 }
               }
+          // A client is waiting on the reply we just composed, so push it out
+          // rather than leaving it for the next command to shake loose — see
+          // M32Tee::flushReply(). Cheap when there is nothing pending, which is
+          // the case for any line that produced no output.
+          m32out.flushReply();
           // clear the string:
           inputString = "";
           stringComplete = false;

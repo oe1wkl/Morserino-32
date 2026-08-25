@@ -46,6 +46,14 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	    learned. "value", "minimum" and "maximum" are unchanged, and so is the
 	    reply for every other sequence.
 
+	Replies are now pushed out as soon as the command that produced them has
+	    been handled. On the M32 Pocket, whose USB is the ESP32-S3's hardware
+	    USB-Serial-JTAG, a short reply could otherwise stay in the transmit
+	    buffer until the next command arrived - so a client that waited for it
+	    saw nothing, and a client that gave up waiting read that stale answer as
+	    the reply to its NEXT command, putting every reply after it out of step.
+	    Intermittent, and present on every firmware before this one.
+
 	On the BLE transport, the responses that stream (GET file/list, GET
 	    file/text, GET file/firstline, GET stats/log) now pace themselves
 	    against the client instead of overrunning the device's transmit buffer,

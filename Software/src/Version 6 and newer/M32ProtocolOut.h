@@ -56,6 +56,9 @@ class M32Tee : public Print {
     size_t write(const uint8_t *buffer, size_t size) override;
     void echo(const String& s);           // raw keyed/generated character stream (SerialOutMorse):
                                           // USB always (caller gates on posSerialOut), BLE iff handshaken
+    void flushReply();                    // push a finished command reply out of the USB TX buffer —
+                                          // see the comment on the implementation before calling it
+                                          // from anywhere but the command path
     M32Target target = M32Target::All;    // transient — set it only through M32TargetScope
     using Print::write;
 };
