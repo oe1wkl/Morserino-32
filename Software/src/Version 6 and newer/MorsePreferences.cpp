@@ -2104,11 +2104,8 @@ void MorsePreferences::writePreferences(const char* repository) {
                       MorseBleSerial::stopWithNotice("BLE serial off", 300);
                     break;                                        // selected TO it: the top-menu backstop starts it
 #endif
-              case posKochSeq:
-                    if (!MorsePreferences::useCustomChars)
-                      koch.setup();
-                    break;
-              case posAbbrevLength:
+              case posKochSeq:                                  // handleKochSequence() has already run setup() on every
+              case posAbbrevLength:                             // path that can get us here, so this is belt and braces
               case posWordLength:
               case posCarouselStart:
                     koch.setup();
