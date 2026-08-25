@@ -24,6 +24,17 @@ jobs:
       - name: Check manual "What is new" matches the change history
         run: python3 "Documentation/User Manual/sync_whatsnew.py" --check
 
+      # The manual's HTML and PDF are generated files that are nevertheless
+      # committed, and nothing used to force a rebuild when their sources
+      # changed -- so they quietly drifted, and the V9 PDFs spent a week
+      # missing a section that was already in the Markdown. build.sh stamps
+      # the HTML with a fingerprint of the sources it was built from; this
+      # fails when those sources have moved on since. Rebuilding in CI and
+      # diffing would not work: the title page carries the build month, so it
+      # would differ every month on its own.
+      - name: Check the built manuals match their sources
+        run: python3 "Documentation/User Manual/check_manual_fresh.py" --check
+
       - uses: actions/cache@v4
         with:
           path: |

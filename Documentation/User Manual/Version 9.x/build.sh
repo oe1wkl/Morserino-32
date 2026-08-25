@@ -317,6 +317,19 @@ PYCHECK
 
     if [ $? -eq 0 ]; then
         echo "Successfully created $pdf_output"
+        # Record which sources this was built from, so check_manual_fresh.py can
+        # tell later whether the committed HTML and PDF still match them. Only
+        # the combined manuals are committed, so only those are stamped -- and
+        # only here, once the PDF exists, so that an HTML-only run cannot leave
+        # something that merely looks up to date. --major comes from this
+        # script's own notion of the version, not from morsedefs.h, so building
+        # an older folder stamps that folder.
+        if [ -z "$suffix" ]; then
+            python3 "../check_manual_fresh.py" --stamp "$lang" --major "$MAJOR" || {
+                echo "ERROR: could not stamp $html_output"
+                return 1
+            }
+        fi
         return 0
     else
         echo "ERROR: weasyprint failed for $lang"
