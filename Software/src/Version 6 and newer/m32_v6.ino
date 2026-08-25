@@ -4888,6 +4888,10 @@ void m32Put(String type, String token, String value) {                    /// PU
         uint8_t nr = (char) token.toInt();
         if (nr >= MorsePreferences::kochMinimum && nr <= MorsePreferences::kochMaximum) {
           MorsePreferences::kochFilter = nr;
+          koch.setup();                                  // the lesson is the Koch filter: rebuild the word/abbrev
+                                                         // tables and the adaptive probabilities for it, or the
+                                                         // trainer keeps serving the previous lesson's pool
+          MorsePreferences::writePreferences("morserino");   // and persist, as setParameter() does for every other PUT
           MorseJSON::jsonOK();
         }
         else
