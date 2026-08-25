@@ -62,14 +62,30 @@ cannot survive. That last check is what `292e417` fixed.
 **Reply delivery.** Every command must put its own answer on the wire without
 being prompted. See the finding below.
 
-## Open finding: withheld replies on `PUT`
+## What the first run found: withheld replies (now fixed)
 
-The first full run turned this up, and it is still open:
+The first full run turned this up, and it is what the reply-delivery check now
+guards against:
 
-> **Some `PUT` commands compose a reply and do not transmit it until the next
-> command arrives.** Affected in one run: `PUT kochlesson/*` and
-> `PUT config/*` — the commands that write NVS. It is intermittent; the same
-> command succeeds on other runs.
+> **Some commands composed a reply and did not transmit it until the next
+> command arrived.** Seen on `PUT kochlesson/*` and `PUT config/*`, and
+> intermittent — the same command succeeded on other runs.
+
+**Cause:** on the M32 Pocket `Serial` is HWCDC, the ESP32-S3's hardware
+USB-Serial-JTAG. Its `write()` hands bytes to a ring buffer that an ISR drains,
+but the draining interrupt is only re-armed under `connected`; when it is not,
+the bytes sit there until the next thing on the wire wakes the ISR. Arduino's
+own `flush()` exists for this and says so in a comment: *"Now trigger the ISR to
+read data from the ring buffer."* The firmware never called it.
+
+**Fix:** `M32Tee::flushReply()`, called once per handled command line in
+`serialEvent()`. Deliberately not called after every protocol object — the
+asynchronous event stream and `echo()` are fire-and-forget, and flushing per
+keyed character would put HWCDC's 100 ms `tx_timeout_ms` into the keying path
+if a host stopped reading.
+
+**Verified with this harness:** before, every run reported ten or more withheld
+replies; after, three consecutive runs report none.
 
 This is worse than a missing reply. A client that waits, times out, and moves
 on will read the stale answer as the reply to its *next* command, and every

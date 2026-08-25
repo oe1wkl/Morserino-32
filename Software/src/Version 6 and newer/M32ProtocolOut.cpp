@@ -40,6 +40,33 @@ size_t M32Tee::write(const uint8_t *buffer, size_t size) {
 #endif
 }
 
+// Push a finished command reply all the way out, instead of leaving it in the
+// transport's transmit buffer.
+//
+// On the M32 Pocket, Serial is HWCDC — the ESP32-S3's hardware USB-Serial-JTAG.
+// Its write() hands bytes to a ring buffer and an ISR drains them, but the
+// interrupt that does the draining is only re-armed under `connected`; when it
+// is not, the bytes simply sit there. The next thing to arrive on the wire
+// wakes the ISR and they go out then — which is why an unanswered command was
+// always answered the moment the NEXT command was sent. Arduino's own flush()
+// exists for exactly this, and says so: "Now trigger the ISR to read data from
+// the ring buffer."
+//
+// The symptom is worse than a slow reply: a client that gives up waiting reads
+// the stale answer as the reply to its next command, and every reply after that
+// is off by one. Software/tests/protocol caught this and proves it by counting
+// objects — see the finding in its README.
+//
+// Deliberately NOT called after every protocol object. Only a client waiting on
+// a command reply needs this; the asynchronous event stream and echo() are
+// fire-and-forget, they get carried out by the next traffic anyway, and flushing
+// per keyed character would put an up-to-100 ms wait (HWCDC's tx_timeout_ms)
+// into the keying path if a host ever stopped reading. On a UART build this is
+// a couple of milliseconds and harmless either way.
+void M32Tee::flushReply() {
+	Serial.flush();                        // BLE paces itself in MorseBleSerial; nothing to do there
+}
+
 void M32Tee::echo(const String& s) {
 	Serial.print(s);            // today's "Serial Output" behavior, handshake irrelevant
 #ifdef CONFIG_BLE_SERIAL

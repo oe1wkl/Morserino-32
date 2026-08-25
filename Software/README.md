@@ -37,6 +37,8 @@
 
 * The Configuration Tool marked the wrong characters as learned when **Koch Sequence** was set to **LICW Carousel** with one of the **BC2** entry points: the 18 characters of the Basic Course 1 core were missing from the display altogether, and among those shown, characters you had not reached yet were shown as already learned. The Morserino was only reporting part of the sequence to the tool. Fixed - the whole sequence is reported now. The other Koch sequences were never affected.
 
+* M32 Pocket only: the Configuration Tool (and any other program using the serial protocol over USB) could hang waiting for an answer that the Morserino had already prepared but not yet sent - it went out only when the next command arrived. A program that gave up waiting then read that late answer as the reply to its following command, so everything after it was one step out of line. This was intermittent and had been there since the M32 Pocket's first firmware; the Configuration Tool hid most of it by quietly ignoring the missing answer. Fixed - replies are now sent as soon as the command has been dealt with.
+
 
 ### CHANGES V. 8.2
 
