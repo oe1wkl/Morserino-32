@@ -227,20 +227,25 @@ git push origin V<ver>-beta.<N>
 
 # 4. Review the draft release. Open it in the web UI:
 #    https://github.com/oe1wkl/Morserino-32/releases
-#    Sanity-check that all 17 assets are attached:
+#    Sanity-check that all 5 beta assets are attached:
 #      - fw_m32_V<ver>_beta_<date>.bin          (classic)
 #      - fw_m32p_V<ver>_beta_<date>.bin         (Pocket)
 #      - fw_m32pa11y_V<ver>_beta_<date>.bin     (Pocket, Accessibility Edition)
 #      - fs_m32pa11y_V<ver>_beta_<date>.bin     (its voice clips)
-#      - Morserino-32_User_Manual_{Classic,Pocket,Pocket_Accessible}_{EN,DE}
-#        .pdf and .epub                          (12 manuals)
 #      - Morserino-32.Pocket.FAQ.pdf
+#    A beta carries NO manuals: they are ~42 MB that nothing can link during
+#    a beta (see step 11b), and uploading them is what timed V9.0-beta.2 out.
+#    Testers get them from morserino.info/manuals. A STABLE release attaches
+#    12 more — the manuals in {Classic,Pocket,Pocket_Accessible} x {EN,DE} x
+#    {pdf,epub} — for 17 in total.
 #    Edit the body text if needed (it was filled in from the README).
 
 # 5. Click "Publish release".
 
-# Dropbox has the new firmware already (the workflow updated it before
-# creating the draft), and site44 should serve it within seconds. If the
+# Dropbox has the new firmware by now (the workflow publishes it right AFTER
+# creating the draft, step 12), and site44 should serve it within seconds.
+# Note the order: a run that dies at step 11 leaves a draft but NO published
+# firmware — see TROUBLESHOOTING. If the
 # installer still shows the old version after a minute or two, see
 # "IF THE INSTALLER DOES NOT SHOW THE NEW RELEASE" below -- that is a
 # site44 stall to report to them, not something to wait out.
@@ -383,7 +388,8 @@ In order (per [RELEASE_AUTOMATION_DESIGN.md §10](RELEASE_AUTOMATION_DESIGN.md))
  8. Rebuild User Manual PDFs from .md (pandoc → weasyprint)
  9. Stage Pocket FAQ
 10. Compose release body from extracted README section
-11. Create DRAFT GitHub Release; upload 5 assets serially
+11. Create DRAFT GitHub Release; upload assets serially
+    (beta: 4 binaries + FAQ; stable: those plus the 12 manuals)
 12. Copy binaries to Dropbox + prepend versions.json entries
 13. Sync rebuilt docs to master IF .md changed since last PDF commit
 14. STABLE ONLY: commit binaries to in-repo archive on master
@@ -461,10 +467,54 @@ where it fails tells you what's still safe.
 | 2 — Verify changelog | everything | add `### Changes V<ver>` to README, commit, re-tag |
 | 4–5 — Build | everything | check `pio` works locally on the same env |
 | 8 — PDFs | everything | check `pandoc` / `weasyprint` / Lato on the runner |
-| 11 — Create release | GH may have a stale draft | `gh release delete <T> --cleanup-tag` then re-tag |
+| 11 — Create release | GH may have a stale draft | `gh release delete <T> --cleanup-tag` then re-tag — but check first whether the draft is actually complete, see below |
 | 12 — Dropbox publish | repo untouched | delete the draft release; manually clean Dropbox files + manifest top entry; re-tag |
 | 13 — Doc sync | release + Dropbox done | re-run workflow (it's idempotent) OR commit docs by hand |
 | 14 — Archive (stable) | everything else done | re-run workflow OR commit binaries to archive by hand |
+
+### If the job times out with the draft already complete
+
+This is what happened to `V9.0-beta.2` (run 32981094280). Everything built,
+all assets uploaded — and the job was killed at 31m46s, mid-step, because
+uploading ~50 MB took 23 minutes on a slow uplink. GitHub reports a
+timed-out job as **cancelled**, not failed, and every later step shows as
+**skipped**, so the run looks abandoned when in fact only the publish
+steps are missing.
+
+Do **not** reach for the rollback recipe here. Deleting a complete draft
+just to re-tag repeats the builds *and* the upload that caused the timeout,
+and a same-day re-tag drags in the `#2` filename suffix for nothing. Check
+what is actually missing first:
+
+```sh
+gh run view <RUN_ID> --json jobs \
+    --jq '.jobs[].steps[] | "\(.conclusion // .status)  \(.name)"'
+gh release view <TAG> --json assets --jq '.assets[].name'
+```
+
+If the draft has its assets and only "Publish to Dropbox" (and the steps
+after it) were skipped, finish those by hand. The runner leaves everything
+they need in place — `/tmp/release-stage/` and `/tmp/rename.json` survive
+the job:
+
+```sh
+export MORSERINO_DROPBOX_ROOT="/Users/wkraml/Library/CloudStorage/Dropbox/Apps/site44/www.morserino.info/firmware"
+
+python3 scripts/release/check_dropbox_targets.py            # same pre-flight the workflow runs
+bash scripts/release/dropbox_publish.sh \
+     --rename-info /tmp/rename.json --channel beta --dry-run    # read it, then drop --dry-run
+
+SITE_ROOT="$(dirname "$MORSERINO_DROPBOX_ROOT")"            # step 11b, the manuals
+for src in /tmp/release-stage/Morserino-32_User_Manual_*; do
+    cp "$src" "$SITE_ROOT/manuals/$(basename "$src")"
+done                                                        # expect 12
+```
+
+Add `--notes "<text>"` to `dropbox_publish.sh` only if the tag was
+annotated; a lightweight tag uses the templated default.
+
+That leaves stage 13 (doc sync) unrun, which matters only if a manual
+`.md` changed in the release — commit the rebuilt PDFs by hand if so.
 
 ### Quick rollback recipe for a botched beta
 

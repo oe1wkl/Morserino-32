@@ -29,7 +29,12 @@ jobs:
   release:
     runs-on: [self-hosted, macos-morserino]
     # Stop early on any step failure; no half-released states.
-    timeout-minutes: 30
+    #
+    # 60, not 30: V9.0-beta.2 was killed at 31m46s with everything built and
+    # every asset uploaded, purely because the upload step took 23 minutes on
+    # a slow uplink. The builds are ~8 minutes; the rest is headroom for the
+    # network, which we do not control.
+    timeout-minutes: 60
 
     steps:
       - name: Checkout (full history + tags)
@@ -304,10 +309,23 @@ jobs:
           ASSETS=(
               /tmp/release-stage/fw_m32*.bin
               /tmp/release-stage/fs_m32pa11y*.bin
-              /tmp/release-stage/Morserino-32_User_Manual_*.pdf
-              /tmp/release-stage/Morserino-32_User_Manual_*.epub
               /tmp/release-stage/Morserino-32.Pocket.FAQ.pdf
           )
+
+          # The 12 manuals are ~42 MB of a ~50 MB upload, and during a beta
+          # nothing links them from the release anyway: the tools point at
+          # morserino.info/manuals (see step 11b), because
+          # .../releases/latest/download/ resolves to the newest NON-prerelease
+          # release and a draft's assets are not public at all. So a beta
+          # spends 20+ minutes uploading files no one can reach — which is
+          # what timed V9.0-beta.2 out. Stable releases still carry the full
+          # set, where those permalinks are the documented way to get a manual.
+          if [[ "${{ steps.parse.outputs.channel }}" != "beta" ]]; then
+              ASSETS+=(
+                  /tmp/release-stage/Morserino-32_User_Manual_*.pdf
+                  /tmp/release-stage/Morserino-32_User_Manual_*.epub
+              )
+          fi
 
           # Create the release first (just metadata), then upload assets
           # SERIALLY with per-file retries. Two reasons:
