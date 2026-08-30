@@ -96,6 +96,7 @@
     "Blues": "aca2a3c0",
     "Bluetooth A R character": "b4c0646b",
     "Bluetooth use": "48f049df",
+    "Boost practice characters": "3c6bec0a",
     "CQ WW": "e9292f77",
     "CW Academy": "b5a4556d",
     "CW Decoder": "1f90444e",
@@ -190,6 +191,7 @@
     "Maximum number of words": "df97b070",
     "Memory Chain": "ad6622d5",
     "Mixed": "699b4f79",
+    "Moderate": "1eb79d43",
     "Morse Invaders": "62b14d61",
     "Morsel": "77c0c2db",
     "Morserino 32 accessibility edition": "7c18d4c3",
@@ -249,6 +251,7 @@
     "Stop after each word": "62dbf39a",
     "Store snapshot": "5bdde6ba",
     "Straight Key": "577977d3",
+    "Strong": "c43e0fd4",
     "Theme": "d7217571",
     "Time-out": "5b6ec483",
     "Tone Pitch": "f6f4f6a9",
@@ -714,6 +717,7 @@
     "aca2a3c0": "Blues",
     "b4c0646b": "Bluetooth A R character",
     "48f049df": "Bluetooth use",
+    "3c6bec0a": "Boost practice characters",
     "01a2da07": "Bravo",
     "63420e4f": "C H",
     "384f938b": "Calibrate Battery",
@@ -854,6 +858,7 @@
     "1b83d5da": "Mike",
     "1586f38d": "millivolts",
     "699b4f79": "Mixed",
+    "1eb79d43": "Moderate",
     "62b14d61": "Morse Invaders",
     "77c0c2db": "Morsel",
     "7c18d4c3": "Morserino 32 accessibility edition",
@@ -931,6 +936,7 @@
     "62dbf39a": "Stop after each word",
     "5bdde6ba": "Store snapshot",
     "577977d3": "Straight Key",
+    "c43e0fd4": "Strong",
     "99ec9c94": "Tango",
     "d7217571": "Theme",
     "5b6ec483": "Time-out",
@@ -976,14 +982,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "9bc3f9c0",
+  "pack_stamp": "a50302f1",
   "counts": {
     "menu": 39,
-    "pref_labels": 48,
-    "option_values": 171,
+    "pref_labels": 49,
+    "option_values": 173,
     "actions": 21,
-    "phrases_total": 294,
+    "phrases_total": 297,
     "atoms_total": 138,
-    "clips_total": 494
+    "clips_total": 497
   }
 }

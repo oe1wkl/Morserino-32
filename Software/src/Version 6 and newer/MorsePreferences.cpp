@@ -84,7 +84,7 @@ const char * prefName[] = {
                       "encoderClicks", "sidetoneFreq", "useExtPaddle", "didah",
                       "keyermode", "curtisBTiming", "curtisBDotT", "ACSlength",
                       "echoToneShift", "interWordSpace", "farnsworthMode", "randomOption",
-                      "randomLength", "callLength", "callContinent", "callCommon","abbrevLength", "wordLength",
+                      "randomLength", "randomBoost", "callLength", "callContinent", "callCommon","abbrevLength", "wordLength",
                       "GeneratorDispl", "wordDoubler", "echoDisplay", "echoRepeats", "echoConf",
                       "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt", "echoSpeedMax",
                       "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
@@ -239,6 +239,16 @@ parameter MorsePreferences::pliste[] = {
     true,
     {"", "1", "2", "3", "4", "5", "6", "2 to 3", "2 to 4", "2 to 5", "2 to 6"},
     "Random group length"
+  },
+  {
+    0, 0, 2, 1,                                                 // Random Characters (non-Koch): raise the odds of drawing a
+                                                                 // "Practice Set" character, intersected with the active
+                                                                 // Random Groups subset - never pulls in a char outside it
+    "Boost Practice",
+    "Draw Practice Set characters more often in Random Characters exercises",
+    true,
+    {"Off", "Moderate", "Strong"},
+    "Boost practice characters"
   },
   {
     0, 0, 4, 1,                                                 // Generators: max length of call signs generated (0 = unlimited)    0, 3 - 6
@@ -684,7 +694,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
   prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posInterCharSpace, posInterWordSpace,
-                                                   posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
+                                                   posRandomOption, posRandomLength, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
@@ -704,7 +714,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
-                                                   posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
+                                                   posRandomOption, posRandomLength, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
@@ -766,7 +776,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLUE
                                                    posKochSeq, posCarouselStart,
                                                    posPracticeChars,
-                                                   posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
+                                                   posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                    posKeyExternalTx, posLoraCwTransmit,

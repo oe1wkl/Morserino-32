@@ -1982,10 +1982,39 @@ String getRandomChars(int maxLength, int option) {
     }
  
     int len = (maxLength > 6) ? 6 : maxLength;
+
+    // Practice Chars Boost (posRandomBoost): raise the odds that characters from
+    // the "Practice Set" (practiceCharSet) come up in this plain Random
+    // Characters draw. Strictly intersected with [s,e) - the subset the user
+    // picked via "Random Groups" - so a practice char outside that subset
+    // (e.g. a digit while "Alpha" is active) never leaks in; it simply has no
+    // effect, exactly as if the boost preference were off.
+    uint8_t boostLevel = MorsePreferences::pliste[posRandomBoost].value;
+    if (boostLevel && MorsePreferences::practiceCharSet.length()) {
+        static const uint8_t boostMultiplier[] = {3, 8};      // Moderate, Strong
+        uint8_t mult = boostMultiplier[boostLevel - 1];
+        const String& pool = MorsePreferences::practiceCharSet;
+        uint8_t weight[51];             // e-s <= 51 (OPT_ALL is the widest range)
+        int totalWeight = 0;
+        for (int i = s; i < e; ++i) {
+            weight[i - s] = (pool.indexOf(CWchars[i]) >= 0) ? mult : 1;
+            totalWeight += weight[i - s];
+        }
+        for (int i = 0; i < len; ++i) {
+            int roll = random(totalWeight);
+            int j = 0;
+            while ((roll -= weight[j]) >= 0)
+                ++j;
+            buf[i] = CWchars[s + j];
+        }
+        buf[len] = '\0';
+        return String(buf);
+    }
+
     for (int i = 0; i < len; ++i)
         buf[i] = CWchars[random(s, e)];
     buf[len] = '\0';
- 
+
     return String(buf);     // one allocation for the return value
 }
  
