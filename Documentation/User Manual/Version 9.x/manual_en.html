@@ -2744,7 +2744,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Boost Practice</td>
-<td>Raises the odds that characters from your <strong>Practice Set</strong> (see <strong>Preferences regarding Practice Set</strong> above) come up when generating Random Characters groups, on top of the <strong>Random Groups</strong> subset selected above. Only affects Random Characters – Words, Abbreviations, Call Signs and the Koch Trainer are unaffected. Has no effect while Practice Set is empty; a Practice Set character that falls outside the current <strong>Random Groups</strong> subset (e.g. a digit while only Alpha is selected) is never boosted in on its own.</td>
+<td>Raises the odds that characters from your <strong>Practice Set</strong> (see <strong>Preferences regarding Practice Set</strong> above) come up: in Random Characters groups, on top of the <strong>Random Groups</strong> subset selected above; and in the Koch Trainer’s character generation (fixed or Adaptive), on top of whichever characters the current Koch Lesson has unlocked. It never overrides Koch’s own weighting of newer/adaptive characters – it only asks Koch’s scheme again when the draw misses a Practice Set character, so the “learn new characters more” behaviour is preserved exactly. Only affects character generation – Words, Abbreviations and Call Signs are unaffected. Has no effect while Practice Set is empty; a Practice Set character outside the currently active character pool (the <strong>Random Groups</strong> subset, or the current Koch Lesson) is never boosted in on its own.</td>
 <td><strong>Off</strong> / Moderate / Strong</td>
 </tr>
 <tr>
@@ -4603,6 +4603,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=3f61e4f8ebc2 -->
+<!-- MANUALFRESH: lang=en src=1e21f70703f0 -->
 </body>
 </html>

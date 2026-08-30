@@ -720,7 +720,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
  prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posKochSeq, posCarouselStart, posInterCharSpace,  posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
+                                                   posKochSeq, posCarouselStart, posInterCharSpace,  posInterWordSpace, posRandomLength, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
@@ -728,7 +728,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
-                                                   posInterCharSpace, posInterWordSpace, posRandomLength, posAbbrevLength,  posWordLength,
+                                                   posInterCharSpace, posInterWordSpace, posRandomLength, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
@@ -3011,22 +3011,50 @@ String Koch::getKochChar(uint8_t i) {           // get a String consisting of a 
   return String(kochCharSet.charAt(i));
 }
 
+// Practice Chars Boost (posRandomBoost) for Koch: how many times a character
+// Koch's own scheme just drew may be re-rolled if it isn't a Practice Set
+// character. This deliberately leaves Koch's own weighting (its "drill the
+// newer/adaptive characters more" logic below and in getAdaptiveChar())
+// completely untouched - a redraw asks that same scheme again, so a Practice
+// Set character only comes up more often in proportion to how often Koch's
+// own logic would already have offered it. 1 attempt = no boost (Off, or no
+// Practice Set defined).
+static uint8_t practiceBoostAttempts() {
+    uint8_t level = MorsePreferences::pliste[posRandomBoost].value;
+    if (!level || MorsePreferences::practiceCharSet.length() == 0)
+        return 1;
+    static const uint8_t attempts[] = {3, 8};      // Moderate, Strong
+    return attempts[level - 1];
+}
+
 String Koch::getRandomChar(int maxl) {                  // get a random character word for Koch, with max length maxl
     String result = "";
     result.reserve(7);
+    uint8_t tries = practiceBoostAttempts();
 
     if (MorsePreferences::useCustomChars) {
         String activeSet = getCharSet();                       // Koch Lesson limits the pool to its first N custom characters
-        for (int i = 0; i < maxl; ++i )
-            result += activeSet.charAt(random(activeSet.length()));
+        for (int i = 0; i < maxl; ++i ) {
+            char c;
+            uint8_t t = 0;
+            do {
+                c = activeSet.charAt(random(activeSet.length()));
+            } while (++t < tries && MorsePreferences::practiceCharSet.indexOf(c) < 0);
+            result += c;
+        }
     }
     else {
         int endk =  MorsePreferences::kochFilter;               // kochChars = "mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-=KA+SNE@:"
         for (int i = 0; i < maxl; ++i) {                        //              1   5    1    5    2    5    3    5    4    5    5
-            if (random(3))                                      // in Koch mode, we generate the last third of the chars learned  a bit more often
-                result += kochCharSet.charAt(random(endk));
-            else
-                result += kochCharSet.charAt(random(2*endk/3, endk));
+            char c;
+            uint8_t t = 0;
+            do {
+                if (random(3))                                  // in Koch mode, we generate the last third of the chars learned  a bit more often
+                    c = kochCharSet.charAt(random(endk));
+                else
+                    c = kochCharSet.charAt(random(2*endk/3, endk));
+            } while (++t < tries && MorsePreferences::practiceCharSet.indexOf(c) < 0);
+            result += c;
         }
     }
     return result;
@@ -3053,20 +3081,27 @@ String Koch::getAdaptiveChar(int maxl) {
   String charSet = getCharSet();
   result.reserve(7);
   int16_t probabilitySum = getProbabilitySum();
+  uint8_t tries = practiceBoostAttempts();
 
   while (result.length() < maxl)
   {
-    int16_t randomOffset = random(probabilitySum);
+    char c = '\0';
+    for (uint8_t t = 0; t < tries; ++t) {
+      int16_t randomOffset = random(probabilitySum);
 
-    for (int j = 0; j < charSet.length(); j++)
-    {
-      randomOffset -= adaptiveProbabilities[j];
-      if (randomOffset < 0)
+      for (int j = 0; j < charSet.length(); j++)
       {
-        result += charSet.charAt(j);
-        break;
+        randomOffset -= adaptiveProbabilities[j];
+        if (randomOffset < 0)
+        {
+          c = charSet.charAt(j);
+          break;
+        }
       }
+      if (MorsePreferences::practiceCharSet.indexOf(c) >= 0)
+        break;                      // hit a Practice Set character, stop rerolling
     }
+    result += c;
   }
 
   return result;
