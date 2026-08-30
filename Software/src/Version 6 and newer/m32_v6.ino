@@ -426,7 +426,17 @@ IPAddress peerIP;
 #ifdef CONFIG_TLV320AIC3100_INT
 volatile bool codec_event = false;
 void IRAM_ATTR codec_isr() {
-  codec_event = digitalRead(CONFIG_TLV320AIC3100_INT) == HIGH ? true : false;
+  // The interrupt is attached RISING, so the fact that we are here IS the event -- there is
+  // nothing to confirm by re-reading the pin. This used to assign digitalRead(), which could
+  // CLEAR a pending event that loop() had not consumed yet: INT1 is a single ~2 ms pulse
+  // (page 0 / reg 48 D0 resets to 0), so a second pulse from a bouncing plug would re-enter
+  // the ISR and, reading the pin after that pulse had ended, overwrite the first event with
+  // false. The plug then sat in the jack undetected until it was pulled and reinserted.
+  // That matched the field reports exactly: detection at boot always worked (soundSetup()
+  // polls soundEventHandler() directly, no interrupt involved), insertion while running was
+  // unreliable, and whether it worked depended on the headphones -- i.e. on how the plug
+  // bounced. Only the consumer in loop() may clear this flag.
+  codec_event = true;
 }
 #endif
 
