@@ -14,6 +14,9 @@ class I2S_Sidetone {
     void begin(int samplerate = 44100, int bps=16, int channels = 2, int buffer_size=32);
     void setFrequency(float f);
     void setVolume(float v);
+    // Pure sine for CW (the default); rich = + 3rd/5th/7th harmonic for the OK/ERR
+    // signalling tones. Set it BEFORE the tone starts, never while one is sounding.
+    void setRichTimbre(bool rich);
     float getFrequency();
     void setADSR(float attack, float decay, float sustainLevel, float release);
     void on();

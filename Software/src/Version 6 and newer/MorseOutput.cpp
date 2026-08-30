@@ -2465,6 +2465,16 @@ void MorseOutput::pwmClick(unsigned int volume) {                        /// gen
     #endif
 }
 
+// Switches the tone generator to the rich (3rd/5th/7th harmonic) timbre for the OK/ERR
+// signals and puts it back to a pure sine on the way out, however the block is left. The
+// CW sidetone must always be a clean sine -- never leave this on.
+#ifdef CONFIG_SOUND_I2S
+struct RichTone {
+    RichTone()  { sidetone.setRichTimbre(true);  }
+    ~RichTone() { sidetone.setRichTimbre(false); }
+};
+#endif
+
 void MorseOutput::soundSignalOK() {
 #ifndef CONFIG_SOUND_I2S
     pwmTone(440, MorsePreferences::sidetoneVolume, false);
@@ -2475,11 +2485,13 @@ void MorseOutput::soundSignalOK() {
     pwmNoTone(MorsePreferences::sidetoneVolume);
 #else
     if (! sidetone.playSPIFFSFile("/sounds/success.mp3")) {
-        pwmTone(440, MorsePreferences::sidetoneVolume, false);
+        // Rising, a fifth above the classic pair (440/587 -> 660/880). See soundSignalERR().
+        RichTone rich;
+        pwmTone(660, MorsePreferences::sidetoneVolume, false);
         delay(97);
         pwmNoTone(MorsePreferences::sidetoneVolume);
         delay(20);
-        pwmTone(587, MorsePreferences::sidetoneVolume, false);
+        pwmTone(880, MorsePreferences::sidetoneVolume, false);
         delay(193);
         pwmNoTone(MorsePreferences::sidetoneVolume);
     }
@@ -2497,11 +2509,19 @@ void MorseOutput::soundSignalERR() {
   pwmNoTone(MorsePreferences::sidetoneVolume);
 #else
   if (! sidetone.playSPIFFSFile("/sounds/error.mp3")) {
-     pwmTone(311, MorsePreferences::sidetoneVolume, false);
-     delay(193);
+     // FALLING, like the classic M32 above -- this branch used to rise (311 -> 330), the
+     // same direction as the OK signal, which is exactly backwards for an error. Restored
+     // to the classic's interval (366 -> 330, a whole tone down, short then long), a fifth
+     // up: 549 -> 495. The fifth and the rich timbre are both about audibility, not taste:
+     // as a pure sine at 311 Hz this signal measured ~10 dB below the CW sidetone on the
+     // Pocket's speaker, because de-clipping the codec (PR #208) removed the harmonics it
+     // had been relying on. Together they win back ~7 dB without raising the pitch further.
+     RichTone rich;
+     pwmTone(549, MorsePreferences::sidetoneVolume, false);
+     delay(97);
      pwmNoTone(MorsePreferences::sidetoneVolume);
      delay(20);
-     pwmTone(330, MorsePreferences::sidetoneVolume, false);
+     pwmTone(495, MorsePreferences::sidetoneVolume, false);
      delay(193);
      pwmNoTone(MorsePreferences::sidetoneVolume);
   }
