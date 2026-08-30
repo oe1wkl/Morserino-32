@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=a1decfea009a v=9 -->
+<!-- WHATSNEW:BEGIN en=73cad3c69917 v=9 -->
 What is new in Version 9?
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
@@ -57,6 +57,8 @@ What is new in Version 9?
 -   A few more cosmetic display output fixes.
 -   The Configuration Tool's Preferences tab now loads in a fraction of the time it used to, because it reads the preferences in a few requests instead of one per preference. The difference is most noticeable over Bluetooth.
 -   M32 Pocket only: all sound is cleaner. The audio chip's internal gain was set so high that every tone was being clipped inside the chip, before it ever reached the volume control - audible as a harsh, buzzy tone that no Tone Volume setting could cure. The CW sidetone, the spoken menus of the Accessibility Edition and your own uploaded success/error sounds are now all reproduced undistorted. Two things follow from this that you will notice: the sidetone is a clean sine now instead of the harmonically rich sound it was, which on the small built-in loudspeaker can seem slightly less penetrating even though it is not quieter; and sounds you uploaded yourself will be quieter than before, because they are no longer being distorted (see the note in the Echo Trainer section of the manual). Loudspeaker and headphone levels have been rebalanced against each other. Thanks to Christian, OE1CKO, for finding this.
+-   M32 Pocket only: the two signals that tell you in the Echo Trainer whether your answer was right or wrong have been reworked. They now sit a fifth higher and carry harmonics, which the small built-in loudspeaker reproduces far better than the plain low tones they used to be - after the clipping fix above, those tones had lost the distortion they had unintentionally been relying on and had become much too quiet. The error signal now also falls in pitch, the way it always has on the classic Morserino, instead of rising like the acknowledgement; a rising "error" had crept into the M32 Pocket version by mistake.
+-   M32 Pocket only: the volume steps for the built-in loudspeaker have been redistributed. A small loudspeaker needs considerably more drive than headphones before it produces anything audible, so with the now undistorted tone the lowest few settings had become inaudible and that part of the range was simply wasted. The steps are now smaller and span a narrower range, so every setting from 1 upwards does something. The maximum is unchanged - but because the steps in between are smaller, your usual setting will now be at a different number than before. Headphones are unaffected and keep their almost-silent lowest setting; they are, however, about 3 dB quieter at maximum, which was too loud.
 -   A Bluetooth (BLE Serial) connection now has to be allowed on the Morserino itself. When an app asks for a session, the device shows „Allow connect?“ and waits for you to press FN - a USB cable has to be plugged in by someone standing next to your device, while anything within radio range can connect over Bluetooth, so the Morserino asks before it hands over control. You are only asked in the main menu (in a training mode the request is refused without interrupting you), an app that reconnects within a minute is let straight back in, and while a session is open a small Bluetooth symbol in the top line shows that something is connected.
 <!-- WHATSNEW:END -->
 
@@ -316,6 +318,15 @@ The speed setting is written to permanent memory after 12 characters are
 keyed at the same speed. The volume setting is written as soon as you
 toggle back from the volume setting mode to the speed setting mode with
 the FN button.
+
+::: {.note .pocket .pocket-a11y}
+The volume steps are not the same for the built-in loudspeaker as for headphones.
+A small loudspeaker needs considerably more drive before it produces anything
+audible, so its steps are spaced more closely and cover a narrower range – every
+setting from 1 upwards can be heard. Headphones keep a wider range, and their
+lowest setting is almost silent. The same number can therefore sound quite
+different depending on whether headphones are plugged in.
+:::
 
 **How To Change the Brightness** of the Display
 
@@ -1048,7 +1059,8 @@ In this mode the Morserino-32 generates a word or group of characters as
 a prompt. You have the same selection options as with the CW Generator.
 Then, it waits for you to repeat these characters using the paddle (or a
 straight key). If you wait too long or your response is not identical to
-what was generated, an error is indicated on the display and by sound,
+what was generated, an error is indicated on the display and by sound
+(a signal that falls in pitch, while the acknowledgement rises),
 and the prompt word is repeated. If you enter the correct characters,
 this is indicated acoustically and on the screen. Then, you are prompted
 for the next word.

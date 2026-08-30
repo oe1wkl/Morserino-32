@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=a1decfea009a v=9 -->
+<!-- WHATSNEW:BEGIN en=73cad3c69917 v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
@@ -59,6 +59,8 @@ Was ist neu in Version 9?
 -   Ein paar weitere kosmetische Korrekturen bei der Bildschirmausgabe.
 -   Die Seite „Preferences“ im Konfigurationsprogramm lädt jetzt in einem Bruchteil der bisherigen Zeit, weil sie die Einstellungen mit wenigen Abfragen liest statt mit einer je Einstellung. Am deutlichsten ist der Unterschied über Bluetooth.
 -   Nur M32 Pocket: Der gesamte Klang ist sauberer. Die interne Verstärkung des Audio-Chips war so hoch eingestellt, dass jeder Ton bereits im Chip übersteuert wurde, noch bevor er überhaupt die Lautstärkeregelung erreichte – hörbar als harter, schnarrender Ton, den keine Einstellung von „Tone Volume“ beheben konnte. Der CW-Mithörton, die gesprochenen Menüs der Accessibility Edition und deine selbst hochgeladenen Success-/Error-Töne werden jetzt alle unverzerrt wiedergegeben. Zwei Dinge, die daraus folgen, wirst du bemerken: Der Mithörton ist nun ein sauberer Sinus statt des zuvor obertonreichen Klangs, was über den kleinen eingebauten Lautsprecher etwas weniger durchdringend wirken kann, obwohl er nicht leiser ist; und selbst hochgeladene Töne sind leiser als zuvor, weil sie nicht mehr verzerrt werden (siehe die Anmerkung im Abschnitt Echo Trainer). Die Pegel von Lautsprecher und Kopfhörer wurden aufeinander abgestimmt. Danke an Christian, OE1CKO, für das Aufspüren.
+-   Nur M32 Pocket: Die beiden Signale, die dir im Echo Trainer melden, ob deine Antwort richtig oder falsch war, wurden überarbeitet. Sie liegen jetzt eine Quinte höher und enthalten Obertöne, die der kleine eingebaute Lautsprecher wesentlich besser wiedergibt als die schlichten tiefen Töne von zuvor – nach der oben beschriebenen Korrektur der Übersteuerung fehlte diesen Tönen die Verzerrung, auf die sie sich unbeabsichtigt gestützt hatten, und sie waren viel zu leise geworden. Das Fehlersignal fällt jetzt außerdem in der Tonhöhe, so wie es beim klassischen Morserino schon immer war, statt wie die Bestätigung anzusteigen; ein ansteigender „Fehler“ hatte sich in die Fassung für den M32 Pocket eingeschlichen.
+-   Nur M32 Pocket: Die Lautstärkestufen für den eingebauten Lautsprecher wurden neu verteilt. Ein kleiner Lautsprecher braucht deutlich mehr Pegel als ein Kopfhörer, bevor er überhaupt hörbar wird; mit dem nun unverzerrten Ton waren die untersten Stufen daher unhörbar geworden, und dieser Teil des Bereichs war schlicht verschenkt. Die Stufen sind jetzt kleiner und decken einen engeren Bereich ab, sodass jede Einstellung ab 1 etwas bewirkt. Das Maximum bleibt unverändert – weil aber die Schritte dazwischen kleiner sind, liegt deine gewohnte Einstellung jetzt bei einer anderen Zahl als bisher. Kopfhörer sind davon nicht betroffen und behalten ihre nahezu lautlose unterste Stufe; sie sind allerdings bei maximaler Lautstärke um etwa 3 dB leiser, was zuvor zu laut war.
 -   Eine Bluetooth-Verbindung (BLE Serial) muss jetzt am Morserino selbst zugelassen werden. Wenn eine App eine Sitzung anfordert, zeigt das Gerät „Allow connect?“ und wartet darauf, dass du FN drückst – ein USB-Kabel muss jemand anstecken, der neben deinem Gerät steht, über Bluetooth kann sich hingegen alles verbinden, was in Funkreichweite ist; deshalb fragt der Morserino, bevor er die Kontrolle aus der Hand gibt. Gefragt wirst du nur im Hauptmenü (in einem Trainingsmodus wird die Anfrage abgelehnt, ohne dich zu unterbrechen), eine App, die sich innerhalb einer Minute erneut verbindet, wird ohne Nachfrage wieder zugelassen, und solange eine Sitzung offen ist, zeigt ein kleines Bluetooth-Symbol in der obersten Zeile, dass etwas verbunden ist.
 <!-- WHATSNEW:END -->
 
@@ -334,6 +336,16 @@ Die Geschwindigkeitseinstellung wird in den permanenten Speicher
 geschrieben, nachdem 12 Zeichen mit der gleichen Geschwindigkeit
 eingegeben wurden. Die Lautstärkeeinstellung wird geschrieben, sobald du
 mit der FN-Taste vom Lautstärke- in den Geschwindigkeitsmodus zurückschaltest.
+
+::: {.note .pocket .pocket-a11y}
+Die Lautstärkestufen sind für den eingebauten Lautsprecher andere als für
+Kopfhörer. Ein kleiner Lautsprecher braucht deutlich mehr Pegel, bevor er
+überhaupt hörbar wird; seine Stufen liegen daher enger beieinander und decken
+einen kleineren Bereich ab – jede Einstellung ab 1 ist hörbar. Für Kopfhörer
+bleibt der Bereich größer, und die unterste Einstellung ist nahezu lautlos.
+Dieselbe Zahl kann sich also deutlich unterschiedlich anhören, je nachdem, ob
+Kopfhörer angesteckt sind.
+:::
 
 **So änderst du die Displayhelligkeit:**
 
@@ -1079,7 +1091,8 @@ Zeichengruppe als Vorgabe. Du hast die gleichen Auswahlmöglichkeiten
 wie beim CW Generator. Dann wartet er darauf, dass du die Zeichen mit
 dem Paddle (oder einer Handtaste) wiederholst. Wenn du zu lange wartest
 oder deine Antwort nicht mit der Vorgabe übereinstimmt, wird ein Fehler
-auf dem Display und durch einen Ton angezeigt, und die Vorgabe wird
+auf dem Display und durch einen Ton angezeigt (ein fallendes Tonpaar,
+während die Bestätigung ansteigt), und die Vorgabe wird
 wiederholt. Wenn du die richtigen Zeichen eingibst, wird dies akustisch
 und auf dem Display bestätigt. Dann wird die nächste Vorgabe ausgegeben.
 
