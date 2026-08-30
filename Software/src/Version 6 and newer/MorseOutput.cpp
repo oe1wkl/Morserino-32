@@ -1988,6 +1988,14 @@ static const float SPEAKER_TRIM_DB = 3.0f;
 // offset did during the PR #208 bench work). Lowering the driver gain scales signal and
 // upstream noise together, so the floor rides down with it.
 static const float HEADPHONE_GAIN_DB = 6.0f;
+// Line-out drives someone else's input, so its level must be defined and must not depend
+// on whether headphones happened to be plugged in earlier in the session. soundEnableLineOut()
+// never wrote the driver gain at all, so it inherited whatever soundEnableHeadphone() last
+// set -- 0 dB (the reset default) on a device that had not seen headphones, 9 dB after
+// PR #208 on one that had. Before PR #208 the headphone path also used 0 dB, so line-out
+// was accidentally deterministic; raising the headphone gain turned that into a silent
+// 9 dB swing. Write it explicitly, and keep it at the pre-PR-#208 value.
+static const float LINEOUT_GAIN_DB = 0.0f;
 
 float calcVolume(uint8_t v) { // v = 0 - 19
   // we map the volume levels 0 - 19 to dB values for the codec
@@ -2009,6 +2017,12 @@ void soundEnableHeadphone(void) {
     // codec.setHeadphoneVolume(-30.0f,-30.0f); // volume regulated by encoder
     codec.setHeadphoneVolume(calcVolume(MorsePreferences::sidetoneVolume)-3.0,calcVolume(MorsePreferences::sidetoneVolume)-3.0);
     codec.setHeadphoneGain(HEADPHONE_GAIN_DB,HEADPHONE_GAIN_DB); // valid db: 0 - 9; see HEADPHONE_GAIN_DB
+    // Undo line-out mode. soundEnableLineOut() turns it on and nothing ever turned it off,
+    // so once a line-out setting had been tried, the driver stayed configured for a light
+    // load for the rest of the session -- including while actually driving 32 ohm phones.
+    // Same class of bug as the gain above: these two functions must SET the driver state,
+    // never inherit it from whichever one happened to run last.
+    codec.setHeadphoneLineMode(false);
     codec.setHeadphoneMute(false); // unmute hp
     codec.setSpeakerMute(true); // mute class d speaker amp
 }
@@ -2029,6 +2043,7 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
     //codec.setHeadphoneGain(-12.0f,-12.0f);
     codec.setHeadphoneMute(false); // unmute hp
     codec.setHeadphoneLineMode(true); // enable line-out mode
+    codec.setHeadphoneGain(LINEOUT_GAIN_DB,LINEOUT_GAIN_DB); // define it; do not inherit it
 
     if (!variable) {
       //DEBUG("Fixed gain!");
