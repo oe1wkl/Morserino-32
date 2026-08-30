@@ -126,7 +126,12 @@ private:
     // makes the rich timbre occupy exactly the same peak budget as a pure sine (and hence
     // ~0.6 dB MORE energy, not less). Getting this wrong clips the codec.
     static constexpr float kRichPeak  = 0.9301f;
-    static constexpr float kRichScale = 1.0f / kRichPeak;
+    // ...and then deliberately back off. On the bench the rich signals came out "almost too
+    // loud" against the sidetone once the harmonics were doing their work, so they run 3 dB
+    // below full scale rather than at it. They are still far louder to the ear than the pure
+    // sines they replaced -- the audibility comes from the harmonic content, not the level.
+    static constexpr float kRichLevel = 0.71f;               // -3.0 dB
+    static constexpr float kRichScale = kRichLevel / kRichPeak;
 
     float frequency_  = 0.0f;
     float amplitude_  = 32767.0f;

@@ -1981,13 +1981,14 @@ static const float SIDETONE_LEVEL = 0.79f;
 static const float SPEAKER_TRIM_DB = 3.0f;
 // Headphone driver gain (valid 0..9 dB). PR #208 put this at the 9 dB maximum to close a
 // ~21 dB speaker/headphone gap; with the speaker since raised by SPEAKER_TRIM_DB, phones
-// came out louder than the speaker on the bench, so back off 3 dB. Take it off the GAIN
+// came out louder than the speaker on the bench, so back off -- first to 6 dB, then to 3
+// after a second listen ("at max volume the headphones get really very loud"). Take it off the GAIN
 // and not off the volume control: the volume control is an attenuator ahead of the driver,
 // so trimming there leaves the driver's own noise untouched and the noise floor becomes
 // audible once Tone Volume is turned up to compensate (that is exactly what a -6 dB volume
 // offset did during the PR #208 bench work). Lowering the driver gain scales signal and
 // upstream noise together, so the floor rides down with it.
-static const float HEADPHONE_GAIN_DB = 6.0f;
+static const float HEADPHONE_GAIN_DB = 3.0f;
 // Line-out drives someone else's input, so its level must be defined and must not depend
 // on whether headphones happened to be plugged in earlier in the session. soundEnableLineOut()
 // never wrote the driver gain at all, so it inherited whatever soundEnableHeadphone() last
@@ -1996,6 +1997,24 @@ static const float HEADPHONE_GAIN_DB = 6.0f;
 // was accidentally deterministic; raising the headphone gain turned that into a silent
 // 9 dB swing. Write it explicitly, and keep it at the pre-PR-#208 value.
 static const float LINEOUT_GAIN_DB = 0.0f;
+
+// Speaker volume curve, deliberately NOT the same as calcVolume().
+//
+// calcVolume()'s 3 dB steps span 48 dB (plus -54/-60 at the bottom). That range is right
+// for headphones, where the quietest settings are genuinely useful, but far too wide for
+// the built-in speaker: below roughly -30 dB it simply stops producing audible output, so
+// the bottom third of the encoder's travel did nothing. That got worse when PR #208
+// de-clipped the sidetone -- a clean sine has none of the 1-3 kHz harmonic content the
+// small speaker actually radiates well, so its usable range shrank further.
+//
+// So the speaker gets 2 dB steps over 36 dB. The maximum is unchanged (the top of the
+// range was never the problem); the minimum comes up by 24 dB, which is what turns the
+// bottom settings back into something you can hear. Headphones keep calcVolume() and its
+// near-silent lowest step.
+float calcSpeakerVolume(uint8_t v) { // v = 0 - 19
+  if (v == 0) return -78.0f;                                   // off (also explicitly muted)
+  return (float) ((19 - v) * -2.0) - SPEAKER_TRIM_DB;
+}
 
 float calcVolume(uint8_t v) { // v = 0 - 19
   // we map the volume levels 0 - 19 to dB values for the codec
@@ -2031,7 +2050,7 @@ void soundEnableSpeaker(void) {
     codec.enableSpeakerAmp();
     codec.setSpeakerGain(18.0f); // valid db: 6, 12, 18, 24; paired with SPEAKER_TRIM_DB below
     // codec.setSpeakerVolume(-13.0f); // volume set by encoder
-    codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume) - SPEAKER_TRIM_DB);
+    codec.setSpeakerVolume(calcSpeakerVolume(MorsePreferences::sidetoneVolume));
     codec.setSpeakerMute(false); // unmute class d speaker amp
     codec.setHeadphoneMute(true); // mute hp
 }
@@ -2060,7 +2079,7 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
         codec.enableSpeakerAmp();
         codec.setSpeakerGain(18.0f); // valid db: 6, 12, 18, 24; paired with SPEAKER_TRIM_DB below
         // codec.setSpeakerVolume(-10.0f); // volume set by encoder
-        codec.setSpeakerVolume(calcVolume(MorsePreferences::sidetoneVolume) - SPEAKER_TRIM_DB);
+        codec.setSpeakerVolume(calcSpeakerVolume(MorsePreferences::sidetoneVolume));
         codec.setSpeakerMute(false); // unmute class d speaker amp
       }
 }
@@ -2082,7 +2101,7 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
             codec.setSpeakerMute(true); // mute class d speaker amp
         else  
             codec.setSpeakerMute(false);
-        codec.setSpeakerVolume(calcVolume(v) - SPEAKER_TRIM_DB);
+        codec.setSpeakerVolume(calcSpeakerVolume(v));
         break;
       case 2: // line-out, speaker not muted, variable l-o gain
         if (v==0) {
@@ -2094,7 +2113,7 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
             codec.setSpeakerMute(false);
             codec.setHeadphoneMute(false);
         }
-        codec.setSpeakerVolume(calcVolume(v) - SPEAKER_TRIM_DB);
+        codec.setSpeakerVolume(calcSpeakerVolume(v));
         codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
         break;
       case 3: // line-out, speaker muted, fixed l-o gain
@@ -2113,7 +2132,7 @@ void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
       codec.setSpeakerMute(true); // mute class d speaker amp
     else  
       codec.setSpeakerMute(false);
-    codec.setSpeakerVolume(calcVolume(v) - SPEAKER_TRIM_DB);
+    codec.setSpeakerVolume(calcSpeakerVolume(v));
   }
 }
 
