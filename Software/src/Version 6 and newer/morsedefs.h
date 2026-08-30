@@ -313,7 +313,7 @@ enum PROMPT_TYPE                // how we prompt in echo trainer mode
 
 enum GEN_TYPE                   // the things we can generate in generator mode
   {
-      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE
+      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE, KOCH_PREVIEW
   };
 
 
@@ -340,9 +340,10 @@ enum morserinoMode              // the states the morserino can be in - selected
       shutDown, measureNF, invalid
   };
 
-// Base menu count: 45 entries (indices 0..44, classic M32 with LoRa, no Games, no QSO Bot)
-// includes the two "Practice Set" leaves (CW Generator + Echo Trainer), unconditional on both variants
-const uint8_t menuN = 45
+// Base menu count: 46 entries (indices 0..45, classic M32 with LoRa, no Games, no QSO Bot)
+// includes the two "Practice Set" leaves (CW Generator + Echo Trainer) and the Koch
+// Trainer "Preview Char" leaf, unconditional on both variants
+const uint8_t menuN = 46
 #ifdef LORA_DISABLED
     - 1    // no LoRa Trx entry
 #endif
@@ -366,7 +367,7 @@ const uint8_t menuN = 45
 enum menuNo
   {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords, _genCalls, _genMixed, _genPlayer,
         _echo, _echoRand, _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
-        _koch, _kochSel, _kochLearn, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
+        _koch, _kochSel, _kochLearn, _kochPreview, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
         _kochGenMixed, _kochEcho, _kochEchoRand, _kochEchoAbb, _kochEchoWords, _kochEchoMixed, _kochEchoAdaptive,
         _trx,
 #ifndef LORA_DISABLED

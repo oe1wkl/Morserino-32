@@ -414,6 +414,8 @@ point
 Portrait
 Practice Set
 Practice Stats
+Preview Char
+Preview Character
 pro sign
 Pro Signs
 QSO Bot

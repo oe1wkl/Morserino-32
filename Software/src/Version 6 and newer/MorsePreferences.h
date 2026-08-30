@@ -82,6 +82,12 @@ namespace MorsePreferences
   extern boolean usePracticeChars;
   extern String  practiceCharSet;
 
+  // Koch Trainer "Preview Char": 0-based index into the active Koch/Custom sequence
+  // (see Koch::getKochChar()), picked by MorseMenu::selectKochPreviewChar(). Runtime
+  // only - not persisted to NVS, reseeded from its previous value each time the
+  // picker opens.
+  extern uint8_t previewCharIndex;
+
   extern uint8_t version_major;
   extern uint8_t version_minor;
   extern uint8_t sidetoneVolume;

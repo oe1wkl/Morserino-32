@@ -1390,6 +1390,25 @@ Sobald du das neue Zeichen beherrschst, kannst du im Koch Trainer zum
 **CW Generator** oder **Echo Trainer** wechseln, um das neu erlernte
 Zeichen in Kombination mit allen bisher gelernten Zeichen zu üben.
 
+### Koch: Preview Char
+
+Manchmal möchtest du nicht das neueste Zeichen hören, sondern ein
+früher gelerntes noch einmal für sich — oder bist einfach neugierig,
+wie ein Zeichen weiter hinten im Kurs klingt. Wenn du diesen Menüpunkt
+auswählst, erscheint eine kleine Auswahlliste aller Zeichen des
+gesamten Kurses, in derselben Reihenfolge wie deine Koch-Lektionen
+(bzw., falls **Koch Sequence** auf **Custom Chars** steht, in der
+Reihenfolge deines eigenen Zeichensatzes) — drehe den ENCODER, um durch
+die Liste zu blättern, und klicke ihn, um ein Zeichen auszuwählen.
+
+Das ausgewählte Zeichen wird danach fortlaufend wiedergegeben, genau
+wie bei **Learn New Chr**: Du siehst und hörst es wiederholt, und du
+kannst die Geschwindigkeit weiterhin durch Drehen des ENCODERs
+anpassen, wie überall sonst auch. Um ein anderes Zeichen zu wählen,
+ohne den Modus zu verlassen, klicke die FN-Taste dreimal kurz
+hintereinander — das bringt dich zurück zur Auswahlliste. Drücke den
+ENCODER-Knopf länger, um zurück ins Menü zu gelangen.
+
 ### Koch: CW Generator und Echo Trainer
 
 Die Funktionalität entspricht der oben für diese Modi beschriebenen, mit

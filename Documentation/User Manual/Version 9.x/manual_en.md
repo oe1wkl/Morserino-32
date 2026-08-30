@@ -1372,6 +1372,23 @@ Once you have mastered the new character, you can progress to either **CW Genera
 to practice the newly learned character in combination with all the
 characters you have learned so far.
 
+### Koch: Preview Char
+
+Sometimes you don't want the newest character, but an earlier one you'd
+like to hear again on its own — or you're curious what a character
+further ahead in the course sounds like. Selecting this menu item shows
+a small picker listing every character of the whole course, in the same
+learning order as your Koch lessons (or, if **Koch Sequence** is set to
+**Custom Chars**, in the order of your custom character set) — turn the
+ENCODER to move through the list and click it to pick a character.
+
+The picked character then plays continuously, exactly like **Learn New
+Chr**: you see and hear it repeat, and you can still adjust the speed by
+turning the ENCODER, same as everywhere else. To pick a different
+character without leaving the mode, click the FN button three times in
+quick succession — this brings back the picker. Press the ENCODER knob
+for longer to leave and return to the menu.
+
 ### Koch: CW Generator and Echo Trainer
 
 The functionality is the same as described above for these two

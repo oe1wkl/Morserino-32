@@ -1315,6 +1315,20 @@ if (morseState == morseKeyer &&
                 break;
       case 2:   MorseOutput::decreaseBrightness();                                                                                       // step through screen brightness levels
                 break;
+      case 3:   if (generatorMode == KOCH_PREVIEW) {                                                                                     // Koch Preview Char: back to the character picker
+                    keyOut(false, true, 0, 0);
+                    keyOut(false, false, 0, 0);
+                    int8_t idx = MorseMenu::selectKochPreviewChar();
+                    if (idx >= 0)
+                        MorsePreferences::previewCharIndex = (uint8_t) idx;
+                    clearText = "";
+                    CWwordPos = 0;
+                    echoTrainerState = SEND_WORD;
+                    startFirst = false;
+                    genTimer = millis();
+                    MorseMenu::showStartDisplay("Preview Char:", "Start:       ", "Press paddle ", 1250);
+                }
+                break;
     }
 
     switch (Buttons::modeButton.clicks) {                                // actions based on encoder button
@@ -2257,8 +2271,8 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 genTimer = millis() + (c == '1' ? rxDitLength : rxDahLength);
             if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1)             // send the element to transmit buffer
                 c == '1' ? cwForTx(1) : cwForTx(2) ;
-            /// if Koch learn character we show dit or dah
-            if (generatorMode == KOCH_LEARN)
+            /// if Koch learn character or Koch preview we show dit or dah
+            if (generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW)
                 displayGeneratedMorse(BOLD, c == '1' ? "."  : "-");
             silentEcho = (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value == DISP_ONLY); // echo mode with no audible prompt
 
@@ -2381,7 +2395,7 @@ void dispGeneratedChar() {
     boolean wordStart = newWordForDisplay;      // consume it here, whether or not we display anything
     newWordForDisplay = false;
 
-    if (generatorMode == KOCH_LEARN ||
+    if (generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW ||
             (MorsePreferences::pliste[posGeneratorDisplay].value == DISPLAY_BY_CHAR &&
             (morseState == loraTrx || morseState == wifiTrx || morseState == morseGenerator || playCW)) ||
             (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY))
@@ -2423,17 +2437,17 @@ void dispGeneratedChar() {
             clearText.remove(0, 1);
         }
  
-        if (generatorMode == KOCH_LEARN) {
+        if (generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW) {
             displayGeneratedMorse(REGULAR, " ");
         }
         // cleanUpProSigns takes String& — construct one from our char buffer
         String charString(charBuf);
         displayGeneratedMorse(
             ((frameWordForDisplay && morseState == morseGenerator) ||
-             morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN)
+             morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW)
                 ? BOLD : REGULAR,
             cleanUpProSigns(charString));
-        if (generatorMode == KOCH_LEARN) {
+        if (generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW) {
             displayGeneratedMorse(REGULAR, " ");
         }
     }
@@ -2508,7 +2522,7 @@ void fetchNewWord() {
         displayGeneratedMorse(REGULAR, " ");    /// in any case, add a blank after the word on the display
     }
 
-    if (generatorMode == KOCH_LEARN) {
+    if (generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW) {
         startFirst = false;
         echoTrainerState = SEND_WORD;
     }
@@ -2530,7 +2544,7 @@ void fetchNewWord() {
                                     clearText = echoTrainerWord;
                                 else {
                                     clearText = echoTrainerWord;
-                                    if (generatorMode != KOCH_LEARN) {
+                                    if (generatorMode != KOCH_LEARN && generatorMode != KOCH_PREVIEW) {
                                         displayGeneratedMorse(INVERSE_REGULAR, cleanUpProSigns(clearText));    //// clean up first!
                                         displayGeneratedMorse(REGULAR, " ");
                                     }
@@ -2548,7 +2562,7 @@ void fetchNewWord() {
 #ifdef CONFIG_PRACTICE_STATS
                             bool statsDiscardWord = false;   // set only for the one phantom word below, not tied to stopFlag's own lifecycle
 #endif
-                            if ((MorsePreferences::pliste[posMaxSequence].value != 0) && (generatorMode != KOCH_LEARN))
+                            if ((MorsePreferences::pliste[posMaxSequence].value != 0) && (generatorMode != KOCH_LEARN) && (generatorMode != KOCH_PREVIEW))
                               if ( morseState == echoTrainer || ((morseState == morseGenerator) && !MorsePreferences::pliste[posAutoStop].value) ) {
                                 // a case for maxSequence - no maxSequence in autostop mode
                                 ++ wordCounter;                                                               //
@@ -2580,6 +2594,8 @@ void fetchNewWord() {
                                       case  WORDS:    clearText = getRandomWord(MorsePreferences::pliste[posWordLength].value);
                                                       break;
                                       case  KOCH_LEARN:clearText = koch.getNewChar();
+                                                      break;
+                                      case  KOCH_PREVIEW:clearText = koch.getKochChar(MorsePreferences::previewCharIndex);
                                                       break;
                                       case  MIXED:    rv = random(4);
                                                       switch (rv) {
@@ -2865,7 +2881,7 @@ void echoTrainerEval() {
           changeSpeed(1);
     } else {
       echoTrainerState = REPEAT_WORD;
-      if (generatorMode != KOCH_LEARN || echoResponse != "") {
+      if ((generatorMode != KOCH_LEARN && generatorMode != KOCH_PREVIEW) || echoResponse != "") {
           ++errCounter;
           displayGeneratedMorse(ERR_RESULT, "ERR");
           if (MorsePreferences::pliste[posEchoConf].value) {

@@ -78,6 +78,7 @@ void cleanupScreen();
 void showStartDisplay(const String&, const String&, const String&, int);
 boolean isRemotelyExecutable(uint8_t);
 int8_t selectFilePart();
+int8_t selectKochPreviewChar();
 #ifdef CONFIG_CW_GAME
  void startGame();
 #endif

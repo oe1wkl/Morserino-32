@@ -100,6 +100,7 @@ const char* const menuText[menuN]  = {
   "Koch Trainer", // 16
     "Select Lesson",
     "Learn New Chr",
+    "Preview Char",
     "CW Generator",   // 19
       "Random",   // 20
       "CW Abbrevs",
@@ -184,8 +185,9 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_echoMixed,_echoPractice,_echo,0},                  // 15 echo player  -e (right -> Practice Set)
   {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
   {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select  -e!!?
-  {1,_kochSel,_kochGen,_koch,0},                        // 18 koch learn new
-  {1,_kochLearn,_kochEcho,_koch,_kochGenRand},          // 19 koch gen
+  {1,_kochSel,_kochPreview,_koch,0},                    // 18 koch learn new
+  {1,_kochLearn,_kochGen,_koch,0},                      // 18a koch preview char  -e
+  {1,_kochPreview,_kochEcho,_koch,_kochGenRand},        // 19 koch gen
   {2,_kochGenMixed,_kochGenAbb,_kochGen,0},             // 20 koch gen random  -e
   {2,_kochGenRand,_kochGenWords,_kochGen,0},            // 21 koch gen abb  -e
   {2,_kochGenAbb,_kochGenMixed,_kochGen,0},             // 22 koch gen words  -e
@@ -740,7 +742,10 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 startFirst = true;
                 morseState = echoTrainer;
                 echoStop = false;
-                showStartDisplay(generatorMode == KOCH_LEARN ? "New Character:" : "Echo Trainer:", "Start:       ", "Press paddle ", 1250);
+                showStartDisplay(
+                    generatorMode == KOCH_LEARN   ? "New Character:" :
+                    generatorMode == KOCH_PREVIEW ? "Preview Char:"  : "Echo Trainer:",
+                    "Start:       ", "Press paddle ", 1250);
                 if(MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY)
                   keyDecoder.setup();
                 executeNow = false;
@@ -759,6 +764,20 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 executeNow = false;
                 goto startEcho;
+      case  _kochPreview: {  // Koch Preview Char - pick any already-unlocked character (in lesson
+                              // order) and repeat it, same playback as Koch Learn New.
+                int8_t previewIdx = MorseMenu::selectKochPreviewChar();
+                if (previewIdx < 0) {
+                    executeNow = false;
+                    m32state = menu_loop;
+                    return false;
+                }
+                MorsePreferences::previewCharIndex = (uint8_t) previewIdx;
+                generatorMode = KOCH_PREVIEW;
+                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
+                executeNow = false;
+                goto startEcho;
+      }
       case  _kochGenRand: // RANDOMS
                 generatorMode = RANDOMS;
                 kochActive = true;
@@ -1212,7 +1231,103 @@ int8_t MorseMenu::selectFilePart() {
                 MorseJSON::jsonActivate(ACT_CANCELLED);
             return -1;
         }
- 
+
+        checkShutDown(false);
+        serialEvent();
+    }
+}
+
+// Koch Trainer "Preview Char": let the user pick any character of the active Koch
+// sequence (built-in or Custom Koch set - Koch::getKochChar() handles both), not just
+// the already-unlocked ones - the full course, so you can preview ahead too. The list
+// is shown in lesson order (position 0 = first learned), which doubles as the order
+// these characters get unlocked in. Same encoder/click/long-press pattern as
+// selectFilePart() above - deliberately reused rather than inventing a new interaction
+// (see UX_CONVENTIONS.md: no mode may redefine a global gesture); the visible window
+// scales with NoOfVisibleLines (hard rule: never hardcode the line count) instead of
+// the fixed 3 lines selectFilePart() uses, since the Pocket has room for more.
+//
+// Returns the picked 0-based index into the active sequence, or -1 if cancelled.
+int8_t MorseMenu::selectKochPreviewChar() {
+    uint8_t count = MorsePreferences::kochMaximum;      // # of characters in the whole course
+
+    if (count < 2) {                                    // nothing to pick between
+        MorsePreferences::previewCharIndex = 0;
+        return 0;
+    }
+
+    int8_t selected = MorsePreferences::previewCharIndex;
+    if (selected < 0 || selected >= count)
+        selected = MorsePreferences::kochFilter - 1;      // default: the current lesson's char
+
+    MorseOutput::clearDisplay();
+    MorseOutput::printOnStatusLine(true, 0, "Preview Char:    ");
+
+    int8_t lastDisplayed = -1;
+    uint8_t rows = (NoOfVisibleLines < count) ? NoOfVisibleLines : count;
+
+    while (true) {
+        if (selected != lastDisplayed) {
+            lastDisplayed = selected;
+            MorseOutput::clearScrollLines();
+
+            // Window of `rows` consecutive lessons, current one kept roughly centered
+            // (clamped at both ends of the full [0, count) range).
+            int16_t windowStart = (int16_t) selected - rows / 2;
+            int16_t maxStart = (int16_t) count - rows;
+            if (windowStart > maxStart) windowStart = maxStart;
+            if (windowStart < 0) windowStart = 0;
+
+            String curLine;
+            for (uint8_t row = 0; row < rows; ++row) {
+                uint8_t idx = (uint8_t) windowStart + row;
+                String line = String(idx + 1) + ": " + koch.getKochChar(idx);
+                MorseOutput::printOnScroll(row, idx == selected ? BOLD : REGULAR, 0, line);
+                if (idx == selected) curLine = line;
+            }
+
+            if (protocolActive())
+                MorseJSON::jsonCreate("message", "Preview character: " + curLine, "");
+        }
+
+        int t = checkEncoder();
+        if (t) {
+            MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+            selected += t;
+            if (selected < 0) selected = 0;
+            if (selected >= count) selected = count - 1;
+        }
+
+        Buttons::modeButton.Update();
+        switch (Buttons::modeButton.clicks) {
+            case 1:
+                MorsePreferences::previewCharIndex = selected;
+                if (protocolActive())
+                    MorseJSON::jsonActivate(ACT_SET);
+                return selected;
+            case -1:
+                if (protocolActive())
+                    MorseJSON::jsonActivate(ACT_CANCELLED);
+                return -1;
+            case 2:   // double click: preferences menu, same as everywhere else (m32_v6.ino loop())
+                MorsePreferences::setupPreferences(MorsePreferences::menuPtr);
+                MorseOutput::clearDisplay();
+                MorseOutput::printOnStatusLine(true, 0, "Preview Char:    ");
+                lastDisplayed = -1;                  // force the list to redraw below
+                break;
+        }
+
+        Buttons::volButton.Update();
+        switch (Buttons::volButton.clicks) {
+            case -1:
+                if (protocolActive())
+                    MorseJSON::jsonActivate(ACT_CANCELLED);
+                return -1;
+            case 2:   // double click: step display brightness, same as everywhere else
+                MorseOutput::decreaseBrightness();
+                break;
+        }
+
         checkShutDown(false);
         serialEvent();
     }
