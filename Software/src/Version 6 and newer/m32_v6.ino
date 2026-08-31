@@ -2487,13 +2487,11 @@ void dispGeneratedChar() {
         if (generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW) {
             displayGeneratedMorse(REGULAR, " ");
         }
-        // cleanUpProSigns takes String& — construct one from our char buffer
-        String charString(charBuf);
         displayGeneratedMorse(
             ((frameWordForDisplay && morseState == morseGenerator) ||
              morseState == loraTrx || morseState == wifiTrx || generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW)
                 ? BOLD : REGULAR,
-            cleanUpProSigns(charString));
+            cleanUpProSigns(charBuf));
         if (generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW) {
             displayGeneratedMorse(REGULAR, " ");
         }
@@ -2890,8 +2888,7 @@ void displayPreviewChar() {
   if (encoderState != previewCharMode)
       return;
   char numBuf[16];
-  String glyph = koch.getKochChar(MorsePreferences::previewCharIndex);
-  cleanUpProSigns(glyph);
+  String glyph = cleanUpProSigns(koch.getKochChar(MorsePreferences::previewCharIndex));
   sprintf(numBuf, "%2d:%-4s", MorsePreferences::previewCharIndex + 1, glyph.c_str());
   MorseOutput::printOnStatusLine(true,  3, numBuf);
   MorseOutput::printOnStatusLine(false, 10, "Chr");
@@ -3133,7 +3130,7 @@ void keyTransmitter(boolean noTx) {
 }
 
 
-String cleanUpProSigns( String &input ) {
+String cleanUpProSigns( const String &input ) {
     /// Expand single-char prosign codes to their display forms.
     /// S→<as>, A→<ka>, N→<kn>, K→<sk>, E→<ve>, B→<bk>, H→ch, R→<err>, U→*
     /// Uses a static char buffer internally — no heap allocations in the loop.
@@ -3174,10 +3171,8 @@ String cleanUpProSigns( String &input ) {
     }
     buf[out] = '\0';
  
-    // Write the result back into the String reference (one allocation, no chained replaces)
-    input = buf;
-    return input;
-}
+    return String(buf);          // one allocation, no chained replaces - and the caller's
+}                                // string is left alone, see the header for why
  
 // WHY THIS IS BETTER:
 //   Old code: 9× String::replace(), each scanning the full string and

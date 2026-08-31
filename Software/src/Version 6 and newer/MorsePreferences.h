@@ -35,7 +35,13 @@ extern volatile bool powerpath_event;
 //extern uint16_t volt;
 extern int16_t batteryVoltage();
 
-extern String cleanUpProSigns( String &input );
+// Returns the display form of a string carrying single-char prosign codes ("K" -> "<sk>").
+// It does NOT modify its argument. It used to: it took a String& and wrote the expansion
+// back, so `String clean = cleanUpProSigns(raw);` silently clobbered raw as well - which
+// broke the accessibility announcement in MorseMenu::selectKochPreviewChar(), where the
+// RAW character is what announceMoreChar() needs. warn_unused_result so a call written for
+// the old in-place behaviour is a compiler diagnostic instead of a silent no-op.
+extern String cleanUpProSigns( const String &input ) __attribute__((warn_unused_result));
 //extern int16_t batteryVoltage();
 //extern int16_t volt;
 extern void updateTimings();

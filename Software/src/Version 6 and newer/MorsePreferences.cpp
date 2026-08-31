@@ -1153,8 +1153,7 @@ String MorsePreferences::getValueLine(prefPos pos) {
         }
         break;
     case posKochFilter:
-      str = koch.getNewChar();
-      cleanUpProSigns(str);
+      str = cleanUpProSigns(koch.getNewChar());
       // "N-M: x": lesson N of M total (kochMaximum tracks the active sequence's
       // lesson count, incl. the LICW carousel window), then the new character.
       // Kept compact: the OLED value line is printed at column 1 of a 14-char line,
@@ -1353,8 +1352,7 @@ static const uint8_t PRACTICE_MAX_LEN   = 24;   // generous for a "chars I strug
 // always draws as its tag ("<sk>", "<as>", ...); only a genuine single
 // character - i.e. not a prosign - gets the cosmetic Output Case treatment.
 static String practiceGlyph(char c) {
-    String s(c);
-    cleanUpProSigns(s);
+    String s = cleanUpProSigns(String(c));
     if (s.length() == 1 && MorsePreferences::pliste[posOutputCase].value)
         s.toUpperCase();
     return s;
