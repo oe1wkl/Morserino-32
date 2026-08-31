@@ -1309,7 +1309,14 @@ int8_t MorseMenu::selectKochPreviewChar() {
                 String cleanChar = rawChar;
                 cleanUpProSigns(cleanChar);
                 String line = String(idx + 1) + ": " + cleanChar;
-                MorseOutput::printOnScroll(row, idx == selected ? BOLD : REGULAR, 0, line);
+                // BOLD alone is too close to REGULAR to pick the highlighted row out at a
+                // glance - markedly so on the Pocket's TFT. So the selected row also carries
+                // the cursor idiom the preference pickers already use (MorsePreferences.cpp):
+                // an INVERSE_BOLD ">" in column 0, with every row's text shifted to column 1
+                // so the list stays aligned whether or not it is the selected one.
+                MorseOutput::printOnScroll(row, idx == selected ? BOLD : REGULAR, 1, line);
+                if (idx == selected)
+                    MorseOutput::printOnScroll(row, INVERSE_BOLD, 0, ">");
                 if (idx == selected) { curLine = line; curRawChar = rawChar; }
             }
 
