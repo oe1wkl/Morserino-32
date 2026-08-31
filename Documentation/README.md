@@ -6,12 +6,18 @@ One manual per Morserino:
 
 | Your Morserino | English | Deutsch |
 |---|---|---|
-| **Morserino-32 Pocket** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.epub) |
-| **Morserino-32, 1st / 2nd edition** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.epub) |
-| **Pocket, Accessibility Edition** | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) |
+| **Morserino-32 Pocket** | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_EN.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_EN.epub) | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_DE.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_DE.epub) |
+| **Morserino-32, 1st / 2nd edition** | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_EN.epub) | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_DE.epub) |
+| **Pocket, Accessibility Edition** | [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) | [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) |
 
-These point at the manuals for the latest released firmware and never need
-updating. Sources, older versions and French/Spanish translations are under
+These always give you the manual for the current firmware, beta releases
+included, and never need updating. They are served from morserino.info rather
+than from the GitHub release: GitHub's `releases/latest/` resolves to the newest
+*non*-prerelease release, so a release-asset link is dead for the whole of a beta
+cycle. The release workflow publishes the manuals to the site on every release,
+which is also where the installer and the Configuration Tool get them.
+
+Sources, older versions and French/Spanish translations are under
 [`User Manual/`](User%20Manual/).
 
 ## What else is here
