@@ -1403,6 +1403,42 @@ Sobald du das neue Zeichen beherrschst, kannst du im Koch Trainer zum
 **CW Generator** oder **Echo Trainer** wechseln, um das neu erlernte
 Zeichen in Kombination mit allen bisher gelernten Zeichen zu üben.
 
+### Koch: Preview Char
+
+Manchmal möchtest du nicht das neueste Zeichen hören, sondern ein
+früher gelerntes noch einmal für sich — oder bist einfach neugierig,
+wie ein Zeichen weiter hinten im Kurs klingt. Wenn du diesen Menüpunkt
+auswählst, erscheint eine kleine Auswahlliste aller Zeichen des
+gesamten Kurses, in derselben Reihenfolge wie deine Koch-Lektionen
+(bzw., falls **Koch Sequence** auf **Custom Chars** steht, in der
+Reihenfolge deines eigenen Zeichensatzes) — drehe den ENCODER, um durch
+die Liste zu blättern, und klicke ihn, um ein Zeichen auszuwählen.
+
+Das ausgewählte Zeichen wird danach fortlaufend wiedergegeben, genau
+wie bei **Learn New Chr**: Du siehst und hörst es wiederholt, und du
+kannst die Geschwindigkeit weiterhin durch Drehen des ENCODERs
+anpassen, wie überall sonst auch.
+
+In diesem Modus bekommt der übliche Klick der FN-Taste (Umschalten
+Geschwindigkeit/Lautstärke) eine dritte Station: Ein Klick schaltet
+den ENCODER reihum zwischen **Geschwindigkeit**, **Lautstärke** und
+**Zeichen** um. Solange der ENCODER die Rolle "Zeichen" hat, blätterst
+du beim Drehen live durch den gesamten Kurs, Lektion für Lektion —
+ohne die Auswahlliste erneut zu öffnen. Die Wiedergabe setzt kurz nach
+dem Loslassen ein, sodass das Durchblättern mehrerer Lektionen still
+bleibt und nur das Zeichen erklingt, bei dem du stehen bleibst. Solange
+der ENCODER die Rolle "Zeichen" hat, zeigt die Statuszeile dort, wo
+sonst die Geschwindigkeit steht, Lektionsnummer und Zeichen in
+Fettschrift — ein Prosign erscheint dabei als sein Kürzel, also z. B.
+`<ka>`, nicht als einzelner Buchstabe — nach derselben Konvention „der
+ENCODER besitzt dies", der auch die WpM-Zahl und der Lautstärkebalken
+folgen. Drücke den ENCODER-Knopf länger, um zurück ins Menü zu
+gelangen.
+
+Solange die Auswahlliste selbst offen ist, funktionieren der übliche
+FN-Doppelklick (Displayhelligkeit) und der ENCODER-Doppelklick
+(Preferences-Menü) weiterhin ganz normal.
+
 ### Koch: CW Generator und Echo Trainer
 
 Die Funktionalität entspricht der oben für diese Modi beschriebenen, mit

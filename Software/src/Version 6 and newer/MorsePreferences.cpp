@@ -582,6 +582,7 @@ boolean MorsePreferences::cn3Mechanical = false;            // CN3 connector: fa
 
   String  MorsePreferences::practiceCharSet = "";             // "Practice Set" character pool (CW Gen/Echo); own NVS key, unrelated to customCharSet above
   boolean MorsePreferences::usePracticeChars = false;          // flag: current CW Gen/Echo run should draw from practiceCharSet
+  uint8_t MorsePreferences::previewCharIndex = 0;              // Koch Preview Char: picked index, runtime only
 
   uint8_t MorsePreferences::menuPtr = 1;                      // current position of menu
   uint8_t MorsePreferences::newMenuPtr = 1;                   // current position of menu when changed

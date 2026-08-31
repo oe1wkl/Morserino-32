@@ -313,7 +313,7 @@ enum PROMPT_TYPE                // how we prompt in echo trainer mode
 
 enum GEN_TYPE                   // the things we can generate in generator mode
   {
-      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE
+      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE, KOCH_PREVIEW
   };
 
 
@@ -324,7 +324,7 @@ enum DECODER_STATES             // state machine for decoding CW
 
 enum encoderMode                // define modes for state machine of the various modi the encoder can be in
   {
-      speedSettingMode, volumeSettingMode, scrollMode, memSelMode
+      speedSettingMode, volumeSettingMode, scrollMode, memSelMode, previewCharMode
   };
 
 enum morserinoMode              // the states the morserino can be in - selected in top level menu
@@ -340,9 +340,10 @@ enum morserinoMode              // the states the morserino can be in - selected
       shutDown, measureNF, invalid
   };
 
-// Base menu count: 45 entries (indices 0..44, classic M32 with LoRa, no Games, no QSO Bot)
-// includes the two "Practice Set" leaves (CW Generator + Echo Trainer), unconditional on both variants
-const uint8_t menuN = 45
+// Base menu count: 46 entries (indices 0..45, classic M32 with LoRa, no Games, no QSO Bot)
+// includes the two "Practice Set" leaves (CW Generator + Echo Trainer) and the Koch
+// Trainer "Preview Char" leaf, unconditional on both variants
+const uint8_t menuN = 46
 #ifdef LORA_DISABLED
     - 1    // no LoRa Trx entry
 #endif
@@ -399,6 +400,10 @@ enum menuNo
 #endif
         , _genPractice  // "Practice Set" - CW Generator, session/persistent character picker (appended: see menuNav wiring in MorseMenu.cpp)
         , _echoPractice // "Practice Set" - Echo Trainer, same character source
+        , _kochPreview  // "Preview Char" - Koch Trainer, appended for the same reason: menuPtr is
+                         // persisted raw (lastExecuted, snapshots, protocol GET menus), so inserting
+                         // a new entry mid-enum would shift every later index. See menuNav wiring in
+                         // MorseMenu.cpp for where it actually sits in the Koch Trainer submenu.
    };
 
 enum loops

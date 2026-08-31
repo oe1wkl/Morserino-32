@@ -1384,6 +1384,38 @@ Once you have mastered the new character, you can progress to either **CW Genera
 to practice the newly learned character in combination with all the
 characters you have learned so far.
 
+### Koch: Preview Char
+
+Sometimes you don't want the newest character, but an earlier one you'd
+like to hear again on its own — or you're curious what a character
+further ahead in the course sounds like. Selecting this menu item shows
+a small picker listing every character of the whole course, in the same
+learning order as your Koch lessons (or, if **Koch Sequence** is set to
+**Custom Chars**, in the order of your custom character set) — turn the
+ENCODER to move through the list and click it to pick a character.
+
+The picked character then plays continuously, exactly like **Learn New
+Chr**: you see and hear it repeat, and you can still adjust the speed by
+turning the ENCODER, same as everywhere else.
+
+In this mode, the FN button's usual speed/volume toggle click gets a
+third stop: clicking it cycles the ENCODER between **speed**,
+**volume**, and **character**. While the ENCODER owns character,
+turning it steps live through the whole course, one lesson at a time —
+no need to open the picker again. Playback follows a moment after you
+stop turning, so spinning through several lessons stays quiet and only
+the character you settle on is sent. While the ENCODER owns the
+character, the status line shows the lesson number and the character
+itself in bold where the speed is normally displayed — a prosign
+appears as its tag, e.g. `<ka>`, not as a bare letter — the same
+"the ENCODER owns this" convention the WpM figure and the volume bar
+already follow. Press the ENCODER knob for longer to leave and return
+to the menu.
+
+While the picker itself is open, the usual FN double-click (display
+brightness) and ENCODER double-click (preferences menu) both still
+work, same as everywhere else.
+
 ### Koch: CW Generator and Echo Trainer
 
 The functionality is the same as described above for these two
