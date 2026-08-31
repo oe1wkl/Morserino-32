@@ -2785,6 +2785,15 @@ void displayCWspeed() {
   char numBuf[16];                // for number to string conversion with sprintf()
   uint8_t wpm;
 
+  // The character readout occupies these columns while the encoder owns the character, so
+  // every caller that repaints speed has to respect it - the echo trainer's own adaptive
+  // changeSpeed() included, which fires on a correct answer and would otherwise flip the
+  // line back to WpM underneath the operator mid-browse.
+  if (encoderState == previewCharMode) {
+      displayPreviewChar();
+      return;
+  }
+
   wpm = lastWasKey ? keyDecoder.getWpm() : audioDecoder.getWpm();
   if ((morseState ==  echoTrainer && MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY))
     sprintf(numBuf, "(%2i)", wpm);
@@ -2806,16 +2815,37 @@ void displayCWspeed() {
   MorseOutput::refreshDisplay();
 }
 
-// Koch Preview Char's third encoder role indicator - column 1 is otherwise blank in
-// echoTrainer mode (updateTopLine() only writes it for morseGenerator), so this fits in
-// without disturbing the keyer-mode symbol at column 2. Bold/regular follows the same
-// "which role does the encoder currently own" idiom as displayCWspeed()'s WPM number and
-// MorseOutput::displayVolume()'s bar. Deliberately the raw single character (not run
-// through cleanUpProSigns()): this is a lone 1-column glyph, not the numbered picker list
-// where two different lessons could otherwise render identically (see selectKochPreviewChar()).
+// Koch Preview Char's third encoder role indicator. It takes over the speed widget's own
+// columns while the role is active - neither WpM number can be adjusted in this role, and
+// what the operator is actually looking at is the character being auditioned.
+//
+// OLED budget (18 columns of 7 px; the volume meter starts at column 13):
+//   cols 3-9    "%2d:%-4s"  position + character, BOLD by the same "which role does the
+//                           encoder own" idiom as displayCWspeed()'s WpM number
+//   cols 10-12  "Chr"       the unit label, exactly where "WpM" sits, so it ends 2 px clear
+//                           of the meter - the margin "WpM" already has
+// Both status-line fonts are strictly monospaced at 7 px in either weight, so the column
+// arithmetic is exact and bold does not push anything sideways. The "%-4s" pad is what
+// erases a longer previous glyph: prosigns expand to four characters, plain letters to one.
+//
+// The glyph goes through cleanUpProSigns() - a lone raw "K" for <sk> is a bare prosign code
+// on screen, differing from the letter "k" by case alone, which is what hard rule 4 exists
+// to prevent. The picker's own display makes the same call.
+//
+// Guarded on encoderState alone, and that is deliberate: previewCharMode is only ever
+// entered while the role is available, and menu_() resets encoderState on every menu entry,
+// so this cannot paint into an unrelated mode the way a generatorMode test would - that
+// global stays set after leaving Preview Char.
 void displayPreviewChar() {
-  if (generatorMode == KOCH_PREVIEW)
-    MorseOutput::printOnStatusLine(encoderState == previewCharMode, 1, koch.getKochChar(MorsePreferences::previewCharIndex));
+  if (encoderState != previewCharMode)
+      return;
+  char numBuf[16];
+  String glyph = koch.getKochChar(MorsePreferences::previewCharIndex);
+  cleanUpProSigns(glyph);
+  sprintf(numBuf, "%2d:%-4s", MorsePreferences::previewCharIndex + 1, glyph.c_str());
+  MorseOutput::printOnStatusLine(true,  3, numBuf);
+  MorseOutput::printOnStatusLine(false, 10, "Chr");
+  MorseOutput::refreshDisplay();
 }
 
 
@@ -2981,6 +3011,9 @@ void changeVolume( int t) {
 // generateCW()'s KEY_UP case only calls fetchNewWord() when CWword.length()-CWwordPos <= 0, so
 // leaving the old (still non-empty) CWword in place just replays the character being left,
 // once per encoder tick, instead of ever reaching the newly picked one.
+// How long the encoder has to sit still before the newly selected character is sent.
+#define PREVIEW_CHAR_SETTLE_MS 200
+
 void changePreviewChar( int t) {
     uint8_t count = MorsePreferences::kochMaximum;
     int16_t idx = (int16_t) MorsePreferences::previewCharIndex + t;
@@ -2995,7 +3028,10 @@ void changePreviewChar( int t) {
     CWwordPos = 0;
     generatorState = KEY_UP;
     echoTrainerState = SEND_WORD;
-    genTimer = millis() - 1;             // "pause is over" on the very next generateCW() tick
+    // Wait for the encoder to sit still before sending. Every detent pushes this out again,
+    // so spinning through the course is silent and only the character actually landed on is
+    // played - rather than each detent starting a character the next one cuts off.
+    genTimer = millis() + PREVIEW_CHAR_SETTLE_MS;
     // Full repaint (not the narrow displayPreviewChar() patch): if the top line currently
     // holds a full-width message (e.g. paused - continueMsg4Disp, "Continue with paddle"),
     // updateTopLine() is what actually clears it instead of drawing the character glyph into

@@ -1279,6 +1279,7 @@ int8_t MorseMenu::selectKochPreviewChar() {
     MorseOutput::printOnStatusLine(true, 0, "Preview Char:    ");
 
     int8_t lastDisplayed = -1;
+    boolean a11ySaidTotal = false;      // see the announcement below
     uint8_t rows = (NoOfVisibleLines < count) ? NoOfVisibleLines : count;
 
     while (true) {
@@ -1302,7 +1303,11 @@ int8_t MorseMenu::selectKochPreviewChar() {
                 // position would draw as a bare uppercase letter indistinguishable from
                 // the plain-letter lesson elsewhere in the course. Same technique as
                 // practiceGlyph() in MorsePreferences.cpp.
-                String cleanChar = cleanUpProSigns(rawChar);
+                // NB cleanUpProSigns() takes a String& and writes the expansion back into
+                // its argument, so it has to work on a copy - cleaning rawChar in place would
+                // leave the announcement below with "<ka>" where it needs the raw "K".
+                String cleanChar = rawChar;
+                cleanUpProSigns(cleanChar);
                 String line = String(idx + 1) + ": " + cleanChar;
                 MorseOutput::printOnScroll(row, idx == selected ? BOLD : REGULAR, 0, line);
                 if (idx == selected) { curLine = line; curRawChar = rawChar; }
@@ -1316,9 +1321,15 @@ int8_t MorseMenu::selectKochPreviewChar() {
             // character (pre-cleanUpProSigns) so prosign clips match; announce()/
             // announceMore() are no-ops without CONFIG_AUDIO_A11Y, so this call is
             // unconditional.
+            // The total is spoken on entry only: it does not change while the encoder turns,
+            // and repeating it on all 51 detents makes the list far slower to scan by ear
+            // (the same reasoning announceValue() records for posKochFilter).
             MorseVoice::announce(String(selected + 1));
-            MorseVoice::announceMore("of");
-            MorseVoice::announceMore(String(count));
+            if (!a11ySaidTotal) {
+                MorseVoice::announceMore("of");
+                MorseVoice::announceMore(String(count));
+                a11ySaidTotal = true;
+            }
             MorseVoice::announceMoreChar(curRawChar);
         }
 
@@ -1370,6 +1381,11 @@ int8_t MorseMenu::selectKochPreviewChar() {
                 break;
         }
 
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();                 // this loop blocks outside loop(), and tick() is what
+                                            // actually starts and advances the clips - the same
+                                            // reason setupPreferences() drives it
+#endif
         checkShutDown(false);
         serialEvent();
     }

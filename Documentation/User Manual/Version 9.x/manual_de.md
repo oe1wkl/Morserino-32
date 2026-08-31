@@ -1410,13 +1410,17 @@ In diesem Modus bekommt der übliche Klick der FN-Taste (Umschalten
 Geschwindigkeit/Lautstärke) eine dritte Station: Ein Klick schaltet
 den ENCODER reihum zwischen **Geschwindigkeit**, **Lautstärke** und
 **Zeichen** um. Solange der ENCODER die Rolle "Zeichen" hat, blätterst
-du beim Drehen live durch den gesamten Kurs, Lektion für Lektion, und
-hörst sofort, worauf du gerade stehst — ohne die Auswahlliste erneut
-zu öffnen. Ein fett dargestelltes einzelnes Zeichen oben links in der
-Statuszeile zeigt an, wenn der ENCODER gerade diese Rolle hat, genauso
-wie die WpM-Zahl bzw. der Lautstärkebalken das für Geschwindigkeit und
-Lautstärke bereits anzeigen. Drücke den ENCODER-Knopf länger, um zurück
-ins Menü zu gelangen.
+du beim Drehen live durch den gesamten Kurs, Lektion für Lektion —
+ohne die Auswahlliste erneut zu öffnen. Die Wiedergabe setzt kurz nach
+dem Loslassen ein, sodass das Durchblättern mehrerer Lektionen still
+bleibt und nur das Zeichen erklingt, bei dem du stehen bleibst. Solange
+der ENCODER die Rolle "Zeichen" hat, zeigt die Statuszeile dort, wo
+sonst die Geschwindigkeit steht, Lektionsnummer und Zeichen in
+Fettschrift — ein Prosign erscheint dabei als sein Kürzel, also z. B.
+`<ka>`, nicht als einzelner Buchstabe — nach derselben Konvention „der
+ENCODER besitzt dies", der auch die WpM-Zahl und der Lautstärkebalken
+folgen. Drücke den ENCODER-Knopf länger, um zurück ins Menü zu
+gelangen.
 
 Solange die Auswahlliste selbst offen ist, funktionieren der übliche
 FN-Doppelklick (Displayhelligkeit) und der ENCODER-Doppelklick

@@ -1389,13 +1389,16 @@ turning the ENCODER, same as everywhere else.
 In this mode, the FN button's usual speed/volume toggle click gets a
 third stop: clicking it cycles the ENCODER between **speed**,
 **volume**, and **character**. While the ENCODER owns character,
-turning it steps live through the whole course, one lesson at a time,
-immediately playing whatever character you land on — no need to open
-the picker again. A bold single character in the top-left of the
-status line shows when the ENCODER currently owns this role, the same
-way the WpM figure and the volume bar already show for speed and
-volume. Press the ENCODER knob for longer to leave and return to the
-menu.
+turning it steps live through the whole course, one lesson at a time —
+no need to open the picker again. Playback follows a moment after you
+stop turning, so spinning through several lessons stays quiet and only
+the character you settle on is sent. While the ENCODER owns the
+character, the status line shows the lesson number and the character
+itself in bold where the speed is normally displayed — a prosign
+appears as its tag, e.g. `<ka>`, not as a bare letter — the same
+"the ENCODER owns this" convention the WpM figure and the volume bar
+already follow. Press the ENCODER knob for longer to leave and return
+to the menu.
 
 While the picker itself is open, the usual FN double-click (display
 brightness) and ENCODER double-click (preferences menu) both still
