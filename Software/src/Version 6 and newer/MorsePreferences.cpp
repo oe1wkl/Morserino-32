@@ -693,6 +693,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                  };
   prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
+                                                   posPracticeChars,
                                                    posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
@@ -713,14 +714,18 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
  prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
+                                                   posPracticeChars,
+                                                   posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
 
  prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posKochSeq, posCarouselStart, posInterCharSpace,  posInterWordSpace, posRandomLength, posRandomBoost, posAbbrevLength,  posWordLength,
+                                                   posKochSeq, posCarouselStart,
+                                                   posPracticeChars,
+                                                   posInterCharSpace,  posInterWordSpace, posRandomLength, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
                                                    posKeyExternalTx, posLoraCwTransmit, posLoraChannel
                                                  };
@@ -728,6 +733,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
+                                                   posPracticeChars,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
                                                  };
@@ -3019,6 +3025,14 @@ String Koch::getKochChar(uint8_t i) {           // get a String consisting of a 
 // Set character only comes up more often in proportion to how often Koch's
 // own logic would already have offered it. 1 attempt = no boost (Off, or no
 // Practice Set defined).
+//
+// NOTE: this is bounded rejection sampling (redraw N times), a different
+// mechanism from the exact weighted draw the non-Koch Random Characters path
+// uses in getRandomChars() (m32_v6.ino). The two are NOT calibrated against
+// each other - "Moderate"/"Strong" land in roughly the same statistical
+// ballpark on both paths, by design (touching Koch's own weighting was ruled
+// out), but they are not the same number twice. Do not "fix" one to match
+// the other's numbers.
 static uint8_t practiceBoostAttempts() {
     uint8_t level = MorsePreferences::pliste[posRandomBoost].value;
     if (!level || MorsePreferences::practiceCharSet.length() == 0)
@@ -3085,7 +3099,13 @@ String Koch::getAdaptiveChar(int maxl) {
 
   while (result.length() < maxl)
   {
-    char c = '\0';
+    // charSet.charAt(0) is only a placeholder in case the invariant below is
+    // ever violated (adaptiveProbabilities[]/charSet falling out of sync, so
+    // the inner loop's randomOffset never goes negative) - normally the inner
+    // loop always assigns a real character on every attempt, so this default
+    // is never actually used, but it must not be '\0': appending that would
+    // silently corrupt the generated group with a NUL byte instead.
+    char c = charSet.charAt(0);
     for (uint8_t t = 0; t < tries; ++t) {
       int16_t randomOffset = random(probabilitySum);
 

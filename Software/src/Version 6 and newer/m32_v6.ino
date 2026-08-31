@@ -1989,6 +1989,13 @@ String getRandomChars(int maxLength, int option) {
     // picked via "Random Groups" - so a practice char outside that subset
     // (e.g. a digit while "Alpha" is active) never leaks in; it simply has no
     // effect, exactly as if the boost preference were off.
+    //
+    // NOTE: this is an exact weighted draw, a different mechanism from the
+    // bounded rejection sampling Koch::getRandomChar()/getAdaptiveChar() use
+    // for the same preference (MorsePreferences.cpp) - that path redraws
+    // rather than reweights, specifically to leave Koch's own weighting
+    // untouched. The two are NOT calibrated against each other; keep the
+    // multiplier here and the attempt count there tuned independently.
     uint8_t boostLevel = MorsePreferences::pliste[posRandomBoost].value;
     if (boostLevel && MorsePreferences::practiceCharSet.length()) {
         static const uint8_t boostMultiplier[] = {3, 8};      // Moderate, Strong
