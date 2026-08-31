@@ -408,7 +408,12 @@ enum loops
 
 enum echoStates
   {
-      START_ECHO, SEND_WORD, REPEAT_WORD, GET_ANSWER, COMPLETE_ANSWER, EVAL_ANSWER
+      START_ECHO, SEND_WORD, REPEAT_WORD, GET_ANSWER, COMPLETE_ANSWER, EVAL_ANSWER,
+      // The two pauses either side of the OK/ERR feedback. They used to be plain delay()s
+      // inside echoTrainerEval(); they are deadlines on echoEvalTimer now, so loop() keeps
+      // turning and the buttons stay alive between repetitions. Runtime state only, never
+      // persisted, and cleanStartSettings() resets it to START_ECHO on every mode start.
+      EVAL_FEEDBACK, EVAL_SETTLE
   };
 
 enum KEYERSTATES
