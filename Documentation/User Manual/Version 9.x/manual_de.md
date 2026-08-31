@@ -3520,7 +3520,11 @@ kannst du auswählen, welcher Reihenfolge du folgen möchtest.
 
 Dies hat nichts mit der Koch-Zeichenfolge oben zu tun – es speist die
 **Practice Set**-Einträge unter **CW Generator** und **Echo Trainer**
-(Abschnitte **5.2** und **5.3**), nicht den Koch Trainer.
+(Abschnitte **5.2** und **5.3**), nicht die Zeichenfolge des Koch
+Trainers selbst. Die einzige Stelle, an der es doch bis zum Koch Trainer
+reicht, ist **Boost Practice** weiter unten: Damit können diese Zeichen
+innerhalb dessen, was deine aktuelle Koch-Lektion bereits freigeschaltet
+hat, häufiger vorkommen.
 
 | Einstellung | Beschreibung | Werte |
 |---|---|---|

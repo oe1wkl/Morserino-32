@@ -3063,7 +3063,10 @@ select which order you want to follow.
 
 This is unrelated to the Koch Character Sequence above – it feeds the
 **Practice Set** entries under **CW Generator** and **Echo Trainer**
-(sections **5.2** and **5.3**), not the Koch Trainer.
+(sections **5.2** and **5.3**), not the Koch Trainer's own sequence. The
+one place it does reach the Koch Trainer is **Boost Practice** below,
+which can make these characters come up more often within whatever your
+current Koch lesson has already unlocked.
 
 | Preference Name | Description | Values |
 |---|---|---|
