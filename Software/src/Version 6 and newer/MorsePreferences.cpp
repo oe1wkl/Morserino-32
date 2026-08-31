@@ -1554,6 +1554,12 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                       if (!MorsePreferences::handleKochSequence(true)) {    // explicit on-device (re-)selection: force a file reload
                           MorseOutput::printOnScroll(2, BOLD, 0, "No custom set");
                           delay(700);
+                          // "No custom set" starts at xpos 0, but the value line drawn for
+                          // whatever option we land on next (handleKochSequence() reverted
+                          // posKochSeq to M32) starts at xpos 1 - so without an explicit clear
+                          // here, its leading character is left behind past that value's own
+                          // narrower text.
+                          MorseOutput::clearLine(2);
                       }
                   }
                   else if (pos == posCarouselStart && pliste[posKochSeq].value == 3)

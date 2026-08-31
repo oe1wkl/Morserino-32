@@ -3986,14 +3986,23 @@ String getM32PWord() {
 // getWord() used to wrap at EOF by reopening the file.
 // For multipart, it must wrap at the part's endOffset back to startOffset.
 
+// File-scope (not a local static inside getWord()) so getCustomChars() can reset it before
+// its own scan: getWord() is shared by three unrelated readers of player.txt (the running
+// File Player, skipWords() fast-forwarding to a saved resume position on File Player entry,
+// and getCustomChars() scanning the whole file for its Custom Chars set) via this one
+// "did we just wrap past EOF" flag. If either of the first two happens to wrap exactly at the
+// point they stop reading - e.g. entering File Player with a saved position that lands on the
+// last word - the flag is left true, and the next getCustomChars() call sees it on its very
+// first read and bails out immediately with an empty set, even though the file is fine.
+static boolean wordReaderAtEof = false;
+
 String getWord() {
     String result = "";
     result.reserve(250);
     byte c;
-    static boolean eof = false;
- 
-    if (eof) {
-        eof = false;
+
+    if (wordReaderAtEof) {
+        wordReaderAtEof = false;
         return result;
     }
  
@@ -4032,7 +4041,7 @@ String getWord() {
     }
     
     // End of part (or end of file): wrap around
-    eof = true;
+    wordReaderAtEof = true;
     
     if (MorsePreferences::filePartCount >= 2) {
         // Multipart: seek back to start of current part
@@ -4062,6 +4071,8 @@ String getCustomChars() {
 
   file.close(); file = SPIFFS.open("/player.txt");
   MorsePreferences::fileWordPointer = 0;
+  wordReaderAtEof = false;   // this is an independent full-file scan - don't let a wrap left
+                             // over from the running File Player or skipWords() cut it short
   while (file.available()) {
       w = getWord();
       if (w == "")
