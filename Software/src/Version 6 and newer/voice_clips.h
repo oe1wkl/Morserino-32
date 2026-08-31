@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "d7fd758e"
+#define VOICE_PACK_STAMP "a50302f1"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -200,6 +200,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Blues", "aca2a3c0"},
   {"Bluetooth A R character", "b4c0646b"},
   {"Bluetooth use", "48f049df"},
+  {"Boost practice characters", "3c6bec0a"},
   {"Bravo", "01a2da07"},
   {"C H", "63420e4f"},
   {"CQ WW", "e9292f77"},
@@ -306,6 +307,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Memory Chain", "ad6622d5"},
   {"Mike", "1b83d5da"},
   {"Mixed", "699b4f79"},
+  {"Moderate", "1eb79d43"},
   {"Morse Invaders", "62b14d61"},
   {"Morsel", "77c0c2db"},
   {"Morserino 32 accessibility edition", "7c18d4c3"},
@@ -341,7 +343,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Portrait", "1c7444be"},
   {"Practice Set", "2c91ef54"},
   {"Practice Stats", "eaac0f5b"},
-  {"Preview Char", "7985265a"},
   {"Pro Signs", "a1edbcde"},
   {"QSO Bot", "60d3a124"},
   {"QSO Difficulty", "c73f6a06"},
@@ -371,6 +372,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Standard", "eb6d8ae6"},
   {"Stop after each word", "62dbf39a"},
   {"Straight Key", "577977d3"},
+  {"Strong", "c43e0fd4"},
   {"Tango", "99ec9c94"},
   {"Theme", "d7217571"},
   {"Time-out", "5b6ec483"},
@@ -438,7 +440,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 424;
+static const unsigned int voiceLookupCount = 426;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

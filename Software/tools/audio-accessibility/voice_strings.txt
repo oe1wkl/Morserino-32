@@ -232,6 +232,7 @@ BLE Serial
 Blues
 Bluetooth A R character
 Bluetooth use
+Boost practice characters
 Bravo
 C H
 Calibrate Battery
@@ -372,6 +373,7 @@ Memory Chain
 Mike
 millivolts
 Mixed
+Moderate
 Morse Invaders
 Morsel
 Morserino 32 accessibility edition
@@ -451,6 +453,7 @@ Standard
 Stop after each word
 Store snapshot
 Straight Key
+Strong
 Tango
 Theme
 Time-out
