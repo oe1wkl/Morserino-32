@@ -397,6 +397,8 @@ const byte pool[][2]  = {
 String echoResponse = "";
 //enum echoStates { START_ECHO, SEND_WORD, REPEAT_WORD, GET_ANSWER, COMPLETE_ANSWER, EVAL_ANSWER };
 echoStates echoTrainerState = START_ECHO;
+unsigned long echoEvalTimer = 0;      // deadline for the EVAL_FEEDBACK / EVAL_SETTLE pauses
+boolean echoEvalCorrect = false;      // verdict, taken once on entry and held across them
 String echoTrainerPrompt, echoTrainerWord;
 uint8_t echoPromptSpeed = 0;     // stores the prompt WPM while response is speed-limited
 
@@ -1230,7 +1232,9 @@ void loop() {
                             case  SEND_WORD:
                             case  REPEAT_WORD:  echoResponse = ""; generateCW();
                                                 break;
-                            case  EVAL_ANSWER:  echoTrainerEval();
+                            case  EVAL_ANSWER:
+                            case  EVAL_FEEDBACK:
+                            case  EVAL_SETTLE:  echoTrainerEval();
                                                 break;
                             case  COMPLETE_ANSWER:
                             case  GET_ANSWER:   if (doPaddleIambic(leftKey, rightKey))
@@ -2902,53 +2906,85 @@ String getKeyerModeSymbol() {             /// symbol to be displayed on status l
 }
 
 ///////// evaluate the response in Echo Trainer Mode
+// Evaluate the operator's answer and pace the two pauses around the verdict.
+//
+// These pauses used to be plain delay()s - interCharacterSpace/2 before the verdict, and
+// 16*ditLength + interWordSpace/12 after it. That is up to 1.8 s at 12 WpM (1.1 s at 20)
+// during which loop() never reached the button poll, so FN and the black knob were dead
+// between repetitions: ClickButton samples the pin inside Update(), so a press that began
+// and ended inside the gap left no trace at all, and one still held when the gap ended was
+// acted on late. It was most obvious in Koch "Preview Char", where the verdict runs on
+// every repetition and FN is the mode's main control, but Echo Trainer, Koch Learn New Chr
+// and the Koch Echo modes all had it.
+//
+// The pauses are now deadlines on echoEvalTimer, with the evaluation split over three
+// states so loop() keeps turning through them. Their LENGTHS are unchanged - this is a
+// control-flow change, not a timing change.
+//
+// The verdict is taken once, on entry, and held in echoEvalCorrect: the original compared
+// echoResponse after its first delay(), which was equivalent because nothing could run
+// during a delay(). Nothing can change echoResponse during these pauses either - the
+// decoder only runs from doPaddleIambic(), which loop() calls in GET_ANSWER /
+// COMPLETE_ANSWER, not in these states - but taking it once makes that independent of
+// what else may some day run in the gap.
 void echoTrainerEval() {
-    // Restore prompt speed if it was limited for response
-    if (echoPromptSpeed > 0) {
-        MorsePreferences::wpm = echoPromptSpeed;
-        echoPromptSpeed = 0;
-        updateTimings();
-        displayCWspeed();
-    }
- 
-    delay(interCharacterSpace / 2);
+    switch (echoTrainerState) {
 
-    if (echoResponse == echoTrainerWord) {
-      echoTrainerState = SEND_WORD;
-      displayGeneratedMorse(OK_RESULT,  "OK");
-      if (MorsePreferences::pliste[posEchoConf].value) {
-          MorseOutput::soundSignalOK();
-      }
-      if (kochActive){
-        koch.decreaseWordProbability(echoTrainerWord);
+      case EVAL_ANSWER:                             // arrived: restore prompt speed, then pause
+            if (echoPromptSpeed > 0) {
+                MorsePreferences::wpm = echoPromptSpeed;
+                echoPromptSpeed = 0;
+                updateTimings();
+                displayCWspeed();
+            }
+            echoEvalCorrect = (echoResponse == echoTrainerWord);
+            echoEvalTimer = millis() + interCharacterSpace / 2;
+            echoTrainerState = EVAL_FEEDBACK;
+            break;
+
+      case EVAL_FEEDBACK:                           // pause over: show and sound the verdict
+            if (millis() < echoEvalTimer)
+                break;
+            if (echoEvalCorrect) {
+                displayGeneratedMorse(OK_RESULT, "OK");
+                if (MorsePreferences::pliste[posEchoConf].value)
+                    MorseOutput::soundSignalOK();
+                if (kochActive) {
+                    koch.decreaseWordProbability(echoTrainerWord);
 #ifdef CONFIG_PRACTICE_STATS
-        MorsePracticeStats::recordWord(echoTrainerWord, echoResponse);
+                    MorsePracticeStats::recordWord(echoTrainerWord, echoResponse);
 #endif
-      }
-      delay(16*ditLength + interWordSpace/12);
-      if (MorsePreferences::pliste[posSpeedAdapt].value)
-          changeSpeed(1);
-    } else {
-      echoTrainerState = REPEAT_WORD;
-      if ((generatorMode != KOCH_LEARN && generatorMode != KOCH_PREVIEW) || echoResponse != "") {
-          ++errCounter;
-          displayGeneratedMorse(ERR_RESULT, "ERR");
-          if (MorsePreferences::pliste[posEchoConf].value) {
-              MorseOutput::soundSignalERR();
-          }
-          if (kochActive){
-            koch.increaseWordProbability(echoTrainerWord, echoResponse);
+                }
+            }
+            else if ((generatorMode != KOCH_LEARN && generatorMode != KOCH_PREVIEW) || echoResponse != "") {
+                ++errCounter;
+                displayGeneratedMorse(ERR_RESULT, "ERR");
+                if (MorsePreferences::pliste[posEchoConf].value)
+                    MorseOutput::soundSignalERR();
+                if (kochActive) {
+                    koch.increaseWordProbability(echoTrainerWord, echoResponse);
 #ifdef CONFIG_PRACTICE_STATS
-            MorsePracticeStats::recordWord(echoTrainerWord, echoResponse);
+                    MorsePracticeStats::recordWord(echoTrainerWord, echoResponse);
 #endif
-          }
-      }
-      delay(16*ditLength + interWordSpace/12);
-      if (MorsePreferences::pliste[posSpeedAdapt].value)
-          changeSpeed(-1);
+                }
+            }
+            echoEvalTimer = millis() + 16*ditLength + interWordSpace/12;
+            echoTrainerState = EVAL_SETTLE;
+            break;
+
+      case EVAL_SETTLE:                             // second pause over: adapt speed, carry on
+            if (millis() < echoEvalTimer)
+                break;
+            if (MorsePreferences::pliste[posSpeedAdapt].value)
+                changeSpeed(echoEvalCorrect ? 1 : -1);
+            echoResponse = "";
+            clearPaddleLatches();
+            echoTrainerState = echoEvalCorrect ? SEND_WORD : REPEAT_WORD;
+            break;
+
+      default:
+            break;
     }
-    echoResponse = "";
-    clearPaddleLatches();
 }   // end of function
 
 
