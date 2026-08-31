@@ -2,6 +2,14 @@
 
 This FAQ is compiled from the official user manual and from community discussions on groups.io. It covers the **M32 Pocket**; where an answer applies to the classic Morserino-32 (1st and 2nd edition) as well, it says so. It is a companion to the user manual, not a replacement — the manual describes every mode and preference in full.
 
+There is one manual per Morserino, and these links always point at the one for the latest released firmware:
+
+| Your Morserino | English | Deutsch |
+|---|---|---|
+| **Morserino-32 Pocket** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.epub) |
+| **Morserino-32, 1st / 2nd edition** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.epub) |
+| **Pocket, Accessibility Edition** | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) |
+
 Answers reflect **firmware version 9.0**.
 
 ## 1. Coming from a 1st or 2nd Edition Morserino
@@ -122,7 +130,8 @@ Answers reflect **firmware version 9.0**.
 ## 7. The Accessibility Edition (M32 Pocket only)
 
 * **What is it?**
-    * A separate edition of the firmware that **speaks the menus and settings aloud**, for blind and partially sighted operators. The games are not included in it; everything else is.
+    * A separate edition of the firmware that **speaks the menus and settings aloud**, for blind and partially sighted operators.
+    * Three things are left out of it, and nothing else: the **games**, and the two WiFi entries **Upload File** and **Update Firmw**. The games are unusable without sight. The other two do not do the job themselves — they only put the Morserino into a waiting state and expect you to finish the work in a browser on another computer, which is an awkward thing to be sent to when the device cannot tell you what is happening. Both jobs are done better from the computer in the first place: use the installer page for firmware, and the Configuration Tool for uploading a file. Everything else — every mode, every preference — is present.
 * **How do I get it onto my device?**
     * A new Pocket is delivered with the Standard edition, which is silent. Install the Accessibility Edition from the same installer page as any other firmware (`morserino.info/install.html`) — it is offered as a choice for the same device.
     * You can move between the Standard and the Accessibility Edition at any time. Your preferences, snapshots and stored speed survive the change in both directions. **Only the File Player's text does not**, since that is the storage the voice clips take over.
@@ -138,6 +147,7 @@ Answers reflect **firmware version 9.0**.
 
 * **What is the easiest update method?**
     * **Webserial**: visit `morserino.info/install.html` in a supported browser. It requires no command-line tools and no separate firmware download.
+    * On the **Accessibility Edition** this is the only way: its WiFi menu has no *Update Firmw* entry, because that entry only hands the job over to a browser on another computer anyway. Run the installer there instead.
     * There is now a **single installer for every Morserino**. It asks the processor in your device which Morserino it is, so you no longer need to know whether to start on a page for the classic M32 or one for the M32 Pocket. It also shows which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two former installer pages forward to it, so old bookmarks keep working.
 * **Which browsers work?**
     * **Google Chrome**, **Microsoft Edge**, **Opera**, and **Firefox from version 151** (which added Web Serial support in May 2026). **Safari cannot do this.**

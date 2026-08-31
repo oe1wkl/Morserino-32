@@ -2,6 +2,14 @@
 
 Diese FAQ ist aus dem offiziellen Benutzerhandbuch und aus Diskussionen der Community auf groups.io zusammengestellt. Sie behandelt den **M32 Pocket**; wo eine Antwort auch für den klassischen Morserino-32 (1. und 2. Edition) gilt, ist das vermerkt. Sie ist eine Ergänzung zum Benutzerhandbuch, kein Ersatz — dort sind alle Betriebsarten und Einstellungen vollständig beschrieben.
 
+Für jeden Morserino gibt es ein eigenes Handbuch. Diese Links verweisen immer auf jenes zur aktuellsten veröffentlichten Firmware:
+
+| Dein Morserino | Deutsch | English |
+|---|---|---|
+| **Morserino-32 Pocket** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_DE.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_EN.epub) |
+| **Morserino-32, 1. / 2. Edition** | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_DE.epub) | [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Classic_EN.epub) |
+| **Pocket, Accessibility Edition** | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) | [EPUB](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://github.com/oe1wkl/Morserino-32/releases/latest/download/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) |
+
 Die Antworten beziehen sich auf **Firmware-Version 9.0**.
 
 Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb ebenfalls englisch angegeben.
@@ -124,7 +132,8 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 ## 7. Die Accessibility Edition (nur M32 Pocket)
 
 * **Was ist das?**
-    * Eine eigene Ausgabe der Firmware, die **Menüs und Einstellungen laut vorliest** — für blinde und sehbehinderte Operatoren. Die Spiele sind darin nicht enthalten, alles andere schon.
+    * Eine eigene Ausgabe der Firmware, die **Menüs und Einstellungen laut vorliest** — für blinde und sehbehinderte Operatoren.
+    * Drei Dinge fehlen darin, sonst nichts: die **Spiele** sowie die beiden WLAN-Einträge **Upload File** und **Update Firmw**. Die Spiele sind ohne Augenlicht nicht spielbar. Die beiden anderen erledigen die Arbeit ohnehin nicht selbst — sie versetzen den Morserino nur in einen Wartezustand und erwarten, dass du die Sache in einem Browser auf einem anderen Rechner zu Ende bringst; dorthin geschickt zu werden ist unangenehm, wenn das Gerät nicht sagen kann, was gerade passiert. Beides geht ohnehin besser gleich vom Rechner aus: für die Firmware die Installationsseite, zum Hochladen einer Datei das Konfigurationsprogramm. Alles Übrige — jede Betriebsart, jede Einstellung — ist vorhanden.
 * **Wie kommt sie auf mein Gerät?**
     * Ein neuer Pocket wird mit der Standard-Edition ausgeliefert, die stumm ist. Die Accessibility Edition installierst du über dieselbe Installationsseite wie jede andere Firmware (`morserino.info/install.html`) — sie wird für dasselbe Gerät zur Auswahl angeboten.
     * Du kannst jederzeit zwischen Standard- und Accessibility Edition wechseln. Deine Einstellungen, Schnappschüsse und die gespeicherte Geschwindigkeit überstehen den Wechsel in beide Richtungen. **Nur der Text des File Players nicht** — genau diesen Speicher übernehmen die Sprachclips.
@@ -140,6 +149,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 
 * **Was ist der einfachste Weg zu einem Update?**
     * **Webserial**: `morserino.info/install.html` in einem unterstützten Browser aufrufen. Dafür brauchst du weder Kommandozeilen-Werkzeuge noch einen separaten Firmware-Download.
+    * Bei der **Accessibility Edition** ist das der einzige Weg: In deren WLAN-Menü gibt es keinen Eintrag *Update Firmw*, weil dieser die Aufgabe ohnehin nur an einen Browser auf einem anderen Rechner weiterreicht. Führe das Installationsprogramm also gleich dort aus.
     * Es gibt jetzt **ein einziges Installationsprogramm für alle Morserinos**. Es fragt den Prozessor im Gerät, welcher Morserino das ist — du musst also nicht mehr wissen, ob du auf einer Seite für den klassischen M32 oder für den M32 Pocket beginnen musst. Es zeigt außerdem an, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installationsseiten leiten dorthin weiter, alte Lesezeichen funktionieren also weiter.
 * **Welche Browser funktionieren?**
     * **Google Chrome**, **Microsoft Edge**, **Opera** und **Firefox ab Version 151** (die im Mai 2026 Unterstützung für Web Serial gebracht hat). **Safari kann das nicht.**
