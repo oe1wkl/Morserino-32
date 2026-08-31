@@ -67,6 +67,13 @@ namespace MorseOutput
 #endif
   void sleep();
   void printOnStatusLine(boolean strong, uint8_t xpos, const String& string);
+  // True while the status line still shows a full-line (xpos==0) message - a paused-mode
+  // notice ("Continue with paddle"), a menu heading, etc. - that hasn't been replaced by a
+  // full top-line repaint since. A narrow update (WPM digits, volume bar) applied directly
+  // on top of that can only ever patch its own small field, leaving the rest of that foreign
+  // message/layout behind; callers should do a full repaint (updateTopLine()) instead of
+  // their normal narrow update when this is true. See printOnStatusLine()'s statusLineCacheWidth.
+  boolean statusLineHasForeignContent();
   void clearBuffer();
   void refreshScrollArea(int relPos);
   void refreshScrollLine(int bufferLine, int displayLine);

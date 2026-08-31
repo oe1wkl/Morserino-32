@@ -3061,8 +3061,12 @@ void changeSpeedValue( int t) {
 void changeSpeed( int t) {
   changeSpeedValue(t);
   charCounter = 0;                                    // reset character counter (NVS-write debounce)
-  if (m32state != menu_loop)
-      displayCWspeed();                     // update display of CW speed
+  if (m32state != menu_loop) {
+      if (MorseOutput::statusLineHasForeignContent())   // status line currently shows something else
+          updateTopLine();                              // (e.g. a paused-mode message) - full repaint,
+      else                                               // not just the narrow WPM field, or its fragments
+          displayCWspeed();                     // update display of CW speed
+  }
 }
 
 
@@ -3079,8 +3083,12 @@ void changeVolumeValue( int t) {
 
 void changeVolume( int t) {
     changeVolumeValue(t);
-    if (m32state != menu_loop)
-        MorseOutput::displayVolume((encoderState == volumeSettingMode ? false : true), MorsePreferences::sidetoneVolume);      // sidetone volume;
+    if (m32state != menu_loop) {
+        if (MorseOutput::statusLineHasForeignContent())
+            updateTopLine();
+        else
+            MorseOutput::displayVolume((encoderState == volumeSettingMode ? false : true), MorsePreferences::sidetoneVolume);      // sidetone volume;
+    }
 }
 
 // Koch Preview Char's live "browse while it plays" role: step the picked character and
