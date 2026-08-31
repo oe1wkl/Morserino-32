@@ -1274,6 +1274,14 @@ if (morseState == morseKeyer &&
     if (Buttons::modeButton.clicks || Buttons::volButton.clicks)
         MorseOutput::resetTOT();        // explicit TOT reset on any button activity
 
+    boolean previewCharModeAvailable = (morseState == echoTrainer && generatorMode == KOCH_PREVIEW);
+                // Koch Preview Char gets a third encoder role (character), cycled in via this same
+                // click alongside speed/volume - see UX_CONVENTIONS.md: the encoder's role is a
+                // documented, red-button-selected mechanism, so this extends it rather than adding
+                // a gesture beside it. Gated on morseState as well as generatorMode: generatorMode
+                // is sticky across mode switches (MorseMenu.cpp's transceiver cases reset it
+                // defensively for the same reason), so checking morseState too keeps this role from
+                // reappearing in an unrelated mode after leaving Preview Char.
     switch (Buttons::volButton.clicks) {
       case 1:   if (encoderState == scrollMode) {
                     if (morseState != morseDecoder)
@@ -1285,20 +1293,21 @@ if (morseState == morseKeyer &&
                     MorseOutput::refreshScrollArea(MorseOutput::relPos);
                     MorseOutput::displayScrollBar(false);
                 }
-                else if (encoderState == volumeSettingMode && morseState != morseDecoder) {          //  single click toggles encoder between speed and volume
-                  encoderState = speedSettingMode;
+                else if (encoderState == volumeSettingMode && morseState != morseDecoder) {          //  single click toggles encoder between speed and volume (and character, in Preview Char)
+                  encoderState = previewCharModeAvailable ? previewCharMode : speedSettingMode;
                   MorsePreferences::writeVolume();
                   #ifdef CONFIG_TLV320AIC3100
                   MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
                   #endif
-                  displayCWspeed();
-                  MorseOutput::displayVolume(true, MorsePreferences::sidetoneVolume);
-
+                  updateTopLine();          // full repaint, not narrow field patches (see updateTopLine() comment)
+                }
+                else if (encoderState == previewCharMode) {                                          // character -> speed (only reachable when previewCharModeAvailable got us here)
+                  encoderState = speedSettingMode;
+                  updateTopLine();
                 }
                 else {
                   encoderState = volumeSettingMode;
-                  displayCWspeed();
-                  MorseOutput::displayVolume(false, MorsePreferences::sidetoneVolume);                                     // sidetone volume
+                  updateTopLine();
                 }
                 break;
       case -1:  if (encoderState == scrollMode) {
@@ -1314,20 +1323,6 @@ if (morseState == morseKeyer &&
                 }
                 break;
       case 2:   MorseOutput::decreaseBrightness();                                                                                       // step through screen brightness levels
-                break;
-      case 3:   if (generatorMode == KOCH_PREVIEW) {                                                                                     // Koch Preview Char: back to the character picker
-                    keyOut(false, true, 0, 0);
-                    keyOut(false, false, 0, 0);
-                    int8_t idx = MorseMenu::selectKochPreviewChar();
-                    if (idx >= 0)
-                        MorsePreferences::previewCharIndex = (uint8_t) idx;
-                    clearText = "";
-                    CWwordPos = 0;
-                    echoTrainerState = SEND_WORD;
-                    startFirst = false;
-                    genTimer = millis();
-                    MorseMenu::showStartDisplay("Preview Char:", "Start:       ", "Press paddle ", 1250);
-                }
                 break;
     }
 
@@ -1407,6 +1402,8 @@ if (morseState == morseKeyer &&
                                   if (ptr > maxMemCount)
                                     ptr = 0;
                                   dispMem(memList[ptr]);
+                                  break;
+           case previewCharMode: changePreviewChar(t);
                                   break;
           }
     } // encoder
@@ -2809,7 +2806,25 @@ void displayCWspeed() {
   MorseOutput::refreshDisplay();
 }
 
+// Koch Preview Char's third encoder role indicator - column 1 is otherwise blank in
+// echoTrainer mode (updateTopLine() only writes it for morseGenerator), so this fits in
+// without disturbing the keyer-mode symbol at column 2. Bold/regular follows the same
+// "which role does the encoder currently own" idiom as displayCWspeed()'s WPM number and
+// MorseOutput::displayVolume()'s bar. Deliberately the raw single character (not run
+// through cleanUpProSigns()): this is a lone 1-column glyph, not the numbered picker list
+// where two different lessons could otherwise render identically (see selectKochPreviewChar()).
+void displayPreviewChar() {
+  if (generatorMode == KOCH_PREVIEW)
+    MorseOutput::printOnStatusLine(encoderState == previewCharMode, 1, koch.getKochChar(MorsePreferences::previewCharIndex));
+}
 
+
+// Full status-line repaint. Deliberately used - instead of patching the individual
+// displayCWspeed()/displayVolume()/displayPreviewChar() fields in place - by anything that
+// might run while the line currently holds a full-width message (e.g. continueMsg4Disp,
+// "Continue with paddle"): printOnStatusLine() only clears the pixel width of what it draws,
+// so a narrow field written on top of a wider message leaves fragments of that message
+// behind instead of a clean line.
 void updateTopLine() {
   String symbol;
   symbol.reserve(5);
@@ -2825,11 +2840,12 @@ void updateTopLine() {
       symbol = "   ";
     MorseOutput::printOnStatusLine(true, 1,  symbol);
   }
-  else if (morseState != morseDecoder) 
+  else if (morseState != morseDecoder)
     MorseOutput::printOnStatusLine(false, 2,  getKeyerModeSymbol() + " ");
-  else 
+  else
     MorseOutput::printOnStatusLine(false, 2,  "d  ");
-  
+  displayPreviewChar();
+
   MorseOutput::printOnStatusLine(false, 3,  MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY ? "SK" : "CK");
 
   displayCWspeed();                                     // update display of CW speed
@@ -2842,7 +2858,10 @@ void updateTopLine() {
       MorseOutput::dispBleLogo();                       // is more urgent than "a client is attached"
 #endif
 
-  MorseOutput::displayVolume(encoderState == speedSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
+  // "is volume NOT the encoder's current role" - not "== speedSettingMode": with
+  // previewCharMode added, that used to be a 2-way check and silently went wrong for the
+  // 3rd state (showed the volume bar as owned while character was actually selected).
+  MorseOutput::displayVolume(encoderState != volumeSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
   MorseOutput::refreshDisplay();
 }
 
@@ -2953,6 +2972,36 @@ void changeVolume( int t) {
     changeVolumeValue(t);
     if (m32state != menu_loop)
         MorseOutput::displayVolume((encoderState == volumeSettingMode ? false : true), MorsePreferences::sidetoneVolume);      // sidetone volume;
+}
+
+// Koch Preview Char's live "browse while it plays" role: step the picked character and
+// restart playback on it immediately, in place - no picker overlay, no mode restart. Mirrors
+// cleanStartSettings()'s recipe for "abandon whatever CWword is mid-flight, fetch a fresh one
+// on the very next generateCW() tick": CWword must be emptied, not just CWwordPos rewound to 0 -
+// generateCW()'s KEY_UP case only calls fetchNewWord() when CWword.length()-CWwordPos <= 0, so
+// leaving the old (still non-empty) CWword in place just replays the character being left,
+// once per encoder tick, instead of ever reaching the newly picked one.
+void changePreviewChar( int t) {
+    uint8_t count = MorsePreferences::kochMaximum;
+    int16_t idx = (int16_t) MorsePreferences::previewCharIndex + t;
+    if (idx < 0) idx = 0;
+    if (idx >= count) idx = count - 1;
+    MorsePreferences::previewCharIndex = (uint8_t) idx;
+
+    keyOut(false, true, 0, 0);           // silence whatever element of the previous character
+    keyOut(false, false, 0, 0);          // was still sounding, so the new one starts cleanly
+    clearText = "";
+    CWword = "";
+    CWwordPos = 0;
+    generatorState = KEY_UP;
+    echoTrainerState = SEND_WORD;
+    genTimer = millis() - 1;             // "pause is over" on the very next generateCW() tick
+    // Full repaint (not the narrow displayPreviewChar() patch): if the top line currently
+    // holds a full-width message (e.g. paused - continueMsg4Disp, "Continue with paddle"),
+    // updateTopLine() is what actually clears it instead of drawing the character glyph into
+    // the middle of it - see updateTopLine()'s own comment.
+    if (m32state != menu_loop)
+        updateTopLine();
 }
 
 void keyTransmitter(boolean noTx) {

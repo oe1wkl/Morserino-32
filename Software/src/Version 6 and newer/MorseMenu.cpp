@@ -100,7 +100,6 @@ const char* const menuText[menuN]  = {
   "Koch Trainer", // 16
     "Select Lesson",
     "Learn New Chr",
-    "Preview Char",
     "CW Generator",   // 19
       "Random",   // 20
       "CW Abbrevs",
@@ -151,6 +150,7 @@ const char* const menuText[menuN]  = {
 #endif
   , "Practice Set"    // _genPractice  - sibling of CW Generator's Random/CW Abbrevs/.../File Player
   , "Practice Set"    // _echoPractice - sibling of Echo Trainer's Random/CW Abbrevs/.../File Player
+  , "Preview Char"    // _kochPreview  - sibling of Koch Trainer's Select Lesson/Learn New Chr
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
@@ -185,9 +185,8 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_echoMixed,_echoPractice,_echo,0},                  // 15 echo player  -e (right -> Practice Set)
   {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
   {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select  -e!!?
-  {1,_kochSel,_kochPreview,_koch,0},                    // 18 koch learn new
-  {1,_kochLearn,_kochGen,_koch,0},                      // 18a koch preview char  -e
-  {1,_kochPreview,_kochEcho,_koch,_kochGenRand},        // 19 koch gen
+  {1,_kochSel,_kochPreview,_koch,0},                    // 18 koch learn new (right -> Preview Char, appended below)
+  {1,_kochLearn,_kochEcho,_koch,_kochGenRand},          // 19 koch gen (left <- Preview Char, appended below)
   {2,_kochGenMixed,_kochGenAbb,_kochGen,0},             // 20 koch gen random  -e
   {2,_kochGenRand,_kochGenWords,_kochGen,0},            // 21 koch gen abb  -e
   {2,_kochGenAbb,_kochGenMixed,_kochGen,0},             // 22 koch gen words  -e
@@ -269,7 +268,10 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #endif
   {1,_genPlayer,_genRand,_gen,0},                       // Practice Set (CW Generator) - appended at enum's end;
                                                          //   spliced into the gen ring via the _genPlayer/_genRand edits above
-  {1,_echoPlayer,_echoRand,_echo,0}                     // Practice Set (Echo Trainer) - same splice, echo ring
+  {1,_echoPlayer,_echoRand,_echo,0},                    // Practice Set (Echo Trainer) - same splice, echo ring
+  {1,_kochLearn,_kochGen,_koch,0}                       // Preview Char (Koch Trainer) - appended at enum's end for the
+                                                         //   same reason (menuPtr persisted raw); spliced into the koch
+                                                         //   ring via the _kochLearn/_kochGen edits above
 };
 
 //String MorseMenu::cmdPath;   // used to create string for json
@@ -452,13 +454,17 @@ void MorseMenu::menu_() {
                       // menuNo, so "< _wifi" captures them and automatically excludes every
                       // WiFi function, shutdown, and grid game (all >= _wifi), including any
                       // future append-only WiFi/game leaf (e.g. _wifi_stats) with no edit
-                      // needed here. The only leaves that must be remembered yet live *after*
-                      // _wifi are the two Practice Set pickers (appended at the enum's end),
-                      // so they are named explicitly (found via on-device testing: Quick Start
-                      // into "CW Generator: Practice Set" otherwise fell back to "Random").
+                      // needed here. The leaves that must be remembered yet live *after* _wifi
+                      // are the ones appended at the enum's end (menuPtr is persisted raw, so
+                      // inserting mid-enum instead would shift every later index - see the
+                      // Koch Trainer submenu wiring above), so they are named explicitly here:
+                      // the two Practice Set pickers (found via on-device testing: Quick Start
+                      // into "CW Generator: Practice Set" otherwise fell back to "Random") and
+                      // Koch Trainer's Preview Char.
                       if (MorsePreferences::menuPtr < _wifi
                           || MorsePreferences::menuPtr == _genPractice
-                          || MorsePreferences::menuPtr == _echoPractice)
+                          || MorsePreferences::menuPtr == _echoPractice
+                          || MorsePreferences::menuPtr == _kochPreview)
                           MorsePreferences::writeLastExecuted(MorsePreferences::newMenuPtr);
                       if (MorseMenu::menuExec())
                         return;
@@ -764,8 +770,12 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 executeNow = false;
                 goto startEcho;
-      case  _kochPreview: {  // Koch Preview Char - pick any already-unlocked character (in lesson
+      case  _kochPreview: {  // Koch Preview Char - pick any character of the course (in lesson
                               // order) and repeat it, same playback as Koch Learn New.
+                              // setCurrentOptions() goes first: the picker's own preferences
+                              // double-click (see selectKochPreviewChar()) must not open whatever
+                              // option set the previously active mode left behind.
+                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 int8_t previewIdx = MorseMenu::selectKochPreviewChar();
                 if (previewIdx < 0) {
                     executeNow = false;
@@ -774,7 +784,6 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 }
                 MorsePreferences::previewCharIndex = (uint8_t) previewIdx;
                 generatorMode = KOCH_PREVIEW;
-                MorsePreferences::setCurrentOptions(MorsePreferences::kochEchoOptions, MorsePreferences::kochEchoOptionsSize);
                 executeNow = false;
                 goto startEcho;
       }
@@ -1121,6 +1130,10 @@ void MorseMenu::showStartDisplay(const String& l0, const String& l1, const Strin
 boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
   if (menuNav[ptr][naviDown] == 0) {
     switch (ptr) {
+      case _kochPreview:      // its picker (selectKochPreviewChar()) has no remote-selection path
+                              // (unlike selectFilePart()'s remoteFilePartSelect) - a protocol client
+                              // executing it would strand the device in a picker only someone
+                              // standing at it can dismiss
       case _wifi_config:      // these WiFi functions cannot be executed remotely
 #ifndef CONFIG_AUDIO_A11Y
       case _wifi_upload:
@@ -1257,8 +1270,10 @@ int8_t MorseMenu::selectKochPreviewChar() {
     }
 
     int8_t selected = MorsePreferences::previewCharIndex;
-    if (selected < 0 || selected >= count)
+    if (selected < 0 || selected >= count) {
         selected = MorsePreferences::kochFilter - 1;      // default: the current lesson's char
+        if (selected < 0) selected = 0;                   // kochFilter == 0 edge: don't hand back -1 (= "cancelled")
+    }
 
     MorseOutput::clearDisplay();
     MorseOutput::printOnStatusLine(true, 0, "Preview Char:    ");
@@ -1278,16 +1293,33 @@ int8_t MorseMenu::selectKochPreviewChar() {
             if (windowStart > maxStart) windowStart = maxStart;
             if (windowStart < 0) windowStart = 0;
 
-            String curLine;
+            String curLine, curRawChar;
             for (uint8_t row = 0; row < rows; ++row) {
                 uint8_t idx = (uint8_t) windowStart + row;
-                String line = String(idx + 1) + ": " + koch.getKochChar(idx);
+                String rawChar = koch.getKochChar(idx);
+                // Display gets the cleaned-up glyph (hard rule 4): CWchars reuses plain
+                // letters as single-char prosign codes (a/n/k/s/e/b), so a raw prosign
+                // position would draw as a bare uppercase letter indistinguishable from
+                // the plain-letter lesson elsewhere in the course. Same technique as
+                // practiceGlyph() in MorsePreferences.cpp.
+                String cleanChar = cleanUpProSigns(rawChar);
+                String line = String(idx + 1) + ": " + cleanChar;
                 MorseOutput::printOnScroll(row, idx == selected ? BOLD : REGULAR, 0, line);
-                if (idx == selected) curLine = line;
+                if (idx == selected) { curLine = line; curRawChar = rawChar; }
             }
 
             if (protocolActive())
                 MorseJSON::jsonCreate("message", "Preview character: " + curLine, "");
+
+            // Accessibility Edition: "21 of 51, Yankee" - same shape as posKochFilter's
+            // announcement (MorsePreferences.cpp). announceMoreChar() wants the RAW
+            // character (pre-cleanUpProSigns) so prosign clips match; announce()/
+            // announceMore() are no-ops without CONFIG_AUDIO_A11Y, so this call is
+            // unconditional.
+            MorseVoice::announce(String(selected + 1));
+            MorseVoice::announceMore("of");
+            MorseVoice::announceMore(String(count));
+            MorseVoice::announceMoreChar(curRawChar);
         }
 
         int t = checkEncoder();
@@ -1313,6 +1345,16 @@ int8_t MorseMenu::selectKochPreviewChar() {
                 MorsePreferences::setupPreferences(MorsePreferences::menuPtr);
                 MorseOutput::clearDisplay();
                 MorseOutput::printOnStatusLine(true, 0, "Preview Char:    ");
+                // Koch Sequence / Custom Chars may have just changed in there, which
+                // changes kochMaximum - re-read and re-clamp instead of trusting the
+                // bounds read at entry.
+                count = MorsePreferences::kochMaximum;
+                if (count < 2) {
+                    MorsePreferences::previewCharIndex = 0;
+                    return 0;
+                }
+                if (selected >= count) selected = count - 1;
+                rows = (NoOfVisibleLines < count) ? NoOfVisibleLines : count;
                 lastDisplayed = -1;                  // force the list to redraw below
                 break;
         }

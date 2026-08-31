@@ -1404,10 +1404,23 @@ die Liste zu blättern, und klicke ihn, um ein Zeichen auszuwählen.
 Das ausgewählte Zeichen wird danach fortlaufend wiedergegeben, genau
 wie bei **Learn New Chr**: Du siehst und hörst es wiederholt, und du
 kannst die Geschwindigkeit weiterhin durch Drehen des ENCODERs
-anpassen, wie überall sonst auch. Um ein anderes Zeichen zu wählen,
-ohne den Modus zu verlassen, klicke die FN-Taste dreimal kurz
-hintereinander — das bringt dich zurück zur Auswahlliste. Drücke den
-ENCODER-Knopf länger, um zurück ins Menü zu gelangen.
+anpassen, wie überall sonst auch.
+
+In diesem Modus bekommt der übliche Klick der FN-Taste (Umschalten
+Geschwindigkeit/Lautstärke) eine dritte Station: Ein Klick schaltet
+den ENCODER reihum zwischen **Geschwindigkeit**, **Lautstärke** und
+**Zeichen** um. Solange der ENCODER die Rolle "Zeichen" hat, blätterst
+du beim Drehen live durch den gesamten Kurs, Lektion für Lektion, und
+hörst sofort, worauf du gerade stehst — ohne die Auswahlliste erneut
+zu öffnen. Ein fett dargestelltes einzelnes Zeichen oben links in der
+Statuszeile zeigt an, wenn der ENCODER gerade diese Rolle hat, genauso
+wie die WpM-Zahl bzw. der Lautstärkebalken das für Geschwindigkeit und
+Lautstärke bereits anzeigen. Drücke den ENCODER-Knopf länger, um zurück
+ins Menü zu gelangen.
+
+Solange die Auswahlliste selbst offen ist, funktionieren der übliche
+FN-Doppelklick (Displayhelligkeit) und der ENCODER-Doppelklick
+(Preferences-Menü) weiterhin ganz normal.
 
 ### Koch: CW Generator und Echo Trainer
 

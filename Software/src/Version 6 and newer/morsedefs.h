@@ -324,7 +324,7 @@ enum DECODER_STATES             // state machine for decoding CW
 
 enum encoderMode                // define modes for state machine of the various modi the encoder can be in
   {
-      speedSettingMode, volumeSettingMode, scrollMode, memSelMode
+      speedSettingMode, volumeSettingMode, scrollMode, memSelMode, previewCharMode
   };
 
 enum morserinoMode              // the states the morserino can be in - selected in top level menu
@@ -367,7 +367,7 @@ const uint8_t menuN = 46
 enum menuNo
   {   _dummy, _keyer, _gen, _genRand, _genAbb, _genWords, _genCalls, _genMixed, _genPlayer,
         _echo, _echoRand, _echoAbb, _echoWords, _echoCalls, _echoMixed, _echoPlayer,
-        _koch, _kochSel, _kochLearn, _kochPreview, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
+        _koch, _kochSel, _kochLearn, _kochGen, _kochGenRand, _kochGenAbb, _kochGenWords,
         _kochGenMixed, _kochEcho, _kochEchoRand, _kochEchoAbb, _kochEchoWords, _kochEchoMixed, _kochEchoAdaptive,
         _trx,
 #ifndef LORA_DISABLED
@@ -400,6 +400,10 @@ enum menuNo
 #endif
         , _genPractice  // "Practice Set" - CW Generator, session/persistent character picker (appended: see menuNav wiring in MorseMenu.cpp)
         , _echoPractice // "Practice Set" - Echo Trainer, same character source
+        , _kochPreview  // "Preview Char" - Koch Trainer, appended for the same reason: menuPtr is
+                         // persisted raw (lastExecuted, snapshots, protocol GET menus), so inserting
+                         // a new entry mid-enum would shift every later index. See menuNav wiring in
+                         // MorseMenu.cpp for where it actually sits in the Koch Trainer submenu.
    };
 
 enum loops

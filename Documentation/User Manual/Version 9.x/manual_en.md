@@ -1384,10 +1384,22 @@ ENCODER to move through the list and click it to pick a character.
 
 The picked character then plays continuously, exactly like **Learn New
 Chr**: you see and hear it repeat, and you can still adjust the speed by
-turning the ENCODER, same as everywhere else. To pick a different
-character without leaving the mode, click the FN button three times in
-quick succession — this brings back the picker. Press the ENCODER knob
-for longer to leave and return to the menu.
+turning the ENCODER, same as everywhere else.
+
+In this mode, the FN button's usual speed/volume toggle click gets a
+third stop: clicking it cycles the ENCODER between **speed**,
+**volume**, and **character**. While the ENCODER owns character,
+turning it steps live through the whole course, one lesson at a time,
+immediately playing whatever character you land on — no need to open
+the picker again. A bold single character in the top-left of the
+status line shows when the ENCODER currently owns this role, the same
+way the WpM figure and the volume bar already show for speed and
+volume. Press the ENCODER knob for longer to leave and return to the
+menu.
+
+While the picker itself is open, the usual FN double-click (display
+brightness) and ENCODER double-click (preferences menu) both still
+work, same as everywhere else.
 
 ### Koch: CW Generator and Echo Trainer
 
