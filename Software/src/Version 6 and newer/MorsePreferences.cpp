@@ -972,7 +972,8 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   else if (pos == posPracticeStatsOn)
     topLine = "Practice Stats:";
 #endif
-  else if (pos == posPracticeChars)              // reached via allOptions, nestled among the "Set Preferences:" items
+  else if (pos == posPracticeChars)              // nestled among the "Set Preferences:" items, in allOptions
+                                                 // and in the four generator/echo/koch option sets
     topLine = "Set Preferences:";
   else
     topLine = "Player & Scores:";
