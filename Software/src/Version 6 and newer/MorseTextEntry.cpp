@@ -5,6 +5,7 @@
 #include "MorseTextEntry.h"
 #include "morsedefs.h"          // Buttons::modeButton / volButton
 #include "MorseOutput.h"
+#include "MorseVoice.h"      // Accessibility Edition: this screen is otherwise silent
 #include "MorsePreferences.h"   // checkEncoder(), checkShutDown(), serialEvent(), sidetoneVolume
 
 namespace MorseTextEntry
@@ -35,6 +36,21 @@ static String displayText(const char *s, String (*xform)(char))
   return out;
 }
 
+// Accessibility Edition: without this the whole widget is mute, and it is the one screen a
+// blind operator has to drive character by character - Call Sign, Op Name and Practice Set
+// all come through here. Everything below is composed from atoms the voice pack already has
+// (the prompt, the numbers, "characters", and the per-character phonetics), so no new clips
+// are owed. MorseVoice::* are no-ops on builds without CONFIG_AUDIO_A11Y, so the calls stay
+// unconditional; only tick() needs the guard, since it is what drives playback and this loop
+// blocks outside loop().
+//
+// announceMoreChar() wants the RAW character, not the displayXform()'d glyph: prosign codes
+// expand to "pro sign" plus two phonetics, which is what makes them distinguishable by ear
+// from the plain letter that shares their code.
+static void sayCandidate(const char *charSet, int charIdx) {
+    MorseVoice::announceMoreChar(String(charSet[charIdx]));
+}
+
 void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLen,
                                const char *charSet, const char *initial,
                                boolean noDuplicates, String (*displayXform)(char))
@@ -52,6 +68,14 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       charIdx = (charIdx + 1) % charCount;
   }
   boolean needsRedraw = true;
+
+  // Heading first, then the character under the cursor. The prompt carries a trailing colon
+  // for the display; the voice pack is keyed on the bare label ("Practice Set", "Call Sign",
+  // "Op Name" - the last one spoken as "Operator Name" via spoken_overrides.tsv).
+  String heading = prompt;
+  if (heading.endsWith(":")) heading.remove(heading.length() - 1);
+  MorseVoice::announce(heading);
+  sayCandidate(charSet, charIdx);
 
   while (true) {
     if (needsRedraw) {
@@ -79,6 +103,8 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
           charIdx = (charIdx + t + charCount) % charCount;
       }
       needsRedraw = true;
+      MorseVoice::announce("");            // start a fresh utterance: one character per detent
+      sayCandidate(charSet, charIdx);
     }
 
     Buttons::modeButton.Update();
@@ -94,6 +120,9 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
           charIdx = (charIdx + 1) % charCount;
       }
       needsRedraw = true;
+      MorseVoice::announce(String(len));   // "3 characters, Yankee" - the count confirms the
+      MorseVoice::announceMore("characters");  // add went in, the character says where we are now
+      sayCandidate(charSet, charIdx);
     }
     if (Buttons::modeButton.clicks == -1) { result[len] = '\0'; return; }   // long press: done
 
@@ -103,9 +132,15 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       result[--len] = '\0';
       charIdx = 0;
       needsRedraw = true;
+      MorseVoice::announce(String(len));
+      MorseVoice::announceMore("characters");
+      sayCandidate(charSet, charIdx);
     }
     if (Buttons::volButton.clicks == -1) { result[len] = '\0'; return; }    // long press: done
 
+#ifdef CONFIG_AUDIO_A11Y
+    MorseVoice::tick();
+#endif
     checkShutDown(false);
     serialEvent();
     delay(20);
