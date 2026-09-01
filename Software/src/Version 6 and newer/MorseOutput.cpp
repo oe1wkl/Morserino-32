@@ -1916,7 +1916,7 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   #endif
 }
 
-boolean MorseOutput::statusLineHasForeignContent() {
+boolean MorseOutput::statusLineHasFullLineMessage() {
   return statusLineCacheWidth > 0;
 }
 

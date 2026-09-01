@@ -1552,12 +1552,25 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                   }
                   if (pos == posKochSeq) {
                       if (!MorsePreferences::handleKochSequence(true)) {    // explicit on-device (re-)selection: force a file reload
+                          // handleKochSequence() deliberately reverted Koch Sequence to M32 -
+                          // leaving the menu showing "Custom Chars" while the engine runs a
+                          // different sequence would be the worse state, so this self-heals.
+                          // Explained on screen instead of just landing there, or the jump
+                          // reads as the display losing its place rather than a decision:
+                          // "No custom set", then which sequence it fell back to. Cleared
+                          // before the first message too - the value line for whichever
+                          // option was selected before landing here (e.g. "LICW Carousel")
+                          // can be longer than "No custom set" itself and extend past it.
+                          MorseOutput::clearLine(2);
                           MorseOutput::printOnScroll(2, BOLD, 0, "No custom set");
-                          delay(700);
-                          // "No custom set" starts at xpos 0, but the value line drawn for
-                          // whatever option we land on next (handleKochSequence() reverted
-                          // posKochSeq to M32) starts at xpos 1 - so without an explicit clear
-                          // here, its leading character is left behind past that value's own
+                          delay(900);
+                          MorseOutput::clearLine(2);
+                          MorseOutput::printOnScroll(2, BOLD, 0, String("Fallback: ") +
+                              MorsePreferences::pliste[posKochSeq].mapping[MorsePreferences::pliste[posKochSeq].value]);
+                          delay(900);
+                          // The value line drawn for whatever option we land on next starts
+                          // at xpos 1, so without an explicit clear here, this message's
+                          // leading character would be left behind past that value's own
                           // narrower text.
                           MorseOutput::clearLine(2);
                       }
