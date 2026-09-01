@@ -321,14 +321,18 @@ const char* const continueMsg4Disp = "Continue with paddle ";
 // NOTE for the #else case: the original was continueMsg4Json + " " which
 // is a runtime String concatenation. Since these are constants, we just hardcode it
 
+#define PAUSE_PROMPT_QUIET_MS 10000        // how long the operator has to be quiet before the reminder
+#define PAUSE_PROMPT_IDLE     4294967000UL  // "not counting down" (matches interWordTimer's sentinel style)
+
 // millis() deadline for re-showing the pause prompt after the operator has stopped touching
 // the encoder/buttons for a while. Once paused (!genIsActive), the status line only ever shows
 // continueMsg4Disp right at the moment of pausing - the first speed/volume change afterwards
 // intentionally clears it (see statusLineHasFullLineMessage()), and nothing else says the mode
-// is still paused. A far-future sentinel (matching interWordTimer's style elsewhere) means
-// "not currently counting down"; showPausePrompt() (re)arms it each time the prompt is shown,
-// and the same activity sites that call MorseOutput::resetTOT() push it back out again.
-unsigned long pausePromptDeadline = 4294967000;
+// is still paused. PAUSE_PROMPT_IDLE means "not currently counting down": showPausePrompt()
+// arms it when we have just paused and disarms it when the reminder itself fired, so there is
+// one reminder per quiet spell rather than a repeat every ten seconds. The same activity sites
+// that call MorseOutput::resetTOT() push it back out again while still paused.
+unsigned long pausePromptDeadline = PAUSE_PROMPT_IDLE;
 
 // for each character:
 // byte length// byte morse encoding as binary value, beginning with most significant bit
@@ -1225,7 +1229,7 @@ void loop() {
                                   cleanStartSettings();
                               else {
                                   keyOut(false, true, 0, 0);
-                                  showPausePrompt();
+                                  showPausePrompt(true);
                               }
                           } else {                  /// no paddle pressed - check stop flag
                               checkStopFlag();
@@ -1233,7 +1237,7 @@ void loop() {
                           if (genIsActive)
                             generateCW();
                           else if (millis() >= pausePromptDeadline)
-                            showPausePrompt();       // operator has been quiet for a while, still paused
+                            showPausePrompt(false);  // operator has been quiet for a while, still paused
                           break;
       case echoTrainer:                             ///// check stopFlag triggered by maxSequence
                           checkStopFlag();
@@ -1246,7 +1250,7 @@ void loop() {
                               cleanStartSettings();
                           } /// end touch to start
                           if (!genIsActive && millis() >= pausePromptDeadline)
-                            showPausePrompt();       // operator has been quiet for a while, still paused
+                            showPausePrompt(false);  // operator has been quiet for a while, still paused
                           if (genIsActive)
                           switch (echoTrainerState) {
                             case  START_ECHO:
@@ -1299,7 +1303,7 @@ if (morseState == morseKeyer &&
     if (Buttons::modeButton.clicks || Buttons::volButton.clicks) {
         MorseOutput::resetTOT();        // explicit TOT reset on any button activity
         if (!genIsActive && (morseState == morseGenerator || morseState == echoTrainer))
-            pausePromptDeadline = millis() + 10000;   // still paused - push the reappearing prompt back out
+            pausePromptDeadline = millis() + PAUSE_PROMPT_QUIET_MS;   // still paused - push the reminder back out
     }
 
     boolean previewCharModeAvailable = (morseState == echoTrainer && generatorMode == KOCH_PREVIEW);
@@ -1372,7 +1376,7 @@ if (morseState == morseKeyer &&
                   genIsActive = !genIsActive;
                   if (!genIsActive) {
                         keyOut(false, true, 0, 0);
-                        showPausePrompt();
+                        showPausePrompt(true);
                   }
                   else {
                     cleanStartSettings();
@@ -1402,7 +1406,7 @@ if (morseState == morseKeyer &&
         MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);         /// click
         MorseOutput::resetTOT();                                         // explicit TOT reset on encoder activity
         if (!genIsActive && (morseState == morseGenerator || morseState == echoTrainer))
-            pausePromptDeadline = millis() + 10000;   // still paused - push the reappearing prompt back out
+            pausePromptDeadline = millis() + PAUSE_PROMPT_QUIET_MS;   // still paused - push the reminder back out
         switch (encoderState) {
           case speedSettingMode:
                                   changeSpeed(t);
@@ -1470,11 +1474,19 @@ void updateManualSpeed() {
 // another quiet spell, for as long as the mode stays paused. Shared by every place that
 // pauses (manual toggle, autostop squeeze, maxSequence stop) and by the reappear check in
 // loop() itself.
-void showPausePrompt() {
+void showPausePrompt(boolean armReminder) {
     MorseOutput::printOnStatusLine( true, 0, continueMsg4Disp);
     if (protocolActive())
         MorseJSON::jsonCreate("message", continueMsg4Json, "");
-    pausePromptDeadline = millis() + 10000;
+    // Arm when we have just paused: the prompt is on screen now, but the first speed or
+    // volume change clears it again, so a reminder is owed once the operator goes quiet.
+    // Do NOT arm when the reminder itself is what just fired - one reminder per quiet
+    // spell, not a repeat every ten seconds for as long as the device sits paused, which
+    // would also re-emit the protocol message on every repeat. Disarming rather than
+    // simply not re-arming matters: leaving the deadline in the past would fire this on
+    // every single loop() iteration. The activity sites below re-arm it, so the next
+    // quiet spell gets its own reminder.
+    pausePromptDeadline = armReminder ? millis() + PAUSE_PROMPT_QUIET_MS : PAUSE_PROMPT_IDLE;
 }
 
 void checkStopFlag() {
@@ -1490,7 +1502,7 @@ void checkStopFlag() {
       wordCounter = 1; errCounter = 0;
       //if (MorsePreferences::fileWordPointer > 1)
       //  --MorsePreferences::fileWordPointer;          // avoid that a word is being skipped after interruption
-      showPausePrompt();
+      showPausePrompt(true);
     }
 }
 
@@ -1507,7 +1519,7 @@ void cleanStartSettings() {
     generatorState = KEY_UP;
     keyerState = IDLE_STATE;
     interWordTimer = 4294967000;                 // almost the biggest possible unsigned long number :-) - do not output a space at the beginning
-    pausePromptDeadline = 4294967000;            // no longer paused - the reappear check is gated on !genIsActive
+    pausePromptDeadline = PAUSE_PROMPT_IDLE;     // no longer paused - the reappear check is gated on !genIsActive
                                                   // anyway, but disarm it too so it starts fresh next time we pause
     genTimer = millis()-1;                       // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc...
     errCounter = wordCounter = 0;                // reset word and error counter for maxSequence
