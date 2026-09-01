@@ -223,6 +223,9 @@
     /* Snapshot comparison */
     .snap-diff{font-weight:900;color:var(--accent)}
     .snap-same{color:var(--muted)}
+    .snap-import-warn{background:#fff8f0;border:1px solid #e8c89a;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:14px;color:#8a5a10}
+    .snap-import-table td.col-check{text-align:center;width:36px}
+    .snap-import-all{font-size:13px;font-weight:700;color:var(--link);cursor:pointer;text-decoration:underline;margin-left:10px}
     /* Global Connection Bar */
     .conn-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 16px;background:#f4f7fa;border-bottom:1px solid #c8d8e4;margin-bottom:0}
     .conn-bar .status-badge{margin:0;padding:4px 12px;font-size:13px}
@@ -567,6 +570,20 @@
       <thead><tr><th>Parameter</th><th style="text-align:right">Snapshot</th><th style="text-align:right">Current</th></tr></thead>
       <tbody id="snapDetailBody"></tbody>
     </table>
+  </div>
+  <input type="file" id="snapImportFileInput" accept="application/json,.json" style="display:none" onchange="onSnapshotFileSelected(event)">
+  <div class="box" id="snapImportBox" style="display:none">
+    <h2 class="section-title" id="snapImportTitle">Import Snapshot</h2>
+    <div id="snapImportWarn"></div>
+    <div id="snapImportMeta" style="margin-bottom:12px"></div>
+    <table class="mem-table snap-import-table" id="snapImportTable">
+      <thead><tr><th style="width:36px"></th><th>Parameter</th><th style="text-align:right">File</th><th style="text-align:right">Current</th></tr></thead>
+      <tbody id="snapImportBody"></tbody>
+    </table>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-accent" id="snapImportConfirmBtn" onclick="snapImportConfirm()">Import into Snapshot</button>
+      <button class="btn btn-outline" onclick="snapImportCancel()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -1828,11 +1845,13 @@ async function setPref(name,value){
 // ============================================================================
 // SNAPSHOTS
 // ============================================================================
+var snapExistingList=[];
 async function loadSnapshots(){
   if(!connected) return;
   try{
     var data=await sendAndParse('get snapshots',3000);
     var existing=(data.snapshots&&data.snapshots['existing snapshots'])?data.snapshots['existing snapshots']:[];
+    snapExistingList=existing;
     renderSnapshots(existing);
     log('Snapshots: '+(existing.length>0?existing.join(', '):'none'));
   }catch(e){log('Snapshots: '+e.message)}
@@ -1844,7 +1863,7 @@ function renderSnapshots(existing){
     var exists=existing.indexOf(i)!==-1;
     var card=document.createElement('div');
     card.className='snap-card'+(exists?' active':' empty');
-    card.innerHTML='<div class="snap-num">'+i+'</div><div class="snap-label">'+(exists?'Stored':'Empty')+'</div><div class="snap-actions"><button class="btn btn-green btn-sm" onclick="snapStore('+i+')">Store</button>'+(exists?'<button class="btn btn-outline btn-sm" onclick="snapInspect('+i+')">Inspect</button><button class="btn btn-accent btn-sm" onclick="snapRecall('+i+')">Recall</button><button class="btn btn-red btn-sm" onclick="snapClear('+i+')">Clear</button>':'')+'</div>';
+    card.innerHTML='<div class="snap-num">'+i+'</div><div class="snap-label">'+(exists?'Stored':'Empty')+'</div><div class="snap-actions"><button class="btn btn-green btn-sm" onclick="snapStore('+i+')">Store</button>'+(exists?'<button class="btn btn-outline btn-sm" onclick="snapInspect('+i+')">Inspect</button><button class="btn btn-accent btn-sm" onclick="snapRecall('+i+')">Recall</button><button class="btn btn-red btn-sm" onclick="snapClear('+i+')">Clear</button><button class="btn btn-outline btn-sm" onclick="snapExport('+i+')">Export</button>':'')+'<button class="btn btn-outline btn-sm" onclick="snapImportPick('+i+')">Import</button></div>';
     grid.appendChild(card);
   }
 }
@@ -1892,11 +1911,160 @@ async function snapInspect(n){
         tbody.appendChild(tr);
       });
     }
+    document.getElementById('snapImportBox').style.display='none';
     document.getElementById('snapDetailBox').style.display='';
     document.getElementById('snapDetailBox').scrollIntoView({behavior:'smooth'});
     log('Inspected snapshot '+n+': '+(snap.configs?snap.configs.length:0)+' parameters, '+diffCount+' differences');
   }catch(e){log('Inspect snapshot: '+e.message)}
   hideLoading();
+}
+
+// ---- Export ----------------------------------------------------------------
+async function snapExport(n){
+  showLoading('Reading snapshot '+n+'...');
+  try{
+    var data=await sendAndParse('get snapshot/'+n,5000);
+    if(!data.snapshot){log('No snapshot data');hideLoading();return}
+    var out={m32SnapshotExport:1,exportedAt:new Date().toISOString(),device:deviceInfo||{},snapshot:data.snapshot};
+    var fwTag=(deviceInfo&&deviceInfo.firmware?deviceInfo.firmware:'unknown').replace(/[^a-zA-Z0-9.]+/g,'_');
+    var dateTag=new Date().toISOString().slice(0,10).replace(/-/g,'');
+    var fn='morserino_snapshot_'+n+'_'+fwTag+'_'+dateTag+'.json';
+    var blob=new Blob([JSON.stringify(out,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob);
+    var a=document.createElement('a');a.href=url;a.download=fn;a.click();URL.revokeObjectURL(url);
+    log('Exported snapshot '+n+' to "'+fn+'"');
+  }catch(e){log('Export snapshot: '+e.message)}
+  hideLoading();
+}
+
+// ---- Import -----------------------------------------------------------------
+var snapImportTarget=null;
+var snapImportFile=null;
+
+function snapImportPick(n){
+  snapImportTarget=n;
+  var input=document.getElementById('snapImportFileInput');
+  input.value='';
+  input.click();
+}
+
+async function onSnapshotFileSelected(evt){
+  var file=evt.target.files&&evt.target.files[0];
+  if(!file) return;
+  var n=snapImportTarget;
+  showLoading('Reading file...');
+  try{
+    var text=await file.text();
+    var parsed;
+    try{ parsed=JSON.parse(text) }catch(e){ throw new Error('not valid JSON') }
+    if(!parsed||parsed.m32SnapshotExport===undefined||!parsed.snapshot){
+      throw new Error('not a Morserino snapshot export file');
+    }
+    snapImportFile=parsed;
+    var currentConfigs={};
+    try{
+      var cur=await sendAndParse('get configs',5000);
+      if(cur.configs) cur.configs.forEach(function(c){ currentConfigs[c.name]={value:c.value,displayed:c.displayed} });
+    }catch(e){log('Could not load current configs for comparison')}
+    renderSnapshotImportPreview(n,parsed,currentConfigs);
+  }catch(e){log('Import snapshot: '+e.message)}
+  hideLoading();
+}
+
+function renderSnapshotImportPreview(n,fileData,currentConfigs){
+  var snap=fileData.snapshot;
+  document.getElementById('snapImportTitle').textContent='Import into Snapshot '+n;
+  document.getElementById('snapImportConfirmBtn').textContent='Import into Snapshot '+n;
+
+  var warnHtml='';
+  var fileDev=fileData.device||{};
+  if(deviceInfo&&(fileDev.firmware!==deviceInfo.firmware||fileDev.hardware!==deviceInfo.hardware)){
+    warnHtml='<div class="snap-import-warn">This file was exported from '+
+      escHtml(fileDev.hardware||'unknown hardware')+', firmware '+escHtml(fileDev.firmware||'unknown')+
+      '. This device is '+escHtml(deviceInfo.hardware||'unknown hardware')+', firmware '+escHtml(deviceInfo.firmware||'unknown')+
+      '. Parameters that do not exist on this firmware will fail individually and be reported after import.</div>';
+  }
+  document.getElementById('snapImportWarn').innerHTML=warnHtml;
+
+  var meta='<div class="info-grid">';
+  meta+='<div class="info-card"><div class="info-card-label">Stored Menu</div><div class="info-card-value" style="font-size:15px">'+
+    '<label style="font-weight:400"><input type="checkbox" id="snapImportMenuChk" checked> '+escHtml(snap.menuName||'—')+'</label></div></div>';
+  if(snap.customChars){
+    meta+='<div class="info-card"><div class="info-card-label">Custom Chars</div><div class="info-card-value" style="font-size:15px">'+
+      '<label style="font-weight:400"><input type="checkbox" id="snapImportCharsChk" checked> '+
+      (snap.customChars.active?escHtml(snap.customChars.characters):'Off')+'</label></div></div>';
+  }
+  meta+='</div><div><span class="snap-import-all" onclick="snapImportSetAll(true)">All</span><span class="snap-import-all" onclick="snapImportSetAll(false)">None</span></div>';
+  document.getElementById('snapImportMeta').innerHTML=meta;
+
+  var tbody=document.getElementById('snapImportBody'); tbody.innerHTML='';
+  (snap.configs||[]).forEach(function(c,idx){
+    var cur=currentConfigs[c.name];
+    var isDiff=cur&&cur.value!==c.value;
+    var cls=isDiff?'snap-diff':'snap-same';
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td class="col-check"><input type="checkbox" class="snap-import-chk" data-idx="'+idx+'" checked></td>'+
+      '<td class="'+cls+'">'+escHtml(c.name)+'</td>'+
+      '<td style="text-align:right" class="'+cls+'">'+escHtml(c.displayed)+'</td>'+
+      '<td style="text-align:right" class="'+cls+'">'+(cur?escHtml(cur.displayed):'—')+'</td>';
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('snapDetailBox').style.display='none';
+  document.getElementById('snapImportBox').style.display='';
+  document.getElementById('snapImportBox').scrollIntoView({behavior:'smooth'});
+}
+
+function snapImportSetAll(state){
+  document.querySelectorAll('.snap-import-chk').forEach(function(el){ el.checked=state });
+  var menuChk=document.getElementById('snapImportMenuChk'); if(menuChk) menuChk.checked=state;
+  var charsChk=document.getElementById('snapImportCharsChk'); if(charsChk) charsChk.checked=state;
+}
+
+function snapImportCancel(){
+  document.getElementById('snapImportBox').style.display='none';
+  snapImportFile=null; snapImportTarget=null;
+}
+
+async function snapImportConfirm(){
+  var n=snapImportTarget, fileData=snapImportFile;
+  if(!n||!fileData){ snapImportCancel(); return }
+  if(snapExistingList.indexOf(n)!==-1){
+    if(!confirm('Import into Snapshot '+n+'? This will overwrite the existing snapshot '+n+'.')) return;
+  }
+  var snap=fileData.snapshot;
+  var checks=Array.prototype.slice.call(document.querySelectorAll('.snap-import-chk'));
+  var toApply=checks.filter(function(el){return el.checked}).map(function(el){return snap.configs[parseInt(el.dataset.idx,10)]});
+  var failed=[];
+  showLoading('Applying 0/'+toApply.length+'...');
+  for(var i=0;i<toApply.length;i++){
+    var c=toApply[i];
+    showLoading('Applying '+(i+1)+'/'+toApply.length+'...');
+    try{ await sendAndParse('put config/'+c.name+'/'+c.value,2000,{quiet:true}) }
+    catch(e){ failed.push(c.name) }
+  }
+  var menuChk=document.getElementById('snapImportMenuChk');
+  if(menuChk&&menuChk.checked&&snap.lastExecuted>0){
+    try{ await sendAndParse('put menu/set/'+snap.lastExecuted,2000,{quiet:true}) }catch(e){ failed.push('Stored Menu') }
+  }
+  var charsChk=document.getElementById('snapImportCharsChk');
+  if(charsChk&&charsChk.checked&&snap.customChars){
+    try{
+      if(snap.customChars.active) await sendAndParse('put customchars/set/'+snap.customChars.characters,2000,{quiet:true});
+      else await sendAndParse('put customchars/clear',2000,{quiet:true});
+    }catch(e){ failed.push('Custom Chars') }
+  }
+  showLoading('Storing snapshot '+n+'...');
+  try{
+    await sendLine('put snapshot/store/'+n);
+    try{await waitForResponse(2000)}catch(e){}
+  }catch(e){ log('Store snapshot '+n+' failed: '+e.message) }
+  hideLoading();
+  log('Imported into snapshot '+n+': '+toApply.length+' applied'+(failed.length?', '+failed.length+' failed ('+failed.join(', ')+')':''));
+  prefDetails={};
+  document.getElementById('snapImportBox').style.display='none';
+  snapImportFile=null; snapImportTarget=null;
+  await sleep(300);
+  loadSnapshots();
 }
 
 // ============================================================================
