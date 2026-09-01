@@ -989,6 +989,20 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
 
 
 
+// delay() that keeps the voice engine turning, so a message shown with a plain delay() is
+// actually heard while it is on screen instead of only after control returns to a loop that
+// polls tick(). Same shape as splashPause() in m32_v6.ino. Defined for every build - it is
+// called from adjustKeyerPreference(), which is not a11y-only - and is a plain delay() where
+// there is no voice engine to turn.
+static void voicedPause(uint32_t ms) {
+#ifdef CONFIG_AUDIO_A11Y
+    uint32_t start = millis();
+    do { MorseVoice::tick(); delay(5); } while (millis() - start < ms);
+#else
+    delay(ms);
+#endif
+}
+
 #ifdef CONFIG_AUDIO_A11Y
 /// a11y: speak a preference value.
 /// Most value lines are one clip, looked up whole. The dynamic ones are assembled at runtime
@@ -1552,8 +1566,36 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                   }
                   if (pos == posKochSeq) {
                       if (!MorsePreferences::handleKochSequence(true)) {    // explicit on-device (re-)selection: force a file reload
+                          // handleKochSequence() deliberately reverted Koch Sequence to M32 -
+                          // leaving the menu showing "Custom Chars" while the engine runs a
+                          // different sequence would be the worse state, so this self-heals.
+                          // Explained on screen instead of just landing there, or the jump
+                          // reads as the display losing its place rather than a decision:
+                          // "No custom set", then which sequence it fell back to. Cleared
+                          // before the first message too - the value line for whichever
+                          // option was selected before landing here (e.g. "LICW Carousel")
+                          // can be longer than "No custom set" itself and extend past it.
+                          // Voice the whole thing as ONE utterance up front rather than a
+                          // clip per message: announce() replaces whatever is still pending,
+                          // so announcing the second message separately could cut the first
+                          // one off mid-word. The fallback sequence is spoken from the Koch
+                          // Sequence option clips, so it stays right if the target changes.
+                          MorseVoice::announce("No custom set");
+                          MorseVoice::announceMore("Fallback");
+                          MorseVoice::announceMore(
+                              MorsePreferences::pliste[posKochSeq].mapping[MorsePreferences::pliste[posKochSeq].value]);
+                          MorseOutput::clearLine(2);
                           MorseOutput::printOnScroll(2, BOLD, 0, "No custom set");
-                          delay(700);
+                          voicedPause(900);
+                          MorseOutput::clearLine(2);
+                          MorseOutput::printOnScroll(2, BOLD, 0, String("Fallback: ") +
+                              MorsePreferences::pliste[posKochSeq].mapping[MorsePreferences::pliste[posKochSeq].value]);
+                          voicedPause(900);
+                          // The value line drawn for whatever option we land on next starts
+                          // at xpos 1, so without an explicit clear here, this message's
+                          // leading character would be left behind past that value's own
+                          // narrower text.
+                          MorseOutput::clearLine(2);
                       }
                   }
                   else if (pos == posCarouselStart && pliste[posKochSeq].value == 3)

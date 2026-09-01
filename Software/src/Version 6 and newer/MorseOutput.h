@@ -67,6 +67,16 @@ namespace MorseOutput
 #endif
   void sleep();
   void printOnStatusLine(boolean strong, uint8_t xpos, const String& string);
+  // True while the status line still shows a full-line (xpos==0) message that hasn't been
+  // replaced by a full top-line repaint since. This is a measurement, not a judgement about
+  // whether that message is expected in the current context - today the only full-line
+  // writers in running modes happen to be the paused/stop notices, so it reads as "foreign
+  // content is up", but any future full-line writer inherits the same true here. A narrow
+  // update (WPM digits, volume bar) applied directly on top of that message can only ever
+  // patch its own small field, leaving the rest of it behind; callers should do a full repaint
+  // (updateTopLine()) instead of their normal narrow update when this is true. See
+  // printOnStatusLine()'s statusLineCacheWidth.
+  boolean statusLineHasFullLineMessage();
   void clearBuffer();
   void refreshScrollArea(int relPos);
   void refreshScrollLine(int bufferLine, int displayLine);
