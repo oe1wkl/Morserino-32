@@ -142,6 +142,7 @@
     "English Words": "0cf804ce",
     "Europe": "912d59cd",
     "External polarity": "975056be",
+    "Fallback": "882277bd",
     "Fight Pileup": "bad4eb31",
     "File Player": "0af9cd2b",
     "Flip Screen": "9c0118ac",
@@ -202,6 +203,7 @@
     "Never": "6e7b34fa",
     "No Bluetooth": "c45fee59",
     "No Tone Shift": "fe361001",
+    "No custom set": "50b8fe29",
     "No limit": "af605ea5",
     "No time-out": "d5a2118d",
     "Non-Squeeze": "6dcc42be",
@@ -787,6 +789,7 @@
     "cb5e100e": "error",
     "912d59cd": "Europe",
     "975056be": "External polarity",
+    "882277bd": "Fallback",
     "bad4eb31": "Fight Pileup",
     "0af9cd2b": "File Player",
     "9c0118ac": "Flip Screen",
@@ -869,6 +872,7 @@
     "4a7ab319": "Narrow",
     "6e7b34fa": "Never",
     "c45fee59": "No Bluetooth",
+    "50b8fe29": "No custom set",
     "af605ea5": "No limit",
     "ef59a97a": "NO SNAPSHOTS",
     "d5a2118d": "No time-out",
@@ -987,14 +991,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "bd6c9a57",
+  "pack_stamp": "310bab80",
   "counts": {
     "menu": 40,
     "pref_labels": 50,
     "option_values": 173,
     "actions": 21,
-    "phrases_total": 299,
+    "phrases_total": 301,
     "atoms_total": 138,
-    "clips_total": 500
+    "clips_total": 502
   }
 }

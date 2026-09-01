@@ -1303,11 +1303,8 @@ int8_t MorseMenu::selectKochPreviewChar() {
                 // position would draw as a bare uppercase letter indistinguishable from
                 // the plain-letter lesson elsewhere in the course. Same technique as
                 // practiceGlyph() in MorsePreferences.cpp.
-                // NB cleanUpProSigns() takes a String& and writes the expansion back into
-                // its argument, so it has to work on a copy - cleaning rawChar in place would
-                // leave the announcement below with "<ka>" where it needs the raw "K".
-                String cleanChar = rawChar;
-                cleanUpProSigns(cleanChar);
+                String cleanChar = cleanUpProSigns(rawChar);   // rawChar stays raw for the
+                                                               // announcement further down
                 String line = String(idx + 1) + ": " + cleanChar;
                 // BOLD alone is too close to REGULAR to pick the highlighted row out at a
                 // glance - markedly so on the Pocket's TFT. So the selected row also carries

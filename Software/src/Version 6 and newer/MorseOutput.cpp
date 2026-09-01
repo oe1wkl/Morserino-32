@@ -747,6 +747,14 @@ namespace {
     bool   statusClearPending = false;   // clearStatusLine was called, not yet flushed
     String statusLineCache;              // text last drawn via printOnStatusLine at xpos=0
     bool   statusLineStrong  = false;    // strong flag for that cached text
+    // Pixel width of the widest xpos==0 (full-line) text still potentially visible on
+    // screen. Unlike statusLineCache (invalidated by the very next narrow write, since the
+    // visible text is then no longer a single known string), this is deliberately NOT reset
+    // by a narrow write - only by something that actually wipes the line/screen. A narrow
+    // write (WPM digits, keyer symbol, ...) must clear at least this far right, or it leaves
+    // fragments of whatever wider full-line message (e.g. "Continue with paddle") is still
+    // sitting past its own narrow width - see printOnStatusLine().
+    uint16_t statusLineCacheWidth = 0;
 
     // Paint the full-width white background, respecting the battery icon's
     // right-side reserved area. Extracted so clearStatusLine() and the
@@ -785,6 +793,7 @@ void MorseOutput::initDisplay()
   // printOnStatusLine actually repaints rather than short-circuiting.
   statusClearPending = true;
   statusLineCache    = "";
+  statusLineCacheWidth = 0;
 }
 
 
@@ -818,6 +827,7 @@ void MorseOutput::clearDisplay() {
     // full background by treating it as if clearStatusLine was just called.
     statusClearPending = true;
     statusLineCache    = "";
+    statusLineCacheWidth = 0;
 #ifdef CONFIG_MCP73871
     batteryDisplayDirty = true;
     batteryIconVisible = false;
@@ -1861,6 +1871,7 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   if (statusClearPending) {
     paintStatusBackground();
     statusClearPending = false;
+    statusLineCacheWidth = 0;   // background is genuinely blank now
   }
 
   if (strong)
@@ -1869,19 +1880,32 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
     display.setFont(DialogInput_plain_12);
   display.setTextAlignment(TEXT_ALIGN_LEFT);
   uint16_t w = stringWidth(string);
+  uint16_t x = xpos * display.getStringWidth("A");
+  // Clear at least as far right as the last full-line write reached (statusLineCacheWidth):
+  // a narrower write here (e.g. WPM digits) must not leave fragments of a wider message
+  // (e.g. "Continue with paddle") sticking out past its own width. Only extends the clear
+  // when that old content actually reaches into or past this xpos - never shrinks it.
+  uint16_t clearW = w;
+  if (statusLineCacheWidth > x) {
+      uint16_t neededW = statusLineCacheWidth - x;
+      if (neededW > clearW) clearW = neededW;
+  }
   display.setColor(WHITE);
-  display.fillRect(xpos * display.getStringWidth("A"), 0 , w, SCROLL_TOP);
+  display.fillRect(x, 0 , clearW, SCROLL_TOP);
   display.setColor(BLACK);
-  display.drawString(xpos * display.getStringWidth("A"), 0, string);
+  display.drawString(x, 0, string);
   display.setColor(WHITE);
   display.display();
 
-  // Only full-line writes (xpos==0) become the cached value; partial
-  // updates (WPM digits, keyer mode, etc.) invalidate the cache since
-  // the visible text is no longer a single known string.
+  // Only full-line writes (xpos==0) become the cached value; partial updates (WPM digits,
+  // keyer mode, ...) invalidate statusLineCache since the visible text is no longer a single
+  // known string - but deliberately leave statusLineCacheWidth alone: it keeps guarding
+  // narrow writes against the wider text until a new full-line write replaces it, or
+  // clearStatusLine()/clearDisplay() actually wipes the line/screen.
   if (xpos == 0) {
     statusLineCache  = string;
     statusLineStrong = strong;
+    statusLineCacheWidth = w;
   } else {
     statusLineCache = "";
   }
@@ -1890,6 +1914,10 @@ void MorseOutput::printOnStatusLine(boolean strong, uint8_t xpos, const String& 
   #ifdef CONFIG_MCP73871
   //  batteryDisplayDirty = true;    // redraw icon on next updateBatteryDisplay
   #endif
+}
+
+boolean MorseOutput::statusLineHasFullLineMessage() {
+  return statusLineCacheWidth > 0;
 }
 
 

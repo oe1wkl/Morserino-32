@@ -300,6 +300,7 @@ equals
 error
 Europe
 External polarity
+Fallback
 Fight Pileup
 File Player
 Flip Screen
@@ -382,6 +383,7 @@ N America
 Narrow
 Never
 No Bluetooth
+No custom set
 No limit
 NO SNAPSHOTS
 No time-out
