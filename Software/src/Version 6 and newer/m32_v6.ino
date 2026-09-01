@@ -2359,7 +2359,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                                                     displayGeneratedMorse(INVERSE_REGULAR, ">");
                                                 }
                                                 ++repeats;
-                                                genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 3;
+                                                genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 3 + (MorsePreferences::pliste[posEchoThinkTime].value * 1000UL);
  
                                                 // Apply response speed limit
                                                 uint8_t speedMaxIdx = MorsePreferences::pliste[posEchoSpeedMax].value;

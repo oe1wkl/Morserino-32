@@ -34,14 +34,14 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>User Manual</p></div>
-<div class="title-version">Version 9.x<br>August 2026</div>
+<div class="title-version">Version 9.x<br>September 2026</div>
 <div class="title-variant">for all Morserino-32 models</div>
 <div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — User Manual</strong></p>
-<p>Edition V 9.x, August 2026 — for all Morserino-32 models</p>
+<p>Edition V 9.x, September 2026 — for all Morserino-32 models</p>
 <p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -765,6 +765,7 @@ The font family used is Lato.</p>
 <p>If this preference is set to a value between 5 and 250 (and not to “Unlimited”), the M32, when pausing after that number of words, will show (for 5 seconds) how many incorrect entries you made (and the number of words) on the top line of the display. <em>Be aware that you can make repeated errors regarding one word, and all of them will be counted!</em></p>
 <p><strong>Adaptv. Speed</strong>: This should help you to train for maximum speed. Whenever your response was correct, the speed will be increased by 1 wpm (word per minute); whenever you make a mistake, it will decrease by 1 wpm. Thus you will eventually always train at your limit, which certainly is the best way to push your limits…​</p>
 <p><strong>Echo Speed Max:</strong> Set this to the maximum speed you would like to use for keying in Echo Trainer mode. If you set the speed faster than this value with the Encoder, or if it is getting faster as a result of adaptive speed, the speed for keying your input stays at that maximum (so you can train your copying at faster speeds than you are comfortable to use when keying).</p>
+<p><strong>Think Time</strong>: Adds a fixed pause of 0–20 seconds after the prompt, before the Echo Trainer expects your response. This is particularly useful for head-copy practice with call signs, where you need time to mentally reconstruct what you heard before keying it back, without having to reduce the prompt speed or change the dot/dash ratio or word spacing — which would affect the whole device, not just the Echo Trainer.</p>
 <p><strong>Intercharacter Space</strong> and <strong>Interword Space</strong>: The first preference defines the pause between characters in the prompt the M32 is generating (the same as in the Generator modes, see there); both preferences also have an influence on the “grace time” you have when responding to the prompt. If that grace time is exceeded, the M32 concludes that you finished your input.</p>
 <h2 data-number="5.4" id="koch-trainer"><span class="header-section-number">5.4</span> Koch Trainer</h2>
 <p>In the 1930s, the German engineer Ludwig Koch developed a method for learning Morse code, in which each lesson introduces an additional character. The order is not alphabetical or sorted by the length of the Morse codes, but rather follows a rhythmic pattern. This way, the individual characters are learned as a rhythm rather than a succession of dits and dahs.</p>
@@ -2860,6 +2861,11 @@ The font family used is Lato.</p>
 <td>Set this to the maximum speed you would like to use for keying in Echo Trainer mode. If you set the speed faster than this value with the Encoder, or if it is getting faster as a result of adaptive speed, the speed for keying your input stays at that maximum.</td>
 <td><strong>No limit</strong> / 5 – 50 wpm (in steps of 5 wpm)</td>
 </tr>
+<tr>
+<td>Think Time</td>
+<td>Adds a fixed pause after the prompt before the Echo Trainer expects your response, useful for head-copy practice.</td>
+<td><strong>0 s</strong> – 20 s (in steps of 1 s)</td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.3.7" id="preferences-regarding-transmitting-decoding-and-qso-bot"><span class="header-section-number">6.3.7</span> Preferences regarding Transmitting, Decoding and QSO Bot</h3>
@@ -4617,6 +4623,5 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=4572f7d44b3c -->
 </body>
 </html>

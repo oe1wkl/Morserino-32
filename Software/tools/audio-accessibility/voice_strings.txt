@@ -291,6 +291,7 @@ Echo
 Echo Prompt
 Echo Repeats
 Echo Speed Max
+Echo think time in seconds
 Echo Trainer
 Encoder Click
 English Words

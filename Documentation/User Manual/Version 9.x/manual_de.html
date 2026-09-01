@@ -34,14 +34,14 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>Benutzerhandbuch</p></div>
-<div class="title-version">Version 9.x<br>August 2026</div>
+<div class="title-version">Version 9.x<br>September 2026</div>
 <div class="title-variant">für alle Morserino-32-Modelle</div>
 <div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — Benutzerhandbuch</strong></p>
-<p>Ausgabe V 9.x, August 2026 — für alle Morserino-32-Modelle</p>
+<p>Ausgabe V 9.x, September 2026 — für alle Morserino-32-Modelle</p>
 <p>© Copyright 2016–2026 by Willi Kraml, OE1WKL</p>
 <p>Dieses Werk steht unter einer CC BY 4.0-Lizenz. Um eine Kopie dieser Lizenz
 einzusehen, besuche <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -767,6 +767,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Wenn diese Einstellung auf einen Wert zwischen 5 und 250 (nicht auf „Unlimited”) gesetzt ist, zeigt der M32 bei der Pause für 5 Sekunden an, wie viele Fehler du gemacht hast (und die Anzahl der Wörter). <em>Beachte: Bei einem Wort können mehrere Fehler entstehen, und alle werden gezählt!</em></p>
 <p><strong>Adaptv. Speed</strong>: Zur Unterstützung des Trainings auf maximale Geschwindigkeit. Bei jeder richtigen Antwort wird die Geschwindigkeit um 1 WpM erhöht, bei jedem Fehler um 1 WpM verringert. So trainierst du dauerhaft an deiner Leistungsgrenze.</p>
 <p><strong>Echo Speed Max</strong>: Legt die maximale Keying-Geschwindigkeit im Echo Trainer fest. Wenn du die Geschwindigkeit mit dem Encoder über diesen Wert hinaus erhöhst oder sie durch Adaptive Speed schneller wird, bleibt die Eingabegeschwindigkeit bei diesem Maximum (so kannst du bei höheren Geschwindigkeiten kopieren als beim Geben).</p>
+<p><strong>Think Time</strong>: Fügt nach der Vorgabe eine feste Pause von 0–20 Sekunden ein, bevor der Echo Trainer deine Antwort erwartet. Das ist besonders beim Kopf-Kopieren (“head copy”) von Rufzeichen hilfreich, wo du Zeit brauchst, um das Gehörte gedanklich zusammenzusetzen, bevor du es tastest — ohne dafür die Vorgabegeschwindigkeit zu reduzieren oder das Verhältnis von Punkt zu Strich bzw. die Wortabstände zu verändern, was sich auf das ganze Gerät auswirken würde und nicht nur auf den Echo Trainer.</p>
 <p><strong>Interchar Spc</strong> und <strong>Interword Spc</strong>: Der erste Wert legt den Zeichenabstand in der Vorgabe fest (wie in den Generatormodi); beide Einstellungen wirken sich auch auf die Wartezeit aus, die du nach der Vorgabe für deine Antwort hast. Wird diese Zeit überschritten, geht der M32 davon aus, dass du deine Eingabe beendet hast.</p>
 <h2 data-number="5.4" id="koch-trainer"><span class="header-section-number">5.4</span> Koch Trainer</h2>
 <p>In den 1930er Jahren entwickelte der deutsche Ingenieur Ludwig Koch eine Methode zum Erlernen des Morsecodes, bei der in jeder Lektion ein weiteres Zeichen eingeführt wird. Die Reihenfolge ist weder alphabetisch noch nach der Länge der Morsezeichen sortiert, sondern folgt einem rhythmischen Muster. So werden die einzelnen Zeichen als Rhythmus gelernt, nicht als zählbare Abfolge von Dits und Dahs.</p>
@@ -2850,6 +2851,11 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td>Legt die maximale Keying-Geschwindigkeit im Modus Echo Trainer fest. Wenn du die Geschwindigkeit mit dem ENCODER über diesen Wert hinaus erhöhst oder sie durch Adaptive Speed schneller wird, bleibt die Eingabegeschwindigkeit bei diesem Maximum (so kannst du bei höheren Geschwindigkeiten kopieren als du comfortabel geben kannst).</td>
 <td><strong>No limit</strong> / 5–50 WpM (in 5-WpM-Schritten)</td>
 </tr>
+<tr>
+<td><strong>Think Time</strong></td>
+<td>Fügt nach der Vorgabe eine feste Pause ein, bevor der Echo Trainer deine Antwort erwartet — nützlich zum Kopf-Kopieren.</td>
+<td><strong>0 s</strong> – 20 s (in 1-Sekunden-Schritten)</td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.3.7" id="einstellungen-zum-senden-dekodieren-und-qso-bot"><span class="header-section-number">6.3.7</span> Einstellungen zum Senden, Dekodieren und QSO Bot</h3>
@@ -4607,6 +4613,5 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=c6d537560eda -->
 </body>
 </html>
