@@ -34,14 +34,14 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>User Manual</p></div>
-<div class="title-version">Version 9.x<br>August 2026</div>
+<div class="title-version">Version 9.x<br>September 2026</div>
 <div class="title-variant">for all Morserino-32 models</div>
 <div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — User Manual</strong></p>
-<p>Edition V 9.x, August 2026 — for all Morserino-32 models</p>
+<p>Edition V 9.x, September 2026 — for all Morserino-32 models</p>
 <p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -178,7 +178,7 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=f0beecdb2085 v=9 -->
+<!-- WHATSNEW:BEGIN en=2b77de7a5ea7 v=9 -->
 <p>What is new in Version 9?</p>
 <ul>
 <li>A single firmware installer for every Morserino, at <a href="https://www.morserino.info/install.html">https://www.morserino.info/install.html</a>. It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.</li>
@@ -194,7 +194,7 @@ The font family used is Lato.</p>
 <li>The serial protocol used by the Configuration Tool and other utilities has been extended to <strong>version 1.4</strong>. A connected program can now read the full details of all preferences in a handful of requests instead of one request per preference, ask the device which of the optional commands it actually supports (instead of trying them out to find out), and read or clear the stored game scores. Everything from version 1.3 keeps working unchanged, so programs written for it need no adaptation. The protocol is described in the separate <em>M32 Protocol</em> document.</li>
 <li>M32 Pocket only: the Configuration Tool now shows the <strong>game scores</strong> stored on your device - the high score tables of all games, and whether Radio Cave has a saved game - on the User Identity tab, next to the call sign and name they were played under. A button there clears them all, doing the same as „Reset Scores“ in the preferences menu on the device.</li>
 <li>The Koch Trainer has a new entry, <strong>Preview Char</strong>, next to <strong>Learn New Chr</strong>. It opens a list of every character of your Koch course — in the order you learn them — and then plays the one you pick, over and over, exactly the way Learn New Chr does. Useful for going back to a character that never quite stuck, or for hearing what is still ahead of you. While it is playing, the FN button has a third position beyond speed and volume: with the ENCODER set to „character“ you can step through the whole course by ear, without going back to the list, and the top line shows which lesson and character you are on. Thanks to Christian, OE1CKO.</li>
-<li>A new preference <strong>Boost Practice</strong> makes the characters of your <strong>Practice Set</strong> turn up more often — Moderate or Strong — instead of your only being able to drill them on their own. It applies to the Random Characters exercises of CW Generator and Echo Trainer, and to the Koch Trainer’s own character generation. It never introduces a character the exercise would not have produced anyway: it only shifts the odds within whatever you already have selected, so a Practice Set digit has no effect while you are practising letters only. Off by default. Thanks to Christian, OE1CKO.</li>
+<li>A new preference <strong>Boost Practice</strong> makes the characters of your <strong>Practice Set</strong> turn up more often — Moderate or Strong — instead of your only being able to drill them on their own. It applies to the Random Characters exercises of CW Generator and Echo Trainer, and to the Koch Trainer’s own character generation. It never introduces a character the exercise would not have produced anyway: it only shifts the odds within whatever you already have selected, so a Practice Set digit has no effect while you are practising letters only. Off by default. The <strong>Practice Set</strong> picker itself now sits directly next to it in the preferences of the CW Generator, the Echo Trainer and the Koch Trainer, so you can choose the characters and decide how hard to push them in one place, instead of having to go to the top-level <strong>Set Preferences</strong> for the one and back for the other. Thanks to Christian, OE1CKO.</li>
 <li>The installer now works in <strong>Firefox</strong> as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.</li>
 <li>Custom Characters is now working like any other built-in Koch order, you can use select lesson, learn new character and the other Koch modes in the same way as with the built-in Koch sequences.</li>
 <li>There is a new feature called „Practice Sets“ that takes the place of the previous Custom character sets, which allows you to train a subset of individual characters which you pick directly on the device and then you can use them for CW generator or Echo Trainer.</li>
@@ -4617,6 +4617,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=4572f7d44b3c -->
+<!-- MANUALFRESH: lang=en src=6dc807bf7b33 -->
 </body>
 </html>
