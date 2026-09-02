@@ -223,6 +223,9 @@
     /* Snapshot comparison */
     .snap-diff{font-weight:900;color:var(--accent)}
     .snap-same{color:var(--muted)}
+    .snap-import-warn{background:#fff8f0;border:1px solid #e8c89a;border-radius:6px;padding:10px 14px;margin-bottom:12px;font-size:14px;color:#8a5a10}
+    .snap-import-table td.col-check{text-align:center;width:36px}
+    .snap-import-all{font-size:13px;font-weight:700;color:var(--link);cursor:pointer;text-decoration:underline;margin-left:10px}
     /* Global Connection Bar */
     .conn-bar{display:flex;align-items:center;justify-content:center;gap:12px;padding:8px 16px;background:#f4f7fa;border-bottom:1px solid #c8d8e4;margin-bottom:0}
     .conn-bar .status-badge{margin:0;padding:4px 12px;font-size:13px}
@@ -567,6 +570,20 @@
       <thead><tr><th>Parameter</th><th style="text-align:right">Snapshot</th><th style="text-align:right">Current</th></tr></thead>
       <tbody id="snapDetailBody"></tbody>
     </table>
+  </div>
+  <input type="file" id="snapImportFileInput" accept="application/json,.json" style="display:none" onchange="onSnapshotFileSelected(event)">
+  <div class="box" id="snapImportBox" style="display:none">
+    <h2 class="section-title" id="snapImportTitle">Import Snapshot</h2>
+    <div id="snapImportWarn"></div>
+    <div id="snapImportMeta" style="margin-bottom:12px"></div>
+    <table class="mem-table snap-import-table" id="snapImportTable">
+      <thead><tr><th style="width:36px"></th><th>Parameter</th><th style="text-align:right">File</th><th style="text-align:right">Current</th></tr></thead>
+      <tbody id="snapImportBody"></tbody>
+    </table>
+    <div class="btn-row" style="margin-top:14px">
+      <button class="btn btn-accent" id="snapImportConfirmBtn" onclick="snapImportConfirm()">Import into Snapshot</button>
+      <button class="btn btn-outline" onclick="snapImportCancel()">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -916,6 +933,22 @@ function formatSize(b){return b<1024?b+' B':b<1048576?(b/1024).toFixed(1)+' KB':
 function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
 function sendLine(t){if(!writer)throw new Error('Not connected');return writer.write(t+'\n')}
 function escHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+// Shared by every "save a file to the computer" feature (File Builder, Snapshot
+// Export, ...). Kept as its own function, rather than inlined at each call
+// site, so the iOS app (Software/iOS/M32Config) — which loads this file
+// unmodified in a WKWebView, where a Blob + <a download> silently does nothing —
+// only has to override this one function in bridge.js to make all of them work.
+// The success log lives HERE, not in the callers: bridge.js's override saves
+// asynchronously and can fail (e.g. the user cancels the share sheet), so a
+// caller logging "saved" right after calling this would claim success before
+// it is known — and, on iOS, get contradicted by the override's own failure
+// log one line later. Only whichever implementation is actually active here
+// gets to say whether it worked.
+function saveTextFile(name,text,mime){
+  var blob=new Blob([text],{type:mime||'text/plain;charset=ascii'}),url=URL.createObjectURL(blob);
+  var a=document.createElement('a');a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);
+  log('Saved "'+name+'" ('+text.length+' bytes)');
+}
 function showLoading(msg){document.getElementById('loadingText').textContent=msg||'Loading...';document.getElementById('loadingOverlay').classList.add('active')}
 function hideLoading(){document.getElementById('loadingOverlay').classList.remove('active')}
 
@@ -924,7 +957,7 @@ function enableUI(c){
   document.getElementById('connectBtn').disabled=c;
   document.getElementById('disconnectBtn').disabled=!c;
   // Enable/disable every interactive element by class or id
-  document.querySelectorAll('.btn-sm, .control-slider, .menu-select, .mem-input, .wifi-input, .identity-input, .pref-select, .pref-slider, #fileInput, #uploadBtn, #targetPath').forEach(function(el){
+  document.querySelectorAll('.btn-sm, .control-slider, .menu-select, .mem-input, .wifi-input, .identity-input, .pref-select, .pref-slider, #fileInput, #uploadBtn, #targetPath, #snapImportConfirmBtn').forEach(function(el){
     // Don't touch connect/disconnect buttons
     if(el.id==='connectBtn'||el.id==='disconnectBtn') return;
     el.disabled=!c;
@@ -1161,6 +1194,8 @@ async function doDisconnect(){
   document.getElementById('hardwareInfoBox').style.display='none';
   document.getElementById('resetDefaultsBox').style.display='none';
   document.getElementById('snapDetailBox').style.display='none';
+  document.getElementById('snapImportBox').style.display='none';
+  snapImportFile=null; snapImportTarget=null; snapImportMenuNumber=null; snapImportConfigsLoadFailed=false;
   document.getElementById('customCharsBox').style.display='none';
   document.getElementById('gameScoresBox').style.display='none';
   document.getElementById('speedValue').textContent='—';
@@ -1828,11 +1863,13 @@ async function setPref(name,value){
 // ============================================================================
 // SNAPSHOTS
 // ============================================================================
+var snapExistingList=[];
 async function loadSnapshots(){
   if(!connected) return;
   try{
     var data=await sendAndParse('get snapshots',3000);
     var existing=(data.snapshots&&data.snapshots['existing snapshots'])?data.snapshots['existing snapshots']:[];
+    snapExistingList=existing;
     renderSnapshots(existing);
     log('Snapshots: '+(existing.length>0?existing.join(', '):'none'));
   }catch(e){log('Snapshots: '+e.message)}
@@ -1844,7 +1881,7 @@ function renderSnapshots(existing){
     var exists=existing.indexOf(i)!==-1;
     var card=document.createElement('div');
     card.className='snap-card'+(exists?' active':' empty');
-    card.innerHTML='<div class="snap-num">'+i+'</div><div class="snap-label">'+(exists?'Stored':'Empty')+'</div><div class="snap-actions"><button class="btn btn-green btn-sm" onclick="snapStore('+i+')">Store</button>'+(exists?'<button class="btn btn-outline btn-sm" onclick="snapInspect('+i+')">Inspect</button><button class="btn btn-accent btn-sm" onclick="snapRecall('+i+')">Recall</button><button class="btn btn-red btn-sm" onclick="snapClear('+i+')">Clear</button>':'')+'</div>';
+    card.innerHTML='<div class="snap-num">'+i+'</div><div class="snap-label">'+(exists?'Stored':'Empty')+'</div><div class="snap-actions"><button class="btn btn-green btn-sm" onclick="snapStore('+i+')">Store</button>'+(exists?'<button class="btn btn-outline btn-sm" onclick="snapInspect('+i+')">Inspect</button><button class="btn btn-accent btn-sm" onclick="snapRecall('+i+')">Recall</button><button class="btn btn-red btn-sm" onclick="snapClear('+i+')">Clear</button><button class="btn btn-outline btn-sm" onclick="snapExport('+i+')">Export</button>':'')+'<button class="btn btn-outline btn-sm" onclick="snapImportPick('+i+')">Import</button></div>';
     grid.appendChild(card);
   }
 }
@@ -1892,11 +1929,233 @@ async function snapInspect(n){
         tbody.appendChild(tr);
       });
     }
+    document.getElementById('snapImportBox').style.display='none';
     document.getElementById('snapDetailBox').style.display='';
     document.getElementById('snapDetailBox').scrollIntoView({behavior:'smooth'});
     log('Inspected snapshot '+n+': '+(snap.configs?snap.configs.length:0)+' parameters, '+diffCount+' differences');
   }catch(e){log('Inspect snapshot: '+e.message)}
   hideLoading();
+}
+
+// ---- Export ----------------------------------------------------------------
+async function snapExport(n){
+  showLoading('Reading snapshot '+n+'...');
+  try{
+    var data=await sendAndParse('get snapshot/'+n,5000);
+    if(!data.snapshot){log('No snapshot data');hideLoading();return}
+    var out={m32SnapshotExport:1,exportedAt:new Date().toISOString(),device:deviceInfo||{},snapshot:data.snapshot};
+    var fwTag=(deviceInfo&&deviceInfo.firmware?deviceInfo.firmware:'unknown').replace(/[^a-zA-Z0-9.]+/g,'_');
+    var dateTag=new Date().toISOString().slice(0,10).replace(/-/g,'');
+    var fn='morserino_snapshot_'+n+'_'+fwTag+'_'+dateTag+'.json';
+    saveTextFile(fn,JSON.stringify(out,null,2),'application/json');
+  }catch(e){log('Export snapshot: '+e.message)}
+  hideLoading();
+}
+
+// ---- Import -----------------------------------------------------------------
+var snapImportTarget=null;
+var snapImportFile=null;
+var snapImportMenuNumber=null;
+var snapImportConfigsLoadFailed=false;
+
+// Values are always uint8_t (see CLAUDE.md sec.4); a name may never contain a
+// slash (it would misalign "put config/<name>/<value>") or a control
+// character. A raw newline is the actual injection vector — sendLine() appends
+// one to build the command, so a value containing "\n" smuggles a second,
+// arbitrary command onto the wire (a crafted or corrupted import file could
+// carry e.g. "put device/reset/defaults"). '/' stays allowed in customChars —
+// it is a real, valid Morse character (see CWchars in m32_v6.ino) — only
+// control characters are rejected there.
+function isSafeCommandText(s){ return typeof s==='string' && !/[\x00-\x1f]/.test(s) }
+function isValidPrefName(s){ return isSafeCommandText(s) && s.indexOf('/')===-1 }
+function isValidPrefValue(v){ var s=String(v); return /^\d{1,3}$/.test(s) && Number(s)<=255 }
+
+function snapImportPick(n){
+  snapImportTarget=n;
+  var input=document.getElementById('snapImportFileInput');
+  input.value='';
+  input.click();
+}
+
+async function onSnapshotFileSelected(evt){
+  var file=evt.target.files&&evt.target.files[0];
+  if(!file) return;
+  var n=snapImportTarget;
+  showLoading('Reading file...');
+  try{
+    var text=await file.text();
+    var parsed;
+    try{ parsed=JSON.parse(text) }catch(e){ throw new Error('not valid JSON') }
+    if(!parsed||parsed.m32SnapshotExport===undefined||!parsed.snapshot){
+      throw new Error('not a Morserino snapshot export file');
+    }
+    snapImportFile=parsed;
+    var currentConfigs={};
+    snapImportConfigsLoadFailed=false;
+    try{
+      var cur=await sendAndParse('get configs',5000);
+      if(cur.configs) cur.configs.forEach(function(c){ currentConfigs[c.name]={value:c.value,displayed:c.displayed} });
+    }catch(e){log('Could not load current configs for comparison'); snapImportConfigsLoadFailed=true}
+    // The stored menu is a raw index into this build's menuText[], which is
+    // conditionally compiled (LORA_DISABLED, CONFIG_CW_GAME, CONFIG_QSO_BOT all
+    // shift it) — the same index can mean a different menu entry on a
+    // different hardware/firmware combination. Resolve it safely by matching
+    // the file's menu *name* against this connected device's own menu list,
+    // and only ever apply the number that comes back from this device.
+    snapImportMenuNumber=null;
+    var menuName=parsed.snapshot.menuName;
+    if(menuName&&menuName!=='—'){
+      try{
+        var menus=await sendAndParse('get menus',5000);
+        if(menus.menus){
+          menus.menus.forEach(function(m){
+            if(snapImportMenuNumber===null&&m.content===menuName) snapImportMenuNumber=m['menu number'];
+          });
+        }
+      }catch(e){log('Could not load menu list to verify the stored menu')}
+    }
+    renderSnapshotImportPreview(n,parsed,currentConfigs);
+  }catch(e){log('Import snapshot: '+e.message)}
+  hideLoading();
+}
+
+function renderSnapshotImportPreview(n,fileData,currentConfigs){
+  var snap=fileData.snapshot;
+  document.getElementById('snapImportTitle').textContent='Import into Snapshot '+n;
+  document.getElementById('snapImportConfirmBtn').textContent='Import into Snapshot '+n;
+
+  var warnHtml='';
+  var fileDev=fileData.device||{};
+  if(deviceInfo&&(fileDev.firmware!==deviceInfo.firmware||fileDev.hardware!==deviceInfo.hardware)){
+    warnHtml+='<div class="snap-import-warn">This file was exported from '+
+      escHtml(fileDev.hardware||'unknown hardware')+', firmware '+escHtml(fileDev.firmware||'unknown')+
+      '. This device is '+escHtml(deviceInfo.hardware||'unknown hardware')+', firmware '+escHtml(deviceInfo.firmware||'unknown')+
+      '. Parameters that do not exist on this firmware are unchecked below; check the Stored Menu note too.</div>';
+  }
+  // Every decision on this screen depends on knowing this device's current
+  // settings — without them "not on this device" cannot be told apart from
+  // "could not check", so refuse to let Import run rather than risk silently
+  // storing whatever happens to be active right now over the target slot.
+  var confirmBtn=document.getElementById('snapImportConfirmBtn');
+  if(snapImportConfigsLoadFailed){
+    warnHtml+='<div class="snap-import-warn">Could not read this device\'s current settings, so this preview cannot show accurate comparisons. Import is disabled — reconnect or try again.</div>';
+    confirmBtn.disabled=true;
+  }else{
+    confirmBtn.disabled=false;
+  }
+  document.getElementById('snapImportWarn').innerHTML=warnHtml;
+
+  var hasStoredMenu=snap.lastExecuted>0;
+  var menuResolvable=hasStoredMenu&&snapImportMenuNumber!==null;
+  var menuNote=hasStoredMenu&&!menuResolvable?' <span style="color:#a8402f;font-weight:400">(not found on this device — will not be applied)</span>':'';
+
+  var meta='<div class="info-grid">';
+  meta+='<div class="info-card"><div class="info-card-label">Stored Menu</div><div class="info-card-value" style="font-size:15px">'+
+    '<label style="font-weight:400"><input type="checkbox" id="snapImportMenuChk"'+(menuResolvable?' checked':' disabled')+'> '+escHtml(snap.menuName||'—')+menuNote+'</label></div></div>';
+  if(snap.customChars){
+    meta+='<div class="info-card"><div class="info-card-label">Custom Chars</div><div class="info-card-value" style="font-size:15px">'+
+      '<label style="font-weight:400"><input type="checkbox" id="snapImportCharsChk" checked> '+
+      (snap.customChars.active?escHtml(snap.customChars.characters):'Off')+'</label></div></div>';
+  }
+  meta+='</div><div><span class="snap-import-all" onclick="snapImportSetAll(true)">All</span><span class="snap-import-all" onclick="snapImportSetAll(false)">None</span></div>'+
+    '<p style="font-size:13px;color:var(--muted);font-style:italic;margin:8px 0 0">Unchecked parameters are stored with the value currently active on this device, not the file\'s old value — the resulting snapshot mixes file and device values for those.</p>';
+  document.getElementById('snapImportMeta').innerHTML=meta;
+
+  var tbody=document.getElementById('snapImportBody'); tbody.innerHTML='';
+  (snap.configs||[]).forEach(function(c,idx){
+    var cur=currentConfigs[c.name];
+    var isDiff=cur&&cur.value!==c.value;
+    var cls=isDiff?'snap-diff':'snap-same';
+    var tr=document.createElement('tr');
+    var currentCell=cur?escHtml(cur.displayed)
+      :snapImportConfigsLoadFailed?'<span style="color:var(--muted)">could not verify</span>'
+      :'<span style="color:#a8402f">not on this device</span>';
+    tr.innerHTML='<td class="col-check"><input type="checkbox" class="snap-import-chk" data-idx="'+idx+'"'+(cur?' checked':'')+'></td>'+
+      '<td class="'+cls+'">'+escHtml(c.name)+'</td>'+
+      '<td style="text-align:right" class="'+cls+'">'+escHtml(c.displayed)+'</td>'+
+      '<td style="text-align:right" class="'+cls+'">'+currentCell+'</td>';
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('snapDetailBox').style.display='none';
+  document.getElementById('snapImportBox').style.display='';
+  document.getElementById('snapImportBox').scrollIntoView({behavior:'smooth'});
+}
+
+function snapImportSetAll(state){
+  document.querySelectorAll('.snap-import-chk').forEach(function(el){ el.checked=state });
+  var menuChk=document.getElementById('snapImportMenuChk');
+  // Only the disabled state (unresolvable on this device) should stop "All"
+  // from checking it — a resolvable Stored Menu must follow All/None too.
+  if(menuChk&&!menuChk.disabled) menuChk.checked=state;
+  var charsChk=document.getElementById('snapImportCharsChk'); if(charsChk) charsChk.checked=state;
+}
+
+function snapImportCancel(){
+  document.getElementById('snapImportBox').style.display='none';
+  snapImportFile=null; snapImportTarget=null; snapImportMenuNumber=null; snapImportConfigsLoadFailed=false;
+}
+
+async function snapImportConfirm(){
+  var n=snapImportTarget, fileData=snapImportFile;
+  if(!n||!fileData){ snapImportCancel(); return }
+  if(snapImportConfigsLoadFailed){
+    log('Import: current device settings could not be verified — refusing to import blind.');
+    return;
+  }
+  var overwriteNote=snapExistingList.indexOf(n)!==-1?' (overwriting what is stored there now)':'';
+  if(!confirm('Import into Snapshot '+n+'? This replaces your current device settings with the checked values from the file, then stores the result into Snapshot '+n+overwriteNote+'.')) return;
+
+  var snap=fileData.snapshot;
+  var checks=Array.prototype.slice.call(document.querySelectorAll('.snap-import-chk'));
+  var toApply=checks.filter(function(el){return el.checked}).map(function(el){return snap.configs[parseInt(el.dataset.idx,10)]});
+  var failed=[];
+  var appliedCount=0;
+  showLoading('Applying 0/'+toApply.length+'...');
+  for(var i=0;i<toApply.length;i++){
+    var c=toApply[i];
+    showLoading('Applying '+(i+1)+'/'+toApply.length+'...');
+    if(!isValidPrefName(c.name)||!isValidPrefValue(c.value)){
+      failed.push(c.name+' (rejected: invalid data)');
+      continue;
+    }
+    try{ await sendAndParse('put config/'+c.name+'/'+c.value,2000,{quiet:true}); appliedCount++ }
+    catch(e){ failed.push(c.name) }
+  }
+  var menuChk=document.getElementById('snapImportMenuChk');
+  if(menuChk&&menuChk.checked&&!menuChk.disabled&&snapImportMenuNumber!==null){
+    try{ await sendAndParse('put menu/set/'+snapImportMenuNumber,2000,{quiet:true}) }catch(e){ failed.push('Stored Menu') }
+  }
+  var charsChk=document.getElementById('snapImportCharsChk');
+  if(charsChk&&charsChk.checked&&snap.customChars){
+    if(snap.customChars.active&&!isSafeCommandText(snap.customChars.characters)){
+      failed.push('Custom Chars (rejected: invalid data)');
+    }else{
+      try{
+        if(snap.customChars.active) await sendAndParse('put customchars/set/'+snap.customChars.characters,2000,{quiet:true});
+        else await sendAndParse('put customchars/clear',2000,{quiet:true});
+      }catch(e){ failed.push('Custom Chars') }
+    }
+  }
+
+  showLoading('Storing snapshot '+n+'...');
+  var storeError=null;
+  try{ await sendAndParse('put snapshot/store/'+n,3000) }
+  catch(e){ storeError=e.message }
+  hideLoading();
+
+  var summary='Imported into snapshot '+n+': '+appliedCount+' of '+toApply.length+' parameters applied'+(failed.length?', '+failed.length+' failed ('+failed.join(', ')+')':'');
+  if(storeError){
+    log(summary+' — but STORING SNAPSHOT '+n+' FAILED: '+storeError+'. Your device settings were changed by this import; snapshot '+n+' was NOT updated.');
+    alert('Storing Snapshot '+n+' failed: '+storeError+'\n\nYour device settings were changed by this import, but Snapshot '+n+' was NOT updated with them.');
+  }else{
+    log(summary);
+  }
+  prefDetails={};
+  document.getElementById('snapImportBox').style.display='none';
+  snapImportFile=null; snapImportTarget=null; snapImportMenuNumber=null; snapImportConfigsLoadFailed=false;
+  await sleep(300);
+  loadSnapshots();
 }
 
 // ============================================================================
@@ -2709,9 +2968,7 @@ function fbMove(id,delta){
 function fbDownload(){
   var output=fbBuildOutput();if(!output)return;
   var fn=document.getElementById('fbOutputName').value.trim()||'multipart.txt';
-  var blob=new Blob([output],{type:'text/plain;charset=ascii'}),url=URL.createObjectURL(blob);
-  var a=document.createElement('a');a.href=url;a.download=fn;a.click();URL.revokeObjectURL(url);
-  log('File Builder: saved "'+fn+'" ('+output.length+' bytes)');
+  saveTextFile(fn,output,'text/plain;charset=ascii');
 }
 
 // --- Upload to M32 ---

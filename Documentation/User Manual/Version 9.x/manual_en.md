@@ -3658,7 +3658,7 @@ still work; they now forward to this one page.
 There are currently three sites that enable you to set up M32 preferences
 through a browser on your computer, and another one that implements an M32 File Manager.
 
-* There is the "official" morserino.info website which hosts a comprehensive configuration tool at [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html). It allows to view and set all preferences, and also to set, delete, view and compare snapshots. In addition it contains file utilities, see below.
+* There is the "official" morserino.info website which hosts a comprehensive configuration tool at [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html). It allows to view and set all preferences, and also to set, delete, view, compare, export and import snapshots. In addition it contains file utilities, see below.
 
 * Christof, **OE6CHD**, wrote a Javascript program that makes it very easy
 to set preferences, WiFi access point credentials, and keyer memories,
