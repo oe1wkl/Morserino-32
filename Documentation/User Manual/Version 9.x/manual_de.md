@@ -4127,7 +4127,8 @@ einen M32-Dateimanager implementiert.
 * Es gibt das „offizielle" morserino.info-Tool unter
   [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html).
   Es ermöglicht das Anzeigen und Setzen aller Einstellungen sowie das
-  Erstellen, Löschen, Anzeigen und Vergleichen von Schnappschüssen.
+  Erstellen, Löschen, Anzeigen, Vergleichen, Exportieren und Importieren
+  von Schnappschüssen.
   Außerdem enthält es Datei-Hilfsprogramme (siehe unten).
 
 * Christof, **OE6CHD**, hat ein Javascript-Programm geschrieben, mit

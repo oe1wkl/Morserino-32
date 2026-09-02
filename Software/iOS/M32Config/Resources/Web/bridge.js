@@ -134,26 +134,23 @@
 
   // ------------------------------------------------------------------- saving
 
-  // "Save to Computer" builds a Blob and clicks an <a download>. WKWebView
-  // ignores that outright: no file, no error, no prompt -- and the tool's own
-  // log line still says it saved, which is what made this look like a mystery
-  // rather than a failure. Hand the text to the app instead and let iOS put up
-  // a share sheet, which is where "save a file" lives on a phone.
-  //
-  // fbDownload is called from an inline onclick, which resolves the name at
-  // call time, so reassigning the global is enough -- the button needs no edit.
-  if (typeof fbDownload === 'function' && typeof fbBuildOutput === 'function') {
-    fbDownload = function () {
-      var output = fbBuildOutput();
-      if (!output) return;                       // the tool already said why
-      var el = document.getElementById('fbOutputName');
-      var fn = ((el && el.value) || '').trim() || 'multipart.txt';
-      callNative('saveFile', { name: fn, text: output })
+  // saveTextFile() builds a Blob and clicks an <a download> — every "save to
+  // computer" feature in the tool (File Builder, Snapshot Export, and whatever
+  // comes next) goes through this one function. WKWebView ignores that outright:
+  // no file, no error, no prompt -- and the caller's own log line still says it
+  // saved, which is what made this look like a mystery rather than a failure.
+  // Overriding saveTextFile() itself, instead of each caller, means a future
+  // caller needs no bridge.js change to work correctly here. Hand the text to
+  // the app instead and let iOS put up a share sheet, which is where "save a
+  // file" lives on a phone.
+  if (typeof saveTextFile === 'function') {
+    saveTextFile = function (name, text) {
+      callNative('saveFile', { name: name, text: text })
         .then(function () {
-          log('File Builder: "' + fn + '" (' + output.length + ' bytes) — choose where to keep it');
+          log('Saved "' + name + '" (' + text.length + ' bytes) — choose where to keep it');
         })
         .catch(function (e) {
-          log('File Builder: could not save "' + fn + '": ' + e.message);
+          log('Could not save "' + name + '": ' + e.message);
         });
     };
     var saveBtn = document.querySelector('[onclick="fbDownload()"]');
