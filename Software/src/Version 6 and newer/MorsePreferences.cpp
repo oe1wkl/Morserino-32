@@ -868,7 +868,11 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                       break;
           case -1:    //////// long press indicates we are done with setting preferences - check if we need to store some of the preferences
 
-          exitFromHere: if (MorsePreferences::useCustomChars && MorsePreferences::customCharSet.length() == 0) {
+          exitFromHere: Buttons::modeButton.clicks = 0;   // swallow the long-press that ended preferences, so the
+                        // mode we return to doesn't read this same stale -1 as its own exit gesture
+                        // (ClickButton fires long-press while still held, then leaves `clicks` at -1
+                        // until the release resolves ~20-270ms later - see ClickButton.cpp:97-133)
+                        if (MorsePreferences::useCustomChars && MorsePreferences::customCharSet.length() == 0) {
                             // Bootstrap only: pull from the file player exclusively when no
                             // custom set is active yet (mirrors handleKochSequence()'s guard).
                             // Previously ran unconditionally on every preferences exit, which
