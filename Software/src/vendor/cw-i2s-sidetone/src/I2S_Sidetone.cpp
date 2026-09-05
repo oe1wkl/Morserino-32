@@ -104,8 +104,8 @@ void I2S_Sidetone::setFrequency(float f) {
 void I2S_Sidetone::setVolume(float v) {
     volume->setVolume(v);
 }
-void I2S_Sidetone::setRichTimbre(bool rich) {
-    sine->setTimbre(rich ? ComplexRotorSine::Timbre::Rich : ComplexRotorSine::Timbre::Sine);
+void I2S_Sidetone::setTimbre(ComplexRotorSine::Timbre t) {
+    sine->setTimbre(t);
 }
 float I2S_Sidetone::getFrequency() {
     return frequency;
