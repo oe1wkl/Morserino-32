@@ -132,19 +132,20 @@ private:
     ///  - the TRUE PEAK is not the sum of the weights -- the partials partly cancel at the
     ///    crest -- and it has to be measured, not guessed, or the codec clips. It is 3.2745
     ///    for the trumpet and 2.3285 for the bassoon (devdocs/signal-tones/tone_sim.py).
-    ///  - the TARGET PEAK puts each signal about 6 dB BELOW the CW sidetone on the Pocket's
-    ///    speaker, and -- unlike the V9 beta, where OK came out 4.5 dB louder than ERR --
-    ///    puts the two of them within 0.1 dB of each other. The V9 beta had OK sitting
-    ///    3 dB ABOVE the sidetone, i.e. the confirmation beep was louder than the CW being
-    ///    practised. That is what the field reported. The two targets differ (0.43 vs 0.61)
-    ///    because the voices differ in crest factor and in where they put their energy.
+    ///  - the TARGET PEAK puts each signal BELOW the CW sidetone on the Pocket's speaker:
+    ///    the error signal by 6 dB, the acknowledgement by 9. The V9 beta had OK sitting
+    ///    3 dB ABOVE the sidetone -- the confirmation beep was louder than the CW being
+    ///    practised, which is what the field reported. The two are deliberately NOT equal:
+    ///    they were matched to each other first, and the bench said the acknowledgement was
+    ///    still a little loud. It should be the more discreet of the two -- you get it far
+    ///    more often, and it tells you nothing you did not already know.
     static Voice voice(Timbre t) {
         static const float kTrumpet[kHarmonics] = {0.50f, 1.00f, 0.90f, 0.72f,
                                                    0.52f, 0.34f, 0.20f, 0.10f};
         static const float kBassoon[kHarmonics] = {0.25f, 1.00f, 0.85f, 0.45f,
                                                    0.18f, 0.07f, 0.03f, 0.01f};
         if (t == Timbre::Bassoon) return { kBassoon, 0.261975f };   // 0.61 / 2.328471
-        return { kTrumpet, 0.131316f };                             // 0.43 / 3.274535
+        return { kTrumpet, 0.091273f };                             // 0.2989 / 3.274535
     }
 
     // One unit phasor plus its per-sample rotation vector.

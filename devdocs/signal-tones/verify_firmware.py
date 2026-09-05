@@ -33,13 +33,16 @@ def pitches(fn):
     i2s = body.split("#else", 1)[1]                     # the CONFIG_SOUND_I2S branch
     return [int(x) for x in re.findall(r"pwmTone\((\d+),", i2s)]
 
-voices = {"Trumpet": ("trumpet", "OK"), "Bassoon": ("bassoon", "ERR")}
+# Per-signal targets, in dB below the CW sidetone on the speaker model. They are
+# NOT equal: the acknowledgement is deliberately the more discreet of the two
+# (bench, 2026-09-05 -- matched levels left OK still a little loud).
+voices = {"Trumpet": ("trumpet", "OK", -9.0), "Bassoon": ("bassoon", "ERR", -6.0)}
 ref = sidetone_ref()
 rs, rf = loudness_db(ref), loudness_db(ref, False)
 demo = []
 
 print(f"{'':38s} {'speaker':>9s} {'headphone':>10s} {'peak':>7s}")
-for cname, (simname, fn) in voices.items():
+for cname, (simname, fn, target) in voices.items():
     w, sc, p = weights(cname), scale(cname), pitches(fn)
     if w != TIMBRES[simname]:
         fail.append(f"{cname}: weights in firmware {w} != tone_sim {TIMBRES[simname]}")
@@ -52,13 +55,14 @@ for cname, (simname, fn) in voices.items():
     d_spk, d_hp = loudness_db(sig) - rs, loudness_db(sig, False) - rf
     print(f"{fn:4s} {cname:10s} {p[0]:>4}/{p[1]:<4} lvl {level:.3f} "
           f"{d_spk:+9.1f} {d_hp:+10.1f} {abs(sig).max():7.3f}")
-    if not (-8.0 < d_spk < -4.0):
-        fail.append(f"{fn}: {d_spk:+.1f} dB vs CW on the speaker, want -6 +/-2")
+    if abs(d_spk - target) > 2.0:
+        fail.append(f"{fn}: {d_spk:+.1f} dB vs CW on the speaker, want {target:+.0f} +/-2")
     demo += [sidetone_ref("R"), silence(350), sig, silence(900)]
     globals()[fn] = d_spk
 
-if abs(OK - ERR) > 1.5:
-    fail.append(f"OK and ERR differ by {abs(OK-ERR):.1f} dB; they should match within ~1 dB")
+if OK > ERR - 1.0:
+    fail.append(f"OK is {OK:+.1f} dB and ERR {ERR:+.1f}; the acknowledgement must stay at "
+                f"least 1 dB quieter than the error signal")
 
 if len(sys.argv) > 1:
     write_wav(sys.argv[1], np.concatenate(demo))
