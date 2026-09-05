@@ -2931,7 +2931,7 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     }
     String tmp_str = symbol;
     if (MorsePreferences::pliste[posOutputCase].value) {
-        tmp_str.toUpperCase();
+        toUpperCaseM32(tmp_str);            // ASCII *and* the decoder's ä ö ü
     }
     // M6: keyed + decoded characters are CW transcription. Weight follows the
     // device convention "incoming CW = bold, your own keying = regular":
@@ -2981,7 +2981,7 @@ void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
 #endif
     if (MorsePreferences::pliste[posOutputCase].value) {
         String upper = s;
-        upper.toUpperCase();
+        toUpperCaseM32(upper);
         MorseOutput::printToScroll(style, upper, true, encoderState == scrollMode);
         SerialOutMorse(upper, 0b100);
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
@@ -4319,6 +4319,25 @@ String cleanUpText(String text) {
 // for long file player text). New code: zero heap work in the loop, one
 // allocation at return. Also replaced indexOf() with strchr() which is faster.
  
+
+// Uppercase for the "Output Case" preference. Arduino's String::toUpperCase() is
+// byte-wise ASCII, so the CW decoder's German umlauts - ä ö ü, two bytes each in
+// UTF-8 - came through untouched while everything around them was uppercased.
+// Their capitals share the same 0xC3 lead byte and sit 0x20 below the lower-case
+// second byte (ä = C3 A4 -> Ä = C3 84), so one pass over the pairs fixes it.
+// ß is deliberately left alone: its capital is "SS", which would change the
+// string's length, and the decoder never produces it in the first place.
+void toUpperCaseM32(String &s) {
+    s.toUpperCase();
+    for (unsigned int i = 0; i + 1 < s.length(); ++i) {
+        if ((uint8_t) s.charAt(i) == 0xC3) {
+            uint8_t c = (uint8_t) s.charAt(i + 1);
+            if (c == 0xA4 || c == 0xB6 || c == 0xBC)      // ä ö ü
+                s.setCharAt(i + 1, (char) (c - 0x20));    // -> Ä Ö Ü
+            ++i;                                          // skip the pair's second byte
+        }
+    }
+}
 
 String utf8umlaut(const String& s) {    // Replacement table: pattern → replacement.
     // Ordered so that longer patterns are checked first where ambiguity
