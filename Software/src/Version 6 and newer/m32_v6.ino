@@ -312,6 +312,13 @@ uint8_t wordCounter = 0;                          // for maxSequence
 uint16_t errCounter = 0;                          // counting errors in echo trainer mode
 boolean stopFlag = false;                         // for maxSequence
 boolean echoStop = false;                         // for maxSequence
+
+// Deadline for the end-of-pass summary ("N errs (M wds)") that maxSequence puts on the
+// status line, or STOP_SUMMARY_IDLE when it is not showing. It used to be held there by a
+// plain delay(5000) - see checkStopFlag().
+#define STOP_SUMMARY_MS   5000
+#define STOP_SUMMARY_IDLE 0
+unsigned long stopSummaryUntil = STOP_SUMMARY_IDLE;
 String lastWord = "";                             // for maxSequence
 
 unsigned long genTimer;                           // timer used for generating morse code in trainer mode
@@ -1248,7 +1255,10 @@ void loop() {
                           break;
       case echoTrainer:                             ///// check stopFlag triggered by maxSequence
                           checkStopFlag();
-                          if (!genIsActive&& (leftKey  || rightKey))   {                       // touching a paddle starts  the generation of code
+                                                                       // ... but not while the end-of-pass summary is still up: the
+                                                                       // delay() that used to hold it there also swallowed the paddle,
+                                                                       // and the operator is meant to get their five seconds to read it
+                          if (!genIsActive && stopSummaryUntil == STOP_SUMMARY_IDLE && (leftKey  || rightKey))   {   // touching a paddle starts  the generation of code
                               // for debouncing:
                               while (checkPaddles() )
                                   ;                                                           // wait until paddles are released
@@ -1508,11 +1518,25 @@ void checkStopFlag() {
       if (morseState == echoTrainer) {
         MorseOutput::clearStatusLine();
         MorseOutput::printOnStatusLine( true, 0, String(errCounter) + " errs (" + String(wordCounter-2) + " wds)" );
-        delay(5000);
+        wordCounter = 1; errCounter = 0;
+        // Hold the summary on a deadline rather than delay(5000)ing through it. That delay
+        // kept loop() out of the button poll for a full five seconds, so FN and the ENCODER
+        // were dead while the operator sat looking at the result - and because ClickButton
+        // samples the pin inside Update(), a press that began *and* ended inside the gap
+        // left no trace at all, while one still held when it ended was acted on late. Same
+        // defect, and the same remedy, as the pauses around the verdict in echoTrainerEval()
+        // - see the note there. Reported by Rodjo, HB9FUR. The five seconds are unchanged:
+        // this is a control-flow change, not a timing change.
+        stopSummaryUntil = millis() + STOP_SUMMARY_MS;
+        return;                     // the "continue with paddle" prompt follows when it expires
       }
       wordCounter = 1; errCounter = 0;
       //if (MorsePreferences::fileWordPointer > 1)
       //  --MorsePreferences::fileWordPointer;          // avoid that a word is being skipped after interruption
+      showPausePrompt(true);
+    }
+    else if (stopSummaryUntil != STOP_SUMMARY_IDLE && millis() >= stopSummaryUntil) {
+      stopSummaryUntil = STOP_SUMMARY_IDLE;             // summary has had its five seconds
       showPausePrompt(true);
     }
 }
@@ -1536,6 +1560,9 @@ void cleanStartSettings() {
                                                   // anyway, but disarm it too so it starts fresh next time we pause
     genTimer = millis()-1;                       // we will be at end of KEY_DOWN when called the first time, so we can fetch a new word etc...
     errCounter = wordCounter = 0;                // reset word and error counter for maxSequence
+    stopSummaryUntil = STOP_SUMMARY_IDLE;        // a pass started from the button while the summary was
+                                                 // still up must not have it expire into a "paused" prompt
+                                                 // five seconds into the new pass
     startFirst = true;
     autoStop = nextword;                             // for autoStop mode
     keyOut(false, true, 0, 0);
