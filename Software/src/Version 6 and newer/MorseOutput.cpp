@@ -54,7 +54,7 @@ LGFX display;
 #include "DisplayWrapper.h"
 #include "m32logo_aa.h"          // pre-rendered anti-aliased boot-splash logo (white-on-black)
 #ifdef CONFIG_SCROLL_FONT_SIZE
-#include "IntelOneMono12ptAscii.h"   // ASCII-range small scroll font (see that file for why)
+#include "IntelOneMono12ptScroll.h"   // small scroll font, range-limited for the metric (see that file)
 #endif
 DisplayWrapper display;
 #endif
@@ -85,12 +85,13 @@ static inline uint16_t stringWidth(const String& s) {
 /// Select the font for the scroll area's *default* size (i.e. printOnScroll()
 /// callers that don't pass small=true): the Font Size preference's Normal/
 /// Small choice on the M32 Pocket (non-Accessibility), or always the normal
-/// 15pt font everywhere else. Small uses the ASCII-range
-/// IntelOneMono12ptAscii.h variant rather than the IntelOneMono 12pt used for
+/// 15pt font everywhere else. Small uses the range-limited
+/// IntelOneMono12ptScroll.h variant rather than the IntelOneMono 12pt used for
 /// a caller-forced small=true (e.g. a narrow IP-address line) - see that
-/// header for why. forceNormal overrides the preference (used by the boot
-/// splash, whose (c) glyph falls outside the small ASCII font's declared
-/// range). Everywhere else (OLED, and the Accessibility Edition) this is
+/// header for why. forceNormal overrides the preference; the boot splash uses
+/// it to keep its two lines at one size. (It used to be needed there because
+/// the small font could not render COPYRIGHT's (c) at all - that is no longer
+/// so.) Everywhere else (OLED, and the Accessibility Edition) this is
 /// always the normal (large) font; posScrollFont doesn't exist in those
 /// builds. Shared by setDefaultScrollFont() and printOnScroll() so the two
 /// font-selection rules can't drift apart.
@@ -99,7 +100,7 @@ static inline void scrollFont(boolean bold, boolean forceNormal) {
   if (forceNormal || !MorsePreferences::pliste[posScrollFont].value)
     display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
   else
-    display.setFont(bold ? &IntelOneMono_Bold12pt8b_Ascii : &IntelOneMono_Regular12pt8b_Ascii);
+    display.setFont(bold ? &IntelOneMono_Bold12pt8b_Scroll : &IntelOneMono_Regular12pt8b_Scroll);
 #else
   display.setFont(bold ? DialogInput_bold_15 : DialogInput_plain_15);
 #endif

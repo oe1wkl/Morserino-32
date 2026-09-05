@@ -86,7 +86,7 @@ namespace MorseOutput
   /// forceNormal overrides the Font Size preference to always draw the normal
   /// (large) size - for text that needs a glyph the small font doesn't have,
   /// e.g. the boot splash's copyright "(c)" (TFT's small font is ASCII-only,
-  /// see IntelOneMono12ptAscii.h). Ignored when small is also true.
+  /// see IntelOneMono12ptScroll.h). Ignored when small is also true.
   uint16_t printOnScroll(uint8_t line, FONT_ATTRIB how, uint8_t xpos, const String& mystring, boolean small = false, boolean forceNormal = false);
   void printToScroll(FONT_ATTRIB style, const String& text, boolean autoflush, boolean scroll);
   void printToScroll_internal(FONT_ATTRIB style, const String& text, boolean scroll);

@@ -1094,9 +1094,10 @@ void displayStartUp(uint16_t volt) {
     s += shortDate(COMPILEDATE);
   }
 
-  // forceNormal: the small font is ASCII-only (IntelOneMono12ptAscii.h) and
-  // can't render the "(c)" in COPYRIGHT - keep this one splash screen at the
-  // normal size regardless of the Font Size preference.
+  // forceNormal: keep this one splash screen at the normal size regardless of
+  // the Font Size preference. Originally this was required - the small font was
+  // declared ASCII-only and could not render COPYRIGHT's "(c)" at all - and it
+  // is now a plain size choice, since IntelOneMono12ptScroll.h covers it.
   MorseOutput::printOnScroll(0, REGULAR, 0, s, false, true);
   MorseOutput::printOnScroll(1, REGULAR, 0, COPYRIGHT, false, true);
 
