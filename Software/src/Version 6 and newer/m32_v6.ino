@@ -1398,6 +1398,10 @@ if (morseState == morseKeyer &&
        case 2:  MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
                 MorseOutput::clearDisplay();                                 // restore display
                 updateTopLine();
+                MorseOutput::refreshScrollArea(MorseOutput::relPos);         // clearDisplay() wiped the screen, but not
+                                                                              // textBuffer - repaint what was already
+                                                                              // there instead of leaving it blank until
+                                                                              // new output is generated on resume
                 if (morseState == morseGenerator || morseState == echoTrainer)
                     stopFlag = true;                                  // we stop what we had been doing
                 else
