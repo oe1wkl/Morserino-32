@@ -1093,10 +1093,14 @@ not a target: a file mastered right up against it comes out louder than the
 Morse code you are practising, which gets tiring in a long session.
 
 A ready-made set of five pairs – a fanfare, handbells, a marimba, a soft chime
-and an arcade-style pair – is available at
-[Sound Packs](https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs), already
-at a suitable level. They also serve as a starting point if you want to make
-your own.
+and an arcade-style pair – comes with the Configuration Tool, already at a
+suitable level. You do not have to download anything: under **Files**, the
+**Sound Packs** section plays each sound in your browser so you can hear it
+before deciding, installs the pair you pick with a single click, and can remove
+both files again to bring the built-in signals back. The same packs are also in
+the repository, at
+[Sound Packs](https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs),
+if you want them as a starting point for making your own.
 :::
 
 In this mode, the prompt word will not normally be displayed; only your

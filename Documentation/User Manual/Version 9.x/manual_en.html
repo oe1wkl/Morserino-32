@@ -754,7 +754,7 @@ The font family used is Lato.</p>
 <div class="note pocket pocket-a11y">
 <p>The two sounds that confirm a correct or a faulty response can be replaced by your own: upload an MP3 file as <em>/sounds/success.mp3</em> or <em>/sounds/error.mp3</em> with the Configuration Tool, and it will be played instead of the built-in beeps. If no such file is present, the built-in beeps are used.</p>
 <p>From version 9.0 on, the audio path no longer overdrives the sound chip, so your own sounds are reproduced cleanly – but they will also be quieter than they were on earlier firmware, where they were being distorted. If that bothers you, prepare them a little louder. Keep their peak level at or just below –1 dBFS: a file normalised to the full 0 dBFS will still distort, because the MP3 decoder runs out of headroom before the sound chip does. Note that this is a ceiling and not a target: a file mastered right up against it comes out louder than the Morse code you are practising, which gets tiring in a long session.</p>
-<p>A ready-made set of five pairs – a fanfare, handbells, a marimba, a soft chime and an arcade-style pair – is available at <a href="https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs">Sound Packs</a>, already at a suitable level. They also serve as a starting point if you want to make your own.</p>
+<p>A ready-made set of five pairs – a fanfare, handbells, a marimba, a soft chime and an arcade-style pair – comes with the Configuration Tool, already at a suitable level. You do not have to download anything: under <strong>Files</strong>, the <strong>Sound Packs</strong> section plays each sound in your browser so you can hear it before deciding, installs the pair you pick with a single click, and can remove both files again to bring the built-in signals back. The same packs are also in the repository, at <a href="https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs">Sound Packs</a>, if you want them as a starting point for making your own.</p>
 </div>
 <p>In this mode, the prompt word will not normally be displayed; only your response will be shown.</p>
 <p>The sub-menus are the same as for the CW Generator: Random, CW Abbrevs, English Words, Call Signs, Mixed, File Player and Practice Set.</p>
@@ -4627,6 +4627,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=deb43584d0f2 -->
+<!-- MANUALFRESH: lang=en src=6fd68429fa25 -->
 </body>
 </html>

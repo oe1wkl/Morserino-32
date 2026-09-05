@@ -1129,10 +1129,15 @@ ausgesteuert ist, klingt lauter als das Morsezeichen, das du gerade übst – un
 das wird in einer längeren Übungseinheit ermüdend.
 
 Ein fertiger Satz von fünf Paaren – eine Fanfare, Handglocken, ein Marimba, ein
-sanftes Glockenspiel und ein Paar im Arcade-Stil – steht unter
-[Sound Packs](https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs)
-bereit, bereits in passender Lautstärke. Sie eignen sich auch als Ausgangspunkt,
-wenn du eigene Töne erstellen möchtest.
+sanftes Glockenspiel und ein Paar im Arcade-Stil – ist bereits im
+Konfigurationswerkzeug enthalten, in passender Lautstärke. Du musst nichts
+herunterladen: Unter **Files** spielt dir der Abschnitt **Sound Packs** jeden Ton
+im Browser vor, sodass du ihn vor der Entscheidung hören kannst, überträgt das
+gewählte Paar mit einem einzigen Klick auf den Morserino und kann beide Dateien
+auch wieder entfernen, womit die eingebauten Signaltöne zurückkehren. Dieselben
+Pakete liegen auch im Repository unter
+[Sound Packs](https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs),
+falls du sie als Ausgangspunkt für eigene Töne verwenden möchtest.
 :::
 
 Die Vorgabe wird normalerweise nicht angezeigt; nur deine Antwort ist

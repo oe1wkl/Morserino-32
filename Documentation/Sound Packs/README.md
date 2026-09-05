@@ -8,8 +8,13 @@ starting point for your own.
 
 ## Installing a pack
 
-Each folder holds two files. Upload them with the **Configuration Tool**, under exactly
-these names:
+**You do not need these files.** All five packs are built into the Configuration Tool:
+open the **Files** tab, and the **Sound Packs** section plays each sound in your browser
+and installs the pair you choose with one click. It also removes both files again, which
+brings the built-in signals back. Nothing here has to be downloaded.
+
+The files in this folder are for making your own, or for uploading by hand. Each folder
+holds two; upload them with the Configuration Tool under exactly these names:
 
 | file in the pack | upload as |
 |---|---|
@@ -18,7 +23,11 @@ these names:
 
 The Morserino plays them instead of its built-in signals from then on. Delete them and
 the built-in signals come back. You can mix packs — a `success.mp3` from one and an
-`error.mp3` from another — and you can install just one of the two.
+`error.mp3` from another — and you can install just one of the two. (The one-click
+installer always writes both; mix by uploading one file by hand afterwards.)
+
+Whenever these files change, re-run `devdocs/signal-tones/embed_sound_packs.py` so the
+copies embedded in the Configuration Tool follow. CI fails if they drift.
 
 ## The packs
 

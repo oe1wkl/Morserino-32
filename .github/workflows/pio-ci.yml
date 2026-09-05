@@ -24,6 +24,14 @@ jobs:
       - name: Check manual "What is new" matches the change history
         run: python3 "Documentation/User Manual/sync_whatsnew.py" --check
 
+      # The Configuration Tool carries the sound packs base64-embedded, so a
+      # user can hear one and install it without downloading anything. That is
+      # a second copy of files that live under "Documentation/Sound Packs/",
+      # and a second copy that can drift silently is the same trap as the
+      # generated manuals below.
+      - name: Check the embedded sound packs match the pack files
+        run: python3 devdocs/signal-tones/embed_sound_packs.py --check
+
       # The manual's HTML and PDF are generated files that are nevertheless
       # committed, and nothing used to force a rebuild when their sources
       # changed -- so they quietly drifted, and the V9 PDFs spent a week
