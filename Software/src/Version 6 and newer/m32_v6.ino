@@ -249,6 +249,13 @@ boolean DIT_LAST_CLOSED = false; // was the most recent paddle *closure* the dit
                                  // Ultimatic tracks this live, on every rising edge - not to be
                                  // confused with the DIT_LAST latch bit, which says which
                                  // *element* was sent last. See doPaddleIambic().
+boolean ultDitMemory = false, ultDahMemory = false;
+                                 // Ultimatic memories. Armed by a paddle *closure* and consumed
+                                 // when an element starts, so a closure guarantees its element
+                                 // even if the paddle is long released by the time the next
+                                 // element is chosen (QST 5/1955 points 1 and 7). The DIT_L/DAH_L
+                                 // latches cannot do this job: they are sampled, and only inside
+                                 // the Curtis-B / Latency windows.
 unsigned int ditLength ;        // dit length in milliseconds - 100ms = 60bpm = 12 wpm
 unsigned int dahLength ;        // dahs are 3 dits long
 KEYERSTATES keyerState;
@@ -1518,6 +1525,8 @@ void cleanStartSettings() {
     echoTrainerState = START_ECHO;
     generatorState = KEY_UP;
     keyerState = IDLE_STATE;
+    ultDitMemory = ultDahMemory = false;         // a mode abandoned mid-character must not leave
+                                                 // an Ultimatic memory pending for the next one
     interWordTimer = 4294967000;                 // almost the biggest possible unsigned long number :-) - do not output a space at the beginning
     pausePromptDeadline = PAUSE_PROMPT_IDLE;     // no longer paused - the reappear check is gated on !genIsActive
                                                   // anyway, but disarm it too so it starts fresh next time we pause
@@ -1527,6 +1536,30 @@ void cleanStartSettings() {
     autoStop = nextword;                             // for autoStop mode
     keyOut(false, true, 0, 0);
     updateTopLine();
+}
+
+/// Ultimatic element selection, as described in QST 5/1955 ("Summary of Actions of the Keys").
+/// Every other keyer mode decides from the sampled DIT_L/DAH_L latches, which are only written
+/// inside the Curtis-B and Latency windows and stay set once written. Ultimatic cannot use them:
+/// a closure inside a window would be missed (point 1/7), and a latch left over from a paddle that
+/// has since been released would key an element the operator is no longer asking for (point 4).
+/// So we decide from the memories plus the *live* paddle levels, and then express the answer in
+/// the latch bits, so the state machine below can carry on unchanged.
+void ultimaticSelect(boolean dit, boolean dah) {
+    keyerControl &= ~(DIT_L + DAH_L);                       // the sampled latches do not apply here
+    if (ultDitMemory && ultDahMemory)                       // both memories: the later closure wins
+        keyerControl |= (DIT_LAST_CLOSED ? DIT_L : DAH_L);
+    else if (ultDitMemory)                                  // one memory: it is guaranteed its element
+        keyerControl |= DIT_L;
+    else if (ultDahMemory)
+        keyerControl |= DAH_L;
+    else if (dit && dah)                                    // nothing pending, both still held:
+        keyerControl |= (DIT_LAST_CLOSED ? DIT_L : DAH_L);  // the one closed last keeps control
+    else if (dit)                                           // nothing pending, one still held
+        keyerControl |= DIT_L;
+    else if (dah)
+        keyerControl |= DAH_L;
+    // nothing pending and nothing held: no bit set, and the character ends
 }
 
 ///////////////////
@@ -1566,9 +1599,33 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   /// other paddle held down all the while - re-arms its memory and seizes control of the sequencer.
   /// On a simultaneous closure the dah wins here, while IDLE_STATE below starts with the dit: that
   /// is the long-standing M32 behaviour for a squeeze (one dit, then a series of dahs).
+  /// The same edges arm the Ultimatic memories. The one thing we do not want to take for a
+  /// closure is contact bounce on the paddle that is currently sending - a paddle that chatters,
+  /// or a touch pad that loses contact for an instant, would otherwise insert an element nobody
+  /// asked for. So a re-closure of that paddle is ignored if it was open for less than
+  /// CHATTER_GUARD_MS. That is short enough that no deliberate movement can fall inside it
+  /// (at 60 WpM a dit is 20 ms, so even a fast flick is several times longer), and the opposite
+  /// paddle is never filtered at all.
+  /// This deliberately does *not* use the Latency preference. Latency is a window measured from
+  /// the end of an element, and at 35-40 WpM it is long enough to cover a genuine re-tap of the
+  /// same paddle: at Latency 7/8 a second, fully intended tap 18-30 ms after the first was being
+  /// swallowed. Found by Pawel, SP5DNA, on the air - the simulator only showed it once he said
+  /// where to look. Ultimatic therefore ignores Latency, as it ignores the CurtisB percentages.
+  static const long CHATTER_GUARD_MS = 5;
   static boolean prevDit = false, prevDah = false;
-  if (dit && !prevDit)  DIT_LAST_CLOSED = true;
-  if (dah && !prevDah)  DIT_LAST_CLOSED = false;
+  static long ditOpenedAt = 0, dahOpenedAt = 0;
+  if (!dit && prevDit) ditOpenedAt = millis();          // note when each paddle went open
+  if (!dah && prevDah) dahOpenedAt = millis();
+  if (dit && !prevDit) {
+      DIT_LAST_CLOSED = true;
+      boolean bounce = (millis() - ditOpenedAt) < CHATTER_GUARD_MS;
+      if (!(bounce && (keyerControl & DIT_LAST)))    ultDitMemory = true;
+  }
+  if (dah && !prevDah) {
+      DIT_LAST_CLOSED = false;
+      boolean bounce = (millis() - dahOpenedAt) < CHATTER_GUARD_MS;
+      if (!(bounce && !(keyerControl & DIT_LAST)))   ultDahMemory = true;
+  }
   prevDit = dit; prevDah = dah;
 
 
@@ -1622,6 +1679,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             if ( MorsePreferences::pliste[posACS].value > 0 && (millis() <= acsTimer))  // if we do automatic character spacing, and haven't waited for (3 or whatever) dits...
               break;
             clearPaddleLatches();                           // always clear the paddle latches at beginning of new element
+            ultDitMemory = false;                           // ... and consume the Ultimatic dit memory
             keyerControl |= DIT_LAST;                        // remember that we process a DIT
 
             ktimer = ditLength;                              // prime timer for dit
@@ -1643,6 +1701,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             if ( MorsePreferences::pliste[posACS].value > 0 && (millis() <= acsTimer))  // if we do automatic character spacing, and haven't waited for 3 dits...
               break;
             clearPaddleLatches();                          // clear the paddle latches
+            ultDahMemory = false;                          // ... and consume the Ultimatic dah memory
             keyerControl &= ~(DIT_LAST);                    // clear 'dit last' latch  - we are not processing a DIT
 
             ktimer = dahLength;
@@ -1704,6 +1763,8 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             else {
                 updatePaddleLatch(dit, dah);          // latch paddle state while between elements
                 if (millis() >= ktimer) {               // at end of INTER-ELEMENT
+                    if (MorsePreferences::pliste[posCurtisMode].value == ULTIMATIC)
+                        ultimaticSelect(dit, dah);      // Ultimatic decides its own way, see above
                     switch(keyerControl) {
                           case 3:                                         // both paddles are latched
                           case 7:
@@ -1714,11 +1775,11 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                                         else                                // but when first element was a DAH
                                                                setDAHstate();            // the next element is a DAH again!
                                                         break;
-                                      case ULTIMATIC:   if (DIT_LAST_CLOSED)                 // control belongs to the paddle
-                                                               setDITstate();            // closed last: it keeps sending its
-                                                        else                                // own element type until it is
-                                                               setDAHstate();            // released or the other one is flicked
-                                                        break;
+                                      case ULTIMATIC:   if (DIT_LAST_CLOSED)                 // not normally reached: ultimaticSelect()
+                                                               setDITstate();            // sets at most one latch bit. Kept so that
+                                                        else                                // the mode still behaves if that ever
+                                                               setDAHstate();            // changes, rather than falling through to
+                                                        break;                              // the iambic default below.
                                       default:          if (keyerControl & DIT_LAST)     // Iambic: last element was a dit - this is case 7, really
                                                             setDAHstate();               // next element will be a DAH
                                                         else                                // and this is case 3 - last element was a DAH
@@ -1762,6 +1823,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                                                               // use the extended time in echo trainer mode to allow longer space between characters,
                                                                               // like in listening
                                    keyerControl = 0;                          // clear all latches completely before we go to IDLE
+                                   ultDitMemory = ultDahMemory = false;       // nothing may be left pending either
                           break;
                     } // switch keyerControl : evaluation of flags
                 }

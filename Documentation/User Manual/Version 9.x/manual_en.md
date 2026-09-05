@@ -704,8 +704,15 @@ down, briefly releasing one of them and closing it again — just a flick —
 hands control back to that paddle, which then keeps sending its own
 element type until you release it again or flick the other one. This
 works for either paddle, including the one that started the character.
-This mode also responds to entries activated on the opposite paddle with
-the same timing preferences defined for Iambic B mode.
+
+Every closure of a paddle is remembered, and is guaranteed to produce at
+least one element of its type — however briefly you touch it, and wherever
+in the current element it falls. Ultimatic therefore has no use for the
+timing preferences of the Iambic modes: **CurtisB DahT%**, **CurtisB
+DitT%** and **Latency** all have no effect in Ultimatic mode. Contact
+bounce is taken care of instead by a short fixed guard, so a chattering
+contact — or a touch pad that loses contact for an instant — does not add
+an element you did not ask for.
 
 **Non-Squeeze Mode:** This simulates the behavior of a single-lever
 paddle when using a dual-lever paddle. Operators who are accustomed to
@@ -3036,10 +3043,10 @@ to **Straight Key** in order to use a straight key).
 | Paddle Polarity | Defines which paddle side is for dits, and which for dahs | -. dah-dit / **.- di-dah** |
 | External Pol. | Allows to reverse the polarity of an external paddle. Use this if your external paddle is wired "the wrong way", so that dots and dashes of internal and external paddle are all on the same side.                                                                          | **Normal** / Reversed |
 | Keyer Mode | Sets the Iambic Mode (A or B), Ultimatic, Non-Squeeze or Straight Key; see the section **CW Keyer**      |                                                                                                                                   Curtis A / **Curtis B** /  Ultimatic / Non-Squeeze / Straight Key |
-| CurtisB DahT% | Timing in Curtis B mode for dahs; see the section **CW Keyer**. Also influences the behavior in Ultimatic mode!                                                                                                                                 0 – 100, in steps of 5 | [**35 – 55**\] |
-| CurtisB DitT% | Timing in Curtis B mode for dits; see the section **CW Keyer** Also influences the behavior in Ultimatic mode!                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
+| CurtisB DahT% | Timing in Curtis B mode for dahs; see the section **CW Keyer**. Applies to Iambic B only — Ultimatic ignores it.                                                                                                                                 0 – 100, in steps of 5 | [**35 – 55**\] |
+| CurtisB DitT% | Timing in Curtis B mode for dits; see the section **CW Keyer**. Applies to Iambic B only — Ultimatic ignores it.                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
 | AutoChar Spce | Minimum spacing between characters | Off / min. 2 / **3** / 4 dots |
-| Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
+| Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. Has no effect in Ultimatic mode, which handles the paddles its own way. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
 | Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Using the Bluetooth Keyboard functionality**).* The last option, **BLE Serial**, instead makes the M32 Serial Protocol (see **Using the Serial Output of the M32**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
 | BLT \<AR> | Only relevant in **Generic Kbd** mode (see **Bluetooth Use** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
 

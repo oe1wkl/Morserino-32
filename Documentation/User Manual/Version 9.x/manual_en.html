@@ -658,7 +658,8 @@ The font family used is Lato.</p>
 <p>In other words, in Curtis B (iambic B) mode, the opposite paddle is checked while the current element (dit or dah) is output. If a paddle is pressed during that time, an additional element opposite the current one is added. This is not the case in Mode A. Since Mode B is tricky to use, it was later changed so that the paddles are checked only after a certain percentage of the element’s duration has elapsed. You can set this percentage with the preferences <strong>CurtisB DahT%</strong> and <strong>CurtisB DitT%</strong>.</p>
 <p>If you set them to 0, the lowest value, the Mode is identical with the original Curtis B Mode; the later developed “enhanced” Curtis B mode uses a percentage of roughly 35%-40%. If you set the percentage to 100, the highest value, the behavior is the same as in Curtis A mode.</p>
 <p>This preference allows you to set any behavior between Curtis A and original Curtis B modes on a continuous scale, and you can set the percentage for dits and dahs separately (this makes sense, as the timing for dits is just a third of that for dahs, and so you might find that you want a higher percentage for dits to feel comfortable).</p>
-<p><strong>Ultimatic Mode</strong>: In Ultimatic mode, pressing both paddles generates a dit or dah. The type of sound generated depends on which paddle is hit first. Afterwards, the opposite sound is generated continuously. This is advantageous for characters like J, B, 1, 2, 6, and 7. Control always belongs to the paddle that was closed <em>last</em>: with both paddles held down, briefly releasing one of them and closing it again — just a flick — hands control back to that paddle, which then keeps sending its own element type until you release it again or flick the other one. This works for either paddle, including the one that started the character. This mode also responds to entries activated on the opposite paddle with the same timing preferences defined for Iambic B mode.</p>
+<p><strong>Ultimatic Mode</strong>: In Ultimatic mode, pressing both paddles generates a dit or dah. The type of sound generated depends on which paddle is hit first. Afterwards, the opposite sound is generated continuously. This is advantageous for characters like J, B, 1, 2, 6, and 7. Control always belongs to the paddle that was closed <em>last</em>: with both paddles held down, briefly releasing one of them and closing it again — just a flick — hands control back to that paddle, which then keeps sending its own element type until you release it again or flick the other one. This works for either paddle, including the one that started the character.</p>
+<p>Every closure of a paddle is remembered, and is guaranteed to produce at least one element of its type — however briefly you touch it, and wherever in the current element it falls. Ultimatic therefore has no use for the timing preferences of the Iambic modes: <strong>CurtisB DahT%</strong>, <strong>CurtisB DitT%</strong> and <strong>Latency</strong> all have no effect in Ultimatic mode. Contact bounce is taken care of instead by a short fixed guard, so a chattering contact — or a touch pad that loses contact for an instant — does not add an element you did not ask for.</p>
 <p><strong>Non-Squeeze Mode:</strong> This simulates the behavior of a single-lever paddle when using a dual-lever paddle. Operators who are accustomed to single-lever paddles may have difficulty using dual-lever paddles because they sometimes squeeze the paddles inadvertently, especially at higher speeds. Non-squeeze mode ignores squeezing, which makes it easier for these operators to use a dual-lever paddle.</p>
 <div class="note">
 <p>The Iambic and Ultimatic modes can only be used with the built-in touch paddle or an external dual-lever paddle. The selection of these modes is irrelevant when using an external single-lever paddle.</p>
@@ -2639,12 +2640,12 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>CurtisB DahT%</td>
-<td>Timing in Curtis B mode for dahs; see the section <strong>CW Keyer</strong>. Also influences the behavior in Ultimatic mode! 0 – 100, in steps of 5</td>
+<td>Timing in Curtis B mode for dahs; see the section <strong>CW Keyer</strong>. Applies to Iambic B only — Ultimatic ignores it. 0 – 100, in steps of 5</td>
 <td>[<strong>35 – 55</strong>]</td>
 </tr>
 <tr>
 <td>CurtisB DitT%</td>
-<td>Timing in Curtis B mode for dits; see the section <strong>CW Keyer</strong> Also influences the behavior in Ultimatic mode! 0 – 100, in steps of 5</td>
+<td>Timing in Curtis B mode for dits; see the section <strong>CW Keyer</strong>. Applies to Iambic B only — Ultimatic ignores it. 0 – 100, in steps of 5</td>
 <td>[<strong>55 – 95</strong>]</td>
 </tr>
 <tr>
@@ -2654,7 +2655,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Latency</td>
-<td>Defines how long after generating the current element (dot or dash) the paddles will be „deaf”. If it is 0%, you have to release the paddle while the last element is still „on”. If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length.</td>
+<td>Defines how long after generating the current element (dot or dash) the paddles will be „deaf”. If it is 0%, you have to release the paddle while the last element is still „on”. If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. Has no effect in Ultimatic mode, which handles the paddles its own way.</td>
 <td>A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is <strong>50%</strong>, i.e. half a dot length).</td>
 </tr>
 <tr>
@@ -4617,6 +4618,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=1a412935a659 -->
+<!-- MANUALFRESH: lang=en src=50e0f1b1480e -->
 </body>
 </html>

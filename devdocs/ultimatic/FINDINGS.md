@@ -1,5 +1,11 @@
 # Ultimatic mode vs. the 1955 original
 
+> **Follow-up:** SP5DNA later found two further deviations — a brief squeeze being
+> swallowed, and a recurring window that splices in an unwanted dah. Both predate
+> this fix and both come from Ultimatic sharing Iambic-B's Curtis timing, not from
+> the selection logic here. See `FOLLOWUP_CURTIS_B.md`; §5 below understates the
+> issue, and says why.
+
 **Status:** bug confirmed and fixed on branch `ultimatic-conformance`.
 Reported by **Paweł, SP5DNA** (August 2026), who went back to the original QST
 article rather than to second-hand descriptions. His reading was correct.

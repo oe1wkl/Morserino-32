@@ -660,7 +660,8 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Konkret: Im Modus Curtis B (Iambic B) wird das gegenüberliegende Paddle geprüft, während das aktuelle Element (Dit oder Dah) ausgegeben wird. Wird in dieser Zeit ein Paddle gedrückt, wird ein zusätzliches, entgegengesetztes Element hinzugefügt – im Modus A nicht so. Da Modus B schwierig zu bedienen ist, wurde er später so geändert, dass die Paddles erst nach einem bestimmten Prozentsatz der Elementdauer geprüft werden. Diesen Prozentsatz kannst du mit den Einstellungen <strong>CurtisB DahT%</strong> und <strong>CurtisB DitT%</strong> festlegen.</p>
 <p>Bei 0 (niedrigster Wert) entspricht der Modus dem ursprünglichen Curtis B; der später entwickelte „verbesserte” Curtis B verwendet etwa 35–40 %. Bei 100 (höchster Wert) verhält sich der Modus wie Curtis A.</p>
 <p>Diese Einstellung erlaubt es dir, jedes beliebige Verhalten zwischen Curtis A und dem ursprünglichen Curtis B auf einer stufenlosen Skala einzustellen; du kannst den Prozentsatz für Dits und Dahs getrennt festlegen (sinnvoll, da die Zeitdauer für Dits nur ein Drittel der von Dahs beträgt).</p>
-<p><strong>Ultimatic-Modus</strong>: Durch Drücken beider Paddles wird ein Dit oder Dah erzeugt. Was zuerst kommt, hängt davon ab, welches Paddle zuerst gedrückt wurde. Danach wird kontinuierlich der entgegengesetzte Ton erzeugt. Vorteilhaft für Zeichen wie J, B, 1, 2, 6 und 7. Die Kontrolle hat immer jenes Paddle, das <em>zuletzt</em> geschlossen wurde: Sind beide Paddles gedrückt und man lässt eines davon kurz los und schließt es wieder — ein kurzes Antippen genügt —, so übernimmt dieses Paddle wieder die Kontrolle und sendet seinen eigenen Elementtyp so lange, bis man es erneut loslässt oder das andere Paddle antippt. Das gilt für beide Paddles, auch für jenes, mit dem das Zeichen begonnen wurde. Dieser Modus reagiert auch auf das gegenüberliegende Paddle mit denselben Zeiteinstellungen wie Iambic B.</p>
+<p><strong>Ultimatic-Modus</strong>: Durch Drücken beider Paddles wird ein Dit oder Dah erzeugt. Was zuerst kommt, hängt davon ab, welches Paddle zuerst gedrückt wurde. Danach wird kontinuierlich der entgegengesetzte Ton erzeugt. Vorteilhaft für Zeichen wie J, B, 1, 2, 6 und 7. Die Kontrolle hat immer jenes Paddle, das <em>zuletzt</em> geschlossen wurde: Sind beide Paddles gedrückt und man lässt eines davon kurz los und schließt es wieder — ein kurzes Antippen genügt —, so übernimmt dieses Paddle wieder die Kontrolle und sendet seinen eigenen Elementtyp so lange, bis man es erneut loslässt oder das andere Paddle antippt. Das gilt für beide Paddles, auch für jenes, mit dem das Zeichen begonnen wurde.</p>
+<p>Jedes Schließen eines Paddles wird gespeichert und erzeugt garantiert mindestens ein Element seiner Art — egal wie kurz du es berührst und an welcher Stelle des laufenden Elements es passiert. Ultimatic braucht daher die Zeiteinstellungen der Iambic-Modi nicht: <strong>CurtisB DahT%</strong>, <strong>CurtisB DitT%</strong> und <strong>Latency</strong> haben im Ultimatic-Modus keine Wirkung. Kontaktprellen fängt stattdessen eine kurze, fest eingestellte Sperre ab — ein prellender Kontakt oder ein kurzzeitiger Kontaktverlust am Touch-Paddle fügt damit kein ungewolltes Element ein.</p>
 <p><strong>Non-Squeeze-Modus</strong>: Simuliert das Verhalten einer Einhebeltaste bei Verwendung eines Doppelhebel-Paddles. Bediener, die an die Einhebeltaste gewöhnt sind, drücken das Doppelpaddle manchmal versehentlich zusammen, besonders bei höheren Geschwindigkeiten. Non-Squeeze ignoriert das Zusammendrücken und erleichtert so die Umstellung.</p>
 <div class="note">
 <p>Die Modi Iambic und Ultimatic können nur mit dem eingebauten Touchpaddle oder einem externen Doppelhebel-Paddle verwendet werden. Bei einem externen Einhebel-Paddle ist die Modusauswahl irrelevant.</p>
@@ -2629,12 +2630,12 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 <tr>
 <td><strong>CurtisB DahT%</strong></td>
-<td>Timing im Curtis-B-Modus für Dahs; siehe Abschnitt <strong>CW Keyer</strong>. Beeinflusst auch das Verhalten im Ultimatic-Modus!</td>
+<td>Timing im Curtis-B-Modus für Dahs; siehe Abschnitt <strong>CW Keyer</strong>. Gilt nur für Iambic B — Ultimatic ignoriert diese Einstellung.</td>
 <td>0–100, in 5er-Schritten [<strong>35–55</strong>]</td>
 </tr>
 <tr>
 <td><strong>CurtisB DitT%</strong></td>
-<td>Timing im Curtis-B-Modus für Dits; siehe Abschnitt <strong>CW Keyer</strong>. Beeinflusst auch das Verhalten im Ultimatic-Modus!</td>
+<td>Timing im Curtis-B-Modus für Dits; siehe Abschnitt <strong>CW Keyer</strong>. Gilt nur für Iambic B — Ultimatic ignoriert diese Einstellung.</td>
 <td>0–100, in 5er-Schritten [<strong>55–95</strong>]</td>
 </tr>
 <tr>
@@ -2644,7 +2645,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 <tr>
 <td><strong>Latency</strong></td>
-<td>Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub” sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an” ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck.</td>
+<td>Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub” sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an” ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. Im Ultimatic-Modus ohne Wirkung, der behandelt die Paddles auf eigene Weise.</td>
 <td>Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: <strong>50 %</strong>, d.h. eine halbe Punktlänge).</td>
 </tr>
 <tr>
@@ -4607,6 +4608,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=7c0abbc603c6 -->
+<!-- MANUALFRESH: lang=de src=4db30399c029 -->
 </body>
 </html>

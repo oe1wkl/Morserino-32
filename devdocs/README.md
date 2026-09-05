@@ -62,8 +62,9 @@ devdocs/
 ├── qso-bot/                      ← QSO Bot behaviour review + improvement backlog
 │   └── IMPROVEMENT_PLAN.md       ·   already-implemented vs. genuine remaining gaps
 └── ultimatic/                    ← Ultimatic keyer mode vs. the 1955 original
-    ├── FINDINGS.md               ·   the QST source, the bug, the fix, bench to-do
-    └── keyer_sim.cpp             ·   host-side keyer simulator, old vs. new logic
+    ├── FINDINGS.md               ·   the QST source, the point-6 bug, the fix
+    ├── FOLLOWUP_CURTIS_B.md      ·   Ultimatic vs. the Curtis-B timing (decision pending)
+    └── keyer_sim.cpp             ·   host-side keyer simulator; `scan` runs the follow-up
 ```
 
 ## Conventions
