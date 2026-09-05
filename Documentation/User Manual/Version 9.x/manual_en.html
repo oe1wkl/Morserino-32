@@ -178,7 +178,7 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=61272ee90fe0 v=9 -->
+<!-- WHATSNEW:BEGIN en=1941e7ef0922 v=9 -->
 <p>What is new in Version 9?</p>
 <ul>
 <li>A single firmware installer for every Morserino, at <a href="https://www.morserino.info/install.html">https://www.morserino.info/install.html</a>. It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.</li>
@@ -195,6 +195,7 @@ The font family used is Lato.</p>
 <li>M32 Pocket only: the Configuration Tool now shows the <strong>game scores</strong> stored on your device - the high score tables of all games, and whether Radio Cave has a saved game - on the User Identity tab, next to the call sign and name they were played under. A button there clears them all, doing the same as „Reset Scores“ in the preferences menu on the device.</li>
 <li>The Koch Trainer has a new entry, <strong>Preview Char</strong>, next to <strong>Learn New Chr</strong>. It opens a list of every character of your Koch course — in the order you learn them — and then plays the one you pick, over and over, exactly the way Learn New Chr does. Useful for going back to a character that never quite stuck, or for hearing what is still ahead of you. While it is playing, the FN button has a third position beyond speed and volume: with the ENCODER set to „character“ you can step through the whole course by ear, without going back to the list, and the top line shows which lesson and character you are on. Thanks to Christian, OE1CKO.</li>
 <li>A new preference <strong>Boost Practice</strong> makes the characters of your <strong>Practice Set</strong> turn up more often — Moderate or Strong — instead of your only being able to drill them on their own. It applies to the Random Characters exercises of CW Generator and Echo Trainer, and to the Koch Trainer’s own character generation. It never introduces a character the exercise would not have produced anyway: it only shifts the odds within whatever you already have selected, so a Practice Set digit has no effect while you are practising letters only. Off by default. The <strong>Practice Set</strong> picker itself now sits directly next to it in the preferences of the CW Generator, the Echo Trainer and the Koch Trainer, so you can choose the characters and decide how hard to push them in one place, instead of having to go to the top-level <strong>Set Preferences</strong> for the one and back for the other. Thanks to Christian, OE1CKO.</li>
+<li>A new preference <strong>Echo Think T.</strong> gives you thinking time in the Echo Trainer: after the prompt, the Morserino waits a further 0 to 20 seconds before it starts expecting your answer. This is meant for head copy — hearing a whole call sign or word and putting it together in your head before you touch the paddle. Until now the only way to buy that time was to slow the prompt down or to widen the character and word spacing, and both of those change the exercise itself, on the whole device rather than only in the Echo Trainer. The number you set is the number of seconds waited; 0, the default, leaves the Echo Trainer exactly as it was. Nothing else changes: as soon as you start keying, your answer is judged the moment you finish it, as before. The idea and the original implementation are Ian Gilchrist’s, VK1HF, who built it for his own head-copy practice; thanks to him, and to Christian, OE1CKO, who reworked it.</li>
 <li>The installer now works in <strong>Firefox</strong> as well (from version 151, which added support for the Webserial API), alongside Chrome, Edge and Opera. Safari still does not support it.</li>
 <li>Custom Characters is now working like any other built-in Koch order, you can use select lesson, learn new character and the other Koch modes in the same way as with the built-in Koch sequences.</li>
 <li>There is a new feature called „Practice Sets“ that takes the place of the previous Custom character sets, which allows you to train a subset of individual characters which you pick directly on the device and then you can use them for CW generator or Echo Trainer.</li>
@@ -767,6 +768,7 @@ The font family used is Lato.</p>
 <p>If this preference is set to a value between 5 and 250 (and not to “Unlimited”), the M32, when pausing after that number of words, will show (for 5 seconds) how many incorrect entries you made (and the number of words) on the top line of the display. <em>Be aware that you can make repeated errors regarding one word, and all of them will be counted!</em></p>
 <p><strong>Adaptv. Speed</strong>: This should help you to train for maximum speed. Whenever your response was correct, the speed will be increased by 1 wpm (word per minute); whenever you make a mistake, it will decrease by 1 wpm. Thus you will eventually always train at your limit, which certainly is the best way to push your limits…​</p>
 <p><strong>Echo Speed Max:</strong> Set this to the maximum speed you would like to use for keying in Echo Trainer mode. If you set the speed faster than this value with the Encoder, or if it is getting faster as a result of adaptive speed, the speed for keying your input stays at that maximum (so you can train your copying at faster speeds than you are comfortable to use when keying).</p>
+<p><strong>Echo Think T.</strong>: Adds a fixed pause of 0–20 seconds after the prompt, before the Echo Trainer expects your response. This is particularly useful for head-copy practice with call signs, where you need time to mentally reconstruct what you heard before keying it back, without having to reduce the prompt speed or change the dot/dash ratio or word spacing — which would affect the whole device, not just the Echo Trainer.</p>
 <p><strong>Intercharacter Space</strong> and <strong>Interword Space</strong>: The first preference defines the pause between characters in the prompt the M32 is generating (the same as in the Generator modes, see there); both preferences also have an influence on the “grace time” you have when responding to the prompt. If that grace time is exceeded, the M32 concludes that you finished your input.</p>
 <h2 data-number="5.4" id="koch-trainer"><span class="header-section-number">5.4</span> Koch Trainer</h2>
 <p>In the 1930s, the German engineer Ludwig Koch developed a method for learning Morse code, in which each lesson introduces an additional character. The order is not alphabetical or sorted by the length of the Morse codes, but rather follows a rhythmic pattern. This way, the individual characters are learned as a rhythm rather than a succession of dits and dahs.</p>
@@ -2862,6 +2864,11 @@ The font family used is Lato.</p>
 <td>Set this to the maximum speed you would like to use for keying in Echo Trainer mode. If you set the speed faster than this value with the Encoder, or if it is getting faster as a result of adaptive speed, the speed for keying your input stays at that maximum.</td>
 <td><strong>No limit</strong> / 5 – 50 wpm (in steps of 5 wpm)</td>
 </tr>
+<tr>
+<td>Echo Think T.</td>
+<td>Adds a fixed pause after the prompt before the Echo Trainer expects your response, useful for head-copy practice.</td>
+<td><strong>0 s</strong> – 20 s (in steps of 1 s)</td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.3.7" id="preferences-regarding-transmitting-decoding-and-qso-bot"><span class="header-section-number">6.3.7</span> Preferences regarding Transmitting, Decoding and QSO Bot</h3>
@@ -4619,6 +4626,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=c5b3ed6ee3e6 -->
+<!-- MANUALFRESH: lang=en src=5b72ac3a9bea -->
 </body>
 </html>
