@@ -178,7 +178,7 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=1941e7ef0922 v=9 -->
+<!-- WHATSNEW:BEGIN en=7206bd1528ee v=9 -->
 <p>What is new in Version 9?</p>
 <ul>
 <li>A single firmware installer for every Morserino, at <a href="https://www.morserino.info/install.html">https://www.morserino.info/install.html</a>. It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.</li>
@@ -207,7 +207,8 @@ The font family used is Lato.</p>
 <li>M32 Pocket only: the two signals that tell you whether your answer was right or wrong - in the Echo Trainer, and in the games - have been reworked. After the clipping fix above they had become much too quiet on the small built-in loudspeaker, having unintentionally been relying on the distortion for their carrying power. They are now built from a full set of harmonics rather than a plain tone, which that loudspeaker reproduces far better: the acknowledgement is bright and trumpet-like, the error signal darker, more like a bassoon. Both are clearly audible again while sitting a little below the volume of the Morse code itself, whatever Tone Volume you have set - they are meant to inform you, not to startle you. The error signal also falls in pitch, the way it always has on the classic Morserino, instead of rising like the acknowledgement; a rising “error” had crept into the M32 Pocket version by mistake. If you would rather have something else entirely, both signals can still be replaced by MP3 files of your own (see the note in the Echo Trainer section of the manual).</li>
 <li>M32 Pocket only: the volume steps for the built-in loudspeaker have been redistributed. A small loudspeaker needs considerably more drive than headphones before it produces anything audible, so with the now undistorted tone the lowest few settings had become inaudible and that part of the range was simply wasted. The steps are now smaller and span a narrower range, so every setting from 1 upwards does something. The maximum is unchanged - but because the steps in between are smaller, your usual setting will now be at a different number than before. Headphones are unaffected and keep their almost-silent lowest setting; they are, however, about 3 dB quieter at maximum, which was too loud.</li>
 <li>A Bluetooth (BLE Serial) connection now has to be allowed on the Morserino itself. When an app asks for a session, the device shows „Allow connect?“ and waits for you to press FN - a USB cable has to be plugged in by someone standing next to your device, while anything within radio range can connect over Bluetooth, so the Morserino asks before it hands over control. You are only asked in the main menu (in a training mode the request is refused without interrupting you), an app that reconnects within a minute is let straight back in, and while a session is open a small Bluetooth symbol in the top line shows that something is connected.</li>
-<li>The <strong>Practice Set</strong> picker is now reachable from the preferences of the CW Generator, the Echo Trainer and the Koch Trainer, and not only from the top-level <strong>Set Preferences</strong> — it sits next to the new <strong>Boost Practice</strong> setting that acts on it. <!-- WHATSNEW:END --></li>
+<li>The <strong>Practice Set</strong> picker is now reachable from the preferences of the CW Generator, the Echo Trainer and the Koch Trainer, and not only from the top-level <strong>Set Preferences</strong> — it sits next to the new <strong>Boost Practice</strong> setting that acts on it.</li>
+<li>The <strong>VK/ZL</strong> setting of <strong>Calls Region</strong> now generates call signs that look like the ones you actually hear on the air down there. It used to pick the call area at random, which made VK8 (the Northern Territory, about a quarter of a million people) as likely as VK2 (New South Wales, over eight million); the areas are now weighted by population, and roughly one call in six is a ZL rather than a VK. Suffixes are two or three letters, as they are in practice. <strong>Calls Region</strong> was also missing from the manual entirely — it has been there since V8.1 — and is now described in both languages. Thanks to Ian Gilchrist, VK1HF, whose setting this is and who worked out the weighting. <!-- WHATSNEW:END --></li>
 </ul>
 <h1 data-number="2" id="connectors-and-controls"><span class="header-section-number">2</span> Connectors and Controls</h1>
 <section id="m32pocket" class="pocket pocket-a11y" data-number="2.1">
@@ -2772,8 +2773,8 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Calls Region</td>
-<td>Select if you want to see call signs from around the world, or just from a certain continent. <strong>This parameter is ignored when the call length has been set to a maximum of 3 characters.</strong></td>
-<td><strong>All</strong> / Europe / N America / S America / Africa / Asia / Oceania</td>
+<td>Select if you want to see call signs from around the world, or just from a certain continent. <strong>VK/ZL</strong> narrows it further still, to Australian and New Zealand call signs only: the call areas are weighted by population, so VK2 and VK3 come up far more often than VK8 or VK0, and roughly one call in six is a ZL. <strong>This parameter is ignored when the call length has been set to a maximum of 3 characters</strong> — there is no 3-character VK or ZL call either.</td>
+<td><strong>All</strong> / Europe / N America / S America / Africa / Asia / Oceania / VK/ZL</td>
 </tr>
 <tr>
 <td>Call Prefixes</td>
@@ -4626,6 +4627,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=5b72ac3a9bea -->
+<!-- MANUALFRESH: lang=en src=deb43584d0f2 -->
 </body>
 </html>

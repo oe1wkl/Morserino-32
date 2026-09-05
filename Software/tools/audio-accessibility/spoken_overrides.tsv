@@ -12,8 +12,8 @@
 #   pio run -e pocketwroom-accessibility -t uploadfs   (from Software/src/)
 #
 # Examples (edit freely / delete):
-.- dit dah	dot dash
 -. dah dit	dash dot
+.- dit dah	dot dash
 1 ms	1 millisecond
 10 min	10 minutes
 10 wpm	10 words per minute
@@ -55,17 +55,22 @@ Adapt. Rand.	Adaptive Random
 All Chars	All characters
 Alph+Num+Int	alpha, numerals and interpunctions
 Alpha + Num	alpha and numerals
-CW Abbrevs	CW Abbreviations
+BLE Serial	B L E serial
 Calibrate Batt	Calibrate Battery
+char	character
 Char by char	Character by character
 Custom Chars	Custom Characters
+CW Abbrevs	CW Abbreviations
 Disp MAC Addr	Disp MAC Address
 Generic Kbd	Generic Keyboard
 Hardware Conf	Hardware Configuration
+iCW/Ext Trx	iCW or External Transceiver
 Interp+ProSn	Interpunctions and Pro Signs
 Interpunct.	interpunctions
 Keyer & Gen.	Keyer and Generator
 Keyer&Gen.&RX	Keyer and Generator and receiver
+l-o: Lsp Muted	line out Speaker Muted
+l-o: Var. Vol.	line out with variable volume
 Learn New Chr	Learn New Character
 Num+Int+ProS	numerals, Interpunctions and Prosigns
 Num+Interp.	numerals and Interpunctions
@@ -74,13 +79,9 @@ Preview Char	Preview Character
 S America	South America
 Sound & Disp	Sound and Display
 Update Firmw	Update Firmware
-BLE Serial	B L E serial
 VBand Kbd	VBand Keyboard
 VBand+Decoded	VBand and Decoded
+VK/ZL	Australia and New Zealand
 WiFi Trx	WiFi Transceiver
 WiFi Tx OFF	WiFi transmit OFF
 WiFi Tx ON	WiFi Transmit ON
-char	character
-iCW/Ext Trx	iCW or External Transceiver
-l-o: Lsp Muted	line out Speaker Muted
-l-o: Var. Vol.	line out with variable volume

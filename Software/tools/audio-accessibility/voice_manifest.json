@@ -696,6 +696,7 @@
     "86492718": "alpha, numerals and interpunctions",
     "154a6734": "Asia",
     "040579cc": "at sign",
+    "0df8dc4a": "Australia and New Zealand",
     "080b6845": "Auto character spacing",
     "964032f6": "B L E serial",
     "7d724e4b": "Bandwidth",
@@ -991,7 +992,7 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "310bab80",
+  "pack_stamp": "753a77fa",
   "counts": {
     "menu": 40,
     "pref_labels": 50,
@@ -999,6 +1000,6 @@
     "actions": 21,
     "phrases_total": 301,
     "atoms_total": 138,
-    "clips_total": 502
+    "clips_total": 503
   }
 }

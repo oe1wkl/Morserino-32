@@ -207,6 +207,7 @@ alpha and numerals
 alpha, numerals and interpunctions
 Asia
 at sign
+Australia and New Zealand
 Auto character spacing
 B L E serial
 Bandwidth

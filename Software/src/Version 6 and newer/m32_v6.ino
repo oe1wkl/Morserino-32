@@ -2192,7 +2192,13 @@ String getRandomCall(int maxLength) {
     int pos = 0;
     uint8_t contMask;
     uint8_t contPref = MorsePreferences::pliste[posCallContinent].value;
-    bool vkzlOnly = (contPref == 7);
+    // "max. 3 characters" asks for one of the handful of 3-character calls, which
+    // exist only in a few NA/EU prefixes - so every region setting is deliberately
+    // ignored in that case (contMask = CONT_ALL below, and the manual says so).
+    // VK/ZL follows the same rule instead of being a silent exception: there is no
+    // 3-character VK or ZL call, so honouring the region here would either produce
+    // a call that breaks the length the user asked for, or nothing at all.
+    bool vkzlOnly = (contPref == 7) && (maxLength != 1);
     // Get filter settings
     if (maxLength != 1)     /// means the max call length is not 3 
         contMask = vkzlOnly ? CONT_OC : getContinentMask(contPref);
@@ -2239,7 +2245,11 @@ String getRandomCall(int maxLength) {
         int suffixLen = (random(0, 10) < 3) ? 2 : 3;
         for (int i = 0; i < suffixLen; i++)
             call[pos++] = 'a' + random(0, 26);
-        call[pos] = ' ';
+        // Terminate the string, as both other return paths do. This was a raw NUL
+        // *byte* in the source rather than the escape - it compiled to the right
+        // value, but it made the whole file binary to grep, diff and any editor
+        // that declines to open it.
+        call[pos] = '\0';
         lastGeneratedCallContinent = CONT_OC;
         lastGeneratedCallCqZone    = isVK ? 29 : 32;
         return String(call);
@@ -2258,7 +2268,6 @@ String getRandomCall(int maxLength) {
         if (!(cont & contMask)) continue;
         if (weight < minWeight) continue;
         if ((int)strlen(pfxBuf) > maxPfxLen) continue;
-        if (vkzlOnly && strncmp(pfxBuf, "VK", 2) != 0 && strncmp(pfxBuf, "ZL", 2) != 0) continue;
         totalWeight += weight;
     }
  
@@ -2286,7 +2295,6 @@ String getRandomCall(int maxLength) {
         if (!(cont & contMask)) continue;
         if (weight < minWeight) continue;
         if ((int)strlen(pfxBuf) > maxPfxLen) continue;
-        if (vkzlOnly && strncmp(pfxBuf, "VK", 2) != 0 && strncmp(pfxBuf, "ZL", 2) != 0) continue;
         cumulative += weight;
         if (cumulative > pick) {
             chosen = i;
