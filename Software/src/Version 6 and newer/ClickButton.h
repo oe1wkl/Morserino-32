@@ -31,6 +31,7 @@ class ClickButton
     boolean _lastState;           // previous button reading
     int _clickCount;              // Number of button clicks within multiclickTime milliseconds
     long _lastBounceTime;         // the last time the button input pin was toggled, due to noise or a press
+    boolean _longClickPending;    // a long click was reported by the previous Update() and has now been seen
 };
 
 #endif /* #ifndef ClickButton_H_ */
