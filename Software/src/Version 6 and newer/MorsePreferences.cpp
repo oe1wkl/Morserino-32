@@ -86,7 +86,7 @@ const char * prefName[] = {
                       "echoToneShift", "interWordSpace", "farnsworthMode", "randomOption",
                       "randomLength", "randomBoost", "callLength", "callContinent", "callCommon","abbrevLength", "wordLength",
                       "GeneratorDispl", "wordDoubler", "echoDisplay", "echoRepeats", "echoConf",
-                      "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt", "echoSpeedMax",
+                      "KeyExternalTx", "LoraCwTransmit", "goertzelBW", "speedAdapt", "echoSpeedMax", "echoThinkTime",
                       "KochSeq", "carouselStart", "latency", "randomFile", "extAudioOnDecod", "timeOut",
                       "quickStart", "outputCase", "autoStop", "maxSequence", "LoraChannel",
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
@@ -369,6 +369,14 @@ parameter MorsePreferences::pliste[] = {
     "Maximum response speed in echo trainer (0=no limit)",
     true,
     {"No limit", "5 wpm", "10 wpm", "15 wpm", "20 wpm", "25 wpm", "30 wpm", "35 wpm", "40 wpm", "45 wpm", "50 wpm"}
+  },
+  {
+    0, 0, 20, 1,                                                // Echo trainer: thinking time in seconds before a response is expected (0 = no extra wait); unmapped so value == seconds (see PR #207)
+    "Echo Think T.",
+    "Seconds to wait before echo trainer expects your response",
+    false,
+    {},
+    "Echo think time in seconds"
   },
   {
     0, 0, 4, 1,                                                 // select Koch sequence: 0 = native/JLMC, 1 = LCWO, 2 = CW Academy, 3 = LICW, 4 = Custom
@@ -709,7 +717,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
-                                                   posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
+                                                   posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
                                                  };
 
  prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
@@ -717,7 +725,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
                                                    posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
-                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
+                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
                                                  };
 
  prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
@@ -732,7 +740,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posPracticeChars, posRandomBoost, posAbbrevLength,  posWordLength,
-                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
+                                                   posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
                                                  };
 
  prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
@@ -780,7 +788,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
-                                                   posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax,
+                                                   posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
                                                    posKeyExternalTx, posLoraCwTransmit,
                                                    posLoraChannel,
                                                    posGoertzelBandwidth, posExtAudioOnDecode,
@@ -1081,6 +1089,9 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
         announceValue(pos, valueLine, withHeading);                      // totals on entry only
     }
 #endif
+    if (pos == posEchoThinkTime)                                        // display-only unit suffix: kept out of the
+        valueLine += "s";                                                // a11y announce above so it still speaks the bare
+                                                                           // number, matching the existing integer atoms
     if (valueLine.length() < maxLength)             // guard: for a >14-char value the subtraction wraps
         valueLine += emptyLine.substring(0,maxLength - valueLine.length());  // unsigned and appends the whole emptyLine
 

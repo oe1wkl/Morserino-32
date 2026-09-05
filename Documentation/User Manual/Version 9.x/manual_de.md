@@ -1195,6 +1195,15 @@ Wert hinaus erhöhst oder sie durch Adaptive Speed schneller wird,
 bleibt die Eingabegeschwindigkeit bei diesem Maximum (so kannst du
 bei höheren Geschwindigkeiten kopieren als beim Geben).
 
+**Echo Think T.**: Fügt nach der Vorgabe eine feste Pause von 0–20 Sekunden
+ein, bevor der Echo Trainer deine Antwort erwartet. Das ist besonders
+beim Kopf-Kopieren ("head copy") von Rufzeichen hilfreich, wo du Zeit
+brauchst, um das Gehörte gedanklich zusammenzusetzen, bevor du es
+tastest — ohne dafür die Vorgabegeschwindigkeit zu reduzieren oder das
+Verhältnis von Punkt zu Strich bzw. die Wortabstände zu verändern, was
+sich auf das ganze Gerät auswirken würde und nicht nur auf den Echo
+Trainer.
+
 **Interchar Spc** und **Interword Spc**: Der erste Wert legt den
 Zeichenabstand in der Vorgabe fest (wie in den Generatormodi); beide
 Einstellungen wirken sich auch auf die Wartezeit aus, die du nach der
@@ -3592,6 +3601,7 @@ beginnen musst!
 | **Tone Shift** | Die Tonhöhe beim Verwenden des Echo Trainers oder beim Senden im Transceiver-Modus kann dieselbe sein wie die des Empfängers (bzw. der Vorgabe im Echo Trainer – **No Tone Shift**), oder einen Halbton tiefer (**Down**) oder höher (**Up**). | **No Tone Shift** / Up 1/2 Tone / Down 1/2 Tone |
 | **Adaptv. Speed** | Wenn auf ON gesetzt, wird die Geschwindigkeit im Modus Echo Trainer bei jeder richtigen Antwort um 1 WpM erhöht und bei jedem Fehler um 1 WpM verringert. | ON / **OFF** |
 | **Echo Speed Max** | Legt die maximale Keying-Geschwindigkeit im Modus Echo Trainer fest. Wenn du die Geschwindigkeit mit dem ENCODER über diesen Wert hinaus erhöhst oder sie durch Adaptive Speed schneller wird, bleibt die Eingabegeschwindigkeit bei diesem Maximum (so kannst du bei höheren Geschwindigkeiten kopieren als du comfortabel geben kannst). | **No limit** / 5–50 WpM (in 5-WpM-Schritten) |
+| **Echo Think T.** | Fügt nach der Vorgabe eine feste Pause ein, bevor der Echo Trainer deine Antwort erwartet — nützlich zum Kopf-Kopieren. | **0 s** – 20 s (in 1-Sekunden-Schritten) |
 
 ### Einstellungen zum Senden, Dekodieren und QSO Bot
 

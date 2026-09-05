@@ -137,6 +137,7 @@
     "Echo Repeats": "25b011d4",
     "Echo Speed Max": "f39dc120",
     "Echo Trainer": "076fb6ab",
+    "Echo think time in seconds": "8c3cf088",
     "Encoder Click": "d0e264d9",
     "English Words": "0cf804ce",
     "Europe": "912d59cd",
@@ -779,6 +780,7 @@
     "0dfac86c": "Echo Prompt",
     "25b011d4": "Echo Repeats",
     "f39dc120": "Echo Speed Max",
+    "8c3cf088": "Echo think time in seconds",
     "076fb6ab": "Echo Trainer",
     "d0e264d9": "Encoder Click",
     "0cf804ce": "English Words",
@@ -989,14 +991,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "c3abdcb0",
+  "pack_stamp": "310bab80",
   "counts": {
     "menu": 40,
-    "pref_labels": 49,
+    "pref_labels": 50,
     "option_values": 173,
     "actions": 21,
-    "phrases_total": 300,
+    "phrases_total": 301,
     "atoms_total": 138,
-    "clips_total": 501
+    "clips_total": 502
   }
 }
