@@ -192,6 +192,28 @@ def loudness_db(x, through_speaker=True):
     return 20 * math.log10(max(_weighted_rms(sounding, fn), 1e-12))
 
 
+def short_term_loudness_db(x, window_ms=100.0, through_speaker=True):
+    """Loudest 100 ms of the sound, A-weighted (and by default through the speaker
+    model). Use this, not loudness_db(), whenever the sounds being compared have
+    different time structures -- a bell with a long decay tail and a flat 100 ms beep
+    can share an RMS and be nowhere near equally loud, because plain RMS averages the
+    tail in. The ear integrates over roughly this window, so the loudest window is the
+    fairer measure for short events."""
+    n = int(window_ms / 1000.0 * SR)
+    if len(x) <= n:
+        return loudness_db(x, through_speaker)
+    hop = max(1, n // 4)
+    best = -300.0
+    for i in range(0, len(x) - n, hop):
+        seg = x[i:i + n]
+        if np.max(np.abs(seg)) < 1e-5:
+            continue
+        fn = ((lambda f: a_weight_mag(f) * speaker_mag(f)) if through_speaker
+              else a_weight_mag)
+        best = max(best, 20 * math.log10(max(_weighted_rms(seg, fn), 1e-12)))
+    return best
+
+
 def apply_speaker_sim(x):
     """Render (not measure) through the speaker model, for listening on a laptop."""
     n = len(x)

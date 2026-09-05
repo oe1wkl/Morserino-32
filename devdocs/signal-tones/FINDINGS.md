@@ -128,8 +128,15 @@ trumpet/bassoon as rendered, fixed level (no preference).**
 
 | | timbre | pitch | level | vs CW (speaker) | vs CW (phones) |
 |---|---|---|---|---|---|
-| OK | trumpet | 440 / 587 | 0.43 | −5.8 dB | −10.7 dB |
+| OK | trumpet | 440 / 587 | 0.299 | −9.0 dB | −13.9 dB |
 | ERR | bassoon | 366 / 330 | 0.61 | −5.9 dB | −7.8 dB |
+
+**Bench-corrected 2026-09-05.** Both were first set to −6 dB and matched to each other.
+On the device ERR was right and OK was still a little loud, so OK went to −9. The two are
+now deliberately unequal, and that is the better design: you get the acknowledgement far
+more often than the error, and it tells you nothing you did not already know, so it should
+be the more discreet of the pair. The model ranked the options correctly but could not
+have told us this — it is exactly the kind of judgement the bench is for.
 
 Three files:
 
@@ -148,26 +155,28 @@ option value or on-screen message. Confirmed — re-running the extractor leaves
 
 Builds clean for `pocketwroom`, `heltec_wifi_lora_32_V2` and `pocketwroom-accessibility`.
 
-**Still owed: a bench check on the device.** Everything above is modelled. The model is
-good enough to have caught the bug and to rank the options, but it cannot tell you how loud
-the thing actually is in a quiet room.
+**Bench-checked on the device** (Willi, 2026-09-05): ERR confirmed good at −6 dB, OK taken
+down to −9. Everything else above is modelled; the model was good enough to catch the bug
+and rank the options, but the final level was settled by ear, as it had to be.
 
 ## Regression guard
 
 `verify_firmware.py` reads the weights, the level constants and the pitches back **out of
 the firmware sources** and re-measures them, failing if a voice drifts from the reference
-recipe, if a level would clip, if either signal leaves the −6 ±2 dB window against the CW
-sidetone, or if OK and ERR fall more than 1.5 dB apart. Run it after touching
+recipe, if a level would clip, if either signal misses its own target against the CW
+sidetone by more than 2 dB, or if the acknowledgement ever creeps up to within 1 dB of the
+error signal. Run it after touching
 `ComplexRotorSine.hpp` or `soundSignalOK`/`soundSignalERR`:
 
 ```
 python3 verify_firmware.py [out.wav]
 ```
 
-The OK/ERR imbalance is the one worth guarding: in the V9 beta the two signals were
-generated at an identical digital level and still came out 4.5 dB apart, because pitch
-decides how much of the energy lands in the driver's efficient band. Nothing on the bench
-or in the code review would have shown that.
+The relationship between the two is what is worth guarding, not their absolute levels: in
+the V9 beta they were generated at an identical digital level and came out 4.5 dB apart --
+the wrong way round -- because pitch decides how much of the energy lands in the driver's
+efficient band. A code review cannot see that, and on the bench it presents as a vague
+"the confirm tone is the annoying one".
 
 ## Follow-up: an MP3 jingle pack (Willi's idea, not yet built)
 

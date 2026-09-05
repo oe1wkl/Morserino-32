@@ -1121,7 +1121,16 @@ werden also sauber wiedergegeben – sie sind dadurch aber auch leiser als unter
 früherer Firmware, wo sie verzerrt wurden. Wenn dich das stört, bereite sie
 etwas lauter auf. Halte den Spitzenpegel bei oder knapp unter –1 dBFS: eine auf
 volle 0 dBFS normalisierte Datei verzerrt weiterhin, weil dem MP3-Decoder schon
-vor dem Audio-Chip der Aussteuerungsspielraum ausgeht.
+vor dem Audio-Chip der Aussteuerungsspielraum ausgeht. Beachte, dass dies eine
+Obergrenze ist und kein Zielwert: eine Datei, die bis dicht an sie heran
+ausgesteuert ist, klingt lauter als das Morsezeichen, das du gerade übst – und
+das wird in einer längeren Übungseinheit ermüdend.
+
+Ein fertiger Satz von fünf Paaren – eine Fanfare, Handglocken, ein Marimba, ein
+sanftes Glockenspiel und ein Paar im Arcade-Stil – steht unter
+[Sound Packs](https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs)
+bereit, bereits in passender Lautstärke. Sie eignen sich auch als Ausgangspunkt,
+wenn du eigene Töne erstellen möchtest.
 :::
 
 Die Vorgabe wird normalerweise nicht angezeigt; nur deine Antwort ist

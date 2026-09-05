@@ -751,7 +751,8 @@ The font family used is Lato.</p>
 <p>In this mode the Morserino-32 generates a word or group of characters as a prompt. You have the same selection options as with the CW Generator. Then, it waits for you to repeat these characters using the paddle (or a straight key). If you wait too long or your response is not identical to what was generated, an error is indicated on the display and by sound (a signal that falls in pitch, while the acknowledgement rises), and the prompt word is repeated. If you enter the correct characters, this is indicated acoustically and on the screen. Then, you are prompted for the next word.</p>
 <div class="note pocket pocket-a11y">
 <p>The two sounds that confirm a correct or a faulty response can be replaced by your own: upload an MP3 file as <em>/sounds/success.mp3</em> or <em>/sounds/error.mp3</em> with the Configuration Tool, and it will be played instead of the built-in beeps. If no such file is present, the built-in beeps are used.</p>
-<p>From version 9.0 on, the audio path no longer overdrives the sound chip, so your own sounds are reproduced cleanly – but they will also be quieter than they were on earlier firmware, where they were being distorted. If that bothers you, prepare them a little louder. Keep their peak level at or just below –1 dBFS: a file normalised to the full 0 dBFS will still distort, because the MP3 decoder runs out of headroom before the sound chip does.</p>
+<p>From version 9.0 on, the audio path no longer overdrives the sound chip, so your own sounds are reproduced cleanly – but they will also be quieter than they were on earlier firmware, where they were being distorted. If that bothers you, prepare them a little louder. Keep their peak level at or just below –1 dBFS: a file normalised to the full 0 dBFS will still distort, because the MP3 decoder runs out of headroom before the sound chip does. Note that this is a ceiling and not a target: a file mastered right up against it comes out louder than the Morse code you are practising, which gets tiring in a long session.</p>
+<p>A ready-made set of five pairs – a fanfare, handbells, a marimba, a soft chime and an arcade-style pair – is available at <a href="https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs">Sound Packs</a>, already at a suitable level. They also serve as a starting point if you want to make your own.</p>
 </div>
 <p>In this mode, the prompt word will not normally be displayed; only your response will be shown.</p>
 <p>The sub-menus are the same as for the CW Generator: Random, CW Abbrevs, English Words, Call Signs, Mixed, File Player and Practice Set.</p>
@@ -4618,6 +4619,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=7b099e4cce56 -->
+<!-- MANUALFRESH: lang=en src=c5b3ed6ee3e6 -->
 </body>
 </html>

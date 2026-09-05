@@ -1086,7 +1086,15 @@ own sounds are reproduced cleanly – but they will also be quieter than they we
 on earlier firmware, where they were being distorted. If that bothers you,
 prepare them a little louder. Keep their peak level at or just below –1 dBFS: a
 file normalised to the full 0 dBFS will still distort, because the MP3 decoder
-runs out of headroom before the sound chip does.
+runs out of headroom before the sound chip does. Note that this is a ceiling and
+not a target: a file mastered right up against it comes out louder than the
+Morse code you are practising, which gets tiring in a long session.
+
+A ready-made set of five pairs – a fanfare, handbells, a marimba, a soft chime
+and an arcade-style pair – is available at
+[Sound Packs](https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/Sound%20Packs), already
+at a suitable level. They also serve as a starting point if you want to make
+your own.
 :::
 
 In this mode, the prompt word will not normally be displayed; only your
