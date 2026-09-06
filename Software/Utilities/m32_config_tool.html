@@ -2605,7 +2605,10 @@ async function listFiles(){
     fileListData=data;
     renderFileList();
     log('Files: '+((data.files&&data.files.length)||0));
-  }catch(e){fileListData=null;log('Files: '+e.message)}
+  }catch(e){
+    fileListData=null; log('Files: '+e.message);
+    renderFileList();     // repaint, or the sound-pack ticks stand on data we no longer have
+  }
   hideLoading();
 }
 
@@ -2830,9 +2833,26 @@ function deviceUsesSoundFiles(){
   return !(m&&m.slug==='Classic');
 }
 
+// Can the listing be trusted to say what is NOT on the device?
+//
+// Three states, not two: "the listing says there are no sound files" and "there
+// is no usable listing" are indistinguishable if you only ask installedSound(),
+// and the cards then quietly claim that no pack is installed. Reported from the
+// bench: after a spell on the Preferences tab and back to Files, the tick was
+// gone while the pack was still on the device. A listing that fails outright is
+// wrong the other way — it leaves the previous tick standing.
+function soundListingUsable(){
+  if(!fileListData||!fileListData.files) return false;   // fetch failed, or never ran
+  // The same truncation the file table warns about: the firmware ran out of
+  // buffer and dropped entries, so an absent /sounds/... proves nothing.
+  if(fileListData.files.length>0&&fileListData.total===undefined) return false;
+  return true;
+}
+
 // Which pack is on the device, judged by file size — the device keeps no record
 // of where success.mp3 came from. Within one slot every pack has a distinct
 // length, so a match is unambiguous; anything else is the user's own file.
+// Only meaningful when soundListingUsable() — otherwise null means "no idea".
 function installedSound(which){
   var files=(fileListData&&fileListData.files)||[];
   var target=SOUND_TARGETS[which], found=null;
@@ -2872,8 +2892,14 @@ function renderSoundPacks(){
   notice.innerHTML=(connected&&!usable)
     ? '<div class="snap-import-warn">This Morserino plays its own built-in signals and does not read sound files — that is an M32 Pocket feature. You can still listen to the packs here.</div>'
     : '';
-  var have={success:installedSound('success'),error:installedSound('error')};
-  document.getElementById('packRevertBtn').disabled=!connected||!usable||(!have.success&&!have.error);
+  var known=soundListingUsable();
+  var have=known?{success:installedSound('success'),error:installedSound('error')}
+                :{success:null,error:null};
+  if(connected&&usable&&!known)
+    notice.innerHTML+='<div class="pack-note">The file list could not be read, so which pack is on the device is unknown. Installing still works; "Use built-in sounds" will remove whatever is there.</div>';
+  // When the listing is unknown, Revert stays available: it is the recovery
+  // action, and it reports per file what it actually managed to remove.
+  document.getElementById('packRevertBtn').disabled=!connected||!usable||(known&&!have.success&&!have.error);
   grid.innerHTML='';
   SOUND_PACKS.forEach(function(p){
     var isOn=have.success===p.id&&have.error===p.id;
@@ -2917,8 +2943,12 @@ async function soundPackRevert(){
   if(!confirm('Remove both sound files?\n\nThe Morserino goes back to its own built-in signals.')) return;
   document.querySelectorAll('#packGrid button, #packRevertBtn').forEach(function(b){b.disabled=true});
   var removed=0, failed=[];
+  var known=soundListingUsable();
   for(var which in SOUND_TARGETS){
-    if(!installedSound(which)) continue;
+    // Skip only what we positively know is absent. With no trustworthy listing,
+    // attempt both -- deleting a file that is not there is answered with an
+    // error we report, which beats silently removing nothing.
+    if(known&&!installedSound(which)) continue;
     // sendAndParse, not a discarded waitForResponse: the firmware answers
     // "File not found" as an error, and a delete that quietly did nothing would
     // leave the old sound playing while this said it was gone.
