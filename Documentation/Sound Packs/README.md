@@ -29,6 +29,7 @@ the built-in signals come back. You can mix packs — a `success.mp3` from one a
 | **marimba** | three wooden notes, rising | two wooden notes, falling | dry and short — good if you find a ringing tone intrusive between repetitions |
 | **chime** | soft glass, rising fourth | soft glass, falling fourth | slow and quiet, for a quiet room or if any beep startles you |
 | **arcade** | fast chiptune arpeggio | descending chiptune | for the games |
+| **soft & simple** | short, gentle ascending tone | short, gentle descending tone | minimal and unobtrusive — fades into the background in long sessions |
 
 Every success sound **rises** in pitch and every error sound **falls**. That is the
 Morserino's convention and it is worth keeping in anything you make yourself: you should
