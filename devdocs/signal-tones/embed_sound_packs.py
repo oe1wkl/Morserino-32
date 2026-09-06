@@ -14,9 +14,10 @@ Why embedded rather than fetched:
     Anything fetched at run time would have to be added to both, and a miss is
     a silent 404 on one surface only.
   * Preview needs the bytes in the page anyway (an <audio> data: URI), and
-    picking between five packs without hearing them is not much of an offer.
-  * All ten files come to ~118 KB, ~157 KB once base64-encoded. That is small
-    enough that removing every network dependency is the better trade.
+    picking between packs without hearing them is not much of an offer.
+  * The packs are small -- a few tens of KB each once base64-encoded -- so
+    removing every network dependency is the better trade. The script prints
+    the running total; keep an eye on it if the collection keeps growing.
 
 Usage:
     python3 embed_sound_packs.py            # rewrite the generated block
@@ -28,6 +29,7 @@ bitten before (see the manual HTML/PDF gate in .github/workflows/pio-ci.yml).
 """
 
 import base64
+import re
 import sys
 from pathlib import Path
 
@@ -44,12 +46,24 @@ END = "// === END GENERATED SOUND PACKS ==="
 # card. Adding a pack directory without adding it here is an error rather than a
 # silent omission -- see check_packs().
 PACKS = [
-    ("fanfare", "Fanfare", "Closest to the built-in signals, with a bit more of an occasion made of it"),
-    ("bells",   "Bells",   "Bright and ringing, clearly audible across a room"),
-    ("marimba", "Marimba", "Dry and short, if you find a ringing tone intrusive between repetitions"),
-    ("chime",   "Chime",   "Slow and quiet, for a quiet room or if any beep startles you"),
-    ("arcade",  "Arcade",  "Fast chiptune, for the games"),
+    ("fanfare",       "Fanfare",       "Closest to the built-in signals, with a bit more of an occasion made of it"),
+    ("bells",         "Bells",         "Bright and ringing, clearly audible across a room"),
+    ("marimba",       "Marimba",       "Dry and short, if you find a ringing tone intrusive between repetitions"),
+    ("chime",         "Chime",         "Slow and quiet, for a quiet room or if any beep startles you"),
+    ("soft & simple", "Soft & Simple", "Minimal and unobtrusive, fades into the background in long sessions"),
+    ("arcade",        "Arcade",        "Fast chiptune, for the games"),
 ]
+
+
+def slug(folder):
+    """A folder name is a human label, not an identifier.
+
+    The id ends up inside a JavaScript string inside an HTML onclick attribute,
+    so a folder called "soft & simple" would put a bare "&" there -- harmless
+    today, and one apostrophe away from breaking the attribute. Derive an
+    identifier instead and let the folder name stay prose.
+    """
+    return re.sub(r"[^a-z0-9]+", "-", folder.lower()).strip("-")
 
 
 def check_packs():
@@ -85,7 +99,7 @@ def build_block():
     for pack_id, name, blurb in PACKS:
         ok, err = b64(pack_id, "success.mp3"), b64(pack_id, "error.mp3")
         total += len(ok) + len(err)
-        lines.append('{id:"%s",name:"%s",blurb:"%s",' % (pack_id, name, blurb))
+        lines.append('{id:"%s",name:"%s",blurb:"%s",' % (slug(pack_id), name, blurb))
         lines.append(' success:"%s",' % ok)
         lines.append(' error:"%s"},' % err)
     lines.append("];")

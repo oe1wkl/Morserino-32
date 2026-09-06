@@ -8,7 +8,7 @@ starting point for your own.
 
 ## Installing a pack
 
-**You do not need these files.** All five packs are built into the Configuration Tool:
+**You do not need these files.** Every pack here is built into the Configuration Tool:
 open the **Files** tab, and the **Sound Packs** section plays each sound in your browser
 and installs the pair you choose with one click. It also removes both files again, which
 brings the built-in signals back. Nothing here has to be downloaded.

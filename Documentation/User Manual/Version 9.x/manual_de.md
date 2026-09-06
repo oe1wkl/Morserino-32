@@ -1128,9 +1128,10 @@ Obergrenze ist und kein Zielwert: eine Datei, die bis dicht an sie heran
 ausgesteuert ist, klingt lauter als das Morsezeichen, das du gerade übst – und
 das wird in einer längeren Übungseinheit ermüdend.
 
-Ein fertiger Satz von fünf Paaren – eine Fanfare, Handglocken, ein Marimba, ein
-sanftes Glockenspiel und ein Paar im Arcade-Stil – ist bereits im
-Konfigurationswerkzeug enthalten, in passender Lautstärke. Du musst nichts
+Ein fertiger Satz von sechs Paaren – eine Fanfare, Handglocken, ein Marimba, ein
+sanftes Glockenspiel, ein zurückhaltendes Paar „soft & simple“ und ein Paar im
+Arcade-Stil – ist bereits im Konfigurationswerkzeug enthalten, in passender
+Lautstärke. Du musst nichts
 herunterladen: Unter **Files** spielt dir der Abschnitt **Sound Packs** jeden Ton
 im Browser vor, sodass du ihn vor der Entscheidung hören kannst, überträgt das
 gewählte Paar mit einem einzigen Klick auf den Morserino und kann beide Dateien

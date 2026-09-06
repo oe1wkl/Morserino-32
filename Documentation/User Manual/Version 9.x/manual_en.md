@@ -1092,9 +1092,9 @@ runs out of headroom before the sound chip does. Note that this is a ceiling and
 not a target: a file mastered right up against it comes out louder than the
 Morse code you are practising, which gets tiring in a long session.
 
-A ready-made set of five pairs – a fanfare, handbells, a marimba, a soft chime
-and an arcade-style pair – comes with the Configuration Tool, already at a
-suitable level. You do not have to download anything: under **Files**, the
+A ready-made set of six pairs – a fanfare, handbells, a marimba, a soft chime,
+a minimal "soft & simple" pair and an arcade-style pair – comes with the
+Configuration Tool, already at a suitable level. You do not have to download anything: under **Files**, the
 **Sound Packs** section plays each sound in your browser so you can hear it
 before deciding, installs the pair you pick with a single click, and can remove
 both files again to bring the built-in signals back. The same packs are also in
