@@ -98,6 +98,11 @@
     .pref-row:hover{background:#f8fbfd;position:relative;z-index:50}
     .pref-name{font-size:15px;font-weight:700;color:var(--text);min-width:150px;flex-shrink:0;display:flex;align-items:center;gap:6px}
     .pref-control{flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end}
+    /* The compile-time default, reported by firmware from V9 on. Fixed width so
+       the column lines up down the group instead of ragging with value length. */
+    .pref-default{font-size:12px;color:var(--muted);white-space:nowrap;width:132px;text-align:right;flex-shrink:0}
+    .pref-default.differs{color:var(--accent);font-weight:700;cursor:pointer}
+    .pref-default.differs:hover{text-decoration:underline}
     .pref-select{font-family:Lato,Arial,sans-serif;font-size:15px;padding:6px 10px;border:1px solid #b0c0cc;border-radius:4px;background:#fff;color:var(--text);min-width:160px;cursor:pointer}
     .pref-select:focus{border-color:var(--accent);outline:none}
     .pref-slider-wrap{display:flex;align-items:center;gap:8px;flex:1;max-width:320px}
@@ -1825,7 +1830,77 @@ function createPrefRow(p){
     slider.onchange=(function(name){return function(){setPref(name,parseInt(this.value))}})(p.name);
     wrap.appendChild(slider); wrap.appendChild(valSpan); controlEl.appendChild(wrap);
   }
-  row.appendChild(controlEl); return row;
+  row.appendChild(controlEl);
+  var defEl=createPrefDefaultEl(p);
+  if(defEl) row.appendChild(defEl);
+  return row;
+}
+
+// ---- Defaults -------------------------------------------------------------
+// Firmware from V9 on reports each parameter's compile-time default alongside
+// its value (MorsePreferences::captureDefaults() takes a copy at boot, because
+// readPreferences() overwrites pliste[] moments later and the default is gone
+// from then on). Older firmware sends no "default" and simply gets no column —
+// there is deliberately no table of defaults in this tool to fall back on: a
+// second copy of 45 values would go stale the first time one of them changed,
+// with nothing to catch it.
+
+// Render a raw value the way the row's own control does: the mapped label when
+// the parameter has one, the bare number otherwise.
+function prefValueText(p,v){
+  var m=p['mapped values'];
+  if(p.isMapped&&m&&m[v]!==undefined&&m[v]!=='') return m[v];
+  return String(v);
+}
+
+function createPrefDefaultEl(p){
+  if(p['default']===undefined) return null;      // firmware predates the field
+  var el=document.createElement('span');
+  updatePrefDefaultEl(el,p);
+  return el;
+}
+
+function updatePrefDefaultEl(el,p){
+  var d=p['default'];
+  if(d===undefined) return;
+  var txt=prefValueText(p,d);
+  if(p.value===d){
+    el.className='pref-default';
+    el.textContent='default: '+txt;
+    el.title='This setting is at its default value';
+    el.onclick=null;
+  }else{
+    el.className='pref-default differs';
+    el.textContent='default: '+txt+' ↺';
+    el.title='Click to put "'+p.name+'" back to its default ('+txt+')';
+    el.onclick=function(){
+      // The row's own widget is not what triggered this, so move it as well --
+      // otherwise the slider keeps pointing at the value it no longer has.
+      setPref(p.name,d).then(function(){ syncPrefControl(p.name,d) });
+    };
+  }
+}
+
+// Move a row's select/slider to <value> without going through its onchange.
+function syncPrefControl(name,value){
+  var row=document.getElementById('pref-row-'+name.replace(/[^a-zA-Z0-9]/g,'_'));
+  if(!row) return;
+  var sel=row.querySelector('.pref-select');
+  if(sel){ sel.value=String(value); return }
+  var sl=row.querySelector('.pref-slider');
+  if(sl){
+    sl.value=value;
+    var v=row.querySelector('.pref-slider-val'); if(v) v.textContent=value;
+  }
+}
+
+// Called after a value changes, so the column does not go stale until reload.
+function refreshPrefDefaultEl(name){
+  var p=prefDetails[name]; if(!p) return;
+  var row=document.getElementById('pref-row-'+name.replace(/[^a-zA-Z0-9]/g,'_'));
+  if(!row) return;
+  var el=row.querySelector('.pref-default');
+  if(el) updatePrefDefaultEl(el,p);
 }
 
 // Practice Set is an action item (no pliste[] entry, see CLAUDE.md), so it
@@ -1871,6 +1946,7 @@ async function setPref(name,value){
     if(prefDetails[name]) prefDetails[name].value=value;
     var row=document.getElementById('pref-row-'+name.replace(/[^a-zA-Z0-9]/g,'_'));
     if(row) row.classList.add('pref-modified');
+    refreshPrefDefaultEl(name);          // the default column tracks the new value
     // Koch Sequence or LICW Carousel change affects the character chart and preference metadata
     if(name==='Koch Sequence'||name==='LICW Carousel'){
       await sleep(300);

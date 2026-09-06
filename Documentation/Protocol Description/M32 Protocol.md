@@ -476,6 +476,9 @@ This returns all details of that parameter (or an error if an invalid parameter 
 
 * "name" (type String): the name of the parameter,
 * "value" (type Number): the current value of the parameter,
+* "default" (type Number): the value the parameter has after a factory reset
+  (*firmware V9 and later*; older firmware omits the property entirely, so a
+  client must treat its absence as "not known" rather than assume a value),
 "description" (type String): a more verbuous description what the parameter is about,
 * "minimum" (type Number),  
 * "maximum" (type Number),
@@ -485,7 +488,7 @@ This returns all details of that parameter (or an error if an invalid parameter 
 
 Example:
 
-	{"config":{"name":"Keyer Mode","value":2,
+	{"config":{"name":"Keyer Mode","value":2,"default":1,
 	"description":"Iambic Modes, Non-squeeze mode, Straight Key mode",
 	"minimum":1,"maximum":5,"step":1,"isMapped":true,
 	"mapped values":["","Iambic A","Iambic B","Ultimatic",
@@ -521,7 +524,7 @@ Example:
 
 	GET configs/details
 	-> {"configdetails":{"from":0,"count":8,"total":49,"more":true,
-	"items":[{"name":"Keyer Mode","value":2,
+	"items":[{"name":"Keyer Mode","value":2,"default":1,
 	"description":"Iambic Modes, Non-squeeze mode, Straight Key mode",
 	"minimum":1,"maximum":5,"step":1,"isMapped":true,
 	"mapped values":["","Iambic A","Iambic B","Ultimatic",

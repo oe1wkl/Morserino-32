@@ -30,7 +30,7 @@ namespace MorseJSON
 	void jsonParameter(const String& token);
 	void jsonParameterList(void);
 	void jsonGetKoch(void);
-	void jsonConfigLong(MorsePreferences::parameter p);
+	void jsonConfigLong(uint8_t idx);          // idx into MorsePreferences::pliste[]
 	void jsonConfigShort(const String& item, int value, const String& displayed);
 	void jsonCreate(const String& objName, const String& path, const String& state);
 	void jsonActivate(actMessage active);
