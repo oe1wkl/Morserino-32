@@ -61,6 +61,8 @@ devdocs/
 │   └── PROTOCOL_1.4_DESIGN.md    ·   the bulk preference read, sized and decided
 ├── qso-bot/                      ← QSO Bot behaviour review + improvement backlog
 │   └── IMPROVEMENT_PLAN.md       ·   already-implemented vs. genuine remaining gaps
+├── snapshot-bundles/             ← importing several snapshots at once (deferred)
+│   └── DESIGN_NOTES.md           ·   what a snapshot really holds, and the traps
 └── ultimatic/                    ← Ultimatic keyer mode vs. the 1955 original
     ├── FINDINGS.md               ·   the QST source, the point-6 bug, the fix
     ├── FOLLOWUP_CURTIS_B.md      ·   Ultimatic vs. the Curtis-B timing (decision pending)

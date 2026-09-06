@@ -814,6 +814,14 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
     }
   }
 
+  // Last chance to see the compile-time defaults: readPreferences() below
+  // replaces pliste[].value with the stored settings. Taking a copy here is
+  // what lets GET config/<name> and GET configs/details report a "default"
+  // alongside the current value. Correct on both paths above -- either
+  // resetDefaults() has just restored the defaults, or nothing has touched
+  // pliste[] since it was initialised.
+  MorsePreferences::captureDefaults();
+
   // read preferences from non-volatile storage
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 

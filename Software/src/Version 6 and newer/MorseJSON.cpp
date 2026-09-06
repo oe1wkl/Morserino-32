@@ -45,7 +45,7 @@ using namespace MorseJSON;
 #define CONFIG_DETAILS_PAGE 8
 
 // Defined next to jsonConfigLong, its other caller (see the comment there).
-static void fillConfigObject(JsonObject conf, const MorsePreferences::parameter &p);
+static void fillConfigObject(JsonObject conf, uint8_t idx);
 
 // Chunked Print adapter: ArduinoJson's serializeJson(doc, Print&) emits one
 // write() call per byte; through the tee that is one Serial.write AND one BLE
@@ -173,7 +173,7 @@ void MorseJSON::jsonParameter(const String& token) { /// find parameter "token" 
 		pname.toLowerCase();
 		if (token != pname)
 			continue;
-		jsonConfigLong(MorsePreferences::pliste[i]);
+		jsonConfigLong(i);
 		found = true;
 		break;
 	}
@@ -224,12 +224,13 @@ void MorseJSON::jsonParameterDetails(uint8_t from) {
 	JsonArray items = det.createNestedArray("items");
 	uint8_t i = from;
 	for (; i <= posSerialOut && (i - from) < CONFIG_DETAILS_PAGE; ++i) {
-		// A fully-mapped parameter costs roughly 400 B of document. Stop before
+		// A fully-mapped parameter costs roughly 420 B of document ("default"
+		// added ~15 B to the ~400 it was). Stop before
 		// the pool can overflow: ArduinoJson drops adds SILENTLY when it is
 		// full, which is exactly how GET menus once lost its whole tail.
-		if (i > from && doc.memoryUsage() + 420 > doc.capacity())
+		if (i > from && doc.memoryUsage() + 440 > doc.capacity())
 			break;
-		fillConfigObject(items.createNestedObject(), MorsePreferences::pliste[i]);
+		fillConfigObject(items.createNestedObject(), i);
 	}
 	det["count"] = i - from;
 	det["more"]  = (i <= posSerialOut);
@@ -336,9 +337,14 @@ void MorseJSON::jsonGetKoch(void) { // get current Koch lesson setting, and asso
 // the 1.4 bulk read (jsonParameterDetails). Both go through here so the two
 // commands can never drift apart. All the strings are const char* literals
 // from pliste[], so ArduinoJson stores pointers to them and copies nothing.
-static void fillConfigObject(JsonObject conf, const MorsePreferences::parameter &p) {
+// Takes the pliste[] index rather than the parameter itself: the compile-time
+// default lives in a parallel lookup (MorsePreferences::defaultValue[]), not in
+// the struct, so the object cannot be filled from the struct alone.
+static void fillConfigObject(JsonObject conf, uint8_t idx) {
+	const MorsePreferences::parameter &p = MorsePreferences::pliste[idx];
 	conf["name"] = p.parName;
 	conf["value"] = p.value;
+	conf["default"] = MorsePreferences::defaultValue[idx];
 	conf["description"] = p.parDescript;
 	conf["minimum"] = p.minimum;
 	conf["maximum"] = p.maximum;
@@ -354,10 +360,10 @@ static void fillConfigObject(JsonObject conf, const MorsePreferences::parameter 
 	}
 }
 
-void MorseJSON::jsonConfigLong(MorsePreferences::parameter p) {
+void MorseJSON::jsonConfigLong(uint8_t idx) {
 	StaticJsonDocument<512> doc;
 	JsonObject conf = doc.createNestedObject("config");
-	fillConfigObject(conf, p);
+	fillConfigObject(conf, idx);
 	MorseJSON::jsonSend(doc);
 }
 

@@ -2208,6 +2208,24 @@ void MorsePreferences::writePreferences(const char* repository) {
 }
 
 
+uint8_t MorsePreferences::defaultValue[posSerialOut + 1];
+
+// Copy the compile-time defaults out of pliste[] before anything overwrites
+// them. Must be called from setup() *after* the factory-reset check and
+// *before* readPreferences(): at that one moment pliste[].value still holds
+// its initialiser (or the value resetDefaults() just put back), and a few
+// lines later it holds the user's stored setting instead. resetDefaults()
+// below depends on exactly the same property.
+//
+// Costs posSerialOut+1 bytes of BSS and leaves the pliste[] table untouched,
+// which is the point: a parallel const array or an extra struct field would be
+// one more positional list to keep in step with the prefPos enum (CLAUDE.md
+// rule 10), and that list has drawn blood before.
+void MorsePreferences::captureDefaults() {
+  for (uint8_t i = 0; i <= posSerialOut; ++i)
+      defaultValue[i] = pliste[i].value;
+}
+
 void MorsePreferences::resetDefaults() {
   pref.begin("morserino", false);                // open namespace in read/write mode
 

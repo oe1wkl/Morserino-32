@@ -205,6 +205,14 @@ namespace MorsePreferences
 
   extern parameter pliste[];
 
+  // The compile-time default of every pliste[] entry, taken at boot by
+  // captureDefaults(). pliste[].value itself cannot answer this at runtime:
+  // readPreferences() overwrites it with the stored setting a few lines into
+  // setup(), and from then on the default is gone. Indexed by prefPos, same
+  // 0..posSerialOut range as pliste[].
+  extern uint8_t defaultValue[];
+  void captureDefaults();
+
   extern  prefPos keyerOptions[];
   extern  prefPos generatorOptions[];
   extern  prefPos playerOptions[];
