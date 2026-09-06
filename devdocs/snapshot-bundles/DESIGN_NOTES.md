@@ -1,157 +1,197 @@
 # Importing several snapshots at once — design notes
 
-**Status: not built. Deferred 2026-09-06 by Willi**, pending a conversation with
-CW Schule Graz about what a curriculum bundle actually has to carry. This note
-exists so that conversation starts from what the firmware really does rather
-than from what it looks like it does.
+**Status: not built.** Deferred 2026-09-06; two of the open questions were
+answered on 2026-09-07 and the prior art has now been read, so what remains is
+mostly format design. See "Where this stands" at the end.
 
 ## What was asked for
 
-CW Schule Graz have defined six snapshots for their curriculum, one per
+CW Schule Graz have defined a set of snapshots for their curriculum, one per
 practice. Today a student would import them one at a time through the
 Configuration Tool's Snapshots tab (added in #214). The ask is to import a whole
-set in one go — and, importantly, **a bundle entry need not define every
-preference**: the ones it leaves out should keep whatever the student already
-has.
+set in one go, from a **configuration file rather than hard-coded definitions**,
+so the same mechanism serves CW Ops, LICW or anyone else's scheme.
 
-That last part is reasonable and matches how the firmware already reads a
-snapshot. It is also where all the difficulty is.
+A bundle entry need not define every preference; the ones it leaves out keep
+whatever the student already has.
 
 ---
 
-## Findings
+## Answered
 
-### 1. A snapshot does not contain the Koch lesson
+### The Koch lesson is not needed (Willi, 2026-09-07)
 
-This is the finding most likely to decide whether the feature is worth building
-in its current shape, so it comes first.
+The earlier draft of this note led with the discovery that a snapshot cannot
+carry `kochFilter`, and flagged it as possibly decisive. **It is not.** These
+snapshots are settings for a *type of practice*, repeated at whatever Koch
+lesson the student has currently reached. The lesson is deliberately not part of
+the preset.
 
-`doWriteSnapshot()` (`MorsePreferences.cpp`) stores exactly five things:
+That removes the only firmware change this feature looked like it might need.
+(The underlying fact still holds and is still worth knowing: `doWriteSnapshot()`
+stores the `storedInSnapshot()` subset of `pliste[]`, the menu pointer,
+`kochCharsLength`, and the custom-chars pair. `kochFilter` is none of those,
+because `posKochFilter` sits past `posSerialOut`. So recalling a snapshot never
+changes the lesson — which is exactly the behaviour wanted here.)
 
-| stored | what it is |
-|---|---|
-| `vals[i]` for `i < posSerialOut` | the `pliste[]` values that `storedInSnapshot()` admits |
-| `lastExec` | `menuPtr`, the menu entry the snapshot was taken from |
-| `kochLen` | `kochCharsLength` — the **length of the character set**, derived from the Koch sequence or the custom chars |
-| `useCustom` | whether Custom Chars is on |
-| `customSet` | the custom character string |
+### There is prior art, and it is worth copying from
 
-`MorsePreferences::kochFilter` — the actual **Koch lesson number** — is not in
-that list. It lives only in the `morserino` namespace (read at
-`MorsePreferences.cpp:1790`, written at `:2089`) and `applySnapshot()` never
-touches it. Recalling a snapshot therefore leaves the student's lesson exactly
-where it was.
+`https://github.com/cdaller/morserino32-trainer` — Christoph Daller's browser
+trainer — already ships the CW Schule Graz set, in
+`js/m32-configuration-ui.js`, as one hard-coded `setupCwSchoolSnapshotN()`
+method per snapshot plus a wired-up button each. Willi's direction: keep the
+data, drop the hard-coding.
 
-`posKochFilter` sits *after* `posSerialOut` in the `prefPos` enum — in the
-"special cases" block — which is why the `i < posSerialOut` loop cannot see it.
+Read out of that file, this is the whole CW Schule Graz set:
 
-**Consequence:** a per-lesson curriculum snapshot cannot set the lesson, which
-is very likely the one thing CW Schule Graz most wants it to set. Worth
-confirming with them before anything else is designed. If they do need it,
-that is a firmware change (widen what a snapshot carries, with a blob version
-bump — the format is already versioned, `SNAP_BLOB_VERSION`), and it should
-probably be settled before the bundle format is, not after.
-
-### 2. Partial snapshots are already supported by the format, but nothing writes one
-
-`decodeSnapshot()` uses `255` to mean "not contained", and `applySnapshot()`
-skips those entries, leaving the running value alone. So the *storage* format
-has supported partial snapshots all along.
-
-What has never existed is a way to *create* one: `doWriteSnapshot()` writes
-every `storedInSnapshot()` parameter from the live configuration, so a snapshot
-the device wrote is always complete. The partial case only arises from an older
-firmware's snapshot that predates a parameter.
-
-This means a hand-authored bundle can be partial, but a bundle **exported** from
-a device never will be. If the Configuration Tool grows a bundle export, it will
-produce full bundles, and partial ones will remain something a club authors by
-hand or with a script. That is worth saying out loud in whatever documentation
-the feature gets, because the asymmetry is surprising.
-
-### 3. The accumulation trap
-
-`PUT snapshot/store/<n>` snapshots the **live configuration**. There is no
-command that writes a snapshot's contents directly. So importing N snapshots
-means N rounds of *apply these values, then store*.
-
-With partial entries that goes wrong in a way that is easy to miss. Suppose the
-student has Word Length 4, and:
-
-- entry 1 sets Word Length 3, says nothing about Interword Space
-- entry 2 sets Interword Space 9, says nothing about Word Length
-
-Applied naively in sequence, snapshot 2 comes out with Word Length **3** — the
-value entry 1 left behind — not the student's own 4. Each entry inherits every
-earlier entry's changes. "Undefined keeps the value as it is" quietly becomes
-"as the previous lesson left it", which is not what anyone means.
-
-The fix is not hard but has to be deliberate: read the student's configuration
-first (`GET configs`), and before each entry restore any parameter that a
-previous entry changed and this one does not define. Restore the full baseline
-at the end, so the student's own settings survive the import.
-
-### 4. Speed
-
-Every `PUT config/<name>/<value>` calls `setParameter()`, which calls
-`writePreferences("morserino")` — one NVS commit per parameter. That is fine for
-the occasional single change and expensive in bulk:
-
-| bundle | writes | rough time |
+| slot | menu | settings |
 |---|---|---|
-| 6 full snapshots (~40 params each) | ~240 | minutes |
-| 6 partial snapshots (~8 params each) | ~48 | tens of seconds |
+| 1 | `menu/set/20` | InterWord Spc 30, Interchar Spc 3, Random Groups 0, Length Rnd Gr 1, Each Word 2x 0, Max # of Words 20 |
+| 2 | `menu/set/17` | InterWord Spc 7, Interchar Spc 3, Random Groups 0, **Time-out 0**, Each Word 2x 0 |
+| 3 | `menu/set/25` then `29` | InterWord Spc 7, Interchar Spc 3, Random Groups 0, Length Rnd Gr 1, Each Word 2x 0, Max # of Words 20 |
+| 4 | `menu/set/20` | InterWord Spc 45, Interchar Spc 15, Random Groups 0, Length Rnd Gr 9, Each Word 2x 0, Max # of Words 15 |
+| 5 | `menu/set/1` | *(none)* |
+| 6 | `menu/set/26` | InterWord Spc 7, Interchar Spc 15, Random Groups 0, Length Abbrev 2, Each Word 2x 0, Max # of Words 20 |
+| 7 | `menu/set/8` | InterWord Spc 45, Interchar Spc 15, Each Word 2x 1, Max # of Words 0 |
+| 8 | `menu/set/13` | InterWord Spc 45, Interchar Spc 15, Length Calls 1, Each Word 2x 1, Max # of Words 0 |
 
-Over BLE, multiply by the `BLE_TIMEOUT_FACTOR` of 3 the iOS bridge already
-applies. So partial bundles are not merely a convenience — they are what makes
-the feature usable at all, which is another reason to settle §2 early.
+Four of them (4, 6, 7, 8) have a second "Koch" button. **Those variants differ
+only in the two spacing values** — e.g. slot 4 is 45/15 in the wide form and 6/3
+in the Koch form. So "Koch" there means *Koch-course spacing*, not a lesson
+number, which is consistent with the answer above. Any format needs a way to
+express "the same exercise at different spacing" without repeating the entry.
+
+Five observations that shape the format:
+
+1. **Entries are partial** — five to eight settings, never the ~40 a stored
+   snapshot holds. This is the normal case, not an edge case.
+2. **An entry may set only a menu** (slot 5 is `menu/set/1` and nothing else).
+3. **The menu is set by raw number.** That is the cross-variant hazard already
+   found and fixed for single-snapshot import in #214: `menuText[]` is
+   conditionally compiled, so index 20 is not the same entry on a classic as on
+   a Pocket, nor across firmware versions. **A bundle must carry the menu path
+   as a string** and resolve it against the connected device's own `GET menus`,
+   exactly as `snapImportConfirm()` now does.
+4. **Slot 2 sets a preference that a snapshot cannot hold.** `Time-out` is one
+   of the historic exclusions in `storedInSnapshot()`, so `PUT config/Time-out/0`
+   changes the running device and is then silently dropped when the snapshot is
+   written. Recalling that snapshot later does not restore it. Worth telling
+   Christoph; worth having the importer *catch*, rather than reproducing it.
+5. **Parameter names are the protocol's own display names** (`InterWord Spc`,
+   `Each Word 2x`, `Max # of Words`). Those are what `PUT config/<name>/<value>`
+   takes, so a file can use them directly and stay readable.
 
 ---
 
-## The option that removes most of this
+## Still open, and still true
 
-A new protocol command — `PUT snapshot/set/<n>` carrying the values — would
-write a snapshot without going near the live configuration. That kills the
-accumulation trap (nothing accumulates), removes the NVS-commit-per-parameter
-cost (one blob write per snapshot), and leaves the student's settings untouched.
-It would also retroactively fix the wart in the single-snapshot import shipped
-in #214, where importing one snapshot necessarily replaces what you are
-currently using.
+### The accumulation trap
 
-Costs: a firmware change, a two-variant build, protocol 1.5 and a documentation
-round, plus a way to pass ~40 values in one command (the existing
-`PUT file/data` base64 chunking is the obvious precedent). The Configuration
-Tool would keep the apply-then-store path as a fallback for older firmware, or
-simply refuse and say why.
+`PUT snapshot/store/<n>` snapshots the **live** configuration; there is no
+command that writes a snapshot's contents directly. So importing N snapshots
+means N rounds of *apply, then store* — and with partial entries that goes wrong
+quietly. If entry 1 sets Word Length 3 and entry 2 says nothing about it, entry
+2's snapshot inherits the 3, not the student's own value. "Undefined keeps the
+value as it is" becomes "as the previous lesson left it".
 
-Recommendation: if bulk import is built at all, build it on this. The
-apply-then-store route is achievable but every part of it is a workaround for
-not having this command.
+The importer must therefore read the student's configuration first
+(`GET configs`), restore anything a previous entry changed that this one does
+not define, and put the whole baseline back at the end.
+
+### Cost
+
+Every `PUT config/<name>/<value>` triggers a full `writePreferences()` NVS
+commit. The CW Schule Graz set is ~50 writes across eight slots — tens of
+seconds, and three times that over BLE. Tolerable because the entries are
+partial. A bundle of *full* snapshots would be minutes.
+
+### `PUT snapshot/set` would remove both problems
+
+A protocol command that writes a snapshot's contents directly would kill the
+accumulation trap (nothing accumulates), collapse the cost to one blob write per
+slot, and leave the student's live settings untouched. It would also fix the
+#214 wart where importing a single snapshot necessarily replaces the running
+configuration. Costs: firmware change, two-variant build, protocol 1.5, and a
+way to carry ~40 values in one command.
+
+Still the recommendation if bulk import is built at all — but note it is now an
+*optimisation*, not a prerequisite: the apply-then-store route works, and with
+partial entries it is fast enough.
+
+### A validation gap: the tool cannot tell what is snapshot-storable
+
+Finding 4 above is not something the Configuration Tool can currently warn
+about — the firmware does not report which preferences `storedInSnapshot()`
+admits, so the tool cannot tell an author that `Time-out` will be dropped. The
+cheap fix is the same one-line, additive pattern used for `default` in V9: add
+`"inSnapshot": true/false` to the config object in `fillConfigObject()`. Then a
+bundle can be validated before a single write is made.
 
 ---
 
-## Questions for CW Schule Graz
+## Sketch of a bundle file
 
-1. **Does a lesson snapshot need to set the Koch lesson?** (See §1 — today it
-   cannot.) If yes, that is the first thing to fix and it is a firmware change.
-2. Which settings does a bundle entry actually define? A short list per lesson
-   keeps the import fast; a full one makes each lesson self-contained but slow.
-3. Should the bundle name its target slots, or should the tool assign them in
-   order?
-4. What should a student see afterwards — their own settings back, or the last
-   lesson loaded and ready to run?
-5. Do they want to author bundles themselves? If so the format needs to be
-   pleasant to hand-edit, which argues for one file with a readable list rather
-   than a concatenation of the existing single-snapshot exports.
+Not settled — a starting point for the conversation with CW Schule Graz.
+
+```jsonc
+{
+  "m32SnapshotBundle": 1,
+  "name": "CW Schule Graz",
+  "description": "Practice presets for the Graz curriculum",
+  "variants": [                          // optional; the "Koch" buttons today
+    { "id": "wide", "name": "Wide spacing", "default": true },
+    { "id": "koch", "name": "Koch spacing" }
+  ],
+  "entries": [
+    {
+      "slot": 4,
+      "name": "Random groups, long",
+      "menu": "Koch Trainer > CW Generator > Random",   // by NAME, never index
+      "settings": {
+        "InterWord Spc": 45, "Interchar Spc": 15,
+        "Random Groups": 0, "Length Rnd Gr": 9,
+        "Each Word 2x": 0, "Max # of Words": 15
+      },
+      "variants": {
+        "koch": { "InterWord Spc": 6, "Interchar Spc": 3 }   // overlay, not a copy
+      }
+    }
+  ]
+}
+```
+
+Before writing anything, the importer should check that every menu path resolves
+on this device, every parameter exists on this firmware, every value is in
+range, and (once the firmware can say) that every parameter is snapshot-storable
+— then show the author or student exactly what it is about to do, in the manner
+of the existing single-snapshot import preview.
+
+---
+
+## Where this stands
+
+Answered: the Koch lesson is out of scope; the data exists and has been
+extracted; the format should be a file, not code, and should generalise beyond
+Graz.
+
+Left to settle with CW Schule Graz: whether the variants ("wide" vs "Koch"
+spacing) are the right model or an artefact of the current buttons; whether the
+bundle should name its target slots or the tool should assign them; and what the
+student should be left running afterwards — their own settings, or the first
+lesson ready to go.
+
+Left to settle here: whether to add `inSnapshot` to the protocol so bundles can
+be validated, and whether to build `PUT snapshot/set` before or after the
+importer.
 
 ## Related
 
-- `Software/Utilities/m32_config_tool.html` — the single-snapshot export/import
-  from #214, whose `snapImportConfirm()` is the code any bulk version would
-  generalise.
-- `Documentation/Protocol Description/M32 Protocol.md` — `GET snapshot/<n>`,
-  `PUT snapshot/store|recall|clear`.
+- `Software/Utilities/m32_config_tool.html` — `snapImportConfirm()`, the
+  single-snapshot import this would generalise, and `snapImportMenuNumber`,
+  which already resolves a menu by name.
 - `MorsePreferences.cpp` — `doWriteSnapshot()`, `storeSnapshotBlob()`,
   `decodeSnapshot()`, `applySnapshot()`, `storedInSnapshot()`.
-- CLAUDE.md §4 for the NVS budget, which any change to snapshot contents has to
-  be costed against.
+- `Documentation/Protocol Description/M32 Protocol.md` — `GET snapshot/<n>`,
+  `GET menus`, `PUT snapshot/store|recall|clear`.
+- CLAUDE.md §4 — the NVS budget, against which any change to snapshot contents
+  has to be costed.
