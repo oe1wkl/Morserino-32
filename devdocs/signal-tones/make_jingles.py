@@ -188,16 +188,52 @@ def match_level(y, target_db, ref_db):
     return y * g, 0.0
 
 
+# Every jingle is faded to zero and given a silent tail before it is encoded.
+#
+# NOT cosmetic, and not about the file sounding truncated. On the device the decoder
+# runs dry at the end of the file and the I2S pipeline re-emits its last audio, so
+# whatever the final few tens of milliseconds contain gets repeated as an artefact
+# after the sound -- the "switching-off" noise reported from the bench, worst on the
+# arcade pack. Measured on an M32 Pocket (2026-09-07, three recordings):
+#
+#   * the burst sits 60-110 ms after the sound, 4-6 ms long, and its level tracks the
+#     file's own level in its last 25-50 ms, about 5-8 dB below it. arcade/error still
+#     sat at -5.8 dB there and produced a -13.4 dB burst, ~18 dB above the room.
+#   * it is NOT the mixer switch in playSPIFFSFile(): moving that switch 360 ms later
+#     left the burst exactly where it was.
+#   * "soft & simple" was the one pack that never did it. It is also the one pack that
+#     already ended in true digital silence, because it was authored with padding.
+#     Recorded under the same conditions its tails measure -47 to -49 dB, i.e. the room.
+#
+# So the cure is to make every pack end the way that one already did. FADE_MS removes
+# the step at the junction; TAIL_MS has to be at least as long as the audio that can be
+# re-emitted, hence 60 rather than 10.
+FADE_MS = 15
+TAIL_MS = 60
+
+
+def seal(y):
+    """Fade to zero over FADE_MS, then append TAIL_MS of digital silence."""
+    n = int(FADE_MS / 1000.0 * SR)
+    if n and len(y) > n:
+        y = y.copy()
+        y[-n:] *= 0.5 * (1 + np.cos(np.pi * np.arange(n) / n))   # raised cosine to zero
+    return np.concatenate([y, silence(TAIL_MS)])
+
+
 def main():
     out = sys.argv[1] if len(sys.argv) > 1 else "jingles"
     ref_db = short_term_loudness_db(sidetone_ref())
-    print(f"{'jingle':22s} {'vs CW':>7s} {'peak':>7s} {'dBFS':>7s} {'ms':>5s}")
+    print(f"{'jingle':22s} {'vs CW':>7s} {'peak':>7s} {'dBFS':>7s} {'ms':>5s} {'tail':>7s}")
     problems = []
     for pack, pair in JINGLES.items():
         os.makedirs(os.path.join(out, pack), exist_ok=True)
         for kind, y in pair.items():
             y = y / max(np.max(np.abs(y)), 1e-9)          # normalise, then level-match
             y, shortfall = match_level(y, TARGET_DB[kind], ref_db)
+            # After the level match, never before: seal() only ever attenuates, so it
+            # cannot push the peak back over the ceiling the match just respected.
+            y = seal(y)
             if shortfall < -6.0:
                 problems.append(f"{pack}/{kind}: {shortfall:.1f} dB short of the target "
                                 f"at the peak ceiling -- pitch it up or fill in its partials")
@@ -224,9 +260,20 @@ def main():
             dl = short_term_loudness_db(d * SIDETONE_LEVEL * DAC_GAIN) - ref_db
             if dpeak > CEILING:
                 problems.append(f"{pack}/{kind}: decoded peak {dpeak:.3f} over the ceiling")
+            # Does it actually end in silence? Measured on the DECODED file, because that
+            # is what the device plays: seal() works on the samples, but the encoder gets
+            # the last word. Anything audible in the last 50 ms is what the pipeline will
+            # re-emit as a click (see the FADE_MS/TAIL_MS note above).
+            ntail = int(0.050 * SR)
+            tail = float(np.max(np.abs(d[-ntail:]))) if len(d) > ntail else 1.0
+            tail_db = 20 * math.log10(max(tail, 1e-9))
+            if tail_db > -60.0:
+                problems.append(f"{pack}/{kind}: last 50 ms reaches {tail_db:.1f} dBFS -- "
+                                f"the device re-emits that after the sound; it must end silent")
             os.remove(wav)
             print(f"{pack + '/' + kind:22s} {dl:+7.1f} {dpeak:7.3f} "
-                  f"{20 * math.log10(max(dpeak, 1e-9)):7.1f} {len(y) / SR * 1000:5.0f}")
+                  f"{20 * math.log10(max(dpeak, 1e-9)):7.1f} {len(y) / SR * 1000:5.0f} "
+                  f"{tail_db:7.1f}")
     print("\n" + ("PROBLEMS\n  " + "\n  ".join(problems) if problems
                   else f"OK - {len(JINGLES)} pairs, all level-matched to the built-in "
                        f"signals and clear of the -1 dBFS ceiling"))
