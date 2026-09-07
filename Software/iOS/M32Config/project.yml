@@ -47,8 +47,22 @@ targets:
     # is what makes it run every time rather than being skipped as up to date.
     preBuildScripts:
       - name: Sync web tool from Software/Utilities
-        script: '"$PROJECT_DIR/sync-webtool.sh"'
-        basedOnDependencyAnalysis: false
+        script: '"$SCRIPT_INPUT_FILE_0"'
+        # Xcode sandboxes run-script phases. Without these declarations the
+        # sandbox refuses even to EXECUTE the script ("Operation not
+        # permitted"), never mind let it write. Declaring the script and its
+        # sources as inputs grants read; declaring the copies as outputs grants
+        # write. Do NOT "fix" this by setting ENABLE_USER_SCRIPT_SANDBOXING=NO.
+        #
+        # Declaring them also means dependency analysis works, so the copy
+        # happens when the tool has actually changed rather than on every build.
+        inputFiles:
+          - $(SRCROOT)/sync-webtool.sh
+          - $(SRCROOT)/../../Utilities/m32_config_tool.html
+          - $(SRCROOT)/../../Utilities/m32_pref_help.json
+        outputFiles:
+          - $(SRCROOT)/Resources/Web/m32_config_tool.html
+          - $(SRCROOT)/Resources/Web/m32_pref_help.json
 
     settings:
       base:
