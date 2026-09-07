@@ -44,7 +44,7 @@ const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 #define VERSION_MINOR 0
 #define VERSION_PATCH 0
 
-#define BETA true
+#define BETA false
 #define COMPILEDATE __DATE__
 
 

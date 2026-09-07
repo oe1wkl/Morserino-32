@@ -39,6 +39,17 @@ targets:
       # was rendered from; see README.
       - path: Resources/Assets.xcassets
 
+    # Copy the web tool in before every build. Without this the app is built
+    # from whatever copy happened to be in Resources/Web -- which drifted two
+    # weeks behind Software/Utilities once, and the only symptom was "my
+    # changes to the config tool are not in the app". Xcode has no idea the
+    # tool is generated, so it has to be told; basedOnDependencyAnalysis: false
+    # is what makes it run every time rather than being skipped as up to date.
+    preBuildScripts:
+      - name: Sync web tool from Software/Utilities
+        script: '"$PROJECT_DIR/sync-webtool.sh"'
+        basedOnDependencyAnalysis: false
+
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.kraml.m32config

@@ -52,6 +52,11 @@ The `cp -n` is there because `xcodegen generate` refuses to run without
 `Local.xcconfig`; it never overwrites an existing one, so it is safe to leave in
 the command you run every time.
 
+**You do not need to re-run `sync-webtool.sh` after editing the config tool.**
+Every build runs it first, as a pre-build phase, so a change in
+`Software/Utilities/` is in the app the next time you press ▶. It is still there
+to run by hand if you want to sync without building.
+
 Then in Xcode:
 
 1. Select the **M32Config** target → **Signing & Capabilities**.
@@ -171,7 +176,7 @@ Still to do, roughly in order:
 | `Sources/BundleSchemeHandler.swift` | Serves the bundled tool under `m32app://local/`. |
 | `Sources/ContentView.swift` | Two tabs: the tool, and the link test. |
 | `Resources/Web/bridge.js` | The ninety lines that re-point the tool at Bluetooth. |
-| `sync-webtool.sh` | Copies the tool out of `Software/Utilities/`. |
+| `sync-webtool.sh` | Copies the tool out of `Software/Utilities/`. Runs automatically before every build. |
 | `Local.xcconfig.example` | Template for your signing Team ID; copy to the git-ignored `Local.xcconfig`. |
 | `Resources/Assets.xcassets` | App icon. Regenerate from `Resources/AppIcon.svg`. |
 
