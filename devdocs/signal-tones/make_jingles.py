@@ -165,7 +165,17 @@ def main():
             mp3 = os.path.join(out, pack, f"{kind}.mp3")
             write_wav(wav, y)
             subprocess.run(["lame", "--quiet", "-b", "128", "-h", "--resample", "44.1",
-                            wav, mp3], check=True)
+                            "-t", wav, mp3], check=True)
+            # -t: suppress the LAME/Xing info frame. It carries no audio, just encoder
+            # metadata, but the firmware's Helix decoder doesn't recognise and skip it --
+            # it decodes the frame as sound, which is an audible click on the device's
+            # speaker at the very start of playback (silent on every desktop player,
+            # which do skip it; that's how this went unnoticed on a laptop). Confirmed
+            # by ear on an M32 Pocket: every existing pack in this collection was built
+            # without this flag and clicks on the device's speaker/headphones; the files
+            # already committed under "Documentation/Sound Packs/" are not regenerated
+            # by this change and still carry the tag until someone re-runs this script.
+            #
             # An MP3 decodes back a little hotter than it went in -- that overshoot is
             # exactly why the manual specifies a ceiling. Measure it, don't assume it.
             # Decode stereo and take ONE channel. "-ac 1" is not a neutral downmix:
