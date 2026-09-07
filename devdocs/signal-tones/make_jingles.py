@@ -51,6 +51,17 @@ def note(freq, dur_ms, partials, decay_s, attack_ms=4.0, detune=0.0):
     return y
 
 
+def swell(freq, dur_ms):
+    """A single pure sine tone, tapered by a full-length Hann window (a soft swell in
+    and back out) rather than the struck/plucked decay of note(). This is the "soft &
+    simple" pack's own voice -- no partials, no instrument character, just pitch and
+    a gentle envelope."""
+    n = int(dur_ms / 1000.0 * SR)
+    t = np.arange(n) / SR
+    window = 0.5 - 0.5 * np.cos(2 * math.pi * np.arange(n) / max(n - 1, 1))
+    return window * np.sin(2 * math.pi * freq * t)
+
+
 def seq(items, gap_ms=0.0):
     """Notes one after another, overlapping by their own decay if gap is negative."""
     out = np.zeros(0)
@@ -80,6 +91,7 @@ C5, E5, G5, C6, D6, E6 = hz(72), hz(76), hz(79), hz(84), hz(86), hz(88)
 A5, D5, F5, A4, F4     = hz(81), hz(74), hz(77), hz(69), hz(65)
 D4, E4, G4, Bb4, B4    = hz(62), hz(64), hz(67), hz(70), hz(71)
 Fs4, Ds4, Cs5, C4      = hz(66), hz(63), hz(73), hz(60)
+Gs5                    = hz(80)
 
 # Every error jingle lives at or above ~290 Hz. Below that this speaker radiates
 # almost nothing (see speaker_mag in tone_sim), so a low, "serious"-sounding error
@@ -127,6 +139,35 @@ JINGLES = {
         "error":   seq([note(Fs4, 110, PULSE, .18), note(E4, 110, PULSE, .18),
                         note(D4, 300, PULSE, .40)]),
     },
+    # Two plain sine notes, each a full-length Hann swell rather than a struck
+    # instrument -- no partials, nothing "played" about it, the most minimal pair
+    # here. Originally shipped at A4/Cs5 (success) and E4/C4 (error); the error's
+    # dominant landed at 260 Hz, under the speaker's ~300 Hz cutoff, and was
+    # reported nearly inaudible on the device (#218). The error moved up a full
+    # octave (E5/C5, ~520 Hz dominant) -- confirmed on hardware, on both speaker
+    # and headphones, no audible shortfall left.
+    #
+    # The success tone only ever had a mild version of the same problem (Willi's
+    # aside: "on the quiet side", losing ~1 dB to the same filter, nowhere near
+    # the error's ~7 dB hole) -- so it doesn't need a full octave, and a full
+    # octave (confirmed on hardware) reads as too high/thin. A fifth up (E5/Gs5)
+    # is the sweet spot: closes essentially all of the measured shortfall
+    # (0.45 dB left vs. tone_sim's speaker model, down from 5.7 dB at the
+    # original pitch) while sitting noticeably lower than the octave-up version.
+    #
+    # The 60 ms of real silence at each end is load-bearing, not decoration: every
+    # other pack in this file opens with a note() attack (or a struck decay at the
+    # tail) that itself takes tens of ms to leave zero, which incidentally soaks up
+    # the Helix decoder's MDCT priming. swell()'s Hann taper does the same thing in
+    # theory, but on actual Pocket hardware it still produced an audible click at
+    # both ends without this margin -- confirmed by ear, not just by the -t fix
+    # above (which was necessary too, but not sufficient on its own).
+    "soft & simple": {
+        "success": np.concatenate([silence(60), seq([swell(E5, 110), swell(Gs5, 160)],
+                                                      gap_ms=20), silence(60)]),
+        "error":   np.concatenate([silence(60), seq([swell(E5, 90), swell(C5, 170)],
+                                                      gap_ms=15), silence(60)]),
+    },
 }
 
 
@@ -170,11 +211,7 @@ def main():
             # metadata, but the firmware's Helix decoder doesn't recognise and skip it --
             # it decodes the frame as sound, which is an audible click on the device's
             # speaker at the very start of playback (silent on every desktop player,
-            # which do skip it; that's how this went unnoticed on a laptop). Confirmed
-            # by ear on an M32 Pocket: every existing pack in this collection was built
-            # without this flag and clicks on the device's speaker/headphones; the files
-            # already committed under "Documentation/Sound Packs/" are not regenerated
-            # by this change and still carry the tag until someone re-runs this script.
+            # which do skip it; that's how this went unnoticed on a laptop).
             #
             # An MP3 decodes back a little hotter than it went in -- that overshoot is
             # exactly why the manual specifies a ceiling. Measure it, don't assume it.

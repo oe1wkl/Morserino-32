@@ -1,7 +1,7 @@
 # Sound packs for the M32 Pocket
 
 Replacement sounds for the two signals that tell you whether your answer was right or
-wrong — in the Echo Trainer, and in the games. Five pairs, pick one, or use them as a
+wrong — in the Echo Trainer, and in the games. Six pairs, pick one, or use them as a
 starting point for your own.
 
 **These are for the M32 Pocket only.** The classic Morserino-32 does not play sound files.
