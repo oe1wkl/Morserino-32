@@ -134,7 +134,29 @@ bool I2S_Sidetone::playSPIFFSFile(const char *filename) {
         //Serial.println(mp3file.size());
         decoder->setStream(&mp3file);
         mixer->set(0,*decoder);
-        while (mp3file.available()) delay(100); // block until copier did copy the whole stream
+
+        // The file being READ is not the sound being PLAYED. mp3file.available() goes
+        // false when the last byte leaves SPIFFS, while the decoder's result queue
+        // (setResultQueueFactor(14) in begin()) still holds audio that has not reached
+        // the I2S yet. The old code switched the mixer straight back to the oscillator
+        // at that point, which discarded the queue: measured on an M32 Pocket
+        // (2026-09-07), the last ~80 ms of every signal simply never played. Recording
+        // the same file with and without this wait shows it plainly -- without, the
+        // level collapses ~80 ms before the file's nominal end; with, it follows the
+        // file's own envelope to the end.
+        //
+        // (This is NOT what caused the click after the sound. That was the files
+        // themselves ending at full level, fixed by sealing them in make_jingles.py.
+        // Moving this switch 360 ms later left the click exactly where it was.)
+        while (mp3file.available()) delay(5);          // was 100 -- start the wait promptly
+        uint32_t drain = millis();
+        while (decoder->available() > 0 && millis() - drain < 300) delay(5);
+        // Do not linger once it is dry: with setLimitToAvailableData(true) an empty
+        // decoder still selected as the mixer input starves the copier, and a starved
+        // pipeline re-emits its last audio. Small margin for the final chunk to be
+        // copied, then hand the mixer back.
+        delay(20);
+
         mixer->set(0,*effects);
         mp3file.close();
         return true;
