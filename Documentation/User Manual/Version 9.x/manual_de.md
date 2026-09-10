@@ -301,7 +301,8 @@ aufgespielt, und deine Einstellungen und Snapshots bleiben dabei erhalten.
 • EIN/AUS (Akku): Der Schiebeschalter befindet sich auf der Rückseite
 in der Nähe des Lautsprechers. Verbindet bzw. trennt den Akku.
 
-• ENCODER: Der schwarze Drehknopf, den du drehen und drücken kannst.
+• ENCODER: Der Drehknopf, den du drehen und drücken kannst[ (schwarz bei
+der 1st und 2nd Edition des Morserinos)]{.classic}.
 
 • FN: Der andere Druckknopfschalter [(rot bei der 1st und 2nd Edition
 des Morserinos).]{.classic}[(beim M32Pocket in das Gehäuse
@@ -4315,10 +4316,10 @@ Wenn eine App die Sitzung mit dem üblichen Kommando
     FN = yes
     click = no
 
-Drücke **FN** (die rote Taste), um die Verbindung zuzulassen. Ein Klick
-auf den schwarzen Drehknopf lehnt sie ab — und ebenso, wenn du etwa 20
-Sekunden lang einfach nichts tust: Die Verbindung wird nie versehentlich
-erteilt. Die App zeigt dir an, dass sie darauf wartet.
+Drücke **FN**, um die Verbindung zuzulassen. Ein Klick auf den Drehknopf
+lehnt sie ab — und ebenso, wenn du etwa 20 Sekunden lang einfach nichts
+tust: Die Verbindung wird nie versehentlich erteilt. Die App zeigt dir
+an, dass sie darauf wartet.
 
 Drei Dinge sind dabei zu beachten:
 

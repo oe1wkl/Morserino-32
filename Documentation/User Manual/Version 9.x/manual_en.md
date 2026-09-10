@@ -283,7 +283,8 @@ together, and your settings and snapshots survive it.
 • ON/OFF (Battery): Sliding switch located on the back near the
 loudspeaker. Connects/disconnects battery.
 
-• ENCODER: The black knob that you can rotate and press.
+• ENCODER: The knob that you can rotate and press[ (the black one on the
+first and second edition Morserinos)]{.classic}.
 
 • FN: The other push-button switch [(the red one on the first and second
 edition Morserinos).]{.classic}[(integrated into the case on the
@@ -3808,10 +3809,10 @@ command, the Morserino shows
     FN = yes
     click = no
 
-Press **FN** (the red button) to allow the connection. A click on the
-black knob refuses it, and so does simply doing nothing for about 20
-seconds — the connection is never granted by accident. The app will tell
-you that it is waiting for this.
+Press **FN** to allow the connection. A click on the encoder knob refuses
+it, and so does simply doing nothing for about 20 seconds — the
+connection is never granted by accident. The app will tell you that it is
+waiting for this.
 
 Three things are worth knowing:
 

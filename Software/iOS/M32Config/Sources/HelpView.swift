@@ -34,17 +34,19 @@ struct HelpView: View {
                         Link("morserino.info", destination: URL(string: "https://www.morserino.info")!)
                     }
 
-                    section("Two names for the buttons") {
-                        Text("**Black knob** — the rotary encoder you turn and press.")
-                        Text("**FN** — the red button.")
-                        Text("Both are used below.")
+                    section("The two controls") {
+                        Text("**The encoder knob** — the rotary knob you turn and press.")
+                        Text("**The FN button** — the other button on your device.")
+                        Text(.init("Named by what they do, not by colour: the classic "
+                           + "Morserino labels them black and red, the M32 Pocket does not "
+                           + "colour-code its controls at all."))
                             .foregroundStyle(.secondary)
                     }
 
                     section("Switch Bluetooth on — once") {
                         Text(.init("Out of the box the Morserino's Bluetooth is off. You only have to "
                            + "do this once; it is remembered."))
-                        step(1, "At the Morserino's main menu, **double click** the black knob "
+                        step(1, "At the Morserino's main menu, **double click** the encoder knob "
                               + "to open the preferences.")
                         step(2, "**Turn** the knob until you reach **Bluetooth Use**.")
                         step(3, "**Click once.** The “>” marker moves down to the value.")
@@ -60,8 +62,8 @@ struct HelpView: View {
                     section("Connect") {
                         step(1, "Leave the Morserino sitting at its **main menu**.")
                         step(2, "Tap **Connect** on the Config tab.")
-                        step(3, "The Morserino asks **“Allow connect?”** — press **FN** on the "
-                              + "device to allow it.")
+                        step(3, "The Morserino asks **“Allow connect?”** — press the **FN button** "
+                              + "on the device to allow it.")
                         Text(.init("Asking is deliberate. Anything within radio range can reach a "
                            + "Bluetooth device, so the Morserino wants your say-so before it "
                            + "hands over control. Doing nothing for about 20 seconds refuses."))
@@ -72,7 +74,7 @@ struct HelpView: View {
 
                         trouble("The app says DEVICE BUSY",
                                 "The Morserino only accepts a connection from its main menu. "
-                              + "Press and hold the black knob to leave whatever mode it is in, "
+                              + "Press and hold the encoder knob to leave whatever mode it is in, "
                               + "then tap Connect again.")
 
                         trouble("No Morserino found",
