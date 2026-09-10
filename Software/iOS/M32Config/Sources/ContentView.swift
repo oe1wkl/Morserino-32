@@ -1,6 +1,6 @@
 //
 //  ContentView.swift
-//  Two tabs: the web tool itself, and a native link test.
+//  Three tabs: the web tool itself, a native link test, and help.
 //
 //  The link test exists to answer the one question this whole approach turns
 //  on — is BLE fast enough to be pleasant? — without the web tool in the way.
@@ -19,6 +19,12 @@ struct ContentView: View {
 
             LinkTestTab(transport: transport)
                 .tabItem { Label("Link test", systemImage: "waveform.path.ecg") }
+
+            // Someone who found this in the App Store has no way to guess that a
+            // preference has to be switched on with the encoder before anything
+            // can happen. A visible tab, not a button hidden behind a connection.
+            HelpView()
+                .tabItem { Label("Help", systemImage: "questionmark.circle") }
         }
     }
 }

@@ -185,7 +185,8 @@
     var placeholder = document.getElementById('connPlaceholder');
     if (placeholder) {
       placeholder.textContent =
-        'Switch the Morserino-32 on, set "Bluetooth Use" to "BLE Serial", then tap Connect';
+        'Switch the Morserino-32 on, set "Bluetooth Use" to "BLE Serial", then tap Connect. '
+      + 'New to this? See the Help tab.';
     }
   }
 
