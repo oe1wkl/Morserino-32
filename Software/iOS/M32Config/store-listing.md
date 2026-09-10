@@ -11,11 +11,11 @@ Fill in the two placeholders before submitting: `<CONTACT EMAIL>` and
 
 ## App name (30 max)
 
-    Morserino-32 Config
+    M32 Config
 
 ## Subtitle (30 max)
 
-    Set up your Morserino by CW
+    Configure your Morserino-32
 
 ## Category
 
@@ -29,7 +29,7 @@ will search by name, and Utilities is where hardware companions live.)
 
 ## Keywords (100 max, comma-separated, no spaces)
 
-    morse,cw,ham,radio,amateur,telegraphy,keyer,koch,morserino,bluetooth
+    morse,cw,ham,radio,amateur,telegraphy,keyer,koch,morserino,m32,bluetooth
 
 ## Description (4000 max)
 
@@ -108,7 +108,10 @@ will search by name, and Utilities is where hardware companions live.)
     reconnect without scanning again; that is declared in the bundled privacy
     manifest as NSPrivacyAccessedAPICategoryUserDefaults, reason CA92.1.
 
-    Contact: <CONTACT EMAIL>
+    Contact: info@morserino.info
+
+
+
 
 ## Answers to the questionnaires
 
