@@ -2467,6 +2467,18 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
   static char c;
   boolean silentEcho;
 
+#ifdef CONFIG_AUDIO_A11Y
+  // Hold the CW generator silent while a voice clip is playing. Both audio paths share
+  // one I2S pipeline on the Pocket, so a generator that keeps calling pwmTone / pwmNoTone
+  // through a clip fights the mixer and produces clicks instead of CW. Gate on KEY_UP
+  // only, not on KEY_DOWN: an active dit or dah must be allowed to complete its natural
+  // key-off, otherwise the tone hangs on until speech ends. Once we land in KEY_UP we
+  // stay here (returning early) until MorseVoice::isSpeaking() clears; then the state
+  // machine advances the next element as usual. Reported by a blind operator (2026-09-11).
+  if (MorseVoice::isSpeaking() && generatorState == KEY_UP)
+      return;
+#endif
+
   switch (generatorState) {                                             // CW generator state machine - key is up or down
     case KEY_UP:
             if (millis() < genTimer)                                    // not yet at end of the pause: just wait
@@ -3266,11 +3278,13 @@ void changeSpeed( int t) {
           displayCWspeed();                     // update display of CW speed
   }
 #ifdef CONFIG_AUDIO_A11Y
-  // Announce the new speed. MorseVoice's 120 ms debounce collapses fast encoder rotation
-  // to the final settled value, so this stays quiet during a sweep and speaks the number
-  // the user actually landed on. Same path serves the echo trainer's speed-adapt step,
-  // which fires once per word - exactly the case a blind user wants to hear.
-  MorseVoice::announce(String(MorsePreferences::wpm));
+  // Announce the new speed. announceOverriding() also cuts any clip that is already
+  // playing so a fast encoder sweep speaks only the settled value - without it the first
+  // detent's clip plays fully (~800 ms) and swallows every detent that fires during
+  // playback, and the user hears the initial value AND the final one with nothing in
+  // between. Same path serves the echo trainer's speed-adapt step, which fires once per
+  // word - exactly the case a blind user wants to hear.
+  MorseVoice::announceOverriding(String(MorsePreferences::wpm));
   MorseVoice::announceMore("words per minute");
 #endif
 }
