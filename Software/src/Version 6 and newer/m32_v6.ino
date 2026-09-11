@@ -1176,6 +1176,15 @@ void loop() {
 
    m32state = active_loop;
 
+#ifdef CONFIG_AUDIO_A11Y
+   // Drive async voice playback while a mode is running. The menu, preferences and text
+   // entry loops each tick MorseVoice themselves, but this is the only path when a mode
+   // owns the encoder - and changeSpeed() (called from the encoder handler below) now
+   // announces the new WpM, so tick has to advance it here. Cheap when nothing is playing:
+   // a couple of flag checks and a millis() compare.
+   MorseVoice::tick();
+#endif
+
    if (playCW) {
                   if (checkPaddles()) {
                     stopPlayCw();
