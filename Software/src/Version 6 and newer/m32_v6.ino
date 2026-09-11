@@ -3256,6 +3256,14 @@ void changeSpeed( int t) {
       else                                               // not just the narrow WPM field, or its fragments
           displayCWspeed();                     // update display of CW speed
   }
+#ifdef CONFIG_AUDIO_A11Y
+  // Announce the new speed. MorseVoice's 120 ms debounce collapses fast encoder rotation
+  // to the final settled value, so this stays quiet during a sweep and speaks the number
+  // the user actually landed on. Same path serves the echo trainer's speed-adapt step,
+  // which fires once per word - exactly the case a blind user wants to hear.
+  MorseVoice::announce(String(MorsePreferences::wpm));
+  MorseVoice::announceMore("words per minute");
+#endif
 }
 
 

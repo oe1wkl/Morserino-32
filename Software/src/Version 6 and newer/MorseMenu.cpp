@@ -283,6 +283,65 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 // somewhere else (power-on, returning from a mode, leaving the preferences menu).
 static uint8_t a11yMenuParent = 0xFF, a11yLastEntry = 0xFF;
 static void a11yForgetMenuContext() { a11yMenuParent = a11yLastEntry = 0xFF; }
+
+// Say how much battery is left when the user returns to the menu from a mode. The visible
+// battery icon in the status line is useless to a blind operator, and running out matters
+// specifically here: the TLV320 audio codec is the first thing to give up on this build
+// when the cell sags, so a blind operator can be left with a working device that says
+// nothing at all. Every menu-from-mode entry gets one line so the state is periodically
+// re-surfaced without becoming chatty inside a session.
+//
+// Suppresses on the very first menu_() call (the one from setup()): the boot splash already
+// announces the reading, and doing it twice reads as a stutter.
+static void a11yAnnounceBatteryOnMenuEntry() {
+    static bool firstCall = true;
+    if (firstCall) { firstCall = false; return; }         // boot splash covered it
+
+    uint16_t v = batteryVoltage();
+#ifdef CONFIG_MCP73871
+    uint8_t pps = MorseOutput::getPowerpathState();
+    if (pps == 4 && v > 4290) pps = 6;                    // matches checkPowerpathState()
+
+    const char *msg;
+    // state 2 = actively charging, state 4 = full but still on USB. Both feel the same to
+    // the operator ("plugged in, do not need to worry about the level") and get one phrase.
+    // A dedicated "battery full" is a step past what was asked for; add it if operators
+    // want it.
+    if      (pps == 2 || pps == 4) msg = "battery charging";
+    else if (pps == 6)              msg = "on USB power";     // running on USB, no battery in
+    else if (pps == 0 || pps == 7)  msg = "battery fault";    // fault / no-input-power
+    else {                                                     // 3 = normal battery discharge
+        // Same thresholds as MorseOutput's voltageToBars(): 0-1 bars -> low (<3500), 2-3
+        // bars -> medium, 4 bars -> high. Low fires early enough (3500 mV, well above the
+        // codec-critical zone) that a blind operator has time to plug in before it goes
+        // mute. Below the shutdown threshold the empty-battery path handles it directly.
+        if      (v < 3500) msg = "battery low";
+        else if (v < 3860) msg = "battery medium";
+        else               msg = "battery high";
+    }
+    MorseVoice::announce(msg);
+#else
+    // Classic (no MCP charge controller). Not built into any a11y edition today - the
+    // pocketwroom-accessibility env is the only a11y build - but the guard keeps this
+    // future-proof: voltage-only, no charging/no-bat detection.
+    if      (v < 3500) MorseVoice::announce("battery low");
+    else if (v < 3860) MorseVoice::announce("battery medium");
+    else               MorseVoice::announce("battery high");
+#endif
+
+    // Commit the announcement to MorseVoice's play sequence before the menu's own
+    // announcement lands and would otherwise replace it. announce() only sets a PENDING
+    // utterance with a 120 ms settle timer; tick() promotes pending -> playing once the
+    // timer elapses, and once a clip is playing, a further announce() only queues after
+    // it. We are about to call menuDisplay() (which announces the menu path) within a
+    // few ms of returning here, so drive tick() for ~150 ms until this clip starts. Same
+    // idiom as splashPause() around announceSplash() in m32_v6.ino.
+    uint32_t deadline = millis() + 150;
+    while ((int32_t)(millis() - deadline) < 0) {
+        MorseVoice::tick();
+        delay(5);
+    }
+}
 #endif
 
 ////// The MENU
@@ -315,6 +374,7 @@ void MorseMenu::menu_() {
    m32state = menu_loop;
 #ifdef CONFIG_AUDIO_A11Y
    a11yForgetMenuContext();     // arriving from a mode (or from power-on): announce the full path
+   a11yAnnounceBatteryOnMenuEntry();   // one line of state per mode-to-menu return; skipped on cold boot
 #endif
    // Persist a volume changed in the mode we just left. The in-mode save only fires on
    // the vol-button toggle back to speed mode; every other exit (long-press to menu,
