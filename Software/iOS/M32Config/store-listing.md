@@ -4,9 +4,6 @@ Draft text for the store record, kept here so the next release starts from
 something rather than from a blank field. Character limits are Apple's; the
 counts were checked against them.
 
-Fill in the two placeholders before submitting: `<CONTACT EMAIL>` and
-`<DEMO VIDEO URL>`.
-
 ---
 
 ## App name (30 max)
@@ -83,7 +80,7 @@ will search by name, and Utilities is where hardware companions live.)
     The app needs a physical Morserino-32 running firmware 9.0 or later, with
     "Bluetooth Use" set to "BLE Serial". We appreciate that the review team
     will not have one, so a video of a complete session is here:
-    <DEMO VIDEO URL>
+    https://www.dropbox.com/scl/fi/zw9sslwl8mwi9up7j651d/M32-Config-Tool.mp4?rlkey=5shokx5hi0usfpwoa4kgsbh9t&dl=0
 
     Without the hardware you can still confirm the app is complete and
     functional: it launches, the full configuration interface is visible, and
