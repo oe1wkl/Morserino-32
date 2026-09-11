@@ -757,6 +757,9 @@ namespace {
     // sitting past its own narrow width - see printOnStatusLine().
     uint16_t statusLineCacheWidth = 0;
 
+    // See MorseOutput::requestRepaint() / takeRepaintRequest().
+    bool   repaintPending = false;
+
     // Paint the full-width white background, respecting the battery icon's
     // right-side reserved area. Extracted so clearStatusLine() and the
     // deferred-clear path inside printOnStatusLine() stay in sync.
@@ -795,6 +798,7 @@ void MorseOutput::initDisplay()
   statusClearPending = true;
   statusLineCache    = "";
   statusLineCacheWidth = 0;
+  repaintPending     = false;   // the screen was just wiped; its owner redraws it
 }
 
 
@@ -807,6 +811,7 @@ static uint16_t currentMorseColor = 0xFFFF;
 static uint16_t currentOkColor    = 0x07E0;
 static uint16_t currentErrColor   = 0xF800;
 static uint16_t currentThemeBg    = 0x0000;
+static uint8_t  currentTheme      = 0xFF;     // none yet: the first setTheme() at boot is a change
 
 void MorseOutput::setTheme (uint8_t theme) {
   //DEBUG("Theme: " + String(theme));
@@ -816,6 +821,20 @@ void MorseOutput::setTheme (uint8_t theme) {
   currentOkColor    = MorsePreferences::themeList[theme].ok;
   currentErrColor   = MorsePreferences::themeList[theme].err;
   currentThemeBg    = MorsePreferences::themeList[theme].background;
+  // This only sets the colours for what is drawn next - everything already on screen keeps the
+  // old ones. So the status-line cache must stop vouching for "the same text is already there"
+  // (it is, but in the wrong colours - that fast path is why the top line stayed old while the
+  // rest of the menu turned), the battery icon needs drawing again, and the screen's owner has
+  // to repaint the rest. Only on an actual change: game exit re-applies the current theme every
+  // time, and a repaint then would just flash.
+  if (theme != currentTheme) {
+    currentTheme    = theme;
+    statusLineCache = "";
+#ifdef CONFIG_MCP73871
+    batteryDisplayDirty = true;
+#endif
+    requestRepaint();
+  }
 }
 
 #endif
@@ -829,6 +848,7 @@ void MorseOutput::clearDisplay() {
     statusClearPending = true;
     statusLineCache    = "";
     statusLineCacheWidth = 0;
+    repaintPending     = false;   // nothing stale is left: the caller draws on a clean screen
 #ifdef CONFIG_MCP73871
     batteryDisplayDirty = true;
     batteryIconVisible = false;
@@ -838,6 +858,16 @@ void MorseOutput::clearDisplay() {
 void MorseOutput::refreshDisplay()
 {
   display.display();
+}
+
+void MorseOutput::requestRepaint() {
+  repaintPending = true;
+}
+
+boolean MorseOutput::takeRepaintRequest() {
+  boolean pending = repaintPending;
+  repaintPending = false;
+  return pending;
 }
 
 uint8_t MorseOutput::getScrollTop() {

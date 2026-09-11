@@ -54,6 +54,7 @@ extern void         displayGeneratedMorse(FONT_ATTRIB style, const String& s);
 extern void         changeSpeed(int t);
 extern void         changeVolume(int t);
 extern void         updateTopLine();
+extern void         repaintModeScreen();
 extern boolean      speedChanged;
 extern encoderMode  encoderState;
 extern uint8_t      lastGeneratedCallContinent;   // set by getRandomCall
@@ -1189,6 +1190,8 @@ void run(menuNo mode) {
         }
 
         serialEvent();
+        if (MorseOutput::takeRepaintRequest())   // theme changed underneath us, e.g. from the config tool
+            repaintModeScreen();
         delay(2);
     }
 

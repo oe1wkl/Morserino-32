@@ -403,6 +403,12 @@ void MorseMenu::menu_() {
             MorseMenu::menuDisplay(disp);
         }
 #endif
+        // The theme (or Font Size) changed underneath the menu - typically from the config
+        // tool, whose PUT config is handled in serialEvent() above - so repaint in place.
+        if (MorseOutput::takeRepaintRequest()) {
+            MorseOutput::clearDisplay();
+            MorseMenu::menuDisplay(disp, false);
+        }
         if (quickStart) {
             quickStart = false;
             command = 1;
@@ -528,7 +534,7 @@ checkShutDown(false);                  // check for time out
 } // end menu_()
 
 
-void MorseMenu::menuDisplay(uint8_t ptr) {
+void MorseMenu::menuDisplay(uint8_t ptr, boolean announce) {
   //DEBUG("Level: " + (String) menuNav [ptr][naviLevel] + " " + menuText[ptr]);
   uint8_t oneUp = menuNav[ptr][naviUp];
   uint8_t twoUp = menuNav[oneUp][naviUp];
@@ -571,6 +577,8 @@ void MorseMenu::menuDisplay(uint8_t ptr) {
             MorseOutput::printOnScroll(0, BOLD, 0, menuText[ptr]);
             break;
   }
+  if (!announce)
+      return;
 #ifdef CONFIG_AUDIO_A11Y
   // a11y: speak the highlighted entry - preceded by the branch it hangs off whenever the
   // listener cannot already know that branch. A sighted user reads it off the two lines above

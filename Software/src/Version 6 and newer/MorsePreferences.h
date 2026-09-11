@@ -253,8 +253,10 @@ namespace MorsePreferences
   boolean  recallSnapshot();
   boolean storeSnapshot(uint8_t);
   boolean setupPreferences(uint8_t);
-  void displayKeyerPreferencesMenu(prefPos);
-  void displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading = true);
+  // announce = false: a repaint of what is already on screen (e.g. after a theme change) - drawn
+  // the same, but neither spoken nor sent to a protocol client, since the entry did not change.
+  void displayKeyerPreferencesMenu(prefPos, boolean announce = true);
+  void displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading = true, boolean announce = true);
   String getValueLine(prefPos);
   int getValue(prefPos);
   boolean adjustKeyerPreference(prefPos);

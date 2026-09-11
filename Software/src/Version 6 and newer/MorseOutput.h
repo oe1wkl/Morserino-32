@@ -60,6 +60,15 @@ namespace MorseOutput
   void initDisplay();
   void clearDisplay();
   void refreshDisplay();
+  // The whole screen has gone stale underneath whoever owns it: every pixel is still in the old
+  // theme colours (setTheme() raises this on an actual change), or the old Font Size geometry.
+  // The config tool is the usual culprit - its PUT config lands inside serialEvent(), which knows
+  // nothing about what is on screen. The loops that own a screen (main menu, preferences, running
+  // modes, QSO Bot) poll takeRepaintRequest() - true once, then cleared - and repaint in place.
+  // clearDisplay()/initDisplay() cancel a pending request: whoever wipes the screen draws it all
+  // again anyway, and a second repaint on top would only flash.
+  void requestRepaint();
+  boolean takeRepaintRequest();
   void decreaseBrightness();
   void setBrightness(uint8_t brightness);
 #ifdef CONFIG_SCROLL_FONT_SIZE

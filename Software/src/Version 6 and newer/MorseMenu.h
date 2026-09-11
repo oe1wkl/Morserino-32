@@ -73,7 +73,9 @@ void setupESPNow();
 // and fragments the heap (post-WiFi-Trx OOM when entering a game).
 void wifiWarmup();
 String getMenuPath(uint8_t);
-void menuDisplay(uint8_t);
+// announce = false: a repaint of the entry already on screen (e.g. after a theme change) - drawn
+// the same, but not spoken again and not re-sent to a protocol client, since nothing changed.
+void menuDisplay(uint8_t, boolean announce = true);
 void cleanupScreen();
 void showStartDisplay(const String&, const String&, const String&, int);
 boolean isRemotelyExecutable(uint8_t);

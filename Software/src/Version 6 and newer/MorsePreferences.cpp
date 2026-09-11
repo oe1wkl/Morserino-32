@@ -823,6 +823,16 @@ int currentOptionSize;
 extern double voltage_raw;
 extern int16_t volt;
 
+// Repaint the preferences screen in place after the theme (or Font Size) changed underneath it -
+// from the config tool, or by the live preview while Theme itself is being adjusted: the same
+// layout, with the ">" marker while a value is being adjusted. Drawn only, not announced: the
+// entry on screen did not change, so there is nothing new to say or to send.
+static void repaintPreferencesScreen(prefPos pos, boolean adjusting) {
+    MorseOutput::clearDisplay();
+    MorsePreferences::displayKeyerPreferencesMenu(pos, false);
+    MorseOutput::printOnScroll(2, adjusting ? INVERSE_BOLD : REGULAR, 0, adjusting ? ">" : " ");
+}
+
 ////// setup preferences ///////
 
 
@@ -945,6 +955,8 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 
             MorseOutput::refreshDisplay();
           }    // end if (encoderPos)
+          if (MorseOutput::takeRepaintRequest())       // theme changed underneath us, e.g. from the config tool
+              repaintPreferencesScreen(posPtr, false);
 #ifdef CONFIG_MCP73871
           MorseOutput::checkPowerpathState();
           MorseOutput::updateBatteryDisplay();
@@ -958,7 +970,7 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 
 //// new way of displaying it
 
-void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
+void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos, boolean announce) {
   const int maxLength = 14;
 
   // MorseOutput::clearDisplay();
@@ -994,7 +1006,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos) {
   itemLine += emptyLine.substring(0,maxLength - itemLine.length());
   MorseOutput::printOnScroll(1, BOLD, 0, itemLine);
   // a11y: the heading + value are announced together by displayValueLine() (called next).
-  displayValueLine(pos, itemLine, false);
+  displayValueLine(pos, itemLine, false, true, announce);
 }
 
 /// posKochFilter, posLoraBand, posLoraQRG, posSnapRecall, posSnapStore,  posVAdjust, posScreen, posHwConf
@@ -1063,7 +1075,7 @@ static void announceValue(prefPos pos, const String& valueLine, boolean withTota
 }
 #endif
 
-void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading) {
+void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boolean jsonOnly, boolean withHeading, boolean announce) {
     String valueLine; valueLine.reserve(20);
     const String emptyLine = "                    ";
     const int maxLength = 14;
@@ -1077,7 +1089,7 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
     if (pos == posMaxSequence && pliste[pos].value == 0)                  /// we do a "mapping" for 0 here
         valueLine = "Unlimited";
 #ifdef CONFIG_AUDIO_A11Y
-    if (!jsonOnly) {                                                      // a11y: heading+value on entry, value-only when adjusting
+    if (!jsonOnly && announce) {                                          // a11y: heading+value on entry, value-only when adjusting
         a11yFresh = true;
         if (withHeading) {                                               // extraItems have no pliste[] entry:
             MorseVoice::announce(pos <= posSerialOut                     // they announce by their display label
@@ -1095,7 +1107,7 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
     if (valueLine.length() < maxLength)             // guard: for a >14-char value the subtraction wraps
         valueLine += emptyLine.substring(0,maxLength - valueLine.length());  // unsigned and appends the whole emptyLine
 
-    if (protocolActive()) {
+    if (protocolActive() && announce) {
       jsonValueLine = valueLine;
       jsonValueLine.trim();
       switch (pos) {
@@ -1560,10 +1572,8 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
                       temp = val + maxi + vstep + t*vstep;
                       pliste[pos].value = temp % (maxi + vstep);
 #ifdef CONFIG_TFT
-                      if (pos == posTheme) {
-                           MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value); 
-                            MorseOutput::refreshDisplay();
-                        }
+                      if (pos == posTheme)          // live preview: setTheme() requests the repaint below
+                          MorseOutput::setTheme(MorsePreferences::pliste[posTheme].value);
 #endif
                       if (pliste[pos].value != 0) {
                         if (pos == posWordDoubler) {
@@ -1706,6 +1716,8 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
             displayValueLine(pos, itemLine, false, false);   /// now display the value (value only, no heading)
 	          MorseOutput::refreshDisplay(); // update the display
          }      // end if     (checkEncoder)
+         if (MorseOutput::takeRepaintRequest())     // theme changed: the Theme preview above, or the config tool
+             repaintPreferencesScreen(pos, true);
         #ifdef CONFIG_MCP73871
          MorseOutput::checkPowerpathState();
          MorseOutput::updateBatteryDisplay();
@@ -2197,6 +2209,9 @@ void MorsePreferences::writePreferences(const char* repository) {
                     // Re-wrapping in place isn't worth it for a settings change;
                     // start the scroll area clean instead.
                     MorseOutput::clearScroll();
+                    // ... which blanks whatever the screen's owner had drawn there (the
+                    // menu entries, a preference), at the old geometry - so it redraws.
+                    MorseOutput::requestRepaint();
                     break;
 #endif
             }     // end of "special cases"

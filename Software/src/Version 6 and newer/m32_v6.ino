@@ -1323,6 +1323,8 @@ if (morseState == morseKeyer &&
         MorseMenu::menu_();                                       // long click exits current mode and goes to top menu
         return;
     }
+    if (MorseOutput::takeRepaintRequest())                        // theme changed underneath us, e.g. from the config tool
+        repaintModeScreen();
   // check buttons
     Buttons::modeButton.Update();
     Buttons::volButton.Update();
@@ -3129,6 +3131,20 @@ void updateTopLine() {
   // 3rd state (showed the volume bar as owned while character was actually selected).
   MorseOutput::displayVolume(encoderState != volumeSettingMode, MorsePreferences::sidetoneVolume);                                     // sidetone volume
   MorseOutput::refreshDisplay();
+}
+
+
+// Repaint a running mode's screen in place when it went stale underneath the mode - the theme
+// (or Font Size) was changed from the config tool: the same restore as after the preferences
+// menu, plus the scroll bar when the encoder is scrolling. A full-width status message (the pause
+// prompt, the echo summary) gives way to the normal top line, as on a speed or volume change.
+// Used by loop() and the QSO Bot.
+void repaintModeScreen() {
+  MorseOutput::clearDisplay();
+  updateTopLine();
+  MorseOutput::refreshScrollArea(MorseOutput::relPos);
+  if (encoderState == scrollMode)
+    MorseOutput::displayScrollBar(true);
 }
 
 
