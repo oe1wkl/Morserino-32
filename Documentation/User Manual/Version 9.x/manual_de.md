@@ -36,12 +36,14 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=d24b18851fa5 v=9 -->
+<!-- WHATSNEW:BEGIN en=da4a28bead26 v=9 -->
 Was ist neu in Version 9?
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
 -   Nur M32 Pocket: Das Installationsprogramm kann nun auch die **Accessibility Edition** installieren, die Menüs und Einstellungen für blinde und sehbehinderte Operatoren laut vorliest (die Spiele sind darin nicht enthalten). Standard- und Accessibility Edition werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln; deine Einstellungen bleiben erhalten.
 -   Nur M32 Pocket, Accessibility Edition: Das Gerät meldet jetzt, wenn mit seinen Sprachdateien etwas nicht stimmt, statt einfach stumm darüber hinwegzugehen. Die Sprachdateien liegen getrennt vom Programm, deshalb kann ein Neuaufspielen nur des Programms — oder eine mittendrin abgebrochene Installation — einen Morserino hinterlassen, der einwandfrei läuft, aber nichts mehr hat, womit er sprechen könnte, oder nur noch die Sprachdateien einer älteren Version. In beiden Fällen hörst du beim Einschalten jetzt vier Paare aus abwechselnd hohem und tiefem Ton, und im Display steht, worum es sich handelt: „No voice clips!“ (gar nichts vorhanden, das Gerät bleibt stumm) oder „Wrong voice pack!“ (Sprachdateien einer anderen Version — es spricht weiter, aber was seit diesen Dateien dazugekommen oder umformuliert wurde, bleibt stumm). Ein nochmaliger Lauf des Installationsprogramms bringt es in Ordnung. Das Warnsignal ist mit Absicht weder Sprache noch Morsezeichen: Es muss funktionieren, wenn gerade die Sprache fehlt, und es darf nicht voraussetzen, dass du schon Morsezeichen lesen kannst.
+-   Nur M32 Pocket, Accessibility Edition: Das Gerät sagt jetzt die neue Geschwindigkeit, sobald du sie änderst — die Zahl wird ausgesprochen, während du den Encoder drehst, damit ein blinder Operator sein Übungstempo selbst wählen kann, ohne jemanden fragen zu müssen. Während du den Encoder in einem Zug durchdrehst, hält es sich zurück (nur der Endwert wird gesagt), und es funktioniert überall dort, wo `changeSpeed()` zuständig ist, auch bei der automatischen Geschwindigkeitsanpassung des Echo Trainers nach jedem Wort.
+-   Nur M32 Pocket, Accessibility Edition: Immer wenn du einen Übungsmodus verlässt und wieder im Hauptmenü landest, sagt das Gerät, wie es der Batterie geht — **high**, **medium**, **low** oder **charging** (dazu **on USB power**, wenn keine Batterie eingelegt ist, und **battery fault** für die beiden seltenen Fehlerzustände). Das ist gerade hier wichtig, weil auf diesem Gerät der Audio-Codec als Erstes aufgibt, wenn die Zelle schwach wird: Ein blinder Operator kann sonst mit einem funktionierenden Gerät zurückbleiben, das gar nichts mehr sagt — und diese Warnung kommt weit genug vor der Codec-Klippe, dass noch Zeit zum Anstecken bleibt. Die Meldung erklingt einmal pro Rückkehr aus dem Modus ins Menü, nicht wiederholt, während du im Menü navigierst.
 -   Es gibt jetzt drei Ausgaben des Handbuchs, jede in zwei Sprachen (Englisch und Deutsch): eine für den „klassischen“ Morserino-32 (1st und 2nd Edition), eine für den M32 Pocket und eine für die Accessibility Edition des M32 Pocket. Jede Ausgabe lässt jene Teile weg, die für die betreffende Hardware bzw. Firmware nicht relevant sind.
 -   Das neue Firmware-Update-Programm und das Konfigurationsprogramm verweisen jetzt auf die jeweils passende Ausgabe des Handbuchs.
 -   Erweiterte BLE-Funktionen. Neben der Ausgabe als BLE-Tastatur gibt es nun auch die Möglichkeit, BLE für das serielle Protokoll zu verwenden. Damit lassen sich Programme schreiben (oder portieren), die kabellos arbeiten, auch auf tragbaren Geräten wie Smartphones oder Tablets.
@@ -189,10 +191,13 @@ Edition schon, und du kannst diesen Abschnitt überspringen.
 Ein neuer M32 Pocket wird mit der **Standard**-Edition ausgeliefert, und diese
 Edition ist stumm: Sie zeigt die Menüs am Display an, liest sie aber nicht vor.
 Die **Accessibility Edition** spricht stattdessen — sie meldet sich beim
-Einschalten selbst mit dem Batteriestatus, und sie spricht Menüeinträge,
-Einstellungen und deren Werte, während du dich durch sie bewegst. Sie kostet
-nichts, sie wird über USB installiert, und du kannst jederzeit wieder zur
-Standard-Edition zurückkehren.
+Einschalten selbst mit dem Batteriestatus, sie spricht Menüeinträge,
+Einstellungen und deren Werte, während du dich durch sie bewegst, sie sagt die
+neue Geschwindigkeit, sobald du sie änderst, und jedes Mal, wenn du aus einem
+Übungsmodus ins Menü zurückkehrst, sagt sie dir, wie es der Batterie geht —
+**high**, **medium**, **low** oder **charging**. Sie kostet nichts, sie wird
+über USB installiert, und du kannst jederzeit wieder zur Standard-Edition
+zurückkehren.
 
 Die beiden sind **Alternativen, nicht eine Edition mit zusätzlicher Sprache**: Es
 läuft entweder die eine oder die andere, und die sprechende kommt ohne drei Dinge
