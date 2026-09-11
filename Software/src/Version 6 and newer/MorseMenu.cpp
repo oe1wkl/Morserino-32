@@ -302,15 +302,29 @@ static void a11yAnnounceBatteryOnMenuEntry() {
     uint8_t pps = MorseOutput::getPowerpathState();
     if (pps == 4 && v > 4290) pps = 6;                    // matches checkPowerpathState()
 
+    // MCP73871 powerpath state, encoded as (STAT1<<2) | (STAT2<<1) | PG. Same numbers the
+    // display code (MorseOutput::displayBatteryStatus) switches on; keep the two in step.
+    //
+    //   0  fault (both status pins asserted at once)
+    //   2  charging in progress on USB
+    //   3  charging at very low battery -- the boot check treats this as empty-battery
+    //      shutdown, and displayBatteryStatus was originally labelling it "Low!" too
+    //   4  charge complete, still on USB
+    //   6  no battery detected (running from USB, no cell installed)
+    //   7  running on battery, no USB (all pins inactive) -- this is the everyday case,
+    //      not a fault; displayBatteryStatus shows nothing for it beyond the voltage.
+    //   1, 5  nonsensical combinations that appear only in transient/error conditions -
+    //      fall back to voltage so we say SOMETHING sensible.
+    //
+    // The first version of this mapped state 7 to "battery fault", which is wrong: 4-bar
+    // battery with no USB reports as state 7 and would announce "battery fault" instead of
+    // "battery high". Fixed 2026-09-11 after bench feedback.
     const char *msg;
-    // state 2 = actively charging, state 4 = full but still on USB. Both feel the same to
-    // the operator ("plugged in, do not need to worry about the level") and get one phrase.
-    // A dedicated "battery full" is a step past what was asked for; add it if operators
-    // want it.
-    if      (pps == 2 || pps == 4) msg = "battery charging";
-    else if (pps == 6)              msg = "on USB power";     // running on USB, no battery in
-    else if (pps == 0 || pps == 7)  msg = "battery fault";    // fault / no-input-power
-    else {                                                     // 3 = normal battery discharge
+    if      (pps == 2 || pps == 4) msg = "battery charging";  // 2 = charging, 4 = full on USB
+    else if (pps == 6)              msg = "on USB power";      // no battery installed
+    else if (pps == 3)              msg = "battery low";       // MCP-reported critical low
+    else if (pps == 0)              msg = "battery fault";     // actual impossible combination
+    else {                                                      // 7 (on battery) and 1/5 fallback
         // Same thresholds as MorseOutput's voltageToBars(): 0-1 bars -> low (<3500), 2-3
         // bars -> medium, 4 bars -> high. Low fires early enough (3500 mV, well above the
         // codec-critical zone) that a blind operator has time to plug in before it goes
