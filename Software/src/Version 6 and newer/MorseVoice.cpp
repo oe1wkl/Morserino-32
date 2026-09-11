@@ -171,6 +171,31 @@ void MorseVoice::announce(const String& text) {        // start a NEW pending ut
 #endif
 }
 
+void MorseVoice::announceOverriding(const String& text) {
+#ifdef CONFIG_AUDIO_A11Y
+    // Like announce(), but also cuts any clip currently playing so this announcement is
+    // heard right away. For places where the user is actively adjusting a value and only
+    // the settled result matters - the encoder-driven speed change, from changeSpeed().
+    // Without this the debounce only collapses successive announce() calls until the first
+    // one clears its 120 ms settle: that one starts playing (~800 ms), further announce()s
+    // just update pending, and the user hears BOTH the first change AND the settled one
+    // with everything between silently dropped. voiceStop() posts to the audio task's
+    // mailbox (latest-wins overwrite), so back-to-back interrupts are safe.
+    //
+    // Do NOT use where a follow-on announcement is expected to queue behind - it would
+    // wipe the one in flight. See a11yAnnounceBatteryOnMenuEntry (battery, then menu path)
+    // for that pattern.
+    if (playing || seqLen > 0) {
+        MorseOutput::voiceStop();
+        playing = false;
+        seqPos = seqLen = 0;
+    }
+    announce(text);
+#else
+    (void)text;
+#endif
+}
+
 void MorseVoice::announceMore(const String& text) {    // append to the pending utterance
 #ifdef CONFIG_AUDIO_A11Y
     appendId(idFor(text));
@@ -251,6 +276,20 @@ void MorseVoice::stop() {
     pendLen = 0; seqLen = 0; seqPos = 0;
     MorseOutput::voiceStop();
     playing = false;
+#endif
+}
+
+bool MorseVoice::isSpeaking() {
+#ifdef CONFIG_AUDIO_A11Y
+    // playing = a clip is actively coming out of the codec; pendLen > 0 = an utterance is
+    // queued and about to promote to seq[] once its 120 ms debounce elapses. Callers that
+    // hold CW output silent while speech is happening need to cover both, otherwise the
+    // gap between "generator running" and "clip audible" leaks clicks. The warning alarm
+    // is not counted here - it uses pwmTone directly on the sidetone, so a mode's own CW
+    // output cannot conflict with it beyond one shared oscillator.
+    return playing || pendLen > 0 || seqPos < seqLen;
+#else
+    return false;
 #endif
 }
 

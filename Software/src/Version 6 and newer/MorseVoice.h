@@ -24,6 +24,12 @@ namespace MorseVoice
   // wins, and tick() starts playback once navigation settles. Silent if the string has no
   // clip (e.g. an out-of-range number). No-op without CONFIG_AUDIO_A11Y.
   void announce(const String& text);
+  // Like announce(), but also interrupts any clip already playing so this new one takes
+  // over immediately. For live-adjust announcements (encoder-driven speed change) where
+  // only the settled value matters; must not be used for the leading half of a two-step
+  // chain (e.g. battery-then-menu-path on menu re-entry), which needs the first clip to
+  // complete before the second arrives.
+  void announceOverriding(const String& text);
   // Append another clip to the current (still-debouncing) utterance, e.g. the value after the
   // heading: announce("Serial Output"); announceMore("Nothing"); -> speaks both in sequence.
   void announceMore(const String& text);
@@ -37,6 +43,14 @@ namespace MorseVoice
   void tick();
   // Interrupt + clear any current/pending announcement (e.g. when leaving the menu).
   void stop();
+
+  // True while a clip is playing, or a clip is queued and waiting out its debounce. The
+  // CW generator and echo trainer use this to hold their state machine and key output
+  // silent while an announcement is speaking: on the Pocket both share one I2S pipeline,
+  // so a generator that keeps running through a clip produces clicks (from pwmTone's
+  // 3 ms volume ramps hitting the codec while the clip owns the mixer) rather than CW.
+  // False without CONFIG_AUDIO_A11Y.
+  bool isSpeaking();
 
   // ---- the voice store itself ------------------------------------------------------------
   // Without its clips this build says nothing at all, and for the operator it exists for a
