@@ -1,7 +1,6 @@
 # M32KIP Phase 0 — timing measurements
 
-Status: **instruments built, measurements pending.** Fill in the tables below from the
-device display; the D1 verdict (Rig side on the classic?) follows from them.
+Status: **classic measured 2026-09-12 (three runs), verdicts below; Pocket runs pending.**
 
 ## Procedure
 
@@ -77,7 +76,17 @@ no-redraw loop gap per state):
 
 | ISR max/avg | D (redraw max) | loop >2 ms | LP all on | LP touch off | LP touch + send off |
 |---|---|---|---|---|---|
-| | | | | | |
+| **96 / 20 µs** | 36.9 ms | 5140 | 7.58 ms | 6.99 ms | **0.24 ms** |
+
+(200 pps load for 190 s; the 60 s states each ran at least once, cumulative since reflash.)
+
+Apportioning: touch reads cost well under 1 ms (7.58 → 6.99 ms when they stop). The
+**`AsyncUDP::writeTo()` call from the loop is the stall**: with it gone the loop never
+paused longer than 0.24 ms outside a redraw. 5140 passes over 2 ms in ~120 s of send-on
+states at 50 sends/s means nearly every send blocked the loop for 2–7 ms — `writeTo()`
+hands the packet to the lwIP thread and waits, and under 200 pps of inbound echo traffic
+that wait is long. (MOPP sends from the loop the same way today; at a few packets per
+word it never mattered.)
 
 spike_load.py, 200 pps × 120 s, 60-byte packets:
 
@@ -112,9 +121,26 @@ little about the device; a wired probe host is needed for a real jitter baseline
 `WiFi.setSleep(false)` in the KIP modes regardless — it is the documented cause of exactly
 this kind of tail on the ESP32 side, and costs nothing here.
 
-## Verdicts
+## Verdicts (classic; Pocket runs still to do)
 
-- **D1 (Rig side on the classic):** *pending* — yes if ISR `>1 ms` stays at 0 under load.
-- **D2 (polled straight-key capture):** *pending* — the LOOP maximum is the worst-case capture
-  error; if the display redraw dominates it, the Keyer mode can rate-limit or skip redraws while
-  the key is down.
+- **D1 — Rig side on the classic: YES.** Hardware-timer ISR on core 1, under 200 pps of WiFi
+  traffic for minutes: 64–96 µs worst case, ~20 µs average, never over 1 ms, never early. Ten
+  times inside the relaxed target and inside the original 200 µs one as well.
+- **D2 — polled straight-key capture: viable, with two conditions on the Keyer mode.**
+  The polled loop itself is good to 0.24 ms once nothing blocks it. What blocks it:
+  1. **Sending from the loop.** `writeTo()` stalls the loop 2–7 ms per packet under load. The
+     Keyer must send from a dedicated task fed by a queue (spec §10 already says so); the
+     loop only timestamps and enqueues. Non-negotiable after this measurement.
+  2. **Display redraws.** 37 ms per redraw on the I²C OLED. While the key is down (and for
+     the polled path, at any time an edge may arrive — i.e. always, for a straight key) the
+     Keyer mode must not redraw synchronously. Options for Phase 3: hold all redraws while
+     the key line is closed and for one dit after it opens (the classic modes print a decoded
+     character only after the inter-character gap anyway, which is exactly the safe window);
+     or move display work to a low-priority task. The Pocket's SPI TFT will be faster per
+     redraw but scrolling a line is not free — measure there before choosing.
+  Touch reads may stay on (< 1 ms).
+- **Network probe:** inconclusive about the LAN, conclusive about the probe host — see run 2.
+  `WiFi.setSleep(false)` stays in the KIP modes on principle.
+- **Spec follow-ups (fold into Draft 0.3):** §10 "the keying path itself never blocks on the
+  socket" is now backed by a number; add the redraw rule to §10; §12.1's "ship the Rig side for
+  the Pocket only if the classic cannot meet the target" is moot — the classic meets it.
