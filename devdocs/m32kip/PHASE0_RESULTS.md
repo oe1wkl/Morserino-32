@@ -1,6 +1,6 @@
 # M32KIP Phase 0 — timing measurements
 
-Status: **classic measured 2026-09-12 (three runs), verdicts below; Pocket runs pending.**
+Status: **complete 2026-09-12** — classic (three runs) and Pocket (one run with the final spike). Verdicts at the end.
 
 ## Procedure
 
@@ -34,15 +34,39 @@ All times in µs; fields saturate at 5 digits. Fitted to the OLED's 14 columns.
 
 ## Results
 
-### M32 Pocket (`pocketwroom`)
+### M32 Pocket (`pocketwroom`, standard edition)
 
-| Condition | ISR max µs | ISR avg µs | >200 µs | >1 ms | LOOP max µs | LOOP >2 ms | rx / tx | core |
-|---|---|---|---|---|---|---|---|---|
-| idle 60 s | | | | | | | | |
-| 200 pps 120 s | | | | | | | | |
-| + touching paddles | | | | | | | | |
+Measured 2026-09-12, device at 192.168.1.23, same WiFi-connected Mac as the probe host.
+One run with the final spike (load states cycling every 60 s), 200 pps × 190 s:
 
-spike_load.py summary: *(paste)*
+```
+sent 38000, echoed 37995, lost 5 (0.01 %)
+RTT ms: min 3.82  median 6.65  p90 41.29  p99 75.89  max 509.77
+```
+
+Lower median and loss than the classic (the S3's WiFi is the newer part); the tail is the
+probe host's, as before.
+
+| ISR max/avg | D (redraw max) | loop >2 ms | LP all on | LP touch off | LP touch + send off | rx / tx | core |
+|---|---|---|---|---|---|---|---|
+| **45 / 22 µs** | **45.8 ms** | 982 | 2.42 ms | 2.76 ms | **1.66 ms** | 38002 / 8800 | **1** |
+
+Reading:
+- **ISR:** 45 µs worst case on the S3, on core 1 as intended. Same verdict as the classic.
+- **Redraw:** 45.8 ms for four scroll lines on the SPI TFT — *slower* than the OLED's three
+  lines. The text path (DisplayWrapper glyph rendering) is the cost, not the bus. The
+  no-redraw-while-keying rule applies to the Pocket at least as much as to the classic.
+- **Send stalls:** far fewer passes over 2 ms (982 vs 5140) and a smaller maximum (2.4–2.8 ms
+  vs 7–7.6 ms); the S3 + newer WiFi stack hands packets over faster. Still over the target, so
+  the send task stays mandatory on both variants.
+- **The 1.66 ms floor with everything off** is new: the classic showed 0.24 ms. The Pocket runs
+  the I2S sidetone/audio task at maximum priority pinned to core 1 (`I2S_Sidetone.cpp`,
+  128-sample buffers at 44.1 kHz = a 2.9 ms period), which preempts the loop whenever it
+  refills the DMA buffer, plus the codec interrupt. So on the Pocket the polled straight-key
+  capture cannot be better than ~1.7 ms, whatever the Keyer mode does. That is over the 1 ms
+  figure but in the same class; **Willi to confirm it is acceptable** (it is what his "1 ms is
+  not a big deal" judgement was about). The only way below it is interrupt capture (the
+  declined D2 option), which remains available later if a bug operator complains.
 
 ### Classic M32 (`heltec_wifi_lora_32_V2`)
 
@@ -121,24 +145,25 @@ little about the device; a wired probe host is needed for a real jitter baseline
 `WiFi.setSleep(false)` in the KIP modes regardless — it is the documented cause of exactly
 this kind of tail on the ESP32 side, and costs nothing here.
 
-## Verdicts (classic; Pocket runs still to do)
+## Verdicts (both variants measured)
 
-- **D1 — Rig side on the classic: YES.** Hardware-timer ISR on core 1, under 200 pps of WiFi
-  traffic for minutes: 64–96 µs worst case, ~20 µs average, never over 1 ms, never early. Ten
-  times inside the relaxed target and inside the original 200 µs one as well.
+- **D1 — Rig side on both variants: YES.** Hardware-timer ISR on core 1, under 200 pps of WiFi
+  traffic for minutes: classic 64–96 µs worst case, Pocket 45 µs, ~20 µs average on both, never
+  over 1 ms, never early. Ten times inside the relaxed target and inside the original 200 µs
+  one as well.
 - **D2 — polled straight-key capture: viable, with two conditions on the Keyer mode.**
   The polled loop itself is good to 0.24 ms once nothing blocks it. What blocks it:
   1. **Sending from the loop.** `writeTo()` stalls the loop 2–7 ms per packet under load. The
      Keyer must send from a dedicated task fed by a queue (spec §10 already says so); the
      loop only timestamps and enqueues. Non-negotiable after this measurement.
-  2. **Display redraws.** 37 ms per redraw on the I²C OLED. While the key is down (and for
+  2. **Display redraws.** 37 ms per redraw on the I²C OLED, 46 ms on the Pocket's TFT. While the key is down (and for
      the polled path, at any time an edge may arrive — i.e. always, for a straight key) the
      Keyer mode must not redraw synchronously. Options for Phase 3: hold all redraws while
      the key line is closed and for one dit after it opens (the classic modes print a decoded
      character only after the inter-character gap anyway, which is exactly the safe window);
-     or move display work to a low-priority task. The Pocket's SPI TFT will be faster per
-     redraw but scrolling a line is not free — measure there before choosing.
-  Touch reads may stay on (< 1 ms).
+     or move display work to a low-priority task. Measured: the TFT is *not* faster.
+  Touch reads may stay on (< 1 ms). **Pocket floor:** ~1.7 ms from the I2S audio task's
+  preemption, independent of the Keyer mode — acceptable within D2's intent, pending Willi's nod.
 - **Network probe:** inconclusive about the LAN, conclusive about the probe host — see run 2.
   `WiFi.setSleep(false)` stays in the KIP modes on principle.
 - **Spec follow-ups (fold into Draft 0.3):** §10 "the keying path itself never blocks on the
