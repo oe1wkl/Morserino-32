@@ -151,9 +151,12 @@ Still to do, roughly in order:
    organization first — an individual listing carries your personal legal name,
    and switching later is a support ticket, not a checkbox.
 2. **Screenshots, from real hardware.** The simulator has no Bluetooth, so it
-   can never show a connected state. Apple's slot is the 6.9-inch display,
-   1320×2868; a 14 Pro shoots 1179×2556 and is refused at upload, so run them
-   through `./store-screenshots.sh <folder>` first. Take them all from ONE
+   can never show a connected state. A 14 Pro shoots 1179×2556, which no slot
+   accepts, so run them through `./store-screenshots.sh <folder>` first — it
+   writes a `6.9-inch/` and a `6.5-inch/` folder. **Upload to the 6.9-inch
+   tab**; the size selector sits above the upload area, and on the wrong tab
+   App Store Connect declares your correct files "required: 1242 × 2688 …",
+   which reads like a file problem and is not. Take them all from ONE
    build — a shot from an older build showing "USB · Chrome/Edge" in the
    connection bar is exactly the confusion the bridge now fixes.
 3. **A privacy policy URL.** Mandatory for every app, even one that collects
