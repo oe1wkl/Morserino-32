@@ -20,11 +20,10 @@ The web tool is **not forked**. `sync-webtool.sh` copies it out of
 `Software/Utilities/` at build time, so the browser version and the app version
 can never drift apart.
 
-> **Status: working, bench-tested, not yet submitted.** It builds, signs and
-> runs on an iPhone against real hardware. Exercised on the bench: connecting
-> and the on-device consent prompt, reading and changing preferences, the File
-> Builder end to end, and the power/battery reporting. The App Store groundwork
-> below is done; the submission itself has not been made.
+> **Status: submitted to the App Store, 2026-09-12** — version 1.0, build 1,
+> awaiting review. Bench-tested throughout on real hardware: connecting and the
+> on-device consent prompt, reading and changing preferences, the File Builder
+> end to end, and the power/battery reporting.
 >
 > Untested: pushing a large file (an MP3) to the device over BLE.
 
@@ -144,12 +143,15 @@ Already in place, and verified in the built bundle:
   `Resources/AppIcon.svg` is what it was rendered from and carries the
   regeneration recipe, including the alpha-stripping step the build needs.
 
-Still to do, roughly in order:
+All of it is done for 1.0 and the app is with the reviewers. What follows is
+kept as the recipe for the next version, and for the traps that cost time:
 
 1. **Enrol in the Apple Developer Program** ($99/year). Needed for TestFlight as
    well as the store, so it is unavoidable either way. Decide individual vs
    organization first — an individual listing carries your personal legal name,
    and switching later is a support ticket, not a checkbox.
+0. **Bump the build number.** `CURRENT_PROJECT_VERSION` 1 was used by the 1.0
+   submission; App Store Connect refuses a second upload that reuses it.
 2. **Screenshots, from real hardware.** The simulator has no Bluetooth, so it
    can never show a connected state. A 14 Pro shoots 1179×2556, which no slot
    accepts, so run them through `./store-screenshots.sh <folder>` first — it
