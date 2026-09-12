@@ -51,7 +51,14 @@ void onTimer() {                            // ISR context (level interrupt, non
 }
 
 // ---- loop-side stats ----
-uint32_t loopN = 0, loopMax = 0, loopOver2ms = 0, loopMaxNoDraw = 0, drawMax = 0;
+uint32_t loopN = 0, loopMax = 0, loopOver2ms = 0, drawMax = 0;
+// The loop cycles through three load states, 60 s each, and keeps the longest no-redraw gap per state:
+//   0 = everything on (touch reads + UDP send, what an interactive mode does)
+//   1 = touch reads off (a Remote Keyer mode with a straight key on the jack needs no touch sensing)
+//   2 = touch reads and UDP send off (what remains: WiFi RX callbacks, buttons, timekeeping)
+const uint32_t STATE_INTERVAL_US = 60000000;
+uint8_t loadState = 0;
+uint32_t loopMaxNoDraw[3] = {0, 0, 0};
 uint64_t loopSum = 0;
 uint32_t rxPackets = 0, txPackets = 0;
 IPAddress peer;
@@ -62,7 +69,8 @@ void resetStats() {
     portENTER_CRITICAL(&mux);
     isrN = isrMax = isrOver200 = isrOver1000 = 0; isrSum = 0; isrNeg = 0;
     portEXIT_CRITICAL(&mux);
-    loopN = loopMax = loopOver2ms = loopMaxNoDraw = drawMax = 0; loopSum = 0;
+    loopN = loopMax = loopOver2ms = drawMax = 0; loopSum = 0;
+    loopMaxNoDraw[0] = loopMaxNoDraw[1] = loopMaxNoDraw[2] = 0;
     rxPackets = txPackets = 0;
 }
 
@@ -79,13 +87,15 @@ void draw() {
     n = isrN; mx = isrMax; o200 = isrOver200; o1000 = isrOver1000; sum = isrSum; core = isrCore; neg = isrNeg;
     portEXIT_CRITICAL(&mux);
     uint32_t avg = n ? (uint32_t)(sum / n) : 0;
-    // Line budget: 14 chars (OLED, NoOfCharsPerLine). All times in µs, fields saturate at 5 digits.
-    //   ISR <max>/<avg>      one-shot alarm latency (Rig emitter error), "!" = an alarm fired early (spike bug)
-    //   >1 <n> L>2 <n>       ISR firings later than 1 ms; loop() gaps longer than 2 ms
-    //   LP<max> D<max>       longest loop() gap in passes WITHOUT a display redraw; longest redraw
-    MorseOutput::printOnScroll(0, REGULAR, 0, "ISR" + pad(mx, 5) + "/" + pad(avg, 4) + (neg ? "!" : ""));
-    MorseOutput::printOnScroll(1, REGULAR, 0, ">1" + pad(o1000, 4) + " L>2" + pad(loopOver2ms, 4));
-    MorseOutput::printOnScroll(2, REGULAR, 0, "LP" + pad(loopMaxNoDraw, 5) + " D" + pad(drawMax, 5));
+    // Line budget: 14 chars (OLED, NoOfCharsPerLine). All times in µs, fields saturate.
+    //   ISR <max>/<avg><s>   one-shot alarm latency (Rig emitter error); <s> = current load state
+    //                        (' ' all on, 'x' touch off, 'X' touch+UDP off), '!' = an alarm fired early (spike bug)
+    //   D<max> >2<n>         longest display redraw; loop() gaps longer than 2 ms (all states)
+    //   <a>x<b>X<c>          longest no-redraw loop() gap per load state, 4 digits each (9999 = saturated)
+    static const char stateTag[3] = {' ', 'x', 'X'};
+    MorseOutput::printOnScroll(0, REGULAR, 0, "ISR" + pad(mx, 5) + "/" + pad(avg, 4) + (neg ? "!" : String(stateTag[loadState])));
+    MorseOutput::printOnScroll(1, REGULAR, 0, "D" + pad(drawMax, 5) + " >2" + pad(loopOver2ms, 4));
+    MorseOutput::printOnScroll(2, REGULAR, 0, pad(loopMaxNoDraw[0], 4) + "x" + pad(loopMaxNoDraw[1], 4) + "X" + pad(loopMaxNoDraw[2], 4));
     if (NoOfVisibleLines > 3)
         MorseOutput::printOnScroll(3, REGULAR, 0, "rx" + pad(rxPackets, 6) + " tx" + pad(txPackets, 6) + " c" + String(core));
 }
@@ -137,6 +147,7 @@ void M32KipSpike::run() {
     memset(txBuf, 0x4B, sizeof(txBuf));
     uint64_t lastLoop = esp_timer_get_time(), lastTx = lastLoop, lastDraw = lastLoop;
     bool drewLastPass = false;
+    uint64_t lastState = lastLoop;
     for (;;) {
         uint64_t now = esp_timer_get_time();
         uint32_t gap = (uint32_t)(now - lastLoop);
@@ -144,7 +155,7 @@ void M32KipSpike::run() {
         loopN++; loopSum += gap;
         if (gap > loopMax) loopMax = gap;
         if (gap > 2000) loopOver2ms++;
-        if (!drewLastPass && gap > loopMaxNoDraw) loopMaxNoDraw = gap;
+        if (!drewLastPass && gap > loopMaxNoDraw[loadState]) loopMaxNoDraw[loadState] = gap;
         drewLastPass = false;
 
         Buttons::modeButton.Update();
@@ -158,9 +169,14 @@ void M32KipSpike::run() {
             Buttons::modeButton.clicks = 0;
         }
 
-        checkPaddles();                                     // the touch reads every interactive mode pays for
+        if ((uint32_t)(now - lastState) >= STATE_INTERVAL_US) {
+            lastState = now;
+            loadState = (loadState + 1) % 3;
+        }
+        if (loadState == 0)
+            checkPaddles();                                 // the touch reads every interactive mode pays for
 
-        if (havePeer && (uint32_t)(now - lastTx) >= TX_INTERVAL_US) {
+        if (loadState < 2 && havePeer && (uint32_t)(now - lastTx) >= TX_INTERVAL_US) {
             lastTx = now;
             MorseWiFi::audp.writeTo(txBuf, sizeof(txBuf), peer, peerPort);
             txPackets++;

@@ -64,7 +64,20 @@ redraw (4 Hz, three lines) — run 2 separates it from the rest of the loop.
 
 | Condition | ISR max | ISR avg | >1 ms | loop >2 ms | LP (no-draw max) | D (redraw max) |
 |---|---|---|---|---|---|---|
-| boot → end of load | | | | | | |
+| boot → end of load, ~5 min | **64 µs** | **17 µs** | **0** | 6135 | **7.7 ms** | **37.2 ms** |
+
+Reading: the Rig emitter is fine (D1 for the classic: **yes**). The polled Keyer path is
+not at the 1 ms target on the classic: 7.7 ms worst case between loop passes even with no
+redraw in the pass, and a redraw costs 37 ms on the I²C OLED. 6135 passes over 2 ms in five
+minutes is far more than the ~1200 redraws, so most of them come from the touch reads and/or
+the UDP send. Run 3 cycles those off to apportion it.
+
+**Run 3** (load states cycling every 60 s: all on / touch off / touch + UDP send off; longest
+no-redraw loop gap per state):
+
+| ISR max/avg | D (redraw max) | loop >2 ms | LP all on | LP touch off | LP touch + send off |
+|---|---|---|---|---|---|
+| | | | | | |
 
 spike_load.py, 200 pps × 120 s, 60-byte packets:
 
