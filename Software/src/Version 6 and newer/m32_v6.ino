@@ -1171,7 +1171,7 @@ void displayStartUp(uint16_t volt) {
 splashPause(1800);
 //DEBUG("Display startup complete");
 #ifdef KIP_SPIKE
-  M32KipSpike::run();     // Phase 0 timing spike (devdocs/m32kip): takes over the device, never returns
+  M32KipSpike::run();     // Phase 0 timing spike (devdocs/m32kip): takes over the device; returns only without WiFi
 #endif
 }
 

@@ -93,9 +93,22 @@ void draw() {
 void M32KipSpike::run() {
     MorseOutput::clearDisplay();
     MorseOutput::printOnStatusLine(true, 0, "KIP spike");
+    // No credentials, or the network is not there: step aside and let the normal firmware boot, so
+    // WiFi can be configured on the device (rebooting here locked the device into a loop - seen on
+    // the first classic flash).
+    if (MorsePreferences::wlanSSID == "") {
+        MorseOutput::printOnScroll(0, REGULAR, 0, "No WiFi conf -");
+        MorseOutput::printOnScroll(1, REGULAR, 0, "normal boot");
+        delay(2500);
+        return;
+    }
     MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
     if (!MorseWiFi::wifiConnect()) {           // shows its own "Not connected" screen for 3.5 s
-        ESP.restart();
+        MorseOutput::clearDisplay();
+        MorseOutput::printOnScroll(0, REGULAR, 0, "Spike skipped -");
+        MorseOutput::printOnScroll(1, REGULAR, 0, "normal boot");
+        delay(2000);
+        return;
     }
     MorseOutput::clearDisplay();
     MorseOutput::printOnStatusLine(true, 0, "KIP " + WiFi.localIP().toString());

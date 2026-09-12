@@ -10,13 +10,14 @@
  *
  *  Build with the flag on the command line, never in platformio.ini:
  *      PLATFORMIO_BUILD_FLAGS="-D KIP_SPIKE=1" pio run -e pocketwroom -t upload
- *  The device then boots straight into the spike (setup() hands over, never returns). Long-press the encoder
+ *  The device then boots straight into the spike (setup() hands over); without WiFi credentials, or if the
+ *  network is unreachable, it steps aside and the normal firmware boots so WiFi can be configured. Long-press the encoder
  *  to reboot, single-click to reset the counters. WiFi load: Software/tests/kip/spike_load.py <ip>.
  *  The TX key line toggles on every ISR - disconnect any transmitter.
  *****************************************************************************************************************************/
 #ifdef KIP_SPIKE
 namespace M32KipSpike {
-    void run();            // never returns
+    void run();            // returns only when it cannot run (no WiFi): the normal firmware then boots
 }
 #endif
 #endif /* M32KIPSPIKE_H_ */
