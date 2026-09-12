@@ -51,7 +51,7 @@ void onTimer() {                            // ISR context (level interrupt, non
 }
 
 // ---- loop-side stats ----
-uint32_t loopN = 0, loopMax = 0, loopOver2ms = 0;
+uint32_t loopN = 0, loopMax = 0, loopOver2ms = 0, loopMaxNoDraw = 0, drawMax = 0;
 uint64_t loopSum = 0;
 uint32_t rxPackets = 0, txPackets = 0;
 IPAddress peer;
@@ -62,7 +62,7 @@ void resetStats() {
     portENTER_CRITICAL(&mux);
     isrN = isrMax = isrOver200 = isrOver1000 = 0; isrSum = 0; isrNeg = 0;
     portEXIT_CRITICAL(&mux);
-    loopN = loopMax = loopOver2ms = 0; loopSum = 0;
+    loopN = loopMax = loopOver2ms = loopMaxNoDraw = drawMax = 0; loopSum = 0;
     rxPackets = txPackets = 0;
 }
 
@@ -79,11 +79,13 @@ void draw() {
     n = isrN; mx = isrMax; o200 = isrOver200; o1000 = isrOver1000; sum = isrSum; core = isrCore; neg = isrNeg;
     portEXIT_CRITICAL(&mux);
     uint32_t avg = n ? (uint32_t)(sum / n) : 0;
-    uint32_t lavg = loopN ? (uint32_t)(loopSum / loopN) : 0;
-    // Line budget: 20 chars (OLED). "ISR" = one-shot alarm latency in µs, "LOOP" = gap between loop() passes in µs.
-    MorseOutput::printOnScroll(0, REGULAR, 0, "ISR mx" + pad(mx, 5) + " av" + pad(avg, 5));
-    MorseOutput::printOnScroll(1, REGULAR, 0, ">.2ms" + pad(o200, 5) + " >1" + pad(o1000, 5) + (neg ? "!" : " "));
-    MorseOutput::printOnScroll(2, REGULAR, 0, "LOOP mx" + pad(loopMax, 5) + " >2" + pad(loopOver2ms, 5));
+    // Line budget: 14 chars (OLED, NoOfCharsPerLine). All times in µs, fields saturate at 5 digits.
+    //   ISR <max>/<avg>      one-shot alarm latency (Rig emitter error), "!" = an alarm fired early (spike bug)
+    //   >1 <n> L>2 <n>       ISR firings later than 1 ms; loop() gaps longer than 2 ms
+    //   LP<max> D<max>       longest loop() gap in passes WITHOUT a display redraw; longest redraw
+    MorseOutput::printOnScroll(0, REGULAR, 0, "ISR" + pad(mx, 5) + "/" + pad(avg, 4) + (neg ? "!" : ""));
+    MorseOutput::printOnScroll(1, REGULAR, 0, ">1" + pad(o1000, 4) + " L>2" + pad(loopOver2ms, 4));
+    MorseOutput::printOnScroll(2, REGULAR, 0, "LP" + pad(loopMaxNoDraw, 5) + " D" + pad(drawMax, 5));
     if (NoOfVisibleLines > 3)
         MorseOutput::printOnScroll(3, REGULAR, 0, "rx" + pad(rxPackets, 6) + " tx" + pad(txPackets, 6) + " c" + String(core));
 }
@@ -110,6 +112,9 @@ void M32KipSpike::run() {
         delay(2000);
         return;
     }
+    // Modem power save is on by default in the Arduino core and puts 50-500 ms into the RTT tail
+    // (measured on the classic, PHASE0_RESULTS.md). The KIP modes will run with it off; measure likewise.
+    WiFi.setSleep(false);
     MorseOutput::clearDisplay();
     MorseOutput::printOnStatusLine(true, 0, "KIP " + WiFi.localIP().toString());
 
@@ -131,6 +136,7 @@ void M32KipSpike::run() {
     uint8_t txBuf[40];
     memset(txBuf, 0x4B, sizeof(txBuf));
     uint64_t lastLoop = esp_timer_get_time(), lastTx = lastLoop, lastDraw = lastLoop;
+    bool drewLastPass = false;
     for (;;) {
         uint64_t now = esp_timer_get_time();
         uint32_t gap = (uint32_t)(now - lastLoop);
@@ -138,6 +144,8 @@ void M32KipSpike::run() {
         loopN++; loopSum += gap;
         if (gap > loopMax) loopMax = gap;
         if (gap > 2000) loopOver2ms++;
+        if (!drewLastPass && gap > loopMaxNoDraw) loopMaxNoDraw = gap;
+        drewLastPass = false;
 
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks == -1) {             // long press: back to a normal boot
@@ -160,6 +168,9 @@ void M32KipSpike::run() {
         if ((uint32_t)(now - lastDraw) >= DRAW_INTERVAL_US) {
             lastDraw = now;
             draw();
+            uint32_t took = (uint32_t)(esp_timer_get_time() - now);
+            if (took > drawMax) drawMax = took;
+            drewLastPass = true;
         }
     }
 }
