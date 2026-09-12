@@ -19,6 +19,17 @@ amend the spec (`SPEC.md`, Draft 0.2) accordingly when it is next revised.
 | D11 | **No logic analyser is available.** Timing is self-measured in firmware (hardware timer vs. `esp_timer`), and the Python reference peer injects network impairments in software. The §13 acceptance tests are read against these instruments. |
 | D12 | Spec amendments to fold into Draft 0.3: (a) §7.6 emitter = hardware-timer ISR via the Arduino `hw_timer` API (no `esp_timer` ISR dispatch in the prebuilt core); (b) §4.3/§13.1 acceptance is relative to the Keyer unit's own key line, which has millisecond granularity; (c) drop `NACK(auth)` — bad MACs are silently dropped; (d) §8: the Keyer unit forces noTx regardless of the `Key Ext Tx` preference. |
 
+## Open since Phase 1
+
+**D13 — the keepalive and repeat schedule.** Phase 1 measured that the redundancy rule protects an
+edge for *R*-1 packets but not for any particular length of *time*: between words the packets are
+250 ms-apart keepalives, so a burst of three losses can withhold an edge for a third of a second
+(313 ms measured), against zero late edges when the same losses are replayed with 30 ms keepalives.
+Three options, costed, in `PHASE1_FINDINGS.md` F3; the recommendation is a short repeat schedule
+after each edge (three repeats at ~20 ms, then the 250 ms idle keepalive), which costs nothing while
+sending and bounds recovery to ~60 ms. **To decide before the Keyer side is built (Phase 3). The Rig
+side (Phase 2) does not depend on it and can start first.**
+
 ## Phase 0 instruments
 
 - `M32KipSpike.cpp` (`-D KIP_SPIKE=1` on the command line, never in `platformio.ini`) boots the

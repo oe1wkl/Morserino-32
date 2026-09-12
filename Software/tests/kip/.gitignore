@@ -1,0 +1,4 @@
+# Build artifacts of the host test binary (see Makefile). The sanitizer build is several MB and
+# is rebuilt by `make` in a second; it has no business in the repository.
+test_core
+test_core.dSYM/

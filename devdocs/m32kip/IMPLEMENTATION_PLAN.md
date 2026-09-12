@@ -1,7 +1,10 @@
 # M32KIP — implementation plan and open decisions
 
-Status: **decisions ratified 2026-09-12** (see `DECISIONS.md`; D2 differs from the
-recommendation below). Phase 0 in progress.
+Status: **Phases 0 and 1 complete, 2026-09-12.** Decisions ratified in `DECISIONS.md` (D2 differs
+from the recommendation below). Phase 0 hardware measurements: `PHASE0_RESULTS.md`. Phase 1 outcome
+and the three protocol findings it produced: `PHASE1_FINDINGS.md` — **F3 is open as D13 and needs a
+decision before the Keyer side is built (Phase 3); the Rig side does not depend on it.** Next:
+Phase 2, the Rig unit on the device.
 Spec: `MKIP_protocol_spec_02.md` (Draft 0.2, currently in Willi's private notes,
 `~/Documents/Privat/Claude/`; decision D10 below is whether it moves into this
 directory as `SPEC.md`).
@@ -68,14 +71,23 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
    load (touch reads, display, UDP). With D2 decided for the polled path, this
    is the straight-key capture jitter; it must stay under the 1 ms target.
 
-### Phase 1 — Protocol core, host-testable
+### Phase 1 — Protocol core, host-testable — **DONE**
+
+> Delivered: `M32Kip.{h,cpp}` (crypto, packet codecs, replay window, speed estimate, edge queue,
+> playout and offset tracking, Rig and Keyer state machines — platform-free, compiled into both
+> images, not yet referenced by anything) and `Software/tests/kip/` (597 checks under the address
+> and undefined-behaviour sanitizers, an independent Python implementation of the wire format
+> cross-checking every vector, a reference peer for both roles, and the §13.2 impairment
+> simulation). Acceptance met: the two implementations agree byte for byte, and no mark is
+> shortened on any profile at any speed. Three findings and one bug came out of the runs —
+> `PHASE1_FINDINGS.md`. The plan as written below was carried out unchanged.
 - `M32Kip.cpp` as above; Python reference peer; test vectors for every packet
   type and both MAC keys; estimator tests replaying synthetic edge streams
   through jitter, loss, reorder, burst loss and drift (the §13.2 profiles, but
   in software). Acceptance: the Python Rig and the C++ core agree on every
   vector; "never shorten a mark" holds on every profile.
 
-### Phase 2 — Rig unit on device
+### Phase 2 — Rig unit on device — **next**
 - Socket on 7374, HELLO/NACK/session handling, `onPacket` → verify → dedupe →
   enqueue; ISR emitter; keepalive / max-keydown / error-storm watchdogs; STATS
   once per second; local override (encoder long-press = universal exit,
