@@ -38,6 +38,9 @@
 #include "MorsePreferences.h" // preferences and persistent storage, snapshots
 #include "MorseMenu.h"        // main menu
 #include "MorseWiFi.h"        // WiFi functions
+#ifdef KIP_SPIKE
+#include "M32KipSpike.h"     // Phase 0 timing spike, command-line flag only (devdocs/m32kip)
+#endif
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
 #include "MorseJSON.h"        // JSON handling for file upload and serial communication
@@ -1167,6 +1170,9 @@ void displayStartUp(uint16_t volt) {
 //DEBUG("Display done, delay");
 splashPause(1800);
 //DEBUG("Display startup complete");
+#ifdef KIP_SPIKE
+  M32KipSpike::run();     // Phase 0 timing spike (devdocs/m32kip): takes over the device, never returns
+#endif
 }
 
 ///////////////////////// THE MAIN LOOP - do this OFTEN! /////////////////////////////////
