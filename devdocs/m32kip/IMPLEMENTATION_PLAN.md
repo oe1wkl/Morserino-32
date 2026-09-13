@@ -99,8 +99,14 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > ISR can drive the pin. Display is rate-limited to 4 Hz and the mode never times out (D8).
 >
 > **Pulled forward from Phase 4:** the pre-shared key had to have an entry path or the mode could only
-> ever display "No key set", so `kipPsk` (NVS, one string, write-only) and its field on the WiFi
-> configuration web page landed here. The serial-protocol side of D3 stays in Phase 4.
+> ever display "No key set", so `kipPsk` (NVS, one string, write-only) landed here, with both of D3's
+> entry paths: the field on the WiFi configuration web page, and `PUT kip/psk/<pass phrase>` over the
+> serial protocol. The protocol one followed because the web form needs a browser on the access point,
+> which makes the mode impossible to bench-test over USB. `serialDecode()` lowercases only the type and
+> the token, so a pass phrase keeps its case and may contain spaces and slashes. There is deliberately
+> no matching GET: the key is write-only, like the WiFi password, so it cannot be read off a device or
+> captured in a backup. What stays in Phase 4 is the protocol **version bump to 1.5** and the
+> capability advertisement, with the Config Tool and manual work that goes with them.
 >
 > **Owed before this is finished:** a bench test against the Python reference peer (`reference_peer.py
 > keyer`), and with it the first real measurement of reproduced timing on hardware. The voice clip for

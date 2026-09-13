@@ -4965,6 +4965,22 @@ void m32Put(String type, String token, String value) {                    /// PU
       }
       else MorseJSON::jsonError("INVALID NAME " + token);
     }
+    ////////////////// M32KIP (Remote Keying) //////////
+    // Write-only, like the WiFi password: the pre-shared key is never returned by any GET, so it cannot be
+    // read back off a device or captured in a backup. serialDecode() lowercases the type and the token but
+    // hands the rest of the line over untouched, so a pass phrase keeps its case and may contain spaces and
+    // slashes. Ratified in D3; the web form on the WiFi configuration page is the other way in.
+    else if (type == "kip") {
+      if (token == "psk") {
+        if (value.length() < 12)
+          MorseJSON::jsonError("PSK TOO SHORT - 12 CHARACTERS MINIMUM");
+        else {
+          MorsePreferences::writeKipPsk(value);
+          MorseJSON::jsonOK();
+        }
+      }
+      else MorseJSON::jsonError("INVALID NAME " + token);
+    }
     ////////////////// PLAYER (v1.3) /////////////////
     else if (type == "player") {
       if (token == "call") {
