@@ -189,6 +189,10 @@ def run_rig(args):
     queue, off, D = [], 0, TICKS_PER_MS * args.playout
     key_state, started = 0, False
     last_stats = time.monotonic()
+    # Counting what arrives is the only hands-free way to see that the Keyer's send task and its D13
+    # repeat schedule are alive: between words the traffic is all keepalives, which carry no new edge
+    # and would otherwise leave no trace at all.
+    key_pkts, edges_seen, last_report = 0, 0, time.monotonic()
 
     while True:
         try:
@@ -219,6 +223,8 @@ def run_rig(args):
                     key_state, codec, queue = 0, None, []
                 elif pkt["type"] == PKT_KEY:
                     t_now, wpm, n, src, _ = struct.unpack_from("<IBBBB", pkt["payload"], 0)
+                    key_pkts += 1
+                    edges_seen += n
                     rig_now = now_ticks(t0)
                     if not started:
                         off, started = (rig_now - t_now) & 0xFFFFFFFF, True
@@ -240,6 +246,9 @@ def run_rig(args):
                     sys.stdout.write("=" if st else " ")
                     sys.stdout.flush()
 
+        if codec and time.monotonic() - last_report >= 5.0:
+            last_report = time.monotonic()
+            print(f"  [{key_pkts} KEY packets, {edges_seen} edge slots, {len(queue)} queued]")
         if codec and peer and time.monotonic() - last_stats >= 1.0:
             last_stats = time.monotonic()
             body = (Codec.header(PKT_STATS, session, 0)

@@ -164,9 +164,19 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > "no link" indication after five seconds without STATS, the host resolved once at entry so no DNS
 > lookup can ever land on the keying path, and BYE three times on the way out.
 >
-> **Owed:** the keying test itself. Nothing can press the paddles remotely, so reproducing a real key
-> line end to end needs someone at the device. What can be checked hands-free — session handshake, the
-> send task, the D13 schedule — is worth doing first against `reference_peer.py rig`.
+> **Verified hands-free 2026-09-13**, classic as Keyer against `reference_peer.py rig` on the Mac:
+> both leaves present and executable under Transceiver (Remote Rig 50, Remote Keyer 51); the handshake
+> completes against an independent implementation of the wire format, which reports the session id,
+> `source` 0 and the 3000 ms key-down limit back; BYE arrives on exit; and the send task runs at
+> **4 packets a second**, exactly the 250 ms idle keepalive. `PUT menu/stop` now returns OK and ends
+> the mode, which is the gap measured earlier the same day, fixed and confirmed.
+>
+> **Still owed, and it needs hands on the paddles.** No edge has ever crossed the wire from a real key:
+> the run above sent 100 packets and zero edge slots because nobody keyed. So three things remain
+> unevidenced on hardware — edge capture through the `keyOut()` hook, D13's *repeat* burst (it only
+> fires after an edge, so only its idle half has been seen outside simulation), and the reproduced key
+> line at the far end. The last of those is the whole point of the protocol, and the natural test is
+> the two devices against each other: one in Remote Rig, one in Remote Keyer, someone sending.
 
 - Source 0 hooks; source 1 ISR capture; send task + queue; HELLO retry, BYE ×3
   on exit; STATS display (`D`, loss, quality bar, rig key/PTT state); the
