@@ -177,6 +177,20 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > fires after an edge, so only its idle half has been seen outside simulation), and the reproduced key
 > line at the far end. The last of those is the whole point of the protocol, and the natural test is
 > the two devices against each other: one in Remote Rig, one in Remote Keyer, someone sending.
+>
+> **That pair is now staged and linked, 2026-09-13.** Classic in Remote Rig at 192.168.1.237, Pocket in
+> Remote Keyer pointed at it, same pass phrase on both, everything set over USB with nobody touching
+> either device. The link was then confirmed **without disturbing it**: a HELLO sent from a third
+> address is answered `NACK(busy)`, which is spec §8's one-session-per-Rig rule doing its job — so the
+> Rig is listening and its session belongs to the Pocket. That rule had never been exercised on
+> hardware before either.
+>
+> Two practical notes for whoever sets this up next. **Menu numbers are per build, not universal**:
+> Rig/Keyer are 50/51 on the classic and 58/59 on the Pocket, whose enum also carries the games and
+> Practice Stats, so read them from `GET menus`. And **the Pocket answers the serial protocol perfectly
+> well** — it needs `dtr=True`, because native USB CDC only treats the host as present when DTR is
+> asserted, whereas the classic's CP2102 wants `dtr=False`. A wrong DTR makes a healthy Pocket look
+> dead, which cost this session a wrong conclusion.
 
 - Source 0 hooks; source 1 ISR capture; send task + queue; HELLO retry, BYE ×3
   on exit; STATS display (`D`, loss, quality bar, rig key/PTT state); the
