@@ -1212,6 +1212,17 @@ void loop() {
                               generateCW();
                           break;
 
+#ifdef CONFIG_M32KIP
+      case kipKeyer:      // Remote Keyer: the CW Keyer's body exactly, so it behaves like the CW Keyer
+                          if (doPaddleIambic(leftKey, rightKey)) {
+                              return;                                                        // busy keying: tight loop, nothing else
+                          }
+                          if (playCW)
+                              generateCW();                                                  // a recalled memory: keyOut() sends it on
+                          else
+                              MorseKipKeyer::tick();                                         // link state, and only in a gap
+                          break;
+#endif
       case loraTrx:
       case wifiTrx:       if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
@@ -1419,7 +1430,7 @@ if (morseState == morseKeyer &&
                     cleanStartSettings();
                   }
 
-              } else if (morseState == morseKeyer || morseState == morseTrx) {  // when Keyer is active, we select a keyer memory
+              } else if (morseState == morseKeyer || morseState == morseTrx || morseState == kipKeyer) {  // when Keyer is active, we select a keyer memory
                     if (protocolActive())
                         MorseJSON::jsonCreate("message", "Select Memory", "");
                     memoryKeyer();
@@ -1863,7 +1874,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    }
                                    if (MorsePreferences::pliste[posACS].value > 0)
                                         acsTimer = millis() + (MorsePreferences::pliste[posACS].value + 1) * ditLength; // prime the ACS timer
-                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx)
+                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx || morseState == kipKeyer)
                                       // interWordTimer = millis() + 5*ditLength;
                                       interWordTimer = millis() + ditLength * (MorsePreferences::pliste[posInterWordSpace].value -1);
                                    else if (morseState == echoTrainer)
@@ -3054,7 +3065,7 @@ void displayCWspeed() {
   MorseOutput::printOnStatusLine(false, 3,  numBuf);                                         // effective wpm or rxwpm
 
   if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY &&
-      (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx ))
+      (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == kipKeyer))
         sprintf(numBuf, "%2i", wpm);
   else
     sprintf(numBuf, "%2i", (morseState == morseDecoder ? wpm : MorsePreferences::wpm));         // d_wpm (decode) or p_wpm (default)
@@ -3130,6 +3141,10 @@ void updateTopLine() {
     MorseOutput::dispLoraLogo();
   else if ((morseState == wifiTrx) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 1))
       MorseOutput::dispWifiLogo();
+#ifdef CONFIG_M32KIP
+  else if (morseState == kipKeyer && MorseKipKeyer::linked())
+      MorseOutput::dispWifiLogo();                      // Remote Keyer: the logo is there while the rig answers
+#endif
 #ifdef CONFIG_BLE_SERIAL
   else if (bleProtocol)                                 // one slot, so RF wins: "I am transmitting"
       MorseOutput::dispBleLogo();                       // is more urgent than "a client is attached"
@@ -5370,7 +5385,7 @@ void m32Put(String type, String token, String value) {                    /// PU
     ////////////////////// CW/PLAY/CWMEMORY /////////////////////////////
     else if (type == "cw") {
       if (token == "play" || token == "repeat" || token == "recall") {
-        if (m32state != menu_loop && (morseState == morseKeyer || morseState == morseTrx)) {
+        if (m32state != menu_loop && (morseState == morseKeyer || morseState == morseTrx || morseState == kipKeyer)) {
           if (token == "recall") {
             /// value must be 1..8
             number = value.toInt();

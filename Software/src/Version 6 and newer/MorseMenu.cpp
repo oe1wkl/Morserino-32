@@ -357,6 +357,12 @@ void MorseMenu::menu_() {
    // the vol-button toggle back to speed mode; every other exit (long-press to menu,
    // decoder mode, games, QSO bot) would otherwise lose the change on reboot.
    MorsePreferences::writeVolume();                     // no-op if unchanged
+#ifdef CONFIG_M32KIP
+   // Leaving Remote Keyer: stop its send task and say BYE while the radio is still up. The block just
+   // below switches WiFi off, and a goodbye sent after that could never leave the device - the rig would
+   // hold the session until its keepalive timeout instead. Idempotent: a no-op when nothing is running.
+   MorseKipKeyer::end();
+#endif
 
 #ifdef LORA_RADIOLIB
     radio.standby();
@@ -992,18 +998,22 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 MorseKipRig::run();
                 m32state = menu_loop;
                 return false;
-      // Remote Keyer — the operator's end. It runs the ordinary iambic keyer and sidetone and sends only
-      // the timing of the edges. It keys nothing locally: kipKeyer appears in no Key-Ext-Tx case in
-      // keyOut(), so the local transmitter output stays down however "Key Ext Tx" happens to be set.
+      // Remote Keyer — the operator's end, and deliberately the CW Keyer plus a network link. Like WiFi
+      // Trx it runs inside the global loop rather than a loop of its own, so it inherits everything the
+      // CW Keyer does: keyed text on the display, keyer memories on the black-knob click, speed, volume,
+      // preferences, scroll-back. A first version with a private loop lost both the text and the
+      // memories. It keys nothing locally: kipKeyer is in no Key-Ext-Tx case in keyOut().
       case _kipKeyer:
+                generatorMode = RANDOMS;  // as WiFi Trx: reset a potential KOCH_LEARN
                 MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions,
                                                     MorsePreferences::wifiTrxOptionsSize);
                 morseState = kipKeyer;
-                Buttons::modeButton.clicks = 0;
-                Buttons::volButton.clicks  = 0;
-                MorseKipKeyer::run();
-                m32state = menu_loop;
-                return false;
+                if (!MorseKipKeyer::begin())    // configuration, WiFi, handshake, send task
+                    return false;
+                clearPaddleLatches();
+                clearText = "";
+                executeNow = false;
+                return true;                    // the global loop takes it from here
 #endif
 #ifdef CONFIG_QSO_BOT
       // QSO Bot — simulated CW QSO partner. Uses the same safety story as

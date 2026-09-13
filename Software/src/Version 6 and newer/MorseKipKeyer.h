@@ -1,30 +1,43 @@
 #ifndef MORSEKIPKEYER_H_
 #define MORSEKIPKEYER_H_
 /******************************************************************************************************************************
- *  M32KIP Keyer unit — the operator's end. Runs the ordinary keyer and sidetone and sends the *timing* of the key line to a
- *  remote Rig unit, which reproduces it on its transmitter.
+ *  M32KIP Keyer unit — the operator's end. Sends the *timing* of the key line to a remote Rig unit, which reproduces it.
  *
- *  The keying logic stays here on purpose (spec §4.2): sidetone and key feel are local and completely unaffected by the
- *  network. Nothing but the edge timestamps goes on the wire, and the local transmitter output is never keyed - `kipKeyer`
- *  appears in no Key-Ext-Tx case in keyOut(), so "Key Ext Tx" cannot make this mode key a rig at the operator's end.
+ *  **It is the CW Keyer, plus a network link.** Remote Keyer runs inside the global loop exactly as WiFi Trx does, so
+ *  everything an operator knows from the CW Keyer works unchanged: the keyed text scrolls on the display, the black-knob
+ *  click recalls keyer memories, the encoder owns speed and volume, the double click opens preferences, the long press
+ *  leaves. None of that is re-implemented here, and none of it may be - UX conventions make the classic modes the
+ *  standard, and a first version that ran its own loop lost both the keyed text and the memories.
  *
- *  Two rules this file exists to obey, both measured in Phase 0 and confirmed in Phase 2 (devdocs/m32kip/):
- *    - **never send from the keying path.** A socket write from the loop stalls it 2-8 ms, and the Phase 2 bench run showed
- *      what that does: edges leave in late bursts and the far end raises its playout delay to the ceiling to cover them.
- *      Edges go into a queue; a separate task owns the socket.
- *    - **never redraw while an edge can arrive.** A redraw costs 37 ms on the OLED and 46 ms on the TFT, which is longer
- *      than a dit at any speed worth using. The display waits for a gap.
+ *  What this module adds is only the link: the handshake, a send task that owns the socket, and the edge hook. Two rules
+ *  measured in Phase 0 and confirmed on hardware still hold, and are why the pieces sit where they do:
+ *    - **never send from the keying path.** keyOut() only timestamps and queues; a task on core 0 transmits.
+ *    - **never redraw while an edge can arrive.** tick() touches the display only when the link state *changes*, and the
+ *      global loop only calls it in a gap - not while the paddles are keying and not while a memory is playing.
+ *
+ *  The local transmitter output is never keyed: `kipKeyer` appears in no Key-Ext-Tx case in keyOut().
  *****************************************************************************************************************************/
 
 #include "morsedefs.h"
 
 namespace MorseKipKeyer {
-    /// Runs the Keyer unit until the operator leaves it. Self-contained, like the Rig unit and the QSO Bot.
-    void run();
+    /// Called from menuExec() on entry. Checks the configuration, brings WiFi up, handshakes with the rig and starts the
+    /// send task. Returns false (with a message on screen) if any of that fails, so the device stays in the menu.
+    bool begin();
 
-    /// Records one key-line transition, called from keyOut() at the exact point the local TX line would be toggled -
-    /// which is what spec §10.1 asks for source 0, and which catches the straight key too, since the decoder keys
-    /// through the same function. A no-op outside this mode, and it never blocks.
+    /// Stops the send task, says BYE and releases the socket. Idempotent - called from menu_() on every return to the
+    /// menu, before WiFi is switched off, because a BYE sent after that could not leave the device at all.
+    void end();
+
+    /// Called by the global loop, only in a gap. Tracks the link and repaints the top line when it changes.
+    void tick();
+
+    /// True while the rig is answering. Drives the WiFi logo in the top bar, the slot WiFi Trx uses.
+    bool linked();
+
+    /// Records one key-line transition, called from keyOut() at the exact point the local TX line would be toggled.
+    /// That catches the iambic keyer, a recalled memory and the straight key alike, since all three key through there.
+    /// A no-op outside this mode, and it never blocks.
     void noteEdge(bool down);
 }
 #endif /* MORSEKIPKEYER_H_ */
