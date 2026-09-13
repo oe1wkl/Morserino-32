@@ -188,6 +188,12 @@ def run_rig(args):
     session, ksess, codec, peer = 0, None, None, None
     queue, off, D = [], 0, TICKS_PER_MS * args.playout
     key_state, started = 0, False
+    # Redundancy means every edge arrives several times over. Checking only the queue is not enough:
+    # once an edge has been emitted and popped it is no longer in the queue, so the next packet's copy
+    # was being queued and played AGAIN. With R=4 that replays each edge up to four times, which shows
+    # up as zero-length marks and a huge apparent emission error. The firmware's RigSession rejects
+    # anything at or before the last emitted edge; this has to do the same.
+    last_emitted = None
     last_stats = time.monotonic()
     # Counting what arrives is the only hands-free way to see that the Keyer's send task and its D13
     # repeat schedule are alive: between words the traffic is all keepalives, which carry no new edge
@@ -230,6 +236,8 @@ def run_rig(args):
                         off, started = (rig_now - t_now) & 0xFFFFFFFF, True
                     for i in range(n):
                         et, st = struct.unpack_from("<IB", pkt["payload"], 8 + 5 * i)
+                        if last_emitted is not None and tick_diff(et, last_emitted) <= 0:
+                            continue                       # already played: a redundant copy
                         if not any(q[0] == et for q in queue):
                             queue.append((et, st))
                     queue.sort(key=lambda q: q[0])
@@ -237,6 +245,7 @@ def run_rig(args):
         rig_now = now_ticks(t0)
         while queue and tick_diff(rig_now, (queue[0][0] + off + D) & 0xFFFFFFFF) >= 0:
             et, st = queue.pop(0)
+            last_emitted = et
             if st != key_state:
                 key_state = st
                 if args.trace:

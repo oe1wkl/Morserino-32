@@ -191,6 +191,32 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > well** — it needs `dtr=True`, because native USB CDC only treats the host as present when DTR is
 > asserted, whereas the classic's CP2102 wants `dtr=False`. A wrong DTR makes a healthy Pocket look
 > dead, which cost this session a wrong conclusion.
+>
+> **A real key line crossed the wire, 2026-09-13.** Willi keyed the Pocket in Remote Keyer while this
+> Mac played the Rig and logged every edge. Recovered from the log:
+>
+> | | |
+> |---|---|
+> | distinct edges | 514, forming 257 marks and 256 gaps |
+> | non-alternating adjacencies | **0** |
+> | dit cluster | 139 marks, median **60 ms** (about 20 WPM) |
+> | dah cluster | 118 marks, median **180 ms** |
+> | dah / dit | **3.00** |
+>
+> That settles the two things Phase 3 could not evidence on its own: **edge capture through the
+> `keyOut()` hook works**, and the element timing survives capture and transport exactly. A ratio of
+> 3.00 with a 60 ms dit is a keyer's output reproduced without distortion.
+>
+> One more harness bug surfaced and was fixed on the way: the peer's rig role checked whether an edge
+> was already in its queue but not whether it had already been *played*, so with redundancy 4 every
+> edge was replayed up to four times, giving zero-length marks and a 97 ms median emission error. The
+> firmware's own `RigSession` rejects anything at or before the last emitted edge, which is why the
+> device never showed this. The figures above come from the *scheduled* times, which are computed from
+> the Morserino's own timestamps and so are unaffected.
+>
+> **Still owed:** emission accuracy measured through the corrected peer, and the two devices driving
+> each other directly rather than one of them driving this Mac. Both ends have now been verified
+> separately, so that pairing is expected to work, but expectation is not measurement.
 
 - Source 0 hooks; source 1 ISR capture; send task + queue; HELLO retry, BYE ×3
   on exit; STATS display (`D`, loss, quality bar, rig key/PTT state); the
