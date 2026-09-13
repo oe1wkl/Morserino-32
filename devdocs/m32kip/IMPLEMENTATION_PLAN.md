@@ -108,8 +108,22 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > captured in a backup. What stays in Phase 4 is the protocol **version bump to 1.5** and the
 > capability advertisement, with the Config Tool and manual work that goes with them.
 >
-> **Owed before this is finished:** a bench test against the Python reference peer (`reference_peer.py
-> keyer`), and with it the first real measurement of reproduced timing on hardware. The voice clip for
+> **Bench-tested 2026-09-13** on the classic, driven from the Mac by `reference_peer.py keyer`: the
+> handshake authenticated with a key set over `PUT kip/psk`, `rig_state` bit 0 confirmed the key line
+> actually keying, and the Rig's own speed estimate converged to exactly 48.0 ms, a dit at 25 WPM. The
+> first run also drove the playout delay to its 600 ms ceiling, which turned out to be the peer
+> blocking up to 500 ms per iteration on its receive and emitting edges in late bursts — the Rig
+> responded exactly as specified, raising the delay and then decaying it 5 ms every 2 s. Fixed in the
+> peer; spec §10's "the keying path never blocks on the socket" now has a demonstration of what
+> happens when it does. The clean re-run: **zero late edges, zero underruns, the playout delay held at
+> 150 ms throughout, and 68 KEY packets for 68 edges** with no loss. Reported jitter reached 54 ms,
+> which is the WiFi-connected Mac rather than the device — the same probe-host effect Phase 0 found.
+>
+> **Known gap:** the run loop does not service `serialEvent()`, so the serial protocol is dead while
+> Remote Rig runs and the mode can only be left by the encoder long-press. Every other mode is
+> reachable over the protocol through `loop()`. For a station meant to sit unattended at a remote site
+> that is the wrong way round — `PUT menu/stop` ought to work — so the Keyer-side loop in Phase 3
+> should poll it, and this loop should be given the same treatment. The voice clip for
 > the new menu entry is done — the extractor needed `CONFIG_M32KIP` adding to its macro set, without
 > which the entry would have shipped silent.
 

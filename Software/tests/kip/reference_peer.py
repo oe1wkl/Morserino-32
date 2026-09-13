@@ -87,7 +87,7 @@ def cw_edges(text, wpm, start_tick):
 def run_keyer(args):
     base = hashlib.sha256(args.psk.encode()).digest()
     sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    sock.settimeout(0.5)
+    sock.settimeout(0.5)          # blocking is fine during the handshake; NOT while keying (see below)
     peer = (args.host, args.port)
     t0 = time.monotonic()
 
@@ -123,7 +123,14 @@ def run_keyer(args):
     sent = 0
     next_keepalive = time.monotonic()
 
-    while edges or time.monotonic() < next_keepalive + 1.0:
+    # Nothing in the keying loop may block. With a 0.5 s socket timeout the recv below stalled the loop
+    # for up to half a second at a time, so edges went out in late bursts: the Rig unit dutifully raised
+    # its playout delay to the 600 ms ceiling to cover a sender that was not keeping time. A real Keyer
+    # unit has the same obligation, which is why spec §10 puts the socket behind a queue.
+    sock.setblocking(False)
+    done_at = None
+
+    while True:
         tick = now_ticks(t0)
         while edges and tick_diff(tick, edges[0][0]) >= 0:
             history.append(edges.pop(0))
@@ -144,16 +151,23 @@ def run_keyer(args):
                     + b"".join(struct.pack("<IB", et, st) for et, st in take))
             sock.sendto(codec.seal(body), peer)
         try:
-            data, _ = sock.recvfrom(256)
-            pkt = codec.open(data)
-            if pkt and pkt["type"] == PKT_STATS:
+            while True:
+                data, _ = sock.recvfrom(256)
+                pkt = codec.open(data)
+                if not (pkt and pkt["type"] == PKT_STATS):
+                    continue
                 (playout, jitter, loss, late, under, rig_state, mk, dit, techo, trig) = \
                     struct.unpack("<HHBBBBHHII", pkt["payload"])
                 print(f"  STATS D={playout} ms jitter={jitter/10:.1f} ms loss={loss}% late={late} "
                       f"underruns={under} rig={rig_state:#04x} dit={dit/10:.1f} ms")
-        except socket.timeout:
+        except BlockingIOError:
             pass
-        time.sleep(0.001)
+        # Finish once the message has been keyed and the repeats have had time to land.
+        if not edges and done_at is None:
+            done_at = time.monotonic()
+        if done_at is not None and time.monotonic() - done_at > 1.5:
+            break
+        time.sleep(0.0005)
 
     for _ in range(3):
         seq += 1
