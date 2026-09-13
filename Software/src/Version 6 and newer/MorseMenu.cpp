@@ -19,6 +19,7 @@
 #include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
 #ifdef CONFIG_M32KIP
 #include "MorseKipRig.h"     // M32KIP Rig unit (Remote Rig)
+#include "MorseKipKeyer.h"   // M32KIP Keyer unit (Remote Keyer)
 #endif
 #ifdef CONFIG_BLE_SERIAL
 #include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
@@ -156,6 +157,7 @@ const char* const menuText[menuN]  = {
   , "Preview Char"    // _kochPreview  - sibling of Koch Trainer's Select Lesson/Learn New Chr
 #ifdef CONFIG_M32KIP
   , "Remote Rig"      // _kipRig       - M32KIP Rig unit, sibling of WiFi Trx / iCW Ext Trx
+  , "Remote Keyer"    // _kipKeyer     - the operator's end (12 chars, the display budget)
 #endif
   } ;
 
@@ -203,42 +205,46 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words  -e
   {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed  -e
   {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive  -e
-// Remote Rig sits between iCW/Ext Trx and whatever followed it, in every combination of
-// LORA_DISABLED and CONFIG_QSO_BOT. _RIG_OR(x) reads as "x, unless Remote Rig is now there".
+// Remote Keyer and Remote Rig sit together between iCW/Ext Trx and whatever followed it, in every
+// combination of LORA_DISABLED and CONFIG_QSO_BOT. Two macros because the pair has two ends:
+// _KIP_AFTER_ICW is what iCW/Ext Trx now points right to, _KIP_BEFORE_NEXT is what the entry after
+// the pair points left to. Each reads as "x, unless the pair is now in the way".
 #ifdef CONFIG_M32KIP
-  #define _RIG_OR(x) _kipRig
+  #define _KIP_AFTER_ICW(x)   _kipKeyer
+  #define _KIP_BEFORE_NEXT(x) _kipRig
 #else
-  #define _RIG_OR(x) x
+  #define _KIP_AFTER_ICW(x)   x
+  #define _KIP_BEFORE_NEXT(x) x
 #endif
 #ifdef LORA_DISABLED
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx
     {1,_qsoBot,_trxIcw,_trx,0},                         // _trxWifi  (left wraps via _qsoBot)
-    {1,_trxWifi,_RIG_OR(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
-    {1,_RIG_OR(_trxIcw),_trxWifi,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_KIP_AFTER_ICW(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
+    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxWifi,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx (no LoRa, first child is WiFi)
-    {1,_RIG_OR(_trxIcw),_trxIcw,_trx,0},                // _trxWifi  (wraps left via Remote Rig)
-    {1,_trxWifi,_RIG_OR(_trxWifi),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
+    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxIcw,_trx,0},                // _trxWifi  (wraps left via Remote Rig)
+    {1,_trxWifi,_KIP_AFTER_ICW(_trxWifi),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
   #endif
 #else
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx
     {1,_qsoBot,_trxWifi,_trx,0},                        // _trxLora  (left wraps via _qsoBot)
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_RIG_OR(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
-    {1,_RIG_OR(_trxIcw),_trxLora,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_KIP_AFTER_ICW(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
+    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxLora,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx (has LoRa)
-    {1,_RIG_OR(_trxIcw),_trxWifi,_trx,0},               // _trxLora  (wraps left via Remote Rig)
+    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxWifi,_trx,0},               // _trxLora  (wraps left via Remote Rig)
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_RIG_OR(_trxLora),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
+    {1,_trxWifi,_KIP_AFTER_ICW(_trxLora),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
   #endif
 #endif
 #ifdef CONFIG_CW_GAME
@@ -287,7 +293,7 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
                                                          //   ring via the _kochLearn/_kochGen edits above
 
 #ifdef CONFIG_M32KIP
-  , {1,_trxIcw,
+  , {1,_kipKeyer,
    #ifdef CONFIG_QSO_BOT
      _qsoBot
    #elif defined(LORA_DISABLED)
@@ -295,11 +301,15 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
    #else
      _trxLora
    #endif
-     ,_trx,0}                                            // Remote Rig - appended at the enum's end; spliced
-                                                         //   into the Transceiver ring by the _RIG_OR rows above
+     ,_trx,0}                                            // Remote Rig   - left is Remote Keyer, right is
+                                                         //   whatever followed iCW/Ext Trx before the pair
+  , {1,_trxIcw,_kipRig,_trx,0}                           // Remote Keyer - between iCW/Ext Trx and Remote
+                                                         //   Rig. Appended at the enum's end like the Rig:
+                                                         //   enum order is not ring order, menuNav is.
 #endif
 };
-#undef _RIG_OR
+#undef _KIP_AFTER_ICW
+#undef _KIP_BEFORE_NEXT
 
 //String MorseMenu::cmdPath;   // used to create string for json
 
@@ -980,6 +990,18 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
                 MorseKipRig::run();
+                m32state = menu_loop;
+                return false;
+      // Remote Keyer — the operator's end. It runs the ordinary iambic keyer and sidetone and sends only
+      // the timing of the edges. It keys nothing locally: kipKeyer appears in no Key-Ext-Tx case in
+      // keyOut(), so the local transmitter output stays down however "Key Ext Tx" happens to be set.
+      case _kipKeyer:
+                MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions,
+                                                    MorsePreferences::wifiTrxOptionsSize);
+                morseState = kipKeyer;
+                Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
+                MorseKipKeyer::run();
                 m32state = menu_loop;
                 return false;
 #endif

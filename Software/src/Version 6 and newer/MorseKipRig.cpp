@@ -18,6 +18,8 @@ using namespace M32Kip;
 
 extern boolean checkPaddles();
 extern boolean leftKey, rightKey;
+extern void    serialEvent();
+extern boolean goToMenu;
 
 namespace {
 
@@ -203,6 +205,11 @@ void MorseKipRig::run() {
         MorseOutput::resetTOT();                    // unattended by design: this mode never times out (D8)
 
         // ---- leaving ----
+        // Servicing the protocol here is what makes `PUT menu/stop` work. Measured on 2026-09-13: without
+        // it the mode swallowed every command, which is the wrong behaviour for a station meant to sit
+        // unattended at a remote site - the one link to it would be the one thing that could not reach it.
+        serialEvent();
+        if (goToMenu) { goToMenu = false; break; }
         Buttons::modeButton.Update();
         if (Buttons::modeButton.clicks == -1) break;
         Buttons::modeButton.clicks = 0;

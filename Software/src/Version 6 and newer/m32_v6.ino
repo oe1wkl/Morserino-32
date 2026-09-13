@@ -41,6 +41,9 @@
 #ifdef KIP_SPIKE
 #include "M32KipSpike.h"     // Phase 0 timing spike, command-line flag only (devdocs/m32kip)
 #endif
+#ifdef CONFIG_M32KIP
+#include "MorseKipKeyer.h"   // Remote Keyer: keyOut() timestamps its edges
+#endif
 #include "goertzel.h"         // Goertzel filter
 #include "MorseDecoder.h"     // Decoder Engine
 #include "MorseJSON.h"        // JSON handling for file upload and serial communication
@@ -4049,6 +4052,9 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
         if (!intTone)
           MorseOutput::pwmTone(extPitch, volume, MorsePreferences::pliste[posExtAudioOnDecode].value);      // set to true if you want external audio out!
         }
+#ifdef CONFIG_M32KIP
+      MorseKipKeyer::noteEdge(true);    // Remote Keyer: the edge is timestamped exactly where the local
+#endif                                  // TX line would move, which is what spec §10.1 asks for source 0
       keyTransmitter(noTx);
 
   } else {                      // key off
@@ -4063,6 +4069,9 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
           if (!intTone)
             MorseOutput::pwmNoTone(volume);
         }
+#ifdef CONFIG_M32KIP
+        MorseKipKeyer::noteEdge(false);
+#endif
         digitalWrite(keyerPin, LOW);      // stop keying Tx
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
         if ((MorseBluetooth::keyboardMode() & 0x1) == 0x1)

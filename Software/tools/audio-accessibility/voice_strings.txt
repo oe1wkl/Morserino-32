@@ -435,6 +435,7 @@ Random group length
 Random Groups
 Randomize File
 Recall snapshot
+Remote Keyer
 Remote Rig
 Repeat each word
 Reset Defaults

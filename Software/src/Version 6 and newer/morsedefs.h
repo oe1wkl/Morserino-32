@@ -340,6 +340,10 @@ enum morserinoMode              // the states the morserino can be in - selected
       kipRig,                     // M32KIP Rig unit: reproduces a remote operator's keying on the TX
                                   // output. Local paddles and keyOut() must never key the line in this
                                   // state - the hardware timer ISR owns it. See MorseKipRig.h.
+      kipKeyer,                   // M32KIP Keyer unit: the operator's end. Keys nothing locally except
+                                  // the sidetone - like the games and the bot it is absent from every
+                                  // Key-Ext-Tx case in keyOut(), so the local TX stays silent while the
+                                  // edge timings go to the remote Rig. See MorseKipKeyer.h.
       shutDown, measureNF, invalid
   };
 
@@ -366,7 +370,7 @@ const uint8_t menuN = 46
     - 2    // no Upload File / Update Firmw — both are browser-driven WiFi-AP flows
 #endif
 #ifdef CONFIG_M32KIP
-    + 1    // Remote Rig — M32KIP Rig unit, see MorseKipRig.h
+    + 2    // Remote Rig + Remote Keyer — M32KIP, see MorseKipRig.h and MorseKipKeyer.h
 #endif
     ;
 
@@ -413,6 +417,8 @@ enum menuNo
 #ifdef CONFIG_M32KIP
         , _kipRig        // "Remote Rig" - M32KIP Rig unit; appended at the end for the same reason,
                          // and spliced into the Transceiver ring in MorseMenu.cpp.
+        , _kipKeyer      // "Remote Keyer" - the operator's end. Enum order is not ring order: the ring
+                         // puts the Keyer first, which menuNav expresses, not this list.
 #endif
    };
 

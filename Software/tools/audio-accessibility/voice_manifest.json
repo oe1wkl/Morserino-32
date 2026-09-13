@@ -238,6 +238,7 @@
     "Random group length": "dcb6a189",
     "Randomize File": "185555b7",
     "Recall snapshot": "b72453f6",
+    "Remote Keyer": "d5832bdc",
     "Remote Rig": "ea2f3ce8",
     "Repeat each word": "e9046441",
     "Reset Defaults": "efd28b76",
@@ -925,6 +926,7 @@
     "f81f2487": "Random Groups",
     "185555b7": "Randomize File",
     "b72453f6": "Recall snapshot",
+    "d5832bdc": "Remote Keyer",
     "ea2f3ce8": "Remote Rig",
     "e9046441": "Repeat each word",
     "efd28b76": "Reset Defaults",
@@ -994,14 +996,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "3ee1b8bc",
+  "pack_stamp": "ceb643fc",
   "counts": {
-    "menu": 41,
+    "menu": 42,
     "pref_labels": 50,
     "option_values": 173,
     "actions": 21,
-    "phrases_total": 302,
+    "phrases_total": 303,
     "atoms_total": 138,
-    "clips_total": 504
+    "clips_total": 505
   }
 }

@@ -139,7 +139,35 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 - Test with the Python Keyer, first on the LAN, then through the impairment
   injector. Logic analyser on TX-out.
 
-### Phase 3 — Keyer unit on device
+### Phase 3 — Keyer unit on device — **DONE (builds; keying test owed)**
+
+> Delivered: `MorseKipKeyer.{h,cpp}`, menu leaf `_kipKeyer` ("Remote Keyer") spliced into the
+> Transceiver ring beside the Rig, and the `kipKeyer` mode state — absent from every Key-Ext-Tx case in
+> `keyOut()`, so the operator's own transmitter output stays down whatever "Key Ext Tx" is set to.
+>
+> **Edge capture is a single hook in `keyOut()`**, at the exact point the local TX line would be
+> toggled. That is what §10.1 asks for source 0, and because the straight-key decoder keys through the
+> same function it captures source 1 as well — so D2's polled path needed no separate capture code at
+> all. The hook does nothing but timestamp and post to a queue.
+>
+> **The two rules Phase 0 and Phase 2 turned into requirements are obeyed literally.** A dedicated task
+> pinned to core 0 owns the socket, so the keying path never touches it; the Phase 2 bench run showed
+> what happens otherwise. The display only redraws in a gap — never while the key is down and never
+> within a quarter second of an edge — because a redraw is 37 ms on the OLED and 46 ms on the TFT,
+> longer than a dit at any speed worth using.
+>
+> **The protocol-servicing gap is fixed in both modes.** Each loop now calls `serialEvent()` and honours
+> `goToMenu`, so `PUT menu/stop` works. A station meant to sit unattended at a remote site should not be
+> deaf to the one link that reaches it.
+>
+> Also here: the half-limit key-down warning driven by the limit the Rig reports in `HELLO_ACK`, a
+> "no link" indication after five seconds without STATS, the host resolved once at entry so no DNS
+> lookup can ever land on the keying path, and BYE three times on the way out.
+>
+> **Owed:** the keying test itself. Nothing can press the paddles remotely, so reproducing a real key
+> line end to end needs someone at the device. What can be checked hands-free — session handshake, the
+> send task, the D13 schedule — is worth doing first against `reference_peer.py rig`.
+
 - Source 0 hooks; source 1 ISR capture; send task + queue; HELLO retry, BYE ×3
   on exit; STATS display (`D`, loss, quality bar, rig key/PTT state); the
   half-limit key-down warning; "no link" after 5 s without STATS; forced noTx.
