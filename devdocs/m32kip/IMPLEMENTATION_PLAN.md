@@ -239,6 +239,30 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > **Still owed:** the two devices driving each other directly rather than one of them driving this Mac.
 > Both ends are now verified separately, so the pairing is expected to work, but expectation is not
 > measurement — and it is the one configuration a user will actually run.
+>
+> **Redesign after Willi's first keying, 2026-09-13.** The first Remote Keyer ran a private loop and
+> so lacked two things every operator expects from the CW Keyer: the keyed text on the display (it was
+> generated, then painted over by link figures every 250 ms) and memory recall on the black-knob click
+> (that code lives only in the global loop). Remote Keyer now runs inside the global loop like WiFi
+> Trx and inherits the CW Keyer's behaviour; link status moved to the top bar's network slot. Verified
+> hands-free on the Pocket, through the Mac as rig:
+>
+> | Check | Result |
+> |---|---|
+> | `PUT cw/play/PARIS PARIS PARIS` | 84 of 84 edges, none twice, none out of order |
+> | Element spread while the text scrolls | dits 0.48 ms, dahs 0.40 ms — **no regression** from the display code |
+> | `PUT cw/recall/3` ("Test") | 12 of 12 edges |
+> | `PUT menu/stop` in the mode | OK, clean exit, BYE received |
+>
+> **Owed from Willi's eyes:** keyed text appearing from the paddles, and memory selection by the
+> black-knob click. Both run through unchanged CW Keyer code now, but neither can be observed from here.
+> **Owed for the Accessibility Edition:** Remote Keyer's on-screen messages ("Calling rig...", "No
+> answer", "No key set" and so on) are invisible to the extractor and therefore silent, per §8 case 2.
+>
+> **Found along the way, not caused by M32KIP:** generated CW (memories, `cw/play`) reaches the key line
+> with every element exactly 6 ms short — dits 57 and dahs 183 against nominal 63 and 189 — giving a
+> dah/dit ratio of 3.21. That is the open item of the 2026-07 CW timing audit, now measured to under
+> half a millisecond; recorded there as well.
 
 - Source 0 hooks; source 1 ISR capture; send task + queue; HELLO retry, BYE ×3
   on exit; STATS display (`D`, loss, quality bar, rig key/PTT state); the

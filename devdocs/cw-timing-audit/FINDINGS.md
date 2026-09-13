@@ -253,3 +253,22 @@ Acceptance test: 12 / 20 / 35 / 60 WpM × softness 1 / 5 / 9 ms —
 
 This also retroactively pins down the classic PWM path, which has never been
 measured this way either.
+
+
+## Addendum 2026-09-13: the generator's key line measured through M32KIP
+
+Evidence for the OPEN item above, measured to sub-millisecond precision with the M32KIP Remote Keyer
+as an instrument (edge timestamps taken in `keyOut()` on the Pocket, reconstructed on a host; see
+`devdocs/m32kip/IMPLEMENTATION_PLAN.md`, Phase 3).
+
+| Source | Dit | Dah | Dah/dit | Spread |
+|---|---|---|---|---|
+| Paddle keyer (`doPaddleIambic`), ~19 WPM | 63 ms | 189 ms | **3.00** | 0.3 / 0.4 ms |
+| Generator (`generateCW`, `PUT cw/play` and a recalled memory), same speed | **57 ms** | **183 ms** | **3.21** | 0.5 / 0.4 ms |
+
+On the key line, every generated element is exactly **6 ms shorter** than nominal: `genTimer` is set to
+`ditLength-6` / `dahLength-6`. Subtracting a constant preserves the dit–dah difference but not the
+ratio, and shortens dits proportionally most. The paddle keyer applies its 6 ms correction differently
+and keeps 3.00. So anything keyed from the generator — keyer memories, protocol `cw/play`, and
+therefore whatever those send to a real transmitter — carries this ratio. Not changed here; recorded
+for the decision this item is waiting on.
