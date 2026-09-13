@@ -19,16 +19,30 @@ amend the spec (`SPEC.md`, Draft 0.2) accordingly when it is next revised.
 | D11 | **No logic analyser is available.** Timing is self-measured in firmware (hardware timer vs. `esp_timer`), and the Python reference peer injects network impairments in software. The §13 acceptance tests are read against these instruments. |
 | D12 | Spec amendments to fold into Draft 0.3: (a) §7.6 emitter = hardware-timer ISR via the Arduino `hw_timer` API (no `esp_timer` ISR dispatch in the prebuilt core); (b) §4.3/§13.1 acceptance is relative to the Keyer unit's own key line, which has millisecond granularity; (c) drop `NACK(auth)` — bad MACs are silently dropped; (d) §8: the Keyer unit forces noTx regardless of the `Key Ext Tx` preference. |
 
-## Open since Phase 1
+## Decided since Phase 1
 
-**D13 — the keepalive and repeat schedule.** Phase 1 measured that the redundancy rule protects an
-edge for *R*-1 packets but not for any particular length of *time*: between words the packets are
-250 ms-apart keepalives, so a burst of three losses can withhold an edge for a third of a second
-(313 ms measured), against zero late edges when the same losses are replayed with 30 ms keepalives.
-Three options, costed, in `PHASE1_FINDINGS.md` F3; the recommendation is a short repeat schedule
-after each edge (three repeats at ~20 ms, then the 250 ms idle keepalive), which costs nothing while
-sending and bounds recovery to ~60 ms. **To decide before the Keyer side is built (Phase 3). The Rig
-side (Phase 2) does not depend on it and can start first.**
+**D13 — the keepalive and repeat schedule. RATIFIED 2026-09-13: the repeat schedule.** After each edge
+the Keyer sends up to three more copies of the same redundant packet, 20 ms apart, and then falls back
+to the 250 ms idle keepalive. Implemented in the core as `KeyerSession::sendDue()` / `noteSent()`, so
+the cadence is host-tested rather than buried in the device layer.
+
+Measured across every impairment profile at 15, 25 and 35 WPM:
+
+| | Late edges | Worst lateness | Marks disturbed | Playout delay |
+|---|---|---|---|---|
+| Repeat schedule (ratified) | **0** everywhere | none | **0** everywhere | never leaves 140 ms |
+| Draft 0.2's 250 ms keepalives | 2–3 per run | 233 ms | up to 2 per run | driven to 561 ms |
+
+**What it costs, and a correction.** Phase 1 claimed this would add nothing during continuous sending,
+because each new edge's packet already carries the repeats. That was wrong, and the measurement says
+so: a 20 ms repeat interval is shorter than an element at every practical speed, so a repeat does fire
+between most edges. The same message costs roughly **three times the packets** — 1209 against 325 at
+15 WPM, 1000 against 304 at 25 WPM, 898 against 309 at 35 WPM — which puts the link at about 3 kB/s
+where §5 estimated 1–2 kB/s. That is still small, and it buys a link that never once ran late in any
+profile, but the figure in §5 needs updating for Draft 0.3.
+
+If 3 kB/s ever turns out to matter, the knob is in `KeyerSession::begin()`: two repeats at 30 ms holds
+the same ~60 ms recovery bound for fewer packets. Nothing else depends on the numbers.
 
 ## Phase 0 instruments
 

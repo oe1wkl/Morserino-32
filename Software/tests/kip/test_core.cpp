@@ -437,6 +437,40 @@ static void testKeyerRedundancy() {
     okEq(clamp.redundancy(), MAX_EDGES, "an absurd R is clamped to the packet maximum");
 }
 
+// ---------------------------------------------------------------- send schedule (D13)
+
+static void testSendSchedule() {
+    section("send schedule (D13)");
+    KeyerSession k;
+    k.begin(4, 20, 3, 250);                             // 3 repeats 20 ms apart, then a 250 ms keepalive
+
+    k.noteSent(1000);                                   // arming send at session start, no edges yet
+    okEq(k.nextSendAt(), 1000 + 2500, "with nothing sent yet the next packet is one keepalive away");
+
+    k.addEdge(5000, KEY_DOWN);
+    okEq(k.repeatsLeft(), 3, "an edge arms three repeats");
+    k.noteSent(5000);                                   // the packet reporting the edge
+    okEq(k.nextSendAt(), 5000 + 200, "the first repeat follows 20 ms later");
+    ok(!k.sendDue(5100), "and is not due before then");
+    ok(k.sendDue(5200), "and is due at 20 ms");
+
+    k.noteSent(5200); okEq(k.repeatsLeft(), 1, "second repeat consumed");
+    okEq(k.nextSendAt(), 5200 + 200, "repeats are 20 ms apart");
+    k.noteSent(5400); okEq(k.repeatsLeft(), 0, "third repeat consumed");
+    k.noteSent(5600);
+    okEq(k.nextSendAt(), 5600 + 2500, "after the repeats the schedule falls back to the keepalive");
+
+    k.addEdge(6000, KEY_UP);
+    okEq(k.repeatsLeft(), 3, "the next edge arms the repeats again");
+
+    KeyerSession plain;                                 // the Draft 0.2 cadence, for comparison runs
+    plain.begin(4, 20, 0, 250);
+    plain.addEdge(100, KEY_DOWN);
+    okEq(plain.repeatsLeft(), 0, "with repeats disabled an edge arms none");
+    plain.noteSent(100);
+    okEq(plain.nextSendAt(), 100 + 2500, "and the cadence is the plain keepalive");
+}
+
 // ---------------------------------------------------------------- end-to-end simulation
 //
 // A CW stream is generated, keyed through the real encoder, pushed through a network model, decoded and
@@ -461,6 +495,8 @@ struct Profile {
     uint32_t burstLen;
     int32_t  driftPpm;
     uint32_t keepaliveMs;       // 0 = the spec's 250 ms
+    uint16_t repeatMs;          // D13 send schedule; repeats = 0 is the Draft 0.2 cadence
+    uint8_t  repeats;
 };
 
 struct Mark { uint32_t start, len; };
@@ -482,6 +518,7 @@ struct Result {
     int32_t  worstShortGapShrink;   // gaps below 300 ms: element and character spacing
     int32_t  worstIdleGapShrink;    // gaps of 300 ms and up: the idle gaps housekeeping may use
     uint32_t bursts, stretchedMarks, maxLateTicks;
+    uint32_t packetsSent;       // what the send schedule costs
 };
 
 // A plausible element stream: characters of one to four elements, inter-element, inter-character and word gaps.
@@ -516,52 +553,73 @@ static Result run(const Profile& p, uint32_t wpm, uint32_t chars, uint32_t seed)
     const uint8_t nc[8] = {1,2,3,4,5,6,7,8}, ns[8] = {8,7,6,5,4,3,2,1};
     deriveSessionKey(base, nc, ns, sess);
 
-    // ---- keyer side: every edge and a keepalive grid, in send order ----
-    struct Send { uint32_t t; int edge; };              // edge index, or -1 for a keepalive
-    std::vector<Send> sends;
+    // ---- keyer side: edges as they happen, plus whatever the send schedule asks for (D13) ----
+    std::vector<Edge> edgeList;
     for (size_t i = 0; i < marks.size(); i++) {
-        Send a; a.t = marks[i].start;            a.edge = (int)(2 * i);     sends.push_back(a);
-        Send b; b.t = marks[i].start + marks[i].len; b.edge = (int)(2 * i + 1); sends.push_back(b);
+        edgeList.push_back(Edge(marks[i].start, KEY_DOWN));
+        edgeList.push_back(Edge(marks[i].start + marks[i].len, KEY_UP));
     }
     uint32_t lastT = marks.empty() ? senderStart : marks.back().start + marks.back().len;
-    const uint32_t keepalive = msToTicks(p.keepaliveMs ? p.keepaliveMs : 250);
-    for (uint32_t t = senderStart; t <= lastT + msToTicks(1500); t += keepalive) {
-        Send k; k.t = t; k.edge = -1; sends.push_back(k);
-    }
-    std::sort(sends.begin(), sends.end(), [](const Send& a, const Send& b) {
-        return a.t != b.t ? a.t < b.t : a.edge > b.edge;
-    });
+    const uint32_t endSend = lastT + msToTicks(1500);
 
     KeyerSession keyer;
-    keyer.begin(4);
+    keyer.begin(4, p.repeatMs ? p.repeatMs : 20, p.repeats,
+                (uint16_t)(p.keepaliveMs ? p.keepaliveMs : 250));
+
     std::vector<Packet> wire;
     uint16_t seq = 0;
-    uint32_t sinceBurst = 0, burstLeft = 0, bursts = 0;
-    for (size_t i = 0; i < sends.size(); i++) {
-        bool isEdge = sends[i].edge >= 0;
-        if (isEdge) {
-            const Mark& m = marks[sends[i].edge / 2];
-            bool down = (sends[i].edge % 2) == 0;
-            keyer.addEdge(down ? m.start : m.start + m.len, down ? KEY_DOWN : KEY_UP);
+    uint32_t sinceBurst = 0, burstLeft = 0, bursts = 0, packetsSent = 0;
+    size_t ei = 0;
+    uint32_t t = senderStart;
+
+    // Everything below the send decision is the network; the two are kept apart so the schedule can be
+    // changed without touching the impairment model.
+    struct Emit {
+        static void go(std::vector<Packet>& wire, KeyerSession& keyer, const Profile& pr, Rng& rng,
+                       uint32_t tSend, uint32_t senderStart, uint32_t trueOffset, uint32_t netDelay,
+                       uint16_t seq, uint32_t wpm, const uint8_t* sess, bool newEdge,
+                       uint32_t& sinceBurst, uint32_t& burstLeft, uint32_t& bursts, uint32_t& packetsSent) {
+            Packet pk;
+            pk.len = keyer.buildKey(pk.bytes, sizeof(pk.bytes), tSend, (uint8_t)wpm,
+                                    SRC_KEYER, 0x11223344u, seq, sess, newEdge);
+            keyer.noteSent(tSend);
+            if (pk.len == 0) return;
+            packetsSent++;
+
+            bool drop = false;
+            if (pr.burstEvery && ++sinceBurst >= pr.burstEvery) { sinceBurst = 0; burstLeft = pr.burstLen; bursts++; }
+            if (burstLeft) { drop = true; burstLeft--; }
+            else if (pr.lossPct && rng.below(100) < pr.lossPct) drop = true;
+            if (drop) return;
+
+            uint32_t senderDelta = tSend - senderStart;
+            uint32_t drift = (uint32_t)((int64_t)senderDelta * pr.driftPpm / 1000000);
+            uint32_t jitter = pr.jitterMs ? rng.below(msToTicks(pr.jitterMs)) : 0;
+            pk.arrival = senderStart + senderDelta + drift + trueOffset + netDelay + jitter;
+            wire.push_back(pk);
         }
-        Packet pk;
-        pk.len = keyer.buildKey(pk.bytes, sizeof(pk.bytes), sends[i].t, (uint8_t)wpm,
-                                SRC_KEYER, 0x11223344u, ++seq, sess, isEdge);
-        if (pk.len == 0) continue;
+    };
 
-        // ---- network ----
-        bool drop = false;
-        if (p.burstEvery && ++sinceBurst >= p.burstEvery) { sinceBurst = 0; burstLeft = p.burstLen; bursts++; }
-        if (burstLeft) { drop = true; burstLeft--; }
-        else if (p.lossPct && rng.below(100) < p.lossPct) drop = true;
-        if (drop) continue;
+    Emit::go(wire, keyer, p, rng, t, senderStart, trueOffset, netDelay, ++seq, wpm, sess, false,
+             sinceBurst, burstLeft, bursts, packetsSent);       // one packet to arm the schedule
 
-        uint32_t senderDelta = sends[i].t - senderStart;
-        uint32_t drift = (uint32_t)((int64_t)senderDelta * p.driftPpm / 1000000);
-        uint32_t jitter = p.jitterMs ? rng.below(msToTicks(p.jitterMs)) : 0;
-        pk.arrival = senderStart + senderDelta + drift + trueOffset + netDelay + jitter;
-        wire.push_back(pk);
+    while (ei < edgeList.size() || tickDiff(keyer.nextSendAt(), endSend) <= 0) {
+        uint32_t tEdge = (ei < edgeList.size()) ? edgeList[ei].t : 0;
+        bool edgeFirst = (ei < edgeList.size()) && tickDiff(tEdge, keyer.nextSendAt()) <= 0;
+        if (edgeFirst) {
+            t = tEdge;
+            keyer.addEdge(edgeList[ei].t, edgeList[ei].state);
+            ei++;
+            Emit::go(wire, keyer, p, rng, t, senderStart, trueOffset, netDelay, ++seq, wpm, sess, true,
+                     sinceBurst, burstLeft, bursts, packetsSent);
+        } else {
+            t = keyer.nextSendAt();
+            if (tickDiff(t, endSend) > 0) break;
+            Emit::go(wire, keyer, p, rng, t, senderStart, trueOffset, netDelay, ++seq, wpm, sess, false,
+                     sinceBurst, burstLeft, bursts, packetsSent);
+        }
     }
+
     std::sort(wire.begin(), wire.end(), [](const Packet& a, const Packet& b) { return a.arrival < b.arrival; });
 
     // ---- rig side ----
@@ -650,6 +708,7 @@ static Result run(const Profile& p, uint32_t wpm, uint32_t chars, uint32_t seed)
     res.finalDMs       = ticksToMs(rig.playoutTicks());
     res.bursts         = bursts;
     res.maxLateTicks   = rig.counters().maxLate;
+    res.packetsSent    = packetsSent;
     return res;
 }
 
@@ -700,9 +759,9 @@ static void checkProfile(const sim::Profile& p, uint32_t wpm, uint32_t chars, ui
                   p.name, wpm, r.maxDMs);
     ok(r.maxDMs <= 600, what);
 
-    std::printf("    %-30s %2u WPM  marks %4u/%-4u  late %3u (worst %4u ticks)  stretched %2u/%-3u  D %3u->%3u ms\n",
+    std::printf("    %-30s %2u WPM  marks %4u/%-4u  late %3u (worst %4u ticks)  stretched %2u/%-3u  pkts %5u  D %3u->%3u ms\n",
                 p.name, wpm, r.marksHeard, r.marksSent, r.late, r.maxLateTicks,
-                r.stretchedMarks, r.bursts, 150u, r.finalDMs);
+                r.stretchedMarks, r.bursts, r.packetsSent, 150u, r.finalDMs);
     if (r.worstShortGapShrink > (int32_t)msToTicks(2) || r.worstIdleGapShrink > (int32_t)msToTicks(8))
         std::printf("        worst gap loss after mark %u: sent %u, heard %u ticks; D %u->%u ms, offset %u->%u\n",
                     r.gapAt, r.gapSent, r.gapHeard, r.gapDup, r.gapDnext, r.gapOffUp, r.gapOffNext);
@@ -711,17 +770,18 @@ static void checkProfile(const sim::Profile& p, uint32_t wpm, uint32_t chars, ui
 static void testSimulation() {
     section("end-to-end reconstruction (spec 13.2 profiles)");
     // (a) and (b) are the spec's clean and hostile links; (c) and (d) add loss; (e) is the burst case.
-    sim::Profile a = {"a: 50 ms, 10 ms jitter",       50,  10, 0,  0, 0,  0,   0};
-    sim::Profile b = {"b: 120 ms, 40 ms jitter",     120,  40, 0,  0, 0,  0,   0};
-    sim::Profile c = {"c: b + 2 % loss",             120,  40, 2,  0, 0,  0,   0};
-    sim::Profile d = {"d: b + 5 % loss",             120,  40, 5,  0, 0,  0,   0};
-    sim::Profile e = {"e: bursts of 3 lost",         120,  40, 0, 40, 3,  0,   0};
-    sim::Profile f = {"drift: 30 ppm over minutes",   60,  15, 0,  0, 0, 30,   0};
-    // The same burst profile with keepalives eight times as often. Redundancy is counted in packets, but what
-    // protects an edge is how much TIME passes before a packet repeating it arrives. Between words the packets
-    // are keepalives, so at 250 ms apart three lost packets can withhold an edge for most of a second. If that
-    // is what stretches the marks in profile e, this run should show it: same losses, far less lateness.
-    sim::Profile g = {"e with 30 ms keepalives",     120,  40, 0, 40, 3,  0,  30};
+    // All profiles run the ratified D13 send schedule: three repeats 20 ms apart after each edge, then the
+    // 250 ms idle keepalive.
+    const uint16_t RP = 20; const uint8_t RN = 3;
+    sim::Profile a = {"a: 50 ms, 10 ms jitter",       50,  10, 0,  0, 0,  0, 0, RP, RN};
+    sim::Profile b = {"b: 120 ms, 40 ms jitter",     120,  40, 0,  0, 0,  0, 0, RP, RN};
+    sim::Profile c = {"c: b + 2 % loss",             120,  40, 2,  0, 0,  0, 0, RP, RN};
+    sim::Profile d = {"d: b + 5 % loss",             120,  40, 5,  0, 0,  0, 0, RP, RN};
+    sim::Profile e = {"e: bursts of 3 lost",         120,  40, 0, 40, 3,  0, 0, RP, RN};
+    sim::Profile f = {"drift: 30 ppm over minutes",   60,  15, 0,  0, 0, 30, 0, RP, RN};
+    // The same burst profile on the Draft 0.2 cadence, kept as the control: it is the run that showed the
+    // 313 ms lateness and made the case for D13. Both are checked, so a regression in either is visible.
+    sim::Profile old = {"e on the old 250 ms cadence", 120, 40, 0, 40, 3, 0, 0,  0,  0};
 
     for (uint32_t wpm = 15; wpm <= 40; wpm += 10) {
         checkProfile(a, wpm, 60, 0xC0FFEE + wpm);
@@ -729,7 +789,7 @@ static void testSimulation() {
         checkProfile(c, wpm, 60, 0x123456 + wpm);
         checkProfile(d, wpm, 60, 0xABCDEF + wpm);
         checkProfile(e, wpm, 60, 0x555555 + wpm);
-        checkProfile(g, wpm, 60, 0x555555 + wpm);
+        checkProfile(old, wpm, 60, 0x555555 + wpm);
     }
     checkProfile(f, 25, 400, 0x99AA55);
 }
@@ -834,6 +894,7 @@ int main(int argc, char** argv) {
     testSpeedEstimator();
     testEdgeQueue();
     testKeyerRedundancy();
+    testSendSchedule();
     testSafety();
     testSimulation();
 

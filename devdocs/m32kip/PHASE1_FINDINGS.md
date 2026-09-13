@@ -59,7 +59,7 @@ tens of ppm is a couple of milliseconds a minute, and a minute of sending has se
 
 *Draft 0.3:* §7.2 should state the rate, not only the step size.
 
-## F3 — redundancy is counted in packets, but what protects an edge is time — **decision needed**
+## F3 — redundancy is counted in packets, but what protects an edge is time *(decided: D13)*
 
 §6.4 makes every packet repeat the last *R*−1 edges, so that "up to *R*−1 consecutive lost packets lose
 no information". True as stated, but *when* the information arrives depends on when the next packet is
@@ -86,10 +86,17 @@ Three ways to close it:
 3. **Leave it.** One disturbed element per ten bursts, and only on a link that loses three packets in a
    row. The max-key-down limit still bounds the worst case.
 
-My recommendation is 1: it is the cheapest of the three and the only one that bounds recovery time
-without paying for it while idle. It changes `keepalive_interval_ms` from a single number in §11 into
-a short repeat schedule, so it wants your sign-off before it goes in. It is a Keyer-side change (Phase 3); the Rig unit
-of Phase 2 is unaffected and can be built while this is decided.
+**Ratified 2026-09-13: option 1.** Three repeats 20 ms apart after each edge, then the 250 ms idle
+keepalive, implemented in the core as `KeyerSession::sendDue()` / `noteSent()` and exercised by the
+simulation. Every profile at every speed now runs with zero late edges, zero disturbed marks and a
+playout delay that never leaves 140 ms; the Draft 0.2 cadence is kept as a control run so a regression
+in either is visible.
+
+One correction to what is written above: this does **not** cost nothing during continuous sending. A
+20 ms repeat interval is shorter than an element at every practical speed, so a repeat fires between
+most edges and the same message costs about three times the packets, putting the link near 3 kB/s
+rather than §5's 1–2 kB/s estimate. Measured figures and the tuning knob are in `DECISIONS.md` D13.
+§11 gains a repeat count and interval; §5's bandwidth figure needs updating.
 
 ## Smaller things
 

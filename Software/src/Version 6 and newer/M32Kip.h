@@ -357,11 +357,24 @@ private:
 
 // ---------------------------------------------------------------- Keyer unit packet construction (spec §6.4, §10)
 
+// The send schedule (D13). Redundancy protects an edge for R-1 packets, but what decides whether it
+// arrives in time is how much *time* passes before one of those packets is sent. While sending, packets
+// follow the edges and a loss is repaired in milliseconds; between words the only packets are keepalives,
+// and at 250 ms apart three losses withheld an edge for 313 ms in the Phase 1 simulation. So each edge is
+// followed by a few quick repeats before the schedule falls back to the idle keepalive.
+const uint16_t DEFAULT_REPEAT_MS    = 20;
+const uint8_t  DEFAULT_REPEATS      = 3;
+const uint16_t DEFAULT_KEEPALIVE_MS = 250;
+
 class KeyerSession {
 public:
     KeyerSession() { begin(4); }
-    /// R = requested redundancy, clamped to 1..MAX_EDGES.
-    void begin(uint8_t redundancy);
+    /// R = requested redundancy, clamped to 1..MAX_EDGES. The other three set the send schedule; pass
+    /// `repeats` = 0 for the plain 250 ms keepalive cadence of spec Draft 0.2.
+    void begin(uint8_t redundancy,
+               uint16_t repeatMs = DEFAULT_REPEAT_MS,
+               uint8_t repeats = DEFAULT_REPEATS,
+               uint16_t keepaliveMs = DEFAULT_KEEPALIVE_MS);
     void reset() { n_ = 0; }
     /// Record an edge at the capture point. Newest last; only the last R are kept.
     void addEdge(uint32_t t, uint8_t state);
@@ -378,9 +391,23 @@ public:
     /// of a word, which is precisely where the spec says it is wanted.
     size_t buildKey(uint8_t* buf, size_t cap, uint32_t tNow, uint8_t wpm, uint8_t source,
                     uint32_t session, uint16_t seq, const uint8_t key[32], bool newEdge);
+
+    // --- send schedule ---
+    //
+    // The caller sends a packet whenever an edge occurs, and otherwise whenever sendDue() says so, and
+    // calls noteSent() after each. One noteSent() at session start arms the schedule.
+    bool     sendDue(uint32_t tNow) const;
+    uint32_t nextSendAt() const { return nextSendAt_; }
+    void     noteSent(uint32_t tNow);
+    uint8_t  repeatsLeft() const { return repeatsLeft_; }
+
 private:
-    Edge    hist_[MAX_EDGES];       // newest last
-    uint8_t n_, r_;
+    Edge     hist_[MAX_EDGES];      // newest last
+    uint8_t  n_, r_;
+    uint16_t repeatMs_, keepaliveMs_;
+    uint8_t  repeats_, repeatsLeft_;
+    uint32_t nextSendAt_;
+    bool     scheduled_;
 };
 
 } // namespace M32Kip

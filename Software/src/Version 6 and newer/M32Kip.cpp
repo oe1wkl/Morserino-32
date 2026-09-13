@@ -729,11 +729,17 @@ void RigSession::fillStats(Stats& s, uint32_t rigNow) const {
 
 // ============================================================ Keyer unit packet construction
 
-void KeyerSession::begin(uint8_t redundancy) {
+void KeyerSession::begin(uint8_t redundancy, uint16_t repeatMs, uint8_t repeats, uint16_t keepaliveMs) {
     r_ = redundancy;
     if (r_ < 1) r_ = 1;
     if (r_ > MAX_EDGES) r_ = MAX_EDGES;
     n_ = 0;
+    repeatMs_ = repeatMs;
+    repeats_ = repeats;
+    keepaliveMs_ = keepaliveMs;
+    repeatsLeft_ = 0;
+    nextSendAt_ = 0;
+    scheduled_ = false;
 }
 
 void KeyerSession::addEdge(uint32_t t, uint8_t state) {
@@ -743,6 +749,21 @@ void KeyerSession::addEdge(uint32_t t, uint8_t state) {
         for (uint8_t i = 1; i < MAX_EDGES; i++) hist_[i - 1] = hist_[i];
         hist_[MAX_EDGES - 1] = Edge(t, state);
     }
+    repeatsLeft_ = repeats_;        // this edge starts a fresh run of quick repeats (D13)
+}
+
+bool KeyerSession::sendDue(uint32_t tNow) const {
+    return scheduled_ && tickDiff(tNow, nextSendAt_) >= 0;
+}
+
+void KeyerSession::noteSent(uint32_t tNow) {
+    if (repeatsLeft_ > 0) {
+        repeatsLeft_--;
+        nextSendAt_ = tNow + msToTicks(repeatMs_);
+    } else {
+        nextSendAt_ = tNow + msToTicks(keepaliveMs_);
+    }
+    scheduled_ = true;
 }
 
 size_t KeyerSession::buildKey(uint8_t* buf, size_t cap, uint32_t tNow, uint8_t wpm, uint8_t source,
