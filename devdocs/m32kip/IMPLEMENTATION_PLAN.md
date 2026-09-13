@@ -214,9 +214,31 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > device never showed this. The figures above come from the *scheduled* times, which are computed from
 > the Morserino's own timestamps and so are unaffected.
 >
-> **Still owed:** emission accuracy measured through the corrected peer, and the two devices driving
-> each other directly rather than one of them driving this Mac. Both ends have now been verified
-> separately, so that pairing is expected to work, but expectation is not measurement.
+> **Clean run through the corrected peer, same day.** 446 edges, **none emitted twice** (so the
+> deduplication fix holds), **zero** non-alternating adjacencies, and the element timing is the best
+> evidence the project has produced:
+>
+> | | |
+> |---|---|
+> | dits | 121 elements, median 63 ms, spread 62–64, **stdev 0.3 ms** |
+> | dahs | 102 elements, median 189 ms, spread 188–190, **stdev 0.4 ms** |
+> | dah / dit | **3.00** |
+> | inter-element gap | median 68 ms |
+>
+> A machine-exact keyer's elements arrived machine-exact: a few tenths of a millisecond of spread over
+> 223 elements, against a target D2 relaxed to 1 ms. Note the gap is ~5 ms longer than the dit. That is
+> the **keyer's own** asymmetry, the one the 2026-07 CW timing audit documented, carried across
+> faithfully rather than introduced — which is incidentally a good check that the capture point in
+> `keyOut()` is the right one, since mark and gap come from the same clock there.
+>
+> The 13.6 ms median emission lag in that log is **not** a protocol figure. The Python peer's loop
+> waits up to 50 ms on its socket, so it cannot resolve better than that. Emission accuracy on real
+> hardware is the Phase 0 measurement: a hardware-timer ISR at 45–96 µs, and the Phase 2 bench run
+> where the Rig held its playout delay with zero late edges.
+>
+> **Still owed:** the two devices driving each other directly rather than one of them driving this Mac.
+> Both ends are now verified separately, so the pairing is expected to work, but expectation is not
+> measurement — and it is the one configuration a user will actually run.
 
 - Source 0 hooks; source 1 ISR capture; send task + queue; HELLO retry, BYE ×3
   on exit; STATS display (`D`, loss, quality bar, rig key/PTT state); the
