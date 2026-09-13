@@ -119,8 +119,13 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > 150 ms throughout, and 68 KEY packets for 68 edges** with no loss. Reported jitter reached 54 ms,
 > which is the WiFi-connected Mac rather than the device — the same probe-host effect Phase 0 found.
 >
-> **Known gap:** the run loop does not service `serialEvent()`, so the serial protocol is dead while
-> Remote Rig runs and the mode can only be left by the encoder long-press. Every other mode is
+> **Known gap, confirmed by measurement 2026-09-13:** the run loop does not service `serialEvent()`,
+> so the serial protocol is dead while Remote Rig runs and the mode can only be left by the encoder
+> long-press. Inside one serial session the handshake and `PUT menu/start now/50` both answered, and
+> then `GET device` and `PUT menu/stop` both returned nothing. Note the trap that made the first
+> attempt at this test meaningless: **opening the port resets the board**, so a script that opens a
+> fresh connection is talking to a device that has just rebooted out of the mode and will answer
+> happily. The test has to start the mode and query it within one open session. Every other mode is
 > reachable over the protocol through `loop()`. For a station meant to sit unattended at a remote site
 > that is the wrong way round — `PUT menu/stop` ought to work — so the Keyer-side loop in Phase 3
 > should poll it, and this loop should be given the same treatment. The voice clip for
