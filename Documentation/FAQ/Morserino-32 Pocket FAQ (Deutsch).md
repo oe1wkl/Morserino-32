@@ -159,6 +159,15 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * **Wach bleiben**: Der M32 Pocket muss beim Anstecken zum Update **eingeschaltet sein** und **darf nicht im Schlafmodus sein**.
     * **Kabelqualität**: Nimm ein **datenfähiges USB-Kabel**, kein reines Ladekabel.
     * **Ein dunkler Bildschirm direkt nach dem Löschen ist normal**: Nach einer Installation mit der Lösch-Option — oder bei einem fabrikneuen Gerät — kann es bis zu etwa zehn Sekunden dauern, bis überhaupt etwas zu sehen ist, weil das Dateisystem vorbereitet wird. Seit Version 9 wird währenddessen ein erklärender Startbildschirm angezeigt, damit du das von einem Fehler unterscheiden kannst.
+* **Mein Morserino scheint tot: Er reagiert auf nichts und taucht am USB nicht auf. Was nun?**
+    * Kaputt ist er mit ziemlicher Sicherheit nicht. Versetze ihn in den **Recovery-Bootmodus**. Der ist im Prozessor eingebaut und hängt nicht von der Firmware ab (danke an Brian, N6UGP):
+        1. Strom ganz ausschalten: USB-Kabel abziehen und, falls ein Akku drin ist, den Ein/Aus-Schalter auf Aus stellen.
+        2. Bei ausgeschaltetem Gerät **den FN-Knopf drücken und gedrückt halten**. Beim Pocket ist das die Aussparung im Gehäuse, beim klassischen M32 der 1. und 2. Edition der rote Knopf.
+        3. Weiter gedrückt halten und das USB-Kabel wieder anstecken. Mit Akku bleibt der Schalter auf Aus; den Strom liefert der USB-Anschluss.
+        4. Sobald das Gerät Strom hat, den FN-Knopf loslassen. Jetzt taucht es am USB wieder auf.
+    * **Der Bildschirm bleibt die ganze Zeit dunkel.** Das ist so gewollt: Die Firmware läuft nicht.
+    * Dann das Installationsprogramm unter `morserino.info/install.html` starten und **Erase everything** wählen. Damit werden auch beschädigte Einstellungen entfernt, deine Einstellungen, Snapshots und Highscores gehen also verloren.
+    * Das funktioniert bei **jedem Morserino**, am wichtigsten ist es aber beim Pocket: Der klassische M32 geht über einen eigenen CP210x-Chip an den USB, und der erscheint normalerweise auch bei defekter Firmware. Taucht ein klassischer gar nicht auf, zuerst Kabel und CP210x-Treiber prüfen.
 
 ## 9. Übungsfunktionen und Einstellungen
 

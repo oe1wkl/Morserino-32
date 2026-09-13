@@ -157,6 +157,15 @@ Answers reflect **firmware version 9.0**.
     * **Stay awake**: The M32 Pocket **must be turned ON** and **must not be in sleep mode** when you connect for an update.
     * **Cable quality**: Use a **data-capable USB cable**, not a "charging-only" one.
     * **A dark screen right after an erase is normal**: after an install with the erase option — or on a brand-new device — the Pocket can take up to about ten seconds to show anything while it prepares its file system. Since version 9 it displays an informative splash screen while this happens, so you can tell it apart from a failure.
+* **My Morserino seems bricked: it does not react to anything and does not show up on USB. What now?**
+    * It is almost certainly not broken. Put it into the **recovery boot mode**, which is built into the processor and does not depend on the firmware (thanks to Brian, N6UGP):
+        1. Switch the power off completely: unplug the USB cable, and if you have a battery, set the power switch to off.
+        2. With the device off, **press and hold the FN button**. On the Pocket, that is the cut-out in the case; on the classic 1st and 2nd edition, the red button.
+        3. Keep holding it and plug the USB cable back in. With a battery, leave the switch off; USB supplies the power.
+        4. Once the device has power, release the FN button. It now shows up on USB again.
+    * **The screen stays dark the whole time.** That is expected: the firmware is not running.
+    * Now run the installer at `morserino.info/install.html` and choose **Erase everything**. This also removes any corrupted settings, so your preferences, snapshots and high scores are lost.
+    * This works on **every Morserino**, but it matters most on the Pocket: the classic M32 reaches USB through a separate CP210x chip, which normally appears even when the firmware is broken. If a classic does not show up at all, check the cable and the CP210x driver first.
 
 ## 9. Training Features and Settings
 

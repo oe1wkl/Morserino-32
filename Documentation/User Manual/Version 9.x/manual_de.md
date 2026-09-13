@@ -4153,6 +4153,58 @@ sonst der Text für den File Player liegt.
 Installationsseiten zeigen, funktionieren weiterhin – sie leiten jetzt
 auf diese eine Seite weiter.
 
+### Wenn der Morserino nicht reagiert: der Recovery-Bootmodus
+
+Ist bei einem Update etwas schiefgegangen, kann der Morserino wie tot
+wirken: Der Bildschirm bleibt dunkel oder hängt, das Gerät reagiert auf
+keine Bedienung, und das Installationsprogramm findet es am USB nicht.
+Kaputt ist es mit ziemlicher Sicherheit nicht. Jeden Morserino kann man
+in den eingebauten Update-Modus des Prozessors zwingen (denselben
+ROM-Update-Modus, den das Installationsprogramm verwendet), und der
+hängt überhaupt nicht von der Firmware ab:
+
+1. **Strom ganz ausschalten.** Das USB-Kabel abziehen. Hat dein Morserino
+   einen Akku, auch den Ein/Aus-Schalter auf Aus stellen.
+2. Bei ausgeschaltetem Gerät **den FN-Knopf drücken und gedrückt
+   halten**.
+3. Weiter gedrückt halten und **das USB-Kabel wieder anstecken**. Mit
+   Akku bleibt der Schalter auf Aus – den Strom für die Wiederherstellung
+   liefert der USB-Anschluss.
+4. Sobald das Gerät Strom hat, **den FN-Knopf loslassen**. Der Morserino
+   ist jetzt im Recovery-Bootmodus, und das Installationsprogramm kann ihn
+   wieder erreichen.
+
+::: {.pocket .pocket-a11y}
+Beim M32 Pocket ist der FN-Knopf die Aussparung im Gehäuse rechts unterhalb
+des ENCODER-Knopfs.
+:::
+
+::: {.classic}
+Beim Morserino-32 der 1st und 2nd Edition ist der FN-Knopf der rote
+Knopf.
+:::
+
+::: note
+**Der Bildschirm bleibt die ganze Zeit dunkel**, solange das Gerät im
+Recovery-Bootmodus ist. Das ist so gewollt: Die Firmware läuft nicht.
+:::
+
+Starte nun das Installationsprogramm wie oben beschrieben und wähle
+*Erase everything*. Damit werden auch beschädigte Einstellungen entfernt,
+die den Start der neuen Firmware verhindern könnten. Deine Einstellungen,
+Snapshots und Highscores gehen dabei verloren.
+
+::: {.classic}
+Bei der 1st und 2nd Edition kümmert sich ein eigener Chip (der CP210x)
+um den USB-Anschluss, das Gerät erscheint also normalerweise auch dann
+am USB, wenn die Firmware defekt ist. Taucht es gar nicht auf, liegt es
+zuerst einmal am Kabel oder am CP210x-Treiber. Der Recovery-Bootmodus ist
+trotzdem der richtige Versuch, wenn das Installationsprogramm den Port
+zwar findet, aber keine Verbindung herstellen kann.
+:::
+
+Danke an Brian, N6UGP, für die Beschreibung dieses Verfahrens.
+
 
 ## Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien
 

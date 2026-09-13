@@ -157,7 +157,10 @@ The font family used is Lato.</p>
 <li><a href="#adjusting-audio-level" id="toc-adjusting-audio-level"><span class="toc-section-number">7.3</span> Adjusting Audio Level</a></li>
 <li><a href="#updating-the-firmware-via-wifi-for-versions-2.0" id="toc-updating-the-firmware-via-wifi-for-versions-2.0"><span class="toc-section-number">7.4</span> Updating the Firmware via WiFi for Versions &lt; 2.0</a></li>
 <li><a href="#updating-the-firmware-via-usb-and-an-update-program" id="toc-updating-the-firmware-via-usb-and-an-update-program"><span class="toc-section-number">7.5</span> Updating the Firmware via USB and an update program</a></li>
-<li><a href="#updating-the-firmware-via-usb-and-a-browser-webserial" id="toc-updating-the-firmware-via-usb-and-a-browser-webserial"><span class="toc-section-number">7.6</span> Updating the Firmware via USB and a Browser (Webserial)</a></li>
+<li><a href="#updating-the-firmware-via-usb-and-a-browser-webserial" id="toc-updating-the-firmware-via-usb-and-a-browser-webserial"><span class="toc-section-number">7.6</span> Updating the Firmware via USB and a Browser (Webserial)</a>
+<ul>
+<li><a href="#if-the-morserino-does-not-respond-recovery-boot-mode" id="toc-if-the-morserino-does-not-respond-recovery-boot-mode"><span class="toc-section-number">7.6.1</span> If the Morserino Does Not Respond: Recovery Boot Mode</a></li>
+</ul></li>
 <li><a href="#using-a-browser-to-set-up-m32-preferences-and-upload-text-files" id="toc-using-a-browser-to-set-up-m32-preferences-and-upload-text-files"><span class="toc-section-number">7.7</span> Using a Browser to set up M32 Preferences, and upload Text Files</a></li>
 <li><a href="#using-the-serial-output-of-the-m32" id="toc-using-the-serial-output-of-the-m32"><span class="toc-section-number">7.8</span> Using the Serial Output of the M32</a>
 <ul>
@@ -3136,6 +3139,28 @@ The font family used is Lato.</p>
 <p><strong>Editions (M32 Pocket only).</strong> The <em>Standard</em> edition is the normal firmware described by this manual. The <em>Accessibility Edition</em> speaks the menus and settings aloud, for blind and partially sighted operators: it announces itself and the battery voltage when you switch it on, and it names the whole menu path — “CW Generator, Call Signs” — whenever the branch you are in may not be obvious, for instance right after switching on. The games are not included in it, and neither are the Standard edition’s two browser-driven WiFi entries, <em>Upload File</em> and <em>Update Firmw</em> — both only open a web page that you would have to operate from another device, so use the USB installer described in this appendix instead. Both editions are offered for the same device and you can move between them at any time — your settings are kept, but the Accessibility Edition uses the space that holds the File Player’s text for its voice clips.</p>
 </div>
 <p>Older bookmarks pointing at the previous two separate installer pages still work; they now forward to this one page.</p>
+<h3 data-number="7.6.1" id="if-the-morserino-does-not-respond-recovery-boot-mode"><span class="header-section-number">7.6.1</span> If the Morserino Does Not Respond: Recovery Boot Mode</h3>
+<p>If an update has gone wrong, the Morserino may seem dead: the screen stays dark or frozen, it ignores all controls, and the installer cannot find it on USB. It is almost certainly not broken. Every Morserino can be forced into the processor’s built-in update mode (the same ROM update mode the installer uses), which does not depend on the firmware at all:</p>
+<ol type="1">
+<li><strong>Switch the power off completely.</strong> Unplug the USB cable. If your Morserino has a battery, also set the power switch to off.</li>
+<li>With the device off, <strong>press and hold the FN button</strong>.</li>
+<li>Keep holding it and <strong>plug the USB cable back in</strong>. If you have a battery, leave the power switch off - USB supplies the power for the recovery.</li>
+<li>Once the device has power, <strong>release the FN button</strong>. The Morserino is now in recovery boot mode and the installer can reach it again.</li>
+</ol>
+<div class="pocket pocket-a11y">
+<p>On the M32 Pocket, the FN button is the cut-out in the case, to the lower right of the ENCODER knob.</p>
+</div>
+<div class="classic">
+<p>On the Morserino-32 1st and 2nd edition, the FN button is the red button.</p>
+</div>
+<div class="note">
+<p><strong>The screen stays dark the whole time</strong> the device is in recovery boot mode. That is expected: the firmware is not running.</p>
+</div>
+<p>Now run the installer as described above and choose <em>Erase everything</em>, which also removes any corrupted settings that might stop the new firmware from starting. Your preferences, snapshots and high scores are lost in the process.</p>
+<div class="classic">
+<p>On the 1st and 2nd edition, USB is handled by a separate chip (the CP210x), so the device normally appears on USB even when the firmware is broken. If it does not show up at all, suspect the cable or the CP210x driver first. The recovery boot mode is still the right thing to try if the installer finds the port but cannot connect.</p>
+</div>
+<p>Thanks to Brian, N6UGP, for describing this procedure.</p>
 <h2 data-number="7.7" id="using-a-browser-to-set-up-m32-preferences-and-upload-text-files"><span class="header-section-number">7.7</span> Using a Browser to set up M32 Preferences, and upload Text Files</h2>
 <p>There are currently three sites that enable you to set up M32 preferences through a browser on your computer, and another one that implements an M32 File Manager.</p>
 <ul>
@@ -4628,6 +4653,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=aae3c0caf481 -->
+<!-- MANUALFRESH: lang=en src=2f8c41ddcd01 -->
 </body>
 </html>

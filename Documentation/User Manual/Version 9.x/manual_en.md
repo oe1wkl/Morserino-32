@@ -3676,6 +3676,53 @@ File Player's text for its voice clips.
 Older bookmarks pointing at the previous two separate installer pages
 still work; they now forward to this one page.
 
+### If the Morserino Does Not Respond: Recovery Boot Mode
+
+If an update has gone wrong, the Morserino may seem dead: the screen
+stays dark or frozen, it ignores all controls, and the installer cannot
+find it on USB. It is almost certainly not broken. Every Morserino can
+be forced into the processor's built-in update mode (the same ROM update
+mode the installer uses), which does not depend on the firmware at all:
+
+1. **Switch the power off completely.** Unplug the USB cable. If your
+   Morserino has a battery, also set the power switch to off.
+2. With the device off, **press and hold the FN button**.
+3. Keep holding it and **plug the USB cable back in**. If you have a
+   battery, leave the power switch off - USB supplies the power for the
+   recovery.
+4. Once the device has power, **release the FN button**. The Morserino is
+   now in recovery boot mode and the installer can reach it again.
+
+::: {.pocket .pocket-a11y}
+On the M32 Pocket, the FN button is the cut-out in the case, to the lower
+right of the ENCODER knob.
+:::
+
+::: {.classic}
+On the Morserino-32 1st and 2nd edition, the FN button is the red
+button.
+:::
+
+::: note
+**The screen stays dark the whole time** the device is in recovery boot
+mode. That is expected: the firmware is not running.
+:::
+
+Now run the installer as described above and choose *Erase everything*,
+which also removes any corrupted settings that might stop the new
+firmware from starting. Your preferences, snapshots and high scores are
+lost in the process.
+
+::: {.classic}
+On the 1st and 2nd edition, USB is handled by a separate chip (the
+CP210x), so the device normally appears on USB even when the firmware
+is broken. If it does not show up at all, suspect the cable or the
+CP210x driver first. The recovery boot mode is still the right thing to
+try if the installer finds the port but cannot connect.
+:::
+
+Thanks to Brian, N6UGP, for describing this procedure.
+
 ## Using a Browser to set up M32 Preferences, and upload Text Files
 
 There are currently three sites that enable you to set up M32 preferences
