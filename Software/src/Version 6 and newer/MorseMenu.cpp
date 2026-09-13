@@ -17,6 +17,9 @@
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
 #include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
+#ifdef CONFIG_M32KIP
+#include "MorseKipRig.h"     // M32KIP Rig unit (Remote Rig)
+#endif
 #ifdef CONFIG_BLE_SERIAL
 #include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
 #endif
@@ -151,6 +154,9 @@ const char* const menuText[menuN]  = {
   , "Practice Set"    // _genPractice  - sibling of CW Generator's Random/CW Abbrevs/.../File Player
   , "Practice Set"    // _echoPractice - sibling of Echo Trainer's Random/CW Abbrevs/.../File Player
   , "Preview Char"    // _kochPreview  - sibling of Koch Trainer's Select Lesson/Learn New Chr
+#ifdef CONFIG_M32KIP
+  , "Remote Rig"      // _kipRig       - M32KIP Rig unit, sibling of WiFi Trx / iCW Ext Trx
+#endif
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
@@ -197,35 +203,42 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words  -e
   {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed  -e
   {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive  -e
+// Remote Rig sits between iCW/Ext Trx and whatever followed it, in every combination of
+// LORA_DISABLED and CONFIG_QSO_BOT. _RIG_OR(x) reads as "x, unless Remote Rig is now there".
+#ifdef CONFIG_M32KIP
+  #define _RIG_OR(x) _kipRig
+#else
+  #define _RIG_OR(x) x
+#endif
 #ifdef LORA_DISABLED
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx
     {1,_qsoBot,_trxIcw,_trx,0},                         // _trxWifi  (left wraps via _qsoBot)
-    {1,_trxWifi,_qsoBot,_trx,0},                        // _trxIcw   (right wraps to _qsoBot)
-    {1,_trxIcw,_trxWifi,_trx,_qsoSotaPota},             // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_RIG_OR(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
+    {1,_RIG_OR(_trxIcw),_trxWifi,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx (no LoRa, first child is WiFi)
-    {1,_trxIcw,_trxIcw,_trx,0},                         // _trxWifi  (2-item wrap)
-    {1,_trxWifi,_trxWifi,_trx,0},                       // _trxIcw   (2-item wrap)
+    {1,_RIG_OR(_trxIcw),_trxIcw,_trx,0},                // _trxWifi  (wraps left via Remote Rig)
+    {1,_trxWifi,_RIG_OR(_trxWifi),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
   #endif
 #else
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx
     {1,_qsoBot,_trxWifi,_trx,0},                        // _trxLora  (left wraps via _qsoBot)
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_qsoBot,_trx,0},                        // _trxIcw   (right wraps to _qsoBot)
-    {1,_trxIcw,_trxLora,_trx,_qsoSotaPota},             // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_RIG_OR(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
+    {1,_RIG_OR(_trxIcw),_trxLora,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx (has LoRa)
-    {1,_trxIcw,_trxWifi,_trx,0},                        // _trxLora
+    {1,_RIG_OR(_trxIcw),_trxWifi,_trx,0},               // _trxLora  (wraps left via Remote Rig)
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_trxLora,_trx,0},                       // _trxIcw
+    {1,_trxWifi,_RIG_OR(_trxLora),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
   #endif
 #endif
 #ifdef CONFIG_CW_GAME
@@ -272,7 +285,21 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_kochLearn,_kochGen,_koch,0}                       // Preview Char (Koch Trainer) - appended at enum's end for the
                                                          //   same reason (menuPtr persisted raw); spliced into the koch
                                                          //   ring via the _kochLearn/_kochGen edits above
+
+#ifdef CONFIG_M32KIP
+  , {1,_trxIcw,
+   #ifdef CONFIG_QSO_BOT
+     _qsoBot
+   #elif defined(LORA_DISABLED)
+     _trxWifi
+   #else
+     _trxLora
+   #endif
+     ,_trx,0}                                            // Remote Rig - appended at the enum's end; spliced
+                                                         //   into the Transceiver ring by the _RIG_OR rows above
+#endif
 };
+#undef _RIG_OR
 
 //String MorseMenu::cmdPath;   // used to create string for json
 
@@ -941,6 +968,21 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                   MorseJSON::jsonCreate("message", "Start CW Transceiver", "");
                 clearPaddleLatches();
                 goto setupDecoder;
+#ifdef CONFIG_M32KIP
+      // Remote Rig — the M32KIP Rig unit. Self-contained like the QSO Bot: it owns the display and the
+      // buttons until the operator long-presses out of it. Unlike the bot it DOES key the transmitter,
+      // but never from here: a hardware-timer ISR owns the key line for the duration (see MorseKipRig.h),
+      // and kipRig appears in none of keyOut()'s Key-Ext-Tx cases, so nothing else can drive the pin.
+      case _kipRig:
+                MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions,
+                                                    MorsePreferences::wifiTrxOptionsSize);
+                morseState = kipRig;
+                Buttons::modeButton.clicks = 0;
+                Buttons::volButton.clicks  = 0;
+                MorseKipRig::run();
+                m32state = menu_loop;
+                return false;
+#endif
 #ifdef CONFIG_QSO_BOT
       // QSO Bot — simulated CW QSO partner. Uses the same safety story as
       // the games (morseQsoBot is local-sidetone-only; never appears in

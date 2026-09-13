@@ -1777,6 +1777,9 @@ void MorsePreferences::readPreferences(const char* repository) {
       MorsePreferences::wlanSSID = pref.getString("wlanSSID");
       MorsePreferences::wlanPassword = pref.getString("wlanPassword");
       MorsePreferences::wlanTRXPeer = pref.getString("wlanTRXPeer", "");
+#ifdef CONFIG_M32KIP
+    MorsePreferences::kipPsk = pref.getString("kipPsk", "");
+#endif
 
       MorsePreferences::wlanSSID1 = pref.getString("wlanSSID1");
       MorsePreferences::wlanPassword1 = pref.getString("wlanPassword1");
@@ -2691,6 +2694,21 @@ void MorsePreferences::writeWifiInfoMultiple(
 
     writeWifiInfo(ssid1, passwd1, trxpeer1);
 }
+
+#ifdef CONFIG_M32KIP
+String MorsePreferences::kipPsk;
+
+// One string in the existing namespace: 1 + ceil((len+1)/32) NVS entries, so two for any sane passphrase.
+// Costed against the budget in CLAUDE.md §4 before adding it; the key name is 6 characters, well inside the
+// 15-character limit that fails silently.
+void MorsePreferences::writeKipPsk(const String& psk) {
+    MorsePreferences::kipPsk = psk;
+    pref.begin("morserino", false);
+    if (!pref.putString("kipPsk", MorsePreferences::kipPsk))
+        DEBUG("kipPsk not stored - NVS full?");     // put*() fails silently when NVS is full
+    pref.end();
+}
+#endif
 
 void MorsePreferences::writeWifiInfo(const String& ssid, const String& passwd, const String& trxpeer)
 {

@@ -134,6 +134,11 @@ namespace MorsePreferences
   extern String  wlanSSID;
   extern String  wlanPassword;
   extern String  wlanTRXPeer;
+#ifdef CONFIG_M32KIP
+  extern String  kipPsk;                  // M32KIP pre-shared key: never sent, only hashed (spec §9).
+                                          // Write-only from outside, like the WiFi password.
+  void writeKipPsk(const String& psk);
+#endif
 
   // config for up to three networks
   extern String  wlanSSID1;

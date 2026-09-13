@@ -87,7 +87,26 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
   in software). Acceptance: the Python Rig and the C++ core agree on every
   vector; "never shorten a mark" holds on every profile.
 
-### Phase 2 — Rig unit on device — **next**
+### Phase 2 — Rig unit on device — **DONE (builds; bench test owed)**
+
+> Delivered: `MorseKipRig.{h,cpp}`, a self-contained mode on the QSO Bot pattern — UDP 7374, HELLO/
+> HELLO_ACK/NACK(busy), KEY into `RigSession`, STATS once a second, BYE three times on the way out.
+> Edges reach the key line from a hardware-timer ISR on core 1 that the run loop pre-arms, never from
+> the loop itself. Safety per §8: the max-key-down limit, the keepalive watchdog, a local paddle touch
+> and the encoder long-press all lift the key immediately. Wired in as menu leaf `_kipRig`
+> ("Remote Rig"), spliced into the Transceiver ring in all four LoRa/QSO-Bot combinations, with the
+> new `kipRig` mode state — which appears in none of `keyOut()`'s Key-Ext-Tx cases, so nothing but the
+> ISR can drive the pin. Display is rate-limited to 4 Hz and the mode never times out (D8).
+>
+> **Pulled forward from Phase 4:** the pre-shared key had to have an entry path or the mode could only
+> ever display "No key set", so `kipPsk` (NVS, one string, write-only) and its field on the WiFi
+> configuration web page landed here. The serial-protocol side of D3 stays in Phase 4.
+>
+> **Owed before this is finished:** a bench test against the Python reference peer (`reference_peer.py
+> keyer`), and with it the first real measurement of reproduced timing on hardware. The voice clip for
+> the new menu entry is done — the extractor needed `CONFIG_M32KIP` adding to its macro set, without
+> which the entry would have shipped silent.
+
 - Socket on 7374, HELLO/NACK/session handling, `onPacket` → verify → dedupe →
   enqueue; ISR emitter; keepalive / max-keydown / error-storm watchdogs; STATS
   once per second; local override (encoder long-press = universal exit,

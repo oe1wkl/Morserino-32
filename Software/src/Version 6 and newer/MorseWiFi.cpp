@@ -98,6 +98,17 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
                     "<div>"
                       "(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
                     "</div>"
+#ifdef CONFIG_M32KIP
+                    "<div>"   // M32KIP pre-shared key. Never rendered back, like the WiFi passwords:
+                      "<div>" //   it is only ever hashed, and leaving the field empty keeps the stored one.
+                        "<label for='kippsk'>Remote Keying pass phrase?</label>"
+                        "<input name='kippsk' id='kippsk'>"
+                      "</div>"
+                      "<div>"
+                        "(at least 12 characters, the same on both Morserinos; leave empty to keep)"
+                      "</div>"
+                    "</div>"
+#endif
                     "<div>"
                       "<button>Submit</button>"
                     "</div>"
@@ -777,6 +788,12 @@ void MorseWiFi::startAP() {
       String(server.arg("ssid2")), String(server.arg("pw2")), String(server.arg("trxpeer2")),
       String(server.arg("ssid3")), String(server.arg("pw3")), String(server.arg("trxpeer3"))
     );
+#ifdef CONFIG_M32KIP
+    // Empty means "leave the stored passphrase alone" - the field is never pre-filled, so submitting the
+    // form to change an SSID must not silently wipe the key.
+    if (server.hasArg("kippsk") && server.arg("kippsk").length())
+        MorsePreferences::writeKipPsk(String(server.arg("kippsk")));
+#endif
     configDone = true;    // signal the loop to exit
   });
  

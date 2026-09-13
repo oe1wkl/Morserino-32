@@ -301,6 +301,8 @@ public:
     bool     hasPending() const   { return !queue_.empty(); }
     /// Rig-clock time the head of the queue is due. Only meaningful while hasPending().
     uint32_t nextEmitTime() const;
+    /// Key level the head of the queue will put on the line. Only meaningful while hasPending().
+    uint8_t  nextEmitState() const { return queue_.empty() ? (uint8_t)KEY_UP : queue_.front().state; }
     uint8_t  keyState() const     { return keyState_; }
     uint32_t playoutTicks() const { return d_; }
     uint32_t jitterTicks() const  { return jitter_; }

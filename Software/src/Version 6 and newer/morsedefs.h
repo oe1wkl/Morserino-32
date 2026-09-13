@@ -337,6 +337,9 @@ enum morserinoMode              // the states the morserino can be in - selected
                                   // (local sidetone only, never RF, never external TX). Kept
                                   // semantically distinct so future bot-specific gating
                                   // doesn't have to ride on morseGame.
+      kipRig,                     // M32KIP Rig unit: reproduces a remote operator's keying on the TX
+                                  // output. Local paddles and keyOut() must never key the line in this
+                                  // state - the hardware timer ISR owns it. See MorseKipRig.h.
       shutDown, measureNF, invalid
   };
 
@@ -361,6 +364,9 @@ const uint8_t menuN = 46
 #endif
 #ifdef CONFIG_AUDIO_A11Y
     - 2    // no Upload File / Update Firmw — both are browser-driven WiFi-AP flows
+#endif
+#ifdef CONFIG_M32KIP
+    + 1    // Remote Rig — M32KIP Rig unit, see MorseKipRig.h
 #endif
     ;
 
@@ -404,6 +410,10 @@ enum menuNo
                          // persisted raw (lastExecuted, snapshots, protocol GET menus), so inserting
                          // a new entry mid-enum would shift every later index. See menuNav wiring in
                          // MorseMenu.cpp for where it actually sits in the Koch Trainer submenu.
+#ifdef CONFIG_M32KIP
+        , _kipRig        // "Remote Rig" - M32KIP Rig unit; appended at the end for the same reason,
+                         // and spliced into the Transceiver ring in MorseMenu.cpp.
+#endif
    };
 
 enum loops
