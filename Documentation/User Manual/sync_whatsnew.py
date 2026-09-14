@@ -132,13 +132,14 @@ def escape_angles(text):
 def render(sections, major, lang):
     """The manual-ready block body (without the markers)."""
     lines = [HEADING[lang] % major, ""]
-    multi = len(sections) > 1
-    for version, subs in sections:
-        bullets = []
-        for name in WANTED:
-            bullets.extend(subs.get(name, []))
-        if not bullets:
-            continue
+    # Only versions that bring features count: a release with nothing but bug
+    # fixes contributes no bullets, so it must not turn on the per-version
+    # labels either (that would rewrite the block and stale the German one).
+    shown = [(version, [b for name in WANTED for b in subs.get(name, [])])
+             for version, subs in sections]
+    shown = [(version, bullets) for version, bullets in shown if bullets]
+    multi = len(shown) > 1
+    for version, bullets in shown:
         if multi:
             lines.append("**V %s**" % version)
             lines.append("")
