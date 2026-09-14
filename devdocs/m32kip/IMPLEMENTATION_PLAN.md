@@ -276,7 +276,8 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > third address was refused as busy: the restarted Rig held a session, and the only client that could
 > have opened it was the Pocket, reconnecting on its own. That exercises the silence path (five seconds
 > without STATS). The BYE path could not be separated this way, since any serial access to the classic
-> reboots it first; and the encoder reset and the reason display need eyes on the device.
+> reboots it first. **Encoder reset confirmed by Willi the same day:** a short press on the classic
+> ended the session and it came straight back as the Pocket reconnected.
 >
 > **Instrument trap, recorded so it is not mistaken for a device fault:** after a session restart the
 > miniforge Python lost macOS's Local Network permission, and its UDP sends to the two Morserinos failed
