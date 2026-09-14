@@ -983,6 +983,102 @@ static void testRigFailSafe() {
     }
 }
 
+// ---------------------------------------------------------------- Keyer glitch filter (spec §10.1)
+
+static void testGlitchFilter() {
+    section("glitch filter");
+    const uint32_t W = msToTicks(3);
+    uint32_t t; uint8_t s;
+    {   GlitchFilter f; f.setWidth(W);
+        f.push(1000, KEY_DOWN);
+        ok(!f.pop(1000 + W - 1, t, s), "an edge is held inside the window");
+        ok(f.pop(1000 + W, t, s), "and released once it has held for the width");
+        okEq(t, 1000, "with the time of the first change, not of the confirmation");
+        okEq(s, KEY_DOWN, "and its level");
+        ok(!f.pop(1000 + 10 * W, t, s), "it is released once only");
+    }
+    {   GlitchFilter f; f.setWidth(W);
+        f.push(1000, KEY_DOWN);
+        f.push(1000 + msToTicks(1), KEY_UP);                 // a 1 ms bounce
+        ok(!f.pop(1000 + msToTicks(100), t, s), "a level that reverts inside the window yields neither edge");
+        ok(!f.pending(), "and leaves nothing pending");
+        f.push(5000, KEY_DOWN);
+        ok(f.pop(5000 + W, t, s) && s == KEY_DOWN, "the next real key-down is still accepted afterwards");
+        okEq(t, 5000, "and reports its own time, not the glitch's");
+    }
+    {   GlitchFilter f; f.setWidth(W);                       // chatter that settles
+        f.push(1000, KEY_DOWN); f.push(1005, KEY_UP); f.push(1010, KEY_DOWN);
+        ok(!f.pop(1010 + W - 1, t, s), "the level has to hold for the width after the last bounce");
+        ok(f.pop(1010 + W, t, s) && t == 1000, "and the edge then reports the first contact of the burst");
+    }
+    {   GlitchFilter f; f.setWidth(W);                       // a late send task sees both edges before popping
+        f.push(1000, KEY_DOWN);
+        f.push(1000 + msToTicks(60), KEY_UP);
+        ok(f.pop(1000 + msToTicks(60), t, s), "a mark proven by the next edge is released at once");
+        okEq(t, 1000, "the key-down first");
+        ok(!f.pop(1000 + msToTicks(62), t, s), "the key-up still has to hold for the width");
+        ok(f.pop(1000 + msToTicks(63), t, s) && s == KEY_UP && t == 1000 + msToTicks(60), "then comes out with its own time");
+    }
+    {   GlitchFilter f; f.setWidth(W);                       // late task, bounce: judged by edge times, not the clock
+        f.push(1000, KEY_DOWN);
+        f.push(1000 + msToTicks(1), KEY_UP);
+        ok(!f.pop(1000 + msToTicks(50), t, s), "a bounce seen late is still a bounce");
+    }
+    {   GlitchFilter f; f.setWidth(W);
+        f.push(1000, KEY_DOWN);
+        f.push(1000 + msToTicks(1), KEY_DOWN);               // keyOut() making sure
+        int n = 0; while (f.pop(1000 + msToTicks(10), t, s)) n++;
+        okEq(n, 1, "a repeated level is not a second edge");
+        f.push(2000, KEY_UP); f.push(2000 + msToTicks(20), KEY_UP);
+        n = 0; while (f.pop(2000 + msToTicks(30), t, s)) n++;
+        okEq(n, 1, "not for the key-up either");
+    }
+    {   GlitchFilter f;                                      // width 0: the iambic keyer
+        f.push(1000, KEY_DOWN);
+        ok(f.pop(1000, t, s) && t == 1000, "width 0 passes an edge straight through");
+        f.push(1001, KEY_UP);
+        ok(f.pop(1001, t, s) && s == KEY_UP, "even one tick later");
+    }
+    {   // A straight key with bounce on every contact: marks and gaps 60-200 ms, 1-3 bounces of 0.3-2 ms at each
+        // make and break. Every mark must come out once, with its true first-contact time, and the stream alternates.
+        GlitchFilter f; f.setWidth(W);
+        uint32_t seed = 12345;
+        auto rnd = [&](uint32_t lo, uint32_t hi) { seed = seed * 1103515245u + 12345u; return lo + (seed >> 8) % (hi - lo + 1); };
+        struct In { uint32_t t; uint8_t s; };
+        std::vector<In> in;
+        std::vector<uint32_t> truth;
+        uint32_t now = 10000;
+        for (int m = 0; m < 200; m++) {
+            for (int edge = 0; edge < 2; edge++) {
+                uint8_t lvl = edge ? KEY_UP : KEY_DOWN, other = edge ? KEY_DOWN : KEY_UP;
+                truth.push_back(now);
+                in.push_back({now, lvl});
+                uint32_t bt = now;
+                int bounces = (int)rnd(1, 3);
+                for (int b = 0; b < bounces; b++) {          // chatter inside the first ~2.5 ms
+                    bt += rnd(3, 8);  in.push_back({bt, other});
+                    bt += rnd(3, 8);  in.push_back({bt, lvl});
+                }
+                now += msToTicks(rnd(60, 200));
+            }
+        }
+        std::vector<In> out;
+        size_t i = 0;
+        for (uint32_t clock = 10000; clock <= now + msToTicks(10); clock += msToTicks(1)) {   // a 1 ms task loop
+            while (i < in.size() && in[i].t <= clock) { f.push(in[i].t, in[i].s); i++; }
+            while (f.pop(clock, t, s)) out.push_back({t, s});
+        }
+        okEq((uint32_t)out.size(), (uint32_t)truth.size(), "a bouncing straight key yields exactly one edge per contact change");
+        bool alt = true, times = out.size() == truth.size();
+        for (size_t k = 0; k < out.size(); k++) {
+            if (out[k].s != ((k % 2) ? KEY_UP : KEY_DOWN)) alt = false;
+            if (times && out[k].t != truth[k]) times = false;
+        }
+        ok(alt, "the filtered stream alternates, starting with a key-down");
+        ok(times, "every edge carries its true first-contact time");
+    }
+}
+
 int main(int argc, char** argv) {
     if (argc > 1 && std::strcmp(argv[1], "--vectors") == 0) { emitVectors(); return 0; }
 
@@ -995,6 +1091,7 @@ int main(int argc, char** argv) {
     testEdgeQueue();
     testKeyerRedundancy();
     testSendSchedule();
+    testGlitchFilter();
     testSafety();
     testRigFailSafe();
     testSimulation();

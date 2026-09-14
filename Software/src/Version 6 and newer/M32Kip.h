@@ -425,5 +425,50 @@ private:
     bool     scheduled_;
 };
 
+// ---------------------------------------------------------------- Keyer unit glitch filter (spec §4.4, §10.1)
+
+/// Contact bounce is the Keyer unit's problem, not the protocol's. An edge is released only once the new level has held
+/// for the filter width; a level that reverts inside the window is discarded together with the edge that started it, so
+/// the stream still alternates and the Rig's alternation check stays valid. A released edge keeps the time of the FIRST
+/// change: the filter adds a constant reporting delay, which the playout delay absorbs, and never a timing error.
+///
+/// Whether an edge "held" is judged against the next edge's timestamp when there is one, not against the clock: a send
+/// task running a few ms behind would otherwise release the first half of a bounce before it had even seen the second.
+/// Width 0 passes every transition straight through.
+///
+/// The time reported is the first contact of a burst of chatter, not the last bounce. Spec §10.1 writes the timestamp as
+/// `t_confirm - glitch_filter_ms`, which is the last bounce, but states the aim as timing identical to the physical key
+/// movement - and make and break chatter differently, so the literal formula could shorten or stretch a mark by a couple
+/// of milliseconds, beyond D2's 1 ms. A burst is a run of reversals each less than the width after the last. An isolated
+/// glitch - a reversal after which the old level then holds - is still discarded entirely. (Noted for Draft 0.3.)
+class GlitchFilter {
+public:
+    GlitchFilter() : width_(0), level_(KEY_UP), pending_(false), pendT_(0), pendState_(KEY_UP),
+                     chatter_(false), chatterFrom_(0), lastRevertT_(0), nReady_(0) {}
+    void setWidth(uint32_t ticks) { width_ = ticks; }
+    void reset() { level_ = KEY_UP; pending_ = false; chatter_ = false; nReady_ = 0; }
+    /// Feed a captured transition, in capture order.
+    void push(uint32_t t, uint8_t state);
+    /// Take the next confirmed edge, if any: those already proven by a later push first, then the pending one if it
+    /// has held until `now`.
+    bool pop(uint32_t now, uint32_t& t, uint8_t& state);
+    bool     pending() const { return pending_; }
+    uint32_t releaseAt() const { return pendT_ + width_; }
+
+private:
+    void release();
+    enum { READY = 4 };
+    uint32_t width_;
+    uint8_t  level_;                // last released level
+    bool     pending_;
+    uint32_t pendT_;                // latest change towards the pending level
+    uint8_t  pendState_;
+    bool     chatter_;              // the last pending edge reverted; a quick return continues the same burst
+    uint32_t chatterFrom_;          // first contact of the current burst: the time a released edge reports
+    uint32_t lastRevertT_;
+    Edge     ready_[READY];
+    uint8_t  nReady_;
+};
+
 } // namespace M32Kip
 #endif /* M32KIP_H_ */

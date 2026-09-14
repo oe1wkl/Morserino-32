@@ -197,10 +197,18 @@ void MorseKipRig::run() {
     gHaveSession = false;
     gLastEnd = "";
     gSession = 0;
-    MorseWiFi::audp.listen(DEFAULT_PORT);
+    MorseWiFi::audp.listen(MorsePreferences::kipPort);
     MorseWiFi::audp.onPacket(onUdp);
 
-    RigConfig cfg;                                  // spec §11 defaults; Phase 4 makes them preferences
+    // Spec §11 defaults, with the D4 preferences on top. A chosen Playout Delay is the starting value AND the floor:
+    // late edges may still raise it (the alternative is late edges on the air), and adaptation brings it back down
+    // to the chosen value, never below. Plain `adaptive = false` would let every raise stick for the rest of the
+    // session. Read once here: preferences cannot change while the mode runs.
+    RigConfig cfg;
+    uint16_t fixedD = MorsePreferences::kipPlayoutMs(MorsePreferences::pliste[posKipPlayout].value);
+    if (fixedD) { cfg.dDefaultMs = fixedD; cfg.dMinMs = fixedD; }
+    cfg.maxKeydownKeyerMs  = (uint16_t)(MorsePreferences::pliste[posKipMaxKeyer].value  * 1000u);
+    cfg.maxKeydownManualMs = (uint16_t)(MorsePreferences::pliste[posKipMaxManual].value * 1000u);
     RigSession rig;
     uint32_t sessions = 0;
     uint32_t lastDraw = 0, lastStats = 0;

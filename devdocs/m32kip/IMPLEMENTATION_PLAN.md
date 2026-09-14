@@ -289,7 +289,31 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
   half-limit key-down warning; "no link" after 5 s without STATS; forced noTx.
 - Test against the Python Rig, then device-to-device.
 
-### Phase 4 — Configuration and serial protocol
+### Phase 4 — Configuration and serial protocol — **DONE (builds both variants; bench test owed)**
+
+> Delivered 2026-09-14:
+> - **Preferences (D4)**, gated `CONFIG_M32KIP`, three arrays in sync (static_asserts hold): `Rig Delay`,
+>   `Rig Limit Kyr` (1–30 s, default 3), `Rig Limit SK` (1–30 s, default 10), `Glitch Filter` (1–5 ms,
+>   default 3). All excluded from snapshots (station settings, not training). NVS cost: 4 primitive entries.
+>   Remote Rig and Remote Keyer each get their own option list; all four also sit in the "All" view.
+> - **Deviation, for Willi's nod:** D4 said Playout Delay "in 10 ms units". It is a mapped list instead —
+>   Adaptive, 50, 100, 150, 200, 250, 300, 400, 500, 600 ms — because a raw unit count would show and
+>   *speak* "15" for 150 ms on the Accessibility Edition. A chosen delay is the start value **and the
+>   floor**: late edges may still raise it, adaptation brings it back to the choice. The core's
+>   `adaptive = false` would have let every raise stick for the session.
+> - **Glitch filter (spec §10.1)** in the core as `GlitchFilter`, host-tested (653 checks). Straight key
+>   only; the iambic keyer's generated edges pass at width 0. Runs in the send task, never on the keying
+>   path. **Deviation from the spec's formula, noted for Draft 0.3:** a settled edge reports the *first
+>   contact* of its chatter burst, not `t_confirm − width` (= the last bounce) — make and break chatter
+>   differently, so the literal formula could skew a mark by ~2 ms, past D2's 1 ms. Isolated glitches are
+>   still discarded whole.
+> - **PTT Lead / PTT Hang not added**: D6 puts PTT behind `PIN_PTT`, unset in every env, so they would be
+>   settings that do nothing. They arrive with `PIN_PTT`.
+> - **Protocol 1.5**: `GET kip` (`pskSet`, `port` — never the key), `PUT kip/port/<n>` (the D3 protocol-only
+>   override; 0 restores 7374 and removes the NVS key), `kip` in `GET capabilities`. `M32 Protocol.md`
+>   updated. Config Tool and iOS app remain follow-ups (D9).
+> - Voice clips: 14 new phrases rendered (stamp e6483cce).
+
 - NVS: PSK (write-only, ≤ 32 chars → 2 entries), Rig host (D3a), port (D3c).
   Cost each; check `put()` results.
 - AP web form field(s) for PSK / host; `GET/PUT kip/...` in the serial

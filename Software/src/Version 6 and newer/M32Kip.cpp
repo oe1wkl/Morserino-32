@@ -824,4 +824,43 @@ size_t KeyerSession::buildKey(uint8_t* buf, size_t cap, uint32_t tNow, uint8_t w
     return encodeKey(buf, cap, h, p, key);
 }
 
+// ---------------------------------------------------------------- GlitchFilter
+
+void GlitchFilter::release() {
+    if (nReady_ < READY) ready_[nReady_++] = Edge(chatterFrom_, pendState_);   // the caller drains after every push
+    level_ = pendState_;
+    pending_ = false;
+}
+
+void GlitchFilter::push(uint32_t t, uint8_t state) {
+    if (pending_ && tickDiff(t, pendT_) >= (int32_t)width_)
+        release();                                  // it held until this edge arrived: a real one
+    if (pending_) {
+        if (state == level_) {                      // reverted inside the window: no edge yet, but maybe chatter
+            pending_ = false;
+            chatter_ = true;
+            lastRevertT_ = t;
+        }
+        return;                                     // (a repeat of the pending level changes nothing)
+    }
+    if (state == level_) return;                    // not a transition
+    if (!(chatter_ && tickDiff(t, lastRevertT_) < (int32_t)width_))
+        chatterFrom_ = t;                           // a fresh contact; inside a burst, keep the burst's first one
+    chatter_ = false;
+    pending_ = true;
+    pendT_ = t;                                     // holding is measured from the latest change
+    pendState_ = state;
+}
+
+bool GlitchFilter::pop(uint32_t now, uint32_t& t, uint8_t& state) {
+    if (!nReady_ && pending_ && tickDiff(now, pendT_) >= (int32_t)width_)
+        release();
+    if (!nReady_) return false;
+    t = ready_[0].t;
+    state = ready_[0].state;
+    for (uint8_t i = 1; i < nReady_; i++) ready_[i - 1] = ready_[i];
+    nReady_--;
+    return true;
+}
+
 } // namespace M32Kip

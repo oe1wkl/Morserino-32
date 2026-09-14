@@ -4845,6 +4845,10 @@ void m32Get(String type, String token, String value) {                    /// GE
     }
     else if (type == "capabilities")
         MorseJSON::jsonCapabilities();
+#ifdef CONFIG_M32KIP
+    else if (type == "kip")                     // protocol 1.5: pskSet + port, never the key
+        MorseJSON::jsonKip();
+#endif
 #ifdef CONFIG_CW_GAME
     else if (type == "game") {
         if (token == "scores")
@@ -5000,6 +5004,19 @@ void m32Put(String type, String token, String value) {                    /// PU
           MorseJSON::jsonError("PSK TOO SHORT - 12 CHARACTERS MINIMUM");
         else {
           MorsePreferences::writeKipPsk(value);
+          MorseJSON::jsonOK();
+        }
+      }
+      else if (token == "port") {
+        // Protocol-only override (D3): nothing on the device shows it, and both ends must agree. 0 restores 7374.
+        bool digits = value.length() > 0 && value.length() <= 5;
+        for (unsigned i = 0; digits && i < value.length(); i++)
+          if (!isDigit(value[i])) digits = false;
+        long p = digits ? value.toInt() : -1;
+        if (p < 0 || p > 65535 || (p != 0 && p < 1024))
+          MorseJSON::jsonError("INVALID PORT - 1024 TO 65535, OR 0 FOR 7374");
+        else {
+          MorsePreferences::writeKipPort((uint16_t)p);
           MorseJSON::jsonOK();
         }
       }

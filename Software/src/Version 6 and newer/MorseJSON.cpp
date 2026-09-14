@@ -253,8 +253,23 @@ void MorseJSON::jsonCapabilities(void) {
 #ifdef CONFIG_PRACTICE_STATS
 	feat.add("stats/log");
 #endif
+#ifdef CONFIG_M32KIP
+	feat.add("kip");                                 // 1.5 remote keying: GET kip, PUT kip/psk, PUT kip/port
+#endif
 	MorseJSON::jsonSend(doc);
 }
+
+#ifdef CONFIG_M32KIP
+// Protocol 1.5: M32KIP remote keying. The pre-shared key is write-only (D3), so
+// this says whether one is set - never the key, and not its length either.
+void MorseJSON::jsonKip(void) {
+	StaticJsonDocument<128> doc;
+	JsonObject kip = doc.createNestedObject("kip");
+	kip["pskSet"] = MorsePreferences::kipPsk.length() >= 12;
+	kip["port"]   = MorsePreferences::kipPort;
+	MorseJSON::jsonSend(doc);
+}
+#endif
 
 #ifdef CONFIG_CW_GAME
 // Protocol 1.4: the game high-score tables, which were previously reachable

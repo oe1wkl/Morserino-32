@@ -12,6 +12,7 @@
 10 words per minute
 10 wpm
 100
+100 ms
 100%
 105
 11
@@ -33,6 +34,7 @@
 15 words per minute
 15 wpm
 150
+150 ms
 155
 16
 160
@@ -58,6 +60,7 @@
 20 words per minute
 20 wpm
 200
+200 ms
 205
 21
 210
@@ -78,6 +81,7 @@
 25 wpm
 25%
 250
+250 ms
 26
 262 Hertz
 262 Hz C4
@@ -93,6 +97,7 @@
 30
 30 words per minute
 30 wpm
+300 ms
 31
 311 Hertz
 311 Hz E4
@@ -118,6 +123,7 @@
 40
 40 words per minute
 40 wpm
+400 ms
 41
 42
 43
@@ -141,9 +147,11 @@
 5 words per minute
 5 wpm
 50
+50 ms
 50 words per minute
 50 wpm
 50%
+500 ms
 51
 52
 523 Hertz
@@ -161,6 +169,7 @@
 6 milliseconds
 6 ms
 60
+600 ms
 62.5%
 622 Hertz
 622 Hz E5
@@ -191,6 +200,7 @@
 932 Hz Bb5
 95
 a umlaut
+Adaptive
 Adaptive Random
 Adaptive random
 Adaptive speed
@@ -436,7 +446,11 @@ Random Groups
 Randomize File
 Recall snapshot
 Remote Keyer
+Remote keyer glitch filter
 Remote Rig
+Remote rig key down limit, keyer
+Remote rig key down limit, straight key
+Remote rig playout delay
 Repeat each word
 Reset Defaults
 Reset Scores

@@ -99,7 +99,7 @@ void sendHello(uint16_t seq, const uint8_t nonce[8]) {
     hello.source = gSource;
     Header h; h.session = 0; h.seq = seq;
     size_t n = encodeHello(buf, sizeof(buf), h, hello, gBaseKey);
-    if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
+    if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, MorsePreferences::kipPort);
 }
 
 /// Runs for the whole mode. HELLO_ACK is only accepted while calling and only for our current nonce; STATS
@@ -143,11 +143,29 @@ void onUdp(AsyncUDPPacket packet) {
 /// The one place that touches the socket. It also owns reconnecting (D14): the Rig ending a session, or five
 /// seconds without a word from it, puts the link back to calling, and the Keyer HELLOs once a second until a
 /// Rig answers. None of that ever runs on the keying path, so the operator keys on undisturbed throughout.
+GlitchFilter      gFilter;                   // send task only
+volatile uint32_t gGlitchTicks = 0;          // from the loop: Glitch Filter for a straight key, 0 for the iambic keyer
+
+/// Every captured transition goes through the glitch filter before it can reach the wire (spec §10.1). The queue is
+/// drained completely before anything is popped, and `now` is read before draining, so an edge's fate is decided by
+/// the edges captured after it and never by how late this task happens to run.
+uint32_t drainIntoFilter(TickType_t firstWait) {
+    uint32_t now = nowTicks();
+    QEdge e;
+    if (xQueueReceive(gEdgeQ, &e, firstWait) == pdTRUE) {
+        now = nowTicks();
+        gFilter.push(e.t, e.state);
+        while (xQueueReceive(gEdgeQ, &e, 0) == pdTRUE) gFilter.push(e.t, e.state);
+    }
+    return now;
+}
+
 void sendTask(void*) {
     uint8_t  buf[MAX_PACKET];
     uint32_t nextHelloMs = 0;
     uint16_t helloSeq = 0;
     while (gRunTask) {
+        gFilter.setWidth(gGlitchTicks);
         if (gLink == LINK_UP) {
             if (gNewSession) {                      // a reconnect has just landed: start the schedule afresh
                 gNewSession = false;
@@ -161,9 +179,12 @@ void sendTask(void*) {
                 continue;
             }
         }
+        uint32_t ft; uint8_t fs;
         if (gLink == LINK_CALLING) {
-            QEdge dropped;                          // keying goes on locally; with no session it goes nowhere
-            xQueueReceive(gEdgeQ, &dropped, pdMS_TO_TICKS(50));
+            // Keying goes on locally; with no session it goes nowhere. It still passes the filter, so the filter's
+            // idea of the key level is right when the link comes back.
+            uint32_t now = drainIntoFilter(pdMS_TO_TICKS(50));
+            while (gFilter.pop(now, ft, fs)) {}
             if (millis() >= nextHelloMs) {
                 gNonceValid = false;
                 for (int i = 0; i < 8; i++) gNonceC[i] = (uint8_t)(esp_random() & 0xFF);
@@ -174,24 +195,30 @@ void sendTask(void*) {
             continue;
         }
 
-        QEdge e;
         int32_t until = tickDiff(gKeyer.nextSendAt(), nowTicks());
+        if (gFilter.pending()) {                    // an edge waiting out the filter may be due before the next repeat
+            int32_t rel = tickDiff(gFilter.releaseAt(), nowTicks());
+            if (rel < until) until = rel;
+        }
         uint32_t waitMs = (until > 0) ? ticksToMs((uint32_t)until) + 1 : 0;
         if (waitMs > 50) waitMs = 50;               // stay responsive to end() and to the link state
-        bool haveEdge = (xQueueReceive(gEdgeQ, &e, pdMS_TO_TICKS(waitMs)) == pdTRUE);
+        uint32_t now = drainIntoFilter(pdMS_TO_TICKS(waitMs));
         uint8_t wpm = (gSource == SRC_KEYER) ? (uint8_t)MorsePreferences::wpm : 0;
         uint32_t session; uint8_t key[32];
         snapshotSession(session, key);
 
-        if (haveEdge) {
-            gKeyer.addEdge(e.t, e.state);
-            size_t n = gKeyer.buildKey(buf, sizeof(buf), e.t, wpm, gSource, session, ++gTxSeq, key, true);
-            if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
-            gKeyer.noteSent(e.t);
-        } else if (gKeyer.sendDue(nowTicks())) {
+        bool sent = false;
+        while (gFilter.pop(now, ft, fs)) {
+            gKeyer.addEdge(ft, fs);
+            size_t n = gKeyer.buildKey(buf, sizeof(buf), ft, wpm, gSource, session, ++gTxSeq, key, true);
+            if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, MorsePreferences::kipPort);
+            gKeyer.noteSent(ft);
+            sent = true;
+        }
+        if (!sent && gKeyer.sendDue(nowTicks())) {
             uint32_t t = nowTicks();
             size_t n = gKeyer.buildKey(buf, sizeof(buf), t, wpm, gSource, session, ++gTxSeq, key, false);
-            if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
+            if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, MorsePreferences::kipPort);
             gKeyer.noteSent(t);
         }
     }
@@ -237,7 +264,7 @@ void sendBye() {
     for (int i = 0; i < 3; i++) {                   // spec §6.6
         Header h; h.session = session; h.seq = ++gTxSeq;
         size_t n = encodeBye(buf, sizeof(buf), h, key);
-        if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
+        if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, MorsePreferences::kipPort);
         delay(100);
     }
 }
@@ -267,6 +294,9 @@ bool MorseKipKeyer::linked() {
 void MorseKipKeyer::tick() {
     if (!gActive) return;
     gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
+    // Contact bounce is a straight key's problem (spec §10.1). The iambic keyer's edges are generated, clean by
+    // construction, and must not pay the filter's delay.
+    gGlitchTicks = (gSource == SRC_STRAIGHT) ? msToTicks(MorsePreferences::pliste[posKipGlitch].value) : 0;
     bool link = linked();
     if (link != gShownLink) {               // only on a change: a redraw is longer than a dit
         gShownLink = link;
@@ -288,6 +318,7 @@ bool MorseKipKeyer::begin() {
     deriveBaseKey(MorsePreferences::kipPsk.c_str(), gBaseKey);
     gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
     gLastNoted = KEY_UP;
+    gFilter.reset();                                // the send task is not running yet (end() above retired it)
 
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
@@ -303,7 +334,7 @@ bool MorseKipKeyer::begin() {
         return false;
     }
 
-    MorseWiFi::audp.listen(DEFAULT_PORT);
+    MorseWiFi::audp.listen(MorsePreferences::kipPort);
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, REGULAR, 0, "Calling rig...");
     MorseOutput::printOnScroll(1, REGULAR, 0, gPeer.toString());

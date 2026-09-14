@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "ceb643fc"
+#define VOICE_PACK_STAMP "e6483cce"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -24,6 +24,7 @@ static const VoiceEntry voiceLookup[] = {
   {"10 min", "70abb32f"},
   {"10 wpm", "926b927e"},
   {"100", "f899139d"},
+  {"100 ms", "a1ea3809"},
   {"100%", "30bd7ce7"},
   {"105", "65b9eea6"},
   {"11", "6512bd43"},
@@ -43,6 +44,7 @@ static const VoiceEntry voiceLookup[] = {
   {"15 min", "2a7bb67d"},
   {"15 wpm", "2dfc98a7"},
   {"150", "7ef605fc"},
+  {"150 ms", "ad3b7da3"},
   {"155", "2a79ea27"},
   {"16", "c74d97b0"},
   {"160", "b73ce398"},
@@ -66,6 +68,7 @@ static const VoiceEntry voiceLookup[] = {
   {"20", "98f13708"},
   {"20 wpm", "e4a19f19"},
   {"200", "3644a684"},
+  {"200 ms", "212d6a6a"},
   {"205", "eae27d77"},
   {"21", "3c59dc04"},
   {"210", "6f3ef77a"},
@@ -84,6 +87,7 @@ static const VoiceEntry voiceLookup[] = {
   {"25 wpm", "5f343b7e"},
   {"25%", "ae0ce64f"},
   {"250", "6c9882bb"},
+  {"250 ms", "2e14209f"},
   {"26", "4e732ced"},
   {"262 Hz C4", "a6b75bd6"},
   {"27", "02e74f10"},
@@ -95,6 +99,7 @@ static const VoiceEntry voiceLookup[] = {
   {"3 ms", "39e3877c"},
   {"30", "34173cb3"},
   {"30 wpm", "2207ad59"},
+  {"300 ms", "2458bc22"},
   {"31", "c16a5320"},
   {"311 Hz E4", "dd32ce8c"},
   {"32", "6364d3f0"},
@@ -114,6 +119,7 @@ static const VoiceEntry voiceLookup[] = {
   {"4 ms", "490c6570"},
   {"40", "d645920e"},
   {"40 wpm", "ece52812"},
+  {"400 ms", "f169b3ed"},
   {"41", "3416a75f"},
   {"42", "a1d0c6e8"},
   {"43", "17e62166"},
@@ -131,8 +137,10 @@ static const VoiceEntry voiceLookup[] = {
   {"5 ms", "7334de9d"},
   {"5 wpm", "4ef28871"},
   {"50", "c0c7c76d"},
+  {"50 ms", "f4eeca07"},
   {"50 wpm", "96fca41e"},
   {"50%", "2496af30"},
+  {"500 ms", "dde8868b"},
   {"51", "2838023a"},
   {"52", "9a115815"},
   {"523 Hz C5", "3d91127c"},
@@ -147,6 +155,7 @@ static const VoiceEntry voiceLookup[] = {
   {"6", "1679091c"},
   {"6 ms", "fedf906a"},
   {"60", "072b030b"},
+  {"600 ms", "1e5f6506"},
   {"62.5%", "92546f34"},
   {"622 Hz E5", "f76d17ec"},
   {"65", "fc490ca4"},
@@ -169,6 +178,7 @@ static const VoiceEntry voiceLookup[] = {
   {"932 Hz Bb5", "f360311c"},
   {"95", "812b4ba2"},
   {"Adapt. Rand.", "3666e983"},
+  {"Adaptive", "1244cba6"},
   {"Adaptive speed", "93aceefc"},
   {"Advanced", "9b6545e4"},
   {"Africa", "f5cd2629"},
@@ -360,6 +370,10 @@ static const VoiceEntry voiceLookup[] = {
   {"Randomize File", "185555b7"},
   {"Remote Keyer", "d5832bdc"},
   {"Remote Rig", "ea2f3ce8"},
+  {"Remote keyer glitch filter", "a1c7e661"},
+  {"Remote rig key down limit, keyer", "641a4bc2"},
+  {"Remote rig key down limit, straight key", "4f69c872"},
+  {"Remote rig playout delay", "7d2f4e74"},
   {"Repeat each word", "e9046441"},
   {"Reset Defaults", "efd28b76"},
   {"Reset Scores", "fc806829"},
@@ -446,7 +460,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 432;
+static const unsigned int voiceLookupCount = 446;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

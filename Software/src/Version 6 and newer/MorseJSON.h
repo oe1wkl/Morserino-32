@@ -56,6 +56,9 @@ namespace MorseJSON
 	// Protocol v1.4 extensions
 	void jsonParameterDetails(uint8_t from);   // paginated bulk parameter read
 	void jsonCapabilities(void);               // build-dependent feature discovery
+#ifdef CONFIG_M32KIP
+	void jsonKip(void);                        // protocol 1.5: remote keying settings (never the key)
+#endif
 #ifdef CONFIG_CW_GAME
 	void jsonGameScores(void);                 // game high-score tables (read-only)
 #endif

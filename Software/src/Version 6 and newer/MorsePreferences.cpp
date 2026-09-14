@@ -105,6 +105,9 @@ const char * prefName[] = {
             "qsoBotContest",     // NVS keys are limited to 15 chars: the original "qsoBotContestType" (17) could never be stored
             "qsoBotLevel",
 #endif
+#ifdef CONFIG_M32KIP
+            "kipPlayout", "kipMaxKeyer", "kipMaxManual", "kipGlitch",   // NVS keys, all well inside 15 chars
+#endif
             "serialOut"
 					};
 
@@ -534,6 +537,40 @@ parameter MorsePreferences::pliste[] = {
     {"Beginner", "Intermediate", "Advanced"}
   },
 #endif
+#ifdef CONFIG_M32KIP
+  {
+    0, 0, 9, 1,                                                 // index into kipPlayoutMs(): 0 = adaptive
+    "Rig Delay",
+    "Remote Rig: fixed delay between keying and transmitter, or Adaptive",
+    true,
+    {"Adaptive", "50 ms", "100 ms", "150 ms", "200 ms", "250 ms", "300 ms", "400 ms", "500 ms", "600 ms"},
+    "Remote rig playout delay"
+  },
+  {
+    3, 1, 30, 1,                                                // seconds (spec §11: 3000 ms)
+    "Rig Limit Kyr",
+    "Remote Rig: longest mark from a paddle keyer before the rig lifts the key (s)",
+    false,
+    {},
+    "Remote rig key down limit, keyer"
+  },
+  {
+    10, 1, 30, 1,                                               // seconds (spec §11: 10000 ms)
+    "Rig Limit SK",
+    "Remote Rig: longest mark from a straight key or bug before the rig lifts the key (s)",
+    false,
+    {},
+    "Remote rig key down limit, straight key"
+  },
+  {
+    3, 1, 5, 1,                                                 // ms (spec §11: 3, range 1-5)
+    "Glitch Filter",
+    "Remote Keyer: how long a straight-key contact must hold to count (ms)",
+    false,
+    {},
+    "Remote keyer glitch filter"
+  },
+#endif
   {
     5, 0, 5, 1,        // Serial Output entry (unchanged)                                                // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
     "Serial Output",
@@ -793,11 +830,30 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posLoraChannel,
                                                    posGoertzelBandwidth, posExtAudioOnDecode,
                                                    QSOBOT
+#ifdef CONFIG_M32KIP
+                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual, posKipGlitch,
+#endif
                                                    posPlayerCall, posPlayerName, posResetScores,
 #ifdef CONFIG_PRACTICE_STATS
                                                    posPracticeStatsOn,
 #endif
                                                  };
+
+#ifdef CONFIG_M32KIP
+ // Remote Rig runs its own loop and offers no preferences gesture, so this list matters only to tools reading the
+ // current mode's parameters; the settings are reached on the device through the "All" view above.
+ prefPos MorsePreferences::kipRigOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut,
+                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual
+                                                 };
+ // Remote Keyer is the CW Keyer plus a link: the keyer's own settings, and nothing that keys a local transmitter or
+ // decodes received audio (the Keyer unit forces noTx, D12d).
+ prefPos MorsePreferences::kipKeyerOptions[] =   { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   posKipGlitch
+                                                 };
+int MorsePreferences::kipRigOptionsSize   = SizeOfArray(MorsePreferences::kipRigOptions);
+int MorsePreferences::kipKeyerOptionsSize = SizeOfArray(MorsePreferences::kipKeyerOptions);
+#endif
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
 
@@ -1100,6 +1156,12 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
         }
         announceValue(pos, valueLine, withHeading);                      // totals on entry only
     }
+#endif
+#ifdef CONFIG_M32KIP
+    if (pos == posKipMaxKeyer || pos == posKipMaxManual)                // display-only unit suffixes, as Think Time below
+        valueLine += "s";
+    if (pos == posKipGlitch)
+        valueLine += "ms";
 #endif
     if (pos == posEchoThinkTime)                                        // display-only unit suffix: kept out of the
         valueLine += "s";                                                // a11y announce above so it still speaks the bare
@@ -1779,6 +1841,7 @@ void MorsePreferences::readPreferences(const char* repository) {
       MorsePreferences::wlanTRXPeer = pref.getString("wlanTRXPeer", "");
 #ifdef CONFIG_M32KIP
     MorsePreferences::kipPsk = pref.getString("kipPsk", "");
+    MorsePreferences::kipPort = pref.getUShort("kipPort", 7374);   // absent unless overridden (PUT kip/port)
 #endif
 
       MorsePreferences::wlanSSID1 = pref.getString("wlanSSID1");
@@ -1956,6 +2019,13 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
 #ifdef CONFIG_QSO_BOT
       case posQsoBotContestType:
       case posQsoBotLevel:
+#endif
+#ifdef CONFIG_M32KIP
+      // remote-keying station settings, not training settings:
+      case posKipPlayout:
+      case posKipMaxKeyer:
+      case posKipMaxManual:
+      case posKipGlitch:
 #endif
           return false;
       default:
@@ -2707,6 +2777,30 @@ void MorsePreferences::writeKipPsk(const String& psk) {
     if (!pref.putString("kipPsk", MorsePreferences::kipPsk))
         DEBUG("kipPsk not stored - NVS full?");     // put*() fails silently when NVS is full
     pref.end();
+}
+
+uint16_t MorsePreferences::kipPort = 7374;          // M32Kip::DEFAULT_PORT; this file stays free of the protocol header
+
+// One uint16 key (1 NVS entry), and only while an override is in force: 0 removes it again, because NVS never
+// shrinks by itself (CLAUDE.md §4 c).
+void MorsePreferences::writeKipPort(uint16_t port) {
+    pref.begin("morserino", false);
+    if (port == 0) {
+        MorsePreferences::kipPort = 7374;
+        if (pref.isKey("kipPort")) pref.remove("kipPort");
+    } else {
+        MorsePreferences::kipPort = port;
+        if (!pref.putUShort("kipPort", port))
+            DEBUG("kipPort not stored - NVS full?");
+    }
+    pref.end();
+}
+
+// The Rig Delay choices. Index 0 is Adaptive. A mapped list rather than a raw number of 10 ms units, so the display
+// and the Accessibility Edition both give the value in milliseconds instead of a bare "15".
+uint16_t MorsePreferences::kipPlayoutMs(uint8_t value) {
+    static const uint16_t ms[] = {0, 50, 100, 150, 200, 250, 300, 400, 500, 600};
+    return value < sizeof(ms) / sizeof(ms[0]) ? ms[value] : 0;
 }
 #endif
 

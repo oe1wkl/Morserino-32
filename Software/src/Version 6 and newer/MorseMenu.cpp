@@ -990,8 +990,8 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       // but never from here: a hardware-timer ISR owns the key line for the duration (see MorseKipRig.h),
       // and kipRig appears in none of keyOut()'s Key-Ext-Tx cases, so nothing else can drive the pin.
       case _kipRig:
-                MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions,
-                                                    MorsePreferences::wifiTrxOptionsSize);
+                MorsePreferences::setCurrentOptions(MorsePreferences::kipRigOptions,
+                                                    MorsePreferences::kipRigOptionsSize);
                 morseState = kipRig;
                 Buttons::modeButton.clicks = 0;
                 Buttons::volButton.clicks  = 0;
@@ -1005,8 +1005,8 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       // memories. It keys nothing locally: kipKeyer is in no Key-Ext-Tx case in keyOut().
       case _kipKeyer:
                 generatorMode = RANDOMS;  // as WiFi Trx: reset a potential KOCH_LEARN
-                MorsePreferences::setCurrentOptions(MorsePreferences::wifiTrxOptions,
-                                                    MorsePreferences::wifiTrxOptionsSize);
+                MorsePreferences::setCurrentOptions(MorsePreferences::kipKeyerOptions,
+                                                    MorsePreferences::kipKeyerOptionsSize);
                 morseState = kipKeyer;
                 if (!MorseKipKeyer::begin())    // configuration, WiFi, handshake, send task
                     return false;

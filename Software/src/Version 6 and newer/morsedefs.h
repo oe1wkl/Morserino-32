@@ -61,7 +61,9 @@ const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 // 1.4 add configs/details (paginated bulk parameter read), capabilities
 //     (feature discovery, so a client need not probe), and game/scores
 //     (read + clear the game high-score tables; CONFIG_CW_GAME builds only)
-#define M32P_VERSION "1.4"
+// 1.5 add kip (M32KIP remote keying: GET kip, PUT kip/psk, PUT kip/port; advertised in
+//     capabilities, CONFIG_M32KIP builds only) and the Remote Rig / Remote Keyer parameters
+#define M32P_VERSION "1.5"
 
 /////// protocol version for IP (and LoRa) - for the time being this is B01
 /////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
@@ -475,6 +477,10 @@ enum prefPos : uint8_t {
 #ifdef CONFIG_QSO_BOT
         posQsoBotContestType,
         posQsoBotLevel,
+#endif
+#ifdef CONFIG_M32KIP
+        posKipPlayout, posKipMaxKeyer, posKipMaxManual,     // Remote Rig (M32KIP D4)
+        posKipGlitch,                                       // Remote Keyer, straight key only
 #endif
   posSerialOut,
                 // to be treated differently:

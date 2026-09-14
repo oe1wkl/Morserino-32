@@ -138,6 +138,8 @@ namespace MorsePreferences
   extern String  kipPsk;                  // M32KIP pre-shared key: never sent, only hashed (spec §9).
                                           // Write-only from outside, like the WiFi password.
   void writeKipPsk(const String& psk);
+  extern uint16_t kipPort;                // UDP port: 7374 unless overridden over the protocol (D3)
+  void writeKipPort(uint16_t port);       // 0 = back to 7374, and the NVS key is removed
 #endif
 
   // config for up to three networks
@@ -232,6 +234,13 @@ namespace MorsePreferences
   extern  prefPos qsoBotOptions[];
 #endif
   extern  prefPos decoderOptions[];
+#ifdef CONFIG_M32KIP
+  extern  prefPos kipRigOptions[];
+  extern  prefPos kipKeyerOptions[];
+  extern int kipRigOptionsSize;
+  extern int kipKeyerOptionsSize;
+  uint16_t kipPlayoutMs(uint8_t value);   // Playout Delay choice -> ms, 0 = adaptive
+#endif
   extern  prefPos allOptions[];
 
   extern prefPos *currentOptions;
