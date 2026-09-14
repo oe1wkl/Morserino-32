@@ -263,6 +263,25 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > with every element exactly 6 ms short — dits 57 and dahs 183 against nominal 63 and 189 — giving a
 > dah/dit ratio of 3.21. That is the open item of the 2026-07 CW timing audit, now measured to under
 > half a millisecond; recorded there as well.
+>
+> **First direct test and D14, 2026-09-13/14.** Pocket keying the classic directly worked at several
+> speeds, then the session was lost for good: the classic showed "Listening", the Pocket's logo went,
+> nothing reconnected. The fixes are D14 (see `DECISIONS.md`): every session death releases the key,
+> the malformed-edge limit is a per-second rate, the Keyer sends only real transitions and reconnects
+> by itself, the Rig shows why a session ended, and its controls are a short encoder press to reset
+> and a long press to leave, with no paddle or touch override.
+>
+> **Reconnect verified on hardware, 2026-09-14.** With the pair linked, the classic was rebooted out of
+> Remote Rig (which destroys the Pocket's session) and put back into it. Moments later a probe from a
+> third address was refused as busy: the restarted Rig held a session, and the only client that could
+> have opened it was the Pocket, reconnecting on its own. That exercises the silence path (five seconds
+> without STATS). The BYE path could not be separated this way, since any serial access to the classic
+> reboots it first; and the encoder reset and the reason display need eyes on the device.
+>
+> **Instrument trap, recorded so it is not mistaken for a device fault:** after a session restart the
+> miniforge Python lost macOS's Local Network permission, and its UDP sends to the two Morserinos failed
+> with `No route to host` while ping, `nc`, Apple's `/usr/bin/python3`, and even the same Python to the
+> router all worked. The probe for this test went through `nc`.
 
 - Source 0 hooks; source 1 ISR capture; send task + queue; HELLO retry, BYE ×3
   on exit; STATS display (`D`, loss, quality bar, rig key/PTT state); the
