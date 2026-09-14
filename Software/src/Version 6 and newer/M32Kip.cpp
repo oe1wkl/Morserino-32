@@ -436,6 +436,11 @@ void RigSession::begin(uint32_t rigNow, const RigConfig& cfg, uint8_t source) {
     started_ = false; alive_ = true; watchdogTripped_ = false; keydownLimitHit_ = false;
     lastLateAt_ = rigNow;
     offAdjustedThisGap_ = false;
+    dropPending_ = false;
+    dropReason_ = DROP_NONE;
+    errWindowStart_ = rigNow;
+    errInWindow_ = 0;
+    rejNext_ = rejCount_ = 0;
     lastDecreaseAt_ = rigNow;
     lossWindowStart_ = rigNow;
     lossAccepted_ = 0;
@@ -498,10 +503,10 @@ bool RigSession::onKey(const Header& h, const KeyPkt& pkt, uint32_t rigNow) {
     trackArrival(pkt.tNow, rigNow);
     for (uint8_t i = 0; i < pkt.n; i++) acceptEdge(pkt.edges[i], rigNow);
 
-    if (counters_.protocolErrors > 0 && (counters_.protocolErrors % 32) == 0) {
-        // A storm of malformed edges is either corruption or an attack; either way the safe answer is to stop.
-        alive_ = false;
-    }
+    // A storm of malformed edges - more than ten in one second (spec §8) - is corruption or an attack, and
+    // the safe answer is to stop. It is a RATE: the first version counted over the whole session, so a
+    // long and perfectly healthy session would have died on its 32nd stray edge.
+    if (errInWindow_ > 10) die(DROP_ERRORS);
     return true;
 }
 
@@ -509,6 +514,8 @@ void RigSession::acceptEdge(const Edge& e, uint32_t rigNow) {
     counters_.edges++;
 
     if (haveEmitted_ && tickDiff(e.t, lastEmittedT_) <= 0) { counters_.duplicates++; return; }
+    for (uint8_t i = 0; i < rejCount_; i++)             // a redundant copy of an edge already refused: redundancy
+        if (rejected_[i] == e.t) { counters_.duplicates++; return; }   // must not multiply one fault into many
 
     // State consistency against the neighbours it would sit between (spec §7.4.4): the earlier edge wins.
     uint8_t pos = 0;
@@ -520,14 +527,14 @@ void RigSession::acceptEdge(const Edge& e, uint32_t rigNow) {
     if (pos > 0)          { prevState = queue_.at((uint8_t)(pos - 1)).state; havePrev = true; }
     else if (haveEmitted_){ prevState = lastEmittedState_;                   havePrev = true; }
     else                  { prevState = KEY_UP; }
-    if (havePrev && prevState == e.state) { counters_.protocolErrors++; return; }
+    if (havePrev && prevState == e.state) { noteProtocolError(e, rigNow, true); return; }
     if (!haveEmitted_ && queue_.empty() && e.state != KEY_DOWN) {
-        counters_.protocolErrors++;                 // the first edge of a session must be a key-down
+        noteProtocolError(e, rigNow, true);          // the first edge of a session must be a key-down
         return;
     }
     if (pos < queue_.size() && queue_.at(pos).state == e.state) {
         queue_.removeAt(pos);                       // the incoming edge is earlier, so it is the authoritative one
-        counters_.protocolErrors++;
+        noteProtocolError(e, rigNow, false);
     }
 
     uint32_t tEmit = e.t + off_ + d_;
@@ -567,10 +574,31 @@ void RigSession::acceptEdge(const Edge& e, uint32_t rigNow) {
     bool duplicate = false;
     if (!queue_.insert(e, duplicate)) {
         counters_.overflows++;
-        alive_ = false;                             // a full queue means reconstruction has lost the plot
+        die(DROP_OVERFLOW);                         // a full queue means reconstruction has lost the plot
         return;
     }
     if (duplicate) counters_.duplicates++;
+}
+
+void RigSession::noteProtocolError(const Edge& e, uint32_t rigNow, bool refused) {
+    counters_.protocolErrors++;
+    if (tickDiff(rigNow, errWindowStart_) >= (int32_t)msToTicks(1000)) {
+        errWindowStart_ = rigNow;
+        errInWindow_ = 0;
+    }
+    if (errInWindow_ < 0xFFFF) errInWindow_++;
+    if (refused) {
+        rejected_[rejNext_] = e.t;
+        rejNext_ = (uint8_t)((rejNext_ + 1) % 8);
+        if (rejCount_ < 8) rejCount_++;
+    }
+}
+
+void RigSession::die(RigDropReason why) {
+    if (!alive_) return;
+    alive_ = false;
+    dropPending_ = true;                            // poll() lifts the key and reports RIG_DROP
+    dropReason_ = (uint8_t)why;
 }
 
 void RigSession::applyPendingD() {
@@ -627,7 +655,21 @@ void RigSession::housekeeping(uint32_t rigNow) {
 
 bool RigSession::poll(uint32_t rigNow, RigAction& out) {
     out = RigAction();
-    if (!alive_) return false;
+    if (!alive_) {
+        // Fail safe = key up (design principle 6). A session that died inside onKey() - an error storm, a
+        // full queue - used to go quiet here with the key line exactly where it was, so a mark on the air at
+        // that instant stayed on the air. Now its death is reported like any other: key up first, then drop.
+        if (!dropPending_) return false;
+        if (keyState_ == KEY_DOWN) {
+            keyState_ = KEY_UP;
+            lastKeyUpAt_ = rigNow;
+            out.type = RIG_FORCE_KEYUP; out.state = KEY_UP; out.at = rigNow;
+            return true;
+        }
+        dropPending_ = false;
+        out.type = RIG_DROP; out.at = rigNow;
+        return true;
+    }
 
     // --- safety first (spec §8) ---
     if (keyState_ == KEY_DOWN) {
@@ -656,6 +698,7 @@ bool RigSession::poll(uint32_t rigNow, RigAction& out) {
         watchdogTripped_ = true;
         if (tickDiff(rigNow, lastPacketAt_) >= (int32_t)msToTicks(cfg_.keepaliveTimeoutMs + 5000)) {
             alive_ = false;
+            dropReason_ = DROP_KEEPALIVE;
             out.type = RIG_DROP; out.at = rigNow;
             return true;
         }

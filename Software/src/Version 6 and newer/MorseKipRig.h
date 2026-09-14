@@ -13,8 +13,11 @@
  *    - nothing else may touch the key line while this mode owns it. `kipRig` appears in none of keyOut()'s Key-Ext-Tx
  *      cases, so keyTransmitter() cannot fire behind the ISR's back.
  *
- *  Safety is spec §8 and is enforced here, not by the far end: a mark longer than the limit, a lost link, a BYE, a local
- *  paddle touch or the encoder long-press all put the key line up immediately.
+ *  Safety is spec §8 and is enforced here, not by the far end: a mark longer than the limit, a lost link, a BYE, a
+ *  malformed stream, a replaced session and leaving the mode all put the key line up immediately.
+ *
+ *  Controls (D14): a short press of the encoder resets the session - the Keyer reconnects by itself - and a long press
+ *  leaves the mode. Paddles and touch pads are deliberately ignored: a Rig normally stands unattended.
  *****************************************************************************************************************************/
 
 #include "morsedefs.h"

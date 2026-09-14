@@ -883,6 +883,106 @@ static void testSafety() {
     }
 }
 
+
+// ---------------------------------------------------------------- fail-safe: every way a session dies (D14)
+
+namespace failsafe {
+
+struct Bench {
+    RigConfig  cfg;
+    RigSession rig;
+    uint32_t   now;
+    uint16_t   seq;
+    Bench() : now(1000), seq(0) {
+        cfg.maxKeydownKeyerMs = 30000;              // keep the mark-length limit out of these tests
+        cfg.adaptive = false;
+        rig.begin(now, cfg, SRC_KEYER);
+    }
+    void packet(const Edge* es, uint8_t n) {
+        Header h; h.seq = ++seq;
+        KeyPkt k; k.tNow = 5000 + (now - 1000); k.n = n;
+        for (uint8_t i = 0; i < n; i++) k.edges[i] = es[i];
+        rig.onKey(h, k, now);
+    }
+    void one(uint32_t t, uint8_t st) { Edge e(t, st); packet(&e, 1); }
+    void run(uint32_t ticks, std::vector<RigActionType>& seen) {
+        for (uint32_t i = 0; i < ticks; i += 10) {
+            now += 10;
+            RigAction a;
+            while (rig.poll(now, a)) seen.push_back(a.type);
+        }
+    }
+    bool keyDown() {                                // put a mark on the air
+        one(5000, KEY_DOWN);
+        std::vector<RigActionType> s;
+        run(2000, s);
+        return rig.keyState() == KEY_DOWN;
+    }
+};
+
+} // namespace failsafe
+
+static bool contains(const std::vector<RigActionType>& v, RigActionType t) {
+    return std::find(v.begin(), v.end(), t) != v.end();
+}
+
+static void testRigFailSafe() {
+    section("fail-safe: every way a session dies releases the key (D14)");
+    using failsafe::Bench;
+
+    {   Bench b;
+        ok(b.keyDown(), "storm: a mark is on the air");
+        for (int i = 0; i < 11; i++) b.one(6000u + (uint32_t)i * 10u, KEY_DOWN);   // eleven malformed edges in a second
+        std::vector<RigActionType> s; b.run(100, s);
+        ok(!s.empty() && s[0] == RIG_FORCE_KEYUP, "an error storm lifts the key first");
+        ok(contains(s, RIG_DROP), "and then reports the session dropped");
+        okEq(b.rig.keyState(), KEY_UP, "the key line is up afterwards");
+        okEq(b.rig.dropReason(), DROP_ERRORS, "the reason given is the error storm");
+    }
+    {   Bench b;
+        ok(b.keyDown(), "rate: a mark is on the air");
+        std::vector<RigActionType> s;
+        uint32_t t = 6000;
+        for (int sec = 0; sec < 5; sec++) {
+            for (int i = 0; i < 8; i++) { b.one(t, KEY_DOWN); t += 10; }
+            b.run(5000, s);
+            b.packet(nullptr, 0);                   // a keepalive half way through the second
+            b.run(5000, s);
+        }
+        ok(b.rig.alive(), "eight stray edges a second for five seconds do not end a session");
+        okEq(b.rig.counters().protocolErrors, 40, "all forty are counted - the old cumulative limit died at 32");
+        okEq(b.rig.keyState(), KEY_DOWN, "and the mark stays on the air");
+        ok(!contains(s, RIG_DROP), "no drop is reported");
+    }
+    {   Bench b;
+        ok(b.keyDown(), "redundancy: a mark is on the air");
+        for (int i = 0; i < 12; i++) b.one(7000, KEY_DOWN);                     // one bad edge, redelivered
+        okEq(b.rig.counters().protocolErrors, 1, "twelve redundant copies of one malformed edge count once");
+        ok(b.rig.alive(), "and do not end the session");
+    }
+    {   Bench b;
+        ok(b.keyDown(), "overflow: a mark is on the air");
+        uint32_t t = 100000; uint8_t st = KEY_UP;
+        for (int p = 0; p < 7 && b.rig.alive(); p++) {
+            Edge es[8];
+            for (int i = 0; i < 8; i++) { es[i] = Edge(t, st); t += 500; st = (st == KEY_UP) ? KEY_DOWN : KEY_UP; }
+            b.packet(es, 8);
+        }
+        std::vector<RigActionType> s; b.run(100, s);
+        ok(!s.empty() && s[0] == RIG_FORCE_KEYUP, "a full edge queue lifts the key first");
+        ok(contains(s, RIG_DROP), "and reports the session dropped");
+        okEq(b.rig.keyState(), KEY_UP, "the key line is up afterwards");
+        okEq(b.rig.dropReason(), DROP_OVERFLOW, "the reason given is the overflow");
+    }
+    {   Bench b;
+        b.one(5000, KEY_DOWN);
+        std::vector<RigActionType> s; b.run(80000, s);                         // eight seconds of silence
+        ok(contains(s, RIG_DROP), "silence drops the session");
+        okEq(b.rig.dropReason(), DROP_KEEPALIVE, "and the reason given is the timeout");
+        okEq(b.rig.keyState(), KEY_UP, "with the key up");
+    }
+}
+
 int main(int argc, char** argv) {
     if (argc > 1 && std::strcmp(argv[1], "--vectors") == 0) { emitVectors(); return 0; }
 
@@ -896,6 +996,7 @@ int main(int argc, char** argv) {
     testKeyerRedundancy();
     testSendSchedule();
     testSafety();
+    testRigFailSafe();
     testSimulation();
 
     std::printf("\n%d checks, %d failures\n", checks, failures);

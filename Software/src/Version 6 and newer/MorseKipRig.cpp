@@ -16,8 +16,6 @@
 
 using namespace M32Kip;
 
-extern boolean checkPaddles();
-extern boolean leftKey, rightKey;
 extern void    serialEvent();
 extern boolean goToMenu;
 
@@ -112,6 +110,7 @@ void keyLineUp() {
 uint8_t   gBaseKey[32], gSessKey[32];
 uint32_t  gSession = 0;
 bool      gHaveSession = false;
+String    gLastEnd;                // why the last session ended, shown until the next one starts (D14)
 IPAddress gPeer;
 uint16_t  gPeerPort = 0;
 uint16_t  gTxSeq = 0;
@@ -130,6 +129,15 @@ void sendBye() {
     }
 }
 
+/// Every way the Rig itself ends a session goes through here: key up first, then a BYE so the Keyer can
+/// reconnect at once instead of waiting out its own timeout, then the reason for the display.
+void endSession(const char* why) {
+    keyLineUp();
+    sendBye();
+    gHaveSession = false;
+    gLastEnd = why;
+}
+
 // ---------------------------------------------------------------- display, at most 4 Hz
 
 void drawFrame(const RigSession& rig, const String& ip, bool listening, uint32_t sessions) {
@@ -137,7 +145,7 @@ void drawFrame(const RigSession& rig, const String& ip, bool listening, uint32_t
     if (listening) {
         MorseOutput::printOnScroll(0, REGULAR, 0, "Listening");
         MorseOutput::printOnScroll(1, REGULAR, 0, ip);
-        MorseOutput::printOnScroll(2, REGULAR, 0, sessions ? ("sessions " + String(sessions)) : String("no session"));
+        MorseOutput::printOnScroll(2, REGULAR, 0, gLastEnd.length() ? gLastEnd : String("no session yet"));
     } else {
         const RigCounters& c = rig.counters();
         MorseOutput::printOnScroll(0, REGULAR, 0, String(rig.keyState() == KEY_DOWN ? "KEY " : "    ")
@@ -187,6 +195,7 @@ void MorseKipRig::run() {
 
     gRxHead = gRxTail = 0;
     gHaveSession = false;
+    gLastEnd = "";
     gSession = 0;
     MorseWiFi::audp.listen(DEFAULT_PORT);
     MorseWiFi::audp.onPacket(onUdp);
@@ -211,21 +220,16 @@ void MorseKipRig::run() {
         serialEvent();
         if (goToMenu) { goToMenu = false; break; }
         Buttons::modeButton.Update();
-        if (Buttons::modeButton.clicks == -1) break;
-        Buttons::modeButton.clicks = 0;
-
-        // ---- local override: a touch of the paddle takes the transmitter back (spec §8) ----
-        checkPaddles();
-        if (leftKey || rightKey) {
-            keyLineUp();
-            sendBye();
-            gHaveSession = false;
-            MorseOutput::printOnScroll(0, INVERSE_BOLD, 0, "Local abort");
-            MorseOutput::refreshDisplay();
-            delay(800);
-            while (checkPaddles()) ;
+        if (Buttons::modeButton.clicks == -1) break;             // long press leaves, as in every mode (D14)
+        if (Buttons::modeButton.clicks == 1 && gHaveSession) {   // short press resets the session (D14); the
+            endSession("End: reset");                           // Keyer reconnects on its own within a second
+            armed = false;
             lastDraw = 0;
         }
+        Buttons::modeButton.clicks = 0;
+
+        // No paddle, touch-pad or key-jack override (D14). A Rig normally stands unattended, and in the first
+        // two-device test a stray touch of the classic's pads could end a session with nobody the wiser.
 
         // ---- incoming ----
         RxPkt pkt;
@@ -251,6 +255,7 @@ void MorseKipRig::run() {
                 ack.session = gSession;
                 deriveSessionKey(gBaseKey, ack.nonceC, ack.nonceS, gSessKey);
 
+                keyLineUp();                        // a replaced session must never leave a mark hanging
                 gPeer = pkt.from; gPeerPort = pkt.port;
                 rig.begin(nowTicks(), cfg, hello.source);
                 ack.maxKeydownMs = rig.maxKeydownMs();
@@ -273,6 +278,7 @@ void MorseKipRig::run() {
                 if (!decodeBye(pkt.data, pkt.len, gSessKey, h)) continue;
                 keyLineUp();
                 gHaveSession = false;
+                gLastEnd = "End: BYE";
                 armed = false;
                 lastDraw = 0;
                 continue;
@@ -299,8 +305,10 @@ void MorseKipRig::run() {
                     keyLineUp();
                     armed = false;
                 } else if (act.type == RIG_DROP) {
-                    keyLineUp();
-                    gHaveSession = false;
+                    RigDropReason why = rig.dropReason();
+                    endSession(why == DROP_KEEPALIVE ? "End: timeout"  :
+                               why == DROP_ERRORS    ? "End: errors"   :
+                               why == DROP_OVERFLOW  ? "End: overflow" : "End: dropped");
                     armed = false;
                     lastDraw = 0;
                     break;

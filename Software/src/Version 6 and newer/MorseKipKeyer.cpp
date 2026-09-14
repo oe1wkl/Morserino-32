@@ -27,13 +27,27 @@ TaskHandle_t  gTask    = nullptr;
 volatile bool gActive  = false;      // gates noteEdge(): the hook in keyOut() is on every mode's path
 volatile bool gRunTask = false;
 
-uint8_t   gBaseKey[32], gSessKey[32];
-uint32_t  gSession = 0;
-uint16_t  gTxSeq = 0;
+uint8_t   gBaseKey[32];
+
+// A reconnect replaces the session from the UDP callback while the send task may be using it on the other
+// core, so "which session, under which key" is only ever read or written under this lock.
+portMUX_TYPE  gSessMux = portMUX_INITIALIZER_UNLOCKED;
+uint8_t       gSessKey[32];
+uint32_t      gSession = 0;
+volatile bool gNewSession = false;   // set when a reconnect lands; the send task restarts its schedule
+
+enum { LINK_UP = 0, LINK_CALLING = 1 };
+volatile uint8_t gLink = LINK_UP;
+volatile bool    gByeSeen = false;
+uint8_t          gNonceC[8];
+volatile bool    gNonceValid = false;
+
+uint16_t  gTxSeq = 0;                // send task only; end() runs after the task has retired
 IPAddress gPeer;
 volatile uint8_t gSource = SRC_KEYER;
+uint8_t   gLastNoted = KEY_UP;       // loop context only
 
-KeyerSession gKeyer;                 // touched ONLY by the send task, so it needs no lock
+KeyerSession gKeyer;                 // send task only, so it needs no lock
 
 portMUX_TYPE      gStatMux = portMUX_INITIALIZER_UNLOCKED;
 volatile bool     gStatFresh = false;
@@ -41,6 +55,28 @@ volatile uint32_t gStatAtMs = 0;
 bool              gShownLink = false;
 
 inline uint32_t nowTicks() { return (uint32_t)(esp_timer_get_time() / 100); }
+
+void snapshotSession(uint32_t& session, uint8_t key[32]) {
+    portENTER_CRITICAL(&gSessMux);
+    session = gSession;
+    memcpy(key, gSessKey, 32);
+    portEXIT_CRITICAL(&gSessMux);
+}
+
+void markAlive() {
+    portENTER_CRITICAL(&gStatMux);
+    gStatFresh = true;
+    gStatAtMs = millis();
+    portEXIT_CRITICAL(&gStatMux);
+}
+
+bool heardRecently() {                              // spec §10: "no link" after five seconds without STATS
+    bool fresh; uint32_t at;
+    portENTER_CRITICAL(&gStatMux);
+    fresh = gStatFresh; at = gStatAtMs;
+    portEXIT_CRITICAL(&gStatMux);
+    return fresh && (millis() - at) < 5000;
+}
 
 void showError(const String& l0, const String& l1, const String& l2) {
     MorseOutput::clearDisplay();
@@ -53,38 +89,108 @@ void showError(const String& l0, const String& l1, const String& l2) {
     delay(2500);
 }
 
-void onUdp(AsyncUDPPacket packet) {                 // WiFi core: verify and note that the rig is alive
-    if (packet.length() > MAX_PACKET) return;
-    Header h;
-    if (!peekHeader(packet.data(), packet.length(), h)) return;
-    if (h.type != PKT_STATS || h.session != gSession) return;
-    Stats s;
-    if (!decodeStats(packet.data(), packet.length(), gSessKey, h, s)) return;
-    portENTER_CRITICAL(&gStatMux);
-    gStatAtMs = millis();
-    gStatFresh = true;
-    portEXIT_CRITICAL(&gStatMux);
+void sendHello(uint16_t seq, const uint8_t nonce[8]) {
+    uint8_t buf[MAX_PACKET];
+    Hello hello;
+    memcpy(hello.nonceC, nonce, 8);
+    hello.tNow = nowTicks();
+    hello.wpm = (gSource == SRC_KEYER) ? (uint8_t)MorsePreferences::wpm : 0;
+    hello.redundancy = 4;
+    hello.source = gSource;
+    Header h; h.session = 0; h.seq = seq;
+    size_t n = encodeHello(buf, sizeof(buf), h, hello, gBaseKey);
+    if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
 }
 
-/// The one place that touches the socket. Everything the keying path produces reaches it through gEdgeQ.
+/// Runs for the whole mode. HELLO_ACK is only accepted while calling and only for our current nonce; STATS
+/// and BYE only for the current session.
+void onUdp(AsyncUDPPacket packet) {
+    size_t len = packet.length();
+    if (len > MAX_PACKET) return;
+    const uint8_t* data = packet.data();
+    Header h;
+    if (!peekHeader(data, len, h)) return;
+
+    if (h.type == PKT_HELLO_ACK) {
+        if (gLink != LINK_CALLING || !gNonceValid) return;
+        HelloAck a;
+        if (!decodeHelloAck(data, len, gBaseKey, h, a)) return;
+        if (memcmp(a.nonceC, gNonceC, 8) != 0) return;         // an answer to an older HELLO
+        uint8_t k[32];
+        deriveSessionKey(gBaseKey, a.nonceC, a.nonceS, k);
+        portENTER_CRITICAL(&gSessMux);
+        memcpy(gSessKey, k, 32);
+        gSession = a.session;
+        portEXIT_CRITICAL(&gSessMux);
+        gNonceValid = false;
+        markAlive();
+        gNewSession = true;
+        gLink = LINK_UP;
+        return;
+    }
+
+    uint32_t session; uint8_t key[32];
+    snapshotSession(session, key);
+    if (session == 0 || h.session != session) return;
+    if (h.type == PKT_STATS) {
+        Stats st;
+        if (decodeStats(data, len, key, h, st)) markAlive();
+    } else if (h.type == PKT_BYE) {
+        if (decodeBye(data, len, key, h)) gByeSeen = true;      // the Rig ended it: call again straight away
+    }
+}
+
+/// The one place that touches the socket. It also owns reconnecting (D14): the Rig ending a session, or five
+/// seconds without a word from it, puts the link back to calling, and the Keyer HELLOs once a second until a
+/// Rig answers. None of that ever runs on the keying path, so the operator keys on undisturbed throughout.
 void sendTask(void*) {
-    uint8_t buf[MAX_PACKET];
+    uint8_t  buf[MAX_PACKET];
+    uint32_t nextHelloMs = 0;
+    uint16_t helloSeq = 0;
     while (gRunTask) {
+        if (gLink == LINK_UP) {
+            if (gNewSession) {                      // a reconnect has just landed: start the schedule afresh
+                gNewSession = false;
+                gKeyer.begin(4);
+                gKeyer.noteSent(nowTicks());
+            }
+            if (gByeSeen || !heardRecently()) {
+                gByeSeen = false;
+                gLink = LINK_CALLING;
+                nextHelloMs = 0;
+                continue;
+            }
+        }
+        if (gLink == LINK_CALLING) {
+            QEdge dropped;                          // keying goes on locally; with no session it goes nowhere
+            xQueueReceive(gEdgeQ, &dropped, pdMS_TO_TICKS(50));
+            if (millis() >= nextHelloMs) {
+                gNonceValid = false;
+                for (int i = 0; i < 8; i++) gNonceC[i] = (uint8_t)(esp_random() & 0xFF);
+                gNonceValid = true;
+                sendHello(++helloSeq, gNonceC);
+                nextHelloMs = millis() + 1000;
+            }
+            continue;
+        }
+
         QEdge e;
         int32_t until = tickDiff(gKeyer.nextSendAt(), nowTicks());
         uint32_t waitMs = (until > 0) ? ticksToMs((uint32_t)until) + 1 : 0;
-        if (waitMs > 50) waitMs = 50;               // stay responsive to end()
+        if (waitMs > 50) waitMs = 50;               // stay responsive to end() and to the link state
         bool haveEdge = (xQueueReceive(gEdgeQ, &e, pdMS_TO_TICKS(waitMs)) == pdTRUE);
         uint8_t wpm = (gSource == SRC_KEYER) ? (uint8_t)MorsePreferences::wpm : 0;
+        uint32_t session; uint8_t key[32];
+        snapshotSession(session, key);
 
         if (haveEdge) {
             gKeyer.addEdge(e.t, e.state);
-            size_t n = gKeyer.buildKey(buf, sizeof(buf), e.t, wpm, gSource, gSession, ++gTxSeq, gSessKey, true);
+            size_t n = gKeyer.buildKey(buf, sizeof(buf), e.t, wpm, gSource, session, ++gTxSeq, key, true);
             if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
             gKeyer.noteSent(e.t);
         } else if (gKeyer.sendDue(nowTicks())) {
             uint32_t t = nowTicks();
-            size_t n = gKeyer.buildKey(buf, sizeof(buf), t, wpm, gSource, gSession, ++gTxSeq, gSessKey, false);
+            size_t n = gKeyer.buildKey(buf, sizeof(buf), t, wpm, gSource, session, ++gTxSeq, key, false);
             if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
             gKeyer.noteSent(t);
         }
@@ -93,11 +199,11 @@ void sendTask(void*) {
     vTaskDelete(nullptr);
 }
 
-bool handshake(uint32_t& outSession, uint16_t& maxKeydownMs) {
-    uint8_t buf[MAX_PACKET];
+/// The first call, at entry. Blocking is fine here - the mode has not started - and a Rig that does not
+/// answer ten tries in a row is reported, so a wrong address or pass phrase is not mistaken for a dropout.
+bool firstHandshake() {
     uint8_t nonceC[8];
     for (int i = 0; i < 8; i++) nonceC[i] = (uint8_t)(esp_random() & 0xFF);
-
     volatile bool got = false;
     HelloAck ack;
     MorseWiFi::audp.onPacket([&](AsyncUDPPacket packet) {
@@ -105,37 +211,32 @@ bool handshake(uint32_t& outSession, uint16_t& maxKeydownMs) {
         Header h;
         HelloAck a;
         if (!decodeHelloAck(packet.data(), packet.length(), gBaseKey, h, a)) return;
-        if (memcmp(a.nonceC, (const void*)nonceC, 8) != 0) return;   // not an answer to our HELLO
+        if (memcmp(a.nonceC, (const void*)nonceC, 8) != 0) return;
         ack = a;
         got = true;
     });
-
     for (int attempt = 0; attempt < 10 && !got; attempt++) {
-        Hello hello;
-        memcpy(hello.nonceC, nonceC, 8);
-        hello.tNow = nowTicks();
-        hello.wpm = (gSource == SRC_KEYER) ? (uint8_t)MorsePreferences::wpm : 0;
-        hello.redundancy = 4;
-        hello.source = gSource;
-        Header h; h.session = 0; h.seq = (uint16_t)(attempt + 1);
-        size_t n = encodeHello(buf, sizeof(buf), h, hello, gBaseKey);
-        if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
+        sendHello((uint16_t)(attempt + 1), nonceC);
         for (int w = 0; w < 50 && !got; w++) delay(10);              // 500 ms between tries (spec §6.3)
     }
     if (!got) return false;
-
-    deriveSessionKey(gBaseKey, ack.nonceC, ack.nonceS, gSessKey);
-    outSession = ack.session;
-    maxKeydownMs = ack.maxKeydownMs;
+    uint8_t k[32];
+    deriveSessionKey(gBaseKey, ack.nonceC, ack.nonceS, k);
+    portENTER_CRITICAL(&gSessMux);
+    memcpy(gSessKey, k, 32);
+    gSession = ack.session;
+    portEXIT_CRITICAL(&gSessMux);
     return true;
 }
 
 void sendBye() {
-    if (!gSession) return;
+    uint32_t session; uint8_t key[32];
+    snapshotSession(session, key);
+    if (!session || gLink != LINK_UP) return;       // nothing established to say goodbye to
     uint8_t buf[MAX_PACKET];
     for (int i = 0; i < 3; i++) {                   // spec §6.6
-        Header h; h.session = gSession; h.seq = ++gTxSeq;
-        size_t n = encodeBye(buf, sizeof(buf), h, gSessKey);
+        Header h; h.session = session; h.seq = ++gTxSeq;
+        size_t n = encodeBye(buf, sizeof(buf), h, key);
         if (n) MorseWiFi::audp.writeTo(buf, n, gPeer, DEFAULT_PORT);
         delay(100);
     }
@@ -147,27 +248,27 @@ void sendBye() {
 
 void MorseKipKeyer::noteEdge(bool down) {
     if (!gActive || !gEdgeQ) return;
+    uint8_t state = down ? KEY_DOWN : KEY_UP;
+    // keyOut() is also called just to make sure the key is off - when a memory stops, when a setting changes -
+    // so the same state can arrive twice. Only a real transition is an edge. Anything else reaches the Rig
+    // as a malformed stream, and a burst of those now ends the session (spec §8).
+    if (state == gLastNoted) return;
+    gLastNoted = state;
     QEdge e;
     e.t = nowTicks();                       // timestamped here, where the local TX line would have moved
-    e.state = down ? KEY_DOWN : KEY_UP;
+    e.state = state;
     xQueueSend(gEdgeQ, &e, 0);              // never waits: the keying path must not block (spec §10)
 }
 
 bool MorseKipKeyer::linked() {
-    if (!gActive) return false;
-    bool fresh; uint32_t at;
-    portENTER_CRITICAL(&gStatMux);
-    fresh = gStatFresh; at = gStatAtMs;
-    portEXIT_CRITICAL(&gStatMux);
-    return fresh && (millis() - at) < 5000;        // spec §10: "no link" after five seconds without STATS
+    return gActive && gLink == LINK_UP && heardRecently();
 }
 
 void MorseKipKeyer::tick() {
     if (!gActive) return;
-    // The operator may switch between iambic and straight key in the preferences mid-session (spec §6.4).
     gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
     bool link = linked();
-    if (link != gShownLink) {               // only on a change: a redraw is longer than a dit, so never routinely
+    if (link != gShownLink) {               // only on a change: a redraw is longer than a dit
         gShownLink = link;
         updateTopLine();
     }
@@ -186,17 +287,17 @@ bool MorseKipKeyer::begin() {
     }
     deriveBaseKey(MorsePreferences::kipPsk.c_str(), gBaseKey);
     gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
+    gLastNoted = KEY_UP;
 
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
     MorseOutput::refreshDisplay();
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Connecting...", "");
-    if (!MorseWiFi::wifiConnect()) return false;    // shows its own failure screen
+    if (!MorseWiFi::wifiConnect()) return false;
     WiFi.setSleep(false);
 
-    // Resolve once, here, so no DNS lookup can ever land on the keying path.
-    String host = MorsePreferences::wlanTRXPeer;
+    String host = MorsePreferences::wlanTRXPeer;    // resolved once, so no DNS lookup lands on the keying path
     if (!gPeer.fromString(host.c_str()) && WiFi.hostByName(host.c_str(), gPeer) != 1) {
         showError("Host not found", host, "");
         return false;
@@ -208,33 +309,31 @@ bool MorseKipKeyer::begin() {
     MorseOutput::printOnScroll(1, REGULAR, 0, gPeer.toString());
     MorseOutput::refreshDisplay();
 
-    uint16_t maxKeydown = 0;
-    if (!handshake(gSession, maxKeydown)) {
+    gLink = LINK_UP;
+    if (!firstHandshake()) {
         MorseWiFi::audp.close();
-        gSession = 0;
+        portENTER_CRITICAL(&gSessMux); gSession = 0; portEXIT_CRITICAL(&gSessMux);
         showError("No answer", "Check rig and", "pass phrase");
         return false;
     }
-    MorseWiFi::audp.onPacket(onUdp);                // replaces the handshake handler
+    MorseWiFi::audp.onPacket(onUdp);                // replaces the handshake handler for the rest of the mode
 
     gEdgeQ = xQueueCreate(64, sizeof(QEdge));
     if (!gEdgeQ) {
         MorseWiFi::audp.close();
-        gSession = 0;
+        portENTER_CRITICAL(&gSessMux); gSession = 0; portEXIT_CRITICAL(&gSessMux);
         showError("Out of memory", "", "");
         return false;
     }
     gKeyer.begin(4);
     gKeyer.noteSent(nowTicks());                    // arm the send schedule (D13)
-
-    portENTER_CRITICAL(&gStatMux);                  // the HELLO_ACK itself is proof of a live link
-    gStatFresh = true;
-    gStatAtMs = millis();
-    portEXIT_CRITICAL(&gStatMux);
+    gNewSession = false;
+    gByeSeen = false;
+    markAlive();                                    // the HELLO_ACK itself is proof of a live link
     gShownLink = true;
 
     gRunTask = true;
-    xTaskCreatePinnedToCore(sendTask, "kipkeyer", 4096, nullptr, 3, &gTask, 0);   // core 0: WiFi already lives there
+    xTaskCreatePinnedToCore(sendTask, "kipkeyer", 4096, nullptr, 3, &gTask, 0);   // core 0: WiFi lives there
     gActive = true;
 
     MorseMenu::showStartDisplay("", "Remote Keyer", gPeer.toString(), 1000);
@@ -242,18 +341,21 @@ bool MorseKipKeyer::begin() {
 }
 
 void MorseKipKeyer::end() {
-    if (!gActive && !gTask && !gSession) return;    // nothing running: the usual case, from menu_()
+    uint32_t session;
+    portENTER_CRITICAL(&gSessMux); session = gSession; portEXIT_CRITICAL(&gSessMux);
+    if (!gActive && !gTask && !session) return;     // nothing running: the usual case, from menu_()
     gActive = false;
     gRunTask = false;
     for (int i = 0; i < 50 && gTask; i++) delay(10);   // let the send task retire before the socket goes
     sendBye();
     MorseWiFi::audp.close();
     if (gEdgeQ) { vQueueDelete(gEdgeQ); gEdgeQ = nullptr; }
-    gSession = 0;
+    portENTER_CRITICAL(&gSessMux); gSession = 0; portEXIT_CRITICAL(&gSessMux);
+    gLink = LINK_UP;
+    gByeSeen = false;
+    gNonceValid = false;
     gShownLink = false;
-    portENTER_CRITICAL(&gStatMux);
-    gStatFresh = false;
-    portEXIT_CRITICAL(&gStatMux);
+    portENTER_CRITICAL(&gStatMux); gStatFresh = false; portEXIT_CRITICAL(&gStatMux);
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Remote Keyer ended", "");
 }

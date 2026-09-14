@@ -289,6 +289,10 @@ struct RigCounters {
                     protocolErrors(0), overflows(0), keydownLimits(0), maxLate(0) {}
 };
 
+/// Why the Rig ended a session on its own. Reported so the unit can show it (D14): a drop nobody can
+/// explain cannot be fixed.
+enum RigDropReason { DROP_NONE = 0, DROP_KEEPALIVE, DROP_ERRORS, DROP_OVERFLOW };
+
 class RigSession {
 public:
     RigSession() { RigConfig c; begin(0, c, SRC_KEYER); }
@@ -312,6 +316,7 @@ public:
     const RigCounters& counters() const { return counters_; }
     void fillStats(Stats& s, uint32_t rigNow) const;
     bool alive() const { return alive_; }
+    RigDropReason dropReason() const { return (RigDropReason)dropReason_; }
 
 private:
     uint32_t emitTimeOf(const Edge& e) const { return e.t + off_ + d_; }
@@ -319,6 +324,8 @@ private:
     void     acceptEdge(const Edge& e, uint32_t rigNow);
     void     housekeeping(uint32_t rigNow);
     void     applyPendingD();
+    void     noteProtocolError(const Edge& e, uint32_t rigNow, bool refused);
+    void     die(RigDropReason why);
     bool     inIdleGap(uint32_t rigNow) const;
 
     RigConfig cfg_;
@@ -350,6 +357,12 @@ private:
     bool     started_, alive_, watchdogTripped_, keydownLimitHit_;
     uint32_t lastLateAt_;
     bool     offAdjustedThisGap_;   // the clock offset moves at most once per idle gap
+    bool     dropPending_;          // the session died inside onKey(): poll() still owes key-up + RIG_DROP
+    uint8_t  dropReason_;
+    uint32_t errWindowStart_;       // malformed edges are judged as a RATE, per second (spec §8)
+    uint16_t errInWindow_;
+    uint32_t rejected_[8];          // recently refused edges, so redundant copies of one are counted once
+    uint8_t  rejNext_, rejCount_;
     uint32_t lastDecreaseAt_;
     uint32_t lossWindowStart_;
     uint32_t lossAccepted_;

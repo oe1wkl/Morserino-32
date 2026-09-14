@@ -44,6 +44,35 @@ profile, but the figure in §5 needs updating for Draft 0.3.
 If 3 kB/s ever turns out to matter, the knob is in `KeyerSession::begin()`: two repeats at 30 ms holds
 the same ~60 ms recovery bound for fewer packets. Nothing else depends on the numbers.
 
+**D14 — Session loss, recovery and the Rig's controls. RATIFIED 2026-09-14**, after the first
+direct two-device test ran well at several speeds and then lost its session for good: the classic
+fell back to "Listening", the Pocket's link logo vanished, and nothing reconnected.
+
+1. **Fail safe on every way a session dies.** Two paths in the core — a storm of malformed edges and a
+   full edge queue — ended the session without releasing the key or reporting the drop, so a mark on
+   the air at that instant stayed there. Both now lift the key and report `RIG_DROP`. The malformed-edge
+   limit is a per-second rate (> 10/s, spec §8), not a session total, and redundant copies of one bad
+   edge count once. A session replaced by a new HELLO also releases the key first.
+2. **The Keyer reconnects by itself.** On a BYE from the Rig, or five seconds without STATS, it HELLOs
+   once a second until a Rig answers. That runs in the send task, so keying continues locally throughout.
+   The Keyer also sends only real key transitions: `keyOut()` is called to *ensure* the key is off, and
+   those calls used to reach the Rig as duplicate key-ups.
+3. **The Rig shows why the last session ended** — `End: timeout`, `End: BYE`, `End: errors`,
+   `End: overflow`, `End: reset` — until the next session starts, so a drop can be diagnosed.
+4. **Rig controls on a Morserino:** a **short encoder press resets the session** (the Keyer reconnects
+   within a second), a **long press leaves the mode** as everywhere. **No paddle, touch-pad or jack
+   override**: a Rig normally stands unattended, and a stray touch must not be able to end a session.
+   This amends the "Local override" row of spec §8.
+
+**Recorded for later, not built:**
+- **A dedicated Rig-only device** would have no display, encoder, paddles or jack — just a button, whose
+  **long press resets the session**.
+- **A deployable Rig must start itself after a power loss**: boot straight into Remote Rig, so an outage
+  at the remote site does not strand the station. It needs a design — how it interacts with Quick Start,
+  and how an operator standing at the device gets out of it.
+- Spec §8's "`NACK` on the next HELLO for 5 s" after an error drop is not implemented.
+- `UX_CONVENTIONS.md` needs an entry for this unattended service mode (Phase 6).
+
 ## Phase 0 instruments
 
 - `M32KipSpike.cpp` (`-D KIP_SPIKE=1` on the command line, never in `platformio.ini`) boots the
