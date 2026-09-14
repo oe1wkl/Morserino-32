@@ -159,7 +159,10 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#einstellen-des-audiopegels" id="toc-einstellen-des-audiopegels"><span class="toc-section-number">7.3</span> Einstellen des Audiopegels</a></li>
 <li><a href="#aktualisieren-der-firmware-ueber-wlan-fuer-versionen-2.0" id="toc-aktualisieren-der-firmware-ueber-wlan-fuer-versionen-2.0"><span class="toc-section-number">7.4</span> Aktualisieren der Firmware über WLAN für Versionen &lt; 2.0</a></li>
 <li><a href="#aktualisieren-der-firmware-ueber-usb-und-ein-update-programm" id="toc-aktualisieren-der-firmware-ueber-usb-und-ein-update-programm"><span class="toc-section-number">7.5</span> Aktualisieren der Firmware über USB und ein Update-Programm</a></li>
-<li><a href="#aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial" id="toc-aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial"><span class="toc-section-number">7.6</span> Aktualisieren der Firmware über USB und einen Browser (Webserial)</a></li>
+<li><a href="#aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial" id="toc-aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial"><span class="toc-section-number">7.6</span> Aktualisieren der Firmware über USB und einen Browser (Webserial)</a>
+<ul>
+<li><a href="#wenn-der-morserino-nicht-reagiert-der-recovery-bootmodus" id="toc-wenn-der-morserino-nicht-reagiert-der-recovery-bootmodus"><span class="toc-section-number">7.6.1</span> Wenn der Morserino nicht reagiert: der Recovery-Bootmodus</a></li>
+</ul></li>
 <li><a href="#einrichten-von-m32-einstellungen-ueber-einen-browser-und-hochladen-von-textdateien" id="toc-einrichten-von-m32-einstellungen-ueber-einen-browser-und-hochladen-von-textdateien"><span class="toc-section-number">7.7</span> Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien</a></li>
 <li><a href="#nutzung-des-seriellen-ausgangs-des-m32" id="toc-nutzung-des-seriellen-ausgangs-des-m32"><span class="toc-section-number">7.8</span> Nutzung des seriellen Ausgangs des M32</a>
 <ul>
@@ -3125,6 +3128,28 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p><strong>Editionen (nur M32 Pocket).</strong> Die <em>Standard</em>-Edition ist die normale Firmware, die in diesem Handbuch beschrieben wird. Die <em>Accessibility Edition</em> liest die Menüs und Einstellungen laut vor – für blinde und sehbehinderte Operatoren: Beim Einschalten meldet sie sich mit Version und Batteriespannung, und sie nennt den ganzen Menüpfad – „CW Generator, Call Signs“ –, wann immer der Zweig, in dem du dich befindest, nicht ohnehin klar ist, etwa gleich nach dem Einschalten. Die Spiele sind darin nicht enthalten, und auch nicht die beiden browsergestützten WLAN-Einträge der Standard-Edition, <em>Upload File</em> und <em>Update Firmw</em> – beide öffnen nur eine Webseite, die du von einem anderen Gerät aus bedienen müsstest; nimm stattdessen den in diesem Anhang beschriebenen USB-Installer. Beide Editionen werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln: Deine Einstellungen bleiben erhalten, aber die Accessibility Edition belegt mit ihren Sprachdateien jenen Platz, in dem sonst der Text für den File Player liegt.</p>
 </div>
 <p>Ältere Lesezeichen, die auf die beiden bisherigen getrennten Installationsseiten zeigen, funktionieren weiterhin – sie leiten jetzt auf diese eine Seite weiter.</p>
+<h3 data-number="7.6.1" id="wenn-der-morserino-nicht-reagiert-der-recovery-bootmodus"><span class="header-section-number">7.6.1</span> Wenn der Morserino nicht reagiert: der Recovery-Bootmodus</h3>
+<p>Ist bei einem Update etwas schiefgegangen, kann der Morserino wie tot wirken: Der Bildschirm bleibt dunkel oder hängt, das Gerät reagiert auf keine Bedienung, und das Installationsprogramm findet es am USB nicht. Kaputt ist es mit ziemlicher Sicherheit nicht. Jeden Morserino kann man in den eingebauten Update-Modus des Prozessors zwingen (denselben ROM-Update-Modus, den das Installationsprogramm verwendet), und der hängt überhaupt nicht von der Firmware ab:</p>
+<ol type="1">
+<li><strong>Strom ganz ausschalten.</strong> Das USB-Kabel abziehen. Hat dein Morserino einen Akku, auch den Ein/Aus-Schalter auf Aus stellen.</li>
+<li>Bei ausgeschaltetem Gerät <strong>den FN-Knopf drücken und gedrückt halten</strong>.</li>
+<li>Weiter gedrückt halten und <strong>das USB-Kabel wieder anstecken</strong>. Mit Akku bleibt der Schalter auf Aus – den Strom für die Wiederherstellung liefert der USB-Anschluss.</li>
+<li>Sobald das Gerät Strom hat, <strong>den FN-Knopf loslassen</strong>. Der Morserino ist jetzt im Recovery-Bootmodus, und das Installationsprogramm kann ihn wieder erreichen.</li>
+</ol>
+<div class="pocket pocket-a11y">
+<p>Beim M32 Pocket ist der FN-Knopf die Aussparung im Gehäuse rechts unterhalb des ENCODER-Knopfs.</p>
+</div>
+<div class="classic">
+<p>Beim Morserino-32 der 1st und 2nd Edition ist der FN-Knopf der rote Knopf.</p>
+</div>
+<div class="note">
+<p><strong>Der Bildschirm bleibt die ganze Zeit dunkel</strong>, solange das Gerät im Recovery-Bootmodus ist. Das ist so gewollt: Die Firmware läuft nicht.</p>
+</div>
+<p>Starte nun das Installationsprogramm wie oben beschrieben und wähle <em>Erase everything</em>. Damit werden auch beschädigte Einstellungen entfernt, die den Start der neuen Firmware verhindern könnten. Deine Einstellungen, Snapshots und Highscores gehen dabei verloren.</p>
+<div class="classic">
+<p>Bei der 1st und 2nd Edition kümmert sich ein eigener Chip (der CP210x) um den USB-Anschluss, das Gerät erscheint also normalerweise auch dann am USB, wenn die Firmware defekt ist. Taucht es gar nicht auf, liegt es zuerst einmal am Kabel oder am CP210x-Treiber. Der Recovery-Bootmodus ist trotzdem der richtige Versuch, wenn das Installationsprogramm den Port zwar findet, aber keine Verbindung herstellen kann.</p>
+</div>
+<p>Danke an Brian, N6UGP, für die Beschreibung dieses Verfahrens.</p>
 <h2 data-number="7.7" id="einrichten-von-m32-einstellungen-ueber-einen-browser-und-hochladen-von-textdateien"><span class="header-section-number">7.7</span> Einrichten von M32-Einstellungen über einen Browser und Hochladen von Textdateien</h2>
 <p>Es gibt derzeit drei Websites, auf denen du M32-Einstellungen über einen Browser auf deinem Computer vornehmen kannst, sowie eine weitere, die einen M32-Dateimanager implementiert.</p>
 <ul>
@@ -4618,6 +4643,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=3a837f183ae1 -->
+<!-- MANUALFRESH: lang=de src=6038bca5fea8 -->
 </body>
 </html>
