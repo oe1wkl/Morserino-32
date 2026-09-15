@@ -68,47 +68,103 @@ will search by name, and Utilities is where hardware companions live.)
 
     Firmware, manuals and the desktop version of this tool: morserino.info
 
-## App Review Information → Notes
+## App Review Information → Notes (4000 bytes max)
 
-    Morserino-32 Config is a companion app for the Morserino-32, an
-    open-source Morse code (CW) training device used by radio amateurs
-    (morserino.info). It has no standalone function: it configures the device
-    over Bluetooth Low Energy.
+Live in App Store Connect since 2026-09-13. App Review's first letter for 1.0
+(guideline 2.1 – Information Needed) asked six numbered questions and wanted
+the answers both as a reply and in this field, so this is that reply, word
+for word. A later version keeps the structure and updates the facts; the
+opening two lines belong to the reply and go.
 
-    HARDWARE REQUIRED — PLEASE SEE THE DEMO VIDEO
+Apple's limit for this field is 4000 **bytes**, not characters, so every
+em-dash costs three. As pasted: 3,810 bytes (3,798 characters), or
+3,891 if App Store Connect stores CRLF line endings. This is the one
+field where the limit bites, so measure after editing, in bytes, rather
+than estimating. The two recordings point 1 describes were attached to the
+reply; they are not part of this field.
 
-    The app needs a physical Morserino-32 running firmware 9.0 or later, with
-    "Bluetooth Use" set to "BLE Serial". We appreciate that the review team
-    will not have one, so a video of a complete session is here:
-    https://www.dropbox.com/scl/fi/zw9sslwl8mwi9up7j651d/M32-Config-Tool.mp4?rlkey=5shokx5hi0usfpwoa4kgsbh9t&dl=0
+    Thank you for the review. The six points are answered below; this text is also
+    in the App Review Information notes.
 
-    Without the hardware you can still confirm the app is complete and
-    functional: it launches, the full configuration interface is visible, and
-    tapping Connect starts a Bluetooth scan (the system permission prompt
-    appears at that point) which then reports that no Morserino was found.
+    1. SCREEN RECORDING
 
-    REGARDING GUIDELINE 4.2
+    Two recordings are attached. The first is a screen recording on a physical
+    iPhone 14 Pro running iOS 26.6.2. It begins at the home screen with the
+    app being launched, then covers Help, the link test, Connect, granting the
+    connection at the device, the preferences loading, and settings being changed.
 
-    The interface is HTML bundled inside the app — the same interface this
-    open-source project ships for desktop browsers over USB. The app loads no
-    remote content of any kind: nothing is fetched over the network, and there
-    is no web server involved. Its core function is native. CoreBluetooth
-    discovers the device, connects to its Nordic UART service and carries the
-    protocol. That is precisely what a web page cannot do on iOS, and why the
-    app exists at all.
+    The second is filmed with a camera so the hardware is visible, since the app
+    exists to configure a physical device. It shows the same session, including the
+    step performed on the device and the Morserino's display changing as a setting
+    is applied from the phone.
 
-    PRIVACY AND ACCOUNTS
+    No simulator is involved: the iOS Simulator has no Bluetooth and cannot run
+    this app. The app has no accounts, so there is no registration, login or
+    deletion flow; no user-generated content; no paid content or features.
 
-    No account, no login, no in-app purchases, no advertising, no analytics.
-    Nothing is collected or transmitted anywhere. The only value the app
-    stores is the identifier of the last Morserino it connected to, so it can
-    reconnect without scanning again; that is declared in the bundled privacy
-    manifest as NSPrivacyAccessedAPICategoryUserDefaults, reason CA92.1.
+    2. PURPOSE AND TARGET AUDIENCE
+
+    The Morserino-32 is an open-source Morse code (CW) training device for radio
+    amateurs and for anyone learning Morse code (morserino.info). M32 Config is its
+    companion app and has no standalone function.
+
+    The device holds around sixty settings, reached by turning a rotary encoder
+    through nested menus on a screen an inch across. Changing several is slow and
+    error-prone; entering a call sign or editing the CW memories is painful that
+    way. This app puts all of it on a phone screen with a keyboard, over Bluetooth.
+    The audience is people who own a Morserino-32.
+
+    3. SETTING UP AND ACCESSING THE MAIN FEATURES
+
+    No login credentials or sample files are required or possible: there is no
+    account system, no server and no sign-in. The only prerequisite is hardware — a
+    Morserino-32 on firmware 9.0 or later, with "Bluetooth Use" set to "BLE Serial".
+    The app's Help tab gives that procedure step by step and is readable with no
+    device present.
+
+    Without a Morserino to hand the app can still be confirmed complete: it
+    launches, the whole interface is visible, the Help and Link test tabs work, and
+    Connect starts a real Bluetooth scan — the iOS permission prompt appears there —
+    which reports no Morserino found.
+
+    4. EXTERNAL SERVICES, TOOLS AND PLATFORMS
+
+    None. No data provider, authentication service, payment processor, AI service,
+    analytics, advertising or crash reporting. The app makes no network requests at
+    all. Its interface is HTML bundled inside the binary, not loaded from anywhere.
+    The only external communication is Bluetooth Low Energy to the user's own
+    Morserino-32, over the Nordic UART Service. Two informational links in the Help
+    tab open Safari; nothing depends on them.
+
+    5. REGIONAL DIFFERENCES
+
+    None. One English-language build behaves identically everywhere: nothing is
+    geo-restricted, and there is no server-side configuration that could differ.
+    Bluetooth Low Energy uses the licence-free 2.4 GHz band worldwide.
+
+    6. REGULATED INDUSTRY OR THIRD-PARTY MATERIAL
+
+    Neither applies. The app transmits nothing over radio and controls no
+    transmitter: it exchanges settings over Bluetooth with a practice device that
+    produces Morse code as an audio tone. No amateur radio licence is needed.
+
+    It contains no third-party material: the Morserino-32 is my own open-source
+    project — I am its designer and maintainer — and the app, its interface and
+    its artwork are mine.
+
+    ON GUIDELINE 4.2
+
+    The bundled HTML interface is the one this project also ships for desktop
+    browsers over USB. The app loads no remote content, and its core function is
+    native: CoreBluetooth discovers the device, connects to its Nordic UART service
+    and carries the protocol — precisely what a web page cannot do on iOS, and why
+    the app exists.
+
+    PRIVACY
+
+    Nothing is collected or transmitted anywhere; see the bundled privacy manifest.
 
     Contact: info@morserino.info
-
-
-
 
 ## Answers to the questionnaires
 
@@ -134,5 +190,7 @@ Worth capturing, with a device connected:
 1. The Config tab with device information filled in
 2. The Preferences tab populated
 3. The File Builder with a few parts assembled
-4. The Morserino showing "Allow connect?" — the consent step, which is
-   unusual enough to be worth showing
+4. The consent step, from the app's side: the app waiting for the button
+   press on the device. A photograph of the Morserino showing "Allow
+   connect?" belongs in the video, not here — guideline 2.3.3 wants
+   screenshots of the app in use, and a picture of the hardware is not one
