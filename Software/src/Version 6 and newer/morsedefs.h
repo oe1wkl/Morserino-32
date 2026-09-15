@@ -480,6 +480,7 @@ enum prefPos : uint8_t {
 #endif
 #ifdef CONFIG_M32KIP
         posKipPlayout, posKipMaxKeyer, posKipMaxManual,     // Remote Rig (M32KIP D4)
+        posKipFirstExt, posKipHangUnit, posKipHang,         // Remote Rig break-in compensation (D16)
         posKipGlitch,                                       // Remote Keyer, straight key only
 #endif
   posSerialOut,

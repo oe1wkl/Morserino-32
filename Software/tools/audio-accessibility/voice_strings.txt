@@ -215,6 +215,7 @@ Alpha
 Alpha + Num
 alpha and numerals
 alpha, numerals and interpunctions
+and a half
 Asia
 at sign
 Australia and New Zealand
@@ -296,6 +297,8 @@ Disp MAC Address
 Display MAC address
 Display off
 Display only
+Dits
+dits
 dot dash
 Down 1 Half
 Echo
@@ -332,6 +335,7 @@ Hardware Configuration
 Hardware configuration
 Headphone Output
 Hotel
+hundred
 Iambic A
 Iambic B
 iCW or External Transceiver
@@ -384,6 +388,8 @@ Mandarin
 Maximum number of words
 Memory Chain
 Mike
+Milliseconds
+milliseconds
 millivolts
 Mixed
 Moderate
@@ -448,6 +454,9 @@ Recall snapshot
 Remote Keyer
 Remote keyer glitch filter
 Remote Rig
+Remote rig first element extension
+Remote rig hang time
+Remote rig hang time unit
 Remote rig key down limit, keyer
 Remote rig key down limit, straight key
 Remote rig playout delay
@@ -476,6 +485,7 @@ Straight Key
 Strong
 Tango
 Theme
+thousand
 Time-out
 Tone Pitch
 Tone Shift

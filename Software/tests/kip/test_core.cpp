@@ -1079,6 +1079,102 @@ static void testGlitchFilter() {
     }
 }
 
+// ---------------------------------------------------------------- break-in compensation (D16)
+
+namespace breakin {
+
+struct Emit { uint32_t at; uint8_t state; };
+
+/// Feeds each edge in its own packet at the moment the sender would have sent it, polls every tick, and returns what
+/// went on the line.
+static std::vector<Emit> play(const RigConfig& cfg, const std::vector<Edge>& edges, uint32_t tail = 20000) {
+    RigSession rig;
+    uint32_t now = 1000;
+    rig.begin(now, cfg, SRC_KEYER);
+    std::vector<Emit> out;
+    uint16_t seq = 0;
+    auto step = [&](uint32_t until) {
+        while (now < until) {
+            now++;
+            RigAction a;
+            while (rig.poll(now, a))
+                if (a.type == RIG_EMIT || a.type == RIG_FORCE_KEYUP) out.push_back({a.at, a.state});
+        }
+    };
+    for (const Edge& e : edges) {
+        step(1000 + (e.t - 5000));
+        Header h; h.seq = ++seq;
+        KeyPkt k; k.tNow = e.t; k.n = 1; k.edges[0] = e;
+        rig.onKey(h, k, now);
+    }
+    step(now + tail);
+    return out;
+}
+
+static RigConfig base() {
+    RigConfig c;
+    c.adaptive = false;
+    c.maxKeydownKeyerMs = 30000;
+    return c;
+}
+
+static uint32_t mark(const std::vector<Emit>& v, size_t i) { return v[2 * i + 1].at - v[2 * i].at; }
+static uint32_t gapBefore(const std::vector<Emit>& v, size_t i) { return v[2 * i].at - v[2 * i - 1].at; }
+
+} // namespace breakin
+
+static void testBreakIn() {
+    section("break-in compensation (D16)");
+    using namespace breakin;
+    // Two dits inside one transmission, then a long pause, then a third: ms timing, 60 ms dits.
+    std::vector<Edge> e = { Edge(5000, KEY_DOWN), Edge(5600, KEY_UP), Edge(6200, KEY_DOWN), Edge(6800, KEY_UP),
+                            Edge(13000, KEY_DOWN), Edge(13600, KEY_UP) };
+    {   std::vector<Emit> v = play(base(), e);
+        okEq((uint32_t)v.size(), 6, "off: all six edges emitted");
+        ok(v.size() == 6 && mark(v, 0) == 600 && mark(v, 1) == 600 && mark(v, 2) == 600, "off: every mark exactly as keyed");
+    }
+    {   RigConfig c = base(); c.firstExtMs = 10; c.hangMs = 500;
+        std::vector<Emit> v = play(c, e);
+        okEq((uint32_t)v.size(), 6, "on: all six edges emitted");
+        if (v.size() == 6) {
+            okEq(mark(v, 0), 700, "the session's first mark starts 10 ms early");
+            okEq(mark(v, 1), 600, "a mark 60 ms after the last is inside the hang and untouched");
+            okEq(gapBefore(v, 1), 600, "and so is the gap before it");
+            okEq(mark(v, 2), 700, "a mark after a 620 ms pause (> 500 ms hang) starts 10 ms early again");
+            okEq(gapBefore(v, 2), 6100, "by shortening the pause, not by moving the key-up");
+        }
+        RigSession r; r.begin(0, c, SRC_KEYER);
+        okEq(ticksToMs(r.playoutTicks()), 160, "the playout delay starts higher by the extension");
+    }
+    {   // Full QSK: hang 0 makes every mark a "first" one - keying compensation - but never across a short gap.
+        RigConfig c = base(); c.firstExtMs = 30; c.hangMs = 0;
+        std::vector<Edge> q = { Edge(5000, KEY_DOWN), Edge(5200, KEY_UP), Edge(5400, KEY_DOWN), Edge(5600, KEY_UP) };
+        std::vector<Emit> v = play(c, q);
+        okEq((uint32_t)v.size(), 4, "QSK: all four edges emitted");
+        if (v.size() == 4) {
+            okEq(mark(v, 0), 500, "hang 0: the first mark gets the full 30 ms");
+            okEq(gapBefore(v, 1), 100, "a 20 ms gap gives up at most half of itself");
+            okEq(mark(v, 1), 300, "so the next mark grows by 10 ms, not 30");
+        }
+    }
+    {   // Hang in dits (Icom style): 7 dits at 60 ms is 420 ms. Twenty dits first, so the speed estimate settles.
+        RigConfig c = base(); c.firstExtMs = 10; c.hangDitsX2 = 14;
+        std::vector<Edge> d;
+        uint32_t t = 5000;
+        for (int i = 0; i < 20; i++) { d.push_back(Edge(t, KEY_DOWN)); d.push_back(Edge(t + 600, KEY_UP)); t += 1200; }
+        t += 2400;                                                  // key up 3000 ticks = 5 dits: inside the hang
+        d.push_back(Edge(t, KEY_DOWN)); d.push_back(Edge(t + 600, KEY_UP));
+        t += 600 + 6000;                                            // 10 dits: the transceiver has dropped out
+        d.push_back(Edge(t, KEY_DOWN)); d.push_back(Edge(t + 600, KEY_UP));
+        std::vector<Emit> v = play(c, d);
+        okEq((uint32_t)v.size(), 44, "dits: all edges emitted");
+        if (v.size() == 44) {
+            okEq(mark(v, 20), 600, "a 5-dit pause is inside a 7-dit hang: untouched");
+            okEq(mark(v, 21), 700, "a 10-dit pause is beyond it: the mark starts 10 ms early");
+        }
+    }
+}
+
 int main(int argc, char** argv) {
     if (argc > 1 && std::strcmp(argv[1], "--vectors") == 0) { emitVectors(); return 0; }
 
@@ -1092,6 +1188,7 @@ int main(int argc, char** argv) {
     testKeyerRedundancy();
     testSendSchedule();
     testGlitchFilter();
+    testBreakIn();
     testSafety();
     testRigFailSafe();
     testSimulation();

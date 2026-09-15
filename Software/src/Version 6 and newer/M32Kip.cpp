@@ -415,6 +415,14 @@ void RigSession::begin(uint32_t rigNow, const RigConfig& cfg, uint8_t source) {
     replay_.reset();
     counters_ = RigCounters();
 
+    if (cfg_.firstExtMs) {
+        // An advanced key-down is due earlier than its timestamp says, which eats into the margin the playout delay
+        // keeps against network jitter. Give the margin back by raising the floor and the start value by the same.
+        uint16_t dMin = (uint16_t)(cfg_.dMinMs + cfg_.firstExtMs);
+        uint16_t dDef = (uint16_t)(cfg_.dDefaultMs + cfg_.firstExtMs);
+        cfg_.dMinMs     = dMin > cfg_.dMaxMs ? cfg_.dMaxMs : dMin;
+        cfg_.dDefaultMs = dDef > cfg_.dMaxMs ? cfg_.dMaxMs : dDef;
+    }
     off_ = 0;
     d_ = msToTicks(cfg_.dDefaultMs);
     dPending_ = 0;
@@ -454,6 +462,27 @@ uint16_t RigSession::maxKeydownMs() const {
 
 uint32_t RigSession::nextEmitTime() const {
     return queue_.empty() ? 0 : emitTimeOf(queue_.front());
+}
+
+uint32_t RigSession::hangTicks() const {
+    if (cfg_.hangDitsX2) {
+        // Until there is a speed estimate - early in a session, or while only one mark length has been seen -
+        // ditEst() is the estimator's 60 ms default (20 WPM). Counting every gap as a changeover instead would
+        // lengthen every mark inside every word; a wrong default speed misjudges at most one element per pause.
+        return speed_.ditEst() * cfg_.hangDitsX2 / 2;
+    }
+    return msToTicks(cfg_.hangMs);
+}
+
+uint32_t RigSession::breakInAdvance(const Edge& e, bool havePrev, uint32_t prevT) const {
+    if (e.state != KEY_DOWN || cfg_.firstExtMs == 0) return 0;
+    uint32_t adv = msToTicks(cfg_.firstExtMs);
+    if (!havePrev) return adv;                      // the session's first mark: the transceiver is surely receiving
+    int32_t gap = tickDiff(e.t, prevT);             // sender clock: pure keying timing, untouched by the network
+    if (gap <= 0) return 0;
+    if ((uint32_t)gap < hangTicks()) return 0;      // still inside the transceiver's hang: it is transmitting
+    if (adv > (uint32_t)gap / 2) adv = (uint32_t)gap / 2;   // never move a key-down across the gap before it
+    return adv;
 }
 
 /// Offset, sliding minimum and jitter, from the sender timestamp each packet carries (spec §7.2).
@@ -537,7 +566,10 @@ void RigSession::acceptEdge(const Edge& e, uint32_t rigNow) {
         noteProtocolError(e, rigNow, false);
     }
 
-    uint32_t tEmit = e.t + off_ + d_;
+    uint32_t prevT = 0;                                 // the edge this one follows, for break-in compensation (D16)
+    if (pos > 0)          prevT = queue_.at((uint8_t)(pos - 1)).t;
+    else if (haveEmitted_) prevT = lastEmittedT_;
+    uint32_t tEmit = e.t + off_ + d_ - breakInAdvance(e, havePrev, prevT);
     int32_t lateBySigned = tickDiff(rigNow, tEmit);     // positive means the edge is overdue (spec §7.4.3)
     // Only a genuinely overdue edge is late. Spec §7.4.2 writes the test against `rig_now + slack`, which reads
     // as though an edge arriving half a millisecond BEFORE it is due were late by a negative amount; computing

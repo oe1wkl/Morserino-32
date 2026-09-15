@@ -262,10 +262,18 @@ struct RigConfig {
     uint16_t maxKeydownManualMs;    // sources 1 and 2
     uint16_t keepaliveTimeoutMs;
     bool     adaptive;
+    // Break-in compensation (D16). A transceiver without PTT keys on RF in semi break-in ("VOX" for CW) and swallows
+    // its changeover time from the first element after it has dropped back to receive. The Rig knows every edge
+    // ahead of time, so it starts that key-down `firstExtMs` EARLY and leaves the key-up where it was: the air gets
+    // exactly the keyed element. An element is "first" when the key was up for at least the hang time before it.
+    uint16_t firstExtMs;            // 0 = off
+    uint16_t hangMs;                // the transceiver's break-in delay, in ms ...
+    uint8_t  hangDitsX2;            // ... or, when non-zero, in half-dits at the estimated speed (Icom style)
     RigConfig()
         : dDefaultMs(150), dMinMs(40), dMaxMs(600), safetyMs(20),
           maxKeydownKeyerMs(3000), maxKeydownManualMs(10000),
-          keepaliveTimeoutMs(1000), adaptive(true) {}
+          keepaliveTimeoutMs(1000), adaptive(true),
+          firstExtMs(0), hangMs(0), hangDitsX2(0) {}
 };
 
 enum RigActionType {
@@ -319,7 +327,12 @@ public:
     RigDropReason dropReason() const { return (RigDropReason)dropReason_; }
 
 private:
-    uint32_t emitTimeOf(const Edge& e) const { return e.t + off_ + d_; }
+    /// Due time of the queue HEAD, whose predecessor is always the last emitted edge.
+    uint32_t emitTimeOf(const Edge& e) const { return e.t + off_ + d_ - breakInAdvance(e, haveEmitted_, lastEmittedT_); }
+    /// How much earlier a key-down goes on the line (D16): the first extension after a gap of at least the hang
+    /// time, never more than half that gap, 0 for key-ups and inside a transmission.
+    uint32_t breakInAdvance(const Edge& e, bool havePrev, uint32_t prevT) const;
+    uint32_t hangTicks() const;
     void     trackArrival(uint32_t tNow, uint32_t rigNow);
     void     acceptEdge(const Edge& e, uint32_t rigNow);
     void     housekeeping(uint32_t rigNow);

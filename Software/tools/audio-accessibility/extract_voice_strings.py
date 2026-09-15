@@ -78,7 +78,9 @@ VALUE_SPOKEN = {"+": "plus"}   # symbol-only option value (BLT <AR>) -> spoken w
 # "of" / "characters" join the composed value lines (see MorsePreferences::announceValue):
 # "21 of 51" for the Koch lesson, "39 characters" for the practice set.
 UNIT_WORDS = ["words per minute", "Volume", "char", "characters", "of", "Snapshot",
-              "millivolts", "pro sign", "error"]
+              "millivolts", "pro sign", "error",
+              # Remote Rig hang time (D16): "2 thousand 3 hundred 50 milliseconds", "7 and a half dits"
+              "milliseconds", "dits", "and a half", "thousand", "hundred"]
 # Boot splash (announceSplash() in m32_v6.ino). The splash is drawn, not table-driven, so
 # these phrases live nowhere the extractor could find them and are listed here instead.
 # Version number and battery voltage are composed from the number atoms below ("version" +
@@ -226,6 +228,8 @@ phrase_texts = (
 letters   = list(NATO.values())                                    # Alpha..Zulu
 punct     = list(PUNCT.values()) + list(UMLAUT.values()) + ["C H"]  # +ch (FLAG)
 ints      = [str(i) for i in range(0,61)] + [str(i) for i in range(65,251,5)]
+# Larger numbers are COMPOSED ("2 thousand 3 hundred 50"), not stored: the SPIFFS voice store has little headroom
+# left. One clip per value 300-3000 in 50s (tried for the Remote Rig hang time, D16) overflowed it by ~520 KB.
 atom_texts = letters + punct + ints
 
 # ── Character -> clip-sequence manifest (drives composition on-device) ───────

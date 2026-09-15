@@ -106,7 +106,9 @@ const char * prefName[] = {
             "qsoBotLevel",
 #endif
 #ifdef CONFIG_M32KIP
-            "kipPlayout", "kipMaxKeyer", "kipMaxManual", "kipGlitch",   // NVS keys, all well inside 15 chars
+            "kipPlayout", "kipMaxKeyer", "kipMaxManual",                // NVS keys, all well inside 15 chars
+            "kipFirstExt", "kipHangUnit", "kipHang",
+            "kipGlitch",
 #endif
             "serialOut"
 					};
@@ -563,6 +565,30 @@ parameter MorsePreferences::pliste[] = {
     "Remote rig key down limit, straight key"
   },
   {
+    0, 0, 30, 1,                                                // ms, 0 = off (D16)
+    "Rig 1st Ext",
+    "Remote Rig: start the first element after a break-in pause this much early (ms), 0 = off",
+    false,
+    {},
+    "Remote rig first element extension"
+  },
+  {
+    0, 0, 1, 1,                                                 // how the transceiver states its break-in delay
+    "Rig Hang Unit",
+    "Remote Rig: the transceiver's break-in delay is given in milliseconds or in dits",
+    true,
+    {"Milliseconds", "Dits"},
+    "Remote rig hang time unit"
+  },
+  {
+    5, 0, 60, 1,                                                // 50 ms steps (0-3000 ms) or half dits (0-30 dits)
+    "Rig Hang",
+    "Remote Rig: the transceiver's break-in delay, in 50 ms steps or half dits",
+    false,
+    {},
+    "Remote rig hang time"
+  },
+  {
     3, 1, 5, 1,                                                 // ms (spec §11: 3, range 1-5)
     "Glitch Filter",
     "Remote Keyer: how long a straight-key contact must hold to count (ms)",
@@ -831,7 +857,8 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posGoertzelBandwidth, posExtAudioOnDecode,
                                                    QSOBOT
 #ifdef CONFIG_M32KIP
-                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual, posKipGlitch,
+                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                                   posKipFirstExt, posKipHangUnit, posKipHang, posKipGlitch,
 #endif
                                                    posPlayerCall, posPlayerName, posResetScores,
 #ifdef CONFIG_PRACTICE_STATS
@@ -843,7 +870,8 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // Remote Rig runs its own loop and offers no preferences gesture, so this list matters only to tools reading the
  // current mode's parameters; the settings are reached on the device through the "All" view above.
  prefPos MorsePreferences::kipRigOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut,
-                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual
+                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                                   posKipFirstExt, posKipHangUnit, posKipHang
                                                  };
  // Remote Keyer is the CW Keyer plus a link: the keyer's own settings, and nothing that keys a local transmitter or
  // decodes received audio (the Keyer unit forces noTx, D12d).
@@ -1124,6 +1152,30 @@ static void announceValue(prefPos pos, const String& valueLine, boolean withTota
             return;
         }
         break;
+#ifdef CONFIG_M32KIP
+      case posKipHang: {                                   // "250 milliseconds" / "7 and a half dits" (D16)
+        uint8_t v = MorsePreferences::pliste[posKipHang].value;
+        if (MorsePreferences::pliste[posKipHangUnit].value == 1) {
+            a11ySay(String(v / 2));
+            if (v % 2) a11ySay("and a half");
+            a11ySay("dits");
+        } else {
+            // Composed from the number atoms (0-60, 65-250 in 5s), which is all the voice store has room for:
+            // "1 thousand 250", "2 thousand 3 hundred 50".
+            uint16_t ms = (uint16_t)(v * 50u);
+            if (ms >= 1000) { a11ySay(String(ms / 1000)); a11ySay("thousand"); }
+            uint16_t r = ms % 1000;
+            if (r > 250) {
+                a11ySay(String(r / 100)); a11ySay("hundred");
+                if (r % 100) a11ySay(String(r % 100));
+            } else if (r || ms < 1000) {
+                a11ySay(String(r));
+            }
+            a11ySay("milliseconds");
+        }
+        return;
+      }
+#endif
       default:
         break;
     }
@@ -1160,8 +1212,14 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
 #ifdef CONFIG_M32KIP
     if (pos == posKipMaxKeyer || pos == posKipMaxManual)                // display-only unit suffixes, as Think Time below
         valueLine += "s";
-    if (pos == posKipGlitch)
+    if (pos == posKipGlitch || pos == posKipFirstExt)
         valueLine += "ms";
+    if (pos == posKipHang) {                                            // the unit follows Rig Hang Unit (D16)
+        uint8_t v = pliste[posKipHang].value;
+        valueLine = pliste[posKipHangUnit].value == 1
+                      ? String(v / 2) + (v % 2 ? ".5" : "") + " dits"
+                      : String(v * 50) + " ms";
+    }
 #endif
     if (pos == posEchoThinkTime)                                        // display-only unit suffix: kept out of the
         valueLine += "s";                                                // a11y announce above so it still speaks the bare
@@ -2025,6 +2083,9 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
       case posKipPlayout:
       case posKipMaxKeyer:
       case posKipMaxManual:
+      case posKipFirstExt:
+      case posKipHangUnit:
+      case posKipHang:
       case posKipGlitch:
 #endif
           return false;

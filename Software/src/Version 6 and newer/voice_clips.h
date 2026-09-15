@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "e6483cce"
+#define VOICE_PACK_STAMP "5d3edef4"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -250,6 +250,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Disp MAC Addr", "5689da3f"},
   {"Display off", "6e8b9688"},
   {"Display only", "8e0340a5"},
+  {"Dits", "219cd3dd"},
   {"Down 1 Half", "5cb6407a"},
   {"Echo", "d31ef811"},
   {"Echo Prompt", "0dfac86c"},
@@ -318,6 +319,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Maximum number of words", "df97b070"},
   {"Memory Chain", "ad6622d5"},
   {"Mike", "1b83d5da"},
+  {"Milliseconds", "38f24676"},
   {"Mixed", "699b4f79"},
   {"Moderate", "1eb79d43"},
   {"Morse Invaders", "62b14d61"},
@@ -371,6 +373,9 @@ static const VoiceEntry voiceLookup[] = {
   {"Remote Keyer", "d5832bdc"},
   {"Remote Rig", "ea2f3ce8"},
   {"Remote keyer glitch filter", "a1c7e661"},
+  {"Remote rig first element extension", "3c264ff4"},
+  {"Remote rig hang time", "232ff229"},
+  {"Remote rig hang time unit", "7af71c3e"},
   {"Remote rig key down limit, keyer", "641a4bc2"},
   {"Remote rig key down limit, straight key", "4f69c872"},
   {"Remote rig playout delay", "7d2f4e74"},
@@ -428,6 +433,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Yankee", "516a99d4"},
   {"Zulu", "68046733"},
   {"a umlaut", "da9f7419"},
+  {"and a half", "13f0805c"},
   {"at sign", "040579cc"},
   {"battery", "20c1d187"},
   {"battery empty", "528b14be"},
@@ -438,15 +444,18 @@ static const VoiceEntry voiceLookup[] = {
   {"colon", "cd474d96"},
   {"comma", "b6d00dc1"},
   {"dash", "b999a7c3"},
+  {"dits", "d4839cab"},
   {"ePaper", "ead05894"},
   {"equals", "51c3f596"},
   {"error", "cb5e100e"},
   {"full stop", "8aba2df2"},
+  {"hundred", "34b569aa"},
   {"iCW/Ext Trx", "989fc876"},
   {"l-o: Lsp Muted", "caee05d5"},
   {"l-o: Var. Vol.", "2ccc7c9b"},
   {"line-out", "07cb954b"},
   {"lower", "81e073b4"},
+  {"milliseconds", "c50c3b1c"},
   {"millivolts", "1586f38d"},
   {"o umlaut", "2e8ebc76"},
   {"of", "8bf8854b"},
@@ -455,12 +464,13 @@ static const VoiceEntry voiceLookup[] = {
   {"pro sign", "ffcdbd79"},
   {"question mark", "59b40a4d"},
   {"slash", "9fbbaa4c"},
+  {"thousand", "41b1df40"},
   {"u umlaut", "cfdb81f4"},
   {"version", "2af72f10"},
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 446;
+static const unsigned int voiceLookupCount = 456;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

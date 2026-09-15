@@ -313,6 +313,19 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 >   override; 0 restores 7374 and removes the NVS key), `kip` in `GET capabilities`. `M32 Protocol.md`
 >   updated. Config Tool and iOS app remain follow-ups (D9).
 > - Voice clips: 14 new phrases rendered (stamp e6483cce).
+>
+> **Added 2026-09-15 — D16 break-in compensation** (see `DECISIONS.md`): Rig 1st Ext, Rig Hang Unit, Rig Hang.
+> The Rig starts a first key-down early instead of stretching it, which a real-time keyer cannot do. Core logic
+> `RigSession::breakInAdvance()` / `hangTicks()`, used both for emission and for the lateness test, host-tested
+> (669 checks: ms and dits hang, the half-gap cap under QSK, the raised playout floor). The first test run caught
+> a bad fallback: with no speed estimate the dits hang was 0, which would have lengthened every mark inside a word
+> at session start; it now uses the estimator's 20 WPM default. The hang value is voiced composed ("2 thousand
+> 3 hundred 50 milliseconds", "7 and a half dits"): 10 new clips (stamp 5d3edef4).
+>
+> **Voice store limit found on the way:** a first version stored one number clip per value 300–3000 (55 clips) and
+> the Accessibility Edition's SPIFFS image overflowed by ~520 KB — and `pio run -t buildfs` still reports SUCCESS
+> after "File system is full", so it would only have shown at upload. SPIFFS overhead on these ~9 KB clips is ~40 %.
+> Headroom after D16: **~172 KB** of the 5.06 MB partition (was ~260 KB before Phase 4). Compose numbers; do not store them.
 
 - NVS: PSK (write-only, ≤ 32 chars → 2 entries), Rig host (D3a), port (D3c).
   Cost each; check `put()` results.

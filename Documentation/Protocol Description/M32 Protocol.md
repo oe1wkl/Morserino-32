@@ -18,7 +18,8 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	PUT kip/psk/<pass phrase> — set the remote-keying pass phrase (write-only)
 	PUT kip/port/<port> — change the remote-keying UDP port (0 = default 7374)
 
-	New parameters: "Rig Delay", "Rig Limit Kyr", "Rig Limit SK", "Glitch Filter"
+	New parameters: "Rig Delay", "Rig Limit Kyr", "Rig Limit SK", "Rig 1st Ext",
+	    "Rig Hang Unit", "Rig Hang", "Glitch Filter"
 
 	Changes in protocol version 1.4 from version 1.3:
 
@@ -1005,4 +1006,4 @@ Sets the pass phrase (pre-shared key). It must be at least 12 characters long; c
 
 Changes the UDP port (default **7374**) — only needed if a router or firewall requires another one. Both ends must use the same port. Allowed values are 1024 to 65535; **0 restores the default**. Anything else is refused with `{"error":{"content":"INVALID PORT - 1024 TO 65535, OR 0 FOR 7374"}}`. The port can only be set over the protocol.
 
-The remote-keying **parameters** — "Rig Delay", "Rig Limit Kyr", "Rig Limit SK" and "Glitch Filter" — are ordinary parameters: read and set them with `GET configs` and `PUT config/<name>/<value>` like any other.
+The remote-keying **parameters** — "Rig Delay", "Rig Limit Kyr", "Rig Limit SK", "Rig 1st Ext", "Rig Hang Unit", "Rig Hang" and "Glitch Filter" — are ordinary parameters: read and set them with `GET configs` and `PUT config/<name>/<value>` like any other.

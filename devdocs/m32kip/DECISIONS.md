@@ -81,6 +81,23 @@ fell back to "Listening", the Pocket's link logo vanished, and nothing reconnect
    isolated glitches are still discarded whole. Fold into Draft 0.3.
 3. **PTT Lead / PTT Hang are not preferences until `PIN_PTT` exists** (D4 read together with D6).
 
+**D16 — Break-in compensation for transceivers keyed without PTT. RATIFIED 2026-09-15.** Without PTT the
+transceiver runs in semi break-in ("VOX" for CW) and clips its changeover time off the first element after it
+has dropped back to receive. Common practice (the WinKeyer's "1st extension") lengthens that element. The Rig
+unit can do better than a real-time keyer: it knows every edge a playout delay ahead, so it **starts the first
+key-down early and leaves the key-up where it is** — the air gets exactly the keyed element, and every other
+mark and gap is untouched.
+- Rig preferences: **Rig 1st Ext** (0–30 ms, 0 = off), **Rig Hang Unit** (Milliseconds / Dits), **Rig Hang**
+  (0–60: 50 ms steps, or half dits at the Rig's own speed estimate). Willi chose both units: Yaesu-style rigs
+  state the break-in delay in ms, Icom-style in dits.
+- A key-down is "first" when the key was up for at least the hang (sender clock). The advance is capped at half
+  the preceding gap. Hang 0 makes every mark "first", which amounts to keying compensation for full QSK.
+- The playout floor and start value rise by the extension, so the jitter margin is kept. No protocol change.
+- Until the speed estimator has an estimate, dits are the estimator's 20 WPM default — not "every gap is a
+  changeover", which would lengthen every mark inside every word at the start of a session.
+- Mismatched hang settings err by at most the extension on one element per pause. The manual must say to set
+  Rig Hang to the transceiver's own break-in delay.
+
 ## Phase 0 instruments
 
 - `M32KipSpike.cpp` (`-D KIP_SPIKE=1` on the command line, never in `platformio.ini`) boots the
