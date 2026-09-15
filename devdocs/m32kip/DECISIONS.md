@@ -73,6 +73,14 @@ fell back to "Listening", the Pocket's link logo vanished, and nothing reconnect
 - Spec §8's "`NACK` on the next HELLO for 5 s" after an error drop is not implemented.
 - `UX_CONVENTIONS.md` needs an entry for this unattended service mode (Phase 6).
 
+**D15 — Phase 4 amendments. RATIFIED 2026-09-15** (Willi, "ok with all three"):
+1. **Rig Delay is a mapped list** — Adaptive, 50, 100, 150, 200, 250, 300, 400, 500, 600 ms — not a raw count
+   of 10 ms units (amends D4), so display and Accessibility Edition give milliseconds. A chosen delay is the
+   start value and the **floor**: late edges may raise it, adaptation returns it to the choice.
+2. **The glitch filter reports the first contact of a chatter burst**, not spec §10.1's `t_confirm − width`;
+   isolated glitches are still discarded whole. Fold into Draft 0.3.
+3. **PTT Lead / PTT Hang are not preferences until `PIN_PTT` exists** (D4 read together with D6).
+
 ## Phase 0 instruments
 
 - `M32KipSpike.cpp` (`-D KIP_SPIKE=1` on the command line, never in `platformio.ini`) boots the
