@@ -158,6 +158,80 @@ void drawFrame(const RigSession& rig, const String& ip, bool listening, uint32_t
     MorseOutput::refreshDisplay();
 }
 
+#ifdef KIP_MEASURE
+// ---------------------------------------------------------------- Phase 5 instrument (devdocs/m32kip/TEST_REPORT.md)
+//
+// The logic analyser we do not have. `-D KIP_MEASURE=1` on the command line only, never in platformio.ini, like the
+// Phase 0 spike. For every edge put on the line it compares the interval the ISR actually produced with the interval
+// between the Keyer's own timestamps for the same two edges: a mark or a space reproduced exactly has error 0. By D12b
+// that is the acceptance reference - the Keyer's key line, not the operator's hand.
+//
+// Spaces are graded in two classes, because the spec treats them differently: a space inside a character or between
+// characters must not move; an idle gap (>= the estimator's idle threshold) is where the Rig may take up clock drift
+// and shorten the playout delay, so a change there is legal and reported separately.
+
+struct MeasHist {
+    uint32_t n, b200, b500, b1000, b2000, over;     // |error| < 0.2 / 0.5 / 1 / 2 ms, and >= 2 ms
+    int32_t  minUs, maxUs;
+    void add(int32_t e) {
+        uint32_t a = (uint32_t)(e < 0 ? -e : e);
+        if (!n || e < minUs) minUs = e;
+        if (!n || e > maxUs) maxUs = e;
+        n++;
+        if (a < 200) b200++; else if (a < 500) b500++; else if (a < 1000) b1000++; else if (a < 2000) b2000++; else over++;
+    }
+    String line(const char* name) const {
+        if (!n) return String(name) + " -";
+        return String(name) + " " + String(n) + " [" + String(b200) + "/" + String(b500) + "/" + String(b1000)
+             + "/" + String(b2000) + "/" + String(over) + "] " + String(minUs) + ".." + String(maxUs) + "us";
+    }
+};
+
+struct Meas {
+    bool     have;
+    uint32_t prevT;         // sender ticks of the previous emitted edge
+    uint32_t prevUs;        // when it went on the line, timer microseconds (modular: fine for intervals < 71 min)
+    uint8_t  prevState;
+    MeasHist marks, spaces, idle;
+    uint32_t shortened;     // marks reproduced more than 0.2 ms short: design principle 5 says never
+    void reset() { *this = Meas(); }
+    Meas() : have(false), prevT(0), prevUs(0), prevState(KEY_UP), marks(), spaces(), idle(), shortened(0) {}
+};
+
+Meas     gMeas;
+uint32_t gLastFiredUs = 0;
+bool     gFiredPending = false;
+
+void measureEdge(const RigSession& rig, uint32_t senderT, uint8_t state, uint32_t lineUs) {
+    if (gMeas.have && state != gMeas.prevState) {
+        int32_t sentUs = tickDiff(senderT, gMeas.prevT) * 100;
+        int32_t gotUs  = (int32_t)(lineUs - gMeas.prevUs);
+        int32_t err    = gotUs - sentUs;
+        if (state == KEY_UP) {                      // the interval that just ended was a mark
+            gMeas.marks.add(err);
+            if (err < -200) gMeas.shortened++;
+        } else if ((uint32_t)sentUs / 100 >= rig.speed().idleGapTicks()) {
+            gMeas.idle.add(err);
+        } else {
+            gMeas.spaces.add(err);
+        }
+    }
+    gMeas.have = true;
+    gMeas.prevT = senderT;
+    gMeas.prevUs = lineUs;
+    gMeas.prevState = state;
+}
+
+void measureReport(const RigSession& rig) {
+    if (!protocolActive()) return;
+    const RigCounters& c = rig.counters();
+    MorseJSON::jsonCreate("message", "KIPM " + gMeas.marks.line("mark") + " | " + gMeas.spaces.line("space") + " | "
+        + gMeas.idle.line("idle") + " | short " + String(gMeas.shortened) + " D " + String(ticksToMs(rig.playoutTicks()))
+        + " late " + String(c.late) + " und " + String(c.underruns) + " dLow " + String(c.dLowers)
+        + " off " + String(c.offSteps) + " dit " + String(ticksToMs(rig.speed().ditEst())), "");
+}
+#endif
+
 } // namespace
 
 // ================================================================ the mode
@@ -273,6 +347,10 @@ void MorseKipRig::run() {
                 keyLineUp();                        // a replaced session must never leave a mark hanging
                 gPeer = pkt.from; gPeerPort = pkt.port;
                 rig.begin(nowTicks(), cfg, hello.source);
+#ifdef KIP_MEASURE
+                gMeas.reset();                      // one session, one measurement
+                gFiredPending = false;
+#endif
                 ack.maxKeydownMs = rig.maxKeydownMs();
                 ack.pttLeadMs = 0;                  // no isolated PTT output on either variant (D6)
                 ack.flags = 0;
@@ -307,11 +385,25 @@ void MorseKipRig::run() {
 
         // ---- reconstruction ----
         if (gHaveSession) {
+#ifdef KIP_MEASURE
+            if (gFired) { gLastFiredUs = gFiredAtUs; gFiredPending = true; gFired = false; armed = false; }
+#else
             if (gFired) { gFired = false; armed = false; }
+#endif
 
             RigAction act;
             while (rig.poll(nowTicks(), act)) {
                 if (act.type == RIG_EMIT) {
+#ifdef KIP_MEASURE
+                    // When did this edge reach the line? The ISR's own timestamp if it fired for it - also if it
+                    // fired only just now, after the check above - otherwise the write below.
+                    uint32_t lineUs;
+                    if (gFired)             { lineUs = gFiredAtUs; gFired = false; }
+                    else if (gFiredPending) { lineUs = gLastFiredUs; }
+                    else                    { lineUs = (uint32_t)nowUs(); }
+                    gFiredPending = false;
+                    measureEdge(rig, act.senderT, act.state, lineUs);
+#endif
                     // The ISR has already put this edge on the line; poll() is what retires it. Should the alarm
                     // somehow not have fired, write it now rather than leave the line wrong.
                     digitalWrite(keyerPin, act.state ? HIGH : LOW);
@@ -341,6 +433,10 @@ void MorseKipRig::run() {
                 Header sh; sh.session = gSession; sh.seq = ++gTxSeq;
                 uint8_t buf[MAX_PACKET];
                 sendTo(buf, encodeStats(buf, sizeof(buf), sh, st, gSessKey));
+#ifdef KIP_MEASURE
+                static uint8_t reportIn = 10;       // every ten STATS = every 10 s; the counts are cumulative
+                if (--reportIn == 0) { reportIn = 10; measureReport(rig); }
+#endif
             }
         }
 

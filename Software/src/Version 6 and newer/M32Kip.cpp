@@ -668,6 +668,7 @@ void RigSession::housekeeping(uint32_t rigNow) {
         curMin_ -= step;                    // the recorded minima are relative to the offset, so they follow it
 
         if (prevValid_) prevMin_ -= step;
+        counters_.offSteps++;
     }
 
     if (!cfg_.adaptive) return;
@@ -682,6 +683,7 @@ void RigSession::housekeeping(uint32_t rigNow) {
         uint32_t step = msToTicks(5);
         d_ = (d_ - target < step) ? target : d_ - step;
         lastDecreaseAt_ = rigNow;
+        counters_.dLowers++;
     }
 }
 
@@ -751,7 +753,7 @@ bool RigSession::poll(uint32_t rigNow, RigAction& out) {
                 keyDownSince_ = rigNow;
                 markAborted_ = false;
                 offAdjustedThisGap_ = false;        // a new gap begins when this mark ends
-                out.type = RIG_EMIT; out.state = KEY_DOWN; out.at = rigNow;
+                out.type = RIG_EMIT; out.state = KEY_DOWN; out.at = rigNow; out.senderT = e.t;
                 return true;
             }
             // key-up: the mark just ended, so its length feeds the speed estimate whether or not we emit
@@ -764,7 +766,7 @@ bool RigSession::poll(uint32_t rigNow, RigAction& out) {
             keyState_ = KEY_UP;
             lastKeyUpAt_ = rigNow;
             applyPendingD();
-            out.type = RIG_EMIT; out.state = KEY_UP; out.at = rigNow;
+            out.type = RIG_EMIT; out.state = KEY_UP; out.at = rigNow; out.senderT = e.t;
             return true;
         }
     }

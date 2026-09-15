@@ -287,14 +287,17 @@ struct RigAction {
     RigActionType type;
     uint8_t       state;    // for RIG_EMIT
     uint32_t      at;       // rig-clock time the action belongs to
-    RigAction() : type(RIG_NONE), state(KEY_UP), at(0) {}
+    uint32_t      senderT;  // for RIG_EMIT: the edge's Keyer timestamp, so a unit can measure what it reproduced
+    RigAction() : type(RIG_NONE), state(KEY_UP), at(0), senderT(0) {}
 };
 
 struct RigCounters {
     uint32_t packets, replays, edges, duplicates, late, underruns, protocolErrors, overflows, keydownLimits;
     uint32_t maxLate;       // ticks: how late the worst edge was. The stretch a burst puts on one mark.
+    uint32_t offSteps;      // clock-offset corrections taken (spec §7.2: at most 1 ms each, only in an idle gap)
+    uint32_t dLowers;       // playout-delay decreases (raises are the underruns)
     RigCounters() : packets(0), replays(0), edges(0), duplicates(0), late(0), underruns(0),
-                    protocolErrors(0), overflows(0), keydownLimits(0), maxLate(0) {}
+                    protocolErrors(0), overflows(0), keydownLimits(0), maxLate(0), offSteps(0), dLowers(0) {}
 };
 
 /// Why the Rig ended a session on its own. Reported so the unit can show it (D14): a drop nobody can
