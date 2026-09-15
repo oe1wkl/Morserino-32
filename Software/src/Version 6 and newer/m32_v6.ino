@@ -1709,7 +1709,9 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
             }
         }
         else {
-           if (echoTrainerState == GET_ANSWER && millis() > genTimer) {
+           // Echo Think T. extends only this deadline for starting the answer. It must not go
+           // into genTimer: generateCW() waits for genTimer again before the next prompt.
+           if (echoTrainerState == GET_ANSWER && millis() > genTimer + MorsePreferences::pliste[posEchoThinkTime].value * 1000UL) {
             echoTrainerState = EVAL_ANSWER;
          }
          return false;                // we return false if there was no paddle press in IDLE STATE - Arduino can do other tasks for a bit
@@ -2550,7 +2552,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                                                     displayGeneratedMorse(INVERSE_REGULAR, ">");
                                                 }
                                                 ++repeats;
-                                                genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 3 + (MorsePreferences::pliste[posEchoThinkTime].value * 1000UL);
+                                                genTimer = millis() + 1400 + interCharacterSpace + interWordSpace / 3;   // Echo Think T. is added in doPaddleIambic()'s GET_ANSWER deadline only
  
                                                 // Apply response speed limit
                                                 uint8_t speedMaxIdx = MorsePreferences::pliste[posEchoSpeedMax].value;
