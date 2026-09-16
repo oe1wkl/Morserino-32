@@ -53,6 +53,20 @@ Acceptance is D2's **1 ms**, measured against the Keyer's own timestamps (D12b).
 | WPM | marks | within 0.2 ms | worst mark | spaces | within 0.2 ms | worst space | shortened | late | underruns |
 |---|---|---|---|---|---|---|---|---|---|
 | 15 | 1959 | **1959** | −100 … +103 µs | 1828 | **1828** | −108 … +88 µs | **0** | 0 | 0 |
+| 25 | 3249 | 3219 (99.1 %) | −90 … **+3587 µs** | 3033 | 3006 | **−3600** … +84 µs | **0** | 0 | 0 |
+
+**25 WPM misses the 1 ms target on about 0.65 % of marks — the project's first acceptance shortfall.** Of 3249
+marks, 21 exceeded 1 ms and 15 exceeded 2 ms; the worst was +3.59 ms, and the space that followed it was −3.60 ms.
+That pairing is the signature of **one edge emitted late**: the mark is stretched and the following gap shortened by
+the same amount, so nothing is lost, only displaced. Three things say the network is not responsible: `late 0` (no
+edge ever arrived after its playout time), `und 0`, and a playout delay that sat at 135–150 ms throughout. No mark
+was ever *shortened* (`short 0`), so design principle 5 holds even here.
+
+The suspect is inside the Rig: the per-edge trace shows most edges are retired by the run loop's fallback write
+rather than by the hardware-timer alarm, which makes emission depend on loop latency — and the Rig redraws its
+display every 250 ms, at ~37 ms per redraw on the OLED. The Keyer already obeys a "never redraw near an edge" rule
+(Phase 0); the Rig does not. **Under investigation** with the `KIPX` outlier trace, which labels each slip with the
+source of its timestamp.
 
 No protocol errors, no queue overflows, no key-down limits. The playout delay adapted from 150 ms down to 100 ms
 over the run (10 decreases), with 9 offset steps.
