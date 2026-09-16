@@ -481,15 +481,27 @@ void MorseKipRig::run() {
                     break;
                 }
             }
-            if (gHaveSession && !armed && rig.hasPending()) {
+            // Re-arm whenever the head's due time changes, not only when nothing is armed at all. The queue head can
+            // move earlier - a redundant copy arriving out of order, or the playout delay and clock offset shifting
+            // the whole timeline (spec §7.2, §7.3) - and a stale alarm then points at a moment that no longer
+            // belongs to any edge. The new head falls due with nothing pending for it, the run loop retires it on
+            // its next pass, and the mark comes out long with the following space equally short: exactly the
+            // outlier signature measured at 25 WPM (always the loop's fallback write, never counted late, never a
+            // shortened mark). The alarm is cheap to re-arm; a missed one costs milliseconds on the air.
+            if (gHaveSession && rig.hasPending()) {
+                static uint32_t armedFor = 0;       // rig-clock time the current alarm was set for
+                uint32_t want = rig.nextEmitTime();
+                if (!armed || want != armedFor) {
 #ifdef KIP_MEASURE
-                // Arming a new alarm retires any fire still on the books. An edge emitted by the fallback write above
-                // can have its alarm go off afterwards, and that timestamp belongs to an edge already on the line -
-                // handing it to the NEXT edge made one interval read ~0 and the one after it a whole element long.
-                gFiredPending = false;
+                    // Arming retires any fire still on the books. An edge emitted by the fallback write above can
+                    // have its alarm go off afterwards, and that timestamp belongs to an edge already on the line -
+                    // handing it to the NEXT edge made one interval read ~0 and the one after it a whole element long.
+                    gFiredPending = false;
 #endif
-                armFor(rig.nextEmitTime(), rig.nextEmitState());
-                armed = true;
+                    armFor(want, rig.nextEmitState());
+                    armed = true;
+                    armedFor = want;
+                }
             }
 
             // Never send while an edge is close. `writeTo()` stalls this loop 2-8 ms (PHASE0_RESULTS.md), and this

@@ -105,6 +105,25 @@ the Keyer ("never send from the keying loop"), which the Rig had never been held
 deferring it costs nothing. The 250 ms display redraw is the same hazard in principle and remains a candidate, but it
 would show as ~37 ms slips, which the traces do not contain; it is left alone until this fix is measured.
 
+**Measured: deferring STATS changed nothing.** Three minutes at 25 WPM, before and after, same instrument settings:
+
+| | marks | > 2 ms | worst |
+|---|---|---|---|
+| before | 831 | 6 | +4.38 ms |
+| after | 833 | 6 | +4.62 ms |
+
+So the packet send is not the cause either. Two suspects are now eliminated *by measurement* — the instrument's own
+serial traffic, and the Rig's STATS send — which is worth as much as a confirmation. The deferral is kept: it is
+correct by Phase 0's rule whatever else is going on.
+
+**What the signature actually implicates: a stale alarm.** `N` means the edge fell due with *no alarm pending for
+it*. The Rig armed the timer only when nothing was armed, so once the queue head changed — a redundant copy arriving
+out of order, or the playout delay and clock offset shifting the whole timeline (§7.2, §7.3) — the alarm still
+pointed at the old moment. The new head then fell due unnoticed and the run loop retired it on its next pass. That
+accounts for all four observations at once: the `N`, the 2–4.6 ms magnitude, no lateness count (the edge itself
+arrived on time), and no shortened mark. **Fix under test:** re-arm whenever the head's due time changes, not merely
+when nothing is armed.
+
 No protocol errors, no queue overflows, no key-down limits. The playout delay adapted from 150 ms down to 100 ms
 over the run (10 decreases), with 9 offset steps.
 
