@@ -45,6 +45,25 @@ overflows; playout delay settled at 145 ms, one offset step, one delay decrease.
 target the Rig reproduces the Keyer's timeline to about **0.1 ms**. (`dup ~5000` is D13 redundancy working as
 designed; `dit 74` ms at 15 WPM is the generator's known 6 ms-short element, [[cw-timing-audit-2026-07]].)
 
+### §13.1 Bench loopback — clean link, 10 minutes per speed
+
+Pocket Remote Keyer (source 0, keyed by `PUT cw/repeat`) → classic Remote Rig, same LAN, no impairment.
+Acceptance is D2's **1 ms**, measured against the Keyer's own timestamps (D12b).
+
+| WPM | marks | within 0.2 ms | worst mark | spaces | within 0.2 ms | worst space | shortened | late | underruns |
+|---|---|---|---|---|---|---|---|---|---|
+| 15 | 1959 | **1959** | −100 … +103 µs | 1828 | **1828** | −108 … +88 µs | **0** | 0 | 0 |
+
+No protocol errors, no queue overflows, no key-down limits. The playout delay adapted from 150 ms down to 100 ms
+over the run (10 decreases), with 9 offset steps.
+
+**The idle-gap outliers are the design, not a defect.** 122 of 130 idle gaps were within 0.2 ms; the other 8 ran up
+to 6.0 ms short. An idle gap is the *only* place the Rig may take up clock drift (offset step, ≤ 1 ms, spec §7.2)
+or shrink the playout delay (5 ms per step, §7.3) — so a gap carrying one of each comes out ~6 ms short, which is
+what 10 decreases plus 9 offset steps predict. Marks and in-character spaces were never affected, which is exactly
+the graded acceptance the host tests assert. A listener hears the rhythm inside words unchanged and a word gap
+occasionally a hair shorter.
+
 ### Two instrument faults found on the way — both mine, not the firmware's
 
 1. **A stale interrupt timestamp.** When `poll()` retired an edge through its fallback write, that edge's alarm
