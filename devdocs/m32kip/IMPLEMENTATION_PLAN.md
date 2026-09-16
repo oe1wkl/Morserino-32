@@ -333,6 +333,35 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
   protocol → protocol 1.5 (D9); the chosen preferences (D4) with their three
   arrays and `spokenName`s.
 
+### Phase 5 — Verification (§13) — **hands-free part largely DONE 2026-09-16**
+
+> Results and method in `TEST_REPORT.md`. Instruments: a `KIP_MEASURE` build of the Rig that compares every
+> reproduced interval with the Keyer's own timestamps (the logic analyser we do not have), a UDP impairment relay on
+> the Mac (the netem box we do not have), and a bench driver that refuses to measure unless both ends prove they are
+> up.
+>
+> - **§13.1 bench loopback — PASSES at 15, 25 and 40 WPM.** Ten minutes each; every mark and space within **0.2 ms**
+>   against D2's 1 ms target. At 40 WPM one packet arrived late and the Rig shifted its timeline, which landed in a
+>   gap (20 ms long) and disturbed no mark.
+> - **A real product defect found and fixed on the way.** 25 WPM initially missed the target on ~0.65 % of marks
+>   (worst +4.6 ms). The cause was the **Rig redrawing its display every 250 ms regardless of the key line** — 37 ms
+>   on the OLED, in the loop that arms the emitter. Phase 0 imposed that rule on the Keyer; the Rig never obeyed it.
+>   Now gated, and 25 WPM went from 30 marks outside 0.2 ms to **none**. Three other hypotheses were eliminated by
+>   measurement first (the instrument's own serial traffic, the STATS send, a stale alarm); the two fixes made while
+>   hunting are kept because each is right on its own terms.
+> - **§13.2 impairment profiles — (a)–(d) pass, (e) fails.** Under 5 % loss with reordering every mark and space
+>   still landed inside 0.2 ms; the redundancy absorbed 358 dropped packets of 7070. **Burst loss (e) shortened one
+>   mark by 138 ms**, which breaches design principle 5; the Rig self-corrected by raising the playout delay, and
+>   raising **Rig Delay** on a lossy path prevents it. Open.
+> - **§13.4 safety — 7/7.** Forged MAC ignored (the mark outlived 1987 ms of corrupted key-ups), key-down limit cut
+>   at exactly 3.0 s, watchdog dropped the key 0.9–1.1 s after silence.
+> - **§13.3 drift — under way** on the direct link.
+> - **Still owed, and needs Willi at the bench:** WiFi pulled mid-mark, the real-Internet run (hotspot + port
+>   forward), straight key and bug, and the 12 s tune test.
+> - **Bench hazards recorded in `TEST_REPORT.md`:** a Keyer restarted often enough stops linking until rebooted
+>   (open question); killing the driver mid-run leaves the Pocket unable to start any mode; and five separate
+>   occasions where a measuring tool posed as a firmware fault.
+
 ### Phase 5 — Verification (§13)
 Bench loopback with logic analyser at 15/25/40 WPM; impairment profiles;
 2-hour drift; safety tests; real Internet via hotspot + port forward;
