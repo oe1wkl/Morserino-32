@@ -30,6 +30,29 @@ Spec §13 assumes a logic analyser on both key lines and a Linux box running `tc
 
 ## Results
 
+### §13.2 Impairment profiles — via the relay
+
+The Keyer's TRX Peer points at this Mac, `impair_relay.py` forwards both directions with the profile's delay, jitter
+and loss, and the Rig is measured as before. Three minutes of continuous 25 WPM keying per profile.
+
+| profile | marks | within 0.2 ms | worst mark | shortened | late | underruns | playout while keying |
+|---|---|---|---|---|---|---|---|
+| **(a) 50 ms, 10 ms jitter** | 963 | **963 (100 %)** | −82 … +90 µs | **0** | 0 | 0 | steady 150 ms |
+
+Relay: 6894 KEY packets forwarded, none dropped — profile (a) adds no loss, and none occurred.
+
+**Reading the playout delay correctly matters here.** The relay's STATS log shows the delay falling 150 → 122 → 96 →
+86 → 52 → 50 ms, which looks like the collapse §13.2 warns about — but every one of those rows is timestamped *after*
+the last measurement report, i.e. after keying stopped. Throughout the keyed portion the delay sat at exactly 150 ms.
+What the tail shows is the Rig shrinking D during idle, which is what §7.3 asks of it when there is nothing to
+protect. Acceptance for (a) — no shortened mark, underruns ≤ 1/min after the first 30 s, D converging without
+oscillation — is met.
+
+*Not understood, and therefore not claimed:* the Rig's own `jitter` field reads 32–220 ms under a profile that adds
+only ±10 ms. It may be measuring the relay's scheduling granularity on top of real WiFi, or the field may mean
+something narrower than assumed here. It bears on none of the acceptance criteria — marks, spaces, lateness and
+underruns are all clean — but it should be pinned down before anyone quotes it.
+
 ### §13.4 Safety — forged MAC, key-down limit, watchdog
 
 All three behaviours verified against the classic running as Rig, driven from this Mac
