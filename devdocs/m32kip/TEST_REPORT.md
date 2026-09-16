@@ -42,6 +42,23 @@ and loss, and the Rig is measured as before. Three minutes of continuous 25 WPM 
 | **(c) (b) + 2 % loss** | 833 | **833 (100 %)** | −82 … +103 µs | **0** | 0 | 0 | steady 150 ms |
 
 | **(d) (b) + 5 % loss, reordered** | 808 | **808 (100 %)** | −76 … +94 µs | **0** | 0 | 0 | steady 150 ms |
+| **(e) bursts of 3 lost, every 5 s** | 844 | 843 (99.9 %) | **−137982** … +74 µs | **1** | 2 | 2 | 150 → 224 ms |
+
+**(e) is the one profile that fails its acceptance: one mark came out 138 ms short.** §13.2 asks for *no* shortened
+mark under burst loss, and 843 of 844 marks were inside 0.2 ms — but one was not, with the gap after it 212 ms long.
+The Rig then grew its playout delay 150 → 224 ms and nothing further was shortened in the remaining ~30 bursts, so
+the behaviour is self-correcting; it is still a breach of design principle 5, which is the promise the whole design
+rests on.
+
+*Mechanism — inference, not measurement:* a burst appears to have swallowed every quick copy of one key-down, so it
+arrived only on a later repeat, past its playout time, and was emitted at once; the key-up that followed was
+unaffected and went out on schedule, shortening the mark by the key-down's lateness. That fits `late 2`, `und 2` and
+the delay growth, and it explains why the *following* gap is long. Confirming it needs the arrival time of that one
+edge, which the present instrument does not capture — worth adding before this is treated as settled.
+
+*Mitigation already shipped:* on a lossy link, raising **Rig Delay** above the burst recovery time prevents this
+outright — exactly what D4's fixed-delay setting exists for. The default (Adaptive, starting at 150 ms) is what was
+measured here; a rig on a burst-prone path should be given a floor.
 
 **(c) is the first profile that actually cost packets, and the redundancy swallowed all of it.** The relay dropped
 **135 of 7091** KEY packets on the way to the Rig (plus 3 STATS on the way back) and not one edge was lost: every
