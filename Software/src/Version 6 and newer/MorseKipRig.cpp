@@ -500,8 +500,15 @@ void MorseKipRig::run() {
                 uint8_t buf[MAX_PACKET];
                 sendTo(buf, encodeStats(buf, sizeof(buf), sh, st, gSessKey));
 #ifdef KIP_MEASURE
-                static uint8_t reportIn = 10;       // every ten STATS = every 10 s; the counts are cumulative
-                if (--reportIn == 0) { reportIn = 10; measureReport(rig); }
+                // Every KIP_REPORT_S seconds; the counts are cumulative, so a longer interval loses nothing but
+                // detail in time. It is a knob because the report itself writes ~200 bytes to the serial line from
+                // THIS loop - about 17 ms at 115200 - and this loop is the one that retires edges. Measuring at
+                // 60 s and comparing outlier rates is how the instrument's own effect gets ruled in or out.
+#ifndef KIP_REPORT_S
+#define KIP_REPORT_S 10
+#endif
+                static uint8_t reportIn = KIP_REPORT_S;
+                if (--reportIn == 0) { reportIn = KIP_REPORT_S; measureReport(rig); }
 #endif
             }
         }

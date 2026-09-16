@@ -65,8 +65,26 @@ was ever *shortened* (`short 0`), so design principle 5 holds even here.
 The suspect is inside the Rig: the per-edge trace shows most edges are retired by the run loop's fallback write
 rather than by the hardware-timer alarm, which makes emission depend on loop latency — and the Rig redraws its
 display every 250 ms, at ~37 ms per redraw on the OLED. The Keyer already obeys a "never redraw near an edge" rule
-(Phase 0); the Rig does not. **Under investigation** with the `KIPX` outlier trace, which labels each slip with the
-source of its timestamp.
+(Phase 0); the Rig does not.
+
+**The `KIPX` trace then attributed them, and every one points the same way.** Four outlier pairs in a one-minute
+25 WPM run, each a lengthened mark followed by an equally shortened space:
+
+| outlier | mark | following space |
+|---|---|---|
+| 1 | **+6919 µs (N)** | −6982 µs (N) |
+| 2 | **+1623 µs (N)** | −1676 µs (I) |
+| 3 | **+646 µs (N)** | −700 µs (N) |
+| 4 | **+1555 µs (N)** | −1604 µs (N) |
+
+`N` means the edge reached the key line through the run loop's fallback `digitalWrite`, not through the alarm ISR:
+the alarm had not fired, and the loop only came round to it after a stall. **Every lengthened mark is an `N`.**
+
+**But the instrument is a suspect in its own right, and must be cleared before the display is blamed.** The report
+writes up to three protocol messages every 10 s — ~200 bytes each, ~17 ms of serial at 115200 — *from the same loop
+that retires edges*, and this run had four outliers against six reports. The shipping firmware has the 250 ms redraw
+but none of that serial traffic. The report interval is therefore a compile-time knob (`KIP_REPORT_S`): running at
+60 s and comparing outlier rates rules the instrument in or out before any fix is designed.
 
 No protocol errors, no queue overflows, no key-down limits. The playout delay adapted from 150 ms down to 100 ms
 over the run (10 decreases), with 9 offset steps.
