@@ -80,6 +80,23 @@ occasionally a hair shorter.
    this shell `/usr/bin/python3` is an `xcrun` shim that fails to load, and the driver's own interpreter is blocked
    from the local network by macOS ([[macos-local-network-python-trap]]).
 
+### Open question for Willi: a Remote Keyer restarted often enough stops linking
+
+Seen twice on 2026-09-16, and it costs a run each time:
+
+- After several stop/start cycles of Remote Keyer within one boot, the Pocket reports **"No answer"** — while the
+  classic's Rig, at that same moment, answers a HELLO from this Mac **instantly** and reports no session. So the Rig
+  is listening and reachable; the Keyer's packets are not getting there (or its answers are not getting back).
+- Once in that state the Pocket will not start **any** mode: `menu/stop` answers OK, `menu/start` is swallowed, and
+  `GET menu` keeps reporting `active: true`. Plain CW Keyer fails the same way, so it is not M32KIP-specific.
+- Only a reboot clears it (`esptool --after hard_reset`, no reflash). Afterwards the very next start links first try.
+
+A user who leaves and re-enters Remote Keyer repeatedly could hit this, so it deserves a look before release. The
+suspect is the socket/WiFi teardown in `MorseKipKeyer::end()` → `begin()` (`audp.close()` then `audp.listen()`), but
+that is a hypothesis, not a diagnosis — the failing device could not be questioned over the network, only rebooted.
+The bench driver now reboots the Pocket before every run so a measurement is never spent on a Keyer that cannot
+transmit; that is a workaround for the bench, not a fix.
+
 ### Link detection: three wrong answers before a right one
 
 Worth recording, because each mistake cost a run and two of them produced *plausible* output:

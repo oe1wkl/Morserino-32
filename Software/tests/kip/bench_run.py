@@ -120,8 +120,23 @@ def main():
     print(f"rig started; letting it reach the network ({args.rig_settle}s) ...", flush=True)
     time.sleep(args.rig_settle)
 
+    # Reboot the Pocket before every run. A Remote Keyer stopped and restarted often enough within one boot stops
+    # linking altogether: it reports "No answer" while the Rig answers other clients on the same LAN instantly, and
+    # afterwards it will not start any mode at all until rebooted. Cheap here (~8 s) and it keeps a measurement from
+    # being spent on a Keyer that cannot transmit. See TEST_REPORT.md - this may be a real defect in the Keyer's
+    # socket teardown, and it is NOT something a measurement should paper over silently.
+    import os, subprocess
+    esptool = os.path.expanduser("~/.platformio/packages/tool-esptoolpy/esptool.py")
+    if os.path.exists(esptool):
+        print("rebooting the Pocket ...", flush=True)
+        subprocess.run([sys.executable, esptool, "--chip", "esp32s3", "--port", args.pocket,
+                        "--after", "hard_reset", "chip_id"], capture_output=True, timeout=90)
+        time.sleep(6)
+    else:
+        print("esptool not found - running without the Pocket reboot", flush=True)
+
     keyer = Port(args.pocket, True, "KEYER", log)
-    time.sleep(1)
+    time.sleep(2)
     keyer.send("PUT device/protocol/on", 2.5)
 
     # Always restart the Keyer AFTER the Rig, so its announcement is fresh: a message carrying the Rig's address
