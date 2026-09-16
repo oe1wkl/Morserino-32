@@ -30,6 +30,44 @@ Spec §13 assumes a logic analyser on both key lines and a Linux box running `tc
 
 ## Results
 
+### §13.4 Safety — forged MAC, key-down limit, watchdog
+
+All three behaviours verified against the classic running as Rig, driven from this Mac
+(`Software/tests/kip/safety_tests.py`). The decisive evidence is a trace of the Rig's `rig_state` through one
+sequence — key-down, valid keepalives, then a stream of key-ups with a corrupted MAC:
+
+| t | rig_state | what it means |
+|---|---|---|
+| 0.9 s | `0x01` | the key is down; forged key-ups start going out |
+| 2.0 s | `0x01` | **ignored** — the mark is still on the air |
+| 2.9 s | `0x01` | still ignored |
+| 4.0 s | `0x08` | the **key-down limit** fired, 3.0 s after the key went down, and cut the mark |
+
+- **Forged MAC ignored** (spec §9, D12c: a bad MAC is dropped in silence). The mark outlived more than two seconds
+  of corrupted key-ups and ended only when the limit cut it — the forged packets changed nothing.
+- **Key-down limit** cut the mark at its configured 3000 ms and set bit 3, with `late 0` and no watchdog involved.
+- **Watchdog**: with the Keyer silent mid-mark the key dropped after **1.0–1.1 s**, inside the 1 s keepalive timeout
+  plus one STATS period.
+
+**The harness failed three times before the firmware passed once — the fifth measuring tool in this project to pose
+as a firmware fault.** In order: it asserted on the first STATS after a key-down, which routinely still reads `0x00`
+because the edge must clear the playout delay and be caught by a 1 Hz report; then it *starved its own stream* while
+waiting, so the Rig's watchdog lifted the key (`0x04`) and the test blamed the firmware for a mark the test itself
+had released; then it sent keepalives once a second against a one-second timeout and lost the race. The lesson is
+general: **a harness that waits must keep sending**, and properties about intervals ("the mark survived", "it was cut
+at the limit") cannot be read from one sampled value — the tests now track the series of reports.
+
+**The corrected harness then reproduced the trace exactly: 7/7.** Mark survived **1987 ms** of forged key-ups; the
+limit cut it **3.0 s** after key-down; the watchdog dropped the key after **0.9–1.1 s** of silence. The test now
+sends on a 200 ms timer rather than at the mercy of its blocking reads, prints the survival and cut timings whatever
+the verdict, and reports its own worst send interval so a future failure is diagnosable from the output alone.
+
+*Caveat, recorded rather than smoothed over:* that self-measurement came back as **1001 ms** — right at the 1 s
+watchdog threshold. The run passed and its numbers match the independent trace, but the output does not say whether
+the gap fell inside or after the measurement window, so the cadence deserves tightening before this test is relied on
+unattended.
+
+
 ### Instrument validation, 2026-09-16 (clean link, 15 WPM, 2 min)
 
 The first measured figures of the project, and the reason to trust the ones that follow:

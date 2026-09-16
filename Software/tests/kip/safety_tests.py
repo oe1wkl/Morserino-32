@@ -117,57 +117,101 @@ results = []
 
 
 def check(name, ok, detail=""):
+    """Detail explains a FAILURE. Printing it on success too put 'the key never went down' next to a PASS."""
     results.append(ok)
-    print(("PASS " if ok else "FAIL ") + name + (f"   {detail}" if detail else ""), flush=True)
+    print(("PASS " if ok else "FAIL ") + name + (f"   {detail}" if detail and not ok else ""), flush=True)
 
 
-def test_forged(link):
-    """A packet with a broken MAC must change nothing."""
-    t = link.ticks()
-    link.send(link.key([(t, 1)]))                       # a real key-down, so there is a session state to disturb
-    time.sleep(0.2)
-    good = link.key([(link.ticks(), 0)])                # ... and its key-up, which we corrupt
-    forged = good[:-1] + bytes([good[-1] ^ 0xFF])
-    for _ in range(5):
-        link.send(forged)
-        time.sleep(0.05)
-    st = link.stats(3)
-    check("forged MAC: the session survives", st is not None, "no STATS came back" if st is None else "")
-    if st:
-        # The key-up was only ever sent forged, so the mark is still on the air: the Rig ignored the bad packet
-        # rather than acting on it.
-        check("forged MAC: it was ignored, not acted on", bool(st["state"] & RIG_KEY_DOWN),
-              f"rig_state={st['state']:#04x}")
-    link.send(link.key([(link.ticks(), 0)]))            # release the key properly
-    time.sleep(0.3)
+def note(text):
+    """A measured fact worth showing whatever the verdict."""
+    print(f"     {text}", flush=True)
 
 
-def test_keydown_limit(link):
-    """A mark longer than max_keydown_ms is cut at the limit, with the stream kept alive throughout."""
+def wait_key_down(link, edge, timeout=6.0):
+    """Wait until the Rig reports the key actually down, keeping the stream alive, and return that STATS.
+
+    Two lessons are baked in here, both learned by blaming the firmware first:
+
+    - The edge has to clear the playout delay (150 ms) and then be caught by a 1 Hz STATS, so the first report
+      after a key-down routinely still reads 0x00. Asserting on it is simply reading too early.
+    - **A waiting harness must still send.** The Rig's keepalive timeout is 1 s; a poll loop that transmits nothing
+      lets the watchdog trip, which lifts the key and aborts the mark (`rig_state` bit 2). Two tests then failed
+      against a key that the harness itself had caused to be released. A real Keyer sends every 250 ms; so do we.
+    """
+    end = time.time() + timeout
+    while time.time() < end:
+        link.send(link.key([edge]))                     # keepalive: same edge, so no new edge enters the stream
+        st = link.stats(0.25)
+        if st and st["state"] & RIG_KEY_DOWN:
+            return st
+    return None
+
+
+def test_forged_and_limit(link):
+    """Both spec §8 behaviours, read from the SERIES of STATS rather than from one sampled reading.
+
+    A single reading cannot express either property. The mark must *survive* the forged packets - which is a
+    statement about a stretch of time - and it must then be cut *at* the limit, which is a statement about when a
+    flag appears. Sampling one STATS and asserting on it failed both tests repeatedly while the firmware was doing
+    exactly the right thing; the trace that settled it simply printed the series.
+    """
     limit_ms = link.max_keydown or 3000
     down_t = link.ticks()
-    link.send(link.key([(down_t, 1)]))
-    deadline = time.time() + limit_ms / 1000.0 + 2.0
-    hit, lifted_after = None, None
+    for _ in range(4):
+        link.send(link.key([(down_t, 1)]))
+        time.sleep(0.03)
+
+    down_at = None          # when the Rig first reported the key down
+    forged = None           # built once the key is down, then sent alongside valid keepalives
+    survived_ms = 0         # how long the mark lasted while forged packets were arriving
+    limit_at = None         # when bit 3 appeared
+    released_at = None      # when the key went back up
+
     start = time.time()
-    while time.time() < deadline:
-        link.send(link.key([(down_t, 1)]))              # keepalives repeating the same edge: no new edges
-        st = link.stats(0.3)
-        if st:
-            if st["state"] & RIG_KEYDOWN_LIMIT and hit is None:
-                hit = time.time() - start
-            if hit is not None and not (st["state"] & RIG_KEY_DOWN) and lifted_after is None:
-                lifted_after = time.time() - start
-                break
-        time.sleep(0.2)
-    check(f"key-down limit ({limit_ms} ms): the Rig flagged it", hit is not None,
-          f"after {hit:.1f}s" if hit else "bit 3 never set")
-    check("key-down limit: the key went up", lifted_after is not None,
-          f"after {lifted_after:.1f}s" if lifted_after else "still down")
-    if lifted_after:
-        margin = abs(lifted_after - limit_ms / 1000.0)
-        check("key-down limit: cut at the limit, not late", margin < 1.0, f"{lifted_after:.1f}s vs {limit_ms/1000:.1f}s")
-    link.send(link.key([(link.ticks(), 0)]))
+    last_send = 0.0
+    max_gap = 0.0                                       # the harness's own worst send interval, measured not assumed
+    while time.time() - start < (limit_ms / 1000.0) + 5.0:
+        now = time.time()
+        if now - last_send >= 0.2:                      # send on a timer, not whenever the reads happen to allow it:
+            if last_send:                               # a cadence dictated by blocking reads once starved the
+                max_gap = max(max_gap, now - last_send) # stream and let the watchdog lift the key mid-test
+            link.send(link.key([(down_t, 1)]))          # valid keepalive: the same edge, so no new edge is added
+            if forged:
+                link.send(forged)                       # ... and the bad packet, which must change nothing
+            last_send = now
+        st = link.stats(0.1)
+        if not st:
+            continue
+        now = time.time()
+        if st["state"] & RIG_KEY_DOWN:
+            if down_at is None:
+                down_at = now
+                good = link.key([(link.ticks(), 0)])    # a valid key-up, corrupted: the only key-up we ever send
+                forged = good[:-1] + bytes([good[-1] ^ 0xFF])
+            elif forged:
+                survived_ms = int((now - down_at) * 1000)
+        elif down_at is not None and released_at is None:
+            released_at = now
+        if (st["state"] & RIG_KEYDOWN_LIMIT) and limit_at is None:
+            limit_at = now
+        if released_at and limit_at:
+            break
+
+    note(f"harness cadence: worst gap between sends {max_gap*1000:.0f} ms (the Rig drops the key after 1000 ms)")
+    if down_at:
+        note(f"mark survived {survived_ms} ms of forged key-ups"
+             + (f", limit cut it {limit_at - down_at:.1f}s after key-down" if limit_at else ", limit never fired"))
+    check("forged MAC: a mark was on the air", down_at is not None, "the key never went down")
+    check("forged MAC: ignored - the mark outlived the forged key-ups", survived_ms >= 1000,
+          f"mark held {survived_ms} ms while forged packets arrived")
+    check(f"key-down limit ({limit_ms} ms): the Rig flagged it", limit_at is not None, "bit 3 never set")
+    if down_at and limit_at:
+        cut_after = limit_at - down_at
+        check("key-down limit: cut at the limit, not late", abs(cut_after - limit_ms / 1000.0) < 1.5,
+              f"{cut_after:.1f}s vs {limit_ms/1000:.1f}s")
+    check("key-down limit: the key went up", released_at is not None, "still down")
+
+    link.send(link.key([(link.ticks(), 0)]))            # release properly
     time.sleep(0.3)
 
 
@@ -211,8 +255,7 @@ def main():
     print(f"session {link.session:#010x}, max key-down {link.max_keydown} ms\n", flush=True)
 
     try:
-        test_forged(link)
-        test_keydown_limit(link)
+        test_forged_and_limit(link)
         test_watchdog(link)
     finally:
         link.bye()
