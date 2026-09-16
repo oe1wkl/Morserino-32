@@ -140,7 +140,28 @@ lateness, no shortened mark.
 **Last untested in-loop stall: the display.** 37 ms per redraw on the OLED, every 250 ms, in the loop that arms the
 emitter. The magnitude argument against it (37 ms stalls should show as 37 ms slips) is not airtight, and it is
 exactly the rule Phase 0 imposed on the Keyer and never on the Rig. Now gated the same way — never while the key is
-down, never within 50 ms of the next edge — and under test.
+down, never within 50 ms of the next edge.
+
+### The display was the cause — fixed
+
+Three minutes at 25 WPM, identical instrument settings, with and without the gate:
+
+| | marks | within 0.2 ms | worst mark | intervals off by > 0.5 ms |
+|---|---|---|---|---|
+| before | 833 | 824 | +4.62 ms | 8 |
+| **after** | **834** | **834** | **+90 µs** | **0** |
+
+Every mark, every space and every idle gap inside 0.2 ms, and not one outlier row in the whole run.
+
+**The magnitude argument was wrong, and testing it anyway is what found the bug.** A 37 ms redraw does not produce a
+37 ms slip: it stalls the loop that *arms* the emitter, and only the tail of the stall overlaps an edge's due moment,
+so the edge comes out late by the remainder — a few milliseconds, which is what the traces showed. The reasoning that
+dismissed the display looked sound and was not.
+
+This is a **product** fix, not a bench fix: the shipping firmware redrew every 250 ms with no regard for the key
+line. The Rig now obeys what Phase 0 required of the Keyer. Two other changes made while hunting are kept because
+each is right on its own terms — STATS is no longer sent next to an edge, and the alarm is re-armed whenever the
+queue head moves — though neither shifted the measurements.
 
 No protocol errors, no queue overflows, no key-down limits. The playout delay adapted from 150 ms down to 100 ms
 over the run (10 decreases), with 9 offset steps.
