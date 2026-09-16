@@ -61,6 +61,23 @@ designed; `dit 74` ms at 15 WPM is the generator's known 6 ms-short element, [[c
    this shell `/usr/bin/python3` is an `xcrun` shim that fails to load, and the driver's own interpreter is blocked
    from the local network by macOS ([[macos-local-network-python-trap]]).
 
+### Link detection: three wrong answers before a right one
+
+Worth recording, because each mistake cost a run and two of them produced *plausible* output:
+
+1. **Wait for the Keyer to announce a handshake.** A Keyer that reconnects by itself (D14) never re-announces, so a
+   healthy link read as a failure — and the driver once keyed for two minutes into a Pocket that had dropped back
+   to its menu, which looks exactly like a successful run until you notice every count is zero.
+2. **Ask the Rig, over the network.** Correct in principle (spec §8: `NACK(busy)` proves a session), but unusable
+   from inside the driver: `/usr/bin/python3` is an `xcrun` shim that fails to load under this interpreter, so the
+   probe always answered "no Rig" while the pair was demonstrably linked.
+3. **Read the Rig's own 10 s report.** Silent when the Rig's *protocol session* is off — and the classic did exactly
+   that: it served the Pocket's session for ten minutes while emitting nothing over USB, so the driver tore the link
+   down three times and then measured nothing at all.
+4. **What works:** demand positive evidence from each end in turn. The classic must report `Remote Rig` starting, and
+   the Keyer — always restarted *after* it, so its announcement is fresh — must report the Rig's address. Anything
+   else aborts the run rather than measuring silence.
+
 **Bench hazard worth remembering:** killing the driver mid-run left the Pocket with a mode it thought was still
 running — `GET menu` kept reporting `active: true`, `menu/stop` answered OK without effect, and *no* mode would
 start afterwards, not even the plain CW Keyer. Only a reboot cleared it (esptool `--after hard_reset`, no
