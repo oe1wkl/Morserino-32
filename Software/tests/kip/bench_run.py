@@ -89,58 +89,57 @@ def main():
     log = open(args.log, "a")
     log.write(f"\n==== {time.ctime()} wpm={args.wpm} minutes={args.minutes} text={args.text!r}\n")
 
-    def link_state():
-        """BUSY while the Rig reports a session, FREE otherwise - read from the Rig's own serial stream.
-
-        The Rig's 10 s measurement report (KIP_MEASURE build) is emitted only inside the session branch, so its
-        arrival IS the proof that a Keyer is connected. Two earlier approaches failed: waiting for the Keyer to
-        announce itself missed a Keyer that had reconnected by itself (D14) and never re-announced, and a network
-        probe run from inside this driver always came back SILENT - on macOS a subprocess inherits this
-        interpreter's Local Network attribution, and a third-party python is blocked from the local network.
-        """
-        now = time.time()
-        with rig.lock:
-            fresh = [t for t, obj in rig.lines if "KIPM" in obj and now - t < 15]
-        return "BUSY" if fresh else "FREE"
+    def wait_for(port, pattern, timeout, mark, stop_pattern=None):
+        """Wait for an object matching `pattern` after index `mark`; returns "OK", "STOP" or None on timeout."""
+        start = time.time()
+        while time.time() - start < timeout:
+            with port.lock:
+                new = [o for _, o in port.lines[mark:]]
+            for obj in new:
+                if stop_pattern and re.search(stop_pattern, obj):
+                    return "STOP"
+                if re.search(pattern, obj):
+                    return "OK"
+            time.sleep(0.2)
+        return None
 
     rig = Port(args.classic, False, "RIG  ", log)
     print("classic: waiting out the reset the port open caused ...", flush=True)
     time.sleep(7)
     rig.send("PUT device/protocol/on", 2.5)
-    rig.send(f"PUT menu/start now/{CLASSIC_RIG_MENU}", 4)
-    # The Rig still has to join WiFi before it can answer a HELLO, and the Keyer gives up after ten tries in 5 s.
-    print(f"rig starting; letting it reach the network ({args.rig_settle}s) ...", flush=True)
+    with rig.lock:
+        mark = len(rig.lines)
+    rig.send(f"PUT menu/start now/{CLASSIC_RIG_MENU}", 1)
+    if wait_for(rig, r"Remote Rig", 20, mark) != "OK":
+        # The classic once served a session while saying nothing at all over USB - its protocol session was off and
+        # opening the port had not reset it - and the driver then "measured" for ten minutes against a Rig that
+        # reported nothing. Positive evidence from the Rig itself, or no run.
+        print("the classic never reported Remote Rig starting - protocol off, or the port did not reset it?", flush=True)
+        rig.close(); log.close()
+        return 1
+    print(f"rig started; letting it reach the network ({args.rig_settle}s) ...", flush=True)
     time.sleep(args.rig_settle)
 
     keyer = Port(args.pocket, True, "KEYER", log)
     time.sleep(1)
     keyer.send("PUT device/protocol/on", 2.5)
 
-    # A Keyer left in the mode reconnects on its own once the Rig is back (D14), so give it a moment and ask the
-    # Rig before touching anything. Restarting a mode that is already running is what stuck the Pocket twice:
-    # menu/stop answered OK, the start was swallowed, and no mode ran at all until the device was rebooted.
-    state = "FREE"
-    for _ in range(10):
-        state = link_state()
-        if state == "BUSY":
+    # Always restart the Keyer AFTER the Rig, so its announcement is fresh: a message carrying the Rig's address
+    # means the handshake completed, "No answer" means it did not. Asking an already-running Keyer to announce
+    # itself never worked (it does not re-announce), and reading the Rig's reports failed when its protocol was off.
+    linked = False
+    for attempt in range(1, 4):
+        keyer.send("PUT menu/stop", 3)
+        with keyer.lock:
+            mark = len(keyer.lines)
+        keyer.send(f"PUT menu/start now/{POCKET_KEYER_MENU}", 1)
+        got = wait_for(keyer, r"Remote Keyer\d", 30, mark, r"No answer|No rig host|No key set")
+        print(f"keyer start attempt {attempt}: {'linked' if got == 'OK' else (got or 'timeout')}", flush=True)
+        if got == "OK":
+            linked = True
             break
-        time.sleep(2)
-    print(f"link after rig start: {state}", flush=True)
-
-    if state != "BUSY" and not args.keep_keyer:
-        for attempt in range(1, 4):
-            keyer.send("PUT menu/stop", 3)
-            keyer.send(f"PUT menu/start now/{POCKET_KEYER_MENU}", 8)
-            for _ in range(10):
-                state = link_state()
-                if state == "BUSY":
-                    break
-                time.sleep(2)
-            print(f"keyer start attempt {attempt}: {state}", flush=True)
-            if state == "BUSY":
-                break
-    if state != "BUSY":
-        print(f"the Keyer is not linked ({state}) - nothing to measure", flush=True)
+    if not linked:
+        print("the Keyer never linked - nothing to measure", flush=True)
         rig.close()
         keyer.close()
         log.close()
