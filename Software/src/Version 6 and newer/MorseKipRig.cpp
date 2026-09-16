@@ -202,9 +202,17 @@ struct Meas {
     uint8_t  trState[TRACE];
     char     trSrc[TRACE];  // where the line timestamp came from: I = this pass's ISR, P = carried over, N = clock read
     uint8_t  trN, trDumped;
+    // The first TRACE intervals are where nothing goes wrong. Outliers turn up minutes into a run, so they get a
+    // trace of their own: what a rare multi-millisecond slip needs is its SOURCE letter - an edge retired by the
+    // loop's fallback write ('N') points at loop latency (the 37 ms OLED redraw), one timed by the alarm does not.
+    static const uint8_t XTRACE = 16;
+    int32_t  xErr[XTRACE];
+    uint8_t  xState[XTRACE];
+    char     xSrc[XTRACE];
+    uint8_t  xN, xDumped;
     void reset() { *this = Meas(); }
     Meas() : have(false), prevT(0), prevUs(0), prevState(KEY_UP), marks(), spaces(), idle(), shortened(0),
-             trN(0), trDumped(0) {}
+             trN(0), trDumped(0), xN(0), xDumped(0) {}
 };
 
 Meas     gMeas;
@@ -222,6 +230,12 @@ void measureEdge(const RigSession& rig, uint32_t senderT, uint8_t state, uint32_
             gMeas.trState[gMeas.trN] = state;
             gMeas.trSrc[gMeas.trN]  = src;
             gMeas.trN++;
+        }
+        if ((err > 500 || err < -500) && gMeas.xN < Meas::XTRACE) {
+            gMeas.xErr[gMeas.xN]   = err;
+            gMeas.xState[gMeas.xN] = state;
+            gMeas.xSrc[gMeas.xN]   = src;
+            gMeas.xN++;
         }
         if (state == KEY_UP) {                      // the interval that just ended was a mark
             gMeas.marks.add(err);
@@ -257,6 +271,20 @@ void measureReport(const RigSession& rig) {
             uint8_t i = gMeas.trDumped;
             s += " " + String(i) + (gMeas.trState[i] == KEY_UP ? "M" : "S")
                + String(gMeas.trSent[i]) + "/" + String(gMeas.trGot[i]) + String(gMeas.trSrc[i]);
+        }
+        MorseJSON::jsonCreate("message", s, "");
+    }
+
+    // The outliers, whenever any have been caught: how far off, whether the interval was a mark or a space, and
+    // where the line timestamp came from. 'N' on a multi-millisecond slip means the loop retired the edge before
+    // its alarm fired - loop latency, not the emitter.
+    if (gMeas.xDumped < gMeas.xN) {
+        String s = "KIPX";
+        uint8_t upto = (uint8_t)(gMeas.xDumped + 6);
+        if (upto > gMeas.xN) upto = gMeas.xN;
+        for (; gMeas.xDumped < upto; gMeas.xDumped++) {
+            uint8_t i = gMeas.xDumped;
+            s += " " + String(gMeas.xErr[i]) + "us" + (gMeas.xState[i] == KEY_UP ? "M" : "S") + String(gMeas.xSrc[i]);
         }
         MorseJSON::jsonCreate("message", s, "");
     }
