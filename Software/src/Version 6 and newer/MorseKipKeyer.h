@@ -39,5 +39,34 @@ namespace MorseKipKeyer {
     /// That catches the iambic keyer, a recalled memory and the straight key alike, since all three key through there.
     /// A no-op outside this mode, and it never blocks.
     void noteEdge(bool down);
+
+    // ---- the rig's own settings, adjusted from the operating position (D17) ----
+    //
+    // The rig items appear in this mode's preferences, first in the list and prefixed, and only while a link is up.
+    // Everything here is non-blocking: a request is handed to the send task, never transmitted from the caller, and
+    // the values the menu shows come from the cached copy so it opens instantly. A fetch on entry corrects them.
+
+    /// True when a link is up AND the rig on the other end answers configuration requests. An older rig never sets
+    /// the capability bit, so the items stay hidden rather than waiting for an answer that cannot come.
+    bool rigCfgAvailable();
+
+    /// The last values the rig reported. Valid whenever rigCfgAvailable() is true; seeded at link-up.
+    /// Indices are the six rig prefPos values, in the order the menu shows them.
+    uint8_t rigCfgValue(uint8_t index);
+
+    /// Number of rig settings, and the prefPos each index maps to.
+    uint8_t rigCfgCount();
+    prefPos rigCfgPref(uint8_t index);
+
+    /// Ask the rig to send its current settings. Returns at once; the answer updates the cache.
+    void rigCfgFetch();
+
+    /// Change one setting on the rig: updates the cache so the menu responds immediately, and queues the set.
+    /// The rig replies with what it actually stored, which corrects the cache if it clamped anything.
+    void rigCfgSet(uint8_t index, uint8_t value);
+
+    /// True while a set is still unacknowledged - the preferences menu waits for this before letting the long press
+    /// return to keying, so the rig's flash write finishes first (D17 decision 3).
+    bool rigCfgPending();
 }
 #endif /* MORSEKIPKEYER_H_ */

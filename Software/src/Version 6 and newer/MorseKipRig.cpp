@@ -119,6 +119,58 @@ void sendTo(const uint8_t* buf, size_t len) {
     if (len) MorseWiFi::audp.writeTo(buf, len, gPeer, gPeerPort);
 }
 
+// ---------------------------------------------------------------- remote configuration (D17)
+
+bool gCfgReplyDue = false;      // the Keyer asked for the settings, or changed them: answer with what we hold
+bool gCfgStoreDue = false;      // ... and commit them, but only with the key up
+
+/// Current settings, as the preferences hold them.
+RigCfgMsg currentRigCfg() {
+    RigCfgMsg m;
+    m.playout     = MorsePreferences::pliste[posKipPlayout].value;
+    m.limitKeyer  = MorsePreferences::pliste[posKipMaxKeyer].value;
+    m.limitManual = MorsePreferences::pliste[posKipMaxManual].value;
+    m.firstExt    = MorsePreferences::pliste[posKipFirstExt].value;
+    m.hangUnit    = MorsePreferences::pliste[posKipHangUnit].value;
+    m.hang        = MorsePreferences::pliste[posKipHang].value;
+    m.flags       = 0;
+    return m;
+}
+
+/// Apply a set from the Keyer: clamp to each parameter's own range, store in the preferences, and put the ones that
+/// the running session uses into its live config. Rig Delay and the break-in settings take effect at once; the
+/// key-down limits are re-read by the session, so they apply from the next mark.
+void applyRigCfg(const RigCfgMsg& want, RigConfig& cfg, RigSession& rig) {
+    struct { prefPos p; uint8_t v; } set[] = {
+        { posKipPlayout,    want.playout     },
+        { posKipMaxKeyer,   want.limitKeyer  },
+        { posKipMaxManual,  want.limitManual },
+        { posKipFirstExt,   want.firstExt    },
+        { posKipHangUnit,   want.hangUnit    },
+        { posKipHang,       want.hang        },
+    };
+    for (uint8_t i = 0; i < sizeof(set) / sizeof(set[0]); i++) {
+        uint8_t v = set[i].v;
+        uint8_t lo = MorsePreferences::pliste[set[i].p].minimum;
+        uint8_t hi = MorsePreferences::pliste[set[i].p].maximum;
+        if (v < lo) v = lo;
+        if (v > hi) v = hi;                          // a hostile or stale Keyer cannot push a value out of range
+        MorsePreferences::pliste[set[i].p].value = v;
+    }
+    uint16_t fixedD = MorsePreferences::kipPlayoutMs(MorsePreferences::pliste[posKipPlayout].value);
+    if (fixedD) { cfg.dDefaultMs = fixedD; cfg.dMinMs = fixedD; }
+    cfg.maxKeydownKeyerMs  = (uint16_t)(MorsePreferences::pliste[posKipMaxKeyer].value  * 1000u);
+    cfg.maxKeydownManualMs = (uint16_t)(MorsePreferences::pliste[posKipMaxManual].value * 1000u);
+    cfg.firstExtMs = MorsePreferences::pliste[posKipFirstExt].value;
+    cfg.hangDitsX2 = 0;
+    cfg.hangMs     = 0;
+    if (MorsePreferences::pliste[posKipHangUnit].value == 1)
+        cfg.hangDitsX2 = MorsePreferences::pliste[posKipHang].value;
+    else
+        cfg.hangMs = (uint16_t)(MorsePreferences::pliste[posKipHang].value * 50u);
+    rig.setConfig(cfg);
+}
+
 void sendBye() {
     if (!gHaveSession) return;
     uint8_t buf[MAX_PACKET];
@@ -412,7 +464,9 @@ void MorseKipRig::run() {
 #endif
                 ack.maxKeydownMs = rig.maxKeydownMs();
                 ack.pttLeadMs = 0;                  // no isolated PTT output on either variant (D6)
-                ack.flags = 0;
+                ack.flags = ACK_CFG_CAPABLE;        // this Rig answers CFG_REQ and CFG_SET (D17). An older one
+                                                    // never sets the bit, so a new Keyer hides the remote
+                                                    // settings rather than waiting for an answer that cannot come.
                 gHaveSession = true;
                 armed = false;
                 sessions++;
@@ -439,6 +493,20 @@ void MorseKipRig::run() {
                 KeyPkt kp;
                 if (!decodeKey(pkt.data, pkt.len, gSessKey, h, kp)) continue;
                 rig.onKey(h, kp, nowTicks());
+            }
+            // ---- remote configuration (D17) ----
+            // Only the session holder gets here: the packet is sealed with the session key, checked above. A SET
+            // is applied to the live session at once and stored; the reply says what was actually stored, so the
+            // operator sees the Rig's own answer rather than an echo of the request.
+            if (h.type == PKT_CFG_REQ) {
+                if (!decodeCfgReq(pkt.data, pkt.len, gSessKey, h)) continue;
+                gCfgReplyDue = true;
+            } else if (h.type == PKT_CFG_SET) {
+                RigCfgMsg want;
+                if (!decodeCfg(pkt.data, pkt.len, gSessKey, h, want)) continue;
+                applyRigCfg(want, cfg, rig);
+                gCfgStoreDue = true;                // the NVS write waits for a moment with the key up
+                gCfgReplyDue = true;
             }
         }
 
@@ -512,6 +580,27 @@ void MorseKipRig::run() {
             // Phase 0 made this a rule for the Keyer ("never send from the keying loop"); the Rig owes it too.
             bool edgeClose = rig.hasPending() &&
                              tickDiff(rig.nextEmitTime(), nowTicks()) < (int32_t)msToTicks(20);
+
+            // ---- remote configuration: answer and commit, in the same quiet moment (D17) ----
+            // writeRigCfg() erases flash and writeTo() blocks this loop - the loop that arms the emitter - so both
+            // wait for the gap the STATS send waits for, and for the key to be up. An operator changing a setting
+            // is not keying at that instant, so the wait is short; the one window that matters is the long press
+            // leaving the menu, and the Keyer holds off keying across it.
+            if ((gCfgStoreDue || gCfgReplyDue) && !edgeClose && rig.keyState() == KEY_UP) {
+                if (gCfgStoreDue) {
+                    MorsePreferences::writeRigCfg();
+                    gCfgStoreDue = false;
+                }
+                if (gCfgReplyDue) {
+                    RigCfgMsg m = currentRigCfg();
+                    m.flags |= CFG_STORED;              // what the Rig holds, not an echo of the request
+                    Header ch; ch.session = gSession; ch.seq = ++gTxSeq;
+                    uint8_t cbuf[MAX_PACKET];
+                    sendTo(cbuf, encodeCfgVal(cbuf, sizeof(cbuf), ch, m, gSessKey));
+                    gCfgReplyDue = false;
+                }
+            }
+
             if (!edgeClose && tickDiff(t, lastStats) >= (int32_t)msToTicks(1000)) {
                 lastStats = t;
                 Stats st;

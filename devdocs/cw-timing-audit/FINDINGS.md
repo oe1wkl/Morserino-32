@@ -272,3 +272,19 @@ ratio, and shortens dits proportionally most. The paddle keyer applies its 6 ms 
 and keeps 3.00. So anything keyed from the generator — keyer memories, protocol `cw/play`, and
 therefore whatever those send to a real transmitter — carries this ratio. Not changed here; recorded
 for the decision this item is waiting on.
+
+### TODO (2026-09-16): fix the generator's 6 ms — Willi has decided
+
+The decision this item was waiting on has been made: **the generator should be fixed.** What settled it was M32KIP
+putting the defect in front of a user. A Remote Rig displays the speed it actually receives, derived from the median
+mark it reproduces, and with generated CW it reads **28 WPM when the Keyer is set to 25** — because a 48 ms dit
+arrives as 42 ms. Willi confirmed that **keying from the paddle measures exact**, which matches the table above
+(paddle 3.00, generator 3.21) and rules the transport out entirely: the Rig is reporting faithfully, the elements
+really are short.
+
+The fix is in `genTimer`: `ditLength-6` / `dahLength-6` subtracts a constant where the paddle keyer applies its
+correction so as to preserve the ratio. Subtracting a constant cannot preserve 3.00, and it hurts dits worst.
+
+Affects keyer memories, `PUT cw/play` and `PUT cw/repeat`, the Echo Trainer and CW Generator as heard on a real
+transmitter, and now the speed a remote operator sees. Not started; wants a measurement afterwards with the same
+instrument (`devdocs/m32kip/TEST_REPORT.md` describes it).

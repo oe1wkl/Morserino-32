@@ -1175,6 +1175,127 @@ static void testBreakIn() {
     }
 }
 
+// ---------------------------------------------------------------- remote configuration (D17)
+
+static void testRemoteConfig() {
+    section("remote configuration (D17)");
+    uint8_t key[32];
+    for (int i = 0; i < 32; i++) key[i] = (uint8_t)(0x40 + i);
+    uint8_t buf[MAX_PACKET];
+
+    RigCfgMsg sent;
+    sent.playout = 3; sent.limitKeyer = 5; sent.limitManual = 20;
+    sent.firstExt = 8; sent.hangUnit = 1; sent.hang = 15; sent.flags = CFG_STORED;
+    Header h; h.session = 0x0BADF00D; h.seq = 4242;
+
+    {   size_t n = encodeCfgVal(buf, sizeof(buf), h, sent, key);
+        ok(n == HEADER_LEN + CFG_BODY_LEN + MAC_LEN, "a VAL is header + 8 + MAC");
+        Header got; RigCfgMsg back;
+        ok(decodeCfg(buf, n, key, got, back), "a VAL round trips");
+        okEq(got.type, PKT_CFG_VAL, "and arrives as a VAL");
+        okEq(back.playout, 3, "playout survives");
+        okEq(back.limitKeyer, 5, "keyer limit survives");
+        okEq(back.limitManual, 20, "manual limit survives");
+        okEq(back.firstExt, 8, "first extension survives");
+        okEq(back.hangUnit, 1, "hang unit survives");
+        okEq(back.hang, 15, "hang survives");
+        okEq(back.flags, CFG_STORED, "the stored flag survives");
+        okEq(got.session, 0x0BADF00D, "the session survives");
+    }
+    {   size_t n = encodeCfgSet(buf, sizeof(buf), h, sent, key);
+        Header got; RigCfgMsg back;
+        ok(decodeCfg(buf, n, key, got, back), "a SET round trips");
+        okEq(got.type, PKT_CFG_SET, "and is distinguishable from a VAL - a Rig must not act on its own reply");
+    }
+    {   size_t n = encodeCfgReq(buf, sizeof(buf), h, key);
+        ok(n == HEADER_LEN + MAC_LEN, "a REQ carries no payload");
+        Header got;
+        ok(decodeCfgReq(buf, n, key, got), "a REQ round trips");
+        RigCfgMsg back;
+        ok(!decodeCfg(buf, n, key, got, back), "and is not mistaken for a VAL");
+    }
+    {   // The guard that matters most: this packet changes a REMOTE TRANSMITTER's settings.
+        size_t n = encodeCfgSet(buf, sizeof(buf), h, sent, key);
+        int refused = 0, total = 0;
+        for (size_t byte = 0; byte < n; byte++) {
+            for (int bit = 0; bit < 8; bit++) {
+                uint8_t tampered[MAX_PACKET];
+                memcpy(tampered, buf, n);
+                tampered[byte] ^= (uint8_t)(1 << bit);
+                Header got; RigCfgMsg back;
+                total++;
+                if (!decodeCfg(tampered, n, key, got, back)) refused++;
+            }
+        }
+        okEq((uint32_t)refused, (uint32_t)total, "every single-bit flip in a SET is refused");
+    }
+    {   size_t n = encodeCfgSet(buf, sizeof(buf), h, sent, key);
+        uint8_t wrong[32];
+        memcpy(wrong, key, 32);
+        wrong[31] ^= 0x01;
+        Header got; RigCfgMsg back;
+        ok(!decodeCfg(buf, n, wrong, got, back), "a SET under the wrong key is refused");
+        for (size_t cut = 1; cut < n; cut++) {
+            if (decodeCfg(buf, n - cut, key, got, back)) { ok(false, "a truncated SET was accepted"); break; }
+        }
+        ok(true, "every truncation of a SET is refused");
+    }
+}
+
+// ---------------------------------------------------------------- setConfig on a LIVE session (D17)
+
+static void testSetConfigLive() {
+    section("remote configuration applied to a running session (D17)");
+    using breakin::base;
+
+    // A session with history: edges accepted, an offset established, marks measured, counters moved.
+    RigConfig cfg = base();
+    cfg.adaptive = false;
+    RigSession rig;
+    uint32_t now = 1000;
+    rig.begin(now, cfg, SRC_KEYER);
+    uint16_t seq = 0;
+    for (int i = 0; i < 6; i++) {                       // three dits, so the speed estimate and counters are alive
+        Edge e(5000 + i * 600, (i % 2) ? KEY_UP : KEY_DOWN);
+        Header h; h.seq = ++seq;
+        KeyPkt k; k.tNow = e.t; k.n = 1; k.edges[0] = e;
+        rig.onKey(h, k, now);
+        now += 300;
+        RigAction a;
+        while (rig.poll(now, a)) {}
+    }
+    uint32_t offBefore    = rig.offset();
+    uint32_t ditBefore    = rig.speed().ditEst();
+    uint32_t edgesBefore  = rig.counters().edges;
+    uint8_t  stateBefore  = rig.keyState();
+
+    RigConfig changed = cfg;
+    changed.maxKeydownKeyerMs = 7000;                   // the operator raises the key-down limit from the far end
+    rig.setConfig(changed);
+
+    okEq(rig.offset(), offBefore, "the clock offset survives a config change");
+    okEq(rig.speed().ditEst(), ditBefore, "the speed estimate survives");
+    okEq(rig.counters().edges, edgesBefore, "the counters survive");
+    okEq(rig.keyState(), stateBefore, "the key state survives");
+    okEq(rig.maxKeydownMs(), 7000, "and the new limit is in force");
+    ok(rig.alive(), "the session is still alive - a setting change must not drop the link");
+
+    {   // A new floor pulls the current delay up; a new ceiling pushes it down. Nothing else moves it.
+        RigConfig c = base(); c.adaptive = false; c.dDefaultMs = 150;
+        RigSession r; r.begin(0, c, SRC_KEYER);
+        okEq(ticksToMs(r.playoutTicks()), 150, "starts at the configured delay");
+        RigConfig raise = c; raise.dMinMs = 300;
+        r.setConfig(raise);
+        okEq(ticksToMs(r.playoutTicks()), 300, "a raised floor lifts the current delay");
+        RigConfig cap = raise; cap.dMinMs = 40; cap.dMaxMs = 200;
+        r.setConfig(cap);
+        okEq(ticksToMs(r.playoutTicks()), 200, "a lowered ceiling brings it back down");
+        RigConfig same = cap;
+        r.setConfig(same);
+        okEq(ticksToMs(r.playoutTicks()), 200, "and an unchanged range leaves it alone");
+    }
+}
+
 int main(int argc, char** argv) {
     if (argc > 1 && std::strcmp(argv[1], "--vectors") == 0) { emitVectors(); return 0; }
 
@@ -1189,6 +1310,8 @@ int main(int argc, char** argv) {
     testSendSchedule();
     testGlitchFilter();
     testBreakIn();
+    testRemoteConfig();
+    testSetConfigLive();
     testSafety();
     testRigFailSafe();
     testSimulation();

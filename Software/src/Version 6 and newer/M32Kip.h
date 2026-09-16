@@ -45,7 +45,12 @@ enum PacketType {
     PKT_KEY       = 3,      // Keyer → Rig
     PKT_STATS     = 4,      // Rig → Keyer
     PKT_BYE       = 5,      // either
-    PKT_NACK      = 6       // Rig → Keyer
+    PKT_NACK      = 6,      // Rig → Keyer
+    // Remote configuration of the Rig from the operating position (D17). Session-keyed like KEY, so only the
+    // current session holder can read or change anything, and an older Rig simply never advertises support.
+    PKT_CFG_REQ   = 7,      // Keyer → Rig: send me your settings
+    PKT_CFG_VAL   = 8,      // Rig → Keyer: here they are (also the acknowledgement of a SET)
+    PKT_CFG_SET   = 9       // Keyer → Rig: use these, and store them
 };
 
 enum NackReason {
@@ -94,7 +99,7 @@ struct HelloAck {
     uint32_t session;       // newly assigned, non-zero
     uint16_t maxKeydownMs;  // Rig-enforced mark limit for this session
     uint8_t  pttLeadMs;     // 0 = PTT disabled
-    uint8_t  flags;         // bit0: PTT available
+    uint8_t  flags;         // bit0: PTT available; bit1: remote configuration supported (D17)
     HelloAck() : session(0), maxKeydownMs(0), pttLeadMs(0), flags(0) {
         for (int i = 0; i < 8; i++) { nonceC[i] = 0; nonceS[i] = 0; }
     }
@@ -163,6 +168,36 @@ size_t encodeNack    (uint8_t* buf, size_t cap, const Header& h, const Nack& p, 
 size_t encodeKey     (uint8_t* buf, size_t cap, const Header& h, const KeyPkt& p,   const uint8_t key[32]);
 size_t encodeStats   (uint8_t* buf, size_t cap, const Header& h, const Stats& p,    const uint8_t key[32]);
 size_t encodeBye     (uint8_t* buf, size_t cap, const Header& h,                    const uint8_t key[32]);
+
+// ---------------------------------------------------------------- remote configuration (D17)
+//
+// The Rig's six settings, each exactly as the preferences hold it, so nothing is scaled twice and a reply can be
+// compared with a request field by field. One payload serves both directions: VAL is what the Rig has, SET is what
+// the Keyer wants, and the Rig answers a SET with a VAL so the operator sees what was actually stored.
+const size_t CFG_BODY_LEN = 8;              // six settings, a flags byte, and one reserved
+
+struct RigCfgMsg {
+    uint8_t playout;        // Rig Delay: index into kipPlayoutMs(), 0 = adaptive
+    uint8_t limitKeyer;     // Rig Limit Kyr, seconds
+    uint8_t limitManual;    // Rig Limit SK, seconds
+    uint8_t firstExt;       // Rig 1st Ext, ms, 0 = off
+    uint8_t hangUnit;       // Rig Hang Unit: 0 = milliseconds, 1 = dits
+    uint8_t hang;           // Rig Hang: 50 ms steps, or half dits
+    uint8_t flags;          // CFG_STORED on a VAL that has been committed to NVS
+    RigCfgMsg() : playout(0), limitKeyer(3), limitManual(10), firstExt(0), hangUnit(0), hang(5), flags(0) {}
+};
+
+const uint8_t CFG_STORED   = 0x01;          // in RigCfgMsg::flags: these values are in the Rig's NVS
+const uint8_t ACK_CFG_CAPABLE = 0x02;       // in HelloAck::flags: this Rig answers CFG_REQ and CFG_SET.
+                                            // An older Rig never sets it, so a new Keyer hides the remote
+                                            // settings instead of waiting for an answer that cannot come.
+
+size_t encodeCfgVal  (uint8_t* buf, size_t cap, const Header& h, const RigCfgMsg& p, const uint8_t key[32]);
+size_t encodeCfgSet  (uint8_t* buf, size_t cap, const Header& h, const RigCfgMsg& p, const uint8_t key[32]);
+size_t encodeCfgReq  (uint8_t* buf, size_t cap, const Header& h,                     const uint8_t key[32]);
+/// Accepts a VAL or a SET - the payload is identical; `h.type` says which arrived.
+bool   decodeCfg     (const uint8_t* buf, size_t len, const uint8_t key[32], Header& h, RigCfgMsg& p);
+bool   decodeCfgReq  (const uint8_t* buf, size_t len, const uint8_t key[32], Header& h);
 
 /// Reads magic, version and the header fields. Does NOT verify the MAC — use verifyMac() or one of the decoders.
 bool peekHeader(const uint8_t* buf, size_t len, Header& h);
@@ -308,6 +343,11 @@ class RigSession {
 public:
     RigSession() { RigConfig c; begin(0, c, SRC_KEYER); }
     void begin(uint32_t rigNow, const RigConfig& cfg, uint8_t source);
+    /// Swap the configuration of a session that is already running (D17: the operator changes a setting from the
+    /// remote end). Deliberately NOT begin(): that resets the offset, the jitter estimate, the queue and the
+    /// counters, which would tear down a live link every time someone nudged a parameter. Reconstruction state is
+    /// left exactly as it is; only the current playout delay is nudged, and only to respect a new floor or ceiling.
+    void setConfig(const RigConfig& cfg);
     /// A KEY packet whose MAC the transport has already verified. Returns false if the replay window refused it.
     bool onKey(const Header& h, const KeyPkt& pkt, uint32_t rigNow);
     /// Drain the actions that are due. Call repeatedly until it returns false; each call yields at most one action.

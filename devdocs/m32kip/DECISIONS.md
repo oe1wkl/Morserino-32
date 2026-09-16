@@ -98,6 +98,28 @@ mark and gap is untouched.
 - Mismatched hang settings err by at most the extension on one element per pause. The manual must say to set
   Rig Hang to the transceiver's own break-in delay.
 
+**D17 — Remote configuration of the Rig from the Keyer. RATIFIED 2026-09-16**, and **required for V10, before
+release** (Willi: "it is essential"). Testers established that a rig which cannot be adjusted from the operating
+position is only half a feature.
+
+1. **Scope:** the six Rig-side settings — Rig Delay, Rig Limit Kyr, Rig Limit SK, Rig 1st Ext, Rig Hang Unit, Rig
+   Hang. The pre-shared key is never readable or settable over the link, as it is never readable over the serial
+   protocol (D3).
+2. **Where they appear:** in the Keyer's own preferences, reached by the standard gesture (double-click), **rig items
+   first in the list**, each carrying a **prefix** so it cannot be mistaken for a local setting, and shown **only
+   while a Remote Keyer link is up**.
+3. **NVS on the Rig: commit immediately.** An operator changing a parameter cannot be keying at the same moment, so
+   the flash write cannot collide with keying — except on the way out. The Keyer therefore **waits 10–50 ms after
+   the long press that leaves the preferences menu** before keying can resume, which covers the Rig's write.
+4. **If the link drops while the preferences are open:** leave the preferences menu immediately and revert the
+   display. No half-edited remote state, no waiting for a timeout.
+5. **Values are cached *and* fetched** (my recommendation, Willi undecided — reverse freely): the menu opens instantly
+   on the values cached at link-up, and a fetch issued on entry corrects them a few hundred ms later. Fetching alone
+   blanks the first item behind a round trip; caching alone goes stale when the Rig is changed at its own end.
+6. **Protocol:** new **session-keyed** packet types (request / values / set), so only the current session holder can
+   read or change anything. Support is advertised in the `flags` byte of `HELLO_ACK`, which is currently always
+   zero — so a new Keyer against an older Rig simply hides the items, with no version break. Fold into Draft 0.3.
+
 ## Phase 0 instruments
 
 - `M32KipSpike.cpp` (`-D KIP_SPIKE=1` on the command line, never in `platformio.ini`) boots the

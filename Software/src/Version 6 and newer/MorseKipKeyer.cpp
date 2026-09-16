@@ -36,6 +36,43 @@ uint8_t       gSessKey[32];
 uint32_t      gSession = 0;
 volatile bool gNewSession = false;   // set when a reconnect lands; the send task restarts its schedule
 
+// ---- the rig's settings, cached here and adjusted from the preferences menu (D17) ----
+//
+// The socket belongs to the send task, so nothing here transmits: a request is flagged and the task sends it. The
+// cache is what the menu displays, which is why it opens without waiting for a round trip.
+const uint8_t RIGCFG_COUNT = 6;
+const prefPos RIGCFG_PREFS[RIGCFG_COUNT] = {
+    posKipPlayout, posKipMaxKeyer, posKipMaxManual, posKipFirstExt, posKipHangUnit, posKipHang
+};
+portMUX_TYPE     gCfgMux = portMUX_INITIALIZER_UNLOCKED;
+RigCfgMsg        gCfgCache;                 // what the rig last reported (or what we just asked it for)
+volatile bool    gCfgCapable = false;       // the rig advertised ACK_CFG_CAPABLE
+volatile bool    gCfgReqDue  = false;       // send a CFG_REQ when the task next runs
+volatile bool    gCfgSetDue  = false;       // ... or a CFG_SET, from gCfgCache
+volatile bool    gCfgWaiting = false;       // a set is out and unacknowledged
+
+uint8_t cfgField(const RigCfgMsg& m, uint8_t i) {
+    switch (i) {
+        case 0: return m.playout;
+        case 1: return m.limitKeyer;
+        case 2: return m.limitManual;
+        case 3: return m.firstExt;
+        case 4: return m.hangUnit;
+        default: return m.hang;
+    }
+}
+
+void cfgSetField(RigCfgMsg& m, uint8_t i, uint8_t v) {
+    switch (i) {
+        case 0: m.playout = v; break;
+        case 1: m.limitKeyer = v; break;
+        case 2: m.limitManual = v; break;
+        case 3: m.firstExt = v; break;
+        case 4: m.hangUnit = v; break;
+        default: m.hang = v; break;
+    }
+}
+
 enum { LINK_UP = 0, LINK_CALLING = 1 };
 volatile uint8_t gLink = LINK_UP;
 volatile bool    gByeSeen = false;
@@ -125,6 +162,8 @@ void onUdp(AsyncUDPPacket packet) {
         gNonceValid = false;
         markAlive();
         gNewSession = true;
+        gCfgCapable = (a.flags & ACK_CFG_CAPABLE) != 0;   // a reconnect may land on a different rig (D17)
+        if (gCfgCapable) gCfgReqDue = true;               // refresh the cache for the preferences menu
         gLink = LINK_UP;
         return;
     }
@@ -135,6 +174,17 @@ void onUdp(AsyncUDPPacket packet) {
     if (h.type == PKT_STATS) {
         Stats st;
         if (decodeStats(data, len, key, h, st)) markAlive();
+    } else if (h.type == PKT_CFG_VAL) {
+        // The rig's own account of its settings - the answer to a fetch, or the acknowledgement of a set saying
+        // what was actually stored after its own clamping. Either way it is the truth and the cache follows it.
+        RigCfgMsg m;
+        if (decodeCfg(data, len, key, h, m)) {
+            portENTER_CRITICAL(&gCfgMux);
+            gCfgCache = m;
+            portEXIT_CRITICAL(&gCfgMux);
+            gCfgWaiting = false;
+            markAlive();
+        }
     } else if (h.type == PKT_BYE) {
         if (decodeBye(data, len, key, h)) gByeSeen = true;      // the Rig ended it: call again straight away
     }
@@ -207,6 +257,25 @@ void sendTask(void*) {
         uint32_t session; uint8_t key[32];
         snapshotSession(session, key);
 
+        // Remote configuration goes out from here, where the socket lives - never from the keying path (D17).
+        // A fetch or a set is a single small packet between edges; if one is lost the operator sees the value
+        // unchanged and can try again, which is why there is no retry machinery.
+        if ((gCfgReqDue || gCfgSetDue) && session) {
+            uint8_t cbuf[MAX_PACKET];
+            Header ch; ch.session = session; ch.seq = ++gTxSeq;
+            if (gCfgSetDue) {
+                RigCfgMsg m;
+                portENTER_CRITICAL(&gCfgMux); m = gCfgCache; portEXIT_CRITICAL(&gCfgMux);
+                size_t n = encodeCfgSet(cbuf, sizeof(cbuf), ch, m, key);
+                if (n) MorseWiFi::audp.writeTo(cbuf, n, gPeer, MorsePreferences::kipPort);
+                gCfgSetDue = false;
+            } else {
+                size_t n = encodeCfgReq(cbuf, sizeof(cbuf), ch, key);
+                if (n) MorseWiFi::audp.writeTo(cbuf, n, gPeer, MorsePreferences::kipPort);
+                gCfgReqDue = false;
+            }
+        }
+
         bool sent = false;
         while (gFilter.pop(now, ft, fs)) {
             gKeyer.addEdge(ft, fs);
@@ -253,6 +322,10 @@ bool firstHandshake() {
     memcpy(gSessKey, k, 32);
     gSession = ack.session;
     portEXIT_CRITICAL(&gSessMux);
+    // Does this rig answer configuration requests (D17)? An older one never sets the bit, and the preferences then
+    // simply do not offer the rig items. Fetch straight away, so the menu has real values before it is first opened.
+    gCfgCapable = (ack.flags & ACK_CFG_CAPABLE) != 0;
+    gCfgReqDue = gCfgCapable;
     return true;
 }
 
@@ -291,6 +364,44 @@ bool MorseKipKeyer::linked() {
     return gActive && gLink == LINK_UP && heardRecently();
 }
 
+// ---- the rig's settings, seen and changed from the operating position (D17) ----
+
+bool MorseKipKeyer::rigCfgAvailable() {
+    return linked() && gCfgCapable;
+}
+
+uint8_t MorseKipKeyer::rigCfgCount() {
+    return RIGCFG_COUNT;
+}
+
+prefPos MorseKipKeyer::rigCfgPref(uint8_t index) {
+    return RIGCFG_PREFS[index < RIGCFG_COUNT ? index : 0];
+}
+
+uint8_t MorseKipKeyer::rigCfgValue(uint8_t index) {
+    if (index >= RIGCFG_COUNT) return 0;
+    RigCfgMsg m;
+    portENTER_CRITICAL(&gCfgMux); m = gCfgCache; portEXIT_CRITICAL(&gCfgMux);
+    return cfgField(m, index);
+}
+
+void MorseKipKeyer::rigCfgFetch() {
+    if (rigCfgAvailable()) gCfgReqDue = true;           // the send task transmits it; this never blocks
+}
+
+void MorseKipKeyer::rigCfgSet(uint8_t index, uint8_t value) {
+    if (index >= RIGCFG_COUNT || !rigCfgAvailable()) return;
+    portENTER_CRITICAL(&gCfgMux);
+    cfgSetField(gCfgCache, index, value);               // the menu reads this back at once, so the knob feels live
+    portEXIT_CRITICAL(&gCfgMux);
+    gCfgWaiting = true;                                 // ... and the rig's reply confirms what it really stored
+    gCfgSetDue = true;
+}
+
+bool MorseKipKeyer::rigCfgPending() {
+    return gCfgWaiting || gCfgSetDue;
+}
+
 void MorseKipKeyer::tick() {
     if (!gActive) return;
     gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
@@ -319,6 +430,11 @@ bool MorseKipKeyer::begin() {
     gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
     gLastNoted = KEY_UP;
     gFilter.reset();                                // the send task is not running yet (end() above retired it)
+    // A fresh session knows nothing about the rig yet: no capability, no values, nothing outstanding. Carrying any
+    // of that over would show a previous rig's settings, or leave a set waiting for an answer that never comes.
+    gCfgCapable = false;
+    gCfgReqDue = gCfgSetDue = gCfgWaiting = false;
+    portENTER_CRITICAL(&gCfgMux); gCfgCache = RigCfgMsg(); portEXIT_CRITICAL(&gCfgMux);
 
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, REGULAR, 0, "Connecting...");
@@ -386,6 +502,10 @@ void MorseKipKeyer::end() {
     gByeSeen = false;
     gNonceValid = false;
     gShownLink = false;
+    // Nothing about the rig outlives the mode: a stale gCfgWaiting would leave rigCfgPending() true for good, and
+    // the preferences menu waits on it before letting keying resume (D17).
+    gCfgCapable = false;
+    gCfgReqDue = gCfgSetDue = gCfgWaiting = false;
     portENTER_CRITICAL(&gStatMux); gStatFresh = false; portEXIT_CRITICAL(&gStatMux);
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Remote Keyer ended", "");

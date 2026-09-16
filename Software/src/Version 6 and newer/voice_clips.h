@@ -383,6 +383,12 @@ static const VoiceEntry voiceLookup[] = {
   {"Reset Defaults", "efd28b76"},
   {"Reset Scores", "fc806829"},
   {"Reversed", "030aa940"},
+  {"Rig: 1st Ext", "3c264ff4"},
+  {"Rig: Delay", "7d2f4e74"},
+  {"Rig: Hang", "232ff229"},
+  {"Rig: Hang U", "7af71c3e"},
+  {"Rig: Lim Kyr", "641a4bc2"},
+  {"Rig: Lim SK", "4f69c872"},
   {"Romeo", "87e7c1c5"},
   {"S America", "aab422ac"},
   {"SOTA/POTA", "34c9f68f"},
@@ -470,7 +476,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 456;
+static const unsigned int voiceLookupCount = 462;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

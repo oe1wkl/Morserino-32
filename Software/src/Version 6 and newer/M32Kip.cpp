@@ -218,6 +218,61 @@ size_t encodeStats(uint8_t* buf, size_t cap, const Header& h, const Stats& p, co
     return seal(buf, cap, o, key);
 }
 
+// ---------------------------------------------------------------- remote configuration (D17)
+//
+// One payload serves both directions: the Rig sends its current settings, the Keyer sends the ones it wants. Six
+// values, each as it is held in the preferences, so nothing has to be scaled twice and a reply can be compared with
+// a request field by field. A REQ carries no payload at all.
+
+static size_t encodeCfgBody(uint8_t* buf, size_t cap, const Header& h, uint8_t type,
+                            const RigCfgMsg& p, const uint8_t key[32]) {
+    if (cap < HEADER_LEN + CFG_BODY_LEN + MAC_LEN) return 0;
+    size_t o = 0;
+    Header hh = h; hh.type = type;
+    putHeader(buf, o, hh);
+    put8(buf, o, p.playout); put8(buf, o, p.limitKeyer); put8(buf, o, p.limitManual);
+    put8(buf, o, p.firstExt); put8(buf, o, p.hangUnit);  put8(buf, o, p.hang);
+    put8(buf, o, p.flags);    put8(buf, o, 0);           // reserved, must be zero
+    return seal(buf, cap, o, key);
+}
+
+size_t encodeCfgVal(uint8_t* buf, size_t cap, const Header& h, const RigCfgMsg& p, const uint8_t key[32]) {
+    return encodeCfgBody(buf, cap, h, PKT_CFG_VAL, p, key);
+}
+
+size_t encodeCfgSet(uint8_t* buf, size_t cap, const Header& h, const RigCfgMsg& p, const uint8_t key[32]) {
+    return encodeCfgBody(buf, cap, h, PKT_CFG_SET, p, key);
+}
+
+size_t encodeCfgReq(uint8_t* buf, size_t cap, const Header& h, const uint8_t key[32]) {
+    if (cap < HEADER_LEN + MAC_LEN) return 0;
+    size_t o = 0;
+    Header hh = h; hh.type = PKT_CFG_REQ;
+    putHeader(buf, o, hh);
+    return seal(buf, cap, o, key);                  // a request carries no payload at all
+}
+
+/// Accepts either a VAL or a SET: the payload is identical, and the caller knows which it asked for. `h.type`
+/// says which arrived, so a Keyer can ignore a SET it never sent and a Rig can ignore a VAL.
+bool decodeCfg(const uint8_t* buf, size_t len, const uint8_t key[32], Header& h, RigCfgMsg& p) {
+    if (!peekHeader(buf, len, h)) return false;
+    uint8_t want = (h.type == PKT_CFG_SET) ? PKT_CFG_SET : PKT_CFG_VAL;
+    if (!openPacket(buf, len, key, want, CFG_BODY_LEN, h)) return false;
+    size_t o = HEADER_LEN;
+    p.playout     = get8(buf, o);
+    p.limitKeyer  = get8(buf, o);
+    p.limitManual = get8(buf, o);
+    p.firstExt    = get8(buf, o);
+    p.hangUnit    = get8(buf, o);
+    p.hang        = get8(buf, o);
+    p.flags       = get8(buf, o);
+    return true;
+}
+
+bool decodeCfgReq(const uint8_t* buf, size_t len, const uint8_t key[32], Header& h) {
+    return openPacket(buf, len, key, PKT_CFG_REQ, 0, h);
+}
+
 size_t encodeBye(uint8_t* buf, size_t cap, const Header& h, const uint8_t key[32]) {
     if (cap < HEADER_LEN + MAC_LEN) return 0;
     size_t o = 0;
@@ -454,6 +509,18 @@ void RigSession::begin(uint32_t rigNow, const RigConfig& cfg, uint8_t source) {
     lossAccepted_ = 0;
     lossFirstSeq_ = 0;
     lossPct_ = 0;
+}
+
+void RigSession::setConfig(const RigConfig& cfg) {
+    cfg_ = cfg;
+    // Everything that describes the CONVERSATION - the clock offset, the jitter estimate and its buckets, the edge
+    // queue, the counters, the key state, the replay window - is deliberately left alone: the session is still the
+    // same session, and the operator has only changed a parameter. The one value that must move is the current
+    // playout delay, and only to stay inside the range it is now allowed.
+    uint32_t lo = msToTicks(cfg_.dMinMs), hi = msToTicks(cfg_.dMaxMs);
+    if (cfg_.firstExtMs) lo += msToTicks(cfg_.firstExtMs);   // begin() raises the floor by the extension; match it
+    if (d_ < lo) d_ = lo;
+    if (d_ > hi) d_ = hi;
 }
 
 uint16_t RigSession::maxKeydownMs() const {

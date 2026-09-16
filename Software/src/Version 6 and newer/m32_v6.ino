@@ -1436,7 +1436,19 @@ if (morseState == morseKeyer &&
                     memoryKeyer();
               }
               break;
-       case 2:  MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
+       case 2:
+#ifdef CONFIG_M32KIP
+                // The rig's own settings lead the list, but only while a link is up to a rig that answers
+                // configuration requests (D17). Decided HERE rather than at mode entry: a link can come up after
+                // the mode starts, and it can drop again, so the list is chosen at the moment the menu opens.
+                if (morseState == kipKeyer)
+                    MorsePreferences::setCurrentOptions(
+                        MorseKipKeyer::rigCfgAvailable() ? MorsePreferences::kipKeyerRigOptions
+                                                         : MorsePreferences::kipKeyerOptions,
+                        MorseKipKeyer::rigCfgAvailable() ? MorsePreferences::kipKeyerRigOptionsSize
+                                                         : MorsePreferences::kipKeyerOptionsSize);
+#endif
+                MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
                 MorseOutput::clearDisplay();                                 // restore display
                 updateTopLine();
                 MorseOutput::refreshScrollArea(MorseOutput::relPos);         // clearDisplay() wiped the screen, but not

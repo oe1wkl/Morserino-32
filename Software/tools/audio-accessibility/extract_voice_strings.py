@@ -73,6 +73,14 @@ ACTION_SPOKEN = {  # extraItems[] display label -> spoken
     "STORE Snapshot":"Store snapshot",
     "Koch Lesson":"Koch lesson",
     "LoRa Frequ":"LoRa frequency",
+    # The remote rig's settings (D17). Display labels are 12-char abbreviations carrying a "Rig:" prefix so they
+    # cannot be mistaken for local ones; read out as written they would be "Rig colon Lim Kyr".
+    "Rig: Delay":"Remote rig playout delay",
+    "Rig: Lim Kyr":"Remote rig key down limit, keyer",
+    "Rig: Lim SK":"Remote rig key down limit, straight key",
+    "Rig: 1st Ext":"Remote rig first element extension",
+    "Rig: Hang U":"Remote rig hang time unit",
+    "Rig: Hang":"Remote rig hang time",
 }
 VALUE_SPOKEN = {"+": "plus"}   # symbol-only option value (BLT <AR>) -> spoken word
 # "of" / "characters" join the composed value lines (see MorsePreferences::announceValue):

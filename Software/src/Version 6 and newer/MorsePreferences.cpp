@@ -24,6 +24,9 @@
 #endif
 #include "MorseVoice.h"
 #include "MorseTextEntry.h"
+#ifdef CONFIG_M32KIP
+#include "MorseKipKeyer.h"     // the remote rig's settings, shown in this device's preferences while linked (D17)
+#endif
 #ifdef CONFIG_CW_GAME
 #include "MorseGridScore.h"    // forgetHighScores(): drop the RAM caches when scores are cleared
 #include "MorseMemoryChain.h"
@@ -609,7 +612,13 @@ parameter MorsePreferences::pliste[] = {
 static_assert(sizeof(MorsePreferences::pliste) / sizeof(MorsePreferences::pliste[0]) == posSerialOut + 1,
               "pliste[] out of sync with the prefPos enum (rule 9)");
 
+// Positional against the special-case region of the prefPos enum, exactly like pliste[]/prefName[] are positional
+// against its first part: an entry out of order mislabels every item after it, silently. The six "Rig:" entries
+// carry the prefix Willi asked for so they cannot be mistaken for local settings (D17).
 const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores", "Practice Set"
+#ifdef CONFIG_M32KIP
+    , "Rig: Delay", "Rig: Lim Kyr", "Rig: Lim SK", "Rig: 1st Ext", "Rig: Hang U", "Rig: Hang"
+#endif
 #ifdef CONFIG_PRACTICE_STATS
     , "Practice Stats"
 #endif
@@ -879,8 +888,17 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
                                                    posKipGlitch
                                                  };
-int MorsePreferences::kipRigOptionsSize   = SizeOfArray(MorsePreferences::kipRigOptions);
-int MorsePreferences::kipKeyerOptionsSize = SizeOfArray(MorsePreferences::kipKeyerOptions);
+ // Same as kipKeyerOptions, but led by the remote rig's own settings (D17). Used only while the link is up AND the
+ // rig answers configuration requests: the operator sees what they can change at the far end first, then their own.
+ prefPos MorsePreferences::kipKeyerRigOptions[] = { posRigDelay, posRigLimitKyr, posRigLimitSK,
+                                                    posRigFirstExt, posRigHangUnit, posRigHang,
+                                                    PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                    posKipGlitch
+                                                  };
+int MorsePreferences::kipRigOptionsSize      = SizeOfArray(MorsePreferences::kipRigOptions);
+int MorsePreferences::kipKeyerOptionsSize    = SizeOfArray(MorsePreferences::kipKeyerOptions);
+int MorsePreferences::kipKeyerRigOptionsSize = SizeOfArray(MorsePreferences::kipKeyerRigOptions);
 #endif
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
@@ -955,6 +973,12 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             goToMenu = false;
             goto exitFromHere;
         }
+#ifdef CONFIG_M32KIP
+        // The rig's settings are only shown while a link is up (D17). If it drops, leave at once rather than let
+        // the operator edit values that can no longer be sent anywhere - and rather than wait for a timeout.
+        if (currentOptions == MorsePreferences::kipKeyerRigOptions && !MorseKipKeyer::linked())
+            goto exitFromHere;
+#endif
         Buttons::modeButton.Update();
         switch (Buttons::modeButton.clicks) {            // button was clicked
           case 1:     if (adjustKeyerPreference(posPtr))
@@ -985,6 +1009,14 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                         if (protocolActive() && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
 
+#ifdef CONFIG_M32KIP
+                        // D17 decision 2: a set may still be in flight, and the rig commits it to NVS - a flash
+                        // erase - as soon as it has a moment with the key up. This is the one window where that
+                        // could collide with keying, because the operator is about to key again. Hold briefly so
+                        // the rig gets its quiet moment first. Bounded, so a lost reply cannot hang the exit.
+                        for (uint8_t waited = 0; waited < 5 && MorseKipKeyer::rigCfgPending(); waited++)
+                            delay(10);
+#endif
                         writePreferences("morserino");
                         MorseOutput::clearDisplay();
                         //DEBUG("Exiting preferences menu\n");
@@ -1300,6 +1332,36 @@ String MorsePreferences::getValueLine(prefPos pos) {
     case posResetScores:
         str = "clear all";
         break;
+#ifdef CONFIG_M32KIP
+    // The remote rig's settings (D17). The values live on the OTHER device - these come from the cache the Keyer
+    // keeps, which is seeded at link-up and corrected by the rig's own reply to every set. Each is formatted
+    // exactly as its local twin in pliste[], so an operator sees the same words at both ends.
+    case posRigDelay: {
+        uint8_t v = MorseKipKeyer::rigCfgValue(0);
+        uint16_t ms = MorsePreferences::kipPlayoutMs(v);
+        str = ms ? (String(ms) + " ms") : String("Adaptive");
+        break;
+    }
+    case posRigLimitKyr:
+        str = String(MorseKipKeyer::rigCfgValue(1)) + "s";
+        break;
+    case posRigLimitSK:
+        str = String(MorseKipKeyer::rigCfgValue(2)) + "s";
+        break;
+    case posRigFirstExt:
+        str = String(MorseKipKeyer::rigCfgValue(3)) + "ms";
+        break;
+    case posRigHangUnit:
+        str = MorseKipKeyer::rigCfgValue(4) == 1 ? "Dits" : "Milliseconds";
+        break;
+    case posRigHang: {
+        uint8_t v = MorseKipKeyer::rigCfgValue(5);
+        str = MorseKipKeyer::rigCfgValue(4) == 1
+                ? String(v / 2) + (v % 2 ? ".5" : "") + " dits"
+                : String(v * 50) + " ms";
+        break;
+    }
+#endif
 #ifdef CONFIG_PRACTICE_STATS
     case posPracticeStatsOn:
         str = MorsePracticeStats::enabled() ? "On" : "Off";
@@ -1631,6 +1693,45 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
         displayKeyerPreferencesMenu(pos);
         return false;
     }
+#ifdef CONFIG_M32KIP
+    // The remote rig's settings (D17). Handled here, ahead of the generic path, because these six have no pliste[]
+    // entry at all - their values live on the other device. The range comes from the local twin's entry, so the
+    // limits an operator meets are the same at both ends; the change goes out as a set, and the rig's reply
+    // corrects the cache if it clamped anything.
+    if (pos >= posRigDelay && pos <= posRigHang) {
+        static const prefPos twin[] = { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                        posKipFirstExt, posKipHangUnit, posKipHang };
+        uint8_t idx = (uint8_t)(pos - posRigDelay);
+        uint8_t lo = pliste[twin[idx]].minimum, hi = pliste[twin[idx]].maximum;
+        MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
+        while (true) {
+            serialEvent();
+#ifdef CONFIG_AUDIO_A11Y
+            MorseVoice::tick();
+#endif
+            if (goToMenu) return true;
+            if (!MorseKipKeyer::linked()) return true;   // the link went: leave, do not edit into the void
+            Buttons::modeButton.Update();
+            if (Buttons::modeButton.clicks) {
+                boolean longPress = (Buttons::modeButton.clicks == -1);
+                Buttons::modeButton.clicks = 0;
+                displayKeyerPreferencesMenu(pos);
+                return longPress;
+            }
+            int8_t t = checkEncoder();
+            if (t) {
+                MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+                int v = (int)MorseKipKeyer::rigCfgValue(idx) + t;
+                if (v < lo) v = lo;
+                if (v > hi) v = hi;
+                MorseKipKeyer::rigCfgSet(idx, (uint8_t)v);
+                displayValueLine(pos, extraItems[pos - posKochFilter], false, false, true);
+                MorseOutput::refreshDisplay();
+            }
+            checkShutDown(false);
+        }
+    }
+#endif
 
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
     uint8_t seq;
@@ -2859,6 +2960,24 @@ void MorsePreferences::writeKipPort(uint16_t port) {
 
 // The Rig Delay choices. Index 0 is Adaptive. A mapped list rather than a raw number of 10 ms units, so the display
 // and the Accessibility Edition both give the value in milliseconds instead of a bare "15".
+// The six Remote Rig settings, and nothing else (D17). Deliberately NOT writePreferences(): that one walks the whole
+// namespace - WiFi strings, Koch filter, brightness, every pliste entry - and calls koch.setup() on the way. This
+// runs on a Rig that is keying a transmitter, where a multi-millisecond stall puts an edge out late; today's 25 WPM
+// outliers came from exactly that class of fault. Each value is compared before it is written, so a set that changes
+// one parameter costs one flash write, and a set that changes nothing costs none.
+void MorsePreferences::writeRigCfg() {
+    static const prefPos items[] = { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                     posKipFirstExt, posKipHangUnit, posKipHang };
+    pref.begin("morserino", false);
+    for (uint8_t i = 0; i < sizeof(items) / sizeof(items[0]); i++) {
+        prefPos p = items[i];
+        if (pref.getUChar(prefName[p], 0xFF) != pliste[p].value)
+            if (!pref.putUChar(prefName[p], pliste[p].value))
+                DEBUG("rig cfg not stored - NVS full?");     // put*() fails silently when NVS is full
+    }
+    pref.end();
+}
+
 uint16_t MorsePreferences::kipPlayoutMs(uint8_t value) {
     static const uint16_t ms[] = {0, 50, 100, 150, 200, 250, 300, 400, 500, 600};
     return value < sizeof(ms) / sizeof(ms[0]) ? ms[value] : 0;

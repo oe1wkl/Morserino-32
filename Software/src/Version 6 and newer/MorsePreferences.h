@@ -237,9 +237,12 @@ namespace MorsePreferences
 #ifdef CONFIG_M32KIP
   extern  prefPos kipRigOptions[];
   extern  prefPos kipKeyerOptions[];
+  extern  prefPos kipKeyerRigOptions[];   // the same, led by the remote rig's settings (D17), used only while linked
   extern int kipRigOptionsSize;
   extern int kipKeyerOptionsSize;
+  extern int kipKeyerRigOptionsSize;
   uint16_t kipPlayoutMs(uint8_t value);   // Playout Delay choice -> ms, 0 = adaptive
+  void writeRigCfg();                     // persist just the six Remote Rig settings (D17), nothing else
 #endif
   extern  prefPos allOptions[];
 

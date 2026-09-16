@@ -405,6 +405,47 @@ A dedicated Rig unit needs only: ESP32 module with WiFi (Ethernet would be a wel
 
 ---
 
+## 12a. Remote configuration of the Rig unit (D17, for Draft 0.3)
+
+A rig that cannot be adjusted from the operating position is half a feature: the playout delay, the key-down limits
+and the break-in compensation all have to be tuned against the transmitter, which is at the other end of the link.
+Three packet types carry that, **sealed with the session key** like `KEY`, so only the current session holder can
+read or change anything.
+
+| Type | Direction | Payload | Meaning |
+|---|---|---|---|
+| 7 `CFG_REQ` | Keyer → Rig | none | send me your settings |
+| 8 `CFG_VAL` | Rig → Keyer | 8 bytes | these are my settings (also the acknowledgement of a `CFG_SET`) |
+| 9 `CFG_SET` | Keyer → Rig | 8 bytes | use these, and store them |
+
+The 8-byte payload is shared by `CFG_VAL` and `CFG_SET`, each value exactly as the preferences hold it, so nothing is
+scaled twice and a reply can be compared with a request field by field:
+
+| Offset | Field | Meaning |
+|---|---|---|
+| 0 | `playout` | Rig Delay: 0 = adaptive, else an index into the delay table |
+| 1 | `limit_keyer` | Max key-down for source 0, seconds |
+| 2 | `limit_manual` | Max key-down for sources 1/2, seconds |
+| 3 | `first_ext` | First-element extension, ms, 0 = off |
+| 4 | `hang_unit` | 0 = milliseconds, 1 = dits |
+| 5 | `hang` | Break-in hang: 50 ms steps, or half dits |
+| 6 | `flags` | bit0 `CFG_STORED`: these values are in the Rig's NVS |
+| 7 | reserved | must be zero |
+
+Rules, all of which follow from the Rig being a transmitter rather than a settings server:
+
+- **Capability is advertised**, in `HELLO_ACK` `flags` bit 1. A Rig that predates this never sets it, so a Keyer
+  hides the remote settings instead of waiting for an answer that cannot come. No version break.
+- **Values are clamped by the Rig** to each parameter's own range. A stale or hostile Keyer cannot push a
+  transmitter's key-down limit out of range.
+- **The reply says what was stored**, not what was asked for, so the operator sees the Rig's own truth after any
+  clamping.
+- **Neither the reply nor the NVS write may happen next to an edge.** `writeTo()` blocks and an NVS write erases
+  flash; both wait for the key to be up with no edge due, exactly as `STATS` and the display redraw do. The one
+  window where this could still collide with keying is the operator's return from the preferences menu, and the
+  Keyer holds off keying briefly to cover it.
+- **The pre-shared key is neither readable nor settable** over the link, as it is not over the serial protocol.
+
 ## 13. Test plan
 
 1. **Bench loopback:** Keyer and Rig unit on the same LAN. Logic analyser on the Keyer's local key line and the Rig's TX-out. Acceptance: every mark and space within 0.5 ms of the original at 15, 25 and 40 WPM, over 10 minutes of continuous keying.

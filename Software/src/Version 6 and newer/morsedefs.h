@@ -489,6 +489,12 @@ enum prefPos : uint8_t {
                 posLoraBand, posLoraQRG, posLoraPower, posSnapRecall, posSnapStore,  posVAdjust, posHwConf,    // 37
                 posPlayerCall, posPlayerName, posResetScores,                                                  // Phase E: identity + score reset
                 posPracticeChars,                                                                              // session character picker for CW Gen/Echo "Practice Set"
+#ifdef CONFIG_M32KIP
+                // The remote Rig's own settings, adjusted from the operating position (D17). Special cases, after
+                // posSerialOut: their values live on the OTHER device, so they must stay out of the pliste[] /
+                // prefName[] loop - they have no NVS key here, and no local value to store.
+                posRigDelay, posRigLimitKyr, posRigLimitSK, posRigFirstExt, posRigHangUnit, posRigHang,
+#endif
 #ifdef CONFIG_PRACTICE_STATS
                 posPracticeStatsOn,
 #endif

@@ -1005,6 +1005,8 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
       // memories. It keys nothing locally: kipKeyer is in no Key-Ext-Tx case in keyOut().
       case _kipKeyer:
                 generatorMode = RANDOMS;  // as WiFi Trx: reset a potential KOCH_LEARN
+                // The option list is chosen again when preferences are opened (D17): with a link up to a rig that
+                // answers configuration requests, the list that leads with the rig's own settings is used instead.
                 MorsePreferences::setCurrentOptions(MorsePreferences::kipKeyerOptions,
                                                     MorsePreferences::kipKeyerOptionsSize);
                 morseState = kipKeyer;
