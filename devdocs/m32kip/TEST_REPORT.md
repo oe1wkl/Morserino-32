@@ -53,7 +53,13 @@ Acceptance is D2's **1 ms**, measured against the Keyer's own timestamps (D12b).
 | WPM | marks | within 0.2 ms | worst mark | spaces | within 0.2 ms | worst space | shortened | late | underruns |
 |---|---|---|---|---|---|---|---|---|---|
 | 15 | 1959 | **1959** | −100 … +103 µs | 1828 | **1828** | −108 … +88 µs | **0** | 0 | 0 |
-| 25 | 3249 | 3219 (99.1 %) | −90 … **+3587 µs** | 3033 | 3006 | **−3600** … +84 µs | **0** | 0 | 0 |
+| 25 *(before the display fix)* | 3249 | 3219 (99.1 %) | −90 … **+3587 µs** | 3033 | 3006 | **−3600** … +84 µs | **0** | 0 | 0 |
+| **25 (after the fix)** | **3125** | **3125 (100 %)** | **−84 … +93 µs** | **2920** | **2920 (100 %)** | **−93 … +85 µs** | **0** | 0 | 0 |
+
+After the fix, **not one interval in ten minutes was off by more than 0.5 ms** — marks, spaces and all 204 idle gaps
+alike (the playout delay held at 150 ms and took no decrease that run, so no legitimate gap adjustments occurred
+either). 15 WPM was measured *before* the fix and passed anyway: at that speed edges are sparse enough that a 250 ms
+redraw rarely lands beside one, and its only outliers were in idle gaps, where the Rig is permitted to adjust.
 
 **25 WPM misses the 1 ms target on about 0.65 % of marks — the project's first acceptance shortfall.** Of 3249
 marks, 21 exceeded 1 ms and 15 exceeded 2 ms; the worst was +3.59 ms, and the space that followed it was −3.60 ms.
