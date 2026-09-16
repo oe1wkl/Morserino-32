@@ -88,6 +88,29 @@ only ±10 ms. It may be measuring the relay's scheduling granularity on top of r
 something narrower than assumed here. It bears on none of the acceptance criteria — marks, spaces, lateness and
 underruns are all clean — but it should be pinned down before anyone quotes it.
 
+### §13.3 Drift — **not satisfied as the spec intends; here is what was actually done**
+
+Ten minutes of continuous 25 WPM keying on the direct link: **3247 marks, 3032 spaces and 215 idle gaps, every one
+within 0.2 ms**, no shortened mark, no late edge, no underrun, playout delay steady at 150 ms — and **zero clock
+offset corrections** (`off 0`).
+
+**That last figure is the point, and it is why this test is not finished.** §13.3 asks for a *two-hour* session so
+that the clocks drift far enough apart for the corrections to be observed and checked: ≤ 1 ms per step, never inside a
+character. In ten minutes the clocks barely diverge, so there is nothing to observe. Running twelve ten-minute legs
+would **not** substitute: each leg restarts both ends and re-establishes the offset, so it samples the first ten
+minutes of drift twelve times rather than watching two hours of it. The ten-minute ceiling on an unattended command
+here is what forces the legs, so this cannot be completed hands-free.
+
+Earlier runs did take corrections — one or two per ten-minute run, and profile (d) showed exactly two steps producing
+exactly two idle gaps ~1 ms short, which is the permitted behaviour and matches what the host tests assert. That is
+supporting evidence, not the test.
+
+**To finish it:** leave the pair keying for two uninterrupted hours and read the Rig's report at the end. The
+instrument already reports `off` steps cumulatively, so nothing further needs building — only the time.
+
+*A second attempt at a leg aborted* when the Keyer fell into the stuck state described above; the drift legs were
+stopped there rather than repeatedly restarting a Pocket that trips the fault every few mode entries.
+
 ### §13.4 Safety — forged MAC, key-down limit, watchdog
 
 All three behaviours verified against the classic running as Rig, driven from this Mac
@@ -315,6 +338,14 @@ suspect is the socket/WiFi teardown in `MorseKipKeyer::end()` → `begin()` (`au
 that is a hypothesis, not a diagnosis — the failing device could not be questioned over the network, only rebooted.
 The bench driver now reboots the Pocket before every run so a measurement is never spent on a Keyer that cannot
 transmit; that is a workaround for the bench, not a fix.
+
+**Seen again at 13:11, and this is the clearest instance yet.** The driver had rebooted the Pocket at the start of
+that very run, and the Pocket had been through only **two mode starts since** — one successful ten-minute leg, then
+this one. The classic reported Remote Rig at 13:10:50; the Keyer called it 35 s later (ample settle) and got
+`No answer`, then went silent on two further attempts. At that moment the Rig accepted a HELLO from this Mac
+**immediately** and held no session, so it was listening, free and reachable. Afterwards the Pocket showed the
+familiar signature: `GET menu` reporting `active: true`, `PUT menu/start` returning silence, everything else
+answering normally. **So the pre-run reboot does not hold the fault off** — it recurs within a couple of mode entries.
 
 **It got worse through 2026-09-16, and the reboot workaround no longer holds it off.** Later the same morning the
 state returned within a couple of stop/start cycles of a reboot the driver had just performed, and it cost three
