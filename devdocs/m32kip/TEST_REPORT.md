@@ -124,6 +124,24 @@ accounts for all four observations at once: the `N`, the 2–4.6 ms magnitude, n
 arrived on time), and no shortened mark. **Fix under test:** re-arm whenever the head's due time changes, not merely
 when nothing is armed.
 
+**Measured: re-arming changed nothing either.** Three minutes at 25 WPM each time, same instrument settings:
+
+| | marks | > 1 ms | > 2 ms | worst |
+|---|---|---|---|---|
+| baseline | 831 | 7 | 6 | +4.38 ms |
+| STATS deferred | 833 | 8 | 6 | +4.62 ms |
+| + re-arm on head change | 833 | 8 | 4 | +3.94 ms |
+
+Three hypotheses eliminated by measurement now: the instrument's serial traffic, the STATS send, and the stale
+alarm. Both fixes are kept — each is correct on its own terms — but neither is *the* cause. The signature has not
+budged: every outlier retired by the loop's fallback write, mark long and the following space equally short, no
+lateness, no shortened mark.
+
+**Last untested in-loop stall: the display.** 37 ms per redraw on the OLED, every 250 ms, in the loop that arms the
+emitter. The magnitude argument against it (37 ms stalls should show as 37 ms slips) is not airtight, and it is
+exactly the rule Phase 0 imposed on the Keyer and never on the Rig. Now gated the same way — never while the key is
+down, never within 50 ms of the next edge — and under test.
+
 No protocol errors, no queue overflows, no key-down limits. The playout delay adapted from 150 ms down to 100 ms
 over the run (10 decreases), with 9 offset steps.
 

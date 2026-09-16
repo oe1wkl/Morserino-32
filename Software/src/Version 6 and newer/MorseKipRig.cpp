@@ -534,7 +534,14 @@ void MorseKipRig::run() {
         }
 
         // ---- display, rate-limited: a redraw costs 37 ms on the OLED and 46 ms on the TFT ----
-        if (tickDiff(t, lastDraw) >= (int32_t)msToTicks(250)) {
+        // ... and never near an edge. A redraw is longer than a dit at any speed worth using, and this is the loop
+        // that arms the emitter: the Keyer has obeyed "never while the key is down, never close to an edge" since
+        // Phase 0, and the Rig never did. While a session is keying the frame simply waits for a gap - nothing on
+        // it changes faster than that anyway.
+        bool edgeNear = gHaveSession && (rig.keyState() == KEY_DOWN ||
+                        (rig.hasPending() &&
+                         tickDiff(rig.nextEmitTime(), nowTicks()) < (int32_t)msToTicks(50)));
+        if (!edgeNear && tickDiff(t, lastDraw) >= (int32_t)msToTicks(250)) {
             lastDraw = t;
             drawFrame(rig, ip, !gHaveSession, sessions);
         }
