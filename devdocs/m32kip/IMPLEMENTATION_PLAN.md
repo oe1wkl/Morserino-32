@@ -368,6 +368,24 @@ Bench loopback with logic analyser at 15/25/40 WPM; impairment profiles;
 straight key and bug; tune. Results go to `devdocs/m32kip/TEST_REPORT.md`.
 
 ### Phase 6 — Documentation and accessibility
+
+> **TODO owed (CLAUDE.md §7): the EN and DE manuals are not yet written for D16 and D17.** Both are user-visible and
+> both shipped in V10, so this is a release blocker rather than a nicety. What the manuals have to cover:
+>
+> - **Break-in compensation (D16)** — three Rig settings: *Rig 1st Ext* (why a transceiver clips the first element,
+>   and that 5–10 ms suits a relay), *Rig Hang Unit* and *Rig Hang* (set it to the transceiver's own break-in delay;
+>   Yaesu-style rigs state it in ms, Icom-style in dits, which is why both units exist). Worth saying plainly that
+>   the Rig starts the first element early rather than stretching it, so what goes on the air is what was keyed.
+> - **Remote configuration (D17)** — in Remote Keyer, a double-click opens the preferences as usual, and while the
+>   link is up the remote rig's own settings appear **first**, each prefixed `Rig:`. Changes take effect at the far
+>   end at once and are stored there. If the link drops the menu closes by itself.
+> - **The accessibility edition speaks the rig items** by their full names ("Remote rig playout delay"), not the
+>   12-character display labels.
+> - **A lossy path wants a floor:** §13.2 profile (e) shortened one mark under burst loss with the delay left on
+>   Adaptive. Raising *Rig Delay* above the burst recovery time prevents it, and the manual should say so where it
+>   describes Rig Delay.
+>
+> Voice clips are already done (`ACTION_SPOKEN`, store unchanged at 172 KB free), so only the prose is outstanding.
 EN + DE manuals (all three variants), `M32 Protocol.md`, `Software/README.md`
 change log (which obligates the manual "What is new" sync), voice clips via
 the extractor/generator, and a `UX_CONVENTIONS.md` addition for an

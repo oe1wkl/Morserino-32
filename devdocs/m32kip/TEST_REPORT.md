@@ -111,6 +111,38 @@ instrument already reports `off` steps cumulatively, so nothing further needs bu
 *A second attempt at a leg aborted* when the Keyer fell into the stuck state described above; the drift legs were
 stopped there rather than repeatedly restarting a Pocket that trips the fault every few mode entries.
 
+### D17 Remote configuration — verified on the wire, 9/9 plus the NVS round trip
+
+`Software/tests/kip/config_tests.py`, run from this Mac against the classic as Rig (Pocket deliberately not linked,
+so the test holds the single session itself):
+
+| Property | Result |
+|---|---|
+| Capability advertised | `HELLO_ACK flags 0x02` — a Keyer can tell a capable Rig from an older one |
+| Fetch | `CFG_REQ` answered with all six values, flagged `CFG_STORED` |
+| Set | the changed value took, **nothing else moved**, and the reply reported what was *stored* rather than echoing |
+| Clamp | asked for **250**, the Rig stored **30** — the parameter's own maximum |
+| NVS round trip | after a genuine reboot the Rig still reported the stored value |
+
+The clamp test is the one that matters most for safety: a stale or hostile Keyer must not be able to set a remote
+transmitter's key-down limit to anything it likes, and the Rig — not the Keyer — enforces the range.
+
+*Cleanup:* the test left `Rig Limit Kyr` at 30 (the clamp result); it has been set back to its default of 3, and no
+other value was touched.
+
+*One oddity, chased down and benign:* the Rig initially reported `Rig Hang Unit = 1` (Dits) and `Rig Hang = 10`,
+where the source defaults are 0 (Milliseconds) and 5. Since they survived a reboot they were genuinely in NVS, and
+the worry was the positional `prefPos` / `prefName[]` / `pliste[]` triplet — whose `static_assert`s check array
+*lengths* but **not alignment**, so three entries inserted at different relative positions in two arrays would
+compile cleanly and then read and write each other's keys (CLAUDE.md rule 10).
+
+Checked against the source rather than reasoned away: the two arrays run in identical order
+(`kipPlayout, kipMaxKeyer, kipMaxManual, kipFirstExt, kipHangUnit, kipHang, kipGlitch` against `Rig Delay, Rig Limit
+Kyr, Rig Limit SK, Rig 1st Ext, Rig Hang Unit, Rig Hang, Glitch Filter`) and the defaults are 0 and 5 as expected.
+Setting both explicitly and rebooting returns them as 0 and 5, persistently. **No misalignment**: the 1 and 10 were
+historical state in that device's flash from earlier bench work, not a live fault. The Rig is now on its documented
+defaults across all six settings.
+
 ### §13.4 Safety — forged MAC, key-down limit, watchdog
 
 All three behaviours verified against the classic running as Rig, driven from this Mac
