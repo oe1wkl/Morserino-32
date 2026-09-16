@@ -188,25 +188,41 @@ struct MeasHist {
 };
 
 struct Meas {
+    static const uint8_t TRACE = 48;
     bool     have;
     uint32_t prevT;         // sender ticks of the previous emitted edge
     uint32_t prevUs;        // when it went on the line, timer microseconds (modular: fine for intervals < 71 min)
     uint8_t  prevState;
     MeasHist marks, spaces, idle;
     uint32_t shortened;     // marks reproduced more than 0.2 ms short: design principle 5 says never
+    // Per-interval trace of the first TRACE intervals of a session. Aggregates alone cannot tell a key line that
+    // really moved from a measurement that paired the wrong two edges, and the first run showed errors of exactly
+    // one dah and exactly one word gap - the signature of a mispairing, not of a timing fault.
+    int32_t  trSent[TRACE], trGot[TRACE];
+    uint8_t  trState[TRACE];
+    char     trSrc[TRACE];  // where the line timestamp came from: I = this pass's ISR, P = carried over, N = clock read
+    uint8_t  trN, trDumped;
     void reset() { *this = Meas(); }
-    Meas() : have(false), prevT(0), prevUs(0), prevState(KEY_UP), marks(), spaces(), idle(), shortened(0) {}
+    Meas() : have(false), prevT(0), prevUs(0), prevState(KEY_UP), marks(), spaces(), idle(), shortened(0),
+             trN(0), trDumped(0) {}
 };
 
 Meas     gMeas;
 uint32_t gLastFiredUs = 0;
 bool     gFiredPending = false;
 
-void measureEdge(const RigSession& rig, uint32_t senderT, uint8_t state, uint32_t lineUs) {
+void measureEdge(const RigSession& rig, uint32_t senderT, uint8_t state, uint32_t lineUs, char src = '?') {
     if (gMeas.have && state != gMeas.prevState) {
         int32_t sentUs = tickDiff(senderT, gMeas.prevT) * 100;
         int32_t gotUs  = (int32_t)(lineUs - gMeas.prevUs);
         int32_t err    = gotUs - sentUs;
+        if (gMeas.trN < Meas::TRACE) {
+            gMeas.trSent[gMeas.trN] = sentUs;
+            gMeas.trGot[gMeas.trN]  = gotUs;
+            gMeas.trState[gMeas.trN] = state;
+            gMeas.trSrc[gMeas.trN]  = src;
+            gMeas.trN++;
+        }
         if (state == KEY_UP) {                      // the interval that just ended was a mark
             gMeas.marks.add(err);
             if (err < -200) gMeas.shortened++;
@@ -228,7 +244,22 @@ void measureReport(const RigSession& rig) {
     MorseJSON::jsonCreate("message", "KIPM " + gMeas.marks.line("mark") + " | " + gMeas.spaces.line("space") + " | "
         + gMeas.idle.line("idle") + " | short " + String(gMeas.shortened) + " D " + String(ticksToMs(rig.playoutTicks()))
         + " late " + String(c.late) + " und " + String(c.underruns) + " dLow " + String(c.dLowers)
-        + " off " + String(c.offSteps) + " dit " + String(ticksToMs(rig.speed().ditEst())), "");
+        + " off " + String(c.offSteps) + " dit " + String(ticksToMs(rig.speed().ditEst()))
+        + " dup " + String(c.duplicates) + " perr " + String(c.protocolErrors)
+        + " kdl " + String(c.keydownLimits) + " ovf " + String(c.overflows), "");
+
+    // A few trace rows per report, so one report never sits long enough on the serial line to disturb the loop.
+    if (gMeas.trDumped < gMeas.trN) {
+        String s = "KIPT";
+        uint8_t upto = (uint8_t)(gMeas.trDumped + 10);
+        if (upto > gMeas.trN) upto = gMeas.trN;
+        for (; gMeas.trDumped < upto; gMeas.trDumped++) {
+            uint8_t i = gMeas.trDumped;
+            s += " " + String(i) + (gMeas.trState[i] == KEY_UP ? "M" : "S")
+               + String(gMeas.trSent[i]) + "/" + String(gMeas.trGot[i]) + String(gMeas.trSrc[i]);
+        }
+        MorseJSON::jsonCreate("message", s, "");
+    }
 }
 #endif
 
@@ -395,14 +426,15 @@ void MorseKipRig::run() {
             while (rig.poll(nowTicks(), act)) {
                 if (act.type == RIG_EMIT) {
 #ifdef KIP_MEASURE
-                    // When did this edge reach the line? The ISR's own timestamp if it fired for it - also if it
-                    // fired only just now, after the check above - otherwise the write below.
-                    uint32_t lineUs;
-                    if (gFired)             { lineUs = gFiredAtUs; gFired = false; }
-                    else if (gFiredPending) { lineUs = gLastFiredUs; }
-                    else                    { lineUs = (uint32_t)nowUs(); }
+                    // When did this edge reach the line? The ISR's own timestamp if the alarm fired for it - also if
+                    // it fired only just now, after the check above - otherwise the write below. 'I', 'P' and 'N' say
+                    // which, so a trace can be read without guessing.
+                    uint32_t lineUs; char src;
+                    if (gFired)             { lineUs = gFiredAtUs;   src = 'I'; gFired = false; }
+                    else if (gFiredPending) { lineUs = gLastFiredUs; src = 'P'; }
+                    else                    { lineUs = (uint32_t)nowUs(); src = 'N'; }
                     gFiredPending = false;
-                    measureEdge(rig, act.senderT, act.state, lineUs);
+                    measureEdge(rig, act.senderT, act.state, lineUs, src);
 #endif
                     // The ISR has already put this edge on the line; poll() is what retires it. Should the alarm
                     // somehow not have fired, write it now rather than leave the line wrong.
@@ -422,6 +454,12 @@ void MorseKipRig::run() {
                 }
             }
             if (gHaveSession && !armed && rig.hasPending()) {
+#ifdef KIP_MEASURE
+                // Arming a new alarm retires any fire still on the books. An edge emitted by the fallback write above
+                // can have its alarm go off afterwards, and that timestamp belongs to an edge already on the line -
+                // handing it to the NEXT edge made one interval read ~0 and the one after it a whole element long.
+                gFiredPending = false;
+#endif
                 armFor(rig.nextEmitTime(), rig.nextEmitState());
                 armed = true;
             }

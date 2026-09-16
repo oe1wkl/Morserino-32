@@ -30,4 +30,38 @@ Spec §13 assumes a logic analyser on both key lines and a Linux box running `tc
 
 ## Results
 
-*(to follow)*
+### Instrument validation, 2026-09-16 (clean link, 15 WPM, 2 min)
+
+The first measured figures of the project, and the reason to trust the ones that follow:
+
+| | count | within 0.2 ms | worst |
+|---|---|---|---|
+| Marks | 224 | 224 | −83 … +97 µs |
+| Spaces (inside a character / between characters) | 208 | 208 | −91 … +79 µs |
+| Idle gaps | 15 | 15 | −78 … +14 µs |
+
+`short 0` (no mark ever shortened — design principle 5), `late 0`, no underruns, no protocol errors, no queue
+overflows; playout delay settled at 145 ms, one offset step, one delay decrease. Against D2's relaxed **1 ms**
+target the Rig reproduces the Keyer's timeline to about **0.1 ms**. (`dup ~5000` is D13 redundancy working as
+designed; `dit 74` ms at 15 WPM is the generator's known 6 ms-short element, [[cw-timing-audit-2026-07]].)
+
+### Two instrument faults found on the way — both mine, not the firmware's
+
+1. **A stale interrupt timestamp.** When `poll()` retired an edge through its fallback write, that edge's alarm
+   could still fire afterwards and leave its timestamp behind for the *next* edge to consume. One interval then
+   read ~0 and the next a whole element too long. The aggregate looked alarming — a third of all marks "wrong" by
+   exactly one dah (234 ms) or one word gap (569 ms), 136 "shortened" marks — while the Rig's own counters said
+   `late 0, und 0` and the delay never moved. Errors landing on whole element lengths are the signature of a
+   mispairing, not of a key line that moved. Fixed by dropping any pending fire when a new alarm is armed; the
+   per-interval trace (`KIPT`, with I/P/N saying where each timestamp came from) is what proved it.
+2. **Link detection that asked the wrong end.** The driver waited for the Keyer to announce a fresh handshake, so
+   a Keyer that had reconnected by itself (D14) looked like a failed one — and it once keyed for two minutes into
+   a Pocket that had fallen back to its menu. It now reads the Rig's own 10 s report, which is emitted only while
+   a session exists. A network probe from inside the driver was tried first and always returned "no Rig": under
+   this shell `/usr/bin/python3` is an `xcrun` shim that fails to load, and the driver's own interpreter is blocked
+   from the local network by macOS ([[macos-local-network-python-trap]]).
+
+**Bench hazard worth remembering:** killing the driver mid-run left the Pocket with a mode it thought was still
+running — `GET menu` kept reporting `active: true`, `menu/stop` answered OK without effect, and *no* mode would
+start afterwards, not even the plain CW Keyer. Only a reboot cleared it (esptool `--after hard_reset`, no
+reflash). Stop a run with `PUT cw/stop` and `PUT menu/stop`, not by killing the driver.
