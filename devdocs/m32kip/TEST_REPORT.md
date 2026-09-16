@@ -39,6 +39,12 @@ and loss, and the Rig is measured as before. Three minutes of continuous 25 WPM 
 |---|---|---|---|---|---|---|---|
 | **(a) 50 ms, 10 ms jitter** | 963 | **963 (100 %)** | −82 … +90 µs | **0** | 0 | 0 | steady 150 ms |
 | **(b) 120 ms, 40 ms jitter** | 809 | **809 (100 %)** | −92 … +100 µs | **0** | 0 | 0 | steady 150 ms |
+| **(c) (b) + 2 % loss** | 833 | **833 (100 %)** | −82 … +103 µs | **0** | 0 | 0 | steady 150 ms |
+
+**(c) is the first profile that actually cost packets, and the redundancy swallowed all of it.** The relay dropped
+**135 of 7091** KEY packets on the way to the Rig (plus 3 STATS on the way back) and not one edge was lost: every
+mark and space still landed within 0.2 ms, with no late edge and no underrun. That is D13's repeat schedule — three
+copies 20 ms apart, then the keepalive — earning its ~3× packet cost.
 
 Relay: 6894 KEY packets forwarded for (a) and 7030 for (b), none dropped — neither profile adds loss, and none
 occurred. For (b) the delay held at 150 ms across *all three* reports, checked in the series rather than sampled at
