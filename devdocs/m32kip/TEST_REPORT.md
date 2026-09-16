@@ -86,6 +86,25 @@ that retires edges*, and this run had four outliers against six reports. The shi
 but none of that serial traffic. The report interval is therefore a compile-time knob (`KIP_REPORT_S`): running at
 60 s and comparing outlier rates rules the instrument in or out before any fix is designed.
 
+**The instrument was cleared, and the real cause is the Rig's own STATS send.** Cutting the reports from every 10 s
+to every 60 s — six times less serial traffic out of that loop — left the severe outliers untouched:
+
+| reporting | keying | marks | > 2 ms | rate |
+|---|---|---|---|---|
+| every 10 s | 1 min | 326 | 1 | ~1 / min |
+| every 60 s | 3 min | 831 | 6 | ~2 / min |
+
+The magnitude is the tell: the stalls are **2–4 ms**, not the ~37 ms an OLED redraw costs. Phase 0 measured that
+exact figure for something the Rig does in this loop every second — `writeTo()` blocks 2–8 ms — and this is the loop
+that arms the alarm for the next edge. A STATS packet sent just before a key-up delays the arming, and the edge goes
+out late by the length of the stall; the following space is short by the same amount, and nothing is lost. Roughly 60
+sends a minute, a couple of which land next to an edge, matches the observed ~2/min.
+
+**Fix:** the Rig now defers its STATS send while the next edge is due within 20 ms — the same rule Phase 0 imposed on
+the Keyer ("never send from the keying loop"), which the Rig had never been held to. STATS is a 1 Hz report, so
+deferring it costs nothing. The 250 ms display redraw is the same hazard in principle and remains a candidate, but it
+would show as ~37 ms slips, which the traces do not contain; it is left alone until this fix is measured.
+
 No protocol errors, no queue overflows, no key-down limits. The playout delay adapted from 150 ms down to 100 ms
 over the run (10 decreases), with 9 offset steps.
 

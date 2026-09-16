@@ -492,7 +492,15 @@ void MorseKipRig::run() {
                 armed = true;
             }
 
-            if (tickDiff(t, lastStats) >= (int32_t)msToTicks(1000)) {
+            // Never send while an edge is close. `writeTo()` stalls this loop 2-8 ms (PHASE0_RESULTS.md), and this
+            // is the loop that arms the alarm for the next edge - so a STATS landing just before a key-up pushes
+            // that edge out by the length of the stall. The outlier trace caught exactly that: marks 2-4 ms long
+            // with the following space equally short, every one retired by the loop's fallback write rather than
+            // by the alarm. Deferring costs nothing: STATS is a 1 Hz report and the next pass sends it.
+            // Phase 0 made this a rule for the Keyer ("never send from the keying loop"); the Rig owes it too.
+            bool edgeClose = rig.hasPending() &&
+                             tickDiff(rig.nextEmitTime(), nowTicks()) < (int32_t)msToTicks(20);
+            if (!edgeClose && tickDiff(t, lastStats) >= (int32_t)msToTicks(1000)) {
                 lastStats = t;
                 Stats st;
                 rig.fillStats(st, nowTicks());
