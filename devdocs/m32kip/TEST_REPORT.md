@@ -41,10 +41,19 @@ and loss, and the Rig is measured as before. Three minutes of continuous 25 WPM 
 | **(b) 120 ms, 40 ms jitter** | 809 | **809 (100 %)** | −92 … +100 µs | **0** | 0 | 0 | steady 150 ms |
 | **(c) (b) + 2 % loss** | 833 | **833 (100 %)** | −82 … +103 µs | **0** | 0 | 0 | steady 150 ms |
 
+| **(d) (b) + 5 % loss, reordered** | 808 | **808 (100 %)** | −76 … +94 µs | **0** | 0 | 0 | steady 150 ms |
+
 **(c) is the first profile that actually cost packets, and the redundancy swallowed all of it.** The relay dropped
 **135 of 7091** KEY packets on the way to the Rig (plus 3 STATS on the way back) and not one edge was lost: every
 mark and space still landed within 0.2 ms, with no late edge and no underrun. That is D13's repeat schedule — three
 copies 20 ms apart, then the keepalive — earning its ~3× packet cost.
+
+**(d) lost 358 of 7070 packets (5 %) with reordering on, and still reproduced every mark and space within 0.2 ms.**
+Its two outlier intervals are both **idle gaps** — −982 µs and −991 µs — and the run took exactly **two clock-offset
+steps**. A step is capped at 1 ms and may only be taken in an idle gap (§7.2), so two steps give two gaps about a
+millisecond short: a one-to-one correspondence, and the same behaviour the host tests assert. No mark or in-character
+space was touched. Out-of-order arrival, one of the discarded suspects for the 25 WPM outliers, causes no trouble at
+all when it is actually applied.
 
 Relay: 6894 KEY packets forwarded for (a) and 7030 for (b), none dropped — neither profile adds loss, and none
 occurred. For (b) the delay held at 150 ms across *all three* reports, checked in the series rather than sampled at
