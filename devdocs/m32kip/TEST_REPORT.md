@@ -38,8 +38,11 @@ and loss, and the Rig is measured as before. Three minutes of continuous 25 WPM 
 | profile | marks | within 0.2 ms | worst mark | shortened | late | underruns | playout while keying |
 |---|---|---|---|---|---|---|---|
 | **(a) 50 ms, 10 ms jitter** | 963 | **963 (100 %)** | −82 … +90 µs | **0** | 0 | 0 | steady 150 ms |
+| **(b) 120 ms, 40 ms jitter** | 809 | **809 (100 %)** | −92 … +100 µs | **0** | 0 | 0 | steady 150 ms |
 
-Relay: 6894 KEY packets forwarded, none dropped — profile (a) adds no loss, and none occurred.
+Relay: 6894 KEY packets forwarded for (a) and 7030 for (b), none dropped — neither profile adds loss, and none
+occurred. For (b) the delay held at 150 ms across *all three* reports, checked in the series rather than sampled at
+the end.
 
 **Reading the playout delay correctly matters here.** The relay's STATS log shows the delay falling 150 → 122 → 96 →
 86 → 52 → 50 ms, which looks like the collapse §13.2 warns about — but every one of those rows is timestamped *after*
