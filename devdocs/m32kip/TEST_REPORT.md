@@ -55,6 +55,14 @@ Acceptance is D2's **1 ms**, measured against the Keyer's own timestamps (D12b).
 | 15 | 1959 | **1959** | −100 … +103 µs | 1828 | **1828** | −108 … +88 µs | **0** | 0 | 0 |
 | 25 *(before the display fix)* | 3249 | 3219 (99.1 %) | −90 … **+3587 µs** | 3033 | 3006 | **−3600** … +84 µs | **0** | 0 | 0 |
 | **25 (after the fix)** | **3125** | **3125 (100 %)** | **−84 … +93 µs** | **2920** | **2920 (100 %)** | **−93 … +85 µs** | **0** | 0 | 0 |
+| **40** | **4962** | **4962 (100 %)** | **−98 … +88 µs** | 4961 | 4960 | −98 … **+20099 µs** | **0** | 1 | 1 |
+
+**40 WPM: every mark within 0.2 ms; the one long space is the network, answered exactly as specified.** In the third
+minute a single packet arrived after its playout time (`late 1`): the Rig grew the delay 150 → 170 ms to cover it and
+shifted the timeline, and because an increase is deferred to a key-up it landed in a **gap**, which came out 20.1 ms
+long. Nothing was shortened and no mark was disturbed — spec §7.3 working as written. For the remaining seven minutes
+there was no further late edge or underrun and the delay held at 170 ms. (`idle -`: at 40 WPM no gap in the test text
+reaches the idle threshold — 300 ms against a 168 ms word gap — so this run has no idle-gap statistics.)
 
 After the fix, **not one interval in ten minutes was off by more than 0.5 ms** — marks, spaces and all 204 idle gaps
 alike (the playout delay held at 150 ms and took no decrease that run, so no legitimate gap adjustments occurred
