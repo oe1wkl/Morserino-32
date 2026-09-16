@@ -111,6 +111,35 @@ that is a hypothesis, not a diagnosis — the failing device could not be questi
 The bench driver now reboots the Pocket before every run so a measurement is never spent on a Keyer that cannot
 transmit; that is a workaround for the bench, not a fix.
 
+**It got worse through 2026-09-16, and the reboot workaround no longer holds it off.** Later the same morning the
+state returned within a couple of stop/start cycles of a reboot the driver had just performed, and it cost three
+more runs. Two details are worth more than the rest:
+
+- **`PUT menu/start` returns *silence*, not an error** — no `ok`, no `menu`, no `activate`, nothing for 30 s —
+  while `menu/stop`, `wifi/trxpeer`, `wifi/select` and `GET wifi` all answer instantly on the same port in the same
+  second. So the protocol and the serial path are alive; only mode entry is dead.
+- **The clearest evidence yet of what fails first:** in the 11:07 run the *Rig* reported a live session (its 10 s
+  reports print only inside the session branch) while the *Keyer* reported `No answer` and left the mode. The
+  Pocket's HELLO therefore arrived at the classic and the classic's `HELLO_ACK` never got back. A Keyer that can
+  transmit but not receive explains every symptom of the day, including why this Mac could always reach the Rig.
+
+**The receive-path theory was then tested and refuted.** With the Pocket freshly rebooted and pointed at a reference
+Rig on this Mac (`reference_peer.py rig`), it linked **immediately** — `session … opened by 192.168.1.23, source 0` —
+and went on sending keepalives (120+ KEY packets). A handshake only completes if the `HELLO_ACK` comes back, so the
+Pocket's UDP receive path is healthy. Two better explanations remain:
+
+1. **This bench's own probe can block the pair.** `probe_session.py` takes a session on the Rig and releases it with
+   a BYE; if that BYE is lost, the Rig keeps a session with *the Mac*, and spec §8 allows only one — so the Pocket's
+   HELLO is refused with `NACK(busy)`, which the Keyer reports as "No answer". That is exactly the run where the Rig
+   showed a live session while the Keyer said No answer. **Use the probe sparingly, and never while a run is
+   starting.** A probe that cannot be released cleanly is not a read-only instrument.
+2. **Commands swallowed on the Pocket.** In the 11:02 run the Keyer linked, but `PUT cw/repeat` drew *no reply at
+   all* and no keying followed — the same silence as `menu/start` in the stuck state. The Pocket answers queries
+   (`GET wifi`, `GET menu`) throughout, so this is mode/command handling, not the serial path and not the network.
+
+So the open question is narrower than it looked: **not networking — the Pocket's command and mode handling after
+repeated mode entry.** Everything else here still stands, including that only a reboot clears it.
+
 ### Link detection: three wrong answers before a right one
 
 Worth recording, because each mistake cost a run and two of them produced *plausible* output:
