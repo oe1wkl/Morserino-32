@@ -120,11 +120,10 @@ def main():
     print(f"rig started; letting it reach the network ({args.rig_settle}s) ...", flush=True)
     time.sleep(args.rig_settle)
 
-    # Reboot the Pocket before every run. A Remote Keyer stopped and restarted often enough within one boot stops
-    # linking altogether: it reports "No answer" while the Rig answers other clients on the same LAN instantly, and
-    # afterwards it will not start any mode at all until rebooted. Cheap here (~8 s) and it keeps a measurement from
-    # being spent on a Keyer that cannot transmit. See TEST_REPORT.md - this may be a real defect in the Keyer's
-    # socket teardown, and it is NOT something a measurement should paper over silently.
+    # Reboot the Pocket before every run, for the ordinary reason a timing bench wants it: every measurement starts
+    # from the same known state. This began life as a workaround for a "Keyer stops linking after repeated starts"
+    # fault; that turned out to be the serial protocol swallowing PUT menu/start whenever the device is not in
+    # menu_loop (TEST_REPORT.md, "Corrected 2026-09-17"), and the reboot never held it off anyway. Cheap (~8 s).
     import os, subprocess
     esptool = os.path.expanduser("~/.platformio/packages/tool-esptoolpy/esptool.py")
     if os.path.exists(esptool):

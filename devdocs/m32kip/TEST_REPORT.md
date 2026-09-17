@@ -108,7 +108,8 @@ supporting evidence, not the test.
 **To finish it:** leave the pair keying for two uninterrupted hours and read the Rig's report at the end. The
 instrument already reports `off` steps cumulatively, so nothing further needs building — only the time.
 
-*A second attempt at a leg aborted* when the Keyer fell into the stuck state described above; the drift legs were
+*A second attempt at a leg aborted* when the Keyer fell into the state described below (which turned out to be
+the protocol's mode-entry handling, not the Keyer — see the correction in that section); the drift legs were
 stopped there rather than repeatedly restarting a Pocket that trips the fault every few mode entries.
 
 ### D17 Remote configuration — verified on the wire, 9/9 plus the NVS round trip
@@ -357,7 +358,7 @@ occasionally a hair shorter.
    this shell `/usr/bin/python3` is an `xcrun` shim that fails to load, and the driver's own interpreter is blocked
    from the local network by macOS ([[macos-local-network-python-trap]]).
 
-### Open question for Willi: a Remote Keyer restarted often enough stops linking
+### A Remote Keyer restarted often enough stops linking — and what it actually was
 
 Seen twice on 2026-09-16, and it costs a run each time:
 
@@ -410,6 +411,37 @@ Pocket's UDP receive path is healthy. Two better explanations remain:
 
 So the open question is narrower than it looked: **not networking — the Pocket's command and mode handling after
 repeated mode entry.** Everything else here still stands, including that only a reboot clears it.
+
+#### Corrected 2026-09-17: this was not a Remote Keyer defect {-}
+
+Everything above is what was observed, and the observations stand. The **conclusions drawn from them do not**, and
+two pieces of evidence arrived after they were written.
+
+**Willi's bench evidence.** Started and left by hand, Remote Keyer has never once hung — "tested that several
+times". Every instance recorded above was a run driven over the serial protocol. That alone moves the suspicion off
+the mode and onto the way the bench drives it, and it retires the socket-teardown hypothesis in
+`MorseKipKeyer::end()` → `begin()`: nothing in that path cares whether the mode was entered by hand or by command.
+
+**The source explains the silence exactly.** `PUT menu/start` (`m32_v6.ino`, the `type == "menu"` branch) sets
+`goToMenu = false`, and then sets `executeMenu` **and replies** only inside `if (m32state == menu_loop)`. A start
+that arrives while the device is anywhere else — running a mode, or unwinding out of one — falls straight through
+the handler: nothing is started, and **nothing is answered**. That is precisely the signature recorded above:
+`menu/stop` answers OK, `GET menu` answers, `GET wifi` answers, and `menu/start` alone returns silence for 30 s.
+With `value` given, the fall-through is worse than a no-op — `newMenuPtr` has already been changed.
+
+So the defect is in the **serial protocol's mode-entry handling**, not in M32KIP: any mode started this way, from
+any client, can be swallowed the same way, which is exactly why plain CW Keyer failed identically. **No firmware
+defect in Remote Keyer is evidenced.** The fix belongs to the protocol: answer with an error instead of silence,
+and — optionally — latch the request so that a start arriving during an unwind is honoured when the menu is
+reached. Willi: **not a blocker at this stage.**
+
+**What is still unexplained**, and should not be written up as solved: why `PUT menu/stop` sometimes answered OK
+without returning the Pocket to the menu. `goToMenu` is consumed in the global loop (`m32_v6.ino:1340`), which is
+where Remote Keyer runs, so it should have taken effect. That thread was not pulled.
+
+**The bench driver still reboots the Pocket before each run**, but no longer as a workaround for a suspected Keyer
+fault — the record above shows it never held that fault off anyway. It is there for the ordinary reason a timing
+bench wants it: a known, identical starting state for every measurement.
 
 ### Link detection: three wrong answers before a right one
 

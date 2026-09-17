@@ -359,7 +359,8 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 > - **§13.3 drift — under way** on the direct link.
 > - **Still owed, and needs Willi at the bench:** WiFi pulled mid-mark, the real-Internet run (hotspot + port
 >   forward), straight key and bug, and the 12 s tune test.
-> - **Bench hazards recorded in `TEST_REPORT.md`:** a Keyer restarted often enough stops linking until rebooted
+> - **Bench hazards recorded in `TEST_REPORT.md`:** a Keyer restarted often enough over the protocol stops linking
+>   (explained 2026-09-17: the protocol swallows `PUT menu/start` outside `menu_loop` - not a Keyer fault)
 >   (open question); killing the driver mid-run leaves the Pocket unable to start any mode; and five separate
 >   occasions where a measuring tool posed as a firmware fault.
 
