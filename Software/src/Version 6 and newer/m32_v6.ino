@@ -1424,7 +1424,7 @@ if (morseState == morseKeyer &&
                                                                               // there instead of leaving it blank until
                                                                               // new output is generated on resume
                 if (morseState == morseGenerator || morseState == echoTrainer)
-                    stopFlag = true;                                  // we stop what we had been doing
+                    pauseTrainer();                                   // we stop what we had been doing - paused, not a finished pass
                 else
                     stopFlag = false;
                 //startFirst = true;
@@ -1519,6 +1519,22 @@ void showPausePrompt(boolean armReminder) {
     // every single loop() iteration. The activity sites below re-arm it, so the next
     // quiet spell gets its own reminder.
     pausePromptDeadline = armReminder ? millis() + PAUSE_PROMPT_QUIET_MS : PAUSE_PROMPT_IDLE;
+}
+
+// Pause the CW Generator / Echo Trainer because something interrupted it - not because a
+// pass has ended. Same stop as checkStopFlag(), minus the end-of-pass summary: the summary
+// is the Echo Trainer's report on a completed set, and it also holds the paddle off for its
+// five seconds (see stopSummaryUntil). Returning from the preferences used to raise stopFlag
+// and so ran into both: a report on a set that never finished, over a mode that then refused
+// the paddle for five seconds while FN and the ENCODER seemed dead too, because the status
+// line was showing the summary instead of the speed.
+void pauseTrainer() {
+    lastWord = clearText;
+    genIsActive = stopFlag = false;
+    stopSummaryUntil = STOP_SUMMARY_IDLE;        // no summary is owed, and none may be pending
+    keyOut(false, true, 0, 0);
+    wordCounter = 1; errCounter = 0;
+    showPausePrompt(true);
 }
 
 void checkStopFlag() {
