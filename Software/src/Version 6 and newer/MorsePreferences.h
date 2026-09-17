@@ -243,6 +243,7 @@ namespace MorsePreferences
   extern int kipKeyerRigOptionsSize;
   uint16_t kipPlayoutMs(uint8_t value);   // Playout Delay choice -> ms, 0 = adaptive
   void writeRigCfg();                     // persist just the six Remote Rig settings (D17), nothing else
+  void startPreferencesAt(prefPos pos);   // open the preferences menu ON this entry, once (D17)
 #endif
   extern  prefPos allOptions[];
 

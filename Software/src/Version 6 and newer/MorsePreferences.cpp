@@ -937,10 +937,20 @@ static void repaintPreferencesScreen(prefPos pos, boolean adjusting) {
 
 ////// setup preferences ///////
 
+// Where the preferences menu opens. Normally it resumes wherever the operator last was - which is why
+// prefPos 1 ("Tone Softness" on a Pocket with I2S sound) greets you after a boot. A caller can ask for a
+// particular entry instead, for one opening only: Remote Keyer does, so the remote rig's settings are not
+// merely first in the LIST but actually the first thing on SCREEN (D17).
+static int prefsOpenAt = -1;
+
+#ifdef CONFIG_M32KIP
+void MorsePreferences::startPreferencesAt(prefPos pos) { prefsOpenAt = (int) pos; }
+#endif
 
 boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
   // enum morserinoMode {morseKeyer, loraTrx, morseGenerator, echoTrainer, shutDown, morseDecoder, invalid };
   static int oldPos = 1;
+  if (prefsOpenAt >= 0) { oldPos = prefsOpenAt; prefsOpenAt = -1; }
   int t;
 
   int ptrIndex, ptrMax;

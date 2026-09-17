@@ -531,6 +531,14 @@ void MorseMenu::menu_() {
                       if (MorsePreferences::menuPtr < _wifi
                           || MorsePreferences::menuPtr == _genPractice
                           || MorsePreferences::menuPtr == _echoPractice
+#ifdef CONFIG_M32KIP
+                          // Appended at the enum's end like the pickers above, so they fall outside "< _wifi"
+                          // and were silently not remembered - unlike every other mode. A Rig that is meant to
+                          // stand unattended needs this most of all: it is what Quick Start would resume after
+                          // a power failure (D14's recorded future item).
+                          || MorsePreferences::menuPtr == _kipKeyer
+                          || MorsePreferences::menuPtr == _kipRig
+#endif
                           || MorsePreferences::menuPtr == _kochPreview)
                           MorsePreferences::writeLastExecuted(MorsePreferences::newMenuPtr);
                       if (MorseMenu::menuExec())

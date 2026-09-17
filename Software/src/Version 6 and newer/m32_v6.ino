@@ -1447,6 +1447,11 @@ if (morseState == morseKeyer &&
                                                          : MorsePreferences::kipKeyerOptions,
                         MorseKipKeyer::rigCfgAvailable() ? MorsePreferences::kipKeyerRigOptionsSize
                                                          : MorsePreferences::kipKeyerOptionsSize);
+                // ... and open ON the first rig item. Putting them first in the array is not enough: the menu
+                // resumes at the last entry the operator used, so without this they are first in a list nobody
+                // is looking at.
+                if (morseState == kipKeyer && MorseKipKeyer::rigCfgAvailable())
+                    MorsePreferences::startPreferencesAt(posRigDelay);
 #endif
                 MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
                 MorseOutput::clearDisplay();                                 // restore display
