@@ -2510,20 +2510,32 @@ void MorseOutput::pwmClick(unsigned int volume) {                        /// gen
     if (!MorsePreferences::pliste[posClicks].value)
       return;
     #ifdef CONFIG_SOUND_I2S
+      // Two volume steps quieter than before in every band (4 dB on the speaker, 6 dB on
+      // headphones): the click's 1144 Hz half sits close to the micro-speaker's resonance and
+      // made it rattle at higher Tone Volume settings (#221). Never below step 1 (0 mutes).
+      // Capped at step 11 (what Tone Volume 17 gives): 18 and 19 were still too loud.
       uint8_t v;
-      if (MorsePreferences::sidetoneVolume > 14)
-        v = MorsePreferences::sidetoneVolume -4;
+      if (MorsePreferences::sidetoneVolume > 17)
+        v = 11;
+      else if (MorsePreferences::sidetoneVolume > 14)
+        v = MorsePreferences::sidetoneVolume -6;
       else if (MorsePreferences::sidetoneVolume > 5)
-        v = MorsePreferences::sidetoneVolume -2;
+        v = MorsePreferences::sidetoneVolume -4;
       else
-        v = MorsePreferences::sidetoneVolume +2;
+        v = MorsePreferences::sidetoneVolume;
 #ifdef CONFIG_TLV320AIC3100
       soundSetVolume(v);
 #endif
       pwmTone(572,v,false);
       delay(3);
       pwmNoTone(v);
-      delay(2);
+      // Let the 572 Hz tone's release run out before keying the 1144 Hz one. Keyed on 2 ms
+      // into the release, the envelope restarted at zero: a one-sample step whose size
+      // depended on where the wave happened to be, heard as an intermittent crackle in the
+      // click (#221). The release follows Tone Softness (1-9 ms); the cap only matters if
+      // the tone path is not being read at all (e.g. while a voice clip holds the mixer).
+      for (uint32_t t0 = millis(); sidetone.isOn() && millis() - t0 < 40; )
+        delay(1);
       pwmTone(1144,v,false);
       delay(6);
       pwmNoTone(v);

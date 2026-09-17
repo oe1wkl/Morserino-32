@@ -165,7 +165,10 @@ bool I2S_Sidetone::playSPIFFSFile(const char *filename) {
 }
 
 bool I2S_Sidetone::isOn() {
-    return false;
+    // True from on() until the release after off() has run out -- i.e. while the envelope
+    // still shapes audible output. keyOn() during a release restarts the envelope at zero,
+    // so callers that key tones in quick succession wait for this to go false first.
+    return adsr && adsr->isActive();
 }
 
 // ---- V9.0 async clip playback ---------------------------------------------------------
