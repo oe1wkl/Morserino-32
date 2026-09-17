@@ -297,7 +297,6 @@ Disp MAC Address
 Display MAC address
 Display off
 Display only
-Dits
 dits
 dot dash
 Down 1 Half
@@ -388,7 +387,6 @@ Mandarin
 Maximum number of words
 Memory Chain
 Mike
-Milliseconds
 milliseconds
 millivolts
 Mixed
@@ -456,7 +454,6 @@ Remote keyer glitch filter
 Remote Rig
 Remote rig first element extension
 Remote rig hang time
-Remote rig hang time unit
 Remote rig key down limit, keyer
 Remote rig key down limit, straight key
 Remote rig playout delay

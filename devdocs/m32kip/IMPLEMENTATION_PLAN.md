@@ -314,7 +314,8 @@ Module layout (new files, all under `Software/src/Version 6 and newer/`):
 >   updated. Config Tool and iOS app remain follow-ups (D9).
 > - Voice clips: 14 new phrases rendered (stamp e6483cce).
 >
-> **Added 2026-09-15 — D16 break-in compensation** (see `DECISIONS.md`): Rig 1st Ext, Rig Hang Unit, Rig Hang.
+> **Added 2026-09-15 — D16 break-in compensation** (see `DECISIONS.md`): Rig 1st Ext and Rig Hang (a Rig Hang
+> Unit preference was added with it and removed again on 2026-09-17 — no manufacturer states the delay in dits).
 > The Rig starts a first key-down early instead of stretching it, which a real-time keyer cannot do. Core logic
 > `RigSession::breakInAdvance()` / `hangTicks()`, used both for emission and for the lateness test, host-tested
 > (669 checks: ms and dits hang, the half-gap cap under QSK, the raised playout floor). The first test run caught
@@ -372,10 +373,11 @@ straight key and bug; tune. Results go to `devdocs/m32kip/TEST_REPORT.md`.
 > **TODO owed (CLAUDE.md §7): the EN and DE manuals are not yet written for D16 and D17.** Both are user-visible and
 > both shipped in V10, so this is a release blocker rather than a nicety. What the manuals have to cover:
 >
-> - **Break-in compensation (D16)** — three Rig settings: *Rig 1st Ext* (why a transceiver clips the first element,
->   and that 5–10 ms suits a relay), *Rig Hang Unit* and *Rig Hang* (set it to the transceiver's own break-in delay;
->   Yaesu-style rigs state it in ms, Icom-style in dits, which is why both units exist). Worth saying plainly that
->   the Rig starts the first element early rather than stretching it, so what goes on the air is what was keyed.
+> - **Break-in compensation (D16)** — two Rig settings: *Rig 1st Ext* (why a transceiver clips the first element,
+>   that 5–10 ms suits a relay, and that the ARRL bench tests call this the transceiver's *first dit on delay*) and
+>   *Rig Hang*, set to the transceiver's own break-in delay in milliseconds, as its manual states it. Worth saying
+>   plainly that the Rig starts the first element early rather than stretching it, so what goes on the air is what
+>   was keyed.
 > - **Remote configuration (D17)** — in Remote Keyer, a double-click opens the preferences as usual, and while the
 >   link is up the remote rig's own settings appear **first**, each prefixed `Rig:`. Changes take effect at the far
 >   end at once and are stored there. If the link drops the menu closes by itself.

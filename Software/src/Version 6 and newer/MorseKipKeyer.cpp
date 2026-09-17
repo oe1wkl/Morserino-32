@@ -40,9 +40,9 @@ volatile bool gNewSession = false;   // set when a reconnect lands; the send tas
 //
 // The socket belongs to the send task, so nothing here transmits: a request is flagged and the task sends it. The
 // cache is what the menu displays, which is why it opens without waiting for a round trip.
-const uint8_t RIGCFG_COUNT = 6;
+const uint8_t RIGCFG_COUNT = 5;
 const prefPos RIGCFG_PREFS[RIGCFG_COUNT] = {
-    posKipPlayout, posKipMaxKeyer, posKipMaxManual, posKipFirstExt, posKipHangUnit, posKipHang
+    posKipPlayout, posKipMaxKeyer, posKipMaxManual, posKipFirstExt, posKipHang
 };
 portMUX_TYPE     gCfgMux = portMUX_INITIALIZER_UNLOCKED;
 RigCfgMsg        gCfgCache;                 // what the rig last reported (or what we just asked it for)
@@ -57,7 +57,6 @@ uint8_t cfgField(const RigCfgMsg& m, uint8_t i) {
         case 1: return m.limitKeyer;
         case 2: return m.limitManual;
         case 3: return m.firstExt;
-        case 4: return m.hangUnit;
         default: return m.hang;
     }
 }
@@ -68,7 +67,6 @@ void cfgSetField(RigCfgMsg& m, uint8_t i, uint8_t v) {
         case 1: m.limitKeyer = v; break;
         case 2: m.limitManual = v; break;
         case 3: m.firstExt = v; break;
-        case 4: m.hangUnit = v; break;
         default: m.hang = v; break;
     }
 }

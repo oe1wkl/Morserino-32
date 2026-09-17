@@ -87,9 +87,8 @@ has dropped back to receive. Common practice (the WinKeyer's "1st extension") le
 unit can do better than a real-time keyer: it knows every edge a playout delay ahead, so it **starts the first
 key-down early and leaves the key-up where it is** — the air gets exactly the keyed element, and every other
 mark and gap is untouched.
-- Rig preferences: **Rig 1st Ext** (0–30 ms, 0 = off), **Rig Hang Unit** (Milliseconds / Dits), **Rig Hang**
-  (0–60: 50 ms steps, or half dits at the Rig's own speed estimate). Willi chose both units: Yaesu-style rigs
-  state the break-in delay in ms, Icom-style in dits.
+- Rig preferences: **Rig 1st Ext** (0–30 ms, 0 = off) and **Rig Hang** (0–60, in 50 ms steps). *Amended
+  2026-09-17, see below — the unit choice is gone.*
 - A key-down is "first" when the key was up for at least the hang (sender clock). The advance is capped at half
   the preceding gap. Hang 0 makes every mark "first", which amounts to keying compensation for full QSK.
 - The playout floor and start value rise by the extension, so the jitter margin is kept. No protocol change.
@@ -98,13 +97,20 @@ mark and gap is untouched.
 - Mismatched hang settings err by at most the extension on one element per pause. The manual must say to set
   Rig Hang to the transceiver's own break-in delay.
 
+**D16 amended 2026-09-17 — the break-in hang is milliseconds only.** The ruling above offered a Milliseconds / Dits
+unit on the belief that Icom-style rigs state the delay in dits. Willi read the Icom, Yaesu and Elecraft manuals and
+found no manufacturer that does — they all state it in milliseconds or seconds — so **Rig Hang Unit** is removed.
+One preference fewer, and the value is entered exactly as the transceiver's own manual gives it. Offset 4 of the
+config payload stays on the wire as a reserved byte and the core keeps `hangDitsX2`, so dits can come back without a
+version break. The stale `kipHangUnit` NVS key is removed on the next preferences write (CLAUDE.md §4 c).
+
 **D17 — Remote configuration of the Rig from the Keyer. RATIFIED 2026-09-16**, and **required for V10, before
 release** (Willi: "it is essential"). Testers established that a rig which cannot be adjusted from the operating
 position is only half a feature.
 
-1. **Scope:** the six Rig-side settings — Rig Delay, Rig Limit Kyr, Rig Limit SK, Rig 1st Ext, Rig Hang Unit, Rig
-   Hang. The pre-shared key is never readable or settable over the link, as it is never readable over the serial
-   protocol (D3).
+1. **Scope:** the Rig-side settings — Rig Delay, Rig Limit Kyr, Rig Limit SK, Rig 1st Ext and Rig Hang (six until
+   the hang unit was dropped, see the D16 amendment). The pre-shared key is never readable or settable over the link,
+   as it is never readable over the serial protocol (D3).
 2. **Where they appear:** in the Keyer's own preferences, reached by the standard gesture (double-click), **rig items
    first in the list**, each carrying a **prefix** so it cannot be mistaken for a local setting, and shown **only
    while a Remote Keyer link is up**.

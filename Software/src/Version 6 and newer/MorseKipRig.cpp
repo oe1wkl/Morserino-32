@@ -131,7 +131,7 @@ RigCfgMsg currentRigCfg() {
     m.limitKeyer  = MorsePreferences::pliste[posKipMaxKeyer].value;
     m.limitManual = MorsePreferences::pliste[posKipMaxManual].value;
     m.firstExt    = MorsePreferences::pliste[posKipFirstExt].value;
-    m.hangUnit    = MorsePreferences::pliste[posKipHangUnit].value;
+    m.reserved    = 0;
     m.hang        = MorsePreferences::pliste[posKipHang].value;
     m.flags       = 0;
     return m;
@@ -146,7 +146,6 @@ void applyRigCfg(const RigCfgMsg& want, RigConfig& cfg, RigSession& rig) {
         { posKipMaxKeyer,   want.limitKeyer  },
         { posKipMaxManual,  want.limitManual },
         { posKipFirstExt,   want.firstExt    },
-        { posKipHangUnit,   want.hangUnit    },
         { posKipHang,       want.hang        },
     };
     for (uint8_t i = 0; i < sizeof(set) / sizeof(set[0]); i++) {
@@ -162,12 +161,7 @@ void applyRigCfg(const RigCfgMsg& want, RigConfig& cfg, RigSession& rig) {
     cfg.maxKeydownKeyerMs  = (uint16_t)(MorsePreferences::pliste[posKipMaxKeyer].value  * 1000u);
     cfg.maxKeydownManualMs = (uint16_t)(MorsePreferences::pliste[posKipMaxManual].value * 1000u);
     cfg.firstExtMs = MorsePreferences::pliste[posKipFirstExt].value;
-    cfg.hangDitsX2 = 0;
-    cfg.hangMs     = 0;
-    if (MorsePreferences::pliste[posKipHangUnit].value == 1)
-        cfg.hangDitsX2 = MorsePreferences::pliste[posKipHang].value;
-    else
-        cfg.hangMs = (uint16_t)(MorsePreferences::pliste[posKipHang].value * 50u);
+    cfg.hangMs = (uint16_t)(MorsePreferences::pliste[posKipHang].value * 50u);
     rig.setConfig(cfg);
 }
 
@@ -394,13 +388,10 @@ void MorseKipRig::run() {
     if (fixedD) { cfg.dDefaultMs = fixedD; cfg.dMinMs = fixedD; }
     cfg.maxKeydownKeyerMs  = (uint16_t)(MorsePreferences::pliste[posKipMaxKeyer].value  * 1000u);
     cfg.maxKeydownManualMs = (uint16_t)(MorsePreferences::pliste[posKipMaxManual].value * 1000u);
-    // Break-in compensation (D16): the transceiver's hang is set like the transceiver itself - Yaesu-style in ms
-    // (50 ms steps) or Icom-style in dits (half-dit steps).
+    // Break-in compensation (D16): the transceiver's break-in delay is entered in milliseconds (50 ms steps),
+    // the way every transceiver manual states it.
     cfg.firstExtMs = MorsePreferences::pliste[posKipFirstExt].value;
-    if (MorsePreferences::pliste[posKipHangUnit].value == 1)
-        cfg.hangDitsX2 = MorsePreferences::pliste[posKipHang].value;
-    else
-        cfg.hangMs = (uint16_t)(MorsePreferences::pliste[posKipHang].value * 50u);
+    cfg.hangMs     = (uint16_t)(MorsePreferences::pliste[posKipHang].value * 50u);
     RigSession rig;
     uint32_t sessions = 0;
     uint32_t lastDraw = 0, lastStats = 0;

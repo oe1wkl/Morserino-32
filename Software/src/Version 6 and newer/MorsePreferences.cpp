@@ -110,7 +110,7 @@ const char * prefName[] = {
 #endif
 #ifdef CONFIG_M32KIP
             "kipPlayout", "kipMaxKeyer", "kipMaxManual",                // NVS keys, all well inside 15 chars
-            "kipFirstExt", "kipHangUnit", "kipHang",
+            "kipFirstExt", "kipHang",
             "kipGlitch",
 #endif
             "serialOut"
@@ -576,17 +576,9 @@ parameter MorsePreferences::pliste[] = {
     "Remote rig first element extension"
   },
   {
-    0, 0, 1, 1,                                                 // how the transceiver states its break-in delay
-    "Rig Hang Unit",
-    "Remote Rig: the transceiver's break-in delay is given in milliseconds or in dits",
-    true,
-    {"Milliseconds", "Dits"},
-    "Remote rig hang time unit"
-  },
-  {
-    5, 0, 60, 1,                                                // 50 ms steps (0-3000 ms) or half dits (0-30 dits)
+    5, 0, 60, 1,                                                // 50 ms steps (0-3000 ms)
     "Rig Hang",
-    "Remote Rig: the transceiver's break-in delay, in 50 ms steps or half dits",
+    "Remote Rig: the transceiver's break-in delay, in 50 ms steps",
     false,
     {},
     "Remote rig hang time"
@@ -617,7 +609,7 @@ static_assert(sizeof(MorsePreferences::pliste) / sizeof(MorsePreferences::pliste
 // carry the prefix Willi asked for so they cannot be mistaken for local settings (D17).
 const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores", "Practice Set"
 #ifdef CONFIG_M32KIP
-    , "Rig: Delay", "Rig: Lim Kyr", "Rig: Lim SK", "Rig: 1st Ext", "Rig: Hang U", "Rig: Hang"
+    , "Rig: Delay", "Rig: Lim Kyr", "Rig: Lim SK", "Rig: 1st Ext", "Rig: Hang"
 #endif
 #ifdef CONFIG_PRACTICE_STATS
     , "Practice Stats"
@@ -867,7 +859,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    QSOBOT
 #ifdef CONFIG_M32KIP
                                                    posKipPlayout, posKipMaxKeyer, posKipMaxManual,
-                                                   posKipFirstExt, posKipHangUnit, posKipHang, posKipGlitch,
+                                                   posKipFirstExt, posKipHang, posKipGlitch,
 #endif
                                                    posPlayerCall, posPlayerName, posResetScores,
 #ifdef CONFIG_PRACTICE_STATS
@@ -880,7 +872,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // current mode's parameters; the settings are reached on the device through the "All" view above.
  prefPos MorsePreferences::kipRigOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut,
                                                    posKipPlayout, posKipMaxKeyer, posKipMaxManual,
-                                                   posKipFirstExt, posKipHangUnit, posKipHang
+                                                   posKipFirstExt, posKipHang
                                                  };
  // Remote Keyer is the CW Keyer plus a link: the keyer's own settings, and nothing that keys a local transmitter or
  // decodes received audio (the Keyer unit forces noTx, D12d).
@@ -891,7 +883,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // Same as kipKeyerOptions, but led by the remote rig's own settings (D17). Used only while the link is up AND the
  // rig answers configuration requests: the operator sees what they can change at the far end first, then their own.
  prefPos MorsePreferences::kipKeyerRigOptions[] = { posRigDelay, posRigLimitKyr, posRigLimitSK,
-                                                    posRigFirstExt, posRigHangUnit, posRigHang,
+                                                    posRigFirstExt, posRigHang,
                                                     PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
                                                     posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
                                                     posKipGlitch
@@ -1195,26 +1187,19 @@ static void announceValue(prefPos pos, const String& valueLine, boolean withTota
         }
         break;
 #ifdef CONFIG_M32KIP
-      case posKipHang: {                                   // "250 milliseconds" / "7 and a half dits" (D16)
-        uint8_t v = MorsePreferences::pliste[posKipHang].value;
-        if (MorsePreferences::pliste[posKipHangUnit].value == 1) {
-            a11ySay(String(v / 2));
-            if (v % 2) a11ySay("and a half");
-            a11ySay("dits");
-        } else {
-            // Composed from the number atoms (0-60, 65-250 in 5s), which is all the voice store has room for:
-            // "1 thousand 250", "2 thousand 3 hundred 50".
-            uint16_t ms = (uint16_t)(v * 50u);
-            if (ms >= 1000) { a11ySay(String(ms / 1000)); a11ySay("thousand"); }
-            uint16_t r = ms % 1000;
-            if (r > 250) {
-                a11ySay(String(r / 100)); a11ySay("hundred");
-                if (r % 100) a11ySay(String(r % 100));
-            } else if (r || ms < 1000) {
-                a11ySay(String(r));
-            }
-            a11ySay("milliseconds");
+      case posKipHang: {                                   // "250 milliseconds", "1 thousand 250 milliseconds" (D16)
+        // Composed from the number atoms (0-60, 65-250 in 5s), which is all the voice store has room for:
+        // "1 thousand 250", "2 thousand 3 hundred 50".
+        uint16_t ms = (uint16_t)(MorsePreferences::pliste[posKipHang].value * 50u);
+        if (ms >= 1000) { a11ySay(String(ms / 1000)); a11ySay("thousand"); }
+        uint16_t r = ms % 1000;
+        if (r > 250) {
+            a11ySay(String(r / 100)); a11ySay("hundred");
+            if (r % 100) a11ySay(String(r % 100));
+        } else if (r || ms < 1000) {
+            a11ySay(String(r));
         }
+        a11ySay("milliseconds");
         return;
       }
 #endif
@@ -1256,12 +1241,8 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
         valueLine += "s";
     if (pos == posKipGlitch || pos == posKipFirstExt)
         valueLine += "ms";
-    if (pos == posKipHang) {                                            // the unit follows Rig Hang Unit (D16)
-        uint8_t v = pliste[posKipHang].value;
-        valueLine = pliste[posKipHangUnit].value == 1
-                      ? String(v / 2) + (v % 2 ? ".5" : "") + " dits"
-                      : String(v * 50) + " ms";
-    }
+    if (pos == posKipHang)                                              // 50 ms steps, shown in ms (D16)
+        valueLine = String(pliste[posKipHang].value * 50) + " ms";
 #endif
     if (pos == posEchoThinkTime)                                        // display-only unit suffix: kept out of the
         valueLine += "s";                                                // a11y announce above so it still speaks the bare
@@ -1361,16 +1342,9 @@ String MorsePreferences::getValueLine(prefPos pos) {
     case posRigFirstExt:
         str = String(MorseKipKeyer::rigCfgValue(3)) + "ms";
         break;
-    case posRigHangUnit:
-        str = MorseKipKeyer::rigCfgValue(4) == 1 ? "Dits" : "Milliseconds";
+    case posRigHang:
+        str = String(MorseKipKeyer::rigCfgValue(4) * 50) + " ms";
         break;
-    case posRigHang: {
-        uint8_t v = MorseKipKeyer::rigCfgValue(5);
-        str = MorseKipKeyer::rigCfgValue(4) == 1
-                ? String(v / 2) + (v % 2 ? ".5" : "") + " dits"
-                : String(v * 50) + " ms";
-        break;
-    }
 #endif
 #ifdef CONFIG_PRACTICE_STATS
     case posPracticeStatsOn:
@@ -1710,7 +1684,7 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
     // corrects the cache if it clamped anything.
     if (pos >= posRigDelay && pos <= posRigHang) {
         static const prefPos twin[] = { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
-                                        posKipFirstExt, posKipHangUnit, posKipHang };
+                                        posKipFirstExt, posKipHang };
         uint8_t idx = (uint8_t)(pos - posRigDelay);
         uint8_t lo = pliste[twin[idx]].minimum, hi = pliste[twin[idx]].maximum;
         MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
@@ -2195,7 +2169,6 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
       case posKipMaxKeyer:
       case posKipMaxManual:
       case posKipFirstExt:
-      case posKipHangUnit:
       case posKipHang:
       case posKipGlitch:
 #endif
@@ -2394,6 +2367,10 @@ void MorsePreferences::writePreferences(const char* repository) {
 #endif
 
   // now we write all other preferences into the repository
+
+  // "Rig Hang Unit" was dropped when the break-in hang became milliseconds-only (D16): no transceiver manual
+  // states it in dits. NVS never shrinks by itself, so the stale key has to be taken out (CLAUDE.md §4 c).
+  if (pref.isKey("kipHangUnit")) pref.remove("kipHangUnit");
 
   if (MorsePreferences::useCustomChars != pref.getBool("useCustomChar")) {
       pref.remove("useCustomChar");
@@ -2970,14 +2947,14 @@ void MorsePreferences::writeKipPort(uint16_t port) {
 
 // The Rig Delay choices. Index 0 is Adaptive. A mapped list rather than a raw number of 10 ms units, so the display
 // and the Accessibility Edition both give the value in milliseconds instead of a bare "15".
-// The six Remote Rig settings, and nothing else (D17). Deliberately NOT writePreferences(): that one walks the whole
+// The five Remote Rig settings, and nothing else (D17). Deliberately NOT writePreferences(): that one walks the whole
 // namespace - WiFi strings, Koch filter, brightness, every pliste entry - and calls koch.setup() on the way. This
 // runs on a Rig that is keying a transmitter, where a multi-millisecond stall puts an edge out late; today's 25 WPM
 // outliers came from exactly that class of fault. Each value is compared before it is written, so a set that changes
 // one parameter costs one flash write, and a set that changes nothing costs none.
 void MorsePreferences::writeRigCfg() {
     static const prefPos items[] = { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
-                                     posKipFirstExt, posKipHangUnit, posKipHang };
+                                     posKipFirstExt, posKipHang };
     pref.begin("morserino", false);
     for (uint8_t i = 0; i < sizeof(items) / sizeof(items[0]); i++) {
         prefPos p = items[i];

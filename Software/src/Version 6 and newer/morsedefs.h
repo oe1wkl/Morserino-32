@@ -480,7 +480,7 @@ enum prefPos : uint8_t {
 #endif
 #ifdef CONFIG_M32KIP
         posKipPlayout, posKipMaxKeyer, posKipMaxManual,     // Remote Rig (M32KIP D4)
-        posKipFirstExt, posKipHangUnit, posKipHang,         // Remote Rig break-in compensation (D16)
+        posKipFirstExt, posKipHang,                         // Remote Rig break-in compensation (D16)
         posKipGlitch,                                       // Remote Keyer, straight key only
 #endif
   posSerialOut,
@@ -493,7 +493,7 @@ enum prefPos : uint8_t {
                 // The remote Rig's own settings, adjusted from the operating position (D17). Special cases, after
                 // posSerialOut: their values live on the OTHER device, so they must stay out of the pliste[] /
                 // prefName[] loop - they have no NVS key here, and no local value to store.
-                posRigDelay, posRigLimitKyr, posRigLimitSK, posRigFirstExt, posRigHangUnit, posRigHang,
+                posRigDelay, posRigLimitKyr, posRigLimitSK, posRigFirstExt, posRigHang,
 #endif
 #ifdef CONFIG_PRACTICE_STATS
                 posPracticeStatsOn,

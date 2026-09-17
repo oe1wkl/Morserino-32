@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "5d3edef4"
+#define VOICE_PACK_STAMP "63f07dcd"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -250,7 +250,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Disp MAC Addr", "5689da3f"},
   {"Display off", "6e8b9688"},
   {"Display only", "8e0340a5"},
-  {"Dits", "219cd3dd"},
   {"Down 1 Half", "5cb6407a"},
   {"Echo", "d31ef811"},
   {"Echo Prompt", "0dfac86c"},
@@ -319,7 +318,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Maximum number of words", "df97b070"},
   {"Memory Chain", "ad6622d5"},
   {"Mike", "1b83d5da"},
-  {"Milliseconds", "38f24676"},
   {"Mixed", "699b4f79"},
   {"Moderate", "1eb79d43"},
   {"Morse Invaders", "62b14d61"},
@@ -375,7 +373,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Remote keyer glitch filter", "a1c7e661"},
   {"Remote rig first element extension", "3c264ff4"},
   {"Remote rig hang time", "232ff229"},
-  {"Remote rig hang time unit", "7af71c3e"},
   {"Remote rig key down limit, keyer", "641a4bc2"},
   {"Remote rig key down limit, straight key", "4f69c872"},
   {"Remote rig playout delay", "7d2f4e74"},
@@ -386,7 +383,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Rig: 1st Ext", "3c264ff4"},
   {"Rig: Delay", "7d2f4e74"},
   {"Rig: Hang", "232ff229"},
-  {"Rig: Hang U", "7af71c3e"},
   {"Rig: Lim Kyr", "641a4bc2"},
   {"Rig: Lim SK", "4f69c872"},
   {"Romeo", "87e7c1c5"},
@@ -476,7 +472,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 462;
+static const unsigned int voiceLookupCount = 458;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

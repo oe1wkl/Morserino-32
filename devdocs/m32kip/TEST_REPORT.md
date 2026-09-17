@@ -136,12 +136,15 @@ the worry was the positional `prefPos` / `prefName[]` / `pliste[]` triplet — w
 *lengths* but **not alignment**, so three entries inserted at different relative positions in two arrays would
 compile cleanly and then read and write each other's keys (CLAUDE.md rule 10).
 
-Checked against the source rather than reasoned away: the two arrays run in identical order
+Checked against the source rather than reasoned away: the two arrays ran in identical order
 (`kipPlayout, kipMaxKeyer, kipMaxManual, kipFirstExt, kipHangUnit, kipHang, kipGlitch` against `Rig Delay, Rig Limit
 Kyr, Rig Limit SK, Rig 1st Ext, Rig Hang Unit, Rig Hang, Glitch Filter`) and the defaults are 0 and 5 as expected.
 Setting both explicitly and rebooting returns them as 0 and 5, persistently. **No misalignment**: the 1 and 10 were
 historical state in that device's flash from earlier bench work, not a live fault. The Rig is now on its documented
 defaults across all six settings.
+
+*Superseded on 2026-09-17:* `Rig Hang Unit` has since been removed (D16 amendment) — the break-in hang is
+milliseconds only — so both lists above are one entry shorter in today's firmware.
 
 ### §13.4 Safety — forged MAC, key-down limit, watchdog
 

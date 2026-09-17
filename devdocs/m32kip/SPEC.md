@@ -427,8 +427,8 @@ scaled twice and a reply can be compared with a request field by field:
 | 1 | `limit_keyer` | Max key-down for source 0, seconds |
 | 2 | `limit_manual` | Max key-down for sources 1/2, seconds |
 | 3 | `first_ext` | First-element extension, ms, 0 = off |
-| 4 | `hang_unit` | 0 = milliseconds, 1 = dits |
-| 5 | `hang` | Break-in hang: 50 ms steps, or half dits |
+| 4 | reserved | must be zero (was `hang_unit`; see D16 amendment) |
+| 5 | `hang` | Break-in hang, 50 ms steps |
 | 6 | `flags` | bit0 `CFG_STORED`: these values are in the Rig's NVS |
 | 7 | reserved | must be zero |
 

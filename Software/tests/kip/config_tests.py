@@ -28,7 +28,7 @@ ACK_CFG_CAPABLE, CFG_STORED = 0x02, 0x01
 
 # index -> (name, minimum, maximum), mirroring pliste[] on the device
 FIELDS = [("Rig Delay", 0, 9), ("Rig Limit Kyr", 1, 30), ("Rig Limit SK", 1, 30),
-          ("Rig 1st Ext", 0, 30), ("Rig Hang Unit", 0, 1), ("Rig Hang", 0, 60)]
+          ("Rig 1st Ext", 0, 30), ("Rig Hang", 0, 60)]
 
 
 def header(ptype, session, seq):

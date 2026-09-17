@@ -231,7 +231,7 @@ static size_t encodeCfgBody(uint8_t* buf, size_t cap, const Header& h, uint8_t t
     Header hh = h; hh.type = type;
     putHeader(buf, o, hh);
     put8(buf, o, p.playout); put8(buf, o, p.limitKeyer); put8(buf, o, p.limitManual);
-    put8(buf, o, p.firstExt); put8(buf, o, p.hangUnit);  put8(buf, o, p.hang);
+    put8(buf, o, p.firstExt); put8(buf, o, p.reserved);  put8(buf, o, p.hang);
     put8(buf, o, p.flags);    put8(buf, o, 0);           // reserved, must be zero
     return seal(buf, cap, o, key);
 }
@@ -263,7 +263,7 @@ bool decodeCfg(const uint8_t* buf, size_t len, const uint8_t key[32], Header& h,
     p.limitKeyer  = get8(buf, o);
     p.limitManual = get8(buf, o);
     p.firstExt    = get8(buf, o);
-    p.hangUnit    = get8(buf, o);
+    p.reserved    = get8(buf, o);
     p.hang        = get8(buf, o);
     p.flags       = get8(buf, o);
     return true;

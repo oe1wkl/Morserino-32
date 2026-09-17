@@ -1185,7 +1185,7 @@ static void testRemoteConfig() {
 
     RigCfgMsg sent;
     sent.playout = 3; sent.limitKeyer = 5; sent.limitManual = 20;
-    sent.firstExt = 8; sent.hangUnit = 1; sent.hang = 15; sent.flags = CFG_STORED;
+    sent.firstExt = 8; sent.reserved = 1; sent.hang = 15; sent.flags = CFG_STORED;
     Header h; h.session = 0x0BADF00D; h.seq = 4242;
 
     {   size_t n = encodeCfgVal(buf, sizeof(buf), h, sent, key);
@@ -1197,7 +1197,7 @@ static void testRemoteConfig() {
         okEq(back.limitKeyer, 5, "keyer limit survives");
         okEq(back.limitManual, 20, "manual limit survives");
         okEq(back.firstExt, 8, "first extension survives");
-        okEq(back.hangUnit, 1, "hang unit survives");
+        okEq(back.reserved, 1, "reserved byte survives");
         okEq(back.hang, 15, "hang survives");
         okEq(back.flags, CFG_STORED, "the stored flag survives");
         okEq(got.session, 0x0BADF00D, "the session survives");

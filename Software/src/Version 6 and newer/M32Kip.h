@@ -181,10 +181,10 @@ struct RigCfgMsg {
     uint8_t limitKeyer;     // Rig Limit Kyr, seconds
     uint8_t limitManual;    // Rig Limit SK, seconds
     uint8_t firstExt;       // Rig 1st Ext, ms, 0 = off
-    uint8_t hangUnit;       // Rig Hang Unit: 0 = milliseconds, 1 = dits
+    uint8_t reserved;       // was the hang unit; kept on the wire so dits could return without a version break
     uint8_t hang;           // Rig Hang: 50 ms steps, or half dits
     uint8_t flags;          // CFG_STORED on a VAL that has been committed to NVS
-    RigCfgMsg() : playout(0), limitKeyer(3), limitManual(10), firstExt(0), hangUnit(0), hang(5), flags(0) {}
+    RigCfgMsg() : playout(0), limitKeyer(3), limitManual(10), firstExt(0), reserved(0), hang(5), flags(0) {}
 };
 
 const uint8_t CFG_STORED   = 0x01;          // in RigCfgMsg::flags: these values are in the Rig's NVS
