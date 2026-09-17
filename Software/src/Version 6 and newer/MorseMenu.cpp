@@ -186,7 +186,7 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
   {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select  -e!!?
   {1,_kochSel,_kochPreview,_koch,0},                    // 18 koch learn new (right -> Preview Char, appended below)
-  {1,_kochLearn,_kochEcho,_koch,_kochGenRand},          // 19 koch gen (left <- Preview Char, appended below)
+  {1,_kochPreview,_kochEcho,_koch,_kochGenRand},        // 19 koch gen (left <- Preview Char, appended below)
   {2,_kochGenMixed,_kochGenAbb,_kochGen,0},             // 20 koch gen random  -e
   {2,_kochGenRand,_kochGenWords,_kochGen,0},            // 21 koch gen abb  -e
   {2,_kochGenAbb,_kochGenMixed,_kochGen,0},             // 22 koch gen words  -e
