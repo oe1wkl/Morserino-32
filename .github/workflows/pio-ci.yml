@@ -55,6 +55,15 @@ jobs:
       - name: Install PlatformIO Core
         run: pip install --upgrade platformio
 
+      # Every menu level is a ring in menuNav[]: each entry names its left and
+      # right neighbour, so every link is written down at both ends. A link
+      # recorded at one end only compiles fine and ships as a menu that skips
+      # an entry turning one way (V9.0, PR #222). The table is full of #ifdefs,
+      # so this checks every environment in platformio.ini, not just the one
+      # built below. Needs PlatformIO for the flags, hence after its install.
+      - name: Check the menu rings are closed in every environment
+        run: python3 Software/tests/menu_ring/check_menu_ring.py
+
       - name: Build PlatformIO
         # Use `pio run -d <project_dir>` rather than `pio ci`. `pio ci`
         # copies sources to a temporary directory and builds there, which
