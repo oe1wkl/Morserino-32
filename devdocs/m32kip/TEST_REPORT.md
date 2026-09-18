@@ -153,9 +153,16 @@ there (`0xAA`, sent together with the hostile 250) has it **ignored** — so the
 without an older rig misreading it. Everything else passed as before: capability advertised, fetch flagged as
 stored, a set reporting what was stored, 250 clamped to 30, and `0,30,10,0,0,5` read back after a genuine reboot.
 
-This run used the **Pocket as the Rig** (192.168.1.23), because the classic had dropped off the USB bus and could
-not be flashed. The Rig code is shared by both variants, so this is the same firmware path; the classic still owes
-its own run once it is back. Cleanup: `Rig Limit Kyr` set back to 3 over the link, and the Pocket left in the menu.
+The first run used the **Pocket as the Rig** (192.168.1.23), because the classic had dropped off the USB bus and
+could not be flashed. Cleanup: `Rig Limit Kyr` set back to 3 over the link, and the Pocket left in the menu.
+
+**The classic, once replugged and flashed, passed the same 11/11 and its own NVS round trip** (`0,30,5,0,0,3` after
+the reboot that opening its serial port causes). It did *not* start on the defaults: it held Rig Limit Kyr 2, Rig
+Limit SK 5 and Rig Hang 3 (150 ms), where the 2026-09-16 cleanup had left all of them at default. The serial
+protocol's `GET config` reports the same values as the link, and `prefName[]`/`pliste[]` are verified aligned, so
+these are genuinely what NVS holds under those keys — most likely set from the Keyer's preferences during Willi's
+review of the rig items, but that is to be confirmed. Cleanup restored the pre-test values rather than the
+defaults: Rig Limit Kyr back to 2. The classic was left in Remote Rig, listening.
 
 ### §13.4 Safety — forged MAC, key-down limit, watchdog
 
