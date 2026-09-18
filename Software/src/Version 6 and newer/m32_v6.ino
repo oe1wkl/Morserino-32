@@ -2781,9 +2781,13 @@ void displayDecodedMorse(String symbol, boolean keyed) {
         // fall through to the standard scroll display
     }
 #endif
-    // Check for "eeee" error sequence    
+    // Check for "eeee" error sequence.
+    // In echo trainer mode skip the conversion when the fourth e is still a valid
+    // continuation of the target word — otherwise a correct answer to a word that
+    // contains four or more consecutive e's is incorrectly marked as an error.
     if (symbol == "e" && echoResponse.endsWith("eee")) {
-        symbol = "<err>";
+        if (morseState != echoTrainer || !echoTrainerWord.startsWith(echoResponse + "e"))
+            symbol = "<err>";
     }
     String tmp_str = symbol;
     if (MorsePreferences::pliste[posOutputCase].value) {
