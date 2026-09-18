@@ -11,10 +11,10 @@ The Rig must be listening with NO session (spec §8 allows one), so stop Remote 
 Four properties, each one a thing that could plausibly be wrong:
 
   capability  HELLO_ACK advertises ACK_CFG_CAPABLE, or a Keyer would never offer the items at all.
-  fetch       CFG_REQ is answered with the rig's current six values, flagged as stored.
+  fetch       CFG_REQ is answered with the rig's current five values, flagged as stored, reserved byte zero.
   set         CFG_SET changes a value, and the reply reports what was STORED rather than echoing the request.
   clamp       a value outside a parameter's range is clamped BY THE RIG - a stale or hostile Keyer must not be
-              able to put a transmitter's key-down limit out of range.
+              able to put a transmitter's key-down limit out of range - and a non-zero reserved byte is ignored.
 
 The NVS round trip (does the value survive a reboot?) is checked by --verify-only after the rig has been restarted.
 """
@@ -26,9 +26,12 @@ PKT_HELLO, PKT_HELLO_ACK, PKT_BYE, PKT_NACK = 1, 2, 5, 6
 PKT_CFG_REQ, PKT_CFG_VAL, PKT_CFG_SET = 7, 8, 9
 ACK_CFG_CAPABLE, CFG_STORED = 0x02, 0x01
 
-# index -> (name, minimum, maximum), mirroring pliste[] on the device
-FIELDS = [("Rig Delay", 0, 9), ("Rig Limit Kyr", 1, 30), ("Rig Limit SK", 1, 30),
-          ("Rig 1st Ext", 0, 30), ("Rig Hang", 0, 60)]
+# payload offset -> (name, minimum, maximum), mirroring pliste[] on the device. Offset 4 is reserved: it carried the
+# hang unit until that preference was dropped (D16 amendment, 2026-09-17). The rig sends it as zero and must ignore
+# whatever a Keyer puts there, so the byte stays on the wire and dits could return without a version break.
+FIELDS = {0: ("Rig Delay", 0, 9), 1: ("Rig Limit Kyr", 1, 30), 2: ("Rig Limit SK", 1, 30),
+          3: ("Rig 1st Ext", 0, 30), 5: ("Rig Hang", 0, 60)}
+RESERVED = 4
 
 
 def header(ptype, session, seq):
@@ -128,7 +131,7 @@ class Link:
 
 
 def show(values):
-    return ", ".join(f"{FIELDS[i][0]}={values[i]}" for i in range(6))
+    return ", ".join(f"{FIELDS[i][0]}={values[i]}" for i in sorted(FIELDS))
 
 
 def main():
@@ -136,7 +139,7 @@ def main():
     ap.add_argument("--rig", required=True)
     ap.add_argument("--port", type=int, default=7374)
     ap.add_argument("--psk", required=True)
-    ap.add_argument("--expect", help="verify these six comma-separated values survived (after a rig reboot)")
+    ap.add_argument("--expect", help="verify these six comma-separated payload bytes survived (after a rig reboot)")
     args = ap.parse_args()
 
     link = Link(args.rig, args.port, args.psk)
@@ -159,6 +162,7 @@ def main():
             return 1
         note(show(values))
         check("fetch: the values are flagged as stored", bool(flags & CFG_STORED), f"flags={flags:#04x}")
+        check("fetch: the reserved byte is zero", values[RESERVED] == 0, f"byte {RESERVED} = {values[RESERVED]}")
 
         if args.expect:                                   # --expect: the NVS round trip, after a reboot
             want = [int(x) for x in args.expect.split(",")]
@@ -183,6 +187,7 @@ def main():
         # not something a stale or hostile Keyer may set to anything it likes.
         hostile = list(got or values)
         hostile[target] = 250                             # far above Rig Limit Kyr's maximum of 30
+        hostile[RESERVED] = 0xAA                          # ... and junk in the reserved byte
         got2, _ = link.cfg_set(hostile)
         check("clamp: an out-of-range value is answered", got2 is not None, "no CFG_VAL came back")
         if got2 is not None:
@@ -190,6 +195,7 @@ def main():
             check("clamp: the rig clamped it to the parameter's own maximum",
                   got2[target] == hi, f"{FIELDS[target][0]}={got2[target]}, maximum is {hi}")
             note(f"asked for 250, rig stored {got2[target]} (range {lo}..{hi})")
+            check("clamp: the reserved byte was ignored", got2[RESERVED] == 0, f"byte {RESERVED} = {got2[RESERVED]}")
             print(f"\nto check the NVS round trip: restart the rig, then run with "
                   f"--expect {','.join(str(v) for v in got2)}", flush=True)
     finally:

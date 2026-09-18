@@ -147,6 +147,16 @@ defaults across all six settings.
 *Superseded on 2026-09-17:* `Rig Hang Unit` has since been removed (D16 amendment) — the break-in hang is
 milliseconds only — so both lists above are one entry shorter in today's firmware.
 
+**Re-run 2026-09-18 after the hang unit was removed: 11/11, plus the NVS round trip.** The test gained two checks
+for the byte that used to carry the unit, now reserved: the rig sends it as **zero**, and a Keyer that puts junk
+there (`0xAA`, sent together with the hostile 250) has it **ignored** — so the byte can carry dits again one day
+without an older rig misreading it. Everything else passed as before: capability advertised, fetch flagged as
+stored, a set reporting what was stored, 250 clamped to 30, and `0,30,10,0,0,5` read back after a genuine reboot.
+
+This run used the **Pocket as the Rig** (192.168.1.23), because the classic had dropped off the USB bus and could
+not be flashed. The Rig code is shared by both variants, so this is the same firmware path; the classic still owes
+its own run once it is back. Cleanup: `Rig Limit Kyr` set back to 3 over the link, and the Pocket left in the menu.
+
 ### §13.4 Safety — forged MAC, key-down limit, watchdog
 
 All three behaviours verified against the classic running as Rig, driven from this Mac
