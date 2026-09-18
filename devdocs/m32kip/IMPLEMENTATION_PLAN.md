@@ -371,24 +371,16 @@ straight key and bug; tune. Results go to `devdocs/m32kip/TEST_REPORT.md`.
 
 ### Phase 6 — Documentation and accessibility
 
-> **TODO owed (CLAUDE.md §7): the EN and DE manuals are not yet written for D16 and D17.** Both are user-visible and
-> both shipped in V10, so this is a release blocker rather than a nicety. What the manuals have to cover:
->
-> - **Break-in compensation (D16)** — two Rig settings: *Rig 1st Ext* (why a transceiver clips the first element,
->   that 5–10 ms suits a relay, and that the ARRL bench tests call this the transceiver's *first dit on delay*) and
->   *Rig Hang*, set to the transceiver's own break-in delay in milliseconds, as its manual states it. Worth saying
->   plainly that the Rig starts the first element early rather than stretching it, so what goes on the air is what
->   was keyed.
-> - **Remote configuration (D17)** — in Remote Keyer, a double-click opens the preferences as usual, and while the
->   link is up the remote rig's own settings appear **first**, each prefixed `Rig:`. Changes take effect at the far
->   end at once and are stored there. If the link drops the menu closes by itself.
-> - **The accessibility edition speaks the rig items** by their full names ("Remote rig playout delay"), not the
->   12-character display labels.
-> - **A lossy path wants a floor:** §13.2 profile (e) shortened one mark under burst loss with the delay left on
->   Adaptive. Raising *Rig Delay* above the burst recovery time prevents it, and the manual should say so where it
->   describes Rig Delay.
->
-> Voice clips are already done (`ACTION_SPOKEN`, store unchanged at 172 KB free), so only the prose is outstanding.
+> **DONE 2026-09-18 — EN and DE manuals written** (CLAUDE.md §7; was a release blocker). Willi reviewed the English
+> draft and chose the heading. Section 5.5.4 *Keying a remote transceiver* / *Einen entfernten Transceiver tasten*
+> covers both modes, the pass phrase, the delay, break-in compensation (D16, with the ARRL name *first dit on delay*),
+> remote configuration (D17), safety and the start-up errors; section 6.3.8 *Preferences regarding Remote Keying* /
+> *Einstellungen zur Ferntastung* is the preferences table. The CW Memory Keyer section now lists Remote Keyer among
+> the modes that recall memories. Two passages were added after the review, from this TODO: an Accessibility-Edition
+> note (tagged `.pocket-a11y`) that the `Rig:` items are spoken by their full names, and a caution that Adaptive can
+> be caught out once by burst loss (§13.2 e) — a fixed Rig Delay of 250 ms or more prevents it. Combined HTML + PDF
+> rebuilt; `check_manual_fresh.py` and `sync_whatsnew.py` pass. Still owed with the release: the `Software/README.md`
+> change-log entry for M32KIP, which drives the manuals' "What is new".
 EN + DE manuals (all three variants), `M32 Protocol.md`, `Software/README.md`
 change log (which obligates the manual "What is new" sync), voice clips via
 the extractor/generator, and a `UX_CONVENTIONS.md` addition for an

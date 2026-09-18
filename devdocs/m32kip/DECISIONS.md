@@ -104,6 +104,11 @@ One preference fewer, and the value is entered exactly as the transceiver's own 
 config payload stays on the wire as a reserved byte and the core keeps `hangDitsX2`, so dits can come back without a
 version break. The stale `kipHangUnit` NVS key is removed on the next preferences write (CLAUDE.md §4 c).
 
+*Recorded for later, not built:* the ARRL bench tests also report a **first dit off delay**. A transceiver that
+clips or stretches the *end* of an element would need the mirror image of D16, which the Rig could provide with the
+same machinery (it knows the following gap one playout delay ahead). Nothing has been measured, so it is out of V10;
+the plan is to ask testers with instrumented stations whether a shortened last element is audible or measurable.
+
 **D17 — Remote configuration of the Rig from the Keyer. RATIFIED 2026-09-16**, and **required for V10, before
 release** (Willi: "it is essential"). Testers established that a rig which cannot be adjusted from the operating
 position is only half a feature.
