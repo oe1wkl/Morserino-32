@@ -160,9 +160,11 @@ could not be flashed. Cleanup: `Rig Limit Kyr` set back to 3 over the link, and 
 the reboot that opening its serial port causes). It did *not* start on the defaults: it held Rig Limit Kyr 2, Rig
 Limit SK 5 and Rig Hang 3 (150 ms), where the 2026-09-16 cleanup had left all of them at default. The serial
 protocol's `GET config` reports the same values as the link, and `prefName[]`/`pliste[]` are verified aligned, so
-these are genuinely what NVS holds under those keys — most likely set from the Keyer's preferences during Willi's
-review of the rig items, but that is to be confirmed. Cleanup restored the pre-test values rather than the
-defaults: Rig Limit Kyr back to 2. The classic was left in Remote Rig, listening.
+these are genuinely what NVS holds under those keys. **Willi confirmed he set them from the Keyer's preferences**
+while reviewing the `Rig:` items — which makes them the first evidence of the whole D17 path end to end through the
+real UI: values chosen on the Pocket's screen, carried over the link, stored by the classic, and still there after
+a reflash and two reboots. Cleanup restored the pre-test values rather than the defaults: Rig Limit Kyr back to 2.
+The classic was left in Remote Rig, listening.
 
 ### §13.4 Safety — forged MAC, key-down limit, watchdog
 
