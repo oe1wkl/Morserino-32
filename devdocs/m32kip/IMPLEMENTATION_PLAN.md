@@ -378,7 +378,8 @@ straight key and bug; tune. Results go to `devdocs/m32kip/TEST_REPORT.md`.
 > *Einstellungen zur Ferntastung* is the preferences table. The CW Memory Keyer section now lists Remote Keyer among
 > the modes that recall memories. Two passages were added after the review, from this TODO: an Accessibility-Edition
 > note (tagged `.pocket-a11y`) that the `Rig:` items are spoken by their full names, and a caution that Adaptive can
-> be caught out once by burst loss (§13.2 e) — a fixed Rig Delay of 250 ms or more prevents it. Combined HTML + PDF
+> be caught out once by burst loss (§13.2 e) — a fixed Rig Delay of 250 ms or more prevents it; Willi approved both
+> passages the same day. Combined HTML + PDF
 > rebuilt; `check_manual_fresh.py` and `sync_whatsnew.py` pass. Still owed with the release: the `Software/README.md`
 > change-log entry for M32KIP, which drives the manuals' "What is new".
 EN + DE manuals (all three variants), `M32 Protocol.md`, `Software/README.md`
