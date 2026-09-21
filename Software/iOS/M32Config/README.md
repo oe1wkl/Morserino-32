@@ -23,10 +23,12 @@ can never drift apart.
 > **Status: with App Review** — version 1.0, build 1, submitted 2026-09-12. On
 > 2026-09-13 App Review asked for more information under guideline 2.1, the
 > letter a new developer account with limited review history gets; the answer
-> went back the same day and is kept in `store-listing.md`. Bench-tested
-> throughout on real hardware: connecting and the on-device consent prompt,
-> reading and changing preferences, the File Builder end to end, and the
-> power/battery reporting.
+> went back the same day and is kept in `store-listing.md`. Replying does not
+> requeue the version, though — it sat at *Abgelehnt* until it was resubmitted
+> on 2026-09-20, a week lost to a step nothing in the letter mentions.
+> Bench-tested throughout on real hardware: connecting and the on-device
+> consent prompt, reading and changing preferences, the File Builder end to
+> end, and the power/battery reporting.
 >
 > Untested: pushing a large file (an MP3) to the device over BLE.
 
@@ -173,8 +175,13 @@ kept as the recipe for the next version, and for the traps that cost time:
    limited review history, not by a fault in the app, and 1.0 got exactly that.
    It asks six numbered questions; the answers are in `store-listing.md`.
    - **Answer twice** — as a reply in the Resolution Center, and in App Review
-     Information → Notes. The letter asks for a reply, not a new build; leave
-     Xcode alone.
+     Information → Notes. No new build is needed; leave Xcode alone.
+   - **Then submit the version for review again.** The step that is easy to
+     miss, and it cost 1.0 a week. Replying answers their questions but does
+     not put the version back in front of anyone: it stays at *Abgelehnt /
+     Rejected*, which is not a queue, so nothing happens at all — no reply, no
+     second rejection, no progress. Resubmit the same build, and the status
+     should move to *Warten auf Prüfung / Waiting for Review*.
    - **The Notes field holds 4,000 bytes** — Apple's unit for this field is
      bytes, not characters, so every em-dash costs three. The 1.0 answers fit
      with about a hundred to spare. Measure after any edit, in bytes.

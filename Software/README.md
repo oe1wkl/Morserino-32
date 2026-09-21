@@ -1,5 +1,5 @@
 # Change History
-### CHANGES V. 9.1
+### CHANGES V. 9.0.1
 
 #### Bug Fixes:
 * M32 Pocket only: changing the **Theme** from the Configuration Tool (or any other program using the serial protocol) did not show on the Morserino at first. The new colours only appeared once you turned the ENCODER, and even then the top line stayed in the old ones. The top line got stuck the same way on the device itself when you changed **Theme** in the preferences and then moved on to another setting — and while you were choosing a theme, only its name was shown in the new colours. Setting **Font Size** from the Configuration Tool had a similar fault: the menu disappeared from the screen until the ENCODER was turned. Fixed — the whole screen is now repainted as soon as either setting changes, whether you are in the menu, in the preferences or in a running mode, and turning through the themes in the preferences now previews each one on the whole screen.
