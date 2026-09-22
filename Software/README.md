@@ -1,4 +1,11 @@
 # Change History
+### CHANGES V. 10.0
+
+#### New Features:
+* Two Morserinos can now form a **remote keying link** over the network. You key one of them at your operating position — the new mode **Remote Keyer** — and the other one, at the station, keys the transmitter through its „to Tx" connector: the new mode **Remote Rig**. The station may be in the next room or in another country. What comes out of the transmitter is what you keyed, with your own timing, whether it came from the paddles, from a straight key or from a bug. It is a keying link, not an audio link: you hear your own sidetone locally and immediately, so nothing on the network can disturb your sending rhythm, while what you hear *from* the station comes over whatever remote-control and audio path you already use. The link runs over UDP port 7374, and the address of the rig goes into the **TRX Peer** field of **Config WiFi** — the same field the WiFi transceiver uses. Both ends are described in the manual, including what to do about routers and firewalls.
+* The serial protocol used by the Configuration Tool and other programs is now at **version 1.5**: it can read and set the remote-keying settings (the shared secret and the port) as well as the Remote Rig and Remote Keyer preferences, and reports the new commands through its capability list. Everything from version 1.4 keeps working unchanged.
+
+
 ### CHANGES V. 9.0.1
 
 #### Bug Fixes:

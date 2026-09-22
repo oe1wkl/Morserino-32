@@ -34,18 +34,18 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>Benutzerhandbuch</p></div>
-<div class="title-version">Version 9.x<br>September 2026</div>
+<div class="title-version">Version 10.x<br>September 2026</div>
 <div class="title-variant">für alle Morserino-32-Modelle</div>
 <div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — Benutzerhandbuch</strong></p>
-<p>Ausgabe V 9.x, September 2026 — für alle Morserino-32-Modelle</p>
+<p>Ausgabe V 10.x, September 2026 — für alle Morserino-32-Modelle</p>
 <p>© Copyright 2016–2026 by Willi Kraml, OE1WKL</p>
 <p>Dieses Werk steht unter einer CC BY 4.0-Lizenz. Um eine Kopie dieser Lizenz
 einzusehen, besuche <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
-<p>Diese Dokumentation wurde für die Firmware-Version 9.x überarbeitet.
+<p>Diese Dokumentation wurde für die Firmware-Version 10.x überarbeitet.
 Die verwendete Schriftfamilie ist Lato.</p>
 <p>Die deutsche Version des Handbuchs wurde mithilfe von Claude (Anthropic)
 aus dem englischsprachigen Original übersetzt.</p>
@@ -99,7 +99,8 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#lora-trx" id="toc-lora-trx"><span class="toc-section-number">5.5.1</span> LoRa Trx</a></li>
 <li><a href="#wifi-trx" id="toc-wifi-trx"><span class="toc-section-number">5.5.2</span> WiFi Trx</a></li>
 <li><a href="#icwext-trx" id="toc-icwext-trx"><span class="toc-section-number">5.5.3</span> iCW/Ext Trx</a></li>
-<li><a href="#qso-bot" id="toc-qso-bot"><span class="toc-section-number">5.5.4</span> QSO Bot</a></li>
+<li><a href="#einen-entfernten-transceiver-tasten" id="toc-einen-entfernten-transceiver-tasten"><span class="toc-section-number">5.5.4</span> Einen entfernten Transceiver tasten</a></li>
+<li><a href="#qso-bot" id="toc-qso-bot"><span class="toc-section-number">5.5.5</span> QSO Bot</a></li>
 </ul></li>
 <li><a href="#cw-decoder" id="toc-cw-decoder"><span class="toc-section-number">5.6</span> CW Decoder</a></li>
 <li><a href="#spiele" id="toc-spiele"><span class="toc-section-number">5.7</span> Spiele</a>
@@ -142,7 +143,8 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#einstellungen-zur-cw-generierung" id="toc-einstellungen-zur-cw-generierung"><span class="toc-section-number">6.3.5</span> Einstellungen zur CW-Generierung</a></li>
 <li><a href="#einstellungen-zum-echo-trainer" id="toc-einstellungen-zum-echo-trainer"><span class="toc-section-number">6.3.6</span> Einstellungen zum Echo Trainer</a></li>
 <li><a href="#einstellungen-zum-senden-dekodieren-und-qso-bot" id="toc-einstellungen-zum-senden-dekodieren-und-qso-bot"><span class="toc-section-number">6.3.7</span> Einstellungen zum Senden, Dekodieren und QSO Bot</a></li>
-<li><a href="#einstellungen-zu-rufzeichen-name-und-spielstaenden" id="toc-einstellungen-zu-rufzeichen-name-und-spielstaenden"><span class="toc-section-number">6.3.8</span> Einstellungen zu Rufzeichen, Name und Spielständen</a></li>
+<li><a href="#einstellungen-zur-ferntastung" id="toc-einstellungen-zur-ferntastung"><span class="toc-section-number">6.3.8</span> Einstellungen zur Ferntastung</a></li>
+<li><a href="#einstellungen-zu-rufzeichen-name-und-spielstaenden" id="toc-einstellungen-zu-rufzeichen-name-und-spielstaenden"><span class="toc-section-number">6.3.9</span> Einstellungen zu Rufzeichen, Name und Spielständen</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#anhaenge" id="toc-anhaenge"><span class="toc-section-number">7</span> Anhänge</a>
@@ -178,43 +180,16 @@ aus dem englischsprachigen Original übersetzt.</p>
 <div class="quote">
 <p><em>„Morserino-32 – Ein multifunktionales Morsegerät, ideal zum Lernen und Trainieren – und zum Spaßhaben.”</em></p>
 </div>
-<p>Dieses Handbuch beschreibt die Funktionen der Firmware-Version 9.x des Morserino-32. <span class="classic">Diese Ausgabe des Handbuchs beschreibt den <strong>Morserino-32 der 1st und 2nd Edition</strong>; für den neueren Morserino Pocket gibt es eine eigene Ausgabe dieses Handbuchs.</span><span class="pocket pocket-a11y">Diese Ausgabe des Handbuchs beschreibt den <strong>Morserino-32 Pocket</strong>; für die früheren Morserinos der 1st und 2nd Edition gibt es eine eigene Ausgabe dieses Handbuchs.</span> Die Funktionalität ist im Wesentlichen für alle drei Morserino-Varianten gleich, mit der Ausnahme, dass der M32Pocket keine LoRa-Transceiver-Fähigkeiten besitzt, dafür aber neue Funktionen wie ein Farbdisplay, Spiele und ein Batteriestatussymbol bietet.</p>
+<p>Dieses Handbuch beschreibt die Funktionen der Firmware-Version 10.x des Morserino-32. <span class="classic">Diese Ausgabe des Handbuchs beschreibt den <strong>Morserino-32 der 1st und 2nd Edition</strong>; für den neueren Morserino Pocket gibt es eine eigene Ausgabe dieses Handbuchs.</span><span class="pocket pocket-a11y">Diese Ausgabe des Handbuchs beschreibt den <strong>Morserino-32 Pocket</strong>; für die früheren Morserinos der 1st und 2nd Edition gibt es eine eigene Ausgabe dieses Handbuchs.</span> Die Funktionalität ist im Wesentlichen für alle drei Morserino-Varianten gleich, mit der Ausnahme, dass der M32Pocket keine LoRa-Transceiver-Fähigkeiten besitzt, dafür aber neue Funktionen wie ein Farbdisplay, Spiele und ein Batteriestatussymbol bietet.</p>
 <div class="pocket-a11y">
 <p><strong>Wenn dein M32 Pocket noch nicht spricht.</strong> Ein neuer Pocket wird mit der Standard-Edition ausgeliefert, und die ist stumm. Die Firmware, die dieses Handbuch beschreibt, wird von einem Computer aus über USB installiert und ist in wenigen Minuten aufgespielt: siehe <strong>Den M32 Pocket zum Sprechen bringen: die Accessibility Edition installieren</strong>, den ersten Abschnitt des Kapitels <strong>Kurzanleitung zur Benutzung des M32</strong>.</p>
 </div>
 <p>Ich möchte mich bei allen bedanken, die durch Code, Kommentare, Vorschläge, Kritik, Rezensionen, Blogeinträge, YouTube-Videos und andere Beiträge dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den M32Pocket nicht!</p>
-<!-- WHATSNEW:BEGIN en=d24b18851fa5 v=9 -->
-<p>Was ist neu in Version 9?</p>
+<!-- WHATSNEW:BEGIN en=7fd1b7b7ef77 v=10 -->
+<p>Was ist neu in Version 10?</p>
 <ul>
-<li><p>Ein einziges Installationsprogramm für jeden Morserino, unter <a href="https://www.morserino.info/install.html">https://www.morserino.info/install.html</a>. Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.</p></li>
-<li><p>Nur M32 Pocket: Das Installationsprogramm kann nun auch die <strong>Accessibility Edition</strong> installieren, die Menüs und Einstellungen für blinde und sehbehinderte Operatoren laut vorliest (die Spiele sind darin nicht enthalten). Standard- und Accessibility Edition werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln; deine Einstellungen bleiben erhalten.</p></li>
-<li><p>Nur M32 Pocket, Accessibility Edition: Das Gerät meldet jetzt, wenn mit seinen Sprachdateien etwas nicht stimmt, statt einfach stumm darüber hinwegzugehen. Die Sprachdateien liegen getrennt vom Programm, deshalb kann ein Neuaufspielen nur des Programms — oder eine mittendrin abgebrochene Installation — einen Morserino hinterlassen, der einwandfrei läuft, aber nichts mehr hat, womit er sprechen könnte, oder nur noch die Sprachdateien einer älteren Version. In beiden Fällen hörst du beim Einschalten jetzt vier Paare aus abwechselnd hohem und tiefem Ton, und im Display steht, worum es sich handelt: „No voice clips!“ (gar nichts vorhanden, das Gerät bleibt stumm) oder „Wrong voice pack!“ (Sprachdateien einer anderen Version — es spricht weiter, aber was seit diesen Dateien dazugekommen oder umformuliert wurde, bleibt stumm). Ein nochmaliger Lauf des Installationsprogramms bringt es in Ordnung. Das Warnsignal ist mit Absicht weder Sprache noch Morsezeichen: Es muss funktionieren, wenn gerade die Sprache fehlt, und es darf nicht voraussetzen, dass du schon Morsezeichen lesen kannst.</p></li>
-<li><p>Es gibt jetzt drei Ausgaben des Handbuchs, jede in zwei Sprachen (Englisch und Deutsch): eine für den „klassischen“ Morserino-32 (1st und 2nd Edition), eine für den M32 Pocket und eine für die Accessibility Edition des M32 Pocket. Jede Ausgabe lässt jene Teile weg, die für die betreffende Hardware bzw. Firmware nicht relevant sind.</p></li>
-<li><p>Das neue Firmware-Update-Programm und das Konfigurationsprogramm verweisen jetzt auf die jeweils passende Ausgabe des Handbuchs.</p></li>
-<li><p>Erweiterte BLE-Funktionen. Neben der Ausgabe als BLE-Tastatur gibt es nun auch die Möglichkeit, BLE für das serielle Protokoll zu verwenden. Damit lassen sich Programme schreiben (oder portieren), die kabellos arbeiten, auch auf tragbaren Geräten wie Smartphones oder Tablets.</p></li>
-<li><p>Nur M32 Pocket: Die Zeitkonstante der Blackman-Harris-Tonformung, die für die „Weichheit“ des CW-Audios sorgt (Ton ohne Klicks), lässt sich jetzt einstellen. Der Vorgabewert ist 5 ms, du kannst ihn zwischen 1 und 9 ms verändern (1 ms ist ziemlich hart, mit Klicks, während 9 ms für schnelles CW eindeutig zu lang ist).</p></li>
-<li><p>Nur M32 Pocket: Wenn du mit dem Koch-Trainer übst, zeichnet der M32 Pocket eine Statistik über deine Leistung auf; du kannst sie entweder über das Konfigurationsprogramm ansehen oder über den eingebauten Webserver des M32, also mit einem Browser.</p></li>
-<li><p>Nur M32 Pocket: Nach einer Firmware-Installation mit der Lösch-Option (oder einer Installation auf ein ganz neues Gerät) dauerte es bis zu 10 Sekunden, bis am Bildschirm etwas zu sehen war, während das nichtflüchtige Dateisystem vorbereitet wurde. Damit keine Panik aufkommt, wird in solchen Fällen jetzt ein abgewandelter Startbildschirm mit einem erklärenden Hinweis angezeigt.</p></li>
-<li><p>Nur M32 Pocket: Eine neue Einstellung <strong>Font Size</strong> schaltet den Scrollbereich zwischen der normalen Textgröße und einer kleineren um, die mehr Zeichen pro Zeile unterbringt und fünf statt vier Zeilen anzeigt. Praktisch bei höheren Geschwindigkeiten oder bei längeren Wörtern, wenn du mehr von dem sehen möchtest, was gerade gesendet wurde.</p></li>
-<li><p>Das serielle Protokoll, das vom Konfigurationsprogramm und von anderen Hilfsprogrammen verwendet wird, wurde auf <strong>Version 1.4</strong> erweitert. Ein verbundenes Programm kann nun alle Einstellungen samt ihren Details mit wenigen Abfragen lesen statt mit einer Abfrage je Einstellung, es kann das Gerät fragen, welche der optionalen Befehle es tatsächlich beherrscht (statt sie zum Ausprobieren einfach abzuschicken), und es kann die gespeicherten Spielergebnisse lesen oder löschen. Alles aus Version 1.3 funktioniert unverändert weiter, bestehende Programme müssen also nicht angepasst werden. Beschrieben ist das Protokoll im eigenen Dokument <em>M32 Protocol</em>.</p></li>
-<li><p>Die Seite „Preferences“ im Konfigurationsprogramm zeigt jetzt zu jeder Einstellung deren <strong>Standardwert</strong> an, gleich daneben, und hebt jene hervor, die du davon abweichend gesetzt hast – ein Klick auf den hervorgehobenen Wert setzt genau diese eine Einstellung wieder auf ihren Standard zurück, ohne irgendetwas anderes anzurühren. Praktisch nach einer Phase des Ausprobierens, wenn du wissen willst, wie eine Einstellung ursprünglich war, aber nicht das ganze Gerät zurücksetzen möchtest. Der Morserino meldet seine Standardwerte ab dieser Version über das serielle Protokoll; an älterer Firmware lässt das Programm die Spalte einfach weg.</p></li>
-<li><p>Nur M32 Pocket: Das Konfigurationsprogramm zeigt jetzt die am Gerät gespeicherten <strong>Spielergebnisse</strong> an – die Bestenlisten aller Spiele und ob für Radio Cave ein gespeicherter Spielstand vorliegt –, und zwar auf der Seite „User Identity“, gleich neben dem Rufzeichen und dem Namen, unter denen sie erspielt wurden. Eine Schaltfläche dort löscht sie alle, mit derselben Wirkung wie „Reset Scores“ im Preferences-Menü am Gerät.</p></li>
-<li><p>Der Koch-Trainer hat einen neuen Eintrag, <strong>Preview Char</strong>, direkt neben <strong>Learn New Chr</strong>. Er öffnet eine Liste aller Zeichen deines Koch-Kurses – in der Reihenfolge, in der du sie lernst – und gibt danach das gewählte Zeichen fortlaufend wieder, genau wie Learn New Chr. Nützlich, um zu einem Zeichen zurückzukehren, das nie richtig sitzen wollte, oder um zu hören, was noch vor dir liegt. Während der Wiedergabe hat die FN-Taste neben Geschwindigkeit und Lautstärke eine dritte Stellung: Steht der ENCODER auf „Zeichen“, blätterst du damit hörend durch den gesamten Kurs, ohne zur Liste zurückkehren zu müssen, und die oberste Zeile zeigt, bei welcher Lektion und welchem Zeichen du gerade bist. Danke an Christian, OE1CKO.</p></li>
-<li><p>Eine neue Einstellung <strong>Boost Practice</strong> lässt die Zeichen deines <strong>Practice Set</strong> häufiger vorkommen – Moderate oder Strong –, statt dass du sie nur für sich allein üben kannst. Sie wirkt in den Zufallszeichen-Übungen von CW Generator und Echo Trainer sowie in der Zeichenerzeugung des Koch-Trainers. Sie bringt dabei nie ein Zeichen ins Spiel, das die Übung nicht ohnehin erzeugt hätte: Sie verschiebt lediglich die Wahrscheinlichkeiten innerhalb dessen, was du ohnehin ausgewählt hast – eine Ziffer im Practice Set bleibt also wirkungslos, solange du nur Buchstaben übst. Standardmäßig ausgeschaltet. Die Auswahl des <strong>Practice Set</strong> steht jetzt direkt daneben – in den Einstellungen von CW Generator, Echo Trainer und Koch-Trainer –, sodass du die Zeichen auswählen und ihre Gewichtung an einer Stelle festlegen kannst, statt für das eine ins <strong>Set Preferences</strong> im Hauptmenü zu wechseln und für das andere wieder zurück. Danke an Christian, OE1CKO.</p></li>
-<li><p>Eine neue Einstellung <strong>Echo Think T.</strong> gibt dir im Echo Trainer Zeit zum Nachdenken: Nach der Vorgabe wartet der Morserino zusätzlich 0 bis 20 Sekunden, bevor er deine Antwort erwartet. Gedacht ist das für das Kopfkopieren – ein ganzes Rufzeichen oder Wort hören und es im Kopf zusammensetzen, bevor du die Taste berührst. Bisher ließ sich diese Zeit nur gewinnen, indem man die Vorgabe langsamer machte oder die Zeichen- und Wortabstände vergrößerte, und beides verändert die Übung selbst – und zwar am ganzen Gerät und nicht nur im Echo Trainer. Die eingestellte Zahl ist die Anzahl der gewarteten Sekunden; 0, die Voreinstellung, lässt den Echo Trainer genau so, wie er war. Sonst ändert sich nichts: Sobald du zu tasten beginnst, wird deine Antwort wie bisher bewertet, sobald du sie beendet hast. Die Idee und die ursprüngliche Umsetzung stammen von Ian Gilchrist, VK1HF, der sie für sein eigenes Kopfkopier-Training gebaut hat; Danke an ihn und an Christian, OE1CKO, der sie überarbeitet hat.</p></li>
-<li><p>Das Installationsprogramm funktioniert jetzt auch in <strong>Firefox</strong> (ab Version 151, die die Unterstützung für die Webserial-API gebracht hat), zusätzlich zu Chrome, Edge und Opera. Safari unterstützt es weiterhin nicht.</p></li>
-<li><p>Custom Characters verhält sich jetzt wie jede andere eingebaute Koch-Reihenfolge: Du kannst Lektion auswählen, neues Zeichen lernen und die übrigen Koch-Modi genauso verwenden wie bei den eingebauten Koch-Sequenzen.</p></li>
-<li><p>Es gibt eine neue Funktion namens „Practice Sets“, die an die Stelle der bisherigen Custom-Zeichensätze tritt. Damit kannst du eine Auswahl einzelner Zeichen üben, die du direkt am Gerät zusammenstellst und dann im CW-Generator oder im Echo-Trainer verwendest.</p></li>
-<li><p>Am Display werden Wörter am Zeilenende nicht mehr getrennt, sondern in einer neuen Zeile begonnen, sofern die Wortlänge vorher bekannt ist (alle CW-Generator-Modi sowie Trx-Modi wie LoRa oder WiFi Trx) und das Wort nicht mehr in die aktuelle Zeile passt.</p></li>
-<li><p>„Select Lesson“ zeigt jetzt auch die Gesamtzahl der Zeichen in der gewählten Koch-Sequenz an.</p></li>
-<li><p>Ein paar weitere kosmetische Korrekturen bei der Bildschirmausgabe.</p></li>
-<li><p>Die Seite „Preferences“ im Konfigurationsprogramm lädt jetzt in einem Bruchteil der bisherigen Zeit, weil sie die Einstellungen mit wenigen Abfragen liest statt mit einer je Einstellung. Am deutlichsten ist der Unterschied über Bluetooth.</p></li>
-<li><p>Nur M32 Pocket: Der gesamte Klang ist sauberer. Die interne Verstärkung des Audio-Chips war so hoch eingestellt, dass jeder Ton bereits im Chip übersteuert wurde, noch bevor er überhaupt die Lautstärkeregelung erreichte – hörbar als harter, schnarrender Ton, den keine Einstellung von „Tone Volume“ beheben konnte. Der CW-Mithörton, die gesprochenen Menüs der Accessibility Edition und deine selbst hochgeladenen Success-/Error-Töne werden jetzt alle unverzerrt wiedergegeben. Zwei Dinge, die daraus folgen, wirst du bemerken: Der Mithörton ist nun ein sauberer Sinus statt des zuvor obertonreichen Klangs, was über den kleinen eingebauten Lautsprecher etwas weniger durchdringend wirken kann, obwohl er nicht leiser ist; und selbst hochgeladene Töne sind leiser als zuvor, weil sie nicht mehr verzerrt werden (siehe die Anmerkung im Abschnitt Echo Trainer). Die Pegel von Lautsprecher und Kopfhörer wurden aufeinander abgestimmt. Danke an Christian, OE1CKO, für das Aufspüren.</p></li>
-<li><p>Nur M32 Pocket: Die beiden Signale, die dir melden, ob deine Antwort richtig oder falsch war – im Echo Trainer und in den Spielen –, wurden überarbeitet. Nach der oben beschriebenen Korrektur der Übersteuerung waren sie auf dem kleinen eingebauten Lautsprecher viel zu leise geworden, denn ihre Durchsetzungskraft hatte sich unbeabsichtigt auf eben diese Verzerrung gestützt. Sie bestehen jetzt aus einem vollständigen Obertonspektrum statt aus einem schlichten Ton, was dieser Lautsprecher wesentlich besser wiedergibt: die Bestätigung klingt hell und trompetenartig, das Fehlersignal dunkler, eher wie ein Fagott. Beide sind wieder deutlich hörbar, bleiben dabei aber etwas unter der Lautstärke des Morsezeichens selbst, ganz gleich, welche Tonlautstärke du eingestellt hast – sie sollen dich informieren und nicht erschrecken. Das Fehlersignal fällt außerdem in der Tonhöhe, so wie es beim klassischen Morserino schon immer war, statt wie die Bestätigung anzusteigen; ein ansteigender „Fehler“ hatte sich in die Fassung für den M32 Pocket eingeschlichen. Wenn dir etwas ganz anderes lieber ist: Beide Signale lassen sich nach wie vor durch eigene MP3-Dateien ersetzen (siehe die Anmerkung im Abschnitt über den Echo Trainer).</p></li>
-<li><p>Nur M32 Pocket: Die Lautstärkestufen für den eingebauten Lautsprecher wurden neu verteilt. Ein kleiner Lautsprecher braucht deutlich mehr Pegel als ein Kopfhörer, bevor er überhaupt hörbar wird; mit dem nun unverzerrten Ton waren die untersten Stufen daher unhörbar geworden, und dieser Teil des Bereichs war schlicht verschenkt. Die Stufen sind jetzt kleiner und decken einen engeren Bereich ab, sodass jede Einstellung ab 1 etwas bewirkt. Das Maximum bleibt unverändert – weil aber die Schritte dazwischen kleiner sind, liegt deine gewohnte Einstellung jetzt bei einer anderen Zahl als bisher. Kopfhörer sind davon nicht betroffen und behalten ihre nahezu lautlose unterste Stufe; sie sind allerdings bei maximaler Lautstärke um etwa 3 dB leiser, was zuvor zu laut war.</p></li>
-<li><p>Eine Bluetooth-Verbindung (BLE Serial) muss jetzt am Morserino selbst zugelassen werden. Wenn eine App eine Sitzung anfordert, zeigt das Gerät „Allow connect?“ und wartet darauf, dass du FN drückst – ein USB-Kabel muss jemand anstecken, der neben deinem Gerät steht, über Bluetooth kann sich hingegen alles verbinden, was in Funkreichweite ist; deshalb fragt der Morserino, bevor er die Kontrolle aus der Hand gibt. Gefragt wirst du nur im Hauptmenü (in einem Trainingsmodus wird die Anfrage abgelehnt, ohne dich zu unterbrechen), eine App, die sich innerhalb einer Minute erneut verbindet, wird ohne Nachfrage wieder zugelassen, und solange eine Sitzung offen ist, zeigt ein kleines Bluetooth-Symbol in der obersten Zeile, dass etwas verbunden ist.</p></li>
-<li><p>Die Auswahl des <strong>Practice Set</strong> ist jetzt auch aus den Einstellungen von CW Generator, Echo Trainer und Koch-Trainer erreichbar und nicht mehr nur über <strong>Set Preferences</strong> im Hauptmenü – sie steht dort direkt neben der neuen Einstellung <strong>Boost Practice</strong>, die auf sie wirkt.</p></li>
-<li><p>Die Einstellung <strong>VK/ZL</strong> von <strong>Calls Region</strong> erzeugt jetzt Rufzeichen, wie man sie dort tatsächlich auf dem Band hört. Bisher wurde der Rufzeichenbezirk rein zufällig gewählt, wodurch VK8 (das Northern Territory mit rund einer Viertelmillion Einwohnern) genauso häufig vorkam wie VK2 (New South Wales mit über acht Millionen); die Bezirke sind nun nach Einwohnerzahl gewichtet, und etwa jedes sechste Rufzeichen ist ein ZL statt eines VK. Die Suffixe haben zwei oder drei Buchstaben, so wie in der Praxis. <strong>Calls Region</strong> fehlte außerdem völlig im Handbuch – die Einstellung gibt es seit V8.1 – und ist jetzt in beiden Sprachen beschrieben. Danke an Ian Gilchrist, VK1HF, von dem die Einstellung stammt und der die Gewichtung ausgearbeitet hat. <!-- WHATSNEW:END --></p></li>
+<li>Zwei Morserinos können jetzt über das Netzwerk eine <strong>Tastverbindung in die Ferne</strong> bilden. Du gibst an deinem Betriebsplatz auf dem einen — dem neuen Modus <strong>Remote Keyer</strong> — und der andere, an der Station, tastet über seinen Anschluss „to Tx“ den Sender: der neue Modus <strong>Remote Rig</strong>. Die Station kann im Nebenzimmer stehen oder in einem anderen Land. Was aus dem Sender kommt, ist das, was du gegeben hast, mit deinem eigenen Timing — ob es von den Paddles kam, von einer Handtaste oder von einem Bug. Es ist eine Tastverbindung, keine Audioverbindung: Deinen Mithörton hörst du lokal und sofort, sodass nichts im Netzwerk deinen Gebe-Rhythmus stören kann; was du <em>von</em> der Station hörst, kommt über den Fernsteuer- und Audioweg, den du ohnehin schon benutzt. Die Verbindung läuft über UDP-Port 7374, und die Adresse der Station trägst du im Feld <strong>TRX Peer</strong> unter <strong>Config WiFi</strong> ein — dasselbe Feld, das auch der WiFi-Transceiver verwendet. Beide Seiten sind im Handbuch beschrieben, samt dem, was bei Routern und Firewalls zu beachten ist.</li>
+<li>Das serielle Protokoll, das das Konfigurationsprogramm und andere Programme verwenden, steht jetzt auf <strong>Version 1.5</strong>: Es kann die Einstellungen für die Ferntastung (gemeinsames Passwort und Port) und die Einstellungen von Remote Rig und Remote Keyer lesen und setzen, und es meldet die neuen Befehle in seiner Liste der Fähigkeiten. Alles aus Version 1.4 funktioniert unverändert weiter. <!-- WHATSNEW:END --></li>
 </ul>
 <h1 data-number="2" id="anschluesse-und-bedienelemente"><span class="header-section-number">2</span> Anschlüsse und Bedienelemente</h1>
 <section id="m32pocket" class="pocket pocket-a11y" data-number="2.1">
@@ -678,7 +653,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Wenn du eine Handtaste angeschlossen und <strong>Keyer Mode</strong> auf <strong>Straight Key</strong> eingestellt hast, kannst du alle Morserino-Modi (z.B. Echo Trainer) nutzen. Der Modus CW Keyer verhält sich dabei jedoch anders (wie der Decoder-Modus): Mit einer Handtaste bist DU der Keyer, nicht der Morserino!</p>
 <h3 data-number="5.1.1" id="cw-memory-keyer"><span class="header-section-number">5.1.1</span> CW Memory Keyer</h3>
 <p>Ab Version 5.1 verfügt der Morserino über einen Memory Keyer. Es stehen acht Speicherplätze zur Verfügung, die jeweils bis zu 47 Zeichen enthalten können. Neben Standard-Morsezeichen (Buchstaben, Zahlen, Satzzeichen) können auch Betriebszeichen und ein Pausenzeichen gespeichert werden. Die Textdarstellung von Betriebszeichen und Pausenmarkierung findest du unter <strong>Kodierung von Textdateien</strong> im Abschnitt <strong>Was kann generiert werden?</strong></p>
-<p>Gespeicherte Inhalte können in den Modi <strong>CW Keyer</strong> und <strong>iCW/Ext Trx</strong> abgerufen werden (aus technischen Gründen jedoch nicht in den Modi <strong>WiFi Trx</strong><span class="classic">oder <strong>LoRa Trx</strong></span>). <strong>Um einen Speicher abzurufen, klicke einmal kurz auf den ENCODER-Knopf.</strong> Wenn Speicher definiert wurden, kannst du in der obersten Zeile mit dem Drehgeber durch sie blättern. Es gibt auch eine EXIT-Option, falls du es dir anders überlegst. Wenn keine Speicherplätze definiert wurden, erscheint eine Fehlermeldung.</p>
+<p>Gespeicherte Inhalte können in den Modi <strong>CW Keyer</strong>, <strong>iCW/Ext Trx</strong> und <strong>Remote Keyer</strong> abgerufen werden (aus technischen Gründen jedoch nicht in den Modi <strong>WiFi Trx</strong><span class="classic">oder <strong>LoRa Trx</strong></span>). <strong>Um einen Speicher abzurufen, klicke einmal kurz auf den ENCODER-Knopf.</strong> Wenn Speicher definiert wurden, kannst du in der obersten Zeile mit dem Drehgeber durch sie blättern. Es gibt auch eine EXIT-Option, falls du es dir anders überlegst. Wenn keine Speicherplätze definiert wurden, erscheint eine Fehlermeldung.</p>
 <p>Die Speicher 1 und 2 werden endlos wiederholt, bis du sie durch manuelle Eingabe stoppst; alle anderen Speicher werden einmal abgespielt.</p>
 <h4 class="unnumbered" id="definition-von-speicherplaetzen">Definition von Speicherplätzen</h4>
 <p>Die Speicher können nur über das serielle Protokoll definiert werden – entweder über eine Computersoftware, die dieses Protokoll implementiert, oder manuell über ein Terminalprogramm. (Das serielle Protokoll ist in einem separaten Dokument beschrieben.)</p>
@@ -1488,7 +1463,117 @@ aus dem englischsprachigen Original übersetzt.</p>
 <h3 data-number="5.5.3" id="icwext-trx"><span class="header-section-number">5.5.3</span> iCW/Ext Trx</h3>
 <p>In diesem Modus wird ein am Morserino-32 angeschlossener Transceiver getastet, oder du kannst den Line-Out-Audioausgang verwenden, um z.B. einen FM-Transceiver zu tasten oder CW über das Internet zu verwenden (iCW – dieses Protokoll verwendet Mumble als Audioaustauschprotokoll). Über Bluetooth kannst du dich auch mit einem Computer verbinden und über diesen mit VBand, einem weiteren internetbasierten CW-Dienst (siehe Abschnitt <strong>Einstellungen zu Key, Paddles und Keyer</strong> für die VBand-Bluetooth-Einstellung).</p>
 <p>Alle CW-Signale, die als Audio über den Audioeingang eingehen, werden dekodiert und auf dem Display angezeigt. Ein externer Transceiver, der über den Anschluss „to Tx” angeschlossen ist, wird vom Keyer getastet; alternativ kann der Audioausgang am Line-Out-Anschluss in einen Computer oder FM-Transceiver eingespeist werden.</p>
-<h3 data-number="5.5.4" id="qso-bot"><span class="header-section-number">5.5.4</span> QSO Bot</h3>
+<h3 data-number="5.5.4" id="einen-entfernten-transceiver-tasten"><span class="header-section-number">5.5.4</span> Einen entfernten Transceiver tasten</h3>
+<p>Mit diesen beiden Modi wird aus zwei Morserinos eine Fern-Tastverbindung: Du gibst an deinem Platz auf dem einen, und der andere – an der Station, die im Nebenzimmer oder in einem anderen Land stehen kann – tastet den Sender. Was der Sender aussendet, ist das, was du gegeben hast, mit deinem eigenen Timing: Punkte, Striche und Pausen werden so wiedergegeben, wie du sie gemacht hast, ob sie nun von den Paddles, von einer Handtaste oder von einem Bug kommen.</p>
+<p>Das ist eine Tastverbindung, keine Audioverbindung. Deinen Mithörton hörst du lokal und ohne Verzögerung, sodass nichts im Netz deinen Rhythmus beim Geben stören kann. Was du <em>von</em> der Station hörst – das Band, dein eigenes Signal, die Gegenstation – überträgt der Morserino nicht; dafür verwendest du den Fernsteuerungs- oder Audioweg, den deine Station ohnehin hat.</p>
+<p>Der Morserino an deinem Platz läuft im Modus <strong>Remote Keyer</strong>. Der an der Station läuft im Modus <strong>Remote Rig</strong> und tastet den Sender über seinen Anschluss „to Tx”, genau wie die anderen Sendemodi. Die Verbindung verwendet UDP-Port 7374.</p>
+<h4 class="unnumbered" id="was-du-brauchst">Was du brauchst</h4>
+<ul>
+<li><strong>Beide Morserinos in einem Netzwerk.</strong> Für einen Test genügt ein lokales Netz; für echten Fernbetrieb muss das Rig-Ende vom Keyer-Ende aus über das Internet erreichbar sein. Es gilt dasselbe wie bei <strong>WiFi Trx</strong>: Steht das Rig hinter einem Router mit NAT, brauchst du eine Portweiterleitung für UDP-Port 7374 auf den Morserino am Rig, oder ein VPN, das beide in ein gemeinsames virtuelles Netz bringt.</li>
+<li><strong>Die Adresse des Rigs</strong>, am Keyer-Ende im Feld <strong>TRX Peer</strong> von <strong>Config WiFi</strong> eingetragen – demselben Feld, das auch der WLAN-Transceiver verwendet. Eine IP-Adresse oder ein DNS-Hostname.</li>
+<li><strong>Eine Passphrase, auf beiden Geräten dieselbe.</strong> Gib sie im Webformular von <strong>Config WiFi</strong> im Feld <em>Remote Keying pass phrase?</em> ein, mindestens 12 Zeichen lang. Sie wird dir nie wieder angezeigt, genau wie die WLAN-Passwörter: Lässt du das Feld leer, bleibt die gespeicherte erhalten.</li>
+</ul>
+<p>Die Passphrase ist keine Nebensache. Jedes Paket der Verbindung wird mit ihr authentifiziert, und ein Morserino im Modus Remote Rig ignoriert alles, was nicht die richtige Signatur trägt – genau das verhindert, dass ein Fremder im Internet deinen Sender tastet. Wähle etwas Langes und gib es deinem Partner auf einem Weg weiter, dem du vertraust. Ohne Passphrase startet keines der beiden Geräte den Modus.</p>
+<h4 class="unnumbered" id="an-der-station-remote-rig">An der Station: Remote Rig</h4>
+<p>Wähle <strong>Remote Rig</strong> im Menü. Das Gerät zeigt kurz <em>Unattended – keep on power</em>, dann seine eigene IP-Adresse in der obersten Zeile, und wartet mit der Anzeige <strong>Listening</strong>.</p>
+<p>Dieser Modus ist dafür gedacht, unbeaufsichtigt zu laufen: Das Gerät geht nie in den Tiefschlaf, egal was bei <strong>Time Out</strong> eingestellt ist. Am Gerät selbst kann nichts den Sender tasten – Paddles, Touch-Sensoren und Tastenbuchse sind hier absichtlich wirkungslos, damit eine Katze, ein Besucher oder ein Stoß gegen den Tisch keinen Träger auf die Luft bringen kann.</p>
+<p>Während eine Sitzung läuft, zeigt das Display, ob die Taste gedrückt ist, wie viele Tastflanken zu spät ankamen, wie oft der Puffer leerlief, und welche Geschwindigkeit das Rig sieht. Endet eine Sitzung, bleibt der Grund auf dem Display stehen, bis die nächste beginnt:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Anzeige</th>
+<th>Was geschehen ist</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>End: BYE</td>
+<td>das Keyer-Ende hat den Modus normal verlassen</td>
+</tr>
+<tr>
+<td>End: timeout</td>
+<td>vom Keyer kam eine Sekunde lang nichts, und er meldete sich nicht wieder</td>
+</tr>
+<tr>
+<td>End: errors</td>
+<td>zu viele beschädigte Pakete – ein schlechter Übertragungsweg, oder etwas im Netz ist nicht, was es vorgibt zu sein</td>
+</tr>
+<tr>
+<td>End: overflow</td>
+<td>Tastflanken kamen schneller an, als sie ausgegeben werden konnten</td>
+</tr>
+<tr>
+<td>End: reset</td>
+<td>du hast am Rig den ENCODER-Knopf gedrückt</td>
+</tr>
+</tbody>
+</table>
+<p>Zwei Bedienelemente: Ein <strong>Klick auf den ENCODER-Knopf</strong> beendet die laufende Sitzung (das Keyer-Ende merkt das und ruft innerhalb einer Sekunde neu an – so bringst du eine Verbindung wieder in Ordnung, die sich seltsam verhält), und ein <strong>langer Druck</strong> verlässt den Modus, wie überall am Morserino.</p>
+<p>Egal wodurch eine Sitzung endet, zuerst wird der Tastausgang freigegeben. Ein Zeichen, das gerade gesendet wurde, als die Verbindung abriss, bleibt nicht auf der Luft stehen.</p>
+<h4 class="unnumbered" id="an-deinem-platz-remote-keyer">An deinem Platz: Remote Keyer</h4>
+<p>Wähle <strong>Remote Keyer</strong>. Der Morserino ruft das Rig, und sobald es antwortet, kannst du geben: Der Modus verhält sich in jeder anderen Hinsicht wie <strong>CW Keyer</strong> – was du gibst, erscheint auf dem Display, ein kurzer Klick auf den ENCODER-Knopf ruft die Keyer-Speicher ab, und Geschwindigkeit und Lautstärke stellst du ein wie immer. Das WLAN-Symbol in der obersten Zeile bedeutet, dass das Rig antwortet; verschwindet es, ist die Verbindung weg, und der Morserino ruft einmal pro Sekunde, bis das Rig wieder da ist. Du kannst währenddessen weitergeben – du sendest dann nur nicht.</p>
+<p>Dein eigener Anschluss „to Tx” bleibt in diesem Modus stumm. Der Morserino vor dir tastet lokal nichts, egal was bei <strong>Key ext TX</strong> eingestellt ist; getastet wird der entfernte Sender.</p>
+<h4 class="unnumbered" id="die-verzoegerung-und-warum-es-sie-gibt">Die Verzögerung, und warum es sie gibt</h4>
+<p>Ein Netzwerk liefert Pakete nicht gleichmäßig aus. Würde das Rig den Sender in dem Moment tasten, in dem eine Tastflanke ankommt, landete das Zittern (Jitter) des Übertragungswegs direkt auf deinem CW und würde es verformen. Deshalb hält das Rig jede Flanke eine feste Zeit zurück (<strong>Rig Delay</strong>) und gibt sie dann nach seinem eigenen Takt aus. Die Verzögerung ist für jede Flanke gleich, daher hat das CW, das den Sender verlässt, genau dein Timing; nur die ganze Aussendung ist um diese Zeit verschoben.</p>
+<p>Die Voreinstellung <strong>Adaptive</strong> lässt das Rig selbst eine Verzögerung finden, die zum Übertragungsweg passt, und sie erhöhen, wenn Flanken zu spät ankommen. Ein fester Wert ist auf einem Weg, den du kennst, die berechenbarere Wahl: Nimm einen, der deutlich größer ist als die schlimmste Laufzeitschwankung, die du beobachtest. In einem guten lokalen Netz reichen 50–100 ms reichlich; quer über einen Kontinent sind 200–300 ms realistischer. Ein gewählter Wert ist zugleich eine Untergrenze – das Rig kann ihn erhöhen, wenn der Weg schlechter wird, und kehrt danach zu deiner Wahl zurück.</p>
+<p>Ein Hinweis zu <strong>Adaptive</strong>: Auf einem Weg, der ab und zu mehrere Pakete hintereinander verliert – manche Mobilfunk- und Satellitenverbindungen tun das –, kann es einmal überrumpelt werden, und ein einzelnes Zeichenelement kommt zu kurz heraus, bevor das Rig seine Verzögerung erhöht hat. Verhält sich dein Weg so, gib dem Rig einen festen Wert von 250 ms oder mehr.</p>
+<p>Die Verzögerung hat keinen Einfluss auf deinen Mithörton, der lokal und sofort ist. Sie bestimmt nur, wie lange nach deiner Tastenbewegung der entfernte Sender folgt, und sie ist der Preis für sauberes CW am anderen Ende.</p>
+<h4 class="unnumbered" id="break-in-kompensation">Break-in-Kompensation</h4>
+<p>Wird dein Transceiver ohne PTT-Leitung getastet, arbeitet er im Semi-Break-in („VOX” für CW): Das erste Tasten schaltet ihn von Empfang auf Senden, und die Zeit, die das Umschalten braucht, wird am Anfang dieses ersten Elements abgeschnitten. Die ARRL-Labortests nennen das die <strong>First Dit On Delay</strong> des Transceivers; bei vielen Geräten sind es einige Millisekunden, bei manchen deutlich mehr. Nach einer Pause – zwischen Wörtern, oder wenn du nach dem Zuhören wieder gibst – ist der Transceiver auf Empfang zurückgefallen, und das nächste erste Element wird wieder beschnitten.</p>
+<p>Der Morserino kann das besser ausgleichen als ein Echtzeit-Keyer, weil er jede Flanke um die Zeit <strong>Rig Delay</strong> im Voraus kennt: Er <strong>beginnt das erste Element früher und lässt sein Ende, wo es ist</strong>. Das Element, das auf die Luft geht, ist das, das du gegeben hast; alles danach bleibt unberührt, und die Abstände in deinem CW werden nicht gestört.</p>
+<p>Zwei Einstellungen am Rig-Ende:</p>
+<ul>
+<li><strong>Rig 1st Ext</strong> – um wie viel früher dieses erste Element beginnt, in Millisekunden. Stelle hier die Umschaltzeit deines Transceivers ein. Kennst du sie nicht, beginne mit 5–10 ms, was zu einem Gerät mit Relais passt, und hör hin: Zu wenig lässt den ersten Punkt eines Wortes zu kurz, zu viel macht ihn zu lang. 0 schaltet die Kompensation aus.</li>
+<li><strong>Rig Hang</strong> – die Break-in-Verzögerung deines Transceivers, in Millisekunden, so wie sie in seinem Handbuch steht (die Einstellung geht in 50-ms-Schritten). Daran erkennt der Morserino, wann der Transceiver auf Empfang zurückgefallen ist und das nächste Element beschnitten wird. Ist der Wert zu kurz, werden Elemente verlängert, die es nicht gebraucht hätten; ist er zu lang, wird ein echtes Umschalten übersehen. In beiden Fällen beträgt der Fehler höchstens die Verlängerung, bei einem Element nach einer Pause.</li>
+</ul>
+<p>Wird dein Transceiver über eine PTT-Leitung getastet, oder betreibst du ihn in Full Break-in ohne nennenswerte Umschaltzeit, lass <strong>Rig 1st Ext</strong> auf 0.</p>
+<h4 class="unnumbered" id="die-einstellungen-des-rigs-von-deinem-platz-aus-aendern">Die Einstellungen des Rigs von deinem Platz aus ändern</h4>
+<p>Die obigen Einstellungen gehören dem Rig und müssen am Sender abgestimmt werden – also genau dort, wo du nicht bist. Deshalb erreichst du sie, solange die Verbindung steht, von deinem Platz aus: Im Modus <strong>Remote Keyer</strong> öffnet ein <strong>Doppelklick</strong> auf den ENCODER wie immer die Einstellungen, und das Menü öffnet direkt bei den Einstellungen des Rigs, die in der Liste zuerst kommen. Jede trägt das Präfix <strong>Rig:</strong>, damit du sie nicht mit einer Einstellung des Morserinos vor dir verwechseln kannst:</p>
+<p><strong>Rig: Delay</strong>, <strong>Rig: Lim Kyr</strong>, <strong>Rig: Lim SK</strong>, <strong>Rig: 1st Ext</strong>, <strong>Rig: Hang</strong>.</p>
+<div class="pocket-a11y">
+<p>Die Accessibility Edition spricht diese Einträge mit ihren vollen Namen – „Remote rig playout delay”, „Remote rig key down limit, keyer” und so weiter – statt die kurzen Bezeichnungen vorzulesen.</p>
+</div>
+<p>Sie verhalten sich wie jede andere Einstellung. Eine Änderung wirkt am anderen Ende sofort und wird dort gespeichert, übersteht also auch einen Stromausfall an der Station. Die angezeigten Werte sind die des Rigs selbst, beim Öffnen des Menüs über die Verbindung zurückgelesen.</p>
+<p>Diese Einträge erscheinen nur, solange die Verbindung steht. Reißt die Verbindung ab, während du in den Einstellungen bist, schließt sich das Menü von selbst und das Display kehrt zur Tastanzeige zurück – statt dich Einstellungen bearbeiten zu lassen, die nirgends mehr ankommen.</p>
+<h4 class="unnumbered" id="sicherheit">Sicherheit</h4>
+<p>Eine Taste, die an einer entfernten Station hängen bleibt, ist ein Sender, der auf der Luft bleibt. Zwei Grenzen am Rig-Ende schützen davor: <strong>Rig Limit Kyr</strong> für einen Paddle-Keyer und <strong>Rig Limit SK</strong> für eine Handtaste oder einen Bug. Dauert ein einzelnes Zeichenelement länger als die Grenze, gibt das Rig die Taste frei. Die Grenze für die Handtaste ist die großzügigere der beiden, weil das Gedrückthalten der Taste – etwa zum Abstimmen – etwas ganz Normales ist; die Voreinstellung von 10 Sekunden reicht dafür und ist trotzdem kurz genug, um etwas zu bewirken.</p>
+<p>Das Rig gibt die Taste auch frei, wenn die Verbindung verstummt, wenn die Sitzung von einer der beiden Seiten beendet wird, und wenn es zum Aufhören aufgefordert wird. Es gibt keinen Zustand der Verbindung, in dem ein Zeichen auf der Luft stehen bleibt.</p>
+<h4 class="unnumbered" id="wenn-es-nicht-startet">Wenn es nicht startet</h4>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Auf dem Display</th>
+<th>Was zu tun ist</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>No key set – Set a pass-phrase first</td>
+<td>Gib die Passphrase im Webformular von <strong>Config WiFi</strong> ein, an beiden Enden</td>
+</tr>
+<tr>
+<td>No rig host – Set TRX Peer in Config WiFi</td>
+<td>Das Keyer-Ende hat keine Adresse für das Rig; trag sie im Feld <strong>TRX Peer</strong> ein</td>
+</tr>
+<tr>
+<td>Host not found</td>
+<td>Der Name oder die Adresse lässt sich nicht auflösen; prüfe sie, und prüfe, ob dieser Morserino im Netz ist</td>
+</tr>
+<tr>
+<td>No answer – Check rig and pass phrase</td>
+<td>Das Rig hat nicht geantwortet: Es ist nicht im Modus <strong>Remote Rig</strong>, es ist nicht erreichbar (Portweiterleitung?), oder die beiden Passphrasen sind verschieden</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="5.5.5" id="qso-bot"><span class="header-section-number">5.5.5</span> QSO Bot</h3>
 <p>Der QSO Bot ist ein simulierter CW-QSO-Partner, mit dem du vollständige, realistische Funkverbindungen ohne Sender üben kannst. Der Bot sendet in Morsecode und liest mit, was du zurücktastest, und reagiert „in character” – so kannst du das Hin und Her einer echten Verbindung in deinem eigenen Tempo einüben, ohne auf Sendung zu gehen. Es handelt sich ausschließlich um einen Übungspartner: Der Bot <strong>sendet niemals über <span class="classic">LoRa,</span> WLAN oder den externen Sender</strong> – er ertönt nur über den lokalen Mithörton und kann daher jederzeit gefahrlos verwendet werden.</p>
 <p>Es gibt drei QSO-Typen, wählbar im Menü unter <strong>Transceiver → QSO Bot</strong>:</p>
 <ul>
@@ -2919,7 +3004,55 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.3.8" id="einstellungen-zu-rufzeichen-name-und-spielstaenden"><span class="header-section-number">6.3.8</span> Einstellungen zu Rufzeichen, Name und Spielständen</h3>
+<h3 data-number="6.3.8" id="einstellungen-zur-ferntastung"><span class="header-section-number">6.3.8</span> Einstellungen zur Ferntastung</h3>
+<p>Diese Einstellungen konfigurieren die beiden Modi zur Ferntastung (Abschnitt <strong>Einen entfernten Transceiver tasten</strong>). Die fünf <strong>Rig</strong>-Einstellungen liest der Morserino, der den Sender tastet – stelle sie also auf diesem Gerät ein, oder bequemer von deinem Platz aus, solange die Verbindung steht, wie in jenem Abschnitt beschrieben. <strong>Glitch Filter</strong> gehört zu dem Morserino, auf dem du gibst.</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>Einstellung</th>
+<th>Beschreibung</th>
+<th>Werte</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rig Delay</td>
+<td>Wie lange das Rig jede Tastflanke zurückhält, bevor es sie ausgibt, damit Laufzeitschwankungen im Netz dein CW nicht verformen können. <strong>Adaptive</strong> lässt das Rig die Verzögerung selbst finden und anpassen. Ein fester Wert ist Startwert und Untergrenze: Das Rig kann ihn erhöhen, wenn Flanken zu spät ankommen, und kehrt zu deiner Wahl zurück, wenn sich der Weg erholt. Ein größerer Wert ist auf einem schlechten Weg sicherer und verzögert den entfernten Sender entsprechend; auf deinen lokalen Mithörton hat er nie Einfluss.</td>
+<td><strong>Adaptive</strong> / 50 / 100 / 150 / 200 / 250 / 300 / 400 / 500 / 600 ms</td>
+</tr>
+<tr>
+<td>Rig Limit Kyr</td>
+<td>Sicherheitsgrenze am Rig: das längste einzelne Zeichenelement von einem Paddle-Keyer, bevor das Rig die Taste freigibt. Ein Keyer kann berechtigterweise kein Element von mehreren Sekunden erzeugen, daher darf diese Grenze knapp sein.</td>
+<td>1 … 30 s (<strong>3</strong>)</td>
+</tr>
+<tr>
+<td>Rig Limit SK</td>
+<td>Dieselbe Grenze für eine Handtaste oder einen Bug, bei denen das Gedrückthalten der Taste – etwa zum Abstimmen – normal ist. Daher die großzügigere Voreinstellung.</td>
+<td>1 … 30 s (<strong>10</strong>)</td>
+</tr>
+<tr>
+<td>Rig 1st Ext</td>
+<td>Break-in-Kompensation: um wie viel früher das Rig das erste Element nach einer Pause beginnt, um die Umschaltzeit des Transceivers auszugleichen (die ARRL-Labortests nennen sie <em>First Dit On Delay</em>). Das Ende des Elements wird nicht verschoben; was auf die Luft geht, ist also das, was du gegeben hast. 0 schaltet die Kompensation aus – die richtige Einstellung, wenn der Transceiver über eine PTT-Leitung getastet wird oder in Full Break-in läuft.</td>
+<td>0 … 30 ms (<strong>0</strong>)</td>
+</tr>
+<tr>
+<td>Rig Hang</td>
+<td>Die Break-in-Verzögerung des Transceivers, wie sie in seinem Handbuch steht, damit der Morserino weiß, wann der Transceiver auf Empfang zurückgefallen ist und das nächste Element beschnitten wird. Nur von Bedeutung, wenn <strong>Rig 1st Ext</strong> nicht 0 ist.</td>
+<td>0 … 3000 ms in 50-ms-Schritten (<strong>250 ms</strong>)</td>
+</tr>
+<tr>
+<td>Glitch Filter</td>
+<td>Am gebenden Ende: wie lange ein Kontakt bestehen muss, bevor er als echte Tastflanke gilt. Kontaktprellen einer Handtaste oder eines Bugs wird verworfen; eine echte Flanke behält den Zeitpunkt, zu dem der Kontakt zuerst geschlossen wurde, sodass der Filter keine Genauigkeit kostet. Auf den internen Keyer wird er nicht angewendet, dessen Flanken von vornherein sauber sind.</td>
+<td>1 … 5 ms (<strong>3</strong>)</td>
+</tr>
+</tbody>
+</table>
+<h3 data-number="6.3.9" id="einstellungen-zu-rufzeichen-name-und-spielstaenden"><span class="header-section-number">6.3.9</span> Einstellungen zu Rufzeichen, Name und Spielständen</h3>
 <p>Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen deine persönliche Identität fest, die<span class="pocket">vom Spiel <strong>Fight the Pileup</strong> und</span> vom <strong>QSO Bot</strong> (Abschnitt <strong>QSO Bot</strong>) verwendet wird; <strong>Reset Scores</strong> löscht die gespeicherten Spielstände<span class="pocket pocket-a11y">, und <strong>Practice Stats</strong> schaltet die weiter unten beschriebene Protokollierung ein oder aus</span>. Call Sign und Op Name können auch über USB über das M32-USB Serial-Protokoll gesetzt werden (z.B. mit einem Browser-Konfigurationstool).</p>
 <table>
 <colgroup>
@@ -3092,12 +3225,12 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Für den M32Pocket musst du den Parameter <code>-d M32Pocket</code> zur Befehlszeile hinzufügen.</p>
 </div>
 <p>In meinem Fall war das (auf einem Windows-Rechner):</p>
-<p><span class="classic"><code>update_m32 -p COM3 -f m32_V9.0.bin</code></span><span class="pocket pocket-a11y"><code>update_m32 -p COM3 -d M32Pocket -f m32_V9.0.bin</code></span></p>
+<p><span class="classic"><code>update_m32 -p COM3 -f m32_V10.0.bin</code></span><span class="pocket pocket-a11y"><code>update_m32 -p COM3 -d M32Pocket -f m32_V10.0.bin</code></span></p>
 <p>oder unter OSX oder Linux:</p>
-<p><span class="classic"><code>./update_m32 -p /dev/tty[...] -f m32_V9.0.bin</code></span><span class="pocket pocket-a11y"><code>./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V9.0.bin</code></span></p>
+<p><span class="classic"><code>./update_m32 -p /dev/tty[...] -f m32_V10.0.bin</code></span><span class="pocket pocket-a11y"><code>./update_m32 -p /dev/tty[...] -d M32Pocket -f m32_V10.0.bin</code></span></p>
 <p>Nach kurzer Zeit sollte dein Morserino neu starten und die aktualisierte Versionsnummer anzeigen.</p>
 <p>Es gibt auch die Möglichkeit, den permanenten Speicher des M32 vor der erneuten Firmware-Installation vollständig zu löschen; das kann nützlich sein, wenn der permanente Speicher beschädigt wurde. Dazu fügst du den optionalen Löschparameter <code>-e</code> hinzu. Beispiel (hier für OSX oder Linux):</p>
-<p><code>./update_m32 -p /dev/tty[...] -f m32_V9.0.bin -e</code></p>
+<p><code>./update_m32 -p /dev/tty[...] -f m32_V10.0.bin -e</code></p>
 <h2 data-number="7.6" id="aktualisieren-der-firmware-ueber-usb-und-einen-browser-webserial"><span class="header-section-number">7.6</span> Aktualisieren der Firmware über USB und einen Browser (Webserial)</h2>
 <p>Einige Browser unterstützen die Webserial-Erweiterung, mit der man direkt vom Browser aus auf eine serielle Schnittstelle zugreifen kann. Derzeit sind das <strong>Google Chrome</strong>, <strong>Microsoft Edge</strong>, <strong>Firefox</strong> (ab Version 151), und zumindest auf einigen Plattformen auch <strong>Opera</strong>. Mit einem solchen Browser wird das Aktualisieren der Firmware auf die neueste Version sehr einfach – kein Firmware-Download notwendig, keine Befehlszeilen.</p>
 <p>Stelle sicher, dass du ein USB-Kabel hast, das Datenübertragung ermöglicht.</p>
@@ -4643,6 +4776,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=6038bca5fea8 -->
+<!-- MANUALFRESH: lang=de src=d802a50551d0 -->
 </body>
 </html>
