@@ -1,26 +1,71 @@
 # Morserino-32 — open items (loose-ends survey)
 
 Compiled 2026-09-30 from all ~60 Claude Code sessions and the memory notes.
-Section A was then checked against the live repository (same day); sections B–H
-come from session transcripts and memory notes, and items marked *(verify)* may
-already be done. Not yet prioritised — the tiers at the end are a proposal only.
+Section A was checked against the live repository the same day; sections B–H come
+from session transcripts and memory notes, and items marked *(verify)* may already
+be done.
 
-Working branch at time of writing: `m32kip` (the V10 line). `master` = 4af466a
-(= origin/master) before this file was added; claims V9.0.1, `BETA false`.
+Branches: `master` = V9.0.1 released, now provisional **9.1.0 BETA**. `m32kip` = the
+**V10** line (10.0.0 BETA), pushed to `origin/m32kip`. When merging master into
+`m32kip`, `morsedefs.h` will conflict on the version lines — **keep 10.0.0**.
+
+---
+
+## Working order (adopted 2026-09-30)
+
+**Wave 1 — protect the work: DONE 2026-09-30.**
+`m32kip` pushed · master merged into `m32kip` · master bumped to 9.1.0 BETA (decision:
+the next master release is 9.1) · FAQ "First Steps" section committed and pushed
+(EN + DE, Phillips screws, Configuration Tool bullet) · V9.0.1 confirmed released.
+
+**Wave 2 — one batched bench session on the classic M32** (and the Pocket where noted).
+Several debts need the classic/OLED unit, so clear them together:
+- BLE Serial (C1): classic V2 scripted tests 1–8, Bluetooth-keyboard interplay, LoRa+BLE
+  coexistence. V9 has already shipped without this gate, so it outranks the other
+  defects.
+- Ultimatic on the OLED and with a mechanical paddle (C4).
+- M32KIP Rig on the classic (already staged) + the Willi-only items of B6: WiFi pulled
+  mid-mark, straight key and bug, 12 s tune, direct two-device soak.
+- Separate slots, not part of the session: the two-hour drift test, the real-Internet run,
+  and the ≥35 WpM soak (**needs another operator — ask someone now**).
+
+**Wave 3 — V10 release path** (can run alongside wave 2):
+1. Editorial passes on the changelog draft and the V10 manual (B1, B2) — only Willi can do this;
+   it is the real critical path.
+2. `PUT menu/start` error reply (B3) — small, one sitting.
+3. Burst-loss §13.2(e) (B4) — **decision needed, see below**.
+4. Keyer a11y voicing (B8); clear the TRX Peer fields (B7).
+
+**Wave 4 — cheap goodwill, any spare 10 minutes:** replies to Rodjo and the pause/resume
+claimant (F1, F2); quick cleanup (A6–A9: merged branches, `git branch -D scratch/umlaut-probe`,
+inspect the three stashes, stale line in `RELEASE_AUTOMATION_DESIGN.md`).
+
+**Wave 5 — after V10, each in its own session:** the I2S-sidetone and generated-CW 6 ms
+fixes (C6, B5 — related); snapshot bundles, sidetone upstreaming, a11y roadmap, QSO Bot
+leftovers (H1–H4); rewrite the stale `devdocs/HANDOFF.md` (H5); CI gates for the FAQ and
+protocol PDFs (E2).
+
+### Decisions still open
+1. **V10 target date / event?** With none, wave 2 leads; with one, wave 3 leads and the
+   burst-loss decision comes first.
+2. **Burst loss (B4):** ship V10 with the documented workaround (Rig Delay ≥ 250 ms), or fix
+   first? Recommendation: ship with the workaround (one loss pattern, documented, 250 ms
+   floor rests on one test run).
+3. **FAQ header** says "Answers reflect **firmware version 9.0**" — change to 9.0.1, or does
+   9.0 mean "the 9.0 line"?
+4. Next master release is 9.1 (decided) — the `### Changes V9.1.0` changelog section is
+   only needed when a 9.1.0 tag is cut; add it with the first real entry.
 
 ---
 
 ## A. Git / release housekeeping
 
-1. **`m32kip` (V10) is unpushed** — 68 commits ahead of master, no `origin/m32kip` (verified).
-2. **Four FAQ files uncommitted on `m32kip`** (EN + DE, `.md` + `.pdf`): new section
-   "First Steps with a New M32 Pocket". Belongs on `master` (site publishes
-   `origin/master`); waiting for Willi's word.
-3. **`m32kip` lacks master's recovery-mode docs** (FAQ + manuals) — merge master into `m32kip`.
-4. **`master` claims to be 9.0.1, not beta.** Before the next change lands: bump to a
-   provisional version with `BETA true` + new changelog section (9.0.2 vs 9.1 is Willi's call).
-5. **V9.0.1 draft GitHub release** — Willi publishes it in the web UI *(verify done; tag
-   `V9.0.1` exists)*.
+1. ~~`m32kip` unpushed~~ — **done 2026-09-30**, `origin/m32kip` = 91ce169.
+2. ~~Four FAQ files uncommitted~~ — **done**, committed and pushed to master as 8e0b9f1.
+3. ~~`m32kip` lacks master's recovery-mode docs~~ — stale (they came in with the V9.0.1
+   merge aa0188e); master is now fully merged into `m32kip`.
+4. ~~`master` claims to be 9.0.1~~ — **done**, bumped to 9.1.0 BETA (5ff863c).
+5. ~~V9.0.1 draft release~~ — **done**, released (confirmed by Willi 2026-09-30).
 6. **Three stashes** (verified): `stash@{0}` and `{1}` are auto-stashes from branch
    checkouts on a detached HEAD, `stash@{2}` is a GitHub Desktop stash on `test1`.
    Contents not inspected — look before dropping.
@@ -100,6 +145,9 @@ Working branch at time of writing: `m32kip` (the V10 line). `master` = 4af466a
 4. `Software/iOS/M32Config/store-listing.md` had an uncommitted edit of Willi's as of 8/24 *(verify)*.
 5. **Book repo:** decide §5.7 — drop the "baseline" snapshot 1, keep only snapshot 2, add one
    sentence pointing to Reset Defaults (chapter 6's snapshot 1 overwrites the baseline).
+6. `m32p_assembly.odt` (Documentation/Assembly Instructions/M32Pocket) still says **TORX T8**
+   for the case screws; Willi says production units use **Phillips** — the FAQ is corrected,
+   the assembly document probably needs it too.
 
 ## F. People and community
 
@@ -121,13 +169,3 @@ Working branch at time of writing: `m32kip` (the V10 line). `master` = 4af466a
 3. **QSO Bot:** only optional items left (T3.2 descriptors, T3.3 LLM/WiFi companion). Parked.
 4. **A11y roadmap:** blind-user feedback, high-contrast themes for partially sighted users, Phase 4 flash site.
 5. **`devdocs/HANDOFF.md`** still says "current focus: Fight the Pileup P6" — stale; rewrite.
-
----
-
-## Proposed tiers (for discussion)
-
-- **Tier 1 — protect the work:** A1–A5 (push `m32kip`, FAQ commit, master→m32kip merge,
-  confirm V9.0.1 published, provisional version bump).
-- **Tier 2 — V10 release blockers:** B1–B3, B6 (bench tests).
-- **Tier 3 — known defects:** B4, C6, C1.
-- **Tier 4 — tidy and respond:** A9, E-items, D-items, F1–F2, H5.
