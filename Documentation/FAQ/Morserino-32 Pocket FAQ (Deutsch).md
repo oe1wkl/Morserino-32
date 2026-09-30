@@ -14,7 +14,20 @@ Die Antworten beziehen sich auf **Firmware-Version 9.0**.
 
 Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb ebenfalls englisch angegeben.
 
-## 1. Umstieg von einem Morserino der 1. oder 2. Edition
+## 1. Die ersten Schritte mit einem neuen M32 Pocket
+
+* **Ich habe gerade meinen M32 Pocket bekommen. Was soll ich als Erstes tun?**
+    * **Zuerst die Firmware aktualisieren.** Welche Version auch immer auf deinem Gerät ausgeliefert wurde — inzwischen gibt es höchstwahrscheinlich eine neuere, und sowohl das Handbuch als auch diese FAQ beschreiben die aktuelle. Du brauchst einen Desktop- oder Laptop-Computer, ein **datentaugliches USB-C-Kabel** (kein reines Ladekabel) und **Google Chrome**, **Microsoft Edge**, **Opera** oder **Firefox ab Version 151** — Safari kann das nicht, Smartphone und Tablet ebenso wenig. Schalte den Morserino ein, lass ihn wach, steck ihn an und öffne [`morserino.info/install.html`](https://www.morserino.info/install.html). Die Seite erkennt selbst, welchen Morserino du hast, und zeigt die installierte Version an, bevor irgendetwas geschrieben wird; wähle **Keep my settings**, sofern du keinen Grund dagegen hast. Einzelheiten stehen in Abschnitt 9. Eines musst du dabei nicht befürchten: Ein fabrikneuer Pocket — wie jeder frisch gelöschte — kann beim ersten Start bis zu etwa zehn Sekunden brauchen, ehe das Menü erscheint, weil er sein internes Dateisystem vorbereitet. Version 9 zeigt dabei einen erklärenden Startbildschirm; ältere Firmware lässt den Schirm einfach dunkel.
+    * **Lade das Benutzerhandbuch herunter — und lies es.** Die Links stehen am Anfang dieser FAQ, eine Zeile je Morserino, und sie zeigen immer auf das Handbuch zur aktuellen Firmware. In diesem Gerät steckt vieles, was du durch bloßes Drehen am Knopf nie entdecken wirst: Lies vor der ersten Übungseinheit zumindest das Kapitel **Kurzanleitung zur Benutzung des M32** und danach das Kapitel zu jener Betriebsart, mit der du anfängst. Diese FAQ ist eine Ergänzung zum Handbuch, kein Ersatz.
+    * **Tritt der Morserino-Benutzergruppe bei**, auf [`groups.io/g/morserino`](https://groups.io/g/morserino). Dort werden neue Firmware-Versionen und Betas angekündigt, und es ist der kürzeste Weg zu einer brauchbaren Antwort, wenn dich etwas ratlos macht — viele sachkundige und hilfsbereite Leute lesen dort mit. Ein guter Teil dieser FAQ ist aus Diskussionen in dieser Gruppe entstanden. Die Gruppensprache ist Englisch.
+    * **Besorg einen Akku und bau ihn sorgfältig ein.** Der Pocket läuft problemlos über USB, aber erst die Zelle macht ihn zum Taschengerät. Er braucht eine einzelne **14500-Li-Ion-Zelle**: Bauform AA, aber 3,6–3,7 V, höchstens 52 mm lang und 14,5 mm dick, mit erhabenem Pluspol (Button-Top); eine **geschützte** Zelle ist dringend zu empfehlen. Zum Einbauen musst du das Gehäuse öffnen — löse die **vier Kreuzschlitzschrauben (Phillips)** an der Unterseite, leg die Zelle **richtig gepolt** in den Halter (verkehrt herum zerstörst du das Gerät höchstwahrscheinlich) und schließe das Gehäuse wieder. Und dabei gilt: **Zieh die Schrauben nicht zu fest an.** Es sind selbstschneidende Schrauben, die ihr Gewinde in den Kunststoff des Gehäuses schneiden — zu festes Anziehen ruiniert dieses Gewinde dauerhaft. Handfest genügt; hör auf, sobald die beiden Gehäusehälften aufeinanderliegen. Denk außerdem daran, dass der Pocket nur lädt, wenn der **Ein-/Ausschalter auf ON (I)** steht. Mehr zu Akku und Laden in Abschnitt 3.
+    * **Lern das Configuration Tool kennen**, auf [`morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html) — dieselben Browser wie beim Installer, dasselbe USB-Kabel. Damit gibst du bequem alles ein, was mit dem Drehgeber mühsam ist: dein **Call Sign** und deinen **Op Name**, deine **WLAN-Zugangsdaten** und alle anderen Einstellungen, alles auf der Computertastatur. Außerdem verwaltet es Schnappschüsse (samt Sichern in eine Datei), zeigt deine Koch-Übungsstatistik und lädt Sounddateien hoch. Für alles, was länger als ein paar Zeichen ist, bist du damit weit schneller als mit dem Drehgeber.
+    * **Sag dem Gerät, wer du bist.** Die Einstellungen **Call Sign** und **Op Name** kannst du direkt am Gerät mit dem Drehgeber eingeben, oder alternativ mit dem **Configuration Tool**, das im vorigen Punkt beschrieben ist. Der QSO Bot und Fight the Pileup verwenden sie, es lohnt sich also vor der ersten QSO-Übung — und wenn du noch kein Rufzeichen hast, trag einfach etwas ein, das dir gefällt.
+    * **Fang dann mit dem Üben an, statt Punkt-Strich-Tabellen zu studieren.** Die meisten beginnen mit dem **Koch Trainer**: Er fügt pro Lektion ein Zeichen hinzu und gibt schnell genug (ab 18 WpM), dass du jedes Zeichen als Rhythmus lernst und nicht dits und dahs zählst. Wenn dir das zu schnell vorkommt, dehne die *Abstände* zwischen Zeichen und Wörtern und lass das Tempo der Zeichen selbst in Ruhe — der M32 lässt dich beides unabhängig einstellen. Übe jede Lektion im **CW Generator** und im **Echo Trainer**; die Paddles dürfen warten, bis dein Ohr etwas gelernt hat.
+    * **Steck keinen Transceiver mit einem gewöhnlichen Kabel in die Audiobuchse.** Beim M32 Pocket ist der Schaft der 4-poligen Buchse der Audio**eingang** — ein einfaches Audiokabel legt die Audiospannung deines Empfängers direkt auf den Ausgang des Pocket und zerstört ihn wahrscheinlich. Was du brauchst, ist ein Y-Adapterkabel mit TRRS-Stecker; siehe Abschnitt 6.
+    * **Und falls du den roten Knopf suchst:** Es gibt keinen. Beim Pocket ist die FN-Taste eine Aussparung im Gehäuse, rechts unterhalb des Drehgebers. Es steht nichts hervor, und mehr als ein neuer Besitzer hat sie erst einmal gesucht.
+
+## 2. Umstieg von einem Morserino der 1. oder 2. Edition
 
 * **Ich habe einen älteren Morserino (1. oder 2. Edition). Soll ich mir einen M32 Pocket zulegen?**
     * Ein funktionierendes Gerät muss man deswegen nicht ersetzen. Beide Modelle laufen mit **derselben Firmware** aus demselben Release und bekommen dieselben Updates. Alle Übungs-Betriebsarten gibt es auf beiden: Koch-Trainer, CW-Generator, Echo Trainer, die Transceiver-Betriebsarten, den QSO Bot, die Bluetooth-Tastatur und BLE Serial, den WiFi-/ESP-NOW-Transceiver sowie das serielle Protokoll mit dem Configuration Tool.
@@ -31,16 +44,16 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * **Ehrliches Fazit**: Wenn dein Morserino funktioniert und du weder die Spiele noch die Statistik, die gesprochenen Menüs oder das bessere Audio besonders brauchst, gibt es keinen zwingenden Grund für ein zweites Gerät. Beim eigentlichen CW-Training — und dafür sind beide da — entgeht dir nichts. Kauf den Pocket wegen der Größe, des Displays und des Klangs, oder weil du die Accessibility Edition brauchst. Behalte den klassischen, wenn du auf LoRa angewiesen bist — und nicht wenige Besitzer haben schlicht beide.
 
 * **Ich habe (oder hatte) einen älteren Morserino und jetzt einen M32 Pocket. Welche Stolperfallen sind die wichtigsten?**
-    * **Die Audiobuchse ist anders belegt, und ein Fehler dabei kann das Gerät zerstören.** Bei der 1. und 2. Edition ist der **Schaft der Audioausgang**. Beim M32 Pocket ist die Buchse 4-polig (TRRS) und der **Schaft der Audioeingang**. Verwende also kein Kabel und keinen Adapter weiter, der am alten Morserino funktioniert hat — er würde die Audiospannung deines Empfängers direkt auf den Ausgang des Pocket legen. Abschnitt 5 beschreibt das Y-Adapterkabel, das du wirklich brauchst.
+    * **Die Audiobuchse ist anders belegt, und ein Fehler dabei kann das Gerät zerstören.** Bei der 1. und 2. Edition ist der **Schaft der Audioausgang**. Beim M32 Pocket ist die Buchse 4-polig (TRRS) und der **Schaft der Audioeingang**. Verwende also kein Kabel und keinen Adapter weiter, der am alten Morserino funktioniert hat — er würde die Audiospannung deines Empfängers direkt auf den Ausgang des Pocket legen. Abschnitt 6 beschreibt das Y-Adapterkabel, das du wirklich brauchst.
     * **Ein anderer Akku.** Die 1. und 2. Edition verwenden eine flache 3,7-V-LiPo-Zelle. Der M32 Pocket braucht eine **14500-Li-Ion-Zelle** — Bauform AA, 3,6–3,7 V, höchstens 52 mm lang und 14,5 mm dick, geschützte Zelle empfohlen. Die beiden sind in keiner Richtung austauschbar.
     * **Ein anderer USB-Anschluss.** Micro-USB bei den älteren Modellen, **USB-C** beim Pocket. Der Pocket zieht beim Laden auch mehr: bis zu etwa 500–600 mA gegenüber rund 200 mA.
     * **Kein LoRa.** Die LoRa-Transceiver-Betriebsarten gibt es schlicht nicht; nimm stattdessen den WiFi-Transceiver.
-    * **Keine Trimmer.** Es gibt kein Potentiometer für den Audio-Eingangspegel — den Pegel stellst du stattdessen an der Quelle ein, siehe Abschnitt 5.
+    * **Keine Trimmer.** Es gibt kein Potentiometer für den Audio-Eingangspegel — den Pegel stellst du stattdessen an der Quelle ein, siehe Abschnitt 6.
     * **Die FN-Taste ist eine Aussparung im Gehäuse**, rechts unterhalb des Drehgebers, und kein hervorstehender roter Knopf. Mehr als ein Besitzer hat sie erst einmal gesucht.
     * **Eine Geste bedeutet etwas anderes.** Ein langer Druck auf FN im Menü startet bei den älteren Modellen die Einstellung des Audio-Eingangspegels; beim Pocket tastet er nur den Sender und erzeugt einen Mithörton.
     * **Deine Einstellungen wandern nicht mit.** Es gibt keine Sicherung und Wiederherstellung zwischen Geräten — ein neuer Pocket startet mit den Werkseinstellungen. Rechne damit, Rufzeichen, Koch-Lektion, Geschwindigkeit und Einstellungen neu zu setzen. Auch Schnappschüsse werden nicht übertragen.
 
-## 2. Stromversorgung, Akku und Laden
+## 3. Stromversorgung, Akku und Laden
 
 * **Welchen Akku soll ich verwenden?**
     * Eine **14500-Li-Ion-Zelle (3,7 V)**. 14500-Zellen haben dieselbe Bauform wie gewöhnliche AA-Batterien, wir brauchen aber 3,6–3,7-V-Zellen, also Li-Ion. Die Höchstmaße sind 52 mm Länge und 14,5 mm Durchmesser.
@@ -55,7 +68,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * **Anzeige**: Der M32 Pocket zeigt in jedem Menü ein Akku- bzw. Ladesymbol in der obersten Zeile des Displays.
 * **Stolperfalle leerer Akku**: Ist die Akkuspannung gefährlich niedrig, erscheint ein leeres Akkusymbol und das Gerät startet nicht. Auch Symptome wie aussetzender Ton beim Geben deuten darauf hin, dass die Akkuspannung zu niedrig ist und geladen werden muss.
 
-## 3. Gehäuse und 3D-Druck
+## 4. Gehäuse und 3D-Druck
 
 * **Wo finde ich Dateien für den 3D-Druck?**
     * Das Handbuch nennt keine Adressen, aus der Community wird aber auf **Printables** verwiesen (z. B. Modell 1550518 von Michael K Johnson/KZ4LY) — dort gibt es FreeCAD-, STEP- und STL-Dateien für den M32 Pocket.
@@ -64,7 +77,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * **Vorgehen**: Das Platinenmaterial ist ins Gehäuse geklebt — mit etwas Aceton lässt sich der Kleber aufweichen, sodass du die Plättchen vorsichtig aus dem alten Gehäuse lösen und ins neue einsetzen kannst. Achte darauf, die Drähte genauso wieder anzuschließen wie zuvor.
 * **Der „fehlende" rote Knopf**: Beim M32 Pocket ist der „rote Knopf" (die FN-Taste) **ins Gehäuse integriert** und kein eigenes hervorstehendes Bauteil. Es ist eine Aussparung im Gehäuse, rechts unterhalb des Drehgebers.
 
-## 4. Externe Tasten und Anschlüsse
+## 5. Externe Tasten und Anschlüsse
 
 * **An welche Buchse kommt eine externe Taste?**
     * An die mit „External Paddle" beschriftete **3,5-mm-Klinkenbuchse, 3-polig (TRS)**. Es ist die Buchse, die dem USB-Anschluss am nächsten liegt.
@@ -75,7 +88,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 * **Kann ich eine mechanische Taste an den internen Paddle-Anschluss hängen?**
     * Ja, das ist allerdings noch **experimentell**. Der Anschluss auf der Platine, der normalerweise die kapazitiven Touchpaddles des Pocket bedient (CN3), lässt sich über das Menü **Hardware Config** auf eine mechanische Taste bzw. ein mechanisches Paddle umschalten. Das ist praktisch, wenn du eine mechanische Taste gemeinsam mit dem M32 Pocket in ein Gehäuse einbauen willst.
 
-## 5. Audio-Ein- und -Ausgang
+## 6. Audio-Ein- und -Ausgang
 
 * **Wie ist die Audio-I/O-Buchse belegt?**
     * Der M32 Pocket verwendet eine **3,5-mm-Klinkenbuchse, 4-polig (TRRS)**.
@@ -107,7 +120,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 * **Der CW-Mithörton klingt seit Version 9 anders.**
     * Dieselbe Ursache. Der Mithörton ist jetzt ein sauberer Sinus statt des vorher obertonreichen Klangs. Über den kleinen eingebauten Lautsprecher kann er dadurch etwas weniger durchdringend wirken, obwohl er nicht leiser ist.
 
-## 6. Bluetooth und VBand
+## 7. Bluetooth und VBand
 
 * **Wie schalte ich Bluetooth ein?**
     * Über die Einstellung **Bluetooth Use**. Neben **No Bluetooth** gibt es vier Tastatur-Betriebsarten (VBand Kbd, Decoded output, VBand+Decoded, Generic Kbd) und **BLE Serial** (das M32-Serial-Protokoll über Bluetooth, siehe unten).
@@ -129,7 +142,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 * **Kann ich Audio über Bluetooth übertragen?**
     * Nein, und es wäre auch nicht sinnvoll: Bluetooth-Audio bringt eine spürbare Verzögerung mit sich, die sauberes Geben sehr schwer macht.
 
-## 7. Die Accessibility Edition (nur M32 Pocket)
+## 8. Die Accessibility Edition (nur M32 Pocket)
 
 * **Was ist das?**
     * Eine eigene Ausgabe der Firmware, die **Menüs und Einstellungen laut vorliest** — für blinde und sehbehinderte Operatoren.
@@ -145,7 +158,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * Abhilfe in beiden Fällen: das Installationsprogramm noch einmal laufen lassen und dabei **Accessibility Edition** sowie **Keep my settings** wählen. Damit werden Programm und passende Sprachclips gemeinsam installiert.
     * Der Alarm ist bewusst weder Sprache noch Morsezeichen: Er muss gerade dann funktionieren, wenn die Sprache fehlt, und er darf nicht voraussetzen, dass du schon Morsezeichen lesen kannst.
 
-## 8. Firmware-Updates
+## 9. Firmware-Updates
 
 * **Was ist der einfachste Weg zu einem Update?**
     * **Webserial**: `morserino.info/install.html` in einem unterstützten Browser aufrufen. Dafür brauchst du weder Kommandozeilen-Werkzeuge noch einen separaten Firmware-Download.
@@ -169,7 +182,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * Dann das Installationsprogramm unter `morserino.info/install.html` starten und **Erase everything** wählen. Damit werden auch beschädigte Einstellungen entfernt, deine Einstellungen, Snapshots und Highscores gehen also verloren.
     * Das funktioniert bei **jedem Morserino**, am wichtigsten ist es aber beim Pocket: Der klassische M32 geht über einen eigenen CP210x-Chip an den USB, und der erscheint normalerweise auch bei defekter Firmware. Taucht ein klassischer gar nicht auf, zuerst Kabel und CP210x-Treiber prüfen.
 
-## 9. Übungsfunktionen und Einstellungen
+## 10. Übungsfunktionen und Einstellungen
 
 * **Was sind „Practice Sets"?**
     * Sie treten an die Stelle der früheren Custom-Zeichensätze. Du wählst direkt am Gerät eine Teilmenge einzelner Zeichen aus und übst dann genau diese im CW-Generator oder im Echo Trainer.
@@ -186,7 +199,7 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
 * **Meine Schnappschüsse haben sich unter einer älteren Firmware seltsam verhalten.**
     * Es gab einen Fehler, der den Einstellungsspeicher des Geräts volllaufen lassen und das Speichern von Schnappschüssen verhindern konnte. Er ist behoben, und Schnappschüsse werden jetzt deutlich sparsamer abgelegt. Beim ersten Start nach dem Update werden vorhandene Schnappschüsse einmalig ins neue Format umgewandelt — das kann ein paar Sekunden dauern und geschieht nur dieses eine Mal.
 
-## 10. Spiele (nur M32 Pocket)
+## 11. Spiele (nur M32 Pocket)
 
 * **Welche Spiele gibt es?**
     * Sieben: **Morse Invaders**, **Fight the Pileup**, **Radio Cave**, **Morsel**, **Trailblazer**, **Fox Hunt** und **Memory Chain**. Sie sind im Benutzerhandbuch beschrieben.
