@@ -390,8 +390,17 @@ fresh `BLEServer`/`BLEService`/two `BLECharacteristic`s/`BLE2902` (14 FreeRTOS
 semaphores, their name strings, map nodes) and `deinit(false)` frees none of
 it — the "few dozen bytes per cycle" comment in `init()` was ~100x too
 optimistic, Andrew measured ~3.8 KB. Andrew saw a visible NO MEM refusal on
-the Pocket; on the classic it degrades silently instead. Fix on branch
-`ble-serial-heap-leak`.
+the Pocket; on the classic it degrades silently instead.
+
+**Fixed (branch `ble-serial-heap-leak`):** `stop()` now deletes every GATT
+object `init()` created — children first, and only after `deinit(false)`, when
+no Bluedroid event can reach them (`freeGattObjects()`). Measured on the classic
+with temporary heap marks, 20 WiFi suspend/resume cycles each: before, 3.7 KB
+lost per cycle (3672–3760 B), largest free block 41 KB → 1.2 KB in eleven
+cycles, reboot on the twelfth; after, 37 B per cycle (library-internal residue,
+~1000 cycles per power-on before it matters), largest block constant at
+40,948 B, 20/20 cycles, and a BLE connect after 21 cycles in one boot took
+1.2 s.
 
 **Unexplained, once:** in the evening's very first run an unanswered request
 was admitted after 9.5 s with nobody touching the device. Not reproduced in
