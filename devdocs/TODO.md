@@ -105,10 +105,9 @@ command line).
 
 1. ~~Editorial pass on the `### CHANGES V. 10.0` draft~~ — Willi: the entries are fine as they are (2026-10-01).
 2. Editorial pass on the **V10 manual** (currently V9 text + M32KIP sections).
-3. **`PUT menu/start` answers nothing** when the device is not at the menu (any mode, any
-   client). Should return an error; optionally latch the request. Not a blocker — but on
-   2026-09-30 it bit the BLE bench harness again (cycles that "lost" their notice); it has
-   now posed as a firmware fault in two separate test campaigns. Worth doing soon.
+3. ~~`PUT menu/start` answers nothing when not at the menu~~ — **done 2026-10-01 on `m32kip`** (0b6b1c3): it
+   now answers `NOT AT MENU - stop the running mode first` and changes nothing; verified on the classic;
+   protocol description updated (1.5). V9/`master` keeps the old silence.
 4. **Burst-loss failure, test-plan §13.2(e):** a burst shortened one mark by 138 ms. Manual
    only carries the workaround (Rig Delay ≥ 250 ms).
 5. **Generated CW is 6 ms short per element** on the key line (dah/dit 3.21) — to-do note only.
@@ -120,7 +119,9 @@ command line).
    text and black-knob memories by eye.
 7. **Cleanup:** clear both **TRX Peer** fields — Willi: leave them for the time being
    (Pocket's points at the classic, 192.168.1.237).
-8. **A11y voicing of the Keyer's messages** still owed.
+8. ~~A11y voicing of the Keyer's messages~~ — **done 2026-10-01 on `m32kip`** (6354662): connect, call, link and
+   all five error screens are spoken. **Open decision:** link lost / restored *while keying* is still only the
+   top-bar icon — speaking it needs `MorseVoice::tick()` in the global loop, which touches keyer timing.
 9. **Pocket polled-Keyer 1.7 ms floor** — Willi's nod still owed.
 11. ~~Setting the pass phrase~~ — **done 2026-10-01 on `m32kip`** (4af1827, 39c2d3f, 39b8cb7):
     preference **Pass Phrase** on the device (MorseTextEntry, write-only, voiced), a **Remote
@@ -129,8 +130,7 @@ command line).
     would be voiced as prosigns in the a11y edition). Web form verified by Willi. `PUT kip/psk`
     keeps only its 12-character minimum (programmatic clients). Still to do: re-enter the
     intended pass phrase on both units (Claude had re-set the bench key, B11 history).
-12. **Preferences heading for the five "Rig:" items** shows "Player & Scores:" — they fall through
-    the heading chain in `displayKeyerPreferencesMenu()`. Cosmetic, one line.
+12. ~~Preferences heading for the five "Rig:" items~~ — **done 2026-10-01 on `m32kip`** (6354662).
 13. ~~Leaving Remote Rig rebooted the device when BLE Serial was on~~ — **fixed 2026-10-01 on `m32kip`**
     (07b9425): the Rig left WiFi on (modem sleep off) when returning into the menu loop, and the BLE Serial
     restart then hit ESP-IDF's WiFi/BT coexistence abort. The Rig now switches its radio off on exit, like the
@@ -180,7 +180,7 @@ command line).
 2. **`audioLevelAdjust()`** can re-enter on a long-press exit; Morsel's internal `-1`
    transitions have the same latch issue.
 3. **A11y gaps:** decoder char-by-char voicing; battery "3980 mV" readout (needs digit spelling).
-4. **A11y voice store:** ~172 KB headroom (~14 clips). Compose numbers; never per-value clips;
+4. **A11y voice store:** **~61 KB headroom (~5 clips) on `m32kip` as of 2026-10-01** (was ~172 KB). Compose numbers; never per-value clips;
    grep `buildfs` output for "full".
 5. **A11y very-late freeze** (decoder-reuse leak) — dead end, unresolved.
 6. **BLE transient splashes** ("BLE Ser. susp.", "BLE init fail") are silent in the a11y edition (§8 case 2).
@@ -215,7 +215,8 @@ command line).
 
 ## I. New requests and reports from testers (added 2026-10-01)
 
-1. **A11y edition: Call Sign / Op Name entry is mostly silent — bug, quick fix.** `MorseTextEntry` voices the
+1. ~~**A11y edition: Call Sign / Op Name entry is mostly silent**~~ — **done 2026-10-01 on `master`** (1004aab,
+   changelog V. 9.1; merged into `m32kip`). Not yet heard on an a11y device. `MorseTextEntry` voices the
    *raw* character, and these two fields use upper case, which the voice pack treats as prosign codes: checked
    against `voice_manifest.json`, **C D F G I J L M O P Q R T U V W X Y Z have no clip (silent)** and **A B E K N S
    are spoken as prosigns**; the space in Op Name has no clip either. Fix: for the call-sign and name character
