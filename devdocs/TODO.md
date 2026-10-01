@@ -212,6 +212,36 @@ command line).
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 
+
+## I. New requests and reports from testers (added 2026-10-01)
+
+1. **A11y edition: Call Sign / Op Name entry is mostly silent — bug, quick fix.** `MorseTextEntry` voices the
+   *raw* character, and these two fields use upper case, which the voice pack treats as prosign codes: checked
+   against `voice_manifest.json`, **C D F G I J L M O P Q R T U V W X Y Z have no clip (silent)** and **A B E K N S
+   are spoken as prosigns**; the space in Op Name has no clip either. Fix: for the call-sign and name character
+   sets, voice the lower-case letter (and say "space"); Practice Set must keep voicing upper case as prosigns
+   (there it IS a prosign code). Shipped bug in V9 → fix on `master` (9.1), merge into `m32kip`.
+2. **BLE keyboard (vBand): link drops after ~30 min, possible stuck key-down — investigate.** Not reported by
+   everybody. What the code does today (`MorseBluetooth.cpp`): on disconnect, `onDisconnect` waits a fixed
+   `delay(5000)` *on the BLE event task*, then re-advertises — so reconnecting relies on the host coming back by
+   itself; and nothing sends an "all keys released" report on (re)connect, so a disconnect between a key-down
+   and its key-up report can leave vBand (in the browser) keying. Plan: send a release report on every connect
+   and before/after any stop; find out why the link drops (host power management, supervision timeout,
+   connection parameters — a long soak with a central that logs disconnect reasons); check whether the 5 s
+   blocking delay on the event task delays or breaks the reconnect.
+3. **Decoder: ITU-R M.1677-1 characters — decision needed.** The decoder already knows `. , : ? ' - / " = + @`
+   (and `; !`, the prosigns, ä ö ü and ch). Against M.1677-1 only three are missing: **é** (`..-..`, decodes as
+   `*` today), **`)`** (`-.--.-`, `*` today) and **`(`** (`-.--.`), which is **`<kn>`** in amateur practice — the
+   conflict Willi pointed out. Options: decode `)` and é in any case (no conflict); keep `-.--.` as `<kn>` (ham
+   practice) unless a new decoder preference selects ITU; further national characters (French à ç è, Spanish ñ,
+   Scandinavian å æ ø, …) depend on the glyphs existing in the OLED and TFT fonts — to be checked per character
+   (see the small-font umlaut episode). Willi: **Koch character sets stay unchanged** (established in schools).
+4. **Minimum word length for the Echo Trainer (and the generator) — feature.** Today only **Length Words**
+   exists (a maximum). A user wants a minimum too, to train long words. A new `prefPos` (three parallel arrays,
+   CLAUDE.md §3 rule 10), word-source filtering for min ≤ length ≤ max (with a sane fallback when the filter
+   leaves too few words for the current Koch lesson), snapshot inclusion, a11y clip(s) for the new label,
+   EN+DE manuals. Possibly the same for Abbreviations and Calls for symmetry — Willi's call.
+
 ## H. Follow-up projects with their own handoffs
 
 1. **Snapshot bundles:** `devdocs/snapshot-bundles/HANDOFF.md` (+ `DESIGN_NOTES.md`).
