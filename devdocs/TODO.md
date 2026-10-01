@@ -59,9 +59,16 @@ protocol PDFs (E2).
    opened with the BLE heap-leak fix.
 
 ### Device state (end of 2026-09-30 session)
-Both units on `m32kip` 30c4504 (10.0 beta, with the BLE leak fix), Bluetooth Use 0. Pair
-re-staged and tested 2026-10-01 (B6); the classic has since left Remote Rig. TRX Peer
+Both units on `m32kip` 39b8cb7 (10.0 beta: BLE leak fix + pass-phrase entry), Bluetooth Use 0.
+Pair re-staged and tested 2026-10-01 (B6); the classic has since left Remote Rig. TRX Peer
 fields kept for now (B7); pass phrase see B11.
+
+**Mac toolchain (2026-10-01):** Rosetta installed again, so PlatformIO's x86-only `mkspiffs`
+(a11y voice image) works. Piper for voice clips: the repo's `.venv` is an old Intel build — a
+working arm64 Piper 1.4.2 needs a venv on a SHORT path (espeak-ng truncates its data path at
+~160 characters), e.g. `PIPER_BIN=/private/tmp/claude-501/pv/bin/piper ./generate_audio.sh`.
+`xcode-select` points at the Command Line Tools, not Xcode 27 (`devicectl` missing on the
+command line).
 
 ---
 
@@ -114,14 +121,15 @@ fields kept for now (B7); pass phrase see B11.
    (Pocket's points at the classic, 192.168.1.237).
 8. **A11y voicing of the Keyer's messages** still owed.
 9. **Pocket polled-Keyer 1.7 ms floor** — Willi's nod still owed.
-11. **Setting the pass phrase.** It can only be entered in the **Config WiFi** web form (WiFi
-    menu) or over the protocol (`PUT kip/psk/...`) — the USB Configuration Tool and the iOS
-    app have no field for it, and the preferences cannot hold a string (CLAUDE.md §3 rule
-    10). Willi found no way to set it from the preferences. Options: a pass-phrase field in
-    the Configuration Tool (WiFi tab; write-only, like WiFi passwords) — small; and/or an
-    on-device entry via `MorseTextEntry`. Note: on 2026-10-01 Claude re-set both units'
-    pass phrase over USB to the old bench key while re-staging, without asking — re-enter
-    the intended one on both units.
+11. ~~Setting the pass phrase~~ — **done 2026-10-01 on `m32kip`** (4af1827, 39c2d3f, 39b8cb7):
+    preference **Pass Phrase** on the device (MorseTextEntry, write-only, voiced), a **Remote
+    Keying** card on the Configuration Tool's WiFi tab, and the Config WiFi web form — all three
+    with one rule, 12–32 characters from a-z 0-9 . , : - / = ? @ + (`kipPskValid()`; upper case
+    would be voiced as prosigns in the a11y edition). Web form verified by Willi. `PUT kip/psk`
+    keeps only its 12-character minimum (programmatic clients). Still to do: re-enter the
+    intended pass phrase on both units (Claude had re-set the bench key, B11 history).
+12. **Preferences heading for the five "Rig:" items** shows "Player & Scores:" — they fall through
+    the heading chain in `displayKeyerPreferencesMenu()`. Cosmetic, one line.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
