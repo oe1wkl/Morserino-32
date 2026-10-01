@@ -59,10 +59,9 @@ protocol PDFs (E2).
    opened with the BLE heap-leak fix.
 
 ### Device state (end of 2026-09-30 session)
-Classic V2: master build (9.1 BETA, with the leak fix), Bluetooth Use 0. Pocket
-(standard): `m32kip` build (10.0), Bluetooth Use 0. **M32KIP link is down** (both were
-reflashed) — Block 3 needs the classic reflashed with `m32kip` and the pair re-staged
-over USB. Both TRX Peer fields still to be cleared afterwards (B7).
+Both units on `m32kip` 30c4504 (10.0 beta, with the BLE leak fix), Bluetooth Use 0. Pair
+re-staged and tested 2026-10-01 (B6); the classic has since left Remote Rig. TRX Peer
+fields kept for now (B7); pass phrase see B11.
 
 ---
 
@@ -105,13 +104,24 @@ over USB. Both TRX Peer fields still to be cleared afterwards (B7).
 4. **Burst-loss failure, test-plan §13.2(e):** a burst shortened one mark by 138 ms. Manual
    only carries the workaround (Rig Delay ≥ 250 ms).
 5. **Generated CW is 6 ms short per element** on the key line (dah/dit 3.21) — to-do note only.
-6. **Bench tests owed by Willi:** WiFi pulled mid-mark; real-Internet run; straight key / bug;
-   12 s tune; two-hour drift session (cannot be done hands-free); two devices driving each
-   other directly over a long soak; Rig's "End: <reason>" display by eye; Keyer paddle text
-   and black-knob memories by eye.
-7. **Cleanup:** clear both **TRX Peer** fields (pair left linked; Pocket's pointed at the Mac).
+6. **Bench tests owed by Willi.** Done 2026-10-01 (two devices, no Mac in the path — see
+   `devdocs/m32kip/TEST_REPORT.md`): direct keying, WiFi pulled mid-mark (key up within the
+   1 s keepalive timeout, `End: timeout` after the 5 s session drop, per spec), straight key
+   and bug, 12 s tune, the Rig's `End: <reason>` display. **Still owed:** real-Internet run,
+   two-hour drift session (cannot be done hands-free), a long soak, and the Keyer's paddle
+   text and black-knob memories by eye.
+7. **Cleanup:** clear both **TRX Peer** fields — Willi: leave them for the time being
+   (Pocket's points at the classic, 192.168.1.237).
 8. **A11y voicing of the Keyer's messages** still owed.
 9. **Pocket polled-Keyer 1.7 ms floor** — Willi's nod still owed.
+11. **Setting the pass phrase.** It can only be entered in the **Config WiFi** web form (WiFi
+    menu) or over the protocol (`PUT kip/psk/...`) — the USB Configuration Tool and the iOS
+    app have no field for it, and the preferences cannot hold a string (CLAUDE.md §3 rule
+    10). Willi found no way to set it from the preferences. Options: a pass-phrase field in
+    the Configuration Tool (WiFi tab; write-only, like WiFi passwords) — small; and/or an
+    on-device entry via `MorseTextEntry`. Note: on 2026-10-01 Claude re-set both units'
+    pass phrase over USB to the old bench key while re-staging, without asking — re-enter
+    the intended one on both units.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
