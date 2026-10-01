@@ -43,9 +43,14 @@ namespace MorseTextEntry
   // (e.g. the "Output Case" preference, prosign expansion); never to alter
   // which character gets appended, since case can be semantically meaningful
   // downstream (see CLAUDE.md).
+  //
+  // `voiceAsLetters` (Accessibility Edition): speak upper case as the LETTER and a space as "space". Set it for
+  // free text such as call sign and name. Leave it false where upper case means a prosign code (Practice Set):
+  // the voice pack speaks an upper-case single character as a prosign, and has no clip for most of the others.
   void enterText(const String &prompt, char *result, uint8_t maxLen,
                  const char *charSet, const char *initial,
-                 boolean noDuplicates = false, String (*displayXform)(char) = nullptr);
+                 boolean noDuplicates = false, String (*displayXform)(char) = nullptr,
+                 boolean voiceAsLetters = false);
 }
 
 #endif /* #ifndef MORSETEXTENTRY_H_ */

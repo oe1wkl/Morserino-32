@@ -47,13 +47,24 @@ static String displayText(const char *s, String (*xform)(char))
 // announceMoreChar() wants the RAW character, not the displayXform()'d glyph: prosign codes
 // expand to "pro sign" plus two phonetics, which is what makes them distinguishable by ear
 // from the plain letter that shares their code.
-static void sayCandidate(const char *charSet, int charIdx) {
-    MorseVoice::announceMoreChar(String(charSet[charIdx]));
+//
+// Call Sign and Op Name are entered in upper case, and there an upper-case character is a LETTER. The voice pack
+// keys upper-case single characters as prosign codes, so voiced raw, C D F G I J L ... were silent and A B E K N S
+// were announced as prosigns (tester report, 2026-10). voiceAsLetters speaks the lower-case letter instead, and
+// the space (Op Name) as the word.
+static void sayCandidate(const char *charSet, int charIdx, boolean voiceAsLetters) {
+    char c = charSet[charIdx];
+    if (voiceAsLetters) {
+        if (c == ' ') { MorseVoice::announceMore("space"); return; }
+        c = (char) tolower((unsigned char) c);
+    }
+    MorseVoice::announceMoreChar(String(c));
 }
 
 void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLen,
                                const char *charSet, const char *initial,
-                               boolean noDuplicates, String (*displayXform)(char))
+                               boolean noDuplicates, String (*displayXform)(char),
+                               boolean voiceAsLetters)
 {
   const int charCount = strlen(charSet);
   uint8_t len = 0;
@@ -75,7 +86,7 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
   String heading = prompt;
   if (heading.endsWith(":")) heading.remove(heading.length() - 1);
   MorseVoice::announce(heading);
-  sayCandidate(charSet, charIdx);
+  sayCandidate(charSet, charIdx, voiceAsLetters);
 
   while (true) {
     if (needsRedraw) {
@@ -104,7 +115,7 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       }
       needsRedraw = true;
       MorseVoice::announce("");            // start a fresh utterance: one character per detent
-      sayCandidate(charSet, charIdx);
+      sayCandidate(charSet, charIdx, voiceAsLetters);
     }
 
     Buttons::modeButton.Update();
@@ -122,7 +133,7 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       needsRedraw = true;
       MorseVoice::announce(String(len));   // "3 characters, Yankee" - the count confirms the
       MorseVoice::announceMore("characters");  // add went in, the character says where we are now
-      sayCandidate(charSet, charIdx);
+      sayCandidate(charSet, charIdx, voiceAsLetters);
     }
     if (Buttons::modeButton.clicks == -1) { result[len] = '\0'; return; }   // long press: done
 
@@ -134,7 +145,7 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       needsRedraw = true;
       MorseVoice::announce(String(len));
       MorseVoice::announceMore("characters");
-      sayCandidate(charSet, charIdx);
+      sayCandidate(charSet, charIdx, voiceAsLetters);
     }
     if (Buttons::volButton.clicks == -1) { result[len] = '\0'; return; }    // long press: done
 
