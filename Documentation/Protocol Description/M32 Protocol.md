@@ -453,13 +453,15 @@ Set the main menu to the requested menu entry (even if it is not executable!). Y
 
 `PUT menu/start`							
 
-If in menu mode, start the currently selected menu, if it is executable (do nothing when not in menu mode, or when the current menu entry is not executable).
+If in menu mode, start the currently selected menu, if it is executable (do nothing when the current menu entry is not executable).
 
 `PUT menu/start/<menu number>`		
 
 Start the command that has the number `<menu number>` (only if it is executable!).
 
 For this, the M32 must be in the main menu (if not sure, execute put menu/stop before doing this, or check with `GET menu` if the "active" property is "false")
+
+A start is only accepted in the main menu. While a mode is running (or still winding down after `PUT menu/stop`), every form of `PUT menu/start` is refused with `{"error":{"content":"NOT AT MENU - stop the running mode first"}}` and changes nothing — retry once `GET menu` reports "active": false. *(Firmware before protocol 1.5 sent no reply at all in this case, and the numbered form still moved the menu selection.)* A number that is not executable is answered with `NOT EXECUTABLE - Menu No <n>`.
 
 
 `PUT menu/start now`

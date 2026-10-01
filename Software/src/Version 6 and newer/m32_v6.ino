@@ -5356,30 +5356,35 @@ void m32Put(String type, String token, String value) {                    /// PU
         MorseJSON::jsonOK();
       }
       else if (token == "start" || token == "start now") {
-        if (value =="") {
-          goToMenu = false;
-          if (m32state == menu_loop) {
-              executeMenu = true;
-              if (token == "start now" && MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr))
-                executeNow = true;
-              MorseJSON::jsonOK();
+        // A start is only taken at the menu. It used to be dropped WITHOUT a reply when a mode was running or
+        // still unwinding, and the numbered form had already moved newMenuPtr - so a client saw silence and the
+        // device's menu selection changed behind the user's back. That silence posed as a firmware fault in
+        // two separate bench campaigns (TODO B3). Now: refuse it, say so, change nothing.
+        uint8_t nr = 0;
+        if (value != "") {
+          nr = (char) value.toInt();
+          if (!(nr > 0 && nr < menuN && MorseMenu::isRemotelyExecutable(nr))) {
+            MorseJSON::jsonError("NOT EXECUTABLE - Menu No " + value);
+            return;
           }
+        }
+        if (m32state != menu_loop) {
+          MorseJSON::jsonError("NOT AT MENU - stop the running mode first");
+          return;
+        }
+        goToMenu = false;
+        if (nr) {
+          MorsePreferences::newMenuPtr = nr;
+          executeMenu = true;
+          if (token == "start now")
+            executeNow = true;
         }
         else {
-          uint8_t nr = (char) value.toInt();
-          if (nr > 0 && nr < menuN && MorseMenu::isRemotelyExecutable(nr)) {
-              MorsePreferences::newMenuPtr = nr;
-              goToMenu = false;
-              if (m32state == menu_loop) {
-                  executeMenu = true;
-                  if (token == "start now")
-                    executeNow = true;
-                  MorseJSON::jsonOK();
-              }
-          }
-          else
-            MorseJSON::jsonError("NOT EXECUTABLE - Menu No " + value);
+          executeMenu = true;
+          if (token == "start now" && MorseMenu::isRemotelyExecutable(MorsePreferences::menuPtr))
+            executeNow = true;
         }
+        MorseJSON::jsonOK();
       }
       else if (token == "set") {
         uint8_t nr = (char) value.toInt();
