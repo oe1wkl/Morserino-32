@@ -1125,8 +1125,9 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos, boolean announce
                                                  // and in the four generator/echo/koch option sets
     topLine = "Set Preferences:";
 #ifdef CONFIG_M32KIP
-  else if (pos == posKipPassPhrase)              // sits with the remote-keying settings it belongs to
-    topLine = "Set Preferences:";
+  else if (pos == posKipPassPhrase ||            // sits with the remote-keying settings it belongs to
+           (pos >= posRigDelay && pos <= posRigHang))   // the remote rig's own settings (D17): they fell through
+    topLine = "Set Preferences:";                        // to "Player & Scores:" below (TODO B12)
 #endif
   else
     topLine = "Player & Scores:";
@@ -1152,7 +1153,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos, boolean announce
 // polls tick(). Same shape as splashPause() in m32_v6.ino. Defined for every build - it is
 // called from adjustKeyerPreference(), which is not a11y-only - and is a plain delay() where
 // there is no voice engine to turn.
-static void voicedPause(uint32_t ms) {
+void MorsePreferences::voicedPause(uint32_t ms) {
 #ifdef CONFIG_AUDIO_A11Y
     uint32_t start = millis();
     do { MorseVoice::tick(); delay(5); } while (millis() - start < ms);

@@ -253,6 +253,7 @@ Calibrate battery
 Call Prefixes
 Call Sign
 Call Signs
+Calling rig
 Calls Region
 Cancel
 Cancel Recall
@@ -271,6 +272,7 @@ Common only
 Complements
 Configure WiFi
 Confirmation tone
+Connecting
 Connection allowed.
 Connection refused.
 Contest
@@ -379,6 +381,7 @@ line out Speaker Muted
 line out with variable volume
 line-out
 Linefeed
+Linked to rig
 LoRa Band
 LoRa frequency
 LoRa Power
@@ -398,9 +401,12 @@ Morserino 32 accessibility edition
 N America
 Narrow
 Never
+No answer from the rig
 No Bluetooth
 No custom set
 No limit
+No pass phrase set
+No rig address set
 NO SNAPSHOTS
 No time-out
 No Tone Shift
@@ -425,6 +431,7 @@ ON (true WpM)
 Op Name
 Operator Name
 Oscar
+Out of memory
 Output Case
 Paddle polarity
 Papa
@@ -464,6 +471,7 @@ Repeat each word
 Reset Defaults
 Reset Scores
 Reversed
+Rig address not found
 Romeo
 S America
 Secondary

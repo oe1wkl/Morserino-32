@@ -1237,7 +1237,7 @@ void MorseMenu::showStartDisplay(const String& l0, const String& l1, const Strin
         MorseOutput::printOnScroll(2, REGULAR, 0, l2);
     if (protocolActive())
         MorseJSON::jsonCreate("message", l0  + l1 + l2, "");
-    delay(pause);
+    MorsePreferences::voicedPause(pause);   // a message announced just before is heard while this screen is up
     cleanupScreen();
 }
 

@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "7a204ecf"
+#define VOICE_PACK_STAMP "3c86de83"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -225,6 +225,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Call Prefixes", "87c1d6f6"},
   {"Call Sign", "40999368"},
   {"Call Signs", "d8bbb35e"},
+  {"Calling rig", "890aa83e"},
   {"Calls Region", "cbe5fd24"},
   {"Cancel", "ea478870"},
   {"Cancel Recall", "5f9c20f0"},
@@ -236,6 +237,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Complements", "29942e7e"},
   {"Config WiFi", "48b63831"},
   {"Confirmation tone", "2fc03d0b"},
+  {"Connecting", "e321c53b"},
   {"Connection allowed.", "89f693ee"},
   {"Connection refused.", "015d206e"},
   {"Contest", "57fb27de"},
@@ -311,6 +313,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Length Words", "b844bc3b"},
   {"Lima", "0cb9cde5"},
   {"Linefeed", "1d909581"},
+  {"Linked to rig", "ad01bb85"},
   {"LoRa Band", "9bc4ca24"},
   {"LoRa Frequ", "b430d983"},
   {"LoRa Power", "d7dac8bf"},
@@ -330,8 +333,11 @@ static const VoiceEntry voiceLookup[] = {
   {"Never", "6e7b34fa"},
   {"No Bluetooth", "c45fee59"},
   {"No Tone Shift", "fe361001"},
+  {"No answer from the rig", "0b1ad851"},
   {"No custom set", "50b8fe29"},
   {"No limit", "af605ea5"},
+  {"No pass phrase set", "0887147a"},
+  {"No rig address set", "a4799e5d"},
   {"No time-out", "d5a2118d"},
   {"Non-Squeeze", "6dcc42be"},
   {"Normal", "960b44c5"},
@@ -349,6 +355,7 @@ static const VoiceEntry voiceLookup[] = {
   {"On", "521c36a3"},
   {"Op Name", "beabbbb8"},
   {"Oscar", "48a0572e"},
+  {"Out of memory", "150699a9"},
   {"Output Case", "ea854519"},
   {"Paddle polarity", "9526b416"},
   {"Papa", "bc7339e3"},
@@ -383,6 +390,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Reset Defaults", "efd28b76"},
   {"Reset Scores", "fc806829"},
   {"Reversed", "030aa940"},
+  {"Rig address not found", "0f85f9e1"},
   {"Rig: 1st Ext", "3c264ff4"},
   {"Rig: Delay", "7d2f4e74"},
   {"Rig: Hang", "232ff229"},
@@ -478,7 +486,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 464;
+static const unsigned int voiceLookupCount = 472;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

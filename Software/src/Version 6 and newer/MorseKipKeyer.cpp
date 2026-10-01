@@ -11,6 +11,7 @@
 #include "MorsePreferences.h"
 #include "MorseMenu.h"
 #include "MorseJSON.h"
+#include "MorseVoice.h"            // a11y: the Keyer's status messages are spoken (TODO B8)
 #include "M32ProtocolOut.h"
 #include <esp_system.h>
 
@@ -113,7 +114,10 @@ bool heardRecently() {                              // spec §10: "no link" afte
     return fresh && (millis() - at) < 5000;
 }
 
-void showError(const String& l0, const String& l1, const String& l2) {
+// `spoken` is what the Accessibility Edition says: one short sentence instead of the display's line-broken
+// fragments ("Set a pass-" / "phrase first"). It must be in the voice pack (KIP_KEYER_WORDS in the extractor).
+void showError(const String& l0, const String& l1, const String& l2, const char* spoken) {
+    MorseVoice::announce(spoken);
     MorseOutput::clearDisplay();
     MorseOutput::printOnScroll(0, INVERSE_BOLD, 0, l0);
     if (l1.length()) MorseOutput::printOnScroll(1, REGULAR, 0, l1);
@@ -121,7 +125,7 @@ void showError(const String& l0, const String& l1, const String& l2) {
     MorseOutput::refreshDisplay();
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Remote Keyer: " + l0, "");
-    delay(2500);
+    MorsePreferences::voicedPause(2500);    // a bare delay() here kept the a11y edition mute (TODO B8)
 }
 
 void sendHello(uint16_t seq, const uint8_t nonce[8]) {
@@ -417,11 +421,11 @@ bool MorseKipKeyer::begin() {
     end();                                  // never two sessions
 
     if (MorsePreferences::kipPsk.length() < 12) {
-        showError("No key set", "Set a pass-", "phrase first");
+        showError("No key set", "Set a pass-", "phrase first", "No pass phrase set");
         return false;
     }
     if (MorsePreferences::wlanTRXPeer.length() == 0) {
-        showError("No rig host", "Set TRX Peer", "in Config WiFi");
+        showError("No rig host", "Set TRX Peer", "in Config WiFi", "No rig address set");
         return false;
     }
     deriveBaseKey(MorsePreferences::kipPsk.c_str(), gBaseKey);
@@ -439,12 +443,14 @@ bool MorseKipKeyer::begin() {
     MorseOutput::refreshDisplay();
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Connecting...", "");
+    MorseVoice::announce("Connecting");
+    MorsePreferences::voicedPause(300);     // long enough for the clip to start; it plays on while WiFi connects
     if (!MorseWiFi::wifiConnect()) return false;
     WiFi.setSleep(false);
 
     String host = MorsePreferences::wlanTRXPeer;    // resolved once, so no DNS lookup lands on the keying path
     if (!gPeer.fromString(host.c_str()) && WiFi.hostByName(host.c_str(), gPeer) != 1) {
-        showError("Host not found", host, "");
+        showError("Host not found", host, "", "Rig address not found");
         return false;
     }
 
@@ -453,12 +459,14 @@ bool MorseKipKeyer::begin() {
     MorseOutput::printOnScroll(0, REGULAR, 0, "Calling rig...");
     MorseOutput::printOnScroll(1, REGULAR, 0, gPeer.toString());
     MorseOutput::refreshDisplay();
+    MorseVoice::announce("Calling rig");
+    MorsePreferences::voicedPause(300);
 
     gLink = LINK_UP;
     if (!firstHandshake()) {
         MorseWiFi::audp.close();
         portENTER_CRITICAL(&gSessMux); gSession = 0; portEXIT_CRITICAL(&gSessMux);
-        showError("No answer", "Check rig and", "pass phrase");
+        showError("No answer", "Check rig and", "pass phrase", "No answer from the rig");
         return false;
     }
     MorseWiFi::audp.onPacket(onUdp);                // replaces the handshake handler for the rest of the mode
@@ -467,7 +475,7 @@ bool MorseKipKeyer::begin() {
     if (!gEdgeQ) {
         MorseWiFi::audp.close();
         portENTER_CRITICAL(&gSessMux); gSession = 0; portEXIT_CRITICAL(&gSessMux);
-        showError("Out of memory", "", "");
+        showError("Out of memory", "", "", "Out of memory");
         return false;
     }
     gKeyer.begin(4);
@@ -481,6 +489,7 @@ bool MorseKipKeyer::begin() {
     xTaskCreatePinnedToCore(sendTask, "kipkeyer", 4096, nullptr, 3, &gTask, 0);   // core 0: WiFi lives there
     gActive = true;
 
+    MorseVoice::announce("Linked to rig");  // heard during the start screen (showStartDisplay pauses voiced)
     MorseMenu::showStartDisplay("", "Remote Keyer", gPeer.toString(), 1000);
     return true;
 }
