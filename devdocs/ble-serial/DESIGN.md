@@ -364,21 +364,60 @@ stream alone; it needs a timeout-based resync or a reconnect (the session
 reset clears everything). `ble_m32_test.py`'s REPL and the regression
 harness now do timeout-resync.
 
+## Third hardware run (2026-09-30, classic V2, firmware 10.0 beta)
+
+First classic V2 run, and the first since access control landed. Harness:
+[`round3_bench.py`](round3_bench.py) and friends (see [`README.md`](README.md));
+the round-2 scripts had gone stale — they predate FN consent and expected the
+pre-blob snapshot recall behaviour, so their first "failures" were the harness.
+
+**Passed:** matrix steps 1–9 (scan + scan-response name, handshake,
+multi-chunk `GET menus` = 51 entries, remote keyer start, `cw/play` echo,
+batched write, transport isolation A1–A13 in both directions, congestion: USB
+answered in 54 ms during the flood and BLE recovered in place), plus
+`GET capabilities` and paginated `GET configs/details` (7 pages, 52/52) over
+BLE; step 10 (WiFi suspend/resume: notice in 0.13 s on every cycle once the
+harness settled at the menu first); step 14 without the factory reset
+(recall leaves Bluetooth Use and the link alone). Access control: an
+unanswered request is declined after 20.2 s (7 consecutive trials, 5 from a
+hard reset), DEVICE BUSY inside a mode once the 60 s grace window has expired.
+
+**Found — BLE stalls after ~16 WiFi suspend/resume cycles per power-on.** The
+classic kept advertising and accepted connections, but every connection
+stalled 31 s and dropped, while the Pocket connected from the same Mac in
+1.5 s. Only a true hard reset cleared it. Cause: every `init()` allocates a
+fresh `BLEServer`/`BLEService`/two `BLECharacteristic`s/`BLE2902` (14 FreeRTOS
+semaphores, their name strings, map nodes) and `deinit(false)` frees none of
+it — the "few dozen bytes per cycle" comment in `init()` was ~100x too
+optimistic, Andrew measured ~3.8 KB. Andrew saw a visible NO MEM refusal on
+the Pocket; on the classic it degrades silently instead.
+
+**Fixed (branch `ble-serial-heap-leak`):** `stop()` now deletes every GATT
+object `init()` created — children first, and only after `deinit(false)`, when
+no Bluedroid event can reach them (`freeGattObjects()`). Measured on the classic
+with temporary heap marks, 20 WiFi suspend/resume cycles each: before, 3.7 KB
+lost per cycle (3672–3760 B), largest free block 41 KB → 1.2 KB in eleven
+cycles, reboot on the twelfth; after, 37 B per cycle (library-internal residue,
+~1000 cycles per power-on before it matters), largest block constant at
+40,948 B, 20/20 cycles, and a BLE connect after 21 cycles in one boot took
+1.2 s.
+
+**Unexplained, once:** in the evening's very first run an unanswered request
+was admitted after 9.5 s with nobody touching the device. Not reproduced in
+seven later trials. Keep watching; `consent_trials.py` is the check.
+
+**Harness lessons:** opening the classic's USB port does not reliably reset
+it; `PUT menu/start` is silently ignored until the device is back at the menu
+(TODO B3); scripts must run from macOS Terminal (Bluetooth permission).
+
 ## Hardware test checklist — remaining
 
-Still open from the PLAN §8 matrix: the **classic V2** run of everything
-above (incl. WiFi-upload-after-BT with free-heap deltas — Willi's bench),
-mid-game multiplayer drop, suspended-session auto-sleep + remote
-self-disable (auto-sleep with an *un*-handshaken BLE link was incidentally
-confirmed — the bench device slept between test sessions), and the
-≥35 WpM stalled-client CW-timing soak (needs ears + paddle: D1's 40 ms loop
-latency is the proxy, not the proof). Run
-[`ble_m32_test.py`](ble_m32_test.py) (`pip install bleak`) scripted or
-`--repl`; the dual-transport regression above is
-[`round2_regression.py`](round2_regression.py) (`pip install bleak pyserial`,
-USB port via `M32_PORT`, defaults to `/dev/cu.usbmodem101`) — it needs the
-device at the top menu with the selector on *BLE Serial*, and it
-stores/clears a snapshot in the first free slot during section C.
+Classic V2 steps 1–10 and 14 are done (above). Still open: step 11
+(suspended-session auto-sleep + remote self-disable), step 12 (Bluetooth
+keyboard interplay), step 13 (WiFi upload/OTA after a BLE session, `loraTrx`
+with BLE connected, 30-minute keyer soak), the ≥35 WpM stalled-client
+CW-timing soak (needs a fast operator), mid-game multiplayer drop, and a
+Pocket re-run under access control. Scripts: [`README.md`](README.md).
 
 ## TODO handed to Willi
 

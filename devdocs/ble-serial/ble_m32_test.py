@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 """End-to-end test for the Morserino-32 "BLE Serial" feature (M32 protocol over BLE).
 
+STALE since BLE access control (ACCESS_CONTROL.md): every handshake now needs
+FN on the device, and a handshake inside a running mode is refused. Kept for
+history; use round3_bench.py and the scripts listed in README.md.
+
 Runs from any Mac/Linux/Windows machine with Bluetooth:
     pip install bleak
     python3 ble_m32_test.py            # full scripted sequence

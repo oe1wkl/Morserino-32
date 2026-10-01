@@ -1,113 +1,47 @@
 #!/usr/bin/env python3
-"""Hardware regression run for PR #194 review round 2 (commit 6c84e76).
+"""BLE Serial hardware regression, round 3 (2026-09-30): round2_regression.py
+brought up to date with ACCESS_CONTROL.md and the snapshot-blob rework.
 
-STALE since BLE access control (ACCESS_CONTROL.md): every handshake now needs
-FN on the device, and a handshake inside a running mode is refused. Kept for
-history; use round3_bench.py and the scripts listed in README.md.
+USB and BLE clients attached simultaneously. Someone must stand at the device:
+the Mac says when to press FN (about ten times), and T0 needs NO press.
+  T0  fail closed: an unanswered request is declined after ~20 s
+  A   session-control isolation across transports (both directions)
+  B   multi-chunk GET menus, GET capabilities, paginated GET configs/details,
+      remote keyer start, cw/play echo, batched write, DEVICE BUSY + recovery
+  C   Bluetooth Use via PUT config stops/restarts BLE; snapshot recall leaves
+      the selector and the link alone (Bluetooth Use is not in a snapshot)
+  D   congestion: no loop stall, backoff clears
+  E   WiFi suspend/resume x5 via remotely executed 'Disp MAC Addr'
 
-Exercises, with USB and BLE clients attached simultaneously:
-  A. fix 5  — session-control isolation across transports (both directions,
-              handshake replies, goodbyes, re-ack, bogus value)
-  B. fix d  — USB protocol value case-insensitivity (run separately, earlier)
-  C. fix 2  — PUT snapshot/recall runs the Bluetooth-Use change-switch
-  D. fix 3/4— congestion: no loop stall while the BLE TX ring overflows;
-              backoff clears after drain
-  E. WiFi suspend/resume x5 via remotely executed 'Disp MAC Addr'
-              (suspend notice must be BLE-only; BLE must re-advertise and
-              reconnect each cycle)
+Usage:  M32_PORT=/dev/cu.usbserial-0001 python3 round3_bench.py
+Leaves Bluetooth Use = 5. Known harness limit: E starts the next cycle after a
+fixed pause; PUT menu/start is silently ignored if the device is not yet back
+at the menu (TODO B3), so prefer wifi_cycles.py for counting notices.
 """
-import asyncio, json, os, sys, time
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from usb_m32 import M32Usb
-from bleak import BleakClient, BleakScanner
-
-NUS_SERVICE = "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
-NUS_RX = "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
-NUS_TX = "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
-
-RESULTS = []
-def check(name, ok, detail=""):
-    RESULTS.append((name, ok, detail))
-    print(("PASS  " if ok else "FAIL  ") + name + ("  -- " + detail if detail else ""))
-
-class BleStream:
-    def __init__(self):
-        self.buf = ""; self.depth = 0; self.in_string = False; self.escape = False
-        self.objects = []; self.echo = ""
-    def feed(self, data: bytes):
-        for ch in data.decode("utf-8", errors="replace"):
-            if self.depth == 0:
-                if ch == "{": self.depth = 1; self.buf = ch
-                else: self.echo += ch
-                continue
-            self.buf += ch
-            if self.in_string:
-                if self.escape: self.escape = False
-                elif ch == "\\": self.escape = True
-                elif ch == '"': self.in_string = False
-            elif ch == '"': self.in_string = True
-            elif ch == "{": self.depth += 1
-            elif ch == "}":
-                self.depth -= 1
-                if self.depth == 0:
-                    try: self.objects.append(json.loads(self.buf))
-                    except json.JSONDecodeError: self.objects.append({"_torn": self.buf[:60]})
-                    self.buf = ""
-    def resync(self):
-        torn = None
-        if self.depth > 0:
-            torn = self.buf[:80]
-            self.depth = 0; self.in_string = False; self.escape = False; self.buf = ""
-        return torn
-
-class Ble:
-    def __init__(self):
-        self.client = None
-        self.stream = BleStream()
-        self.disconnected = asyncio.Event()
-    async def connect(self, timeout=20):
-        dev = None
-        end = time.time() + timeout
-        while dev is None and time.time() < end:
-            dev = await BleakScanner.find_device_by_filter(
-                lambda d, adv: NUS_SERVICE.lower() in [u.lower() for u in adv.service_uuids],
-                timeout=5.0)
-        if dev is None:
-            raise RuntimeError("device not advertising")
-        self.disconnected.clear()
-        self.stream = BleStream()
-        self.client = BleakClient(dev, disconnected_callback=lambda c: self.disconnected.set())
-        await self.client.connect()
-        await self.client.start_notify(NUS_TX, lambda h, d: self.stream.feed(bytes(d)))
-    async def send(self, line):
-        await self.client.write_gatt_char(NUS_RX, (line + "\n").encode(), response=False)
-    async def wait_for(self, key, timeout=4.0):
-        end = time.time() + timeout
-        while time.time() < end:
-            for i, o in enumerate(self.stream.objects):
-                if key in o: return self.stream.objects.pop(i)
-            await asyncio.sleep(0.05)
-        return None
-    async def silent_for(self, key, seconds=2.0):
-        """True if no object with `key` arrives within `seconds`."""
-        return (await self.wait_for(key, seconds)) is None
-    async def disconnect(self):
-        if self.client and self.client.is_connected:
-            await self.client.disconnect()
-
-def usb_silent_for(usb, key, seconds=2.0):
-    return usb.wait_for(key, seconds) is None
+from ble_bench_common import *
 
 async def main():
-    usb = M32Usb(port=os.environ.get("M32_PORT", "/dev/cu.usbmodem101"))
+    usb = M32Usb(port=os.environ.get("M32_PORT", "/dev/cu.usbserial-0001"))
     time.sleep(0.3); usb.pump(0.3); usb.objects.clear(); usb.raw = ""
     ble = Ble()
 
     # ---------- setup: BLE session first, then USB handshake under BLE watch —
     await ble.connect()
+    # T0: fail closed - an UNANSWERED request must be declined after the window
+    ble.stream.objects.clear()
     await ble.send("PUT device/protocol/on")
-    dev = await ble.wait_for("device")
-    check("setup: BLE handshake", dev is not None, json.dumps(dev)[:80] if dev else "no device object")
+    cue("Test zero. Do not press anything for about twenty five seconds")
+    t0 = time.time(); got = None; confirm = False
+    while time.time() - t0 < 45 and got is None:
+        for i, o in enumerate(ble.stream.objects):
+            if "message" in o and "CONFIRM" in json.dumps(o): confirm = True; ble.stream.objects.pop(i); break
+            if "error" in o or "device" in o: got = ble.stream.objects.pop(i); break
+        await asyncio.sleep(0.05)
+    dt = time.time() - t0
+    check("T0a: client is told CONFIRM ON DEVICE", confirm)
+    check("T0b: unanswered request declined (fail closed)", got is not None and "DECLINED" in json.dumps(got), f"{json.dumps(got)[:60] if got else 'none'} after {dt:.1f}s")
+    dev = await ble_hs(ble, "Setup")
+    check("setup: BLE handshake after FN", dev is not None and "device" in dev, json.dumps(dev)[:80] if dev else "no device object")
 
     usb.send("PUT device/protocol/on")
     dev_u = usb.wait_for("device", 4)
@@ -128,8 +62,8 @@ async def main():
     check("A5: USB session alive after BLE off", usb.wait_for("control", 3) is not None)
 
     # mixed-case re-handshake + already-on re-ack + bogus value, all BLE-only
-    await ble.send("PUT Device/Protocol/ON")
-    check("A6: mixed-case BLE re-handshake", (await ble.wait_for("device")) is not None)
+    a6 = await ble_hs(ble, "A six", line="PUT Device/Protocol/ON")
+    check("A6: mixed-case BLE re-handshake (FN)", a6 is not None and "device" in a6)
     check("A7: BLE handshake reply does NOT leak to USB", usb_silent_for(usb, "device", 1.5))
     await ble.send("put device/protocol/on")
     check("A8: already-on re-ack over BLE (new intercept)", (await ble.wait_for("device")) is not None)
@@ -145,6 +79,45 @@ async def main():
     await ble.send("GET control/speed")
     check("A13: BLE session alive after USB off", (await ble.wait_for("control")) is not None)
     usb.send("PUT device/protocol/on"); usb.wait_for("device", 3)
+
+    # ---------- B: basics over the confirmed BLE session ----------
+    ble.stream.objects.clear()
+    await ble.send("GET menus"); menus = await ble.wait_for("menus", 10)
+    check("B1: multi-chunk GET menus reassembles", menus is not None and len(menus.get("menus", [])) > 20, f"{len(menus['menus']) if menus else 0} menus")
+    keyer = next((m["menu number"] for m in (menus or {}).get("menus", []) if m["content"].strip().lower().endswith("cw keyer")), None)
+    await ble.send("GET capabilities"); caps = await ble.wait_for("capabilities", 4)
+    check("B2: GET capabilities over BLE", caps is not None and "kip" in json.dumps(caps), json.dumps(caps)[:90] if caps else "none")
+    pages = 0; total = None; frm = 0; more = True; ok_pages = True
+    while more and pages < 12:
+        await ble.send("GET configs/details" + (f"/{frm}" if frm else ""))
+        pg = await ble.wait_for("configdetails", 10)
+        if pg is None: ok_pages = False; break
+        d = pg["configdetails"]; pages += 1; total = d.get("total"); frm = d["from"] + d["count"]; more = d.get("more", False)
+    check("B3: paginated GET configs/details over BLE", ok_pages and total and frm == total, f"{pages} pages, {frm}/{total} parameters")
+    ble.stream.echo = ""
+    await ble.send(f"PUT menu/start now/{keyer}")
+    act = None
+    for _ in range(80):
+        for i, o in enumerate(ble.stream.objects):
+            if "activate" in o or "menu" in o: act = ble.stream.objects.pop(i); break
+        if act: break
+        await asyncio.sleep(0.05)
+    check("B4: PUT menu/start now/<keyer> answered over BLE", act is not None)
+    await ble.send("PUT cw/play/CQ CQ CQ DE W2ASM"); await asyncio.sleep(7.0)
+    check("B5: cw/play echo arrives over BLE", "CQ" in ble.stream.echo.upper(), repr(ble.stream.echo[:40]))
+    ble.stream.echo = ""; ble.stream.objects.clear()
+    await ble.client.write_gatt_char(NUS_RX, b"PUT cw/play/HI\nGET control/speed\n", response=True)
+    check("B6: batched single write executes both lines", (await ble.wait_for("control", 8)) is not None)
+    await asyncio.sleep(2.0); await ble.send("PUT cw/stop"); await asyncio.sleep(0.5)
+    # busy refusal: end the session while a mode is running, then ask again
+    ble.stream.objects.clear()
+    await ble.send("put device/protocol/off"); await ble.wait_for("end m32protocol", 3)
+    await ble.send("PUT device/protocol/on"); busy = await ble.wait_for("error", 4)
+    check("B7: handshake while a mode runs is refused at once (DEVICE BUSY)", busy is not None and "BUSY" in json.dumps(busy).upper(), json.dumps(busy) if busy else "none")
+    usb.send("PUT menu/stop"); usb.wait_for("ok", 3); usb.objects.clear()
+    await asyncio.sleep(1.0)
+    r = await ble_hs(ble, "B eight")
+    check("B8: handshake at the top menu succeeds after the busy refusal (FN)", r is not None and "device" in r)
 
     # ---------- C: fix 2 — snapshot recall runs the change-switch ----------
     usb.objects.clear()
@@ -183,35 +156,23 @@ async def main():
     await asyncio.sleep(1.5)                            # top-menu backstop restarts BLE
     try:
         await ble.connect(timeout=20)
-        await ble.send("PUT device/protocol/on")
-        re_ok = (await ble.wait_for("device")) is not None
+        r3 = await ble_hs(ble, "C three")
+        re_ok = r3 is not None and "device" in r3
     except RuntimeError:
         re_ok = False
     check("C3: selector->5 restarts BLE (re-advertise + handshake)", re_ok)
 
-    usb.objects.clear()
+    usb.objects.clear(); ble.stream.objects.clear(); ble.disconnected.clear()
     usb.send(f"PUT snapshot/recall/{slot}")
     ok_r = usb.wait_for("ok", 4)
-    gotmsg2 = await ble.wait_for("message", 4)          # fix 2: "BLE serial off" must arrive on BLE
-    try:
-        await asyncio.wait_for(ble.disconnected.wait(), 6)
-        dropped2 = True
-    except asyncio.TimeoutError:
-        dropped2 = ble.disconnected.is_set()
-    check("C4: PUT snapshot/recall (selector 0) stops BLE (fix 2)",
-          ok_r is not None and dropped2, f"notice={json.dumps(gotmsg2) if gotmsg2 else 'MISSING'}")
-    usb.send("GET configs")
-    cfgs = usb.wait_for("configs", 5)
+    await asyncio.sleep(3.0)
+    check("C4: PUT snapshot/recall leaves BLE up (selector is not part of a snapshot)", ok_r is not None and not ble.disconnected.is_set())
+    usb.send("GET configs"); cfgs = usb.wait_for("configs", 5)
     val = next((c["value"] for c in cfgs["configs"] if c["name"] == "Bluetooth Use"), None) if cfgs else None
-    check("C5: selector reads 0 after recall", val == 0, f"value={val}")
-
-    # cleanup: clear slot, restore selector 5, BLE back up
-    usb.send(f"PUT snapshot/clear/{slot}"); usb.wait_for("ok", 4)
-    usb.send("PUT config/Bluetooth Use/5"); usb.wait_for("ok", 4)
-    await asyncio.sleep(1.5)
-    await ble.connect(timeout=20)
-    await ble.send("PUT device/protocol/on")
-    check("C6: cleanup — slot cleared, selector=5, BLE back", (await ble.wait_for("device")) is not None)
+    check("C5: selector still 5 after recall", val == 5, f"value={val}")
+    usb.send(f"PUT snapshot/clear/{slot}"); ok_c = usb.wait_for("ok", 4)
+    await ble.send("GET control/speed")
+    check("C6: cleanup - slot cleared, BLE session alive", ok_c is not None and (await ble.wait_for("control", 4)) is not None)
 
     # ---------- D: congestion — no stall, backoff clears ----------
     usb.raw = ""
@@ -237,8 +198,7 @@ async def main():
         await ble.disconnect()
         await asyncio.sleep(1.0)
         await ble.connect(timeout=15)
-        await ble.send("PUT device/protocol/on")
-        await ble.wait_for("device", 4)
+        await ble_hs(ble, "D recovery")
         await ble.send("GET control/speed")
         after = await ble.wait_for("control", 4)
         recovery = "after reconnect"
@@ -287,8 +247,8 @@ async def main():
         await asyncio.sleep(2.0)                        # back at top menu; backstop restarts BLE
         try:
             await ble.connect(timeout=25)
-            await ble.send("PUT device/protocol/on")
-            if (await ble.wait_for("device")) is None: break
+            rr = await ble_hs(ble, f"Cycle {cyc+1} of 5")
+            if rr is None or "device" not in rr: break
         except RuntimeError:
             print(f"   cycle {cyc+1}: no re-advertise"); break
         cycles_ok += 1
@@ -323,5 +283,7 @@ async def main():
     if failed:
         for n, _, d in failed: print("FAILED:", n, d)
         sys.exit(1)
+
+asyncio.run(main())
 
 asyncio.run(main())

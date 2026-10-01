@@ -6,6 +6,12 @@
 * The serial protocol used by the Configuration Tool and other programs is now at **version 1.5**: it can read and set the remote-keying settings (the shared secret and the port) as well as the Remote Rig and Remote Keyer preferences, and reports the new commands through its capability list. Everything from version 1.4 keeps working unchanged.
 
 
+### CHANGES V. 9.1
+
+#### Bug Fixes:
+* With **Bluetooth Use** set to **BLE Serial**, every trip into a WiFi function and back (for example **Disp MAC Addr**, or uploading a file) cost the Morserino about 4 KB of memory that it never got back. After about a dozen such trips without switching off, a Morserino-32 of the 1st or 2nd edition could restart by itself, or keep showing up in the Bluetooth list while no longer accepting connections; the M32 Pocket, with more memory to spare, refused BLE Serial after about twenty. This is fixed: the memory is now given back each time.
+
+
 ### CHANGES V. 9.0.1
 
 #### Bug Fixes:

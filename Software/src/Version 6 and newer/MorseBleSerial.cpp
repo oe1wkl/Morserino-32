@@ -64,8 +64,13 @@ static bool txBackoffLogPending = false;                // DEBUG deferred to pum
                                                         // there splices raw text into the middle of the USB client's
                                                         // object (found on hardware: corrupted a concurrent USB GET)
 
+// Every GATT object init() creates, kept so stop() can free them: the library
+// never does (see freeGattObjects()).
 static BLEServer *bleServer = nullptr;
+static BLEService *bleService = nullptr;
 static BLECharacteristic *txChar = nullptr;
+static BLECharacteristic *rxChar = nullptr;
+static BLE2902 *txCccd = nullptr;
 static volatile uint16_t ourGattsIf = 0xFFFF;           // hook filter: never let another server's events
 static volatile uint16_t ourConnId = 0xFFFF;            // (e.g. HID, should the exclusion ever weaken) credit our pump
 
@@ -203,21 +208,21 @@ bool MorseBleSerial::init() {
     bleServer = BLEDevice::createServer();
     bleServer->setCallbacks(&serverCallbacks);
 
-    BLEService *service = bleServer->createService(NUS_SERVICE_UUID);
-    txChar = service->createCharacteristic(NUS_TX_UUID, BLECharacteristic::PROPERTY_NOTIFY);
-    // Deliberately heap-allocated per init(), like the library's own
-    // server/service/characteristic objects (documented leak, a few dozen
-    // bytes per suspend/resume cycle). A static instance does NOT work:
+    bleService = bleServer->createService(NUS_SERVICE_UUID);
+    txChar = bleService->createCharacteristic(NUS_TX_UUID, BLECharacteristic::PROPERTY_NOTIFY);
+    // Heap-allocated per init() and freed by stop(), like the server, service
+    // and characteristic objects. A static instance does NOT work:
     // BLEDescriptor::executeCreate() refuses a descriptor whose m_handle is
     // already set (from the previous init cycle, setHandle() is private), so
     // the re-created characteristic would silently get NO CCCD — every
     // client's enable-notify then fails with ATT "attribute not found"
     // (found on hardware, M32 Pocket, first stop->init cycle).
-    txChar->addDescriptor(new BLE2902());
-    BLECharacteristic *rxChar = service->createCharacteristic(NUS_RX_UUID,
+    txCccd = new BLE2902();
+    txChar->addDescriptor(txCccd);
+    rxChar = bleService->createCharacteristic(NUS_RX_UUID,
                                     BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
     rxChar->setCallbacks(&rxCallbacks);
-    service->start();
+    bleService->start();
 
     // flags (3 B) + 128-bit NUS UUID (18 B) fill the 31-byte ADV PDU; the
     // device name rides in the scan response so scanners still show it.
@@ -265,6 +270,25 @@ bool MorseBleSerial::init() {
     return true;
 }
 
+// The Arduino BLE library frees none of the GATT objects it hands out:
+// BLEServer and BLEService have no destructors that walk their children, and
+// BLEDevice::deinit() only shuts the stack down. Left alone, every init()/stop()
+// cycle leaked them — 14 FreeRTOS semaphores, their name strings and the map
+// nodes, measured at 3.7 KB per WiFi suspend/resume. The classic's largest free
+// block fell from 41 KB to 1.2 KB in eleven cycles; the twelfth rebooted it,
+// and on a connected device BLE stalled silently instead. So we free them
+// ourselves, children first. Only legal after deinit(): with Bluedroid down no
+// event can reach these objects, and the destructors merely free memory.
+// BLEDevice keeps a stale m_pServer, read only by its GATTS event handler (dead
+// until the next init) and overwritten by the next createServer().
+static void freeGattObjects() {
+    delete txCccd;     txCccd = nullptr;
+    delete rxChar;     rxChar = nullptr;
+    delete txChar;     txChar = nullptr;
+    delete bleService; bleService = nullptr;
+    delete bleServer;  bleServer = nullptr;
+}
+
 void MorseBleSerial::stop() {
     // PLAN D19: synchronous teardown; never trust onDisconnect to be
     // delivered through deinit. Callers that want the TX ring delivered call
@@ -273,8 +297,10 @@ void MorseBleSerial::stop() {
     // from inside the bleSerialEvent dispatch chain) safe.
     bool wasRunning = isRunning;
     isRunning = false;
-    if (wasRunning)
+    if (wasRunning) {
         BLEDevice::deinit(false);       // deinit(true) poisons the library for the rest of the boot (PLAN D16)
+        freeGattObjects();              // after deinit, never before
+    }
     isConnected = false;
     bleProtocol = false;                // protocolActive() reverts immediately: auto-sleep keeps working
     initFailedSticky = false;           // a pref off->on cycle may retry a failed init
@@ -288,9 +314,7 @@ void MorseBleSerial::stop() {
     mtuPayload = 20;
     rxRing.hardReset();                 // legal: the producer (GATT server) is down
     txRing.hardReset();
-    flow.resetSession(millis());
-    bleServer = nullptr;                // objects are leaked by the library across cycles (documented);
-    txChar = nullptr;                   // our own callback instances are static, no churn from us
+    flow.resetSession(millis());        // GATT objects are freed above; our callback instances are static
 }
 
 // The flow-gated TX drain, shared by pump() and txMakeRoom(): service the credit

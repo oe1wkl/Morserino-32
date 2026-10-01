@@ -20,9 +20,11 @@ the next master release is 9.1) · FAQ "First Steps" section committed and pushe
 
 **Wave 2 — one batched bench session on the classic M32** (and the Pocket where noted).
 Several debts need the classic/OLED unit, so clear them together:
-- BLE Serial (C1): classic V2 scripted tests 1–8, Bluetooth-keyboard interplay, LoRa+BLE
-  coexistence. V9 has already shipped without this gate, so it outranks the other
-  defects.
+- ~~BLE Serial scripted matrix on the classic V2~~ — **done 2026-09-30**: steps 1–10 and
+  14 pass (factory reset skipped by decision); results in `devdocs/ble-serial/DESIGN.md`
+  ("Third hardware run"), scripts in `devdocs/ble-serial/README.md`. Found and **fixed**
+  a 3.7 KB heap leak per WiFi suspend/resume that rebooted the classic on the 12th trip
+  (00ee378, on master, changelog `V. 9.1`). Still open from C1: steps 11–13 (see C1).
 - Ultimatic on the OLED and with a mechanical paddle (C4).
 - M32KIP Rig on the classic (already staged) + the Willi-only items of B6: WiFi pulled
   mid-mark, straight key and bug, 12 s tune, direct two-device soak.
@@ -53,8 +55,14 @@ protocol PDFs (E2).
    floor rests on one test run).
 3. **FAQ header** says "Answers reflect **firmware version 9.0**" — change to 9.0.1, or does
    9.0 mean "the 9.0 line"?
-4. Next master release is 9.1 (decided) — the `### Changes V9.1.0` changelog section is
-   only needed when a 9.1.0 tag is cut; add it with the first real entry.
+4. ~~Next master release is 9.1~~ (decided) — the `### CHANGES V. 9.1` section now exists,
+   opened with the BLE heap-leak fix.
+
+### Device state (end of 2026-09-30 session)
+Classic V2: master build (9.1 BETA, with the leak fix), Bluetooth Use 0. Pocket
+(standard): `m32kip` build (10.0), Bluetooth Use 0. **M32KIP link is down** (both were
+reflashed) — Block 3 needs the classic reflashed with `m32kip` and the pair re-staged
+over USB. Both TRX Peer fields still to be cleared afterwards (B7).
 
 ---
 
@@ -91,7 +99,9 @@ protocol PDFs (E2).
 1. Editorial pass on the **`### CHANGES V. 10.0`** draft in `Software/README.md` (EN; DE what's-new translated).
 2. Editorial pass on the **V10 manual** (currently V9 text + M32KIP sections).
 3. **`PUT menu/start` answers nothing** when the device is not at the menu (any mode, any
-   client). Should return an error; optionally latch the request. Not a blocker.
+   client). Should return an error; optionally latch the request. Not a blocker — but on
+   2026-09-30 it bit the BLE bench harness again (cycles that "lost" their notice); it has
+   now posed as a firmware fault in two separate test campaigns. Worth doing soon.
 4. **Burst-loss failure, test-plan §13.2(e):** a burst shortened one mark by 138 ms. Manual
    only carries the workaround (Rig Delay ≥ 250 ms).
 5. **Generated CW is 6 ms short per element** on the key line (dah/dit 3.21) — to-do note only.
@@ -107,13 +117,17 @@ protocol PDFs (E2).
 
 ## C. Hardware verification debts
 
-1. **BLE Serial (PR #194)**, carried to the V9 beta: classic V2 scripted tests 1–8;
-   BT-keyboard interplay; LoRa+BLE coexistence; ≥35 WpM stalled-client CW soak (needs a fast
-   operator); WiFi suspend/resume ×5 heap deltas; snapshot store/recall + factory reset with
-   BLE Serial set. Doc debt: `M32 Protocol.pdf` (hand-exported from MacDown) not regenerated.
+1. **BLE Serial (PR #194).** Classic V2 steps 1–10 and 14 **done 2026-09-30** (see wave 2).
+   Still open: step 11 (suspended-session auto-sleep + remote self-disable), step 12
+   (Bluetooth keyboard interplay), step 13 (WiFi upload/OTA after a BLE session, LoRa+BLE,
+   30-minute keyer soak); ≥35 WpM stalled-client CW soak (needs a fast operator); a Pocket
+   re-run under access control, including **measuring the leak fix on the Pocket** (only the
+   classic was measured). Doc debt: `M32 Protocol.pdf` (hand-exported from MacDown) not
+   regenerated.
 2. **iOS app vs. a11y Pocket over BLE** — Files tab with a long `player.txt` (from the
    "Installer problems" session, commit 9c82391) *(verify pushed)*.
-3. **Protocol 1.4:** untested over BLE; `PUT game/scores/clear` never run against real scores.
+3. **Protocol 1.4:** `GET capabilities` and paginated `GET configs/details` **pass over BLE**
+   (2026-09-30, classic). `PUT game/scores/clear` still never run against real scores.
 4. **Ultimatic keyer:** never keyed on classic/OLED or with a mechanical paddle; touch-dropout
    spurious-element risk unchecked (mitigation if needed: minimum-open time).
 5. **`pocketwroom-lora`** compiles, never bench-tested (shared-SPI question in its commit message).
@@ -123,6 +137,15 @@ protocol PDFs (E2).
    - Re-measure after the `MorseCwEngine` gap fix (Fox Hunt / Pileup / Radio Cave) never confirmed.
 7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed;
    per-site `clicks = 0` cleanup pass still open.
+8. **BLE consent — one unexplained admission.** On 2026-09-30 an unanswered BLE handshake was
+   admitted after 9.5 s with nobody touching the classic; 7 later hands-off trials (5 from a
+   hard reset) were all correctly declined after 20.2 s. Only an FN click can grant consent in
+   the code, so either a spurious button event or something not yet understood. Re-run
+   `devdocs/ble-serial/consent_trials.py` now and then; if it ever reproduces, look at the
+   FN button's ClickButton state at prompt entry (relates to C7).
+9. **Classic: BLE Serial with more than ~1000 WiFi trips per power-on.** After the leak fix
+   37 B per cycle remain inside the library/Bluedroid. Harmless in practice; noted so a
+   future heap investigation does not rediscover it.
 
 ## D. Small firmware follow-ups
 
