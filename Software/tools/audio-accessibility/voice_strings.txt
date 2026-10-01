@@ -1,4 +1,5 @@
 (not set)
+(set)
 -. dah dit
 .- dit dah
 0
@@ -428,6 +429,7 @@ Output Case
 Paddle polarity
 Papa
 Phones
+Phrase saved
 Plain
 plus
 point
@@ -451,6 +453,7 @@ Randomize File
 Recall snapshot
 Remote Keyer
 Remote keyer glitch filter
+Remote keying pass phrase
 Remote Rig
 Remote rig first element extension
 Remote rig hang time
@@ -487,11 +490,13 @@ Time-out
 Tone Pitch
 Tone Shift
 Tone Softness
+Too short
 Trailblazer
 Transceiver
 Transceiver channel
 u umlaut
 Ultimatic
+Unchanged
 Uniform
 Unlimited
 Up 1 Half

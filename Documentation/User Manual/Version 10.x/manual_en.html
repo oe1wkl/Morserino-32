@@ -34,14 +34,14 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>User Manual</p></div>
-<div class="title-version">Version 10.x<br>September 2026</div>
+<div class="title-version">Version 10.x<br>October 2026</div>
 <div class="title-variant">for all Morserino-32 models</div>
 <div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — User Manual</strong></p>
-<p>Edition V 10.x, September 2026 — for all Morserino-32 models</p>
+<p>Edition V 10.x, October 2026 — for all Morserino-32 models</p>
 <p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -1489,7 +1489,7 @@ The font family used is Lato.</p>
 <ul>
 <li><strong>Both Morserinos on a network.</strong> A local network is enough for a test; for real remote operation the rig end must be reachable from the keyer end over the Internet. The same considerations as for <strong>WiFi Trx</strong> apply: if the rig is behind a router doing NAT, you need port forwarding for UDP port 7374 to the rig’s Morserino, or a VPN that puts both on one virtual network.</li>
 <li><strong>The address of the rig</strong>, entered at the keyer end as the <strong>TRX Peer</strong> field of <strong>Config WiFi</strong> — the same field the WiFi transceiver uses. An IP address or a DNS host name.</li>
-<li><strong>A pass phrase, the same on both devices.</strong> Enter it in the <strong>Config WiFi</strong> web form, in the field <em>Remote Keying pass phrase?</em>, at least 12 characters. It is never shown back to you, exactly like the WiFi passwords: leave the field empty to keep the stored one.</li>
+<li><strong>A pass phrase, the same on both devices</strong>, at least 12 characters. There are three ways to enter it: on the Morserino itself with the preference <strong>Pass Phrase</strong> (section <strong>Preferences regarding Remote Keying</strong>); on the <strong>WiFi</strong> tab of the Configuration Tool, in the card <strong>Remote Keying</strong>; or in the <strong>Config WiFi</strong> web form, in the field <em>Remote Keying pass phrase?</em>. Whichever you use, it is never shown back to you, exactly like the WiFi passwords — the preference only tells you whether one is set. On the device you can enter lower-case letters, digits and the characters . , : - / = ? @ +; the Configuration Tool and the web form accept any characters, so if you want to be able to type the same phrase on the device later, stick to those.</li>
 </ul>
 <p>The pass phrase is not a nicety. Every packet of the link is authenticated with it, and a Morserino in Remote Rig ignores anything that does not carry the right signature — which is what stops a stranger on the Internet from keying your transmitter. Choose something long, and give it to your remote partner by a channel you trust. Neither device will start the mode without it.</p>
 <h4 class="unnumbered" id="at-the-station-remote-rig">At the station: Remote Rig</h4>
@@ -1575,7 +1575,7 @@ The font family used is Lato.</p>
 <tbody>
 <tr>
 <td>No key set — Set a pass-phrase first</td>
-<td>Enter the pass phrase in the <strong>Config WiFi</strong> web form, at both ends</td>
+<td>Enter the pass phrase at both ends — preference <strong>Pass Phrase</strong>, the Configuration Tool, or the <strong>Config WiFi</strong> web form</td>
 </tr>
 <tr>
 <td>No rig host — Set TRX Peer in Config WiFi</td>
@@ -3015,7 +3015,7 @@ The font family used is Lato.</p>
 </tbody>
 </table>
 <h3 data-number="6.3.8" id="preferences-regarding-remote-keying"><span class="header-section-number">6.3.8</span> Preferences regarding Remote Keying</h3>
-<p>These preferences configure the two remote keying modes (section <strong>Keying a remote transceiver</strong>). The five <strong>Rig</strong> items are read by the Morserino that keys the transmitter, so set them on that device — or, more conveniently, from the operating position while the link is up, as described in that section. <strong>Glitch Filter</strong> belongs to the Morserino you key.</p>
+<p>These preferences configure the two remote keying modes (section <strong>Keying a remote transceiver</strong>). The five <strong>Rig</strong> items are read by the Morserino that keys the transmitter, so set them on that device — or, more conveniently, from the operating position while the link is up, as described in that section. <strong>Glitch Filter</strong> belongs to the Morserino you key. <strong>Pass Phrase</strong> must be set, identically, on both.</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -3059,6 +3059,11 @@ The font family used is Lato.</p>
 <td>Glitch Filter</td>
 <td>At the keying end: how long a contact must hold before it is taken as a real key edge. Contact bounce from a straight key or a bug is discarded; a genuine edge keeps the time at which the contact was first made, so the filter costs no timing accuracy. It is not applied to the internal keyer, whose edges are clean by construction.</td>
 <td>1 … 5 ms (<strong>3</strong>)</td>
+</tr>
+<tr>
+<td>Pass Phrase</td>
+<td>The remote keying pass phrase, the same on both Morserinos. Entered with the encoder like <strong>Call Sign</strong>: turn to choose a character, click to add it, FN deletes the last one, a long press finishes. It is never shown — the value reads <em>(set)</em> or <em>(not set)</em> — and an entry that is empty or shorter than 12 characters leaves the stored pass phrase unchanged. Only lower-case letters, digits and . , : - / = ? @ + can be entered here; the Configuration Tool and the <strong>Config WiFi</strong> web form accept any characters.</td>
+<td>12 … 32 characters</td>
 </tr>
 </tbody>
 </table>
@@ -4786,6 +4791,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=ceb8233b6b43 -->
+<!-- MANUALFRESH: lang=en src=bc2fce6194bc -->
 </body>
 </html>

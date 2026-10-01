@@ -282,6 +282,9 @@ namespace MorsePreferences
   void resetGameScores();
   void clearGameScores();   // the wipe without the confirm UI (protocol PUT game/scores/clear)
   void editPracticeChars();
+#ifdef CONFIG_M32KIP
+  void editKipPassPhrase();
+#endif
   void setPracticeChars(const String& chars);   // assign + persist; shared with the serial "practicechars" command
   void readPreferences(const char* repository);
   void readScreenPref();

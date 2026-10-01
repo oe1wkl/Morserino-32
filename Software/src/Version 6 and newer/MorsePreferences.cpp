@@ -610,11 +610,23 @@ static_assert(sizeof(MorsePreferences::pliste) / sizeof(MorsePreferences::pliste
 const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores", "Practice Set"
 #ifdef CONFIG_M32KIP
     , "Rig: Delay", "Rig: Lim Kyr", "Rig: Lim SK", "Rig: 1st Ext", "Rig: Hang"
+    , "Pass Phrase"
 #endif
 #ifdef CONFIG_PRACTICE_STATS
     , "Practice Stats"
 #endif
 };
+// The same positional trap as prefName[]/pliste[], guarded the same way: the last special-case position decides.
+static constexpr int lastExtraPos =
+#if defined(CONFIG_PRACTICE_STATS)
+    posPracticeStatsOn;
+#elif defined(CONFIG_M32KIP)
+    posKipPassPhrase;
+#else
+    posPracticeChars;
+#endif
+static_assert(sizeof(extraItems) / sizeof(extraItems[0]) == lastExtraPos - posKochFilter + 1,
+              "extraItems[] must have one label per prefPos from posKochFilter to the last special case");
 
 #ifdef CONFIG_TFT
 themes MorsePreferences::themeList[] = {
@@ -859,7 +871,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    QSOBOT
 #ifdef CONFIG_M32KIP
                                                    posKipPlayout, posKipMaxKeyer, posKipMaxManual,
-                                                   posKipFirstExt, posKipHang, posKipGlitch,
+                                                   posKipFirstExt, posKipHang, posKipGlitch, posKipPassPhrase,
 #endif
                                                    posPlayerCall, posPlayerName, posResetScores,
 #ifdef CONFIG_PRACTICE_STATS
@@ -878,7 +890,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // decodes received audio (the Keyer unit forces noTx, D12d).
  prefPos MorsePreferences::kipKeyerOptions[] =   { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
-                                                   posKipGlitch
+                                                   posKipGlitch, posKipPassPhrase
                                                  };
  // Same as kipKeyerOptions, but led by the remote rig's own settings (D17). Used only while the link is up AND the
  // rig answers configuration requests: the operator sees what they can change at the far end first, then their own.
@@ -886,7 +898,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                     posRigFirstExt, posRigHang,
                                                     PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
                                                     posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
-                                                    posKipGlitch
+                                                    posKipGlitch, posKipPassPhrase
                                                   };
 int MorsePreferences::kipRigOptionsSize      = SizeOfArray(MorsePreferences::kipRigOptions);
 int MorsePreferences::kipKeyerOptionsSize    = SizeOfArray(MorsePreferences::kipKeyerOptions);
@@ -1112,6 +1124,10 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos, boolean announce
   else if (pos == posPracticeChars)              // nestled among the "Set Preferences:" items, in allOptions
                                                  // and in the four generator/echo/koch option sets
     topLine = "Set Preferences:";
+#ifdef CONFIG_M32KIP
+  else if (pos == posKipPassPhrase)              // sits with the remote-keying settings it belongs to
+    topLine = "Set Preferences:";
+#endif
   else
     topLine = "Player & Scores:";
 
@@ -1324,6 +1340,9 @@ String MorsePreferences::getValueLine(prefPos pos) {
         str = "clear all";
         break;
 #ifdef CONFIG_M32KIP
+    case posKipPassPhrase:                              // write-only: whether one is set, never what it is
+        str = MorsePreferences::kipPsk.length() >= 12 ? "(set)" : "(not set)";
+        break;
     // The remote rig's settings (D17). The values live on the OTHER device - these come from the cache the Keyer
     // keeps, which is seeded at link-up and corrected by the rig's own reply to every set. Each is formatted
     // exactly as its local twin in pliste[], so an operator sees the same words at both ends.
@@ -1544,6 +1563,60 @@ void MorsePreferences::editPlayerIdentity(prefPos pos) {
     Buttons::volButton.clicks  = 0;
 }
 
+#ifdef CONFIG_M32KIP
+// --- Remote keying pass phrase (M32KIP) ---
+// The third way in, beside the Config WiFi web form and PUT kip/psk: none of them needs another device's browser
+// or a computer, and this one needs neither. Write-only like the other two - entry starts empty, the stored phrase
+// is never shown, and an empty or too short entry leaves it unchanged (fail safe: a stray long-press must not
+// wipe a working key). The character set is lower case, digits and . , : - / = ? @ + only: those are the
+// characters the Accessibility Edition can speak as themselves (upper case letters are prosign codes there).
+static const uint8_t KIP_PSK_MIN = 12;   // MorseKipKeyer/MorseKipRig refuse a shorter key, and so does PUT kip/psk
+static const uint8_t KIP_PSK_MAX = 32;   // on-device entry only; the web form and the protocol accept longer ones
+
+// Show a short result and keep the voice running while it is up - a bare delay() would leave the
+// Accessibility Edition mute and swallow a button press.
+static void showKipResult(const String &line1, const String &line2) {
+    MorseOutput::clearScrollLines();
+    MorseOutput::printOnScroll(1, BOLD, 0, line1);
+    if (line2.length()) MorseOutput::printOnScroll(2, REGULAR, 0, line2);
+    MorseOutput::refreshDisplay();
+    uint32_t until = millis() + 1500;
+    while ((int32_t)(millis() - until) < 0) {
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();
+#endif
+        checkShutDown(false);
+        delay(10);
+    }
+    Buttons::modeButton.clicks = 0;
+    Buttons::volButton.clicks  = 0;
+}
+
+void MorsePreferences::editKipPassPhrase() {
+    char buf[KIP_PSK_MAX + 1];
+    MorseTextEntry::enterText("Pass Phrase:", buf, KIP_PSK_MAX, MorseTextEntry::CHARSET_PASSPHRASE, "");
+    Buttons::modeButton.clicks = 0;   // swallow the long-press that ended entry
+    Buttons::volButton.clicks  = 0;
+    size_t len = strlen(buf);
+    if (len == 0) {
+        MorseVoice::announce("Unchanged");
+        showKipResult("Unchanged", "");
+    }
+    else if (len < KIP_PSK_MIN) {
+        MorseVoice::announce("Too short");                 // "Too short, 12 characters" - composed from atoms
+        MorseVoice::announceMore(String(KIP_PSK_MIN));
+        MorseVoice::announceMore("characters");
+        showKipResult("Too short", "min 12 chars");
+    }
+    else {
+        writeKipPsk(String(buf));
+        MorseVoice::announce("Phrase saved");
+        showKipResult("Phrase saved", "same on both");
+    }
+    memset(buf, 0, sizeof(buf));      // do not leave the key lying on the stack
+}
+#endif
+
 // --- "Practice Set" character picker (CW Generator / Echo Trainer) ---
 static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes;
                                                  // excludes the trailing multi-byte äöü/H tail (m32_v6.ino),
@@ -1678,6 +1751,11 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
         return false;
     }
 #ifdef CONFIG_M32KIP
+    if (pos == posKipPassPhrase) {
+        editKipPassPhrase();
+        displayKeyerPreferencesMenu(pos);
+        return false;
+    }
     // The remote rig's settings (D17). Handled here, ahead of the generic path, because these six have no pliste[]
     // entry at all - their values live on the other device. The range comes from the local twin's entry, so the
     // limits an operator meets are the same at both ends; the change goes out as a set, and the rig's reply

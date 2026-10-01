@@ -12,6 +12,26 @@ namespace MorseTextEntry
 {
   const char *const CHARSET_CALLSIGN = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789/";
   const char *const CHARSET_NAME     = "ABCDEFGHIJKLMNOPQRSTUVWXYZ ";
+  // Lower case on purpose: in this firmware an upper case single character is a prosign code, and the
+  // Accessibility Edition would speak it as one. No space either - it has no clip, and the protocol trims it.
+  const char *const CHARSET_PASSPHRASE = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+";
+}
+
+// Width of the entry line. The candidate in brackets is appended to the text, so a long field (pass phrase,
+// practice set) would run off the line; show its tail instead, marked with '<'. Short fields are unaffected.
+#ifdef CONFIG_TFT
+static const uint8_t ENTRY_LINE_WIDTH = 21;   // IntelOneMono at the large scroll font
+#else
+static const uint8_t ENTRY_LINE_WIDTH = 14;   // OLED
+#endif
+
+static String fitEntryLine(const String &text, const String &candidate)
+{
+  String line = text + "[" + candidate + "]";
+  if (line.length() <= ENTRY_LINE_WIDTH) return line;
+  int keep = ENTRY_LINE_WIDTH - 1 - (candidate.length() + 2);    // room for '<' and "[c]"
+  if (keep < 0) keep = 0;
+  return "<" + text.substring(text.length() - keep) + "[" + candidate + "]";
 }
 
 static boolean containsChar(const char *s, char c)
@@ -86,7 +106,7 @@ void MorseTextEntry::enterText(const String &prompt, char *result, uint8_t maxLe
       MorseOutput::clearStatusLine();
       MorseOutput::printOnStatusLine(true, 0, prompt);
       MorseOutput::clearScrollLines();
-      MorseOutput::printOnScroll(0, BOLD,    0, displayText(result, displayXform) + "[" + displayGlyph(charSet[charIdx], displayXform) + "]");
+      MorseOutput::printOnScroll(0, BOLD,    0, fitEntryLine(displayText(result, displayXform), displayGlyph(charSet[charIdx], displayXform)));
       MorseOutput::printOnScroll(1, REGULAR, 0, "click = add");
       MorseOutput::printOnScroll(2, REGULAR, 0, "FN=del hold=ok");
       MorseOutput::refreshDisplay();

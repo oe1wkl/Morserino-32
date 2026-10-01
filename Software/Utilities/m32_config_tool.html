@@ -2310,6 +2310,7 @@ async function loadWifi(){
     var wifiArr=data.wifi||[]; var espnow=data.espnow||false;
     var wlanChoice=data.wlanChoice!==undefined?data.wlanChoice:-1;
     renderWifi(wifiArr,espnow,wlanChoice);
+    if(hasFeature('kip')===true) await renderKip();   // protocol 1.5, builds with remote keying only
     log('WiFi loaded');
   }catch(e){log('WiFi: '+e.message)}
   hideLoading();
@@ -2336,6 +2337,30 @@ function renderWifi(wifiArr,espnow,wlanChoice){
 async function setWifiSsid(n){var val=document.getElementById('wifiSsid'+n).value;try{await sendLine('put wifi/ssid/'+n+'/'+val);try{await waitForResponse(2000)}catch(e){}log('WiFi '+n+' SSID → '+val)}catch(e){log('Error: '+e.message)}}
 async function setWifiPass(n){var val=document.getElementById('wifiPass'+n).value;if(!val){log('No password');return}try{await sendLine('put wifi/password/'+n+'/'+val);try{await waitForResponse(2000)}catch(e){}log('WiFi '+n+' password set');document.getElementById('wifiPass'+n).value=''}catch(e){log('Error: '+e.message)}}
 async function setWifiPeer(n){var val=document.getElementById('wifiPeer'+n).value;try{await sendLine('put wifi/trxpeer/'+n+'/'+val);try{await waitForResponse(2000)}catch(e){}log('WiFi '+n+' TRX Peer → '+val)}catch(e){log('Error: '+e.message)}}
+// Remote keying (M32KIP) pass phrase. Write-only on the device, so the card shows only WHETHER one is set.
+// The phrase must never reach the log: sendAndParse() logs a failing command in full, hence quiet:true and
+// our own messages.
+async function renderKip(){
+  var set=null;
+  try{ var d=await sendAndParse('get kip',3000,{quiet:true}); set=!!(d.kip&&d.kip.pskSet); }catch(e){}
+  var card=document.createElement('div'); card.className='wifi-card';
+  card.innerHTML='<div class="wifi-card-header"><div class="wifi-card-num">&#128273;</div><span class="wifi-card-title">Remote Keying</span></div>'+
+    '<div class="wifi-field"><span class="wifi-label">Status</span><span id="kipStatus" style="font-size:14px">'+(set===null?'unknown':(set?'pass phrase set':'no pass phrase set'))+'</span></div>'+
+    '<div class="wifi-field"><span class="wifi-label">Pass phrase</span><input type="password" class="wifi-input" id="kipPsk" autocomplete="off" placeholder="(write-only — at least 12 characters)"><button class="btn btn-green btn-sm" onclick="setKipPsk()">Set</button></div>'+
+    '<p class="identity-note" style="margin-top:6px">Use the same pass phrase on both Morserinos — the Remote Keyer and the Remote Rig. It is never shown back. '+
+    'Here you can use any characters; on the device itself only lower-case letters, digits and . , : - / = ? @ + can be entered, so stick to those if you also want to type it there.</p>';
+  document.getElementById('wifiContainer').appendChild(card);
+}
+async function setKipPsk(){
+  var el=document.getElementById('kipPsk'), val=el.value;
+  if(val.length<12){ log('Remote keying: the pass phrase needs at least 12 characters'); return; }
+  if(val!==val.trim()){ log('Remote keying: no spaces at the start or end of the pass phrase (the device would drop them)'); return; }
+  try{
+    await sendAndParse('put kip/psk/'+val,3000,{quiet:true});
+    el.value=''; document.getElementById('kipStatus').textContent='pass phrase set';
+    log('Remote keying pass phrase set — use the same one on the other Morserino');
+  }catch(e){ el.value=''; log('Remote keying: pass phrase NOT set — '+(e.deviceError?e.message:'no answer from the device')); }
+}
 async function selectWifi(n){try{await sendLine('put wifi/select/'+n);try{await waitForResponse(2000)}catch(e){}log('Selected WiFi '+n);await sleep(300);loadWifi()}catch(e){log('Error: '+e.message)}}
 
 // ============================================================================

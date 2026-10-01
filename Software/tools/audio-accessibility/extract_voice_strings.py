@@ -80,6 +80,7 @@ ACTION_SPOKEN = {  # extraItems[] display label -> spoken
     "Rig: Lim SK":"Remote rig key down limit, straight key",
     "Rig: 1st Ext":"Remote rig first element extension",
     "Rig: Hang":"Remote rig hang time",
+    "Pass Phrase":"Remote keying pass phrase",   # also the text-entry heading ("Pass Phrase:" minus the colon)
 }
 VALUE_SPOKEN = {"+": "plus"}   # symbol-only option value (BLT <AR>) -> spoken word
 # "of" / "characters" join the composed value lines (see MorsePreferences::announceValue):
@@ -108,6 +109,9 @@ CONSENT_WORDS = ["Allow Bluetooth connection? F N for yes, click for no.",
 # The sequence it falls back to is spoken from the Koch Sequence option clips, so only the two
 # fixed phrases are needed here.
 KOCH_FALLBACK_WORDS = ["No custom set", "Fallback"]
+# Remote keying pass phrase entry (editKipPassPhrase() in MorsePreferences.cpp): the three outcomes, drawn on
+# screen, not table-driven. "Too short" is followed by the composed "12 characters" (existing atoms).
+PASSPHRASE_WORDS = ["Unchanged", "Too short", "Phrase saved"]
 
 # User-editable pronunciation overrides (spoken_overrides.tsv): firmware string -> spoken text.
 # Highest priority -- lets the maintainer hand-tune how any entry / option / label is pronounced.
@@ -214,7 +218,7 @@ extra_body = preprocess(array_body(strip_comments(load("MorsePreferences.cpp")),
                                    r"extraItems\s*\[\s*\]\s*="), POCKET_MACROS)
 extra_items = [s for s in QSTRING.findall(extra_body) if s.strip()]
 inline_values = ["clear all","Cancel Recall","Cancel Store","NO SNAPSHOTS",
-    "Flip Screen","Reset Defaults","Cancel","(not set)"]
+    "Flip Screen","Reset Defaults","Cancel","(not set)","(set)"]
 action_items = extra_items + inline_values
 
 # ── Assemble PHRASES (apply menu/action spoken overrides) ────────────────────
@@ -224,7 +228,7 @@ phrase_texts = (
     pref_labels +
     option_values +
     [spoken_of(s, ACTION_SPOKEN) for s in action_items] +
-    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS
+    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS
 )
 # NOTE: a non-table word list must appear TWICE -- here, which schedules the clip for
 # rendering, and in the fw_add() loop below, which maps the firmware string to that clip.
@@ -320,7 +324,7 @@ for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spok
 for lbl in pref_labels: fw_add(lbl, lbl)
 for v in option_values: fw_add(v, v)
 for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
-for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
+for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
 
 def cstr(s): return s.replace("\\", "\\\\").replace('"', '\\"')
 HDR = os.path.join(SRC, "voice_clips.h")

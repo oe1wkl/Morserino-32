@@ -1665,9 +1665,15 @@ transmitting modes. The link uses UDP port 7374.
   virtual network.
 - **The address of the rig**, entered at the keyer end as the **TRX Peer** field of
   **Config WiFi** — the same field the WiFi transceiver uses. An IP address or a DNS host name.
-- **A pass phrase, the same on both devices.** Enter it in the **Config WiFi** web form, in the
-  field *Remote Keying pass phrase?*, at least 12 characters. It is never shown back to you,
-  exactly like the WiFi passwords: leave the field empty to keep the stored one.
+- **A pass phrase, the same on both devices**, at least 12 characters. There are three ways to
+  enter it: on the Morserino itself with the preference **Pass Phrase** (section **Preferences
+  regarding Remote Keying**); on the **WiFi** tab of the Configuration Tool, in the card
+  **Remote Keying**; or in the **Config WiFi** web form, in the field *Remote Keying pass
+  phrase?*. Whichever you use, it is never shown back to you, exactly like the WiFi passwords —
+  the preference only tells you whether one is set. On the device you can enter lower-case
+  letters, digits and the characters . , : - / = ? @ +; the Configuration Tool and the web form
+  accept any characters, so if you want to be able to type the same phrase on the device later,
+  stick to those.
 
 The pass phrase is not a nicety. Every packet of the link is authenticated with it, and a
 Morserino in Remote Rig ignores anything that does not carry the right signature — which is
@@ -1807,7 +1813,7 @@ and when it is told to stop. There is no state of the link in which a mark is le
 
 | On the display | What to do |
 |---|---|
-| No key set — Set a pass-phrase first | Enter the pass phrase in the **Config WiFi** web form, at both ends |
+| No key set — Set a pass-phrase first | Enter the pass phrase at both ends — preference **Pass Phrase**, the Configuration Tool, or the **Config WiFi** web form |
 | No rig host — Set TRX Peer in Config WiFi | The keyer end has no address for the rig; enter it in the **TRX Peer** field |
 | Host not found | The name or address does not resolve; check it, and check that this Morserino is on the network |
 | No answer — Check rig and pass phrase | The rig did not reply: it is not in **Remote Rig**, or it is not reachable (port forwarding?), or the two pass phrases differ |
@@ -3325,7 +3331,8 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 These preferences configure the two remote keying modes (section **Keying a remote
 transceiver**). The five **Rig** items are read by the Morserino that keys the transmitter, so set them
 on that device — or, more conveniently, from the operating position while the link is up, as
-described in that section. **Glitch Filter** belongs to the Morserino you key.
+described in that section. **Glitch Filter** belongs to the Morserino you key. **Pass Phrase**
+must be set, identically, on both.
 
 | Preference Name | Description | Values |
 |---|---|---|
@@ -3335,6 +3342,7 @@ described in that section. **Glitch Filter** belongs to the Morserino you key.
 | Rig 1st Ext | Break-in compensation: how much earlier the rig starts the first element after a pause, to make up for the transceiver's changeover time (the ARRL bench tests call it the *first dit on delay*). The end of the element is not moved, so what goes on the air is what you keyed. 0 switches the compensation off — the right setting when the transceiver is keyed through a PTT line or runs full break-in. | 0 … 30 ms (**0**) |
 | Rig Hang | The transceiver's own break-in delay, as given in its manual, so that the Morserino knows when the transceiver has dropped back to receive and the next element will be clipped. Only relevant when **Rig 1st Ext** is not 0. | 0 … 3000 ms in 50 ms steps (**250 ms**) |
 | Glitch Filter | At the keying end: how long a contact must hold before it is taken as a real key edge. Contact bounce from a straight key or a bug is discarded; a genuine edge keeps the time at which the contact was first made, so the filter costs no timing accuracy. It is not applied to the internal keyer, whose edges are clean by construction. | 1 … 5 ms (**3**) |
+| Pass Phrase | The remote keying pass phrase, the same on both Morserinos. Entered with the encoder like **Call Sign**: turn to choose a character, click to add it, FN deletes the last one, a long press finishes. It is never shown — the value reads *(set)* or *(not set)* — and an entry that is empty or shorter than 12 characters leaves the stored pass phrase unchanged. Only lower-case letters, digits and . , : - / = ? @ + can be entered here; the Configuration Tool and the **Config WiFi** web form accept any characters. | 12 … 32 characters |
 
 ### Preferences regarding Player Identity and Scores
 

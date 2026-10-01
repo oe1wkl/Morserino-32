@@ -494,6 +494,7 @@ enum prefPos : uint8_t {
                 // posSerialOut: their values live on the OTHER device, so they must stay out of the pliste[] /
                 // prefName[] loop - they have no NVS key here, and no local value to store.
                 posRigDelay, posRigLimitKyr, posRigLimitSK, posRigFirstExt, posRigHang,
+                posKipPassPhrase,       // write-only pass phrase entry (a string: no pliste[] entry, no NVS key here)
 #endif
 #ifdef CONFIG_PRACTICE_STATS
                 posPracticeStatsOn,

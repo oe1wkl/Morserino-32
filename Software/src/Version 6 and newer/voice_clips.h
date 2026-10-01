@@ -8,12 +8,13 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "63f07dcd"
+#define VOICE_PACK_STAMP "0f0ba4be"
 
 struct VoiceEntry { const char* key; const char* id; };
 
 static const VoiceEntry voiceLookup[] = {
   {"(not set)", "3e670ad8"},
+  {"(set)", "3e9fafd7"},
   {"-. dah dit", "e20ee838"},
   {".- dit dah", "c224c4e0"},
   {"0", "cfcd2084"},
@@ -351,7 +352,9 @@ static const VoiceEntry voiceLookup[] = {
   {"Output Case", "ea854519"},
   {"Paddle polarity", "9526b416"},
   {"Papa", "bc7339e3"},
+  {"Pass Phrase", "c40692db"},
   {"Phones", "a7ad04a9"},
+  {"Phrase saved", "1d19ffbb"},
   {"Plain", "4cd84132"},
   {"Portrait", "1c7444be"},
   {"Practice Set", "2c91ef54"},
@@ -406,11 +409,13 @@ static const VoiceEntry voiceLookup[] = {
   {"Tone Pitch", "f6f4f6a9"},
   {"Tone Shift", "306688bc"},
   {"Tone Softness", "8b90cb8d"},
+  {"Too short", "c012e2a8"},
   {"Trailblazer", "43a3ec3a"},
   {"Transceiver", "6d3a63f4"},
   {"Transceiver channel", "ae283e65"},
   {"UPPER", "9e43f529"},
   {"Ultimatic", "a6c028fe"},
+  {"Unchanged", "5ff3c697"},
   {"Uniform", "f19516d1"},
   {"Unlimited", "545f6c2f"},
   {"Up 1 Half", "4f895838"},
@@ -472,7 +477,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 458;
+static const unsigned int voiceLookupCount = 463;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 
