@@ -3006,6 +3006,17 @@ void MorsePreferences::writeKipPsk(const String& psk) {
     pref.end();
 }
 
+// The one rule for a pass phrase typed by a person, wherever they type it: the characters the on-device entry
+// offers (so a phrase set elsewhere can always be typed on the device too), 12 to 32 of them.
+bool MorsePreferences::kipPskValid(const String& psk) {
+    if (psk.length() < KIP_PSK_MIN || psk.length() > KIP_PSK_MAX)
+        return false;
+    for (unsigned i = 0; i < psk.length(); i++)
+        if (!strchr(MorseTextEntry::CHARSET_PASSPHRASE, psk[i]))
+            return false;
+    return true;
+}
+
 uint16_t MorsePreferences::kipPort = 7374;          // M32Kip::DEFAULT_PORT; this file stays free of the protocol header
 
 // One uint16 key (1 NVS entry), and only while an override is in force: 0 removes it again, because NVS never

@@ -1489,7 +1489,7 @@ The font family used is Lato.</p>
 <ul>
 <li><strong>Both Morserinos on a network.</strong> A local network is enough for a test; for real remote operation the rig end must be reachable from the keyer end over the Internet. The same considerations as for <strong>WiFi Trx</strong> apply: if the rig is behind a router doing NAT, you need port forwarding for UDP port 7374 to the rig’s Morserino, or a VPN that puts both on one virtual network.</li>
 <li><strong>The address of the rig</strong>, entered at the keyer end as the <strong>TRX Peer</strong> field of <strong>Config WiFi</strong> — the same field the WiFi transceiver uses. An IP address or a DNS host name.</li>
-<li><strong>A pass phrase, the same on both devices</strong>, at least 12 characters. There are three ways to enter it: on the Morserino itself with the preference <strong>Pass Phrase</strong> (section <strong>Preferences regarding Remote Keying</strong>); on the <strong>WiFi</strong> tab of the Configuration Tool, in the card <strong>Remote Keying</strong>; or in the <strong>Config WiFi</strong> web form, in the field <em>Remote Keying pass phrase?</em>. Whichever you use, it is never shown back to you, exactly like the WiFi passwords — the preference only tells you whether one is set. Use 12 to 32 lower-case letters, digits and the characters . , : - / = ? @ + — the device and the Configuration Tool accept only these. The web form accepts any characters, but a phrase outside this set cannot be typed on the device later, so stick to it there too.</li>
+<li><strong>A pass phrase, the same on both devices</strong>, at least 12 characters. There are three ways to enter it: on the Morserino itself with the preference <strong>Pass Phrase</strong> (section <strong>Preferences regarding Remote Keying</strong>); on the <strong>WiFi</strong> tab of the Configuration Tool, in the card <strong>Remote Keying</strong>; or in the <strong>Config WiFi</strong> web form, in the field <em>Remote Keying pass phrase?</em>. Whichever you use, it is never shown back to you, exactly like the WiFi passwords — the preference only tells you whether one is set. Use 12 to 32 lower-case letters, digits and the characters . , : - / = ? @ + — all three ways accept only these, so a phrase set one way can always be entered another way too.</li>
 </ul>
 <p>The pass phrase is not a nicety. Every packet of the link is authenticated with it, and a Morserino in Remote Rig ignores anything that does not carry the right signature — which is what stops a stranger on the Internet from keying your transmitter. Choose something long, and give it to your remote partner by a channel you trust. Neither device will start the mode without it.</p>
 <h4 class="unnumbered" id="at-the-station-remote-rig">At the station: Remote Rig</h4>
@@ -3062,7 +3062,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Pass Phrase</td>
-<td>The remote keying pass phrase, the same on both Morserinos. Entered with the encoder like <strong>Call Sign</strong>: turn to choose a character, click to add it, FN deletes the last one, a long press finishes. It is never shown — the value reads <em>(set)</em> or <em>(not set)</em> — and an entry that is empty or shorter than 12 characters leaves the stored pass phrase unchanged. Only lower-case letters, digits and . , : - / = ? @ + can be entered here, and the Configuration Tool accepts the same set (the <strong>Config WiFi</strong> web form accepts any characters).</td>
+<td>The remote keying pass phrase, the same on both Morserinos. Entered with the encoder like <strong>Call Sign</strong>: turn to choose a character, click to add it, FN deletes the last one, a long press finishes. It is never shown — the value reads <em>(set)</em> or <em>(not set)</em> — and an entry that is empty or shorter than 12 characters leaves the stored pass phrase unchanged. Only lower-case letters, digits and . , : - / = ? @ + can be entered — the same rule as in the Configuration Tool and the <strong>Config WiFi</strong> web form.</td>
 <td>12 … 32 characters</td>
 </tr>
 </tbody>
@@ -4791,6 +4791,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=832781f9d1c5 -->
+<!-- MANUALFRESH: lang=en src=910ac7bcab23 -->
 </body>
 </html>

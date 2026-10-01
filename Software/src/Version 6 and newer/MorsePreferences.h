@@ -138,7 +138,9 @@ namespace MorsePreferences
   extern String  kipPsk;                  // M32KIP pre-shared key: never sent, only hashed (spec §9).
                                           // Write-only from outside, like the WiFi password.
   void writeKipPsk(const String& psk);
-  extern uint16_t kipPort;                // UDP port: 7374 unless overridden over the protocol (D3)
+  bool kipPskValid(const String& psk);    // 12-32 chars from MorseTextEntry::CHARSET_PASSPHRASE (device entry,
+                                          // Config WiFi form and Configuration Tool all follow this rule)
+  extern uint16_t kipPort;               // UDP port: 7374 unless overridden over the protocol (D3)
   void writeKipPort(uint16_t port);       // 0 = back to 7374, and the NVS key is removed
 #endif
 

@@ -1471,7 +1471,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <ul>
 <li><strong>Beide Morserinos in einem Netzwerk.</strong> Für einen Test genügt ein lokales Netz; für echten Fernbetrieb muss das Rig-Ende vom Keyer-Ende aus über das Internet erreichbar sein. Es gilt dasselbe wie bei <strong>WiFi Trx</strong>: Steht das Rig hinter einem Router mit NAT, brauchst du eine Portweiterleitung für UDP-Port 7374 auf den Morserino am Rig, oder ein VPN, das beide in ein gemeinsames virtuelles Netz bringt.</li>
 <li><strong>Die Adresse des Rigs</strong>, am Keyer-Ende im Feld <strong>TRX Peer</strong> von <strong>Config WiFi</strong> eingetragen – demselben Feld, das auch der WLAN-Transceiver verwendet. Eine IP-Adresse oder ein DNS-Hostname.</li>
-<li><strong>Eine Passphrase, auf beiden Geräten dieselbe</strong>, mindestens 12 Zeichen lang. Du kannst sie auf drei Wegen eingeben: am Morserino selbst mit der Einstellung <strong>Pass Phrase</strong> (Abschnitt <strong>Einstellungen zur Ferntastung</strong>); im Konfigurationstool im Reiter <strong>WiFi</strong>, in der Karte <strong>Remote Keying</strong>; oder im Webformular von <strong>Config WiFi</strong> im Feld <em>Remote Keying pass phrase?</em>. Auf welchem Weg auch immer – sie wird dir nie wieder angezeigt, genau wie die WLAN-Passwörter; die Einstellung sagt dir nur, ob eine gesetzt ist. Verwende 12 bis 32 Kleinbuchstaben, Ziffern und die Zeichen . , : - / = ? @ + – das Gerät und das Konfigurationstool nehmen nur diese an. Das Webformular nimmt beliebige Zeichen an, aber eine Passphrase außerhalb dieses Zeichenvorrats lässt sich später nicht am Gerät eintippen – bleib also auch dort bei diesen.</li>
+<li><strong>Eine Passphrase, auf beiden Geräten dieselbe</strong>, mindestens 12 Zeichen lang. Du kannst sie auf drei Wegen eingeben: am Morserino selbst mit der Einstellung <strong>Pass Phrase</strong> (Abschnitt <strong>Einstellungen zur Ferntastung</strong>); im Konfigurationstool im Reiter <strong>WiFi</strong>, in der Karte <strong>Remote Keying</strong>; oder im Webformular von <strong>Config WiFi</strong> im Feld <em>Remote Keying pass phrase?</em>. Auf welchem Weg auch immer – sie wird dir nie wieder angezeigt, genau wie die WLAN-Passwörter; die Einstellung sagt dir nur, ob eine gesetzt ist. Verwende 12 bis 32 Kleinbuchstaben, Ziffern und die Zeichen . , : - / = ? @ + – alle drei Wege nehmen nur diese an, so lässt sich eine auf einem Weg gesetzte Passphrase immer auch auf einem anderen eingeben.</li>
 </ul>
 <p>Die Passphrase ist keine Nebensache. Jedes Paket der Verbindung wird mit ihr authentifiziert, und ein Morserino im Modus Remote Rig ignoriert alles, was nicht die richtige Signatur trägt – genau das verhindert, dass ein Fremder im Internet deinen Sender tastet. Wähle etwas Langes und gib es deinem Partner auf einem Weg weiter, dem du vertraust. Ohne Passphrase startet keines der beiden Geräte den Modus.</p>
 <h4 class="unnumbered" id="an-der-station-remote-rig">An der Station: Remote Rig</h4>
@@ -3052,7 +3052,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 <tr>
 <td>Pass Phrase</td>
-<td>Die Passphrase für die Ferntastung, auf beiden Morserinos dieselbe. Eingabe mit dem Drehgeber wie bei <strong>Call Sign</strong>: drehen, um ein Zeichen zu wählen, klicken, um es anzufügen, FN löscht das letzte, ein langer Druck beendet die Eingabe. Sie wird nie angezeigt – als Wert steht <em>(set)</em> oder <em>(not set)</em> –, und eine leere oder kürzere Eingabe als 12 Zeichen lässt die gespeicherte Passphrase unverändert. Hier lassen sich nur Kleinbuchstaben, Ziffern und . , : - / = ? @ + eingeben, und das Konfigurationstool nimmt denselben Zeichenvorrat an (das Webformular von <strong>Config WiFi</strong> beliebige Zeichen).</td>
+<td>Die Passphrase für die Ferntastung, auf beiden Morserinos dieselbe. Eingabe mit dem Drehgeber wie bei <strong>Call Sign</strong>: drehen, um ein Zeichen zu wählen, klicken, um es anzufügen, FN löscht das letzte, ein langer Druck beendet die Eingabe. Sie wird nie angezeigt – als Wert steht <em>(set)</em> oder <em>(not set)</em> –, und eine leere oder kürzere Eingabe als 12 Zeichen lässt die gespeicherte Passphrase unverändert. Hier lassen sich nur Kleinbuchstaben, Ziffern und . , : - / = ? @ + eingeben – dieselbe Regel wie im Konfigurationstool und im Webformular von <strong>Config WiFi</strong>.</td>
 <td>12 … 32 Zeichen</td>
 </tr>
 </tbody>
@@ -4781,6 +4781,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=01f157df98bf -->
+<!-- MANUALFRESH: lang=de src=19dd0b056536 -->
 </body>
 </html>

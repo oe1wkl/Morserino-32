@@ -1703,10 +1703,9 @@ läuft im Modus **Remote Rig** und tastet den Sender über seinen Anschluss
   Webformular von **Config WiFi** im Feld *Remote Keying pass phrase?*. Auf
   welchem Weg auch immer – sie wird dir nie wieder angezeigt, genau wie die
   WLAN-Passwörter; die Einstellung sagt dir nur, ob eine gesetzt ist. Verwende 12
-  bis 32 Kleinbuchstaben, Ziffern und die Zeichen . , : - / = ? @ + – das Gerät und
-  das Konfigurationstool nehmen nur diese an. Das Webformular nimmt beliebige Zeichen
-  an, aber eine Passphrase außerhalb dieses Zeichenvorrats lässt sich später nicht am
-  Gerät eintippen – bleib also auch dort bei diesen.
+  bis 32 Kleinbuchstaben, Ziffern und die Zeichen . , : - / = ? @ + – alle drei
+  Wege nehmen nur diese an, so lässt sich eine auf einem Weg gesetzte Passphrase
+  immer auch auf einem anderen eingeben.
 
 Die Passphrase ist keine Nebensache. Jedes Paket der Verbindung wird mit ihr
 authentifiziert, und ein Morserino im Modus Remote Rig ignoriert alles, was nicht
@@ -3832,7 +3831,7 @@ gibst. **Pass Phrase** muss auf beiden gesetzt sein, und zwar gleich.
 | Rig 1st Ext | Break-in-Kompensation: um wie viel früher das Rig das erste Element nach einer Pause beginnt, um die Umschaltzeit des Transceivers auszugleichen (die ARRL-Labortests nennen sie *First Dit On Delay*). Das Ende des Elements wird nicht verschoben; was auf die Luft geht, ist also das, was du gegeben hast. 0 schaltet die Kompensation aus – die richtige Einstellung, wenn der Transceiver über eine PTT-Leitung getastet wird oder in Full Break-in läuft. | 0 … 30 ms (**0**) |
 | Rig Hang | Die Break-in-Verzögerung des Transceivers, wie sie in seinem Handbuch steht, damit der Morserino weiß, wann der Transceiver auf Empfang zurückgefallen ist und das nächste Element beschnitten wird. Nur von Bedeutung, wenn **Rig 1st Ext** nicht 0 ist. | 0 … 3000 ms in 50-ms-Schritten (**250 ms**) |
 | Glitch Filter | Am gebenden Ende: wie lange ein Kontakt bestehen muss, bevor er als echte Tastflanke gilt. Kontaktprellen einer Handtaste oder eines Bugs wird verworfen; eine echte Flanke behält den Zeitpunkt, zu dem der Kontakt zuerst geschlossen wurde, sodass der Filter keine Genauigkeit kostet. Auf den internen Keyer wird er nicht angewendet, dessen Flanken von vornherein sauber sind. | 1 … 5 ms (**3**) |
-| Pass Phrase | Die Passphrase für die Ferntastung, auf beiden Morserinos dieselbe. Eingabe mit dem Drehgeber wie bei **Call Sign**: drehen, um ein Zeichen zu wählen, klicken, um es anzufügen, FN löscht das letzte, ein langer Druck beendet die Eingabe. Sie wird nie angezeigt – als Wert steht *(set)* oder *(not set)* –, und eine leere oder kürzere Eingabe als 12 Zeichen lässt die gespeicherte Passphrase unverändert. Hier lassen sich nur Kleinbuchstaben, Ziffern und . , : - / = ? @ + eingeben, und das Konfigurationstool nimmt denselben Zeichenvorrat an (das Webformular von **Config WiFi** beliebige Zeichen). | 12 … 32 Zeichen |
+| Pass Phrase | Die Passphrase für die Ferntastung, auf beiden Morserinos dieselbe. Eingabe mit dem Drehgeber wie bei **Call Sign**: drehen, um ein Zeichen zu wählen, klicken, um es anzufügen, FN löscht das letzte, ein langer Druck beendet die Eingabe. Sie wird nie angezeigt – als Wert steht *(set)* oder *(not set)* –, und eine leere oder kürzere Eingabe als 12 Zeichen lässt die gespeicherte Passphrase unverändert. Hier lassen sich nur Kleinbuchstaben, Ziffern und . , : - / = ? @ + eingeben – dieselbe Regel wie im Konfigurationstool und im Webformular von **Config WiFi**. | 12 … 32 Zeichen |
 
 ### Einstellungen zu Rufzeichen, Name und Spielständen
 
