@@ -13,6 +13,7 @@
 #include "MorseJSON.h"
 #include "M32ProtocolOut.h"
 #include <esp_system.h>
+#include <ESPmDNS.h>                  // MDNS.end() when leaving: wifiConnect() started it
 
 using namespace M32Kip;
 
@@ -636,6 +637,18 @@ void MorseKipRig::run() {
     gTimer = nullptr;
     MorseWiFi::audp.close();
     gHaveSession = false;
+    // Switch the radio off on the way out. This mode runs inside menuExec(), so leaving it returns straight
+    // into the menu's wait loop: menu_()'s WiFi teardown, which only runs when the menu is ENTERED, never
+    // sees it (the games tear down for the same reason). Left on - associated, mDNS answering, modem sleep
+    // off - the radio collided with the next Bluetooth start: the top-menu backstop restarted BLE Serial,
+    // and ESP-IDF's WiFi/BT coexistence aborts when modem sleep is off ("Should enable WiFi modem sleep
+    // when both WiFi and Bluetooth are enabled"), rebooting the device. Modem sleep goes back first, so
+    // Arduino does not re-apply "off" on the next WiFi.mode().
+    WiFi.setSleep(true);
+    MDNS.end();
+    WiFi.disconnect(true, false);
+    delay(50);
+    WiFi.mode(WIFI_OFF);
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Remote Rig ended", "");
 }

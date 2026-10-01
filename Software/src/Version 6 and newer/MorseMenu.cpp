@@ -367,6 +367,10 @@ void MorseMenu::menu_() {
 #ifdef LORA_RADIOLIB
     radio.standby();
 #endif
+    // Remote Keyer (and Remote Rig) switch WiFi modem sleep off for timing. Arduino remembers that and re-applies
+    // it on the next WiFi.mode(), and ESP-IDF aborts if Bluetooth is enabled while modem sleep is off (WiFi/BT
+    // coexistence). Leaving a mode puts the default back, so no later WiFi function inherits it.
+    WiFi.setSleep(true);
     if (EspNowIsActive) {
       quickEspNow.stop();
       EspNowIsActive = false;
