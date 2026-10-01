@@ -1555,7 +1555,8 @@ void MorsePreferences::editPlayerIdentity(prefPos pos) {
     MorseTextEntry::enterText(isCall ? "Call Sign:" : "Op Name:", buf, IDENT_MAX_LEN,
                               isCall ? MorseTextEntry::CHARSET_CALLSIGN
                                      : MorseTextEntry::CHARSET_NAME,
-                              cur.c_str());
+                              cur.c_str(), false, nullptr,
+                              true);    // a11y: upper case here is a letter, not a prosign code
     p.begin("morserino", false);
     p.putString(key, buf);
     p.end();

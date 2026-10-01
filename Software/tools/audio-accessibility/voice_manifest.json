@@ -326,6 +326,7 @@
     "plus": "d7d18cfb",
     "point": "78ee54aa",
     "pro sign": "ffcdbd79",
+    "space": "ff2364a0",
     "thousand": "41b1df40",
     "version": "2af72f10",
     "volts": "98e8d837",
@@ -995,6 +996,7 @@
     "3d359afb": "Sound and Display",
     "af6a83b8": "Sound only",
     "aab422ac": "South America",
+    "ff2364a0": "space",
     "eb6d8ae6": "Standard",
     "62dbf39a": "Stop after each word",
     "5bdde6ba": "Store snapshot",
@@ -1048,14 +1050,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "0f0ba4be",
+  "pack_stamp": "7a204ecf",
   "counts": {
     "menu": 42,
     "pref_labels": 56,
     "option_values": 183,
     "actions": 28,
-    "phrases_total": 329,
+    "phrases_total": 330,
     "atoms_total": 138,
-    "clips_total": 531
+    "clips_total": 532
   }
 }
