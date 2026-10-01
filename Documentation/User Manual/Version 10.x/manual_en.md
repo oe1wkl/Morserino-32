@@ -1670,10 +1670,10 @@ transmitting modes. The link uses UDP port 7374.
   regarding Remote Keying**); on the **WiFi** tab of the Configuration Tool, in the card
   **Remote Keying**; or in the **Config WiFi** web form, in the field *Remote Keying pass
   phrase?*. Whichever you use, it is never shown back to you, exactly like the WiFi passwords —
-  the preference only tells you whether one is set. On the device you can enter lower-case
-  letters, digits and the characters . , : - / = ? @ +; the Configuration Tool and the web form
-  accept any characters, so if you want to be able to type the same phrase on the device later,
-  stick to those.
+  the preference only tells you whether one is set. Use 12 to 32 lower-case letters, digits and
+  the characters . , : - / = ? @ + — the device and the Configuration Tool accept only these.
+  The web form accepts any characters, but a phrase outside this set cannot be typed on the
+  device later, so stick to it there too.
 
 The pass phrase is not a nicety. Every packet of the link is authenticated with it, and a
 Morserino in Remote Rig ignores anything that does not carry the right signature — which is
@@ -3342,7 +3342,7 @@ must be set, identically, on both.
 | Rig 1st Ext | Break-in compensation: how much earlier the rig starts the first element after a pause, to make up for the transceiver's changeover time (the ARRL bench tests call it the *first dit on delay*). The end of the element is not moved, so what goes on the air is what you keyed. 0 switches the compensation off — the right setting when the transceiver is keyed through a PTT line or runs full break-in. | 0 … 30 ms (**0**) |
 | Rig Hang | The transceiver's own break-in delay, as given in its manual, so that the Morserino knows when the transceiver has dropped back to receive and the next element will be clipped. Only relevant when **Rig 1st Ext** is not 0. | 0 … 3000 ms in 50 ms steps (**250 ms**) |
 | Glitch Filter | At the keying end: how long a contact must hold before it is taken as a real key edge. Contact bounce from a straight key or a bug is discarded; a genuine edge keeps the time at which the contact was first made, so the filter costs no timing accuracy. It is not applied to the internal keyer, whose edges are clean by construction. | 1 … 5 ms (**3**) |
-| Pass Phrase | The remote keying pass phrase, the same on both Morserinos. Entered with the encoder like **Call Sign**: turn to choose a character, click to add it, FN deletes the last one, a long press finishes. It is never shown — the value reads *(set)* or *(not set)* — and an entry that is empty or shorter than 12 characters leaves the stored pass phrase unchanged. Only lower-case letters, digits and . , : - / = ? @ + can be entered here; the Configuration Tool and the **Config WiFi** web form accept any characters. | 12 … 32 characters |
+| Pass Phrase | The remote keying pass phrase, the same on both Morserinos. Entered with the encoder like **Call Sign**: turn to choose a character, click to add it, FN deletes the last one, a long press finishes. It is never shown — the value reads *(set)* or *(not set)* — and an entry that is empty or shorter than 12 characters leaves the stored pass phrase unchanged. Only lower-case letters, digits and . , : - / = ? @ + can be entered here, and the Configuration Tool accepts the same set (the **Config WiFi** web form accepts any characters). | 12 … 32 characters |
 
 ### Preferences regarding Player Identity and Scores
 

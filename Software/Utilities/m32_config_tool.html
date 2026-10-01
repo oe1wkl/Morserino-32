@@ -2346,15 +2346,19 @@ async function renderKip(){
   var card=document.createElement('div'); card.className='wifi-card';
   card.innerHTML='<div class="wifi-card-header"><div class="wifi-card-num">&#128273;</div><span class="wifi-card-title">Remote Keying</span></div>'+
     '<div class="wifi-field"><span class="wifi-label">Status</span><span id="kipStatus" style="font-size:14px">'+(set===null?'unknown':(set?'pass phrase set':'no pass phrase set'))+'</span></div>'+
-    '<div class="wifi-field"><span class="wifi-label">Pass phrase</span><input type="password" class="wifi-input" id="kipPsk" autocomplete="off" placeholder="(write-only — at least 12 characters)"><button class="btn btn-green btn-sm" onclick="setKipPsk()">Set</button></div>'+
+    '<div class="wifi-field"><span class="wifi-label">Pass phrase</span><input type="password" class="wifi-input" id="kipPsk" autocomplete="off" maxlength="32" placeholder="(write-only — 12 to 32 characters)"><button class="btn btn-green btn-sm" onclick="setKipPsk()">Set</button></div>'+
     '<p class="identity-note" style="margin-top:6px">Use the same pass phrase on both Morserinos — the Remote Keyer and the Remote Rig. It is never shown back. '+
-    'Here you can use any characters; on the device itself only lower-case letters, digits and . , : - / = ? @ + can be entered, so stick to those if you also want to type it there.</p>';
+    '12 to 32 characters: lower-case letters, digits and . , : - / = ? @ + — the same characters the Morserino itself offers for entering it, so a phrase set here can always be typed on the device too.</p>';
   document.getElementById('wifiContainer').appendChild(card);
 }
+// The same character set as the on-device entry (CHARSET_PASSPHRASE in MorseTextEntry.cpp), so a phrase
+// set here can always be typed on the device too. Upper case is refused, not converted: changing the
+// phrase silently would leave the other Morserino with a different one.
+var KIP_PSK_OK=/^[a-z0-9.,:\-\/=?@+]+$/;
 async function setKipPsk(){
   var el=document.getElementById('kipPsk'), val=el.value;
-  if(val.length<12){ log('Remote keying: the pass phrase needs at least 12 characters'); return; }
-  if(val!==val.trim()){ log('Remote keying: no spaces at the start or end of the pass phrase (the device would drop them)'); return; }
+  if(val.length<12||val.length>32){ log('Remote keying: the pass phrase needs 12 to 32 characters'); return; }
+  if(!KIP_PSK_OK.test(val)){ log('Remote keying: only lower-case letters, digits and . , : - / = ? @ + are allowed (as on the device)'); return; }
   try{
     await sendAndParse('put kip/psk/'+val,3000,{quiet:true});
     el.value=''; document.getElementById('kipStatus').textContent='pass phrase set';
