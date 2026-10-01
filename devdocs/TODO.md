@@ -59,7 +59,8 @@ protocol PDFs (E2).
    opened with the BLE heap-leak fix.
 
 ### Device state (end of 2026-09-30 session)
-Both units on `m32kip` 39b8cb7 (10.0 beta: BLE leak fix + pass-phrase entry), Bluetooth Use 0.
+Both units on `m32kip` c22d8d8 (10.0 beta: BLE leak fix, pass-phrase entry, Rig exit fix, reset log),
+Bluetooth Use 0 on the classic; the classic has Quick Start ON into Remote Rig (B14).
 Pair re-staged and tested 2026-10-01 (B6); the classic has since left Remote Rig. TRX Peer
 fields kept for now (B7); pass phrase see B11.
 
@@ -102,7 +103,7 @@ command line).
 
 ## B. M32KIP / V10
 
-1. Editorial pass on the **`### CHANGES V. 10.0`** draft in `Software/README.md` (EN; DE what's-new translated).
+1. ~~Editorial pass on the `### CHANGES V. 10.0` draft~~ — Willi: the entries are fine as they are (2026-10-01).
 2. Editorial pass on the **V10 manual** (currently V9 text + M32KIP sections).
 3. **`PUT menu/start` answers nothing** when the device is not at the menu (any mode, any
    client). Should return an error; optionally latch the request. Not a blocker — but on
@@ -130,6 +131,14 @@ command line).
     intended pass phrase on both units (Claude had re-set the bench key, B11 history).
 12. **Preferences heading for the five "Rig:" items** shows "Player & Scores:" — they fall through
     the heading chain in `displayKeyerPreferencesMenu()`. Cosmetic, one line.
+13. ~~Leaving Remote Rig rebooted the device when BLE Serial was on~~ — **fixed 2026-10-01 on `m32kip`**
+    (07b9425): the Rig left WiFi on (modem sleep off) when returning into the menu loop, and the BLE Serial
+    restart then hit ESP-IDF's WiFi/BT coexistence abort. The Rig now switches its radio off on exit, like the
+    games. Reproduced and verified on the classic.
+14. **Quick Start into Remote Rig rebooted the classic 2–3 times** on one cold start (USB power, BLE Serial
+    off), then worked; not reproducible on demand, and no core dump was written, so not a crash — a brown-out
+    or a hardware watchdog. **`GET resets`** (c22d8d8, protocol 1.5) now records why each boot happened: when it
+    recurs, read it before anything else.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
