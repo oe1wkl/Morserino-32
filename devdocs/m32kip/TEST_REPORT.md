@@ -483,3 +483,28 @@ Worth recording, because each mistake cost a run and two of them produced *plaus
 running — `GET menu` kept reporting `active: true`, `menu/stop` answered OK without effect, and *no* mode would
 start afterwards, not even the plain CW Keyer. Only a reboot cleared it (esptool `--after hard_reset`, no
 reflash). Stop a run with `PUT cw/stop` and `PUT menu/stop`, not by killing the driver.
+
+### Two-device bench, 2026-09-30/10-01 — Willi keying, both units on `m32kip` 30c4504
+
+The configuration a user actually runs: classic V2 as **Remote Rig**, M32 Pocket (standard) as **Remote Keyer**,
+no Mac in the path. Staged hands-free over USB (pass phrase, TRX Peer, `PUT menu/start now/<n>` — Rig 50 on the
+classic, Keyer 59 on the Pocket); link proven without touching either unit by a HELLO from the Mac, answered
+`NACK` reason 1 (busy) — spec §8's one-session rule — with [`hello_probe.py`](../../Software/tests/kip/hello_probe.py).
+
+| Test | Result |
+|---|---|
+| Direct keying, Pocket → classic | **pass** — reproduced cleanly by ear |
+| WiFi pulled mid-mark (access point switched off) | **pass** — key up "after a split second" (spec: no authenticated packet for `keepalive_timeout` = 1000 ms → key up); the Rig kept showing *connected* for a few seconds, then **`End: timeout`** — the spec's "drop session after 5 s", key already up during that window (D14) |
+| Straight key and bug | **pass** |
+| 12 s tune | **pass** — cut at the Rig's key-down limit (Willi's non-default Rig values survived two reflashes) |
+| Rig's `End: <reason>` display | **seen** (`End: timeout`) |
+
+Still owed: the real-Internet run, the two-hour drift session (§13.3), a long soak, and Willi's by-eye check of
+the Keyer's paddle text and black-knob memories.
+
+**Two Mac-side traps, neither a firmware fault (the seventh and eighth tool-posing-as-firmware episodes):** UDP
+sent from a sandboxed tool shell fails with `No route to host` while ping works — macOS Local Network privacy;
+run network tools from Terminal. And `reference_peer.py` skips every reply that is not a `HELLO_ACK`, so a
+correct `NACK(busy)` reads as "no HELLO_ACK — wrong host, wrong PSK, or the Rig unit is not listening";
+`hello_probe.py` names the reply. Its HELLO_ACK path (a free Rig: it releases the won session with three BYEs) is
+not yet exercised on hardware.
