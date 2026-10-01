@@ -832,6 +832,7 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   // if version cannot be read, we have a new ESP32 and need to write the preferences first
 
   MorsePreferences::readPreferences("morserino");
+  MorsePreferences::recordResetReason();       // GET resets: tells a brown-out from a crash after the fact
   MorsePreferences::readFilePartData();
   koch.setup();
 
@@ -4884,6 +4885,8 @@ void m32Get(String type, String token, String value) {                    /// GE
     }
     else if (type == "capabilities")
         MorseJSON::jsonCapabilities();
+    else if (type == "resets")                  // protocol 1.5: why the last boots happened
+        MorseJSON::jsonResets();
 #ifdef CONFIG_M32KIP
     else if (type == "kip")                     // protocol 1.5: pskSet + port, never the key
         MorseJSON::jsonKip();

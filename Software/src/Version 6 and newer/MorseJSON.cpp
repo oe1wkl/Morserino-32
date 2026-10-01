@@ -271,6 +271,21 @@ void MorseJSON::jsonKip(void) {
 }
 #endif
 
+// Protocol 1.5: the reasons for the last (up to 8) boots, newest first, in words. Not build-dependent, so it is
+// not listed in GET capabilities. Indexed by esp_reset_reason_t.
+void MorseJSON::jsonResets(void) {
+	static const char *const names[] = { "unknown", "power on", "reset pin", "software restart", "crash",
+	                                     "interrupt watchdog", "task watchdog", "other watchdog",
+	                                     "deep sleep wake", "brown-out", "sdio" };
+	uint8_t r[8];
+	uint8_t n = MorsePreferences::readResetLog(r, sizeof(r));
+	StaticJsonDocument<384> doc;
+	JsonArray a = doc.createNestedArray("resets");
+	for (uint8_t i = 0; i < n; i++)
+		a.add(r[i] < sizeof(names) / sizeof(names[0]) ? names[r[i]] : "unknown");
+	MorseJSON::jsonSend(doc);
+}
+
 #ifdef CONFIG_CW_GAME
 // Protocol 1.4: the game high-score tables, which were previously reachable
 // only on the device itself. Read-only — PUT game/scores/clear wipes them, but

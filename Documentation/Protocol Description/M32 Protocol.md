@@ -21,6 +21,11 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	New parameters: "Rig Delay", "Rig Limit Kyr", "Rig Limit SK", "Rig 1st Ext",
 	    "Rig Hang", "Glitch Filter"
 
+	Also new in 1.5, in every build:
+
+	GET resets — why the last (up to 8) restarts happened: power on, crash,
+	    watchdog, brown-out, ...
+
 	Changes in protocol version 1.4 from version 1.3:
 
 	New GET commands:
@@ -857,6 +862,34 @@ Example (M32 Pocket, no cable connected):
 Example (classic M32):
 
 	{"battery":{"status":"usb powered"}}
+
+### Restart History
+
+*(protocol version 1.5)*
+
+`GET resets`
+
+This returns why the Morserino started, for its last (up to 8) restarts, newest first. It exists for diagnosing a
+device that restarts on its own: a crash also leaves a core dump in flash, but a brown-out (the supply dipped) or a
+hardware watchdog leaves no trace anywhere else, and this list is recorded at every start, so it can be read later,
+without a cable attached at the moment it happened.
+
+* "resets" (type Array of Strings): one of `"power on"`, `"reset pin"`, `"software restart"`, `"crash"`,
+  `"interrupt watchdog"`, `"task watchdog"`, `"other watchdog"`, `"deep sleep wake"`, `"brown-out"`, `"sdio"` or
+  `"unknown"` per restart.
+
+*Notes*:
+
+* On the ESP32, a reset through the EN line — which is what USB flashing tools and the reset circuit of many boards
+  use — is reported as `"power on"`, the same as switching the device on.
+* `"software restart"` includes the firmware's own deliberate restarts (after a factory reset, a firmware update, or a
+  memory-clearing restart before a game on the M32 Pocket); `"deep sleep wake"` is the normal wake-up after the
+  device went to sleep.
+* Firmware older than 1.5 answers `GET resets` with an error.
+
+Example:
+
+	{"resets":["power on","brown-out","brown-out","power on"]}
 
 ### Automated CW Keyer and Memory Keyer
 

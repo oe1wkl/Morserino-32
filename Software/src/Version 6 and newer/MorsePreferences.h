@@ -289,6 +289,8 @@ namespace MorsePreferences
 #endif
   void setPracticeChars(const String& chars);   // assign + persist; shared with the serial "practicechars" command
   void readPreferences(const char* repository);
+  void recordResetReason();               // once per boot: why this boot happened, into a small NVS ring
+  uint8_t readResetLog(uint8_t* out, uint8_t max);   // newest first; returns how many are known
   void readScreenPref();
   void readVoltagePref();
   void writePreferences(const char* repository);

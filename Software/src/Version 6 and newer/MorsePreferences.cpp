@@ -2046,6 +2046,44 @@ void MorsePreferences::handleCarouselChange() {
 
 /////////////// READING and WRITING parameters from / into Non Volatile Storage, using ESP32 preferences
 
+// --- Reset-reason log ---
+// Why did the recent boots happen? A crash leaves a core dump, but a brown-out or a hardware watchdog reset leaves
+// nothing at all, and a device that reboots now and then on its own can otherwise only be diagnosed with a serial
+// cable attached at the right moment. One versioned blob (NVS cost: 3 entries): [version 1][count][8 x
+// esp_reset_reason(), newest first]. A blob of another size or version is started afresh.
+static const char *const RST_LOG_KEY = "rstLog";
+static const uint8_t RST_LOG_LEN = 8;
+static const uint8_t RST_LOG_VER = 1;
+
+void MorsePreferences::recordResetReason() {
+    uint8_t blob[2 + RST_LOG_LEN] = { RST_LOG_VER, 0 };
+    pref.begin("morserino", false);
+    if (pref.getBytesLength(RST_LOG_KEY) == sizeof(blob)) {
+        pref.getBytes(RST_LOG_KEY, blob, sizeof(blob));
+        if (blob[0] != RST_LOG_VER || blob[1] > RST_LOG_LEN) {
+            memset(blob, 0, sizeof(blob));
+            blob[0] = RST_LOG_VER;
+        }
+    }
+    memmove(blob + 3, blob + 2, RST_LOG_LEN - 1);          // age the ring by one
+    blob[2] = (uint8_t) esp_reset_reason();
+    if (blob[1] < RST_LOG_LEN) blob[1]++;
+    if (pref.putBytes(RST_LOG_KEY, blob, sizeof(blob)) != sizeof(blob))
+        DEBUG("rstLog not stored - NVS full?");             // put*() fails silently when NVS is full
+    pref.end();
+}
+
+uint8_t MorsePreferences::readResetLog(uint8_t* out, uint8_t max) {
+    uint8_t blob[2 + RST_LOG_LEN] = { 0 };
+    pref.begin("morserino", true);
+    bool ok = pref.getBytesLength(RST_LOG_KEY) == sizeof(blob) && pref.getBytes(RST_LOG_KEY, blob, sizeof(blob)) == sizeof(blob);
+    pref.end();
+    if (!ok || blob[0] != RST_LOG_VER || blob[1] > RST_LOG_LEN) return 0;
+    uint8_t n = blob[1] < max ? blob[1] : max;
+    memcpy(out, blob + 2, n);
+    return n;
+}
+
 void MorsePreferences::readPreferences(const char* repository) {
       if (strcmp(repository, "morserino") != 0) {          // snapshots have their own (blob-capable) reader
           applySnapshot(repository);
