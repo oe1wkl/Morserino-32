@@ -1402,9 +1402,8 @@ void MorsePreferences::editPlayerIdentity(prefPos pos) {
 }
 
 // --- "Practice Set" character picker (CW Generator / Echo Trainer) ---
-static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes;
-                                                 // excludes the trailing multi-byte äöü/H tail (m32_v6.ino),
-                                                 // which the plain RANDOMS pool doesn't use either
+static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes; the
+                                                 // national letters are added per Decoder Chars set (editPracticeChars())
 static const uint8_t PRACTICE_MAX_LEN   = 24;   // generous for a "chars I struggle with" set; bounds the on-screen line
 
 // Display-only glyph for the picker wheel; never touches what gets stored.
@@ -1417,8 +1416,8 @@ static const uint8_t PRACTICE_MAX_LEN   = 24;   // generous for a "chars I strug
 // character - i.e. not a prosign - gets the cosmetic Output Case treatment.
 static String practiceGlyph(char c) {
     String s = cleanUpProSigns(String(c));
-    if (s.length() == 1 && MorsePreferences::pliste[posOutputCase].value)
-        s.toUpperCase();
+    if (!s.startsWith("<") && MorsePreferences::pliste[posOutputCase].value)
+        toUpperCaseM32(s);                       // also the two-byte national letters (é -> É)
     return s;
 }
 
@@ -1438,9 +1437,10 @@ void MorsePreferences::setPracticeChars(const String& chars) {
 }
 
 void MorsePreferences::editPracticeChars() {
-    char wheel[PRACTICE_WHEEL_LEN + 1];
+    // the plain characters, then the letters of the chosen Decoder Chars set (ä ö ü ch for Standard)
+    char wheel[PRACTICE_WHEEL_LEN + 12];
     memcpy(wheel, CWchars, PRACTICE_WHEEL_LEN);
-    wheel[PRACTICE_WHEEL_LEN] = '\0';
+    strlcpy(wheel + PRACTICE_WHEEL_LEN, decoderSetLetters(), sizeof(wheel) - PRACTICE_WHEEL_LEN);
 
     String cur = MorsePreferences::practiceCharSet;
     if (cur.length() > PRACTICE_MAX_LEN)             // defensive; shouldn't happen, cap matches storage

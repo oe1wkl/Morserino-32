@@ -760,15 +760,15 @@ void MorseJSON::jsonGetCustomChars(void) {
     StaticJsonDocument<256> doc;
     JsonObject obj = doc.createNestedObject("customchars");
     obj["active"] = MorsePreferences::useCustomChars;
-    obj["characters"] = MorsePreferences::customCharSet;
+    obj["characters"] = codesToUtf8(MorsePreferences::customCharSet);   // raw codes, national letters as UTF-8
     MorseJSON::jsonSend(doc);
 }
 
 void MorseJSON::jsonGetPracticeChars(void) {
     StaticJsonDocument<192> doc;
     JsonObject obj = doc.createNestedObject("practicechars");
-    obj["characters"] = MorsePreferences::practiceCharSet;
-    serializeJson(doc, Serial);
+    obj["characters"] = codesToUtf8(MorsePreferences::practiceCharSet); // raw codes, national letters as UTF-8
+    MorseJSON::jsonSend(doc);      // not serializeJson(doc, Serial): that skipped BLE Serial (CLAUDE.md rule 9)
 }
 
 void MorseJSON::jsonGetHardware(void) {
