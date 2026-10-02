@@ -110,7 +110,10 @@ command line).
    protocol description updated (1.5). V9/`master` keeps the old silence.
 4. **Burst-loss failure, test-plan §13.2(e):** a burst shortened one mark by 138 ms. Manual
    only carries the workaround (Rig Delay ≥ 250 ms).
-5. **Generated CW is 6 ms short per element** on the key line (dah/dit 3.21) — to-do note only.
+5. **Generated CW is 6 ms short per element** on the key line (dah/dit 3.21; a 48 ms dit arrives as 42 ms, so a
+   Remote Rig shows 28 WPM for 25). **Willi decided 2026-09-16: fix it** (`genTimer`'s constant `-6`, see
+   cw-timing-audit FINDINGS); re-confirmed on the a11y build 2026-10-02. Affects keyer memories, `cw/play`, and
+   whatever those send to a transmitter — on `master` too.
 6. **Bench tests owed by Willi.** Done 2026-10-01 (two devices, no Mac in the path — see
    `devdocs/m32kip/TEST_REPORT.md`): direct keying, WiFi pulled mid-mark (key up within the
    1 s keepalive timeout, `End: timeout` after the 5 s session drop, per spec), straight key
@@ -120,8 +123,8 @@ command line).
 7. **Cleanup:** clear both **TRX Peer** fields — Willi: leave them for the time being
    (Pocket's points at the classic, 192.168.1.237).
 8. ~~A11y voicing of the Keyer's messages~~ — **done 2026-10-01 on `m32kip`** (6354662): connect, call, link and
-   all five error screens are spoken. **Open decision:** link lost / restored *while keying* is still only the
-   top-bar icon — speaking it needs `MorseVoice::tick()` in the global loop, which touches keyer timing.
+   all five error screens are spoken; **link lost / restored too** (81b9f70: voice driven from the idle branch only,
+   clips cut the moment CW starts). Heard by Willi on an a11y Pocket; timing benched unchanged (TEST_REPORT).
 9. **Pocket polled-Keyer 1.7 ms floor** — Willi's nod still owed.
 11. ~~Setting the pass phrase~~ — **done 2026-10-01 on `m32kip`** (4af1827, 39c2d3f, 39b8cb7):
     preference **Pass Phrase** on the device (MorseTextEntry, write-only, voiced), a **Remote
