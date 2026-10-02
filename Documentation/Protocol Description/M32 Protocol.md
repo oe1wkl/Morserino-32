@@ -884,6 +884,8 @@ without a cable attached at the moment it happened.
 
 * On the ESP32, a reset through the EN line — which is what USB flashing tools and the reset circuit of many boards
   use — is reported as `"power on"`, the same as switching the device on.
+* On the M32 Pocket (ESP32-S3), a reset over its native USB port — by a flashing tool, or by opening the serial port
+  — is reported as `"unknown"`: the ESP-IDF version in use has no name for it.
 * `"software restart"` includes the firmware's own deliberate restarts (after a factory reset, a firmware update, or a
   memory-clearing restart before a game on the M32 Pocket); `"deep sleep wake"` is the normal wake-up after the
   device went to sleep.
