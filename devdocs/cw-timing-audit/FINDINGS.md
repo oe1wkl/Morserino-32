@@ -288,3 +288,21 @@ correction so as to preserve the ratio. Subtracting a constant cannot preserve 3
 Affects keyer memories, `PUT cw/play` and `PUT cw/repeat`, the Echo Trainer and CW Generator as heard on a real
 transmitter, and now the speed a remote operator sees. Not started; wants a measurement afterwards with the same
 instrument (`devdocs/m32kip/TEST_REPORT.md` describes it).
+
+### FIXED 2026-10-02 (06acf11 on `master`, merged into `m32kip`)
+
+`keyOut()` waits 6 ms on both edges before it moves the key line. The generator now times the mark with the full
+dit/dah (the two waits cancel, as in the paddle keyer's `corrTime`) and takes the 6 ms off the element, character
+and word *spaces* instead (`KEYOUT_EDGE_MS` in `m32_v6.ino`) — the next key-down asserts the line that much later.
+Measured with the same instrument (Pocket Remote Keyer, `PUT cw/repeat` at 25 WPM → classic Remote Rig with
+`-D KIP_MEASURE=1`, the Keyer's own `keyOut()` timestamps):
+
+| On the key line | Before | After | Nominal |
+|---|---|---|---|
+| dit | 42.1 ms | **48.0 ms** (47.0–49.0) | 48 |
+| dah | ~137.5 ms | **144.0 ms** (143.0–145.1) | 144 |
+| element space | ~53 ms | **48.0 ms** | 48 |
+| character gap | ~151 ms | **145.3 ms** | 144 |
+| dah/dit | 3.27 | **3.002** | 3.00 |
+
+The Rig's speed estimate reads 48 ms = 25 WPM again. Overall speed unchanged (element + space is still two dits).
