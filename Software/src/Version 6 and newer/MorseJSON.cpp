@@ -798,7 +798,7 @@ void MorseJSON::jsonGetPracticeChars(void) {
     StaticJsonDocument<192> doc;
     JsonObject obj = doc.createNestedObject("practicechars");
     obj["characters"] = MorsePreferences::practiceCharSet;
-    serializeJson(doc, Serial);
+    MorseJSON::jsonSend(doc);      // not serializeJson(doc, Serial): that skipped BLE Serial (CLAUDE.md rule 9)
 }
 
 void MorseJSON::jsonGetHardware(void) {
