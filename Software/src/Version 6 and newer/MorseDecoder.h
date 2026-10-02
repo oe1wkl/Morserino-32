@@ -46,7 +46,7 @@ struct linklist {
 };
 
 
-const struct linklist CWtree[69]  = {
+const struct linklist CWtree[73]  = {
   {"",1,2},            // 0
   {"e", 3,4},         // 1
   {"t",5,6},          // 2
@@ -67,19 +67,19 @@ const struct linklist CWtree[69]  = {
 //---------------------------------------------
   {"h", 31,32},       // 15
   {"v", 33, 34},      // 16
-  {"f", 63, 63},      // 17
+  {"f", 70, 63},      // 17
   {"ü", 35, 36},      // 18 german ue
   {"l", 37, 38},      // 19
-  {"ä", 39, 63},      // 20 german ae
+  {"ä", 39, 63},      // 20 german ae  (æ in Da/No)
   {"p", 63, 40},      // 21
   {"j", 63, 41},      // 22
   {"b", 42, 43},      // 23
   {"x", 44, 63},      // 24
-  {"c", 63, 45},      // 25
+  {"c", 71, 45},      // 25
   {"y", 46, 63},      // 26
   {"z", 47, 48},      // 27
-  {"q", 63, 63},      // 28
-  {"ö", 49, 63},      // 29 german oe
+  {"q", 63, 72},      // 28
+  {"ö", 49, 63},      // 29 german oe  (ø in Da/No)
   {"<ch>", 50, 51},        // 30 !!! german "ch"
 //---------------------------------------------
   {"5", 64, 63},      // 31
@@ -89,15 +89,15 @@ const struct linklist CWtree[69]  = {
   {"*", 53,63,},      // 35 * used for all unidentifiable characters ¬
   {"2", 63, 63},      // 36
   {"<as>", 63,63},         // 37 !! <as>
-  {"*", 54, 63},      // 38
+  {"*", 54, 63},      // 38 .-..-  è in Fr/Es/Pt
   {"+", 63, 55},      // 39
-  {"*", 56, 63},      // 40
+  {"*", 56, 63},      // 40 .--.-  à in Fr/Es/Pt, å in Sv/Fi + Da/No
   {"1", 57, 63},      // 41
   {"6", 63, 58},      // 42
   {"=", 67, 63},      // 43
   {"/", 63, 63},      // 44
   {"<ka>", 59, 60},        // 45 !! <ka>
-  {"<kn>", 63, 63},        // 46 !! <kn>
+  {"<kn>", 63, 69},        // 46 !! <kn>  ( in ITU, see decodedSymbol()
   {"7", 63, 63},      // 47
   {"*", 63, 61},      // 48
   {"8", 62, 63},      // 49
@@ -121,11 +121,23 @@ const struct linklist CWtree[69]  = {
   {"<err>", 66, 63},       // 65
   {"<err>", 66, 63},      // 66 !! Error - backspace
   {"*", 63, 68},        // 67
-  {"<bk>", 63, 63}      // 68 <bk>
+  {"<bk>", 63, 63},     // 68 <bk>
+// Nodes for the Decoder Chars preference: "*" in Standard, as before they existed; the
+// letters are substituted by decodedSymbol() (MorseDecoder.cpp) in the display-only modes.
+  {"*", 63, 63},       // 69 -.--.-  )
+  {"*", 63, 63},       // 70 ..-..   é
+  {"*", 63, 63},       // 71 -.-..   ç
+  {"*", 63, 63}        // 72 --.--   ñ
 };
 
 //// we define two classes: M32MorseTable (a pointer to the linked list defined above, and mthods to manipulate the pointer)
 ////                   and  Decoder (which decodes signals from a key or from audio - derived from a Goertzel filter)
+
+// Decoder Chars (posDecoderChars): the symbol to show for a tree node, after the national/ITU
+// substitutions of the active character set. Use this, never CWtree[n].symb directly, for text
+// that is shown or sent on; decoderCharSet() (m32_v6.ino) decides which set is active.
+const char* decodedSymbol(uint8_t node);
+uint8_t decoderCharSet();
 
 class M32MorseTable {
 

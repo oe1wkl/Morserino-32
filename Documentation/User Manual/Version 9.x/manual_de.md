@@ -36,8 +36,15 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=d24b18851fa5 v=9 -->
+<!-- WHATSNEW:BEGIN en=70a80c7b554a v=9 -->
 Was ist neu in Version 9?
+
+**V 9.1**
+
+-   Eine neue Einstellung **Decoder Chars** lässt den Decoder die Buchstaben anderer Sprachen und die Klammern des ITU-Standards anzeigen. Einige Morsecodes bedeuten in verschiedenen Sprachen verschiedene Buchstaben – `.--.-` ist à im Französischen, aber å im Schwedischen, `.-.-` ist ä im Deutschen, aber æ im Dänischen –, daher wählst du einen Satz: **Standard** (wie bisher: `-.--.` ist \<kn>, dazu ä ö ü und ch), **ITU** (`-.--.` ist „(“, dazu „)“ und é, wie in ITU-R M.1677-1), **Fr/Es/Pt** (à é è ç ñ), **Sv/Fi** (å) oder **Da/No** (å, und æ ø an Stelle von ä ö). Sie gilt für CW Keyer, CW Decoder und die Transceiver-Modi; Echo Trainer, Koch Trainer, die Spiele und der QSO Bot verwenden weiterhin Standard, weil sie das Gegebene mit dem vergleichen, was sie selbst gesendet haben. Nicht in der Accessibility Edition, wo dekodierter Text nicht vom Display gelesen wird. Danke an die Tester, die sich französische, spanische, portugiesische und nordische Buchstaben sowie die ITU-Klammern gewünscht haben.
+-   Bei der Bluetooth-Tastaturausgabe werden Buchstaben mit Umlauten oder Akzenten jetzt ohne diese getippt – ä ö ü als ae oe ue, å als aa usw. –, weil das, was eine Tastatur dafür tippt, vom Tastaturlayout des Computers abhängt. Bisher tippten ä ö ü gar nichts.
+
+**V 9.0**
 
 -   Ein einziges Installationsprogramm für jeden Morserino, unter [https://www.morserino.info/install.html](https://www.morserino.info/install.html). Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.
 -   Nur M32 Pocket: Das Installationsprogramm kann nun auch die **Accessibility Edition** installieren, die Menüs und Einstellungen für blinde und sehbehinderte Operatoren laut vorliest (die Spiele sind darin nicht enthalten). Standard- und Accessibility Edition werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln; deine Einstellungen bleiben erhalten.
@@ -3416,7 +3423,7 @@ gespeichert, und das Abrufen eines Schnappschusses verändert sie nie:
     Tx**[, der LoRa-Kanal]{.classic}
 -   Bluetooth-Tastatur-Einstellungen: **BLT Kbd Output**, **BLT \<AR\>**
 -   Audio-Routing: **Headphone Output**, **Decoded on IO**
--   Geräteverhalten: **Encoder Click**, **Quick Start**
+-   Geräteverhalten: **Encoder Click**, **Quick Start**[, **Decoder Chars**]{.classic .pocket}
 -   [Spiel-Einstellungen: **Invader Orient.** sowie die
     QSO-Bot-Einstellungen]{.pocket}[QSO-Bot-Einstellungen]{.classic .pocket-a11y} (**Contest Type**, **QSO Difficulty**)
 
@@ -3626,6 +3633,7 @@ Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot
 | **Generator Tx** | Ermöglicht dem CW-Generator, das Generierte[ entweder über LoRa oder WLAN]{.classic}[über WLAN]{.pocket .pocket-a11y} zu senden – so kann ein Gerät etwas erzeugen und mehrere andere die gleiche Sequenz empfangen. Verwendbar in allen CW-Generator- und Koch/CW-Generator-Modi einschließlich File Player. Nützlich für Lerngruppen. Auf öffentlichen M32-Chat-Servern sollte dies nur mit Vorsicht und nicht über längere Zeit verwendet werden; sehr praktisch hingegen für eine Gruppe im gleichen Netzwerksegment (Broadcast als TrX-Peer oder privater Chat-Server) oder[ über LoRa (oder]{.classic} WiFi Trx mit EspNow[)]{.classic}, wenn alle Teilnehmer nah genug beieinander sind. [*Beim Senden über LoRa muss eine Antenne angeschlossen sein, sonst wird der LoRa-Transceiver irgendwann zerstört!*]{.classic} | [**Tx OFF** (= generierte Morsezeichen nicht aussenden) / LoRa Tx ON (mit LoRa senden) / WiFi Tx ON (mit WLAN senden)]{.classic}[**WiFi Tx OFF** (= generierte Morsezeichen nicht aussenden) / WiFi Tx ON (mit WLAN senden)]{.pocket .pocket-a11y} |
 | **Trx Channel** | Wählt den Kanal für[ LoRa oder]{.classic} EspNow (ein WLAN-Peer-to-Peer-Modus ohne Access Point). [Bei LoRa ist dies ein virtueller Kanal; bei EspNow wird]{.classic}[Dabei wird]{.pocket .pocket-a11y} die Frequenz tatsächlich zwischen WLAN-Kanal 6 (**Standard Ch**) und 1 (**Secondary Ch**) gewechselt. Weitere Informationen zu EspNow findest du in Abschnitt **WiFi Trx**. | **Standard Ch** / Secondary Ch |
 | **Bandwidth** | Legt die Bandbreite fest, die der CW-Decoder verwendet (implementiert in Software als sogenannter Goertzel-Filter). **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz. | **Wide** / Narrow |
+| []{.classic .pocket}**Decoder Chars** | Welche Zeichen für die wenigen Morsecodes angezeigt werden, die in verschiedenen Sprachen verschiedene Buchstaben bedeuten oder die nur der ITU-Standard (ITU-R M.1677-1) kennt. Gilt überall dort, wo dekodierter Text nur gelesen wird: CW Keyer, CW Decoder und die Transceiver-Modi. Echo Trainer, Koch Trainer[, die Spiele]{.pocket} und der QSO Bot verwenden immer **Standard**, weil sie das Gegebene mit dem vergleichen, was sie selbst gesendet haben (mit **ITU** käme ein richtig gegebenes \<kn> sonst als „(“ an und würde als Fehler gezählt).<br/>**Standard**: wie bisher – `-.--.` ist \<kn>, `.-.-` ä, `---.` ö, `..--` ü, `----` ch; unbekannte Codes erscheinen als \*.<br/>**ITU**: wie Standard, aber `-.--.` ist „(“, dazu kommen „)“ (`-.--.-`) und é (`..-..`).<br/>**Fr/Es/Pt** (Französisch, Spanisch, Portugiesisch): wie Standard, dazu à (`.--.-`), é (`..-..`), è (`.-..-`), ç (`-.-..`) und ñ (`--.--`).<br/>**Sv/Fi** (Schwedisch, Finnisch): wie Standard, dazu å (`.--.-`).<br/>**Da/No** (Dänisch, Norwegisch): å (`.--.-`), und æ und ø an Stelle von ä und ö.<br/>Bei der Bluetooth-Tastaturausgabe werden diese Buchstaben ohne Akzente getippt (siehe **Benutzung der Bluetooth-Tastatur-Funktion**). | **Standard** / ITU / *Fr/Es/Pt* / *Sv/Fi* / *Da/No* |
 | **Decoded on I/O** | Normalerweise wird dekodiertes CW von einer externen Quelle (bei Verwendung eines der Transceiver-Modi oder des Decoders für Audiodekodierung) über den Lautsprecher (oder Kopfhörer) abgespielt, aber nicht an den externen Audio-E/A-Anschluss gesendet. Bei Einstellung auf „ON" wird der Ton auch an den externen Audio-E/A-Anschluss gesendet. **Beim M32Pocket wird diese Einstellung ignoriert!** | On / **Off** |
 | **Contest Type** | Nur relevant im **Contest**-Modus des QSO Bots (Abschnitt **QSO Bot**): welcher Contest-Austausch verwendet wird. **CQ WW** sendet 5NN + die CQ-Zone des Bot-Rufzeichens; **WPX/Sprint** sendet 5NN + eine Seriennummer. | **CQ WW** / WPX/Sprint |
 | **QSO Difficulty** | Wie nachsichtig und wie gesprächig der QSO-Bot-Partner ist (alle QSO-Bot-Modi, Abschnitt **QSO Bot**). **Beginner** ist geduldig (mehr Zeit zum Antworten, ein zusätzlicher Versuch), gibt Rapporte voll ausgeschrieben (599 statt 5nn) und verwendet klare, ruhige Aufforderungen. **Advanced** hält ein strafferes Tempo und verwendet knappe Aufforderungen wie von einem erfahrenen Operator. **Intermediate** liegt dazwischen. | Beginner / **Intermediate** / Advanced |
@@ -4438,6 +4446,10 @@ Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wir
 Beachte, dass der Morserino wie eine Tastatur mit US-Tastenlayout
 arbeitet – dies ist ggf. auf dem verwendeten Computer entsprechend
 einzustellen.
+:::
+
+::: note
+Buchstaben mit Umlauten oder Akzenten kann eine Tastatur nicht zuverlässig tippen (welches Zeichen eine Taste ergibt, hängt vom Tastaturlayout des Computers ab), daher tippt der Morserino sie ohne: ä, ö und ü als ae, oe und ue[, und die Buchstaben der Einstellung **Decoder Chars** als å → aa, æ → ae, ø → oe, à → a, é und è → e, ç → c, ñ → n]{.classic .pocket}.
 :::
 
 

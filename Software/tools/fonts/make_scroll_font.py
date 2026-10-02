@@ -1,0 +1,172 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+make_scroll_font.py -- generates IntelOneMono12ptScroll.h, the M32 Pocket's Font Size = Small
+scroll font, from the in-tree copies of DisplayWrapper's IntelOneMono 12pt fonts.
+
+    python3 Software/tools/fonts/make_scroll_font.py
+
+Why the font is re-declared at all: LovyanGFX's GFXfont::getDefaultMetric() - what the scroll
+area's line pitch is computed from - scans every glyph the font declares for the tallest ascent
+and the deepest descent. Over the library's full 0x20-0xFF that hits the font's 29 px placeholder
+boxes and costs the fifth visible line (141 px available). So the font declares only the
+codepoints the firmware draws (CODEPOINTS below), as LovyanGFX EncodeRanges, with its own
+compacted bitmap and glyph tables.
+
+The line-pitch budget is MAX_ASCENT + MAX_DESCENT = 27 px (5 x 27 = 135 <= 141). A few accented
+capitals (A grave, E grave, E acute, N tilde) are taller than that; their bitmaps are squashed
+row by row until they fit - first one row out of the blank gap between accent and letter (a
+one-row gap remains), then the accent's top row. Everything else is copied bit for bit.
+
+After regenerating, verify the table against the LINKED binary (memory note on the 2026-09 umlaut
+fix): a generated comment ending in a backslash once swallowed a table row.
+"""
+import os, re, sys
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+SRC = os.path.normpath(os.path.join(HERE, "..", "..", "src", "Version 6 and newer"))
+OUT = os.path.join(SRC, "IntelOneMono12ptScroll.h")
+FONTS = [("Regular", "IntelOneMono_Regular12pt8b.h"), ("Bold", "IntelOneMono_Bold12pt8b.h")]
+
+MAX_ASCENT, MAX_DESCENT = 20, 7
+
+NAMES = {0xA9: "copyright", 0xC0: "A grave", 0xC4: "A umlaut", 0xC5: "A ring", 0xC6: "AE",
+         0xC7: "C cedilla", 0xC8: "E grave", 0xC9: "E acute", 0xD1: "N tilde", 0xD6: "O umlaut",
+         0xD8: "O slash", 0xDC: "U umlaut", 0xDF: "sharp s", 0xE0: "a grave", 0xE4: "a umlaut",
+         0xE5: "a ring", 0xE6: "ae", 0xE7: "c cedilla", 0xE8: "e grave", 0xE9: "e acute",
+         0xF1: "n tilde", 0xF6: "o umlaut", 0xF8: "o slash", 0xFC: "u umlaut"}
+# Printable ASCII; the splash's (c); German umlauts and sharp s; the Decoder Chars letters
+# (devdocs/language-support/), lower case and - for Output Case = UPPER - capitals.
+CODEPOINTS = sorted(set(range(0x20, 0x7F)) | set(NAMES))
+
+
+def load(path):
+    t = open(path, encoding="utf-8").read()
+    bm = t[t.index("Bitmaps[]"):t.index("Glyphs[]")]
+    bm = [int(x, 16) for x in re.findall(r"0x([0-9A-Fa-f]{2})", bm[bm.index("{"):])]
+    g = t[t.index("Glyphs[]"):]
+    glyphs = [tuple(map(int, r)) for r in
+              re.findall(r"\{\s*(\d+),\s*(\d+),\s*(\d+),\s*(\d+),\s*(-?\d+),\s*(-?\d+)\s*\}", g)]
+    first = int(re.search(r"Glyphs,\s*0x([0-9A-Fa-f]+)", t).group(1), 16)
+    return bm, glyphs, first
+
+
+def rows_of(bm, off, w, h):
+    bits = []
+    for b in bm[off:off + (w * h + 7) // 8]:
+        bits += [(b >> (7 - i)) & 1 for i in range(8)]
+    return [bits[y * w:(y + 1) * w] for y in range(h)]
+
+
+def pack(rows):
+    bits = [b for r in rows for b in r]
+    bits += [0] * (-len(bits) % 8)
+    return [int("".join(map(str, bits[i:i + 8])), 2) for i in range(0, len(bits), 8)]
+
+
+def squash(rows, yo):
+    """Drop rows until the glyph's ascent (-yo) is within MAX_ASCENT. Returns rows, yo, note."""
+    dropped = []
+    while -yo > MAX_ASCENT:
+        blank = [not any(r) for r in rows]
+        gap = next((i for i in range(1, len(rows) - 1) if blank[i] and blank[i + 1]), None)
+        if gap is not None:
+            del rows[gap]; dropped.append("gap row")
+        else:
+            del rows[0]; dropped.append("top row")
+        yo += 1
+    return rows, yo, ", ".join(dropped)
+
+
+def label(cp):
+    if cp in NAMES: return NAMES[cp]
+    if cp == 0x20: return "space"
+    if cp == 0x5C: return "backslash"      # never a raw backslash: it would end the comment line
+    return "'%s'" % chr(cp)
+
+
+def ranges(cps):
+    out, base = [], 0
+    for cp in cps:
+        if out and cp == out[-1][1] + 1: out[-1][1] = cp
+        else: out.append([cp, cp, base])
+        base += 1
+    return out
+
+
+def build(style, fname):
+    bm, glyphs, first = load(os.path.join(SRC, fname))
+    data, table = [], []
+    for i, cp in enumerate(CODEPOINTS):
+        off, w, h, xa, xo, yo = glyphs[cp - first]
+        rows = rows_of(bm, off, w, h)
+        rows, yo, note = squash(rows, yo)
+        h = len(rows)
+        if -yo > MAX_ASCENT or h + yo > MAX_DESCENT:
+            sys.exit("0x%02X %s: ascent %d / descent %d over budget" % (cp, style, -yo, h + yo))
+        comment = "[%3d] 0x%02X %s" % (i, cp, label(cp)) + ("  (squashed: %s)" % note if note else "")
+        table.append((len(data), w, h, xa, xo, yo, comment))
+        data += pack(rows)
+    return data, table
+
+
+def emit():
+    rs = ranges(CODEPOINTS)
+    L = []
+    L.append("#ifndef INTELONEMONO12PT_SCROLL_H_")
+    L.append("#define INTELONEMONO12PT_SCROLL_H_")
+    L.append("")
+    L.append("// GENERATED by Software/tools/fonts/make_scroll_font.py - do not edit by hand; change the")
+    L.append("// script and re-run it. Source glyphs: the in-tree IntelOneMono_{Regular,Bold}12pt8b.h, which")
+    L.append("// are byte-identical to DisplayWrapper's copies and are read only by that script.")
+    L.append("//")
+    L.append("// Small scroll-area font on the M32 Pocket (posScrollFont == Small): DisplayWrapper's")
+    L.append("// IntelOneMono 12pt, re-declared over just the codepoints this firmware draws - printable ASCII,")
+    L.append("// the splash's (c), the German umlauts and the Decoder Chars letters - with its own compacted")
+    L.append("// bitmaps. LovyanGFX's getDefaultMetric() (the scroll area's line pitch) scans every declared")
+    L.append("// glyph for the tallest ascent and deepest descent; over the library's full 0x20-0xFF it hits")
+    L.append("// 29 px placeholder boxes and costs the fifth line. Here the budget is ascent %d + descent %d ="
+             % (MAX_ASCENT, MAX_DESCENT))
+    L.append("// %d px, 5 x %d = %d <= 141 px available. Accented capitals taller than that are squashed by a"
+             % (MAX_ASCENT + MAX_DESCENT, MAX_ASCENT + MAX_DESCENT, 5 * (MAX_ASCENT + MAX_DESCENT)))
+    L.append("// row or two (marked below); every other glyph is the library's bitmap bit for bit.")
+    L.append("")
+    L.append("#include <LovyanGFX.hpp>")
+    L.append("")
+    L.append("// start, end, base: base is the index into the glyph table at which `start` sits.")
+    L.append("static const lgfx::EncodeRange IntelOneMono12ptScrollRanges[] PROGMEM = {")
+    for s, e, b in rs:
+        what = "printable ASCII" if (s, e) == (0x20, 0x7E) else " .. ".join(
+            dict.fromkeys([label(s), label(e)]))
+        L.append("  { 0x%02X, 0x%02X, %3d },   // %s" % (s, e, b, what))
+    L.append("};")
+    L.append("#define INTELONEMONO12PT_SCROLL_RANGES %d" % len(rs))
+    for style, fname in FONTS:
+        data, table = build(style, fname)
+        name = "IntelOneMono_%s12pt8b_Scroll" % style
+        L.append("")
+        L.append("static const uint8_t %sBitmaps[] PROGMEM = {" % name)
+        for i in range(0, len(data), 16):
+            L.append("  " + ", ".join("0x%02X" % b for b in data[i:i + 16]) + ",")
+        L.append("};")
+        L.append("")
+        L.append("static const lgfx::GFXglyph %sGlyphs[] PROGMEM = {" % name)
+        for off, w, h, xa, xo, yo, c in table:
+            L.append("  { %5d, %3d, %3d, %3d, %4d, %4d },   // %s" % (off, w, h, xa, xo, yo, c))
+        L.append("};")
+        L.append("")
+        L.append("const lgfx::GFXfont %s PROGMEM = {" % name)
+        L.append("  (uint8_t *) %sBitmaps," % name)
+        L.append("  (lgfx::GFXglyph *) %sGlyphs," % name)
+        L.append("  0x%02X, 0x%02X, 32," % (CODEPOINTS[0], CODEPOINTS[-1]))
+        L.append("  INTELONEMONO12PT_SCROLL_RANGES, (lgfx::EncodeRange *) IntelOneMono12ptScrollRanges")
+        L.append("};")
+    L.append("")
+    L.append("#endif")
+    assert not any(l.endswith("\\") for l in L), "a generated line ends in a backslash"
+    open(OUT, "w", encoding="utf-8").write("\n".join(L) + "\n")
+    print("wrote %s: %d glyphs, %d ranges" % (OUT, len(CODEPOINTS), len(rs)))
+
+
+if __name__ == "__main__":
+    emit()

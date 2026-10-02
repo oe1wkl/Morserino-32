@@ -297,9 +297,9 @@ void MorseBluetooth::bluetoothTypeCharacter(const char chr)
 	{
 		// translate character to key combination
 		uint8_t val = (uint8_t)chr;
-		if (val > KEYMAP_SIZE)
+		if (val >= KEYMAP_SIZE)
 			return; // character not available on keyboard - skip
-		KEYMAP map = keymap[chr];
+		KEYMAP map = keymap[val];   // not keymap[chr]: char is signed, a UTF-8 byte would index below the table
 
 		// create input report
 		InputReport report = {
@@ -342,6 +342,25 @@ static void bluetoothTypeShiftReturn(void)
     }
 }
 
+// A HID keyboard sends key positions, not characters, and which character a position types depends
+// on the host's keyboard layout - so the decoder's national letters (ä ö ü, and the Decoder Chars
+// ones) are typed transliterated: å -> aa, æ -> ae, ø -> oe, é -> e, ... Argument: the second byte
+// of a UTF-8 0xC3 pair. Anything else types nothing.
+static const char* asciiForLatin1(uint8_t b) {
+    switch (b) {
+        case 0xA4: case 0xA6: return "ae";   case 0x84: case 0x86: return "AE";   // ä æ  Ä Æ
+        case 0xB6: case 0xB8: return "oe";   case 0x96: case 0x98: return "OE";   // ö ø  Ö Ø
+        case 0xBC:            return "ue";   case 0x9C:            return "UE";   // ü    Ü
+        case 0xA5:            return "aa";   case 0x85:            return "AA";   // å    Å
+        case 0xA0:            return "a";    case 0x80:            return "A";    // à    À
+        case 0xA8: case 0xA9: return "e";    case 0x88: case 0x89: return "E";    // è é  È É
+        case 0xA7:            return "c";    case 0x87:            return "C";    // ç    Ç
+        case 0xB1:            return "n";    case 0x91:            return "N";    // ñ    Ñ
+        case 0x9F:            return "ss";                                        // ß
+        default:              return "";
+    }
+}
+
 void MorseBluetooth::bluetoothTypeString(const String& str) {
     // Build a local modified copy only when needed
     String modified;
@@ -372,6 +391,10 @@ void MorseBluetooth::bluetoothTypeString(const String& str) {
         char c = (*toSend)[i];
         if (c == '\v')
             bluetoothTypeShiftReturn();
+        else if ((uint8_t) c == 0xC3 && i + 1 < toSend->length()) {     // UTF-8 letter: type it in ASCII
+            for (const char* a = asciiForLatin1((uint8_t) (*toSend)[++i]); *a; ++a)
+                bluetoothTypeCharacter(*a);
+        }
         else
             bluetoothTypeCharacter(c);
     }
