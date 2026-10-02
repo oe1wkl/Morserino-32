@@ -717,7 +717,7 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     // Custom chars stored in snapshots
     JsonObject custom = snap.createNestedObject("customChars");
     custom["active"] = (useCustom != 0);
-    custom["characters"] = customSet;
+    custom["characters"] = codesToUtf8(customSet);   // raw codes, national letters as UTF-8
 
     // All pliste[] parameters that snapshots actually contain (training settings;
     // device/hardware/game settings are excluded — see storedInSnapshot())

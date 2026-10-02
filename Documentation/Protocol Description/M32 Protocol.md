@@ -69,6 +69,19 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	Everything else is additive: no command or property from 1.3 changed its
 	shape or its meaning.
 
+	Additions made within protocol version 1.4, which did not change the
+	version number:
+
+	October 2, 2026: the Practice Set commands (GET practicechars,
+	PUT practicechars/set/<characters>, PUT practicechars/clear), in the
+	firmware since 9.0 but not described here until now, are documented
+	(section "Practice Set"). From firmware 9.1 the character sets of
+	customchars, practicechars and GET snapshot/<n> may also contain round
+	brackets and letters with umlauts and accents, sent and accepted as
+	UTF-8 (section "Custom Character Set"). Firmware 9.1 also answers
+	GET practicechars over BLE Serial; earlier firmware sent that reply to
+	USB only.
+
 	Additions made within protocol version 1.3, which did not change the
 	version number:
 
@@ -746,6 +759,8 @@ Example:
 
 This sets and enables a custom Koch character set. The `<characters>` string contains the characters to be used, in the desired order. Note: `<characters>` is case-sensitive in the protocol (it is the third argument, which is not lowercased by the command parser).
 
+Character sets in this command, in `GET customchars`, in `GET snapshot/<n>` and in the Practice Set commands below use the device's own one-character codes: lower-case letters, digits and punctuation as themselves, and the prosigns as upper-case letters (`S` = \<as>, `A` = \<ka>, `N` = \<kn>, `K` = \<sk>, `E` = \<ve>, `B` = \<bk>, `H` = ch). From firmware 9.1 a set may also contain the round brackets and the letters with umlauts and accents that have a Morse code – ä ö ü é è à ç ñ å æ ø – written as ordinary UTF-8 characters, both ways; an accented capital (É) is stored as its small letter, and accented letters without a Morse code (á, ê, …) are stored as the plain letter.
+
 Example:
 
 	PUT customchars/set/mkrsuaptlowi
@@ -762,6 +777,25 @@ load its content, overwriting anything injected with this command.
 `PUT customchars/clear`
 
 This disables and clears the custom Koch character set. The Koch trainer will revert to the sequence selected by the "Koch Sequence" parameter.
+
+
+### Practice Set
+
+`GET practicechars`
+
+This returns the Practice Set – the character pool of the **Practice Set** entries of CW Generator and Echo Trainer, and of **Boost Practice** – in property "characters" (type String, empty if not set), in the same one-character codes as the custom character set above.
+
+Example:
+
+	{"practicechars":{"characters":"kmré"}}
+
+`PUT practicechars/set/<characters>`
+
+This sets the Practice Set (at most 24 characters; it is stored immediately and is not part of any snapshot). `<characters>` is case-sensitive, as for `customchars`.
+
+`PUT practicechars/clear`
+
+This clears the Practice Set.
 
 
 ### Player Identity

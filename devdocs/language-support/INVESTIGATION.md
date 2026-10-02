@@ -133,3 +133,37 @@ to give back voice-store space now.
   help text.
 - **Owed:** bench test on both variants — each value in CW Keyer and Decoder, Output Case UPPER, Font Size Small,
   a Trx pair, Bluetooth keyboard output; and one Echo Trainer round with ITU set (`<kn>` must still count as right).
+
+## Phase 2 — the letters in user-defined training (branch `generator-national-chars`, 2026-10-02)
+
+Willi's afterthought: should the file player, Custom Chars and the Practice Set allow the new characters too?
+Key point: **letter → code is unambiguous; only code → letter needs the language.** So generation needs no setting,
+and the Echo Trainer can judge by the target word. Decisions (Willi, all as recommended): do it; ä ö ü in files get
+their own codes (no longer ae oe ue); the Practice Set picker offers the letters of the chosen Decoder Chars set
+(Standard and the a11y edition: ä ö ü ch); the new letters stay unvoiced in the a11y edition for now.
+
+- **One-byte codes.** The generator is byte-based (CWchars[] ↔ pool[] by byte index; Koch/custom/practice sets and the
+  echo comparison by `char`). National letters now travel as their Latin-1 byte (ä = 0xE4 …), like prosigns travel
+  as one capital letter. `CWchars[]` gained ä ö ü ch ( ) é è à ç ñ å æ ø at 51–64 and `pool[]` the matching
+  entries, with a `static_assert` that the two stay in step. **Latent bug fixed on the way:** ä ö ü used to sit in
+  CWchars as UTF-8 (two bytes each), so their byte positions no longer matched pool[] and `H` (ch) indexed past its
+  end — harmless only because nothing could generate them.
+- **Conversions at the edges** (m32_v6.ino): `foldLatin1()` is the one mapping (letters with a code → code; other
+  accented letters → plain letter; ß → ss; capitals → small). In: `utf8umlaut()` (file text, hence also Custom Chars
+  from /player.txt), `encodeProSigns()` (decoded text, so the echo comparison sees codes), `utf8ToCodes()` (protocol
+  PUT customchars/practicechars). Out: `cleanUpProSigns()` (everything displayed), `codesToUtf8()` (protocol GET
+  customchars/practicechars/snapshot, practice statistics keys).
+- **Echo Trainer** joins the Decoder Chars modes; `decodedSymbol()` first returns, for a code that stands for several
+  characters, the one the target word contains (`(`/<kn>, à/å, ä/æ, ö/ø, and é è ç ñ `)` which Standard shows as `*`).
+  Plain equality comparison is unchanged; a genuine error in Standard still shows `*`.
+- **Voice:** the extractor keys ä ö ü by their codes (same clips, same pack stamp — nothing to re-render).
+- **Host tests** (scratch, not committed): the real `foldLatin1/utf8ToCodes/codesToUtf8/encodeProSigns/cleanUpProSigns/
+  utf8umlaut/cleanUpText` and `generateCWword` with the real `pool[]` extracted from m32_v6.ino and compiled against a
+  String shim — 15 file words, 8 decoded symbols, 17 generated codes, all as intended.
+- **Found while here, fixed on master** (50ad66b, 9.1): `[ka]` `[p]` `[t]` in player files were sent as plain letters
+  (brackets swapped only in the output of `utf8umlaut()`), and `GET practicechars` wrote to raw `Serial` (rule 9).
+- **Docs:** manuals EN+DE (file encoding, Custom Chars, Practice Set, Decoder Chars row), changelog + what's-new,
+  protocol description (character-set encoding; Practice Set commands, previously undocumented), Config Tool help.
+- **Owed (bench):** a player.txt with "café für smörgåsbord niño (test) [kn] [p]" — sent codes, display (both Output
+  Case settings, Font Size Small), Echo Trainer on it with Decoder Chars Standard and Sv/Fi; Custom Chars from that
+  file; Practice Set picker per set; a11y Pocket: picker speaks ä ö ü ch; GET/PUT practicechars with é over USB and BLE.
