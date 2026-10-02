@@ -508,3 +508,18 @@ run network tools from Terminal. And `reference_peer.py` skips every reply that 
 correct `NACK(busy)` reads as "no HELLO_ACK — wrong host, wrong PSK, or the Rig unit is not listening";
 `hello_probe.py` names the reply. Its HELLO_ACK path (a free Rig: it releases the won session with three BYEs) is
 not yet exercised on hardware.
+
+### Accessibility Edition as Remote Keyer, 2026-10-02 — link voicing and timing
+
+After B8 (spoken link status) the keying branch of `loop()` carries one extra test in the Accessibility build
+(`MorseVoice::busy()`, to cut a clip when CW starts), so the a11y Pocket was benched as Keyer against the classic
+Rig (`-D KIP_MEASURE=1`, 25 WPM, `PUT cw/repeat`, 3 min; driver `bench_run.py` with the a11y build's menu number 49
+and a `menu/stop` first, because the classic now Quick-Starts into Remote Rig):
+
+- **Transport:** 981 marks, 916 spaces, all reproduced within ±0.09 ms (−84..+89 µs), 0 shortened, 0 late, 0
+  protocol errors — the same as the standard edition.
+- **Keyer intervals** (the Keyer's own timestamps, `KIPT`): dit 42.1 ms, dah ~137.5 ms, element space ~53 ms,
+  character gap ~151 ms — exactly the generator's known 6 ms (cw-timing-audit FINDINGS: "a 48 ms dit arrives as
+  42 ms"), unchanged by the a11y build. The paddle path carries the identical check but cannot be scripted.
+- **By ear (Willi):** "Connecting", "Calling rig", "Linked to rig", "Link lost", "Link restored" all heard;
+  keying during an announcement cuts it and the sidetone is there at once.
