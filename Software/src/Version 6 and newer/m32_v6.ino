@@ -4458,13 +4458,16 @@ String utf8umlaut(const String& s) {    // Replacement table: pattern → replac
     static char buf[512];       // player text can be up to ~250 chars
     int out = 0;
     const int bufMax = sizeof(buf) - 1;
-    const char* src = s.c_str();
-    int len = s.length();
+    // [ka] is the same as <ka> (manual, File Player). Normalised BEFORE matching: until 2026-10 the
+    // brackets were swapped only in the output, so the table below never saw "<ka>" - [ka] [p] [t]
+    // came out as the plain letters "ka", "p", "t" (cleanUpText() drops the stray < >).
+    String n = s;
+    n.replace('[', '<');
+    n.replace(']', '>');
+    const char* src = n.c_str();
+    int len = n.length();
  
     for (int i = 0; i < len && out < bufMax; ) {
-        // Handle [ → < and ] → >
-        if (src[i] == '[') { buf[out++] = '<'; ++i; continue; }
-        if (src[i] == ']') { buf[out++] = '>'; ++i; continue; }
  
         // Try each pattern at current position
         bool matched = false;
