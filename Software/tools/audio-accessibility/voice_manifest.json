@@ -198,6 +198,8 @@
     "Length Calls": "a509fbf6",
     "Length Words": "b844bc3b",
     "Linefeed": "1d909581",
+    "Link lost": "bdedbc86",
+    "Link restored": "d35c36b4",
     "Linked to rig": "ad01bb85",
     "LoRa Band": "9bc4ca24",
     "LoRa Power": "d7dac8bf",
@@ -907,6 +909,8 @@
     "2ccc7c9b": "line out with variable volume",
     "07cb954b": "line-out",
     "1d909581": "Linefeed",
+    "bdedbc86": "Link lost",
+    "d35c36b4": "Link restored",
     "ad01bb85": "Linked to rig",
     "9bc4ca24": "LoRa Band",
     "b430d983": "LoRa frequency",
@@ -1066,14 +1070,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "3c86de83",
+  "pack_stamp": "c80488c6",
   "counts": {
     "menu": 42,
     "pref_labels": 56,
     "option_values": 183,
     "actions": 28,
-    "phrases_total": 338,
+    "phrases_total": 340,
     "atoms_total": 138,
-    "clips_total": 540
+    "clips_total": 542
   }
 }

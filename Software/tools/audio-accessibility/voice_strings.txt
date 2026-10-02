@@ -381,6 +381,8 @@ line out Speaker Muted
 line out with variable volume
 line-out
 Linefeed
+Link lost
+Link restored
 Linked to rig
 LoRa Band
 LoRa frequency

@@ -414,7 +414,16 @@ void MorseKipKeyer::tick() {
     if (link != gShownLink) {               // only on a change: a redraw is longer than a dit
         gShownLink = link;
         updateTopLine();
+        // Accessibility Edition: the top-bar logo is all a sighted operator gets; a blind one hears it (TODO B8).
+        MorseVoice::announce(link ? "Link restored" : "Link lost");
     }
+#ifdef CONFIG_AUDIO_A11Y
+    // tick() is called from here only - the global loop's idle branch, between characters, never while an element
+    // is timed (doPaddleIambic() busy returns before this). It only checks the clip and posts to the audio task's
+    // mailbox; the decoding runs in the audio task. A clip that is still playing when keying starts is cut in the
+    // keying branch (MorseVoice::busy() in loop()), so it never mutes the sidetone.
+    MorseVoice::tick();
+#endif
 }
 
 bool MorseKipKeyer::begin() {

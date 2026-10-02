@@ -117,7 +117,8 @@ TEXT_ENTRY_WORDS = ["space"]
 # Remote Keyer status (MorseKipKeyer.cpp, TODO B8): drawn, not table-driven. Short on purpose - the voice
 # store is nearly full - and spoken as one sentence where the display breaks a hint over two lines.
 KIP_KEYER_WORDS = ["Connecting", "Calling rig", "Linked to rig", "No pass phrase set", "No rig address set",
-                   "Rig address not found", "No answer from the rig", "Out of memory"]
+                   "Rig address not found", "No answer from the rig", "Out of memory",
+                   "Link lost", "Link restored"]          # link changes while in the mode (idle gaps only)
 
 # User-editable pronunciation overrides (spoken_overrides.tsv): firmware string -> spoken text.
 # Highest priority -- lets the maintainer hand-tune how any entry / option / label is pronounced.

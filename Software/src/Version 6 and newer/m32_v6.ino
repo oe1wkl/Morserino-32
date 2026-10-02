@@ -1216,10 +1216,20 @@ void loop() {
 #ifdef CONFIG_M32KIP
       case kipKeyer:      // Remote Keyer: the CW Keyer's body exactly, so it behaves like the CW Keyer
                           if (doPaddleIambic(leftKey, rightKey)) {
+#ifdef CONFIG_AUDIO_A11Y
+                              // A spoken link status must never play over keying: voice and sidetone share the
+                              // one mixer input, so the clip would mute the operator's sidetone. One cheap test;
+                              // stop() posts a single mailbox command and only runs once per announcement.
+                              if (MorseVoice::busy()) MorseVoice::stop();
+#endif
                               return;                                                        // busy keying: tight loop, nothing else
                           }
-                          if (playCW)
+                          if (playCW) {
+#ifdef CONFIG_AUDIO_A11Y
+                              if (MorseVoice::busy()) MorseVoice::stop();                    // same reason as above
+#endif
                               generateCW();                                                  // a recalled memory: keyOut() sends it on
+                          }
                           else
                               MorseKipKeyer::tick();                                         // link state, and only in a gap
                           break;

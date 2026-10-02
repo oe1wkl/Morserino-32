@@ -244,6 +244,14 @@ void MorseVoice::tick() {
 #endif
 }
 
+bool MorseVoice::busy() {
+#ifdef CONFIG_AUDIO_A11Y
+    return playing || seqPos < seqLen || pendLen > 0 || warnActive;
+#else
+    return false;
+#endif
+}
+
 void MorseVoice::stop() {
 #ifdef CONFIG_AUDIO_A11Y
     if (warnActive)                     // "any input silences the announcement" applies to the
