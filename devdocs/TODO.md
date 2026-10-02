@@ -231,13 +231,13 @@ command line).
    and before/after any stop; find out why the link drops (host power management, supervision timeout,
    connection parameters — a long soak with a central that logs disconnect reasons); check whether the 5 s
    blocking delay on the event task delays or breaks the reconnect.
-3. **Decoder: ITU-R M.1677-1 characters — decision needed.** The decoder already knows `. , : ? ' - / " = + @`
-   (and `; !`, the prosigns, ä ö ü and ch). Against M.1677-1 only three are missing: **é** (`..-..`, decodes as
-   `*` today), **`)`** (`-.--.-`, `*` today) and **`(`** (`-.--.`), which is **`<kn>`** in amateur practice — the
-   conflict Willi pointed out. Options: decode `)` and é in any case (no conflict); keep `-.--.` as `<kn>` (ham
-   practice) unless a new decoder preference selects ITU; further national characters (French à ç è, Spanish ñ,
-   Scandinavian å æ ø, …) depend on the glyphs existing in the OLED and TFT fonts — to be checked per character
-   (see the small-font umlaut episode). Willi: **Koch character sets stay unchanged** (established in schools).
+3. **Decoder: ITU brackets and national characters.** Willi (2026-10-02): `-.--.` stays `<kn>` by default, a
+   decoder preference may select `(`; Koch sets untouched; decoder-only options are **compiled out of the a11y
+   edition**. Investigation of French/Spanish/Portuguese/Nordic support done: `devdocs/language-support/
+   INVESTIGATION.md` — fonts are not the blocker (OLED and Pocket fonts have every letter except Font Size Small),
+   three codes are genuinely ambiguous between languages (`.--.-` à/å, `.-.-` ä/æ, `---.` ö/ø), so a single
+   selector; **four questions for Willi** there. Prerequisite: the voice extractor must model the a11y build
+   (it renders clips for code the a11y edition never compiles — the games already waste space that way).
 4. **Minimum word length for the Echo Trainer (and the generator) — feature.** Today only **Length Words**
    exists (a maximum). A user wants a minimum too, to train long words. A new `prefPos` (three parallel arrays,
    CLAUDE.md §3 rule 10), word-source filtering for min ≤ length ≤ max (with a sane fallback when the filter
