@@ -328,6 +328,13 @@ unsigned long stopSummaryUntil = STOP_SUMMARY_IDLE;
 String lastWord = "";                             // for maxSequence
 
 unsigned long genTimer;                           // timer used for generating morse code in trainer mode
+// keyOut() blocks this long on BOTH edges (tone on + wait, then the key line; wait + tone off, then the key line), so
+// the key line moves this much after the call. For generated CW the delays cancel over a mark (start the timer, then
+// key down; on expiry key up), and a space must leave them out: the next key-down asserts the line that much later.
+// The generator used to subtract it from the MARK instead - every mark 6 ms short and every space 6 ms long on the
+// key line (a 48 ms dit sent as 42 ms, dah/dit 3.21; cw-timing-audit FINDINGS, TODO B5). The paddle keyer always
+// did this right (corrTime in doPaddleIambic()). Only the sidetone path blocks; LoRa/WiFi Trx use rx... timings.
+static const int KEYOUT_EDGE_MS = 6;
 
 enum MORSE_TYPE {KEY_DOWN, KEY_UP };              //   State Machine Defines
 unsigned char generatorState;
@@ -2570,7 +2577,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             if (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value == DISP_ONLY)
                 genTimer = millis() + 2;      // very short timing
             else if (morseState != loraTrx && morseState != wifiTrx)
-                genTimer = millis() + (c == '1' ? ditLength-6 : dahLength-6);           // start a dit or a dah, acording to the next element, correct for slightly loner dit and dah, see output routine
+                genTimer = millis() + (c == '1' ? ditLength : dahLength);       // start a dit or a dah: full length, keyOut()'s waits cancel over a mark
             else
                 genTimer = millis() + (c == '1' ? rxDitLength : rxDahLength);
             if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1)             // send the element to transmit buffer
@@ -2632,7 +2639,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                     }
                 }
                 else {
-                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : interWordSpace) ;  // we need a pause for interWordSpace
+                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : interWordSpace - KEYOUT_EDGE_MS) ;  // we need a pause for interWordSpace
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1) {                                   // in generator mode and we want to send with LoRa
                           cwForTx(0);
                           cwForTx(3);                           // as we have just finished a word
@@ -2651,10 +2658,10 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 if (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value == DISP_ONLY)
                     genTimer = millis() +1;
                 else
-                    genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterCharacterSpace : wordDoublerICS());          // pause = intercharacter space
+                    genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterCharacterSpace : wordDoublerICS() - KEYOUT_EDGE_MS);          // pause = intercharacter space
              }
              else  {                                                                                                   // we are in the middle of a character
-                genTimer = millis() + ((morseState == loraTrx  || morseState == wifiTrx) ? rxDitLength : ditLength);                              // pause = interelement space
+                genTimer = millis() + ((morseState == loraTrx  || morseState == wifiTrx) ? rxDitLength : ditLength - KEYOUT_EDGE_MS);                              // pause = interelement space
              }
              generatorState = KEY_UP;                               // next state = key up = pause
              break;
