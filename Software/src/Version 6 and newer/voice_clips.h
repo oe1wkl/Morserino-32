@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "c80488c6"
+#define VOICE_PACK_STAMP "15c7ad3e"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -265,13 +265,10 @@ static const VoiceEntry voiceLookup[] = {
   {"Europe", "912d59cd"},
   {"External polarity", "975056be"},
   {"Fallback", "882277bd"},
-  {"Fight Pileup", "bad4eb31"},
   {"File Player", "0af9cd2b"},
   {"Flip Screen", "9c0118ac"},
   {"Forever", "97055d26"},
-  {"Fox Hunt", "c0a368cb"},
   {"Foxtrot", "69a577fa"},
-  {"Games", "251bd814"},
   {"Garnet", "9a1d4889"},
   {"Generated", "5c5f0644"},
   {"Generator Tx", "9cbb447b"},
@@ -290,7 +287,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Intermediate", "b57ed7a0"},
   {"Interp+ProSn", "2b4f9063"},
   {"Interpunct.", "6dfd2bbc"},
-  {"Invader orientation", "2947f34b"},
   {"Juliett", "fbc40751"},
   {"Key external transmitter", "aac42999"},
   {"Keyed", "75886b07"},
@@ -304,7 +300,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Koch Trainer", "dd245100"},
   {"LCWO", "894ae206"},
   {"LICW Carousel", "1da54a69"},
-  {"Landscape", "815dff01"},
   {"Latency", "26ae7bdd"},
   {"Learn New Chr", "a5190fa8"},
   {"Lemonade", "68c2ed4b"},
@@ -322,12 +317,9 @@ static const VoiceEntry voiceLookup[] = {
   {"M32", "91a34118"},
   {"Mandarin", "76c06512"},
   {"Maximum number of words", "df97b070"},
-  {"Memory Chain", "ad6622d5"},
   {"Mike", "1b83d5da"},
   {"Mixed", "699b4f79"},
   {"Moderate", "1eb79d43"},
-  {"Morse Invaders", "62b14d61"},
-  {"Morsel", "77c0c2db"},
   {"Morserino 32 accessibility edition", "7c18d4c3"},
   {"N America", "122c4611"},
   {"NO SNAPSHOTS", "ef59a97a"},
@@ -365,7 +357,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Phones", "a7ad04a9"},
   {"Phrase saved", "1d19ffbb"},
   {"Plain", "4cd84132"},
-  {"Portrait", "1c7444be"},
   {"Practice Set", "2c91ef54"},
   {"Practice Stats", "eaac0f5b"},
   {"Preview Char", "7985265a"},
@@ -375,7 +366,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Quebec", "9f9619c6"},
   {"Quick Start", "411eaaaa"},
   {"RECALLSnapshot", "b72453f6"},
-  {"Radio Cave", "d71afeab"},
   {"Random", "64663f46"},
   {"Random Groups", "f81f2487"},
   {"Random group length", "dcb6a189"},
@@ -420,7 +410,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Tone Shift", "306688bc"},
   {"Tone Softness", "8b90cb8d"},
   {"Too short", "c012e2a8"},
-  {"Trailblazer", "43a3ec3a"},
   {"Transceiver", "6d3a63f4"},
   {"Transceiver channel", "ae283e65"},
   {"UPPER", "9e43f529"},
@@ -429,8 +418,6 @@ static const VoiceEntry voiceLookup[] = {
   {"Uniform", "f19516d1"},
   {"Unlimited", "545f6c2f"},
   {"Up 1 Half", "4f895838"},
-  {"Update Firmw", "b6ec3174"},
-  {"Upload File", "fbb7d719"},
   {"VBand Kbd", "89011465"},
   {"VBand+Decoded", "4dd3f70a"},
   {"VK/ZL", "0df8dc4a"},
@@ -488,7 +475,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 474;
+static const unsigned int voiceLookupCount = 461;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 

@@ -4,8 +4,9 @@ Generates the on-device voice clips for the **M32 Pocket Accessibility** firmwar
 Design + rationale: [`devdocs/audio-accessibility/IMPLEMENTATION_PLAN.md`](../../../devdocs/audio-accessibility/IMPLEMENTATION_PLAN.md).
 
 ## Files
-- `extract_voice_strings.py` — reads the firmware tables (config-aware for the Pocket
-  build) and emits `voice_strings.txt` (one clip per line) + `voice_manifest.json`
+- `extract_voice_strings.py` — reads the firmware tables as the Accessibility Edition
+  compiles them (macros taken from `[env:pocketwroom-accessibility]` in `platformio.ini`,
+  so anything that env leaves out — the games, Font Size, Upload File — gets no clip) and emits `voice_strings.txt` (one clip per line) + `voice_manifest.json`
   (phrase→clip-id, and character/prosign/number → ordered clip-id list for on-device
   composition). Re-run when menu/preference entries change.
 - `generate_audio.sh` — renders one mono MP3 per line into `Software/src/data/voice/`.

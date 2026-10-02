@@ -12,8 +12,8 @@ Emits every distinct clip the on-device voice engine needs, in two groups:
                 Prosigns / snapshot readouts / "NN char X" / the WpM-volume HUD are
                 built by *sequencing* atoms, so no per-prosign clip is stored.
 
-Reads the firmware's own tables (config-aware for the pocketwroom build) so the set
-regenerates when entries change. Outputs (next to this script):
+Reads the firmware's own tables, as the Accessibility Edition (pocketwroom-accessibility)
+compiles them, so the set regenerates when entries change. Outputs (next to this script):
   voice_strings.txt   all distinct clip texts, deduped + sorted  (feeds generate_audio.sh)
   voice_manifest.json phrases{text:slug}, characters{char:[slug,...]}, collisions, counts
 
@@ -26,14 +26,53 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 SRC = os.environ.get("M32_SRC", os.path.normpath(
     os.path.join(HERE, "..", "..", "src", "Version 6 and newer")))
 
-POCKET_MACROS = {
-    "CONFIG_TFT", "CONFIG_CW_GAME", "CONFIG_QSO_BOT", "CONFIG_SOUND_I2S",
-    "CONFIG_BLUETOOTH_KEYBOARD", "CONFIG_BLE_SERIAL", "LORA_DISABLED", "CONFIG_ENGLISH_OXFORD",
-    "CONFIG_TLV320AIC3100", "CONFIG_MCP73871", "CONFIG_DECODER_I2S",
-    "CONFIG_BATMEAS_PIN", "ARDUINO_USB_MODE", "ARDUINO_USB_CDC_ON_BOOT",
-    "CONFIG_PRACTICE_STATS",
-    "CONFIG_M32KIP",
-}
+# The tables are evaluated as the ACCESSIBILITY EDITION compiles them -- the only build that
+# plays these clips. The macro set is read from that env's build_flags in platformio.ini, not
+# hand-listed: a hand list (the standard Pocket's, until 2026-10) rendered clips for code the
+# a11y build never compiles -- the games, Font Size, Upload File / Update Firmw -- spending the
+# nearly full voice store on entries a blind operator can never reach.
+A11Y_ENV = os.environ.get("M32_A11Y_ENV", "pocketwroom-accessibility")
+PIO_INI = os.path.normpath(os.path.join(SRC, "..", "platformio.ini"))
+
+def pio_macros(ini_path, env):
+    """-D macros of [env:<env>]: follows `extends`, expands ${section.key}, applies build_unflags."""
+    sections, cur = {}, None
+    with open(ini_path, encoding="utf-8") as f:
+        for raw in f:
+            line = re.sub(r"(^|\s);.*$", "", raw.rstrip("\n"))      # full-line and inline ; comments
+            m = re.match(r"\s*\[([^\]]+)\]\s*$", line)
+            if m:
+                cur = m.group(1).strip(); sections[cur] = {}; key = None; continue
+            if cur is None or not line.strip():
+                continue
+            m = re.match(r"([A-Za-z_][\w.]*)\s*=(.*)$", line)
+            if m and not line[0].isspace():
+                key = m.group(1); sections[cur][key] = [m.group(2).strip()]
+            elif key:
+                sections[cur][key].append(line.strip())             # continuation line
+
+    def value(sec, key, seen=()):
+        if (sec, key) in seen: raise RuntimeError(f"platformio.ini: ${{{sec}.{key}}} is circular")
+        s = sections.get(sec, {})
+        if key not in s:
+            ext = s.get("extends")
+            if ext: return value(ext[0].strip(), key, seen + ((sec, key),))
+            return []
+        out = []
+        for tok in s[key]:
+            m = re.fullmatch(r"\$\{([^.}]+)\.([^}]+)\}", tok)
+            out += value(m.group(1), m.group(2), seen + ((sec, key),)) if m else [tok]
+        return out
+
+    sec = "env:" + env
+    if sec not in sections: raise RuntimeError(f"{ini_path}: no [{sec}]")
+    def defs(lines):
+        return {m.group(1) for l in lines for m in re.finditer(r"-D\s*(\w+)", l)}
+    return defs(value(sec, "build_flags")) - defs(value(sec, "build_unflags"))
+
+A11Y_MACROS = pio_macros(PIO_INI, A11Y_ENV)
+if "CONFIG_AUDIO_A11Y" not in A11Y_MACROS:
+    sys.exit(f"{PIO_INI} [env:{A11Y_ENV}] does not define CONFIG_AUDIO_A11Y - wrong env?")
 QSTRING = re.compile(r'"((?:[^"\\]|\\.)*)"')
 
 # ── NATO phonetic alphabet + how single characters are voiced ────────────────
@@ -148,7 +187,12 @@ def preprocess(text, macros):
         if m: c = m.group(1) in macros; stack.append({"a":c,"t":c}); continue
         m = re.match(r"#\s*ifndef\s+(\w+)", s)
         if m: c = m.group(1) not in macros; stack.append({"a":c,"t":c}); continue
-        if re.match(r"#\s*if\b", s): stack.append({"a":True,"t":True}); continue
+        m = re.match(r"#\s*if\s+(!?)\s*defined\s*\(?\s*(\w+)\s*\)?\s*$", s)   # #if [!]defined(X)
+        if m: c = (m.group(2) in macros) != bool(m.group(1)); stack.append({"a":c,"t":c}); continue
+        if re.match(r"#\s*(if|elif)\b", s):
+            # Anything richer would be guessed, and a wrong guess is a clip for code the a11y
+            # build drops (wasted store) or no clip for code it keeps (silence). Refuse instead.
+            raise RuntimeError("extend preprocess() for this conditional: " + s)
         if re.match(r"#\s*else\b", s):
             if stack: f=stack[-1]; f["a"]=not f["t"]; f["t"]=True
             continue
@@ -193,12 +237,12 @@ def clip_id(text):
 
 # ── 1) Menu entries ──────────────────────────────────────────────────────────
 menu_body = preprocess(array_body(strip_comments(load("MorseMenu.cpp")),
-                                  r"menuText\s*\[\s*menuN\s*\]\s*="), POCKET_MACROS)
+                                  r"menuText\s*\[\s*menuN\s*\]\s*="), A11Y_MACROS)
 menu_entries = [s for s in QSTRING.findall(menu_body) if s.strip()]
 
 # ── 2) Preferences: spokenName (else parName) + option values ────────────────
 pl_body = preprocess(array_body(strip_comments(load("MorsePreferences.cpp")),
-                                r"pliste\s*\[\s*\]\s*="), POCKET_MACROS)
+                                r"pliste\s*\[\s*\]\s*="), A11Y_MACROS)
 pref_labels, option_values = [], []
 for entry in top_entries(pl_body):
     b = entry.index("{")                       # the mapping{} brace (only brace in an entry)
@@ -222,7 +266,7 @@ for entry in top_entries(pl_body):
 # ("Recall Snapshot" vs the real "RECALLSnapshot"), so those headings had no clip
 # under the string the firmware actually announces.
 extra_body = preprocess(array_body(strip_comments(load("MorsePreferences.cpp")),
-                                   r"extraItems\s*\[\s*\]\s*="), POCKET_MACROS)
+                                   r"extraItems\s*\[\s*\]\s*="), A11Y_MACROS)
 extra_items = [s for s in QSTRING.findall(extra_body) if s.strip()]
 inline_values = ["clear all","Cancel Recall","Cancel Store","NO SNAPSHOTS",
     "Flip Screen","Reset Defaults","Cancel","(not set)","(set)"]

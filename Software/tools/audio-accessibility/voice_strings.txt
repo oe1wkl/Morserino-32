@@ -317,14 +317,11 @@ error
 Europe
 External polarity
 Fallback
-Fight Pileup
 File Player
 Flip Screen
 Forever
-Fox Hunt
 Foxtrot
 full stop
-Games
 Garnet
 Generated
 Generator display
@@ -350,7 +347,6 @@ Interp+ProSn
 Interpunct.
 interpunctions
 Interpunctions and Pro Signs
-Invader orientation
 Juliett
 Key external transmitter
 Keyed
@@ -366,7 +362,6 @@ Koch Sequence
 Koch Trainer
 l-o: Lsp Muted
 l-o: Var. Vol.
-Landscape
 Latency
 LCWO
 Learn New Character
@@ -391,14 +386,11 @@ lower
 M32
 Mandarin
 Maximum number of words
-Memory Chain
 Mike
 milliseconds
 millivolts
 Mixed
 Moderate
-Morse Invaders
-Morsel
 Morserino 32 accessibility edition
 N America
 Narrow
@@ -442,7 +434,6 @@ Phrase saved
 Plain
 plus
 point
-Portrait
 Practice Set
 Practice Stats
 Preview Char
@@ -454,7 +445,6 @@ QSO Difficulty
 Quebec
 question mark
 Quick Start
-Radio Cave
 Random
 Random group length
 Random Groups
@@ -502,7 +492,6 @@ Tone Pitch
 Tone Shift
 Tone Softness
 Too short
-Trailblazer
 Transceiver
 Transceiver channel
 u umlaut
@@ -512,8 +501,6 @@ Uniform
 Unlimited
 Up 1 Half
 Update Firmware
-Update firmware
-Upload File
 UPPER
 VBand and Decoded
 VBand Kbd
