@@ -58,11 +58,16 @@ protocol PDFs (E2).
 4. ~~Next master release is 9.1~~ (decided) — the `### CHANGES V. 9.1` section now exists,
    opened with the BLE heap-leak fix.
 
-### Device state (end of 2026-09-30 session)
-Both units on `m32kip` c22d8d8 (10.0 beta: BLE leak fix, pass-phrase entry, Rig exit fix, reset log),
-Bluetooth Use 0 on the classic; the classic has Quick Start ON into Remote Rig (B14).
-Pair re-staged and tested 2026-10-01 (B6); the classic has since left Remote Rig. TRX Peer
-fields kept for now (B7); pass phrase see B11.
+### Device state (2026-10-03)
+Both units run the **9.1 build** (`generator-national-chars` = master's I3 work), standard edition on the Pocket,
+flashed for the I3 bench; `/player.txt` on both is the I3 test file (`devdocs/language-support/bench-player.txt`).
+**For M32KIP work (wave 2, B6, B14) re-flash both from the `m32kip` folder.** Earlier staging (Quick Start into
+Remote Rig, pass phrase) is NVS and survives, but check it. TRX Peer fields kept for now (B7).
+
+**Repo layout (2026-10-03, iCloud):** `~/Documents/GitHub/Morserino-32` = master, `~/Documents/GitHub/Morserino-32-m32kip`
+= m32kip — never switch branches in either folder (iCloud makes "name 2" copies). `.pio`/`.venv`/`.claude/worktrees`
+are `*.nosync` folders behind symlinks; a new checkout needs `mkdir Software/src/.pio.nosync && ln -s .pio.nosync
+Software/src/.pio` before its first build.
 
 **Mac toolchain (2026-10-01):** Rosetta installed again, so PlatformIO's x86-only `mkspiffs`
 (a11y voice image) works. Piper for voice clips: the repo's `.venv` is an old Intel build — a
@@ -190,7 +195,7 @@ command line).
 ## E. Docs and pipeline
 
 1. EPUBs still carry the pre-recovery-mode text; Memory Chain HTML/PDF rebuild was open in earlier notes.
-2. FAQ and protocol PDFs have **no CI freshness gate** (only the manuals do) — can drift silently.
+2. FAQ and protocol PDFs have **no CI freshness gate** (only the manuals do) — can drift silently. **Now stale:** `M32 Protocol.md` gained the character-set and Practice Set sections on 2026-10-02, the PDF was not regenerated.
 3. V9.0-beta.2 shipped via a **partly manual** path; the next release is the first end-to-end
    test of the workflow timeout (30→60) and beta-asset changes.
 4. `Software/iOS/M32Config/store-listing.md` had an uncommitted edit of Willi's as of 8/24 *(verify)*.
