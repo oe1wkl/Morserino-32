@@ -25,6 +25,8 @@ static BLEClient* client = nullptr;
 static volatile bool connected = false, authDone = false, authOk = false;
 static volatile bool dropOnDown = false, dropNow = false;
 static bool autoConnect = true;
+static uint32_t reconnectDelay = 0;          // ms to wait after a disconnect before reconnecting ("delay <ms>")
+static volatile uint32_t lastDisc = 0;
 
 static void notifyCb(BLERemoteCharacteristic*, uint8_t* data, size_t len, bool) {
     Ev e{millis(), 'R', (uint8_t)(len > 0 ? data[0] : 0), (uint8_t)(len > 2 ? data[2] : 0)};
@@ -40,6 +42,7 @@ static void gattcHandler(esp_gattc_cb_event_t event, esp_gatt_if_t, esp_ble_gatt
     if (event == ESP_GATTC_DISCONNECT_EVT) {
         Ev e{millis(), 'D', (uint8_t)p->disconnect.reason, 0};
         xQueueSend(q, &e, 0);
+        lastDisc = millis();
         connected = false;
     }
 }
@@ -77,7 +80,22 @@ static bool findTarget() {
 
 static bool connectAndSubscribe() {
     authDone = authOk = false;
-    if (!client->connect(*target, targetType)) { Serial.println("ERR connect"); return false; }
+    if (!client->connect(*target, targetType)) {
+        Serial.println("ERR connect");
+        // Is the DUT advertising at all? (distinguishes "not advertising" from "advertising, not accepting")
+        BLEScan* scan = BLEDevice::getScan();
+        scan->setActiveScan(true);
+        BLEScanResults res = scan->start(3, false);
+        int rssi = 0; bool seen = false;
+        for (int i = 0; i < res.getCount(); ++i) {
+            BLEAdvertisedDevice d = res.getDevice(i);
+            if (d.getAddress().equals(*target)) { seen = true; rssi = d.getRSSI(); }
+        }
+        scan->clearResults();
+        if (seen) Serial.printf("SEEN %lu rssi %d\n", millis(), rssi);
+        else      Serial.printf("NOTSEEN %lu\n", millis());
+        return false;
+    }
     connected = true;
     Serial.printf("CONN %lu\n", millis());
     uint32_t t0 = millis();
@@ -128,6 +146,7 @@ void loop() {
         else if (cmd == "drop-on-down") dropOnDown = true;
         else if (cmd == "auto 0") autoConnect = false;
         else if (cmd == "auto 1") autoConnect = true;
+        else if (cmd.startsWith("delay ")) { reconnectDelay = cmd.substring(6).toInt(); Serial.printf("DELAY %lu\n", reconnectDelay); }
         else if (cmd == "status") Serial.printf("STATUS %lu connected=%d target=%s\n", millis(), (int)connected,
                                                 target ? target->toString().c_str() : "-");
     }
@@ -135,7 +154,7 @@ void loop() {
         dropNow = false;
         if (connected) { Serial.printf("DROP %lu\n", millis()); client->disconnect(); }
     }
-    if (!connected && autoConnect) {
+    if (!connected && autoConnect && millis() - lastDisc >= reconnectDelay) {
         if (!target && !findTarget()) { delay(200); return; }
         if (!connectAndSubscribe()) delay(300);
     }

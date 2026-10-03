@@ -71,8 +71,11 @@ class Host:
                 parts = text.split()
                 t = now()
                 self.log("host " + text)
+                hms = int(parts[1]) if len(parts) > 1 and parts[1].isdigit() else None
                 with self.lock:
-                    self.events.append((t, parts[0], parts[1:]))
+                    # the host prints queued events only after a blocking reconnect, so the Mac's arrival
+                    # time can put a DISC after the CONN/SUB that followed it: keep the host's own clock
+                    self.events.append((t, parts[0], parts[1:], hms))
                     if parts[0] == "R" and len(parts) >= 3:
                         down = bool(int(parts[2]) & 1)
                         if down and not self.state:
@@ -88,20 +91,30 @@ class Host:
     def send(self, cmd):
         self.s.write((cmd + "\n").encode())
 
-    def wait_for(self, kind, after, timeout):
-        """First event of `kind` after wallclock `after`, or None."""
+    def mark(self):
+        """A position in the event list: later events are 'after' it, whatever their arrival order."""
+        with self.lock:
+            return len(self.events)
+
+    def wait_for(self, kind, after_idx, timeout, after_ms=None):
+        """First event of `kind` past list position `after_idx` (and, if given, with a host clock later
+        than `after_ms`), or None."""
         end = now() + timeout
         while now() < end:
             with self.lock:
-                for ev in self.events:
-                    if ev[0] > after and ev[1] == kind:
+                for ev in self.events[after_idx:]:
+                    if ev[1] == kind and (after_ms is None or (ev[3] or 0) > after_ms):
                         return ev
             time.sleep(0.02)
         return None
 
-    def reports_between(self, t0, t1):
+    def reports_between_ms(self, ms0, ms1):
         with self.lock:
-            return [e for e in self.events if t0 < e[0] <= t1 and e[1] == "R"]
+            return [e for e in self.events if e[1] == "R" and e[3] is not None and ms0 < e[3] <= ms1]
+
+    def last_ms(self):
+        with self.lock:
+            return max((e[3] for e in self.events if e[3] is not None), default=0)
 
     def close(self):
         self.stop = True
@@ -140,6 +153,10 @@ class Dut:
                     self.debug.append((now(), text))
                     self.log("dut  " + text)
 
+    def lost_count(self):
+        n = [int(m.group(1)) for _, l in self.debug for m in [re.search(r"\((\d+) since start", l)] if m]
+        return n[-1] if n else 0
+
     def stop_reader(self):
         self.stop = True
         if self.reader:
@@ -165,6 +182,12 @@ def main():
     ap.add_argument("--resync", type=float, default=3.0, help="seconds allowed for the re-sync after re-subscribing")
     ap.add_argument("--stuck", type=float, default=2.0, help="host DOWN longer than this = stuck key")
     ap.add_argument("--log", default="ble_kbd_soak.log")
+    ap.add_argument("--reconnect-delay", type=float, default=0,
+                    help="seconds the test host waits after a disconnect before reconnecting")
+    ap.add_argument("--reboot-first", action="store_true",
+                    help="reboot the DUT before starting, so its connection count starts from zero")
+    ap.add_argument("--until-fail", action="store_true",
+                    help="stop the drop cycles at the first reconnect failure instead of recovering")
     args = ap.parse_args()
 
     logf = open(args.log, "a", buffering=1)
@@ -178,6 +201,9 @@ def main():
 
     say(f"soak start, log {args.log}")
     dut = Dut(args.dut, log)
+    if args.reboot_first:
+        dut.link.reboot(boot_wait=4.0)
+        say("DUT rebooted")
     d = dut.link.device.get("device", dut.link.device)
     say(f"DUT: {d.get('hardware')} firmware {d.get('firmware')} edition {d.get('edition')}")
 
@@ -203,8 +229,9 @@ def main():
 
     host = Host(args.host, log)
     host.send("auto 1")
+    host.send(f"delay {int(args.reconnect_delay * 1000)}")
     say("waiting for the test host to connect and subscribe ...")
-    if not host.wait_for("SUB", t_start, 60):
+    if not host.wait_for("SUB", 0, 60):
         say("FAIL: the test host never subscribed (is the DUT in CW Keyer with Bluetooth Use = VBand?)")
         return finish(dut, host, saved, say, 1)
     say("subscribed")
@@ -213,26 +240,33 @@ def main():
 
     # -- forced drop cycles ---------------------------------------------------------------------------------
     for i in range(args.drops):
-        dut.fire(f"PUT cw/repeat/{DROP_TEXT}")
-        if not host.wait_for("R", now(), 10):
-            say(f"drop {i+1}: no reports from the DUT within 10 s - skipped"); results["drop_inconclusive"] += 1
+        if not start_keying(dut, host, DROP_TEXT, say):
+            say(f"drop {i+1}: no reports from the DUT - skipped"); results["drop_inconclusive"] += 1
+            if not recover(dut, host, keyer, say):
+                break
             continue
         time.sleep(1.0)
-        t0 = now()
+        m0, ms0 = host.mark(), host.last_ms()
         host.send("drop-on-down")
-        disc = host.wait_for("DISC", t0, 10)
+        disc = host.wait_for("DISC", m0, 10, after_ms=ms0)
         if not disc:
             say(f"drop {i+1}: link did not drop"); results["drop_inconclusive"] += 1; continue
         dut.fire("PUT cw/stop")                       # key goes up while the host cannot hear it
-        last = host.reports_between(t0, disc[0])
-        down_at_drop = bool(last and int(last[-1][2][0]) & 1)
-        sub = host.wait_for("SUB", disc[0], 20)
+        last = host.reports_between_ms(ms0, disc[3])
+        down_at_drop = bool(last and int(last[-1][2][1]) & 1)
+        sub = host.wait_for("SUB", m0, 20, after_ms=disc[3])
         if not sub:
-            say(f"drop {i+1}: FAIL - host did not get back within 20 s"); results["drop_fail"] += 1; continue
-        deadline = sub[0] + args.resync
+            results["drop_fail"] += 1
+            say(f"drop {i+1}: FAIL - the host could not reconnect within 20 s (DUT link-lost count "
+                f"{dut.lost_count()})")
+            results["failed_at_cycle"] = i + 1
+            if args.until_fail or not recover(dut, host, keyer, say):
+                break
+            continue
+        deadline = now() + args.resync
         while now() < deadline and host.state:
             time.sleep(0.05)
-        reconnect = sub[0] - disc[0]
+        reconnect = (sub[3] - disc[3]) / 1000
         if not down_at_drop:
             results["drop_inconclusive"] += 1
             say(f"drop {i+1}: inconclusive (key-up slipped through before the drop), reconnect {reconnect:.1f} s")
@@ -246,24 +280,32 @@ def main():
 
     # -- leave CW Keyer with the key down -------------------------------------------------------------------
     if args.exit_test:
-        dut.fire(f"PUT cw/repeat/{TEXT}")
-        host.wait_for("R", now(), 10)
-        t0 = now()
-        while now() - t0 < 10 and not host.state:
-            time.sleep(0.005)
-        dut.fire("PUT menu/stop")                     # leaves the mode -> stopBluetooth()
-        disc = host.wait_for("DISC", t0, 10)
-        last = host.reports_between(t0, disc[0] if disc else now())
-        released = bool(last) and not (int(last[-1][2][0]) & 1)
-        say(f"exit test: {'pass - last report before the link went was UP' if released else 'FAIL - host left with the key DOWN'}")
-        results["exit"] = "pass" if released else "FAIL"
-        dut.fire(f"PUT menu/start/{keyer}")
-        host.wait_for("SUB", now(), 30)
+        if not start_keying(dut, host, TEXT, say):
+            say("exit test: inconclusive - no live link/keying"); results["exit"] = "inconclusive"
+        else:
+            t0 = now()
+            while now() - t0 < 10 and not host.state:
+                time.sleep(0.005)
+            m0, ms0 = host.mark(), host.last_ms()
+            dut.fire("PUT menu/stop")                 # leaves the mode -> stopBluetooth()
+            disc = host.wait_for("DISC", m0, 10, after_ms=ms0)
+            if not disc:
+                say("exit test: inconclusive - the link did not go away"); results["exit"] = "inconclusive"
+            else:
+                last = host.reports_between_ms(ms0 - 1, disc[3])
+                released = not host.state if not last else not (int(last[-1][2][1]) & 1)
+                say(f"exit test: {'pass - the host was left with the key UP' if released else 'FAIL - host left with the key DOWN'}")
+                results["exit"] = "pass" if released else "FAIL"
+            time.sleep(1.5)
+            dut.fire(f"PUT menu/start/{keyer}")
+            host.wait_for("SUB", host.mark(), 30)
 
     # -- continuous soak ------------------------------------------------------------------------------------
     if args.minutes > 0:
         say(f"soak: keying for {args.minutes:g} min")
-        dut.fire(f"PUT cw/repeat/{TEXT}")
+        if not start_keying(dut, host, TEXT, say):
+            say("soak: could not get keying reports flowing - soak skipped")
+            args.minutes = 0
         t_end = now() + args.minutes * 60
         seen = len(host.events)
         next_note = now() + 600
@@ -271,12 +313,17 @@ def main():
             time.sleep(0.2)
             with host.lock:
                 new = host.events[seen:]; seen = len(host.events)
-            for t, kind, f in new:
-                if kind == "DISC":
+            for t, kind, f, _ms in new:
+                if kind == "DISC" and f and f[-1] != "0x16":   # 0x16 on the host = its own deliberate cut
                     results["unasked_disc"] += 1
                     dut_lines = [l for (tt, l) in dut.debug if abs(tt - t) < 5]
                     say(f"soak: link dropped by itself after {(t - t_start)/60:.1f} min, host reason {f[1] if len(f) > 1 else '?'}"
                         f"; DUT: {dut_lines[-1] if dut_lines else 'no log line'}")
+            last_r = max((e[0] for e in host.events[-50:] if e[1] == "R"), default=None)
+            if last_r and now() - last_r > 30 and host.subscribed:
+                results["silent"] = results.get("silent", 0) + 1
+                say(f"soak: SILENT - subscribed but no report for {now() - last_r:.0f} s (DUT keying stopped, or the link is dead)")
+                start_keying(dut, host, TEXT, say)
             if host.down_since and now() - host.down_since > args.stuck:
                 results["stuck"] += 1
                 say(f"soak: STUCK - host has seen the key DOWN for {now() - host.down_since:.1f} s")
@@ -287,8 +334,35 @@ def main():
         dut.fire("PUT cw/stop")
 
     say(f"RESULT {results}")
-    ok = results["drop_fail"] == 0 and results["stuck"] == 0 and results.get("exit", "pass") == "pass"
+    ok = results["drop_fail"] == 0 and results["stuck"] == 0 and results.get("exit", "pass") in ("pass", "inconclusive")
     return finish(dut, host, saved, say, 0 if ok else 1)
+
+
+def start_keying(dut, host, text, say, tries=3):
+    """cw/repeat, and wait until reports actually reach the host (a CW Keyer that has just started may
+    refuse with "Keyer not active")."""
+    for _ in range(tries):
+        if not host.subscribed and not host.wait_for("SUB", host.mark(), 20):
+            continue
+        m = host.mark()
+        dut.fire(f"PUT cw/repeat/{text}")
+        if host.wait_for("R", m, 6):
+            return True
+        time.sleep(2)
+    return False
+
+
+def recover(dut, host, keyer, say):
+    """Leave and re-enter CW Keyer (re-initialises the DUT's Bluetooth) and wait for the host."""
+    say("recover: re-entering CW Keyer on the DUT")
+    dut.fire("PUT cw/stop"); time.sleep(0.3)
+    dut.fire("PUT menu/stop"); time.sleep(2.0)
+    m = host.mark()
+    dut.fire(f"PUT menu/start/{keyer}")
+    ok = host.wait_for("SUB", m, 40) is not None
+    say("recover: " + ("host connected again" if ok else "host could NOT connect even after re-entering CW Keyer"))
+    time.sleep(2.0)
+    return ok
 
 
 def finish(dut, host, saved, say, code):
@@ -302,10 +376,18 @@ def finish(dut, host, saved, say, code):
         for n, v in saved.items():
             if v is None:
                 continue
-            try:
-                dut.link.command(f"PUT config/{n}/{v}", allow_error=True)
-            except Exception as exc:
-                failed.append(f"{n} ({exc})")
+            for attempt in range(6):                  # the DUT can be busy for a while after a BLE fault
+                try:
+                    dut.link.command(f"PUT config/{n}/{v}", allow_error=True)
+                    break
+                except Exception as exc:
+                    if attempt == 5:
+                        failed.append(f"{n} ({exc})")
+                    time.sleep(5)
+                    try:
+                        dut.link.handshake()
+                    except Exception:
+                        pass
         say(f"restored preferences {saved}" + (f" - FAILED: {failed}" if failed else ""))
     finally:
         host.close()
