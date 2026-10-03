@@ -169,10 +169,16 @@ class M32Link:
         high, i.e. a normal boot -- the same sequence esptool uses, minus the
         download-mode strap.
         """
+        if self._serial is None:       # works on a closed link too: opening no longer resets
+            self.open(handshake=False, boot_wait=0)
         s = self._serial
         s.dtr = False                  # from 1/1: now DTR=0, RTS=1 -> reset held
         time.sleep(0.15)
         s.dtr = True                   # 1/1: released, normal boot
+        # Hold 1/1 well past the release before closing: close() passes through DTR=1/RTS=0 (GPIO0 low),
+        # and the ESP32 samples GPIO0 a few ms AFTER release (EN rises through an RC) - closing at once
+        # sent the classic into download mode (2026-10-03, on the bench).
+        time.sleep(1.0)
         self.close()                   # the S3 may re-enumerate its USB port
         time.sleep(0.5)
         last = None
