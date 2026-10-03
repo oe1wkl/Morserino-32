@@ -30,6 +30,7 @@ Usage:
   --major N   override the major version (default: VERSION_MAJOR from morsedefs.h)
 """
 
+import subprocess
 import argparse
 import hashlib
 import os
@@ -74,9 +75,27 @@ def source_files(d, lang):
     files += [os.path.join(d, f) for f in SHARED]
     images = os.path.join(d, "images")
     if os.path.isdir(images):
-        files += [os.path.join(images, f) for f in sorted(os.listdir(images))
-                  if not f.startswith(".")]
+        names = tracked_names(images)
+        if names is None:                      # not a git checkout: every file there
+            names = sorted(f for f in os.listdir(images) if not f.startswith("."))
+        files += [os.path.join(images, f) for f in names]
     return files
+
+
+def tracked_names(directory):
+    """The files git tracks directly in `directory`, sorted - or None outside a git checkout.
+
+    Only tracked files count, because only they exist where CI checks: a stray local file (on
+    2026-10-03, iCloud Drive's "name 2.png" conflict copies, made when a branch switch deleted and
+    recreated the folder) was hashed into the stamp at build time and made a correct build fail in
+    CI as "older than its sources".
+    """
+    try:
+        out = subprocess.run(["git", "-C", directory, "ls-files", "-z", "--", "."],
+                             capture_output=True, check=True).stdout.decode("utf-8")
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return sorted(p for p in out.split("\0") if p and "/" not in p)
 
 
 def fingerprint(paths):
