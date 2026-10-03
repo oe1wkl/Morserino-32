@@ -48,6 +48,18 @@ bool isBleConnected = false;
 // onDisconnect (BLE event task) to skip the reconnect grace period + re-advertise
 static volatile bool btStopping = false;
 
+// Link bookkeeping (TODO I2: vBand link drops, possible stuck key). The BLE callbacks run on Bluedroid's
+// event task and must not block it - until 2026-10 onDisconnect slept there for 5 s before re-advertising.
+// They only record what happened; MorseBluetooth::tick() acts on it from the main loop, which is also the
+// only task that sends input reports, so reports never race each other.
+static BLEServer* bleServer = nullptr;
+static volatile bool advertisePending = false;     // re-advertise once the disconnect has settled
+static volatile uint32_t disconnectedAt = 0;
+static volatile bool resyncPending = false;        // tell the host the key's real state after a (re)connect
+static volatile uint32_t connectedAt = 0;
+static bool ctrlDown = false;                      // what the keyer last asked for, connected or not
+static uint16_t disconnectCount = 0;
+
 TaskHandle_t taskHandle;    //
 
 // Message (report) sent when a key is pressed or released
@@ -115,6 +127,8 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
 
     void onConnect(BLEServer* server) {
         isBleConnected = true;
+        connectedAt = millis();
+        resyncPending = true;
 
         // Allow notifications for characteristics
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
@@ -123,13 +137,18 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
         //DEBUG("Client has connected");
     }
 
-    void onDisconnect(BLEServer* server) {
+    // The overload with the GATT parameters, for the disconnect reason (the library calls both overloads).
+    void onDisconnect(BLEServer* server, esp_ble_gatts_cb_param_t* param) {
         isBleConnected = false;
+        resyncPending = false;
+        ++disconnectCount;
+        // Reported by tick() from the main loop. HCI reasons: 0x08 supervision timeout (the link went
+        // silent - radio, or one side stalled), 0x13 the host hung up, 0x16 we did, 0x3e never established.
+        lastReason = param ? param->disconnect.reason : 0xFF;
+        reasonUnreported = true;
 
-        // Teardown in progress (stopBluetooth): this callback runs on the BLE
-        // event task and deinit() waits behind it, so the 5 s reconnect grace
-        // below would stall the mode exit — and re-advertising a dying stack
-        // makes no sense. Just note the disconnect and get out of the way.
+        // Teardown in progress (stopBluetooth): deinit() waits behind this callback,
+        // and re-advertising a dying stack makes no sense. Just get out of the way.
         if (btStopping)
             return;
 
@@ -137,13 +156,17 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
         cccDesc->setNotifications(false);
 
-        //DEBUG("Client has disconnected");
-		delay(5000);
-		// DEBUG("Restarting advertising...");
-		//server->getAdvertising()->start();
-		server->startAdvertising();
+        disconnectedAt = millis();
+        advertisePending = true;                    // tick() restarts advertising - never sleep here
     }
+
+public:
+    volatile uint8_t lastReason = 0;
+    volatile bool reasonUnreported = false;
 };
+
+// File scope (was local to bluetoothTask): tick() reads the disconnect reason from it.
+static BleKeyboardCallbacks keyboardCallbacks;
 
 
 /*
@@ -167,13 +190,13 @@ void bluetoothTask(void*) {
     // repeated cycles do not churn the heap; the BLEServer/BLEHIDDevice objects
     // below come from the library, which leaks them across deinit/init cycles
     // (a few hundred bytes per cycle — known library wart, nothing we can free).
-    static BleKeyboardCallbacks keyboardCallbacks;
     static OutputCallbacks outputCallbacks;
     static BLESecurity security;
 
     // initialize the device
     BLEDevice::init(DEVICE_NAME);
     BLEServer* server = BLEDevice::createServer();
+    bleServer = server;
     server->setCallbacks(&keyboardCallbacks);
 
     // create an HID device
@@ -240,11 +263,42 @@ void MorseBluetooth::initializeBluetooth(void)
 }
 
 
+// Called from the main loop while the keyboard runs: everything the BLE callbacks may not do themselves.
+void MorseBluetooth::tick(void)
+{
+    if (!isBLErunning)
+        return;
+    if (keyboardCallbacks.reasonUnreported) {
+        keyboardCallbacks.reasonUnreported = false;
+        DEBUG("BLE kbd: link lost, reason 0x" + String(keyboardCallbacks.lastReason, HEX)
+              + " (" + String(disconnectCount) + " since start, up " + String(millis() / 60000) + " min)");
+    }
+    if (advertisePending && millis() - disconnectedAt >= 500 && bleServer) {
+        advertisePending = false;
+        bleServer->startAdvertising();
+    }
+    // After a (re)connect, send the key's real state once the host has subscribed: a key-up lost in a
+    // dropout (or a disconnect between press and release) would otherwise leave vBand keying until
+    // the next element. A second is ample for subscription + encryption on a reconnect.
+    if (resyncPending && isBleConnected && millis() - connectedAt >= 1000) {
+        resyncPending = false;
+        bluetoothTypeLCTRL(ctrlDown);
+    }
+}
+
 void MorseBluetooth::stopBluetooth(void)
 {
     if (MorseBluetooth::isBLErunning) {
         DEBUG("Stopping BLE");
-        btStopping = true;          // tell onDisconnect to skip its 5 s grace + re-advertise
+        if (isBleConnected && input) {      // never leave the host with the key down (e.g. key held on exit)
+            input->setValue((uint8_t *)&NO_KEY_PRESSED, sizeof(NO_KEY_PRESSED));
+            input->notify();
+            delay(60);                      // a few connection intervals for it to go out before teardown
+        }
+        ctrlDown = false;
+        advertisePending = false;
+        resyncPending = false;
+        btStopping = true;          // tell onDisconnect to skip re-advertising
         vTaskDelete(taskHandle);
         delay(100);
         // deinit(true) releases the BT controller memory irreversibly AND leaves the
@@ -266,6 +320,7 @@ void MorseBluetooth::stopBluetooth(void)
 
 void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 {
+	ctrlDown = ctrl;                // tracked while disconnected too: tick() re-syncs the host on connect
 	if (isBleConnected) {
 		if (ctrl)
 		{ // Send Left CTRL key pressed

@@ -30,6 +30,9 @@ namespace MorseBluetooth
 	uint8_t keyboardMode(void);
 	void initializeBluetooth(void);
 	void stopBluetooth(void);
+	// Main-loop service while the keyboard runs: re-advertising after a disconnect, re-syncing the
+	// host's key state after a (re)connect, logging disconnect reasons (the BLE callbacks must not block).
+	void tick(void);
 	void bluetoothTypeLCTRL(bool ctrl);
 	void bluetoothTypeCharacter(const char chr);
 	void bluetoothTypeString(const String& str);

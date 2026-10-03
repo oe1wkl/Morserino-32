@@ -7,6 +7,7 @@
 * With Bluetooth keyboard output, letters with umlauts or accents are now typed without them – ä ö ü as ae oe ue, å as aa, and so on – because what a keyboard types for them depends on the computer's keyboard layout. Until now ä ö ü typed nothing at all.
 
 #### Bug Fixes:
+* Bluetooth keyboard (VBand and the other keyboard modes): when the Bluetooth link dropped, the Morserino waited five seconds before the computer could find it again – now half a second. And if the link dropped (or you left CW Keyer) while the key was down, the computer could go on "keying" – VBand kept sounding – until your next element; the Morserino now tells the computer the key's real state as soon as the link is back, and releases the key before the keyboard is switched off.
 * File Player: prosigns written in square brackets in the text file – `[ka]`, `[sk]`, and the pause and next-station markers `[p]` and `[t]` – were sent as plain letters, so `[p]` gave you a „p“ instead of a pause. The other two ways of writing them, `<ka>` and `\ka`, always worked. Fixed, as described in the manual.
 * With **Bluetooth Use** set to **BLE Serial**, a program asking for the **Practice Set** (`GET practicechars`) got no answer – the reply went out over USB instead. Fixed.
 * With Bluetooth keyboard output and **Output Case** set to UPPER, a decoded Ä or Ö typed some unrelated key on the computer. Fixed (they are now typed as AE and OE).

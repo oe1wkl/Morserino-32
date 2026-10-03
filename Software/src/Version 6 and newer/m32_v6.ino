@@ -1338,6 +1338,7 @@ if (morseState == morseKeyer &&
     // Initialize Bluetooth System
     MorseBluetooth::initializeBluetooth();
 }
+MorseBluetooth::tick();                           // no-op unless the keyboard runs
 #endif
 /// if we have time check for serial input and for button presses
 
