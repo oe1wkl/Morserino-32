@@ -284,7 +284,7 @@ void endSegment() {
     if (segment.numChars) {
         JsonObject chars = doc.createNestedObject("chars");
         for (uint8_t i = 0; i < segment.numChars; i++) {
-            JsonArray a = chars.createNestedArray(String(segment.chars[i].c));
+            JsonArray a = chars.createNestedArray(codesToUtf8(String(segment.chars[i].c)));   // é: valid UTF-8 key
             a.add(segment.chars[i].heard);
             a.add(segment.chars[i].attempts);
             a.add(segment.chars[i].errors);

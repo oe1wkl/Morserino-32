@@ -747,7 +747,7 @@ void MorseJSON::jsonGetSnapshot(uint8_t snapNumber) {
     // Custom chars stored in snapshots
     JsonObject custom = snap.createNestedObject("customChars");
     custom["active"] = (useCustom != 0);
-    custom["characters"] = customSet;
+    custom["characters"] = codesToUtf8(customSet);   // raw codes, national letters as UTF-8
 
     // All pliste[] parameters that snapshots actually contain (training settings;
     // device/hardware/game settings are excluded — see storedInSnapshot())
@@ -790,14 +790,14 @@ void MorseJSON::jsonGetCustomChars(void) {
     StaticJsonDocument<256> doc;
     JsonObject obj = doc.createNestedObject("customchars");
     obj["active"] = MorsePreferences::useCustomChars;
-    obj["characters"] = MorsePreferences::customCharSet;
+    obj["characters"] = codesToUtf8(MorsePreferences::customCharSet);   // raw codes, national letters as UTF-8
     MorseJSON::jsonSend(doc);
 }
 
 void MorseJSON::jsonGetPracticeChars(void) {
     StaticJsonDocument<192> doc;
     JsonObject obj = doc.createNestedObject("practicechars");
-    obj["characters"] = MorsePreferences::practiceCharSet;
+    obj["characters"] = codesToUtf8(MorsePreferences::practiceCharSet); // raw codes, national letters as UTF-8
     MorseJSON::jsonSend(doc);      // not serializeJson(doc, Serial): that skipped BLE Serial (CLAUDE.md rule 9)
 }
 

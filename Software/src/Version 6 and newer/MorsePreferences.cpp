@@ -113,6 +113,9 @@ const char * prefName[] = {
             "kipFirstExt", "kipHang",
             "kipGlitch",
 #endif
+#ifndef CONFIG_AUDIO_A11Y
+            "decoderChars",
+#endif
             "serialOut"
 					};
 
@@ -592,6 +595,15 @@ parameter MorsePreferences::pliste[] = {
     "Remote keyer glitch filter"
   },
 #endif
+#ifndef CONFIG_AUDIO_A11Y
+  {
+    0, 0, 4, 1,                                                 // decoderCharSets (morsedefs.h): national letters / ITU brackets
+    "Decoder Chars",
+    "Letters and brackets decoded for national and ITU codes",
+    true,
+    {"Standard", "ITU", "Fr/Es/Pt", "Sv/Fi", "Da/No"}
+  },
+#endif
   {
     5, 0, 5, 1,        // Serial Output entry (unchanged)                                                // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
     "Serial Output",
@@ -770,11 +782,17 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define QSOBOT
 #endif
+#ifndef CONFIG_AUDIO_A11Y
+#define DECCHARS posDecoderChars,
+#else
+#define DECCHARS
+#endif
 
 
   prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency,
+                                                   DECCHARS
                                                  };
   prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
@@ -822,19 +840,22 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
-                                                   posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
+                                                   posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
  prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
-                                                   posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
+                                                   posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
  prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode
+                                                   posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
 #ifdef CONFIG_QSO_BOT
@@ -848,7 +869,8 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
  prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
+                                                   posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
  // The order here is the order the user sees in the "All" preferences view
@@ -867,7 +889,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
                                                    posKeyExternalTx, posLoraCwTransmit,
                                                    posLoraChannel,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   posGoertzelBandwidth, posExtAudioOnDecode, DECCHARS
                                                    QSOBOT
 #ifdef CONFIG_M32KIP
                                                    posKipPlayout, posKipMaxKeyer, posKipMaxManual,
@@ -890,6 +912,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // decodes received audio (the Keyer unit forces noTx, D12d).
  prefPos MorsePreferences::kipKeyerOptions[] =   { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   DECCHARS
                                                    posKipGlitch, posKipPassPhrase
                                                  };
  // Same as kipKeyerOptions, but led by the remote rig's own settings (D17). Used only while the link is up AND the
@@ -898,6 +921,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                     posRigFirstExt, posRigHang,
                                                     PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
                                                     posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                    DECCHARS
                                                     posKipGlitch, posKipPassPhrase
                                                   };
 int MorsePreferences::kipRigOptionsSize      = SizeOfArray(MorsePreferences::kipRigOptions);
@@ -1620,9 +1644,8 @@ void MorsePreferences::editKipPassPhrase() {
 #endif
 
 // --- "Practice Set" character picker (CW Generator / Echo Trainer) ---
-static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes;
-                                                 // excludes the trailing multi-byte äöü/H tail (m32_v6.ino),
-                                                 // which the plain RANDOMS pool doesn't use either
+static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes; the
+                                                 // national letters are added per Decoder Chars set (editPracticeChars())
 static const uint8_t PRACTICE_MAX_LEN   = 24;   // generous for a "chars I struggle with" set; bounds the on-screen line
 
 // Display-only glyph for the picker wheel; never touches what gets stored.
@@ -1635,8 +1658,8 @@ static const uint8_t PRACTICE_MAX_LEN   = 24;   // generous for a "chars I strug
 // character - i.e. not a prosign - gets the cosmetic Output Case treatment.
 static String practiceGlyph(char c) {
     String s = cleanUpProSigns(String(c));
-    if (s.length() == 1 && MorsePreferences::pliste[posOutputCase].value)
-        s.toUpperCase();
+    if (!s.startsWith("<") && MorsePreferences::pliste[posOutputCase].value)
+        toUpperCaseM32(s);                       // also the two-byte national letters (é -> É)
     return s;
 }
 
@@ -1656,9 +1679,10 @@ void MorsePreferences::setPracticeChars(const String& chars) {
 }
 
 void MorsePreferences::editPracticeChars() {
-    char wheel[PRACTICE_WHEEL_LEN + 1];
+    // the plain characters, then the letters of the chosen Decoder Chars set (ä ö ü ch for Standard)
+    char wheel[PRACTICE_WHEEL_LEN + 12];
     memcpy(wheel, CWchars, PRACTICE_WHEEL_LEN);
-    wheel[PRACTICE_WHEEL_LEN] = '\0';
+    strlcpy(wheel + PRACTICE_WHEEL_LEN, decoderSetLetters(), sizeof(wheel) - PRACTICE_WHEEL_LEN);
 
     String cur = MorsePreferences::practiceCharSet;
     if (cur.length() > PRACTICE_MAX_LEN)             // defensive; shouldn't happen, cap matches storage
@@ -2257,6 +2281,10 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
       // device & UI behaviour:
       case posClicks:
       case posQuickStart:
+#ifndef CONFIG_AUDIO_A11Y
+      case posDecoderChars:               // the operator's language, not a training choice: a recalled
+                                          // (or imported) snapshot must not switch a Danish operator to Standard
+#endif
       // hardware wiring:
       case posPolarity:
       case posExtPddlPolarity:

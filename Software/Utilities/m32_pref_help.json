@@ -42,5 +42,6 @@
   "Generator Tx": "Allows the CW Generator to transmit generated code via LoRa or WiFi. Useful for groups of learners. Caution: Always have an antenna connected when transmitting via LoRa!",
   "Trx Channel": "Virtual channel for LoRa or EspNow. Standard Ch or Secondary Ch. For EspNow this changes the WiFi channel (6 vs 1).",
   "Bandwidth": "Audio bandwidth of the CW decoder (Goertzel filter). Wide ≈ 600 Hz, Narrow ≈ 150 Hz. Center frequency ≈ 700 Hz.",
+  "Decoder Chars": "Which characters are shown for the few Morse codes that mean different letters in different languages, or that only ITU-R M.1677-1 defines - in CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer (games and QSO Bot always use Standard; in the Echo Trainer the letter of the word to repeat wins). Standard: as always (-.--. is <kn>, plus ä ö ü, ch). ITU: -.--. is '(' and adds ')' and é. Fr/Es/Pt: adds à é è ç ñ. Sv/Fi: adds å. Da/No: å, and æ ø instead of ä ö. Not stored in snapshots.",
   "Decoded on IO": "Send decoded CW audio to the external audio I/O port (in transceiver and decoder modes). Ignored on M32Pocket."
 }

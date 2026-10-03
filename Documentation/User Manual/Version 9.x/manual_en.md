@@ -34,8 +34,16 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=d24b18851fa5 v=9 -->
+<!-- WHATSNEW:BEGIN en=eb80e8d42b49 v=9 -->
 What is new in Version 9?
+
+**V 9.1**
+
+-   A new preference **Decoder Chars** lets the decoder show the letters of other languages, and the brackets of the ITU standard. A few Morse codes mean different letters in different languages – `.--.-` is à in French but å in Swedish, `.-.-` is ä in German but æ in Danish – so you choose a set: **Standard** (as before: `-.--.` is \<kn>, plus ä ö ü and ch), **ITU** (`-.--.` is „(“, and „)“ and é are added, as in ITU-R M.1677-1), **Fr/Es/Pt** (à é è ç ñ), **Sv/Fi** (å) or **Da/No** (å, and æ ø instead of ä ö). It applies to CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer; the games and the QSO Bot keep using Standard. Not in the Accessibility Edition, where decoded text is not read from the screen. Thanks to the testers who asked for French, Spanish, Portuguese and Nordic letters, and for the ITU brackets.
+-   The letters of other languages can now also be practised. The File Player sends ä ö ü, é è à ç ñ and å æ ø with their own Morse code – until now ä ö ü were sent as ae oe ue, and the others were simply left out („café“ came out as „caf“) – other accented letters as the plain letter, and round brackets as `-.--.` and `-.--.-`. Koch **Custom Chars** taken from the file may contain them as well, and the **Practice Set** picker now also offers ä ö ü and ch (or, outside the Accessibility Edition, the letters of the set chosen with **Decoder Chars**). In the Echo Trainer, a code that stands for several letters counts as the one in the word you are to repeat: `.--.-` for the å of a Swedish text is right whatever **Decoder Chars** is set to.
+-   With Bluetooth keyboard output, letters with umlauts or accents are now typed without them – ä ö ü as ae oe ue, å as aa, and so on – because what a keyboard types for them depends on the computer's keyboard layout. Until now ä ö ü typed nothing at all.
+
+**V 9.0**
 
 -   A single firmware installer for every Morserino, at [https://www.morserino.info/install.html](https://www.morserino.info/install.html). It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.
 -   M32 Pocket only: the installer can now also install the **Accessibility Edition**, which speaks the menus and settings aloud for blind and partially sighted operators (the games are not included in it). Standard and Accessibility Edition are offered for the same device and you can move between them at any time; your settings are kept.
@@ -908,9 +916,13 @@ the next time you restart the file player. Once the end of the file (or the file
 
 #### Encoding of text files for file player {-}
 
-The file should contain ASCII characters only (upper or lower case does
+The file should be plain text, saved as UTF-8 (upper or lower case does
 not matter) - characters that cannot be represented in Morse code are
-just ignored. Pro-signs can be in the file, they need to be written as 2
+just ignored. Letters with umlauts or accents are sent with their own
+Morse code wherever there is one: ä ö ü, é è à ç ñ and å æ ø[ (how they
+are decoded and shown is set with the preference **Decoder Chars**)]{.classic .pocket}.
+Other accented letters (á, ê, õ, …) are sent as the plain letter, and ß
+as "ss". Round brackets are sent as `-.--.` for „(“ and `-.--.-` for „)“. Pro-signs can be in the file, they need to be written as 2
 character representations with either \[\] or \<> around them, e.g.
 \<sk> or \[ka\], or prepended with a backslash, e.g. \\kn.
 
@@ -1380,7 +1392,9 @@ first *N* characters of the set are used as the active training pool
 (capped at the actual length of the set, so a lesson number larger than
 your character set simply uses all of it). The lesson maximum adjusts
 automatically to the length of your custom character set (up to 51
-characters; characters beyond the 51st are not reachable).
+characters; characters beyond the 51st are not reachable). The set may
+also contain the letters with umlauts and accents described under
+**Encoding of text files for file player**[ (on this edition, letters other than ä ö ü are not spoken)]{.pocket-a11y}.
 
 To change the character set, upload a new text file and select **Custom
 Chars **again. Even if it had been selected before, you must select
@@ -2956,7 +2970,7 @@ change them:
     the LoRa channel]{.classic}
 -   Bluetooth keyboard settings: **BLT Kbd Output**, **BLT \<AR\>**
 -   Audio routing: **Headphone Output**, **Decoded on IO**
--   Device behavior: **Encoder Click**, **Quick Start**
+-   Device behavior: **Encoder Click**, **Quick Start**[, **Decoder Chars**]{.classic .pocket}
 -   [Game settings: **Invader Orient.** and the]{.pocket}[The]{.classic .pocket-a11y} QSO Bot settings
     (**Contest Type**, **QSO Difficulty**)
 
@@ -3101,7 +3115,7 @@ current Koch lesson has already unlocked.
 
 | Preference Name | Description | Values |
 |---|---|---|
-| Practice Set | Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation, click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as "(not set)" until you have added at least one character. | *(opens the picker; not an adjustable value)* |
+| Practice Set | Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation (followed by ä ö ü and ch[, or the letters of the set chosen with **Decoder Chars**]{.classic .pocket}), click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as "(not set)" until you have added at least one character. | *(opens the picker; not an adjustable value)* |
 
 
 
@@ -3170,6 +3184,7 @@ transmitter), for decoding Morse code characters, and for the QSO Bot
 | Generator Tx | This allows the CW Generator to send, what it generates, [either via LoRa or via WiFi]{.classic}[via WiFi]{.pocket .pocket-a11y} – so you can have one device generating something, and several others receiving the same sequence. This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server, or[ via LoRa (or]{.classic} WiFi Trx using EspNow[)]{.classic} when all participants are close enough together. [*Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!*]{.classic} | [**Tx OFF** (= do not transmit generated CW) / LoRa Tx ON (transmit generated code through LoRa) / WiFi Tx ON (transmit generated code through WiFi).]{.classic}[**WiFi Tx OFF** (= do not transmit generated CW) / WiFi Tx ON (transmit generated code through WiFi).]{.pocket .pocket-a11y} |
 | Trx Channel | Selects which channel [LoRa or]{.classic} EspNow (a peer to peer Wifi mode, not using access points) will be used. [For LoRa this is a virtual channel, for EspNow it]{.classic}[It]{.pocket .pocket-a11y} actually changes the QRG between WiFi channel 6 (**Standard Ch**) and 1 (**Secondary Ch**). More infos on EspNow can be found in the section **Wifi Trx.** | **Standard Ch** / Secondary Ch |
 | Bandwidth | Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).<br/> **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; center frequency = ca 700 Hz. | **Wide** / Narrow |
+| []{.classic .pocket}Decoder Chars | Which characters are shown for the few Morse codes that mean different letters in different languages, or that only the ITU standard (ITU-R M.1677-1) defines. It applies to CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer (also in the Koch Trainer). In the Echo Trainer, a code that stands for several characters is always taken as the one in the word you are to repeat: a correctly keyed \<kn> stays \<kn> with **ITU**, and `.--.-` for the å of a Swedish text is right whatever you set here. [The games and the QSO Bot]{.pocket}[The QSO Bot]{.classic} always use **Standard**.<br/>**Standard**: as always – `-.--.` is \<kn>, `.-.-` ä, `---.` ö, `..--` ü, `----` ch; codes it does not know show as \*.<br/>**ITU**: as Standard, but `-.--.` is „(“, and „)“ (`-.--.-`) and é (`..-..`) are added.<br/>**Fr/Es/Pt** (French, Spanish, Portuguese): as Standard, plus à (`.--.-`), é (`..-..`), è (`.-..-`), ç (`-.-..`) and ñ (`--.--`).<br/>**Sv/Fi** (Swedish, Finnish): as Standard, plus å (`.--.-`).<br/>**Da/No** (Danish, Norwegian): å (`.--.-`), and æ and ø where Standard has ä and ö.<br/>On Bluetooth keyboard output these letters are typed without their accents (see **Using the Bluetooth Keyboard functionality**). | **Standard** / ITU / *Fr/Es/Pt* / *Sv/Fi* / *Da/No* |
 | Decoded on I/O | Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON", the audio is also sent to the external audio I/O port.<br/> **On the M32Pocket, this setting is ignored!** | On / **Off** |
 | Contest Type | Only relevant in the QSO Bot's **Contest** mode (section **QSO Bot**): which contest exchange the bot uses. **CQ WW** sends 5NN + the CQ zone of the bot's callsign; **WPX/Sprint** sends 5NN + a serial number. | **CQ WW** / WPX/Sprint |
 | QSO Difficulty | How forgiving and how chatty the QSO Bot partner is (all QSO Bot modes, section **QSO Bot**). **Beginner** is patient (more time to reply, an extra retry), spells signal reports out in full (599 rather than 5nn), and uses clear, calm prompts. **Advanced** keeps a tighter rhythm and uses curt, seasoned-operator prompts. **Intermediate** sits in between. | Beginner / **Intermediate** / Advanced |
@@ -3922,6 +3937,10 @@ This feature is only active in CW Keyer mode! The keyboard will only become visi
 The Morserino works like a keyboard with a US key
 layout – this may need to be set accordingly on the computer you are
 using.
+:::
+
+::: note
+Letters with umlauts or accents cannot be typed reliably by a keyboard (what a key types depends on the computer's keyboard layout), so the Morserino types them without: ä, ö and ü as ae, oe and ue[, and the letters of the **Decoder Chars** preference as å → aa, æ → ae, ø → oe, à → a, é and è → e, ç → c, ñ → n]{.classic .pocket}.
 :::
 
 

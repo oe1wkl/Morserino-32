@@ -88,6 +88,11 @@ PUNCT = {  # FLAG: ham/CW alternatives may be preferred ("stroke", "break", <AR>
     '=':"equals", '?':"question mark", '@':"at sign", '+':"plus",
 }
 UMLAUT = {'ä':"a umlaut", 'ö':"o umlaut", 'ü':"u umlaut"}
+# The firmware's generator codes for these (CWchars[] in m32_v6.ino): one byte, the Latin-1 value -
+# what the Practice Set picker and Koch Custom Chars hand to announceMoreChar(). The other national
+# letters (é è à ç ñ å æ ø) only exist where a Decoder Chars set offers them, and that preference is
+# not in the Accessibility Edition: left unvoiced by decision (2026-10-02), so no clips.
+CODE_OF = {'ä': '\xe4', 'ö': '\xf6', 'ü': '\xfc'}
 # Prosigns: firmware encodes them as single UPPERCASE chars in CWchars
 # (cleanUpProSigns: S->'<as>' A->'<ka>' N->'<kn>' K->'<sk>' E->'<ve>' B->'<bk>' H->'ch').
 # Spoken as "pro sign" + the two phonetic letters (composed from atoms).
@@ -295,7 +300,7 @@ ints      = [str(i) for i in range(0,61)] + [str(i) for i in range(65,251,5)]
 atom_texts = letters + punct + ints
 
 # ── Character -> clip-sequence manifest (drives composition on-device) ───────
-CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH"
+CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEB" + "".join(CODE_OF.values()) + "H"
 char_seq = {}   # char -> ordered list of clip TEXTS (converted to ids in the manifest)
 missing = []
 for ch in CWchars:
@@ -308,8 +313,8 @@ for ch in CWchars:
     elif ch in PROSIGN_LETTERS:          # prosign code -> "pro sign" + 2 phonetics
         a,b = PROSIGN_LETTERS[ch]
         char_seq[ch] = ["pro sign", NATO[a], NATO[b]]
-    elif ch in UMLAUT:
-        char_seq[ch] = [UMLAUT[ch]]
+    elif ch in CODE_OF.values():          # ä ö ü as their one-byte generator code
+        char_seq[ch] = [UMLAUT[next(k for k, v in CODE_OF.items() if v == ch)]]
     elif ch == 'H':                      # 'ch' digraph
         char_seq[ch] = ["C H"]
     else:
@@ -405,7 +410,8 @@ with open(HDR, "w", encoding="utf-8") as f:
     for ch in sorted(char_seq):
         ids = [clip_id(t) for t in char_seq[ch]]
         slots = ", ".join(f'"{i}"' for i in ids) + ", nullptr" * (maxseq - len(ids))
-        f.write(f'  {{"{cstr(ch)}", {len(ids)}, {{{slots}}}}},\n')
+        key = "".join(f"\\x{ord(x):02X}" if ord(x) > 0x7F else cstr(x) for x in ch)   # code bytes as escapes
+        f.write(f'  {{"{key}", {len(ids)}, {{{slots}}}}},\n')
     f.write("};\n")
     f.write(f"static const unsigned int voiceCharLookupCount = {len(char_seq)};\n\n")
     f.write("#endif // VOICE_CLIPS_H_\n")

@@ -533,9 +533,9 @@ static const VoiceCharEntry voiceCharLookup[] = {
   {"x", 1, {"dbc6d5ce", nullptr, nullptr}},
   {"y", 1, {"516a99d4", nullptr, nullptr}},
   {"z", 1, {"68046733", nullptr, nullptr}},
-  {"ä", 1, {"da9f7419", nullptr, nullptr}},
-  {"ö", 1, {"2e8ebc76", nullptr, nullptr}},
-  {"ü", 1, {"cfdb81f4", nullptr, nullptr}},
+  {"\xE4", 1, {"da9f7419", nullptr, nullptr}},
+  {"\xF6", 1, {"2e8ebc76", nullptr, nullptr}},
+  {"\xFC", 1, {"cfdb81f4", nullptr, nullptr}},
 };
 static const unsigned int voiceCharLookupCount = 56;
 

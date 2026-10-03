@@ -278,9 +278,17 @@ File uploadFile;                        // file handle for chunked upload
 bool uploadActive = false;              // true while a chunked upload is in progress
 uint32_t uploadBytesWritten = 0;        // total bytes written in current upload
 
-//const String CWchars = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH";
-const char CWchars[] = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEBäöüH";
-//                      0....5....1....5....2....5....3....5....4....5....5....5
+// One byte per character - pool[] below is indexed by the byte position. National letters travel
+// as their Latin-1 value (\xE4 = ä ...), like the prosigns travel as one uppercase letter: the
+// whole generator pipeline (Koch/custom/practice sets, echo comparison, generateCWword) is byte-
+// based. utf8ToCodes()/encodeProSigns() turn UTF-8 into these codes, codesToUtf8()/
+// cleanUpProSigns() turn them back for anything shown or sent on. (Until 2026-10 ä ö ü sat here as
+// UTF-8, two bytes each, so their positions no longer matched pool[] - harmless only because
+// nothing ever generated them.)
+const char CWchars[] = "abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+SANKEB" "\xE4\xF6\xFC" "H" "()"
+                       "\xE9\xE8\xE0\xE7\xF1\xE5\xE6\xF8";
+//                      0....5....1....5....2....5....3....5....4....5....5   ä51 ö52 ü53 H54 (55 )56
+//                                                                             é57 è58 à59 ç60 ñ61 å62 æ63 ø64
 // we use substrings as char pool for trainer mode
 // SANKEB will be replaced by <as>, <ka>, <kn>, <sk>, <ve> and <bk>, H = ch
 // a = CWchars.substring(0,26); 9 = CWchars.substring(26,36); ? = CWchars.substring(36,45); <> = CWchars.substring(44,51);
@@ -426,9 +434,20 @@ const byte pool[][2]  = {
                {B01010000, 4},  // ä    51
                {B11100000, 4},  // ö    52
                {B00110000, 4},  // ü    53
-               {B11110000, 4}   // ch   54    H
-
+               {B11110000, 4},  // ch   54    H
+// Decoder Chars letters and the ITU brackets (user-defined training: file player, Custom Chars, Practice Set)
+               {B10110000, 5},  // (    55    same code as <kn>
+               {B10110100, 6},  // )    56
+               {B00100000, 5},  // é    57
+               {B01001000, 5},  // è    58
+               {B01101000, 5},  // à    59
+               {B10100000, 5},  // ç    60
+               {B11011000, 5},  // ñ    61
+               {B01101000, 5},  // å    62    same code as à
+               {B01010000, 4},  // æ    63    same code as ä
+               {B11100000, 4}   // ø    64    same code as ö
             };
+static_assert(sizeof(pool) / sizeof(pool[0]) == sizeof(CWchars) - 1, "CWchars[] and pool[] out of step");
 
 ////////////////////////////////////////////////////////////////////
 ///// Variables for Echo Trainer Mode
@@ -3018,7 +3037,7 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     }
     String tmp_str = symbol;
     if (MorsePreferences::pliste[posOutputCase].value) {
-        toUpperCaseM32(tmp_str);            // ASCII *and* the decoder's ä ö ü
+        toUpperCaseM32(tmp_str);            // ASCII *and* the decoder's ä ö ü (+ Decoder Chars letters)
     }
     // M6: keyed + decoded characters are CW transcription. Weight follows the
     // device convention "incoming CW = bold, your own keying = regular":
@@ -3458,6 +3477,11 @@ String cleanUpProSigns( const String &input ) {
                 found = true;
                 break;
             }
+        }
+        if (!found && (uint8_t) src[i] >= 0xC0) {        // national letter code -> UTF-8 (see CWchars[])
+            buf[out++] = (char) 0xC3;
+            buf[out++] = (char) ((uint8_t) src[i] - 0x40);
+            found = true;
         }
         if (!found) {
             buf[out++] = src[i];
@@ -3900,18 +3924,114 @@ String CWwordToClearText(String cwword) {             // decode the Morse code c
                     break;
           case '2': ptr = CWtree[ptr].dah;
                     break;
-          case '0': symbol = CWtree[ptr].symb;
+          case '0': symbol = decodedSymbol(ptr);
                     ptr = 0;
                     result += symbol;
                     break;
       }
   }
-  symbol = CWtree[ptr].symb;
+  symbol = decodedSymbol(ptr);
   result += symbol;
   return encodeProSigns(result);
 }
 
+// The Decoder Chars set in force right now (decodedSymbol(), MorseDecoder.cpp): CW Keyer, Decoder, the
+// transceivers, and the Echo/Koch trainers - there decodedSymbol() first prefers the letter the target
+// word contains, so a correctly keyed <kn> is never shown (and judged) as ITU's "(". The games and the
+// QSO Bot match single characters against ASCII text of their own and always decode Standard.
+// The letters of the Decoder Chars set chosen in the preferences, as generator codes: what the Practice
+// Set picker offers beyond the plain characters (CWchars[0..50]). Standard (and the Accessibility
+// Edition, which has no such preference) is ä ö ü ch - already voiced there.
+const char* decoderSetLetters() {
+#ifdef CONFIG_AUDIO_A11Y
+  uint8_t set = DEC_CHARS_STANDARD;
+#else
+  uint8_t set = MorsePreferences::pliste[posDecoderChars].value;
+#endif
+  switch (set) {
+    case DEC_CHARS_ITU:      return "\xE4\xF6\xFC" "H" "()" "\xE9";
+    case DEC_CHARS_FR_ES_PT: return "\xE4\xF6\xFC" "H" "\xE0\xE9\xE8\xE7\xF1";
+    case DEC_CHARS_SV_FI:    return "\xE5\xE4\xF6\xFC" "H";
+    case DEC_CHARS_DA_NO:    return "\xE5\xE6\xF8\xFC" "H";
+    default:                 return "\xE4\xF6\xFC" "H";
+  }
+}
 
+uint8_t decoderCharSet() {
+#ifdef CONFIG_AUDIO_A11Y
+  return DEC_CHARS_STANDARD;                    // the preference is not in the Accessibility Edition
+#else
+  if (gameMode)
+    return DEC_CHARS_STANDARD;
+#ifdef CONFIG_QSO_BOT
+  if (qsoBotMode)
+    return DEC_CHARS_STANDARD;
+#endif
+  switch (morseState) {
+    case morseKeyer: case loraTrx: case wifiTrx: case morseTrx: case morseDecoder: case echoTrainer:
+    case kipKeyer:                              // Remote Keyer = the CW Keyer's body, decodes the operator's keying
+    case kipRig:                                // decodes nothing today (status lines only) - listed so it follows suit if it ever does
+      return MorsePreferences::pliste[posDecoderChars].value;
+    default:
+      return DEC_CHARS_STANDARD;
+  }
+#endif
+}
+
+
+
+///// National letters as one-byte codes (see CWchars[]) /////
+
+// The second byte of a UTF-8 0xC3 pair (a Latin-1 letter, either case) as generator text: the one-byte
+// code for the letters Morse has a code for, the plain letter for the accented ones it has not
+// (á í ó ú â ê ô ã õ ... are sent without the accent, as operators do), "ss" for ß, "" for the rest.
+static const char* foldLatin1(uint8_t b) {
+    uint8_t l = b + 0x40;                                          // C3 xx is U+00xx+0x40: the Latin-1 value
+    if (l >= 0xC0 && l <= 0xDE && l != 0xD7) l += 0x20;            // capital -> small (not ×, not ß)
+    switch (l) {
+        case 0xE4: return "\xE4";  case 0xF6: return "\xF6";  case 0xFC: return "\xFC";   // ä ö ü
+        case 0xE9: return "\xE9";  case 0xE8: return "\xE8";  case 0xE0: return "\xE0";   // é è à
+        case 0xE7: return "\xE7";  case 0xF1: return "\xF1";                              // ç ñ
+        case 0xE5: return "\xE5";  case 0xE6: return "\xE6";  case 0xF8: return "\xF8";   // å æ ø
+        case 0xE1: case 0xE2: case 0xE3:            return "a";
+        case 0xEA: case 0xEB:                       return "e";
+        case 0xEC: case 0xED: case 0xEE: case 0xEF: return "i";
+        case 0xF2: case 0xF3: case 0xF4: case 0xF5: return "o";
+        case 0xF9: case 0xFA: case 0xFB:            return "u";
+        case 0xFD: case 0xFF:                       return "y";
+        case 0xDF:                                  return "ss";       // ß
+        default:                                    return "";
+    }
+}
+
+// UTF-8 -> generator codes: every 0xC3 pair through foldLatin1(), everything else (ASCII, and the
+// uppercase prosign codes) unchanged. For text arriving from outside - the serial protocol.
+String utf8ToCodes(const String& s) {
+    String out;
+    out.reserve(s.length());
+    for (unsigned int i = 0; i < s.length(); ++i) {
+        uint8_t c = (uint8_t) s.charAt(i);
+        if (c == 0xC3 && i + 1 < s.length())
+            out += foldLatin1((uint8_t) s.charAt(++i));
+        else if (c < 0x80)
+            out += (char) c;                                       // other non-ASCII: no Morse code, dropped
+    }
+    return out;
+}
+
+// Generator codes -> UTF-8: the one-byte national letters become their two-byte form, everything else
+// (prosign codes included) is left alone. For raw sets sent on as they are - the protocol's
+// customchars/practicechars, the practice statistics; anything shown goes through cleanUpProSigns().
+String codesToUtf8(const String& s) {
+    String out;
+    out.reserve(s.length() + 4);
+    for (unsigned int i = 0; i < s.length(); ++i) {
+        uint8_t c = (uint8_t) s.charAt(i);
+        if (c >= 0xC0) { out += (char) 0xC3; out += (char) (c - 0x40); }
+        else out += (char) c;
+    }
+    return out;
+}
 
 String encodeProSigns( String &input ) {
     /// Compress prosign display forms to single-char codes.
@@ -3945,6 +4065,12 @@ String encodeProSigns( String &input ) {
                 found = true;
                 break;
             }
+        }
+        if (!found && (uint8_t) src[i] == 0xC3 && i + 1 < len) {   // decoded national letter -> its code
+            for (const char* f = foldLatin1((uint8_t) src[i + 1]); *f && out < (int)sizeof(buf) - 2; ++f)
+                buf[out++] = *f;
+            i += 2;
+            found = true;
         }
         if (!found) {
             buf[out++] = src[i++];
@@ -4417,7 +4543,8 @@ String cleanUpText(String text) {
  
     for (int i = 0; i < len && out < (int)sizeof(buf) - 1; ++i) {
         char c = src[i];
-        if (strchr(kochChars, c) != NULL || c == 'P' || c == 'T' || c == 'C') {
+        if (strchr(kochChars, c) != NULL || c == 'P' || c == 'T' || c == 'C' ||
+            (strchr(CWchars + 51, c) != NULL && c != '\0')) {   // ä ö ü ( ) and the other national letters (CWchars[51..]; text is lower case, so no H)
             buf[out++] = c;
         }
     }
@@ -4443,8 +4570,8 @@ void toUpperCaseM32(String &s) {
     for (unsigned int i = 0; i + 1 < s.length(); ++i) {
         if ((uint8_t) s.charAt(i) == 0xC3) {
             uint8_t c = (uint8_t) s.charAt(i + 1);
-            if (c == 0xA4 || c == 0xB6 || c == 0xBC)      // ä ö ü
-                s.setCharAt(i + 1, (char) (c - 0x20));    // -> Ä Ö Ü
+            if (c >= 0xA0 && c <= 0xBE && c != 0xB7)      // Latin-1 small letters: ä ö ü, and the
+                s.setCharAt(i + 1, (char) (c - 0x20));    // Decoder Chars letters -> capitals (not ÷)
             ++i;                                          // skip the pair's second byte
         }
     }
@@ -4454,14 +4581,9 @@ String utf8umlaut(const String& s) {    // Replacement table: pattern → replac
     // Ordered so that longer patterns are checked first where ambiguity
     // could arise (e.g. "<bk>" before "<b").
     static const struct { const char* pat; uint8_t patLen; const char* rep; uint8_t repLen; } table[] = {
-        // UTF-8 umlauts (2-byte sequences in UTF-8)
-        { "\xc3\xa4", 2, "ae", 2 },    // ä
-        { "\xc3\xb6", 2, "oe", 2 },    // ö
-        { "\xc3\xbc", 2, "ue", 2 },    // ü
-        { "\xc3\x84", 2, "ae", 2 },    // Ä
-        { "\xc3\x96", 2, "oe", 2 },    // Ö
-        { "\xc3\x9c", 2, "ue", 2 },    // Ü
-        { "\xc3\x9f", 2, "ss", 2 },    // ß
+        // UTF-8 letters (0xC3 pairs) are not in this table: they go through foldLatin1() below - ä ö ü
+        // and the other letters with a Morse code become their one-byte code (until 2026-10 ä ö ü were
+        // sent as ae oe ue), accented letters without one their plain letter, ß "ss".
         // Angle-bracket prosigns (longer sequences first)
         { "<err>", 5, "R", 1 },         // not in original but harmless safety
         { "<ar>",  4, "+", 1 },
@@ -4518,6 +4640,12 @@ String utf8umlaut(const String& s) {    // Replacement table: pattern → replac
                 matched = true;
                 break;
             }
+        }
+        if (!matched && (uint8_t) src[i] == 0xC3 && i + 1 < len) {   // UTF-8 letter -> code / plain letter
+            for (const char* f = foldLatin1((uint8_t) src[i + 1]); *f && out < bufMax; ++f)
+                buf[out++] = *f;
+            i += 2;
+            matched = true;
         }
         if (!matched) {
             buf[out++] = src[i++];
@@ -5116,7 +5244,7 @@ void m32Put(String type, String token, String value) {                    /// PU
           MorsePreferences::customCharSet = "";
         } else {
           MorsePreferences::useCustomChars = true;
-          MorsePreferences::customCharSet = value;
+          MorsePreferences::customCharSet = utf8ToCodes(value);   // é etc. arrive as UTF-8
         }
         koch.setup();                                  // clamps kochFilter/bounds before we persist them
         MorsePreferences::writePreferences("morserino");
@@ -5138,7 +5266,7 @@ void m32Put(String type, String token, String value) {                    /// PU
         // PUT practicechars/set/<character string>   — value is case-sensitive;
         // MorsePreferences::setPracticeChars() caps length + persists to its own
         // NVS key (unrelated to customchars above - see CLAUDE.md).
-        MorsePreferences::setPracticeChars(value);
+        MorsePreferences::setPracticeChars(utf8ToCodes(value));   // é etc. arrive as UTF-8
         MorseJSON::jsonOK();
       }
       else if (token == "clear") {
