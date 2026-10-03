@@ -1,5 +1,6 @@
 """
-PlatformIO pre-build hook: delete stale `<sketch>.ino N.cpp` duplicates.
+PlatformIO pre-build hook: delete stale `<sketch>.ino N.cpp` duplicates, and
+iCloud/Finder "name N.ext" copies (second pass, at the end of this file).
 
 Background
 ----------
@@ -53,5 +54,58 @@ def _clean(src_dir: str) -> int:
     return removed
 
 
+# Second pass: iCloud Drive / Finder conflict copies of ANY file - "MorseKipRig 2.cpp", "foo 3.h",
+# "a1b2c3d4 2.mp3" (2026-10-03: the repo lives in iCloud-synced ~/Documents, and a branch switch that
+# deletes and recreates a folder makes iCloud keep "name 2" copies - 82 in one afternoon). In src_dir a
+# copy is compiled next to its original ("multiple definition of ..."); in data_dir it would be packed
+# into the SPIFFS image, where the a11y voice store has little room to spare.
+# A copy byte-identical to the original beside it is redundant and removed. Any other copy in src_dir -
+# original missing, or different content - stops the build: which version is wanted is not ours to guess.
+_COPY_RE = re.compile(r"^(?P<stem>.+) (?P<n>\d+)(?P<ext>\.[A-Za-z0-9]+)?$")
+_SOURCE_EXT = {".c", ".cc", ".cpp", ".cxx", ".h", ".hh", ".hpp", ".ino", ".S", ".s"}
+
+
+def _same(a: Path, b: Path) -> bool:
+    try:
+        return a.stat().st_size == b.stat().st_size and a.read_bytes() == b.read_bytes()
+    except OSError:
+        return False
+
+
+def _clean_copies(root: str, sources_only: bool) -> list:
+    """Remove identical "name N.ext" copies under root; return the ones that could not be judged safe."""
+    unsafe = []
+    if not os.path.isdir(root):
+        return unsafe
+    for dirpath, _dirnames, filenames in os.walk(root):
+        for name in filenames:
+            m = _COPY_RE.match(name)
+            if not m:
+                continue
+            ext = m.group("ext") or ""
+            if sources_only and ext not in _SOURCE_EXT:
+                continue
+            copy = Path(dirpath) / name
+            original = Path(dirpath) / (m.group("stem") + ext)
+            if original.exists() and _same(copy, original):
+                try:
+                    copy.unlink()
+                    print(f"[clean_ino_dupes] removed identical iCloud/Finder copy: {copy}")
+                except OSError as exc:  # pragma: no cover - defensive
+                    print(f"[clean_ino_dupes] could not remove {copy}: {exc}")
+                    unsafe.append(copy)
+            elif sources_only:
+                unsafe.append(copy)
+    return unsafe
+
+
 src_dir = env.subst("$PROJECT_SRC_DIR")  # noqa: F821
 _clean(src_dir)
+_unsafe = _clean_copies(src_dir, sources_only=True)
+_clean_copies(env.subst("$PROJECT_DATA_DIR"), sources_only=False)  # noqa: F821 - SPIFFS image source
+if _unsafe:
+    print("\n[clean_ino_dupes] STOP: these look like iCloud/Finder copies of source files, but they are not")
+    print("identical to an original beside them, so they would be compiled as well. Delete or rename them:")
+    for f in _unsafe:
+        print(f"    {f}")
+    env.Exit(1)  # noqa: F821
