@@ -159,7 +159,7 @@ For each tag, the workflow:
 
 ### Pocket FAQ
 
-The Pocket FAQ at `Documentation/FAQ/Morserino-32 Pocket FAQ.pdf` should ideally also be rebuilt from `Morserino-32 Pocket FAQ.md`, but **there is no `build.sh` for the FAQ today** — the PDF has been produced by hand.
+The Pocket FAQ at `Documentation/FAQ/Morserino-32 Pocket FAQ.pdf` is built from `Morserino-32 Pocket FAQ.md` (and the German one from its `.md`) by `Documentation/FAQ/build.sh` (since 2026-08). **Update 2026-10-03:** CI now checks on every push that the committed FAQ and protocol PDFs were built from their current sources (`Documentation/check_doc_pdfs.py`, a source fingerprint in the PDF metadata — TODO E2), so the committed copy the release attaches is current by construction. The `.md`-newer-than-`.pdf` mtime warning in `release.yml` cannot fire on a fresh checkout (all files get the checkout time); it is superseded by that check.
 
 **Plan:**
 - **Phase 1 (initial release-workflow rollout):** the FAQ PDF is attached as-is from the committed copy. The workflow logs a warning if the `.md` is newer than the `.pdf`.

@@ -43,6 +43,12 @@ jobs:
       - name: Check the built manuals match their sources
         run: python3 "Documentation/User Manual/check_manual_fresh.py" --check
 
+      # The same for the FAQ (EN + DE) and the protocol description: their
+      # build.sh writes a fingerprint of the sources into the PDF's metadata,
+      # and this fails when the Markdown has moved on since (TODO E2).
+      - name: Check the FAQ and protocol PDFs match their sources
+        run: python3 Documentation/check_doc_pdfs.py --check
+
       - uses: actions/cache@v4
         with:
           path: |

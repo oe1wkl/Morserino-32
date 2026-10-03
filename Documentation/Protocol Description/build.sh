@@ -42,10 +42,15 @@ done
 #
 # pagetitle (rather than title) sets the HTML <title> without also emitting a
 # title block, which would duplicate the document's own top-level heading.
+# The source fingerprint goes into the PDF's metadata (keywords), so CI can tell a stale PDF from a
+# current one: ../check_doc_pdfs.py --check (TODO E2).
+FP=$(python3 ../check_doc_pdfs.py --fingerprint protocol)
+
 pandoc -f markdown-raw_html -t html5 \
        --standalone \
        --toc --toc-depth=3 \
        --metadata pagetitle="The M32 Serial Protocol" \
+       --metadata keywords="docsrc:$FP" \
        --css style.css \
        -o "$HTML" "$SRC"
 
