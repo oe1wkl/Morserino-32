@@ -234,19 +234,35 @@ uint8_t Decoder::getWpm() {
 // ---. is ö or ø), so no single tree is right for everybody; the Decoder Chars preference picks
 // the set. Standard is the tree as it always was. See devdocs/language-support/INVESTIGATION.md.
 
+// The Echo Trainer's target word, in generator codes (m32_v6.ino). Read here so that a code meaning
+// several letters decodes as the one the target actually contains.
+extern String echoTrainerWord;
+
 const char* decodedSymbol(uint8_t node) {
-  static const struct { uint8_t node; uint8_t sets; const char* symb; } subst[] = {
-    { 46, 1 << DEC_CHARS_ITU,                           "(" },   // -.--.   instead of <kn>
-    { 69, 1 << DEC_CHARS_ITU,                           ")" },   // -.--.-
-    { 70, 1 << DEC_CHARS_ITU | 1 << DEC_CHARS_FR_ES_PT, "é" },   // ..-..
-    { 38, 1 << DEC_CHARS_FR_ES_PT,                      "è" },   // .-..-
-    { 71, 1 << DEC_CHARS_FR_ES_PT,                      "ç" },   // -.-..
-    { 72, 1 << DEC_CHARS_FR_ES_PT,                      "ñ" },   // --.--
-    { 40, 1 << DEC_CHARS_FR_ES_PT,                      "à" },   // .--.-
-    { 40, 1 << DEC_CHARS_SV_FI | 1 << DEC_CHARS_DA_NO,  "å" },   // .--.-
-    { 20, 1 << DEC_CHARS_DA_NO,                         "æ" },   // .-.-    instead of ä
-    { 29, 1 << DEC_CHARS_DA_NO,                         "ø" },   // ---.    instead of ö
+  // code = the letter's generator code (CWchars[], m32_v6.ino) - what the Echo Trainer compares
+  static const struct { uint8_t node; uint8_t sets; char code; const char* symb; } subst[] = {
+    { 46, 1 << DEC_CHARS_ITU,                           '(',    "(" },   // -.--.   instead of <kn>
+    { 69, 1 << DEC_CHARS_ITU,                           ')',    ")" },   // -.--.-
+    { 70, 1 << DEC_CHARS_ITU | 1 << DEC_CHARS_FR_ES_PT, '\xE9', "é" },   // ..-..
+    { 38, 1 << DEC_CHARS_FR_ES_PT,                      '\xE8', "è" },   // .-..-
+    { 71, 1 << DEC_CHARS_FR_ES_PT,                      '\xE7', "ç" },   // -.-..
+    { 72, 1 << DEC_CHARS_FR_ES_PT,                      '\xF1', "ñ" },   // --.--
+    { 40, 1 << DEC_CHARS_FR_ES_PT,                      '\xE0', "à" },   // .--.-
+    { 40, 1 << DEC_CHARS_SV_FI | 1 << DEC_CHARS_DA_NO,  '\xE5', "å" },   // .--.-
+    { 20, 1 << DEC_CHARS_DA_NO,                         '\xE6', "æ" },   // .-.-    instead of ä
+    { 29, 1 << DEC_CHARS_DA_NO,                         '\xF8', "ø" },   // ---.    instead of ö
+    // Standard's own symbols for the shared codes - mask 0, used only by the Echo Trainer rule below
+    { 46, 0,                                            'N',    "<kn>" },
+    { 20, 0,                                            '\xE4', "ä" },
+    { 29, 0,                                            '\xF6', "ö" },
   };
+  // Echo Trainer: a code that stands for several letters is the one the target word contains -
+  // keying .--.- for the å of a Swedish file is right, whatever Decoder Chars is set to, and shows
+  // as å. Codes the target does not contain fall through to the set as usual (Standard: "*").
+  if (morseState == echoTrainer)
+    for (const auto& s : subst)
+      if (s.node == node && echoTrainerWord.indexOf(s.code) >= 0)
+        return s.symb;
   uint8_t set = decoderCharSet();
   if (set != DEC_CHARS_STANDARD)
     for (const auto& s : subst)

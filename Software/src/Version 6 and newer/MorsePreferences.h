@@ -61,6 +61,12 @@ extern void serialEvent();
 
 extern String getCustomChars();
 extern const char CWchars[];    // m32_v6.ino; first 51 bytes are the plain (non-Koch) RANDOMS char pool - see the ruler comment there
+// National letters travel through the generator as one-byte codes (their Latin-1 value) - see CWchars[]
+// in m32_v6.ino. These convert at the edges: UTF-8 in from outside, UTF-8 out for raw sets sent on.
+extern String utf8ToCodes(const String& s);
+extern String codesToUtf8(const String& s);
+extern const char* decoderSetLetters();     // the chosen Decoder Chars set's letters, as codes
+extern void toUpperCaseM32(String &s);
 
 
 #define MAX_FILE_PARTS 16
