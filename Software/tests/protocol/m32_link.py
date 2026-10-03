@@ -108,23 +108,30 @@ class M32Link:
 
     # -- connection ---------------------------------------------------------
 
-    def open(self, handshake=True, boot_wait=1.5):
-        """Open the port and (by default) handshake the protocol on.
+    def open(self, handshake=True, boot_wait=0.3):
+        """Open the port WITHOUT resetting the device, and (by default) handshake.
 
-        Opening resets an ESP32-S3 board -- the first thing on the wire is the
-        ROM banner, not an answer -- so `boot_wait` lets most of the boot pass
-        before the handshake is attempted, and handshake() retries besides.
+        macOS raises DTR and RTS when a tty is opened, and pyserial then applies
+        the requested levels one at a time, DTR first. Asking for both off -- as
+        this harness did until 2026-10 -- walks the lines through DTR=0/RTS=1,
+        which is exactly the ESP32 auto-reset state (EN low via the classic's
+        CP2102 transistor pair, chip reset on the S3's USB-Serial/JTAG): every
+        open rebooted the device, as a short, timing-dependent pulse. Asking for
+        both ON leaves the lines where open() put them -- what the browser tools
+        do (a bare port.open(), no setSignals) -- so nothing moves and nothing
+        resets. Both levels are also correct while connected: the Pocket's USB
+        CDC only talks to a host that asserts DTR, and on the classic DTR=1 with
+        RTS=0 would pull GPIO0 low, which is its FN button, held.
 
         pyserial rejects dtr=/rts= as constructor keywords, so the object is
-        built unopened, the lines are set, and only then is it opened -- with
-        both lines de-asserted, which is what this board answers to.
+        built unopened, the lines are set, and only then is it opened.
         """
         s = serial.Serial()
         s.port = self.port
         s.baudrate = self.baud
         s.timeout = 0.1
-        s.dtr = False
-        s.rts = False
+        s.dtr = True
+        s.rts = True
         s.open()
         self._serial = s
         self._buffer = ""
@@ -138,20 +145,41 @@ class M32Link:
         return self
 
     def close(self):
+        """Close without a reset pulse: RTS goes first (passing DTR=1/RTS=0, a
+        harmless instant of GPIO0 low), so the kernel's own drop of the lines on
+        close finds them already at 0/0 and cannot pass through DTR=0/RTS=1."""
         if self._serial is not None:
             try:
+                try:
+                    self._serial.rts = False
+                    self._serial.dtr = False
+                except Exception:
+                    pass
                 self._serial.close()
             finally:
                 self._serial = None
 
     def reboot(self, boot_wait=3.0, attempts=4):
-        """Power-cycle by proxy: close the port, reopen it, handshake again.
+        """Reboot the device on purpose and handshake again.
 
-        Opening the port asserts a chip reset on the ESP32-S3, so this is a
-        real reboot -- which is exactly what a persistence check needs, since
-        anything held only in RAM does not survive it.
+        Persistence checks need a real reboot -- anything held only in RAM must
+        not survive it. Opening the port no longer provides one by accident, so
+        pulse the reset explicitly: DTR=0/RTS=1 holds EN low (classic) or resets
+        the S3 through its USB-Serial/JTAG, then DTR=1 releases it with GPIO0
+        high, i.e. a normal boot -- the same sequence esptool uses, minus the
+        download-mode strap.
         """
-        self.close()
+        if self._serial is None:       # works on a closed link too: opening no longer resets
+            self.open(handshake=False, boot_wait=0)
+        s = self._serial
+        s.dtr = False                  # from 1/1: now DTR=0, RTS=1 -> reset held
+        time.sleep(0.15)
+        s.dtr = True                   # 1/1: released, normal boot
+        # Hold 1/1 well past the release before closing: close() passes through DTR=1/RTS=0 (GPIO0 low),
+        # and the ESP32 samples GPIO0 a few ms AFTER release (EN rises through an RC) - closing at once
+        # sent the classic into download mode (2026-10-03, on the bench).
+        time.sleep(1.0)
+        self.close()                   # the S3 may re-enumerate its USB port
         time.sleep(0.5)
         last = None
         for attempt in range(attempts):
