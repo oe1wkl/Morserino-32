@@ -55,9 +55,11 @@ contain, so they can never go stale:
 `firmware_tables.py` from the firmware's own source rather than hand-copied.
 
 **Tier 3 — the lesson setter.** `PUT kochlesson/<n>` round trips; out-of-range
-values are refused; and the value **survives a reboot** — the harness closes
-and reopens the port, which resets an ESP32-S3, so anything held only in RAM
-cannot survive. That last check is what `292e417` fixed.
+values are refused; and the value **survives a reboot** — the harness pulses
+the chip's reset through DTR/RTS (the esptool way), so anything held only in RAM
+cannot survive. Merely opening the port does **not** reset the device (since
+2026-10: both lines are opened asserted, as the browser tools do — see
+`M32Link.open()` for why the old "both off" setting rebooted it every time). That last check is what `292e417` fixed.
 
 **Reply delivery.** Every command must put its own answer on the wire without
 being prompted. See the finding below.

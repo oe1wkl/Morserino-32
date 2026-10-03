@@ -165,8 +165,8 @@ def check_lesson_setter(report, m32, label):
 def check_persistence(report, m32):
     """Tier 3: the lesson survives a reboot.
 
-    Opening the serial port resets an ESP32-S3, so closing and reopening is a
-    genuine power-cycle -- a value held only in RAM cannot survive it.
+    M32Link.reboot() pulses the chip reset through DTR/RTS, so this is a genuine
+    reboot -- a value held only in RAM cannot survive it.
     """
     reading = m32.get_kochlesson()
     low, high = reading["minimum"], reading["maximum"]
