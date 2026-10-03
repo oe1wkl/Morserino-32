@@ -105,6 +105,9 @@ const char * prefName[] = {
             "qsoBotContest",     // NVS keys are limited to 15 chars: the original "qsoBotContestType" (17) could never be stored
             "qsoBotLevel",
 #endif
+#ifndef CONFIG_AUDIO_A11Y
+            "decoderChars",
+#endif
             "serialOut"
 					};
 
@@ -534,6 +537,15 @@ parameter MorsePreferences::pliste[] = {
     {"Beginner", "Intermediate", "Advanced"}
   },
 #endif
+#ifndef CONFIG_AUDIO_A11Y
+  {
+    0, 0, 4, 1,                                                 // decoderCharSets (morsedefs.h): national letters / ITU brackets
+    "Decoder Chars",
+    "Letters and brackets decoded for national and ITU codes",
+    true,
+    {"Standard", "ITU", "Fr/Es/Pt", "Sv/Fi", "Da/No"}
+  },
+#endif
   {
     5, 0, 5, 1,        // Serial Output entry (unchanged)                                                // output characters on USB serial? 0 = none (but DEBUG/ERR) 1= keyed, 2 = decode, 3=both, 4=generated, 5=all
     "Serial Output",
@@ -694,11 +706,17 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define QSOBOT
 #endif
+#ifndef CONFIG_AUDIO_A11Y
+#define DECCHARS posDecoderChars,
+#else
+#define DECCHARS
+#endif
 
 
   prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency,
+                                                   DECCHARS
                                                  };
   prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
@@ -746,19 +764,22 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
-                                                   posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
+                                                   posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
  prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
-                                                   posKeyExternalTx, posLoraChannel, posExtAudioOnDecode
+                                                   posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
  prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode
+                                                   posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
 #ifdef CONFIG_QSO_BOT
@@ -772,7 +793,8 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
  prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
-                                                   posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode
+                                                   posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   DECCHARS
                                                  };
 
  // The order here is the order the user sees in the "All" preferences view
@@ -791,7 +813,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
                                                    posKeyExternalTx, posLoraCwTransmit,
                                                    posLoraChannel,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   posGoertzelBandwidth, posExtAudioOnDecode, DECCHARS
                                                    QSOBOT
                                                    posPlayerCall, posPlayerName, posResetScores,
 #ifdef CONFIG_PRACTICE_STATS
@@ -1931,6 +1953,10 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
       // device & UI behaviour:
       case posClicks:
       case posQuickStart:
+#ifndef CONFIG_AUDIO_A11Y
+      case posDecoderChars:               // the operator's language, not a training choice: a recalled
+                                          // (or imported) snapshot must not switch a Danish operator to Standard
+#endif
       // hardware wiring:
       case posPolarity:
       case posExtPddlPolarity:

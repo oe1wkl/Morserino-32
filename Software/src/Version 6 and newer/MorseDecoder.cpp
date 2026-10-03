@@ -228,6 +228,33 @@ uint8_t Decoder::getWpm() {
 }
 
 
+//////// Decoder Chars: national letters and ITU brackets /////////
+//
+// Three codes mean different letters in different languages (.--.- is à or å, .-.- is ä or æ,
+// ---. is ö or ø), so no single tree is right for everybody; the Decoder Chars preference picks
+// the set. Standard is the tree as it always was. See devdocs/language-support/INVESTIGATION.md.
+
+const char* decodedSymbol(uint8_t node) {
+  static const struct { uint8_t node; uint8_t sets; const char* symb; } subst[] = {
+    { 46, 1 << DEC_CHARS_ITU,                           "(" },   // -.--.   instead of <kn>
+    { 69, 1 << DEC_CHARS_ITU,                           ")" },   // -.--.-
+    { 70, 1 << DEC_CHARS_ITU | 1 << DEC_CHARS_FR_ES_PT, "é" },   // ..-..
+    { 38, 1 << DEC_CHARS_FR_ES_PT,                      "è" },   // .-..-
+    { 71, 1 << DEC_CHARS_FR_ES_PT,                      "ç" },   // -.-..
+    { 72, 1 << DEC_CHARS_FR_ES_PT,                      "ñ" },   // --.--
+    { 40, 1 << DEC_CHARS_FR_ES_PT,                      "à" },   // .--.-
+    { 40, 1 << DEC_CHARS_SV_FI | 1 << DEC_CHARS_DA_NO,  "å" },   // .--.-
+    { 20, 1 << DEC_CHARS_DA_NO,                         "æ" },   // .-.-    instead of ä
+    { 29, 1 << DEC_CHARS_DA_NO,                         "ø" },   // ---.    instead of ö
+  };
+  uint8_t set = decoderCharSet();
+  if (set != DEC_CHARS_STANDARD)
+    for (const auto& s : subst)
+      if (s.node == node && (s.sets & (1 << set)))
+        return s.symb;
+  return CWtree[node].symb;
+}
+
 //////// methods for class M32MorseTable /////////
 
 M32MorseTable::M32MorseTable()
@@ -252,7 +279,7 @@ String M32MorseTable::retrieveSymbol() { /// deliver the character, and go backk
   symbol.reserve(6);
   if (treeptr == 0 )
     return String(" ");     /// we display a blank
-  symbol = CWtree[treeptr].symb;
+  symbol = decodedSymbol(treeptr);
   treeptr = 0;
   return symbol;
 }

@@ -2970,7 +2970,7 @@ void displayDecodedMorse(String symbol, boolean keyed) {
     }
     String tmp_str = symbol;
     if (MorsePreferences::pliste[posOutputCase].value) {
-        toUpperCaseM32(tmp_str);            // ASCII *and* the decoder's ä ö ü
+        toUpperCaseM32(tmp_str);            // ASCII *and* the decoder's ä ö ü (+ Decoder Chars letters)
     }
     // M6: keyed + decoded characters are CW transcription. Weight follows the
     // device convention "incoming CW = bold, your own keying = regular":
@@ -3848,15 +3848,38 @@ String CWwordToClearText(String cwword) {             // decode the Morse code c
                     break;
           case '2': ptr = CWtree[ptr].dah;
                     break;
-          case '0': symbol = CWtree[ptr].symb;
+          case '0': symbol = decodedSymbol(ptr);
                     ptr = 0;
                     result += symbol;
                     break;
       }
   }
-  symbol = CWtree[ptr].symb;
+  symbol = decodedSymbol(ptr);
   result += symbol;
   return encodeProSigns(result);
+}
+
+// The Decoder Chars set in force right now (decodedSymbol(), MorseDecoder.cpp). Only where decoded
+// text is just read - CW Keyer, Decoder, the transceivers. The Echo and Koch trainers, the games and
+// the QSO Bot compare what was keyed with text they generated themselves (<kn>, ä, ...), so they
+// always decode Standard: ITU's "(" would mark a correctly keyed <kn> wrong.
+uint8_t decoderCharSet() {
+#ifdef CONFIG_AUDIO_A11Y
+  return DEC_CHARS_STANDARD;                    // the preference is not in the Accessibility Edition
+#else
+  if (gameMode)
+    return DEC_CHARS_STANDARD;
+#ifdef CONFIG_QSO_BOT
+  if (qsoBotMode)
+    return DEC_CHARS_STANDARD;
+#endif
+  switch (morseState) {
+    case morseKeyer: case loraTrx: case wifiTrx: case morseTrx: case morseDecoder:
+      return MorsePreferences::pliste[posDecoderChars].value;
+    default:
+      return DEC_CHARS_STANDARD;
+  }
+#endif
 }
 
 
@@ -4385,8 +4408,8 @@ void toUpperCaseM32(String &s) {
     for (unsigned int i = 0; i + 1 < s.length(); ++i) {
         if ((uint8_t) s.charAt(i) == 0xC3) {
             uint8_t c = (uint8_t) s.charAt(i + 1);
-            if (c == 0xA4 || c == 0xB6 || c == 0xBC)      // ä ö ü
-                s.setCharAt(i + 1, (char) (c - 0x20));    // -> Ä Ö Ü
+            if (c >= 0xA0 && c <= 0xBE && c != 0xB7)      // Latin-1 small letters: ä ö ü, and the
+                s.setCharAt(i + 1, (char) (c - 0x20));    // Decoder Chars letters -> capitals (not ÷)
             ++i;                                          // skip the pair's second byte
         }
     }

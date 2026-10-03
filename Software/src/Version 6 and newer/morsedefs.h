@@ -460,6 +460,11 @@ enum prefPos : uint8_t {
         posQsoBotContestType,
         posQsoBotLevel,
 #endif
+// Decoder Chars (national letters / ITU brackets in decoded text): not in the Accessibility
+// Edition - decoded text is read on screen, and every preference costs voice clips there.
+#ifndef CONFIG_AUDIO_A11Y
+        posDecoderChars,
+#endif
   posSerialOut,
                 // to be treated differently:
                 posKochFilter,                                                                                // 36
@@ -469,6 +474,15 @@ enum prefPos : uint8_t {
 #ifdef CONFIG_PRACTICE_STATS
                 posPracticeStatsOn,
 #endif
+};
+
+// Decoder Chars (posDecoderChars) values - stored in NVS, so the order must never change.
+enum decoderCharSets : uint8_t {
+  DEC_CHARS_STANDARD,           // the tree as it always was: <kn>, ä ö ü ch
+  DEC_CHARS_ITU,                // ITU-R M.1677-1: ( ) é, keeps ä ö ü ch
+  DEC_CHARS_FR_ES_PT,           // à é è ç ñ
+  DEC_CHARS_SV_FI,              // å ä ö
+  DEC_CHARS_DA_NO               // å æ ø
 };
 
 enum actMessage : int {
