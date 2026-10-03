@@ -90,7 +90,7 @@ command line).
    checkouts on a detached HEAD, `stash@{2}` is a GitHub Desktop stash on `test1`.
    Contents not inspected — look before dropping.
 7. ~~`Software/tests/kip/` untracked~~ — resolved, it is tracked on `m32kip`.
-8. **`devdocs/RELEASE_AUTOMATION_DESIGN.md:162`** says the FAQ has no `build.sh` — stale.
+8. ~~`devdocs/RELEASE_AUTOMATION_DESIGN.md:162` says the FAQ has no `build.sh`~~ — fixed 2026-10-03.
 9. **Branch graveyard** (verified 2026-09-30; "unmerged" means not an ancestor of master —
    squash-merged work also shows up that way, so check the PR before deleting):
    - Merged, safe to delete: `claude/cranky-bardeen-dcddba`, `pr-222`, `pr-223`.
@@ -155,8 +155,7 @@ command line).
    (Bluetooth keyboard interplay), step 13 (WiFi upload/OTA after a BLE session, LoRa+BLE,
    30-minute keyer soak); ≥35 WpM stalled-client CW soak (needs a fast operator); a Pocket
    re-run under access control, including **measuring the leak fix on the Pocket** (only the
-   classic was measured). Doc debt: `M32 Protocol.pdf` (hand-exported from MacDown) not
-   regenerated.
+   classic was measured). Doc debt: ~~`M32 Protocol.pdf` not regenerated~~ — rebuilt and CI-gated 2026-10-03 (E2).
 2. **iOS app vs. a11y Pocket over BLE** — Files tab with a long `player.txt` (from the
    "Installer problems" session, commit 9c82391) *(verify pushed)*.
 3. **Protocol 1.4:** `GET capabilities` and paginated `GET configs/details` **pass over BLE**
@@ -195,7 +194,9 @@ command line).
 ## E. Docs and pipeline
 
 1. EPUBs still carry the pre-recovery-mode text; Memory Chain HTML/PDF rebuild was open in earlier notes.
-2. FAQ and protocol PDFs have **no CI freshness gate** (only the manuals do) — can drift silently. **Now stale:** `M32 Protocol.md` gained the character-set and Practice Set sections on 2026-10-02, the PDF was not regenerated.
+2. ~~FAQ and protocol PDFs have no CI freshness gate~~ — **done 2026-10-03**: `Documentation/check_doc_pdfs.py`
+   (source fingerprint in the PDF metadata, written by both `build.sh`), CI step in `pio-ci.yml`; all three PDFs
+   rebuilt (the protocol PDF had missed the 2026-10-02 sections).
 3. V9.0-beta.2 shipped via a **partly manual** path; the next release is the first end-to-end
    test of the workflow timeout (30→60) and beta-asset changes.
 4. `Software/iOS/M32Config/store-listing.md` had an uncommitted edit of Willi's as of 8/24 *(verify)*.
@@ -228,14 +229,14 @@ command line).
    are spoken as prosigns**; the space in Op Name has no clip either. Fix: for the call-sign and name character
    sets, voice the lower-case letter (and say "space"); Practice Set must keep voicing upper case as prosigns
    (there it IS a prosign code). Shipped bug in V9 → fix on `master` (9.1), merge into `m32kip`.
-2. **BLE keyboard (vBand): link drops after ~30 min, possible stuck key-down — investigate.** Not reported by
-   everybody. What the code does today (`MorseBluetooth.cpp`): on disconnect, `onDisconnect` waits a fixed
-   `delay(5000)` *on the BLE event task*, then re-advertises — so reconnecting relies on the host coming back by
-   itself; and nothing sends an "all keys released" report on (re)connect, so a disconnect between a key-down
-   and its key-up report can leave vBand (in the browser) keying. Plan: send a release report on every connect
-   and before/after any stop; find out why the link drops (host power management, supervision timeout,
-   connection parameters — a long soak with a central that logs disconnect reasons); check whether the 5 s
-   blocking delay on the event task delays or breaks the reconnect.
+2. **BLE keyboard (vBand): link drops after ~30 min, possible stuck key-down** — **fix on branch
+   `ble-kbd-reconnect` (a500b76, worktree `/private/tmp/claude-501/m32-ble-kbd`), not merged, bench owed.**
+   `onDisconnect` slept 5 s on Bluedroid's event task: now the callbacks only record, `MorseBluetooth::tick()`
+   (main loop) re-advertises after 0.5 s; the real Ctrl state is sent 1 s after every (re)connect; the key is
+   released before `stopBluetooth()`; every disconnect is logged with its HCI reason (DEBUG, Serial Output =
+   Nothing) — `devdocs/ble-keyboard/soak_log.py` records them. **Bench:** vBand session, force drops (walk out of
+   range / toggle the Mac's Bluetooth) while keying and while the key is held; then a long soak with the logger to
+   learn WHY it drops (0x08 timeout / 0x13 host / 0x16 M32).
 3. ~~**Decoder: ITU brackets and national characters**~~ — **done, bench-tested by Willi on the classic and the
    Pocket (standard edition) and merged to `master` 2026-10-03** (a3e9d5a + 60fa931, changelog V. 9.1, EN+DE manuals).
    Preference **Decoder Chars** (Standard / ITU / Fr/Es/Pt / Sv/Fi / Da/No; not in the a11y edition, not in snapshots),

@@ -30,7 +30,7 @@ LANGS=${1:-all}
 FORMAT=${2:-pdf}
 
 build_one() {
-    local lang=$1 src title toc html pdf
+    local lang=$1 src title toc html pdf fp
     case "$lang" in
         en) src="Morserino-32 Pocket FAQ.md"
             pdf="Morserino-32 Pocket FAQ.pdf"
@@ -45,6 +45,8 @@ build_one() {
     html="${pdf%.pdf}.html"
 
     [ -f "$src" ] || { echo "ERROR: $src is missing." >&2; return 1; }
+    # source fingerprint into the PDF's metadata, for CI's ../check_doc_pdfs.py --check (TODO E2)
+    fp=$(python3 ../check_doc_pdfs.py --fingerprint "faq-$lang")
 
     # -raw_html for the same reason as the protocol document: the sources talk
     # about file names and settings in running prose, and pandoc's default reader
@@ -55,6 +57,7 @@ build_one() {
            --metadata pagetitle="$title" \
            --metadata toc-title="$toc" \
            --metadata lang="$lang" \
+           --metadata keywords="docsrc:$fp" \
            --css style.css \
            -o "$html" "$src"
 
