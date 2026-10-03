@@ -229,14 +229,18 @@ command line).
    are spoken as prosigns**; the space in Op Name has no clip either. Fix: for the call-sign and name character
    sets, voice the lower-case letter (and say "space"); Practice Set must keep voicing upper case as prosigns
    (there it IS a prosign code). Shipped bug in V9 → fix on `master` (9.1), merge into `m32kip`.
-2. **BLE keyboard (vBand): link drops after ~30 min, possible stuck key-down** — **fix on branch
-   `ble-kbd-reconnect` (a500b76, worktree `/private/tmp/claude-501/m32-ble-kbd`), not merged, bench owed.**
-   `onDisconnect` slept 5 s on Bluedroid's event task: now the callbacks only record, `MorseBluetooth::tick()`
-   (main loop) re-advertises after 0.5 s; the real Ctrl state is sent 1 s after every (re)connect; the key is
-   released before `stopBluetooth()`; every disconnect is logged with its HCI reason (DEBUG, Serial Output =
-   Nothing) — `devdocs/ble-keyboard/soak_log.py` records them. **Bench:** vBand session, force drops (walk out of
-   range / toggle the Mac's Bluetooth) while keying and while the key is held; then a long soak with the logger to
-   learn WHY it drops (0x08 timeout / 0x13 host / 0x16 M32).
+2. **BLE keyboard (vBand): link drops after ~30 min, possible stuck key-down** — **fixes on branch
+   `ble-kbd-reconnect` (6d8de58, worktree `/private/tmp/claude-501/m32-ble-kbd`), not merged.** An automated rig
+   (`Software/tests/ble-kbd/`: the classic as BLE test host + `soak.py`) found and confirmed, 2026-10-03/04:
+   - **stuck key** after a dropout: master leaves the host with the key DOWN in 16 of 16 forced drops; fixed (the
+     real Ctrl state is re-sent 1 s after every (re)connect; released before the keyboard stops);
+   - **13 KB leaked per CW Keyer visit** (BLEHIDDevice's GATT objects never freed): after ~5 visits the keyboard
+     could not start until power-off — fixed (own HID table, freed after deinit; 0 B/cycle measured);
+   - advertising UUIDs re-added on every start (fixed); onDisconnect's 5 s block on the BLE task (gone);
+   - **open:** "half-open" connections — the ESP32 test host sometimes never completes connecting while the Pocket
+     stops advertising (master too); 10 s encryption watchdog added, not yet seen firing. The ESP32 central is a
+     flaky reference: **next, a real host** (Mac, run from Terminal.app — BLE permission) for drops and the 30-min soak.
+   **Classic currently runs the test-host sketch** — re-flash 9.1 when done.
 3. ~~**Decoder: ITU brackets and national characters**~~ — **done, bench-tested by Willi on the classic and the
    Pocket (standard edition) and merged to `master` 2026-10-03** (a3e9d5a + 60fa931, changelog V. 9.1, EN+DE manuals).
    Preference **Decoder Chars** (Standard / ITU / Fr/Es/Pt / Sv/Fi / Da/No; not in the a11y edition, not in snapshots),
