@@ -34,14 +34,14 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>User Manual</p></div>
-<div class="title-version">Version 9.x<br>September 2026</div>
+<div class="title-version">Version 9.x<br>October 2026</div>
 <div class="title-variant">for all Morserino-32 models</div>
 <div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — User Manual</strong></p>
-<p>Edition V 9.x, September 2026 — for all Morserino-32 models</p>
+<p>Edition V 9.x, October 2026 — for all Morserino-32 models</p>
 <p>© Copyright 2016-2026 by Willi Kraml, OE1WKL</p>
 <p>This work is licensed under a CC BY 4.0 license. To view a copy of this
 license, visit <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -181,8 +181,15 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=d24b18851fa5 v=9 -->
+<!-- WHATSNEW:BEGIN en=eb80e8d42b49 v=9 -->
 <p>What is new in Version 9?</p>
+<p><strong>V 9.1</strong></p>
+<ul>
+<li>A new preference <strong>Decoder Chars</strong> lets the decoder show the letters of other languages, and the brackets of the ITU standard. A few Morse codes mean different letters in different languages – <code>.--.-</code> is à in French but å in Swedish, <code>.-.-</code> is ä in German but æ in Danish – so you choose a set: <strong>Standard</strong> (as before: <code>-.--.</code> is &lt;kn&gt;, plus ä ö ü and ch), <strong>ITU</strong> (<code>-.--.</code> is „(“, and „)“ and é are added, as in ITU-R M.1677-1), <strong>Fr/Es/Pt</strong> (à é è ç ñ), <strong>Sv/Fi</strong> (å) or <strong>Da/No</strong> (å, and æ ø instead of ä ö). It applies to CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer; the games and the QSO Bot keep using Standard. Not in the Accessibility Edition, where decoded text is not read from the screen. Thanks to the testers who asked for French, Spanish, Portuguese and Nordic letters, and for the ITU brackets.</li>
+<li>The letters of other languages can now also be practised. The File Player sends ä ö ü, é è à ç ñ and å æ ø with their own Morse code – until now ä ö ü were sent as ae oe ue, and the others were simply left out („café“ came out as „caf“) – other accented letters as the plain letter, and round brackets as <code>-.--.</code> and <code>-.--.-</code>. Koch <strong>Custom Chars</strong> taken from the file may contain them as well, and the <strong>Practice Set</strong> picker now also offers ä ö ü and ch (or, outside the Accessibility Edition, the letters of the set chosen with <strong>Decoder Chars</strong>). In the Echo Trainer, a code that stands for several letters counts as the one in the word you are to repeat: <code>.--.-</code> for the å of a Swedish text is right whatever <strong>Decoder Chars</strong> is set to.</li>
+<li>With Bluetooth keyboard output, letters with umlauts or accents are now typed without them – ä ö ü as ae oe ue, å as aa, and so on – because what a keyboard types for them depends on the computer’s keyboard layout. Until now ä ö ü typed nothing at all.</li>
+</ul>
+<p><strong>V 9.0</strong></p>
 <ul>
 <li>A single firmware installer for every Morserino, at <a href="https://www.morserino.info/install.html">https://www.morserino.info/install.html</a>. It asks the processor in your device which Morserino it is, so you no longer have to know whether to start on the page for the classic M32 or the one for the M32 Pocket - there is only one page now. It also tells you which firmware version is currently on the device before you install anything, and lets you choose whether your settings are kept or erased. The two previous installer pages forward to it, so existing bookmarks keep working.</li>
 <li>M32 Pocket only: the installer can now also install the <strong>Accessibility Edition</strong>, which speaks the menus and settings aloud for blind and partially sighted operators (the games are not included in it). Standard and Accessibility Edition are offered for the same device and you can move between them at any time; your settings are kept.</li>
@@ -712,7 +719,7 @@ The font family used is Lato.</p>
 <p>The file player mode remembers where you stopped. (Exit this mode by pressing and holding the encoder. <strong>Do not just switch it off</strong> or wait for time-out; if you do, the Morserino will not be able to remember where you were.) It will then resume playing from that point the next time you restart the file player. Once the end of the file (or the file part) is reached, it will start at the beginning again.</p>
 </div>
 <h4 class="unnumbered" id="encoding-of-text-files-for-file-player">Encoding of text files for file player</h4>
-<p>The file should contain ASCII characters only (upper or lower case does not matter) - characters that cannot be represented in Morse code are just ignored. Pro-signs can be in the file, they need to be written as 2 character representations with either [] or &lt;&gt; around them, e.g. &lt;sk&gt; or [ka], or prepended with a backslash, e.g. \kn.</p>
+<p>The file should be plain text, saved as UTF-8 (upper or lower case does not matter) - characters that cannot be represented in Morse code are just ignored. Letters with umlauts or accents are sent with their own Morse code wherever there is one: ä ö ü, é è à ç ñ and å æ ø<span class="classic pocket">(how they are decoded and shown is set with the preference <strong>Decoder Chars</strong>)</span>. Other accented letters (á, ê, õ, …) are sent as the plain letter, and ß as “ss”. Round brackets are sent as <code>-.--.</code> for „(“ and <code>-.--.-</code> for „)“. Pro-signs can be in the file, they need to be written as 2 character representations with either [] or &lt;&gt; around them, e.g. &lt;sk&gt; or [ka], or prepended with a backslash, e.g. \kn.</p>
 <p><strong>Pro Signs</strong></p>
 <p>The following pro signs are recognized (see further down in <strong>Koch: Select Lesson</strong> about the meaning of pro signs):</p>
 <ul>
@@ -1430,7 +1437,7 @@ The font family used is Lato.</p>
 </div>
 <h4 class="unnumbered" id="koch-train-with-a-customized-set-of-characters"><strong>Koch: Train with a customized set of characters</strong></h4>
 <p>You can also use the Koch Trainer to practice with a specific set of characters. First, upload a text file to the file player that contains the characters you want to train. They can be one “word” or several words on one line or more. Then, set the preference <strong>Koch Sequence</strong> to the new option <strong>Custom Chars.</strong> The Koch Trainer will then read the characters from the file.</p>
-<p>Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use those characters for your training. The <strong>Koch Lesson</strong> setting acts as an index into your custom character set: at lesson <em>N</em>, only the first <em>N</em> characters of the set are used as the active training pool (capped at the actual length of the set, so a lesson number larger than your character set simply uses all of it). The lesson maximum adjusts automatically to the length of your custom character set (up to 51 characters; characters beyond the 51st are not reachable).</p>
+<p>Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use those characters for your training. The <strong>Koch Lesson</strong> setting acts as an index into your custom character set: at lesson <em>N</em>, only the first <em>N</em> characters of the set are used as the active training pool (capped at the actual length of the set, so a lesson number larger than your character set simply uses all of it). The lesson maximum adjusts automatically to the length of your custom character set (up to 51 characters; characters beyond the 51st are not reachable). The set may also contain the letters with umlauts and accents described under <strong>Encoding of text files for file player</strong><span class="pocket-a11y">(on this edition, letters other than ä ö ü are not spoken)</span>.</p>
 <p>To change the character set, upload a new text file and select <strong>Custom Chars </strong>again. Even if it had been selected before, you must select <strong>Custom Chars</strong> again to prepare the new character set. If you just upload a new text file, the custom character set will not change. You must go into preferences and select <strong>Custom Chars</strong> again.<br/> <em>This is a feature, not a bug!</em><br/> It means you can switch between training your characters and using a different text file for the file player. Setting <strong>Koch Sequence</strong> to M32, LCWO, LICW, or CW Academy reverts to the “normal” Koch Trainer option.</p>
 <div class="note">
 <p>Looking for a quicker way to just drill a handful of characters you find difficult, without going through a text file or the Koch lesson mechanism? See <strong>Practice Set</strong>, a separate feature reachable directly under <strong>CW Generator</strong> and <strong>Echo Trainer</strong> (not under Koch Trainer) – described where those modes are introduced, and in <strong>Preferences regarding Practice Set</strong>. It uses its own, separately stored character set and does not affect or get affected by <strong>Custom Chars</strong> here.</p>
@@ -2518,7 +2525,7 @@ The font family used is Lato.</p>
 <li>Transmitter and network settings: <strong>Key ext TX</strong>, <strong>Generator Tx</strong><span class="classic">, the LoRa channel</span></li>
 <li>Bluetooth keyboard settings: <strong>BLT Kbd Output</strong>, <strong>BLT &lt;AR&gt;</strong></li>
 <li>Audio routing: <strong>Headphone Output</strong>, <strong>Decoded on IO</strong></li>
-<li>Device behavior: <strong>Encoder Click</strong>, <strong>Quick Start</strong></li>
+<li>Device behavior: <strong>Encoder Click</strong>, <strong>Quick Start</strong><span class="classic pocket">, <strong>Decoder Chars</strong></span></li>
 <li><span class="pocket">Game settings: <strong>Invader Orient.</strong> and the</span><span class="classic pocket-a11y">The</span> QSO Bot settings (<strong>Contest Type</strong>, <strong>QSO Difficulty</strong>)</li>
 </ul>
 <p>(Snapshots stored with older firmware versions may still contain some of these settings; they are ignored when recalling, and cleaned out when you overwrite the snapshot.)</p>
@@ -2724,7 +2731,7 @@ The font family used is Lato.</p>
 <tbody>
 <tr>
 <td>Practice Set</td>
-<td>Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation, click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as “(not set)” until you have added at least one character.</td>
+<td>Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation (followed by ä ö ü and ch<span class="classic pocket">, or the letters of the set chosen with <strong>Decoder Chars</strong></span>), click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as “(not set)” until you have added at least one character.</td>
 <td><em>(opens the picker; not an adjustable value)</em></td>
 </tr>
 </tbody>
@@ -2911,6 +2918,11 @@ The font family used is Lato.</p>
 <td>Bandwidth</td>
 <td>Defines the bandwidth the CW decoder is using (this is implemented in software using a so called Goertzel filter).<br/> <strong>Wide</strong> = ca. 600 Hz, <strong>Narrow</strong> = ca. 150 Hz; center frequency = ca 700 Hz.</td>
 <td><strong>Wide</strong> / Narrow</td>
+</tr>
+<tr>
+<td><span class="classic pocket"></span>Decoder Chars</td>
+<td>Which characters are shown for the few Morse codes that mean different letters in different languages, or that only the ITU standard (ITU-R M.1677-1) defines. It applies to CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer (also in the Koch Trainer). In the Echo Trainer, a code that stands for several characters is always taken as the one in the word you are to repeat: a correctly keyed &lt;kn&gt; stays &lt;kn&gt; with <strong>ITU</strong>, and <code>.--.-</code> for the å of a Swedish text is right whatever you set here. <span class="pocket">The games and the QSO Bot</span><span class="classic">The QSO Bot</span> always use <strong>Standard</strong>.<br/><strong>Standard</strong>: as always – <code>-.--.</code> is &lt;kn&gt;, <code>.-.-</code> ä, <code>---.</code> ö, <code>..--</code> ü, <code>----</code> ch; codes it does not know show as *.<br/><strong>ITU</strong>: as Standard, but <code>-.--.</code> is „(“, and „)“ (<code>-.--.-</code>) and é (<code>..-..</code>) are added.<br/><strong>Fr/Es/Pt</strong> (French, Spanish, Portuguese): as Standard, plus à (<code>.--.-</code>), é (<code>..-..</code>), è (<code>.-..-</code>), ç (<code>-.-..</code>) and ñ (<code>--.--</code>).<br/><strong>Sv/Fi</strong> (Swedish, Finnish): as Standard, plus å (<code>.--.-</code>).<br/><strong>Da/No</strong> (Danish, Norwegian): å (<code>.--.-</code>), and æ and ø where Standard has ä and ö.<br/>On Bluetooth keyboard output these letters are typed without their accents (see <strong>Using the Bluetooth Keyboard functionality</strong>).</td>
+<td><strong>Standard</strong> / ITU / <em>Fr/Es/Pt</em> / <em>Sv/Fi</em> / <em>Da/No</em></td>
 </tr>
 <tr>
 <td>Decoded on I/O</td>
@@ -3235,6 +3247,9 @@ click = no</code></pre>
 </div>
 <div class="note">
 <p>The Morserino works like a keyboard with a US key layout – this may need to be set accordingly on the computer you are using.</p>
+</div>
+<div class="note">
+<p>Letters with umlauts or accents cannot be typed reliably by a keyboard (what a key types depends on the computer’s keyboard layout), so the Morserino types them without: ä, ö and ü as ae, oe and ue<span class="classic pocket">, and the letters of the <strong>Decoder Chars</strong> preference as å → aa, æ → ae, ø → oe, à → a, é and è → e, ç → c, ñ → n</span>.</p>
 </div>
 <h2 data-number="7.10" id="list-of-common-cw-abbreviations-used-by-morserino-32"><span class="header-section-number">7.10</span> List of common CW abbreviations used by Morserino-32</h2>
 <p>The list contains definitions in English and German, separated by a slash. Not all abbreviations are very common in all languages; abbreviations uncommon in English are in square brackets [].</p>
@@ -4653,6 +4668,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=2f8c41ddcd01 -->
+<!-- MANUALFRESH: lang=en src=c688c7d07e57 -->
 </body>
 </html>

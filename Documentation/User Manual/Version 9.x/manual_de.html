@@ -34,14 +34,14 @@
 <div class="title-page">
 <div class="title-blue-band"><h1>Morserino-32</h1></div>
 <div class="title-grey-band"><p>Benutzerhandbuch</p></div>
-<div class="title-version">Version 9.x<br>September 2026</div>
+<div class="title-version">Version 9.x<br>Oktober 2026</div>
 <div class="title-variant">für alle Morserino-32-Modelle</div>
 <div class="title-logo"><img src="images/M32_logo.png" alt="M32 Logo"></div>
 </div>
 
 <div class="edition-page">
 <p><strong>M32 — Benutzerhandbuch</strong></p>
-<p>Ausgabe V 9.x, September 2026 — für alle Morserino-32-Modelle</p>
+<p>Ausgabe V 9.x, Oktober 2026 — für alle Morserino-32-Modelle</p>
 <p>© Copyright 2016–2026 by Willi Kraml, OE1WKL</p>
 <p>Dieses Werk steht unter einer CC BY 4.0-Lizenz. Um eine Kopie dieser Lizenz
 einzusehen, besuche <a href="http://creativecommons.org/licenses/by/4.0/">http://creativecommons.org/licenses/by/4.0/</a></p>
@@ -183,8 +183,15 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p><strong>Wenn dein M32 Pocket noch nicht spricht.</strong> Ein neuer Pocket wird mit der Standard-Edition ausgeliefert, und die ist stumm. Die Firmware, die dieses Handbuch beschreibt, wird von einem Computer aus über USB installiert und ist in wenigen Minuten aufgespielt: siehe <strong>Den M32 Pocket zum Sprechen bringen: die Accessibility Edition installieren</strong>, den ersten Abschnitt des Kapitels <strong>Kurzanleitung zur Benutzung des M32</strong>.</p>
 </div>
 <p>Ich möchte mich bei allen bedanken, die durch Code, Kommentare, Vorschläge, Kritik, Rezensionen, Blogeinträge, YouTube-Videos und andere Beiträge dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den M32Pocket nicht!</p>
-<!-- WHATSNEW:BEGIN en=d24b18851fa5 v=9 -->
+<!-- WHATSNEW:BEGIN en=eb80e8d42b49 v=9 -->
 <p>Was ist neu in Version 9?</p>
+<p><strong>V 9.1</strong></p>
+<ul>
+<li>Eine neue Einstellung <strong>Decoder Chars</strong> lässt den Decoder die Buchstaben anderer Sprachen und die Klammern des ITU-Standards anzeigen. Einige Morsecodes bedeuten in verschiedenen Sprachen verschiedene Buchstaben – <code>.--.-</code> ist à im Französischen, aber å im Schwedischen, <code>.-.-</code> ist ä im Deutschen, aber æ im Dänischen –, daher wählst du einen Satz: <strong>Standard</strong> (wie bisher: <code>-.--.</code> ist &lt;kn&gt;, dazu ä ö ü und ch), <strong>ITU</strong> (<code>-.--.</code> ist „(“, dazu „)“ und é, wie in ITU-R M.1677-1), <strong>Fr/Es/Pt</strong> (à é è ç ñ), <strong>Sv/Fi</strong> (å) oder <strong>Da/No</strong> (å, und æ ø an Stelle von ä ö). Sie gilt für CW Keyer, CW Decoder, die Transceiver-Modi und den Echo Trainer; die Spiele und der QSO Bot verwenden weiterhin Standard. Nicht in der Accessibility Edition, wo dekodierter Text nicht vom Display gelesen wird. Danke an die Tester, die sich französische, spanische, portugiesische und nordische Buchstaben sowie die ITU-Klammern gewünscht haben.</li>
+<li>Die Buchstaben anderer Sprachen lassen sich jetzt auch üben. Der File Player sendet ä ö ü, é è à ç ñ und å æ ø mit ihrem eigenen Morsecode – bisher wurden ä ö ü als ae oe ue gesendet und die anderen einfach weggelassen („café“ kam als „caf“ an) –, andere Buchstaben mit Akzent als einfachen Buchstaben und runde Klammern als <code>-.--.</code> und <code>-.--.-</code>. Auch <strong>Custom Chars</strong> des Koch Trainers, aus der Datei übernommen, darf sie enthalten, und der Picker für das <strong>Practice Set</strong> bietet jetzt auch ä ö ü und ch an (oder, außerhalb der Accessibility Edition, die Buchstaben des mit <strong>Decoder Chars</strong> gewählten Satzes). Im Echo Trainer zählt ein Code, der für mehrere Buchstaben steht, als der Buchstabe im nachzugebenden Wort: <code>.--.-</code> für das å eines schwedischen Textes ist richtig, egal wie <strong>Decoder Chars</strong> eingestellt ist.</li>
+<li>Bei der Bluetooth-Tastaturausgabe werden Buchstaben mit Umlauten oder Akzenten jetzt ohne diese getippt – ä ö ü als ae oe ue, å als aa usw. –, weil das, was eine Tastatur dafür tippt, vom Tastaturlayout des Computers abhängt. Bisher tippten ä ö ü gar nichts.</li>
+</ul>
+<p><strong>V 9.0</strong></p>
 <ul>
 <li><p>Ein einziges Installationsprogramm für jeden Morserino, unter <a href="https://www.morserino.info/install.html">https://www.morserino.info/install.html</a>. Es fragt den Prozessor in deinem Gerät, welcher Morserino es ist – du musst also nicht mehr wissen, ob du auf der Seite für den klassischen M32 oder auf der für den M32 Pocket beginnen musst; es gibt jetzt nur noch eine Seite. Es zeigt dir außerdem, welche Firmware-Version gerade auf dem Gerät ist, bevor du irgendetwas installierst, und lässt dich wählen, ob deine Einstellungen erhalten bleiben oder gelöscht werden. Die beiden bisherigen Installer-Seiten leiten dorthin weiter, bestehende Lesezeichen funktionieren also weiterhin.</p></li>
 <li><p>Nur M32 Pocket: Das Installationsprogramm kann nun auch die <strong>Accessibility Edition</strong> installieren, die Menüs und Einstellungen für blinde und sehbehinderte Operatoren laut vorliest (die Spiele sind darin nicht enthalten). Standard- und Accessibility Edition werden für dasselbe Gerät angeboten, und du kannst jederzeit zwischen ihnen wechseln; deine Einstellungen bleiben erhalten.</p></li>
@@ -714,7 +721,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Der File Player merkt sich, wo du aufgehört hast. (Beende diesen Modus durch Drücken und Halten des ENCODERs. <strong>Schalte das Gerät nicht einfach aus</strong> und warte auch nicht auf den Time-Out, da der Morserino sonst die aktuelle Position nicht speichern kann.) Beim nächsten Start des File Players wird die Wiedergabe an dieser Stelle fortgesetzt. Wenn das Ende der Datei (oder des Dateiabschnitts) erreicht ist, beginnt der Player wieder von vorne.</p>
 </div>
 <h4 class="unnumbered" id="kodierung-von-textdateien-fuer-den-file-player">Kodierung von Textdateien für den File Player</h4>
-<p>Die Datei sollte nur ASCII-Zeichen enthalten (Groß-/Kleinschreibung spielt keine Rolle) – Zeichen, die im Morsecode nicht dargestellt werden können, werden einfach ignoriert. Betriebszeichen können in der Datei enthalten sein; sie müssen als 2-Zeichen-Darstellung mit [] oder &lt;&gt; um sie herum geschrieben werden, z.B. &lt;sk&gt; oder [ka], oder mit einem Backslash vorangestellt werden, z.B. \kn.</p>
+<p>Die Datei sollte reiner Text sein, als UTF-8 gespeichert (Groß-/Kleinschreibung spielt keine Rolle) – Zeichen, die im Morsecode nicht dargestellt werden können, werden einfach ignoriert. Buchstaben mit Umlauten oder Akzenten werden mit ihrem eigenen Morsecode gesendet, wo es einen gibt: ä ö ü, é è à ç ñ und å æ ø<span class="classic pocket">(wie sie dekodiert und angezeigt werden, legt die Einstellung <strong>Decoder Chars</strong> fest)</span>. Andere Buchstaben mit Akzent (á, ê, õ, …) werden als einfacher Buchstabe gesendet, ß als „ss“. Runde Klammern werden als <code>-.--.</code> für „(“ und <code>-.--.-</code> für „)“ gesendet. Betriebszeichen können in der Datei enthalten sein; sie müssen als 2-Zeichen-Darstellung mit [] oder &lt;&gt; um sie herum geschrieben werden, z.B. &lt;sk&gt; oder [ka], oder mit einem Backslash vorangestellt werden, z.B. \kn.</p>
 <p><strong>Betriebszeichen</strong></p>
 <p>Folgende Betriebszeichen werden erkannt (Bedeutung der Betriebszeichen siehe Abschnitt <strong>Koch: Select Lesson</strong>):</p>
 <ul>
@@ -1416,7 +1423,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </div>
 <h4 class="unnumbered" id="koch-training-mit-einem-benutzerdefinierten-zeichensatz">Koch: Training mit einem benutzerdefinierten Zeichensatz</h4>
 <p>Du kannst den Koch Trainer auch verwenden, um mit einem selbst festgelegten Zeichensatz zu üben. Lade zunächst eine Textdatei in den File Player hoch, die die zu trainierenden Zeichen enthält (als ein „Wort” oder mehrere Wörter auf einer oder mehreren Zeilen). Setze dann die Einstellung <strong>Koch Sequence</strong> auf die neue Option <strong>Custom Chars</strong>. Der Koch Trainer liest die Zeichen dann aus der Datei.</p>
-<p>Nun kannst du den Koch Trainer (CW Generator oder Echo Trainer) verwenden, und er wird diese Zeichen für dein Training benutzen. Die Einstellung <strong>Koch Lesson</strong> wirkt dabei als Index in deinen benutzerdefinierten Zeichensatz: bei Lektion <em>N</em> werden nur die ersten <em>N</em> Zeichen des Zeichensatzes als aktiver Trainings-Pool verwendet (begrenzt auf die tatsächliche Länge des Zeichensatzes, falls die Lektion größer ist). Das Lektions-Maximum passt sich dabei automatisch an die Länge deines Zeichensatzes an (bis maximal 51 Zeichen; Zeichen ab Position 52 sind nicht erreichbar).</p>
+<p>Nun kannst du den Koch Trainer (CW Generator oder Echo Trainer) verwenden, und er wird diese Zeichen für dein Training benutzen. Die Einstellung <strong>Koch Lesson</strong> wirkt dabei als Index in deinen benutzerdefinierten Zeichensatz: bei Lektion <em>N</em> werden nur die ersten <em>N</em> Zeichen des Zeichensatzes als aktiver Trainings-Pool verwendet (begrenzt auf die tatsächliche Länge des Zeichensatzes, falls die Lektion größer ist). Das Lektions-Maximum passt sich dabei automatisch an die Länge deines Zeichensatzes an (bis maximal 51 Zeichen; Zeichen ab Position 52 sind nicht erreichbar). Der Zeichensatz darf auch die Buchstaben mit Umlauten und Akzenten enthalten, die unter <strong>Kodierung von Textdateien für den File Player</strong> beschrieben sind<span class="pocket-a11y">(in dieser Ausgabe werden Buchstaben außer ä ö ü nicht gesprochen)</span>.</p>
 <p>Um den Zeichensatz zu ändern, lade eine neue Textdatei hoch und wähle <strong>Custom Chars</strong> erneut aus. Selbst wenn es zuvor bereits ausgewählt war, musst du <strong>Custom Chars</strong> erneut wählen, um den neuen Zeichensatz zu übernehmen. Das bloße Hochladen einer neuen Datei ändert den benutzerdefinierten Zeichensatz nicht.<br/> <em>Das ist ein Feature, kein Bug!</em><br/> Es bedeutet, dass du zwischen dem Training mit deinem Zeichensatz und der Verwendung einer anderen Textdatei für den File Player wechseln kannst. Durch Umstellen von <strong>Koch Sequence</strong> auf M32, LCWO, LICW oder CW Academy kehrst du zur „normalen” Koch-Trainer-Option zurück.</p>
 <div class="note">
 <p>Suchst du nur einen schnellen Weg, um gezielt ein paar Zeichen zu üben, die dir schwerfallen, ohne den Umweg über eine Textdatei oder die Koch-Lektionen? Siehe <strong>Practice Set</strong>, eine eigenständige Funktion, die direkt unter <strong>CW Generator</strong> und <strong>Echo Trainer</strong> erreichbar ist (nicht unter Koch Trainer) – beschrieben dort, wo diese Modi vorgestellt werden, sowie unter <strong>Einstellungen zum Practice Set</strong>. Sie verwendet einen eigenen, getrennt gespeicherten Zeichensatz und hat mit <strong>Custom Chars</strong> hier nichts zu tun.</p>
@@ -2508,7 +2515,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li>Sender- und Netzwerk-Einstellungen: <strong>Key ext TX</strong>, <strong>Generator Tx</strong><span class="classic">, der LoRa-Kanal</span></li>
 <li>Bluetooth-Tastatur-Einstellungen: <strong>BLT Kbd Output</strong>, <strong>BLT &lt;AR&gt;</strong></li>
 <li>Audio-Routing: <strong>Headphone Output</strong>, <strong>Decoded on IO</strong></li>
-<li>Geräteverhalten: <strong>Encoder Click</strong>, <strong>Quick Start</strong></li>
+<li>Geräteverhalten: <strong>Encoder Click</strong>, <strong>Quick Start</strong><span class="classic pocket">, <strong>Decoder Chars</strong></span></li>
 <li><span class="pocket">Spiel-Einstellungen: <strong>Invader Orient.</strong> sowie die QSO-Bot-Einstellungen</span><span class="classic pocket-a11y">QSO-Bot-Einstellungen</span> (<strong>Contest Type</strong>, <strong>QSO Difficulty</strong>)</li>
 </ul>
 <p>(Schnappschüsse, die mit älteren Firmware-Versionen gespeichert wurden, können einige dieser Einstellungen noch enthalten; sie werden beim Abrufen ignoriert und beim Überschreiben des Schnappschusses entfernt.)</p>
@@ -2714,7 +2721,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <tbody>
 <tr>
 <td><strong>Practice Set</strong></td>
-<td>Öffnet einen Zeichen-Picker direkt am Gerät, um deinen eigenen Übungs-Zeichenvorrat zusammenzustellen: mit dem ENCODER durch Buchstaben, Ziffern und Satzzeichen blättern, per Klick das markierte Zeichen hinzufügen (jedes Zeichen nur einmal), mit der FN-Taste das zuletzt hinzugefügte wieder entfernen, und mit langem Druck abschließen und speichern. Zeigt „(not set)“, solange noch kein Zeichen hinzugefügt wurde.</td>
+<td>Öffnet einen Zeichen-Picker direkt am Gerät, um deinen eigenen Übungs-Zeichenvorrat zusammenzustellen: mit dem ENCODER durch Buchstaben, Ziffern und Satzzeichen blättern (danach ä ö ü und ch<span class="classic pocket">, oder die Buchstaben des mit <strong>Decoder Chars</strong> gewählten Satzes</span>), per Klick das markierte Zeichen hinzufügen (jedes Zeichen nur einmal), mit der FN-Taste das zuletzt hinzugefügte wieder entfernen, und mit langem Druck abschließen und speichern. Zeigt „(not set)“, solange noch kein Zeichen hinzugefügt wurde.</td>
 <td><em>(öffnet den Picker; kein einstellbarer Wert)</em></td>
 </tr>
 </tbody>
@@ -2901,6 +2908,11 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td><strong>Bandwidth</strong></td>
 <td>Legt die Bandbreite fest, die der CW-Decoder verwendet (implementiert in Software als sogenannter Goertzel-Filter). <strong>Wide</strong> = ca. 600 Hz, <strong>Narrow</strong> = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz.</td>
 <td><strong>Wide</strong> / Narrow</td>
+</tr>
+<tr>
+<td><span class="classic pocket"></span><strong>Decoder Chars</strong></td>
+<td>Welche Zeichen für die wenigen Morsecodes angezeigt werden, die in verschiedenen Sprachen verschiedene Buchstaben bedeuten oder die nur der ITU-Standard (ITU-R M.1677-1) kennt. Gilt für CW Keyer, CW Decoder, die Transceiver-Modi und den Echo Trainer (auch im Koch Trainer). Im Echo Trainer wird ein Code, der für mehrere Zeichen steht, immer als das Zeichen im nachzugebenden Wort genommen: ein richtig gegebenes &lt;kn&gt; bleibt mit <strong>ITU</strong> ein &lt;kn&gt;, und <code>.--.-</code> für das å eines schwedischen Textes ist richtig, egal was hier eingestellt ist. <span class="pocket">Die Spiele und der QSO Bot verwenden</span><span class="classic">Der QSO Bot verwendet</span> immer <strong>Standard</strong>.<br/><strong>Standard</strong>: wie bisher – <code>-.--.</code> ist &lt;kn&gt;, <code>.-.-</code> ä, <code>---.</code> ö, <code>..--</code> ü, <code>----</code> ch; unbekannte Codes erscheinen als *.<br/><strong>ITU</strong>: wie Standard, aber <code>-.--.</code> ist „(“, dazu kommen „)“ (<code>-.--.-</code>) und é (<code>..-..</code>).<br/><strong>Fr/Es/Pt</strong> (Französisch, Spanisch, Portugiesisch): wie Standard, dazu à (<code>.--.-</code>), é (<code>..-..</code>), è (<code>.-..-</code>), ç (<code>-.-..</code>) und ñ (<code>--.--</code>).<br/><strong>Sv/Fi</strong> (Schwedisch, Finnisch): wie Standard, dazu å (<code>.--.-</code>).<br/><strong>Da/No</strong> (Dänisch, Norwegisch): å (<code>.--.-</code>), und æ und ø an Stelle von ä und ö.<br/>Bei der Bluetooth-Tastaturausgabe werden diese Buchstaben ohne Akzente getippt (siehe <strong>Benutzung der Bluetooth-Tastatur-Funktion</strong>).</td>
+<td><strong>Standard</strong> / ITU / <em>Fr/Es/Pt</em> / <em>Sv/Fi</em> / <em>Da/No</em></td>
 </tr>
 <tr>
 <td><strong>Decoded on I/O</strong></td>
@@ -3224,6 +3236,9 @@ click = no</code></pre>
 </div>
 <div class="note">
 <p>Beachte, dass der Morserino wie eine Tastatur mit US-Tastenlayout arbeitet – dies ist ggf. auf dem verwendeten Computer entsprechend einzustellen.</p>
+</div>
+<div class="note">
+<p>Buchstaben mit Umlauten oder Akzenten kann eine Tastatur nicht zuverlässig tippen (welches Zeichen eine Taste ergibt, hängt vom Tastaturlayout des Computers ab), daher tippt der Morserino sie ohne: ä, ö und ü als ae, oe und ue<span class="classic pocket">, und die Buchstaben der Einstellung <strong>Decoder Chars</strong> als å → aa, æ → ae, ø → oe, à → a, é und è → e, ç → c, ñ → n</span>.</p>
 </div>
 <h2 data-number="7.10" id="gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.10</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
 <p>Die Liste enthält Definitionen auf Englisch und Deutsch, getrennt durch einen Schrägstrich. Nicht alle Abkürzungen sind in allen Sprachen sehr gebräuchlich; im Englischen ungewöhnliche Abkürzungen stehen in eckigen Klammern [].</p>
@@ -4643,6 +4658,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=6038bca5fea8 -->
+<!-- MANUALFRESH: lang=de src=9ce25eea8cd6 -->
 </body>
 </html>
