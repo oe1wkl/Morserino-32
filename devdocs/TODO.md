@@ -236,8 +236,8 @@ command line).
    Preference **Decoder Chars** (Standard / ITU / Fr/Es/Pt / Sv/Fi / Da/No; not in the a11y edition, not in snapshots),
    Bluetooth keyboard transliteration, and the letters in user-defined training (file player, Custom Chars, Practice
    Set; Echo Trainer judges by the target word's letter). Details: `devdocs/language-support/INVESTIGATION.md`.
-   **Open for `m32kip`:** when master is merged there, decide whether the Remote Keyer/Rig use Decoder Chars
-   (`decoderCharSet()` list + `DECCHARS` in their option lists). Also shipped with it on master: the voice extractor
+   **`m32kip`:** merged there 2026-10-03 (c5f492d); the Remote Keyer uses Decoder Chars (Willi), the Rig is in the
+   list but decodes nothing, so its option list stays without the preference. V10 manual updated to match. Also shipped with it on master: the voice extractor
    models the a11y build (c2a13e7), `[ka]` `[p]` `[t]` in player files and `GET practicechars` over BLE (50ad66b),
    and the protocol harness no longer reboots a device by opening its port (ada42c5).
 4. **Minimum word length for the Echo Trainer (and the generator) — feature.** Today only **Length Words**
