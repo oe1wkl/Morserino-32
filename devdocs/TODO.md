@@ -214,7 +214,7 @@ command line).
 
 ## G. iOS app
 
-- Back in App Store review (build 1, resubmitted); next move is Apple's.
+- ~~App Store review~~ — **live in the App Store** (Willi, 2026-10-05).
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 
