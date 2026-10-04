@@ -206,7 +206,9 @@ class M32Link:
         self._serial.write((text + "\n").encode("utf-8", "replace"))
         self._serial.flush()
 
-    def _read_object(self, timeout):
+    def _read_object(self, timeout, keep_partial=False):
+        # keep_partial: a reply that stopped halfway (seen on the Pocket's native USB, 2026-10-05) keeps its
+        # first bytes, so the tail a nudge shakes loose completes it instead of arriving as a torn object.
         deadline = time.time() + timeout
         while time.time() < deadline:
             obj, self._buffer = extract_json_object(self._buffer)
@@ -220,7 +222,8 @@ class M32Link:
             else:
                 time.sleep(0.01)
         partial = self._buffer[:120]
-        self._buffer = ""
+        if not keep_partial:
+            self._buffer = ""
         raise TimeoutError("no reply within %.1fs (partial: %r)" % (timeout, partial))
 
     # -- protocol -----------------------------------------------------------
@@ -292,7 +295,7 @@ class M32Link:
             pass
         self._write_line(text)
         try:
-            raw = self._read_object(timeout)
+            raw = self._read_object(timeout, keep_partial=nudge)
         except OSError:
             if not nudge:
                 raise

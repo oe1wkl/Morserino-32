@@ -33,11 +33,11 @@ The detailed entries below are the original audit record; this table is the live
 | C13 | ✅ documented — parameter set is build-dependent; restore tolerates `INVALID PARAMETER` |
 | C-VER | ✅ (1) compatibility rule documented · ✅ (2) `GET capabilities` shipped in **1.4** |
 | C-NVS-NAMESPACE | ✅ resolved — snapshot/Morsel namespaces fixed in CLAUDE.md + mode-matrix |
-| C15 | ⏳ open — optional firmware input-length cap (plan Phase 4) |
+| C15 | ✅ done 2026-10-05 — USB cap 1024 / `LINE TOO LONG`, documented (firmware 9.1) |
 | C-ERR-HANDLING, C-BRACE | ✅ resolved 2026-08-19 — config tool (and file manager) framing + error display |
 | C-BULK | ✅ resolved in **1.4** — `GET configs/details`, paginated |
 
-**Status 2026-08-19: the list is closed apart from C15.** Protocol 1.4 shipped the three deferrals
+**Status 2026-10-05: the list is closed** (C15 done in firmware 9.1). Earlier: **status 2026-08-19: closed apart from C15.** Protocol 1.4 shipped the three deferrals
 (C6, C-VER (2), C-BULK) and Phase 3 landed the config-tool robustness work; only the optional
 input-length cap (C15, plan Phase 4) is still open.
 

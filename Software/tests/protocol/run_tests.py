@@ -206,6 +206,28 @@ def check_replies_were_sent(report, m32):
                  "every command answered without being prompted", detail.strip())
 
 
+def check_line_length_cap(report, m32):
+    """USB input lines are capped at 1024 characters (protocol audit C15).
+
+    A longer line is discarded up to its newline and answered with LINE TOO
+    LONG; a line just under the cap is still executed (here: an unknown config
+    name, so its error proves it was parsed); and the session carries on.
+    Changes nothing on the device. Firmware before 9.1 accepts any length.
+    """
+    def error_of(reply):
+        err = reply.get("error") if isinstance(reply, dict) else None
+        return (err.get("content") if isinstance(err, dict) else err) or ""
+
+    long_reply = m32.command("GET config/" + "x" * 1100, allow_error=True, nudge=False)
+    report.check(error_of(long_reply) == "LINE TOO LONG",
+                 "a 1111-character line is refused with LINE TOO LONG", "reply: %r" % long_reply)
+    near_reply = m32.command("GET config/" + "x" * 1000, allow_error=True, nudge=False)
+    report.check(error_of(near_reply) not in ("", "LINE TOO LONG"),
+                 "a 1011-character line is still executed", "reply: %r" % near_reply)
+    device = m32.command("GET device")
+    report.check("device" in device, "the session carries on after a refused line", "reply: %r" % device)
+
+
 # ------------------------------------------------------------------ sequences
 
 def walk_builtin_sequences(report, m32):
@@ -303,6 +325,9 @@ def main():
             report.skip("lesson survives a reboot", "--skip-persistence")
         else:
             check_persistence(report, m32)
+
+        print()
+        check_line_length_cap(report, m32)
 
         print()
         check_replies_were_sent(report, m32)

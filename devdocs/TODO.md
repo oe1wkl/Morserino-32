@@ -188,7 +188,16 @@ command line).
    grep `buildfs` output for "full".
 5. **A11y very-late freeze** (decoder-reuse leak) — dead end, unresolved.
 6. **BLE transient splashes** ("BLE Ser. susp.", "BLE init fail") are silent in the a11y edition (§8 case 2).
-7. **Protocol C15** (input-length cap) — last open protocol item.
+7. ~~**Protocol C15** (input-length cap)~~ — **done 2026-10-05 on `master`** (USB 1024 / `LINE TOO LONG`, documented).
+8. **Pocket USB replies still stall now and then (HWCDC, core 2.0.17).** Found while testing C15, present in 9.0.1:
+   a reply stops after its first part (always 6–7 + 64·k bytes, i.e. after a full 64-byte packet that followed a
+   short first one) and the rest goes out only when the host sends again. Measured with a set/get-lesson loop:
+   ~1 in 35–150 replies with the default 256-byte TX ring; **~1 in 600–900 with the 1 KB ring now set in setup()**
+   (4 KB no better). Stalls recur at the same loop position across runs → deterministic timing, not noise. Kicking
+   the TX interrupt from `flushReply()` did not help (tried, reverted). Candidates: core 3.x HWCDC, or TinyUSB CDC
+   (`ARDUINO_USB_MODE=0`). Also fixed alongside: the 256-byte RX queue dropped bytes of longer commands (now 2 KB).
+   The protocol harness now keeps a stalled reply's first part, so such a stall shows up as "withheld" instead of
+   aborting the run.
 
 ## E. Docs and pipeline
 
