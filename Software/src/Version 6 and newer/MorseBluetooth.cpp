@@ -22,8 +22,11 @@
 #include "morsedefs.h"
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
+#include "MorseOutput.h"
 #include "BLEDevice.h"
-#include "BLEHIDDevice.h"
+#include "BLE2902.h"
+#include "BLE2904.h"
+#include "BLEHIDDevice.h"     // only for the HID_KEYBOARD appearance constant: the table itself is built here
 #include "HIDTypes.h"
 #include "HIDKeyboardTypes.h"
 
@@ -47,6 +50,49 @@ bool isBleConnected = false;
 // set (on the loop task) while stopBluetooth() tears the stack down; read by
 // onDisconnect (BLE event task) to skip the reconnect grace period + re-advertise
 static volatile bool btStopping = false;
+
+// Link bookkeeping (TODO I2: vBand link drops, possible stuck key). The BLE callbacks run on Bluedroid's
+// event task and must not block it - until 2026-10 onDisconnect slept there for 5 s before re-advertising.
+// They only record what happened; MorseBluetooth::tick() acts on it from the main loop, which is also the
+// only task that sends input reports, so reports never race each other.
+static BLEServer* bleServer = nullptr;
+static volatile bool advertisePending = false;     // re-advertise once the disconnect has settled
+static volatile uint32_t disconnectedAt = 0;
+static volatile bool resyncPending = false;        // tell the host the key's real state after a (re)connect
+static volatile uint32_t connectedAt = 0;
+static bool ctrlDown = false;                      // what the keyer last asked for, connected or not
+static uint16_t disconnectCount = 0;
+// Advertising start results (GAP event), for the soak's "stops accepting connections" fault (TODO I2):
+// 0xFF = nothing to report, else the esp_bt_status_t of the last advertising start that did not succeed.
+static volatile uint8_t advStartFault = 0xFF;
+// Link watchdog: a connection that is not encrypted within LINK_SETUP_MS is dropped. Every real HID host encrypts
+// within about a second (bonded: the stored key; new: pairing), and the HID characteristics are unusable until it
+// does. Found with the soak rig: now and then a central's stack never finished its side of a new connection, and
+// the keyboard - having stopped advertising - waited for it forever (until CW Keyer was left).
+static const uint32_t LINK_SETUP_MS = 10000;
+static volatile bool linkEncrypted = false;
+static volatile uint16_t connId = 0xFFFF;
+// Diagnostics (DEBUG, i.e. on USB when Serial Output = Nothing): events the callbacks note for tick() to report,
+// and a 30 s status line while the keyboard runs - for the "connected but silent" case seen with macOS.
+static volatile bool connectUnreported = false;
+static volatile int authResult = -1;                // -1 none, else (success << 8) | fail_reason, until reported
+static uint32_t notifiesSent = 0;                   // input reports sent on the current connection
+static uint32_t lastStatusAt = 0;
+static volatile bool serviceChangePending = false;  // tell a bonded host to rediscover once encrypted
+static volatile uint32_t encryptedAt = 0;
+
+static void gapHandler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t* param) {
+    if (event == ESP_GAP_BLE_ADV_START_COMPLETE_EVT && param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS)
+        advStartFault = (uint8_t) param->adv_start_cmpl.status;
+    if (event == ESP_GAP_BLE_AUTH_CMPL_EVT) {
+        if (param->ble_security.auth_cmpl.success) {
+            linkEncrypted = true;
+            serviceChangePending = true;
+            encryptedAt = millis();
+        }
+        authResult = (param->ble_security.auth_cmpl.success ? 0x100 : 0) | param->ble_security.auth_cmpl.fail_reason;
+    }
+}
 
 TaskHandle_t taskHandle;    //
 
@@ -102,9 +148,170 @@ static const uint8_t REPORT_MAP[] = {
     END_COLLECTION(0)               // End application collection
 };
 
-BLEHIDDevice* hid;
-BLECharacteristic* input;
-BLECharacteristic* output;
+BLECharacteristic* input = nullptr;
+BLECharacteristic* output = nullptr;
+
+// The HID GATT table, built here rather than with the library's BLEHIDDevice so that every object is ours to
+// free. The Arduino BLE library frees none of the GATT objects it hands out (no destructors that walk their
+// children, and BLEDevice::deinit() only stops the stack), and ~BLEHIDDevice() is empty: each keyboard
+// start/stop leaked the whole table - 13.2-13.7 KB per CW Keyer visit, measured on the Pocket 2026-10-04;
+// after five visits the keyboard could no longer start (largest free block 8 KB). The same disease as BLE
+// Serial's 3.7 KB per WiFi trip (00ee378), same cure: free them after deinit(false), children first.
+// The layout mirrors BLEHIDDevice (Arduino-ESP32 2.0.17): device info + HID + battery services.
+//
+// The attribute layout must not change. The library creates a service's characteristics, and a characteristic's
+// descriptors, in the order of their heap ADDRESSES (BLEService/BLECharacteristic keep them in std::maps keyed
+// by pointer), not in the order they were added; a bonded host caches the layout and never asks again. When the
+// table was built from separate news, the input report's CCCD and report reference swapped handles relative to
+// what a Mac had cached under master: the Mac wrote "notify on" (01 00) into the report reference, later read it
+// back as report type 0 and stopped subscribing to the input report at all - a connected, encrypted keyboard that
+// macOS silently ignores (I2, 2026-10-04). So the whole table is ONE object: members lie at ascending addresses
+// in declaration order, which is BLEHIDDevice's order (and what master produced): manufacturer, PnP; HID info,
+// report map, control point, protocol mode, input (reference, CCCD), output (reference); battery (format, CCCD).
+// Report references are read-only, as the HID spec has them. Hosts that cached another layout are told to
+// rediscover by a Service Changed indication once the link is encrypted (see gattsHandler / tick).
+struct HidTable {
+    BLECharacteristic manufacturer { BLEUUID((uint16_t) 0x2a29), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic pnp          { BLEUUID((uint16_t) 0x2a50), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic hidInfo      { BLEUUID((uint16_t) 0x2a4a), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic reportMap    { BLEUUID((uint16_t) 0x2a4b), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic hidControl   { BLEUUID((uint16_t) 0x2a4c), BLECharacteristic::PROPERTY_WRITE_NR };
+    BLECharacteristic protocolMode { BLEUUID((uint16_t) 0x2a4e), BLECharacteristic::PROPERTY_WRITE_NR | BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic input        { BLEUUID((uint16_t) 0x2a4d), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY };
+    BLEDescriptor     inputRef     { BLEUUID((uint16_t) 0x2908) };
+    BLE2902           inputCccd;
+    BLECharacteristic output       { BLEUUID((uint16_t) 0x2a4d),
+                                     BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR };
+    BLEDescriptor     outputRef    { BLEUUID((uint16_t) 0x2908) };
+    BLE2904           batteryFormat;
+    BLECharacteristic batteryLevel { BLEUUID((uint16_t) 0x2a19), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY };
+    BLE2902           batteryCccd;
+};
+static HidTable* hidTable = nullptr;
+static BLEService *svcDeviceInfo, *svcHid, *svcBattery;
+static BLEDescriptor* dInputCccd = nullptr;     // for the status line
+
+// Telling a bonded host that cached another layout to look again. The Arduino core's Bluedroid is built with
+// Service Changed in AUTO mode, which refuses esp_ble_gatts_send_service_change_indication() ("can't send
+// service change indication manually"); in that mode it indicates Service Changed to every connected peer when
+// a new service is started. So once per Bluetooth start, 2 s after the first encryption, an empty marker service
+// is added: a real database change, so a host that holds a stale map - from master, whose order was heap luck,
+// or from this branch's first table - rediscovers and resubscribes instead of ignoring the keyboard for good.
+static const char* MARKER_SERVICE_UUID = "4d33322d-6c61-796f-7574-2d65706f6368";   // "M32-layout-epoch"
+static BLEService* svcMarker = nullptr;
+
+// Battery level for the host (a percentage on a LiPo discharge curve; hosts show it next to the keyboard - with
+// no value macOS logged "Failed to extract battery level" on every connect). The Pocket measures in microseconds
+// (fast ADC, no delays), so it re-measures every minute and notifies changes; the classic measures only at boot
+// (later reads would have to switch Vext, which powers the OLED on some boards), so it reports that value.
+#ifndef CONFIG_MCP73871
+extern uint16_t volt;                               // m32_v6.ino, measured in setup()
+#endif
+static int batteryPct = -1;
+static uint32_t batteryAt = 0;
+
+static int batteryPercent(int mv) {
+    static const int16_t curve[][2] = { {4150, 100}, {4050, 90}, {3950, 75}, {3850, 55}, {3780, 40},
+                                        {3700, 25}, {3600, 12}, {3500, 5}, {3300, 0} };
+    if (mv >= curve[0][0]) return 100;
+    for (size_t i = 1; i < sizeof(curve) / sizeof(curve[0]); ++i)
+        if (mv >= curve[i][0])
+            return curve[i][1] + (mv - curve[i][0]) * (curve[i-1][1] - curve[i][1]) / (curve[i-1][0] - curve[i][0]);
+    return 0;
+}
+
+static void updateBatteryLevel(bool notify);
+
+static void buildHidTable(BLEServer* server) {
+    HidTable* t = hidTable = new HidTable();
+    svcDeviceInfo = server->createService(BLEUUID((uint16_t) 0x180a));
+    svcHid        = server->createService(BLEUUID((uint16_t) 0x1812), 40);
+    svcBattery    = server->createService(BLEUUID((uint16_t) 0x180f));
+
+    t->manufacturer.setValue("Morserino32");
+    const uint8_t pnp[] = { 0x02, 0xe5, 0x02, 0xa1, 0x11, 0x02, 0x10 };   // USB VID 0xe502, PID 0xa111, version 0x0210
+    t->pnp.setValue((uint8_t*) pnp, sizeof(pnp));
+    svcDeviceInfo->addCharacteristic(&t->manufacturer);
+    svcDeviceInfo->addCharacteristic(&t->pnp);
+
+    const uint8_t info[] = { 0x11, 0x01, 0x00, 0x02 };                 // HID 1.11, not localized, normally connectable
+    t->hidInfo.setValue((uint8_t*) info, sizeof(info));
+    t->reportMap.setValue((uint8_t*) REPORT_MAP, sizeof(REPORT_MAP));
+    const uint8_t reportMode[] = { 0x01 };
+    t->protocolMode.setValue((uint8_t*) reportMode, 1);
+
+    // input report 1: notify, encrypted, with report reference {id 1, input} and CCCD
+    t->input.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    t->inputRef.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED);
+    const uint8_t inRef[] = { 1, 0x01 };
+    t->inputRef.setValue((uint8_t*) inRef, 2);
+    t->inputCccd.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    t->input.addDescriptor(&t->inputRef);
+    t->input.addDescriptor(&t->inputCccd);
+
+    // output report 1 (LEDs): encrypted, with report reference {id 1, output}
+    t->output.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    t->outputRef.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED);
+    const uint8_t outRef[] = { 1, 0x02 };
+    t->outputRef.setValue((uint8_t*) outRef, 2);
+    t->output.addDescriptor(&t->outputRef);
+
+    for (BLECharacteristic* c : { &t->hidInfo, &t->reportMap, &t->hidControl, &t->protocolMode, &t->input, &t->output })
+        svcHid->addCharacteristic(c);
+
+    // battery level, with presentation format and CCCD (notifications on by default, as the library does)
+    t->batteryFormat.setFormat(BLE2904::FORMAT_UINT8);
+    t->batteryFormat.setNamespace(1);
+    t->batteryFormat.setUnit(0x27ad);
+    t->batteryCccd.setNotifications(true);
+    t->batteryLevel.addDescriptor(&t->batteryFormat);
+    t->batteryLevel.addDescriptor(&t->batteryCccd);
+    svcBattery->addCharacteristic(&t->batteryLevel);
+
+    input = &t->input;
+    output = &t->output;
+    dInputCccd = &t->inputCccd;
+
+    batteryPct = -1;
+    updateBatteryLevel(false);
+
+    svcDeviceInfo->start();
+    svcHid->start();
+    svcBattery->start();
+}
+
+static void updateBatteryLevel(bool notify) {
+    batteryAt = millis();
+#ifdef CONFIG_MCP73871
+    int mv = batteryVoltage();
+#else
+    int mv = volt;
+#endif
+    if (mv < 1000 || !hidTable)                     // no measurement on this board (pocketwroom PCB < 4.1)
+        return;
+    int pct = batteryPercent(mv);
+    if (pct == batteryPct)
+        return;
+    batteryPct = pct;
+    uint8_t level = (uint8_t) pct;
+    hidTable->batteryLevel.setValue(&level, 1);
+    if (notify && isBleConnected)
+        hidTable->batteryLevel.notify();
+}
+
+// Only after BLEDevice::deinit(): with Bluedroid down no event can reach these objects, and their destructors
+// merely free memory (semaphores, strings, containers). BLEDevice keeps a stale m_pServer, read only by its
+// GATTS handler (dead until the next init) and overwritten by the next createServer() - as for BLE Serial.
+static void freeHidTable() {
+    delete hidTable;
+    delete svcDeviceInfo; delete svcHid; delete svcBattery; delete svcMarker;
+    delete bleServer;
+    hidTable = nullptr;
+    input = output = nullptr;
+    dInputCccd = nullptr;
+    svcDeviceInfo = svcHid = svcBattery = svcMarker = nullptr;
+    bleServer = nullptr;
+}
 
 const InputReport NO_KEY_PRESSED = { };
 
@@ -113,8 +320,14 @@ const InputReport NO_KEY_PRESSED = { };
  */
 class BleKeyboardCallbacks : public BLEServerCallbacks {
 
-    void onConnect(BLEServer* server) {
+    void onConnect(BLEServer* server, esp_ble_gatts_cb_param_t* param) {
         isBleConnected = true;
+        connectedAt = millis();
+        resyncPending = true;
+        linkEncrypted = false;
+        connId = param ? param->connect.conn_id : 0xFFFF;
+        notifiesSent = 0;
+        connectUnreported = true;
 
         // Allow notifications for characteristics
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
@@ -123,13 +336,18 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
         //DEBUG("Client has connected");
     }
 
-    void onDisconnect(BLEServer* server) {
+    // The overload with the GATT parameters, for the disconnect reason (the library calls both overloads).
+    void onDisconnect(BLEServer* server, esp_ble_gatts_cb_param_t* param) {
         isBleConnected = false;
+        resyncPending = false;
+        ++disconnectCount;
+        // Reported by tick() from the main loop. HCI reasons: 0x08 supervision timeout (the link went
+        // silent - radio, or one side stalled), 0x13 the host hung up, 0x16 we did, 0x3e never established.
+        lastReason = param ? param->disconnect.reason : 0xFF;
+        reasonUnreported = true;
 
-        // Teardown in progress (stopBluetooth): this callback runs on the BLE
-        // event task and deinit() waits behind it, so the 5 s reconnect grace
-        // below would stall the mode exit — and re-advertising a dying stack
-        // makes no sense. Just note the disconnect and get out of the way.
+        // Teardown in progress (stopBluetooth): deinit() waits behind this callback,
+        // and re-advertising a dying stack makes no sense. Just get out of the way.
         if (btStopping)
             return;
 
@@ -137,13 +355,17 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
         cccDesc->setNotifications(false);
 
-        //DEBUG("Client has disconnected");
-		delay(5000);
-		// DEBUG("Restarting advertising...");
-		//server->getAdvertising()->start();
-		server->startAdvertising();
+        disconnectedAt = millis();
+        advertisePending = true;                    // tick() restarts advertising - never sleep here
     }
+
+public:
+    volatile uint8_t lastReason = 0;
+    volatile bool reasonUnreported = false;
 };
+
+// File scope (was local to bluetoothTask): tick() reads the disconnect reason from it.
+static BleKeyboardCallbacks keyboardCallbacks;
 
 
 /*
@@ -163,48 +385,37 @@ class OutputCallbacks : public BLECharacteristicCallbacks {
 void bluetoothTask(void*) {
 
     // This task may run once per keyer session (stopBluetooth on every menu
-    // return, restart on the next keyer entry). Our own objects are static so
-    // repeated cycles do not churn the heap; the BLEServer/BLEHIDDevice objects
-    // below come from the library, which leaks them across deinit/init cycles
-    // (a few hundred bytes per cycle — known library wart, nothing we can free).
-    static BleKeyboardCallbacks keyboardCallbacks;
+    // return, restart on the next keyer entry). The callback objects are static;
+    // the GATT table is rebuilt each time and freed by stopBluetooth() (see
+    // buildHidTable / freeHidTable).
     static OutputCallbacks outputCallbacks;
+    static bool advertisingConfigured = false;
     static BLESecurity security;
 
     // initialize the device
     BLEDevice::init(DEVICE_NAME);
+    BLEDevice::setCustomGapHandler(gapHandler);
     BLEServer* server = BLEDevice::createServer();
+    bleServer = server;
     server->setCallbacks(&keyboardCallbacks);
-
-    // create an HID device
-    hid = new BLEHIDDevice(server);
-    input = hid->inputReport(1); // report ID
-    output = hid->outputReport(1); // report ID
-    output->setCallbacks(&outputCallbacks);
-
-    // set manufacturer name
-    hid->manufacturer()->setValue("Morserino32");
-    // set USB vendor and product ID
-    hid->pnp(0x02, 0xe502, 0xa111, 0x0210);
-    // information about HID device: device is not localized, device can be connected
-    hid->hidInfo(0x00, 0x02);
 
     // Security: device requires bonding
     security.setAuthenticationMode(ESP_LE_AUTH_BOND);
 
-    // set report map
-    hid->reportMap((uint8_t*)REPORT_MAP, sizeof(REPORT_MAP));
-    hid->startServices();
+    buildHidTable(server);
+    output->setCallbacks(&outputCallbacks);
 
-    // set battery level to 100%
-    //hid->setBatteryLevel(100);
-
-    // advertise the services
+    // advertise the services. The BLEAdvertising object outlives deinit() (BLEDevice keeps it) and
+    // addServiceUUID() only appends, so the UUIDs are added once per boot: until 2026-10 every keyboard start
+    // added all three again, and the growing list pushed the advertising data past its 31 bytes.
     BLEAdvertising* advertising = server->getAdvertising();
-    advertising->setAppearance(HID_KEYBOARD);
-    advertising->addServiceUUID(hid->hidService()->getUUID());
-    advertising->addServiceUUID(hid->deviceInfo()->getUUID());
-    advertising->addServiceUUID(hid->batteryService()->getUUID());
+    if (!advertisingConfigured) {
+        advertising->setAppearance(HID_KEYBOARD);
+        advertising->addServiceUUID(BLEUUID((uint16_t) 0x1812));     // HID
+        advertising->addServiceUUID(BLEUUID((uint16_t) 0x180a));     // device information
+        advertising->addServiceUUID(BLEUUID((uint16_t) 0x180f));     // battery
+        advertisingConfigured = true;
+    }
     advertising->start();
 
     // DEBUG("BLE ready");
@@ -231,6 +442,7 @@ void MorseBluetooth::initializeBluetooth(void)
 #endif
 	// start Bluetooth task - stack size was originally 20000m prio was 5
     if (!isBLErunning) {
+        DEBUG("BLE kbd: start, heap " + String(ESP.getFreeHeap()) + " (min " + String(ESP.getMinFreeHeap()) + ")");
 	    xReturned = xTaskCreate(bluetoothTask, "bluetooth", 10000, NULL, 3, &taskHandle);
         if (xReturned == pdPASS)
             isBLErunning = true;
@@ -240,11 +452,107 @@ void MorseBluetooth::initializeBluetooth(void)
 }
 
 
+// Called from the main loop while the keyboard runs: everything the BLE callbacks may not do themselves.
+bool MorseBluetooth::hostConnected(void)
+{
+    return isBLErunning && isBleConnected;
+}
+
+static bool logoShown = false;                      // the Bluetooth symbol as last drawn by tick()
+
+void MorseBluetooth::tick(void)
+{
+    if (!isBLErunning)
+        return;
+    if (isBleConnected != logoShown) {              // show whether a host is connected; CW Keyer's top-line
+        logoShown = isBleConnected;                 // repaint (updateTopLine) draws it too
+        if (logoShown)
+            MorseOutput::dispBleLogo(true);         // the keyboard runs only in CW Keyer
+        else
+            MorseOutput::clearBleLogo(true);
+    }
+    if (keyboardCallbacks.reasonUnreported) {
+        keyboardCallbacks.reasonUnreported = false;
+        DEBUG("BLE kbd: link lost, reason 0x" + String(keyboardCallbacks.lastReason, HEX)
+              + " (" + String(disconnectCount) + " since start, up " + String(millis() / 60000) + " min, "
+              + String(bleServer ? bleServer->getConnectedCount() : 0) + " still connected, heap "
+              + String(ESP.getFreeHeap()) + ")");
+    }
+    if (connectUnreported) {
+        connectUnreported = false;
+        DEBUG("BLE kbd: connected, conn " + String(connId));
+        auto h = [](uint16_t v) { return String(v, HEX); };
+        HidTable* t = hidTable;
+        DEBUG("BLE kbd: handles manuf " + h(t->manufacturer.getHandle()) + " pnp " + h(t->pnp.getHandle())
+              + " info " + h(t->hidInfo.getHandle()) + " map " + h(t->reportMap.getHandle()) + " ctrl " + h(t->hidControl.getHandle())
+              + " proto " + h(t->protocolMode.getHandle()) + " in " + h(t->input.getHandle()) + " in-ref " + h(t->inputRef.getHandle())
+              + " in-cccd " + h(t->inputCccd.getHandle()) + " out " + h(t->output.getHandle()) + " out-ref " + h(t->outputRef.getHandle())
+              + " batt " + h(t->batteryLevel.getHandle()));
+    }
+    if (authResult >= 0) {
+        int a = authResult;
+        authResult = -1;
+        DEBUG(String("BLE kbd: encryption ") + ((a & 0x100) ? "ok" : "FAILED") + ", reason 0x" + String(a & 0xFF, HEX));
+    }
+#ifdef CONFIG_MCP73871
+    if (millis() - batteryAt >= 60000)
+        updateBatteryLevel(true);
+#endif
+    if (serviceChangePending && millis() - encryptedAt >= 2000) {
+        serviceChangePending = false;
+        if (isBleConnected && bleServer && !svcMarker) {
+            svcMarker = bleServer->createService(BLEUUID(MARKER_SERVICE_UUID), 2);
+            svcMarker->start();
+            DEBUG("BLE kbd: marker service started (Service Changed to the host)");
+        }
+    }
+    if (millis() - lastStatusAt >= 30000) {
+        lastStatusAt = millis();
+        DEBUG(String("BLE kbd: status ") + (isBleConnected ? "connected" : "not connected")
+              + (isBleConnected ? String(linkEncrypted ? ", encrypted" : ", NOT encrypted")
+                                  + ", cccd " + String(dInputCccd ? (int) ((BLE2902*) dInputCccd)->getNotifications() : -1)
+                                  + ", reports " + String(notifiesSent) : String(""))
+              + ", battery " + String(batteryPct) + " %, heap " + String(ESP.getFreeHeap()));
+    }
+    if (advStartFault != 0xFF) {
+        DEBUG("BLE kbd: advertising start FAILED, status 0x" + String(advStartFault, HEX));
+        advStartFault = 0xFF;
+    }
+    if (advertisePending && millis() - disconnectedAt >= 500 && bleServer) {
+        advertisePending = false;
+        bleServer->startAdvertising();
+    }
+    // A link that is still not encrypted after LINK_SETUP_MS will never be usable: drop it, so that
+    // onDisconnect -> advertising lets the host (or another one) connect again.
+    if (isBleConnected && !linkEncrypted && connId != 0xFFFF && millis() - connectedAt >= LINK_SETUP_MS) {
+        DEBUG("BLE kbd: link not encrypted after " + String(LINK_SETUP_MS / 1000) + " s - dropping it");
+        uint16_t id = connId;
+        connId = 0xFFFF;                    // once
+        bleServer->disconnect(id);
+    }
+    // After a (re)connect, send the key's real state once the host has subscribed: a key-up lost in a
+    // dropout (or a disconnect between press and release) would otherwise leave vBand keying until
+    // the next element. A second is ample for subscription + encryption on a reconnect.
+    if (resyncPending && isBleConnected && millis() - connectedAt >= 1000) {
+        resyncPending = false;
+        bluetoothTypeLCTRL(ctrlDown);
+    }
+}
+
 void MorseBluetooth::stopBluetooth(void)
 {
     if (MorseBluetooth::isBLErunning) {
         DEBUG("Stopping BLE");
-        btStopping = true;          // tell onDisconnect to skip its 5 s grace + re-advertise
+        if (isBleConnected && input) {      // never leave the host with the key down (e.g. key held on exit)
+            input->setValue((uint8_t *)&NO_KEY_PRESSED, sizeof(NO_KEY_PRESSED));
+            input->notify();
+            delay(60);                      // a few connection intervals for it to go out before teardown
+        }
+        ctrlDown = false;
+        advertisePending = false;
+        resyncPending = false;
+        connId = 0xFFFF;
+        btStopping = true;          // tell onDisconnect to skip re-advertising
         vTaskDelete(taskHandle);
         delay(100);
         // deinit(true) releases the BT controller memory irreversibly AND leaves the
@@ -257,15 +565,19 @@ void MorseBluetooth::stopBluetooth(void)
         // able to (re)init the stack after a keyboard session — see
         // devdocs/ble-serial/DESIGN.md.)
         BLEDevice::deinit(false);
+        freeHidTable();             // after deinit, never before
         delay(100);
         MorseBluetooth::isBLErunning = false;
         isBleConnected = false;     // onDisconnect is not delivered through deinit
+        logoShown = false;          // the menu repaints the top line (and clears the symbol)
+        DEBUG("BLE kbd: stopped, heap " + String(ESP.getFreeHeap()));
         btStopping = false;
     }
 }
 
 void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 {
+	ctrlDown = ctrl;                // tracked while disconnected too: tick() re-syncs the host on connect
 	if (isBleConnected) {
 		if (ctrl)
 		{ // Send Left CTRL key pressed
@@ -280,6 +592,7 @@ void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 			// send the input report
 			input->setValue((uint8_t *)&report, sizeof(report));
 			input->notify();
+			++notifiesSent;
 		}
 		else
 		{ // Send no key pressed
@@ -287,6 +600,7 @@ void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 			// consecutive characters are treated as just one key press
 			input->setValue((uint8_t *)&NO_KEY_PRESSED, sizeof(NO_KEY_PRESSED));
 			input->notify();
+			++notifiesSent;
 		}
 	}
 }

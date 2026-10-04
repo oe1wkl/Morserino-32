@@ -1793,7 +1793,7 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
   display.display();
 }
 
-#ifdef CONFIG_BLE_SERIAL
+#if defined(CONFIG_BLE_SERIAL) || defined(CONFIG_BLUETOOTH_KEYBOARD)
 // Where the session glyph lives. On builds with a charge controller the battery
 // icon owns the right-hand end of the STATUS line, so the glyph steps left of the
 // strip paintStatusBackground() reserves. Deliberately NOT conditional on
@@ -1801,7 +1801,11 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
 // flag, so a glyph drawn during that window would land in the battery's place
 // and be painted over the moment the icon is redrawn -- which looked exactly
 // like the indicator failing to appear at all after leaving a mode.
-static int bleLogoX() {
+// Inside a mode the battery icon is gone (cleared at mode start, MorseMenu) and the right-hand end of the top line
+// is the logo slot the WiFi and LoRa logos use, right of the volume bar; the menu position would land on that bar.
+static int bleLogoX(bool inMode) {
+  if (inMode)
+    return display.getWidth() - logoWidth;
 #ifdef CONFIG_MCP73871
   return display.getWidth() - 34 - ble_width - 4;      // 34 = that reserved width
 #else
@@ -1809,20 +1813,21 @@ static int bleLogoX() {
 #endif
 }
 
-void MorseOutput::dispBleLogo() {      // display a small logo in the top right corner while a BLE Serial client is connected
+void MorseOutput::dispBleLogo(bool inMode) {      // display a small logo in the top right corner while a BLE Serial client is connected,
+                                       // or a host is connected to the Bluetooth keyboard (CW Keyer)
   display.setColor(BLACK);
-  display.drawXbm(bleLogoX(), 2, ble_width, ble_height, ble_bits);
+  display.drawXbm(bleLogoX(inMode), 2, ble_width, ble_height, ble_bits);
   display.setColor(WHITE);
   display.display();
 }
 
-void MorseOutput::clearBleLogo() {     // erase it when the session ends
+void MorseOutput::clearBleLogo(bool inMode) {     // erase it when the session ends
   // Its own operation, because printOnStatusLine() short-circuits when asked to
   // draw text that is already on screen: coming back to the menu with the same
   // "Select Mode:" line repaints no background whatsoever, so a glyph left over
   // from a finished session would sit there forever.
   display.setColor(WHITE);
-  display.fillRect(bleLogoX(), 2, ble_width, ble_height);
+  display.fillRect(bleLogoX(inMode), 2, ble_width, ble_height);
   display.setColor(WHITE);
   display.display();
 }
