@@ -25,3 +25,19 @@ pio run -d Software/tests/ble-kbd/central -t upload --upload-port /dev/cu.usbser
 Observed 2026-10-03: the **very first** pairing between a new host and the Pocket failed (the Pocket hung up,
 0x16, and then believed itself connected, so it stopped advertising until CW Keyer was entered again);
 every later connection worked. Not reproduced since — it would need the Pocket's stored bonds cleared.
+
+## When a Mac is connected but ignores the keyboard
+
+How the 2026-10-04 "silent link" was found (fixed in 9dbac24); all of it works from a sandboxed shell:
+
+- **Does macOS receive reports?** `ioreg -r -c IOHIDDevice -l` → the Morserino's `IOHIDInterface` carries
+  `DebugState`; `ReportAvailableCalls=0` while the Pocket keys means nothing reaches the HID layer.
+- **Why not?** `/usr/bin/log show --last 5m --style compact --predicate 'process == "bluetoothd" OR process ==
+  "BTLEServer"'` (plain `log` is a zsh builtin). "Received an indication on handle 0x0041 but no session is
+  subscribed" = the input report arrives, nobody listens. Compare "Enabling notifications on client configuration
+  descriptor at handle 0x0040" (input) with `…0x0060` (battery) per connection.
+- **What does the Mac think the device looks like?** bluetoothd's `statedump:` lines list its cached GATT map with
+  values; compare them with the Pocket's own map, logged at connect as `BLE kbd: handles …` (DEBUG output, i.e.
+  **Serial Output = Nothing**).
+- `sudo killall BTLEServer` does not clear that cache (it lives in bluetoothd); a Service Changed indication or a
+  fresh pairing does.
