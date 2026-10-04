@@ -19,6 +19,9 @@
 #include "M32ProtocolOut.h"      // bleProtocol
 #include "MorseJSON.h"           // jsonError on init failure
 #include "MorseOutput.h"         // splash on init failure
+#ifdef CONFIG_AUDIO_A11Y
+#include "MorseVoice.h"          // the two splashes are spoken in the Accessibility Edition (CLAUDE.md §8)
+#endif
 #include "MorsePreferences.h"    // pliste[posBluetoothOut]: are we selected on the Bluetooth Use selector?
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"      // isBLErunning: HID-owns-the-stack is a transient, not an init failure
@@ -165,6 +168,9 @@ static bool initFailedSticky = false;   // don't retry (and re-splash) every pol
 
 static bool bleInitFail(const char *why) {
     MorseOutput::printOnScroll(2, BOLD, 0, "BLE init fail");
+#ifdef CONFIG_AUDIO_A11Y
+    MorseVoice::announce("Bluetooth serial failed to start");   // spoken from the menu loop's voice tick
+#endif
     MorseJSON::jsonError(String("BLE INIT FAILED: ") + why);
     initFailedSticky = true;
     return false;
@@ -480,7 +486,13 @@ void MorseBleSerial::suspendForWifi() {
                                         // second call (radio primitives) from splashing again.
         MorseOutput::printOnScroll(2, BOLD, 0, "BLE Ser. susp.");
         MorseOutput::refreshDisplay();
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::announce("Bluetooth serial suspended for wireless mode");
+        for (uint32_t t0 = millis(); millis() - t0 < 2500; delay(5))   // a plain delay() would never let
+            MorseVoice::tick();                                         // the clip play (nothing ticks it)
+#else
         delay(800);
+#endif
     }
 }
 

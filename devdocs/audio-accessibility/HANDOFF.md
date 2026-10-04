@@ -292,8 +292,9 @@ custom partition (`m32pocket_accessibility.csv`); games and the two WiFi-AP entr
 4. **Composed numbers / snapshots** — *done* (2026-08-13) for Koch lesson, snapshot slot and
    practice-set size, via `announceValue()` in `MorsePreferences.cpp`; the boot splash speaks
    the battery the same way (2026-08-14, "4 point 1 volts" — whole volts and tenths are inside
-   the integer-atom range). **Still open: the `posVAdjust` calibration readout** ("3980 mV") —
-   integer atoms only go to 250, so that one needs a digit-spelling path.
+   the integer-atom range). The `posVAdjust` calibration readout ("3980 mV") is
+   spoken "3 point 9 8 0 volts" since 2026-10-05 (digits after the point spelled singly, as
+   integer atoms only go to 250).
 5. **Action-pref labels** — *done* (2026-08-13): extra items announce their heading on entry,
    and the extractor reads `extraItems[]` from the firmware, so a cryptic display label is
    fixed with an `ACTION_SPOKEN` entry ("RECALLSnapshot" → "Recall snapshot").

@@ -183,11 +183,13 @@ command line).
 1. **Snapshot recall** applies the theme without `setTheme` / font geometry / `writePreferences` — Willi's call.
 2. **`audioLevelAdjust()`** can re-enter on a long-press exit; Morsel's internal `-1`
    transitions have the same latch issue.
-3. **A11y gaps:** decoder char-by-char voicing; battery "3980 mV" readout (needs digit spelling).
+3. **A11y gaps:** decoder char-by-char voicing. ~~Battery "3980 mV" calibration readout~~ — **done 2026-10-05 on `master`**
+   ("3 point 9 8 0 volts", composed; not yet heard on an a11y Pocket).
 4. **A11y voice store:** **~164 KB headroom (~13 clips) on `m32kip` as of 2026-10-02**, after the extractor fix (was ~61 KB). Compose numbers; never per-value clips;
    grep `buildfs` output for "full".
 5. **A11y very-late freeze** (decoder-reuse leak) — dead end, unresolved.
-6. **BLE transient splashes** ("BLE Ser. susp.", "BLE init fail") are silent in the a11y edition (§8 case 2).
+6. ~~**BLE transient splashes** silent in the a11y edition~~ — **done 2026-10-05 on `master`**: "Bluetooth serial suspended
+   for wireless mode" / "Bluetooth serial failed to start" (2 clips; not yet heard on an a11y Pocket).
 7. ~~**Protocol C15** (input-length cap)~~ — **done 2026-10-05 on `master`** (USB 1024 / `LINE TOO LONG`, documented).
 8. **Pocket USB replies still stall now and then (HWCDC, core 2.0.17).** Found while testing C15, present in 9.0.1:
    a reply stops after its first part (always 6–7 + 64·k bytes, i.e. after a full 64-byte packet that followed a
