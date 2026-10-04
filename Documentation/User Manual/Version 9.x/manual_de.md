@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=eb80e8d42b49 v=9 -->
+<!-- WHATSNEW:BEGIN en=d3d57e0b5a80 v=9 -->
 Was ist neu in Version 9?
 
 **V 9.1**
@@ -44,6 +44,7 @@ Was ist neu in Version 9?
 -   Eine neue Einstellung **Decoder Chars** lässt den Decoder die Buchstaben anderer Sprachen und die Klammern des ITU-Standards anzeigen. Einige Morsecodes bedeuten in verschiedenen Sprachen verschiedene Buchstaben – `.--.-` ist à im Französischen, aber å im Schwedischen, `.-.-` ist ä im Deutschen, aber æ im Dänischen –, daher wählst du einen Satz: **Standard** (wie bisher: `-.--.` ist \<kn>, dazu ä ö ü und ch), **ITU** (`-.--.` ist „(“, dazu „)“ und é, wie in ITU-R M.1677-1), **Fr/Es/Pt** (à é è ç ñ), **Sv/Fi** (å) oder **Da/No** (å, und æ ø an Stelle von ä ö). Sie gilt für CW Keyer, CW Decoder, die Transceiver-Modi und den Echo Trainer; die Spiele und der QSO Bot verwenden weiterhin Standard. Nicht in der Accessibility Edition, wo dekodierter Text nicht vom Display gelesen wird. Danke an die Tester, die sich französische, spanische, portugiesische und nordische Buchstaben sowie die ITU-Klammern gewünscht haben.
 -   Die Buchstaben anderer Sprachen lassen sich jetzt auch üben. Der File Player sendet ä ö ü, é è à ç ñ und å æ ø mit ihrem eigenen Morsecode – bisher wurden ä ö ü als ae oe ue gesendet und die anderen einfach weggelassen („café“ kam als „caf“ an) –, andere Buchstaben mit Akzent als einfachen Buchstaben und runde Klammern als `-.--.` und `-.--.-`. Auch **Custom Chars** des Koch Trainers, aus der Datei übernommen, darf sie enthalten, und der Picker für das **Practice Set** bietet jetzt auch ä ö ü und ch an (oder, außerhalb der Accessibility Edition, die Buchstaben des mit **Decoder Chars** gewählten Satzes). Im Echo Trainer zählt ein Code, der für mehrere Buchstaben steht, als der Buchstabe im nachzugebenden Wort: `.--.-` für das å eines schwedischen Textes ist richtig, egal wie **Decoder Chars** eingestellt ist.
 -   Bei der Bluetooth-Tastaturausgabe werden Buchstaben mit Umlauten oder Akzenten jetzt ohne diese getippt – ä ö ü als ae oe ue, å als aa usw. –, weil das, was eine Tastatur dafür tippt, vom Tastaturlayout des Computers abhängt. Bisher tippten ä ö ü gar nichts.
+-   Bluetooth-Tastatur: Im CW Keyer zeigt jetzt ein kleines Bluetooth-Symbol rechts in der obersten Zeile, solange ein Computer, Telefon oder Tablet mit der Tastatur verbunden ist – bisher konnte man am Morserino nicht sehen, ob VBand wirklich zuhört. Außerdem meldet der Morserino dem verbundenen Gerät seinen Akkustand, der dort neben der Tastatur angezeigt wird (der M32 Pocket aktualisiert ihn jede Minute; ein Morserino-32 der 1. oder 2. Edition meldet den beim Einschalten gemessenen Stand).
 
 **V 9.0**
 
@@ -4450,7 +4451,7 @@ verfügbaren Optionen findest du im Abschnitt
 Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird die Tastatur für PC und Tablett etc. sichtbar!
 :::
 
-Solange ein Computer, Telefon oder Tablet mit der Tastatur verbunden ist, erscheint im CW Keyer rechts in der obersten Zeile ein kleines Bluetooth-Symbol. Fehlt es, ist (noch) nichts verbunden, und was du gibst, kommt am anderen Gerät nicht an; es erscheint wieder, sobald sich das Gerät erneut verbunden hat.
+Solange ein Computer, Telefon oder Tablet mit der Tastatur verbunden ist, erscheint im CW Keyer rechts in der obersten Zeile ein kleines Bluetooth-Symbol. Fehlt es, ist (noch) nichts verbunden, und was du gibst, kommt am anderen Gerät nicht an; es erscheint wieder, sobald sich das Gerät erneut verbunden hat. Außerdem meldet der Morserino dem verbundenen Gerät seinen Akkustand, der dort meist neben der Tastatur angezeigt wird ([der M32 Pocket aktualisiert ihn jede Minute]{.pocket}[ein Morserino-32 der 1. oder 2. Edition meldet den beim Einschalten gemessenen Stand]{.classic}).
 
 ::: note
 Beachte, dass der Morserino wie eine Tastatur mit US-Tastenlayout

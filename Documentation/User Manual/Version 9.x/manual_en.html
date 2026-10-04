@@ -181,13 +181,14 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=eb80e8d42b49 v=9 -->
+<!-- WHATSNEW:BEGIN en=d3d57e0b5a80 v=9 -->
 <p>What is new in Version 9?</p>
 <p><strong>V 9.1</strong></p>
 <ul>
 <li>A new preference <strong>Decoder Chars</strong> lets the decoder show the letters of other languages, and the brackets of the ITU standard. A few Morse codes mean different letters in different languages – <code>.--.-</code> is à in French but å in Swedish, <code>.-.-</code> is ä in German but æ in Danish – so you choose a set: <strong>Standard</strong> (as before: <code>-.--.</code> is &lt;kn&gt;, plus ä ö ü and ch), <strong>ITU</strong> (<code>-.--.</code> is „(“, and „)“ and é are added, as in ITU-R M.1677-1), <strong>Fr/Es/Pt</strong> (à é è ç ñ), <strong>Sv/Fi</strong> (å) or <strong>Da/No</strong> (å, and æ ø instead of ä ö). It applies to CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer; the games and the QSO Bot keep using Standard. Not in the Accessibility Edition, where decoded text is not read from the screen. Thanks to the testers who asked for French, Spanish, Portuguese and Nordic letters, and for the ITU brackets.</li>
 <li>The letters of other languages can now also be practised. The File Player sends ä ö ü, é è à ç ñ and å æ ø with their own Morse code – until now ä ö ü were sent as ae oe ue, and the others were simply left out („café“ came out as „caf“) – other accented letters as the plain letter, and round brackets as <code>-.--.</code> and <code>-.--.-</code>. Koch <strong>Custom Chars</strong> taken from the file may contain them as well, and the <strong>Practice Set</strong> picker now also offers ä ö ü and ch (or, outside the Accessibility Edition, the letters of the set chosen with <strong>Decoder Chars</strong>). In the Echo Trainer, a code that stands for several letters counts as the one in the word you are to repeat: <code>.--.-</code> for the å of a Swedish text is right whatever <strong>Decoder Chars</strong> is set to.</li>
 <li>With Bluetooth keyboard output, letters with umlauts or accents are now typed without them – ä ö ü as ae oe ue, å as aa, and so on – because what a keyboard types for them depends on the computer’s keyboard layout. Until now ä ö ü typed nothing at all.</li>
+<li>Bluetooth keyboard: in CW Keyer, a small Bluetooth symbol at the right of the top line now shows while a computer, phone or tablet is connected to the keyboard - until now you could not see on the Morserino whether VBand was actually listening. The Morserino also reports its battery level to the connected device, which shows it next to the keyboard (the M32 Pocket updates it every minute; a Morserino-32 of the 1st or 2nd edition reports the level measured when it was switched on).</li>
 </ul>
 <p><strong>V 9.0</strong></p>
 <ul>
@@ -3245,6 +3246,7 @@ click = no</code></pre>
 <div class="note">
 <p>This feature is only active in CW Keyer mode! The keyboard will only become visible on your PC, tablet, etc. once CW Keyer has been launched!</p>
 </div>
+<p>While a computer, phone or tablet is connected to the keyboard, a small Bluetooth symbol appears at the right of the top line in CW Keyer. If it is missing, nothing is connected (yet), and nothing you key reaches the other device; it reappears as soon as the device has connected again. The Morserino also reports its battery level to the connected device, which usually shows it next to the keyboard (<span class="pocket">the M32 Pocket updates it every minute</span><span class="classic">a Morserino-32 of the 1st or 2nd edition reports the level measured when it was switched on</span>).</p>
 <div class="note">
 <p>The Morserino works like a keyboard with a US key layout – this may need to be set accordingly on the computer you are using.</p>
 </div>
@@ -4668,6 +4670,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=c688c7d07e57 -->
+<!-- MANUALFRESH: lang=en src=68d21f2744df -->
 </body>
 </html>

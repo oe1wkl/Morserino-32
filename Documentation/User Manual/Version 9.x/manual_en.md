@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=eb80e8d42b49 v=9 -->
+<!-- WHATSNEW:BEGIN en=d3d57e0b5a80 v=9 -->
 What is new in Version 9?
 
 **V 9.1**
@@ -42,6 +42,7 @@ What is new in Version 9?
 -   A new preference **Decoder Chars** lets the decoder show the letters of other languages, and the brackets of the ITU standard. A few Morse codes mean different letters in different languages – `.--.-` is à in French but å in Swedish, `.-.-` is ä in German but æ in Danish – so you choose a set: **Standard** (as before: `-.--.` is \<kn>, plus ä ö ü and ch), **ITU** (`-.--.` is „(“, and „)“ and é are added, as in ITU-R M.1677-1), **Fr/Es/Pt** (à é è ç ñ), **Sv/Fi** (å) or **Da/No** (å, and æ ø instead of ä ö). It applies to CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer; the games and the QSO Bot keep using Standard. Not in the Accessibility Edition, where decoded text is not read from the screen. Thanks to the testers who asked for French, Spanish, Portuguese and Nordic letters, and for the ITU brackets.
 -   The letters of other languages can now also be practised. The File Player sends ä ö ü, é è à ç ñ and å æ ø with their own Morse code – until now ä ö ü were sent as ae oe ue, and the others were simply left out („café“ came out as „caf“) – other accented letters as the plain letter, and round brackets as `-.--.` and `-.--.-`. Koch **Custom Chars** taken from the file may contain them as well, and the **Practice Set** picker now also offers ä ö ü and ch (or, outside the Accessibility Edition, the letters of the set chosen with **Decoder Chars**). In the Echo Trainer, a code that stands for several letters counts as the one in the word you are to repeat: `.--.-` for the å of a Swedish text is right whatever **Decoder Chars** is set to.
 -   With Bluetooth keyboard output, letters with umlauts or accents are now typed without them – ä ö ü as ae oe ue, å as aa, and so on – because what a keyboard types for them depends on the computer's keyboard layout. Until now ä ö ü typed nothing at all.
+-   Bluetooth keyboard: in CW Keyer, a small Bluetooth symbol at the right of the top line now shows while a computer, phone or tablet is connected to the keyboard - until now you could not see on the Morserino whether VBand was actually listening. The Morserino also reports its battery level to the connected device, which shows it next to the keyboard (the M32 Pocket updates it every minute; a Morserino-32 of the 1st or 2nd edition reports the level measured when it was switched on).
 
 **V 9.0**
 
@@ -3933,7 +3934,7 @@ keyboard options (for more information, see section  **Preferences regarding Ke
 This feature is only active in CW Keyer mode! The keyboard will only become visible on your PC, tablet, etc. once CW Keyer has been launched!
 :::
 
-While a computer, phone or tablet is connected to the keyboard, a small Bluetooth symbol appears at the right of the top line in CW Keyer. If it is missing, nothing is connected (yet), and nothing you key reaches the other device; it reappears as soon as the device has connected again.
+While a computer, phone or tablet is connected to the keyboard, a small Bluetooth symbol appears at the right of the top line in CW Keyer. If it is missing, nothing is connected (yet), and nothing you key reaches the other device; it reappears as soon as the device has connected again. The Morserino also reports its battery level to the connected device, which usually shows it next to the keyboard ([the M32 Pocket updates it every minute]{.pocket}[a Morserino-32 of the 1st or 2nd edition reports the level measured when it was switched on]{.classic}).
 
 ::: note
 The Morserino works like a keyboard with a US key
