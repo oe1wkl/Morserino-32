@@ -182,6 +182,10 @@ confirmed — would need its own recording focused on that exact moment.
 
 ## OPEN (2026-07-22): I2S sidetone is ~6 ms heavier than the key line
 
+> **2026-10-05: implemented on branch `sidetone-alignment`** exactly as proposed below
+> (`sidetoneLeadMs` = round(0.657 × ramp), set by `setSidetoneEnvelope()`: 1 1 2 3 3 4 5 5 6 ms for
+> Tone Softness 1–9 ms). **Not merged until the scope test below has been run.**
+
 **Ours to fix, not a contributor's** — pre-existing since #136/#138, surfaced
 while reviewing PR #196 ("Tone Softness"). **Analysis only; not yet measured on
 hardware.**

@@ -2422,9 +2422,18 @@ void MorseOutput::soundSetup()
 }
 
 #ifdef CONFIG_SOUND_I2S
+// Where, inside pwmTone()'s and pwmNoTone()'s fixed 6 ms, the I2S sidetone is switched (devdocs/cw-timing-audit/
+// FINDINGS.md, "I2S sidetone is ~6 ms heavier"). The key line changes AFTER those 6 ms on both edges; the tone used
+// to start 6 ms BEFORE the key closed and stop with it, so every mark sounded 6 ms long (plus the release tail).
+// The Blackman-Harris envelope crosses -6 dB at 0.657 of its ramp on both edges, so switching k = 0.657 * ramp
+// before the end of the 6 ms puts both -6 dB points on the key-line edges, for every Tone Softness. The total
+// blocking time stays 6 ms, so corrTime = millis() - 6 and MorseCwEngine's corrections still hold.
+static uint8_t sidetoneLeadMs = 3;                           // k for the default 5 ms ramp
+
 void MorseOutput::setSidetoneEnvelope(uint8_t prefValue) {   // prefValue 0..8 maps to 1..9 ms attack/release
   float t = (prefValue + 1) / 1000.0f;
   sidetone.setADSR(t, 0.0f, 1.0f, t);
+  sidetoneLeadMs = (uint8_t) min(6, (int) lroundf(0.657f * (prefValue + 1)));
 }
 #endif
 
@@ -2478,8 +2487,9 @@ void MorseOutput::pwmTone(unsigned int frequency, unsigned int volume, boolean l
 #else
   sidetone.setVolume(float(volume) / 19.0);
 #endif
+  delay(6 - sidetoneLeadMs);       // see setSidetoneEnvelope(): -6 dB edge on the key-line edge
   sidetone.on();
-  delay(6);
+  delay(sidetoneLeadMs);
 #endif
 }
 
@@ -2504,8 +2514,9 @@ void MorseOutput::pwmNoTone(unsigned int volume) {      // stop playing a tone b
   ledcWrite(lineOutChannel, dutyCycleZero);
 
 #else
-  delay(6);
+  delay(6 - sidetoneLeadMs);
   sidetone.off();
+  delay(sidetoneLeadMs);
 #endif
 }
 
