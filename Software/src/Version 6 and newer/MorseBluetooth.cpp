@@ -22,6 +22,7 @@
 #include "morsedefs.h"
 #include "MorsePreferences.h"
 #include "MorseBluetooth.h"
+#include "MorseOutput.h"
 #include "BLEDevice.h"
 #include "BLE2902.h"
 #include "BLE2904.h"
@@ -408,10 +409,24 @@ void MorseBluetooth::initializeBluetooth(void)
 
 
 // Called from the main loop while the keyboard runs: everything the BLE callbacks may not do themselves.
+bool MorseBluetooth::hostConnected(void)
+{
+    return isBLErunning && isBleConnected;
+}
+
+static bool logoShown = false;                      // the Bluetooth symbol as last drawn by tick()
+
 void MorseBluetooth::tick(void)
 {
     if (!isBLErunning)
         return;
+    if (isBleConnected != logoShown) {              // show whether a host is connected; CW Keyer's top-line
+        logoShown = isBleConnected;                 // repaint (updateTopLine) draws it too
+        if (logoShown)
+            MorseOutput::dispBleLogo();
+        else
+            MorseOutput::clearBleLogo();
+    }
     if (keyboardCallbacks.reasonUnreported) {
         keyboardCallbacks.reasonUnreported = false;
         DEBUG("BLE kbd: link lost, reason 0x" + String(keyboardCallbacks.lastReason, HEX)
@@ -506,6 +521,7 @@ void MorseBluetooth::stopBluetooth(void)
         delay(100);
         MorseBluetooth::isBLErunning = false;
         isBleConnected = false;     // onDisconnect is not delivered through deinit
+        logoShown = false;          // the menu repaints the top line (and clears the symbol)
         DEBUG("BLE kbd: stopped, heap " + String(ESP.getFreeHeap()));
         btStopping = false;
     }

@@ -4450,6 +4450,8 @@ verfügbaren Optionen findest du im Abschnitt
 Diese Funktion ist nur im Modus CW Keyer aktiv! Erst wenn CW Keyer gestartet wird, wird die Tastatur für PC und Tablett etc. sichtbar!
 :::
 
+Solange ein Computer, Telefon oder Tablet mit der Tastatur verbunden ist, erscheint im CW Keyer rechts in der obersten Zeile ein kleines Bluetooth-Symbol. Fehlt es, ist (noch) nichts verbunden, und was du gibst, kommt am anderen Gerät nicht an; es erscheint wieder, sobald sich das Gerät erneut verbunden hat.
+
 ::: note
 Beachte, dass der Morserino wie eine Tastatur mit US-Tastenlayout
 arbeitet – dies ist ggf. auf dem verwendeten Computer entsprechend

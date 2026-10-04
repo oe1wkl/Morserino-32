@@ -33,6 +33,8 @@ namespace MorseBluetooth
 	// Main-loop service while the keyboard runs: re-advertising after a disconnect, re-syncing the
 	// host's key state after a (re)connect, logging disconnect reasons (the BLE callbacks must not block).
 	void tick(void);
+	// A host is connected to the keyboard right now (drives the Bluetooth symbol in CW Keyer's top line).
+	bool hostConnected(void);
 	void bluetoothTypeLCTRL(bool ctrl);
 	void bluetoothTypeCharacter(const char chr);
 	void bluetoothTypeString(const String& str);

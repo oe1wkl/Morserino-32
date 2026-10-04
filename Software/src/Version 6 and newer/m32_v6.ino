@@ -3174,6 +3174,10 @@ void updateTopLine() {
   else if (bleProtocol)                                 // one slot, so RF wins: "I am transmitting"
       MorseOutput::dispBleLogo();                       // is more urgent than "a client is attached"
 #endif
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+  else if (morseState == morseKeyer && MorseBluetooth::hostConnected())
+      MorseOutput::dispBleLogo();                       // a host (vBand, ...) is connected to the keyboard
+#endif
 
   // "is volume NOT the encoder's current role" - not "== speedSettingMode": with
   // previewCharMode added, that used to be a 2-way check and silently went wrong for the

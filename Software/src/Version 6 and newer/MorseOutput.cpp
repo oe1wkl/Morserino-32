@@ -1793,7 +1793,7 @@ void MorseOutput::dispWifiLogo() {     // display a small logo in the top right 
   display.display();
 }
 
-#ifdef CONFIG_BLE_SERIAL
+#if defined(CONFIG_BLE_SERIAL) || defined(CONFIG_BLUETOOTH_KEYBOARD)
 // Where the session glyph lives. On builds with a charge controller the battery
 // icon owns the right-hand end of the STATUS line, so the glyph steps left of the
 // strip paintStatusBackground() reserves. Deliberately NOT conditional on
@@ -1809,7 +1809,8 @@ static int bleLogoX() {
 #endif
 }
 
-void MorseOutput::dispBleLogo() {      // display a small logo in the top right corner while a BLE Serial client is connected
+void MorseOutput::dispBleLogo() {      // display a small logo in the top right corner while a BLE Serial client is connected,
+                                       // or a host is connected to the Bluetooth keyboard (CW Keyer)
   display.setColor(BLACK);
   display.drawXbm(bleLogoX(), 2, ble_width, ble_height, ble_bits);
   display.setColor(WHITE);

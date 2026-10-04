@@ -119,9 +119,9 @@ namespace MorseOutput
   void showVolumeScope(uint16_t mini, uint16_t maxi);
   void dispLoraLogo();
   void dispWifiLogo();
-#ifdef CONFIG_BLE_SERIAL
-  void dispBleLogo();                  // a BLE Serial client holds a session
-  void clearBleLogo();                 // ... and that session has ended
+#if defined(CONFIG_BLE_SERIAL) || defined(CONFIG_BLUETOOTH_KEYBOARD)
+  void dispBleLogo();                  // a BLE Serial client holds a session, or a host is connected to the BT keyboard
+  void clearBleLogo();                 // ... and that has ended
 #endif
 #ifdef CONFIG_MCP73871
   extern uint8_t  ppCurrentState;
