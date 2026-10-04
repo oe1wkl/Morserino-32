@@ -4094,6 +4094,8 @@ keyboard options (for more information, see section  **Preferences regarding Ke
 This feature is only active in CW Keyer mode! The keyboard will only become visible on your PC, tablet, etc. once CW Keyer has been launched!
 :::
 
+While a computer, phone or tablet is connected to the keyboard, a small Bluetooth symbol appears at the right of the top line in CW Keyer. If it is missing, nothing is connected (yet), and nothing you key reaches the other device; it reappears as soon as the device has connected again. The Morserino also reports its battery level to the connected device, which usually shows it next to the keyboard ([the M32 Pocket updates it every minute]{.pocket}[a Morserino-32 of the 1st or 2nd edition reports the level measured when it was switched on]{.classic}).
+
 ::: note
 The Morserino works like a keyboard with a US key
 layout – this may need to be set accordingly on the computer you are
