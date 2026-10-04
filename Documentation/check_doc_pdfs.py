@@ -65,8 +65,12 @@ def read_stamp(pdf_path):
     if m:
         return m.group(1).decode()
     for s in re.finditer(rb"stream\r?\n(.*?)\r?\nendstream", data, re.S):
+        # decompressobj, not decompress: the non-greedy match ends a stream at the first "\nendstream"
+        # it meets, which compressed data can contain by chance - strict decompress() then rejects the
+        # truncated stream (the protocol PDF of 2026-10-05 hid its stamp that way), a decompressobj
+        # still yields everything up to the cut.
         try:
-            m = STAMP_RE.search(zlib.decompress(s.group(1)))
+            m = STAMP_RE.search(zlib.decompressobj().decompress(s.group(1)))
         except zlib.error:
             continue
         if m:
