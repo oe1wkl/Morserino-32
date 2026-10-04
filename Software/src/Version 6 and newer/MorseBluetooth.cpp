@@ -71,12 +71,21 @@ static volatile uint8_t advStartFault = 0xFF;
 static const uint32_t LINK_SETUP_MS = 10000;
 static volatile bool linkEncrypted = false;
 static volatile uint16_t connId = 0xFFFF;
+// Diagnostics (DEBUG, i.e. on USB when Serial Output = Nothing): events the callbacks note for tick() to report,
+// and a 30 s status line while the keyboard runs - for the "connected but silent" case seen with macOS.
+static volatile bool connectUnreported = false;
+static volatile int authResult = -1;                // -1 none, else (success << 8) | fail_reason, until reported
+static uint32_t notifiesSent = 0;                   // input reports sent on the current connection
+static uint32_t lastStatusAt = 0;
 
 static void gapHandler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t* param) {
     if (event == ESP_GAP_BLE_ADV_START_COMPLETE_EVT && param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS)
         advStartFault = (uint8_t) param->adv_start_cmpl.status;
-    if (event == ESP_GAP_BLE_AUTH_CMPL_EVT && param->ble_security.auth_cmpl.success)
-        linkEncrypted = true;
+    if (event == ESP_GAP_BLE_AUTH_CMPL_EVT) {
+        if (param->ble_security.auth_cmpl.success)
+            linkEncrypted = true;
+        authResult = (param->ble_security.auth_cmpl.success ? 0x100 : 0) | param->ble_security.auth_cmpl.fail_reason;
+    }
 }
 
 TaskHandle_t taskHandle;    //
@@ -241,6 +250,8 @@ class BleKeyboardCallbacks : public BLEServerCallbacks {
         resyncPending = true;
         linkEncrypted = false;
         connId = param ? param->connect.conn_id : 0xFFFF;
+        notifiesSent = 0;
+        connectUnreported = true;
 
         // Allow notifications for characteristics
         BLE2902* cccDesc = (BLE2902*)input->getDescriptorByUUID(BLEUUID((uint16_t)0x2902));
@@ -377,6 +388,23 @@ void MorseBluetooth::tick(void)
               + String(bleServer ? bleServer->getConnectedCount() : 0) + " still connected, heap "
               + String(ESP.getFreeHeap()) + ")");
     }
+    if (connectUnreported) {
+        connectUnreported = false;
+        DEBUG("BLE kbd: connected, conn " + String(connId));
+    }
+    if (authResult >= 0) {
+        int a = authResult;
+        authResult = -1;
+        DEBUG(String("BLE kbd: encryption ") + ((a & 0x100) ? "ok" : "FAILED") + ", reason 0x" + String(a & 0xFF, HEX));
+    }
+    if (millis() - lastStatusAt >= 30000) {
+        lastStatusAt = millis();
+        DEBUG(String("BLE kbd: status ") + (isBleConnected ? "connected" : "not connected")
+              + (isBleConnected ? String(linkEncrypted ? ", encrypted" : ", NOT encrypted")
+                                  + ", cccd " + String(dInputCccd ? (int) ((BLE2902*) dInputCccd)->getNotifications() : -1)
+                                  + ", reports " + String(notifiesSent) : String(""))
+              + ", heap " + String(ESP.getFreeHeap()));
+    }
     if (advStartFault != 0xFF) {
         DEBUG("BLE kbd: advertising start FAILED, status 0x" + String(advStartFault, HEX));
         advStartFault = 0xFF;
@@ -454,6 +482,7 @@ void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 			// send the input report
 			input->setValue((uint8_t *)&report, sizeof(report));
 			input->notify();
+			++notifiesSent;
 		}
 		else
 		{ // Send no key pressed
@@ -461,6 +490,7 @@ void MorseBluetooth::bluetoothTypeLCTRL(bool ctrl)
 			// consecutive characters are treated as just one key press
 			input->setValue((uint8_t *)&NO_KEY_PRESSED, sizeof(NO_KEY_PRESSED));
 			input->notify();
+			++notifiesSent;
 		}
 	}
 }

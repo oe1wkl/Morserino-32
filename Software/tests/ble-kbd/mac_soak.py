@@ -177,6 +177,7 @@ def main():
     mac = MacHost(log)
     blue = Blue(args.drop_method, say)
     dut = Dut(args.dut, log)
+    dut.log_all = True                    # every reply and DEBUG line: a refused cw/repeat must be visible
     d = dut.link.device.get("device", dut.link.device)
     say(f"DUT: {d.get('hardware')} firmware {d.get('firmware')} edition {d.get('edition')}")
     saved = {n: dut.link.get_config(n) for n in ("Bluetooth Use", "Serial Output", "Key ext TX")}

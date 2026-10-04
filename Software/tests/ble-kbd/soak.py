@@ -149,7 +149,7 @@ class Dut:
             while b"\n" in buf:
                 line, buf = buf.split(b"\n", 1)
                 text = line.decode("utf-8", "replace").strip()
-                if "BLE" in text or "Stopping" in text:
+                if "BLE" in text or "Stopping" in text or getattr(self, "log_all", False):
                     self.debug.append((now(), text))
                     self.log("dut  " + text)
 
