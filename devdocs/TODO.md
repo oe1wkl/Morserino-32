@@ -58,9 +58,8 @@ protocol PDFs (E2).
 4. ~~Next master release is 9.1~~ (decided) — the `### CHANGES V. 9.1` section now exists,
    opened with the BLE heap-leak fix.
 
-### Device state (2026-10-03)
-Both units run the **9.1 build** (`generator-national-chars` = master's I3 work), standard edition on the Pocket,
-flashed for the I3 bench; `/player.txt` on both is the I3 test file (`devdocs/language-support/bench-player.txt`).
+### Device state (2026-10-04)
+Both units run the **9.1 build from master ce83d2a** (I3 + I2), standard edition on the Pocket (Bluetooth Use 5); `/player.txt` on both is the I3 test file (`devdocs/language-support/bench-player.txt`).
 **For M32KIP work (wave 2, B6, B14) re-flash both from the `m32kip` folder.** Earlier staging (Quick Start into
 Remote Rig, pass phrase) is NVS and survives, but check it. TRX Peer fields kept for now (B7).
 
@@ -229,14 +228,29 @@ command line).
    are spoken as prosigns**; the space in Op Name has no clip either. Fix: for the call-sign and name character
    sets, voice the lower-case letter (and say "space"); Practice Set must keep voicing upper case as prosigns
    (there it IS a prosign code). Shipped bug in V9 → fix on `master` (9.1), merge into `m32kip`.
-2. **BLE keyboard (vBand): link drops after ~30 min, possible stuck key-down** — **fix on branch
-   `ble-kbd-reconnect` (a500b76, worktree `/private/tmp/claude-501/m32-ble-kbd`), not merged, bench owed.**
-   `onDisconnect` slept 5 s on Bluedroid's event task: now the callbacks only record, `MorseBluetooth::tick()`
-   (main loop) re-advertises after 0.5 s; the real Ctrl state is sent 1 s after every (re)connect; the key is
-   released before `stopBluetooth()`; every disconnect is logged with its HCI reason (DEBUG, Serial Output =
-   Nothing) — `devdocs/ble-keyboard/soak_log.py` records them. **Bench:** vBand session, force drops (walk out of
-   range / toggle the Mac's Bluetooth) while keying and while the key is held; then a long soak with the logger to
-   learn WHY it drops (0x08 timeout / 0x13 host / 0x16 M32).
+2. ~~**BLE keyboard (vBand): link drops after ~30 min, possible stuck key-down**~~ — **done: merged to `master`
+   2026-10-04 (ce83d2a) after Willi's bench and a real vBand test** (Mac sleep/wake, out of range); changelog V. 9.1,
+   EN+DE manuals. **`m32kip`: merge master in** (from the m32kip folder). An automated rig
+   (`Software/tests/ble-kbd/`: the classic as BLE test host + `soak.py`) found and confirmed, 2026-10-03/04:
+   - **stuck key** after a dropout: master leaves the host with the key DOWN in 16 of 16 forced drops; fixed (the
+     real Ctrl state is re-sent 1 s after every (re)connect; released before the keyboard stops);
+   - **13 KB leaked per CW Keyer visit** (BLEHIDDevice's GATT objects never freed): after ~5 visits the keyboard
+     could not start until power-off — fixed (own HID table, freed after deinit; 0 B/cycle measured);
+   - advertising UUIDs re-added on every start (fixed); onDisconnect's 5 s block on the BLE task (gone);
+   - **"the Mac ignores the keyboard" (2026-10-04, fixed 9dbac24):** after a Mac Bluetooth off/on the link was up and
+     encrypted, reports were sent, and macOS dropped them all. Cause: the Arduino BLE library creates characteristics
+     and descriptors in heap-*address* order, so the attribute layout was luck (on master too); the bonded Mac kept
+     master's layout, wrote "notify on" into the input report's report reference, and from then on read it as report
+     type 0. Fix: the table is one object (fixed order = master's), report references read-only, and a marker service
+     started after encryption makes Bluedroid indicate Service Changed, so a stale host rediscovers by itself
+     (verified: the stuck Mac recovered without re-pairing; 5/5 Mac Bluetooth power-cycles keyed afterwards).
+     Diagnosis method (bluetoothd "statedump" in `log show`, `ioreg` HID DebugState) is in `Software/tests/ble-kbd/`.
+   - **added on the branch:** Bluetooth symbol in CW Keyer's top line while a host is connected (35b243d, 08db6dc —
+     also moves the BLE Serial symbol out of the volume bar inside modes); battery level reported to the host
+     (0f55b91); change log + EN/DE manuals rebuilt (b098f91). `Software/tests/ble-kbd/mac_soak.py` = the Mac as host.
+   - "Half-open" connections were only ever seen with the ESP32 test host (master too); the 10 s encryption
+     watchdog stays as a safety net, never seen firing.
+   Devices restored 2026-10-04: classic back on 9.1 (master ce83d2a), Pocket on the same build, Bluetooth Use 5.
 3. ~~**Decoder: ITU brackets and national characters**~~ — **done, bench-tested by Willi on the classic and the
    Pocket (standard edition) and merged to `master` 2026-10-03** (a3e9d5a + 60fa931, changelog V. 9.1, EN+DE manuals).
    Preference **Decoder Chars** (Standard / ITU / Fr/Es/Pt / Sv/Fi / Da/No; not in the a11y edition, not in snapshots),
