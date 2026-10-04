@@ -27,6 +27,7 @@
   "Call Prefixes": "Filter out rare prefixes and only generate call signs with common prefixes.",
   "Length Abbrev": "Maximum length of randomly generated CW abbreviations and Q groups. Unlimited or max 2–6.",
   "Length Words": "Maximum length of randomly generated English words. Unlimited or max 2–6.",
+  "Word Length": "Length of randomly generated English words: Unlimited, up to 2 … up to 6 letters, or 4 or more (to practise longer words). In the Koch Trainer, if no word of 4 or more letters fits the lesson yet, words of any length are used. Called 'Length Words' before firmware 9.1.",
   "Max # of Words": "After this number of words/groups, the M32 generates an AR (+) pro sign and pauses. Touch a paddle to continue. Ignored when Auto Stop is active. Unlimited or 5–250 in steps of 5.",
   "Stop<Next>Rep": "Stops generating after each word. Right paddle = next word, left paddle = repeat. Not compatible with 'Each Word 2x' — enabling one disables the other.",
   "CW Gen Displ": "How the CW Generator or Transceivers display generated/received content: Display off, Char by Char, or Word by Word.",

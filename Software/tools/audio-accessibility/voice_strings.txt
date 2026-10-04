@@ -115,6 +115,7 @@
 4 dits
 4 milliseconds
 4 ms
+4 or more
 40
 40 words per minute
 40 wpm
@@ -353,7 +354,6 @@ Learn new character
 Lemonade
 Length Abbrev
 Length Calls
-Length Words
 LICW Carousel
 Lima
 line out Speaker Muted
@@ -462,6 +462,11 @@ Ultimatic
 Uniform
 Unlimited
 Up 1 Half
+up to 2
+up to 3
+up to 4
+up to 5
+up to 6
 Update Firmware
 UPPER
 VBand and Decoded
@@ -484,6 +489,7 @@ WiFi Trx
 WiFi Tx OFF
 WiFi Tx ON
 Word by word
+Word Length
 words per minute
 WPX/Sprint
 X-ray
