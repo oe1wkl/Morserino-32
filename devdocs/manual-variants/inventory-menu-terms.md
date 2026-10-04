@@ -123,7 +123,7 @@ ones with no manual hits are undocumented device labels.
 | preference | `Length Abbrev` | 897, 2896 | 913, 3328 |
 | preference | `Length Calls` | 894, 2893 | 910, 3325 |
 | preference | `Length Rnd Gr` | 889, 2892 | 906, 3324 |
-| preference | `Length Words` | 897, 2897 | 913, 3329 |
+| preference | `Word Length` (was `Length Words` before 9.1) | 897, 2897 | 913, 3329 |
 | preference | `Max # of Words` | *not documented* | *not documented* |
 | preference | `Output Case` | 2823 | 3263 |
 | preference | `Paddle Polar.` | 2728 | 3160 |

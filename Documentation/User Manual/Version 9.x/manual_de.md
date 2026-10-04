@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=d3d57e0b5a80 v=9 -->
+<!-- WHATSNEW:BEGIN en=f08137d62026 v=9 -->
 Was ist neu in Version 9?
 
 **V 9.1**
@@ -44,6 +44,7 @@ Was ist neu in Version 9?
 -   Eine neue Einstellung **Decoder Chars** lässt den Decoder die Buchstaben anderer Sprachen und die Klammern des ITU-Standards anzeigen. Einige Morsecodes bedeuten in verschiedenen Sprachen verschiedene Buchstaben – `.--.-` ist à im Französischen, aber å im Schwedischen, `.-.-` ist ä im Deutschen, aber æ im Dänischen –, daher wählst du einen Satz: **Standard** (wie bisher: `-.--.` ist \<kn>, dazu ä ö ü und ch), **ITU** (`-.--.` ist „(“, dazu „)“ und é, wie in ITU-R M.1677-1), **Fr/Es/Pt** (à é è ç ñ), **Sv/Fi** (å) oder **Da/No** (å, und æ ø an Stelle von ä ö). Sie gilt für CW Keyer, CW Decoder, die Transceiver-Modi und den Echo Trainer; die Spiele und der QSO Bot verwenden weiterhin Standard. Nicht in der Accessibility Edition, wo dekodierter Text nicht vom Display gelesen wird. Danke an die Tester, die sich französische, spanische, portugiesische und nordische Buchstaben sowie die ITU-Klammern gewünscht haben.
 -   Die Buchstaben anderer Sprachen lassen sich jetzt auch üben. Der File Player sendet ä ö ü, é è à ç ñ und å æ ø mit ihrem eigenen Morsecode – bisher wurden ä ö ü als ae oe ue gesendet und die anderen einfach weggelassen („café“ kam als „caf“ an) –, andere Buchstaben mit Akzent als einfachen Buchstaben und runde Klammern als `-.--.` und `-.--.-`. Auch **Custom Chars** des Koch Trainers, aus der Datei übernommen, darf sie enthalten, und der Picker für das **Practice Set** bietet jetzt auch ä ö ü und ch an (oder, außerhalb der Accessibility Edition, die Buchstaben des mit **Decoder Chars** gewählten Satzes). Im Echo Trainer zählt ein Code, der für mehrere Buchstaben steht, als der Buchstabe im nachzugebenden Wort: `.--.-` für das å eines schwedischen Textes ist richtig, egal wie **Decoder Chars** eingestellt ist.
 -   Bei der Bluetooth-Tastaturausgabe werden Buchstaben mit Umlauten oder Akzenten jetzt ohne diese getippt – ä ö ü als ae oe ue, å als aa usw. –, weil das, was eine Tastatur dafür tippt, vom Tastaturlayout des Computers abhängt. Bisher tippten ä ö ü gar nichts.
+-   **Word Length** (bisher **Length Words**) hat einen neuen Wert, **4 or more**, zum Üben längerer Wörter im CW Generator, im Echo Trainer und im Koch Trainer; die Höchstwerte heißen jetzt **up to 2** … **up to 6**. Im Koch Trainer kommen die Wörter jetzt aus derselben großen Wortliste wie im CW Generator (rund 4.900 statt 373 Wörter, die häufigeren öfter), sodass schon frühe Lektionen viel mehr verschiedene Wörter bieten – in Lektion 12 der M32-Reihenfolge 229 statt 46. Passt noch kein Wort mit 4 oder mehr Buchstaben zu deiner Lektion, werden Wörter jeder Länge verwendet. Programme, die diese Einstellung über das serielle Protokoll setzen, müssen den neuen Namen verwenden.
 -   Bluetooth-Tastatur: Im CW Keyer zeigt jetzt ein kleines Bluetooth-Symbol rechts in der obersten Zeile, solange ein Computer, Telefon oder Tablet mit der Tastatur verbunden ist – bisher konnte man am Morserino nicht sehen, ob VBand wirklich zuhört. Außerdem meldet der Morserino dem verbundenen Gerät seinen Akkustand, der dort neben der Tastatur angezeigt wird (der M32 Pocket aktualisiert ihn jede Minute; ein Morserino-32 der 1. oder 2. Edition meldet den beim Einschalten gemessenen Stand).
 
 **V 9.0**
@@ -1102,8 +1103,14 @@ zwischen 2 to 3 und 2 to 6.
 **Length Calls**: Maximale Länge der generierten Rufzeichen (3–6 oder
 Unlimited).
 
-**Length Abbrev** und **Length Words**: Maximale Länge der zufällig
-generierten CW-Abkürzungen bzw. englischen Wörter (2–6 oder Unlimited).
+**Length Abbrev**: Maximale Länge der zufällig generierten
+CW-Abkürzungen (2–6 oder Unlimited).
+
+**Word Length**: Länge der zufällig generierten englischen Wörter:
+**Unlimited**, eine Höchstlänge (**up to 2** … **up to 6**) oder
+**4 or more**, um längere Wörter zu üben. Lässt sich im Koch Trainer aus
+den Zeichen deiner Lektion noch kein Wort mit 4 oder mehr Buchstaben
+bilden, werden stattdessen Wörter jeder Länge verwendet.
 
 **Each Word 2x**: Jedes „Wort" (Zeichen zwischen Leerzeichen) wird
 zweimal ausgegeben, um das Kopieren nach Gehör zu erleichtern (ON –
@@ -3602,7 +3609,7 @@ Trainer relevant!
 | **Calls Region** | Wähle, ob Rufzeichen aus aller Welt oder nur von einem bestimmten Kontinent generiert werden sollen. **VK/ZL** schränkt noch weiter ein, nämlich auf australische und neuseeländische Rufzeichen: Die Rufzeichenbezirke sind nach Einwohnerzahl gewichtet, VK2 und VK3 kommen also weit häufiger vor als VK8 oder VK0, und etwa jedes sechste Rufzeichen ist ein ZL. **Dieser Parameter wird ignoriert, wenn die Rufzeichenlänge auf maximal 3 Zeichen eingestellt ist** — ein VK- oder ZL-Rufzeichen mit 3 Zeichen gibt es ohnehin nicht. | **All** / Europe / N America / S America / Africa / Asia / Oceania / VK/ZL |
 | **Call Prefixes** | Über diese Einstellung kannst du sehr seltene Präfixe herausfiltern und nur Rufzeichen mit geläufigeren Präfixen erhalten. | **Common only** / All |
 | **Length Abbrev** | Wähle die maximale Länge der zufällig generierten gängigen CW-Abkürzungen und Q-Gruppen. | **Unlimited** / max. 2 – max. 6 |
-| **Length Words** | Wähle die maximale Länge der zufällig generierten gängigen englischen Wörter. | **Unlimited** / max. 2 – max. 6 |
+| **Word Length** | Wähle die Länge der zufällig generierten gängigen englischen Wörter: eine Höchstlänge oder 4 Buchstaben und mehr (vor 9.1 hieß diese Einstellung **Length Words**). | **Unlimited** / up to 2 – up to 6 / 4 or more |
 | **Max \# of Words** | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen generiert wurde, erzeugt der Morserino-32 ein abschließendes AR-Betriebszeichen ("+"), um das Ende dieser Sequenz anzuzeigen, und hält dann an und wartet. Mit einem Paddle-Berühren (oder einem Klick auf den ENCODER-Knopf) fährt er fort und erzeugt die nächste Wortfolge. Dieses abschließende "+" wird, wie das einleitende *vvv\<ka>*, fett auf dem Display dargestellt. *(Wenn „Auto Stop" aktiv ist, wird diese Einstellung im Modus CW Generator ignoriert.)* | **Unlimited** / 5 bis 250 in 5er-Schritten |
 | **Stop/Next/Rep** | Stoppt die Generierung von Morsezeichen nach jedem Wort in den Modi CW Generator und Koch Generator, um das Erlernen des Kopierens ohne Mitschreiben zu unterstützen. Fortfahren durch Berühren des rechten Paddles (nächstes Wort) oder des linken Paddles (Wort wiederholen). *Diese Option und die Option „Each Word 2x" sind nicht miteinander kompatibel: Wenn eine auf ON gesetzt wird, wird die andere automatisch auf OFF gesetzt.* | ON / **OFF** |
 | **CW Gen Displ** | Wähle, wie der CW-Generator oder die CW-Transceiver das Generierte oder Empfangene anzeigen sollen. | Display off / **Char by Char** / Word by word |
