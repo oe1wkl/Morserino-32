@@ -200,6 +200,28 @@ static BLEDescriptor* dInputCccd = nullptr;     // for the status line
 static const char* MARKER_SERVICE_UUID = "4d33322d-6c61-796f-7574-2d65706f6368";   // "M32-layout-epoch"
 static BLEService* svcMarker = nullptr;
 
+// Battery level for the host (a percentage on a LiPo discharge curve; hosts show it next to the keyboard - with
+// no value macOS logged "Failed to extract battery level" on every connect). The Pocket measures in microseconds
+// (fast ADC, no delays), so it re-measures every minute and notifies changes; the classic measures only at boot
+// (later reads would have to switch Vext, which powers the OLED on some boards), so it reports that value.
+#ifndef CONFIG_MCP73871
+extern uint16_t volt;                               // m32_v6.ino, measured in setup()
+#endif
+static int batteryPct = -1;
+static uint32_t batteryAt = 0;
+
+static int batteryPercent(int mv) {
+    static const int16_t curve[][2] = { {4150, 100}, {4050, 90}, {3950, 75}, {3850, 55}, {3780, 40},
+                                        {3700, 25}, {3600, 12}, {3500, 5}, {3300, 0} };
+    if (mv >= curve[0][0]) return 100;
+    for (size_t i = 1; i < sizeof(curve) / sizeof(curve[0]); ++i)
+        if (mv >= curve[i][0])
+            return curve[i][1] + (mv - curve[i][0]) * (curve[i-1][1] - curve[i][1]) / (curve[i-1][0] - curve[i][0]);
+    return 0;
+}
+
+static void updateBatteryLevel(bool notify);
+
 static void buildHidTable(BLEServer* server) {
     HidTable* t = hidTable = new HidTable();
     svcDeviceInfo = server->createService(BLEUUID((uint16_t) 0x180a));
@@ -250,9 +272,31 @@ static void buildHidTable(BLEServer* server) {
     output = &t->output;
     dInputCccd = &t->inputCccd;
 
+    batteryPct = -1;
+    updateBatteryLevel(false);
+
     svcDeviceInfo->start();
     svcHid->start();
     svcBattery->start();
+}
+
+static void updateBatteryLevel(bool notify) {
+    batteryAt = millis();
+#ifdef CONFIG_MCP73871
+    int mv = batteryVoltage();
+#else
+    int mv = volt;
+#endif
+    if (mv < 1000 || !hidTable)                     // no measurement on this board (pocketwroom PCB < 4.1)
+        return;
+    int pct = batteryPercent(mv);
+    if (pct == batteryPct)
+        return;
+    batteryPct = pct;
+    uint8_t level = (uint8_t) pct;
+    hidTable->batteryLevel.setValue(&level, 1);
+    if (notify && isBleConnected)
+        hidTable->batteryLevel.notify();
 }
 
 // Only after BLEDevice::deinit(): with Bluedroid down no event can reach these objects, and their destructors
@@ -450,6 +494,10 @@ void MorseBluetooth::tick(void)
         authResult = -1;
         DEBUG(String("BLE kbd: encryption ") + ((a & 0x100) ? "ok" : "FAILED") + ", reason 0x" + String(a & 0xFF, HEX));
     }
+#ifdef CONFIG_MCP73871
+    if (millis() - batteryAt >= 60000)
+        updateBatteryLevel(true);
+#endif
     if (serviceChangePending && millis() - encryptedAt >= 2000) {
         serviceChangePending = false;
         if (isBleConnected && bleServer && !svcMarker) {
@@ -464,7 +512,7 @@ void MorseBluetooth::tick(void)
               + (isBleConnected ? String(linkEncrypted ? ", encrypted" : ", NOT encrypted")
                                   + ", cccd " + String(dInputCccd ? (int) ((BLE2902*) dInputCccd)->getNotifications() : -1)
                                   + ", reports " + String(notifiesSent) : String(""))
-              + ", heap " + String(ESP.getFreeHeap()));
+              + ", battery " + String(batteryPct) + " %, heap " + String(ESP.getFreeHeap()));
     }
     if (advStartFault != 0xFF) {
         DEBUG("BLE kbd: advertising start FAILED, status 0x" + String(advStartFault, HEX));
