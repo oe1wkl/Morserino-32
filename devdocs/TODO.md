@@ -163,11 +163,14 @@ command line).
    spurious-element risk unchecked (mitigation if needed: minimum-open time).
 5. **`pocketwroom-lora`** compiles, never bench-tested (shared-SPI question in its commit message).
 6. **CW timing** (`devdocs/cw-timing-audit/FINDINGS.md`):
-   - I2S sidetone ~6 ms heavier than the key line — fix proposed, ours to do; verify on a
-     2-channel scope, not a microphone.
+   - I2S sidetone ~6 ms heavier than the key line — **fix implemented on branch `sidetone-alignment`** (104e6b9,
+     worktree `/private/tmp/claude-501/m32-sidetone`), **not merged: needs Willi's 2-channel scope test** (FINDINGS.md
+     "How to verify").
    - Re-measure after the `MorseCwEngine` gap fix (Fox Hunt / Pileup / Radio Cave) never confirmed.
-7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed;
-   per-site `clicks = 0` cleanup pass still open.
+7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed (host tests cover the rest).
+   The per-site `clicks = 0` cleanup pass is **deliberately not done** (2026-10-05): with the root cause fixed those
+   lines are harmless, and several also discard a *legitimate* pending click (the short press that opened a screen),
+   so removing them risks behaviour changes for no gain.
 8. **BLE consent — one unexplained admission.** On 2026-09-30 an unanswered BLE handshake was
    admitted after 9.5 s with nobody touching the classic; 7 later hands-off trials (5 from a
    hard reset) were all correctly declined after 20.2 s. Only an FN click can grant consent in
@@ -181,8 +184,9 @@ command line).
 ## D. Small firmware follow-ups
 
 1. **Snapshot recall** applies the theme without `setTheme` / font geometry / `writePreferences` — Willi's call.
-2. **`audioLevelAdjust()`** can re-enter on a long-press exit; Morsel's internal `-1`
-   transitions have the same latch issue.
+2. ~~**`audioLevelAdjust()`** can re-enter on a long-press exit; Morsel's internal `-1` transitions~~ — **resolved
+   by the ClickButton root-cause fix** (2b0b3ac, one-shot long click): the host tests' "the caller it returns to does
+   NOT see it a second time" is exactly this case (re-checked 2026-10-05, all pass).
 3. **A11y gaps:** decoder char-by-char voicing. ~~Battery "3980 mV" calibration readout~~ — **done 2026-10-05 on `master`**
    ("3 point 9 8 0 volts", composed; not yet heard on an a11y Pocket).
 4. **A11y voice store:** **~164 KB headroom (~13 clips) on `m32kip` as of 2026-10-02**, after the extractor fix (was ~61 KB). Compose numbers; never per-value clips;
@@ -212,9 +216,9 @@ command line).
 4. `Software/iOS/M32Config/store-listing.md` had an uncommitted edit of Willi's as of 8/24 *(verify)*.
 5. **Book repo:** decide §5.7 — drop the "baseline" snapshot 1, keep only snapshot 2, add one
    sentence pointing to Reset Defaults (chapter 6's snapshot 1 overwrites the baseline).
-6. `m32p_assembly.odt` (Documentation/Assembly Instructions/M32Pocket) still says **TORX T8**
-   for the case screws; Willi says production units use **Phillips** — the FAQ is corrected,
-   the assembly document probably needs it too.
+6. ~~`m32p_assembly.odt` says **TORX T8**~~ — **done 2026-10-05**: "a small Phillips (cross-head) screwdriver", ODT
+   edited and PDF re-exported (LibreOffice, 300 dpi images; 0.8 MB instead of 2.9 MB). Its own "Version 1.0,
+   14.08.2025" line is left for Willi.
 
 ## F. People and community
 
