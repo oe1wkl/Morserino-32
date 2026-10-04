@@ -260,8 +260,8 @@ command line).
    list but decodes nothing, so its option list stays without the preference. V10 manual updated to match. Also shipped with it on master: the voice extractor
    models the a11y build (c2a13e7), `[ka]` `[p]` `[t]` in player files and `GET practicechars` over BLE (50ad66b),
    and the protocol harness no longer reboots a device by opening its port (ada42c5).
-4. **Minimum word length — done on branch `word-length`** (worktree `/private/tmp/claude-501/m32-wordlen`; f2de99e,
-   e1d21e4), **not merged — Willi's bench owed.** Willi's decisions (2026-10-04): words only; one ring, renamed
+4. ~~**Minimum word length**~~ — **done: bench-tested by Willi (classic + Pocket) and merged to `master`
+   2026-10-04** (f2de99e, e1d21e4). Willi's decisions (2026-10-04): words only; one ring, renamed
    **Word Length**: Unlimited / up to 2 … up to 6 / **4 or more**; if nothing fits, any length. Also the Koch Trainer
    now draws from the Oxford list (it used the 373-word list: 46 words at M32 lesson 12, now 229), frequency-weighted,
    via a 1-bit-per-word filter (613 B RAM). Protocol name changed ("Length Words" → "Word Length"; NVS/snapshots keep
