@@ -237,10 +237,22 @@ command line).
    - **13 KB leaked per CW Keyer visit** (BLEHIDDevice's GATT objects never freed): after ~5 visits the keyboard
      could not start until power-off — fixed (own HID table, freed after deinit; 0 B/cycle measured);
    - advertising UUIDs re-added on every start (fixed); onDisconnect's 5 s block on the BLE task (gone);
-   - **open:** "half-open" connections — the ESP32 test host sometimes never completes connecting while the Pocket
-     stops advertising (master too); 10 s encryption watchdog added, not yet seen firing. The ESP32 central is a
-     flaky reference: **next, a real host** (Mac, run from Terminal.app — BLE permission) for drops and the 30-min soak.
-   **Classic currently runs the test-host sketch** — re-flash 9.1 when done.
+   - **"the Mac ignores the keyboard" (2026-10-04, fixed 9dbac24):** after a Mac Bluetooth off/on the link was up and
+     encrypted, reports were sent, and macOS dropped them all. Cause: the Arduino BLE library creates characteristics
+     and descriptors in heap-*address* order, so the attribute layout was luck (on master too); the bonded Mac kept
+     master's layout, wrote "notify on" into the input report's report reference, and from then on read it as report
+     type 0. Fix: the table is one object (fixed order = master's), report references read-only, and a marker service
+     started after encryption makes Bluedroid indicate Service Changed, so a stale host rediscovers by itself
+     (verified: the stuck Mac recovered without re-pairing; 5/5 Mac Bluetooth power-cycles keyed afterwards).
+     Diagnosis method (bluetoothd "statedump" in `log show`, `ioreg` HID DebugState) is in `Software/tests/ble-kbd/`.
+   - **added on the branch:** Bluetooth symbol in CW Keyer's top line while a host is connected (35b243d, 08db6dc —
+     also moves the BLE Serial symbol out of the volume bar inside modes); battery level reported to the host
+     (0f55b91); change log + EN/DE manuals rebuilt (b098f91). `Software/tests/ble-kbd/mac_soak.py` = the Mac as host.
+   - **open:** Willi's real-world vBand test (incl. Mac sleep/wake, out of range), then merge. "Half-open"
+     connections were only ever seen with the ESP32 test host (master too); the 10 s encryption watchdog stays
+     as a safety net, never seen firing.
+   **Classic currently runs the test-host sketch** (parked, auto 0) — re-flash 9.1 when done. The Pocket runs the
+   branch (std edition), Bluetooth Use 1 for the Mac tests — **restore 5 (BLE Serial) afterwards.**
 3. ~~**Decoder: ITU brackets and national characters**~~ — **done, bench-tested by Willi on the classic and the
    Pocket (standard edition) and merged to `master` 2026-10-03** (a3e9d5a + 60fa931, changelog V. 9.1, EN+DE manuals).
    Preference **Decoder Chars** (Standard / ITU / Fr/Es/Pt / Sv/Fi / Da/No; not in the a11y edition, not in snapshots),
