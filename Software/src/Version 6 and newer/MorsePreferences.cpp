@@ -290,11 +290,11 @@ parameter MorsePreferences::pliste[] = {
     {"Unlimited", "2", "3", "4", "5", "6"}
   },
   {
-    0, 0, 5,  1,                                                // Generators: max length of english words generated (0 = unlimited) 0, 1-5 = 2-6
-    "Length Words",
-    "Maximum length of generated common English words",
+    0, 0, 6,  1,                                                // Generators: length of english words generated: 0 = unlimited, 1-5 = up to 2-6, 6 = 4 or more
+    "Word Length",                                              // (was "Length Words" until 9.1; NVS key and snapshots: "wordLength")
+    "Length of generated common English words: up to a maximum, or 4 letters or more",
     true,
-    {"Unlimited", "2", "3", "4", "5", "6"}
+    {"Unlimited", "up to 2", "up to 3", "up to 4", "up to 5", "up to 6", "4 or more"}
   },
   {
     1, 0, 2,  1,                                                // Generator: how we display what the trainer generates: nothing, by char, or by word  0-2
@@ -3374,15 +3374,59 @@ void MorsePreferences::readFilePartData() {
 Koch::Koch() {
 }
 
-void Koch::createWords(uint8_t maxl, uint8_t koch) {                  // this function creates an array of words that are compliant to Koch filter and max word length
-  numberOfWords = 0;
-  //DEBUG("ptr: " + String(maxl));
-  //DEBUG("koch: " + String(koch));
-  maxl = (maxl == 0 ? 0 : maxl+1);
-  for (int i = EnglishWords::WORDS_POINTER[maxl]; i< EnglishWords::WORDS_NUMBER_OF_ELEMENTS; ++i) {     // do this for all words with max length maxl
-      if (wordIsKoch(EnglishWords::words[i]) <= koch) {
-          wordIndices[numberOfWords++] = i;
-      }
+void MorsePreferences::wordLengthLimits(uint8_t value, uint8_t &minLen, uint8_t &maxLen) {
+  minLen = 1;
+  maxLen = 99;
+  if (value == WORD_LENGTH_MIN4)
+    minLen = 4;
+  else if (value >= 1 && value <= 5)
+    maxLen = value + 1;
+}
+
+static inline int kochWordWeight(int i) {
+#ifdef CONFIG_ENGLISH_OXFORD
+  return englishWordWeight(i);
+#else
+  return 1;
+#endif
+}
+
+static inline const char* kochWord(int i) {
+#ifdef CONFIG_ENGLISH_OXFORD
+  return englishWord(i);
+#else
+  return EnglishWords::words[i];
+#endif
+}
+
+void Koch::createWords(uint8_t lengthPref, uint8_t koch) {           // mark the words that pass the Koch (or custom char) filter and the Word Length
+  uint8_t rank[128];                                                  // char -> Koch position (1-based), as wordIsKoch() counts it
+  memset(rank, kochCharsLength + 1, sizeof(rank));
+  const String& charSet = MorsePreferences::useCustomChars ? MorsePreferences::customCharSet : kochCharSet;
+  for (int i = charSet.length() - 1; i >= 0; --i)                      // backwards, so the first occurrence wins (indexOf)
+    if ((uint8_t) charSet[i] < 128)
+      rank[(uint8_t) charSet[i]] = i + 1;
+
+  uint8_t minLen, maxLen;
+  MorsePreferences::wordLengthLimits(lengthPref, minLen, maxLen);
+  for (int pass = 0; pass < 2; ++pass) {
+    memset(wordBits, 0, sizeof(wordBits));
+    numberOfWords = 0;
+    wordWeightSum = 0;
+    for (int i = 0; i < KOCH_WORDS; ++i) {
+      const char* w = kochWord(i);
+      uint8_t l = 0, highest = 0;
+      for (; w[l]; ++l)
+        highest = _max(highest, (uint8_t) w[l] < 128 ? rank[(uint8_t) w[l]] : (uint8_t) (kochCharsLength + 1));
+      if (l < minLen || l > maxLen || highest > koch)
+        continue;
+      wordBits[i >> 3] |= 1 << (i & 7);
+      ++numberOfWords;
+      wordWeightSum += kochWordWeight(i);
+    }
+    if (numberOfWords || minLen == 1)
+      break;
+    minLen = 1;                                                       // "4 or more" left nothing (early lesson): any length that fits
   }
 }
 
@@ -3599,8 +3643,12 @@ String Koch::getRandomWord() {                       // get a random english wor
   if (numberOfWords == 0)
     return getRandomChar(1);
 
-  uint16_t index = wordIndices[random(numberOfWords)];
-  return EnglishWords::words[index];
+  int32_t r = random((long) wordWeightSum);                           // weighted by frequency, as the CW Generator picks
+  for (int i = 0; i < KOCH_WORDS; ++i)
+    if (wordBits[i >> 3] & (1 << (i & 7)))
+      if ((r -= kochWordWeight(i)) < 0)
+        return kochWord(i);
+  return getRandomChar(1);                                            // not reached
 }
 
 String Koch::getRandomAbbrev() {

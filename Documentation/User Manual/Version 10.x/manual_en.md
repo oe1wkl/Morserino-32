@@ -1030,9 +1030,14 @@ within these limits).
 **Length Calls**: The length of call signs that will be generated.
 Choose a value between 3 and 6 or Unlimited.
 
-**Length Abbrev** and **Length Words**: The length of common CW
-abbreviations or common English words, respectively, that will be
-generated. Choose between 2 and 6, or Unlimited.
+**Length Abbrev**: The maximum length of common CW abbreviations that
+will be generated. Choose between 2 and 6, or Unlimited.
+
+**Word Length**: The length of common English words that will be
+generated: **Unlimited**, a maximum (**up to 2** … **up to 6**), or
+**4 or more** to train longer words. In the Koch Trainer, if no word of
+4 or more letters can be built from the characters of your lesson yet,
+words of any length are used instead.
 
 **Each Word 2x:** Each "word" (characters between spaces) will be
 output twice, as a help to learn to copy by ear (ON). This is also
@@ -3282,7 +3287,7 @@ Echo Trainer!
 | Calls Region | Select if you want to see call signs from around the world, or just from a certain continent. **VK/ZL** narrows it further still, to Australian and New Zealand call signs only: the call areas are weighted by population, so VK2 and VK3 come up far more often than VK8 or VK0, and roughly one call in six is a ZL. **This parameter is ignored when the call length has been set to a maximum of 3 characters** — there is no 3-character VK or ZL call either. | **All** / Europe / N America / S America / Africa / Asia / Oceania / VK/ZL |
 | Call Prefixes | You can use this setting to filter out very rare prefixes, and get only call signs with more common prefixes. | **Common only** / All |
 | Length Abbrev | Select the maximum length of the randomly generated common CW abbreviations and Q groups | **Unlimited** / max. 2 – max. 6 |
-| Length Words | Select the maximum length of the randomly generated common English words | **Unlimited** / max. 2 – max. 6 |
+| Word Length | Select the length of the randomly generated common English words: a maximum, or 4 letters or more (called **Length Words** before 9.1) | **Unlimited** / up to 2 – up to 6 / 4 or more |
 | Max \# of Words | When the specified number of words or letter groups has been generated, the Morserino-32 will generate a final AR ("+") pro sign to indicate that this sequence is over, and then pause and wait – with a touch of a paddle (or clicking the ENCODER knob) it will continue and generate the next sequence of words. This closing "+", like the opening *vvv\<ka>*, is shown in bold on the display. *(When "Auto Stop" is active, this preference will be ignored in CW Generator mode.)*    |                                                                                                                                                                                        **Unlimited** / 5 to 250 in steps of 5 |
 | Stop/Next/Rep | Stops the generating of morse characters after each word in CW Generator and Koch Generator modes to help with learning head copying. Continue by touching the right paddle to play the next word, or by touching the left paddle to repeat the word. *This option and the option 'Each Word 2x' are not compatible with each other, setting one to ON, will set the other to OFF automatically.* | ON / **OFF** |
 | CW Gen Displ | Select, how the CW Generator or the CW Transceivers should display what is generated or received | Display off / **Char by Char** / Word by word |

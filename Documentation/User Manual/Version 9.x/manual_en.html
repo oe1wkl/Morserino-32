@@ -181,13 +181,14 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=d3d57e0b5a80 v=9 -->
+<!-- WHATSNEW:BEGIN en=f08137d62026 v=9 -->
 <p>What is new in Version 9?</p>
 <p><strong>V 9.1</strong></p>
 <ul>
 <li>A new preference <strong>Decoder Chars</strong> lets the decoder show the letters of other languages, and the brackets of the ITU standard. A few Morse codes mean different letters in different languages – <code>.--.-</code> is à in French but å in Swedish, <code>.-.-</code> is ä in German but æ in Danish – so you choose a set: <strong>Standard</strong> (as before: <code>-.--.</code> is &lt;kn&gt;, plus ä ö ü and ch), <strong>ITU</strong> (<code>-.--.</code> is „(“, and „)“ and é are added, as in ITU-R M.1677-1), <strong>Fr/Es/Pt</strong> (à é è ç ñ), <strong>Sv/Fi</strong> (å) or <strong>Da/No</strong> (å, and æ ø instead of ä ö). It applies to CW Keyer, CW Decoder, the transceiver modes and the Echo Trainer; the games and the QSO Bot keep using Standard. Not in the Accessibility Edition, where decoded text is not read from the screen. Thanks to the testers who asked for French, Spanish, Portuguese and Nordic letters, and for the ITU brackets.</li>
 <li>The letters of other languages can now also be practised. The File Player sends ä ö ü, é è à ç ñ and å æ ø with their own Morse code – until now ä ö ü were sent as ae oe ue, and the others were simply left out („café“ came out as „caf“) – other accented letters as the plain letter, and round brackets as <code>-.--.</code> and <code>-.--.-</code>. Koch <strong>Custom Chars</strong> taken from the file may contain them as well, and the <strong>Practice Set</strong> picker now also offers ä ö ü and ch (or, outside the Accessibility Edition, the letters of the set chosen with <strong>Decoder Chars</strong>). In the Echo Trainer, a code that stands for several letters counts as the one in the word you are to repeat: <code>.--.-</code> for the å of a Swedish text is right whatever <strong>Decoder Chars</strong> is set to.</li>
 <li>With Bluetooth keyboard output, letters with umlauts or accents are now typed without them – ä ö ü as ae oe ue, å as aa, and so on – because what a keyboard types for them depends on the computer’s keyboard layout. Until now ä ö ü typed nothing at all.</li>
+<li><strong>Word Length</strong> (until now called <strong>Length Words</strong>) has a new value, <strong>4 or more</strong>, for practising longer words in the CW Generator, the Echo Trainer and the Koch Trainer; the maximum values now read <strong>up to 2</strong> … <strong>up to 6</strong>. In the Koch Trainer the words now come from the same large word list as in the CW Generator (about 4,900 words instead of 373, the more common ones more often), so even early lessons offer many more different words – at lesson 12 of the M32 sequence 229 instead of 46. If no word of 4 or more letters fits your lesson yet, words of any length are used. Programs that set this preference over the serial protocol need to use the new name.</li>
 <li>Bluetooth keyboard: in CW Keyer, a small Bluetooth symbol at the right of the top line now shows while a computer, phone or tablet is connected to the keyboard - until now you could not see on the Morserino whether VBand was actually listening. The Morserino also reports its battery level to the connected device, which shows it next to the keyboard (the M32 Pocket updates it every minute; a Morserino-32 of the 1st or 2nd edition reports the level measured when it was switched on).</li>
 </ul>
 <p><strong>V 9.0</strong></p>
@@ -758,7 +759,8 @@ The font family used is Lato.</p>
 <p><strong>Random Groups</strong>: Defines which characters should be contained in the random character groups. You can choose between Alpha / Numerals / Interpunct. / Pro Signs / Alpha + Num / Num+Interp. / Interp+ProSn / Alpha+Num+Int / Num+Int+ProS / All Chars.</p>
 <p><strong>Length Rnd Gr</strong>: Defines how many characters there should be in a random group. You can either select a fixed length ( 1 to 6), or a randomly chosen length between 2 to 3 and 2 to 6 (length chosen randomly within these limits).</p>
 <p><strong>Length Calls</strong>: The length of call signs that will be generated. Choose a value between 3 and 6 or Unlimited.</p>
-<p><strong>Length Abbrev</strong> and <strong>Length Words</strong>: The length of common CW abbreviations or common English words, respectively, that will be generated. Choose between 2 and 6, or Unlimited.</p>
+<p><strong>Length Abbrev</strong>: The maximum length of common CW abbreviations that will be generated. Choose between 2 and 6, or Unlimited.</p>
+<p><strong>Word Length</strong>: The length of common English words that will be generated: <strong>Unlimited</strong>, a maximum (<strong>up to 2</strong> … <strong>up to 6</strong>), or <strong>4 or more</strong> to train longer words. In the Koch Trainer, if no word of 4 or more letters can be built from the characters of your lesson yet, words of any length are used instead.</p>
 <p><strong>Each Word 2x:</strong> Each “word” (characters between spaces) will be output twice, as a help to learn to copy by ear (ON). This is also called word doubler. If an increased space between the characters has been selected (“Farnsworth Spacing”), the repetition can also be generated with a smaller space (<strong>ON less ICS</strong>) or without Farnsworth Spacing (<strong>ON true WpM</strong>).</p>
 <p>For the less frequently used preferences <strong>Key ext TX</strong>, <strong>CW Gen Displ</strong> and Generator Tx see the section <strong>Preferences regarding CW Generation</strong>.</p>
 <h2 data-number="5.3" id="echo-trainer"><span class="header-section-number">5.3</span> Echo Trainer</h2>
@@ -2799,9 +2801,9 @@ The font family used is Lato.</p>
 <td><strong>Unlimited</strong> / max. 2 – max. 6</td>
 </tr>
 <tr>
-<td>Length Words</td>
-<td>Select the maximum length of the randomly generated common English words</td>
-<td><strong>Unlimited</strong> / max. 2 – max. 6</td>
+<td>Word Length</td>
+<td>Select the length of the randomly generated common English words: a maximum, or 4 letters or more (called <strong>Length Words</strong> before 9.1)</td>
+<td><strong>Unlimited</strong> / up to 2 – up to 6 / 4 or more</td>
 </tr>
 <tr>
 <td>Max # of Words</td>
@@ -4670,6 +4672,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=68d21f2744df -->
+<!-- MANUALFRESH: lang=en src=0dac568cec13 -->
 </body>
 </html>

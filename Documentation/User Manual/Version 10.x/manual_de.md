@@ -1063,8 +1063,14 @@ zwischen 2 to 3 und 2 to 6.
 **Length Calls**: Maximale Länge der generierten Rufzeichen (3–6 oder
 Unlimited).
 
-**Length Abbrev** und **Length Words**: Maximale Länge der zufällig
-generierten CW-Abkürzungen bzw. englischen Wörter (2–6 oder Unlimited).
+**Length Abbrev**: Maximale Länge der zufällig generierten
+CW-Abkürzungen (2–6 oder Unlimited).
+
+**Word Length**: Länge der zufällig generierten englischen Wörter:
+**Unlimited**, eine Höchstlänge (**up to 2** … **up to 6**) oder
+**4 or more**, um längere Wörter zu üben. Lässt sich im Koch Trainer aus
+den Zeichen deiner Lektion noch kein Wort mit 4 oder mehr Buchstaben
+bilden, werden stattdessen Wörter jeder Länge verwendet.
 
 **Each Word 2x**: Jedes „Wort" (Zeichen zwischen Leerzeichen) wird
 zweimal ausgegeben, um das Kopieren nach Gehör zu erleichtern (ON –
@@ -3777,7 +3783,7 @@ Trainer relevant!
 | **Calls Region** | Wähle, ob Rufzeichen aus aller Welt oder nur von einem bestimmten Kontinent generiert werden sollen. **VK/ZL** schränkt noch weiter ein, nämlich auf australische und neuseeländische Rufzeichen: Die Rufzeichenbezirke sind nach Einwohnerzahl gewichtet, VK2 und VK3 kommen also weit häufiger vor als VK8 oder VK0, und etwa jedes sechste Rufzeichen ist ein ZL. **Dieser Parameter wird ignoriert, wenn die Rufzeichenlänge auf maximal 3 Zeichen eingestellt ist** — ein VK- oder ZL-Rufzeichen mit 3 Zeichen gibt es ohnehin nicht. | **All** / Europe / N America / S America / Africa / Asia / Oceania / VK/ZL |
 | **Call Prefixes** | Über diese Einstellung kannst du sehr seltene Präfixe herausfiltern und nur Rufzeichen mit geläufigeren Präfixen erhalten. | **Common only** / All |
 | **Length Abbrev** | Wähle die maximale Länge der zufällig generierten gängigen CW-Abkürzungen und Q-Gruppen. | **Unlimited** / max. 2 – max. 6 |
-| **Length Words** | Wähle die maximale Länge der zufällig generierten gängigen englischen Wörter. | **Unlimited** / max. 2 – max. 6 |
+| **Word Length** | Wähle die Länge der zufällig generierten gängigen englischen Wörter: eine Höchstlänge oder 4 Buchstaben und mehr (vor 9.1 hieß diese Einstellung **Length Words**). | **Unlimited** / up to 2 – up to 6 / 4 or more |
 | **Max \# of Words** | Wenn die angegebene Anzahl von Wörtern oder Buchstabengruppen generiert wurde, erzeugt der Morserino-32 ein abschließendes AR-Betriebszeichen ("+"), um das Ende dieser Sequenz anzuzeigen, und hält dann an und wartet. Mit einem Paddle-Berühren (oder einem Klick auf den ENCODER-Knopf) fährt er fort und erzeugt die nächste Wortfolge. Dieses abschließende "+" wird, wie das einleitende *vvv\<ka>*, fett auf dem Display dargestellt. *(Wenn „Auto Stop" aktiv ist, wird diese Einstellung im Modus CW Generator ignoriert.)* | **Unlimited** / 5 bis 250 in 5er-Schritten |
 | **Stop/Next/Rep** | Stoppt die Generierung von Morsezeichen nach jedem Wort in den Modi CW Generator und Koch Generator, um das Erlernen des Kopierens ohne Mitschreiben zu unterstützen. Fortfahren durch Berühren des rechten Paddles (nächstes Wort) oder des linken Paddles (Wort wiederholen). *Diese Option und die Option „Each Word 2x" sind nicht miteinander kompatibel: Wenn eine auf ON gesetzt wird, wird die andere automatisch auf OFF gesetzt.* | ON / **OFF** |
 | **CW Gen Displ** | Wähle, wie der CW-Generator oder die CW-Transceiver das Generierte oder Empfangene anzeigen sollen. | Display off / **Char by Char** / Word by word |

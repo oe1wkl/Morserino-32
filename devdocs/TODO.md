@@ -260,11 +260,13 @@ command line).
    list but decodes nothing, so its option list stays without the preference. V10 manual updated to match. Also shipped with it on master: the voice extractor
    models the a11y build (c2a13e7), `[ka]` `[p]` `[t]` in player files and `GET practicechars` over BLE (50ad66b),
    and the protocol harness no longer reboots a device by opening its port (ada42c5).
-4. **Minimum word length for the Echo Trainer (and the generator) — feature.** Today only **Length Words**
-   exists (a maximum). A user wants a minimum too, to train long words. A new `prefPos` (three parallel arrays,
-   CLAUDE.md §3 rule 10), word-source filtering for min ≤ length ≤ max (with a sane fallback when the filter
-   leaves too few words for the current Koch lesson), snapshot inclusion, a11y clip(s) for the new label,
-   EN+DE manuals. Possibly the same for Abbreviations and Calls for symmetry — Willi's call.
+4. ~~**Minimum word length**~~ — **done: bench-tested by Willi (classic + Pocket) and merged to `master`
+   2026-10-04** (f2de99e, e1d21e4). Willi's decisions (2026-10-04): words only; one ring, renamed
+   **Word Length**: Unlimited / up to 2 … up to 6 / **4 or more**; if nothing fits, any length. Also the Koch Trainer
+   now draws from the Oxford list (it used the 373-word list: 46 words at M32 lesson 12, now 229), frequency-weighted,
+   via a 1-bit-per-word filter (613 B RAM). Protocol name changed ("Length Words" → "Word Length"; NVS/snapshots keep
+   `wordLength`); config-tool help has both names. Verified on the Pocket over the protocol (generator + Koch).
+   **`m32kip`:** port the manual edits to the V10 manual after merging.
 
 ## H. Follow-up projects with their own handoffs
 

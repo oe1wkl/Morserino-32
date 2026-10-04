@@ -348,13 +348,24 @@ namespace MorsePreferences
   void setCurrentOptions(prefPos *current, int size);
   void setCwMem(uint8_t, String);
   void getCwMem();
+  // Word Length (posWordLength): 0 = unlimited, 1-5 = up to 2-6 letters, WORD_LENGTH_MIN4 = 4 letters or more
+  const uint8_t WORD_LENGTH_MIN4 = 6;
+  void wordLengthLimits(uint8_t value, uint8_t &minLen, uint8_t &maxLen);
 }
 
 
 class Koch {
   private:
-    uint16_t wordIndices[EnglishWords::WORDS_NUMBER_OF_ELEMENTS];
+    // Words eligible for the Koch / custom-char filter and the Word Length setting: one bit per word of the
+    // word list (the Oxford list where it is built in - an index per word would cost ~10 KB of RAM).
+#ifdef CONFIG_ENGLISH_OXFORD
+    static const int KOCH_WORDS = ENGLISH_WORDS_COUNT;
+#else
+    static const int KOCH_WORDS = EnglishWords::WORDS_NUMBER_OF_ELEMENTS;
+#endif
+    uint8_t wordBits[(KOCH_WORDS + 7) / 8];
     uint16_t numberOfWords;
+    uint32_t wordWeightSum;                 // sum of the eligible words' frequency weights (1 each without them)
     uint16_t abbrIndices[Abbrev::ABBREV_NUMBER_OF_ELEMENTS];
     uint16_t numberOfAbbr;
     String kochCharSet;

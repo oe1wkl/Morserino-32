@@ -18,15 +18,16 @@
 #include <Arduino.h>
 #include <stdlib.h>
 
-const int totalWords = sizeof(words) / sizeof(words[0]);
+const char* englishWord(int i) { return words[i].word; }
+int englishWordWeight(int i) { return words[i].weight; }
 
-const char* getEnglishWord(int maxWordLength=100) {
-    // Calculate the total weight for words within the length limit
+const char* getEnglishWord(int minWordLength, int maxWordLength) {
+    // Calculate the total weight for words within the length limits
     int totalWeight = 0;
-    for (int i = 0; i < totalWords; ++i) {
-        if (strlen(words[i].word) <= maxWordLength) {
+    for (int i = 0; i < ENGLISH_WORDS_COUNT; ++i) {
+        int l = strlen(words[i].word);
+        if (l >= minWordLength && l <= maxWordLength)
             totalWeight += words[i].weight;
-        }
     }
 
     // Generate a random number between 0 and totalWeight
@@ -34,8 +35,9 @@ const char* getEnglishWord(int maxWordLength=100) {
 
     // Select the word based on the random value
     int cumulativeWeight = 0;
-    for (int i = 0; i < totalWords; ++i) {
-        if (strlen(words[i].word) <= maxWordLength) {
+    for (int i = 0; i < ENGLISH_WORDS_COUNT; ++i) {
+        int l = strlen(words[i].word);
+        if (l >= minWordLength && l <= maxWordLength) {
             cumulativeWeight += words[i].weight;
             if (randomValue < cumulativeWeight) {
                 return words[i].word;
@@ -43,6 +45,6 @@ const char* getEnglishWord(int maxWordLength=100) {
         }
     }
 
-    return nullptr; // Should not reach here
+    return words[0].word; // not reached: some word of every length range exists
 }
 #endif // CONFIG_ENGLISH_OXFORD

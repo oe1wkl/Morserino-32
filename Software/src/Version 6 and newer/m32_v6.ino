@@ -2156,18 +2156,18 @@ void initSensors() {
 }
 
 
-String getRandomWord( int maxLength) {        //// give me a random English word, max maxLength chars long (1-5) - 0 returns any length
-    if (maxLength > 5)
-      maxLength = 0;
-    else if (maxLength != 0)
-      ++maxLength;
+String getRandomWord(uint8_t lengthPref) {      //// a random English word for the Word Length setting (posWordLength values)
     if (kochActive)
-        return koch.getRandomWord();
-    else
+        return koch.getRandomWord();               // filtered by Koch.createWords(), Word Length included
+    uint8_t minLen, maxLen;
+    MorsePreferences::wordLengthLimits(lengthPref, minLen, maxLen);
 #ifdef CONFIG_ENGLISH_OXFORD
-        return getEnglishWord(maxLength == 0 ? 100 : maxLength);
+    return getEnglishWord(minLen, maxLen);
 #else
-        return EnglishWords::words[random(EnglishWords::WORDS_POINTER[maxLength], EnglishWords::WORDS_NUMBER_OF_ELEMENTS)];
+    // the short list is sorted by length, longest first; WORDS_POINTER[n] = first word of length n (0 = all)
+    int first = minLen > 1 ? 0 : EnglishWords::WORDS_POINTER[maxLen > 7 ? 0 : maxLen];
+    int last = minLen > 1 ? EnglishWords::WORDS_POINTER[minLen - 1] : EnglishWords::WORDS_NUMBER_OF_ELEMENTS;
+    return EnglishWords::words[random(first, last)];
 #endif
 }
 

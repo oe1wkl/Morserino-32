@@ -995,7 +995,7 @@ const WeightedWord words[] = {
 	{ "campaign", 17583 },
 	{ "camping", 5480 },
 	{ "campus", 6931 },
-	{ "can1", 1 },
+	{ "can", 1 },
 	{ "canal", 4845 },
 	{ "cancel", 12681 },
 	{ "cancer", 23935 },
@@ -2943,7 +2943,7 @@ const WeightedWord words[] = {
 	{ "library", 16307 },
 	{ "licence", 3381 },
 	{ "license", 20413 },
-	{ "lie1", 1 },
+	{ "lie", 1 },
 	{ "life", 624596 },
 	{ "lifelong", 1640 },
 	{ "lifestyle", 4610 },
@@ -3170,7 +3170,7 @@ const WeightedWord words[] = {
 	{ "ministry", 6714 },
 	{ "minor", 10781 },
 	{ "minority", 2009 },
-	{ "minute1", 1 },
+	{ "minute", 1 },
 	{ "miracle", 20179 },
 	{ "mirror", 20313 },
 	{ "miserable", 14078 },
@@ -4755,7 +4755,7 @@ const WeightedWord words[] = {
 	{ "teacher", 53004 },
 	{ "teaching", 15100 },
 	{ "team", 134358 },
-	{ "tear1", 1 },
+	{ "tear", 1 },
 	{ "technical", 6813 },
 	{ "technique", 8469 },
 	{ "technological", 1359 },
@@ -5302,7 +5302,13 @@ const WeightedWord words[] = {
 	{ "zone", 17386 },
 };
 
-const char* getEnglishWord(int maxWordLength);
+const int ENGLISH_WORDS_COUNT = sizeof(words) / sizeof(words[0]);
+
+// Access from other translation units goes through these (english_words.cpp): words[] has internal linkage, so
+// reading it elsewhere would put a second copy of the whole list into flash.
+const char* getEnglishWord(int minWordLength, int maxWordLength);   // weighted random word, length in [min, max]
+const char* englishWord(int i);
+int englishWordWeight(int i);
 
 #endif // CONFIG_ENGLISH_OXFORD
 
