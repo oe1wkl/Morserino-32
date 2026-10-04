@@ -3172,11 +3172,11 @@ void updateTopLine() {
       MorseOutput::dispWifiLogo();
 #ifdef CONFIG_BLE_SERIAL
   else if (bleProtocol)                                 // one slot, so RF wins: "I am transmitting"
-      MorseOutput::dispBleLogo();                       // is more urgent than "a client is attached"
+      MorseOutput::dispBleLogo(true);                   // is more urgent than "a client is attached"
 #endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
   else if (morseState == morseKeyer && MorseBluetooth::hostConnected())
-      MorseOutput::dispBleLogo();                       // a host (vBand, ...) is connected to the keyboard
+      MorseOutput::dispBleLogo(true);                   // a host (vBand, ...) is connected to the keyboard
 #endif
 
   // "is volume NOT the encoder's current role" - not "== speedSettingMode": with

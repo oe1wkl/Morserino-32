@@ -120,8 +120,8 @@ namespace MorseOutput
   void dispLoraLogo();
   void dispWifiLogo();
 #if defined(CONFIG_BLE_SERIAL) || defined(CONFIG_BLUETOOTH_KEYBOARD)
-  void dispBleLogo();                  // a BLE Serial client holds a session, or a host is connected to the BT keyboard
-  void clearBleLogo();                 // ... and that has ended
+  void dispBleLogo(bool inMode = false);   // a BLE Serial client holds a session, or a host is connected to the BT keyboard
+  void clearBleLogo(bool inMode = false);  // ... and that has ended (inMode: a mode's top line, not the main menu)
 #endif
 #ifdef CONFIG_MCP73871
   extern uint8_t  ppCurrentState;

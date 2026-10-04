@@ -423,9 +423,9 @@ void MorseBluetooth::tick(void)
     if (isBleConnected != logoShown) {              // show whether a host is connected; CW Keyer's top-line
         logoShown = isBleConnected;                 // repaint (updateTopLine) draws it too
         if (logoShown)
-            MorseOutput::dispBleLogo();
+            MorseOutput::dispBleLogo(true);         // the keyboard runs only in CW Keyer
         else
-            MorseOutput::clearBleLogo();
+            MorseOutput::clearBleLogo(true);
     }
     if (keyboardCallbacks.reasonUnreported) {
         keyboardCallbacks.reasonUnreported = false;
