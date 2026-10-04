@@ -77,13 +77,18 @@ static volatile bool connectUnreported = false;
 static volatile int authResult = -1;                // -1 none, else (success << 8) | fail_reason, until reported
 static uint32_t notifiesSent = 0;                   // input reports sent on the current connection
 static uint32_t lastStatusAt = 0;
+static volatile bool serviceChangePending = false;  // tell a bonded host to rediscover once encrypted
+static volatile uint32_t encryptedAt = 0;
 
 static void gapHandler(esp_gap_ble_cb_event_t event, esp_ble_gap_cb_param_t* param) {
     if (event == ESP_GAP_BLE_ADV_START_COMPLETE_EVT && param->adv_start_cmpl.status != ESP_BT_STATUS_SUCCESS)
         advStartFault = (uint8_t) param->adv_start_cmpl.status;
     if (event == ESP_GAP_BLE_AUTH_CMPL_EVT) {
-        if (param->ble_security.auth_cmpl.success)
+        if (param->ble_security.auth_cmpl.success) {
             linkEncrypted = true;
+            serviceChangePending = true;
+            encryptedAt = millis();
+        }
         authResult = (param->ble_security.auth_cmpl.success ? 0x100 : 0) | param->ble_security.auth_cmpl.fail_reason;
     }
 }
@@ -152,68 +157,97 @@ BLECharacteristic* output = nullptr;
 // after five visits the keyboard could no longer start (largest free block 8 KB). The same disease as BLE
 // Serial's 3.7 KB per WiFi trip (00ee378), same cure: free them after deinit(false), children first.
 // The layout mirrors BLEHIDDevice (Arduino-ESP32 2.0.17): device info + HID + battery services.
+//
+// The attribute layout must not change. The library creates a service's characteristics, and a characteristic's
+// descriptors, in the order of their heap ADDRESSES (BLEService/BLECharacteristic keep them in std::maps keyed
+// by pointer), not in the order they were added; a bonded host caches the layout and never asks again. When the
+// table was built from separate news, the input report's CCCD and report reference swapped handles relative to
+// what a Mac had cached under master: the Mac wrote "notify on" (01 00) into the report reference, later read it
+// back as report type 0 and stopped subscribing to the input report at all - a connected, encrypted keyboard that
+// macOS silently ignores (I2, 2026-10-04). So the whole table is ONE object: members lie at ascending addresses
+// in declaration order, which is BLEHIDDevice's order (and what master produced): manufacturer, PnP; HID info,
+// report map, control point, protocol mode, input (reference, CCCD), output (reference); battery (format, CCCD).
+// Report references are read-only, as the HID spec has them. Hosts that cached another layout are told to
+// rediscover by a Service Changed indication once the link is encrypted (see gattsHandler / tick).
+struct HidTable {
+    BLECharacteristic manufacturer { BLEUUID((uint16_t) 0x2a29), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic pnp          { BLEUUID((uint16_t) 0x2a50), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic hidInfo      { BLEUUID((uint16_t) 0x2a4a), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic reportMap    { BLEUUID((uint16_t) 0x2a4b), BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic hidControl   { BLEUUID((uint16_t) 0x2a4c), BLECharacteristic::PROPERTY_WRITE_NR };
+    BLECharacteristic protocolMode { BLEUUID((uint16_t) 0x2a4e), BLECharacteristic::PROPERTY_WRITE_NR | BLECharacteristic::PROPERTY_READ };
+    BLECharacteristic input        { BLEUUID((uint16_t) 0x2a4d), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY };
+    BLEDescriptor     inputRef     { BLEUUID((uint16_t) 0x2908) };
+    BLE2902           inputCccd;
+    BLECharacteristic output       { BLEUUID((uint16_t) 0x2a4d),
+                                     BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR };
+    BLEDescriptor     outputRef    { BLEUUID((uint16_t) 0x2908) };
+    BLE2904           batteryFormat;
+    BLECharacteristic batteryLevel { BLEUUID((uint16_t) 0x2a19), BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY };
+    BLE2902           batteryCccd;
+};
+static HidTable* hidTable = nullptr;
 static BLEService *svcDeviceInfo, *svcHid, *svcBattery;
-static BLECharacteristic *chManufacturer, *chPnp, *chHidInfo, *chReportMap, *chHidControl, *chProtocolMode,
-                         *chBatteryLevel;
-static BLEDescriptor *dBatteryFormat, *dBatteryCccd, *dInputCccd, *dInputRef, *dOutputRef;
+static BLEDescriptor* dInputCccd = nullptr;     // for the status line
+
+// Telling a bonded host that cached another layout to look again. The Arduino core's Bluedroid is built with
+// Service Changed in AUTO mode, which refuses esp_ble_gatts_send_service_change_indication() ("can't send
+// service change indication manually"); in that mode it indicates Service Changed to every connected peer when
+// a new service is started. So once per Bluetooth start, 2 s after the first encryption, an empty marker service
+// is added: a real database change, so a host that holds a stale map - from master, whose order was heap luck,
+// or from this branch's first table - rediscovers and resubscribes instead of ignoring the keyboard for good.
+static const char* MARKER_SERVICE_UUID = "4d33322d-6c61-796f-7574-2d65706f6368";   // "M32-layout-epoch"
+static BLEService* svcMarker = nullptr;
 
 static void buildHidTable(BLEServer* server) {
+    HidTable* t = hidTable = new HidTable();
     svcDeviceInfo = server->createService(BLEUUID((uint16_t) 0x180a));
     svcHid        = server->createService(BLEUUID((uint16_t) 0x1812), 40);
     svcBattery    = server->createService(BLEUUID((uint16_t) 0x180f));
 
-    chManufacturer = svcDeviceInfo->createCharacteristic((uint16_t) 0x2a29, BLECharacteristic::PROPERTY_READ);
-    chManufacturer->setValue("Morserino32");
-    chPnp = svcDeviceInfo->createCharacteristic((uint16_t) 0x2a50, BLECharacteristic::PROPERTY_READ);
+    t->manufacturer.setValue("Morserino32");
     const uint8_t pnp[] = { 0x02, 0xe5, 0x02, 0xa1, 0x11, 0x02, 0x10 };   // USB VID 0xe502, PID 0xa111, version 0x0210
-    chPnp->setValue((uint8_t*) pnp, sizeof(pnp));
+    t->pnp.setValue((uint8_t*) pnp, sizeof(pnp));
+    svcDeviceInfo->addCharacteristic(&t->manufacturer);
+    svcDeviceInfo->addCharacteristic(&t->pnp);
 
-    chHidInfo = svcHid->createCharacteristic((uint16_t) 0x2a4a, BLECharacteristic::PROPERTY_READ);
     const uint8_t info[] = { 0x11, 0x01, 0x00, 0x02 };                 // HID 1.11, not localized, normally connectable
-    chHidInfo->setValue((uint8_t*) info, sizeof(info));
-    chReportMap = svcHid->createCharacteristic((uint16_t) 0x2a4b, BLECharacteristic::PROPERTY_READ);
-    chReportMap->setValue((uint8_t*) REPORT_MAP, sizeof(REPORT_MAP));
-    chHidControl = svcHid->createCharacteristic((uint16_t) 0x2a4c, BLECharacteristic::PROPERTY_WRITE_NR);
-    chProtocolMode = svcHid->createCharacteristic((uint16_t) 0x2a4e,
-                                                  BLECharacteristic::PROPERTY_WRITE_NR | BLECharacteristic::PROPERTY_READ);
+    t->hidInfo.setValue((uint8_t*) info, sizeof(info));
+    t->reportMap.setValue((uint8_t*) REPORT_MAP, sizeof(REPORT_MAP));
     const uint8_t reportMode[] = { 0x01 };
-    chProtocolMode->setValue((uint8_t*) reportMode, 1);
+    t->protocolMode.setValue((uint8_t*) reportMode, 1);
 
-    // input report 1: notify, encrypted, with CCCD and report reference {id 1, input}
-    input = svcHid->createCharacteristic((uint16_t) 0x2a4d, BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    input->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-    dInputCccd = new BLE2902();
-    dInputCccd->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-    dInputRef = new BLEDescriptor(BLEUUID((uint16_t) 0x2908));
-    dInputRef->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    // input report 1: notify, encrypted, with report reference {id 1, input} and CCCD
+    t->input.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    t->inputRef.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED);
     const uint8_t inRef[] = { 1, 0x01 };
-    dInputRef->setValue((uint8_t*) inRef, 2);
-    input->addDescriptor(dInputCccd);
-    input->addDescriptor(dInputRef);
+    t->inputRef.setValue((uint8_t*) inRef, 2);
+    t->inputCccd.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    t->input.addDescriptor(&t->inputRef);
+    t->input.addDescriptor(&t->inputCccd);
 
     // output report 1 (LEDs): encrypted, with report reference {id 1, output}
-    output = svcHid->createCharacteristic((uint16_t) 0x2a4d,
-                 BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_WRITE | BLECharacteristic::PROPERTY_WRITE_NR);
-    output->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
-    dOutputRef = new BLEDescriptor(BLEUUID((uint16_t) 0x2908));
-    dOutputRef->setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    t->output.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED | ESP_GATT_PERM_WRITE_ENCRYPTED);
+    t->outputRef.setAccessPermissions(ESP_GATT_PERM_READ_ENCRYPTED);
     const uint8_t outRef[] = { 1, 0x02 };
-    dOutputRef->setValue((uint8_t*) outRef, 2);
-    output->addDescriptor(dOutputRef);
+    t->outputRef.setValue((uint8_t*) outRef, 2);
+    t->output.addDescriptor(&t->outputRef);
+
+    for (BLECharacteristic* c : { &t->hidInfo, &t->reportMap, &t->hidControl, &t->protocolMode, &t->input, &t->output })
+        svcHid->addCharacteristic(c);
 
     // battery level, with presentation format and CCCD (notifications on by default, as the library does)
-    BLE2904* fmt = new BLE2904();
-    fmt->setFormat(BLE2904::FORMAT_UINT8);
-    fmt->setNamespace(1);
-    fmt->setUnit(0x27ad);
-    dBatteryFormat = fmt;
-    chBatteryLevel = svcBattery->createCharacteristic((uint16_t) 0x2a19,
-                                                      BLECharacteristic::PROPERTY_READ | BLECharacteristic::PROPERTY_NOTIFY);
-    chBatteryLevel->addDescriptor(dBatteryFormat);
-    BLE2902* batCccd = new BLE2902();
-    batCccd->setNotifications(true);
-    dBatteryCccd = batCccd;
-    chBatteryLevel->addDescriptor(dBatteryCccd);
+    t->batteryFormat.setFormat(BLE2904::FORMAT_UINT8);
+    t->batteryFormat.setNamespace(1);
+    t->batteryFormat.setUnit(0x27ad);
+    t->batteryCccd.setNotifications(true);
+    t->batteryLevel.addDescriptor(&t->batteryFormat);
+    t->batteryLevel.addDescriptor(&t->batteryCccd);
+    svcBattery->addCharacteristic(&t->batteryLevel);
+
+    input = &t->input;
+    output = &t->output;
+    dInputCccd = &t->inputCccd;
 
     svcDeviceInfo->start();
     svcHid->start();
@@ -224,16 +258,13 @@ static void buildHidTable(BLEServer* server) {
 // merely free memory (semaphores, strings, containers). BLEDevice keeps a stale m_pServer, read only by its
 // GATTS handler (dead until the next init) and overwritten by the next createServer() - as for BLE Serial.
 static void freeHidTable() {
-    BLEDescriptor* descs[] = { dInputCccd, dInputRef, dOutputRef, dBatteryFormat, dBatteryCccd };
-    for (BLEDescriptor* d : descs) delete d;
-    BLECharacteristic* chars[] = { input, output, chManufacturer, chPnp, chHidInfo, chReportMap, chHidControl,
-                                   chProtocolMode, chBatteryLevel };
-    for (BLECharacteristic* c : chars) delete c;
-    delete svcDeviceInfo; delete svcHid; delete svcBattery;
+    delete hidTable;
+    delete svcDeviceInfo; delete svcHid; delete svcBattery; delete svcMarker;
     delete bleServer;
-    dInputCccd = dInputRef = dOutputRef = dBatteryFormat = dBatteryCccd = nullptr;
-    input = output = chManufacturer = chPnp = chHidInfo = chReportMap = chHidControl = chProtocolMode = chBatteryLevel = nullptr;
-    svcDeviceInfo = svcHid = svcBattery = nullptr;
+    hidTable = nullptr;
+    input = output = nullptr;
+    dInputCccd = nullptr;
+    svcDeviceInfo = svcHid = svcBattery = svcMarker = nullptr;
     bleServer = nullptr;
 }
 
@@ -391,11 +422,26 @@ void MorseBluetooth::tick(void)
     if (connectUnreported) {
         connectUnreported = false;
         DEBUG("BLE kbd: connected, conn " + String(connId));
+        auto h = [](uint16_t v) { return String(v, HEX); };
+        HidTable* t = hidTable;
+        DEBUG("BLE kbd: handles manuf " + h(t->manufacturer.getHandle()) + " pnp " + h(t->pnp.getHandle())
+              + " info " + h(t->hidInfo.getHandle()) + " map " + h(t->reportMap.getHandle()) + " ctrl " + h(t->hidControl.getHandle())
+              + " proto " + h(t->protocolMode.getHandle()) + " in " + h(t->input.getHandle()) + " in-ref " + h(t->inputRef.getHandle())
+              + " in-cccd " + h(t->inputCccd.getHandle()) + " out " + h(t->output.getHandle()) + " out-ref " + h(t->outputRef.getHandle())
+              + " batt " + h(t->batteryLevel.getHandle()));
     }
     if (authResult >= 0) {
         int a = authResult;
         authResult = -1;
         DEBUG(String("BLE kbd: encryption ") + ((a & 0x100) ? "ok" : "FAILED") + ", reason 0x" + String(a & 0xFF, HEX));
+    }
+    if (serviceChangePending && millis() - encryptedAt >= 2000) {
+        serviceChangePending = false;
+        if (isBleConnected && bleServer && !svcMarker) {
+            svcMarker = bleServer->createService(BLEUUID(MARKER_SERVICE_UUID), 2);
+            svcMarker->start();
+            DEBUG("BLE kbd: marker service started (Service Changed to the host)");
+        }
     }
     if (millis() - lastStatusAt >= 30000) {
         lastStatusAt = millis();
