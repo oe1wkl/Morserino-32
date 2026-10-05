@@ -133,9 +133,11 @@ before running the link test.
   is maybe thirty lines of SwiftUI.
 - **No background mode.** Lock the phone and the link drops. Fine for a
   configuration tool; wrong for anything that wants to keep logging.
-- **The file upload path is untested over BLE.** It should work — the base64
-  chunks are 180 bytes, comfortably under the firmware's 400-character line
-  limit — but nobody has pushed an MP3 through it yet.
+- **File upload over BLE: text tested, sound not yet.** A File Builder text
+  with accented letters went from the iPhone app to a Morserino on 9.1 and
+  played correctly (Willi, TestFlight 1.1, 2026-10-05). The base64 chunks are
+  180 bytes, comfortably under the firmware's 400-character BLE line limit;
+  nobody has pushed an MP3 through it yet.
 
 ## Before submitting to the App Store
 

@@ -5,9 +5,25 @@ Section A was checked against the live repository the same day; sections B–H c
 from session transcripts and memory notes, and items marked *(verify)* may already
 be done.
 
-Branches: `master` = V9.0.1 released, now provisional **9.1.0 BETA**. `m32kip` = the
-**V10** line (10.0.0 BETA), pushed to `origin/m32kip`. When merging master into
+Branches: `master` = **9.1.0 BETA**; **`V9.1-beta.1` released 2026-10-05** (published, in the web installer).
+`m32kip` = the **V10** line (10.0.0 BETA), pushed to `origin/m32kip`. When merging master into
 `m32kip`, `morsedefs.h` will conflict on the version lines — **keep 10.0.0**.
+
+## ▶ Where we are — start here (2026-10-05)
+
+**Release plan (Willi):** 9.1 stable after about a week of beta, then the **first V10 beta** (m32kip) soon after.
+
+1. **V9.1 stable:** set `BETA false` in `morsedefs.h`, push, tag `V9.1`, publish the draft (`devdocs/RELEASING.md`).
+   Everything 9.1 is benched: I1–I4, C15 + Pocket USB buffers, the a11y voicings (heard on an a11y Pocket
+   2026-10-05, all approved), the Config Tool File Builder with accented letters. Decide before tagging whether
+   the sidetone fix (C6, branch `sidetone-alignment`) goes in — only after its scope test.
+2. **iOS app 1.1 (build 2):** uploaded, installed via TestFlight and tested by Willi 2026-10-05 — the File Builder's
+   accented letters **and a text upload from the iPhone app over BLE** both pass. Submit 1.1 for App Review after
+   9.1 stable ("What's New" text in `Software/iOS/M32Config/store-listing.md`).
+3. **Then V10:** merge master into `m32kip` once more — 11 commits since 5bb9994, incl. **V9 manual edits that must
+   be ported to the V10 manual** (File Builder paragraph and the file-upload passage, both 2026-10-05) — then the B
+   items below (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
+   `V10.0-beta.1`.
 
 ---
 
@@ -57,8 +73,11 @@ protocol PDFs (E2).
 4. ~~Next master release is 9.1~~ (decided) — the `### CHANGES V. 9.1` section now exists,
    opened with the BLE heap-leak fix.
 
-### Device state (2026-10-04)
-Both units run the **9.1 build from master ce83d2a** (I3 + I2), standard edition on the Pocket (Bluetooth Use 5); `/player.txt` on both is the I3 test file (`devdocs/language-support/bench-player.txt`).
+### Device state (2026-10-05)
+All run current master firmware (9.1 beta code; later master commits are docs/tools only):
+**classic** (flashed 2026-10-05, protocol harness 122/122), **a11y Pocket** (connected now; firmware + voice image,
+Bluetooth Use 0), **standard Pocket** (swapped out; C15 build cb32593, Bluetooth Use 5, Word Length "up to 4").
+`/player.txt` may be Willi's File Builder test (`devdocs/language-support/file-builder-test.txt`) or the I3 bench file.
 **For M32KIP work (wave 2, B6, B14) re-flash both from the `m32kip` folder.** Earlier staging (Quick Start into
 Remote Rig, pass phrase) is NVS and survives, but check it. TRX Peer fields kept for now (B7).
 
@@ -71,8 +90,8 @@ Software/src/.pio` before its first build.
 (a11y voice image) works. Piper for voice clips: the repo's `.venv` is an old Intel build — a
 working arm64 Piper 1.4.2 needs a venv on a SHORT path (espeak-ng truncates its data path at
 ~160 characters), e.g. `PIPER_BIN=/private/tmp/claude-501/pv/bin/piper ./generate_audio.sh`.
-`xcode-select` points at the Command Line Tools, not Xcode 27 (`devicectl` missing on the
-command line).
+`xcode-select` points at Xcode 27 (`/Applications/Xcode.app`, checked 2026-10-05). JavaScript can be tested
+without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc`.
 
 ---
 
@@ -148,6 +167,16 @@ command line).
     `Disp MAC Address`) overrides the extractor's own `MENU_SPOKEN` entry. Fix: change that line to
     `Display MAC address` and re-run extractor + generate_audio.sh (the clip 43f7eeee already exists; the old one
     becomes an orphan to prune). Everything else voiced in 9.1 was heard and approved on an a11y Pocket.
+16. **Review the order of the preferences — on the device and in the manual (Willi, 2026-10-05, for V10).** Willi
+    wants to go through the order himself. Inputs: `pliste[]`/`prefPos` order and the per-mode option lists
+    (`MorsePreferences.cpp`, the `posXxx` arrays passed to `setCurrentOptions`) vs the preference tables in the
+    V10 manual (EN + DE). Remember CLAUDE.md §3 rule 10: `prefPos`, `pliste[]` and `prefName[]` are positional and
+    must move together; NVS keys and snapshots go by name, so reordering is storage-safe, but the a11y voice
+    tables and the protocol's config order follow (re-run the extractor).
+17. **Check that the preferences offered inside each mode are correct and meaningful (Willi, 2026-10-05, for V10).**
+    Each mode shows only a subset (its option list in `MorsePreferences.cpp`); verify per mode that nothing
+    irrelevant is offered and nothing needed is missing — e.g. Word Length / Decoder Chars only where they act.
+    Best done together with 16, with a mode × preference table as the working document.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
@@ -241,7 +270,12 @@ command line).
 
 ## G. iOS app
 
-- ~~App Store review~~ — **live in the App Store** (Willi, 2026-10-05).
+- ~~App Store review~~ — **1.0 live in the App Store** (Willi, 2026-10-05).
+- **1.1 (build 2)** archived, uploaded and tested via TestFlight 2026-10-05 (File Builder accents; BLE text upload
+  from the app works — previously untested). **Next: submit for review after 9.1 stable.** Fixed on the way:
+  `project.yml` now generates a shared scheme and takes the plist version from `MARKETING_VERSION` /
+  `CURRENT_PROJECT_VERSION` (XcodeGen had hard-coded 1.0 / 1); the Team ID is the certificate's **OU**
+  (F44LJ6Y4F9), not the code in parentheses — `Local.xcconfig` had the personal ID. "Xcode Cloud" prompt: declined.
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 
