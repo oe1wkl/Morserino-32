@@ -98,6 +98,11 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: M32 Config
+        # The version comes from MARKETING_VERSION / CURRENT_PROJECT_VERSION above. Without these two lines
+        # XcodeGen writes 1.0 / 1 into the plist, whatever the build settings say - and the 1.1 archive
+        # came out as 1.0 (1), which App Store Connect refused.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait
