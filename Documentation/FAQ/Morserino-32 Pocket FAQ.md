@@ -10,7 +10,7 @@ There is one manual per Morserino. These links always give you the one for the c
 | **Morserino-32, 1st / 2nd edition** | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_EN.epub) | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_DE.epub) |
 | **Pocket, Accessibility Edition** | [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) | [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) |
 
-Answers reflect **firmware version 9.0**.
+Answers reflect **firmware version 9.x**.
 
 ## 1. First Steps with a New M32 Pocket
 

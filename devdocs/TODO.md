@@ -53,8 +53,7 @@ protocol PDFs (E2).
 2. **Burst loss (B4):** ship V10 with the documented workaround (Rig Delay ≥ 250 ms), or fix
    first? Recommendation: ship with the workaround (one loss pattern, documented, 250 ms
    floor rests on one test run).
-3. **FAQ header** says "Answers reflect **firmware version 9.0**" — change to 9.0.1, or does
-   9.0 mean "the 9.0 line"?
+3. ~~**FAQ header**~~ — decided 2026-10-05: "firmware version **9.x**" (EN + DE, PDFs rebuilt).
 4. ~~Next master release is 9.1~~ (decided) — the `### CHANGES V. 9.1` section now exists,
    opened with the BLE heap-leak fix.
 
