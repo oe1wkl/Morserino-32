@@ -20,7 +20,10 @@ The web tool is **not forked**. `sync-webtool.sh` copies it out of
 `Software/Utilities/` at build time, so the browser version and the app version
 can never drift apart.
 
-> **Status: with App Review** — version 1.0, build 1, submitted 2026-09-12. On
+> **Status: 1.0 is live in the App Store** (Willi, 2026-10-05). **1.1 (build 2) prepared**: version bumped in
+> `project.yml`, "What's New" text in `store-listing.md`; not yet archived or uploaded.
+>
+> **1.0 history:** version 1.0, build 1, submitted 2026-09-12. On
 > 2026-09-13 App Review asked for more information under guideline 2.1, the
 > letter a new developer account with limited review history gets; the answer
 > went back the same day and is kept in `store-listing.md`. Replying does not
