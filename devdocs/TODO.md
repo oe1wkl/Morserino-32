@@ -202,6 +202,16 @@ command line).
 6. ~~**BLE transient splashes** silent in the a11y edition~~ — **done 2026-10-05 on `master`**: "Bluetooth serial suspended
    for wireless mode" / "Bluetooth serial failed to start" (2 clips; not yet heard on an a11y Pocket).
 7. ~~**Protocol C15** (input-length cap)~~ — **done 2026-10-05 on `master`** (USB 1024 / `LINE TOO LONG`, documented).
+9. **Config Tool, Multi-Part File Builder: accented letters (Willi, 2026-10-05).** Since 9.1 the File Player plays
+   ä ö ü é è à ç ñ å æ ø with their own codes, other Latin-1 accents as the plain letter and ß as "ss" (`foldLatin1()`).
+   The File Builder never lets them through: `fbSanitize()` deletes **every** non-ASCII character after the optional
+   "Convert German umlauts" step (`s.replace(/[^\x0A\x0D\x20-\x7E]/g,'')`), so with the box unticked "café" becomes
+   "caf" and "für" becomes "fr" — there is no "keep" option today. Proposal (UX → Willi): keep Latin-1 letters
+   (U+00C0–U+00FF) by default, and turn the checkbox into "Convert accented letters to plain ASCII (for firmware
+   before 9.1)": ä→ae ö→oe ü→ue ß→ss, everything else via NFD + strip combining marks (é→e, č→c), ł/đ by hand.
+   Letters outside Latin-1 should be folded that way in both modes, since the firmware drops them. The tool knows
+   the connected firmware version, so it could preset the box. Two copies: `Software/Utilities/m32_config_tool.html`
+   and `Software/iOS/M32Config/Resources/Web/m32_config_tool.html` (the iOS one ships with an app update).
 8. **Pocket USB replies still stall now and then (HWCDC, core 2.0.17).** Found while testing C15, present in 9.0.1:
    a reply stops after its first part (always 6–7 + 64·k bytes, i.e. after a full 64-byte packet that followed a
    short first one) and the rest goes out only when the host sends again. Measured with a set/get-lesson loop:
