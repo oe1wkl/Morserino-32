@@ -187,7 +187,10 @@ command line).
    by the ClickButton root-cause fix** (2b0b3ac, one-shot long click): the host tests' "the caller it returns to does
    NOT see it a second time" is exactly this case (re-checked 2026-10-05, all pass).
 3. **A11y gaps:** decoder char-by-char voicing. ~~Battery "3980 mV" calibration readout~~ — **done 2026-10-05 on `master`**
-   ("3 point 9 8 0 volts", composed; not yet heard on an a11y Pocket).
+   ("3 point 9 8 0 volts", composed) — **moot in practice**: the Pocket's Hardware Config skips Calibr. Batt.
+   (`if (hwConf == 1) hwConf = 2`), so no a11y device can reach it; kept as harmless, correct code.
+   **Small old bug found there:** turning the encoder *backwards* from Flip Screen maps 1 → 2 again, so the Pocket
+   cannot step back past it (forward wraps round, so Cancel is still reachable). Fix: `hwConf = (t > 0 ? 2 : 0)`.
 4. **A11y voice store:** **~164 KB headroom (~13 clips) on `m32kip` as of 2026-10-02**, after the extractor fix (was ~61 KB). Compose numbers; never per-value clips;
    grep `buildfs` output for "full".
 5. **A11y very-late freeze** (decoder-reuse leak) — dead end, unresolved.
