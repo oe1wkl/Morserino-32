@@ -2448,7 +2448,7 @@ The font family used is Lato.</p>
 <section id="uploading-a-text-file" class="classic pocket" data-number="5.8.4">
 <h3 data-number="5.8.4"><span class="header-section-number">5.8.4</span> Uploading a Text File</h3>
 <p>Once you configured your Morserino-32 with your local WiFi credentials, you are ready to upload a text file to use for your Morse code training. Currently only one file can reside on the Morserino-32, This means, whenever you upload a new file, the old one will be overwritten.</p>
-<p>The <strong>file</strong> that you upload should be a plain ASCII text file without any formatting (no Word files, pdf documents etc.). German characters (<em>ÄÖÜäöüß</em>) encoded as UTF-8 are allowed and will be converted to <em>ae</em>, <em>oe</em>, <em>ue</em> and <em>ss</em>. The file can contain uppercase and lowercase letters, and all the characters that are part of the Koch method set, including pro-signs (51 different characters in total). Any other characters will just be disregarded when the file is played in Morse code. The file that you upload can be pretty large – you have about 1 MB space available for it (enough to store a copy of Mark Twain’s “The Adventures of Huckleberry Finn”).</p>
+<p>The <strong>file</strong> that you upload should be a plain text file, saved as UTF-8, without any formatting (no Word files, pdf documents etc.). It can contain uppercase and lowercase letters, letters with umlauts and accents, and all the characters that are part of the Koch method set, including pro-signs; see <strong>Encoding of text files for file player</strong> in section <strong>What can be generated?</strong> for how they are sent. Any other characters will just be disregarded when the file is played in Morse code. The file that you upload can be pretty large – you have about 1 MB space available for it (enough to store a copy of Mark Twain’s “The Adventures of Huckleberry Finn”).</p>
 <div class="note">
 <p>See the information about encoding of text files in section <strong>What can be generated?</strong> – for example, you can separate a file into several parts, each of which will be treated like a separate file by the File Player.</p>
 </div>
@@ -3192,7 +3192,7 @@ The font family used is Lato.</p>
 <div class="note">
 <ul>
 <li><p>The “official” tool is a simple html/javascript program that can also run locally. The source is also available at the Morserino GitHub site. There you will also find a help file in JSON format which enables tool tips within the application (explainign the purpose of the various preferences).</p></li>
-<li><p>This tool also contains a <strong>file manager</strong> for uploading text and sound files, and for viewing the standard text file, as well as a <strong>file builder</strong>, which allows to combine several files into a mulit-part file that can be used with the M32 file player; <strong>this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player</strong>.</p></li>
+<li><p>This tool also contains a <strong>file manager</strong> for uploading text and sound files, and for viewing the standard text file, as well as a <strong>file builder</strong>, which allows to combine several files into a multi-part file that can be used with the M32 file player; <strong>this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player</strong>. Letters with umlauts and accents are kept, as the file player plays them since firmware 9.1; for older firmware, tick <strong>Convert accented letters to plain ASCII</strong> (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e and so on). The option is set for you when the connected Morserino runs firmware older than 9.1.</p></li>
 <li><p>You can also run Christof’s javascript program locally, the source code is available at <em>https://github.com/cdaller/morserino32-trainer</em>.</p></li>
 </ul>
 </div>
@@ -4672,6 +4672,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=0dac568cec13 -->
+<!-- MANUALFRESH: lang=en src=e550f73ae485 -->
 </body>
 </html>

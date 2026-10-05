@@ -775,7 +775,7 @@
     <label class="fb-toggle" id="fbUmlautToggle">
       <input type="checkbox" id="fbUmlautCb" onchange="fbReprocessAll()" />
       <span class="fb-switch"></span>
-      <span>Convert German umlauts (ä→ae, ö→oe, ü→ue, ß→ss)</span>
+      <span>Convert accented letters to plain ASCII (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e …) — for firmware before 9.1, which plays no accented letters</span>
     </label>
     <div id="fbPartsContainer" style="display:none">
       <div class="field-label">Parts <span id="fbPartsCount" style="font-weight:400"></span></div>
@@ -1186,6 +1186,7 @@ async function doConnect(){
 
     deviceInfo=devData.device;
     showDeviceInfo(devData.device);
+    fbPresetAccentOption(devData.device.firmware);
 
     // Valid handshake — NOW set connected=true and enable UI
     enableUI(true);
@@ -3180,13 +3181,38 @@ async function fbExtractEpub(file){
 }
 
 // --- ASCII sanitization ---
-function fbConvertUmlauts(s){return s.replace(/\u00e4/g,'ae').replace(/\u00c4/g,'Ae').replace(/\u00f6/g,'oe').replace(/\u00d6/g,'Oe').replace(/\u00fc/g,'ue').replace(/\u00dc/g,'Ue').replace(/\u00df/g,'ss')}
+// Accented letters. Firmware 9.1 plays the Latin-1 letters itself (ä ö ü é è à ç ñ å æ ø with their own Morse codes,
+// other accents as the plain letter, ß as ss) and drops everything else; older firmware plays only ASCII. So by
+// default the Latin-1 letters are kept, and with the option ticked everything becomes ASCII the way each language
+// writes it without its letters: German ä→ae ö→oe ü→ue ß→ss, Nordic å→aa æ→ae ø→oe, Icelandic þ→th ð→d.
+var FB_TO_ASCII={'\u00e4':'ae','\u00c4':'Ae','\u00f6':'oe','\u00d6':'Oe','\u00fc':'ue','\u00dc':'Ue','\u00df':'ss',
+  '\u00e5':'aa','\u00c5':'Aa','\u00e6':'ae','\u00c6':'Ae','\u00f8':'oe','\u00d8':'Oe'};
+// Letters no firmware plays and NFD cannot strip: converted in both modes (Latin-1 \u00f0/\u00fe are dropped by 9.1).
+var FB_ALWAYS={'\u00fe':'th','\u00de':'Th','\u00f0':'d','\u00d0':'D','\u0153':'oe','\u0152':'Oe','\u0142':'l','\u0141':'L',
+  '\u0111':'d','\u0110':'D','\u0131':'i'};
+function fbFoldLetters(s,toAscii){
+  return s.replace(/[^\x00-\x7F]/g,function(c){
+    if(FB_ALWAYS[c])return FB_ALWAYS[c];
+    if(toAscii&&FB_TO_ASCII[c])return FB_TO_ASCII[c];
+    var code=c.charCodeAt(0);
+    if(!toAscii&&code>=0xC0&&code<=0xFF&&code!==0xD7&&code!==0xF7)return c;   // a Latin-1 letter: 9.1 plays it
+    var d=c.normalize('NFD').replace(/[\u0300-\u036f]/g,'');                // é→e, č→c, ő→o ...
+    return /^[\x20-\x7E]+$/.test(d)?d:c;                                     // anything else is stripped below
+  });
+}
 function fbSanitize(text){
-  var s=text;
-  if(document.getElementById('fbUmlautCb').checked) s=fbConvertUmlauts(s);
+  var s=text,toAscii=document.getElementById('fbUmlautCb').checked;
   s=s.replace(/[\u2018\u2019\u201A\u2039\u203A]/g,"'");s=s.replace(/[\u201C\u201D\u201E\u00AB\u00BB]/g,'"');
   s=s.replace(/[\u2013\u2014]/g,'-');s=s.replace(/\u2026/g,'...');s=s.replace(/\u00A0/g,' ');
-  s=s.replace(/[^\x0A\x0D\x20-\x7E]/g,'');s=s.replace(/\n{3,}/g,'\n\n');return s.trim();
+  s=fbFoldLetters(s,toAscii);
+  s=s.replace(toAscii?/[^\x0A\x0D\x20-\x7E]/g:/[^\x0A\x0D\x20-\x7E\u00C0-\u00D6\u00D8-\u00F6\u00F8-\u00FF]/g,'');
+  s=s.replace(/\n{3,}/g,'\n\n');return s.trim();
+}
+// Preset the option for the connected Morserino: ticked for firmware before 9.1. The user can still change it.
+function fbPresetAccentOption(fw){
+  var m=/^\s*(\d+)\.(\d+)/.exec(String(fw||''));if(!m)return;
+  var old=(+m[1]<9)||(+m[1]===9&&+m[2]<1),cb=document.getElementById('fbUmlautCb');
+  if(cb.checked!==old){cb.checked=old;fbReprocessAll()}
 }
 function fbReprocessAll(){for(var p of fbParts){if(!p.loading&&p.rawText)p.text=fbSanitize(p.rawText)};fbRender()}
 
@@ -3270,7 +3296,7 @@ function fbMove(id,delta){
 function fbDownload(){
   var output=fbBuildOutput();if(!output)return;
   var fn=document.getElementById('fbOutputName').value.trim()||'multipart.txt';
-  saveTextFile(fn,output,'text/plain;charset=ascii');
+  saveTextFile(fn,output,'text/plain;charset=utf-8');
 }
 
 // --- Upload to M32 ---

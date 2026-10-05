@@ -3179,12 +3179,11 @@ konfiguriert hast, kannst du eine Textdatei für das Morse-Training
 hochladen. Derzeit kann nur eine Datei auf dem Morserino-32 gespeichert
 werden; beim Hochladen einer neuen Datei wird die alte überschrieben.
 
-Die **hochzuladende Datei** sollte eine einfache ASCII-Textdatei ohne
-Formatierung sein (keine Word-Dateien, PDFs usw.). Deutsche Zeichen
-(*ÄÖÜäöüß*) in UTF-8-Kodierung sind erlaubt und werden in *ae*, *oe*,
-*ue* und *ss* umgewandelt. Die Datei kann Groß- und Kleinbuchstaben
-sowie alle Zeichen der Koch-Methode (einschließlich Betriebszeichen,
-insgesamt 51 verschiedene Zeichen) enthalten. Alle anderen Zeichen
+Die **hochzuladende Datei** sollte eine einfache Textdatei in UTF-8-Kodierung ohne
+Formatierung sein (keine Word-Dateien, PDFs usw.). Sie kann Groß- und Kleinbuchstaben,
+Buchstaben mit Umlauten und Akzenten sowie alle Zeichen der Koch-Methode (einschließlich
+Betriebszeichen) enthalten; wie sie gesendet werden, steht unter **Kodierung von Textdateien
+für den File Player** im Abschnitt **Was kann generiert werden?**. Alle anderen Zeichen
 werden beim Abspielen im Morsecode ignoriert. Die Datei kann recht groß
 sein – ca. 1 MB Speicherplatz steht zur Verfügung (genug für Mark Twains
 „The Adventures of Huckleberry Finn").
@@ -4279,7 +4278,12 @@ folgenden Seiten aufrufst:
   Datei kombinieren kannst, die mit dem M32-File-Player verwendet werden
   kann. **Der Datei-Builder akzeptiert nicht nur Textdateien, sondern
   auch PDF-, EPUB- und Textverarbeitungsformate und konvertiert sie in
-  einfachen Text, der für den File Player geeignet ist.**
+  einfachen Text, der für den File Player geeignet ist.** Buchstaben mit
+  Umlauten und Akzenten bleiben erhalten, denn der File Player spielt sie
+  seit Firmware 9.1; für ältere Firmware wähle **Convert accented letters
+  to plain ASCII** (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e usw.).
+  Ist ein Morserino mit älterer Firmware verbunden, ist diese Option
+  schon gewählt.
 
 * Du kannst Christofs Javascript-Programm auch lokal ausführen; der
   Quellcode ist unter *https://github.com/cdaller/morserino32-trainer*

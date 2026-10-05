@@ -2719,12 +2719,11 @@ you are ready to upload a text file to use for your Morse code training.
 Currently only one file can reside on the Morserino-32, This means,
 whenever you upload a new file, the old one will be overwritten.
 
-The **file** that you upload should be a plain ASCII text file without
-any formatting (no Word files, pdf documents etc.). German characters
-(*ÄÖÜäöüß*) encoded as UTF-8 are allowed and will be converted to *ae*,
-*oe*, *ue* and *ss*. The file can contain uppercase and lowercase
-letters, and all the characters that are part of the Koch method set,
-including pro-signs (51 different characters in total). Any other
+The **file** that you upload should be a plain text file, saved as UTF-8, without
+any formatting (no Word files, pdf documents etc.). It can contain uppercase and lowercase
+letters, letters with umlauts and accents, and all the characters that are part of the Koch method set,
+including pro-signs; see **Encoding of text files for file player** in section **What can be generated?**
+for how they are sent. Any other
 characters will just be disregarded when the file is played in Morse
 code. The file that you upload can be pretty large – you have about 1
 MB space available for it (enough to store a copy of Mark Twain's "The
@@ -3775,7 +3774,7 @@ by OE6CHD),
 
 * The "official" tool is a simple html/javascript program that can also run locally. The source is also available at the Morserino GitHub site. There you will also find a help file in JSON format which enables tool tips within the application (explainign the purpose of the various preferences). 
 
-* This tool also contains a **file manager** for uploading text and sound files, and for viewing the standard text file, as well as a **file builder**, which allows to combine several files into a mulit-part file that can be used with the M32 file player; **this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player**.
+* This tool also contains a **file manager** for uploading text and sound files, and for viewing the standard text file, as well as a **file builder**, which allows to combine several files into a multi-part file that can be used with the M32 file player; **this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player**. Letters with umlauts and accents are kept, as the file player plays them since firmware 9.1; for older firmware, tick **Convert accented letters to plain ASCII** (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e and so on). The option is set for you when the connected Morserino runs firmware older than 9.1.
 
 * You can also run Christof's javascript program locally, the source code
 is available at *https://github.com/cdaller/morserino32-trainer*.

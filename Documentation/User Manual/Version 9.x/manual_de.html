@@ -2438,7 +2438,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <section id="hochladen-einer-textdatei" class="classic pocket" data-number="5.8.4">
 <h3 data-number="5.8.4"><span class="header-section-number">5.8.4</span> Hochladen einer Textdatei</h3>
 <p>Nachdem du deinen Morserino-32 mit deinen lokalen WLAN-Zugangsdaten konfiguriert hast, kannst du eine Textdatei für das Morse-Training hochladen. Derzeit kann nur eine Datei auf dem Morserino-32 gespeichert werden; beim Hochladen einer neuen Datei wird die alte überschrieben.</p>
-<p>Die <strong>hochzuladende Datei</strong> sollte eine einfache ASCII-Textdatei ohne Formatierung sein (keine Word-Dateien, PDFs usw.). Deutsche Zeichen (<em>ÄÖÜäöüß</em>) in UTF-8-Kodierung sind erlaubt und werden in <em>ae</em>, <em>oe</em>, <em>ue</em> und <em>ss</em> umgewandelt. Die Datei kann Groß- und Kleinbuchstaben sowie alle Zeichen der Koch-Methode (einschließlich Betriebszeichen, insgesamt 51 verschiedene Zeichen) enthalten. Alle anderen Zeichen werden beim Abspielen im Morsecode ignoriert. Die Datei kann recht groß sein – ca. 1 MB Speicherplatz steht zur Verfügung (genug für Mark Twains „The Adventures of Huckleberry Finn”).</p>
+<p>Die <strong>hochzuladende Datei</strong> sollte eine einfache Textdatei in UTF-8-Kodierung ohne Formatierung sein (keine Word-Dateien, PDFs usw.). Sie kann Groß- und Kleinbuchstaben, Buchstaben mit Umlauten und Akzenten sowie alle Zeichen der Koch-Methode (einschließlich Betriebszeichen) enthalten; wie sie gesendet werden, steht unter <strong>Kodierung von Textdateien für den File Player</strong> im Abschnitt <strong>Was kann generiert werden?</strong>. Alle anderen Zeichen werden beim Abspielen im Morsecode ignoriert. Die Datei kann recht groß sein – ca. 1 MB Speicherplatz steht zur Verfügung (genug für Mark Twains „The Adventures of Huckleberry Finn”).</p>
 <div class="note">
 <p>Informationen zur Kodierung von Textdateien findest du im Abschnitt <strong>Was kann generiert werden?</strong> – du kannst z.B. eine Datei in mehrere Teile unterteilen, die der File Player wie separate Dateien behandelt.</p>
 </div>
@@ -3181,7 +3181,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <div class="note">
 <ul>
 <li><p>Das „offizielle” Tool ist ein einfaches HTML/Javascript-Programm, das auch lokal ausgeführt werden kann. Der Quellcode ist auch auf der Morserino-GitHub-Seite verfügbar, wo du auch eine Hilfedatei im JSON-Format findest, die Tooltipps innerhalb der Anwendung ermöglicht (und den Zweck der verschiedenen Einstellungen erklärt).</p></li>
-<li><p>Dieses Tool enthält auch einen <strong>Dateimanager</strong> zum Hochladen von Text- und Tondateien, zum Anzeigen der Standard-Textdatei sowie einen <strong>Datei-Builder</strong>, mit dem du mehrere Dateien zu einer mehrteiligen Datei kombinieren kannst, die mit dem M32-File-Player verwendet werden kann. <strong>Der Datei-Builder akzeptiert nicht nur Textdateien, sondern auch PDF-, EPUB- und Textverarbeitungsformate und konvertiert sie in einfachen Text, der für den File Player geeignet ist.</strong></p></li>
+<li><p>Dieses Tool enthält auch einen <strong>Dateimanager</strong> zum Hochladen von Text- und Tondateien, zum Anzeigen der Standard-Textdatei sowie einen <strong>Datei-Builder</strong>, mit dem du mehrere Dateien zu einer mehrteiligen Datei kombinieren kannst, die mit dem M32-File-Player verwendet werden kann. <strong>Der Datei-Builder akzeptiert nicht nur Textdateien, sondern auch PDF-, EPUB- und Textverarbeitungsformate und konvertiert sie in einfachen Text, der für den File Player geeignet ist.</strong> Buchstaben mit Umlauten und Akzenten bleiben erhalten, denn der File Player spielt sie seit Firmware 9.1; für ältere Firmware wähle <strong>Convert accented letters to plain ASCII</strong> (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e usw.). Ist ein Morserino mit älterer Firmware verbunden, ist diese Option schon gewählt.</p></li>
 <li><p>Du kannst Christofs Javascript-Programm auch lokal ausführen; der Quellcode ist unter <em>https://github.com/cdaller/morserino32-trainer</em> verfügbar.</p></li>
 </ul>
 </div>
@@ -4662,6 +4662,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=4ea4ddf99330 -->
+<!-- MANUALFRESH: lang=de src=849362264955 -->
 </body>
 </html>
