@@ -70,7 +70,11 @@ Then in Xcode:
 2. Set **Team** to your Apple ID (*Add an Account…* if it is not listed yet).
    Then put the Team ID into `Local.xcconfig` so it survives the next
    `xcodegen generate` — the file is git-ignored and exists precisely for this.
-   `security find-identity -v -p codesigning` prints it in parentheses.
+   The Team ID is the **OU** field of your certificate —
+   `security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject` —
+   **not** the code in parentheses that `security find-identity` shows after your e-mail address:
+   that identifies you, not your team, and with it Xcode drops back to a wrong team after every
+   `xcodegen generate` (this repo's own instructions said otherwise until 2026-10-05).
 3. If it complains that the bundle identifier is taken, change
    `cc.kraml.m32config` to anything unique.
 4. Plug in your iPhone, pick it in the device menu at the top, and press ▶.
