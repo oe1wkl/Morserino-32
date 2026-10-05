@@ -21,6 +21,9 @@ targets:
   M32Config:
     type: application
     platform: iOS
+    # A shared scheme, generated with the project: without it Xcode 27 opened the regenerated project with
+    # no scheme at all (Run greyed out, no destination picker), as nothing auto-created one any more.
+    scheme: {}
 
     sources:
       - path: Sources
