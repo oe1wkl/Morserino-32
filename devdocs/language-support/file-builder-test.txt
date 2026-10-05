@@ -1,0 +1,7 @@
+Grüße aus Köln, Straße, Äpfel, Öl, Übel.
+Nordic: smörgåsbord, Ærø, Øresund, Åland.
+Icelandic: Þórr og Ðiðrik.
+Café, élève, à la carte, garçon, niño, São Paulo, naïve, señor.
+Beyond Latin-1: Dvořák, Łódź, œuvre, Erdős.
+Typography: „Anführung“ «guillemets» – dash … ✓ 👍
+Prosigns and brackets: (test) <kn> [ar] \sk
