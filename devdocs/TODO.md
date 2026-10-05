@@ -143,6 +143,11 @@ command line).
     off), then worked; not reproducible on demand, and no core dump was written, so not a crash — a brown-out
     or a hardware watchdog. **`GET resets`** (c22d8d8, protocol 1.5) now records why each boot happened: when it
     recurs, read it before anything else.
+15. **A11y pronunciation, for V10 (Willi, 2026-10-05):** "Disp MAC Addr" is spoken "Disp M-A-C address"; he wants
+    "Display MAC address". Cause: `Software/tools/audio-accessibility/spoken_overrides.tsv` line 64 (`Disp MAC Addr` →
+    `Disp MAC Address`) overrides the extractor's own `MENU_SPOKEN` entry. Fix: change that line to
+    `Display MAC address` and re-run extractor + generate_audio.sh (the clip 43f7eeee already exists; the old one
+    becomes an orphan to prune). Everything else voiced in 9.1 was heard and approved on an a11y Pocket.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
