@@ -107,6 +107,8 @@
     "Beginner": "2ddabc33",
     "Blues": "aca2a3c0",
     "Bluetooth A R character": "b4c0646b",
+    "Bluetooth serial failed to start": "695db495",
+    "Bluetooth serial suspended for wireless mode": "35ffa7f0",
     "Bluetooth use": "48f049df",
     "Boost practice characters": "3c6bec0a",
     "CQ WW": "e9292f77",
@@ -766,6 +768,8 @@
     "716afdde": "BLE Serial",
     "aca2a3c0": "Blues",
     "b4c0646b": "Bluetooth A R character",
+    "695db495": "Bluetooth serial failed to start",
+    "35ffa7f0": "Bluetooth serial suspended for wireless mode",
     "48f049df": "Bluetooth use",
     "3c6bec0a": "Boost practice characters",
     "01a2da07": "Bravo",
@@ -1056,14 +1060,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "549a70f1",
+  "pack_stamp": "2cad5d4e",
   "counts": {
     "menu": 32,
     "pref_labels": 55,
     "option_values": 187,
     "actions": 28,
-    "phrases_total": 333,
+    "phrases_total": 335,
     "atoms_total": 138,
-    "clips_total": 535
+    "clips_total": 537
   }
 }

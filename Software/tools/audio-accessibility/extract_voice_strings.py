@@ -156,6 +156,10 @@ KOCH_FALLBACK_WORDS = ["No custom set", "Fallback"]
 # Remote keying pass phrase entry (editKipPassPhrase() in MorsePreferences.cpp): the three outcomes, drawn on
 # screen, not table-driven. "Too short" is followed by the composed "12 characters" (existing atoms).
 PASSPHRASE_WORDS = ["Unchanged", "Too short", "Phrase saved"]
+# BLE Serial splashes (MorseBleSerial.cpp: bleInitFail(), suspendForWifi()). Drawn, not table-driven,
+# and the protocol text stream cannot carry them: they announce the end, or the failed start, of the
+# very session that stream would need.
+BLE_NOTICE_WORDS = ["Bluetooth serial failed to start", "Bluetooth serial suspended for wireless mode"]
 # Text entry (MorseTextEntry, voiceAsLetters): the space in Op Name is spoken as the word.
 TEXT_ENTRY_WORDS = ["space"]
 # Remote Keyer status (MorseKipKeyer.cpp, TODO B8): drawn, not table-driven. Short on purpose - the voice
@@ -284,7 +288,7 @@ phrase_texts = (
     pref_labels +
     option_values +
     [spoken_of(s, ACTION_SPOKEN) for s in action_items] +
-    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS
+    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS
 )
 # NOTE: a non-table word list must appear TWICE -- here, which schedules the clip for
 # rendering, and in the fw_add() loop below, which maps the firmware string to that clip.
@@ -380,7 +384,7 @@ for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spok
 for lbl in pref_labels: fw_add(lbl, lbl)
 for v in option_values: fw_add(v, v)
 for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
-for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
+for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
 
 def cstr(s): return s.replace("\\", "\\\\").replace('"', '\\"')
 HDR = os.path.join(SRC, "voice_clips.h")

@@ -102,6 +102,13 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	GET practicechars over BLE Serial; earlier firmware sent that reply to
 	USB only.
 
+	October 5, 2026: from firmware 9.1, a USB command line longer than
+	1024 characters is refused with the error "LINE TOO LONG" (section
+	"Sending commands to Morserino", "Maximum command length"). BLE has
+	refused lines over 400 characters since BLE Serial was introduced.
+	The preference "Length Words" is called "Word Length" from 9.1, with
+	the new value "4 or more"; GET/PUT config address it by the new name.
+
 	Additions made within protocol version 1.3, which did not change the
 	version number:
 
@@ -194,6 +201,8 @@ Morserino sends a message whenever a user action is executed on the device (navi
 ## Sending commands to Morserino
 
 Commands sent to the Morserino start with "GET" (read values) or "PUT" (write values) and additional parameters. Commands are ended by a single line feed (\n, ascii 10); a trailing carriage return (\r) is tolerated. Responses to GET commands are of course JSON objects, while as a rule there are no responses to PUT commands.
+
+**Maximum command length.** A command line may be at most **1024 characters** over USB and **400** over BLE (bytes, including the command itself, without the line feed). A longer line is not executed: everything up to its line feed is discarded, and the Morserino answers `{"error":{"content":"LINE TOO LONG"}}` (`BLE LINE TOO LONG` over BLE) — on USB only once a protocol session is open. No command needs that much: the longest one the Morserino's own tools send is a `PUT file/data` chunk of 240 base64 characters. If you upload a text file with `PUT file/new` / `PUT file/append`, split lines that would exceed the limit. *(USB limit from firmware 9.1; earlier firmware accepted any length, and the M32 Pocket could lose bytes of a USB command longer than about 256 characters.)*
 
 
 

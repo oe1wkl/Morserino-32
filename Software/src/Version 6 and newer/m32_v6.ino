@@ -576,6 +576,17 @@ void setup()
    //// 7. check for press of key/paddle at start, to initiate hw config
    //// 8. do the remaining initialisations
 
+#if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
+  // The Pocket's native USB (HWCDC, core 2.0.17) stopped about one protocol reply in 50-150 halfway - the
+  // first part sent, the rest only when the host sent its next command (seen with 263-313-byte replies;
+  // 9.0.1 too). Its default 256-byte TX ring is smaller than such a reply; with 1 KB the rate fell to about
+  // 1 in 900 (2026-10-05; 4 KB was no better). The remaining cases are a driver race - see devdocs/TODO.md.
+  Serial.setTxBufferSize(1024);
+  // And its 256-byte RX queue drops bytes when full (the ISR gives up on the rest of a 64-byte packet) - a
+  // command longer than ~256 bytes, sent in one go, lost pieces before loop() got to read it, newline
+  // included, so lines merged. 2 KB holds any line up to twice USB_LINE_MAX: executed or refused whole.
+  Serial.setRxBufferSize(2048);
+#endif
   Serial.begin(115200);
   delay(30); // give me time to bring up serial monitor
   // reserve 400 bytes for the serial inputString variable defined above:
@@ -4678,12 +4689,34 @@ void skipWords(uint32_t count) {             /// just skip count words in open f
   delay response. Multiple bytes of data may be available.
 */
 
+// Longest USB input line accepted (protocol audit C15). Nothing legitimate comes near it - the longest
+// command the tools send is a 180-byte file/data chunk (240 base64 characters), and file/append lines are
+// a text file's lines - but without a cap a runaway line would grow inputString until the heap gives out.
+// BLE Serial has its own, tighter cap (400, "BLE LINE TOO LONG") in bleSerialEvent().
+static const uint16_t USB_LINE_MAX = 1024;
+static bool usbDiscardLine = false;          // swallowing the tail of an over-long line, up to its \n
+
 void serialEvent() {
       while (Serial.available()) {
         // get the new byte:
         char inChar = (char)Serial.read();
+        if (usbDiscardLine) {                  // tail of a runaway line: execute nothing of it
+          if (inChar == '\n')
+            usbDiscardLine = false;
+          continue;
+        }
         // add it to the inputString:
         inputString += inChar;
+        if (inputString.length() > USB_LINE_MAX) {
+          inputString = "";
+          usbDiscardLine = true;
+          if (m32protocol) {                   // a USB port that never handshook stays byte-silent
+            M32TargetScope usbOnly(M32Target::UsbOnly);
+            MorseJSON::jsonError("LINE TOO LONG");
+            m32out.flushReply();
+          }
+          continue;
+        }
         // if the incoming character is a newline, set a flag so the main loop can
         // do something about it:
         if (inChar == '\n') {

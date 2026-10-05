@@ -163,11 +163,14 @@ command line).
    spurious-element risk unchecked (mitigation if needed: minimum-open time).
 5. **`pocketwroom-lora`** compiles, never bench-tested (shared-SPI question in its commit message).
 6. **CW timing** (`devdocs/cw-timing-audit/FINDINGS.md`):
-   - I2S sidetone ~6 ms heavier than the key line — fix proposed, ours to do; verify on a
-     2-channel scope, not a microphone.
+   - I2S sidetone ~6 ms heavier than the key line — **fix implemented on branch `sidetone-alignment`** (104e6b9,
+     worktree `/private/tmp/claude-501/m32-sidetone`), **not merged: needs Willi's 2-channel scope test** (FINDINGS.md
+     "How to verify").
    - Re-measure after the `MorseCwEngine` gap fix (Fox Hunt / Pileup / Radio Cave) never confirmed.
-7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed;
-   per-site `clicks = 0` cleanup pass still open.
+7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed (host tests cover the rest).
+   The per-site `clicks = 0` cleanup pass is **deliberately not done** (2026-10-05): with the root cause fixed those
+   lines are harmless, and several also discard a *legitimate* pending click (the short press that opened a screen),
+   so removing them risks behaviour changes for no gain.
 8. **BLE consent — one unexplained admission.** On 2026-09-30 an unanswered BLE handshake was
    admitted after 9.5 s with nobody touching the classic; 7 later hands-off trials (5 from a
    hard reset) were all correctly declined after 20.2 s. Only an FN click can grant consent in
@@ -181,14 +184,26 @@ command line).
 ## D. Small firmware follow-ups
 
 1. **Snapshot recall** applies the theme without `setTheme` / font geometry / `writePreferences` — Willi's call.
-2. **`audioLevelAdjust()`** can re-enter on a long-press exit; Morsel's internal `-1`
-   transitions have the same latch issue.
-3. **A11y gaps:** decoder char-by-char voicing; battery "3980 mV" readout (needs digit spelling).
+2. ~~**`audioLevelAdjust()`** can re-enter on a long-press exit; Morsel's internal `-1` transitions~~ — **resolved
+   by the ClickButton root-cause fix** (2b0b3ac, one-shot long click): the host tests' "the caller it returns to does
+   NOT see it a second time" is exactly this case (re-checked 2026-10-05, all pass).
+3. **A11y gaps:** decoder char-by-char voicing. ~~Battery "3980 mV" calibration readout~~ — **done 2026-10-05 on `master`**
+   ("3 point 9 8 0 volts", composed; not yet heard on an a11y Pocket).
 4. **A11y voice store:** **~164 KB headroom (~13 clips) on `m32kip` as of 2026-10-02**, after the extractor fix (was ~61 KB). Compose numbers; never per-value clips;
    grep `buildfs` output for "full".
 5. **A11y very-late freeze** (decoder-reuse leak) — dead end, unresolved.
-6. **BLE transient splashes** ("BLE Ser. susp.", "BLE init fail") are silent in the a11y edition (§8 case 2).
-7. **Protocol C15** (input-length cap) — last open protocol item.
+6. ~~**BLE transient splashes** silent in the a11y edition~~ — **done 2026-10-05 on `master`**: "Bluetooth serial suspended
+   for wireless mode" / "Bluetooth serial failed to start" (2 clips; not yet heard on an a11y Pocket).
+7. ~~**Protocol C15** (input-length cap)~~ — **done 2026-10-05 on `master`** (USB 1024 / `LINE TOO LONG`, documented).
+8. **Pocket USB replies still stall now and then (HWCDC, core 2.0.17).** Found while testing C15, present in 9.0.1:
+   a reply stops after its first part (always 6–7 + 64·k bytes, i.e. after a full 64-byte packet that followed a
+   short first one) and the rest goes out only when the host sends again. Measured with a set/get-lesson loop:
+   ~1 in 35–150 replies with the default 256-byte TX ring; **~1 in 600–900 with the 1 KB ring now set in setup()**
+   (4 KB no better). Stalls recur at the same loop position across runs → deterministic timing, not noise. Kicking
+   the TX interrupt from `flushReply()` did not help (tried, reverted). Candidates: core 3.x HWCDC, or TinyUSB CDC
+   (`ARDUINO_USB_MODE=0`). Also fixed alongside: the 256-byte RX queue dropped bytes of longer commands (now 2 KB).
+   The protocol harness now keeps a stalled reply's first part, so such a stall shows up as "withheld" instead of
+   aborting the run.
 
 ## E. Docs and pipeline
 
@@ -201,9 +216,9 @@ command line).
 4. `Software/iOS/M32Config/store-listing.md` had an uncommitted edit of Willi's as of 8/24 *(verify)*.
 5. **Book repo:** decide §5.7 — drop the "baseline" snapshot 1, keep only snapshot 2, add one
    sentence pointing to Reset Defaults (chapter 6's snapshot 1 overwrites the baseline).
-6. `m32p_assembly.odt` (Documentation/Assembly Instructions/M32Pocket) still says **TORX T8**
-   for the case screws; Willi says production units use **Phillips** — the FAQ is corrected,
-   the assembly document probably needs it too.
+6. ~~`m32p_assembly.odt` says **TORX T8**~~ — **done 2026-10-05**: "a small Phillips (cross-head) screwdriver", ODT
+   edited and PDF re-exported (LibreOffice, 300 dpi images; 0.8 MB instead of 2.9 MB). Its own "Version 1.0,
+   14.08.2025" line is left for Willi.
 
 ## F. People and community
 
@@ -214,7 +229,7 @@ command line).
 
 ## G. iOS app
 
-- Back in App Store review (build 1, resubmitted); next move is Apple's.
+- ~~App Store review~~ — **live in the App Store** (Willi, 2026-10-05).
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 

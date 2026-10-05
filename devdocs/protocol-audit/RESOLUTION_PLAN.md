@@ -68,7 +68,7 @@ byte limit — was left as a future nicety; the ceiling itself is documented.)
 
 ## Phase 4 — Optional firmware robustness
 
-- [ ] **C15** — cap the serial input-line length in `serialEvent()` and emit an error past the cap; document the maximum command length.
+- [x] **C15** — **done 2026-10-05 on `master`** (firmware 9.1): USB lines over 1024 characters are discarded up to their newline and answered `LINE TOO LONG` (only with a session open — a USB port that never handshook stays silent); BLE keeps its 400 / `BLE LINE TOO LONG`. Documented under "Maximum command length"; harness check `check_line_length_cap`. Testing it exposed two Pocket USB (HWCDC) flaws, both mitigated: the 256-byte RX queue dropped bytes of lines over ~256 characters (RX queue now 2 KB), and replies stalled halfway (TX ring now 1 KB; see devdocs/TODO.md D8).
 
 ---
 

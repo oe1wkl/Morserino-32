@@ -1220,6 +1220,19 @@ static void announceValue(prefPos pos, const String& valueLine, boolean withTota
             return;
         }
         break;
+      case posVAdjust: {                                   // "3 point 9 8 0 volts": the integer atoms stop at
+        int mv = valueLine.toInt();                        // 250, so the millivolts after the point are spelled
+        if (mv > 1000) {                                   // digit by digit - exactly what the display shows
+            a11ySay(String(mv / 1000));
+            a11ySay("point");
+            a11ySay(String((mv / 100) % 10));
+            a11ySay(String((mv / 10) % 10));
+            a11ySay(String(mv % 10));
+            a11ySay("volts");
+            return;
+        }
+        break;
+      }
       case posPracticeChars:
         if (MorsePreferences::practiceCharSet.length()) {  // else "(not set)" -- one clip
             a11ySay(String(MorsePreferences::practiceCharSet.length()));

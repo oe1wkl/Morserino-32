@@ -245,6 +245,8 @@ beta
 BLE Serial
 Blues
 Bluetooth A R character
+Bluetooth serial failed to start
+Bluetooth serial suspended for wireless mode
 Bluetooth use
 Boost practice characters
 Bravo
