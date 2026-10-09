@@ -13,14 +13,14 @@ Branches: `master` = **9.1.0 BETA**; **`V9.1-beta.1` released 2026-10-05** (publ
 
 **Release plan (Willi):** 9.1 stable after about a week of beta, then the **first V10 beta** (m32kip) soon after.
 
-1. **V9.1 stable:** set `BETA false` in `morsedefs.h`, push, tag `V9.1`, publish the draft (`devdocs/RELEASING.md`).
+1. **V9.1 stable** (as soon as iOS app 1.1 is in the App Store, item 2): set `BETA false` in `morsedefs.h`, push, tag `V9.1`, publish the draft (`devdocs/RELEASING.md`).
    Everything 9.1 is benched: I1–I4, C15 + Pocket USB buffers, the a11y voicings (heard on an a11y Pocket
    2026-10-05, all approved), the Config Tool File Builder with accented letters. Decide before tagging whether
    the sidetone fix (C6, branch `sidetone-alignment`) goes in — only after its scope test.
 2. **iOS app 1.1 (build 2):** uploaded, installed via TestFlight and tested by Willi 2026-10-05 — the File Builder's
    accented letters **and a text upload from the iPhone app over BLE** both pass. **Submitted for App Review
-   2026-10-09 with manual release** — once approved it waits as "Pending Developer Release"; press **Release This
-   Version** in App Store Connect on the day 9.1 stable is published (its "What's New" promises 9.1 features).
+   2026-10-09 with automatic release** — it goes live as soon as Apple approves it, and **9.1 stable is released
+   once 1.1 is in the App Store** (its "What's New" promises 9.1 features).
 3. **Then V10:** merge master into `m32kip` once more — 11 commits since 5bb9994, incl. **V9 manual edits that must
    be ported to the V10 manual** (File Builder paragraph and the file-upload passage, both 2026-10-05) — then the B
    items below (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
@@ -273,8 +273,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 
 - ~~App Store review~~ — **1.0 live in the App Store** (Willi, 2026-10-05).
 - **1.1 (build 2)** archived, uploaded and tested via TestFlight 2026-10-05 (File Builder accents; BLE text upload
-  from the app works — previously untested). **Submitted for review 2026-10-09, manual release: release it in App
-  Store Connect together with 9.1 stable.** Fixed on the way:
+  from the app works — previously untested). **Submitted for review 2026-10-09, automatic release; 9.1 stable
+  follows once 1.1 is in the App Store.** Fixed on the way:
   `project.yml` now generates a shared scheme and takes the plist version from `MARKETING_VERSION` /
   `CURRENT_PROJECT_VERSION` (XcodeGen had hard-coded 1.0 / 1); the Team ID is the certificate's **OU**
   (F44LJ6Y4F9), not the code in parentheses — `Local.xcconfig` had the personal ID. "Xcode Cloud" prompt: declined.
