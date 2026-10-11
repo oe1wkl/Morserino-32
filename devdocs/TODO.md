@@ -57,7 +57,7 @@ Several debts need the classic/OLED unit, so clear them together:
 
 **Wave 4 — cheap goodwill, any spare 10 minutes:** replies to Rodjo and the pause/resume
 claimant (F1, F2); quick cleanup (A6–A9: merged branches, `git branch -D scratch/umlaut-probe`,
-inspect the three stashes, stale line in `RELEASE_AUTOMATION_DESIGN.md`).
+inspect the three stashes).
 
 **Wave 5 — after V10, each in its own session:** the I2S-sidetone and generated-CW 6 ms
 fixes (C6, B5 — related); snapshot bundles, sidetone upstreaming, a11y roadmap, QSO Bot
@@ -108,7 +108,10 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    checkouts on a detached HEAD, `stash@{2}` is a GitHub Desktop stash on `test1`.
    Contents not inspected — look before dropping.
 7. ~~`Software/tests/kip/` untracked~~ — resolved, it is tracked on `m32kip`.
-8. ~~`devdocs/RELEASE_AUTOMATION_DESIGN.md:162` says the FAQ has no `build.sh`~~ — fixed 2026-10-03.
+8. ~~`devdocs/RELEASE_AUTOMATION_DESIGN.md` stale claims~~ — the "FAQ has no `build.sh`" line fixed
+   2026-10-03; the §6 Phase-2 plan, the P1 decision row and the "draft for review — no code written
+   yet" status header fixed 2026-10-11. Left alone: the dead mtime warning in `release.yml` step 8
+   (noted in §6, to go when that file is next touched).
 9. **Branch graveyard** (verified 2026-09-30; "unmerged" means not an ancestor of master —
    squash-merged work also shows up that way, so check the PR before deleting):
    - Merged, safe to delete: `claude/cranky-bardeen-dcddba`, `pr-222`, `pr-223`.
