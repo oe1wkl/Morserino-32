@@ -15,8 +15,8 @@ Branches: `master` = **9.1.0 BETA**; **`V9.1-beta.1` released 2026-10-05** (publ
 
 1. **V9.1 stable** (as soon as iOS app 1.1 is in the App Store, item 2): set `BETA false` in `morsedefs.h`, push, tag `V9.1`, publish the draft (`devdocs/RELEASING.md`).
    Everything 9.1 is benched: I1–I4, C15 + Pocket USB buffers, the a11y voicings (heard on an a11y Pocket
-   2026-10-05, all approved), the Config Tool File Builder with accented letters. Decide before tagging whether
-   the sidetone fix (C6, branch `sidetone-alignment`) goes in — only after its scope test.
+   2026-10-05, all approved), the Config Tool File Builder with accented letters. **Decided 2026-10-11: the
+   sidetone fix (C6) goes into 9.1 without the scope test** (risk judged extremely low; the test is still owed).
 2. **iOS app 1.1 (build 2):** uploaded, installed via TestFlight and tested by Willi 2026-10-05 — the File Builder's
    accented letters **and a text upload from the iPhone app over BLE** both pass. **Submitted for App Review
    2026-10-09 with automatic release** — it goes live as soon as Apple approves it, and **9.1 stable is released
@@ -59,8 +59,8 @@ Several debts need the classic/OLED unit, so clear them together:
 claimant (F1, F2); quick cleanup (A6–A9: merged branches, `git branch -D scratch/umlaut-probe`,
 inspect the three stashes).
 
-**Wave 5 — after V10, each in its own session:** the I2S-sidetone and generated-CW 6 ms
-fixes (C6, B5 — related); snapshot bundles, sidetone upstreaming, a11y roadmap, QSO Bot
+**Wave 5 — after V10, each in its own session:** the generated-CW 6 ms fix (B5; the related
+I2S-sidetone fix C6 shipped in 9.1, scope test owed); snapshot bundles, sidetone upstreaming, a11y roadmap, QSO Bot
 leftovers (H1–H4); rewrite the stale `devdocs/HANDOFF.md` (H5); CI gates for the FAQ and
 protocol PDFs (E2).
 
@@ -200,9 +200,9 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    spurious-element risk unchecked (mitigation if needed: minimum-open time).
 5. **`pocketwroom-lora`** compiles, never bench-tested (shared-SPI question in its commit message).
 6. **CW timing** (`devdocs/cw-timing-audit/FINDINGS.md`):
-   - I2S sidetone ~6 ms heavier than the key line — **fix implemented on branch `sidetone-alignment`** (104e6b9,
-     worktree `/private/tmp/claude-501/m32-sidetone`), **not merged: needs Willi's 2-channel scope test** (FINDINGS.md
-     "How to verify").
+   - I2S sidetone ~6 ms heavier than the key line — **fix merged to master for V9.1 on 2026-10-11** (cherry-picked
+     from branch `sidetone-alignment`, 104e6b9) **without the scope test**, by Willi's decision; the 2-channel scope
+     test (FINDINGS.md "How to verify") is still owed as confirmation.
    - Re-measure after the `MorseCwEngine` gap fix (Fox Hunt / Pileup / Radio Cave) never confirmed.
 7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed (host tests cover the rest).
    The per-site `clicks = 0` cleanup pass is **deliberately not done** (2026-10-05): with the root cause fixed those
