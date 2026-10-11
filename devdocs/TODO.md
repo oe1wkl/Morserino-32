@@ -18,7 +18,9 @@ Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (publish
    alignment fix (C6), shipped **without its scope test** by Willi's decision — the test is still owed (C6 below).
    iOS app 1.1 (build 2) was approved and is in the App Store.
 2. **Next master change:** bump to a provisional next version (`9.1.1` or `9.2`, `BETA true`) and open a new
-   changelog section before it lands.
+   changelog section before it lands. **Candidate:** the unmerged a11y speed/battery speech on
+   `origin/a11y-speed-battery` (based 2026-09-10, so it needs rebasing onto master, its voice clips
+   regenerating, and its changelog/manual text moving out of the 9.1 section it was written for).
 3. **Then V10:** merge master into `m32kip` once more — 18 commits since 5bb9994 (plus the `[skip ci]` archive
    commit), incl. **V9 manual edits that must be ported to the V10 manual** (File Builder paragraph and the
    file-upload passage, both 2026-10-05), the sidetone fix, and the 9.1 changelog — then the B items below
@@ -121,9 +123,11 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    - Probably squash-merged, confirm against PRs: `BLE_MIDI`, `ble-output-single-selector`
      (#189), `koch-preview-encoder-role` (#210/#211), `practice-stats-review-followups`,
      `pocket-erase-setup-screen` (also on origin), `review207`, `claude/optimistic-jones-457246`.
-   - `a11y-speed-battery` (6 commits incl. a fixup, on origin) and `tmp-squash` (5 commits,
-     checked out in worktree `.claude/worktrees/sad-kepler-c33841`) look like the same
-     work before/after the history rewrite — decide which survives.
+   - ~~`a11y-speed-battery` vs `tmp-squash`~~ — **checked 2026-10-11:** identical trees, so the
+     `tmp-squash` worktree was removed (its local branch still needs `git branch -D tmp-squash`);
+     **`origin/a11y-speed-battery` survives.** Its work — the a11y edition speaking the new speed
+     and the battery state on return to the menu, reported by a blind operator 2026-09-11 — was
+     **never merged and is not in 9.1**. See "Next master change" at the top.
    - Local `protocol-1.4` is already gone.
 
 ## B. M32KIP / V10
