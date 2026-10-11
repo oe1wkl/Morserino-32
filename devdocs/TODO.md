@@ -5,25 +5,24 @@ Section A was checked against the live repository the same day; sections B–H c
 from session transcripts and memory notes, and items marked *(verify)* may already
 be done.
 
-Branches: `master` = **9.1.0 BETA**; **`V9.1-beta.1` released 2026-10-05** (published, in the web installer).
+Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (published, in the web installer, binaries archived).
 `m32kip` = the **V10** line (10.0.0 BETA), pushed to `origin/m32kip`. When merging master into
-`m32kip`, `morsedefs.h` will conflict on the version lines — **keep 10.0.0**.
+`m32kip`, `morsedefs.h` will conflict on the version lines — **keep 10.0.0 and `BETA true`**.
 
-## ▶ Where we are — start here (2026-10-05)
+## ▶ Where we are — start here (2026-10-11)
 
-**Release plan (Willi):** 9.1 stable after about a week of beta, then the **first V10 beta** (m32kip) soon after.
+**Release plan (Willi):** 9.1 is out; next is the **first V10 beta** (m32kip).
 
-1. **V9.1 stable** (as soon as iOS app 1.1 is in the App Store, item 2): set `BETA false` in `morsedefs.h`, push, tag `V9.1`, publish the draft (`devdocs/RELEASING.md`).
-   Everything 9.1 is benched: I1–I4, C15 + Pocket USB buffers, the a11y voicings (heard on an a11y Pocket
-   2026-10-05, all approved), the Config Tool File Builder with accented letters. **Decided 2026-10-11: the
-   sidetone fix (C6) goes into 9.1 without the scope test** (risk judged extremely low; the test is still owed).
-2. **iOS app 1.1 (build 2):** uploaded, installed via TestFlight and tested by Willi 2026-10-05 — the File Builder's
-   accented letters **and a text upload from the iPhone app over BLE** both pass. **Submitted for App Review
-   2026-10-09 with automatic release** — it goes live as soon as Apple approves it, and **9.1 stable is released
-   once 1.1 is in the App Store** (its "What's New" promises 9.1 features).
-3. **Then V10:** merge master into `m32kip` once more — 11 commits since 5bb9994, incl. **V9 manual edits that must
-   be ported to the V10 manual** (File Builder paragraph and the file-upload passage, both 2026-10-05) — then the B
-   items below (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
+1. ~~**V9.1 stable**~~ — **released 2026-10-11** (tag `V9.1`, draft published the same day; installer shows 9.1
+   for classic, Pocket and the Accessibility Edition). It is V9.1-beta.1 plus one firmware change, the I2S sidetone
+   alignment fix (C6), shipped **without its scope test** by Willi's decision — the test is still owed (C6 below).
+   iOS app 1.1 (build 2) was approved and is in the App Store.
+2. **Next master change:** bump to a provisional next version (`9.1.1` or `9.2`, `BETA true`) and open a new
+   changelog section before it lands.
+3. **Then V10:** merge master into `m32kip` once more — 18 commits since 5bb9994 (plus the `[skip ci]` archive
+   commit), incl. **V9 manual edits that must be ported to the V10 manual** (File Builder paragraph and the
+   file-upload passage, both 2026-10-05), the sidetone fix, and the 9.1 changelog — then the B items below
+   (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
    `V10.0-beta.1`.
 
 ---
@@ -201,8 +200,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 5. **`pocketwroom-lora`** compiles, never bench-tested (shared-SPI question in its commit message).
 6. **CW timing** (`devdocs/cw-timing-audit/FINDINGS.md`):
    - I2S sidetone ~6 ms heavier than the key line — **fix merged to master for V9.1 on 2026-10-11** (cherry-picked
-     from branch `sidetone-alignment`, 104e6b9) **without the scope test**, by Willi's decision; the 2-channel scope
-     test (FINDINGS.md "How to verify") is still owed as confirmation.
+     from branch `sidetone-alignment`, 104e6b9; branch deleted) and **released in V9.1** **without the scope test**,
+     by Willi's decision; the 2-channel scope test (FINDINGS.md "How to verify") is still owed as confirmation.
    - Re-measure after the `MorseCwEngine` gap fix (Fox Hunt / Pileup / Radio Cave) never confirmed.
 7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed (host tests cover the rest).
    The per-site `clicks = 0` cleanup pass is **deliberately not done** (2026-10-05): with the root cause fixed those
