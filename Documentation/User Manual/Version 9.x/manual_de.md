@@ -36,8 +36,13 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=f08137d62026 v=9 -->
+<!-- WHATSNEW:BEGIN en=2113ffff1455 v=9 -->
 Was ist neu in Version 9?
+
+**V 9.2**
+
+-   Nur M32 Pocket, Accessibility Edition: Das Gerät sagt jetzt die neue Geschwindigkeit, sobald du sie änderst – die Zahl wird ausgesprochen, während du den Encoder drehst, damit ein blinder Operator sein Übungstempo selbst wählen kann, ohne jemanden fragen zu müssen. Drehst du den Encoder schnell durch, wird nur der Endwert gesagt: Eine Ansage, die gerade läuft, wird abgebrochen, sobald ein neuerer Wert kommt – du hörst also nie den Anfangs- und den Endwert, während alles dazwischen verschluckt wird. Der CW-Generator schweigt, solange die Ansage läuft (der gemeinsame Audioweg würde aus den Morsezeichen sonst Klicks machen), und setzt danach mit dem nächsten Element im neuen Tempo fort. Das funktioniert in den Übungsmodi, auch bei der automatischen Geschwindigkeitsanpassung des Echo Trainers nach jedem Wort; im QSO Bot noch nicht.
+-   Nur M32 Pocket, Accessibility Edition: Immer wenn du einen Übungsmodus verlässt und wieder im Hauptmenü landest, sagt das Gerät, wie es der Batterie geht – **high**, **medium**, **low** oder **charging** (dazu **on USB power**, wenn keine Batterie eingelegt ist, und **battery fault** für den seltenen Fehlerzustand). Das ist gerade hier wichtig, weil auf diesem Gerät der Audio-Codec als Erstes aufgibt, wenn die Zelle schwach wird: Ein blinder Operator kann sonst mit einem funktionierenden Gerät zurückbleiben, das gar nichts mehr sagt – und diese Warnung kommt weit genug vor der Codec-Klippe, dass noch Zeit zum Anstecken bleibt. Die Meldung erklingt einmal pro Rückkehr aus dem Modus ins Menü, nicht wiederholt, während du im Menü navigierst.
 
 **V 9.1**
 
@@ -199,10 +204,13 @@ Edition schon, und du kannst diesen Abschnitt überspringen.
 Ein neuer M32 Pocket wird mit der **Standard**-Edition ausgeliefert, und diese
 Edition ist stumm: Sie zeigt die Menüs am Display an, liest sie aber nicht vor.
 Die **Accessibility Edition** spricht stattdessen — sie meldet sich beim
-Einschalten selbst mit dem Batteriestatus, und sie spricht Menüeinträge,
-Einstellungen und deren Werte, während du dich durch sie bewegst. Sie kostet
-nichts, sie wird über USB installiert, und du kannst jederzeit wieder zur
-Standard-Edition zurückkehren.
+Einschalten selbst mit dem Batteriestatus, sie spricht Menüeinträge,
+Einstellungen und deren Werte, während du dich durch sie bewegst, sie sagt die
+neue Geschwindigkeit, sobald du sie änderst, und jedes Mal, wenn du aus einem
+Übungsmodus ins Menü zurückkehrst, sagt sie dir, wie es der Batterie geht —
+**high**, **medium**, **low** oder **charging**. Sie kostet nichts, sie wird
+über USB installiert, und du kannst jederzeit wieder zur Standard-Edition
+zurückkehren.
 
 Die beiden sind **Alternativen, nicht eine Edition mit zusätzlicher Sprache**: Es
 läuft entweder die eine oder die andere, und die sprechende kommt ohne drei Dinge

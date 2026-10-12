@@ -236,6 +236,74 @@ device, so boot now checks and reports.
   pack it was never built for. Full measurements and the clean-on-switch fix are in
   `devdocs/installer/PLAN.md` §12b. The pack stamp above is the belt to that fix's braces.
 
+## Speed + battery-status announcements (2026-09-11, landed for V9.2)
+
+Two things blind operators asked for after living with V9 beta for a while. Written on
+branch `a11y-speed-battery` (based on 9.0, never merged), rebased onto master after the
+V9.1 release as `a11y-speed-battery-v91`.
+
+- **Speed change** — `changeSpeed()` in `m32_v6.ino` announces the new WpM as
+  `announceOverriding(String(wpm)) + announceMore("words per minute")`. Guarded by
+  `CONFIG_AUDIO_A11Y`; a no-op on every other build. Covers everything that routes through
+  `changeSpeed()` *and* runs where `MorseVoice::tick()` is driven: the training modes via
+  `loop()` (which now ticks MorseVoice every iteration — before this, nothing in a mode ever
+  queued an utterance, so the tick was missing but not needed), the Echo Trainer's
+  automatic speed step after each word, and the remote `PUT control/speed` handler. The
+  games call `changeSpeedValue()` directly and are compiled out of this build anyway.
+  **Gap:** the QSO Bot runs its own main loop (`MorseQsoBot::run`) that calls
+  `changeSpeed()` but does not tick MorseVoice, so a speed change there is silent; the
+  pending utterance is simply replaced by the battery line on the next menu return. Fixing
+  it needs a tick in the bot loop *and* a speaking gate on the bot's own CW output (same
+  clicking problem as the generator, below) — not done.
+
+- **`announceOverriding()` vs `announce()`** — on the bench a fast encoder sweep announced
+  TWO speeds: the first to clear the 120 ms debounce started playing (~800 ms) and every
+  later `announce()` only updated pending, so the user heard the first and the settled value
+  with everything between swallowed. `announceOverriding()` also stops a clip in flight
+  (`MorseOutput::voiceStop()`, latest-wins mailbox), so the newest value takes over at
+  once. It is a separate entry point on purpose: a plain `announce()` must still let a
+  follow-on queue behind a playing clip, or the battery-then-menu-path chain on menu
+  re-entry loses its first half.
+
+- **Generator hold while speaking** — the CW generator and the voice clips share the one I2S
+  pipeline, so a generator running through a clip produced clicks instead of CW.
+  `MorseVoice::isSpeaking()` (clip playing, sequence queued, or utterance pending in its
+  debounce) gates the top of `generateCW()` **at `KEY_UP` only**: an element already
+  keyed completes its natural key-off (no hanging tone, no stuck key line), and the state
+  machine then waits silently until speech ends. The hold only ever *lengthens* the space
+  in progress — `genTimer` is untouched — so the exact mark/space lengths of B5
+  (`KEYOUT_EDGE_MS`) and the I2S sidetone alignment of C6 (in `pwmTone`/`pwmNoTone`) are
+  unaffected. With **Key Ext Tx** keying a transmitter from the generator, the transmitter
+  sees a longer pause, never a held key. LoRa/WiFi Trx playback runs through the same
+  state machine and is held the same way (it only queues up behind the clip).
+
+- **Battery status on mode-to-menu return** — `a11yAnnounceBatteryOnMenuEntry()` in
+  `MorseMenu.cpp`, called from the top of `menu_()` right after `a11yForgetMenuContext()`.
+  A `static bool firstCall` gate skips the first invocation (which comes from `setup()`
+  and would duplicate the boot splash's own battery announcement). One of six phrases —
+  "battery high" / "medium" / "low" / "charging" / "on USB power" / "battery fault" —
+  from `MorseOutput::getPowerpathState()` plus a fresh `batteryVoltage()`. MCP73871 state
+  mapping (keep in step with `MorseOutput::displayBatteryStatus`): 2/4 → charging,
+  6 → on USB power (no cell), 3 → low, 0 → fault, **7 = on battery without USB, the
+  everyday case** → by voltage (the first version called 7 "battery fault"; fixed on the
+  bench 2026-09-11), 1/5 → by voltage. Discharge thresholds (<3500 mV low, <3860 medium,
+  else high) match the icon's `voltageToBars()`. "Low" fires well above the
+  codec-critical zone: on this build the TLV320 is the first thing to give up when the
+  cell sags, and a blind operator would otherwise be left with a device that says nothing.
+
+- **One footgun worth knowing.** After `announce()`, the utterance sits PENDING for a
+  120 ms settle window before `tick()` promotes it to the play sequence, and a further
+  `announce()` in that window REPLACES it. `menuDisplay()` calls `announce()` on the
+  menu path a few ms after `a11yAnnounceBatteryOnMenuEntry()` returns, so the battery
+  announcement is committed by driving `tick()` for 150 ms before returning — the same
+  idiom `splashPause()` uses around `announceSplash()`. An "announce immediately, skip the
+  debounce" API was considered and skipped: two call sites do not justify it, and the
+  debounce is there for the encoder-adjust-then-settle flow it exists to serve.
+
+- **Clips:** six phrases in `BATTERY_WORDS` in `extract_voice_strings.py` (whole phrases,
+  not "battery" + atom, so each state is one breath); `"words per minute"` was already in
+  `UNIT_WORDS`, and the number is spoken from the existing integer clips.
+
 ## Checklist: you added a preference / menu entry / message (CLAUDE.md §8)
 
 Master *is* the Accessibility Edition, so new UI text is mute until it has a clip.

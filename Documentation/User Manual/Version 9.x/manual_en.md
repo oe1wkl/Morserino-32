@@ -34,8 +34,13 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=f08137d62026 v=9 -->
+<!-- WHATSNEW:BEGIN en=2113ffff1455 v=9 -->
 What is new in Version 9?
+
+**V 9.2**
+
+-   M32 Pocket, Accessibility Edition only: the device now says the new speed whenever you change it - the number spoken as you turn the encoder, so a blind operator can pace their practice without asking anyone. Sweeping the encoder fast speaks only the settled value: any announcement already playing is cut when the newer value comes in, so you never hear both the initial and the final speed with everything between swallowed. The CW generator holds silent while the announcement plays (the shared audio path would otherwise turn CW into clicks) and picks the next element up at the new speed. This works in the training modes, including the Echo Trainer's automatic speed step after each word; it does not yet work in the QSO Bot.
+-   M32 Pocket, Accessibility Edition only: whenever you leave a training mode and land back in the top menu, the device tells you how the battery is doing — **high**, **medium**, **low**, or **charging** (plus **on USB power** with no battery, and **battery fault** for the rare fault state). This matters specifically here, because the audio codec is the first thing to give up on this build when the cell sags: a blind operator can be left with a working device that says nothing at all, and this warning fires far enough above the codec's cliff to give time to plug in. The message is announced once per mode-to-menu return, not repeated while navigating the menu itself.
 
 **V 9.1**
 
@@ -189,9 +194,12 @@ Accessibility Edition and can skip this section.
 A new M32 Pocket is delivered with the **Standard** edition, and that edition is
 silent: it shows the menus on the display but does not read them out. The
 **Accessibility Edition** speaks instead — it announces itself and the battery
-status when you switch it on, and it speaks menu entries, preferences and their
-values as you move through them. It costs nothing, it is installed over USB, and
-you can go back to the Standard edition at any time.
+status when you switch it on, it speaks menu entries, preferences and their
+values as you move through them, it says the new speed whenever you change
+it, and every time you return to the menu from a training mode it tells you
+how the battery is doing — **high**, **medium**, **low**, or **charging**.
+It costs nothing, it is installed over USB, and you can go back to the
+Standard edition at any time.
 
 The two are **alternatives, not one edition with speech added on top**: you run
 one or the other, and the speaking one does without three things.
