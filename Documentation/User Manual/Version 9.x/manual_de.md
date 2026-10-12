@@ -793,7 +793,7 @@ zwischen 0 und 7 einstellen (0/8 bis 7/8 einer Punktlänge). Der
 Standardwert ist 4 (halbe Punktlänge). Wenn du noch unerwünschte Dits
 erzeugst, erhöhe diesen Wert.
 
-Zur Einstellung **AutoChar Spce** (Mindestlänge für den
+Zur Einstellung **AutoChar Spc** (Mindestlänge für den
 Zeichenzwischenraum) siehe Abschnitt **Einstellungen zu Key,
 Paddles und Keyer**.
 
@@ -3557,7 +3557,7 @@ oder die Verwendung einer externen Handtaste relevant sind (stelle
 | **Keyer Mode** | Stellt den Iambic-Modus (A oder B), Ultimatic, Non-Squeeze oder Handtaste (Straight Key) ein; siehe Abschnitt **CW Keyer**. | Curtis A / **Curtis B** / Ultimatic / Non-Squeeze / Straight Key |
 | **CurtisB DahT%** | Timing im Curtis-B-Modus für Dahs; siehe Abschnitt **CW Keyer**. Gilt nur für Iambic B — Ultimatic ignoriert diese Einstellung. | 0–100, in 5er-Schritten [**35–55**] |
 | **CurtisB DitT%** | Timing im Curtis-B-Modus für Dits; siehe Abschnitt **CW Keyer**. Gilt nur für Iambic B — Ultimatic ignoriert diese Einstellung. | 0–100, in 5er-Schritten [**55–95**] |
-| **AutoChar Spce** | Mindestabstand zwischen den Zeichen. | Off / min. 2 / **3** / 4 dots |
+| **AutoChar Spc** | Mindestabstand zwischen den Zeichen. | **Off** / min. 2 / 3 / 4 dots |
 | **Latency** | Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub" sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an" ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. Im Ultimatic-Modus ohne Wirkung, der behandelt die Paddles auf eigene Weise. | Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: **50 %**, d.h. eine halbe Punktlänge). |
 | **Bluetooth Use** | Legt fest, wofür das Bluetooth-Funkmodul verwendet wird. Die ersten vier Optionen (neben **No Bluetooth**) sind Tastatur-Modi: Die Option **VBand Kbd** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded output** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded output**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Benutzung der Bluetooth-Tastatur-Funktion**).* Die letzte Option, **BLE Serial**, stellt stattdessen das M32-Serielle-Protokoll (siehe **Nutzung des seriellen Ausgangs des M32**) über Bluetooth Low Energy zur Verfügung — damit können Apps auf Smartphones und Tablets den Morserino fernsteuern und Text senden, der als CW getastet wird, ganz ohne USB-Kabel; die Auswahl wird bei der nächsten Rückkehr ins Hauptmenü wirksam. Beachte: Wie eine USB-Protokollsitzung verhindert auch eine aktive BLE-Protokollsitzung die automatische Abschaltung (Timeout) — denke daran im Akkubetrieb. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
 | **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **Bluetooth Use** oben). Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
