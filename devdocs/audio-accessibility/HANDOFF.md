@@ -300,6 +300,11 @@ V9.1 release as `a11y-speed-battery-v91`.
   else high) match the icon's `voltageToBars()`. "Low" fires well above the
   codec-critical zone: on this build the TLV320 is the first thing to give up when the
   cell sags, and a blind operator would otherwise be left with a device that says nothing.
+  **Not every mode returns through `menu_()`:** the QSO Bot (like the games and the WiFi
+  functions) returns from `menuExec()` with `false` into the running menu loop, so the bot
+  case in `menuExec()` calls `a11yForgetMenuContext()` + `a11yAnnounceBatteryOnMenuEntry()`
+  itself (found on the bench 2026-10-14: no battery line after the bot). A new mode that
+  returns this way needs the same two calls.
 
 - **One footgun worth knowing.** After `announce()`, the utterance sits PENDING for a
   120 ms settle window before `tick()` promotes it to the play sequence, and a further
