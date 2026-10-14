@@ -2748,7 +2748,9 @@ unsigned int wordDoublerICS() {
 
 int pitch() {                 // find out which pitch to use for the generated CW tone
     int p = MorseOutput::notes[MorsePreferences::pliste[posPitch].value];
-    if (alternatePitch && morseState == morseGenerator)
+    // The file's tone marker (<t> \t [t]) toggles alternatePitch. No Tone Shift (0) means no change, as the manual
+    // says; this used to shift down a half tone for 0 as well as for Down (2).
+    if (alternatePitch && morseState == morseGenerator && MorsePreferences::pliste[posEchoToneShift].value != 0)
       p = (MorsePreferences::pliste[posEchoToneShift].value == 1 ? p * 18 / 17 : p * 17 / 18);
     return p;
 }

@@ -12,6 +12,26 @@ scrolls through is the order of the option lists (`allOptions[]` and the per-mod
 change the order of the protocol's config list and the a11y tables, so re-run the voice extractor afterwards
 (expected: no new clips).
 
+## Decisions (Willi, 2026-10-14) — implemented on `m32kip` the same day
+
+- **Mode-specific settings first** inside a mode, then the general block, which is the same everywhere:
+  Encoder Click, Tone Pitch, Tone Softness, Time-out, Quick Start, Output Case, Headphone Output, Theme,
+  Font Size, Serial Output, Bluetooth Use, then **Paddle Polar. / External Pol.** at the very end (set-once
+  hardware). Macros `PREFPOS_GENERAL` + `PREFPOS_PADDLES` in `MorsePreferences.cpp`; the relative order of
+  each mode's own settings is unchanged (open for refinement, e.g. QSO Difficulty / Contest Type first in the
+  bot, or the Echo settings before the keyer ones in the Echo Trainer).
+- With nothing remembered (first opening after boot, or the last-used preference is not in this mode's list),
+  the preferences now open at the **top** of the list instead of at index 1 / Tone Pitch.
+- **Bluetooth Use is a general preference** (it also selects BLE Serial): in the All view and the manual it
+  moved from the keyer group to the end of the General group. **BLT \<AR\>** stays in the keyer group of
+  the All view and is offered only in **CW Keyer** (the only mode that starts the BLE keyboard).
+- **B17 items 1–5 fixed:** Headphone Output added to CW Generator; Key ext TX added to iCW/Ext Trx; Tone Shift
+  removed from iCW/Ext Trx and the QSO Bot and added to the File Player; Bandwidth removed from the QSO Bot.
+- Found on the way and fixed: the `[t]` tone marker shifted the pitch with Tone Shift at *No Tone Shift*;
+  the manual says it must not (`pitch()` in `m32_v6.ino`).
+- Still open from the list below: B16 item 2 (three manual/device order differences) and B17 item 6
+  (Bluetooth Use changed from inside a mode — when does it take effect?).
+
 ## B17 — offered where it does nothing, or missing where it acts
 
 Evidence is section 3 of the matrix (where each preference is read) plus the conditions at those reads.

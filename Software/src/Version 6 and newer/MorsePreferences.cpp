@@ -773,9 +773,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #define INVORIENT
 #endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-#define BLUE posBluetoothOut, posBluetoothARkey,
+#define BLUEUSE posBluetoothOut,         // what the BLE radio is for (keyboard, MIDI, serial protocol): a general setting
+#define BLTAR posBluetoothARkey,         // how the keyboard types <AR>: only CW Keyer starts the BLE keyboard
 #else
-#define BLUE
+#define BLUEUSE
+#define BLTAR
 #endif
 #ifdef CONFIG_QSO_BOT
 #define QSOBOT posQsoBotLevel, posQsoBotContestType,
@@ -789,88 +791,84 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #endif
 
 
-  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+// Inside a mode the operator scrolls through that mode's own settings first, then the general block - the
+// mode's settings are the likeliest to be sought (Willi, V10 preference review B16, 2026-10-14). The general
+// block is the same in every mode; Paddle Polar. / External Pol. close it (set-once hardware settings).
+#define PREFPOS_GENERAL PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT posSerialOut, BLUEUSE
+#define PREFPOS_PADDLES posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency,
-                                                   DECCHARS
+  prefPos MorsePreferences::keyerOptions[] =     { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency,
+                                                   DECCHARS BLTAR
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
-  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posInterCharSpace, posInterWordSpace,
+  prefPos MorsePreferences::generatorOptions[] = { posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
-                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel
+                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
- prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posInterCharSpace, posInterWordSpace,
-                                                   posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
-                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel
+ // Tone Shift: the file's tone marker (<t>, \t, [t]) switches to the shifted pitch (pitch() in m32_v6.ino)
+ prefPos MorsePreferences::playerOptions[] =     { posInterCharSpace, posInterWordSpace,
+                                                   posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler, posEchoToneShift,
+                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
+ prefPos MorsePreferences::echoPlayerOptions[] = { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
+ prefPos MorsePreferences::echoTrainerOptions[]= { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
                                                    posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posKochSeq, posCarouselStart,
+ prefPos MorsePreferences::kochGenOptions[] =    { posKochSeq, posCarouselStart,
                                                    posInterCharSpace,  posInterWordSpace, posRandomLength, posPracticeChars, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
-                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel
+                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
+ prefPos MorsePreferences::kochEchoOptions[] =   { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posPracticeChars, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
+ prefPos MorsePreferences::loraTrxOptions[] =    { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
                                                    posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
                                                    DECCHARS
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
+ prefPos MorsePreferences::wifiTrxOptions[] =    { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
                                                    posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
                                                    DECCHARS
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode,
+ // CW Trx: Key ext TX keys the transmitter here (keyOut(): morseTrx); Tone Shift does not act (not read for morseTrx)
+ prefPos MorsePreferences::extTrxOptions[] =     { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   posKeyExternalTx, posGoertzelBandwidth, posExtAudioOnDecode,
                                                    DECCHARS
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
 #ifdef CONFIG_QSO_BOT
- prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
-                                                   posGoertzelBandwidth,
-                                                   posQsoBotLevel, posQsoBotContestType
+ // The bot decodes the operator's key, not audio (no Bandwidth), and keeps its own pitch (no Tone Shift)
+ prefPos MorsePreferences::qsoBotOptions[] =     { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   posQsoBotLevel, posQsoBotContestType,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 #endif
 
- prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode,
+ prefPos MorsePreferences::decoderOptions[] =    { posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode,
                                                    DECCHARS
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
  // The order here is the order the user sees in the "All" preferences view
@@ -878,11 +876,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // user manual's section structure: General -> Key/Paddles/Keyer -> Koch
  // sequence -> CW Generation -> Echo Trainer -> Transmitting/Decoding/QSO
  // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
- // BLUE, QSOBOT) are macro-expanded into their groups so the order stays
- // stable across build configurations.
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, posPolarity, posExtPddlPolarity,
+ // BLUEUSE, BLTAR, QSOBOT) are macro-expanded into their groups so the order
+ // stays stable across build configurations.
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, BLUEUSE posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLUE
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR
                                                    posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
@@ -903,26 +901,26 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 
 #ifdef CONFIG_M32KIP
  // Remote Rig runs its own loop and offers no preferences gesture, so this list matters only to tools reading the
- // current mode's parameters; the settings are reached on the device through the "All" view above.
- prefPos MorsePreferences::kipRigOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut,
-                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual,
-                                                   posKipFirstExt, posKipHang
+ // current mode's parameters; the settings are reached on the device through the "All" view above. No paddles.
+ prefPos MorsePreferences::kipRigOptions[] =     { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                                   posKipFirstExt, posKipHang,
+                                                   PREFPOS_GENERAL
                                                  };
  // Remote Keyer is the CW Keyer plus a link: the keyer's own settings, and nothing that keys a local transmitter or
- // decodes received audio (the Keyer unit forces noTx, D12d).
- prefPos MorsePreferences::kipKeyerOptions[] =   { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+ // decodes received audio (the Keyer unit forces noTx, D12d). No BLT <AR>: the BLE keyboard is a CW Keyer feature.
+ prefPos MorsePreferences::kipKeyerOptions[] =   { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
                                                    DECCHARS
-                                                   posKipGlitch, posKipPassPhrase
+                                                   posKipGlitch, posKipPassPhrase,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
  // Same as kipKeyerOptions, but led by the remote rig's own settings (D17). Used only while the link is up AND the
  // rig answers configuration requests: the operator sees what they can change at the far end first, then their own.
  prefPos MorsePreferences::kipKeyerRigOptions[] = { posRigDelay, posRigLimitKyr, posRigLimitSK,
                                                     posRigFirstExt, posRigHang,
-                                                    PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
                                                     posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
                                                     DECCHARS
-                                                    posKipGlitch, posKipPassPhrase
+                                                    posKipGlitch, posKipPassPhrase,
+                                                    PREFPOS_GENERAL PREFPOS_PADDLES
                                                   };
 int MorsePreferences::kipRigOptionsSize      = SizeOfArray(MorsePreferences::kipRigOptions);
 int MorsePreferences::kipKeyerOptionsSize    = SizeOfArray(MorsePreferences::kipKeyerOptions);
@@ -977,7 +975,7 @@ void MorsePreferences::startPreferencesAt(prefPos pos) { prefsOpenAt = (int) pos
 
 boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
   // enum morserinoMode {morseKeyer, loraTrx, morseGenerator, echoTrainer, shutDown, morseDecoder, invalid };
-  static int oldPos = 1;
+  static int oldPos = -1;                   // nothing used yet: open at the top of the list
   if (prefsOpenAt >= 0) { oldPos = prefsOpenAt; prefsOpenAt = -1; }
   int t;
 
@@ -988,7 +986,8 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
   ptrMax = currentOptionSize;
 
   ///// we should check here if the old ptr (oldIndex) is contained in the current preferences collection (currentOptions)
-  ptrIndex = 1;
+  ///// If not (or nothing was used yet), open at the top: inside a mode that is the mode's own first setting (B16).
+  ptrIndex = 0;
   for (int i = 0; i < ptrMax; ++i) {
       if (currentOptions[i] == oldPos) {
           ptrIndex = i;
