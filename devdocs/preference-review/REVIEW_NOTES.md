@@ -38,6 +38,12 @@ change the order of the protocol's config list and the a11y tables, so re-run th
   the matrix shows no manual/device order difference. Note: in the code Decoder Chars acts on decoding (keyer,
   transceivers, decoder, Echo Trainer, Remote Keyer) and on the Practice Set picker, not in the File Player
   (`decoderCharSet()` returns Standard for `morseGenerator`).
+- **The File Player does not follow Decoder Chars — deliberately** (Willi, 2026-10-14). Sending is letter →
+  code and never ambiguous (é is always `..-..`); Decoder Chars resolves the reverse, code → letter. In the
+  Echo Trainer's File Player a keyed answer is already judged against the target word's letter for every
+  shared code, whatever the setting (`decodedSymbol()` in `MorseDecoder.cpp`). Rejected: letting the setting
+  decide which accented letters are sent with their own code — the text's language decides that, not the
+  listener's decoder.
 - Still open: B17 item 6 (Bluetooth Use changed from inside a mode — when does it take effect?).
 
 ## B17 — offered where it does nothing, or missing where it acts
