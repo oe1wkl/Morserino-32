@@ -304,7 +304,6 @@ Decoded
 Decoded audio on I O port
 Decoded output
 Delta
-Disp MAC Address
 Display MAC address
 Display off
 Display only
