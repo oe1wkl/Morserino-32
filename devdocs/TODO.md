@@ -268,8 +268,20 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 5. **Book repo:** decide §5.7 — drop the "baseline" snapshot 1, keep only snapshot 2, add one
    sentence pointing to Reset Defaults (chapter 6's snapshot 1 overwrites the baseline).
 6. ~~`m32p_assembly.odt` says **TORX T8**~~ — **done 2026-10-05**: "a small Phillips (cross-head) screwdriver", ODT
-   edited and PDF re-exported (LibreOffice, 300 dpi images; 0.8 MB instead of 2.9 MB). Its own "Version 1.0,
-   14.08.2025" line is left for Willi.
+   edited and PDF re-exported (LibreOffice, 300 dpi images; 0.8 MB instead of 2.9 MB). Willi, 2026-10-14: only the
+   **prototypes** had TORX, every production unit is Phillips — so the wording is now right, not a compromise.
+   ~~Its own "Version 1.0, 14.08.2025" line is left for Willi~~ — bumped 2026-10-14 to **"Version 1.1, 05.10.2026"**
+   (the date of the content change), PDF re-exported. The export recipe, reverse-engineered from the committed PDF
+   (same image dimensions, and the same size to within the text delta — the default quality of 90 gives 1.07 MB):
+
+   ```
+   /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --norestore \
+     -env:UserInstallation=file:///private/tmp/lo-profile \
+     --convert-to 'pdf:writer_pdf_Export:{"UseLosslessCompression":{"type":"boolean","value":"false"},"Quality":{"type":"long","value":"85"},"ReduceImageResolution":{"type":"boolean","value":"true"},"MaxImageResolution":{"type":"long","value":"300"}}' \
+     --outdir . m32p_assembly.odt
+   ```
+
+   Editing the ODT itself means rewriting `content.xml` inside the zip with `mimetype` kept first and STORED.
 
 ## F. People and community
 
