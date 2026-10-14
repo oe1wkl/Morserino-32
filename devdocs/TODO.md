@@ -21,9 +21,9 @@ Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (publish
    for the time being — we might soon jump to a 10.0 beta with m32kip included"). The a11y speed/battery speech
    (rebased from `origin/a11y-speed-battery` as `a11y-speed-battery-v91`), plus "keying cuts an announcement"
    added after the bench test; all bench-tested by Willi on an a11y Pocket. Ext-Tx keying during an
-   announcement was not bench-tested. The **QSO Bot** gap (speed changes silent there) is fixed on branch
-   `qsobot-speed-voice` (2026-10-14): voice tick in the bot loop, keying cuts speech, bot CW pauses
-   while a clip plays — bench test owed.
+   announcement was not bench-tested. The **QSO Bot** gap (speed changes silent there) is fixed too, merged
+   2026-10-14 (`qsobot-speed-voice`, bench-tested): voice tick in the bot loop, keying cuts speech, bot CW
+   pauses while a clip plays, and battery line + menu path after leaving the bot.
 3. **Then V10:** merge master into `m32kip` once more — 18 commits since 5bb9994 (plus the `[skip ci]` archive
    commit), incl. **V9 manual edits that must be ported to the V10 manual** (File Builder paragraph and the
    file-upload passage, both 2026-10-05), the sidetone fix, and the 9.1 changelog — then the B items below
