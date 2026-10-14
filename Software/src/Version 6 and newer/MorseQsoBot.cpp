@@ -35,6 +35,7 @@
 #include "ClickButton.h"
 #include "qso_content.h"
 #include "MorseQsoBotMatch.h"     // pure matcher primitives (unit-tested off-device)
+#include "MorseVoice.h"           // a11y edition: speed announcements in the bot loop
 #include <Preferences.h>
 #include <ctype.h>
 
@@ -483,6 +484,17 @@ String maybeDropPreamble(const String& text) {
     return rest;
 }
 
+#ifdef CONFIG_AUDIO_A11Y
+// Hold the bot's CW while a voice clip is playing or about to play (the speed announcement
+// from changeSpeed()). Clip and sidetone share one I2S pipeline, so CW keyed through a clip
+// is lost or comes out as clicks. Only between elements, like the CW generator's KEY_UP
+// gate: the engine's mute path cuts a tone that is on, so muting mid-element would shorten
+// a dit or dah and garble the character. The engine's resume gap (2 dits) follows.
+bool botVoiceMute() {
+    return MorseVoice::isSpeaking() && !MorseCwEngine::isToneOn();
+}
+#endif
+
 void startBotTx(const String& text) {
     String tx = maybeDropPreamble(text);
     // Beginner: spell RST out in full ("5nn" -> "599") — easier to copy than
@@ -502,7 +514,11 @@ void startBotTx(const String& text) {
         /*wpm            */ (gBotWpm && gBotWpm != MorsePreferences::wpm) ? gBotWpm : (uint8_t) 0,
         /*loop           */ false,
         /*resumeGapDits  */ 2,
+#ifdef CONFIG_AUDIO_A11Y
+        /*extraMute      */ botVoiceMute,
+#else
         /*extraMute      */ nullptr,
+#endif
         /*onCharComplete */ onBotCharComplete,
     };
     MorseCwEngine::playStart(tx, opts);
@@ -912,6 +928,12 @@ void run(menuNo mode) {
     bool userAborted = false;
     while (gState != RT_DONE) {
 
+#ifdef CONFIG_AUDIO_A11Y
+        // This loop owns the device instead of loop(), so it has to drive the voice engine
+        // itself, or the speed announcement from changeSpeed() below never plays.
+        MorseVoice::tick();
+#endif
+
         // Encoder rotation.
         int t = checkEncoder();
         if (t != 0) {
@@ -985,6 +1007,11 @@ void run(menuNo mode) {
             case DIT: case DAH: case KEY_START: break;
             default: checkPaddles(); break;
         }
+#ifdef CONFIG_AUDIO_A11Y
+        // Keying cuts speech, as in loop(): the sidetone is silent while a clip plays.
+        if ((leftKey || rightKey || keyerState != IDLE_STATE) && MorseVoice::isSpeaking())
+            MorseVoice::stop();
+#endif
         if (doPaddleIambic(leftKey, rightKey)) continue;
 
         // Drain one decoded char into the matcher accumulator.

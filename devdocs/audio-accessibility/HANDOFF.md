@@ -250,11 +250,12 @@ V9.1 release as `a11y-speed-battery-v91`.
   queued an utterance, so the tick was missing but not needed), the Echo Trainer's
   automatic speed step after each word, and the remote `PUT control/speed` handler. The
   games call `changeSpeedValue()` directly and are compiled out of this build anyway.
-  **Gap:** the QSO Bot runs its own main loop (`MorseQsoBot::run`) that calls
-  `changeSpeed()` but does not tick MorseVoice, so a speed change there is silent; the
-  pending utterance is simply replaced by the battery line on the next menu return. Fixing
-  it needs a tick in the bot loop *and* a speaking gate on the bot's own CW output (same
-  clicking problem as the generator, below) — not done.
+  **QSO Bot** (added 2026-10-14): the bot runs its own main loop (`MorseQsoBot::run`), not
+  `loop()`, so it ticks MorseVoice itself, applies the same "keying cuts speech" rule, and
+  pauses its own CW through the MorseCwEngine `extraMute` hook (`botVoiceMute()`: speaking
+  *and* no tone on, so a dit or dah in flight completes, as with the generator's KEY_UP
+  gate; the engine's 2-dit resume gap follows). Before this, a speed change in the bot was
+  silent and the pending utterance was dropped by the battery line on the next menu return.
 
 - **`announceOverriding()` vs `announce()`** — on the bench a fast encoder sweep announced
   TWO speeds: the first to clear the 120 ms debounce started playing (~800 ms) and every
@@ -299,6 +300,11 @@ V9.1 release as `a11y-speed-battery-v91`.
   else high) match the icon's `voltageToBars()`. "Low" fires well above the
   codec-critical zone: on this build the TLV320 is the first thing to give up when the
   cell sags, and a blind operator would otherwise be left with a device that says nothing.
+  **Not every mode returns through `menu_()`:** the QSO Bot (like the games and the WiFi
+  functions) returns from `menuExec()` with `false` into the running menu loop, so the bot
+  case in `menuExec()` calls `a11yForgetMenuContext()` + `a11yAnnounceBatteryOnMenuEntry()`
+  itself (found on the bench 2026-10-14: no battery line after the bot). A new mode that
+  returns this way needs the same two calls.
 
 - **One footgun worth knowing.** After `announce()`, the utterance sits PENDING for a
   120 ms settle window before `tick()` promotes it to the play sequence, and a further

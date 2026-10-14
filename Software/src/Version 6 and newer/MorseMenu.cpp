@@ -1029,6 +1029,13 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::volButton.clicks  = 0;
                 MorseQsoBot::run((menuNo) MorsePreferences::menuPtr);
                 m32state = menu_loop;
+#ifdef CONFIG_AUDIO_A11Y
+                // The bot comes back through here (menuExec() returning false), not through
+                // menu_(), so do what menu_() does for a mode-to-menu return: name the full path
+                // again and say the battery state.
+                a11yForgetMenuContext();
+                a11yAnnounceBatteryOnMenuEntry();
+#endif
                 return false;
 #endif
 #ifdef CONFIG_CW_GAME
