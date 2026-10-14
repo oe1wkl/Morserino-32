@@ -304,7 +304,7 @@ V9.1 release as `a11y-speed-battery-v91`.
   functions) returns from `menuExec()` with `false` into the running menu loop, so the bot
   case in `menuExec()` calls `a11yForgetMenuContext()` + `a11yAnnounceBatteryOnMenuEntry()`
   itself (found on the bench 2026-10-14: no battery line after the bot). A new mode that
-  returns this way needs the same two calls.
+  returns this way needs the same two calls (Remote Rig has them, V10).
 
 - **One footgun worth knowing.** After `announce()`, the utterance sits PENDING for a
   120 ms settle window before `tick()` promotes it to the play sequence, and a further

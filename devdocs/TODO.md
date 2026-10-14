@@ -24,9 +24,10 @@ Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (publish
    announcement was not bench-tested. The **QSO Bot** gap (speed changes silent there) is fixed too, merged
    2026-10-14 (`qsobot-speed-voice`, bench-tested): voice tick in the bot loop, keying cuts speech, bot CW
    pauses while a clip plays, and battery line + menu path after leaving the bot.
-3. **Then V10:** merge master into `m32kip` once more — 18 commits since 5bb9994 (plus the `[skip ci]` archive
-   commit), incl. **V9 manual edits that must be ported to the V10 manual** (File Builder paragraph and the
-   file-upload passage, both 2026-10-05), the sidetone fix, and the 9.1 changelog — then the B items below
+3. **Then V10:** ~~merge master into `m32kip` once more~~ — **done 2026-10-14** (433b03a, master up to cc8230d:
+   9.1 release, 9.2 a11y speed/battery speech; V9 manual edits ported to the V10 manual; voice store regenerated,
+   SPIFFS headroom now only **~36 KB**). Open: the changelog keeps `### CHANGES V. 9.2` below 10.0 - fold it into
+   10.0 if 9.2 is never released on its own. Then the B items below
    (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
    `V10.0-beta.1`.
 

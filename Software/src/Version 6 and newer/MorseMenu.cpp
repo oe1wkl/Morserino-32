@@ -1083,6 +1083,12 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::volButton.clicks  = 0;
                 MorseKipRig::run();
                 m32state = menu_loop;
+#ifdef CONFIG_AUDIO_A11Y
+                // Like the QSO Bot: the Rig comes back through here, not through menu_(), so name
+                // the full path again and say the battery state, as every mode-to-menu return does.
+                a11yForgetMenuContext();
+                a11yAnnounceBatteryOnMenuEntry();
+#endif
                 return false;
       // Remote Keyer — the operator's end, and deliberately the CW Keyer plus a network link. Like WiFi
       // Trx it runs inside the global loop rather than a loop of its own, so it inherits everything the
