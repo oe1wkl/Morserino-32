@@ -149,6 +149,13 @@ KOCH_FALLBACK_WORDS = ["No custom set", "Fallback"]
 BLE_NOTICE_WORDS = ["Bluetooth serial failed to start", "Bluetooth serial suspended for wireless mode"]
 # Text entry (MorseTextEntry, voiceAsLetters): the space in Op Name is spoken as the word.
 TEXT_ENTRY_WORDS = ["space"]
+# Battery status readout on menu re-entry (a11yAnnounceBatteryOnMenuEntry() in MorseMenu.cpp).
+# Drawn nowhere -- the icon is visual only, so voicing has to come from the firmware side.
+# Six phrases rather than composed atoms ("battery" + "high") so each state reads as one
+# smooth breath, and because the operator would otherwise learn to distinguish states by
+# their pause: composing gives "battery ... high" with a beat between the clips.
+BATTERY_WORDS = ["battery high", "battery medium", "battery low", "battery charging",
+                 "on USB power", "battery fault"]
 
 # User-editable pronunciation overrides (spoken_overrides.tsv): firmware string -> spoken text.
 # Highest priority -- lets the maintainer hand-tune how any entry / option / label is pronounced.
@@ -270,7 +277,7 @@ phrase_texts = (
     pref_labels +
     option_values +
     [spoken_of(s, ACTION_SPOKEN) for s in action_items] +
-    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS
+    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + BATTERY_WORDS
 )
 # NOTE: a non-table word list must appear TWICE -- here, which schedules the clip for
 # rendering, and in the fw_add() loop below, which maps the firmware string to that clip.
@@ -364,7 +371,7 @@ for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spok
 for lbl in pref_labels: fw_add(lbl, lbl)
 for v in option_values: fw_add(v, v)
 for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
-for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
+for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + BATTERY_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
 
 def cstr(s): return s.replace("\\", "\\\\").replace('"', '\\"')
 HDR = os.path.join(SRC, "voice_clips.h")

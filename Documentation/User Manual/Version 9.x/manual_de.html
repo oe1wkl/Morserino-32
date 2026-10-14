@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="de" xml:lang="de">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc 3.10.1" />
+  <meta name="generator" content="pandoc 3.12.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Morserino-32 Benutzerhandbuch</title>
   <style>
@@ -26,7 +26,6 @@
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
     }
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -183,8 +182,13 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p><strong>Wenn dein M32 Pocket noch nicht spricht.</strong> Ein neuer Pocket wird mit der Standard-Edition ausgeliefert, und die ist stumm. Die Firmware, die dieses Handbuch beschreibt, wird von einem Computer aus über USB installiert und ist in wenigen Minuten aufgespielt: siehe <strong>Den M32 Pocket zum Sprechen bringen: die Accessibility Edition installieren</strong>, den ersten Abschnitt des Kapitels <strong>Kurzanleitung zur Benutzung des M32</strong>.</p>
 </div>
 <p>Ich möchte mich bei allen bedanken, die durch Code, Kommentare, Vorschläge, Kritik, Rezensionen, Blogeinträge, YouTube-Videos und andere Beiträge dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den M32Pocket nicht!</p>
-<!-- WHATSNEW:BEGIN en=f08137d62026 v=9 -->
+<!-- WHATSNEW:BEGIN en=94086b1f13dd v=9 -->
 <p>Was ist neu in Version 9?</p>
+<p><strong>V 9.2</strong></p>
+<ul>
+<li>Nur M32 Pocket, Accessibility Edition: Das Gerät sagt jetzt die neue Geschwindigkeit, sobald du sie änderst – die Zahl wird ausgesprochen, während du den Encoder drehst, damit ein blinder Operator sein Übungstempo selbst wählen kann, ohne jemanden fragen zu müssen. Drehst du den Encoder schnell durch, wird nur der Endwert gesagt: Eine Ansage, die gerade läuft, wird abgebrochen, sobald ein neuerer Wert kommt – du hörst also nie den Anfangs- und den Endwert, während alles dazwischen verschluckt wird. Der CW-Generator schweigt, solange die Ansage läuft (der gemeinsame Audioweg würde aus den Morsezeichen sonst Klicks machen), und setzt danach mit dem nächsten Element im neuen Tempo fort. Beginnst du während einer Ansage zu geben, bricht die Ansage sofort ab – was du gibst, hörst du also immer als Mithörton, auch wenn es an einen Sender geht. Das funktioniert in den Übungsmodi, auch bei der automatischen Geschwindigkeitsanpassung des Echo Trainers nach jedem Wort; im QSO Bot noch nicht.</li>
+<li>Nur M32 Pocket, Accessibility Edition: Immer wenn du einen Übungsmodus verlässt und wieder im Hauptmenü landest, sagt das Gerät, wie es der Batterie geht – <strong>high</strong>, <strong>medium</strong>, <strong>low</strong> oder <strong>charging</strong> (dazu <strong>on USB power</strong>, wenn keine Batterie eingelegt ist, und <strong>battery fault</strong> für den seltenen Fehlerzustand). Das ist gerade hier wichtig, weil auf diesem Gerät der Audio-Codec als Erstes aufgibt, wenn die Zelle schwach wird: Ein blinder Operator kann sonst mit einem funktionierenden Gerät zurückbleiben, das gar nichts mehr sagt – und diese Warnung kommt weit genug vor der Codec-Klippe, dass noch Zeit zum Anstecken bleibt. Die Meldung erklingt einmal pro Rückkehr aus dem Modus ins Menü, nicht wiederholt, während du im Menü navigierst.</li>
+</ul>
 <p><strong>V 9.1</strong></p>
 <ul>
 <li>Eine neue Einstellung <strong>Decoder Chars</strong> lässt den Decoder die Buchstaben anderer Sprachen und die Klammern des ITU-Standards anzeigen. Einige Morsecodes bedeuten in verschiedenen Sprachen verschiedene Buchstaben – <code>.--.-</code> ist à im Französischen, aber å im Schwedischen, <code>.-.-</code> ist ä im Deutschen, aber æ im Dänischen –, daher wählst du einen Satz: <strong>Standard</strong> (wie bisher: <code>-.--.</code> ist &lt;kn&gt;, dazu ä ö ü und ch), <strong>ITU</strong> (<code>-.--.</code> ist „(“, dazu „)“ und é, wie in ITU-R M.1677-1), <strong>Fr/Es/Pt</strong> (à é è ç ñ), <strong>Sv/Fi</strong> (å) oder <strong>Da/No</strong> (å, und æ ø an Stelle von ä ö). Sie gilt für CW Keyer, CW Decoder, die Transceiver-Modi und den Echo Trainer; die Spiele und der QSO Bot verwenden weiterhin Standard. Nicht in der Accessibility Edition, wo dekodierter Text nicht vom Display gelesen wird. Danke an die Tester, die sich französische, spanische, portugiesische und nordische Buchstaben sowie die ITU-Klammern gewünscht haben.</li>
@@ -499,7 +503,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <section id="den-m32-pocket-zum-sprechen-bringen-die-accessibility-edition-installieren" class="pocket pocket-a11y" data-number="3.1">
 <h2 data-number="3.1"><span class="header-section-number">3.1</span> Den M32 Pocket zum Sprechen bringen: die Accessibility Edition installieren</h2>
 <p>Wenn dein M32 Pocket beim Einschalten bereits spricht, läuft die Accessibility Edition schon, und du kannst diesen Abschnitt überspringen.</p>
-<p>Ein neuer M32 Pocket wird mit der <strong>Standard</strong>-Edition ausgeliefert, und diese Edition ist stumm: Sie zeigt die Menüs am Display an, liest sie aber nicht vor. Die <strong>Accessibility Edition</strong> spricht stattdessen — sie meldet sich beim Einschalten selbst mit dem Batteriestatus, und sie spricht Menüeinträge, Einstellungen und deren Werte, während du dich durch sie bewegst. Sie kostet nichts, sie wird über USB installiert, und du kannst jederzeit wieder zur Standard-Edition zurückkehren.</p>
+<p>Ein neuer M32 Pocket wird mit der <strong>Standard</strong>-Edition ausgeliefert, und diese Edition ist stumm: Sie zeigt die Menüs am Display an, liest sie aber nicht vor. Die <strong>Accessibility Edition</strong> spricht stattdessen — sie meldet sich beim Einschalten selbst mit dem Batteriestatus, sie spricht Menüeinträge, Einstellungen und deren Werte, während du dich durch sie bewegst, sie sagt die neue Geschwindigkeit, sobald du sie änderst, und jedes Mal, wenn du aus einem Übungsmodus ins Menü zurückkehrst, sagt sie dir, wie es der Batterie geht — <strong>high</strong>, <strong>medium</strong>, <strong>low</strong> oder <strong>charging</strong>. Sie kostet nichts, sie wird über USB installiert, und du kannst jederzeit wieder zur Standard-Edition zurückkehren.</p>
 <p>Die beiden sind <strong>Alternativen, nicht eine Edition mit zusätzlicher Sprache</strong>: Es läuft entweder die eine oder die andere, und die sprechende kommt ohne drei Dinge aus.</p>
 <ul>
 <li><strong>Die sieben Spiele</strong> — Morse Invaders, Fight the Pileup, Radio Cave, Morsel, Trailblazer, Fox Hunt und Memory Chain. Sie werden gespielt, indem man auf den Bildschirm schaut, und Sprache kann das nicht ersetzen.</li>
@@ -541,7 +545,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <h2 data-number="3.3" id="die-grundlagen"><span class="header-section-number">3.3</span> Die Grundlagen</h2>
 <p><strong>Zu verwendende Bedienelemente:</strong></p>
 <p>• EIN/AUS (Akku): Der Schiebeschalter befindet sich auf der Rückseite in der Nähe des Lautsprechers. Verbindet bzw. trennt den Akku.</p>
-<p>• ENCODER: Der Drehknopf, den du drehen und drücken kannst<span class="classic">(schwarz bei der 1st und 2nd Edition des Morserinos)</span>.</p>
+<p>• ENCODER: Der Drehknopf, den du drehen und drücken kannst<span class="classic"> (schwarz bei der 1st und 2nd Edition des Morserinos)</span>.</p>
 <p>• FN: Der andere Druckknopfschalter <span class="classic">(rot bei der 1st und 2nd Edition des Morserinos).</span><span class="pocket pocket-a11y">(beim M32Pocket in das Gehäuse integriert).</span></p>
 <p><strong>So schaltest du den M32 ein:</strong></p>
 <p>Schließe entweder ein USB-Netzteil an, oder, wenn du einen Akku eingebaut hast, stelle den Akkuschalter auf ON (I).</p>
@@ -589,7 +593,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </div>
 <p>Wenn das Gerät ausgeschaltet ist, aber der Akku angeschlossen ist (der Schiebeschalter steht auf ON), befindet es sich im Tiefschlaf – in Wirklichkeit sind fast alle Funktionen des Mikrocontrollers ausgeschaltet und der Stromverbrauch ist minimal (<span class="classic">weniger als 5 % des normalen Betriebs</span><span class="pocket pocket-a11y">etwa 1 % des normalen Betriebs</span>).</p>
 <p><strong>Um das Gerät aus dem Tiefschlaf einzuschalten</strong>, drücke kurz die FN-Taste.</p>
-<p>Wenn der Morserino-32 hochfährt, erscheint für einige Sekunden ein Startbildschirm. <span class="classic">In der obersten Zeile wird die LoRa-Frequenz angezeigt, für die der M32 konfiguriert ist, als fünfstellige Zahl.</span><span class="pocket pocket-a11y">Er beginnt mit dem Morserino-Logo.</span> Unterhalb der Versionsnummer siehst du die Akkuspannung und<span class="classic">ein Symbol dafür,</span> wie viel Akkuleistung noch vorhanden ist. Wenn der Akku schwach ist, schließe dein Gerät an eine USB-Stromquelle an. Der Akku entlädt sich auch dann, wenn du das Gerät nie einschaltest. Obwohl die Entladung im Tiefschlafmodus minimal ist, ist der Akku nach einigen Tagen leer. Wenn du also vorhast, den Morserino über einen längeren Zeitraum nicht zu benutzen, trenne den Akku mit dem Netzschalter auf der Rückseite des Geräts.</p>
+<p>Wenn der Morserino-32 hochfährt, erscheint für einige Sekunden ein Startbildschirm. <span class="classic">In der obersten Zeile wird die LoRa-Frequenz angezeigt, für die der M32 konfiguriert ist, als fünfstellige Zahl.</span><span class="pocket pocket-a11y">Er beginnt mit dem Morserino-Logo.</span> Unterhalb der Versionsnummer siehst du die Akkuspannung und<span class="classic"> ein Symbol dafür,</span> wie viel Akkuleistung noch vorhanden ist. Wenn der Akku schwach ist, schließe dein Gerät an eine USB-Stromquelle an. Der Akku entlädt sich auch dann, wenn du das Gerät nie einschaltest. Obwohl die Entladung im Tiefschlafmodus minimal ist, ist der Akku nach einigen Tagen leer. Wenn du also vorhast, den Morserino über einen längeren Zeitraum nicht zu benutzen, trenne den Akku mit dem Netzschalter auf der Rückseite des Geräts.</p>
 <p>Wenn die Akkuspannung beim Einschalten gefährlich niedrig ist, erscheint auf dem Bildschirm das Symbol für einen leeren Akku und das Gerät lässt sich nicht hochfahren. Wenn du dieses Symbol siehst, lade den Akku so bald wie möglich auf.</p>
 <div class="classic">
 <p>Nur bei der 1st Edition des M32: Nach der Nutzung einer der WLAN-Funktionen funktioniert die Akkumessung erst nach einem erneuten Aus- und Einschalten des Morserino-32 (oder einem Reset mit der Reset-Taste) wieder korrekt. Dies ist auf ein Hardwareproblem auf dem Heltec-Board V2.0 zurückzuführen. In solchen Fällen zeigt der Morserino-32 statt der Akkuspannung „Unknown” an, und das Akkusymbol erscheint mit einem Fragezeichen. Nach einem Neustart sollte alles wieder normal funktionieren.</p>
@@ -687,7 +691,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Wenn du eine Handtaste angeschlossen und <strong>Keyer Mode</strong> auf <strong>Straight Key</strong> eingestellt hast, kannst du alle Morserino-Modi (z.B. Echo Trainer) nutzen. Der Modus CW Keyer verhält sich dabei jedoch anders (wie der Decoder-Modus): Mit einer Handtaste bist DU der Keyer, nicht der Morserino!</p>
 <h3 data-number="5.1.1" id="cw-memory-keyer"><span class="header-section-number">5.1.1</span> CW Memory Keyer</h3>
 <p>Ab Version 5.1 verfügt der Morserino über einen Memory Keyer. Es stehen acht Speicherplätze zur Verfügung, die jeweils bis zu 47 Zeichen enthalten können. Neben Standard-Morsezeichen (Buchstaben, Zahlen, Satzzeichen) können auch Betriebszeichen und ein Pausenzeichen gespeichert werden. Die Textdarstellung von Betriebszeichen und Pausenmarkierung findest du unter <strong>Kodierung von Textdateien</strong> im Abschnitt <strong>Was kann generiert werden?</strong></p>
-<p>Gespeicherte Inhalte können in den Modi <strong>CW Keyer</strong> und <strong>iCW/Ext Trx</strong> abgerufen werden (aus technischen Gründen jedoch nicht in den Modi <strong>WiFi Trx</strong><span class="classic">oder <strong>LoRa Trx</strong></span>). <strong>Um einen Speicher abzurufen, klicke einmal kurz auf den ENCODER-Knopf.</strong> Wenn Speicher definiert wurden, kannst du in der obersten Zeile mit dem Drehgeber durch sie blättern. Es gibt auch eine EXIT-Option, falls du es dir anders überlegst. Wenn keine Speicherplätze definiert wurden, erscheint eine Fehlermeldung.</p>
+<p>Gespeicherte Inhalte können in den Modi <strong>CW Keyer</strong> und <strong>iCW/Ext Trx</strong> abgerufen werden (aus technischen Gründen jedoch nicht in den Modi <strong>WiFi Trx</strong><span class="classic"> oder <strong>LoRa Trx</strong></span>). <strong>Um einen Speicher abzurufen, klicke einmal kurz auf den ENCODER-Knopf.</strong> Wenn Speicher definiert wurden, kannst du in der obersten Zeile mit dem Drehgeber durch sie blättern. Es gibt auch eine EXIT-Option, falls du es dir anders überlegst. Wenn keine Speicherplätze definiert wurden, erscheint eine Fehlermeldung.</p>
 <p>Die Speicher 1 und 2 werden endlos wiederholt, bis du sie durch manuelle Eingabe stoppst; alle anderen Speicher werden einmal abgespielt.</p>
 <h4 class="unnumbered" id="definition-von-speicherplaetzen">Definition von Speicherplätzen</h4>
 <p>Die Speicher können nur über das serielle Protokoll definiert werden – entweder über eine Computersoftware, die dieses Protokoll implementiert, oder manuell über ein Terminalprogramm. (Das serielle Protokoll ist in einem separaten Dokument beschrieben.)</p>
@@ -723,7 +727,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Der File Player merkt sich, wo du aufgehört hast. (Beende diesen Modus durch Drücken und Halten des ENCODERs. <strong>Schalte das Gerät nicht einfach aus</strong> und warte auch nicht auf den Time-Out, da der Morserino sonst die aktuelle Position nicht speichern kann.) Beim nächsten Start des File Players wird die Wiedergabe an dieser Stelle fortgesetzt. Wenn das Ende der Datei (oder des Dateiabschnitts) erreicht ist, beginnt der Player wieder von vorne.</p>
 </div>
 <h4 class="unnumbered" id="kodierung-von-textdateien-fuer-den-file-player">Kodierung von Textdateien für den File Player</h4>
-<p>Die Datei sollte reiner Text sein, als UTF-8 gespeichert (Groß-/Kleinschreibung spielt keine Rolle) – Zeichen, die im Morsecode nicht dargestellt werden können, werden einfach ignoriert. Buchstaben mit Umlauten oder Akzenten werden mit ihrem eigenen Morsecode gesendet, wo es einen gibt: ä ö ü, é è à ç ñ und å æ ø<span class="classic pocket">(wie sie dekodiert und angezeigt werden, legt die Einstellung <strong>Decoder Chars</strong> fest)</span>. Andere Buchstaben mit Akzent (á, ê, õ, …) werden als einfacher Buchstabe gesendet, ß als „ss“. Runde Klammern werden als <code>-.--.</code> für „(“ und <code>-.--.-</code> für „)“ gesendet. Betriebszeichen können in der Datei enthalten sein; sie müssen als 2-Zeichen-Darstellung mit [] oder &lt;&gt; um sie herum geschrieben werden, z.B. &lt;sk&gt; oder [ka], oder mit einem Backslash vorangestellt werden, z.B. \kn.</p>
+<p>Die Datei sollte reiner Text sein, als UTF-8 gespeichert (Groß-/Kleinschreibung spielt keine Rolle) – Zeichen, die im Morsecode nicht dargestellt werden können, werden einfach ignoriert. Buchstaben mit Umlauten oder Akzenten werden mit ihrem eigenen Morsecode gesendet, wo es einen gibt: ä ö ü, é è à ç ñ und å æ ø<span class="classic pocket"> (wie sie dekodiert und angezeigt werden, legt die Einstellung <strong>Decoder Chars</strong> fest)</span>. Andere Buchstaben mit Akzent (á, ê, õ, …) werden als einfacher Buchstabe gesendet, ß als „ss“. Runde Klammern werden als <code>-.--.</code> für „(“ und <code>-.--.-</code> für „)“ gesendet. Betriebszeichen können in der Datei enthalten sein; sie müssen als 2-Zeichen-Darstellung mit [] oder &lt;&gt; um sie herum geschrieben werden, z.B. &lt;sk&gt; oder [ka], oder mit einem Backslash vorangestellt werden, z.B. \kn.</p>
 <p><strong>Betriebszeichen</strong></p>
 <p>Folgende Betriebszeichen werden erkannt (Bedeutung der Betriebszeichen siehe Abschnitt <strong>Koch: Select Lesson</strong>):</p>
 <ul>
@@ -1426,7 +1430,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </div>
 <h4 class="unnumbered" id="koch-training-mit-einem-benutzerdefinierten-zeichensatz">Koch: Training mit einem benutzerdefinierten Zeichensatz</h4>
 <p>Du kannst den Koch Trainer auch verwenden, um mit einem selbst festgelegten Zeichensatz zu üben. Lade zunächst eine Textdatei in den File Player hoch, die die zu trainierenden Zeichen enthält (als ein „Wort” oder mehrere Wörter auf einer oder mehreren Zeilen). Setze dann die Einstellung <strong>Koch Sequence</strong> auf die neue Option <strong>Custom Chars</strong>. Der Koch Trainer liest die Zeichen dann aus der Datei.</p>
-<p>Nun kannst du den Koch Trainer (CW Generator oder Echo Trainer) verwenden, und er wird diese Zeichen für dein Training benutzen. Die Einstellung <strong>Koch Lesson</strong> wirkt dabei als Index in deinen benutzerdefinierten Zeichensatz: bei Lektion <em>N</em> werden nur die ersten <em>N</em> Zeichen des Zeichensatzes als aktiver Trainings-Pool verwendet (begrenzt auf die tatsächliche Länge des Zeichensatzes, falls die Lektion größer ist). Das Lektions-Maximum passt sich dabei automatisch an die Länge deines Zeichensatzes an (bis maximal 51 Zeichen; Zeichen ab Position 52 sind nicht erreichbar). Der Zeichensatz darf auch die Buchstaben mit Umlauten und Akzenten enthalten, die unter <strong>Kodierung von Textdateien für den File Player</strong> beschrieben sind<span class="pocket-a11y">(in dieser Ausgabe werden Buchstaben außer ä ö ü nicht gesprochen)</span>.</p>
+<p>Nun kannst du den Koch Trainer (CW Generator oder Echo Trainer) verwenden, und er wird diese Zeichen für dein Training benutzen. Die Einstellung <strong>Koch Lesson</strong> wirkt dabei als Index in deinen benutzerdefinierten Zeichensatz: bei Lektion <em>N</em> werden nur die ersten <em>N</em> Zeichen des Zeichensatzes als aktiver Trainings-Pool verwendet (begrenzt auf die tatsächliche Länge des Zeichensatzes, falls die Lektion größer ist). Das Lektions-Maximum passt sich dabei automatisch an die Länge deines Zeichensatzes an (bis maximal 51 Zeichen; Zeichen ab Position 52 sind nicht erreichbar). Der Zeichensatz darf auch die Buchstaben mit Umlauten und Akzenten enthalten, die unter <strong>Kodierung von Textdateien für den File Player</strong> beschrieben sind<span class="pocket-a11y"> (in dieser Ausgabe werden Buchstaben außer ä ö ü nicht gesprochen)</span>.</p>
 <p>Um den Zeichensatz zu ändern, lade eine neue Textdatei hoch und wähle <strong>Custom Chars</strong> erneut aus. Selbst wenn es zuvor bereits ausgewählt war, musst du <strong>Custom Chars</strong> erneut wählen, um den neuen Zeichensatz zu übernehmen. Das bloße Hochladen einer neuen Datei ändert den benutzerdefinierten Zeichensatz nicht.<br/> <em>Das ist ein Feature, kein Bug!</em><br/> Es bedeutet, dass du zwischen dem Training mit deinem Zeichensatz und der Verwendung einer anderen Textdatei für den File Player wechseln kannst. Durch Umstellen von <strong>Koch Sequence</strong> auf M32, LCWO, LICW oder CW Academy kehrst du zur „normalen” Koch-Trainer-Option zurück.</p>
 <div class="note">
 <p>Suchst du nur einen schnellen Weg, um gezielt ein paar Zeichen zu üben, die dir schwerfallen, ohne den Umweg über eine Textdatei oder die Koch-Lektionen? Siehe <strong>Practice Set</strong>, eine eigenständige Funktion, die direkt unter <strong>CW Generator</strong> und <strong>Echo Trainer</strong> erreichbar ist (nicht unter Koch Trainer) – beschrieben dort, wo diese Modi vorgestellt werden, sowie unter <strong>Einstellungen zum Practice Set</strong>. Sie verwendet einen eigenen, getrennt gespeicherten Zeichensatz und hat mit <strong>Custom Chars</strong> hier nichts zu tun.</p>
@@ -1484,7 +1488,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Weitere Informationen über LoRa findest du in <strong>Weitere Informationen über LoRa</strong>.</p>
 </section>
 <h3 data-number="5.5.2" id="wifi-trx"><span class="header-section-number">5.5.2</span> WiFi Trx</h3>
-<p>Du kannst diesen Transceiver-Modus verwenden, um mit deinem CW-Buddy über WLAN zu kommunizieren – entweder im lokalen Netzwerk, über das Internet oder sogar Peer-to-Peer ohne Access Point. Diese Methode heißt <em>EspNow</em>; der Morserino nutzt dabei seine Broadcast-Funktionalität<span class="classic">– das ist dann sehr ähnlich wie die Nutzung von LoRa</span>. Die Reichweite ist naturgemäß begrenzt (je nach Umgebung einige Meter bis ca. 50 Meter bei freier Sicht). Wie du im Modus WiFi Trx zwischen Access Point und EspNow umschaltest, erfährst du im Abschnitt <strong>WiFi Select</strong>.</p>
+<p>Du kannst diesen Transceiver-Modus verwenden, um mit deinem CW-Buddy über WLAN zu kommunizieren – entweder im lokalen Netzwerk, über das Internet oder sogar Peer-to-Peer ohne Access Point. Diese Methode heißt <em>EspNow</em>; der Morserino nutzt dabei seine Broadcast-Funktionalität<span class="classic"> – das ist dann sehr ähnlich wie die Nutzung von LoRa</span>. Die Reichweite ist naturgemäß begrenzt (je nach Umgebung einige Meter bis ca. 50 Meter bei freier Sicht). Wie du im Modus WiFi Trx zwischen Access Point und EspNow umschaltest, erfährst du im Abschnitt <strong>WiFi Select</strong>.</p>
 <h4 class="unnumbered" id="verwendung-von-zwei-verschiedenen-espnow-kanaelen">Verwendung von zwei verschiedenen EspNow-Kanälen</h4>
 <p>Der Morserino-32 kann im EspNow-Modus zwei Kanäle nutzen. Dies kann z.B. in einem Klassenzimmer verwendet werden, um zwei unabhängige Gruppen zu bilden, die sich nicht gegenseitig stören, oder in Umgebungen mit sehr hohem WLAN-„Rauschen” – wenn der primäre Kanal nicht korrekt funktioniert, versuche es mit dem sekundären Kanal.</p>
 <p>Die Kanäle werden über die Einstellung <strong>Trx Channel</strong> ausgewählt, siehe Abschnitt <strong>Einstellungen zum Senden, Dekodieren und QSO Bot</strong>.</p>
@@ -2512,7 +2516,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Für verschiedene Trainingsarten benötigst du in der Regel unterschiedliche Einstellungen – du möchtest vielleicht den Zeichen- oder Wortabstand ändern, oder die Länge von Zeichengruppen oder Wörtern usw. Das Wechseln von einer Trainingsart zur nächsten würde bedeuten, jedes Mal verschiedene Einstellungen zu ändern.</p>
 <p>Um dies zu vereinfachen, kannst du „<strong>Schnappschüsse</strong>” (Snapshots) der Einstellungen verwenden: Sobald du alles für deinen ersten Trainingsmodus eingestellt hast, speicherst du alle aktuellen Einstellungen in einem von acht Schnappschüssen; dasselbe machst du für deine anderen Trainingsmodi. Du kannst die Einstellungen dann durch Abrufen eines bestimmten Schnappschusses schnell wiederherstellen.</p>
 <p>Die gewählte „Koch-Lektion” wird im nichtflüchtigen Speicher abgelegt und ist nach einem Neustart verfügbar, wird aber nicht in einem Schnappschuss gespeichert oder überschrieben. Dasselbe gilt für WLAN-Einstellungen, die Einstellung <strong>Serial Output</strong>, den Bildschirm-Timeout sowie für deine Geschwindigkeits- und Lautstärkeeinstellungen.</p>
-<p>Schnappschüsse enthalten nur Einstellungen, die für das Training relevant sind. Einstellungen, die das Gerät selbst, seine Verbindungen<span class="pocket">oder die Spiele</span> betreffen, werden <strong>nicht</strong> in Schnappschüssen gespeichert, und das Abrufen eines Schnappschusses verändert sie nie:</p>
+<p>Schnappschüsse enthalten nur Einstellungen, die für das Training relevant sind. Einstellungen, die das Gerät selbst, seine Verbindungen<span class="pocket"> oder die Spiele</span> betreffen, werden <strong>nicht</strong> in Schnappschüssen gespeichert, und das Abrufen eines Schnappschusses verändert sie nie:</p>
 <ul>
 <li>Hardware-Einstellungen: <strong>Paddle Polar.</strong>, <strong>External Pol.</strong></li>
 <li>Sender- und Netzwerk-Einstellungen: <strong>Key ext TX</strong>, <strong>Generator Tx</strong><span class="classic">, der LoRa-Kanal</span></li>
@@ -2531,7 +2535,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Du kannst auch einen nicht mehr benötigten oder versehentlich erstellten Schnappschuss löschen. Gehe so vor, als wolltest du einen Schnappschuss abrufen, wähle den zu löschenden Schnappschuss aus und <strong>klicke dann auf die FN-Taste</strong>, um ihn zu löschen. Ein Bestätigungsdialog fragt, ob du den Schnappschuss wirklich löschen möchtest. Wenn du den ENCODER auf „Yes” drehst und klickst, wird der Schnappschuss gelöscht; wie beim Speichern und Abrufen bestätigt eine kurze Meldung den Erfolg.</p>
 <p>Am einfachsten konfigurierst du Einstellungen und Schnappschüsse, indem du deinen Morserino über USB mit einem Computer mit Chrome, Edge, Opera oder Firefox verbindest und den Anweisungen in <strong>Einrichten von M32-Einstellungen über einen Browser</strong> folgst.</p>
 <h2 data-number="6.2" id="rufzeichen-name-und-spielstaende"><span class="header-section-number">6.2</span> Rufzeichen, Name und Spielstände</h2>
-<p>Zwei Einstellungen sagen dem Morserino, wer du bist. <strong>Call Sign</strong> (Rufzeichen) und <strong>Op Name</strong> (Name) werden<span class="pocket">von den Spielen (<strong>Fight the Pileup</strong>, <strong>Morsel</strong>) und</span> vom <strong>QSO-Bot</strong> verwendet. Wählst du einen dieser Einträge im Einstellungsmenü, öffnet sich ein Texteditor am Bildschirm (er funktioniert am OLED und am LCD gleich):</p>
+<p>Zwei Einstellungen sagen dem Morserino, wer du bist. <strong>Call Sign</strong> (Rufzeichen) und <strong>Op Name</strong> (Name) werden<span class="pocket"> von den Spielen (<strong>Fight the Pileup</strong>, <strong>Morsel</strong>) und</span> vom <strong>QSO-Bot</strong> verwendet. Wählst du einen dieser Einträge im Einstellungsmenü, öffnet sich ein Texteditor am Bildschirm (er funktioniert am OLED und am LCD gleich):</p>
 <ul>
 <li><strong>ENCODER drehen</strong> wählt ein Zeichen,</li>
 <li><strong>ENCODER klicken</strong> fügt es zum Text hinzu,</li>
@@ -2539,7 +2543,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><strong>langer Druck</strong> auf eine der Tasten beendet die Eingabe.</li>
 </ul>
 <p>Call Sign akzeptiert Buchstaben, Ziffern und den Schrägstrich; Op Name akzeptiert Buchstaben und ein Leerzeichen. Der aktuelle Wert wird neben der Einstellung angezeigt.</p>
-<p><strong>Reset Scores</strong> löscht die gespeicherten Bestenlisten und den Spielfortschritt aller Spiele<span class="pocket">(Morse Invaders, Morsel, Radio Cave, die Gitter-Labyrinth-Spiele Trailblazer und Fox Hunt sowie Memory Chain)</span>. Beim Auswählen erscheint eine Bestätigung: <strong>FN</strong> drücken zum Bestätigen, oder den ENCODER klicken zum Abbrechen.</p>
+<p><strong>Reset Scores</strong> löscht die gespeicherten Bestenlisten und den Spielfortschritt aller Spiele<span class="pocket"> (Morse Invaders, Morsel, Radio Cave, die Gitter-Labyrinth-Spiele Trailblazer und Fox Hunt sowie Memory Chain)</span>. Beim Auswählen erscheint eine Bestätigung: <strong>FN</strong> drücken zum Bestätigen, oder den ENCODER klicken zum Abbrechen.</p>
 <h2 data-number="6.3" id="liste-aller-morserino-32-einstellungen"><span class="header-section-number">6.3</span> Liste aller Morserino-32-Einstellungen</h2>
 <p><strong>Fett gedruckte Werte</strong> sind Standard- oder empfohlene Werte. Wenn du das Einstellungsmenü vom Startmenü aus aufrufst, sind alle Einstellungen verfügbar; wenn du es aus einem laufenden Modus heraus aufrufst, sind nur die für diesen Modus relevanten Einstellungen verfügbar.</p>
 <h3 data-number="6.3.1" id="allgemeine-einstellungen"><span class="header-section-number">6.3.1</span> Allgemeine Einstellungen</h3>
@@ -2610,7 +2614,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 <tr>
 <td><strong>Serial Output</strong></td>
-<td>Legt fest, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; unterschieden wird zwischen getasteten Zeichen (<strong>Keyer</strong> – Ausgabe des iambischen Keyers), dekodierten Zeichen (<strong>Decoded</strong> – vom CW-Decoder oder einer Handtaste) und „generierten” Zeichen (<strong>Generated</strong> – vom CW-Generator usw., auch von der Empfangsseite der<span class="classic">LoRa- oder</span> WiFi-Transceiver-Modi). <strong>Nothing</strong> sendet keines dieser Zeichen (bestimmte System- oder Fehlermeldungen können aber trotzdem erscheinen), <strong>All</strong> sendet alles. Über das M32-Serielle-Protokoll können zudem weitere Informationen gesendet und empfangen werden, wenn die angeschlossene Computersoftware dies unterstützt. Siehe auch <strong>Nutzung des seriellen Ausgangs des M32</strong>. Diese Einstellung gilt auch für den Zeichenstrom an eine über Bluetooth verbundene App (siehe die Einstellung <strong>Bluetooth Use</strong> im Abschnitt <strong>Einstellungen zu Key, Paddles und Keyer</strong>).</td>
+<td>Legt fest, was an die serielle Schnittstelle (USB-Anschluss) gesendet wird; unterschieden wird zwischen getasteten Zeichen (<strong>Keyer</strong> – Ausgabe des iambischen Keyers), dekodierten Zeichen (<strong>Decoded</strong> – vom CW-Decoder oder einer Handtaste) und „generierten” Zeichen (<strong>Generated</strong> – vom CW-Generator usw., auch von der Empfangsseite der<span class="classic"> LoRa- oder</span> WiFi-Transceiver-Modi). <strong>Nothing</strong> sendet keines dieser Zeichen (bestimmte System- oder Fehlermeldungen können aber trotzdem erscheinen), <strong>All</strong> sendet alles. Über das M32-Serielle-Protokoll können zudem weitere Informationen gesendet und empfangen werden, wenn die angeschlossene Computersoftware dies unterstützt. Siehe auch <strong>Nutzung des seriellen Ausgangs des M32</strong>. Diese Einstellung gilt auch für den Zeichenstrom an eine über Bluetooth verbundene App (siehe die Einstellung <strong>Bluetooth Use</strong> im Abschnitt <strong>Einstellungen zu Key, Paddles und Keyer</strong>).</td>
 <td>Nothing / Keyer / Decoded / Keyed+Decoded / Generated / <strong>All</strong> (Standard seit V. 4.3)</td>
 </tr>
 </tbody>
@@ -2877,7 +2881,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tbody>
 </table>
 <h3 data-number="6.3.7" id="einstellungen-zum-senden-dekodieren-und-qso-bot"><span class="header-section-number">6.3.7</span> Einstellungen zum Senden, Dekodieren und QSO Bot</h3>
-<p>Diese Einstellungen steuern einige Funktionen, die für das Senden (entweder direkt über<span class="classic">LoRa oder</span> WLAN oder durch Tastung eines externen Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot (siehe Abschnitt <strong>QSO Bot</strong>) verfügbar sind.</p>
+<p>Diese Einstellungen steuern einige Funktionen, die für das Senden (entweder direkt über<span class="classic"> LoRa oder</span> WLAN oder durch Tastung eines externen Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot (siehe Abschnitt <strong>QSO Bot</strong>) verfügbar sind.</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2894,17 +2898,17 @@ aus dem englischsprachigen Original übersetzt.</p>
 <tbody>
 <tr>
 <td><strong>Key ext TX</strong></td>
-<td>Legt fest, ob ein angeschlossener Sender getastet werden soll. <strong>Gen</strong> = Generatormodi, <strong>RX</strong> =<span class="classic">LoRa- oder</span> WiFi-Empfangsmodi. Die Option <strong>Keyer &amp; Gen.</strong> lässt den Morserino einen externen Sender auch im Generatormodus tasten (z.B. für Trainingsübertragungen). Die Option <strong>Keyer&amp;Gen.&amp;RX</strong> ist nützlich, wenn du auf deinem Sender das senden möchtest, was der Morserino über<span class="classic">LoRa oder</span> WLAN empfangen hat (für Fernbedienung).</td>
+<td>Legt fest, ob ein angeschlossener Sender getastet werden soll. <strong>Gen</strong> = Generatormodi, <strong>RX</strong> =<span class="classic"> LoRa- oder</span> WiFi-Empfangsmodi. Die Option <strong>Keyer &amp; Gen.</strong> lässt den Morserino einen externen Sender auch im Generatormodus tasten (z.B. für Trainingsübertragungen). Die Option <strong>Keyer&amp;Gen.&amp;RX</strong> ist nützlich, wenn du auf deinem Sender das senden möchtest, was der Morserino über<span class="classic"> LoRa oder</span> WLAN empfangen hat (für Fernbedienung).</td>
 <td>Never / <strong>CW Keyer only</strong> (gilt auch für Transceiver-Modi) / Keyer &amp; Gen. / Keyer&amp;Gen.&amp;RX</td>
 </tr>
 <tr>
 <td><strong>Generator Tx</strong></td>
-<td>Ermöglicht dem CW-Generator, das Generierte<span class="classic">entweder über LoRa oder WLAN</span><span class="pocket pocket-a11y">über WLAN</span> zu senden – so kann ein Gerät etwas erzeugen und mehrere andere die gleiche Sequenz empfangen. Verwendbar in allen CW-Generator- und Koch/CW-Generator-Modi einschließlich File Player. Nützlich für Lerngruppen. Auf öffentlichen M32-Chat-Servern sollte dies nur mit Vorsicht und nicht über längere Zeit verwendet werden; sehr praktisch hingegen für eine Gruppe im gleichen Netzwerksegment (Broadcast als TrX-Peer oder privater Chat-Server) oder<span class="classic">über LoRa (oder</span> WiFi Trx mit EspNow<span class="classic">)</span>, wenn alle Teilnehmer nah genug beieinander sind. <span class="classic"><em>Beim Senden über LoRa muss eine Antenne angeschlossen sein, sonst wird der LoRa-Transceiver irgendwann zerstört!</em></span></td>
+<td>Ermöglicht dem CW-Generator, das Generierte<span class="classic"> entweder über LoRa oder WLAN</span><span class="pocket pocket-a11y">über WLAN</span> zu senden – so kann ein Gerät etwas erzeugen und mehrere andere die gleiche Sequenz empfangen. Verwendbar in allen CW-Generator- und Koch/CW-Generator-Modi einschließlich File Player. Nützlich für Lerngruppen. Auf öffentlichen M32-Chat-Servern sollte dies nur mit Vorsicht und nicht über längere Zeit verwendet werden; sehr praktisch hingegen für eine Gruppe im gleichen Netzwerksegment (Broadcast als TrX-Peer oder privater Chat-Server) oder<span class="classic"> über LoRa (oder</span> WiFi Trx mit EspNow<span class="classic">)</span>, wenn alle Teilnehmer nah genug beieinander sind. <span class="classic"><em>Beim Senden über LoRa muss eine Antenne angeschlossen sein, sonst wird der LoRa-Transceiver irgendwann zerstört!</em></span></td>
 <td><span class="classic"><strong>Tx OFF</strong> (= generierte Morsezeichen nicht aussenden) / LoRa Tx ON (mit LoRa senden) / WiFi Tx ON (mit WLAN senden)</span><span class="pocket pocket-a11y"><strong>WiFi Tx OFF</strong> (= generierte Morsezeichen nicht aussenden) / WiFi Tx ON (mit WLAN senden)</span></td>
 </tr>
 <tr>
 <td><strong>Trx Channel</strong></td>
-<td>Wählt den Kanal für<span class="classic">LoRa oder</span> EspNow (ein WLAN-Peer-to-Peer-Modus ohne Access Point). <span class="classic">Bei LoRa ist dies ein virtueller Kanal; bei EspNow wird</span><span class="pocket pocket-a11y">Dabei wird</span> die Frequenz tatsächlich zwischen WLAN-Kanal 6 (<strong>Standard Ch</strong>) und 1 (<strong>Secondary Ch</strong>) gewechselt. Weitere Informationen zu EspNow findest du in Abschnitt <strong>WiFi Trx</strong>.</td>
+<td>Wählt den Kanal für<span class="classic"> LoRa oder</span> EspNow (ein WLAN-Peer-to-Peer-Modus ohne Access Point). <span class="classic">Bei LoRa ist dies ein virtueller Kanal; bei EspNow wird</span><span class="pocket pocket-a11y">Dabei wird</span> die Frequenz tatsächlich zwischen WLAN-Kanal 6 (<strong>Standard Ch</strong>) und 1 (<strong>Secondary Ch</strong>) gewechselt. Weitere Informationen zu EspNow findest du in Abschnitt <strong>WiFi Trx</strong>.</td>
 <td><strong>Standard Ch</strong> / Secondary Ch</td>
 </tr>
 <tr>
@@ -2935,7 +2939,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tbody>
 </table>
 <h3 data-number="6.3.8" id="einstellungen-zu-rufzeichen-name-und-spielstaenden"><span class="header-section-number">6.3.8</span> Einstellungen zu Rufzeichen, Name und Spielständen</h3>
-<p>Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen deine persönliche Identität fest, die<span class="pocket">vom Spiel <strong>Fight the Pileup</strong> und</span> vom <strong>QSO Bot</strong> (Abschnitt <strong>QSO Bot</strong>) verwendet wird; <strong>Reset Scores</strong> löscht die gespeicherten Spielstände<span class="pocket pocket-a11y">, und <strong>Practice Stats</strong> schaltet die weiter unten beschriebene Protokollierung ein oder aus</span>. Call Sign und Op Name können auch über USB über das M32-USB Serial-Protokoll gesetzt werden (z.B. mit einem Browser-Konfigurationstool).</p>
+<p>Diese Punkte stehen ganz am Ende der Einstellungsliste. Die ersten beiden legen deine persönliche Identität fest, die<span class="pocket"> vom Spiel <strong>Fight the Pileup</strong> und</span> vom <strong>QSO Bot</strong> (Abschnitt <strong>QSO Bot</strong>) verwendet wird; <strong>Reset Scores</strong> löscht die gespeicherten Spielstände<span class="pocket pocket-a11y">, und <strong>Practice Stats</strong> schaltet die weiter unten beschriebene Protokollierung ein oder aus</span>. Call Sign und Op Name können auch über USB über das M32-USB Serial-Protokoll gesetzt werden (z.B. mit einem Browser-Konfigurationstool).</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -2952,17 +2956,17 @@ aus dem englischsprachigen Original übersetzt.</p>
 <tbody>
 <tr>
 <td><strong>Call Sign</strong></td>
-<td>Dein eigenes Amateurfunk-Rufzeichen. Gib es mit dem Encoder und den Tasten ein. Es wird in Großbuchstaben gespeichert und als dein Stationsrufzeichen<span class="pocket">in <strong>Fight the Pileup</strong> und</span> im <strong>QSO Bot</strong> verwendet.</td>
+<td>Dein eigenes Amateurfunk-Rufzeichen. Gib es mit dem Encoder und den Tasten ein. Es wird in Großbuchstaben gespeichert und als dein Stationsrufzeichen<span class="pocket"> in <strong>Fight the Pileup</strong> und</span> im <strong>QSO Bot</strong> verwendet.</td>
 <td>bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert)</td>
 </tr>
 <tr>
 <td><strong>Op Name</strong></td>
-<td>Dein Operatorname (z.B. dein Vorname). Gib ihn mit dem Encoder und den Tasten ein. Er wird in Großbuchstaben gespeichert<span class="pocket">und zusammen mit deinem Rufzeichen in <strong>Fight the Pileup</strong> verwendet</span>.</td>
+<td>Dein Operatorname (z.B. dein Vorname). Gib ihn mit dem Encoder und den Tasten ein. Er wird in Großbuchstaben gespeichert<span class="pocket"> und zusammen mit deinem Rufzeichen in <strong>Fight the Pileup</strong> verwendet</span>.</td>
 <td>bis zu 8 Zeichen (in GROSSBUCHSTABEN gespeichert)</td>
 </tr>
 <tr>
 <td><strong>Reset Scores</strong></td>
-<td>Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele<span class="pocket">— die Bestenliste von <strong>Morse Invaders</strong>, die Bestwerte von <strong>Morsel</strong>, den gespeicherten Fortschritt von <strong>Radio Cave</strong> sowie die Bestenlisten von <strong>Trailblazer</strong>, <strong>Fox Hunt</strong> und <strong>Memory Chain</strong></span>. Du wirst gebeten, mit der <strong>FN</strong>-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.)</td>
+<td>Dies ist eine Aktion, keine Einstellung: Sie löscht die gespeicherten Bestenlisten und Spielstände der Spiele<span class="pocket"> — die Bestenliste von <strong>Morse Invaders</strong>, die Bestwerte von <strong>Morsel</strong>, den gespeicherten Fortschritt von <strong>Radio Cave</strong> sowie die Bestenlisten von <strong>Trailblazer</strong>, <strong>Fox Hunt</strong> und <strong>Memory Chain</strong></span>. Du wirst gebeten, mit der <strong>FN</strong>-Taste zu bestätigen. (Fight the Pileup speichert keine dauerhafte Bestenliste und ist nicht betroffen.)</td>
 <td>mit FN bestätigen</td>
 </tr>
 <tr>
@@ -4598,7 +4602,7 @@ click = no</code></pre>
 </tr>
 <tr>
 <td>MOPP</td>
-<td>Morserino Packet Protocol – das Datenformat zur Kodierung von Morsecode-Elementen (Dits, Dahs, Pausen) in kompakte Binärpakete für die Übertragung via<span class="classic">LoRa oder</span> WiFi/ESPNow.</td>
+<td>Morserino Packet Protocol – das Datenformat zur Kodierung von Morsecode-Elementen (Dits, Dahs, Pausen) in kompakte Binärpakete für die Übertragung via<span class="classic"> LoRa oder</span> WiFi/ESPNow.</td>
 </tr>
 <tr>
 <td>NVS</td>
@@ -4610,7 +4614,7 @@ click = no</code></pre>
 </tr>
 <tr>
 <td>QSK</td>
-<td>Volles Break-In – die Fähigkeit, zwischen gesendeten Elementen zu hören. In<span class="classic">LoRa/</span>WiFi-Transceiver-Modi wegen der paketbasierten Übertragung nicht möglich.</td>
+<td>Volles Break-In – die Fähigkeit, zwischen gesendeten Elementen zu hören. In<span class="classic"> LoRa/</span>WiFi-Transceiver-Modi wegen der paketbasierten Übertragung nicht möglich.</td>
 </tr>
 <tr>
 <td><span class="classic"></span>RSSI</td>
@@ -4662,6 +4666,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=d10c6a324d75 -->
+<!-- MANUALFRESH: lang=de src=a6e14de5810d -->
 </body>
 </html>

@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "1c30dd1c"
+#define VOICE_PACK_STAMP "38ccf11d"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -404,7 +404,12 @@ static const VoiceEntry voiceLookup[] = {
   {"a umlaut", "da9f7419"},
   {"at sign", "040579cc"},
   {"battery", "20c1d187"},
+  {"battery charging", "f37d4993"},
   {"battery empty", "528b14be"},
+  {"battery fault", "fcc9f966"},
+  {"battery high", "3266f6c9"},
+  {"battery low", "795a2f36"},
+  {"battery medium", "e398c3e9"},
   {"beta", "987bcab0"},
   {"char", "a956161a"},
   {"characters", "2593c7ce"},
@@ -424,6 +429,7 @@ static const VoiceEntry voiceLookup[] = {
   {"millivolts", "1586f38d"},
   {"o umlaut", "2e8ebc76"},
   {"of", "8bf8854b"},
+  {"on USB power", "e2bbd99d"},
   {"plus", "d7d18cfb"},
   {"point", "78ee54aa"},
   {"pro sign", "ffcdbd79"},
@@ -440,7 +446,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 426;
+static const unsigned int voiceLookupCount = 432;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 
