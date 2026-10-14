@@ -277,6 +277,15 @@ V9.1 release as `a11y-speed-battery-v91`.
   sees a longer pause, never a held key. LoRa/WiFi Trx playback runs through the same
   state machine and is held the same way (it only queues up behind the clip).
 
+- **Keying cuts speech** (Willi's decision 2026-10-14, after the bench test). The paddle keyer
+  is *not* held like the generator: while a clip plays the mixer is routed to the decoder, so
+  the sidetone is silent, yet `keyOut()` still drives the key line, the BLE keyboard and the
+  decoder display — on the bench the keyed characters appeared on screen while the clip went
+  on, and with Key Ext Tx the rig would have been keyed blind. So `loop()` calls
+  `MorseVoice::stop()` when `leftKey`/`rightKey` is down or `keyerState != IDLE_STATE` while
+  `isSpeaking()`. Holding the keyer instead was rejected (dropped/delayed paddle presses feel
+  broken in a keyer). Side effect: turning the encoder *while* keying speaks nothing.
+
 - **Battery status on mode-to-menu return** — `a11yAnnounceBatteryOnMenuEntry()` in
   `MorseMenu.cpp`, called from the top of `menu_()` right after `a11yForgetMenuContext()`.
   A `static bool firstCall` gate skips the first invocation (which comes from `setup()`

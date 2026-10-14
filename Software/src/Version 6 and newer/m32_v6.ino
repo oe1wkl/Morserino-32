@@ -1241,6 +1241,17 @@ void loop() {
                break;
    }
 
+#ifdef CONFIG_AUDIO_A11Y
+   // Keying cuts speech. While a clip plays the mixer is routed to the voice decoder, so the
+   // sidetone is silent - but keyOut() still drives the key line, the BLE keyboard and the
+   // decoder display. Keying through an announcement would put CW on the air (Key Ext Tx)
+   // that the operator cannot hear. So the first paddle or key contact, or a keyer element
+   // still running from its memory, stops the announcement and the sidetone comes back at
+   // once. Willi's decision 2026-10-14, after the bench test of the speed announcement.
+   if ((leftKey || rightKey || keyerState != IDLE_STATE) && MorseVoice::isSpeaking())
+       MorseVoice::stop();
+#endif
+
    switch (morseState) {
       case morseKeyer:    if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
