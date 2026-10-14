@@ -129,7 +129,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
      `tmp-squash` worktree was removed (its local branch still needs `git branch -D tmp-squash`);
      **`origin/a11y-speed-battery` survives.** Its work — the a11y edition speaking the new speed
      and the battery state on return to the menu, reported by a blind operator 2026-09-11 — was
-     **never merged and is not in 9.1** — rebased as `a11y-speed-battery-v91` and **merged 2026-10-14**; `origin/a11y-speed-battery` and the local `a11y-speed-battery-v91` can now be deleted.
+     **never merged and is not in 9.1** — rebased as `a11y-speed-battery-v91` and **merged 2026-10-14**; both branches deleted (local and origin) 2026-10-14.
    - Local `protocol-1.4` is already gone.
 
 ## B. M32KIP / V10
