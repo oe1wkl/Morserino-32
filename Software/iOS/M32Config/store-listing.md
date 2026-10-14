@@ -28,6 +28,15 @@ will search by name, and Utilities is where hardware companions live.)
 
     morse,cw,ham,radio,amateur,telegraphy,keyer,koch,morserino,m32,bluetooth
 
+## What's New in This Version (4000 max) — 1.1, build 2
+
+    Training files with accented letters
+    The File Builder now keeps letters with umlauts and accents (ä, é, ñ, å, ø and so on). From firmware 9.1 the Morserino's File Player sends them in Morse code, so a French, German or Scandinavian text no longer loses its letters on the way.
+    For older firmware, the new option "Convert accented letters to plain ASCII" writes them the way each language does without them: ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e. When the connected Morserino runs firmware older than 9.1, the option is switched on for you.
+
+    Help for the new preferences of firmware 9.1
+    Decoder Chars (national letters and the ITU brackets in decoded text) and Word Length (now also "4 or more", for practising longer words) come with their help texts.
+
 ## Description (4000 max)
 
     Morserino-32 Config sets up your Morserino from your iPhone over

@@ -1,6 +1,6 @@
 # Morserino-32 — Release Automation Design
 
-Status: **draft for review** — no code written yet. Implementation begins only after this document is approved.
+Status: **implemented and in use.** The design below was approved and built: the pipeline is `.github/workflows/release.yml` plus the helpers in `scripts/release/`, and every V9 release — `V9.0-beta.1` through `V9.1-beta.1` — was shipped with it. This document remains the design rationale and decision log; [RELEASING.md](RELEASING.md) is the one to read when you actually want to ship. Passages still written in the future tense ("to be created", "implementation can proceed") describe the design as it was approved rather than work outstanding; where the built pipeline ended up differing, an **Update** note says so.
 
 ---
 
@@ -161,11 +161,12 @@ For each tag, the workflow:
 
 The Pocket FAQ at `Documentation/FAQ/Morserino-32 Pocket FAQ.pdf` is built from `Morserino-32 Pocket FAQ.md` (and the German one from its `.md`) by `Documentation/FAQ/build.sh` (since 2026-08). **Update 2026-10-03:** CI now checks on every push that the committed FAQ and protocol PDFs were built from their current sources (`Documentation/check_doc_pdfs.py`, a source fingerprint in the PDF metadata — TODO E2), so the committed copy the release attaches is current by construction. The `.md`-newer-than-`.pdf` mtime warning in `release.yml` cannot fire on a fresh checkout (all files get the checkout time); it is superseded by that check.
 
-**Plan:**
-- **Phase 1 (initial release-workflow rollout):** the FAQ PDF is attached as-is from the committed copy. The workflow logs a warning if the `.md` is newer than the `.pdf`.
-- **Phase 2 (small follow-up):** add a `build.sh` under `Documentation/FAQ/` (modelled on the User Manual one — pandoc + the same Lua filter where applicable). Once it exists, the workflow rebuilds the FAQ alongside the manuals.
+**As built (updated 2026-10-11):**
+- **Phase 1 shipped as designed:** step 8 of `release.yml` attaches the committed PDF as-is, renamed to `Morserino-32.Pocket.FAQ.pdf`.
+- **Phase 2 — rebuilding the FAQ inside the release workflow — is dropped.** `Documentation/FAQ/build.sh` exists (2026-08), and the CI gate above refuses a push whose committed FAQ PDF does not match its `.md`. The release therefore attaches a PDF that is current by construction, and rebuilding it at tag time would only put pandoc and weasyprint on the runner's critical path for no gain.
+- **One leftover:** the mtime warning in step 8 is dead code — a fresh checkout stamps every file with the checkout time, so the `.md` is never newer than the `.pdf`. Harmless; it can go the next time `release.yml` is touched.
 
-This keeps the initial pipeline focused while not losing track of the goal.
+Keeping the FAQ out of the release build keeps the pipeline focused, now with CI rather than a warning to catch drift.
 
 ### pandoc
 
@@ -469,7 +470,7 @@ All previously open questions are now resolved:
 
 | ID | Question | Decision |
 |---|---|---|
-| P1 | Rebuild Pocket FAQ PDF, or copy committed file? | Copy committed file in Phase 1; add `Documentation/FAQ/build.sh` and rebuild in Phase 2 |
+| P1 | Rebuild Pocket FAQ PDF, or copy committed file? | Copy the committed file — as built. `Documentation/FAQ/build.sh` arrived separately (2026-08); the planned Phase 2, rebuilding inside the workflow, was dropped 2026-10-11 in favour of the CI freshness gate (see §6) |
 | P2 | `pandoc` availability for `build.sh` | Confirmed at `/usr/local/bin/pandoc` |
 | N1 | Beta release notes — share with stable section, or per-beta? | Share with the cumulative `### Changes V<ver>` section |
 | R1 | GH Release created as draft or auto-published? | Draft; flip to auto-publish later if desired |
@@ -478,7 +479,7 @@ All previously open questions are now resolved:
 | C1 | Hard-code Dropbox path or env var? | Env var `MORSERINO_DROPBOX_ROOT` |
 | **A3 (revised)** | Beta tag scheme | `V<ver>-beta.<counter>`; date stamped at build time; same-day collisions get a `.<counter>` filename suffix (see §5) |
 
-Design is **locked**. Implementation can proceed:
+Design is **locked**. Implementation followed these steps, all of them done:
 1. `RUNNER_SETUP.md` written and runner registered.
 2. `scripts/release/` Python helpers written, each unit-testable with `--dry-run`.
 3. `.github/workflows/release.yml` written, pointing at the self-hosted runner.

@@ -320,6 +320,79 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 // somewhere else (power-on, returning from a mode, leaving the preferences menu).
 static uint8_t a11yMenuParent = 0xFF, a11yLastEntry = 0xFF;
 static void a11yForgetMenuContext() { a11yMenuParent = a11yLastEntry = 0xFF; }
+
+// Say how much battery is left when the user returns to the menu from a mode. The visible
+// battery icon in the status line is useless to a blind operator, and running out matters
+// specifically here: the TLV320 audio codec is the first thing to give up on this build
+// when the cell sags, so a blind operator can be left with a working device that says
+// nothing at all. Every menu-from-mode entry gets one line so the state is periodically
+// re-surfaced without becoming chatty inside a session.
+//
+// Suppresses on the very first menu_() call (the one from setup()): the boot splash already
+// announces the reading, and doing it twice reads as a stutter.
+static void a11yAnnounceBatteryOnMenuEntry() {
+    static bool firstCall = true;
+    if (firstCall) { firstCall = false; return; }         // boot splash covered it
+
+    uint16_t v = batteryVoltage();
+#ifdef CONFIG_MCP73871
+    uint8_t pps = MorseOutput::getPowerpathState();
+    if (pps == 4 && v > 4290) pps = 6;                    // matches checkPowerpathState()
+
+    // MCP73871 powerpath state, encoded as (STAT1<<2) | (STAT2<<1) | PG. Same numbers the
+    // display code (MorseOutput::displayBatteryStatus) switches on; keep the two in step.
+    //
+    //   0  fault (both status pins asserted at once)
+    //   2  charging in progress on USB
+    //   3  charging at very low battery -- the boot check treats this as empty-battery
+    //      shutdown, and displayBatteryStatus was originally labelling it "Low!" too
+    //   4  charge complete, still on USB
+    //   6  no battery detected (running from USB, no cell installed)
+    //   7  running on battery, no USB (all pins inactive) -- this is the everyday case,
+    //      not a fault; displayBatteryStatus shows nothing for it beyond the voltage.
+    //   1, 5  nonsensical combinations that appear only in transient/error conditions -
+    //      fall back to voltage so we say SOMETHING sensible.
+    //
+    // The first version of this mapped state 7 to "battery fault", which is wrong: 4-bar
+    // battery with no USB reports as state 7 and would announce "battery fault" instead of
+    // "battery high". Fixed 2026-09-11 after bench feedback.
+    const char *msg;
+    if      (pps == 2 || pps == 4) msg = "battery charging";  // 2 = charging, 4 = full on USB
+    else if (pps == 6)              msg = "on USB power";      // no battery installed
+    else if (pps == 3)              msg = "battery low";       // MCP-reported critical low
+    else if (pps == 0)              msg = "battery fault";     // actual impossible combination
+    else {                                                      // 7 (on battery) and 1/5 fallback
+        // Same thresholds as MorseOutput's voltageToBars(): 0-1 bars -> low (<3500), 2-3
+        // bars -> medium, 4 bars -> high. Low fires early enough (3500 mV, well above the
+        // codec-critical zone) that a blind operator has time to plug in before it goes
+        // mute. Below the shutdown threshold the empty-battery path handles it directly.
+        if      (v < 3500) msg = "battery low";
+        else if (v < 3860) msg = "battery medium";
+        else               msg = "battery high";
+    }
+    MorseVoice::announce(msg);
+#else
+    // Classic (no MCP charge controller). Not built into any a11y edition today - the
+    // pocketwroom-accessibility env is the only a11y build - but the guard keeps this
+    // future-proof: voltage-only, no charging/no-bat detection.
+    if      (v < 3500) MorseVoice::announce("battery low");
+    else if (v < 3860) MorseVoice::announce("battery medium");
+    else               MorseVoice::announce("battery high");
+#endif
+
+    // Commit the announcement to MorseVoice's play sequence before the menu's own
+    // announcement lands and would otherwise replace it. announce() only sets a PENDING
+    // utterance with a 120 ms settle timer; tick() promotes pending -> playing once the
+    // timer elapses, and once a clip is playing, a further announce() only queues after
+    // it. We are about to call menuDisplay() (which announces the menu path) within a
+    // few ms of returning here, so drive tick() for ~150 ms until this clip starts. Same
+    // idiom as splashPause() around announceSplash() in m32_v6.ino.
+    uint32_t deadline = millis() + 150;
+    while ((int32_t)(millis() - deadline) < 0) {
+        MorseVoice::tick();
+        delay(5);
+    }
+}
 #endif
 
 ////// The MENU
@@ -352,6 +425,7 @@ void MorseMenu::menu_() {
    m32state = menu_loop;
 #ifdef CONFIG_AUDIO_A11Y
    a11yForgetMenuContext();     // arriving from a mode (or from power-on): announce the full path
+   a11yAnnounceBatteryOnMenuEntry();   // one line of state per mode-to-menu return; skipped on cold boot
 #endif
    // Persist a volume changed in the mode we just left. The in-mode save only fires on
    // the vol-button toggle back to speed mode; every other exit (long-press to menu,
@@ -1043,6 +1117,13 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 Buttons::volButton.clicks  = 0;
                 MorseQsoBot::run((menuNo) MorsePreferences::menuPtr);
                 m32state = menu_loop;
+#ifdef CONFIG_AUDIO_A11Y
+                // The bot comes back through here (menuExec() returning false), not through
+                // menu_(), so do what menu_() does for a mode-to-menu return: name the full path
+                // again and say the battery state.
+                a11yForgetMenuContext();
+                a11yAnnounceBatteryOnMenuEntry();
+#endif
                 return false;
 #endif
 #ifdef CONFIG_CW_GAME

@@ -8,9 +8,12 @@
 // selection every time the project is regenerated -- Xcode reads the value from
 // here, not from the generated .xcodeproj.
 //
-// Your Team ID is the code in parentheses in:
-//   security find-identity -v -p codesigning
-// e.g. "Apple Development: you@example.com (ABCDE12345)" -> ABCDE12345
+// Your Team ID is the OU field of your signing certificate:
+//   security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject
+// e.g. "... CN=Apple Development: you@example.com (ABCDE12345), OU=FGHIJ67890, ..." -> FGHIJ67890
+// NOT the code in parentheses after your e-mail address: that one identifies you, not your team,
+// and signing with it makes Xcode report an unknown team after every `xcodegen generate`.
+// (Also shown in Xcode > Settings > Accounts, and at developer.apple.com > Membership details.)
 //
 // Leaving it empty is fine for a simulator build; a build to a real device
 // needs it (or pick the team by hand in Signing & Capabilities).

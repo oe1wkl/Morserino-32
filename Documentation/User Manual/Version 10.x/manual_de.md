@@ -159,10 +159,13 @@ Edition schon, und du kannst diesen Abschnitt überspringen.
 Ein neuer M32 Pocket wird mit der **Standard**-Edition ausgeliefert, und diese
 Edition ist stumm: Sie zeigt die Menüs am Display an, liest sie aber nicht vor.
 Die **Accessibility Edition** spricht stattdessen — sie meldet sich beim
-Einschalten selbst mit dem Batteriestatus, und sie spricht Menüeinträge,
-Einstellungen und deren Werte, während du dich durch sie bewegst. Sie kostet
-nichts, sie wird über USB installiert, und du kannst jederzeit wieder zur
-Standard-Edition zurückkehren.
+Einschalten selbst mit dem Batteriestatus, sie spricht Menüeinträge,
+Einstellungen und deren Werte, während du dich durch sie bewegst, sie sagt die
+neue Geschwindigkeit, sobald du sie änderst, und jedes Mal, wenn du aus einem
+Übungsmodus ins Menü zurückkehrst, sagt sie dir, wie es der Batterie geht —
+**high**, **medium**, **low** oder **charging**. Sie kostet nichts, sie wird
+über USB installiert, und du kannst jederzeit wieder zur Standard-Edition
+zurückkehren.
 
 Die beiden sind **Alternativen, nicht eine Edition mit zusätzlicher Sprache**: Es
 läuft entweder die eine oder die andere, und die sprechende kommt ohne drei Dinge
@@ -753,7 +756,7 @@ zwischen 0 und 7 einstellen (0/8 bis 7/8 einer Punktlänge). Der
 Standardwert ist 4 (halbe Punktlänge). Wenn du noch unerwünschte Dits
 erzeugst, erhöhe diesen Wert.
 
-Zur Einstellung **AutoChar Spce** (Mindestlänge für den
+Zur Einstellung **AutoChar Spc** (Mindestlänge für den
 Zeichenzwischenraum) siehe Abschnitt **Einstellungen zu Key,
 Paddles und Keyer**.
 
@@ -3353,12 +3356,11 @@ konfiguriert hast, kannst du eine Textdatei für das Morse-Training
 hochladen. Derzeit kann nur eine Datei auf dem Morserino-32 gespeichert
 werden; beim Hochladen einer neuen Datei wird die alte überschrieben.
 
-Die **hochzuladende Datei** sollte eine einfache ASCII-Textdatei ohne
-Formatierung sein (keine Word-Dateien, PDFs usw.). Deutsche Zeichen
-(*ÄÖÜäöüß*) in UTF-8-Kodierung sind erlaubt und werden in *ae*, *oe*,
-*ue* und *ss* umgewandelt. Die Datei kann Groß- und Kleinbuchstaben
-sowie alle Zeichen der Koch-Methode (einschließlich Betriebszeichen,
-insgesamt 51 verschiedene Zeichen) enthalten. Alle anderen Zeichen
+Die **hochzuladende Datei** sollte eine einfache Textdatei in UTF-8-Kodierung ohne
+Formatierung sein (keine Word-Dateien, PDFs usw.). Sie kann Groß- und Kleinbuchstaben,
+Buchstaben mit Umlauten und Akzenten sowie alle Zeichen der Koch-Methode (einschließlich
+Betriebszeichen) enthalten; wie sie gesendet werden, steht unter **Kodierung von Textdateien
+für den File Player** im Abschnitt **Was kann generiert werden?**. Alle anderen Zeichen
 werden beim Abspielen im Morsecode ignoriert. Die Datei kann recht groß
 sein – ca. 1 MB Speicherplatz steht zur Verfügung (genug für Mark Twains
 „The Adventures of Huckleberry Finn").
@@ -3732,7 +3734,7 @@ oder die Verwendung einer externen Handtaste relevant sind (stelle
 | **Keyer Mode** | Stellt den Iambic-Modus (A oder B), Ultimatic, Non-Squeeze oder Handtaste (Straight Key) ein; siehe Abschnitt **CW Keyer**. | Curtis A / **Curtis B** / Ultimatic / Non-Squeeze / Straight Key |
 | **CurtisB DahT%** | Timing im Curtis-B-Modus für Dahs; siehe Abschnitt **CW Keyer**. Gilt nur für Iambic B — Ultimatic ignoriert diese Einstellung. | 0–100, in 5er-Schritten [**35–55**] |
 | **CurtisB DitT%** | Timing im Curtis-B-Modus für Dits; siehe Abschnitt **CW Keyer**. Gilt nur für Iambic B — Ultimatic ignoriert diese Einstellung. | 0–100, in 5er-Schritten [**55–95**] |
-| **AutoChar Spce** | Mindestabstand zwischen den Zeichen. | Off / min. 2 / **3** / 4 dots |
+| **AutoChar Spc** | Mindestabstand zwischen den Zeichen. | **Off** / min. 2 / 3 / 4 dots |
 | **Latency** | Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub" sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an" ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. Im Ultimatic-Modus ohne Wirkung, der behandelt die Paddles auf eigene Weise. | Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: **50 %**, d.h. eine halbe Punktlänge). |
 | **Bluetooth Use** | Legt fest, wofür das Bluetooth-Funkmodul verwendet wird. Die ersten vier Optionen (neben **No Bluetooth**) sind Tastatur-Modi: Die Option **VBand Kbd** ermöglicht die Verwendung des Morserinos als VBand-Dongle (zu VBand siehe *https://hamradio.solutions/vband/*). **Decoded output** sendet alle dekodierten Zeichen nicht nur ans Display, sondern auch über Bluetooth. Die Option **Generic Kbd** macht im Wesentlichen dasselbe wie **Decoded output**, sendet aber zusätzlich den Code für die „**Enter**"-Taste (neue Zeile), wenn du \<KA> (neue Nachricht) eingibst, und für die „**Backspace**"-Taste, wenn du \<HH> eingibst (d.h. 8 Dits). Der M32 erscheint immer als US-Tastatur (QWERTY-Layout) – dies ist bei der Konfiguration am angeschlossenen Computer zu berücksichtigen. *Die Bluetooth-Tastaturausgabe ist nur im Modus CW Keyer aktiv (siehe auch **Benutzung der Bluetooth-Tastatur-Funktion**).* Die letzte Option, **BLE Serial**, stellt stattdessen das M32-Serielle-Protokoll (siehe **Nutzung des seriellen Ausgangs des M32**) über Bluetooth Low Energy zur Verfügung — damit können Apps auf Smartphones und Tablets den Morserino fernsteuern und Text senden, der als CW getastet wird, ganz ohne USB-Kabel; die Auswahl wird bei der nächsten Rückkehr ins Hauptmenü wirksam. Beachte: Wie eine USB-Protokollsitzung verhindert auch eine aktive BLE-Protokollsitzung die automatische Abschaltung (Timeout) — denke daran im Akkubetrieb. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
 | **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **Bluetooth Use** oben). Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
@@ -4472,7 +4474,12 @@ folgenden Seiten aufrufst:
   Datei kombinieren kannst, die mit dem M32-File-Player verwendet werden
   kann. **Der Datei-Builder akzeptiert nicht nur Textdateien, sondern
   auch PDF-, EPUB- und Textverarbeitungsformate und konvertiert sie in
-  einfachen Text, der für den File Player geeignet ist.**
+  einfachen Text, der für den File Player geeignet ist.** Buchstaben mit
+  Umlauten und Akzenten bleiben erhalten, denn der File Player spielt sie
+  seit Firmware 9.1; für ältere Firmware wähle **Convert accented letters
+  to plain ASCII** (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e usw.).
+  Ist ein Morserino mit älterer Firmware verbunden, ist diese Option
+  schon gewählt.
 
 * Du kannst Christofs Javascript-Programm auch lokal ausführen; der
   Quellcode ist unter *https://github.com/cdaller/morserino32-trainer*

@@ -5,9 +5,30 @@ Section A was checked against the live repository the same day; sections B–H c
 from session transcripts and memory notes, and items marked *(verify)* may already
 be done.
 
-Branches: `master` = V9.0.1 released, now provisional **9.1.0 BETA**. `m32kip` = the
-**V10** line (10.0.0 BETA), pushed to `origin/m32kip`. When merging master into
-`m32kip`, `morsedefs.h` will conflict on the version lines — **keep 10.0.0**.
+Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (published, in the web installer, binaries archived).
+`m32kip` = the **V10** line (10.0.0 BETA), pushed to `origin/m32kip`. When merging master into
+`m32kip`, `morsedefs.h` will conflict on the version lines — **keep 10.0.0 and `BETA true`**.
+
+## ▶ Where we are — start here (2026-10-11)
+
+**Release plan (Willi):** 9.1 is out; next is the **first V10 beta** (m32kip).
+
+1. ~~**V9.1 stable**~~ — **released 2026-10-11** (tag `V9.1`, draft published the same day; installer shows 9.1
+   for classic, Pocket and the Accessibility Edition). It is V9.1-beta.1 plus one firmware change, the I2S sidetone
+   alignment fix (C6), shipped **without its scope test** by Willi's decision — the test is still owed (C6 below).
+   iOS app 1.1 (build 2) was approved and is in the App Store.
+2. ~~**Next master change**~~ — **merged + pushed 2026-10-14** (f5c853b): master is **9.2 beta** (Willi: "9.2
+   for the time being — we might soon jump to a 10.0 beta with m32kip included"). The a11y speed/battery speech
+   (rebased from `origin/a11y-speed-battery` as `a11y-speed-battery-v91`), plus "keying cuts an announcement"
+   added after the bench test; all bench-tested by Willi on an a11y Pocket. Ext-Tx keying during an
+   announcement was not bench-tested. The **QSO Bot** gap (speed changes silent there) is fixed too, merged
+   2026-10-14 (`qsobot-speed-voice`, bench-tested): voice tick in the bot loop, keying cuts speech, bot CW
+   pauses while a clip plays, and battery line + menu path after leaving the bot.
+3. **Then V10:** merge master into `m32kip` once more — 18 commits since 5bb9994 (plus the `[skip ci]` archive
+   commit), incl. **V9 manual edits that must be ported to the V10 manual** (File Builder paragraph and the
+   file-upload passage, both 2026-10-05), the sidetone fix, and the 9.1 changelog — then the B items below
+   (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
+   `V10.0-beta.1`.
 
 ---
 
@@ -40,10 +61,10 @@ Several debts need the classic/OLED unit, so clear them together:
 
 **Wave 4 — cheap goodwill, any spare 10 minutes:** replies to Rodjo and the pause/resume
 claimant (F1, F2); quick cleanup (A6–A9: merged branches, `git branch -D scratch/umlaut-probe`,
-inspect the three stashes, stale line in `RELEASE_AUTOMATION_DESIGN.md`).
+inspect the three stashes).
 
-**Wave 5 — after V10, each in its own session:** the I2S-sidetone and generated-CW 6 ms
-fixes (C6, B5 — related); snapshot bundles, sidetone upstreaming, a11y roadmap, QSO Bot
+**Wave 5 — after V10, each in its own session:** the generated-CW 6 ms fix (B5; the related
+I2S-sidetone fix C6 shipped in 9.1, scope test owed); snapshot bundles, sidetone upstreaming, a11y roadmap, QSO Bot
 leftovers (H1–H4); rewrite the stale `devdocs/HANDOFF.md` (H5); CI gates for the FAQ and
 protocol PDFs (E2).
 
@@ -53,13 +74,15 @@ protocol PDFs (E2).
 2. **Burst loss (B4):** ship V10 with the documented workaround (Rig Delay ≥ 250 ms), or fix
    first? Recommendation: ship with the workaround (one loss pattern, documented, 250 ms
    floor rests on one test run).
-3. **FAQ header** says "Answers reflect **firmware version 9.0**" — change to 9.0.1, or does
-   9.0 mean "the 9.0 line"?
+3. ~~**FAQ header**~~ — decided 2026-10-05: "firmware version **9.x**" (EN + DE, PDFs rebuilt).
 4. ~~Next master release is 9.1~~ (decided) — the `### CHANGES V. 9.1` section now exists,
    opened with the BLE heap-leak fix.
 
-### Device state (2026-10-04)
-Both units run the **9.1 build from master ce83d2a** (I3 + I2), standard edition on the Pocket (Bluetooth Use 5); `/player.txt` on both is the I3 test file (`devdocs/language-support/bench-player.txt`).
+### Device state (2026-10-05)
+All run current master firmware (9.1 beta code; later master commits are docs/tools only):
+**classic** (flashed 2026-10-05, protocol harness 122/122), **a11y Pocket** (connected now; firmware + voice image,
+Bluetooth Use 0), **standard Pocket** (swapped out; C15 build cb32593, Bluetooth Use 5, Word Length "up to 4").
+`/player.txt` may be Willi's File Builder test (`devdocs/language-support/file-builder-test.txt`) or the I3 bench file.
 **For M32KIP work (wave 2, B6, B14) re-flash both from the `m32kip` folder.** Earlier staging (Quick Start into
 Remote Rig, pass phrase) is NVS and survives, but check it. TRX Peer fields kept for now (B7).
 
@@ -72,8 +95,8 @@ Software/src/.pio` before its first build.
 (a11y voice image) works. Piper for voice clips: the repo's `.venv` is an old Intel build — a
 working arm64 Piper 1.4.2 needs a venv on a SHORT path (espeak-ng truncates its data path at
 ~160 characters), e.g. `PIPER_BIN=/private/tmp/claude-501/pv/bin/piper ./generate_audio.sh`.
-`xcode-select` points at the Command Line Tools, not Xcode 27 (`devicectl` missing on the
-command line).
+`xcode-select` points at Xcode 27 (`/Applications/Xcode.app`, checked 2026-10-05). JavaScript can be tested
+without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A/Helpers/jsc`.
 
 ---
 
@@ -89,7 +112,10 @@ command line).
    checkouts on a detached HEAD, `stash@{2}` is a GitHub Desktop stash on `test1`.
    Contents not inspected — look before dropping.
 7. ~~`Software/tests/kip/` untracked~~ — resolved, it is tracked on `m32kip`.
-8. ~~`devdocs/RELEASE_AUTOMATION_DESIGN.md:162` says the FAQ has no `build.sh`~~ — fixed 2026-10-03.
+8. ~~`devdocs/RELEASE_AUTOMATION_DESIGN.md` stale claims~~ — the "FAQ has no `build.sh`" line fixed
+   2026-10-03; the §6 Phase-2 plan, the P1 decision row and the "draft for review — no code written
+   yet" status header fixed 2026-10-11. Left alone: the dead mtime warning in `release.yml` step 8
+   (noted in §6, to go when that file is next touched).
 9. **Branch graveyard** (verified 2026-09-30; "unmerged" means not an ancestor of master —
    squash-merged work also shows up that way, so check the PR before deleting):
    - Merged, safe to delete: `claude/cranky-bardeen-dcddba`, `pr-222`, `pr-223`.
@@ -100,9 +126,11 @@ command line).
    - Probably squash-merged, confirm against PRs: `BLE_MIDI`, `ble-output-single-selector`
      (#189), `koch-preview-encoder-role` (#210/#211), `practice-stats-review-followups`,
      `pocket-erase-setup-screen` (also on origin), `review207`, `claude/optimistic-jones-457246`.
-   - `a11y-speed-battery` (6 commits incl. a fixup, on origin) and `tmp-squash` (5 commits,
-     checked out in worktree `.claude/worktrees/sad-kepler-c33841`) look like the same
-     work before/after the history rewrite — decide which survives.
+   - ~~`a11y-speed-battery` vs `tmp-squash`~~ — **checked 2026-10-11:** identical trees, so the
+     `tmp-squash` worktree was removed (its local branch still needs `git branch -D tmp-squash`);
+     **`origin/a11y-speed-battery` survives.** Its work — the a11y edition speaking the new speed
+     and the battery state on return to the menu, reported by a blind operator 2026-09-11 — was
+     **never merged and is not in 9.1** — rebased as `a11y-speed-battery-v91` and **merged 2026-10-14**; both branches deleted (local and origin) 2026-10-14.
    - Local `protocol-1.4` is already gone.
 
 ## B. M32KIP / V10
@@ -144,6 +172,21 @@ command line).
     off), then worked; not reproducible on demand, and no core dump was written, so not a crash — a brown-out
     or a hardware watchdog. **`GET resets`** (c22d8d8, protocol 1.5) now records why each boot happened: when it
     recurs, read it before anything else.
+15. **A11y pronunciation, for V10 (Willi, 2026-10-05):** "Disp MAC Addr" is spoken "Disp M-A-C address"; he wants
+    "Display MAC address". Cause: `Software/tools/audio-accessibility/spoken_overrides.tsv` line 64 (`Disp MAC Addr` →
+    `Disp MAC Address`) overrides the extractor's own `MENU_SPOKEN` entry. Fix: change that line to
+    `Display MAC address` and re-run extractor + generate_audio.sh (the clip 43f7eeee already exists; the old one
+    becomes an orphan to prune). Everything else voiced in 9.1 was heard and approved on an a11y Pocket.
+16. **Review the order of the preferences — on the device and in the manual (Willi, 2026-10-05, for V10).** Willi
+    wants to go through the order himself. Inputs: `pliste[]`/`prefPos` order and the per-mode option lists
+    (`MorsePreferences.cpp`, the `posXxx` arrays passed to `setCurrentOptions`) vs the preference tables in the
+    V10 manual (EN + DE). Remember CLAUDE.md §3 rule 10: `prefPos`, `pliste[]` and `prefName[]` are positional and
+    must move together; NVS keys and snapshots go by name, so reordering is storage-safe, but the a11y voice
+    tables and the protocol's config order follow (re-run the extractor).
+17. **Check that the preferences offered inside each mode are correct and meaningful (Willi, 2026-10-05, for V10).**
+    Each mode shows only a subset (its option list in `MorsePreferences.cpp`); verify per mode that nothing
+    irrelevant is offered and nothing needed is missing — e.g. Word Length / Decoder Chars only where they act.
+    Best done together with 16, with a mode × preference table as the working document.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
@@ -163,9 +206,9 @@ command line).
    spurious-element risk unchecked (mitigation if needed: minimum-open time).
 5. **`pocketwroom-lora`** compiles, never bench-tested (shared-SPI question in its commit message).
 6. **CW timing** (`devdocs/cw-timing-audit/FINDINGS.md`):
-   - I2S sidetone ~6 ms heavier than the key line — **fix implemented on branch `sidetone-alignment`** (104e6b9,
-     worktree `/private/tmp/claude-501/m32-sidetone`), **not merged: needs Willi's 2-channel scope test** (FINDINGS.md
-     "How to verify").
+   - I2S sidetone ~6 ms heavier than the key line — **fix merged to master for V9.1 on 2026-10-11** (cherry-picked
+     from branch `sidetone-alignment`, 104e6b9; branch deleted) and **released in V9.1** **without the scope test**,
+     by Willi's decision; the 2-channel scope test (FINDINGS.md "How to verify") is still owed as confirmation.
    - Re-measure after the `MorseCwEngine` gap fix (Fox Hunt / Pileup / Radio Cave) never confirmed.
 7. **ClickButton latch fix:** only the CW Generator long-press exit is bench-confirmed (host tests cover the rest).
    The per-site `clicks = 0` cleanup pass is **deliberately not done** (2026-10-05): with the root cause fixed those
@@ -188,13 +231,21 @@ command line).
    by the ClickButton root-cause fix** (2b0b3ac, one-shot long click): the host tests' "the caller it returns to does
    NOT see it a second time" is exactly this case (re-checked 2026-10-05, all pass).
 3. **A11y gaps:** decoder char-by-char voicing. ~~Battery "3980 mV" calibration readout~~ — **done 2026-10-05 on `master`**
-   ("3 point 9 8 0 volts", composed; not yet heard on an a11y Pocket).
+   ("3 point 9 8 0 volts", composed) — **moot in practice**: the Pocket's Hardware Config skips Calibr. Batt.
+   (`if (hwConf == 1) hwConf = 2`), so no a11y device can reach it; kept as harmless, correct code.
+   **Small old bug found there:** turning the encoder *backwards* from Flip Screen maps 1 → 2 again, so the Pocket
+   cannot step back past it (forward wraps round, so Cancel is still reachable). Fix: `hwConf = (t > 0 ? 2 : 0)`.
 4. **A11y voice store:** **~164 KB headroom (~13 clips) on `m32kip` as of 2026-10-02**, after the extractor fix (was ~61 KB). Compose numbers; never per-value clips;
    grep `buildfs` output for "full".
 5. **A11y very-late freeze** (decoder-reuse leak) — dead end, unresolved.
 6. ~~**BLE transient splashes** silent in the a11y edition~~ — **done 2026-10-05 on `master`**: "Bluetooth serial suspended
    for wireless mode" / "Bluetooth serial failed to start" (2 clips; not yet heard on an a11y Pocket).
 7. ~~**Protocol C15** (input-length cap)~~ — **done 2026-10-05 on `master`** (USB 1024 / `LINE TOO LONG`, documented).
+9. ~~**Config Tool, File Builder: accented letters**~~ — **done 2026-10-05**: Latin-1 letters are kept (9.1 plays
+   them); the option "Convert accented letters to plain ASCII" does German ä→ae ö→oe ü→ue ß→ss, Nordic å→aa æ→ae
+   ø→oe, Icelandic þ→th ð→d, the rest via NFD (é→e, č→c); þ/ð and letters beyond Latin-1 are folded in both modes.
+   Preset from the connected firmware (ticked below 9.1). Manuals EN/DE (File Builder + the outdated "German
+   characters are converted" upload passage). The iOS app copies the tool at build time, so its next build has it.
 8. **Pocket USB replies still stall now and then (HWCDC, core 2.0.17).** Found while testing C15, present in 9.0.1:
    a reply stops after its first part (always 6–7 + 64·k bytes, i.e. after a full 64-byte packet that followed a
    short first one) and the rest goes out only when the host sends again. Measured with a set/get-lesson loop:
@@ -229,7 +280,13 @@ command line).
 
 ## G. iOS app
 
-- ~~App Store review~~ — **live in the App Store** (Willi, 2026-10-05).
+- ~~App Store review~~ — **1.0 live in the App Store** (Willi, 2026-10-05).
+- **1.1 (build 2)** archived, uploaded and tested via TestFlight 2026-10-05 (File Builder accents; BLE text upload
+  from the app works — previously untested). **Submitted for review 2026-10-09, automatic release; 9.1 stable
+  follows once 1.1 is in the App Store.** Fixed on the way:
+  `project.yml` now generates a shared scheme and takes the plist version from `MARKETING_VERSION` /
+  `CURRENT_PROJECT_VERSION` (XcodeGen had hard-coded 1.0 / 1); the Team ID is the certificate's **OU**
+  (F44LJ6Y4F9), not the code in parentheses — `Local.xcconfig` had the personal ID. "Xcode Cloud" prompt: declined.
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 

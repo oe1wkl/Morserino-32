@@ -1223,6 +1223,15 @@ void loop() {
 
    m32state = active_loop;
 
+#ifdef CONFIG_AUDIO_A11Y
+   // Drive async voice playback while a mode is running. The menu, preferences and text
+   // entry loops each tick MorseVoice themselves, but this is the only path when a mode
+   // owns the encoder - and changeSpeed() (called from the encoder handler below) now
+   // announces the new WpM, so tick has to advance it here. Cheap when nothing is playing:
+   // a couple of flag checks and a millis() compare.
+   MorseVoice::tick();
+#endif
+
    if (playCW) {
                   if (checkPaddles()) {
                     stopPlayCw();
@@ -1241,6 +1250,17 @@ void loop() {
       default: checkPaddles();
                break;
    }
+
+#ifdef CONFIG_AUDIO_A11Y
+   // Keying cuts speech. While a clip plays the mixer is routed to the voice decoder, so the
+   // sidetone is silent - but keyOut() still drives the key line, the BLE keyboard and the
+   // decoder display. Keying through an announcement would put CW on the air (Key Ext Tx)
+   // that the operator cannot hear. So the first paddle or key contact, or a keyer element
+   // still running from its memory, stops the announcement and the sidetone comes back at
+   // once. Willi's decision 2026-10-14, after the bench test of the speed announcement.
+   if ((leftKey || rightKey || keyerState != IDLE_STATE) && MorseVoice::isSpeaking())
+       MorseVoice::stop();
+#endif
 
    switch (morseState) {
       case morseKeyer:    if (doPaddleIambic(leftKey, rightKey)) {
@@ -2564,6 +2584,18 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
   static char c;
   boolean silentEcho;
 
+#ifdef CONFIG_AUDIO_A11Y
+  // Hold the CW generator silent while a voice clip is playing. Both audio paths share
+  // one I2S pipeline on the Pocket, so a generator that keeps calling pwmTone / pwmNoTone
+  // through a clip fights the mixer and produces clicks instead of CW. Gate on KEY_UP
+  // only, not on KEY_DOWN: an active dit or dah must be allowed to complete its natural
+  // key-off, otherwise the tone hangs on until speech ends. Once we land in KEY_UP we
+  // stay here (returning early) until MorseVoice::isSpeaking() clears; then the state
+  // machine advances the next element as usual. Reported by a blind operator (2026-09-11).
+  if (MorseVoice::isSpeaking() && generatorState == KEY_UP)
+      return;
+#endif
+
   switch (generatorState) {                                             // CW generator state machine - key is up or down
     case KEY_UP:
             if (millis() < genTimer)                                    // not yet at end of the pause: just wait
@@ -3388,6 +3420,16 @@ void changeSpeed( int t) {
       else                                               // not just the narrow WPM field, or its fragments
           displayCWspeed();                     // update display of CW speed
   }
+#ifdef CONFIG_AUDIO_A11Y
+  // Announce the new speed. announceOverriding() also cuts any clip that is already
+  // playing so a fast encoder sweep speaks only the settled value - without it the first
+  // detent's clip plays fully (~800 ms) and swallows every detent that fires during
+  // playback, and the user hears the initial value AND the final one with nothing in
+  // between. Same path serves the echo trainer's speed-adapt step, which fires once per
+  // word - exactly the case a blind user wants to hear.
+  MorseVoice::announceOverriding(String(MorsePreferences::wpm));
+  MorseVoice::announceMore("words per minute");
+#endif
 }
 
 

@@ -21,6 +21,9 @@ targets:
   M32Config:
     type: application
     platform: iOS
+    # A shared scheme, generated with the project: without it Xcode 27 opened the regenerated project with
+    # no scheme at all (Run greyed out, no destination picker), as nothing auto-created one any more.
+    scheme: {}
 
     sources:
       - path: Sources
@@ -67,8 +70,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.kraml.m32config
-        MARKETING_VERSION: "1.0"
-        CURRENT_PROJECT_VERSION: "1"
+        MARKETING_VERSION: "1.1"
+        CURRENT_PROJECT_VERSION: "2"
         # Swift 5 language mode on purpose: Swift 6 strict concurrency turns the
         # CoreBluetooth delegate pattern into a fight that buys this app nothing.
         SWIFT_VERSION: "5.0"
@@ -95,6 +98,11 @@ targets:
       path: Generated/Info.plist
       properties:
         CFBundleDisplayName: M32 Config
+        # The version comes from MARKETING_VERSION / CURRENT_PROJECT_VERSION above. Without these two lines
+        # XcodeGen writes 1.0 / 1 into the plist, whatever the build settings say - and the 1.1 archive
+        # came out as 1.0 (1), which App Store Connect refused.
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
         UILaunchScreen: {}
         UISupportedInterfaceOrientations:
           - UIInterfaceOrientationPortrait

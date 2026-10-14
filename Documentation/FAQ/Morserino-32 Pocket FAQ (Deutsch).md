@@ -10,7 +10,7 @@ Für jeden Morserino gibt es ein eigenes Handbuch. Diese Links liefern immer jen
 | **Morserino-32, 1. / 2. Edition** | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_DE.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_DE.epub) | [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_EN.pdf) · [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Classic_EN.epub) |
 | **Pocket, Accessibility Edition** | [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_DE.epub) · [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_DE.pdf) | [EPUB](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_EN.epub) · [PDF](https://www.morserino.info/manuals/Morserino-32_User_Manual_Pocket_Accessible_EN.pdf) |
 
-Die Antworten beziehen sich auf **Firmware-Version 9.0**.
+Die Antworten beziehen sich auf **Firmware-Version 9.x**.
 
 Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb ebenfalls englisch angegeben.
 

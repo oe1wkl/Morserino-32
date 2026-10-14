@@ -34,8 +34,13 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=f08137d62026 v=9 -->
+<!-- WHATSNEW:BEGIN en=2ed518b3b1b0 v=9 -->
 What is new in Version 9?
+
+**V 9.2**
+
+-   M32 Pocket, Accessibility Edition only: the device now says the new speed whenever you change it - the number spoken as you turn the encoder, so a blind operator can pace their practice without asking anyone. Sweeping the encoder fast speaks only the settled value: any announcement already playing is cut when the newer value comes in, so you never hear both the initial and the final speed with everything between swallowed. The CW generator holds silent while the announcement plays (the shared audio path would otherwise turn CW into clicks) and picks the next element up at the new speed. If you start keying during an announcement, the announcement stops at once, so whatever you key is always heard as side tone - also when it goes out to a transmitter. This works in the training modes, including the Echo Trainer's automatic speed step after each word, and in the QSO Bot, whose CW pauses for the announcement in the same way.
+-   M32 Pocket, Accessibility Edition only: whenever you leave a training mode and land back in the top menu, the device tells you how the battery is doing — **high**, **medium**, **low**, or **charging** (plus **on USB power** with no battery, and **battery fault** for the rare fault state). This matters specifically here, because the audio codec is the first thing to give up on this build when the cell sags: a blind operator can be left with a working device that says nothing at all, and this warning fires far enough above the codec's cliff to give time to plug in. The message is announced once per mode-to-menu return, not repeated while navigating the menu itself.
 
 **V 9.1**
 
@@ -189,9 +194,12 @@ Accessibility Edition and can skip this section.
 A new M32 Pocket is delivered with the **Standard** edition, and that edition is
 silent: it shows the menus on the display but does not read them out. The
 **Accessibility Edition** speaks instead — it announces itself and the battery
-status when you switch it on, and it speaks menu entries, preferences and their
-values as you move through them. It costs nothing, it is installed over USB, and
-you can go back to the Standard edition at any time.
+status when you switch it on, it speaks menu entries, preferences and their
+values as you move through them, it says the new speed whenever you change
+it, and every time you return to the menu from a training mode it tells you
+how the battery is doing — **high**, **medium**, **low**, or **charging**.
+It costs nothing, it is installed over USB, and you can go back to the
+Standard edition at any time.
 
 The two are **alternatives, not one edition with speech added on top**: you run
 one or the other, and the speaking one does without three things.
@@ -750,7 +758,7 @@ this value between 0 and 7. This means 0/8 to 7/8 of a dot's length. The
 default is 4, or half a dot's length. If you still generate unwanted
 dits, increase this value.
 
-For the preference **AutoChar Spce** (defining a minimum length for the
+For the preference **AutoChar Spc** (defining a minimum length for the
 space between characters) see the section **Preferences regarding Key, Paddles and Keyer** for details.
 
 **Straight Key Mode**: This is not really an automatic keyer mode, but
@@ -2719,12 +2727,11 @@ you are ready to upload a text file to use for your Morse code training.
 Currently only one file can reside on the Morserino-32, This means,
 whenever you upload a new file, the old one will be overwritten.
 
-The **file** that you upload should be a plain ASCII text file without
-any formatting (no Word files, pdf documents etc.). German characters
-(*ÄÖÜäöüß*) encoded as UTF-8 are allowed and will be converted to *ae*,
-*oe*, *ue* and *ss*. The file can contain uppercase and lowercase
-letters, and all the characters that are part of the Koch method set,
-including pro-signs (51 different characters in total). Any other
+The **file** that you upload should be a plain text file, saved as UTF-8, without
+any formatting (no Word files, pdf documents etc.). It can contain uppercase and lowercase
+letters, letters with umlauts and accents, and all the characters that are part of the Koch method set,
+including pro-signs; see **Encoding of text files for file player** in section **What can be generated?**
+for how they are sent. Any other
 characters will just be disregarded when the file is played in Morse
 code. The file that you upload can be pretty large – you have about 1
 MB space available for it (enough to store a copy of Mark Twain's "The
@@ -3090,7 +3097,7 @@ to **Straight Key** in order to use a straight key).
 | Keyer Mode | Sets the Iambic Mode (A or B), Ultimatic, Non-Squeeze or Straight Key; see the section **CW Keyer**      |                                                                                                                                   Curtis A / **Curtis B** /  Ultimatic / Non-Squeeze / Straight Key |
 | CurtisB DahT% | Timing in Curtis B mode for dahs; see the section **CW Keyer**. Applies to Iambic B only — Ultimatic ignores it.                                                                                                                                 0 – 100, in steps of 5 | [**35 – 55**\] |
 | CurtisB DitT% | Timing in Curtis B mode for dits; see the section **CW Keyer**. Applies to Iambic B only — Ultimatic ignores it.                                                                                                                              0 – 100, in steps of 5 | [**55 – 95**\] |
-| AutoChar Spce | Minimum spacing between characters | Off / min. 2 / **3** / 4 dots |
+| AutoChar Spc | Minimum spacing between characters | **Off** / min. 2 / 3 / 4 dots |
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. Has no effect in Ultimatic mode, which handles the paddles its own way. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
 | Bluetooth Use | Defines what the Bluetooth radio is used for. The first four options (besides **No Bluetooth**) are keyboard modes: The VBand option allows the Morserino to be used as a VBand dongle (for VBand see *https://hamradio.solutions/vband/*), **Decoded output** sends all decoded characters not only to the display, but also out via Bluetooth, and the **Generic Kbd** option does more or less the same as **Decoded output**, but it sends the code for the "**Enter**" Key (New Line) when you key \<KA> (new message), and for the "**Backspace**" key when you key \<HH> (i.e. 8 dits). The M32 will appear as a US keyboard (QWERTY layout). *Bluetooth keyboard output is only active in CW Keyer mode (see also **Using the Bluetooth Keyboard functionality**).* The last option, **BLE Serial**, instead makes the M32 Serial Protocol (see **Using the Serial Output of the M32**) available over Bluetooth Low Energy, so apps on phones and tablets can remote-control the Morserino and send text to be keyed as CW — without a USB cable; it takes effect on the next return to the main menu. Note that, like a USB protocol session, an active BLE protocol session prevents the automatic power-off timeout — keep this in mind when running on battery. | **No Bluetooth** / VBand Kbd / Decoded output / VBand+Decoded / Generic Kbd / BLE Serial |
 | BLT \<AR> | Only relevant in **Generic Kbd** mode (see **Bluetooth Use** above). Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
@@ -3775,7 +3782,7 @@ by OE6CHD),
 
 * The "official" tool is a simple html/javascript program that can also run locally. The source is also available at the Morserino GitHub site. There you will also find a help file in JSON format which enables tool tips within the application (explainign the purpose of the various preferences). 
 
-* This tool also contains a **file manager** for uploading text and sound files, and for viewing the standard text file, as well as a **file builder**, which allows to combine several files into a mulit-part file that can be used with the M32 file player; **this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player**.
+* This tool also contains a **file manager** for uploading text and sound files, and for viewing the standard text file, as well as a **file builder**, which allows to combine several files into a multi-part file that can be used with the M32 file player; **this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player**. Letters with umlauts and accents are kept, as the file player plays them since firmware 9.1; for older firmware, tick **Convert accented letters to plain ASCII** (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e and so on). The option is set for you when the connected Morserino runs firmware older than 9.1.
 
 * You can also run Christof's javascript program locally, the source code
 is available at *https://github.com/cdaller/morserino32-trainer*.

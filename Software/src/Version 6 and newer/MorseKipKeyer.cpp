@@ -417,13 +417,10 @@ void MorseKipKeyer::tick() {
         // Accessibility Edition: the top-bar logo is all a sighted operator gets; a blind one hears it (TODO B8).
         MorseVoice::announce(link ? "Link restored" : "Link lost");
     }
-#ifdef CONFIG_AUDIO_A11Y
-    // tick() is called from here only - the global loop's idle branch, between characters, never while an element
-    // is timed (doPaddleIambic() busy returns before this). It only checks the clip and posts to the audio task's
-    // mailbox; the decoding runs in the audio task. A clip that is still playing when keying starts is cut in the
-    // keying branch (MorseVoice::busy() in loop()), so it never mutes the sidetone.
-    MorseVoice::tick();
-#endif
+    // Accessibility Edition: MorseVoice::tick() is driven by the global loop() for every mode (merged from master,
+    // V9.2), so there is no tick here. While nothing is playing it is a few flag checks, cheap enough for the keying
+    // path too. A clip that is still playing when keying starts is cut in loop() (keying cuts speech, and the
+    // MorseVoice::busy() test in the kipKeyer branch), so it never mutes the sidetone.
 }
 
 bool MorseKipKeyer::begin() {

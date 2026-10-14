@@ -20,7 +20,10 @@ The web tool is **not forked**. `sync-webtool.sh` copies it out of
 `Software/Utilities/` at build time, so the browser version and the app version
 can never drift apart.
 
-> **Status: with App Review** — version 1.0, build 1, submitted 2026-09-12. On
+> **Status: 1.0 is live in the App Store** (Willi, 2026-10-05). **1.1 (build 2) prepared**: version bumped in
+> `project.yml`, "What's New" text in `store-listing.md`; not yet archived or uploaded.
+>
+> **1.0 history:** version 1.0, build 1, submitted 2026-09-12. On
 > 2026-09-13 App Review asked for more information under guideline 2.1, the
 > letter a new developer account with limited review history gets; the answer
 > went back the same day and is kept in `store-listing.md`. Replying does not
@@ -67,7 +70,11 @@ Then in Xcode:
 2. Set **Team** to your Apple ID (*Add an Account…* if it is not listed yet).
    Then put the Team ID into `Local.xcconfig` so it survives the next
    `xcodegen generate` — the file is git-ignored and exists precisely for this.
-   `security find-identity -v -p codesigning` prints it in parentheses.
+   The Team ID is the **OU** field of your certificate —
+   `security find-certificate -c "Apple Development" -p | openssl x509 -noout -subject` —
+   **not** the code in parentheses that `security find-identity` shows after your e-mail address:
+   that identifies you, not your team, and with it Xcode drops back to a wrong team after every
+   `xcodegen generate` (this repo's own instructions said otherwise until 2026-10-05).
 3. If it complains that the bundle identifier is taken, change
    `cc.kraml.m32config` to anything unique.
 4. Plug in your iPhone, pick it in the device menu at the top, and press ▶.
@@ -126,9 +133,11 @@ before running the link test.
   is maybe thirty lines of SwiftUI.
 - **No background mode.** Lock the phone and the link drops. Fine for a
   configuration tool; wrong for anything that wants to keep logging.
-- **The file upload path is untested over BLE.** It should work — the base64
-  chunks are 180 bytes, comfortably under the firmware's 400-character line
-  limit — but nobody has pushed an MP3 through it yet.
+- **File upload over BLE: text tested, sound not yet.** A File Builder text
+  with accented letters went from the iPhone app to a Morserino on 9.1 and
+  played correctly (Willi, TestFlight 1.1, 2026-10-05). The base64 chunks are
+  180 bytes, comfortably under the firmware's 400-character BLE line limit;
+  nobody has pushed an MP3 through it yet.
 
 ## Before submitting to the App Store
 

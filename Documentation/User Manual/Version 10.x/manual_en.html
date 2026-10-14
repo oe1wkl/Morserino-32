@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="generator" content="pandoc 3.10.1" />
+  <meta name="generator" content="pandoc 3.12.1" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
   <title>Morserino-32 User Manual</title>
   <style>
@@ -26,7 +26,6 @@
       margin: 0 0.8em 0.2em -1.6em;
       vertical-align: middle;
     }
-    .display.math{display: block; text-align: center; margin: 0.5rem auto;}
   </style>
   <link rel="stylesheet" href="style.css" />
 </head>
@@ -463,7 +462,7 @@ The font family used is Lato.</p>
 <section id="making-the-m32-pocket-speak-installing-the-accessibility-edition" class="pocket pocket-a11y" data-number="3.1">
 <h2 data-number="3.1"><span class="header-section-number">3.1</span> Making the M32 Pocket Speak: Installing the Accessibility Edition</h2>
 <p>If your M32 Pocket already speaks when you switch it on, you are running the Accessibility Edition and can skip this section.</p>
-<p>A new M32 Pocket is delivered with the <strong>Standard</strong> edition, and that edition is silent: it shows the menus on the display but does not read them out. The <strong>Accessibility Edition</strong> speaks instead — it announces itself and the battery status when you switch it on, and it speaks menu entries, preferences and their values as you move through them. It costs nothing, it is installed over USB, and you can go back to the Standard edition at any time.</p>
+<p>A new M32 Pocket is delivered with the <strong>Standard</strong> edition, and that edition is silent: it shows the menus on the display but does not read them out. The <strong>Accessibility Edition</strong> speaks instead — it announces itself and the battery status when you switch it on, it speaks menu entries, preferences and their values as you move through them, it says the new speed whenever you change it, and every time you return to the menu from a training mode it tells you how the battery is doing — <strong>high</strong>, <strong>medium</strong>, <strong>low</strong>, or <strong>charging</strong>. It costs nothing, it is installed over USB, and you can go back to the Standard edition at any time.</p>
 <p>The two are <strong>alternatives, not one edition with speech added on top</strong>: you run one or the other, and the speaking one does without three things.</p>
 <ul>
 <li><strong>The seven games</strong> — Morse Invaders, Fight the Pileup, Radio Cave, Morsel, Trailblazer, Fox Hunt and Memory Chain. They are played by watching the screen, and speech cannot stand in for that.</li>
@@ -505,7 +504,7 @@ The font family used is Lato.</p>
 <h2 data-number="3.3" id="the-basics"><span class="header-section-number">3.3</span> The Basics</h2>
 <p><strong>Controls</strong> to be used:</p>
 <p>• ON/OFF (Battery): Sliding switch located on the back near the loudspeaker. Connects/disconnects battery.</p>
-<p>• ENCODER: The knob that you can rotate and press<span class="classic">(the black one on the first and second edition Morserinos)</span>.</p>
+<p>• ENCODER: The knob that you can rotate and press<span class="classic"> (the black one on the first and second edition Morserinos)</span>.</p>
 <p>• FN: The other push-button switch <span class="classic">(the red one on the first and second edition Morserinos).</span><span class="pocket pocket-a11y">(integrated into the case on the M32Pocket).</span></p>
 <p><strong>How To Turn On</strong> the M32</p>
 <p>Either connect a USB power supply, or, if you have a battery installed, turn the battery switch to ON (I).</p>
@@ -553,7 +552,7 @@ The font family used is Lato.</p>
 </div>
 <p>When the device is off but with the battery connected (sliding power switch is on), it is in deep sleep – in reality: almost all functions of the microcontroller are turned off, and power consumption is minimal (<span class="classic">less than 5% of normal operation</span><span class="pocket pocket-a11y">around 1% of normal operation</span>).</p>
 <p><strong>To turn the device on from deep sleep</strong>, press the FN button briefly.</p>
-<p>When the Morserino-32 boots up, a startup screen will appear for a few seconds. <span class="classic">The top line shows the LoRa frequency that the M32 is configured to use, as a five-digit number.</span><span class="pocket pocket-a11y">It opens with the Morserino logo.</span> Below the version number you will see the battery voltage, and<span class="classic">a symbol showing</span> how much battery power is left. If the battery is low, connect your device to a USB power source. The battery will drain even if you never turn the device on. Although the drain is minimal in deep sleep mode, the battery will be empty after a few days. Therefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the power switch at the back.</p>
+<p>When the Morserino-32 boots up, a startup screen will appear for a few seconds. <span class="classic">The top line shows the LoRa frequency that the M32 is configured to use, as a five-digit number.</span><span class="pocket pocket-a11y">It opens with the Morserino logo.</span> Below the version number you will see the battery voltage, and<span class="classic"> a symbol showing</span> how much battery power is left. If the battery is low, connect your device to a USB power source. The battery will drain even if you never turn the device on. Although the drain is minimal in deep sleep mode, the battery will be empty after a few days. Therefore, if you intend not to use the Morserino for a longer period of time, disconnect the battery from the device using the power switch at the back.</p>
 <p>If the battery voltage is dangerously low when you try to turn on the device, an empty battery symbol will appear on the screen, and the device will not boot up. If you see this symbol, begin charging your battery as soon as possible.</p>
 <div class="classic">
 <p>First edition of M32 only: After using any of the WiFi functions, battery measurement does not work correctly until the Morserino-32 is powered down and up again (or a reset with the Reset button has been performed). This is due to a hardware problem on the Heltec board V2.0. In such cases the Morserino-32 displays “Unknown” instead of the battery voltage, and the battery symbol is shown with an inscribed question mark. After a power cycle everything should work OK again.</p>
@@ -646,12 +645,12 @@ The font family used is Lato.</p>
 <p>The Iambic and Ultimatic modes can only be used with the built-in touch paddle or an external dual-lever paddle. The selection of these modes is irrelevant when using an external single-lever paddle.</p>
 </div>
 <p>The preference <strong>Latency</strong> defines how long the paddles will be “deaf” after generating the current element (dot or dash). In earlier firmware versions, this was set to 0. This resulted in generating more dots than intended, especially at higher speeds. This was because you had to release the paddle while the last dot was still “on.” Now, you can set this value between 0 and 7. This means 0/8 to 7/8 of a dot’s length. The default is 4, or half a dot’s length. If you still generate unwanted dits, increase this value.</p>
-<p>For the preference <strong>AutoChar Spce</strong> (defining a minimum length for the space between characters) see the section <strong>Preferences regarding Key, Paddles and Keyer</strong> for details.</p>
+<p>For the preference <strong>AutoChar Spc</strong> (defining a minimum length for the space between characters) see the section <strong>Preferences regarding Key, Paddles and Keyer</strong> for details.</p>
 <p><strong>Straight Key Mode</strong>: This is not really an automatic keyer mode, but it enables the Morserino-32 to be used with a simple straight key.</p>
 <p>If you have connected a simple straight key, and have set the Keyer Mode to <strong>Straight Key</strong>, you can use all Morserino modes (like Echo Trainer, e.g.), but the mode CW Keyer works differently (it works like the Decoder mode); with a straight key, YOU are the keyer, not the Morserino!</p>
 <h3 data-number="5.1.1" id="cw-memory-keyer"><span class="header-section-number">5.1.1</span> CW Memory Keyer</h3>
 <p>Starting with version 5.1, the Morserino incorporates a memory keyer. There are eight memories available, and each can contain up to 47 characters. In addition to standard Morse code characters (letters, numbers, and punctuation), it can also contain pro-signs and a pause marker. For the textual representations of pro-signs and the pause marker, see <strong>Encoding of text files</strong> in section <strong>What can be generated?</strong> below.</p>
-<p>Memories can be <em>recalled</em> in the <strong>CW Keyer</strong>, <strong>iCW/Ext Trx</strong> and <strong>Remote Keyer</strong> modes (but <strong>not</strong> in the <strong>WiFi Trx</strong><span class="classic">or <strong>LoRa Trx</strong></span> modes for technical reasons). <strong>To recall a memory, quickly press the ENCODER knob once.</strong> If any memories have been defined, the top line will allow you to scroll through them with the encoder. There is also an EXIT option if you change your mind. An error message will appear if no memories have been defined.</p>
+<p>Memories can be <em>recalled</em> in the <strong>CW Keyer</strong>, <strong>iCW/Ext Trx</strong> and <strong>Remote Keyer</strong> modes (but <strong>not</strong> in the <strong>WiFi Trx</strong><span class="classic"> or <strong>LoRa Trx</strong></span> modes for technical reasons). <strong>To recall a memory, quickly press the ENCODER knob once.</strong> If any memories have been defined, the top line will allow you to scroll through them with the encoder. There is also an EXIT option if you change your mind. An error message will appear if no memories have been defined.</p>
 <p>Memories 1 and 2 play repeatedly until stopped by keying something manually; all other memories play once.</p>
 <h4 class="unnumbered" id="definition-of-memories">Definition of Memories</h4>
 <p>The memories can only be defined through the serial protocol, either though some computer software that implements this protocol, or manually through a terminal program. (The serial protocol has been specified in a separate document.)</p>
@@ -687,7 +686,7 @@ The font family used is Lato.</p>
 <p>The file player mode remembers where you stopped. (Exit this mode by pressing and holding the encoder. <strong>Do not just switch it off</strong> or wait for time-out; if you do, the Morserino will not be able to remember where you were.) It will then resume playing from that point the next time you restart the file player. Once the end of the file (or the file part) is reached, it will start at the beginning again.</p>
 </div>
 <h4 class="unnumbered" id="encoding-of-text-files-for-file-player">Encoding of text files for file player</h4>
-<p>The file should be plain text, saved as UTF-8 (upper or lower case does not matter) - characters that cannot be represented in Morse code are just ignored. Letters with umlauts or accents are sent with their own Morse code wherever there is one: ä ö ü, é è à ç ñ and å æ ø<span class="classic pocket">(how they are decoded and shown is set with the preference <strong>Decoder Chars</strong>)</span>. Other accented letters (á, ê, õ, …) are sent as the plain letter, and ß as “ss”. Round brackets are sent as <code>-.--.</code> for „(“ and <code>-.--.-</code> for „)“. Pro-signs can be in the file, they need to be written as 2 character representations with either [] or &lt;&gt; around them, e.g. &lt;sk&gt; or [ka], or prepended with a backslash, e.g. \kn.</p>
+<p>The file should be plain text, saved as UTF-8 (upper or lower case does not matter) - characters that cannot be represented in Morse code are just ignored. Letters with umlauts or accents are sent with their own Morse code wherever there is one: ä ö ü, é è à ç ñ and å æ ø<span class="classic pocket"> (how they are decoded and shown is set with the preference <strong>Decoder Chars</strong>)</span>. Other accented letters (á, ê, õ, …) are sent as the plain letter, and ß as “ss”. Round brackets are sent as <code>-.--.</code> for „(“ and <code>-.--.-</code> for „)“. Pro-signs can be in the file, they need to be written as 2 character representations with either [] or &lt;&gt; around them, e.g. &lt;sk&gt; or [ka], or prepended with a backslash, e.g. \kn.</p>
 <p><strong>Pro Signs</strong></p>
 <p>The following pro signs are recognized (see further down in <strong>Koch: Select Lesson</strong> about the meaning of pro signs):</p>
 <ul>
@@ -760,7 +759,7 @@ The font family used is Lato.</p>
 <p>Select a “Koch lesson” (with the default M32 sequence, you will learn 51 characters in total through the Koch method; other sequences have a different number of lessons — see <strong>Koch Sequence</strong> in the section <strong>Preferences regarding Koch Character Sequence</strong>). The menu shows the number of the lesson, the total number of lessons in the currently selected Koch sequence, and the character associated with that lesson — for example <code>21-39: y</code> for lesson 21 of 39, which teaches the character “y”.</p>
 <p>The order of the characters learned has not been strictly defined by Koch, and therefore different learning courses use slightly different orders. Here we use the same order of characters as defined by the program “Just Lean Morse Code” as default, which again is almost identical to the order used by the “SuperMorse” software package (see <em>http://www.qsl.net/kb5wck/super.html</em>).</p>
 <p>This order is as follows:</p>
-<table style="width:100%;">
+<table style="width:99%;">
 <colgroup>
 <col style="width: 15%" />
 <col style="width: 17%" />
@@ -1406,7 +1405,7 @@ The font family used is Lato.</p>
 </div>
 <h4 class="unnumbered" id="koch-train-with-a-customized-set-of-characters"><strong>Koch: Train with a customized set of characters</strong></h4>
 <p>You can also use the Koch Trainer to practice with a specific set of characters. First, upload a text file to the file player that contains the characters you want to train. They can be one “word” or several words on one line or more. Then, set the preference <strong>Koch Sequence</strong> to the new option <strong>Custom Chars.</strong> The Koch Trainer will then read the characters from the file.</p>
-<p>Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use those characters for your training. The <strong>Koch Lesson</strong> setting acts as an index into your custom character set: at lesson <em>N</em>, only the first <em>N</em> characters of the set are used as the active training pool (capped at the actual length of the set, so a lesson number larger than your character set simply uses all of it). The lesson maximum adjusts automatically to the length of your custom character set (up to 51 characters; characters beyond the 51st are not reachable). The set may also contain the letters with umlauts and accents described under <strong>Encoding of text files for file player</strong><span class="pocket-a11y">(on this edition, letters other than ä ö ü are not spoken)</span>.</p>
+<p>Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use those characters for your training. The <strong>Koch Lesson</strong> setting acts as an index into your custom character set: at lesson <em>N</em>, only the first <em>N</em> characters of the set are used as the active training pool (capped at the actual length of the set, so a lesson number larger than your character set simply uses all of it). The lesson maximum adjusts automatically to the length of your custom character set (up to 51 characters; characters beyond the 51st are not reachable). The set may also contain the letters with umlauts and accents described under <strong>Encoding of text files for file player</strong><span class="pocket-a11y"> (on this edition, letters other than ä ö ü are not spoken)</span>.</p>
 <p>To change the character set, upload a new text file and select <strong>Custom Chars </strong>again. Even if it had been selected before, you must select <strong>Custom Chars</strong> again to prepare the new character set. If you just upload a new text file, the custom character set will not change. You must go into preferences and select <strong>Custom Chars</strong> again.<br/> <em>This is a feature, not a bug!</em><br/> It means you can switch between training your characters and using a different text file for the file player. Setting <strong>Koch Sequence</strong> to M32, LCWO, LICW, or CW Academy reverts to the “normal” Koch Trainer option.</p>
 <div class="note">
 <p>Looking for a quicker way to just drill a handful of characters you find difficult, without going through a text file or the Koch lesson mechanism? See <strong>Practice Set</strong>, a separate feature reachable directly under <strong>CW Generator</strong> and <strong>Echo Trainer</strong> (not under Koch Trainer) – described where those modes are introduced, and in <strong>Preferences regarding Practice Set</strong>. It uses its own, separately stored character set and does not affect or get affected by <strong>Custom Chars</strong> here.</p>
@@ -1468,7 +1467,7 @@ The font family used is Lato.</p>
 <p>More information about LoRa can be found in <strong>More information about LoRa</strong>.</p>
 </section>
 <h3 data-number="5.5.2" id="wifi-trx"><span class="header-section-number">5.5.2</span> Wifi Trx</h3>
-<p>You can use this transceiver mode to communicate with your CW buddy using WiFi, either on your local area network, or across the Internet, or even peer-to-peer without an access point – this method is called <em>EspNow</em>, and the Morserino uses its broadcast functionality<span class="classic">– this is then very similar to using LoRa</span>, and obviously the range is limited (depending on the environment, from a few meters up to maybe 50 meters if there is a clear line of sight). See further down in section <strong>WiFi Select</strong> how to select either an access point or EspNow for the WiFi Trx mode.</p>
+<p>You can use this transceiver mode to communicate with your CW buddy using WiFi, either on your local area network, or across the Internet, or even peer-to-peer without an access point – this method is called <em>EspNow</em>, and the Morserino uses its broadcast functionality<span class="classic"> – this is then very similar to using LoRa</span>, and obviously the range is limited (depending on the environment, from a few meters up to maybe 50 meters if there is a clear line of sight). See further down in section <strong>WiFi Select</strong> how to select either an access point or EspNow for the WiFi Trx mode.</p>
 <h4 class="unnumbered" id="using-two-different-espnow-channels">Using two different EspNow Channels</h4>
 <p>Morserino-32 can make use of two channels when operating in EspNow mode. This can be used, for example, in a class room situation, to create two independent groups that do not interfere with each other, or in environments suffering from very high WiFi “noise” - when the primary channel does not work properly, try the secondary channel.</p>
 <p>The channels are selected through the preference <strong>Trx Channel</strong>, see section <strong>Preferences regarding Transmitting, Decoding and QSO Bot</strong>.</p>
@@ -2524,7 +2523,7 @@ The font family used is Lato.</p>
 <section id="uploading-a-text-file" class="classic pocket" data-number="5.8.4">
 <h3 data-number="5.8.4"><span class="header-section-number">5.8.4</span> Uploading a Text File</h3>
 <p>Once you configured your Morserino-32 with your local WiFi credentials, you are ready to upload a text file to use for your Morse code training. Currently only one file can reside on the Morserino-32, This means, whenever you upload a new file, the old one will be overwritten.</p>
-<p>The <strong>file</strong> that you upload should be a plain ASCII text file without any formatting (no Word files, pdf documents etc.). German characters (<em>ÄÖÜäöüß</em>) encoded as UTF-8 are allowed and will be converted to <em>ae</em>, <em>oe</em>, <em>ue</em> and <em>ss</em>. The file can contain uppercase and lowercase letters, and all the characters that are part of the Koch method set, including pro-signs (51 different characters in total). Any other characters will just be disregarded when the file is played in Morse code. The file that you upload can be pretty large – you have about 1 MB space available for it (enough to store a copy of Mark Twain’s “The Adventures of Huckleberry Finn”).</p>
+<p>The <strong>file</strong> that you upload should be a plain text file, saved as UTF-8, without any formatting (no Word files, pdf documents etc.). It can contain uppercase and lowercase letters, letters with umlauts and accents, and all the characters that are part of the Koch method set, including pro-signs; see <strong>Encoding of text files for file player</strong> in section <strong>What can be generated?</strong> for how they are sent. Any other characters will just be disregarded when the file is played in Morse code. The file that you upload can be pretty large – you have about 1 MB space available for it (enough to store a copy of Mark Twain’s “The Adventures of Huckleberry Finn”).</p>
 <div class="note">
 <p>See the information about encoding of text files in section <strong>What can be generated?</strong> – for example, you can separate a file into several parts, each of which will be treated like a separate file by the File Player.</p>
 </div>
@@ -2617,7 +2616,7 @@ The font family used is Lato.</p>
 <p>You can also delete a snapshot that is no longer needed, or that was created in error. Proceed as if you wanted to recall a snapshot, select the one you want to delete, and then <strong>click the FN button</strong> for deleting it. There will be a confirmation dialog to make sure you really want to delete that snapshot. If you rotete the ENCODER to “Yes” and click it, that snapshot will be deleted, and, like with storing and recalling snapshots, a short message will indicate that the action was successful.</p>
 <p>The easiest way to configure your preferences and snapshots is to connect your Morserino via USB to a computer running Chrome, Edge, Firefox or Opera and using the instructions in the appendix <strong>Using a Browser to set up M32 Preferences, and upload Text Files</strong>.</p>
 <h2 data-number="6.2" id="player-identity-and-game-scores"><span class="header-section-number">6.2</span> Player identity and game scores</h2>
-<p>Two preferences let you tell the Morserino who you are. <strong>Call Sign</strong> and <strong>Op Name</strong> are used<span class="pocket">by the games (<strong>Fight the Pileup</strong>, <strong>Morsel</strong>) and</span> by the <strong>QSO Bot</strong>. Select either item in the preferences menu and an on-screen text editor opens (it works the same on the OLED and the LCD):</p>
+<p>Two preferences let you tell the Morserino who you are. <strong>Call Sign</strong> and <strong>Op Name</strong> are used<span class="pocket"> by the games (<strong>Fight the Pileup</strong>, <strong>Morsel</strong>) and</span> by the <strong>QSO Bot</strong>. Select either item in the preferences menu and an on-screen text editor opens (it works the same on the OLED and the LCD):</p>
 <ul>
 <li><strong>turn the ENCODER</strong> to choose a character,</li>
 <li><strong>click the ENCODER</strong> to add it to the text,</li>
@@ -2625,7 +2624,7 @@ The font family used is Lato.</p>
 <li><strong>long-press</strong> either button when you are done.</li>
 </ul>
 <p>Call Sign accepts letters, digits and the slash; Op Name accepts letters and a space. The current value is shown next to the preference.</p>
-<p><strong>Reset Scores</strong> clears the saved high scores and game progress for all games<span class="pocket">(Morse Invaders, Morsel, Radio Cave, the Trailblazer and Fox Hunt grid-maze games, and Memory Chain)</span>. Selecting it shows a confirmation: press <strong>FN</strong> to confirm, or click the ENCODER to cancel.</p>
+<p><strong>Reset Scores</strong> clears the saved high scores and game progress for all games<span class="pocket"> (Morse Invaders, Morsel, Radio Cave, the Trailblazer and Fox Hunt grid-maze games, and Memory Chain)</span>. Selecting it shows a confirmation: press <strong>FN</strong> to confirm, or click the ENCODER to cancel.</p>
 <h2 data-number="6.3" id="list-of-all-morserino-32-preferences"><span class="header-section-number">6.3</span> List of All Morserino-32 preferences</h2>
 <p>Bold values are default or recommended ones. When called from the start menu, all preferences are available for modification, when called from a running mode, only those that are relevant for this mode are available.</p>
 <h3 data-number="6.3.1" id="general-preferences"><span class="header-section-number">6.3.1</span> General Preferences</h3>
@@ -2743,9 +2742,9 @@ The font family used is Lato.</p>
 <td>[<strong>55 – 95</strong>]</td>
 </tr>
 <tr>
-<td>AutoChar Spce</td>
+<td>AutoChar Spc</td>
 <td>Minimum spacing between characters</td>
-<td>Off / min. 2 / <strong>3</strong> / 4 dots</td>
+<td><strong>Off</strong> / min. 2 / 3 / 4 dots</td>
 </tr>
 <tr>
 <td>Latency</td>
@@ -2985,7 +2984,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>Generator Tx</td>
-<td>This allows the CW Generator to send, what it generates, <span class="classic">either via LoRa or via WiFi</span><span class="pocket pocket-a11y">via WiFi</span> – so you can have one device generating something, and several others receiving the same sequence. This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server, or<span class="classic">via LoRa (or</span> WiFi Trx using EspNow<span class="classic">)</span> when all participants are close enough together. <span class="classic"><em>Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!</em></span></td>
+<td>This allows the CW Generator to send, what it generates, <span class="classic">either via LoRa or via WiFi</span><span class="pocket pocket-a11y">via WiFi</span> – so you can have one device generating something, and several others receiving the same sequence. This can be used in all CW Generator and Koch / CW Generator modes, including File Player. Could be useful for groups of learners, as you can transmit e.g. contents of a file to a group of people. Obviously this should only be used with caution (and not for extended period of time) on public M32 chat servers, but can be very handy for a group on the same network segment, using broadcast as TrX peer, or a privately set up chat server, or<span class="classic"> via LoRa (or</span> WiFi Trx using EspNow<span class="classic">)</span> when all participants are close enough together. <span class="classic"><em>Be aware that you must have an antenna connected when you transmit via LoRa, otherwise the LoRa transceiver will eventually be destroyed!</em></span></td>
 <td><span class="classic"><strong>Tx OFF</strong> (= do not transmit generated CW) / LoRa Tx ON (transmit generated code through LoRa) / WiFi Tx ON (transmit generated code through WiFi).</span><span class="pocket pocket-a11y"><strong>WiFi Tx OFF</strong> (= do not transmit generated CW) / WiFi Tx ON (transmit generated code through WiFi).</span></td>
 </tr>
 <tr>
@@ -3074,7 +3073,7 @@ The font family used is Lato.</p>
 </tbody>
 </table>
 <h3 data-number="6.3.9" id="preferences-regarding-player-identity-and-scores"><span class="header-section-number">6.3.9</span> Preferences regarding Player Identity and Scores</h3>
-<p>These items appear at the very end of the preferences list. The first two set your personal identity, which is used<span class="pocket">by the <strong>Fight the Pileup</strong> game and</span> by the <strong>QSO Bot</strong> (section <strong>QSO Bot</strong>); <strong>Reset Scores</strong> clears the stored game scores<span class="pocket pocket-a11y">, and <strong>Practice Stats</strong> switches the logging described below on or off</span>. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).</p>
+<p>These items appear at the very end of the preferences list. The first two set your personal identity, which is used<span class="pocket"> by the <strong>Fight the Pileup</strong> game and</span> by the <strong>QSO Bot</strong> (section <strong>QSO Bot</strong>); <strong>Reset Scores</strong> clears the stored game scores<span class="pocket pocket-a11y">, and <strong>Practice Stats</strong> switches the logging described below on or off</span>. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).</p>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -3091,17 +3090,17 @@ The font family used is Lato.</p>
 <tbody>
 <tr>
 <td>Call Sign</td>
-<td>Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in<span class="pocket"><strong>Fight the Pileup</strong> and</span> the <strong>QSO Bot</strong>.</td>
+<td>Your own amateur radio call sign. Enter it with the encoder and buttons. It is stored in upper case and used as your station call in<span class="pocket"> <strong>Fight the Pileup</strong> and</span> the <strong>QSO Bot</strong>.</td>
 <td>up to 8 characters (stored as UPPER CASE)</td>
 </tr>
 <tr>
 <td>Op Name</td>
-<td>Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case<span class="pocket">and used together with your call sign in <strong>Fight the Pileup</strong></span>.</td>
+<td>Your operator name (for example your first name). Enter it with the encoder and buttons. It is stored in upper case<span class="pocket"> and used together with your call sign in <strong>Fight the Pileup</strong></span>.</td>
 <td>up to 8 characters (stored as UPPER CASE)</td>
 </tr>
 <tr>
 <td>Reset Scores</td>
-<td>This is an action, not a setting: it clears the stored high scores and saved progress of the games<span class="pocket">— the <strong>Morse Invaders</strong> high-score table, the <strong>Morsel</strong> high scores, the <strong>Radio Cave</strong> saved progress, and the <strong>Trailblazer</strong>, <strong>Fox Hunt</strong>, and <strong>Memory Chain</strong> high-score tables</span>. You are asked to confirm by pressing the <strong>FN</strong> button. (Fight the Pileup keeps no persistent high score and is not affected.)</td>
+<td>This is an action, not a setting: it clears the stored high scores and saved progress of the games<span class="pocket"> — the <strong>Morse Invaders</strong> high-score table, the <strong>Morsel</strong> high scores, the <strong>Radio Cave</strong> saved progress, and the <strong>Trailblazer</strong>, <strong>Fox Hunt</strong>, and <strong>Memory Chain</strong> high-score tables</span>. You are asked to confirm by pressing the <strong>FN</strong> button. (Fight the Pileup keeps no persistent high score and is not affected.)</td>
 <td>press FN to confirm</td>
 </tr>
 <tr>
@@ -3321,7 +3320,7 @@ The font family used is Lato.</p>
 <div class="note">
 <ul>
 <li><p>The “official” tool is a simple html/javascript program that can also run locally. The source is also available at the Morserino GitHub site. There you will also find a help file in JSON format which enables tool tips within the application (explainign the purpose of the various preferences).</p></li>
-<li><p>This tool also contains a <strong>file manager</strong> for uploading text and sound files, and for viewing the standard text file, as well as a <strong>file builder</strong>, which allows to combine several files into a mulit-part file that can be used with the M32 file player; <strong>this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player</strong>.</p></li>
+<li><p>This tool also contains a <strong>file manager</strong> for uploading text and sound files, and for viewing the standard text file, as well as a <strong>file builder</strong>, which allows to combine several files into a multi-part file that can be used with the M32 file player; <strong>this file builder accepts not only text files, but also pdf, epub and word processing formats and converts them into simple text suitable for the file player</strong>. Letters with umlauts and accents are kept, as the file player plays them since firmware 9.1; for older firmware, tick <strong>Convert accented letters to plain ASCII</strong> (ä→ae, ö→oe, ü→ue, ß→ss, å→aa, æ→ae, ø→oe, é→e and so on). The option is set for you when the connected Morserino runs firmware older than 9.1.</p></li>
 <li><p>You can also run Christof’s javascript program locally, the source code is available at <em>https://github.com/cdaller/morserino32-trainer</em>.</p></li>
 </ul>
 </div>
@@ -4801,6 +4800,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=c94022e3e7bd -->
+<!-- MANUALFRESH: lang=en src=ba6a71fc2256 -->
 </body>
 </html>
