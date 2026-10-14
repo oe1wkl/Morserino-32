@@ -26,8 +26,9 @@ Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (publish
    pauses while a clip plays, and battery line + menu path after leaving the bot.
 3. **Then V10:** ~~merge master into `m32kip` once more~~ — **done 2026-10-14** (433b03a, master up to cc8230d:
    9.1 release, 9.2 a11y speed/battery speech; V9 manual edits ported to the V10 manual; voice store regenerated,
-   SPIFFS headroom now only **~36 KB**). Open: the changelog keeps `### CHANGES V. 9.2` below 10.0 - fold it into
-   10.0 if 9.2 is never released on its own. Then the B items below
+   SPIFFS headroom now only **~36 KB**). The 9.2 changelog bullets are folded into 10.0 on m32kip (Willi 2026-10-14:
+   9.2 unlikely to ship, next release likely 10.0 beta); master still carries `### CHANGES V. 9.2`, so expect
+   that README conflict on the next master merge (resolve by keeping 10.0 only). Then the B items below
    (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
    `V10.0-beta.1`.
 
