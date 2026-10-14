@@ -1468,7 +1468,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <h3 data-number="5.5.4" id="einen-entfernten-transceiver-tasten"><span class="header-section-number">5.5.4</span> Einen entfernten Transceiver tasten</h3>
 <p>Mit diesen beiden Modi wird aus zwei Morserinos eine Fern-Tastverbindung: Du gibst an deinem Platz auf dem einen, und der andere – an der Station, die im Nebenzimmer oder in einem anderen Land stehen kann – tastet den Sender. Was der Sender aussendet, ist das, was du gegeben hast, mit deinem eigenen Timing: Punkte, Striche und Pausen werden so wiedergegeben, wie du sie gemacht hast, ob sie nun von den Paddles, von einer Handtaste oder von einem Bug kommen.</p>
 <p>Das ist eine Tastverbindung, keine Audioverbindung. Deinen Mithörton hörst du lokal und ohne Verzögerung, sodass nichts im Netz deinen Rhythmus beim Geben stören kann. Was du <em>von</em> der Station hörst – das Band, dein eigenes Signal, die Gegenstation – überträgt der Morserino nicht; dafür verwendest du den Fernsteuerungs- oder Audioweg, den deine Station ohnehin hat.</p>
-<p>Der Morserino an deinem Platz läuft im Modus <strong>Remote Keyer</strong>. Der an der Station läuft im Modus <strong>Remote Rig</strong> und tastet den Sender über seinen Anschluss „to Tx”, genau wie die anderen Sendemodi. Die Verbindung verwendet UDP-Port 7374.</p>
+<p>Der Morserino an deinem Platz läuft im Modus <strong>Remote Keyer</strong>. Der an der Station läuft im Modus <strong>Remote Rig</strong> und tastet den Sender über seinen Anschluss „to Tx”, genau wie die anderen Sendemodi. Die Verbindung verwendet UDP-Port 7374. Ist dieser Port in deinem Netz schon belegt, lässt er sich über das serielle Protokoll ändern (<code>PUT kip/port</code>, siehe die Protokollbeschreibung) – auf beiden Morserinos, denn sie müssen denselben verwenden.</p>
 <h4 class="unnumbered" id="was-du-brauchst">Was du brauchst</h4>
 <ul>
 <li><strong>Beide Morserinos in einem Netzwerk.</strong> Für einen Test genügt ein lokales Netz; für echten Fernbetrieb muss das Rig-Ende vom Keyer-Ende aus über das Internet erreichbar sein. Es gilt dasselbe wie bei <strong>WiFi Trx</strong>: Steht das Rig hinter einem Router mit NAT, brauchst du eine Portweiterleitung für UDP-Port 7374 auf den Morserino am Rig, oder ein VPN, das beide in ein gemeinsames virtuelles Netz bringt.</li>
@@ -1498,7 +1498,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 </tr>
 <tr>
 <td>End: timeout</td>
-<td>vom Keyer kam eine Sekunde lang nichts, und er meldete sich nicht wieder</td>
+<td>vom Keyer kam nichts mehr: Nach einer Sekunde hat das Rig die Taste gelöst, nach fünf weiteren Sekunden ohne Lebenszeichen die Sitzung beendet</td>
 </tr>
 <tr>
 <td>End: errors</td>
@@ -1559,7 +1559,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <tbody>
 <tr>
 <td>No key set – Set a pass-phrase first</td>
-<td>Gib die Passphrase an beiden Enden ein – Einstellung <strong>Pass Phrase</strong>, Konfigurationstool oder Webformular von <strong>Config WiFi</strong></td>
+<td>Erscheint auf beiden Geräten, im Remote Keyer wie im Remote Rig: Gib die Passphrase an beiden Enden ein – Einstellung <strong>Pass Phrase</strong>, Konfigurationstool oder Webformular von <strong>Config WiFi</strong></td>
 </tr>
 <tr>
 <td>No rig host – Set TRX Peer in Config WiFi</td>
@@ -1572,6 +1572,10 @@ aus dem englischsprachigen Original übersetzt.</p>
 <tr>
 <td>No answer – Check rig and pass phrase</td>
 <td>Das Rig hat nicht geantwortet: Es ist nicht im Modus <strong>Remote Rig</strong>, es ist nicht erreichbar (Portweiterleitung?), oder die beiden Passphrasen sind verschieden</td>
+</tr>
+<tr>
+<td>Out of memory</td>
+<td>Das Keyer-Ende konnte die Verbindung nicht aufbauen; schalte den Morserino aus und wieder ein und starte <strong>Remote Keyer</strong> erneut</td>
 </tr>
 </tbody>
 </table>
@@ -2596,6 +2600,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li>Bluetooth-Tastatur-Einstellungen: <strong>BLT Kbd Output</strong>, <strong>BLT &lt;AR&gt;</strong></li>
 <li>Audio-Routing: <strong>Headphone Output</strong>, <strong>Decoded on IO</strong></li>
 <li>Geräteverhalten: <strong>Encoder Click</strong>, <strong>Quick Start</strong><span class="classic pocket">, <strong>Decoder Chars</strong></span></li>
+<li>Einstellungen der Ferntastung: <strong>Rig Delay</strong>, <strong>Rig Limit Kyr</strong>, <strong>Rig Limit SK</strong>, <strong>Rig 1st Ext</strong>, <strong>Rig Hang</strong>, <strong>Glitch Filter</strong></li>
 <li><span class="pocket">Spiel-Einstellungen: <strong>Invader Orient.</strong> sowie die QSO-Bot-Einstellungen</span><span class="classic pocket-a11y">QSO-Bot-Einstellungen</span> (<strong>Contest Type</strong>, <strong>QSO Difficulty</strong>)</li>
 </ul>
 <p>(Schnappschüsse, die mit älteren Firmware-Versionen gespeichert wurden, können einige dieser Einstellungen noch enthalten; sie werden beim Abrufen ignoriert und beim Überschreiben des Schnappschusses entfernt.)</p>
@@ -4792,6 +4797,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=df9eeaaf13f6 -->
+<!-- MANUALFRESH: lang=de src=e95e2aeb1856 -->
 </body>
 </html>

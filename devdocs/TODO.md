@@ -138,7 +138,13 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 ## B. M32KIP / V10
 
 1. ~~Editorial pass on the `### CHANGES V. 10.0` draft~~ — Willi: the entries are fine as they are (2026-10-01).
-2. Editorial pass on the **V10 manual** (currently V9 text + M32KIP sections).
+2. ~~Editorial pass on the **V10 manual**~~ — **done 2026-10-14** for the V10-only text (the remote-keying
+   section, its preferences, What's New; the V9 text had shipped already). Checked against the firmware; five
+   edits approved by Willi and applied EN+DE: snapshot exclusions now list the remote-keying settings; start-up
+   table gains *Out of memory* and the Rig's own *No key set*; *End: timeout* explained correctly (key lifted after
+   1 s, session ends 5 s later); port note (`PUT kip/port`, same on both ends); one wording fix.
+   Noticed, not changed (V9 text, also on master): the snapshot list calls the Bluetooth selector **BLT Kbd
+   Output**; on the device it is **Bluetooth Use**.
 3. ~~`PUT menu/start` answers nothing when not at the menu~~ — **done 2026-10-01 on `m32kip`** (0b6b1c3): it
    now answers `NOT AT MENU - stop the running mode first` and changes nothing; verified on the classic;
    protocol description updated (1.5). V9/`master` keeps the old silence.

@@ -1701,7 +1701,9 @@ Fernsteuerungs- oder Audioweg, den deine Station ohnehin hat.
 
 Der Morserino an deinem Platz läuft im Modus **Remote Keyer**. Der an der Station
 läuft im Modus **Remote Rig** und tastet den Sender über seinen Anschluss
-„to Tx", genau wie die anderen Sendemodi. Die Verbindung verwendet UDP-Port 7374.
+„to Tx", genau wie die anderen Sendemodi. Die Verbindung verwendet UDP-Port 7374. Ist dieser
+Port in deinem Netz schon belegt, lässt er sich über das serielle Protokoll ändern (`PUT kip/port`,
+siehe die Protokollbeschreibung) – auf beiden Morserinos, denn sie müssen denselben verwenden.
 
 #### Was du brauchst {-}
 
@@ -1752,7 +1754,7 @@ Display stehen, bis die nächste beginnt:
 | Anzeige | Was geschehen ist |
 |---|---|
 | End: BYE | das Keyer-Ende hat den Modus normal verlassen |
-| End: timeout | vom Keyer kam eine Sekunde lang nichts, und er meldete sich nicht wieder |
+| End: timeout | vom Keyer kam nichts mehr: Nach einer Sekunde hat das Rig die Taste gelöst, nach fünf weiteren Sekunden ohne Lebenszeichen die Sitzung beendet |
 | End: errors | zu viele beschädigte Pakete – ein schlechter Übertragungsweg, oder etwas im Netz ist nicht, was es vorgibt zu sein |
 | End: overflow | Tastflanken kamen schneller an, als sie ausgegeben werden konnten |
 | End: reset | du hast am Rig den ENCODER-Knopf gedrückt |
@@ -1893,10 +1895,11 @@ der Luft stehen bleibt.
 
 | Auf dem Display | Was zu tun ist |
 |---|---|
-| No key set – Set a pass-phrase first | Gib die Passphrase an beiden Enden ein – Einstellung **Pass Phrase**, Konfigurationstool oder Webformular von **Config WiFi** |
+| No key set – Set a pass-phrase first | Erscheint auf beiden Geräten, im Remote Keyer wie im Remote Rig: Gib die Passphrase an beiden Enden ein – Einstellung **Pass Phrase**, Konfigurationstool oder Webformular von **Config WiFi** |
 | No rig host – Set TRX Peer in Config WiFi | Das Keyer-Ende hat keine Adresse für das Rig; trag sie im Feld **TRX Peer** ein |
 | Host not found | Der Name oder die Adresse lässt sich nicht auflösen; prüfe sie, und prüfe, ob dieser Morserino im Netz ist |
 | No answer – Check rig and pass phrase | Das Rig hat nicht geantwortet: Es ist nicht im Modus **Remote Rig**, es ist nicht erreichbar (Portweiterleitung?), oder die beiden Passphrasen sind verschieden |
+| Out of memory | Das Keyer-Ende konnte die Verbindung nicht aufbauen; schalte den Morserino aus und wieder ein und starte **Remote Keyer** erneut |
 
 ### QSO Bot
 
@@ -3618,6 +3621,8 @@ gespeichert, und das Abrufen eines Schnappschusses verändert sie nie:
 -   Bluetooth-Tastatur-Einstellungen: **BLT Kbd Output**, **BLT \<AR\>**
 -   Audio-Routing: **Headphone Output**, **Decoded on IO**
 -   Geräteverhalten: **Encoder Click**, **Quick Start**[, **Decoder Chars**]{.classic .pocket}
+-   Einstellungen der Ferntastung: **Rig Delay**, **Rig Limit Kyr**, **Rig Limit SK**, **Rig 1st Ext**,
+    **Rig Hang**, **Glitch Filter**
 -   [Spiel-Einstellungen: **Invader Orient.** sowie die
     QSO-Bot-Einstellungen]{.pocket}[QSO-Bot-Einstellungen]{.classic .pocket-a11y} (**Contest Type**, **QSO Difficulty**)
 

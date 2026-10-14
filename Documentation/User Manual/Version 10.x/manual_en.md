@@ -1670,7 +1670,9 @@ use whatever remote-control or audio path your station already has for that.
 
 The Morserino at your position runs **Remote Keyer**. The one at the station runs **Remote
 Rig** and keys the transmitter through its "to Tx" connector, exactly like the other
-transmitting modes. The link uses UDP port 7374.
+transmitting modes. The link uses UDP port 7374. If that port is taken on your network, it can be
+changed over the serial protocol (`PUT kip/port`, see the protocol description) — on both
+Morserinos, since they must use the same one.
 
 #### What you need {-}
 
@@ -1712,7 +1714,7 @@ ends, the reason stays on the screen until the next one starts:
 | Shown | What happened |
 |---|---|
 | End: BYE | the keyer end left the mode normally |
-| End: timeout | nothing was heard from the keyer for a second, and it did not come back |
+| End: timeout | nothing was heard from the keyer: after one second the rig lifted the key, and after five more seconds without word it ended the session |
 | End: errors | too many damaged packets — a bad path, or something on the network is not what it claims to be |
 | End: overflow | edges arrived faster than they could be played out |
 | End: reset | you pressed the encoder at the rig |
@@ -1726,10 +1728,9 @@ link died does not stay there.
 
 #### At your position: Remote Keyer {-}
 
-Select **Remote Keyer**. It calls the rig, and once the rig answers you can key: the mode
-behaves like **CW Keyer** in every other respect: what you key appears on the display, a quick
-click of the ENCODER knob recalls the keyer memories, and speed and volume are where they always
-are. The
+Select **Remote Keyer**. It calls the rig, and once the rig answers you can key. In every other
+respect the mode behaves like **CW Keyer**: what you key appears on the display, a quick click of
+the ENCODER knob recalls the keyer memories, and speed and volume are where they always are. The
 WiFi symbol on the top line means the rig is answering; if it disappears, the link is down, and
 the Morserino goes on calling once a second until the rig comes back. You can go on keying
 while it does — you will simply not be transmitting.
@@ -1828,10 +1829,11 @@ and when it is told to stop. There is no state of the link in which a mark is le
 
 | On the display | What to do |
 |---|---|
-| No key set — Set a pass-phrase first | Enter the pass phrase at both ends — preference **Pass Phrase**, the Configuration Tool, or the **Config WiFi** web form |
+| No key set — Set a pass-phrase first | Shown by either device, Remote Keyer or Remote Rig: enter the pass phrase at both ends — preference **Pass Phrase**, the Configuration Tool, or the **Config WiFi** web form |
 | No rig host — Set TRX Peer in Config WiFi | The keyer end has no address for the rig; enter it in the **TRX Peer** field |
 | Host not found | The name or address does not resolve; check it, and check that this Morserino is on the network |
 | No answer — Check rig and pass phrase | The rig did not reply: it is not in **Remote Rig**, or it is not reachable (port forwarding?), or the two pass phrases differ |
+| Out of memory | The keyer end could not set up the link; switch the Morserino off and on, and start **Remote Keyer** again |
 
 ### QSO Bot
 
@@ -3123,6 +3125,8 @@ change them:
 -   Bluetooth keyboard settings: **BLT Kbd Output**, **BLT \<AR\>**
 -   Audio routing: **Headphone Output**, **Decoded on IO**
 -   Device behavior: **Encoder Click**, **Quick Start**[, **Decoder Chars**]{.classic .pocket}
+-   Remote keying settings: **Rig Delay**, **Rig Limit Kyr**, **Rig Limit SK**, **Rig 1st Ext**,
+    **Rig Hang**, **Glitch Filter**
 -   [Game settings: **Invader Orient.** and the]{.pocket}[The]{.classic .pocket-a11y} QSO Bot settings
     (**Contest Type**, **QSO Difficulty**)
 

@@ -1486,7 +1486,7 @@ The font family used is Lato.</p>
 <h3 data-number="5.5.4" id="keying-a-remote-transceiver"><span class="header-section-number">5.5.4</span> Keying a remote transceiver</h3>
 <p>These two modes turn a pair of Morserinos into a remote keying link: you key one of them at your operating position, and the other one — at the station, which may be in the next room or in another country — keys the transmitter. What comes out of the transmitter is what you keyed, with your own timing: dits, dahs and spaces are reproduced as you made them, whether they came from the paddles, from a straight key or from a bug.</p>
 <p>The mode is a keying link, not an audio link. You hear your own sidetone locally and immediately, so nothing on the network can disturb your sending rhythm. What you hear <em>from</em> the station — the band, your own signal, the other operator — is not carried by the Morserino; use whatever remote-control or audio path your station already has for that.</p>
-<p>The Morserino at your position runs <strong>Remote Keyer</strong>. The one at the station runs <strong>Remote Rig</strong> and keys the transmitter through its “to Tx” connector, exactly like the other transmitting modes. The link uses UDP port 7374.</p>
+<p>The Morserino at your position runs <strong>Remote Keyer</strong>. The one at the station runs <strong>Remote Rig</strong> and keys the transmitter through its “to Tx” connector, exactly like the other transmitting modes. The link uses UDP port 7374. If that port is taken on your network, it can be changed over the serial protocol (<code>PUT kip/port</code>, see the protocol description) — on both Morserinos, since they must use the same one.</p>
 <h4 class="unnumbered" id="what-you-need">What you need</h4>
 <ul>
 <li><strong>Both Morserinos on a network.</strong> A local network is enough for a test; for real remote operation the rig end must be reachable from the keyer end over the Internet. The same considerations as for <strong>WiFi Trx</strong> apply: if the rig is behind a router doing NAT, you need port forwarding for UDP port 7374 to the rig’s Morserino, or a VPN that puts both on one virtual network.</li>
@@ -1516,7 +1516,7 @@ The font family used is Lato.</p>
 </tr>
 <tr>
 <td>End: timeout</td>
-<td>nothing was heard from the keyer for a second, and it did not come back</td>
+<td>nothing was heard from the keyer: after one second the rig lifted the key, and after five more seconds without word it ended the session</td>
 </tr>
 <tr>
 <td>End: errors</td>
@@ -1535,7 +1535,7 @@ The font family used is Lato.</p>
 <p>Two controls: a <strong>click of the ENCODER knob</strong> ends the current session (the keyer end notices and calls again within a second — this is the way to recover a link that has gone strange), and a <strong>long press</strong> leaves the mode, as everywhere else on the Morserino.</p>
 <p>Whatever ends a session, the key line is released first. A mark that was on the air when the link died does not stay there.</p>
 <h4 class="unnumbered" id="at-your-position-remote-keyer">At your position: Remote Keyer</h4>
-<p>Select <strong>Remote Keyer</strong>. It calls the rig, and once the rig answers you can key: the mode behaves like <strong>CW Keyer</strong> in every other respect: what you key appears on the display, a quick click of the ENCODER knob recalls the keyer memories, and speed and volume are where they always are. The WiFi symbol on the top line means the rig is answering; if it disappears, the link is down, and the Morserino goes on calling once a second until the rig comes back. You can go on keying while it does — you will simply not be transmitting.</p>
+<p>Select <strong>Remote Keyer</strong>. It calls the rig, and once the rig answers you can key. In every other respect the mode behaves like <strong>CW Keyer</strong>: what you key appears on the display, a quick click of the ENCODER knob recalls the keyer memories, and speed and volume are where they always are. The WiFi symbol on the top line means the rig is answering; if it disappears, the link is down, and the Morserino goes on calling once a second until the rig comes back. You can go on keying while it does — you will simply not be transmitting.</p>
 <p>Your own “to Tx” connector stays quiet in this mode. The Morserino in front of you keys nothing locally, whatever <strong>Key ext TX</strong> is set to; the transmitter that gets keyed is the distant one.</p>
 <h4 class="unnumbered" id="the-delay-and-why-there-is-one">The delay, and why there is one</h4>
 <p>A network does not deliver packets evenly. If the rig keyed the transmitter the moment each edge arrived, the jitter of the path would land directly on your CW and deform it. So the rig holds every edge for a fixed time — the <strong>Rig Delay</strong> — and then plays it out on its own clock. The delay is the same for every edge, so the CW that leaves the transmitter has exactly the timing you gave it; only the whole transmission is shifted by that delay.</p>
@@ -1577,7 +1577,7 @@ The font family used is Lato.</p>
 <tbody>
 <tr>
 <td>No key set — Set a pass-phrase first</td>
-<td>Enter the pass phrase at both ends — preference <strong>Pass Phrase</strong>, the Configuration Tool, or the <strong>Config WiFi</strong> web form</td>
+<td>Shown by either device, Remote Keyer or Remote Rig: enter the pass phrase at both ends — preference <strong>Pass Phrase</strong>, the Configuration Tool, or the <strong>Config WiFi</strong> web form</td>
 </tr>
 <tr>
 <td>No rig host — Set TRX Peer in Config WiFi</td>
@@ -1590,6 +1590,10 @@ The font family used is Lato.</p>
 <tr>
 <td>No answer — Check rig and pass phrase</td>
 <td>The rig did not reply: it is not in <strong>Remote Rig</strong>, or it is not reachable (port forwarding?), or the two pass phrases differ</td>
+</tr>
+<tr>
+<td>Out of memory</td>
+<td>The keyer end could not set up the link; switch the Morserino off and on, and start <strong>Remote Keyer</strong> again</td>
 </tr>
 </tbody>
 </table>
@@ -2606,6 +2610,7 @@ The font family used is Lato.</p>
 <li>Bluetooth keyboard settings: <strong>BLT Kbd Output</strong>, <strong>BLT &lt;AR&gt;</strong></li>
 <li>Audio routing: <strong>Headphone Output</strong>, <strong>Decoded on IO</strong></li>
 <li>Device behavior: <strong>Encoder Click</strong>, <strong>Quick Start</strong><span class="classic pocket">, <strong>Decoder Chars</strong></span></li>
+<li>Remote keying settings: <strong>Rig Delay</strong>, <strong>Rig Limit Kyr</strong>, <strong>Rig Limit SK</strong>, <strong>Rig 1st Ext</strong>, <strong>Rig Hang</strong>, <strong>Glitch Filter</strong></li>
 <li><span class="pocket">Game settings: <strong>Invader Orient.</strong> and the</span><span class="classic pocket-a11y">The</span> QSO Bot settings (<strong>Contest Type</strong>, <strong>QSO Difficulty</strong>)</li>
 </ul>
 <p>(Snapshots stored with older firmware versions may still contain some of these settings; they are ignored when recalling, and cleaned out when you overwrite the snapshot.)</p>
@@ -4802,6 +4807,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=cc530b001e5a -->
+<!-- MANUALFRESH: lang=en src=81a73ce5f4ac -->
 </body>
 </html>
