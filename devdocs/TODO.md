@@ -204,7 +204,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     findings, e.g. Headphone Output missing in CW Generator, Key ext TX missing in CW Trx; three manual/device
     order mismatches; one order question). **Willi's first decisions implemented 2026-10-14** (mode-specific
     settings first, Bluetooth Use general, BLT <AR> CW Keyer only, B17 fixes 1–5; see the Decisions section of
-    `REVIEW_NOTES.md`). Still open there: the three manual/device order differences, and B17 item 6.
+    `REVIEW_NOTES.md`); second round the same day (QSO Bot and Echo order, Decoder Chars general, manual follows
+    the device). Still open there: only B17 item 6.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 

@@ -21,53 +21,53 @@ Device order = `allOptions[]`. Manual = section and row of the preference tables
 | 4 | Time-out | `posTimeOut` | ✓ | ✓ | General Preferences | 4 |
 | 5 | Quick Start | `posQuickStart` | ✓ | ✓ | General Preferences | 5 |
 | 6 | Output Case | `posOutputCase` | ✓ | ✓ | General Preferences | 6 |
-| 7 | Headphone Output | `posLineOut` | — | ✓ | General Preferences | 7 |
-| 8 | Theme | `posTheme` | — | ✓ | General Preferences | 8 |
-| 9 | Font Size | `posScrollFont` | — | — | General Preferences | 9 |
-| 10 | Invader Orient. | `posInvaderOrient` | — | — | General Preferences | 10 |
-| 11 | Serial Output | `posSerialOut` | ✓ | ✓ | General Preferences | 11 |
-| 12 | Bluetooth Use | `posBluetoothOut` | ✓ | ✓ | General Preferences | 12 |
-| 13 | Paddle Polar. | `posPolarity` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 1 |
-| 14 | External Pol. | `posExtPddlPolarity` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 2 |
-| 15 | Keyer Mode | `posCurtisMode` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 3 |
-| 16 | CurtisB DahT% | `posCurtisBDahTiming` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 4 |
-| 17 | CurtisB DitT% | `posCurtisBDotTiming` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 5 |
-| 18 | AutoChar Spc | `posACS` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 6 |
-| 19 | Latency | `posLatency` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 7 |
-| 20 | BLT <AR> | `posBluetoothARkey` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 8 |
-| 21 | Koch Sequence | `posKochSeq` | ✓ | ✓ | Preferences regarding Koch Character Sequence | 1 |
-| 22 | LICW Carousel | `posCarouselStart` | ✓ | ✓ | Preferences regarding Koch Character Sequence | 2 |
-| 23 | Interchar Spc | `posInterCharSpace` | ✓ | ✓ | Preferences regarding CW Generation | 1 |
-| 24 | InterWord Spc | `posInterWordSpace` | ✓ | ✓ | Preferences regarding CW Generation | 2 |
-| 25 | Random Groups | `posRandomOption` | ✓ | ✓ | Preferences regarding CW Generation | 3 |
-| 26 | Length Rnd Gr | `posRandomLength` | ✓ | ✓ | Preferences regarding CW Generation | 4 |
-| 27 | Practice Set ⚠ | `posPracticeChars` | ✓ | ✓ | Preferences regarding Practice Set | 1 |
-| 28 | Boost Practice | `posRandomBoost` | ✓ | ✓ | Preferences regarding CW Generation | 5 |
-| 29 | Length Calls | `posCallLength` | ✓ | ✓ | Preferences regarding CW Generation | 6 |
-| 30 | Calls Region | `posCallContinent` | ✓ | ✓ | Preferences regarding CW Generation | 7 |
-| 31 | Call Prefixes | `posCallCommon` | ✓ | ✓ | Preferences regarding CW Generation | 8 |
-| 32 | Length Abbrev | `posAbbrevLength` | ✓ | ✓ | Preferences regarding CW Generation | 9 |
-| 33 | Word Length | `posWordLength` | ✓ | ✓ | Preferences regarding CW Generation | 10 |
-| 34 | Max # of Words | `posMaxSequence` | ✓ | ✓ | Preferences regarding CW Generation | 11 |
-| 35 | Stop<Next>Rep | `posAutoStop` | ✓ | ✓ | Preferences regarding CW Generation | 12 |
-| 36 | CW Gen Displ | `posGeneratorDisplay` | ✓ | ✓ | Preferences regarding CW Generation | 13 |
-| 37 | Randomize File | `posRandomFile` | ✓ | ✓ | Preferences regarding CW Generation | 14 |
-| 38 | Each Word 2x | `posWordDoubler` | ✓ | ✓ | Preferences regarding CW Generation | 15 |
-| 39 | Echo Repeats | `posEchoRepeats` | ✓ | ✓ | Preferences regarding Echo Trainer | 1 |
-| 40 | Echo Prompt | `posEchoDisplay` | ✓ | ✓ | Preferences regarding Echo Trainer | 2 |
-| 41 | Confrm. Tone | `posEchoConf` | ✓ | ✓ | Preferences regarding Echo Trainer | 3 |
-| 42 | Tone Shift | `posEchoToneShift` | ✓ | ✓ | Preferences regarding Echo Trainer | 4 |
-| 43 | Adaptv. Speed | `posSpeedAdapt` | ✓ | ✓ | Preferences regarding Echo Trainer | 5 |
-| 44 | Echo Speed Max | `posEchoSpeedMax` | ✓ | ✓ | Preferences regarding Echo Trainer | 6 |
-| 45 | Echo Think T. | `posEchoThinkTime` | ✓ | ✓ | Preferences regarding Echo Trainer | 7 |
-| 46 | Key ext TX | `posKeyExternalTx` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 1 |
-| 47 | Generator Tx | `posLoraCwTransmit` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 2 |
-| 48 | Trx Channel | `posLoraChannel` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 3 |
-| 49 | Bandwidth | `posGoertzelBandwidth` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 4 |
-| 50 | Decoded on IO | `posExtAudioOnDecode` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 6 |
-| 51 | Decoder Chars ⚠ | `posDecoderChars` | ✓ | — | Preferences regarding Transmitting, Decoding and QSO Bot | 5 |
-| 52 | QSO Difficulty | `posQsoBotLevel` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 8 |
-| 53 | Contest Type ⚠ | `posQsoBotContestType` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 7 |
+| 7 | Decoder Chars | `posDecoderChars` | ✓ | — | General Preferences | 7 |
+| 8 | Headphone Output | `posLineOut` | — | ✓ | General Preferences | 8 |
+| 9 | Theme | `posTheme` | — | ✓ | General Preferences | 9 |
+| 10 | Font Size | `posScrollFont` | — | — | General Preferences | 10 |
+| 11 | Invader Orient. | `posInvaderOrient` | — | — | General Preferences | 11 |
+| 12 | Serial Output | `posSerialOut` | ✓ | ✓ | General Preferences | 12 |
+| 13 | Bluetooth Use | `posBluetoothOut` | ✓ | ✓ | General Preferences | 13 |
+| 14 | Paddle Polar. | `posPolarity` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 1 |
+| 15 | External Pol. | `posExtPddlPolarity` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 2 |
+| 16 | Keyer Mode | `posCurtisMode` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 3 |
+| 17 | CurtisB DahT% | `posCurtisBDahTiming` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 4 |
+| 18 | CurtisB DitT% | `posCurtisBDotTiming` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 5 |
+| 19 | AutoChar Spc | `posACS` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 6 |
+| 20 | Latency | `posLatency` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 7 |
+| 21 | BLT <AR> | `posBluetoothARkey` | ✓ | ✓ | Preferences regarding Key, Paddles and Keyer | 8 |
+| 22 | Koch Sequence | `posKochSeq` | ✓ | ✓ | Preferences regarding Koch Character Sequence | 1 |
+| 23 | LICW Carousel | `posCarouselStart` | ✓ | ✓ | Preferences regarding Koch Character Sequence | 2 |
+| 24 | Interchar Spc | `posInterCharSpace` | ✓ | ✓ | Preferences regarding CW Generation | 1 |
+| 25 | InterWord Spc | `posInterWordSpace` | ✓ | ✓ | Preferences regarding CW Generation | 2 |
+| 26 | Random Groups | `posRandomOption` | ✓ | ✓ | Preferences regarding CW Generation | 3 |
+| 27 | Length Rnd Gr | `posRandomLength` | ✓ | ✓ | Preferences regarding CW Generation | 4 |
+| 28 | Practice Set | `posPracticeChars` | ✓ | ✓ | Preferences regarding CW Generation | 5 |
+| 29 | Boost Practice | `posRandomBoost` | ✓ | ✓ | Preferences regarding CW Generation | 6 |
+| 30 | Length Calls | `posCallLength` | ✓ | ✓ | Preferences regarding CW Generation | 7 |
+| 31 | Calls Region | `posCallContinent` | ✓ | ✓ | Preferences regarding CW Generation | 8 |
+| 32 | Call Prefixes | `posCallCommon` | ✓ | ✓ | Preferences regarding CW Generation | 9 |
+| 33 | Length Abbrev | `posAbbrevLength` | ✓ | ✓ | Preferences regarding CW Generation | 10 |
+| 34 | Word Length | `posWordLength` | ✓ | ✓ | Preferences regarding CW Generation | 11 |
+| 35 | Max # of Words | `posMaxSequence` | ✓ | ✓ | Preferences regarding CW Generation | 12 |
+| 36 | Stop<Next>Rep | `posAutoStop` | ✓ | ✓ | Preferences regarding CW Generation | 13 |
+| 37 | CW Gen Displ | `posGeneratorDisplay` | ✓ | ✓ | Preferences regarding CW Generation | 14 |
+| 38 | Randomize File | `posRandomFile` | ✓ | ✓ | Preferences regarding CW Generation | 15 |
+| 39 | Each Word 2x | `posWordDoubler` | ✓ | ✓ | Preferences regarding CW Generation | 16 |
+| 40 | Echo Repeats | `posEchoRepeats` | ✓ | ✓ | Preferences regarding Echo Trainer | 1 |
+| 41 | Echo Prompt | `posEchoDisplay` | ✓ | ✓ | Preferences regarding Echo Trainer | 2 |
+| 42 | Confrm. Tone | `posEchoConf` | ✓ | ✓ | Preferences regarding Echo Trainer | 3 |
+| 43 | Tone Shift | `posEchoToneShift` | ✓ | ✓ | Preferences regarding Echo Trainer | 4 |
+| 44 | Adaptv. Speed | `posSpeedAdapt` | ✓ | ✓ | Preferences regarding Echo Trainer | 5 |
+| 45 | Echo Speed Max | `posEchoSpeedMax` | ✓ | ✓ | Preferences regarding Echo Trainer | 6 |
+| 46 | Echo Think T. | `posEchoThinkTime` | ✓ | ✓ | Preferences regarding Echo Trainer | 7 |
+| 47 | Key ext TX | `posKeyExternalTx` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 1 |
+| 48 | Generator Tx | `posLoraCwTransmit` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 2 |
+| 49 | Trx Channel | `posLoraChannel` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 3 |
+| 50 | Bandwidth | `posGoertzelBandwidth` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 4 |
+| 51 | Decoded on IO | `posExtAudioOnDecode` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 5 |
+| 52 | QSO Difficulty | `posQsoBotLevel` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 6 |
+| 53 | Contest Type | `posQsoBotContestType` | ✓ | ✓ | Preferences regarding Transmitting, Decoding and QSO Bot | 7 |
 | 54 | Rig Delay | `posKipPlayout` | ✓ | ✓ | Preferences regarding Remote Keying | 1 |
 | 55 | Rig Limit Kyr | `posKipMaxKeyer` | ✓ | ✓ | Preferences regarding Remote Keying | 2 |
 | 56 | Rig Limit SK | `posKipMaxManual` | ✓ | ✓ | Preferences regarding Remote Keying | 3 |
@@ -105,65 +105,65 @@ offers are listed after the table.
 
 | Preference | Keyer | Gen | GenFile | Echo | EchoFile | KochGen | KochEcho | LoRa | WiFi | ExtTrx | RKeyer | RRig | Bot | Decoder |
 |---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| Encoder Click | 9 | 19 | 12 | 25 | 17 | 17 | 23 | 13 | 13 | 11 | 10 | 6 | 9 | 5 |
-| Tone Pitch | 10 | 20 | 13 | 26 | 18 | 18 | 24 | 14 | 14 | 12 | 11 | 7 | 10 | 6 |
-| Tone Softness | 11 C— | 21 C— | 14 C— | 27 C— | 19 C— | 19 C— | 25 C— | 15 C— | 15 C— | 13 C— | 12 C— | 8 C— | 11 C— | 7 C— |
-| Time-out | 12 | 22 | 15 | 28 | 20 | 20 | 26 | 16 | 16 | 14 | 13 | 9 | 12 | 8 |
-| Quick Start | 13 | 23 | 16 | 29 | 21 | 21 | 27 | 17 | 17 | 15 | 14 | 10 | 13 | 9 |
-| Output Case | 14 | 24 | 17 | 30 | 22 | 22 | 28 | 18 | 18 | 16 | 15 | 11 | 14 | 10 |
-| Headphone Output | 15 C— | 25 C— | 18 C— | 31 C— | 23 C— | 23 C— | 29 C— | 19 C— | 19 C— | 17 C— | 16 C— | 12 C— | 15 C— | 11 C— |
-| Theme | 16 C— | 26 C— | 19 C— | 32 C— | 24 C— | 24 C— | 30 C— | 20 C— | 20 C— | 18 C— | 17 C— | 13 C— | 16 C— | 12 C— |
-| Font Size | 17 C— A— | 27 C— A— | 20 C— A— | 33 C— A— | 25 C— A— | 25 C— A— | 31 C— A— | 21 C— A— | 21 C— A— | 19 C— A— | 18 C— A— | 14 C— A— | 17 C— A— | 13 C— A— |
-| Serial Output | 18 | 28 | 21 | 34 | 26 | 26 | 32 | 22 | 22 | 20 | 19 | 15 | 18 | 14 |
-| Bluetooth Use | 19 | 29 | 22 | 35 | 27 | 27 | 33 | 23 | 23 | 21 | 20 | 16 | 19 | 15 |
-| Paddle Polar. | 20 | 30 | 23 | 36 | 28 | 28 | 34 | 24 | 24 | 22 | 21 |  | 20 | 16 |
-| External Pol. | 21 | 31 | 24 | 37 | 29 | 29 | 35 | 25 | 25 | 23 | 22 |  | 21 | 17 |
-| Keyer Mode | 1 |  |  | 1 | 1 |  | 1 | 1 | 1 | 1 | 1 |  | 1 |  |
-| CurtisB DahT% | 2 |  |  | 2 | 2 |  | 2 | 2 | 2 | 2 | 2 |  | 2 |  |
-| CurtisB DitT% | 3 |  |  | 3 | 3 |  | 3 | 3 | 3 | 3 | 3 |  | 3 |  |
-| AutoChar Spc | 4 |  |  | 4 | 4 |  | 4 | 4 | 4 | 4 | 4 |  | 4 |  |
-| Latency | 6 |  |  | 5 | 5 |  | 5 | 6 | 6 | 6 | 6 |  | 6 |  |
-| BLT <AR> | 8 |  |  |  |  |  |  |  |  |  |  |  |  |  |
-| Koch Sequence |  |  |  |  |  | 1 | 6 |  |  |  |  |  |  |  |
-| LICW Carousel |  |  |  |  |  | 2 | 7 |  |  |  |  |  |  |  |
-| Interchar Spc |  | 1 | 1 | 6 | 6 | 3 | 8 |  |  |  |  |  |  |  |
-| InterWord Spc | 5 | 2 | 2 | 7 | 7 | 4 | 9 | 5 | 5 | 5 | 5 |  | 5 | 1 |
-| Random Groups |  | 3 |  | 8 |  |  |  |  |  |  |  |  |  |  |
-| Length Rnd Gr |  | 4 |  | 9 |  | 5 | 10 |  |  |  |  |  |  |  |
-| Practice Set |  | 5 |  | 10 |  | 6 | 11 |  |  |  |  |  |  |  |
-| Boost Practice |  | 6 |  | 11 |  | 7 | 12 |  |  |  |  |  |  |  |
-| Length Calls |  | 7 |  | 12 |  |  |  |  |  |  |  |  |  |  |
-| Calls Region |  | 8 |  | 13 |  |  |  |  |  |  |  |  |  |  |
-| Call Prefixes |  | 9 |  | 14 |  |  |  |  |  |  |  |  |  |  |
-| Length Abbrev |  | 10 |  | 15 |  | 8 | 13 |  |  |  |  |  |  |  |
-| Word Length |  | 11 |  | 16 |  | 9 | 14 |  |  |  |  |  |  |  |
-| Max # of Words |  | 12 | 3 | 17 | 8 | 10 | 15 |  |  |  |  |  |  |  |
+| Encoder Click | 8 | 19 | 12 | 25 | 17 | 17 | 23 | 12 | 12 | 10 | 9 | 6 | 9 | 4 |
+| Tone Pitch | 9 | 20 | 13 | 26 | 18 | 18 | 24 | 13 | 13 | 11 | 10 | 7 | 10 | 5 |
+| Tone Softness | 10 C— | 21 C— | 14 C— | 27 C— | 19 C— | 19 C— | 25 C— | 14 C— | 14 C— | 12 C— | 11 C— | 8 C— | 11 C— | 6 C— |
+| Time-out | 11 | 22 | 15 | 28 | 20 | 20 | 26 | 15 | 15 | 13 | 12 | 9 | 12 | 7 |
+| Quick Start | 12 | 23 | 16 | 29 | 21 | 21 | 27 | 16 | 16 | 14 | 13 | 10 | 13 | 8 |
+| Output Case | 13 | 24 | 17 | 30 | 22 | 22 | 28 | 17 | 17 | 15 | 14 | 11 | 14 | 9 |
+| Decoder Chars | 14 A— | 25 A— | 18 A— | 31 A— | 23 A— | 23 A— | 29 A— | 18 A— | 18 A— | 16 A— | 15 A— | 12 A— | 15 A— | 10 A— |
+| Headphone Output | 15 C— | 26 C— | 19 C— | 32 C— | 24 C— | 24 C— | 30 C— | 19 C— | 19 C— | 17 C— | 16 C— | 13 C— | 16 C— | 11 C— |
+| Theme | 16 C— | 27 C— | 20 C— | 33 C— | 25 C— | 25 C— | 31 C— | 20 C— | 20 C— | 18 C— | 17 C— | 14 C— | 17 C— | 12 C— |
+| Font Size | 17 C— A— | 28 C— A— | 21 C— A— | 34 C— A— | 26 C— A— | 26 C— A— | 32 C— A— | 21 C— A— | 21 C— A— | 19 C— A— | 18 C— A— | 15 C— A— | 18 C— A— | 13 C— A— |
+| Serial Output | 18 | 29 | 22 | 35 | 27 | 27 | 33 | 22 | 22 | 20 | 19 | 16 | 19 | 14 |
+| Bluetooth Use | 19 | 30 | 23 | 36 | 28 | 28 | 34 | 23 | 23 | 21 | 20 | 17 | 20 | 15 |
+| Paddle Polar. | 20 | 31 | 24 | 37 | 29 | 29 | 35 | 24 | 24 | 22 | 21 |  | 21 | 16 |
+| External Pol. | 21 | 32 | 25 | 38 | 30 | 30 | 36 | 25 | 25 | 23 | 22 |  | 22 | 17 |
+| Keyer Mode | 1 |  |  | 20 | 12 |  | 18 | 1 | 1 | 1 | 1 |  | 3 |  |
+| CurtisB DahT% | 2 |  |  | 21 | 13 |  | 19 | 2 | 2 | 2 | 2 |  | 4 |  |
+| CurtisB DitT% | 3 |  |  | 22 | 14 |  | 20 | 3 | 3 | 3 | 3 |  | 5 |  |
+| AutoChar Spc | 4 |  |  | 23 | 15 |  | 21 | 4 | 4 | 4 | 4 |  | 6 |  |
+| Latency | 6 |  |  | 24 | 16 |  | 22 | 6 | 6 | 6 | 6 |  | 8 |  |
+| BLT <AR> | 7 |  |  |  |  |  |  |  |  |  |  |  |  |  |
+| Koch Sequence |  |  |  |  |  | 1 | 1 |  |  |  |  |  |  |  |
+| LICW Carousel |  |  |  |  |  | 2 | 2 |  |  |  |  |  |  |  |
+| Interchar Spc |  | 1 | 1 | 1 | 1 | 3 | 3 |  |  |  |  |  |  |  |
+| InterWord Spc | 5 | 2 | 2 | 2 | 2 | 4 | 4 | 5 | 5 | 5 | 5 |  | 7 | 1 |
+| Random Groups |  | 3 |  | 3 |  |  |  |  |  |  |  |  |  |  |
+| Length Rnd Gr |  | 4 |  | 4 |  | 5 | 5 |  |  |  |  |  |  |  |
+| Practice Set |  | 5 |  | 5 |  | 6 | 6 |  |  |  |  |  |  |  |
+| Boost Practice |  | 6 |  | 6 |  | 7 | 7 |  |  |  |  |  |  |  |
+| Length Calls |  | 7 |  | 7 |  |  |  |  |  |  |  |  |  |  |
+| Calls Region |  | 8 |  | 8 |  |  |  |  |  |  |  |  |  |  |
+| Call Prefixes |  | 9 |  | 9 |  |  |  |  |  |  |  |  |  |  |
+| Length Abbrev |  | 10 |  | 10 |  | 8 | 8 |  |  |  |  |  |  |  |
+| Word Length |  | 11 |  | 11 |  | 9 | 9 |  |  |  |  |  |  |  |
+| Max # of Words |  | 12 | 3 | 12 | 3 | 10 | 10 |  |  |  |  |  |  |  |
 | Stop<Next>Rep |  | 13 | 4 |  |  | 11 |  |  |  |  |  |  |  |  |
 | CW Gen Displ |  | 14 | 5 |  |  | 12 |  | 7 | 7 |  |  |  |  |  |
-| Randomize File |  |  | 6 |  | 9 |  |  |  |  |  |  |  |  |  |
+| Randomize File |  |  | 6 |  | 4 |  |  |  |  |  |  |  |  |  |
 | Each Word 2x |  | 15 | 7 |  |  | 13 |  |  |  |  |  |  |  |  |
-| Echo Repeats |  |  |  | 18 | 10 |  | 16 |  |  |  |  |  |  |  |
-| Echo Prompt |  |  |  | 19 | 11 |  | 17 |  |  |  |  |  |  |  |
-| Confrm. Tone |  |  |  | 20 | 12 |  | 18 |  |  |  |  |  |  |  |
-| Tone Shift |  |  | 8 | 21 | 13 |  | 19 | 8 | 8 |  |  |  |  |  |
-| Adaptv. Speed |  |  |  | 22 | 14 |  | 20 |  |  |  |  |  |  |  |
-| Echo Speed Max |  |  |  | 23 | 15 |  | 21 |  |  |  |  |  |  |  |
-| Echo Think T. |  |  |  | 24 | 16 |  | 22 |  |  |  |  |  |  |  |
+| Echo Repeats |  |  |  | 13 | 5 |  | 11 |  |  |  |  |  |  |  |
+| Echo Prompt |  |  |  | 14 | 6 |  | 12 |  |  |  |  |  |  |  |
+| Confrm. Tone |  |  |  | 15 | 7 |  | 13 |  |  |  |  |  |  |  |
+| Tone Shift |  |  | 8 | 16 | 8 |  | 14 | 8 | 8 |  |  |  |  |  |
+| Adaptv. Speed |  |  |  | 17 | 9 |  | 15 |  |  |  |  |  |  |  |
+| Echo Speed Max |  |  |  | 18 | 10 |  | 16 |  |  |  |  |  |  |  |
+| Echo Think T. |  |  |  | 19 | 11 |  | 17 |  |  |  |  |  |  |  |
 | Key ext TX |  | 16 | 9 |  |  | 14 |  | 9 | 9 | 7 |  |  |  |  |
 | Generator Tx |  | 17 | 10 |  |  | 15 |  |  |  |  |  |  |  |  |
 | Trx Channel |  | 18 | 11 |  |  | 16 |  | 10 | 10 |  |  |  |  |  |
 | Bandwidth |  |  |  |  |  |  |  |  |  | 8 |  |  |  | 2 |
 | Decoded on IO |  |  |  |  |  |  |  | 11 | 11 | 9 |  |  |  | 3 |
-| Decoder Chars | 7 A— |  |  |  |  |  |  | 12 A— | 12 A— | 10 A— | 7 A— |  |  | 4 A— |
-| QSO Difficulty |  |  |  |  |  |  |  |  |  |  |  |  | 7 |  |
-| Contest Type |  |  |  |  |  |  |  |  |  |  |  |  | 8 |  |
+| QSO Difficulty |  |  |  |  |  |  |  |  |  |  |  |  | 1 |  |
+| Contest Type |  |  |  |  |  |  |  |  |  |  |  |  | 2 |  |
 | Rig Delay |  |  |  |  |  |  |  |  |  |  |  | 1 |  |  |
 | Rig Limit Kyr |  |  |  |  |  |  |  |  |  |  |  | 2 |  |  |
 | Rig Limit SK |  |  |  |  |  |  |  |  |  |  |  | 3 |  |  |
 | Rig 1st Ext |  |  |  |  |  |  |  |  |  |  |  | 4 |  |  |
 | Rig Hang |  |  |  |  |  |  |  |  |  |  |  | 5 |  |  |
-| Glitch Filter |  |  |  |  |  |  |  |  |  |  | 8 |  |  |  |
-| Pass Phrase |  |  |  |  |  |  |  |  |  |  | 9 |  |  |  |
+| Glitch Filter |  |  |  |  |  |  |  |  |  |  | 7 |  |  |  |
+| Pass Phrase |  |  |  |  |  |  |  |  |  |  | 8 |  |  |  |
 
 Offered in no mode (All view only): Invader Orient., Call Sign, Op Name, Reset Scores, Practice Stats
 
@@ -181,6 +181,7 @@ through a cached variable; check by hand.
 | Time-out | `posTimeOut` | m32_v6.ino ×2 |
 | Quick Start | `posQuickStart` | m32_v6.ino ×2 |
 | Output Case | `posOutputCase` | m32_v6.ino ×2, MorseGame.cpp ×1, MorseGridEngine.cpp ×1, MorsePreferences.cpp ×1 |
+| Decoder Chars | `posDecoderChars` | m32_v6.ino ×2 |
 | Headphone Output | `posLineOut` | MorseOutput.cpp ×2 |
 | Theme | `posTheme` | MorsePreferences.cpp ×4, m32_v6.ino ×2, MorseGameMode.cpp ×1 |
 | Font Size | `posScrollFont` | MorseOutput.cpp ×2 |
@@ -225,7 +226,6 @@ through a cached variable; check by hand.
 | Trx Channel | `posLoraChannel` | MorseMenu.cpp ×2, MorsePileup.cpp ×1, MorsePreferences.cpp ×1, m32_v6.ino ×1 |
 | Bandwidth | `posGoertzelBandwidth` | goertzel.cpp ×4 |
 | Decoded on IO | `posExtAudioOnDecode` | m32_v6.ino ×2 |
-| Decoder Chars | `posDecoderChars` | m32_v6.ino ×2 |
 | QSO Difficulty | `posQsoBotLevel` | MorseQsoBot.cpp ×1 |
 | Contest Type | `posQsoBotContestType` | MorseQsoBot.cpp ×1 |
 | Rig Delay | `posKipPlayout` | MorseKipRig.cpp ×3 |

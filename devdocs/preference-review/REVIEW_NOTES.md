@@ -29,8 +29,16 @@ change the order of the protocol's config list and the a11y tables, so re-run th
   removed from iCW/Ext Trx and the QSO Bot and added to the File Player; Bandwidth removed from the QSO Bot.
 - Found on the way and fixed: the `[t]` tone marker shifted the pitch with Tone Shift at *No Tone Shift*;
   the manual says it must not (`pitch()` in `m32_v6.ino`).
-- Still open from the list below: B16 item 2 (three manual/device order differences) and B17 item 6
-  (Bluetooth Use changed from inside a mode — when does it take effect?).
+- **Second round, same day:** the QSO Bot leads with QSO Difficulty and Contest Type; in the three Echo
+  lists (Echo Trainer, its File Player, Koch Echo) the keyer block (Keyer Mode … Latency) now comes after the
+  Echo settings — content settings first as before, so Koch Sequence still leads in the Koch Trainer.
+  **Decoder Chars is a general preference** (after Output Case, in every mode and in the All view). The manual
+  follows the device for **Practice Set** (its own section dropped, the row now sits in *CW Generation* after
+  *Length Rnd Gr*; three cross-references repointed) and for the QSO Bot order. B16 item 2 is therefore closed:
+  the matrix shows no manual/device order difference. Note: in the code Decoder Chars acts on decoding (keyer,
+  transceivers, decoder, Echo Trainer, Remote Keyer) and on the Practice Set picker, not in the File Player
+  (`decoderCharSet()` returns Standard for `morseGenerator`).
+- Still open: B17 item 6 (Bluetooth Use changed from inside a mode — when does it take effect?).
 
 ## B17 — offered where it does nothing, or missing where it acts
 

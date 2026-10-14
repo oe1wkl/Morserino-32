@@ -136,12 +136,11 @@ The font family used is Lato.</p>
 <li><a href="#general-preferences" id="toc-general-preferences"><span class="toc-section-number">6.3.1</span> General Preferences</a></li>
 <li><a href="#preferences-regarding-key-paddles-and-keyer" id="toc-preferences-regarding-key-paddles-and-keyer"><span class="toc-section-number">6.3.2</span> Preferences regarding Key, Paddles and Keyer</a></li>
 <li><a href="#preferences-regarding-koch-character-sequence" id="toc-preferences-regarding-koch-character-sequence"><span class="toc-section-number">6.3.3</span> Preferences regarding Koch Character Sequence</a></li>
-<li><a href="#preferences-regarding-practice-set" id="toc-preferences-regarding-practice-set"><span class="toc-section-number">6.3.4</span> Preferences regarding Practice Set</a></li>
-<li><a href="#preferences-regarding-cw-generation" id="toc-preferences-regarding-cw-generation"><span class="toc-section-number">6.3.5</span> Preferences regarding CW Generation</a></li>
-<li><a href="#preferences-regarding-echo-trainer" id="toc-preferences-regarding-echo-trainer"><span class="toc-section-number">6.3.6</span> Preferences regarding Echo Trainer</a></li>
-<li><a href="#preferences-regarding-transmitting-decoding-and-qso-bot" id="toc-preferences-regarding-transmitting-decoding-and-qso-bot"><span class="toc-section-number">6.3.7</span> Preferences regarding Transmitting, Decoding and QSO Bot</a></li>
-<li><a href="#preferences-regarding-remote-keying" id="toc-preferences-regarding-remote-keying"><span class="toc-section-number">6.3.8</span> Preferences regarding Remote Keying</a></li>
-<li><a href="#preferences-regarding-player-identity-and-scores" id="toc-preferences-regarding-player-identity-and-scores"><span class="toc-section-number">6.3.9</span> Preferences regarding Player Identity and Scores</a></li>
+<li><a href="#preferences-regarding-cw-generation" id="toc-preferences-regarding-cw-generation"><span class="toc-section-number">6.3.4</span> Preferences regarding CW Generation</a></li>
+<li><a href="#preferences-regarding-echo-trainer" id="toc-preferences-regarding-echo-trainer"><span class="toc-section-number">6.3.5</span> Preferences regarding Echo Trainer</a></li>
+<li><a href="#preferences-regarding-transmitting-decoding-and-qso-bot" id="toc-preferences-regarding-transmitting-decoding-and-qso-bot"><span class="toc-section-number">6.3.6</span> Preferences regarding Transmitting, Decoding and QSO Bot</a></li>
+<li><a href="#preferences-regarding-remote-keying" id="toc-preferences-regarding-remote-keying"><span class="toc-section-number">6.3.7</span> Preferences regarding Remote Keying</a></li>
+<li><a href="#preferences-regarding-player-identity-and-scores" id="toc-preferences-regarding-player-identity-and-scores"><span class="toc-section-number">6.3.8</span> Preferences regarding Player Identity and Scores</a></li>
 </ul></li>
 </ul></li>
 <li><a href="#appendices" id="toc-appendices"><span class="toc-section-number">7</span> Appendices</a>
@@ -182,15 +181,15 @@ The font family used is Lato.</p>
 <p><strong>If your M32 Pocket does not speak yet.</strong> A new Pocket is delivered with the Standard edition, which is silent. The firmware this manual describes is installed from a computer over USB, and takes a few minutes: see <strong>Making the M32 Pocket Speak: Installing the Accessibility Edition</strong>, the first section of the chapter <strong>Quick Guide to Using the M32</strong>.</p>
 </div>
 <p>I would like to thank all those who contributed–through code, comments, suggestions, criticism, reviews, blog entries, Youtube videos and other means–to making the Morserino-32 a successful and outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn’t exist!</p>
-<!-- WHATSNEW:BEGIN en=926b3dd5d8d6 v=10 -->
+<!-- WHATSNEW:BEGIN en=26eca37012b9 v=10 -->
 <p>What is new in Version 10?</p>
 <ul>
 <li>Two Morserinos can now form a <strong>remote keying link</strong> over the network. You key one of them at your operating position — the new mode <strong>Remote Keyer</strong> — and the other one, at the station, keys the transmitter through its „to Tx” connector: the new mode <strong>Remote Rig</strong>. The station may be in the next room or in another country. What comes out of the transmitter is what you keyed, with your own timing, whether it came from the paddles, from a straight key or from a bug. It is a keying link, not an audio link: you hear your own sidetone locally and immediately, so nothing on the network can disturb your sending rhythm, while what you hear <em>from</em> the station comes over whatever remote-control and audio path you already use. The link runs over UDP port 7374, and the address of the rig goes into the <strong>TRX Peer</strong> field of <strong>Config WiFi</strong> — the same field the WiFi transceiver uses. Both ends are described in the manual, including what to do about routers and firewalls.</li>
 <li>The serial protocol used by the Configuration Tool and other programs is now at <strong>version 1.5</strong>: it can read and set the remote-keying settings (the shared secret and the port) as well as the Remote Rig and Remote Keyer preferences, and reports the new commands through its capability list. Everything from version 1.4 keeps working unchanged.</li>
 <li>M32 Pocket, Accessibility Edition only: the device now says the new speed whenever you change it - the number spoken as you turn the encoder, so a blind operator can pace their practice without asking anyone. Sweeping the encoder fast speaks only the settled value: any announcement already playing is cut when the newer value comes in, so you never hear both the initial and the final speed with everything between swallowed. The CW generator holds silent while the announcement plays (the shared audio path would otherwise turn CW into clicks) and picks the next element up at the new speed. If you start keying during an announcement, the announcement stops at once, so whatever you key is always heard as side tone - also when it goes out to a transmitter. This works in the training modes, including the Echo Trainer’s automatic speed step after each word, and in the QSO Bot, whose CW pauses for the announcement in the same way.</li>
 <li>M32 Pocket, Accessibility Edition only: whenever you leave a training mode and land back in the top menu, the device tells you how the battery is doing — <strong>high</strong>, <strong>medium</strong>, <strong>low</strong>, or <strong>charging</strong> (plus <strong>on USB power</strong> with no battery, and <strong>battery fault</strong> for the rare fault state). This matters specifically here, because the audio codec is the first thing to give up on this build when the cell sags: a blind operator can be left with a working device that says nothing at all, and this warning fires far enough above the codec’s cliff to give time to plug in. The message is announced once per mode-to-menu return, not repeated while navigating the menu itself.</li>
-<li>When you open the preferences from inside a mode (double click), the settings of that mode now come first, and the general settings that every mode offers (tone, time-out, display, serial and Bluetooth output, paddle polarity) follow after them – the ones you are most likely looking for are no longer at the end of the list. When you have not used the preferences yet, the list opens at the top.</li>
-<li><strong>Bluetooth Use</strong> is now one of the general preferences, since it also switches on the serial protocol over Bluetooth; <strong>BLT \&lt;AR&gt;</strong>, which only concerns the Bluetooth keyboard, is now offered only in <strong>CW Keyer</strong>, the one mode that types over Bluetooth.</li>
+<li>When you open the preferences from inside a mode (double click), the settings of that mode now come first – in the Echo Trainer its echo settings before those for the keyer, in the QSO Bot <strong>QSO Difficulty</strong> and <strong>Contest Type</strong> – and the general settings that every mode offers (tone, time-out, display, decoded characters, serial and Bluetooth output, paddle polarity) follow after them – the ones you are most likely looking for are no longer at the end of the list. When you have not used the preferences yet, the list opens at the top.</li>
+<li><strong>Bluetooth Use</strong> is now one of the general preferences, since it also switches on the serial protocol over Bluetooth, and so is <strong>Decoder Chars</strong>, which matters wherever characters are decoded; <strong>BLT \&lt;AR&gt;</strong>, which only concerns the Bluetooth keyboard, is now offered only in <strong>CW Keyer</strong>, the one mode that types over Bluetooth.</li>
 <li>Some modes offered preferences that had no effect there, and missed some that did: <strong>CW Generator</strong> now offers <strong>Headphone Output</strong>, <strong>iCW/Ext Trx</strong> offers <strong>Key ext TX</strong> (which decides there whether your transmitter is keyed), and the <strong>File Player</strong> offers <strong>Tone Shift</strong> (used by its tone marker). <strong>Tone Shift</strong> is no longer offered in <strong>iCW/Ext Trx</strong> and the <strong>QSO Bot</strong>, and <strong>Bandwidth</strong> no longer in the <strong>QSO Bot</strong> – they did nothing there. <!-- WHATSNEW:END --></li>
 </ul>
 <h1 data-number="2" id="connectors-and-controls"><span class="header-section-number">2</span> Connectors and Controls</h1>
@@ -685,7 +684,7 @@ The font family used is Lato.</p>
 <li><strong>Call Signs</strong>: Generates amateur radio call signs (these are not always real call signs, and there will be some generated that would not exist in the real world, as certain suffixes might not have been assigned to anyone). The maximum length can be selected through a preference, as well as (if you like it so) the continent of the call signs generated, and if it should not generate call signs with extremely rare prefixes.</li>
 <li><strong>Mixed</strong>: Selects randomly from the previous possibilities (random character groups, abbreviations, English words and call signs).</li>
 <li><strong>File Player</strong>: Plays in Morse code the content of a file that has been uploaded to the Morserino-32. Currently it can hold just one file, as soon as you upload a new one, the old one will be overwritten. But your file can have <strong>up to 16 parts</strong> (see below about encoding and creating multi-part files), and you can choose which of the parts you are going to use!<br/> <strong>Upload of files</strong> works <span class="classic pocket">through WiFi from your PC (or Mac or tablet or smartphone or whatever – see the section <strong>Uploading a Text File</strong> for instructions how to do this), or</span> by using the method described in <strong>Using a Browser to set up M32 Preferences</strong>.</li>
-<li><strong>Practice Set</strong>: Generates random characters from a pool you pick yourself, right on the device – e.g. just the few characters you personally find difficult. Build (and change) the pool with the <strong>Practice Set</strong> entry in the preferences menu (see <strong>Preferences regarding Practice Set</strong> below); it is saved on the device and stays in effect until you change it again. This is unrelated to the Koch Trainer’s own <strong>Custom Chars</strong> lesson (see the section <strong>Koch: Select Lesson</strong>, last paragraph) – the two character sets are stored and edited separately.</li>
+<li><strong>Practice Set</strong>: Generates random characters from a pool you pick yourself, right on the device – e.g. just the few characters you personally find difficult. Build (and change) the pool with the <strong>Practice Set</strong> entry in the preferences menu (see <strong>Practice Set</strong> under <strong>Preferences regarding CW Generation</strong> below); it is saved on the device and stays in effect until you change it again. This is unrelated to the Koch Trainer’s own <strong>Custom Chars</strong> lesson (see the section <strong>Koch: Select Lesson</strong>, last paragraph) – the two character sets are stored and edited separately.</li>
 </ul>
 <div class="note">
 <p>The file player mode remembers where you stopped. (Exit this mode by pressing and holding the encoder. <strong>Do not just switch it off</strong> or wait for time-out; if you do, the Morserino will not be able to remember where you were.) It will then resume playing from that point the next time you restart the file player. Once the end of the file (or the file part) is reached, it will start at the beginning again.</p>
@@ -1413,7 +1412,7 @@ The font family used is Lato.</p>
 <p>Now, you can use the Koch Trainer (CW Generator or Echo Trainer), and it will use those characters for your training. The <strong>Koch Lesson</strong> setting acts as an index into your custom character set: at lesson <em>N</em>, only the first <em>N</em> characters of the set are used as the active training pool (capped at the actual length of the set, so a lesson number larger than your character set simply uses all of it). The lesson maximum adjusts automatically to the length of your custom character set (up to 51 characters; characters beyond the 51st are not reachable). The set may also contain the letters with umlauts and accents described under <strong>Encoding of text files for file player</strong><span class="pocket-a11y"> (on this edition, letters other than ä ö ü are not spoken)</span>.</p>
 <p>To change the character set, upload a new text file and select <strong>Custom Chars </strong>again. Even if it had been selected before, you must select <strong>Custom Chars</strong> again to prepare the new character set. If you just upload a new text file, the custom character set will not change. You must go into preferences and select <strong>Custom Chars</strong> again.<br/> <em>This is a feature, not a bug!</em><br/> It means you can switch between training your characters and using a different text file for the file player. Setting <strong>Koch Sequence</strong> to M32, LCWO, LICW, or CW Academy reverts to the “normal” Koch Trainer option.</p>
 <div class="note">
-<p>Looking for a quicker way to just drill a handful of characters you find difficult, without going through a text file or the Koch lesson mechanism? See <strong>Practice Set</strong>, a separate feature reachable directly under <strong>CW Generator</strong> and <strong>Echo Trainer</strong> (not under Koch Trainer) – described where those modes are introduced, and in <strong>Preferences regarding Practice Set</strong>. It uses its own, separately stored character set and does not affect or get affected by <strong>Custom Chars</strong> here.</p>
+<p>Looking for a quicker way to just drill a handful of characters you find difficult, without going through a text file or the Koch lesson mechanism? See <strong>Practice Set</strong>, a separate feature reachable directly under <strong>CW Generator</strong> and <strong>Echo Trainer</strong> (not under Koch Trainer) – described where those modes are introduced, and in <strong>Preferences regarding CW Generation</strong>. It uses its own, separately stored character set and does not affect or get affected by <strong>Custom Chars</strong> here.</p>
 </div>
 <h3 data-number="5.4.2" id="koch-learn-new-chr"><span class="header-section-number">5.4.2</span> Koch: Learn New Chr</h3>
 <p>By selecting this menu item a new character will be introduced (according to the Koch lesson selected – see the previous menu entry) – you will hear the sound, and see the sequence of dots and dashes quickly on the screen, as well as the character displayed on the screen. This will be repeated until you stop by pressing the ENCODER knob. After each occurrence you have the opportunity (but no obligation) to repeat with the paddles what you have heard, and the device will let you know if this was correct or not.</p>
@@ -2684,6 +2683,11 @@ The font family used is Lato.</p>
 <td><strong>lower</strong> / UPPER</td>
 </tr>
 <tr>
+<td><span class="classic pocket"></span>Decoder Chars</td>
+<td>Which characters are shown for the few Morse codes that mean different letters in different languages, or that only the ITU standard (ITU-R M.1677-1) defines. It applies to CW Keyer, Remote Keyer, CW Decoder, the transceiver modes and the Echo Trainer (also in the Koch Trainer). In the Echo Trainer, a code that stands for several characters is always taken as the one in the word you are to repeat: a correctly keyed &lt;kn&gt; stays &lt;kn&gt; with <strong>ITU</strong>, and <code>.--.-</code> for the å of a Swedish text is right whatever you set here. <span class="pocket">The games and the QSO Bot</span><span class="classic">The QSO Bot</span> always use <strong>Standard</strong>.<br/><strong>Standard</strong>: as always – <code>-.--.</code> is &lt;kn&gt;, <code>.-.-</code> ä, <code>---.</code> ö, <code>..--</code> ü, <code>----</code> ch; codes it does not know show as *.<br/><strong>ITU</strong>: as Standard, but <code>-.--.</code> is „(“, and „)“ (<code>-.--.-</code>) and é (<code>..-..</code>) are added.<br/><strong>Fr/Es/Pt</strong> (French, Spanish, Portuguese): as Standard, plus à (<code>.--.-</code>), é (<code>..-..</code>), è (<code>.-..-</code>), ç (<code>-.-..</code>) and ñ (<code>--.--</code>).<br/><strong>Sv/Fi</strong> (Swedish, Finnish): as Standard, plus å (<code>.--.-</code>).<br/><strong>Da/No</strong> (Danish, Norwegian): å (<code>.--.-</code>), and æ and ø where Standard has ä and ö.<br/>On Bluetooth keyboard output these letters are typed without their accents (see <strong>Using the Bluetooth Keyboard functionality</strong>).</td>
+<td><strong>Standard</strong> / ITU / <em>Fr/Es/Pt</em> / <em>Sv/Fi</em> / <em>Da/No</em></td>
+</tr>
+<tr>
 <td><span class="pocket pocket-a11y"></span>Headphone Output</td>
 <td>(Only for M32 Pocket) This setting determines what happens when headphones or another device are connected to the headphone output. With the default setting, output will be via the headphones and the speaker will be muted. With “<em>line-out</em>,” output will be via the headphone output at full volume and via the speaker as normal. With “<em>l-o: Var. Vol.</em>” it is similar, but the output via the plug is at the set volume, and with “<em>l-o: Lsp Muted</em>” the output via the plug is at full volume and the speaker is muted.</td>
 <td><strong>Phones</strong> / line-out / l-o: Var. Vol. / l-o: Lsp Muted Caution: Never plug in headphones when using the line-out options! As playback may occur at full volume, this could cause damage to your hearing or the headphones!</td>
@@ -2801,30 +2805,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.3.4" id="preferences-regarding-practice-set"><span class="header-section-number">6.3.4</span> Preferences regarding Practice Set</h3>
-<p>This is unrelated to the Koch Character Sequence above – it feeds the <strong>Practice Set</strong> entries under <strong>CW Generator</strong> and <strong>Echo Trainer</strong> (sections <strong>5.2</strong> and <strong>5.3</strong>), not the Koch Trainer’s own sequence. The one place it does reach the Koch Trainer is <strong>Boost Practice</strong> below, which can make these characters come up more often within whatever your current Koch lesson has already unlocked.</p>
-<table>
-<colgroup>
-<col style="width: 33%" />
-<col style="width: 33%" />
-<col style="width: 33%" />
-</colgroup>
-<thead>
-<tr>
-<th>Preference Name</th>
-<th>Description</th>
-<th>Values</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Practice Set</td>
-<td>Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation (followed by ä ö ü and ch<span class="classic pocket">, or the letters of the set chosen with <strong>Decoder Chars</strong></span>), click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as “(not set)” until you have added at least one character.</td>
-<td><em>(opens the picker; not an adjustable value)</em></td>
-</tr>
-</tbody>
-</table>
-<h3 data-number="6.3.5" id="preferences-regarding-cw-generation"><span class="header-section-number">6.3.5</span> Preferences regarding CW Generation</h3>
+<h3 data-number="6.3.4" id="preferences-regarding-cw-generation"><span class="header-section-number">6.3.4</span> Preferences regarding CW Generation</h3>
 <p>The following preferences control how characters are generated and played randomly, or how text files are being played as Morse characters. I’d like to draw your attention to <strong>Interchar Spc</strong> and <strong>Interword Spc</strong> primarily, as through those preferences you can achieve what is otherwise known as “Farnsworth Speed” or “Wordsworth Speed”, respectively. Of course, these preferences are also relevant for the Echo Trainer!</p>
 <table>
 <colgroup>
@@ -2861,8 +2842,13 @@ The font family used is Lato.</p>
 <td>Fixed lengths 1 – 6, and 2 to 3 – 2 to 6 (length chosen randomly within these limits) [<strong>5</strong>]</td>
 </tr>
 <tr>
+<td>Practice Set</td>
+<td>Opens an on-device picker to build your own practice character pool: turn the ENCODER to browse letters, digits and punctuation (followed by ä ö ü and ch<span class="classic pocket">, or the letters of the set chosen with <strong>Decoder Chars</strong></span>), click to add the highlighted one (each character can be added only once), the FN button removes the last one added, and a long press finishes and saves the set. Shows as “(not set)” until you have added at least one character. It is unrelated to the Koch Character Sequence: it feeds the <strong>Practice Set</strong> entries under <strong>CW Generator</strong> and <strong>Echo Trainer</strong> (sections <strong>5.2</strong> and <strong>5.3</strong>), not the Koch Trainer’s own sequence; the one place it reaches the Koch Trainer is <strong>Boost Practice</strong> below.</td>
+<td><em>(opens the picker; not an adjustable value)</em></td>
+</tr>
+<tr>
 <td>Boost Practice</td>
-<td>Raises the odds that characters from your <strong>Practice Set</strong> (see <strong>Preferences regarding Practice Set</strong> above) come up: in Random Characters groups, on top of the <strong>Random Groups</strong> subset selected above; and in the Koch Trainer’s character generation (fixed or Adaptive), on top of whichever characters the current Koch Lesson has unlocked. It never overrides Koch’s own weighting of newer/adaptive characters – it only asks Koch’s scheme again when the draw misses a Practice Set character, so the “learn new characters more” behaviour is preserved exactly. Only affects character generation – Words, Abbreviations and Call Signs are unaffected. Has no effect while Practice Set is empty; a Practice Set character outside the currently active character pool (the <strong>Random Groups</strong> subset, or the current Koch Lesson) is never boosted in on its own.</td>
+<td>Raises the odds that characters from your <strong>Practice Set</strong> (see <strong>Practice Set</strong> above) come up: in Random Characters groups, on top of the <strong>Random Groups</strong> subset selected above; and in the Koch Trainer’s character generation (fixed or Adaptive), on top of whichever characters the current Koch Lesson has unlocked. It never overrides Koch’s own weighting of newer/adaptive characters – it only asks Koch’s scheme again when the draw misses a Practice Set character, so the “learn new characters more” behaviour is preserved exactly. Only affects character generation – Words, Abbreviations and Call Signs are unaffected. Has no effect while Practice Set is empty; a Practice Set character outside the currently active character pool (the <strong>Random Groups</strong> subset, or the current Koch Lesson) is never boosted in on its own.</td>
 <td><strong>Off</strong> / Moderate / Strong</td>
 </tr>
 <tr>
@@ -2917,7 +2903,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.3.6" id="preferences-regarding-echo-trainer"><span class="header-section-number">6.3.6</span> Preferences regarding Echo Trainer</h3>
+<h3 data-number="6.3.5" id="preferences-regarding-echo-trainer"><span class="header-section-number">6.3.5</span> Preferences regarding Echo Trainer</h3>
 <p>The following preferences control the essential properties of the Echo Trainer (however, Tone Shift also applies to <span class="classic">LoRa Trx and </span>WiFi Trx, and to the tone marker of the File Player).</p>
 <p>Increasing the value for “Interword Space” also increases the “grace time” after the prompt before you must begin keying your response!</p>
 <table>
@@ -2971,7 +2957,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.3.7" id="preferences-regarding-transmitting-decoding-and-qso-bot"><span class="header-section-number">6.3.7</span> Preferences regarding Transmitting, Decoding and QSO Bot</h3>
+<h3 data-number="6.3.6" id="preferences-regarding-transmitting-decoding-and-qso-bot"><span class="header-section-number">6.3.6</span> Preferences regarding Transmitting, Decoding and QSO Bot</h3>
 <p>These preferences control some functions available for transmitting (either directly through <span class="classic">LoRa or</span> Wifi, or through keying an external transmitter), for decoding Morse code characters, and for the QSO Bot (see section <strong>QSO Bot</strong>).</p>
 <table>
 <colgroup>
@@ -3008,28 +2994,23 @@ The font family used is Lato.</p>
 <td><strong>Wide</strong> / Narrow</td>
 </tr>
 <tr>
-<td><span class="classic pocket"></span>Decoder Chars</td>
-<td>Which characters are shown for the few Morse codes that mean different letters in different languages, or that only the ITU standard (ITU-R M.1677-1) defines. It applies to CW Keyer, Remote Keyer, CW Decoder, the transceiver modes and the Echo Trainer (also in the Koch Trainer). In the Echo Trainer, a code that stands for several characters is always taken as the one in the word you are to repeat: a correctly keyed &lt;kn&gt; stays &lt;kn&gt; with <strong>ITU</strong>, and <code>.--.-</code> for the å of a Swedish text is right whatever you set here. <span class="pocket">The games and the QSO Bot</span><span class="classic">The QSO Bot</span> always use <strong>Standard</strong>.<br/><strong>Standard</strong>: as always – <code>-.--.</code> is &lt;kn&gt;, <code>.-.-</code> ä, <code>---.</code> ö, <code>..--</code> ü, <code>----</code> ch; codes it does not know show as *.<br/><strong>ITU</strong>: as Standard, but <code>-.--.</code> is „(“, and „)“ (<code>-.--.-</code>) and é (<code>..-..</code>) are added.<br/><strong>Fr/Es/Pt</strong> (French, Spanish, Portuguese): as Standard, plus à (<code>.--.-</code>), é (<code>..-..</code>), è (<code>.-..-</code>), ç (<code>-.-..</code>) and ñ (<code>--.--</code>).<br/><strong>Sv/Fi</strong> (Swedish, Finnish): as Standard, plus å (<code>.--.-</code>).<br/><strong>Da/No</strong> (Danish, Norwegian): å (<code>.--.-</code>), and æ and ø where Standard has ä and ö.<br/>On Bluetooth keyboard output these letters are typed without their accents (see <strong>Using the Bluetooth Keyboard functionality</strong>).</td>
-<td><strong>Standard</strong> / ITU / <em>Fr/Es/Pt</em> / <em>Sv/Fi</em> / <em>Da/No</em></td>
-</tr>
-<tr>
 <td>Decoded on I/O</td>
 <td>Normally, decoded CW that comes from an external source (when using any of the transceiver modes, or using the decoder to decode audio input) is played on the speaker (or headphones), but not sent to the external audio I/O port. With this preference set to „ON”, the audio is also sent to the external audio I/O port.<br/> <strong>On the M32Pocket, this setting is ignored!</strong></td>
 <td>On / <strong>Off</strong></td>
-</tr>
-<tr>
-<td>Contest Type</td>
-<td>Only relevant in the QSO Bot’s <strong>Contest</strong> mode (section <strong>QSO Bot</strong>): which contest exchange the bot uses. <strong>CQ WW</strong> sends 5NN + the CQ zone of the bot’s callsign; <strong>WPX/Sprint</strong> sends 5NN + a serial number.</td>
-<td><strong>CQ WW</strong> / WPX/Sprint</td>
 </tr>
 <tr>
 <td>QSO Difficulty</td>
 <td>How forgiving and how chatty the QSO Bot partner is (all QSO Bot modes, section <strong>QSO Bot</strong>). <strong>Beginner</strong> is patient (more time to reply, an extra retry), spells signal reports out in full (599 rather than 5nn), and uses clear, calm prompts. <strong>Advanced</strong> keeps a tighter rhythm and uses curt, seasoned-operator prompts. <strong>Intermediate</strong> sits in between.</td>
 <td>Beginner / <strong>Intermediate</strong> / Advanced</td>
 </tr>
+<tr>
+<td>Contest Type</td>
+<td>Only relevant in the QSO Bot’s <strong>Contest</strong> mode (section <strong>QSO Bot</strong>): which contest exchange the bot uses. <strong>CQ WW</strong> sends 5NN + the CQ zone of the bot’s callsign; <strong>WPX/Sprint</strong> sends 5NN + a serial number.</td>
+<td><strong>CQ WW</strong> / WPX/Sprint</td>
+</tr>
 </tbody>
 </table>
-<h3 data-number="6.3.8" id="preferences-regarding-remote-keying"><span class="header-section-number">6.3.8</span> Preferences regarding Remote Keying</h3>
+<h3 data-number="6.3.7" id="preferences-regarding-remote-keying"><span class="header-section-number">6.3.7</span> Preferences regarding Remote Keying</h3>
 <p>These preferences configure the two remote keying modes (section <strong>Keying a remote transceiver</strong>). The five <strong>Rig</strong> items are read by the Morserino that keys the transmitter, so set them on that device — or, more conveniently, from the operating position while the link is up, as described in that section. <strong>Glitch Filter</strong> belongs to the Morserino you key. <strong>Pass Phrase</strong> must be set, identically, on both.</p>
 <table>
 <colgroup>
@@ -3082,7 +3063,7 @@ The font family used is Lato.</p>
 </tr>
 </tbody>
 </table>
-<h3 data-number="6.3.9" id="preferences-regarding-player-identity-and-scores"><span class="header-section-number">6.3.9</span> Preferences regarding Player Identity and Scores</h3>
+<h3 data-number="6.3.8" id="preferences-regarding-player-identity-and-scores"><span class="header-section-number">6.3.8</span> Preferences regarding Player Identity and Scores</h3>
 <p>These items appear at the very end of the preferences list. The first two set your personal identity, which is used<span class="pocket"> by the <strong>Fight the Pileup</strong> game and</span> by the <strong>QSO Bot</strong> (section <strong>QSO Bot</strong>); <strong>Reset Scores</strong> clears the stored game scores<span class="pocket pocket-a11y">, and <strong>Practice Stats</strong> switches the logging described below on or off</span>. Call Sign and Op Name can also be set over USB through the M32 Serial protocol (for example with a browser configuration tool).</p>
 <table>
 <colgroup>
@@ -4810,6 +4791,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=ce6409ff1560 -->
+<!-- MANUALFRESH: lang=en src=1d4f83f6c9c8 -->
 </body>
 </html>
