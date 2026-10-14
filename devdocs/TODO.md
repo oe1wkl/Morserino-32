@@ -193,6 +193,10 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     Each mode shows only a subset (its option list in `MorsePreferences.cpp`); verify per mode that nothing
     irrelevant is offered and nothing needed is missing — e.g. Word Length / Decoder Chars only where they act.
     Best done together with 16, with a mode × preference table as the working document.
+    **Prepared 2026-10-14:** `devdocs/preference-review/` — `PREFERENCE_MATRIX.md` (generated from the
+    preprocessed firmware tables and the V10 manual by `make_matrix.py`) and `REVIEW_NOTES.md` (six B17
+    findings, e.g. Headphone Output missing in CW Generator, Key ext TX missing in CW Trx; three manual/device
+    order mismatches; one order question). Waiting for Willi's review.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 

@@ -52,6 +52,10 @@ devdocs/
 │   └── CONCEPT.md                ·   settled design decisions, both game modes
 ├── practice-stats/               ← practice statistics logging + viewers (Pocket only)
 │   └── README.md                 ·   /stats.jsonl format, WiFi page, config-tool tab
+├── preference-review/           ← V10 review of preference order + per-mode lists (B16/B17)
+│   ├── REVIEW_NOTES.md           ·   START HERE — findings, open questions, decisions
+│   ├── PREFERENCE_MATRIX.md      ·   mode × preference table, All view vs manual (generated)
+│   └── make_matrix.py            ·   regenerates the matrix from the preprocessed firmware
 ├── protocol-audit/               ← USB serial protocol audit, and what 1.4 added
 │   ├── command-matrix.md         ·   one row per command, three-corner presence
 │   ├── conflicts.md              ·   three-way disagreements + live resolution status
