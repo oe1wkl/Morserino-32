@@ -17,13 +17,12 @@ Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (publish
    for classic, Pocket and the Accessibility Edition). It is V9.1-beta.1 plus one firmware change, the I2S sidetone
    alignment fix (C6), shipped **without its scope test** by Willi's decision — the test is still owed (C6 below).
    iOS app 1.1 (build 2) was approved and is in the App Store.
-2. **Next master change — on branch `a11y-speed-battery-v91`, awaiting Willi's bench test + OK (2026-10-12).**
-   Willi chose **9.2** (BETA true; "for the time being — we might soon jump to a 10.0 beta with m32kip
-   included"). The branch is `origin/a11y-speed-battery` rebased onto master (fixup squashed, its 9.1 bump
-   dropped), voice store regenerated (+6 battery clips), changelog/manuals moved into a new
-   `### CHANGES V. 9.2`, manuals rebuilt; builds classic, Pocket and Pocket a11y (+ buildfs). Not pushed.
-   Open gap, written into the changelog: speed changes in the **QSO Bot** stay silent (own loop, no
-   MorseVoice tick; a fix also needs a speaking gate on the bot's CW). Details: `devdocs/audio-accessibility/HANDOFF.md`.
+2. ~~**Next master change**~~ — **merged + pushed 2026-10-14** (f5c853b): master is **9.2 beta** (Willi: "9.2
+   for the time being — we might soon jump to a 10.0 beta with m32kip included"). The a11y speed/battery speech
+   (rebased from `origin/a11y-speed-battery` as `a11y-speed-battery-v91`), plus "keying cuts an announcement"
+   added after the bench test; all bench-tested by Willi on an a11y Pocket. Ext-Tx keying during an
+   announcement was not bench-tested. Open gap (in the changelog): speed changes in the **QSO Bot** stay
+   silent (own loop, no MorseVoice tick; a fix also needs a speaking gate on the bot's CW).
 3. **Then V10:** merge master into `m32kip` once more — 18 commits since 5bb9994 (plus the `[skip ci]` archive
    commit), incl. **V9 manual edits that must be ported to the V10 manual** (File Builder paragraph and the
    file-upload passage, both 2026-10-05), the sidetone fix, and the 9.1 changelog — then the B items below
@@ -130,7 +129,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
      `tmp-squash` worktree was removed (its local branch still needs `git branch -D tmp-squash`);
      **`origin/a11y-speed-battery` survives.** Its work — the a11y edition speaking the new speed
      and the battery state on return to the menu, reported by a blind operator 2026-09-11 — was
-     **never merged and is not in 9.1** — rebased 2026-10-12 as `a11y-speed-battery-v91` (see "Next master change" at the top); once that merges, `origin/a11y-speed-battery` can be deleted.
+     **never merged and is not in 9.1** — rebased as `a11y-speed-battery-v91` and **merged 2026-10-14**; `origin/a11y-speed-battery` and the local `a11y-speed-battery-v91` can now be deleted.
    - Local `protocol-1.4` is already gone.
 
 ## B. M32KIP / V10
