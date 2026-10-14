@@ -143,7 +143,11 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    now answers `NOT AT MENU - stop the running mode first` and changes nothing; verified on the classic;
    protocol description updated (1.5). V9/`master` keeps the old silence.
 4. **Burst-loss failure, test-plan §13.2(e):** a burst shortened one mark by 138 ms. Manual
-   only carries the workaround (Rig Delay ≥ 250 ms).
+   only carries the workaround (Rig Delay ≥ 250 ms). **Willi 2026-10-14: ship the V10 beta, investigate after.**
+   Reading the code does not explain it (edges go oldest-first, a late key-down grows `d_` while the key is up,
+   and `poll()` recomputes every emit time from the current `d_`, so the key-up should move with it). Next:
+   reproduce in the host simulation with a loss pattern aimed at exactly one key-down's quick copies; then a
+   bench re-run of profile (e) with the Rig logging edge arrival times.
 5. ~~Generated CW is 6 ms short per element~~ — **fixed 2026-10-02 on `master`** (06acf11, changelog V. 9.1;
    merged into `m32kip`): dit 48.0 / dah 144.0 / space 48.0 ms at 25 WPM, dah/dit 3.002 (FINDINGS on `m32kip`).
 6. **Bench tests owed by Willi.** Done 2026-10-01 (two devices, no Mac in the path — see
@@ -157,7 +161,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 8. ~~A11y voicing of the Keyer's messages~~ — **done 2026-10-01 on `m32kip`** (6354662): connect, call, link and
    all five error screens are spoken; **link lost / restored too** (81b9f70: voice driven from the idle branch only,
    clips cut the moment CW starts). Heard by Willi on an a11y Pocket; timing benched unchanged (TEST_REPORT).
-9. **Pocket polled-Keyer 1.7 ms floor** — Willi's nod still owed.
+9. ~~**Pocket polled-Keyer 1.7 ms floor**~~ — **accepted by Willi 2026-10-14** (recorded under D2 in `DECISIONS.md`).
 11. ~~Setting the pass phrase~~ — **done 2026-10-01 on `m32kip`** (4af1827, 39c2d3f, 39b8cb7):
     preference **Pass Phrase** on the device (MorseTextEntry, write-only, voiced), a **Remote
     Keying** card on the Configuration Tool's WiFi tab, and the Config WiFi web form — all three
