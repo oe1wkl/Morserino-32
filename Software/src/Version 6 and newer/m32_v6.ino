@@ -1523,6 +1523,9 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
                     MorsePreferences::startPreferencesAt(posRigDelay);
 #endif
                 MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+                MorseMenu::applyBluetoothUse();                              // CW Keyer: a changed Bluetooth Use counts now
+#endif
                 MorseOutput::clearDisplay();                                 // restore display
                 updateTopLine();
                 MorseOutput::refreshScrollArea(MorseOutput::relPos);         // clearDisplay() wiped the screen, but not

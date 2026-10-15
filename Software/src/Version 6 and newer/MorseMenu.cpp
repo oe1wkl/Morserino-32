@@ -398,6 +398,33 @@ static void a11yAnnounceBatteryOnMenuEntry() {
 ////// The MENU
 
 
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+void MorseMenu::stopBtKeyboard() {
+    MorseOutput::clearDisplay();
+    MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Stop BT Kbd");
+    if (protocolActive())
+        MorseJSON::jsonCreate("message", "Stop BT Kbd", "");
+    MorseOutput::refreshDisplay();
+    delay (1400);
+    MorseBluetooth::stopBluetooth();
+}
+
+// Bluetooth Use changed from inside CW Keyer (preferences, double click): make it count now instead of on the
+// next start of the mode (Willi, V10 preference review B17, 2026-10-14). Switched to a keyboard mode: start the
+// keyboard - initializeBluetooth() is the same call menuExec() makes for CW Keyer. Switched to No Bluetooth or to
+// BLE Serial: stop it, as leaving the mode would (BLE Serial itself still starts from the top menu only; moving
+// AWAY from BLE Serial already stopped it in writePreferences()). Only CW Keyer runs the keyboard.
+void MorseMenu::applyBluetoothUse() {
+    if (morseState != morseKeyer)
+        return;
+    if (MorseBluetooth::keyboardMode() != 0) {
+        if (!MorseBluetooth::isBLErunning)
+            MorseBluetooth::initializeBluetooth();
+    } else if (MorseBluetooth::isBLErunning)
+        stopBtKeyboard();
+}
+#endif
+
 void MorseMenu::menu_() {
    // Swallow whatever button click got us here (typically the long-press that
    // exits a running mode). ClickButton fires a long click while the button is
@@ -457,19 +484,8 @@ void MorseMenu::menu_() {
     WiFi.mode(WIFI_OFF);
     //DEBUG("WiFi Mode OFF");
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-    if (MorseBluetooth::isBLErunning) {
-      MorseOutput::clearDisplay();
-      MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Stop BT Kbd");
-      //MorseOutput::printOnScroll(2, REGULAR, 0, "Needs Reboot");
-      if (protocolActive())
-              MorseJSON::jsonCreate("message", "Stop BT Kbd", "");
-      MorseOutput::refreshDisplay();
-      delay (1400);
-      MorseBluetooth::stopBluetooth();
-
-      //DEBUG("Bluetooth Stopped");
-      //ESP.restart(); // not needed anymore
-    }
+    if (MorseBluetooth::isBLErunning)
+      stopBtKeyboard();
 #endif
     genIsActive = false;
     cleanStartSettings();

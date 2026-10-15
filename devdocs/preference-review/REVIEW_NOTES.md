@@ -44,7 +44,14 @@ change the order of the protocol's config list and the a11y tables, so re-run th
   shared code, whatever the setting (`decodedSymbol()` in `MorseDecoder.cpp`). Rejected: letting the setting
   decide which accented letters are sent with their own code — the text's language decides that, not the
   listener's decoder.
-- Still open: B17 item 6 (Bluetooth Use changed from inside a mode — when does it take effect?).
+- **B17 item 6 answered and fixed (2026-10-15):** changes between keyboard modes acted at once (typing reads
+  the setting live); moving away from BLE Serial stopped it at once (`writePreferences()`); moving to BLE Serial
+  takes effect at the next top menu (unchanged, documented). The gap: in CW Keyer, switching *to* a keyboard
+  mode did nothing until the mode was restarted, and switching it *off* left the keyboard connected. Willi:
+  start and stop at once — `MorseMenu::applyBluetoothUse()`, called after the double-click preferences in
+  `loop()`; `stopBtKeyboard()` is the "Stop BT Kbd" path shared with `menu_()`. Bench check owed: BLE Serial →
+  keyboard mode inside CW Keyer runs the BLE Serial stop and the keyboard start back to back.
+- The review is complete; nothing is open in this file.
 
 ## B17 — offered where it does nothing, or missing where it acts
 

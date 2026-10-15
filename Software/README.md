@@ -13,6 +13,7 @@
 * Some modes offered preferences that had no effect there, and missed some that did: **CW Generator** now offers **Headphone Output**, **iCW/Ext Trx** offers **Key ext TX** (which decides there whether your transmitter is keyed), and the **File Player** offers **Tone Shift** (used by its tone marker). **Tone Shift** is no longer offered in **iCW/Ext Trx** and the **QSO Bot**, and **Bandwidth** no longer in the **QSO Bot** – they did nothing there.
 
 #### Bug Fixes:
+* Bluetooth keyboard: switching **Bluetooth Use** to a keyboard mode in the preferences while in **CW Keyer** did nothing until you left CW Keyer and started it again; switching it off left the keyboard connected (though silent). The keyboard now starts or stops as soon as you leave the preferences.
 * File Player: with **Tone Shift** set to **No Tone Shift**, the tone marker still changed the pitch (down a half tone). It now leaves the pitch alone, as the manual says.
 
 ### CHANGES V. 9.1

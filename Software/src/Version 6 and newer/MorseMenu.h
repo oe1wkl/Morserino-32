@@ -81,6 +81,12 @@ void showStartDisplay(const String&, const String&, const String&, int);
 boolean isRemotelyExecutable(uint8_t);
 int8_t selectFilePart();
 int8_t selectKochPreviewChar();
+#ifdef CONFIG_BLUETOOTH_KEYBOARD
+// "Stop BT Kbd" on the display (and to a protocol client), then stop the BLE keyboard.
+void stopBtKeyboard();
+// In CW Keyer, after the preferences: start or stop the BLE keyboard so that it matches Bluetooth Use.
+void applyBluetoothUse();
+#endif
 #ifdef CONFIG_CW_GAME
  void startGame();
 #endif

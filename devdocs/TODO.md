@@ -205,7 +205,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     order mismatches; one order question). **Willi's first decisions implemented 2026-10-14** (mode-specific
     settings first, Bluetooth Use general, BLT <AR> CW Keyer only, B17 fixes 1–5; see the Decisions section of
     `REVIEW_NOTES.md`); second round the same day (QSO Bot and Echo order, Decoder Chars general, manual follows
-    the device). Still open there: only B17 item 6.
+    the device); B17 item 6 fixed 2026-10-15 (Bluetooth Use changed in CW Keyer now starts/stops the keyboard at once —
+    bench check owed, esp. BLE Serial → keyboard). **B16/B17 done** apart from that bench check.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
