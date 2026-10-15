@@ -1826,9 +1826,13 @@ unterstützt. Die WinKeyer-Nachrichten 1 bis 6 spielen die
 Keyer-Speicher 1 bis 6 des Morserino ab (siehe **CW Memory Keyer**).
 
 **DTR und RTS:** Bei manchen Programmen kannst du wählen, wie sie diese
-beiden Leitungen der seriellen Schnittstelle setzen. Beide an, beide
-aus oder „DTR an, RTS aus" sind in Ordnung; verwende nie „RTS an, DTR
-aus" – damit wird der Morserino im Reset festgehalten.
+beiden Leitungen der seriellen Schnittstelle setzen. Verwende nie „RTS
+an, DTR aus" – damit wird der Morserino im Reset festgehalten. [Bei der
+1st und 2nd Edition setze beide an oder beide aus: „DTR an, RTS aus"
+hält die FN-Taste gedrückt, solange das Programm die Schnittstelle
+geöffnet hat (im Hauptmenü startet das **Audio In Adj.**, das den Sender
+tastet).]{.classic}[Beim M32 Pocket sind beide an, beide aus oder „DTR
+an, RTS aus" in Ordnung.]{.pocket .pocket-a11y}
 
 ### QSO Bot
 
