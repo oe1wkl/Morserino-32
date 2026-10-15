@@ -195,7 +195,7 @@ def step_buffered(wk):
     wk.send(bytes([0x1C, 30]) + b"FAST" + bytes([0x1E]) + b" " + bytes([0x1A, 2]) + b"T", "speed 30, FAST, cancel, wait 2 s, T")
     saw_wait = False
     end = time.time() + 10
-    while time.time() < end and not bytes(wk.echo).endswith(b"T"):
+    while time.time() < end and bytes(wk.echo) != b"FAST T":      # "FAST" alone also ends in T
         wk.read_for(0.1)
         saw_wait |= wk.status is not None and bool(wk.status & 0x10)
     check("buffered speed + wait: all echoed", bytes(wk.echo) == b"FAST T", repr(bytes(wk.echo)))

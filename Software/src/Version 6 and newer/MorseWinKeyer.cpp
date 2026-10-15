@@ -65,15 +65,16 @@ static bool highBaud = false;           // classic: 9600 instead of 1200 (Set Hi
 static bool inPrefs = false;            // the preferences menu is up: it can store a snapshot, so the
                                         // M32's own speed must stay in MorsePreferences::wpm meanwhile
 
-// host-owned sending-side settings (D7) - session values, never written to NVS
+// host-owned sending-side settings (D7) - session values, never written to NVS. The initial values
+// are resetSessionSettings()'s: Get Values / Dump EEPROM can be asked for before any Host Open.
 static uint8_t hostMode;                // mode register (0x0E); key mode, swap and autospace are ignored
 static uint8_t hostWpm;                 // 0 = speed pot (= the M32's encoder speed, E1)
 static uint8_t bufWpm;                  // buffered speed change in force, 0 = none
 static uint8_t sidetoneByte;            // as sent; only the paddle-only bit (WK2) is used
-static uint8_t weight, ratio, farnsWpm, firstExt, keyComp, lead, tail, setpoint;
-static uint8_t potMin, potRange;
+static uint8_t weight = 50, ratio = 50, farnsWpm, firstExt, keyComp, lead, tail, setpoint = 50;
+static uint8_t potMin = 5, potRange = 30;
 static bool    potWindowSet;            // the host has sent Setup Speed Pot
-static uint8_t pinCfg, x1Mode, x2Mode;
+static uint8_t pinCfg = 0x06, x1Mode, x2Mode;
 static bool    wk3Mode;                 // Set WK3 Mode: sidetone formula, X1MODE layout, Load Defaults 9/15
 static bool    wk2Status;               // Set WK2 Mode: status bit 3 is 0 (pushbutton tag) instead of KEYDOWN
 
