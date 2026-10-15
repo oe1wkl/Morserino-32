@@ -1,0 +1,981 @@
+/******************************************************************************************************************************
+ *  Software for the Morserino-32 (M32) multi-functional Morse code machine, based on the Heltec WiFi LORA (ESP32) module   ***
+ *  Copyright (C) 2018-2026  Willi Kraml, OE1WKL                                                                            ***
+ *
+ *  This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License
+ *  as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty
+ *  of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License along with this program.
+ *  If not, see <https://www.gnu.org/licenses/>.
+ *****************************************************************************************************************************/
+
+// K1EL WinKeyer emulation - see MorseWinKeyer.h and devdocs/winkeyer/DESIGN.md.
+//
+// Three parts:
+//   - the byte parser (feed()), which consumes the parameters of EVERY WK2/WK3 command, also
+//     the ones we ignore - a parameter read as a command desynchronises the stream for good;
+//   - the input buffer, holding host text and buffered commands in arrival order;
+//   - the sender (tick()), a non-blocking state machine driven from loop(), so serial input,
+//     paddle break-in, the buttons and the TOT keep running while it sends (no delay() anywhere).
+// Host CW goes through keyOut(), and from there through MorseOutput::pwmTone (hard rule 1).
+
+#include "MorseWinKeyer.h"
+
+#ifdef CONFIG_WINKEYER
+
+#include "MorsePreferences.h"
+#include "MorseOutput.h"
+#include "MorseJSON.h"
+#include "M32ProtocolOut.h"
+#include "MorseVoice.h"
+
+// m32_v6.ino
+extern morserinoMode morseState;
+extern boolean m32protocol;
+extern uint16_t volt;
+extern const byte pool[][2];      // the M32 Morse table (element patterns), indexed like CWchars[]
+extern void keyOut(boolean on, boolean fromHere, int f, int volume);
+extern void displayGeneratedMorse(FONT_ATTRIB style, const String& s);
+extern void displayCWspeed();
+extern void updateTopLine();
+extern String cleanUpText(String text);
+extern String codesToUtf8(const String& s);
+extern int16_t batteryVoltage();
+
+namespace MorseWinKeyer {
+  volatile bool portOwned = false;
+#ifdef WK_NATIVE_USB
+  bool topMenuArmed = false;
+#endif
+}
+
+using namespace MorseWinKeyer;
+
+///////////////////////////// state
+
+static bool inMode = false;             // the WinKeyer menu mode is running
+static bool sessionOpen = false;               // a host session is open (Host Open .. Host Close)
+static bool autoEntered = false;        // Pocket: the session opened at the top menu (D1a)
+static bool closeToMenu = false;        // ... and was closed by the host: go back to the menu
+static bool autoOpenPending = false;    // Host Open seen at the top menu, mode not entered yet
+static bool highBaud = false;           // classic: 9600 instead of 1200 (Set High Baud)
+static bool inPrefs = false;            // the preferences menu is up: it can store a snapshot, so the
+                                        // M32's own speed must stay in MorsePreferences::wpm meanwhile
+
+// host-owned sending-side settings (D7) - session values, never written to NVS
+static uint8_t hostMode;                // mode register (0x0E); key mode, swap and autospace are ignored
+static uint8_t hostWpm;                 // 0 = speed pot (= the M32's encoder speed, E1)
+static uint8_t bufWpm;                  // buffered speed change in force, 0 = none
+static uint8_t sidetoneByte;            // as sent; only the paddle-only bit (WK2) is used
+static uint8_t weight, ratio, farnsWpm, firstExt, keyComp, lead, tail, setpoint;
+static uint8_t potMin, potRange;
+static bool    potWindowSet;            // the host has sent Setup Speed Pot
+static uint8_t pinCfg, x1Mode, x2Mode;
+static bool    wk3Mode;                 // Set WK3 Mode: sidetone formula, X1MODE layout, Load Defaults 9/15
+static bool    wk2Status;               // Set WK2 Mode: status bit 3 is 0 (pushbutton tag) instead of KEYDOWN
+
+static uint8_t potWpm;                  // the M32's own speed: the encoder, reported as the speed pot
+
+// input buffer: text and buffered commands. A parallel tag byte keeps Backspace from eating
+// half of a buffered command.
+static const uint16_t BUF_SIZE = 128;   // as a real WinKeyer; XOFF above 2/3
+enum : uint8_t { T_TEXT, T_CMD, T_PARAM };
+static uint8_t  buf[BUF_SIZE], tag[BUF_SIZE];
+static uint16_t bufHead = 0, bufCount = 0;
+
+// output queue to the host (status, pot, echo, replies) - drained without blocking
+static const uint16_t OUT_SIZE = 320;   // room for the 256-byte EEPROM dump
+static uint8_t  outBuf[OUT_SIZE];
+static uint16_t outHead = 0, outCount = 0;
+
+// parser
+static const uint16_t NO_CMD = 0xFFFF;
+static uint16_t pCmd = NO_CMD;
+static bool     pIsAdmin = false, pAdminNext = false;
+static uint16_t pNeed = 0, pHave = 0;
+static uint8_t  pPar[16];
+
+// sender
+enum SendState : uint8_t { S_IDLE, S_MARK, S_SPACE, S_TIMED };
+static SendState sState = S_IDLE;
+static uint32_t  sBits = 0;              // elements of the character in progress, MSB first, 1 = dah
+static uint8_t   sLen = 0, sPos = 0;
+static unsigned long sDeadline = 0;
+static unsigned long sSpaceAfter = 0;    // the gap that follows the mark in progress
+static bool      hostKeying = false;     // the sender holds the key down (sidetone/TX decisions)
+static unsigned long lastKeyUp = 0;      // for the 1st extension
+static uint8_t   pendEcho[2]; static uint8_t pendEchoN = 0;
+static String    pendDisp;
+static bool      paused = false;
+static bool      tuneOn = false;   static unsigned long tuneDeadline = 0;
+static bool      waitOn = false;         // Wait (WAIT status bit) - Key Buffered uses S_TIMED with the key down
+static bool      breakin = false;  static unsigned long lastPaddle = 0;
+static uint16_t  paddleElems = 0;  static KEYERSTATES prevKs = IDLE_STATE;
+static uint8_t   lastStatus = 0;
+
+static const unsigned long TUNE_WATCHDOG_MS = 100000UL;   // K1EL: hard-coded, cannot be disabled
+// keyOut() blocks this long on both edges before the key line moves (KEYOUT_EDGE_MS in m32_v6.ino).
+// As in generateCW(): a mark's deadline is set BEFORE the key goes down, so the waits cancel over
+// the mark, and every gap that ends in a key-down is shortened by it.
+static const long EDGE_MS = 6;
+
+///////////////////////////// small helpers
+
+static void outPut(uint8_t b) {
+  if (outCount >= OUT_SIZE) return;                 // a host that does not read loses bytes, never us
+  outBuf[(outHead + outCount) % OUT_SIZE] = b;
+  ++outCount;
+}
+
+static void pump() {
+  while (outCount) {
+    if (Serial.availableForWrite() <= 0)            // never block the keying path on a slow port
+      return;
+    Serial.write(outBuf[outHead]);
+    outHead = (outHead + 1) % OUT_SIZE;
+    --outCount;
+  }
+}
+
+// A host that waits for a reply (CQRLOG gives the revision byte 50 ms) gets it now. On the
+// Pocket's HWCDC a written byte can sit in the TX ring until the next traffic unless flushed
+// (devdocs: HWCDC withheld replies); on the classic's UART flush() would wait out the 1200-baud
+// transmission, so there it is left to the UART.
+static void replyNow() {
+  pump();
+#ifdef WK_NATIVE_USB
+  Serial.flush();
+#endif
+}
+
+static uint8_t clampWpm(int w) {
+  return (uint8_t) constrain(w, (int) MorsePreferences::wpmMin, (int) MorsePreferences::wpmMax);
+}
+
+static uint8_t potTop() { return potMin + _min(potRange, 31); }
+
+// the speed the paddle and the screen follow: the host's, or the speed pot (= encoder) in pot mode
+static uint8_t baseWpm() {
+  if (hostWpm)
+    return clampWpm(hostWpm);
+  if (sessionOpen && potWindowSet)
+    return clampWpm(constrain((int) potWpm, (int) potMin, (int) potTop()));
+  return potWpm;
+}
+
+static uint8_t sendWpm() { return bufWpm ? clampWpm(bufWpm) : baseWpm(); }
+
+static void announce(const char* s) {
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::announce(s);
+#else
+  (void) s;
+#endif
+}
+
+// Make MorsePreferences::wpm (paddle keyer timing, top-bar WpM) follow the session's speed.
+// It is put back to the M32's own speed before anything can persist it (beforePreferences(),
+// closeSession(), leave()), and the keyer's 12-character speed write is off in this mode.
+static void applySpeed() {
+  if (inPrefs) return;                    // host bytes still arrive (serialEvent() in the menu's loop)
+  uint8_t w = baseWpm();
+  if (w != MorsePreferences::wpm) {
+    MorsePreferences::wpm = w;
+    updateTimings();
+    if (inMode)
+      displayCWspeed();
+  }
+}
+
+static uint8_t potByte() {
+  int v = (int) potWpm - (int) potMin;
+  return 0x80 | (uint8_t) constrain(v, 0, (int) _min(potRange, 31));
+}
+
+///////////////////////////// buffer
+
+static bool bufPut(uint8_t b, uint8_t t) {
+  if (bufCount >= BUF_SIZE) return false;
+  buf[(bufHead + bufCount) % BUF_SIZE] = b;
+  tag[(bufHead + bufCount) % BUF_SIZE] = t;
+  ++bufCount;
+  return true;
+}
+
+static uint8_t bufGet() {
+  uint8_t b = buf[bufHead];
+  bufHead = (bufHead + 1) % BUF_SIZE;
+  --bufCount;
+  return b;
+}
+
+static void bufClear() { bufHead = bufCount = 0; }
+
+///////////////////////////// sender
+
+static void keyDown() {
+#ifdef CONFIG_AUDIO_A11Y
+  if (MorseVoice::isSpeaking())          // CW on the air wins over speech, as for the paddle
+    MorseVoice::stop();
+#endif
+  hostKeying = true;
+  keyOut(true, true, MorseOutput::notes[MorsePreferences::pliste[posPitch].value], MorsePreferences::sidetoneVolume);
+}
+
+static void keyUp() {
+  if (hostKeying) {
+    keyOut(false, true, 0, 0);
+    lastKeyUp = millis();
+  }
+  hostKeying = false;
+}
+
+// Cut whatever the host had going: the character in progress, a wait, a timed key-down, tune.
+static void abortSending() {
+  keyUp();
+  sState = S_IDLE;
+  sLen = sPos = 0;
+  pendEchoN = 0;
+  pendDisp = "";
+  tuneOn = waitOn = false;
+}
+
+static void restoreBufferedSpeed() { bufWpm = 0; }
+
+static void clearBuffer() {             // 0x0A and the M32 abort paths
+  bufClear();
+  abortSending();
+  paused = false;
+  restoreBufferedSpeed();
+}
+
+// The M32 Morse table supplies the element patterns (pool[] in m32_v6.ino); only three of
+// K1EL's prosign mappings have no M32 character and are spelled out here.
+static bool patternOfPoolIndex(int idx, uint32_t& bits, uint8_t& n) {
+  if (idx < 0) return false;
+  uint8_t len = pool[idx][1], mask = pool[idx][0];
+  for (uint8_t j = 0; j < len && n < 31; ++j) {
+    bits = (bits << 1) | ((mask & 0x80) ? 1 : 0);
+    mask <<= 1;
+    ++n;
+  }
+  return true;
+}
+
+static bool patternOfText(const char* els, uint32_t& bits, uint8_t& n) {
+  for (; *els && n < 31; ++els, ++n)
+    bits = (bits << 1) | (*els == '-' ? 1 : 0);
+  return true;
+}
+
+static int poolIndex(char c) {
+  const char* e = strchr(CWchars, c);
+  return (e && c) ? (int)(e - CWchars) : -1;
+}
+
+// WinKeyer byte -> elements, appended to bits/n. K1EL's ASCII table (WK3 manual, table 17).
+static bool appendPattern(uint8_t b, uint32_t& bits, uint8_t& n) {
+  if (b >= 0x80)                                         // internal: an M32 code from a keyer memory
+    return patternOfPoolIndex(b & 0x7F, bits, n);
+  if (b >= 'A' && b <= 'Z') b += 32;                     // CWchars has lower-case letters
+  if (wk3Mode && (x2Mode & 0x10) && b == '0') b = 't';   // X2MODE cut numbers
+  if (wk3Mode && (x2Mode & 0x20) && b == '9') b = 'n';
+  char c;
+  switch (b) {
+    case '<':  c = '+';    break;                        // AR
+    case '>':  c = 'K';    break;                        // SK (M32 prosign code)
+    case '[':  c = 'S';    break;                        // AS
+    case '(': case ':': case ']':
+               c = 'N';    break;                        // KN
+    case '\\': c = '/';    break;                        // DN
+    case ';':  c = '\xE4'; break;                        // AA - same code as the M32's ä
+    case '"':  return patternOfText(".-..-.", bits, n);  // RR
+    case '$':  return patternOfText("...-..-", bits, n); // SX
+    case '\'': return patternOfText(".----.", bits, n);  // WG
+    default:
+      if ((b >= 'a' && b <= 'z') || (b >= '0' && b <= '9') || strchr(".,?/=-@+)", b))
+        c = (char) b;
+      else
+        return false;                                    // ! # % & * and the rest: ignored
+  }
+  return patternOfPoolIndex(poolIndex(c), bits, n);
+}
+
+// What the scroll area shows for a host byte - the M32's own conventions (hard rule 4).
+static String displayOf(uint8_t b) {
+  if (b >= 0x80)
+    return codesToUtf8(cleanUpProSigns(String(CWchars[b & 0x7F])));
+  switch (b) {
+    case '<':  return "+";
+    case '>':  return "<sk>";
+    case '[':  return "<as>";
+    case '(': case ':': case ']':
+               return "<kn>";
+    case '\\': return "/";
+    case ';':  return "<aa>";
+  }
+  if (b >= 'A' && b <= 'Z') b += 32;
+  return String((char) b);
+}
+
+struct WkTiming { long dit, dah, weightAdj, letterGap, wordExtra; };
+
+static void timing(WkTiming& t) {
+  uint8_t s = sendWpm();
+  uint8_t c = s;
+  bool farns = farnsWpm >= 10 && farnsWpm > s;           // Farnsworth is off at or above its speed
+  if (farns) c = farnsWpm;
+  t.dit = 1200L / c;
+  t.dah = t.dit * 3L * ratio / 50L;                      // DAH/DIT = 3 * (ratio / 50)
+  t.weightAdj = t.dit * ((long) weight - 50L) / 50L;     // added to every mark, taken from the gap after it
+  long letter, word;
+  if (farns) {                                           // PARIS: 31 units at character speed, 19 of spacing
+    long ts = 60000L / s - 31L * t.dit;
+    if (ts < 19L * t.dit) ts = 19L * t.dit;
+    letter = ts * 3L / 19L;
+    word   = ts * ((hostMode & 0x01) ? 6L : 7L) / 19L;    // contest spacing: one unit less
+  } else {
+    letter = 3L * t.dit;
+    word   = ((hostMode & 0x01) ? 6L : 7L) * t.dit;
+  }
+  // Letterspace (X1MODE): 0..15 steps of 2 %, read here as a lengthening of the letter space.
+  uint8_t ls = wk3Mode ? (x1Mode & 0x1F) : (x1Mode >> 4);
+  if (ls > 15) ls = 15;
+  letter += letter * 2L * ls / 100L;
+  t.letterGap = letter;
+  t.wordExtra = word > letter ? word - letter : 0;
+}
+
+static void startMark() {
+  WkTiming t; timing(t);
+  bool dah = (sBits >> (sLen - 1 - sPos)) & 1;
+  long mark = (dah ? t.dah : t.dit) + t.weightAdj + keyComp;
+  // 1st extension: the first element after the key has been up longer than the PTT tail time
+  // (3 dits + tail x 10 ms) - K1EL uses the tail timer to guess the rig is back on receive.
+  if (sPos == 0 && firstExt && millis() - lastKeyUp > (unsigned long)(3L * t.dit + 10L * tail))
+    mark += firstExt;
+  if (mark < 1) mark = 1;
+  ++sPos;
+  long gap = (sPos < sLen ? t.dit : t.letterGap) - t.weightAdj - keyComp - EDGE_MS;
+  sSpaceAfter = gap > 0 ? gap : 0;
+  sDeadline = millis() + mark;
+  sState = S_MARK;
+  keyDown();
+}
+
+static void startChar(uint32_t bits, uint8_t n, const uint8_t* echo, uint8_t echoN, const String& disp) {
+  sBits = bits; sLen = n; sPos = 0;
+  pendEchoN = echoN;
+  for (uint8_t i = 0; i < echoN; ++i) pendEcho[i] = echo[i];
+  pendDisp = disp;
+  startMark();
+}
+
+static void space(long ms) {
+  sDeadline = millis() + (ms > 0 ? ms : 0);
+  sState = S_SPACE;
+}
+
+static void charDone() {               // end of the last mark: echo and show the character
+  if (sessionOpen && (hostMode & 0x04))       // serial echo
+    for (uint8_t i = 0; i < pendEchoN; ++i)
+      outPut(pendEcho[i]);
+  pendEchoN = 0;
+  if (pendDisp.length())
+    displayGeneratedMorse(REGULAR, pendDisp);   // own transmission: REGULAR (UX_CONVENTIONS §5)
+  pendDisp = "";
+}
+
+// Take the next item out of the buffer and start it.
+static void nextItem() {
+  while (bufCount && sState == S_IDLE) {
+    uint8_t t = tag[bufHead];
+    uint8_t b = bufGet();
+    if (t == T_PARAM) continue;                 // orphan (cannot happen; robustness)
+    if (t == T_TEXT) {
+      WkTiming tm; timing(tm);
+      if (b == ' ') {
+        if (sessionOpen && (hostMode & 0x04)) outPut(' ');
+        displayGeneratedMorse(REGULAR, " ");
+        space(tm.wordExtra);
+        return;
+      }
+      if (b == '|') {                           // half-dit pad
+        space(tm.dit / 2);
+        return;
+      }
+      uint32_t bits = 0; uint8_t n = 0;
+      if (!appendPattern(b, bits, n) || n == 0)
+        continue;                               // unmapped: ignored
+      uint8_t echo = (b >= 0x80) ? 0 : b;
+      startChar(bits, n, &echo, echo ? 1 : 0, displayOf(b));
+      return;
+    }
+    // a buffered command; it was put in whole, so its parameters follow
+    switch (b) {
+      case 0x18: bufGet(); break;                                   // PTT on/off - D3: no PTT
+      case 0x19: {                                                  // key buffered, 0..99 s
+                  uint8_t s = bufGet();
+                  if (s) { keyDown(); sDeadline = millis() + 1000UL * _min(s, 99); sState = S_TIMED; }
+                  return;
+                 }
+      case 0x1A: {                                                  // wait, 0..99 s
+                  uint8_t s = bufGet();
+                  waitOn = true; sDeadline = millis() + 1000UL * _min(s, 99); sState = S_TIMED;
+                  return;
+                 }
+      case 0x1B: {                                                  // merge letters
+                  uint8_t a = bufGet(), c = bufGet();
+                  uint32_t bits = 0; uint8_t n = 0;
+                  appendPattern(a, bits, n);
+                  appendPattern(c, bits, n);
+                  if (!n) break;
+                  uint8_t echo[2] = { a, c };
+                  String d = "<" + displayOf(a) + displayOf(c) + ">";
+                  startChar(bits, n, echo, 2, d);
+                  return;
+                 }
+      case 0x1C: {                                                  // buffered speed change
+                  uint8_t w = bufGet();
+                  if (w) bufWpm = w;
+                  break;
+                 }
+      case 0x1D: bufGet(); break;                                   // buffered HSCW - not supported
+      case 0x1E: restoreBufferedSpeed(); break;                     // cancel buffered speed
+      default:   break;                                             // 0x1F NOP
+    }
+  }
+}
+
+static void runSender() {
+  unsigned long now = millis();
+  if (tuneOn) {
+    if (now - tuneDeadline < 0x80000000UL) {    // 100 s watchdog
+      tuneOn = false;
+      keyUp();
+    }
+    return;
+  }
+  switch (sState) {
+    case S_MARK:
+      if ((long)(now - sDeadline) < 0) return;
+      keyUp();
+      if (sPos >= sLen)
+        charDone();
+      space(sSpaceAfter);
+      return;
+    case S_SPACE:
+      if ((long)(now - sDeadline) < 0) return;
+      if (sPos < sLen) { startMark(); return; }
+      sState = S_IDLE;
+      break;
+    case S_TIMED:
+      if ((long)(now - sDeadline) < 0) return;
+      keyUp();
+      waitOn = false;
+      sState = S_IDLE;
+      break;
+    case S_IDLE:
+      break;
+  }
+  if (sState == S_IDLE && !paused && !breakin)
+    nextItem();
+}
+
+///////////////////////////// status
+
+static uint8_t status() {
+  uint8_t st = 0xC0;
+  if (waitOn)                                     st |= 0x10;
+  if (!wk2Status && (tuneOn || (hostKeying && sState == S_TIMED)))
+                                                  st |= 0x08;     // KEYDOWN (WK1 format)
+  if (bufCount || sState != S_IDLE || tuneOn)     st |= 0x04;     // BUSY
+  if (breakin)                                    st |= 0x02;
+  if (bufCount > BUF_SIZE * 2 / 3)                st |= 0x01;     // XOFF
+  return st;
+}
+
+static void statusUpdate() {
+  uint8_t st = status();
+  if (sessionOpen && st != lastStatus)
+    outPut(st);
+  lastStatus = st;
+}
+
+///////////////////////////// session
+
+static uint8_t m32SidetoneCode() {
+  int p = MorseOutput::notes[MorsePreferences::pliste[posPitch].value];
+  if (wk3Mode)
+    return (uint8_t) constrain(62500 / p, 1, 255);
+  return (uint8_t) constrain((4000 + p / 2) / p, 1, 10) | (sidetoneByte & 0x80);
+}
+
+// The mode register as the M32 actually behaves: the host's echo/contest/watchdog bits, the
+// M32's own keyer mode, paddle swap and autospace (D7).
+static uint8_t effectiveModeReg() {
+  uint8_t m = hostMode & 0xC5;
+  switch (MorsePreferences::pliste[posCurtisMode].value) {
+    case IAMBICA:     m |= 0x10; break;
+    case ULTIMATIC:   m |= 0x20; break;
+    case STRAIGHTKEY: m |= 0x30; break;
+    default:          break;                           // Iambic B, Non-Squeeze: 00
+  }
+  if (MorsePreferences::pliste[posPolarity].value == 0) m |= 0x08;   // doPaddleIambic() swaps on 0
+  if (MorsePreferences::pliste[posACS].value)          m |= 0x02;
+  return m;
+}
+
+// Load Defaults order (WK2 v23 / WK3)
+static void currentValues(uint8_t v[15]) {
+  v[0]  = effectiveModeReg();
+  v[1]  = hostWpm ? hostWpm : MorsePreferences::wpm;
+  v[2]  = m32SidetoneCode();
+  v[3]  = weight;
+  v[4]  = lead;
+  v[5]  = tail;
+  v[6]  = potMin;
+  v[7]  = potRange;
+  v[8]  = wk3Mode ? x2Mode : firstExt;
+  v[9]  = keyComp;
+  v[10] = farnsWpm;
+  v[11] = setpoint;
+  v[12] = ratio;
+  v[13] = pinCfg;
+  v[14] = x1Mode;
+}
+
+static void resetSessionSettings() {
+  hostMode = 0; hostWpm = 0; bufWpm = 0;
+  sidetoneByte = 0; weight = 50; ratio = 50; farnsWpm = 0; firstExt = 0; keyComp = 0;
+  lead = tail = 0; setpoint = 50;
+  potMin = 5; potRange = 30; potWindowSet = false;
+  pinCfg = 0x06;                          // sidetone + key output
+  x1Mode = x2Mode = 0;
+  wk3Mode = false; wk2Status = false;
+  paused = false;
+  breakin = false;
+}
+
+static void openSession() {
+  if (!sessionOpen)
+    potWpm = MorsePreferences::wpm;       // the M32's own speed becomes the speed pot (E1)
+  clearBuffer();
+  resetSessionSettings();
+  sessionOpen = true;
+  m32protocol = false;                    // whoever spoke the M32 protocol on this port is gone
+  closeToMenu = false;
+  outPut(REVISION);
+  replyNow();
+  lastStatus = status();
+  applySpeed();
+  if (inMode) {
+    updateTopLine();
+    announce("Host connected");
+  }
+}
+
+static void setBaud(bool high) {
+#ifndef WK_NATIVE_USB
+  if (high == highBaud) return;
+  Serial.flush();
+  Serial.updateBaudRate(high ? 9600 : 1200);
+#endif
+  highBaud = high;
+}
+
+static void closeSession(bool fromHost) {
+  if (!sessionOpen) return;
+  clearBuffer();
+  sessionOpen = false;
+  resetSessionSettings();
+  if (inMode)
+    setBaud(false);                       // K1EL: 1200 baud is reinstated on every close
+  applySpeed();                           // back to the M32's own speed
+  if (fromHost && autoEntered)
+    closeToMenu = true;
+  autoEntered = false;
+  if (inMode && !closeToMenu) {
+    updateTopLine();
+    announce("Host closed");
+  }
+}
+
+///////////////////////////// D8: messages and Vcc
+
+static void queueMemory(uint8_t n) {      // admin Send Message 1..6 -> M32 keyer memory n
+  if (!inMode || n < 1 || n > 6 || !(MorsePreferences::cwMemMask & (1 << (n - 1))))
+    return;                               // an empty slot sends nothing
+  String text = String(MorsePreferences::cwMem[n - 1]);
+  int i = 0, l = text.length();
+  while (i < l) {                         // word by word, cleaned up as the memory keyer's playback does
+    while (i < l && isSpace(text[i])) ++i;
+    int s = i;
+    while (i < l && !isSpace(text[i])) ++i;
+    if (i == s) break;
+    String w = cleanUpText(text.substring(s, i));
+    w.replace("T", "");
+    if (w.indexOf('P') != -1) {           // the player's pause token: a few word spaces
+      bufPut(' ', T_TEXT); bufPut(' ', T_TEXT);
+    } else {
+      for (unsigned int k = 0; k < w.length(); ++k) {
+        int idx = poolIndex(w[k]);
+        if (idx >= 0) bufPut(0x80 | idx, T_TEXT);
+      }
+    }
+    bufPut(' ', T_TEXT);
+  }
+}
+
+static uint8_t vccByte() {
+  uint16_t mv;
+#ifdef CONFIG_MCP73871
+  mv = batteryVoltage();
+#else
+  mv = volt;                              // the classic reads its battery by switching Vext, which also
+                                          // powers the display - so report the reading taken at boot
+#endif
+  if (mv == 0) return 0xFF;
+  return (uint8_t) constrain(262140UL / mv, 1UL, 255UL);   // K1EL: 26214 / byte = volts x 100
+}
+
+///////////////////////////// parser
+
+static uint16_t adminParams(uint8_t sub) {
+  switch (sub) {
+    case 0x00: return 1;                  // calibrate (WK1): FF
+    case 0x04: return 1;                  // echo test
+    case 0x0D: return 256;                // load EEPROM
+    case 0x0E: return 1;                  // send message
+    case 0x0F: return 1;                  // load X1MODE
+    case 0x13: return 2;                  // RTTY registers
+    case 0x16: return 1;                  // load X2MODE
+    case 0x19: return 1;                  // sidetone volume
+    default:   return 0;
+  }
+}
+
+static uint16_t cmdParams(uint8_t c) {
+  switch (c) {
+    case 0x04: case 0x1B:          return 2;    // PTT lead/tail; merge letters
+    case 0x05:                     return 3;    // speed pot setup
+    case 0x0F:                     return 15;   // load defaults
+    case 0x07: case 0x08: case 0x0A: case 0x13: case 0x15: case 0x1E: case 0x1F:
+                                   return 0;
+    default:                       return 1;    // 0x16 pointer: +1 for sub-command 3, see feed()
+  }
+}
+
+static void sendValues() {
+  if (wk3Mode) { outPut(0); return; }     // WK3: historical, returns 0
+  uint8_t v[15]; currentValues(v);
+  for (uint8_t i = 0; i < 15; ++i) outPut(v[i]);
+}
+
+static void dumpEeprom() {                // used by flwkey's "read parameters" and K1EL's tools
+  uint8_t v[15]; currentValues(v);
+  outPut(0xA5);                           // WK2 EEPROM magic, then the settings block (DESIGN.md §7.1)
+  for (uint8_t i = 0; i < 15; ++i) outPut(v[i]);
+  for (uint16_t i = 16; i < 256; ++i) outPut(0);
+}
+
+static void execAdmin(uint8_t sub) {
+  switch (sub) {
+    case 0x01: closeSession(true); break;                       // reset: session state only, never a reboot
+    case 0x02: openSession(); break;
+    case 0x03: closeSession(true); break;
+    case 0x04: outPut(pPar[0]); replyNow(); break;
+    case 0x05: case 0x06: outPut(0); replyNow(); break;         // paddle / speed A2D (WK1)
+    case 0x07: sendValues(); replyNow(); break;
+    case 0x09: outPut(REVISION >= 30 ? REVISION : 0x18); replyNow(); break;
+    case 0x0A: wk2Status = false; break;
+    case 0x0B: wk2Status = true;  break;
+    case 0x0C: dumpEeprom(); replyNow(); break;
+    case 0x0E: queueMemory(pPar[0]); break;
+    case 0x0F: x1Mode = pPar[0]; break;
+    case 0x11: if (inMode) setBaud(false); break;
+    case 0x12: if (inMode) setBaud(true);  break;
+    case 0x14: wk3Mode = true; break;
+    case 0x15: outPut(vccByte()); replyNow(); break;
+    case 0x16: x2Mode = pPar[0]; break;
+    case 0x17: outPut(0); replyNow(); break;                   // FW minor revision
+    case 0x18: outPut(0); replyNow(); break;                   // IC type: DIP
+    default:   break;                                          // calibrate, reserved, load EEPROM,
+                                                               // FW update, RTTY, volume: ignored
+  }
+}
+
+static void setMode(uint8_t m) { hostMode = m; restoreBufferedSpeed(); }
+
+static void execCmd(uint8_t c) {
+  uint8_t p = pPar[0];
+  switch (c) {
+    case 0x01: sidetoneByte = p; break;                        // pitch stays the M32's (D7)
+    case 0x02: hostWpm = p; restoreBufferedSpeed(); applySpeed(); break;
+    case 0x03: weight = constrain(p, 10, 90); restoreBufferedSpeed(); break;
+    case 0x04: lead = pPar[0]; tail = pPar[1]; break;          // PTT: D3, tail also times the 1st extension
+    case 0x05: potMin = pPar[0]; potRange = pPar[1]; potWindowSet = true; applySpeed(); break;
+    case 0x06: paused = (p != 0); break;
+    case 0x07: outPut(potByte()); break;
+    case 0x08:                                                 // backspace: the last unsent text byte
+               if (bufCount && tag[(bufHead + bufCount - 1) % BUF_SIZE] == T_TEXT) --bufCount;
+               break;
+    case 0x09: pinCfg = p; break;
+    case 0x0A: clearBuffer(); break;
+    case 0x0B: if (p) { abortSending(); tuneOn = true; tuneDeadline = millis() + TUNE_WATCHDOG_MS; keyDown(); }
+               else if (tuneOn) { tuneOn = false; keyUp(); }
+               break;
+    case 0x0D: farnsWpm = p; restoreBufferedSpeed(); break;
+    case 0x0E: setMode(p); break;
+    case 0x0F:                                                 // load defaults - all 15 parsed
+               setMode(pPar[0]);
+               hostWpm = pPar[1];
+               sidetoneByte = pPar[2];
+               weight = constrain(pPar[3], 10, 90);
+               lead = pPar[4]; tail = pPar[5];
+               potMin = pPar[6]; potRange = pPar[7]; potWindowSet = true;
+               if (wk3Mode) x2Mode = pPar[8]; else firstExt = pPar[8];   // byte 9 changes meaning
+               keyComp = pPar[9];
+               farnsWpm = pPar[10];
+               setpoint = pPar[11];                            // the M32's Latency plays this role (D7)
+               ratio = constrain(pPar[12], 33, 66);
+               pinCfg = pPar[13];
+               if (wk3Mode) x1Mode = pPar[14];                 // byte 15: WK2 "don't care"
+               applySpeed();
+               break;
+    case 0x10: firstExt = p; break;
+    case 0x11: keyComp = p; restoreBufferedSpeed(); break;     // host CW only (DESIGN.md §7.2)
+    case 0x12: setpoint = p; break;
+    case 0x15: outPut(status()); break;
+    case 0x17: ratio = constrain(p, 33, 66); restoreBufferedSpeed(); break;
+    default:   break;      // 0x0C HSCW, 0x13 null, 0x14 software paddle, 0x16 pointer: parsed, ignored
+  }
+}
+
+static void finish() {
+  uint16_t c = pCmd;
+  pCmd = NO_CMD;
+  if (pIsAdmin) {
+    execAdmin((uint8_t) c);
+    return;
+  }
+  if (c >= 0x18) {                        // buffered: into the buffer whole, unless the paddle has it
+    if (breakin) return;
+    uint16_t need = 1 + pNeed;
+    if (BUF_SIZE - bufCount < need) return;
+    bufPut((uint8_t) c, T_CMD);
+    for (uint16_t i = 0; i < pNeed; ++i) bufPut(pPar[i], T_PARAM);
+    return;
+  }
+  execCmd((uint8_t) c);
+}
+
+static void feed(uint8_t b) {
+  if (pAdminNext) {                       // the admin sub-command byte
+    pAdminNext = false;
+    pCmd = b; pIsAdmin = true; pHave = 0;
+    pNeed = adminParams(b);
+    if (!pNeed) finish();
+    return;
+  }
+  if (pCmd != NO_CMD) {                   // a parameter
+    if (pHave < sizeof(pPar)) pPar[pHave] = b;
+    ++pHave;
+    if (!pIsAdmin && pCmd == 0x16 && pHave == 1 && b == 3)
+      pNeed = 2;                          // pointer command "add nulls" has a count
+    if (pHave >= pNeed) finish();
+    return;
+  }
+  if (b == 0x00) { pAdminNext = true; return; }
+  if (!sessionOpen) return;                      // closed: only admin commands are accepted
+  if (b < 0x20) {
+    pCmd = b; pIsAdmin = false; pHave = 0;
+    pNeed = cmdParams(b);
+    if (!pNeed) finish();
+    return;
+  }
+  if (b >= 0x80 || breakin) return;       // host text meets a paddle break-in: dropped
+  bufPut(b, T_TEXT);
+}
+
+static void resetParser() { pCmd = NO_CMD; pAdminNext = false; pHave = pNeed = 0; }
+
+///////////////////////////// public
+
+void MorseWinKeyer::enter(bool autoOpened) {
+  inMode = true;
+  portOwned = true;
+  m32protocol = false;
+  closeToMenu = false;
+  autoEntered = autoOpened && sessionOpen;
+#ifdef WK_NATIVE_USB
+  autoOpenPending = false;
+#endif
+  if (!autoEntered) {
+    resetParser();
+    closeSession(false);
+    resetSessionSettings();
+    potWpm = MorsePreferences::wpm;
+#ifndef WK_NATIVE_USB
+    Serial.flush();
+    Serial.end();
+    Serial.begin(1200, SERIAL_8N2);       // WinKeyer: 1200 baud, 8 data bits, no parity, 2 stop bits
+    highBaud = false;
+#endif
+  }
+  paddleElems = 0; prevKs = IDLE_STATE;
+  lastStatus = status();
+  announce(autoEntered ? "Host connected" : "Waiting for host");
+}
+
+void MorseWinKeyer::leave() {
+  if (!portOwned) return;
+  closeSession(false);
+  abortSending();
+  resetParser();
+  inMode = false;
+  autoEntered = closeToMenu = false;
+  outHead = outCount = 0;
+#ifndef WK_NATIVE_USB
+  Serial.flush();
+  Serial.end();
+  Serial.begin(115200);                  // back to the M32 protocol's speed and framing
+#endif
+  highBaud = false;
+  portOwned = false;
+}
+
+void MorseWinKeyer::serviceInput() {
+  while (Serial.available()) {
+    feed((uint8_t) Serial.read());
+    if (sessionOpen) MorseOutput::resetTOT();
+  }
+  statusUpdate();
+  pump();
+}
+
+void MorseWinKeyer::tick() {
+  if (!inMode) { pump(); return; }
+  serviceInput();
+  if (breakin && millis() - lastPaddle > 7UL * 1200UL / MorsePreferences::wpm)
+    breakin = false;                      // one word space after the paddle stopped, host CW resumes
+  runSender();
+  if (sessionOpen)
+    MorseOutput::resetTOT();              // an attached logger is activity: no shutdown under it
+  statusUpdate();
+  pump();
+}
+
+void MorseWinKeyer::paddleActivity(bool pressed, KEYERSTATES ks) {
+  if (!inMode) return;
+  if (ks == KEYED && prevKs != KEYED) ++paddleElems;
+  if (ks == IDLE_STATE) paddleElems = 0;  // a character ended: not a stuck paddle
+  prevKs = ks;
+  if (pressed || ks != IDLE_STATE) {
+    lastPaddle = millis();
+    if (!breakin) {                       // break-in: the paddle wins at once (WK2 v23)
+      breakin = true;
+      clearBuffer();
+      statusUpdate();                     // BREAKIN goes out before any paddle echo
+    }
+  }
+}
+
+void MorseWinKeyer::paddleChar(const String& symbol) {
+  if (!sessionOpen || !(hostMode & 0x40))       // paddle echo off
+    return;
+  String s = symbol;
+  s.trim();                               // hard rule 3: the decoder's space never becomes an echo byte
+  if (s.length() == 0) return;
+  uint8_t b = 0;
+  if (s.length() == 1 && (uint8_t) s[0] > 0x20 && (uint8_t) s[0] < 0x7F)
+    b = (uint8_t) toupper(s[0]);
+  else if (s == "<kn>") b = '(';
+  else if (s == "<sk>") b = '>';
+  else if (s == "<as>") b = '[';
+  else if (s == "<ar>") b = '+';
+  if (b) outPut(b);                       // sent while BREAKIN is high: the host knows it is the paddle
+}
+
+void MorseWinKeyer::encoderSpeed(int t) {
+  potWpm = clampWpm((int) potWpm + t);
+  if (sessionOpen && hostWpm == 0 && potWindowSet)
+    potWpm = clampWpm(constrain((int) potWpm, (int) potMin, (int) potTop()));
+  if (sessionOpen) outPut(potByte());            // E1: the encoder is the speed pot
+  applySpeed();
+  displayCWspeed();
+  if (protocolActive())
+    MorseJSON::jsonControl("speed", MorsePreferences::wpm, MorsePreferences::wpmMin, MorsePreferences::wpmMax, false);
+#ifdef CONFIG_AUDIO_A11Y
+  MorseVoice::announceOverriding(String(MorsePreferences::wpm));
+  MorseVoice::announceMore("words per minute");
+#endif
+}
+
+void MorseWinKeyer::stopSending() {
+  clearBuffer();
+  statusUpdate();
+}
+
+void MorseWinKeyer::beforePreferences() {
+  clearBuffer();                          // the preferences menu blocks loop(): no key may stay down
+  statusUpdate(); pump();
+  MorsePreferences::wpm = potWpm;         // only the M32's own speed may be persisted
+  updateTimings();
+  inPrefs = true;
+}
+
+void MorseWinKeyer::afterPreferences() {
+  inPrefs = false;
+  potWpm = MorsePreferences::wpm;
+  MorsePreferences::wpm = 0;              // force applySpeed() to recompute and repaint
+  applySpeed();
+}
+
+bool MorseWinKeyer::wantsMenu() {
+  bool r = closeToMenu;
+  closeToMenu = false;
+  return r;
+}
+
+bool MorseWinKeyer::isOpen() { return sessionOpen; }
+
+bool MorseWinKeyer::sidetoneWanted() {
+  if (!(pinCfg & 0x02)) return false;                       // pin config: sidetone off
+  bool paddleOnly = wk3Mode ? (x2Mode & 0x08) : (sidetoneByte & 0x80);
+  return !(hostKeying && paddleOnly);                       // paddle-only sidetone mutes host CW
+}
+
+bool MorseWinKeyer::txWanted() {
+  if (!(pinCfg & 0x0C)) return false;                       // both key outputs off: sidetone only
+  if (!hostKeying) {
+    if (!(hostMode & 0x80) && paddleElems >= 128) return false;   // paddle watchdog: 128 elements
+    if (wk3Mode && (x2Mode & 0x02)) return false;           // X2MODE paddle mute: paddle in sidetone only
+  }
+  return true;
+}
+
+#ifdef WK_NATIVE_USB
+bool MorseWinKeyer::topMenuByte(uint8_t c) {
+  if (pCmd == NO_CMD && !pAdminNext && c != 0x00 && c != 0x13)
+    return false;                         // not ours: the M32 protocol's line assembly gets it
+  bool wasOpen = sessionOpen;
+  feed(c);                                // closed: admin commands only, 0x13 nulls fall through
+  if (sessionOpen && !wasOpen)
+    autoOpenPending = true;
+  pump();
+  return true;
+}
+
+bool MorseWinKeyer::takeAutoOpen() {
+  bool r = autoOpenPending;
+  autoOpenPending = false;
+  if (r && !sessionOpen) r = false;
+  return r;
+}
+#endif
+
+#endif // CONFIG_WINKEYER

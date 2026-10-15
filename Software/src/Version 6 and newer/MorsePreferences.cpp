@@ -782,6 +782,17 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    DECCHARS
                                                  };
 
+#ifdef CONFIG_WINKEYER
+ // WinKeyer: the CW Keyer's paddle settings stay the M32's (D7), plus the transmit gate. No Serial
+ // Output - the port belongs to the WinKeyer host while the mode runs.
+ prefPos MorsePreferences::winKeyerOptions[] =   { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posPolarity, posExtPddlPolarity,
+
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   posKeyExternalTx,
+                                                   DECCHARS
+                                                 };
+#endif
+
 #ifdef CONFIG_QSO_BOT
  prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
 
@@ -833,6 +844,9 @@ int MorsePreferences::kochEchoOptionsSize = SizeOfArray(MorsePreferences::kochEc
 int MorsePreferences::loraTrxOptionsSize = SizeOfArray(MorsePreferences::loraTrxOptions);
 int MorsePreferences::wifiTrxOptionsSize = SizeOfArray(MorsePreferences::wifiTrxOptions);
 int MorsePreferences::extTrxOptionsSize = SizeOfArray(MorsePreferences::extTrxOptions);
+#ifdef CONFIG_WINKEYER
+int MorsePreferences::winKeyerOptionsSize = SizeOfArray(MorsePreferences::winKeyerOptions);
+#endif
 #ifdef CONFIG_QSO_BOT
 int MorsePreferences::qsoBotOptionsSize = SizeOfArray(MorsePreferences::qsoBotOptions);
 #endif

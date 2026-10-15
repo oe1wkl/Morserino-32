@@ -21,6 +21,7 @@
 #include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
 #endif
 #include "MorseVoice.h"
+#include "MorseWinKeyer.h"
 
 #ifdef CONFIG_PRACTICE_STATS
 #include "MorsePracticeStats.h"
@@ -151,6 +152,9 @@ const char* const menuText[menuN]  = {
   , "Practice Set"    // _genPractice  - sibling of CW Generator's Random/CW Abbrevs/.../File Player
   , "Practice Set"    // _echoPractice - sibling of Echo Trainer's Random/CW Abbrevs/.../File Player
   , "Preview Char"    // _kochPreview  - sibling of Koch Trainer's Select Lesson/Learn New Chr
+#ifdef CONFIG_WINKEYER
+  , "WinKeyer"        // _winKeyer     - sibling of the Transceiver modes, after iCW/Ext Trx
+#endif
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
@@ -165,6 +169,31 @@ enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
 #endif
 
 bool EspNowIsActive = false;
+
+// WinKeyer (appended at the enum's end, menuPtr being persisted raw) sits in the Transceiver ring
+// right after iCW/Ext Trx - it keys an external transmitter, like that one. These name its
+// neighbours for every combination of LoRa, QSO Bot and WinKeyer being built in.
+#ifdef LORA_DISABLED
+  #define _trxFirst _trxWifi
+#else
+  #define _trxFirst _trxLora
+#endif
+#ifdef CONFIG_WINKEYER
+  #define _trxIcwOrWk _winKeyer           // the entry before QSO Bot / before wrapping round
+  #define _afterIcw   _winKeyer
+#else
+  #define _trxIcwOrWk _trxIcw
+  #ifdef CONFIG_QSO_BOT
+    #define _afterIcw _qsoBot
+  #else
+    #define _afterIcw _trxFirst
+  #endif
+#endif
+#ifdef CONFIG_QSO_BOT
+  #define _afterWk _qsoBot
+#else
+  #define _afterWk _trxFirst
+#endif
 
 const uint8_t menuNav [menuN] [5] = {                   // { level, left, right, up, down}
   { 0,0,0,0,0},                                         // 0 = dummy
@@ -201,31 +230,31 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx
     {1,_qsoBot,_trxIcw,_trx,0},                         // _trxWifi  (left wraps via _qsoBot)
-    {1,_trxWifi,_qsoBot,_trx,0},                        // _trxIcw   (right wraps to _qsoBot)
-    {1,_trxIcw,_trxWifi,_trx,_qsoSotaPota},             // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw   (right -> WinKeyer, or QSO Bot)
+    {1,_trxIcwOrWk,_trxWifi,_trx,_qsoSotaPota},         // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx (no LoRa, first child is WiFi)
-    {1,_trxIcw,_trxIcw,_trx,0},                         // _trxWifi  (2-item wrap)
-    {1,_trxWifi,_trxWifi,_trx,0},                       // _trxIcw   (2-item wrap)
+    {1,_trxIcwOrWk,_trxIcw,_trx,0},                     // _trxWifi  (wrap, via WinKeyer if built in)
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw
   #endif
 #else
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx
     {1,_qsoBot,_trxWifi,_trx,0},                        // _trxLora  (left wraps via _qsoBot)
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_qsoBot,_trx,0},                        // _trxIcw   (right wraps to _qsoBot)
-    {1,_trxIcw,_trxLora,_trx,_qsoSotaPota},             // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw   (right -> WinKeyer, or QSO Bot)
+    {1,_trxIcwOrWk,_trxLora,_trx,_qsoSotaPota},         // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx (has LoRa)
-    {1,_trxIcw,_trxWifi,_trx,0},                        // _trxLora
+    {1,_trxIcwOrWk,_trxWifi,_trx,0},                    // _trxLora
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_trxLora,_trx,0},                       // _trxIcw
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw
   #endif
 #endif
 #ifdef CONFIG_CW_GAME
@@ -272,6 +301,9 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_kochLearn,_kochGen,_koch,0}                       // Preview Char (Koch Trainer) - appended at enum's end for the
                                                          //   same reason (menuPtr persisted raw); spliced into the koch
                                                          //   ring via the _kochLearn/_kochGen edits above
+#ifdef CONFIG_WINKEYER
+  , {1,_trxIcw,_afterWk,_trx,0}                          // WinKeyer (Transceiver) - spliced in via _afterIcw/_trxIcwOrWk
+#endif
 };
 
 //String MorseMenu::cmdPath;   // used to create string for json
@@ -373,6 +405,10 @@ void MorseMenu::menu_() {
    // walks newMenuPtr up several levels at once instead of landing on the
    // mode we just left (mirrors the setupPreferences() exit fix above).
    Buttons::modeButton.clicks = 0;
+#ifdef CONFIG_WINKEYER
+   MorseWinKeyer::leave();                 // back from WinKeyer: the port returns to the M32 protocol
+                                           // (115200 on the classic); no-op from any other mode
+#endif
    // Memory-clearing reboot is now reactive (see MorseGameMode::allocate)
    // rather than preemptive on WiFi Trx exit. The heap stays fragmented
    // after WiFi Trx, but that only matters if the user immediately starts
@@ -440,6 +476,9 @@ void MorseMenu::menu_() {
     MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
+#ifdef WK_NATIVE_USB
+        MorseWinKeyer::topMenuArmed = true;  // D1a: only here may a WinKeyer host open a session
+#endif
 #ifdef CONFIG_BLE_SERIAL
         // serialEvent(), plus the ONE place a BLE client may ask to be let in
         // (devdocs/ble-serial/ACCESS_CONTROL.md D2 — everywhere else refuses).
@@ -448,6 +487,15 @@ void MorseMenu::menu_() {
             MorseMenu::menuDisplay(disp);
 #else
         serialEvent();
+#endif
+#ifdef WK_NATIVE_USB
+        MorseWinKeyer::topMenuArmed = false;
+        if (MorseWinKeyer::takeAutoOpen()) {    // Host Open arrived (and is answered): enter the mode
+            MorsePreferences::menuPtr = MorsePreferences::newMenuPtr = _winKeyer;
+            disp = 0;
+            if (MorseMenu::menuExec())
+                return;
+        }
 #endif
 #ifdef CONFIG_BLE_SERIAL
         // THE top-menu backstop (the only one): every path to the top menu
@@ -1006,6 +1054,23 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 executeNow = false;
                 return true;
                 break;
+#ifdef CONFIG_WINKEYER
+      case  _winKeyer: {   // WinKeyer emulation (devdocs/winkeyer/DESIGN.md). Owns the serial port;
+                           // keys the TX like the CW Keyer. Entered from the menu, or on the Pocket by a
+                           // Host Open at the top menu (D1a), in which case the session is already open.
+                const bool autoOpened = MorseWinKeyer::isOpen();
+                generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
+                MorsePreferences::setCurrentOptions(MorsePreferences::winKeyerOptions, MorsePreferences::winKeyerOptionsSize);
+                morseState = morseWinKeyer;
+                MorseWinKeyer::enter(autoOpened);
+                showStartDisplay("", "WinKeyer", autoOpened ? "Host connected" : "Waiting for host", autoOpened ? 0 : 600);
+                clearPaddleLatches();
+                if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY)
+                  keyDecoder.setup();
+                executeNow = false;
+                return true;
+      }
+#endif
       case  _trxIcw: /// icw/ext TRX
                 MorsePreferences::setCurrentOptions(MorsePreferences::extTrxOptions, MorsePreferences::extTrxOptionsSize);
                 morseState = morseTrx;
@@ -1237,6 +1302,9 @@ void MorseMenu::showStartDisplay(const String& l0, const String& l1, const Strin
 boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
   if (menuNav[ptr][naviDown] == 0) {
     switch (ptr) {
+#ifdef CONFIG_WINKEYER
+      case _winKeyer:         // takes the serial port away from the very client that would execute it
+#endif
       case _kochPreview:      // its picker (selectKochPreviewChar()) has no remote-selection path
                               // (unlike selectFilePart()'s remoteFilePartSelect) - a protocol client
                               // executing it would strand the device in a picker only someone
