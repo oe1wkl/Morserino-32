@@ -184,9 +184,9 @@ def step_status(wk):
     wk.send(0x07, "get speed pot")
     got = wk.read_for(0.5, until=lambda g: any(b & 0xC0 == 0x80 for b in g))
     check("get speed pot", any(b & 0xC0 == 0x80 for b in got), f"pot 0x{wk.pot:02X}" if wk.pot is not None else "")
-    print("      turn the encoder one detent now (3 s) ...")
+    print("      turn the encoder one detent now (10 s) ...")
     before = wk.pot
-    wk.read_for(3.0, until=lambda g: any(b & 0xC0 == 0x80 for b in g))
+    wk.read_for(10.0, until=lambda g: any(b & 0xC0 == 0x80 for b in g))
     check("encoder reported as speed pot", wk.pot is not None and wk.pot != before, f"pot 0x{(wk.pot or 0):02X}")
 
 
@@ -223,13 +223,14 @@ def step_defaults(wk):
 
 
 def step_breakin(wk):
+    wk.send(bytes([0x0E, 0x44]), "mode: serial echo + paddle echo (Host Open resets it)")
     wk.send(bytes([0x02, 12]), "speed 12")
     wk.send(b"VVV VVV VVV VVV VVV", "long text")
     wk.read_for(0.8)
-    print("      PADDLE: key a short word (e.g. 'TEST') now, within 8 s ...")
+    print("      PADDLE: key a short word (e.g. 'TEST') now, within 15 s ...")
     wk.breakin_echo.clear()
     saw_breakin = False
-    end = time.time() + 8
+    end = time.time() + 15
     while time.time() < end:
         wk.read_for(0.1)
         saw_breakin |= wk.status is not None and bool(wk.status & 0x02)

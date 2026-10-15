@@ -13,9 +13,20 @@ The script: `Software/tests/winkeyer/wk_bench.py PORT [--lines dtr|both|none] [-
 (1200 8N2; DTR on / RTS off by default, as CQRLOG and flwkey do). Steps: `echo values open send
 prosigns xoff status buffered defaults tune breakin close`.
 
+## Results so far
+
+**2026-10-15, M32 Pocket (standard edition), macOS, `wk_bench.py` with DTR on / RTS off:**
+every step passes - echo (21-25 ms), values, Vcc, Dump EEPROM, Host Open at the main menu
+(auto-detect, revision 23 in 22-25 ms), PARIS at 20 WpM in 3.03 s, prosign + merge, XOFF and
+Clear Buffer, buffered speed/wait (WAIT seen), Load Defaults in sync, encoder reported as
+speed pot, paddle break-in (BREAKIN before the echo, host text dropped, paddle echo "TEST"),
+tune, Host Close back to the menu with the M32 protocol answering again. No reboot on port
+open. One firmware bug found and fixed (33701a8: closed-state Get Values reported zeros).
+Still open below: classic M32, DTR/RTS variants, timing on the key line, the loggers, rev 31.
+
 ## 1. Before anything else (DESIGN.md §2.4)
 
-- [ ] **Pocket, 1200-baud touch:** `pocketwroom` has `board_upload.use_1200bps_touch`. With the
+- [x] **Pocket, 1200-baud touch:** `pocketwroom` has `board_upload.use_1200bps_touch`. With the
       Pocket at the main menu, run `wk_bench.py PORT --only echo`. It must answer the Echo Test,
       not drop into the bootloader.
 - [ ] **DTR/RTS on open and close, each variant**, with `--lines dtr`, `both` and `none`: does
@@ -28,7 +39,7 @@ prosigns xoff status buffered defaults tune breakin close`.
 - [ ] Classic: start Transceiver → WinKeyer, run the full script. Then leave the mode and check
       that the Configuration Tool works again at 115200.
 - [ ] Pocket, menu-entered: same.
-- [ ] Pocket, auto-detect: leave it at the main menu, run the full script. Host Open must answer
+- [x] Pocket, auto-detect: leave it at the main menu, run the full script. Host Open must answer
       within 50 ms (CQRLOG's limit — the script prints the time) and enter the mode; `close`
       must return to the menu.
 - [ ] Pocket: a logger knocking while a training mode runs must NOT take over.
