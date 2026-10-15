@@ -359,5 +359,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 3. **QSO Bot:** only optional items left (T3.2 descriptors, T3.3 LLM/WiFi companion). Parked.
 4. **A11y roadmap:** blind-user feedback, high-contrast themes for partially sighted users, Phase 4 flash site.
 5. **`devdocs/HANDOFF.md`** still says "current focus: Fight the Pileup P6" — stale; rewrite.
-6. **WinKeyer emulation (idea, 2026-10-15):** feasibility + effort estimate in `devdocs/winkeyer/DESIGN.md` —
-   feasible as a dedicated menu mode, USB first, WK2 subset, ~4–6 sessions + bench. Needs Willi's decisions D1–D5 first. No code yet.
+6. **WinKeyer emulation (idea, 2026-10-15):** `devdocs/winkeyer/DESIGN.md` — menu mode + always-on Pocket
+   auto-detect, USB only, PTT ignored, branch `winkeyer` off master (D1–D5 decided 2026-10-15); every WK2/WK3
+   command walked through (§7); D8 decided (messages → keyer memories, Vcc from battery). ~5–7 sessions + bench.
+   D6 (reply WK2 v23, try WK3 on the bench) and D7 (M32 owns paddle + pitch) decided after the logger research
+   in §8 — **all decisions taken, ready to implement on branch `winkeyer`.** No code yet.
