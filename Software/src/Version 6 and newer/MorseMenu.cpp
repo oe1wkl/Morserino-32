@@ -613,11 +613,17 @@ void MorseMenu::menu_() {
                       // Koch Trainer submenu wiring above), so they are named explicitly here:
                       // the two Practice Set pickers (found via on-device testing: Quick Start
                       // into "CW Generator: Practice Set" otherwise fell back to "Random") and
-                      // Koch Trainer's Preview Char.
+                      // Koch Trainer's Preview Char, and WinKeyer (a Transceiver mode, remembered
+                      // like the others when chosen here - not when a Pocket host opened it from
+                      // the top menu, which does not pass through this case).
                       if (MorsePreferences::menuPtr < _wifi
                           || MorsePreferences::menuPtr == _genPractice
                           || MorsePreferences::menuPtr == _echoPractice
-                          || MorsePreferences::menuPtr == _kochPreview)
+                          || MorsePreferences::menuPtr == _kochPreview
+#ifdef CONFIG_WINKEYER
+                          || MorsePreferences::menuPtr == _winKeyer
+#endif
+                         )
                           MorsePreferences::writeLastExecuted(MorsePreferences::newMenuPtr);
                       if (MorseMenu::menuExec())
                         return;

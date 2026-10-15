@@ -401,3 +401,26 @@ session (which the D7 options below all respect).
 - In all three, nothing the host sets is written to NVS.
 - **Decided (D7): option 2**, the M32 owns paddle and pitch (see §6).
 
+
+## 9. Future: Remote WinKeyer (with M32KIP)
+
+Willi, 2026-10-15, after the first bench session: WinKeyer should also play nicely with M32KIP
+(branch `m32kip`, the V10 line, `devdocs/m32kip/`). The likely shape is a further Transceiver leaf,
+**Remote WinKeyer**, next to Remote Keyer / Remote Rig: a logger drives this M32 over USB exactly as
+in WinKeyer mode, and the resulting keying goes to a Remote Rig over M32KIP instead of (or as well
+as) the local key line. Nothing is designed yet. Questions to settle when both branches meet:
+
+- **Where the keying is captured.** Remote Keyer takes its edges at the key line in `keyOut()` and
+  runs in the global loop; the WinKeyer sender also keys through `keyOut()`, so the capture point
+  may already be shared - check that both paddle and host CW reach the wire, and that the sidetone
+  stays local.
+- **Latency vs. the host's view.** The link delay (Remote Rig holds ~150 ms) is longer than the
+  WinKeyer status/echo timing a logger expects; echo is sent when the *local* sender finishes a
+  letter, so the logger stays in step with the M32, not with the rig. Probably fine; to confirm.
+- **Break-in and tune.** Paddle break-in, Clear Buffer and the 100 s tune watchdog must also stop
+  the remote key line promptly (Remote Keyer's fail-safe, D14, applies).
+- **Port and network together.** The mode owns USB (WinKeyer) and WiFi (M32KIP) at once; the
+  classic's 1200-baud switch and the Pocket's auto-detect are unaffected, but auto-detect at the
+  top menu would then have to choose between WinKeyer and Remote WinKeyer (or stay local only).
+- **Menu label** "Remote WinKeyer" is 15 characters - longer than the 12-character labels the OLED
+  menu is hand-fitted to (`"Update Firmw"`); needs a shorter form or a check on both displays.
