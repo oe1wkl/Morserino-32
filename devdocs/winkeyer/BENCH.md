@@ -47,8 +47,8 @@ Consequences with such a logger:
 - if the mode is left while the logger keeps the port open, the menu sees FN held and starts
   *Audio In Adj.*, keying the TX.
 
-"Both on" and "both off" are safe (as is the Pocket, whose FN is not on a strap pin). Options,
-**for Willi to decide** (nothing changed in the firmware yet):
+"Both on" and "both off" are safe (as is the Pocket, whose FN is not on a strap pin). Options
+as written down at the time:
 1. Manual only: classic users must set DTR and RTS both on (or both off) in the logger. CQRLOG
    and flwkey are hard-wired to DTR on / RTS off, so they would not be usable on the classic.
 2. Firmware, classic WinKeyer mode: ignore FN while it has been held continuously since the mode
@@ -56,6 +56,19 @@ Consequences with such a logger:
 3. Firmware, menu: do not start *Audio In Adj.* when FN was already low on arriving at the menu
    (needs a release first) - protects the TX whatever the cause.
 2 and 3 together would make the classic safe with every logger; 1 alone is the cheap answer.
+
+**Decided by Willi: 2 and 3, implemented.** `MorseWinKeyer::filterFn()` (only where FN is pin 0):
+an FN already down at mode start, or down for more than 3 s, is a line and is ignored until
+released; a long press, which ClickButton reports after 1 s while still held, is held back and
+delivered at the release. `menu_()`: an FN down on arrival does nothing until released (all
+variants). **Verified on the classic with DTR on / RTS off held for 35 s:** the encoder stayed the
+speed control throughout (pot bytes 3.8-9.7 s), leaving the mode with the port still held did not
+start Audio In Adj. (the menu answered the protocol at 115200 afterwards - Audio In Adj. never
+polls serial), and the port was back at 115200.
+**Remaining gap:** a logger that opens the port while the classic is still at the *menu* (before
+the mode is started) holds FN from then on, and the menu's FN long press starts Audio In Adj. -
+the manual says to start the mode first. Cosmetic: leaving the mode sends one stray byte (`FE`)
+to the logger as the UART is re-initialised at 115200.
 
 Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RTS variants, timing on the key line, the loggers, rev 31.
 

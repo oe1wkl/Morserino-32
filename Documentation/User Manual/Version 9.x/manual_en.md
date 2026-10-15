@@ -1785,9 +1785,12 @@ Morserino's keyer memories 1 to 6 (see **CW Memory Keyer**).
 **DTR and RTS:** some programs let you choose how they set these two
 lines of the serial port. Never use "RTS on, DTR off" – that holds the
 Morserino in reset. [On the 1st and 2nd edition, set both on or both
-off: "DTR on, RTS off" holds the FN button down for as long as the
-program has the port open (in the main menu that starts **Audio In
-Adj.**, which keys the transmitter).]{.classic}[On the M32 Pocket,
+off if you can: "DTR on, RTS off" (what CQRLOG and flwkey always do)
+holds the FN button down for as long as the program has the port open.
+The Morserino recognises this and ignores FN until the program lets go,
+so it does no harm – but FN cannot be used meanwhile. For the same
+reason, a long press of FN in WinKeyer mode only takes effect when you
+release it.]{.classic}[On the M32 Pocket,
 both on, both off, or "DTR on, RTS off" are all fine.]{.pocket .pocket-a11y}
 
 ### QSO Bot

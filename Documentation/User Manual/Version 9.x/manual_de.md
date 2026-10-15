@@ -1828,10 +1828,13 @@ Keyer-Speicher 1 bis 6 des Morserino ab (siehe **CW Memory Keyer**).
 **DTR und RTS:** Bei manchen Programmen kannst du wählen, wie sie diese
 beiden Leitungen der seriellen Schnittstelle setzen. Verwende nie „RTS
 an, DTR aus" – damit wird der Morserino im Reset festgehalten. [Bei der
-1st und 2nd Edition setze beide an oder beide aus: „DTR an, RTS aus"
-hält die FN-Taste gedrückt, solange das Programm die Schnittstelle
-geöffnet hat (im Hauptmenü startet das **Audio In Adj.**, das den Sender
-tastet).]{.classic}[Beim M32 Pocket sind beide an, beide aus oder „DTR
+1st und 2nd Edition setze nach Möglichkeit beide an oder beide aus:
+„DTR an, RTS aus" (was CQRLOG und flwkey immer tun) hält die FN-Taste
+gedrückt, solange das Programm die Schnittstelle geöffnet hat. Der
+Morserino erkennt das und ignoriert FN, bis das Programm loslässt – das
+schadet also nicht, aber FN ist so lange nicht benutzbar. Aus demselben
+Grund wirkt ein langer Druck auf FN im WinKeyer-Modus erst beim
+Loslassen.]{.classic}[Beim M32 Pocket sind beide an, beide aus oder „DTR
 an, RTS aus" in Ordnung.]{.pocket .pocket-a11y}
 
 ### QSO Bot

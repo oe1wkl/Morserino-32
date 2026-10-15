@@ -117,6 +117,11 @@ static bool      breakin = false;  static unsigned long lastPaddle = 0;
 static uint16_t  paddleElems = 0;  static KEYERSTATES prevKs = IDLE_STATE;
 static uint8_t   lastStatus = 0;
 
+// filterFn(): FN held by a serial line rather than a finger (see MorseWinKeyer.h)
+static const unsigned long FN_LINE_MS = 3000;   // held longer than this: a line, not a finger
+static bool fnFresh = true, fnPrevDown = false, fnIgnore = false, fnPendingLong = false;
+static unsigned long fnDownSince = 0;
+
 static const unsigned long TUNE_WATCHDOG_MS = 100000UL;   // K1EL: hard-coded, cannot be disabled
 // keyOut() blocks this long on both edges before the key line moves (KEYOUT_EDGE_MS in m32_v6.ino).
 // As in generateCW(): a mark's deadline is set BEFORE the key goes down, so the waits cancel over
@@ -828,6 +833,7 @@ void MorseWinKeyer::enter(bool autoOpened) {
 #endif
   }
   paddleElems = 0; prevKs = IDLE_STATE;
+  fnFresh = true;                         // filterFn(): judge FN afresh, an FN already down is a line
   lastStatus = status();
   announce(autoEntered ? "Host connected" : "Waiting for host");
 }
@@ -934,6 +940,39 @@ void MorseWinKeyer::afterPreferences() {
   potWpm = MorsePreferences::wpm;
   MorsePreferences::wpm = 0;              // force applySpeed() to recompute and repaint
   applySpeed();
+}
+
+// A long press is reported while FN is still held (ClickButton), after one second - before a held
+// line can be told from a finger. So it is held back and acted on at the release; a hold that
+// outlasts FN_LINE_MS, or that was already there when the mode started, is a line and does nothing
+// until it is released (the logger closed the port, or set its lines differently).
+int MorseWinKeyer::filterFn(int clicks, bool down) {
+  unsigned long now = millis();
+  if (fnFresh) {
+    fnFresh = false;
+    fnIgnore = fnPrevDown = down;
+    fnDownSince = now;
+    fnPendingLong = false;
+  }
+  if (down && !fnPrevDown)
+    fnDownSince = now;
+  fnPrevDown = down;
+  if (!down) {
+    bool deliver = fnPendingLong && !fnIgnore;
+    fnPendingLong = fnIgnore = false;
+    return deliver ? -1 : clicks;
+  }
+  if (!fnIgnore && now - fnDownSince > FN_LINE_MS) {
+    fnIgnore = true;
+    fnPendingLong = false;
+  }
+  if (fnIgnore)
+    return 0;
+  if (clicks < 0) {
+    fnPendingLong = true;
+    return 0;
+  }
+  return clicks;
 }
 
 bool MorseWinKeyer::wantsMenu() {

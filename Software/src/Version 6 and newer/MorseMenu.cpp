@@ -405,6 +405,13 @@ void MorseMenu::menu_() {
    // walks newMenuPtr up several levels at once instead of landing on the
    // mode we just left (mirrors the setupPreferences() exit fix above).
    Buttons::modeButton.clicks = 0;
+   // FN already down on arrival is not a gesture made in this menu. On the classic, FN is GPIO0, which
+   // a WinKeyer logger with DTR on / RTS off holds low for as long as it has the port open - and FN's
+   // long press here starts Audio In Adj., which keys the transmitter. So FN does nothing until it has
+   // been released once. (Harmless for a finger: it, too, was pressed before we got here.)
+   Buttons::volButton.Update();
+   boolean fnHeldOnArrival = Buttons::volButton.depressed;
+   Buttons::volButton.clicks = 0;
 #ifdef CONFIG_WINKEYER
    MorseWinKeyer::leave();                 // back from WinKeyer: the port returns to the M32 protocol
                                            // (115200 on the classic); no-op from any other mode
@@ -634,6 +641,12 @@ void MorseMenu::menu_() {
         }
 
        Buttons::volButton.Update();
+       if (fnHeldOnArrival) {
+          if (Buttons::volButton.depressed)
+             Buttons::volButton.clicks = 0;     // still the press we arrived with
+          else
+             fnHeldOnArrival = false;
+       }
 
        switch (Buttons::volButton.clicks) {
           case -1:  audioLevelAdjust();                         /// for adjusting line-in audio level (at the same time keying tx and sending oudio on line-out

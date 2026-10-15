@@ -76,7 +76,11 @@ buffer, ends a tune), the device-side equivalent of the paddle break-in. Keyer
 memories are not offered there — the host plays them (admin Send Message 1–6).
 The encoder keeps its speed role (reported to the host as the WinKeyer speed
 pot); FN, double click and long press are unchanged
-(`devdocs/winkeyer/DESIGN.md`, E1).
+(`devdocs/winkeyer/DESIGN.md`, E1) - with one classic-only exception: FN is GPIO0
+there, which a logger's DTR can hold down, so in this mode an FN long press acts on
+**release** (a hold of more than 3 s, or one already there at mode start, is a line
+and is ignored). Likewise the top menu ignores an FN that was already down on
+arrival until it has been released (`devdocs/winkeyer/BENCH.md`).
 
 ## 2. Global live adjustments — speed, volume, pitch
 

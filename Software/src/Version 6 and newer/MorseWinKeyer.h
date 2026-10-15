@@ -61,6 +61,10 @@ namespace MorseWinKeyer
   bool isOpen();
   bool sidetoneWanted();                // keyOut(): pin config sidetone bit, paddle-only sidetone
   bool txWanted();                      // keyOut(): key-output bits, paddle watchdog, paddle mute
+  // loop(), classic only (FN on GPIO0): a logger that sets DTR on / RTS off pulls GPIO0 low through
+  // the CP2102 auto-reset circuit, i.e. holds FN down for as long as it has the port open. Takes
+  // the FN button's clicks and debounced state, returns the clicks the mode should act on.
+  int filterFn(int clicks, bool down);
 
 #ifdef WK_NATIVE_USB
   // D1a: armed only around the top menu's serialEvent() call. topMenuByte() takes the WinKeyer

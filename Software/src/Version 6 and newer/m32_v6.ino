@@ -1404,6 +1404,10 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
   // check buttons
     Buttons::modeButton.Update();
     Buttons::volButton.Update();
+#ifdef CONFIG_WINKEYER
+    if (morseState == morseWinKeyer && Buttons::volButton.pin == 0)    // FN on GPIO0 (classic): DTR may hold it
+        Buttons::volButton.clicks = MorseWinKeyer::filterFn(Buttons::volButton.clicks, Buttons::volButton.depressed);
+#endif
     if (Buttons::modeButton.clicks || Buttons::volButton.clicks) {
         MorseOutput::resetTOT();        // explicit TOT reset on any button activity
         if (!genIsActive && (morseState == morseGenerator || morseState == echoTrainer))
