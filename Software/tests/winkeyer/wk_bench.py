@@ -190,6 +190,43 @@ def step_status(wk):
     check("encoder reported as speed pot", wk.pot is not None and wk.pot != before, f"pot 0x{(wk.pot or 0):02X}")
 
 
+def step_potspeed(wk):
+    """E1 in pot mode: the host never sends a speed, so the encoder is the sending speed.
+    Sends PARIS ten times and measures each word from the serial echo (PARIS + space = 50 units)."""
+    wk.send(bytes([0x0E, 0x04]), "mode: serial echo (no speed command: pot mode)")
+    wk.send(0x07, "get speed pot")
+    wk.read_for(0.3)
+    start_pot = wk.pot
+    wk.echo.clear()
+    wk.send(b"PARIS " * 10, "10 x PARIS")
+    print("      ENCODER: after the 2nd PARIS, turn it a few clicks UP (clockwise) ...")
+    t0 = time.time()
+    last_space, words, pots = None, [], []
+    seen = 0
+    end = time.time() + 60
+    while time.time() < end and wk.echo.count(b" ") < 10:
+        before_pot = wk.pot
+        wk.read_for(0.05)
+        now = time.time() - t0
+        if wk.pot != before_pot:
+            pots.append((now, wk.pot & 0x3F))
+        spaces = wk.echo.count(b" ")
+        if spaces > seen:
+            if last_space is not None:
+                words.append((now, 60.0 / (now - last_space)))
+            last_space, seen = now, spaces
+    for t, w in words:
+        print(f"      word ending at {t:5.1f} s: {w:4.1f} WpM")
+    for t, p in pots:
+        print(f"      pot byte at {t:5.1f} s: {p} (+ pot min)")
+    check("encoder reported as speed pot", bool(pots), f"start 0x{(start_pot or 0):02X}")
+    if len(words) >= 4:
+        first, last = words[0][1], words[-1][1]
+        check("sending speed followed the encoder", abs(last - first) >= 2, f"{first:.1f} -> {last:.1f} WpM")
+    else:
+        check("sending speed followed the encoder", False, "too few words timed")
+
+
 def step_buffered(wk):
     wk.echo.clear()
     wk.send(bytes([0x1C, 30]) + b"FAST" + bytes([0x1E]) + b" " + bytes([0x1A, 2]) + b"T", "speed 30, FAST, cancel, wait 2 s, T")
@@ -255,7 +292,8 @@ def step_close(wk):
 
 STEPS = {
     "echo": step_echo, "values": step_values, "open": step_open, "send": step_send,
-    "prosigns": step_prosigns, "xoff": step_xoff, "status": step_status, "buffered": step_buffered,
+    "prosigns": step_prosigns, "xoff": step_xoff, "status": step_status, "potspeed": step_potspeed,
+    "buffered": step_buffered,
     "defaults": step_defaults, "tune": step_tune, "breakin": step_breakin, "close": step_close,
 }
 

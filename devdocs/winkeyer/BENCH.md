@@ -11,7 +11,7 @@ edition before flashing a Pocket (the Accessibility Edition needs `pocketwroom-a
 
 The script: `Software/tests/winkeyer/wk_bench.py PORT [--lines dtr|both|none] [--only step,...]`
 (1200 8N2; DTR on / RTS off by default, as CQRLOG and flwkey do). Steps: `echo values open send
-prosigns xoff status buffered defaults tune breakin close`.
+prosigns xoff status potspeed buffered defaults tune breakin close`.
 
 ## Results so far
 
@@ -22,6 +22,9 @@ Clear Buffer, buffered speed/wait (WAIT seen), Load Defaults in sync, encoder re
 speed pot, paddle break-in (BREAKIN before the echo, host text dropped, paddle echo "TEST"),
 tune, Host Close back to the menu with the M32 protocol answering again. No reboot on port
 open. One firmware bug found and fixed (33701a8: closed-state Get Values reported zeros).
+Pot mode (E1, `potspeed` step): with no speed command from the host, 7 encoder clicks took the
+sending speed from 19.9 to 26.8-27.6 WpM within one word (pot 15 -> 22, pot min 5, i.e. 20 -> 27);
+with a host speed set, the encoder only reports the pot, as decided.
 Still open below: classic M32, DTR/RTS variants, timing on the key line, the loggers, rev 31.
 
 ## 1. Before anything else (DESIGN.md §2.4)
