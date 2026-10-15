@@ -359,3 +359,5 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 3. **QSO Bot:** only optional items left (T3.2 descriptors, T3.3 LLM/WiFi companion). Parked.
 4. **A11y roadmap:** blind-user feedback, high-contrast themes for partially sighted users, Phase 4 flash site.
 5. **`devdocs/HANDOFF.md`** still says "current focus: Fight the Pileup P6" — stale; rewrite.
+6. **WinKeyer emulation (idea, 2026-10-15):** feasibility + effort estimate in `devdocs/winkeyer/DESIGN.md` —
+   feasible as a dedicated menu mode, USB first, WK2 subset, ~4–6 sessions + bench. Needs Willi's decisions D1–D5 first. No code yet.
