@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "38ccf11d"
+#define VOICE_PACK_STAMP "4bcfcad5"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -268,6 +268,8 @@ static const VoiceEntry voiceLookup[] = {
   {"Golf", "690c3b10"},
   {"Hardware Conf", "59fd932d"},
   {"Headphone Output", "adf7d572"},
+  {"Host closed", "00b2261c"},
+  {"Host connected", "aff1c693"},
   {"Hotel", "26e28738"},
   {"Iambic A", "7fa38a97"},
   {"Iambic B", "0b93ebcf"},
@@ -389,6 +391,7 @@ static const VoiceEntry voiceLookup[] = {
   {"Victor", "82233bce"},
   {"Volume", "bd7a9717"},
   {"WPX/Sprint", "e0750e84"},
+  {"Waiting for host", "ad131d48"},
   {"Whiskey", "d3edd21c"},
   {"WiFi Functions", "d0d101fd"},
   {"WiFi Trx", "368f275c"},
@@ -396,6 +399,7 @@ static const VoiceEntry voiceLookup[] = {
   {"WiFi Tx ON", "1c9f2b75"},
   {"Wide", "e7c770a6"},
   {"Wifi Select", "d3df4241"},
+  {"WinKeyer", "55c6a432"},
   {"Word Length", "8bbcf5a4"},
   {"Word by word", "6e53cc02"},
   {"X-ray", "dbc6d5ce"},
@@ -446,7 +450,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 432;
+static const unsigned int voiceLookupCount = 436;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 
