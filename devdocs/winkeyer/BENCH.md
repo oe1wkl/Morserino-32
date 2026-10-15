@@ -25,7 +25,39 @@ open. One firmware bug found and fixed (33701a8: closed-state Get Values reporte
 Pot mode (E1, `potspeed` step): with no speed command from the host, 7 encoder clicks took the
 sending speed from 19.9 to 26.8-27.6 WpM within one word (pot 15 -> 22, pot min 5, i.e. 20 -> 27);
 with a host speed set, the encoder only reports the pot, as decided.
-Still open below: classic M32, DTR/RTS variants, timing on the key line, the loggers, rev 31.
+**2026-10-15, classic M32 2nd edition (CP2102, macOS's own AppleUSBSLCOM driver), `--lines both`,
+mode started from the menu:** all 16 automatic checks pass (echo 73 ms, Host Open 47 ms - at
+1200 baud the two request bytes and the reply alone are ~27 ms on the wire, so CQRLOG's 50 ms is
+tight but met; PARIS at 20 WpM in 3.07 s). Two practical notes: the CP2102 port refused every
+`tcsetattr` (even `stty 115200`: "Invalid argument") for a few seconds after replugging, then
+worked; and a host that talks to the classic before the mode is started gets nothing sensible
+(the port is still at 115200) - the manual says to start the mode first.
+
+### FINDING (classic): DTR on / RTS off holds the FN button down
+
+On the classic, **FN is GPIO0** (`volButtonPin = 0`), the pin the CP2102 auto-reset circuit pulls
+low when DTR is asserted and RTS is not. DESIGN.md §2.4 only saw the download-mode risk of that
+state; it is worse: **"DTR on, RTS off" - what CQRLOG and flwkey do, and wk_bench.py's default -
+holds FN pressed for as long as the port is open.** Observed on the bench: the classic, at the
+main menu, started *Audio In Adj.* (FN long press) - which keys the transmitter.
+
+Consequences with such a logger:
+- in WinKeyer mode, the held FN is a long press: the encoder switches to scroll mode and stops
+  being the speed control (and FN clicks no longer register);
+- if the mode is left while the logger keeps the port open, the menu sees FN held and starts
+  *Audio In Adj.*, keying the TX.
+
+"Both on" and "both off" are safe (as is the Pocket, whose FN is not on a strap pin). Options,
+**for Willi to decide** (nothing changed in the firmware yet):
+1. Manual only: classic users must set DTR and RTS both on (or both off) in the logger. CQRLOG
+   and flwkey are hard-wired to DTR on / RTS off, so they would not be usable on the classic.
+2. Firmware, classic WinKeyer mode: ignore FN while it has been held continuously since the mode
+   started or for longer than a few seconds (a line, not a finger), until it is released.
+3. Firmware, menu: do not start *Audio In Adj.* when FN was already low on arriving at the menu
+   (needs a release first) - protects the TX whatever the cause.
+2 and 3 together would make the classic safe with every logger; 1 alone is the cheap answer.
+
+Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RTS variants, timing on the key line, the loggers, rev 31.
 
 ## 1. Before anything else (DESIGN.md §2.4)
 
@@ -39,7 +71,7 @@ Still open below: classic M32, DTR/RTS variants, timing on the key line, the log
 
 ## 2. Script, both variants
 
-- [ ] Classic: start Transceiver → WinKeyer, run the full script. Then leave the mode and check
+- [x] Classic: start Transceiver → WinKeyer, run the full script (automatic steps, `--lines both`). Then leave the mode and check
       that the Configuration Tool works again at 115200.
 - [ ] Pocket, menu-entered: same.
 - [x] Pocket, auto-detect: leave it at the main menu, run the full script. Host Open must answer
