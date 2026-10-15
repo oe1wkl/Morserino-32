@@ -33,6 +33,10 @@ tight but met; PARIS at 20 WpM in 3.07 s). Two practical notes: the CP2102 port 
 worked; and a host that talks to the classic before the mode is started gets nothing sensible
 (the port is still at 115200) - the manual says to start the mode first.
 
+Last-executed mode (2947854): on the classic, WinKeyer chosen from the menu, power cycled - the menu
+came back on Transceiver > WinKeyer. Flashing the classic through the 20-in-1 USB-C dock failed
+(write timeout, then "serial TX path seems to be down"); plugged straight into the Mac it worked.
+
 ### FINDING (classic): DTR on / RTS off holds the FN button down
 
 On the classic, **FN is GPIO0** (`volButtonPin = 0`), the pin the CP2102 auto-reset circuit pulls
