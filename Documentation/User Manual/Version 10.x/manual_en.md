@@ -3093,6 +3093,16 @@ only get to those preferences that are relevant for the current mode.**
 Did you double click from the Start Menu, you will be presented the
 complete range of preferences.
 
+Inside a mode, the preferences of that mode come first, followed by the
+general ones that every mode offers (tone, time-out, display, serial and
+Bluetooth output, paddle polarity). The menu opens at the preference you
+were on when you last left it, as long as the current mode offers it –
+handy when you adjust the same setting in several modes. So if you last
+left the menu on a general preference, you start there, among the
+general ones, and not at the mode's own settings. After switching on, or
+when the current mode does not offer that preference, the menu opens at
+the top of the list.
+
 ::: note
 Almost all preferences can be reset to their factoy value through the Hardware Configuration Menu. See **Hardware Configuration Menu** for further information.
 :::

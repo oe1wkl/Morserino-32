@@ -3585,6 +3585,17 @@ Die jeweils verfügbaren Einstellungen variieren je nach Modus:
 für diesen Modus relevanten Einstellungen.** Wenn du vom Startmenü aus
 doppelklickst, werden alle Einstellungen angezeigt.
 
+Innerhalb eines Modus kommen zuerst die Einstellungen dieses Modus, danach
+die allgemeinen, die jeder Modus anbietet (Ton, Time-out, Anzeige,
+serielle und Bluetooth-Ausgabe, Paddle-Polarität). Das Menü öffnet bei
+der Einstellung, bei der du es zuletzt verlassen hast, sofern der aktuelle
+Modus sie anbietet – praktisch, wenn du dieselbe Einstellung in mehreren
+Modi anpasst. Hast du das Menü zuletzt also bei einer allgemeinen
+Einstellung verlassen, beginnst du dort, bei den allgemeinen, und nicht
+bei den Einstellungen des Modus. Nach dem Einschalten, oder wenn der
+aktuelle Modus diese Einstellung nicht anbietet, öffnet das Menü am
+Anfang der Liste.
+
 ::: note
 Fast alle Einstellungen können über das Hardware-Konfigurationsmenü auf
 die Werkseinstellungen zurückgesetzt werden. Weitere Informationen
