@@ -4364,12 +4364,22 @@ void audioLevelAdjust() {
     MorseOutput::printOnScroll(1, REGULAR, 0, "End with FN");
     //keyTx = true;
     keyOut(true,  true, 698, 0);                                  /// we generate a side tone, f=698 Hz, also on line-out, but with vol down on speaker
+    boolean fnPressed = false;
     while (true) {                                                       // we also key the transmitter (can be used for tuning the Tx...)
         Buttons::volButton.Update();
-        if (Buttons::volButton.clicks)
+        if (fnPressed || Buttons::volButton.clicks)
             break;                                                /// pressing the red button gets you out of this mode!
-        for (i = 0; i < dataSize ; ++i)
+        // One round - 1216 samples plus a full OLED redraw - takes long enough for a quick tap on FN
+        // to fall between two polls and be missed, so FN is polled while sampling too. ClickButton
+        // shows a click for one Update() only, hence the latch.
+        for (i = 0; i < dataSize ; ++i) {
             testData[i] = analogRead(audioInPin);                 /// read analog input
+            if ((i & 63) == 0) {
+                Buttons::volButton.Update();
+                if (Buttons::volButton.clicks)
+                    fnPressed = true;
+            }
+        }
         maxi = mini = testData[0];
         for (i = 1; i< dataSize ; ++i) {
             if (testData[i] < mini)

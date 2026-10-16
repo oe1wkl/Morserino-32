@@ -31,6 +31,7 @@
 #include "MorseJSON.h"
 #include "M32ProtocolOut.h"
 #include "MorseVoice.h"
+#include "ClickButton.h"     // HeldLineFilter
 
 // m32_v6.ino
 extern morserinoMode morseState;
@@ -116,11 +117,10 @@ static bool      waitOn = false;         // Wait (WAIT status bit) - Key Buffere
 static bool      breakin = false;  static unsigned long lastPaddle = 0;
 static uint16_t  paddleElems = 0;  static KEYERSTATES prevKs = IDLE_STATE;
 static uint8_t   lastStatus = 0;
+static bool      paddleWordOpen = false; // paddle echo: a letter went out since the last space
 
-// filterFn(): FN held by a serial line rather than a finger (see MorseWinKeyer.h)
-static const unsigned long FN_LINE_MS = 3000;   // held longer than this: a line, not a finger
-static bool fnFresh = true, fnPrevDown = false, fnIgnore = false, fnPendingLong = false;
-static unsigned long fnDownSince = 0;
+// filterFn(): FN held by a serial line rather than a finger (HeldLineFilter, ClickButton.h)
+static HeldLineFilter fnFilter;
 
 static const unsigned long TUNE_WATCHDOG_MS = 100000UL;   // K1EL: hard-coded, cannot be disabled
 // keyOut() blocks this long on both edges before the key line moves (KEYOUT_EDGE_MS in m32_v6.ino).
@@ -572,6 +572,7 @@ static void openSession() {
   clearBuffer();
   resetSessionSettings();
   sessionOpen = true;
+  paddleWordOpen = false;
   m32protocol = false;                    // whoever spoke the M32 protocol on this port is gone
   closeToMenu = false;
   outPut(REVISION);
@@ -833,7 +834,7 @@ void MorseWinKeyer::enter(bool autoOpened) {
 #endif
   }
   paddleElems = 0; prevKs = IDLE_STATE;
-  fnFresh = true;                         // filterFn(): judge FN afresh, an FN already down is a line
+  fnFilter.reset();                       // filterFn(): judge FN afresh, an FN already down is a line
   lastStatus = status();
   announce(autoEntered ? "Host connected" : "Waiting for host");
 }
@@ -895,8 +896,12 @@ void MorseWinKeyer::paddleChar(const String& symbol) {
   if (!sessionOpen || !(hostMode & 0x40))       // paddle echo off
     return;
   String s = symbol;
-  s.trim();                               // hard rule 3: the decoder's space never becomes an echo byte
-  if (s.length() == 0) return;
+  s.trim();                               // hard rule 3: no stray whitespace from the decoder
+  if (s.length() == 0) {                  // the decoder's word gap (the M32's Interword Spc): one space,
+    if (paddleWordOpen) outPut(' ');      // as K3NG's emulator sends - never twice, never at the start
+    paddleWordOpen = false;
+    return;
+  }
   uint8_t b = 0;
   if (s.length() == 1 && (uint8_t) s[0] > 0x20 && (uint8_t) s[0] < 0x7F)
     b = (uint8_t) toupper(s[0]);
@@ -904,7 +909,10 @@ void MorseWinKeyer::paddleChar(const String& symbol) {
   else if (s == "<sk>") b = '>';
   else if (s == "<as>") b = '[';
   else if (s == "<ar>") b = '+';
-  if (b) outPut(b);                       // sent while BREAKIN is high: the host knows it is the paddle
+  if (b) {                                // sent while BREAKIN is high: the host knows it is the paddle
+    outPut(b);
+    paddleWordOpen = true;
+  }
 }
 
 void MorseWinKeyer::encoderSpeed(int t) {
@@ -942,37 +950,8 @@ void MorseWinKeyer::afterPreferences() {
   applySpeed();
 }
 
-// A long press is reported while FN is still held (ClickButton), after one second - before a held
-// line can be told from a finger. So it is held back and acted on at the release; a hold that
-// outlasts FN_LINE_MS, or that was already there when the mode started, is a line and does nothing
-// until it is released (the logger closed the port, or set its lines differently).
 int MorseWinKeyer::filterFn(int clicks, bool down) {
-  unsigned long now = millis();
-  if (fnFresh) {
-    fnFresh = false;
-    fnIgnore = fnPrevDown = down;
-    fnDownSince = now;
-    fnPendingLong = false;
-  }
-  if (down && !fnPrevDown)
-    fnDownSince = now;
-  fnPrevDown = down;
-  if (!down) {
-    bool deliver = fnPendingLong && !fnIgnore;
-    fnPendingLong = fnIgnore = false;
-    return deliver ? -1 : clicks;
-  }
-  if (!fnIgnore && now - fnDownSince > FN_LINE_MS) {
-    fnIgnore = true;
-    fnPendingLong = false;
-  }
-  if (fnIgnore)
-    return 0;
-  if (clicks < 0) {
-    fnPendingLong = true;
-    return 0;
-  }
-  return clicks;
+  return fnFilter.filter(clicks, down);
 }
 
 bool MorseWinKeyer::wantsMenu() {

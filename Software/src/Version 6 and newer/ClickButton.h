@@ -34,4 +34,27 @@ class ClickButton
     boolean _longClickPending;    // a long click was reported by the previous Update() and has now been seen
 };
 
+// A button that a serial line can hold down. On the classic M32, FN is GPIO0, which the CP2102's
+// auto-reset circuit pulls low while DTR is on and RTS off - what WinKeyer loggers such as CQRLOG
+// and flwkey do for as long as they have the port open (devdocs/winkeyer/BENCH.md). Feed it the
+// button's clicks and debounced state right after each Update(); it returns the clicks to act on.
+//
+// ClickButton reports a long press after longClickTime while the button is still held - before a
+// held line can be told from a finger. So a long press is held back and delivered at the release;
+// a hold that outlasts lineMs, or that is already there when the filter is (re)started, is a line
+// and does nothing until it is released. Short and multiple clicks, reported after the release
+// anyway, pass unchanged. A caller that writes the result back into ClickButton::clicks must clear
+// it before handing control to code that polls the same button (it would see the -1 again).
+class HeldLineFilter
+{
+  public:
+    explicit HeldLineFilter(unsigned long lineMs = 3000) : _lineMs(lineMs) {}
+    void reset() { _fresh = true; }     // judge afresh: a press already down counts as a line
+    int filter(int clicks, boolean down);
+  private:
+    unsigned long _lineMs;
+    boolean _fresh = true, _prevDown = false, _ignore = false, _pendingLong = false;
+    unsigned long _downSince = 0;
+};
+
 #endif /* #ifndef ClickButton_H_ */

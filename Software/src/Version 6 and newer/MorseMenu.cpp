@@ -412,6 +412,11 @@ void MorseMenu::menu_() {
    Buttons::volButton.Update();
    boolean fnHeldOnArrival = Buttons::volButton.depressed;
    Buttons::volButton.clicks = 0;
+   // Classic (FN = GPIO0): a WinKeyer logger with DTR on / RTS off can also start holding FN while we
+   // sit here - opened before WinKeyer mode was started, or still open after a restart. FN's long press
+   // (Audio In Adj.) therefore acts on release, and a hold of more than 3 s is a line and does nothing.
+   static HeldLineFilter fnLineFilter;
+   fnLineFilter.reset();
 #ifdef CONFIG_WINKEYER
    MorseWinKeyer::leave();                 // back from WinKeyer: the port returns to the M32 protocol
                                            // (115200 on the classic); no-op from any other mode
@@ -647,6 +652,8 @@ void MorseMenu::menu_() {
         }
 
        Buttons::volButton.Update();
+       if (Buttons::volButton.pin == 0)
+          Buttons::volButton.clicks = fnLineFilter.filter(Buttons::volButton.clicks, Buttons::volButton.depressed);
        if (fnHeldOnArrival) {
           if (Buttons::volButton.depressed)
              Buttons::volButton.clicks = 0;     // still the press we arrived with
@@ -654,7 +661,11 @@ void MorseMenu::menu_() {
              fnHeldOnArrival = false;
        }
 
-       switch (Buttons::volButton.clicks) {
+       int fnClicks = Buttons::volButton.clicks;
+       Buttons::volButton.clicks = 0;                // audioLevelAdjust() polls FN itself: it must not see this
+                                                     // gesture (a long press the filter delivers at release is
+                                                     // not cleared by Update() for another 250 ms)
+       switch (fnClicks) {
           case -1:  audioLevelAdjust();                         /// for adjusting line-in audio level (at the same time keying tx and sending oudio on line-out
                     MorseOutput::clearDisplay();
                     MorseMenu::menuDisplay(disp);
