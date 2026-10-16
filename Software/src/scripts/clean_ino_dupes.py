@@ -23,7 +23,11 @@ re-extensioned). The space between `.ino` and the digit is what
 distinguishes a Finder/PIO duplicate from a legitimate `.cpp` file.
 
 Scope: limited to the project's `src_dir` (the directory PIO compiles
-from). Other parts of the tree are untouched.
+from). Other parts of the tree are untouched - and so are hidden folders
+inside it, which PlatformIO does not compile either: in the main checkout
+`src_dir` contains `.claude/worktrees/`, whole other checkouts (with their
+own `.pio` build folders) belonging to other sessions. Walking into them
+would delete files there, or stop this build over a copy that is not ours.
 """
 
 import os
@@ -38,10 +42,17 @@ Import("env")  # noqa: F821 - PIO injects this builtin
 _DUPE_RE = re.compile(r".+\.ino \d+(\.cpp)?$")
 
 
+def _walk(root: str):
+    """os.walk() without hidden folders - the same folders PlatformIO leaves out of the build."""
+    for dirpath, dirnames, filenames in os.walk(root):
+        dirnames[:] = [d for d in dirnames if not d.startswith(".")]
+        yield dirpath, filenames
+
+
 def _clean(src_dir: str) -> int:
     """Remove any duplicate-pattern files under ``src_dir``. Returns count."""
     removed = 0
-    for dirpath, _dirnames, filenames in os.walk(src_dir):
+    for dirpath, filenames in _walk(src_dir):
         for name in filenames:
             if _DUPE_RE.match(name):
                 target = Path(dirpath) / name
@@ -77,7 +88,7 @@ def _clean_copies(root: str, sources_only: bool) -> list:
     unsafe = []
     if not os.path.isdir(root):
         return unsafe
-    for dirpath, _dirnames, filenames in os.walk(root):
+    for dirpath, filenames in _walk(root):
         for name in filenames:
             m = _COPY_RE.match(name)
             if not m:
