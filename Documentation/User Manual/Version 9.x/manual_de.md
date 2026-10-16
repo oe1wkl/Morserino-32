@@ -1828,6 +1828,14 @@ wird. Nichts, was das Programm einstellt, wird im Morserino
 gespeichert; wenn das Programm den WinKeyer schließt oder du den Modus
 verlässt, ist alles wie vorher.
 
+Das Programm kann den Mithörton auch ganz abschalten oder auf das Paddle
+beschränken – für alle, die den Mithörton ihres Transceivers hören.
+**Wenn der Morserino tastet, aber stumm bleibt, sieh dir die
+Mithörton-Einstellung im Programm an:** Stelle dort irgendeine Frequenz
+ein (der Morserino verwendet ohnehin seine eigene Tonhöhe), und schalte
+„Mithörton nur für das Paddle" ab, wenn du auch das CW des Programms
+hören willst.
+
 **Was nicht unterstützt wird:** Der Morserino hat keinen PTT-Ausgang,
 die PTT-Einstellungen des Programms (Vorlauf, Nachlauf, PTT ein/aus)
 werden daher ignoriert – verwende das QSK oder VOX deines Transceivers,

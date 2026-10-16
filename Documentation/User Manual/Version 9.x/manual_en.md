@@ -1785,6 +1785,13 @@ extension, Farnsworth spacing, letter spacing, contest spacing,
 Nothing the program sets is stored on the Morserino; when the program
 closes the WinKeyer, or you leave the mode, everything is as before.
 
+The program can also switch the side tone off, or limit it to the
+paddle, for operators who listen to their transceiver's own side tone.
+**If the Morserino keys but stays silent, look at the program's side
+tone setting**: set it to any frequency (the Morserino uses its own
+pitch regardless), and switch off "paddle only side tone" if you want
+to hear the program's CW too.
+
 **What is not supported:** the Morserino has no PTT output, so the
 program's PTT settings (lead-in, tail, PTT on/off) are ignored – use
 your transceiver's QSK or VOX, or let the program switch PTT over CAT.

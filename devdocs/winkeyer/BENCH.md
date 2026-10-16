@@ -124,6 +124,11 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
       (needs BREAKIN), paddle echo appears in N1MM, the encoder moves N1MM's speed (pot), N1MM's
       speed field wins over the encoder. Confirm "Reverse paddles", "Keying mode", "Sidetone
       frequency" do nothing (by design, D7).
+- [ ] **RUMlogNG** (macOS, Pocket, 2026-10-16): CW Interface set to WinKeyer → RUMlog opened the
+      port and the Pocket entered WinKeyer mode by itself (auto-detect); text from RUMlog's CW window
+      is sent. With RUMlog's "CW side tone" popup at Off the M32 keyed silently (pin config /
+      paddle-only bit, host-owned by design); any frequency there brought the tone back - now in the
+      manual. Still to report: Esc, break-in on Auto CQ, speed both ways, logging use.
 - [ ] **RUMlog** (macOS) or **CQRLOG** (Linux). CQRLOG sends only 2 of the 3 Setup Speed Pot
       bytes, so the next byte is eaten as the third (as on a real WinKeyer) — check that CQRLOG
       still works.
