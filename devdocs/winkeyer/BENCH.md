@@ -127,6 +127,12 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
 - [ ] **RUMlog** (macOS) or **CQRLOG** (Linux). CQRLOG sends only 2 of the 3 Setup Speed Pot
       bytes, so the next byte is eaten as the third (as on a real WinKeyer) — check that CQRLOG
       still works.
+- [x] **flwkey 1.2.4, macOS, Pocket (2026-10-16):** connects (with the prefs-file port workaround,
+      above); sending, the CQ message button, paddle break-in with paddle echo, and the encoder as
+      speed pot all work. flwkey sends the whole mode register (`0E`) on every Parameters tick box
+      (its log shows C4/C6/CC/84): paddle echo acted on, swap and autospace ignored by design (D7).
+      Still to check: weight/ratio audibly at the extremes (10/90, 33/66), "Read parameters"
+      (Dump EEPROM), and flwkey on the classic.
 - [ ] **flwkey**: connect (revision ≥ 20 → it sends Set WK2 Mode), "Read parameters" (our
       Dump EEPROM: `0xA5` + the 15 settings in Load Defaults order, rest zero) — does flwkey
       show the M32's speed/mode/pitch sensibly? Then send its Load Defaults back.
