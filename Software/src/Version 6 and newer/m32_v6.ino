@@ -43,6 +43,7 @@
 #include "MorseJSON.h"        // JSON handling for file upload and serial communication
 #include "M32ProtocolOut.h"   // m32out tee + protocolActive(): protocol output/gating across transports
 #include "MorseVoice.h"       // spoken UI (Accessibility Edition; no-ops elsewhere)
+#include "MorseWinKeyer.h"    // WinKeyer emulation (CONFIG_WINKEYER): owns the serial port while active
 #ifdef CONFIG_BLE_SERIAL
 #include "MorseBleSerial.h"   // M32 protocol over BLE (Nordic UART Service)
 #endif
@@ -336,7 +337,8 @@ unsigned long genTimer;                           // timer used for generating m
 // The generator used to subtract it from the MARK instead - every mark 6 ms short and every space 6 ms long on the
 // key line (a 48 ms dit sent as 42 ms, dah/dit 3.21; cw-timing-audit FINDINGS, TODO B5). The paddle keyer always
 // did this right (corrTime in doPaddleIambic()). Only the sidetone path blocks; LoRa/WiFi Trx use rx... timings.
-static const int KEYOUT_EDGE_MS = 6;
+extern const int KEYOUT_EDGE_MS;           // external linkage: the WinKeyer sender (MorseWinKeyer.cpp) uses it too
+const int KEYOUT_EDGE_MS = 6;
 
 enum MORSE_TYPE {KEY_DOWN, KEY_UP };              //   State Machine Defines
 unsigned char generatorState;
@@ -368,6 +370,7 @@ unsigned long pausePromptDeadline = PAUSE_PROMPT_IDLE;
 
 byte poolPair[2];           // storage in RAM for one morse code character
 
+extern const byte pool[][2];  // external linkage: MorseWinKeyer.cpp sends from this table too
 const byte pool[][2]  = {
 // letters
                {B01000000, 2},  // a    0
@@ -540,6 +543,10 @@ int checkEncoder()
 //////////////////////// Argument to DEBUG has to be a String object
 
 void DEBUG (const String& s) {
+#ifdef CONFIG_WINKEYER
+  if (MorseWinKeyer::ownsSerial())          // a WinKeyer host would read every stray byte as status/echo
+    return;
+#endif
   if (!MorsePreferences::pliste[posSerialOut].value || IGNORE_SERIALOUT)
     Serial.println(s);
 }
@@ -1267,6 +1274,20 @@ void loop() {
                           generateCW();
                           break;
 
+#ifdef CONFIG_WINKEYER
+      case morseWinKeyer: // WinKeyer: the host's buffered sender, with the paddle breaking in (MorseWinKeyer.cpp)
+                          if (MorseWinKeyer::wantsMenu()) {               // the host closed a session it opened at the top menu
+                              if (protocolActive())
+                                  MorseJSON::jsonActivate(ACT_EXIT);      // as the long-press exit does
+                              MorseMenu::menu_();
+                              return;
+                          }
+                          MorseWinKeyer::paddleActivity(leftKey || rightKey, keyerState);   // before the keyer keys
+                          MorseWinKeyer::tick();                          // serial input, sender, status/echo output
+                          if (doPaddleIambic(leftKey, rightKey))
+                              return;                                     // we are busy keying and so need a very tight loop !
+                          break;
+#endif
       case morseTrx:      if (doPaddleIambic(leftKey, rightKey)) {
                               return;                                                        // we are busy keying and so need a very tight loop !
                           }
@@ -1386,6 +1407,10 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
   // check buttons
     Buttons::modeButton.Update();
     Buttons::volButton.Update();
+#ifdef CONFIG_WINKEYER
+    if (morseState == morseWinKeyer && Buttons::volButton.pin == 0)    // FN on GPIO0 (classic): DTR may hold it
+        Buttons::volButton.clicks = MorseWinKeyer::filterFn(Buttons::volButton.clicks, Buttons::volButton.depressed);
+#endif
     if (Buttons::modeButton.clicks || Buttons::volButton.clicks) {
         MorseOutput::resetTOT();        // explicit TOT reset on any button activity
         if (!genIsActive && (morseState == morseGenerator || morseState == echoTrainer))
@@ -1468,13 +1493,26 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
                     cleanStartSettings();
                   }
 
+#ifdef CONFIG_WINKEYER
+              } else if (morseState == morseWinKeyer) {     // WinKeyer: stop what the host is sending (and tune)
+                    MorseWinKeyer::stopSending();
+#endif
               } else if (morseState == morseKeyer || morseState == morseTrx) {  // when Keyer is active, we select a keyer memory
                     if (protocolActive())
                         MorseJSON::jsonCreate("message", "Select Memory", "");
                     memoryKeyer();
               }
               break;
-       case 2:  MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
+       case 2:
+#ifdef CONFIG_WINKEYER
+                if (morseState == morseWinKeyer)
+                    MorseWinKeyer::beforePreferences();                     // key up, and no host speed may be persisted
+#endif
+                MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
+#ifdef CONFIG_WINKEYER
+                if (morseState == morseWinKeyer)
+                    MorseWinKeyer::afterPreferences();
+#endif
                 MorseOutput::clearDisplay();                                 // restore display
                 updateTopLine();
                 MorseOutput::refreshScrollArea(MorseOutput::relPos);         // clearDisplay() wiped the screen, but not
@@ -1499,6 +1537,12 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
             pausePromptDeadline = millis() + PAUSE_PROMPT_QUIET_MS;   // still paused - push the reminder back out
         switch (encoderState) {
           case speedSettingMode:
+#ifdef CONFIG_WINKEYER
+                                  if (morseState == morseWinKeyer) {      // E1: the encoder is the speed pot
+                                    MorseWinKeyer::encoderSpeed(t);
+                                    break;
+                                  }
+#endif
                                   changeSpeed(t);
                                   break;
           case volumeSettingMode:
@@ -1925,12 +1969,13 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
 
                                    ++charCounter;                         // count this character
                                    // if we have seen 12 chars since changing speed, we write the config to preferences (speed and left & right thresholds)
-                                   if (charCounter == 12) {
+                                   if (charCounter == 12 && morseState != morseWinKeyer) {   // WinKeyer: nothing reaches NVS (D7)
                                         MorsePreferences::fireCharSeen(false);
                                    }
                                    if (MorsePreferences::pliste[posACS].value > 0)
                                         acsTimer = millis() + (MorsePreferences::pliste[posACS].value + 1) * ditLength; // prime the ACS timer
-                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx)
+                                   if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx
+                                       || morseState == morseWinKeyer)
                                       // interWordTimer = millis() + 5*ditLength;
                                       interWordTimer = millis() + ditLength * (MorsePreferences::pliste[posInterWordSpace].value -1);
                                    else if (morseState == echoTrainer)
@@ -2993,6 +3038,10 @@ void fetchNewWord() {
 
 
 void displayDecodedMorse(String symbol, boolean keyed) {
+#ifdef CONFIG_WINKEYER
+    if (morseState == morseWinKeyer)
+        MorseWinKeyer::paddleChar(symbol);      // paddle echo to the host (trims the decoder's space itself)
+#endif
 #if defined(CONFIG_CW_GAME) || defined(CONFIG_QSO_BOT)
     // In game mode (Pocket TFT games), redirect the decoded character
     // to the game buffer and bypass the scroll display entirely — the
@@ -3132,6 +3181,10 @@ void displayCWspeed() {
     sprintf(numBuf, "(%2i)", effWpm);
   else if (morseState == morseTrx )
     sprintf(numBuf, "r%2is", audioDecoder.getWpm());
+#ifdef CONFIG_WINKEYER
+  else if (morseState == morseWinKeyer)
+    sprintf(numBuf, MorseWinKeyer::isOpen() ? "Host" : "    ");     // a WinKeyer host session is open
+#endif
   else sprintf(numBuf, "    ");
 
   MorseOutput::printOnStatusLine(false, 3,  numBuf);                                         // effective wpm or rxwpm
@@ -4241,13 +4294,25 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
                 noTx = false;
       default:  break;
   }
+  boolean sidetone = true;
+#ifdef CONFIG_WINKEYER
+  // WinKeyer is a keyer: every "Key Ext Tx" value but Never includes it. The host's pin config
+  // (key outputs, sidetone), paddle-only sidetone, paddle watchdog and paddle mute decide the rest.
+  if (morseState == morseWinKeyer) {
+      noTx = !(fromHere && MorsePreferences::pliste[posKeyExternalTx].value != 0 && MorseWinKeyer::txWanted());
+      sidetone = MorseWinKeyer::sidetoneWanted();
+  }
+#endif
 
 //DEBUG("keyOut: " + String(on) + String(fromHere) + String(noTx));
   if (on) {
       if (fromHere) {
         intPitch = f;
         intTone = true;
-        MorseOutput::pwmTone(intPitch, volume, true);
+        if (sidetone)
+          MorseOutput::pwmTone(intPitch, volume, true);
+        else
+          delay(KEYOUT_EDGE_MS);              // muted (WinKeyer): the key line keeps the sidetone path's timing
       } else {                    // not from here
         extTone = true;
         extPitch = f;
@@ -4302,12 +4367,22 @@ void audioLevelAdjust() {
     MorseOutput::printOnScroll(1, REGULAR, 0, "End with FN");
     //keyTx = true;
     keyOut(true,  true, 698, 0);                                  /// we generate a side tone, f=698 Hz, also on line-out, but with vol down on speaker
+    boolean fnPressed = false;
     while (true) {                                                       // we also key the transmitter (can be used for tuning the Tx...)
         Buttons::volButton.Update();
-        if (Buttons::volButton.clicks)
+        if (fnPressed || Buttons::volButton.clicks)
             break;                                                /// pressing the red button gets you out of this mode!
-        for (i = 0; i < dataSize ; ++i)
+        // One round - 1216 samples plus a full OLED redraw - takes long enough for a quick tap on FN
+        // to fall between two polls and be missed, so FN is polled while sampling too. ClickButton
+        // shows a click for one Update() only, hence the latch.
+        for (i = 0; i < dataSize ; ++i) {
             testData[i] = analogRead(audioInPin);                 /// read analog input
+            if ((i & 63) == 0) {
+                Buttons::volButton.Update();
+                if (Buttons::volButton.clicks)
+                    fnPressed = true;
+            }
+        }
         maxi = mini = testData[0];
         for (i = 1; i< dataSize ; ++i) {
             if (testData[i] < mini)
@@ -4678,10 +4753,39 @@ void skipWords(uint32_t count) {             /// just skip count words in open f
 static const uint16_t USB_LINE_MAX = 1024;
 static bool usbDiscardLine = false;          // swallowing the tail of an over-long line, up to its \n
 
+static void serialLines();
+
 void serialEvent() {
+#ifdef CONFIG_WINKEYER
+      if (MorseWinKeyer::ownsSerial()) {       // the WinKeyer mode owns USB: binary WinKeyer bytes, no lines
+        if (!MorseWinKeyer::takeTickServiced())   // loop() already had tick() poll it in this pass;
+          MorseWinKeyer::serviceInput();          // busy-wait sites (preferences, pickers) have not
+      } else
+#endif
+      serialLines();
+#ifdef CONFIG_BLE_SERIAL
+      bleSerialEvent();               // BLE is serviced everywhere USB is: serialEvent() is polled in
+                                      // loop(), the menu wait-loop and every busy-wait site
+#endif
+}
+
+// USB: assemble M32 protocol lines and dispatch them.
+static void serialLines() {
       while (Serial.available()) {
         // get the new byte:
         char inChar = (char)Serial.read();
+#ifdef WK_NATIVE_USB
+        // D1a (Pocket): at the top menu a WinKeyer host may knock - nulls, Echo Test, Host Open.
+        // Those bytes never reach the line buffer; after Host Open the rest stays in the RX
+        // buffer for the WinKeyer mode, which the menu enters next (takeAutoOpen()).
+        if (MorseWinKeyer::topMenuArmed && MorseWinKeyer::topMenuByte((uint8_t) inChar)) {
+          if (MorseWinKeyer::isOpen()) {
+            inputString = "";
+            return;
+          }
+          continue;
+        }
+#endif
         if (usbDiscardLine) {                  // tail of a runaway line: execute nothing of it
           if (inChar == '\n')
             usbDiscardLine = false;
@@ -4728,10 +4832,6 @@ void serialEvent() {
           inputString = "";
           stringComplete = false;
       }
-#ifdef CONFIG_BLE_SERIAL
-      bleSerialEvent();               // BLE is serviced everywhere USB is: serialEvent() is polled in
-                                      // loop(), the menu wait-loop and every busy-wait site
-#endif
 }
 
 #ifdef CONFIG_BLE_SERIAL

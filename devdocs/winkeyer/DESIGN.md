@@ -251,7 +251,7 @@ this way, so that is what hosts send. One exception is still open: the two baud 
 | `09` | Get Cal (WK2) / Get FW Major Rev (WK3) | → byte | 2/3 | ✅ | WK2: historical, returns a fixed byte (K3NG sends `0x18`); WK3: same value as the Host Open reply |
 | `0A` | Set WK1 Mode | – | 2/3 | ✅ | Status-byte format only (bit 3 = KEYDOWN) |
 | `0B` | Set WK2 Mode | – | 2/3 | 🟡 | Status-byte format switches; we never send pushbutton status bytes — the M32's buttons belong to the M32 UX |
-| `0C` | Dump EEPROM | → 256 bytes | 2/3 | 🟡 | Used by K1EL's WK3tools and by flwkey's "read parameters". Reply with an image whose first 16 bytes hold the M32's current settings (WK2 layout), the rest zero — see D7 in §8 |
+| `0C` | Dump EEPROM | → 256 bytes | 2/3 | 🟡 | Used by K1EL's WK3tools (flwkey 1.2.4 has no "read parameters" control and shows its own saved values - bench, 2026-10-16). Reply with an image whose first 16 bytes hold the M32's current settings (WK2 layout), the rest zero — see D7 in §8 |
 | `0D` | Load EEPROM | 256 | 2/3 | ❌ | Consume and discard all 256 bytes |
 | `0E` | Send Message 1–6 | 1 | 2/3 | ✅ | D8: → M32 keyer memories 1–6 (`memoryKeyer()`, 8 slots); an empty slot sends nothing |
 | `0F` | Load X1MODE (WK2: letterspace) | 1 | 2/3 | ✅ | Letterspace +0…30 % in the sender. Paddle-status and standalone-cut bits ignored |
@@ -350,7 +350,7 @@ K3NG's change log.
 | Host | Start-up | What it sends | Consequence |
 |---|---|---|---|
 | **CQRLOG** (open source) | DTR on, RTS off; 3 × `13`; Echo Test, waits 300 ms; Host Open, waits **50 ms**, ignores the revision | Only speed, speed-pot setup (**2 of its 3 bytes** — a real WinKeyer then eats the next byte as the third), backspace, tune, clear buffer | Never sends a mode register or sidetone: the M32's paddle settings and pitch stay whatever D7 says |
-| **flwkey** (W1HKJ, open source) | DTR on, RTS off; Null, Echo Test (2 s), Host Open (2 s); revision ≥ 20 → sends Set WK2 Mode | A full Load Defaults block from its own settings window (WK2 layout); "Read parameters" fills that window from the 256-byte EEPROM dump | If our Dump EEPROM returns the M32's settings, flwkey shows them and sends them back |
+| **flwkey** (W1HKJ, open source) | DTR on, RTS off; Null, Echo Test (2 s), Host Open (2 s); revision ≥ 20 → sends Set WK2 Mode | A full Load Defaults block from its own settings window (WK2 layout); ~~"Read parameters" fills that window from the 256-byte EEPROM dump~~ - not in flwkey 1.2.4: on the bench its window showed its own saved values after a fresh connect, and only its Done button (apply and close) sends them | flwkey always imposes its own Load Defaults; the M32 keeps paddle and pitch anyway (D7) |
 | **N1MM Logger+** (closed; documented) | – | Its Winkey tab: keying mode (Iambic A/B, Ultimatic, **Semi-Automatic = bug**), **Reverse Paddles**, **Sidetone Frequency (default 469 Hz)**, paddle-only sidetone, autospace, lead/tail, 1st extension, key compensation, hang time, three speed-pot behaviours; weight and contest spacing on other tabs. WK3.1 is needed **only** for its RTTY-via-Winkey option | An N1MM user sets paddles and pitch in N1MM, as with a real WinKeyer |
 | **K3NG keyer** (open-source emulator) | – | – | Reports **WK2 v23** (or WK1 v10), **never WK3**, and has been used for years with N1MM, Win-Test, Logger32, WriteLog and UcxLog. Applies the host's mode register **in full** (key mode, swap, autospace) and even saves it |
 
@@ -401,3 +401,26 @@ session (which the D7 options below all respect).
 - In all three, nothing the host sets is written to NVS.
 - **Decided (D7): option 2**, the M32 owns paddle and pitch (see §6).
 
+
+## 9. Future: Remote WinKeyer (with M32KIP)
+
+Willi, 2026-10-15, after the first bench session: WinKeyer should also play nicely with M32KIP
+(branch `m32kip`, the V10 line, `devdocs/m32kip/`). The likely shape is a further Transceiver leaf,
+**Remote WinKeyer**, next to Remote Keyer / Remote Rig: a logger drives this M32 over USB exactly as
+in WinKeyer mode, and the resulting keying goes to a Remote Rig over M32KIP instead of (or as well
+as) the local key line. Nothing is designed yet. Questions to settle when both branches meet:
+
+- **Where the keying is captured.** Remote Keyer takes its edges at the key line in `keyOut()` and
+  runs in the global loop; the WinKeyer sender also keys through `keyOut()`, so the capture point
+  may already be shared - check that both paddle and host CW reach the wire, and that the sidetone
+  stays local.
+- **Latency vs. the host's view.** The link delay (Remote Rig holds ~150 ms) is longer than the
+  WinKeyer status/echo timing a logger expects; echo is sent when the *local* sender finishes a
+  letter, so the logger stays in step with the M32, not with the rig. Probably fine; to confirm.
+- **Break-in and tune.** Paddle break-in, Clear Buffer and the 100 s tune watchdog must also stop
+  the remote key line promptly (Remote Keyer's fail-safe, D14, applies).
+- **Port and network together.** The mode owns USB (WinKeyer) and WiFi (M32KIP) at once; the
+  classic's 1200-baud switch and the Pocket's auto-detect are unaffected, but auto-detect at the
+  top menu would then have to choose between WinKeyer and Remote WinKeyer (or stay local only).
+- **Menu label** "Remote WinKeyer" is 15 characters - longer than the 12-character labels the OLED
+  menu is hand-fitted to (`"Update Firmw"`); needs a shorter form or a check on both displays.

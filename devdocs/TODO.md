@@ -363,4 +363,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    auto-detect, USB only, PTT ignored, branch `winkeyer` off master (D1–D5 decided 2026-10-15); every WK2/WK3
    command walked through (§7); D8 decided (messages → keyer memories, Vcc from battery). ~5–7 sessions + bench.
    D6 (reply WK2 v23, try WK3 on the bench) and D7 (M32 owns paddle + pitch) decided after the logger research
-   in §8 — **all decisions taken, ready to implement on branch `winkeyer`.** No code yet.
+   in §8 — all decisions taken. **Implemented 2026-10-15 on branch `winkeyer`** (not pushed/merged):
+   bench-tested with `Software/tests/winkeyer/wk_bench.py` on the Pocket and a classic 2nd edition, results
+   and the open checks (loggers, key-line timing, rev 31) in `devdocs/winkeyer/BENCH.md`. Found on the bench
+   and fixed: the classic's FN is GPIO0, held down by loggers with DTR on / RTS off (now ignored).
+   **Follow-up: Remote WinKeyer** with M32KIP (V10) — DESIGN.md §9.
