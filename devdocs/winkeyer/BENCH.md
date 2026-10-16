@@ -177,6 +177,32 @@ The Pocket is back on the committed build (revision 23). Still owed for D6: N1MM
       To return that Pocket to 10.0 it needs the m32kip build *and* its uploadfs.)
 - [ ] Host CW cuts a running announcement (CW on the air wins, as for the paddle).
 
+## Decisions taken 2026-10-16 (Willi), on the list below and the classic menu gap
+
+1. **Paddle echo sends one space per word gap** (the M32 decoder's gap, its Interword Spc), never
+   twice, never at the start - implemented. The space leaves while BREAKIN is still high as long as
+   Interword Spc is at most 7 (the default); above that it arrives just after break-in ends.
+2.-9. Kept as they are: letterspace, paddle mute, weighting, speed-pot window, Key ext TX (keys
+   unless Never), menu place, TOT (no power-off while a host session is open), Vcc on the classic.
+- **Classic menu gap closed (option B):** at the classic's main menu FN goes through the same
+  filter as in WinKeyer mode - long press acts on release, a hold over 3 s is a line. The filter is
+  now `HeldLineFilter` in `ClickButton.h` (host tests in `Software/tests/clickbutton`). Not
+  fixable in firmware, now in the manual: switching the classic on while a DTR-on/RTS-off logger
+  holds the port boots it into download mode (dark screen).
+
+**Bench, 2026-10-16, after implementing the decisions:**
+- Classic main menu, DTR on / RTS off held 8 s: no Audio In Adj. (menu answered the protocol right after).
+- Classic main menu, finger: FN 1.5 s → Audio In Adj. on release; 5 s → nothing. First try found a
+  bug - the long press the filter delivers at release was written back into `ClickButton::clicks`,
+  which `Update()` clears only after the multi-click window, so Audio In Adj.'s own FN poll saw it and
+  quit at once (and WinKeyer mode would have toggled scroll mode repeatedly). Fixed in the filter (a
+  released button never passes on a -1 it did not just deliver) and in the menu (acts on a local copy,
+  clears the field first); host test `test_filter_written_back_once` added.
+- Found on the way, older than WinKeyer: Audio In Adj. on the classic polled FN once per round (1216
+  samples + a full OLED redraw), so a quick tap was missed. Now polled while sampling, with a latch.
+- Pocket (a11y edition) paddle echo: keyed words arrive as `G TEST TEHM M TE` - one space per word
+  gap, inside BREAKIN (`[C2] ... ␣ [C0]`), never doubled or leading.
+
 ## Interpretations to confirm on the bench (not covered by DESIGN.md)
 
 These were decided while implementing; each is a one-line change if the bench says otherwise.

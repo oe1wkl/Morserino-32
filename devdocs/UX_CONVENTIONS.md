@@ -80,7 +80,9 @@ pot); FN, double click and long press are unchanged
 there, which a logger's DTR can hold down, so in this mode an FN long press acts on
 **release** (a hold of more than 3 s, or one already there at mode start, is a line
 and is ignored). Likewise the top menu ignores an FN that was already down on
-arrival until it has been released (`devdocs/winkeyer/BENCH.md`).
+arrival until it has been released, and on the classic its FN long press (Audio In
+Adj.) also acts on release, with the same 3-s line rule (`HeldLineFilter`,
+`ClickButton.h`; `devdocs/winkeyer/BENCH.md`).
 
 ## 2. Global live adjustments — speed, volume, pitch
 

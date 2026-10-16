@@ -1805,7 +1805,8 @@ Keyer).
     wiederholenden CQ-Ruf mit dem Paddle beenden. Einen Wortabstand,
     nachdem du zu tasten aufgehört hast, nimmt der Morserino wieder
     Text vom Programm an. Wenn das Programm es verlangt, bekommt es
-    das, was du tastest, als Text.
+    das, was du tastest, als Text – mit einem Leerzeichen nach jeder
+    Wortpause.
 -   FN, der Doppelklick (Einstellungen) und der lange Druck (Modus
     verlassen) funktionieren wie in jedem anderen Modus. Wenn du den
     Modus verlässt, endet die Verbindung zum Programm; die meisten
@@ -1853,8 +1854,12 @@ an, DTR aus" – damit wird der Morserino im Reset festgehalten. [Bei der
 gedrückt, solange das Programm die Schnittstelle geöffnet hat. Der
 Morserino erkennt das und ignoriert FN, bis das Programm loslässt – das
 schadet also nicht, aber FN ist so lange nicht benutzbar. Aus demselben
-Grund wirkt ein langer Druck auf FN im WinKeyer-Modus erst beim
-Loslassen.]{.classic}[Beim M32 Pocket sind beide an, beide aus oder „DTR
+Grund wirkt ein langer Druck auf FN im WinKeyer-Modus und im Hauptmenü
+erst beim Loslassen. Wogegen sich der Morserino nicht schützen kann:
+Schaltest du ihn ein, während ein solches Programm die Schnittstelle
+geöffnet hat, startet er stattdessen in seinem Programmiermodus, und das
+Display bleibt dunkel. Schließe dann das Programm (oder ziehe das
+USB-Kabel ab) und schalte den Morserino aus und wieder ein.]{.classic}[Beim M32 Pocket sind beide an, beide aus oder „DTR
 an, RTS aus" in Ordnung.]{.pocket .pocket-a11y}
 
 ### QSO Bot

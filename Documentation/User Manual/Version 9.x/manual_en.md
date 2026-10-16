@@ -1764,7 +1764,7 @@ lets WinKeyer mode key the transmitter (the same as in CW Keyer).
     so you can, for example, stop a repeating CQ with the paddle. One
     word space after you stop keying, the Morserino accepts text from
     the program again. If the program asks for it, what you key is
-    passed on to it as text.
+    passed on to it as text, with a space after each word gap.
 -   FN, the double click (preferences) and the long press (leave the
     mode) work as in every other mode. Leaving the mode ends the
     program's connection; most programs then report that the WinKeyer
@@ -1807,8 +1807,12 @@ off if you can: "DTR on, RTS off" (what CQRLOG and flwkey always do)
 holds the FN button down for as long as the program has the port open.
 The Morserino recognises this and ignores FN until the program lets go,
 so it does no harm – but FN cannot be used meanwhile. For the same
-reason, a long press of FN in WinKeyer mode only takes effect when you
-release it.]{.classic}[On the M32 Pocket,
+reason, a long press of FN in WinKeyer mode and in the main menu only
+takes effect when you release it. One thing the Morserino cannot
+protect against: if you switch it on while such a program has the port
+open, it starts in its programming mode instead and the screen stays
+dark. Close the program (or unplug the USB cable), then switch the
+Morserino off and on again.]{.classic}[On the M32 Pocket,
 both on, both off, or "DTR on, RTS off" are all fine.]{.pocket .pocket-a11y}
 
 ### QSO Bot
