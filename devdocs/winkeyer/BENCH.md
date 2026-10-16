@@ -170,7 +170,11 @@ The Pocket is back on the committed build (revision 23). Still owed for D6: N1MM
 
 ## 6. Accessibility Edition
 
-- [ ] Hear "Win Keyer" in the menu, "Waiting for host" on entry, "Host connected" / "Host closed".
+- [x] Hear "Win Keyer" in the menu, "Waiting for host" on entry, "Host connected" / "Host closed".
+      (2026-10-16, a second Pocket flashed from 10.0-a11y to `pocketwroom-accessibility` + uploadfs,
+      no voice-pack alarm. Menu-entered: Host connected, TEST, Host closed, mode kept. Auto-detect from
+      the main menu: Host connected, OK, and on Host Close back to the menu with its announcement.
+      To return that Pocket to 10.0 it needs the m32kip build *and* its uploadfs.)
 - [ ] Host CW cuts a running announcement (CW on the air wins, as for the paddle).
 
 ## Interpretations to confirm on the bench (not covered by DESIGN.md)
