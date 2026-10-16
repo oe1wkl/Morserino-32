@@ -50,6 +50,7 @@ namespace MorseWinKeyer
   void enter(bool autoOpened);          // menuExec(): the mode takes the port
   void leave();                         // menu_(): gives it back; no-op unless the mode was active
   void serviceInput();                  // serialEvent() while the port is owned
+  bool takeTickServiced();              // serialEvent(): tick() already polled the port in this loop() pass
   void tick();                          // loop(): sender, timers, output queue
   void paddleActivity(bool pressed, KEYERSTATES ks);  // loop(), before doPaddleIambic(): break-in
   void paddleChar(const String& symbol);              // displayDecodedMorse(): paddle echo

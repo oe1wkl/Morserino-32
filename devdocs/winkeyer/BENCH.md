@@ -203,6 +203,15 @@ The Pocket is back on the committed build (revision 23). Still owed for D6: N1MM
 - Pocket (a11y edition) paddle echo: keyed words arrive as `G TEST TEHM M TE` - one space per word
   gap, inside BREAKIN (`[C2] ... ␣ [C0]`), never doubled or leading.
 
+**Code review of the branch (2026-10-16), nine findings, all fixed:** a tune arriving while the
+preferences menu is open is refused (that menu reads serial but never runs the tune watchdog -
+verified on the classic: refused inside, CC/C0 outside); merge-letter parameters can no longer index
+past the Morse table; the 1st extension also counts paddle keying; ACT_EXIT is sent when a host
+closes an auto-opened session; the port is polled once per loop() pass; the sender shares
+KEYOUT_EDGE_MS; paddle echo goes through encodeProSigns() (<ka> <ve> <bk> ch now echoed as KA VE
+BK CH, ä as ';'); a stale comment; wk_bench.py `--lines none` no longer walks through DTR=0/RTS=1
+(which reset the M32 on every open). Regression after the fixes: 17/17 on the classic.
+
 ## Interpretations to confirm on the bench (not covered by DESIGN.md)
 
 These were decided while implementing; each is a one-line change if the bench says otherwise.

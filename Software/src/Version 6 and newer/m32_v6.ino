@@ -337,7 +337,8 @@ unsigned long genTimer;                           // timer used for generating m
 // The generator used to subtract it from the MARK instead - every mark 6 ms short and every space 6 ms long on the
 // key line (a 48 ms dit sent as 42 ms, dah/dit 3.21; cw-timing-audit FINDINGS, TODO B5). The paddle keyer always
 // did this right (corrTime in doPaddleIambic()). Only the sidetone path blocks; LoRa/WiFi Trx use rx... timings.
-static const int KEYOUT_EDGE_MS = 6;
+extern const int KEYOUT_EDGE_MS;           // external linkage: the WinKeyer sender (MorseWinKeyer.cpp) uses it too
+const int KEYOUT_EDGE_MS = 6;
 
 enum MORSE_TYPE {KEY_DOWN, KEY_UP };              //   State Machine Defines
 unsigned char generatorState;
@@ -1276,6 +1277,8 @@ void loop() {
 #ifdef CONFIG_WINKEYER
       case morseWinKeyer: // WinKeyer: the host's buffered sender, with the paddle breaking in (MorseWinKeyer.cpp)
                           if (MorseWinKeyer::wantsMenu()) {               // the host closed a session it opened at the top menu
+                              if (protocolActive())
+                                  MorseJSON::jsonActivate(ACT_EXIT);      // as the long-press exit does
                               MorseMenu::menu_();
                               return;
                           }
@@ -4754,9 +4757,10 @@ static void serialLines();
 
 void serialEvent() {
 #ifdef CONFIG_WINKEYER
-      if (MorseWinKeyer::ownsSerial())         // the WinKeyer mode owns USB: binary WinKeyer bytes, no lines
-        MorseWinKeyer::serviceInput();
-      else
+      if (MorseWinKeyer::ownsSerial()) {       // the WinKeyer mode owns USB: binary WinKeyer bytes, no lines
+        if (!MorseWinKeyer::takeTickServiced())   // loop() already had tick() poll it in this pass;
+          MorseWinKeyer::serviceInput();          // busy-wait sites (preferences, pickers) have not
+      } else
 #endif
       serialLines();
 #ifdef CONFIG_BLE_SERIAL

@@ -39,12 +39,20 @@ class WK:
         s.parity = serial.PARITY_NONE
         s.stopbits = serial.STOPBITS_TWO
         s.timeout = 0.02
-        # pyserial applies DTR first, then RTS. "dtr" = CQRLOG/flwkey (DTR on, RTS off: on the classic
-        # GPIO0 is held low but EN is not - no reset, but a later brown-out would boot into download mode).
-        s.dtr = lines in ("dtr", "both")
-        s.rts = lines == "both"
+        # macOS raises DTR and RTS when the port opens, and pyserial then applies the levels asked for
+        # one at a time, DTR first - asking for both off would walk through DTR=0/RTS=1, the ESP32
+        # auto-reset state, and reset the M32 on every open (see tests/protocol/m32_link.py). So open
+        # with both on (nothing moves), then drop RTS before DTR: the only state passed through is
+        # DTR=1/RTS=0, which holds GPIO0 (the classic's FN) low for an instant but never resets.
+        # "dtr" = CQRLOG/flwkey (DTR on, RTS off: on the classic that holds FN down - BENCH.md).
+        s.dtr = True
+        s.rts = True
         t0 = time.time()
         s.open()
+        if lines in ("dtr", "none"):
+            s.rts = False
+        if lines == "none":
+            s.dtr = False
         self.s = s
         self.opened_at = t0
         self.status = None          # last status byte seen

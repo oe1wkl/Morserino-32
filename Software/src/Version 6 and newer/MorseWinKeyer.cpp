@@ -43,6 +43,7 @@ extern void displayGeneratedMorse(FONT_ATTRIB style, const String& s);
 extern void displayCWspeed();
 extern void updateTopLine();
 extern String cleanUpText(String text);
+extern String encodeProSigns(String &input);
 extern String codesToUtf8(const String& s);
 extern int16_t batteryVoltage();
 
@@ -118,15 +119,16 @@ static bool      breakin = false;  static unsigned long lastPaddle = 0;
 static uint16_t  paddleElems = 0;  static KEYERSTATES prevKs = IDLE_STATE;
 static uint8_t   lastStatus = 0;
 static bool      paddleWordOpen = false; // paddle echo: a letter went out since the last space
+static bool      tickServiced = false;   // tick() polled the port in this loop() pass - see serialEvent()
 
 // filterFn(): FN held by a serial line rather than a finger (HeldLineFilter, ClickButton.h)
 static HeldLineFilter fnFilter;
 
 static const unsigned long TUNE_WATCHDOG_MS = 100000UL;   // K1EL: hard-coded, cannot be disabled
-// keyOut() blocks this long on both edges before the key line moves (KEYOUT_EDGE_MS in m32_v6.ino).
-// As in generateCW(): a mark's deadline is set BEFORE the key goes down, so the waits cancel over
-// the mark, and every gap that ends in a key-down is shortened by it.
-static const long EDGE_MS = 6;
+// keyOut() blocks KEYOUT_EDGE_MS (m32_v6.ino) on both edges before the key line moves. As in
+// generateCW(): a mark's deadline is set BEFORE the key goes down, so the waits cancel over the
+// mark, and every gap that ends in a key-down is shortened by it.
+extern const int KEYOUT_EDGE_MS;
 
 ///////////////////////////// small helpers
 
@@ -260,8 +262,10 @@ static void clearBuffer() {             // 0x0A and the M32 abort paths
 
 // The M32 Morse table supplies the element patterns (pool[] in m32_v6.ino); only three of
 // K1EL's prosign mappings have no M32 character and are spelled out here.
+static int poolSize() { static const int n = strlen(CWchars); return n; }   // one pool[] entry per CWchars byte
+
 static bool patternOfPoolIndex(int idx, uint32_t& bits, uint8_t& n) {
-  if (idx < 0) return false;
+  if (idx < 0 || idx >= poolSize()) return false;
   uint8_t len = pool[idx][1], mask = pool[idx][0];
   for (uint8_t j = 0; j < len && n < 31; ++j) {
     bits = (bits << 1) | ((mask & 0x80) ? 1 : 0);
@@ -313,7 +317,7 @@ static bool appendPattern(uint8_t b, uint32_t& bits, uint8_t& n) {
 // What the scroll area shows for a host byte - the M32's own conventions (hard rule 4).
 static String displayOf(uint8_t b) {
   if (b >= 0x80)
-    return codesToUtf8(cleanUpProSigns(String(CWchars[b & 0x7F])));
+    return (b & 0x7F) < poolSize() ? codesToUtf8(cleanUpProSigns(String(CWchars[b & 0x7F]))) : String();
   switch (b) {
     case '<':  return "+";
     case '>':  return "<sk>";
@@ -365,7 +369,7 @@ static void startMark() {
     mark += firstExt;
   if (mark < 1) mark = 1;
   ++sPos;
-  long gap = (sPos < sLen ? t.dit : t.letterGap) - t.weightAdj - keyComp - EDGE_MS;
+  long gap = (sPos < sLen ? t.dit : t.letterGap) - t.weightAdj - keyComp - KEYOUT_EDGE_MS;
   sSpaceAfter = gap > 0 ? gap : 0;
   sDeadline = millis() + mark;
   sState = S_MARK;
@@ -435,13 +439,15 @@ static void nextItem() {
                  }
       case 0x1B: {                                                  // merge letters
                   uint8_t a = bufGet(), c = bufGet();
+                  if (a >= 0x80) a = 0;                     // host bytes: never internal M32 codes (unmapped -> ignored)
+                  if (c >= 0x80) c = 0;
                   uint32_t bits = 0; uint8_t n = 0;
-                  appendPattern(a, bits, n);
-                  appendPattern(c, bits, n);
+                  uint8_t echo[2]; uint8_t echoN = 0;
+                  String d = "<";
+                  if (a && appendPattern(a, bits, n)) { echo[echoN++] = a; d += displayOf(a); }
+                  if (c && appendPattern(c, bits, n)) { echo[echoN++] = c; d += displayOf(c); }
                   if (!n) break;
-                  uint8_t echo[2] = { a, c };
-                  String d = "<" + displayOf(a) + displayOf(c) + ">";
-                  startChar(bits, n, echo, 2, d);
+                  startChar(bits, n, echo, echoN, d + ">");
                   return;
                  }
       case 0x1C: {                                                  // buffered speed change
@@ -682,7 +688,7 @@ static void sendValues() {
   for (uint8_t i = 0; i < 15; ++i) outPut(v[i]);
 }
 
-static void dumpEeprom() {                // used by flwkey's "read parameters" and K1EL's tools
+static void dumpEeprom() {                // for K1EL's WK3tools (flwkey 1.2.4 never asks: BENCH.md)
   uint8_t v[15]; currentValues(v);
   outPut(0xA5);                           // WK2 EEPROM magic, then the settings block (DESIGN.md §7.1)
   for (uint8_t i = 0; i < 15; ++i) outPut(v[i]);
@@ -732,7 +738,10 @@ static void execCmd(uint8_t c) {
                break;
     case 0x09: pinCfg = p; break;
     case 0x0A: clearBuffer(); break;
-    case 0x0B: if (p) { abortSending(); tuneOn = true; tuneDeadline = millis() + TUNE_WATCHDOG_MS; keyDown(); }
+    case 0x0B: if (p && !inPrefs) {                           // not while the preferences menu is up: its loop
+                                                              // reads serial but never runs the tune watchdog
+                 abortSending(); tuneOn = true; tuneDeadline = millis() + TUNE_WATCHDOG_MS; keyDown();
+               }
                else if (tuneOn) { tuneOn = false; keyUp(); }
                break;
     case 0x0D: farnsWpm = p; restoreBufferedSpeed(); break;
@@ -868,6 +877,7 @@ void MorseWinKeyer::serviceInput() {
 void MorseWinKeyer::tick() {
   if (!inMode) { pump(); return; }
   serviceInput();
+  tickServiced = true;
   if (breakin && millis() - lastPaddle > 7UL * 1200UL / MorsePreferences::wpm)
     breakin = false;                      // one word space after the paddle stopped, host CW resumes
   runSender();
@@ -884,6 +894,7 @@ void MorseWinKeyer::paddleActivity(bool pressed, KEYERSTATES ks) {
   prevKs = ks;
   if (pressed || ks != IDLE_STATE) {
     lastPaddle = millis();
+    lastKeyUp = lastPaddle;               // the rig is in transmit for the paddle too (1st extension)
     if (!breakin) {                       // break-in: the paddle wins at once (WK2 v23)
       breakin = true;
       clearBuffer();
@@ -902,16 +913,32 @@ void MorseWinKeyer::paddleChar(const String& symbol) {
     paddleWordOpen = false;
     return;
   }
-  uint8_t b = 0;
-  if (s.length() == 1 && (uint8_t) s[0] > 0x20 && (uint8_t) s[0] < 0x7F)
-    b = (uint8_t) toupper(s[0]);
-  else if (s == "<kn>") b = '(';
-  else if (s == "<sk>") b = '>';
-  else if (s == "<as>") b = '[';
-  else if (s == "<ar>") b = '+';
-  if (b) {                                // sent while BREAKIN is high: the host knows it is the paddle
-    outPut(b);
-    paddleWordOpen = true;
+  // The decoder's prosigns and national letters, through the same single-byte codes the CW
+  // generator uses (encodeProSigns(), hard rule 4), then to what a WinKeyer echoes: K1EL's ASCII
+  // stand-ins where there is one (table 17), the two letters where there is not.
+  encodeProSigns(s);
+  for (unsigned int k = 0; k < s.length(); ++k) {
+    char c = s[k];
+    const char* out = nullptr;
+    char one[2] = { 0, 0 };
+    switch (c) {
+      case 'S': out = "[";  break;                  // <as>
+      case 'N': out = "(";  break;                  // <kn>
+      case 'K': out = ">";  break;                  // <sk>
+      case 'A': out = "KA"; break;                  // <ka> - no K1EL character
+      case 'E': out = "VE"; break;                  // <ve>
+      case 'B': out = "BK"; break;                  // <bk>
+      case 'H': out = "CH"; break;                  // ch
+      case 'R': case 'U': break;                    // <err>, * - nothing to echo
+      case '\xE4': out = ";"; break;               // ä = .-.- = AA, K1EL's ';'
+      default:
+        if ((uint8_t) c > 0x20 && (uint8_t) c < 0x7F) { one[0] = (char) toupper(c); out = one; }
+        break;                                      // other national letters: no ASCII form
+    }
+    for (; out && *out; ++out) {                    // sent while BREAKIN is high: the host knows
+      outPut((uint8_t) *out);                       // it is the paddle
+      paddleWordOpen = true;
+    }
   }
 }
 
@@ -952,6 +979,12 @@ void MorseWinKeyer::afterPreferences() {
 
 int MorseWinKeyer::filterFn(int clicks, bool down) {
   return fnFilter.filter(clicks, down);
+}
+
+bool MorseWinKeyer::takeTickServiced() {
+  bool r = tickServiced;
+  tickServiced = false;
+  return r;
 }
 
 bool MorseWinKeyer::wantsMenu() {
