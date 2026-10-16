@@ -139,7 +139,8 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
       speed pot all work. flwkey sends the whole mode register (`0E`) on every Parameters tick box
       (its log shows C4/C6/CC/84): paddle echo acted on, swap and autospace ignored by design (D7).
       Weight, ratio etc. are not sent when the field changes - flwkey only sends them in its
-      Load Defaults block, i.e. on **Apply** (and at connect). Ratio 66 + Apply: dashes clearly
+      Load Defaults block, i.e. on **Done** (which applies and closes the Parameters window) and at
+      connect. Ratio 66 + Done: dashes clearly
       longer, so Load Defaults is parsed and applied. flwkey 1.2.4 has **no "Read parameters"**
       control, and after a fresh connect its Parameters window shows its own saved values (Min/Rng
       WPM 10/25, not the M32's 5/30) - it never uses Dump EEPROM for that window. Our Dump EEPROM
