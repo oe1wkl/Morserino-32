@@ -251,7 +251,7 @@ this way, so that is what hosts send. One exception is still open: the two baud 
 | `09` | Get Cal (WK2) / Get FW Major Rev (WK3) | → byte | 2/3 | ✅ | WK2: historical, returns a fixed byte (K3NG sends `0x18`); WK3: same value as the Host Open reply |
 | `0A` | Set WK1 Mode | – | 2/3 | ✅ | Status-byte format only (bit 3 = KEYDOWN) |
 | `0B` | Set WK2 Mode | – | 2/3 | 🟡 | Status-byte format switches; we never send pushbutton status bytes — the M32's buttons belong to the M32 UX |
-| `0C` | Dump EEPROM | → 256 bytes | 2/3 | 🟡 | Used by K1EL's WK3tools and by flwkey's "read parameters". Reply with an image whose first 16 bytes hold the M32's current settings (WK2 layout), the rest zero — see D7 in §8 |
+| `0C` | Dump EEPROM | → 256 bytes | 2/3 | 🟡 | Used by K1EL's WK3tools (flwkey 1.2.4 has no "read parameters" control and shows its own saved values - bench, 2026-10-16). Reply with an image whose first 16 bytes hold the M32's current settings (WK2 layout), the rest zero — see D7 in §8 |
 | `0D` | Load EEPROM | 256 | 2/3 | ❌ | Consume and discard all 256 bytes |
 | `0E` | Send Message 1–6 | 1 | 2/3 | ✅ | D8: → M32 keyer memories 1–6 (`memoryKeyer()`, 8 slots); an empty slot sends nothing |
 | `0F` | Load X1MODE (WK2: letterspace) | 1 | 2/3 | ✅ | Letterspace +0…30 % in the sender. Paddle-status and standalone-cut bits ignored |
@@ -350,7 +350,7 @@ K3NG's change log.
 | Host | Start-up | What it sends | Consequence |
 |---|---|---|---|
 | **CQRLOG** (open source) | DTR on, RTS off; 3 × `13`; Echo Test, waits 300 ms; Host Open, waits **50 ms**, ignores the revision | Only speed, speed-pot setup (**2 of its 3 bytes** — a real WinKeyer then eats the next byte as the third), backspace, tune, clear buffer | Never sends a mode register or sidetone: the M32's paddle settings and pitch stay whatever D7 says |
-| **flwkey** (W1HKJ, open source) | DTR on, RTS off; Null, Echo Test (2 s), Host Open (2 s); revision ≥ 20 → sends Set WK2 Mode | A full Load Defaults block from its own settings window (WK2 layout); "Read parameters" fills that window from the 256-byte EEPROM dump | If our Dump EEPROM returns the M32's settings, flwkey shows them and sends them back |
+| **flwkey** (W1HKJ, open source) | DTR on, RTS off; Null, Echo Test (2 s), Host Open (2 s); revision ≥ 20 → sends Set WK2 Mode | A full Load Defaults block from its own settings window (WK2 layout); ~~"Read parameters" fills that window from the 256-byte EEPROM dump~~ - not in flwkey 1.2.4: on the bench its window showed its own saved values after a fresh connect, and only Apply/Done sends them | flwkey always imposes its own Load Defaults; the M32 keeps paddle and pitch anyway (D7) |
 | **N1MM Logger+** (closed; documented) | – | Its Winkey tab: keying mode (Iambic A/B, Ultimatic, **Semi-Automatic = bug**), **Reverse Paddles**, **Sidetone Frequency (default 469 Hz)**, paddle-only sidetone, autospace, lead/tail, 1st extension, key compensation, hang time, three speed-pot behaviours; weight and contest spacing on other tabs. WK3.1 is needed **only** for its RTTY-via-Winkey option | An N1MM user sets paddles and pitch in N1MM, as with a real WinKeyer |
 | **K3NG keyer** (open-source emulator) | – | – | Reports **WK2 v23** (or WK1 v10), **never WK3**, and has been used for years with N1MM, Win-Test, Logger32, WriteLog and UcxLog. Applies the host's mode register **in full** (key mode, swap, autospace) and even saves it |
 

@@ -133,9 +133,12 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
       (its log shows C4/C6/CC/84): paddle echo acted on, swap and autospace ignored by design (D7).
       Weight, ratio etc. are not sent when the field changes - flwkey only sends them in its
       Load Defaults block, i.e. on **Apply** (and at connect). Ratio 66 + Apply: dashes clearly
-      longer, so Load Defaults is parsed and applied. Still to check: "Read parameters" (Dump
-      EEPROM), and flwkey on the classic.
-- [ ] **flwkey**: connect (revision ≥ 20 → it sends Set WK2 Mode), "Read parameters" (our
+      longer, so Load Defaults is parsed and applied. flwkey 1.2.4 has **no "Read parameters"**
+      control, and after a fresh connect its Parameters window shows its own saved values (Min/Rng
+      WPM 10/25, not the M32's 5/30) - it never uses Dump EEPROM for that window. Our Dump EEPROM
+      reply is therefore only checked by wk_bench.py (format), not by a host program; K1EL's
+      WK3tools (Windows) would be the one to try. Still to check: flwkey on the classic.
+- [ ] **flwkey** (superseded by the entry above - kept for the classic): connect (revision ≥ 20 → it sends Set WK2 Mode), "Read parameters" (our
       Dump EEPROM: `0xA5` + the 15 settings in Load Defaults order, rest zero) — does flwkey
       show the M32's speed/mode/pitch sensibly? Then send its Load Defaults back.
 - [ ] Messages: a logger's / WK tool's "send message 1..6" plays keyer memories 1..6.
