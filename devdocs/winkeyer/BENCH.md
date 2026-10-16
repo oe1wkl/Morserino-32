@@ -157,6 +157,13 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
 
 ## 5. Revision 31 (D6)
 
+**RUMlogNG, Pocket, 2026-10-16 (temporary build answering 31, with a top-line marker for WK3
+mode; not committed):** RUMlog sent Set WK3 Mode (`00 14`) - the Pocket showed the marker - and
+sending with sidetone, Esc, paddle break-in and speed all worked in WK3 mode, i.e. the WK3 Load
+Defaults layout (bytes 9/15 = X2MODE/X1MODE) and the WK3 sidetone handling hold up with a real host.
+RUMlog's WK3 settings offer no sidetone frequency change on the M32 (pitch stays the M32's, D7).
+The Pocket is back on the committed build (revision 23). Still owed for D6: N1MM with 31.
+
 - [ ] Set `MorseWinKeyer::REVISION = 31`, rebuild, repeat N1MM plus one more logger. Does the host
       send Set WK3 Mode (`00 14`)? If so, check sidetone (62500/f), X1MODE/X2MODE and Load
       Defaults bytes 9/15. Then settle on 23 or 31 and update DESIGN.md.
