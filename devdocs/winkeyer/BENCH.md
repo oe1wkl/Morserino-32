@@ -130,7 +130,11 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
       paddle-only bit, host-owned by design); any frequency there brought the tone back - now in the
       manual. Esc stops sending, the paddle stops Auto CQ, speed follows in both directions. (Macros
       such as <his call> are expanded by RUMlog - plain text to the M32, nothing extra to test.)
-      Still open: RUMlog on the classic.
+- [x] **RUMlogNG on the classic 2nd edition** (2026-10-16, plugged straight into the Mac, mode
+      started first): no reboot when RUMlog opened the port; sending, Esc, paddle break-in on Auto CQ,
+      speed both ways all pass. A short FN press toggled speed/volume normally - so RUMlog does **not**
+      hold GPIO0 low (it does not use DTR on / RTS off). Leaving the mode with RUMlog still connected
+      landed in the menu, no Audio In Adj. This also covers the classic paddle break-in.
 - [ ] **RUMlog** (macOS) or **CQRLOG** (Linux). CQRLOG sends only 2 of the 3 Setup Speed Pot
       bytes, so the next byte is eaten as the third (as on a real WinKeyer) — check that CQRLOG
       still works.
