@@ -120,6 +120,21 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
 
 ## 4. Loggers
 
+- [ ] **N1MM Logger+, Windows PC, Pocket standard edition (2026-10-17) - connected, sends:**
+      - With N1MM's port DTR/RTS both **Always Off** nothing reached the Pocket, not even in
+        WinKeyer mode: the Pocket's native USB (HWCDC) only exchanges data with a host that asserts
+        DTR. **DTR Always On / RTS Always Off** works. N1MM applies the lines only when it opens the
+        port, i.e. at start-up - changing them needs an N1MM restart. On the first start with the
+        new lines the Pocket rebooted once (the switch-over), not on later starts.
+      - The Configurer's OK button can be off-screen on a small display; closing the window any
+        other way discards the settings.
+      - N1MM's default **Paddle only sidetone** made the Pocket key N1MM's CW silently; unticking
+        it (and restarting N1MM - it sends its Winkey settings only on connect) brought the tone.
+      - Auto-detect from the main menu worked (revision 23); text from N1MM is sent.
+      - All of the above is now in the manual (EN/DE, "Example: setting up N1MM Logger+").
+      - Still to check with N1MM: Esc, break-in on a repeating CQ, the speed pot, revision 31; and
+        N1MM with the classic (the manual's "both Always Off" for the classic is derived from the
+        CP2102 behaviour, not yet tried with N1MM).
 - [ ] **N1MM Logger+** (Windows): F1 CQ, Esc stops it, a paddle touch stops a *repeating* CQ
       (needs BREAKIN), paddle echo appears in N1MM, the encoder moves N1MM's speed (pot), N1MM's
       speed field wins over the encoder. Confirm "Reverse paddles", "Keying mode", "Sidetone

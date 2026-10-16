@@ -1812,8 +1812,39 @@ takes effect when you release it. One thing the Morserino cannot
 protect against: if you switch it on while such a program has the port
 open, it starts in its programming mode instead and the screen stays
 dark. Close the program (or unplug the USB cable), then switch the
-Morserino off and on again.]{.classic}[On the M32 Pocket,
-both on, both off, or "DTR on, RTS off" are all fine.]{.pocket .pocket-a11y}
+Morserino off and on again.]{.classic}[On the M32 Pocket, **DTR must
+be on**: its USB port only exchanges data with a program that switches
+DTR on, so with both lines off the program gets no answer at all. "DTR
+on, RTS off" is the best choice. The first time a program switches the
+lines over, the Pocket may restart once; that is harmless.]{.pocket .pocket-a11y}
+
+#### Example: setting up N1MM Logger+ {-}
+
+N1MM Logger+ (Windows) has a few settings that are easy to get wrong.
+They are all in the Configurer (**Config → Configure Ports, Mode
+Control, Winkey, etc.**):
+
+-   **Hardware tab:** in a free row, choose the Morserino's port (for
+    example COM7) and tick **CW/Other**. Click **Set** in that row, tick
+    **WinKey**, and set [**DTR (pin 4)** to **Always On** and **RTS
+    (pin 7)** to **Always Off**]{.pocket .pocket-a11y}[**DTR (pin 4)**
+    and **RTS (pin 7)** both to **Always Off**]{.classic}. Confirm with
+    **OK**.
+-   **Leave the Configurer with its OK button.** Closing the window any
+    other way throws the settings away. On a small screen the buttons at
+    the bottom of the window can be out of sight; move the window up to
+    reach them.
+-   **Restart N1MM after changing DTR or RTS.** N1MM sets these lines
+    only when it opens the port, at start-up.
+-   **Winkey tab:** keep **Sidetone** ticked and **untick "Paddle only
+    sidetone"** (ticked by default), otherwise the Morserino sends
+    N1MM's CW without a sound. N1MM sends these settings only when it
+    connects, so restart N1MM after changing them as well. **Keying
+    Mode**, **Autospace**, **Reverse Paddles** and **Sidetone
+    Frequency** have no effect on the Morserino (see above); **Lead
+    Time**, **Tail Time**, **Hang Time** and **Pin 5 Function** concern
+    PTT, which the Morserino does not have. With **Use Winkeyer Speed
+    Pot**, N1MM takes its sending speed from the Morserino's ENCODER.
 
 ### QSO Bot
 
