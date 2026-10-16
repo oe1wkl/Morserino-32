@@ -37,6 +37,15 @@ Last-executed mode (2947854): on the classic, WinKeyer chosen from the menu, pow
 came back on Transceiver > WinKeyer. Flashing the classic through the 20-in-1 USB-C dock failed
 (write timeout, then "serial TX path seems to be down"); plugged straight into the Mac it worked.
 
+**flwkey 1.2.4 on macOS with the Pocket (2026-10-16):** flwkey's port scan globs `/dev/cu.*` and
+`/dev/tty.*` but skips every name containing "modem" (an old Apple-modem rule, inherited from the
+W1HKJ serial code) - so the Pocket's `/dev/cu.usbmodem…` never appears in Configure → Ports, even
+after a restart. Workaround: with flwkey fully quit (closing its window does not quit it, and it
+rewrites `~/.flwkey/flwkey.prefs` on quit), set `serial_port_name:/dev/cu.usbmodem12301` in that
+file. flwkey then opened the port at start-up and connected (auto-detect at the main menu).
+Documented in the manual (Pocket variants). Worth reporting upstream to W1HKJ. Test results with
+flwkey: see section 4.
+
 ### FINDING (classic): DTR on / RTS off holds the FN button down
 
 On the classic, **FN is GPIO0** (`volButtonPin = 0`), the pin the CP2102 auto-reset circuit pulls

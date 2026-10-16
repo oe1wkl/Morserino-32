@@ -1713,6 +1713,17 @@ the paddle at any time.
 and the Morserino's USB serial port as its port (the same port the
 Configuration Tool uses).
 
+[**flwkey on a Mac with the M32 Pocket:** flwkey leaves every port
+whose name contains "modem" out of its list, and on a Mac the M32
+Pocket's port is called `/dev/cu.usbmodem…`. Enter the port by hand
+instead: quit flwkey (⌘Q), open the file `.flwkey/flwkey.prefs` in
+your home folder with a text editor, change the line
+`serial_port_name:NONE` to the Pocket's port (for example
+`serial_port_name:/dev/cu.usbmodem12301` – the Terminal command
+`ls /dev/cu.usbmodem*` shows the name), save, and start flwkey again.
+Do not open flwkey's port dialog afterwards; it would set the port
+back.]{.pocket .pocket-a11y}
+
 [On the 1st and 2nd edition Morserino, first start **Transceiver →
 WinKeyer** on the Morserino, then start the program (or tell it to
 connect). While the mode runs, the USB port works at 1200 baud, as a

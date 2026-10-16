@@ -1508,6 +1508,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <h3 data-number="5.5.4" id="winkeyer"><span class="header-section-number">5.5.4</span> WinKeyer</h3>
 <p>In diesem Modus verhält sich der Morserino-32 wie ein <strong>WinKeyer</strong> – der CW-Keyer von K1EL, den die meisten Log- und Contestprogramme ansteuern können (zum Beispiel N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog, CQRLOG oder fldigi mit flwkey). Das Programm schickt seinen Text und seine Befehle über USB; der Morserino macht daraus Morsezeichen, tastet einen an „to Tx” angeschlossenen Sender und spielt den Mithörton. Mit dem Paddle kannst du jederzeit dazwischen gehen (Break-in).</p>
 <p><strong>Einrichten des Programms:</strong> Wähle als CW-Keyer einen WinKeyer (WK2) und als Anschluss die serielle USB-Schnittstelle des Morserino (dieselbe, die auch das Configuration Tool verwendet).</p>
+<p><span class="pocket pocket-a11y"><strong>flwkey auf einem Mac mit dem M32 Pocket:</strong> flwkey lässt alle Schnittstellen, deren Name „modem” enthält, aus seiner Liste weg – und auf einem Mac heißt die Schnittstelle des M32 Pocket <code>/dev/cu.usbmodem…</code>. Trage sie stattdessen von Hand ein: Beende flwkey (⌘Q), öffne die Datei <code>.flwkey/flwkey.prefs</code> in deinem Benutzerordner mit einem Texteditor, ändere die Zeile <code>serial_port_name:NONE</code> auf die Schnittstelle des Pocket (zum Beispiel <code>serial_port_name:/dev/cu.usbmodem12301</code> – der Terminal-Befehl <code>ls /dev/cu.usbmodem*</code> zeigt den Namen), speichere und starte flwkey wieder. Öffne danach den Schnittstellen-Dialog von flwkey nicht mehr; er würde die Einstellung zurücksetzen.</span></p>
 <p><span class="classic">Beim Morserino der 1st und 2nd Edition startest du zuerst am Morserino <strong>Transceiver → WinKeyer</strong> und dann das Programm (oder lässt es sich verbinden). Solange der Modus läuft, arbeitet die USB-Schnittstelle mit 1200 Baud wie ein WinKeyer (oder mit 9600, wenn das Programm das verlangt); wenn du den Modus verlässt, kehrt sie zu ihrer normalen Geschwindigkeit zurück.</span></p>
 <p><span class="pocket pocket-a11y">Beim M32 Pocket kannst du es genauso machen – oder den Morserino einfach im Hauptmenü lassen: Wenn das Programm den WinKeyer öffnet, wechselt der Morserino von selbst in den WinKeyer-Modus und kehrt ins Menü zurück, wenn das Programm ihn wieder schließt. Das geschieht nur im Hauptmenü, nie in einem laufenden Modus – ein Programm kann also nicht übernehmen, während du den Morserino gerade benutzt. (Bei der 1st und 2nd Edition geht das nicht: Dort muss die USB-Schnittstelle erst auf die Geschwindigkeit des WinKeyers umgeschaltet werden.)</span></p>
 <p>Solange der Modus läuft, gehört die USB-Schnittstelle dem Logprogramm: Das Configuration Tool und die anderen Hilfsprogramme können sie erst wieder verwenden, wenn du den Modus verlässt.</p>
@@ -4688,6 +4689,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=4cebbc916fba -->
+<!-- MANUALFRESH: lang=de src=969a06a2719d -->
 </body>
 </html>

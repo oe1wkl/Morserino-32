@@ -1526,6 +1526,7 @@ The font family used is Lato.</p>
 <h3 data-number="5.5.4" id="winkeyer"><span class="header-section-number">5.5.4</span> WinKeyer</h3>
 <p>In this mode the Morserino-32 behaves like a <strong>WinKeyer</strong> – the CW keyer by K1EL that most logging and contest programs know how to drive (for example N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog, CQRLOG, or fldigi with flwkey). The program sends its text and commands over USB; the Morserino turns them into Morse code, keys a transmitter connected to “to Tx”, and plays the side tone. You can break in with the paddle at any time.</p>
 <p><strong>Setting up the program:</strong> choose a WinKeyer (WK2) as the CW keyer, and the Morserino’s USB serial port as its port (the same port the Configuration Tool uses).</p>
+<p><span class="pocket pocket-a11y"><strong>flwkey on a Mac with the M32 Pocket:</strong> flwkey leaves every port whose name contains “modem” out of its list, and on a Mac the M32 Pocket’s port is called <code>/dev/cu.usbmodem…</code>. Enter the port by hand instead: quit flwkey (⌘Q), open the file <code>.flwkey/flwkey.prefs</code> in your home folder with a text editor, change the line <code>serial_port_name:NONE</code> to the Pocket’s port (for example <code>serial_port_name:/dev/cu.usbmodem12301</code> – the Terminal command <code>ls /dev/cu.usbmodem*</code> shows the name), save, and start flwkey again. Do not open flwkey’s port dialog afterwards; it would set the port back.</span></p>
 <p><span class="classic">On the 1st and 2nd edition Morserino, first start <strong>Transceiver → WinKeyer</strong> on the Morserino, then start the program (or tell it to connect). While the mode runs, the USB port works at 1200 baud, as a WinKeyer does (or 9600, if the program asks for it); when you leave the mode it goes back to its normal speed.</span></p>
 <p><span class="pocket pocket-a11y">On the M32 Pocket you can do the same – or simply leave the Morserino in the main menu: when the program opens the WinKeyer, the Morserino switches to WinKeyer mode by itself, and returns to the menu when the program closes it again. This only happens in the main menu, never in a running mode, so a program cannot take over while you are using the Morserino. (On the 1st and 2nd edition this is not possible: there the USB port has to be switched to the WinKeyer’s speed first.)</span></p>
 <p>While the mode runs, the USB port belongs to the logging program: the Configuration Tool and the other utilities cannot use it until you leave the mode.</p>
@@ -4698,6 +4699,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=c26f40c04616 -->
+<!-- MANUALFRESH: lang=en src=a1df58e7eb52 -->
 </body>
 </html>

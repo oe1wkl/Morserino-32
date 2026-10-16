@@ -1746,6 +1746,18 @@ gehen (Break-in).
 und als Anschluss die serielle USB-Schnittstelle des Morserino
 (dieselbe, die auch das Configuration Tool verwendet).
 
+[**flwkey auf einem Mac mit dem M32 Pocket:** flwkey lässt alle
+Schnittstellen, deren Name „modem" enthält, aus seiner Liste weg – und
+auf einem Mac heißt die Schnittstelle des M32 Pocket
+`/dev/cu.usbmodem…`. Trage sie stattdessen von Hand ein: Beende flwkey
+(⌘Q), öffne die Datei `.flwkey/flwkey.prefs` in deinem Benutzerordner
+mit einem Texteditor, ändere die Zeile `serial_port_name:NONE` auf die
+Schnittstelle des Pocket (zum Beispiel
+`serial_port_name:/dev/cu.usbmodem12301` – der Terminal-Befehl
+`ls /dev/cu.usbmodem*` zeigt den Namen), speichere und starte flwkey
+wieder. Öffne danach den Schnittstellen-Dialog von flwkey nicht mehr;
+er würde die Einstellung zurücksetzen.]{.pocket .pocket-a11y}
+
 [Beim Morserino der 1st und 2nd Edition startest du zuerst am Morserino
 **Transceiver → WinKeyer** und dann das Programm (oder lässt es sich
 verbinden). Solange der Modus läuft, arbeitet die USB-Schnittstelle mit
