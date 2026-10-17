@@ -207,7 +207,10 @@ Decided after the logger research in §8:
 - **D6 — WK2 now, WK3 tried on the bench.** Implement the WK3-mode handling (Set WK3 Mode,
   WK3 sidetone formula, X1/X2MODE layouts, the changed Load Defaults bytes 9 and 15), but
   reply **23** to Host Open from a single constant. On the bench, try **31** with N1MM and
-  one more logger, then settle.
+  one more logger, then settle. **Settled 2026-10-17: 23.** With 31, RUMlog switched to WK3
+  mode and worked; N1MM only asked two WK3 questions (FW minor revision, RTTY registers) and
+  otherwise stayed with WK2 commands - no WK3 mode, no baud change. 31 gains nothing, 23 is
+  the revision K3NG's emulator has served the major loggers with (BENCH.md §5).
 - **D7 — The M32 owns paddle and pitch.** Keyer mode, paddle swap, ACS/autospace, latency
   and the sidetone pitch stay with the M32 preferences; the host's values for these are
   parsed and ignored. Sending-side settings come from the host (speed, weighting, ratio,

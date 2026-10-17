@@ -202,9 +202,19 @@ Defaults layout (bytes 9/15 = X2MODE/X1MODE) and the WK3 sidetone handling hold 
 RUMlog's WK3 settings offer no sidetone frequency change on the M32 (pitch stays the M32's, D7).
 The Pocket is back on the committed build (revision 23). Still owed for D6: N1MM with 31.
 
-- [ ] Set `MorseWinKeyer::REVISION = 31`, rebuild, repeat N1MM plus one more logger. Does the host
-      send Set WK3 Mode (`00 14`)? If so, check sidetone (62500/f), X1MODE/X2MODE and Load
-      Defaults bytes 9/15. Then settle on 23 or 31 and update DESIGN.md.
+**N1MM, Pocket, 2026-10-17 (same kind of temporary build, plus every received command shown on
+screen):** `A17 0E 05 01 09 04 10 11 03 07 A13 09 02 02 02 02` - after Host Open N1MM asks the FW
+minor revision (`A17`, a WK3 question) and sends the RTTY registers (`A13`, 2 parameters - read and
+ignored, presumably "RTTY off"), otherwise the same WK2 commands as with 23: **no Set WK3 Mode, no
+baud change** (so the classic needs no separate test). All checks passed.
+
+- [x] **Decision (Willi, 2026-10-17): stay at revision 23** - recorded in DESIGN.md §6 D6. The
+      WK3-mode handling stays in the firmware (RUMlog uses it when it sees 31; harmless otherwise).
+- Seen during this test: the Pocket rebooted when N1MM started - the first start after its DTR/RTS
+  settings had been switched back from the classic's (both On) to the Pocket's (DTR On, RTS Off).
+  Most likely the ESP32-S3 USB-Serial-JTAG's hardware reset on a DTR/RTS sequence (the same
+  mechanism the installer uses; it works even from deep sleep, which would explain a "wake" without
+  FN if the Pocket had timed out at the menu). Harmless - the auto-detect connects after the boot.
 
 ## 6. Accessibility Edition
 
