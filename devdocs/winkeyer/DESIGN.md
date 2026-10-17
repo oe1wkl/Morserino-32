@@ -444,7 +444,16 @@ as) the local key line. Nothing is designed yet. Questions to settle when both b
 
 ### 9.1 Remote WinKeyer — decision list (2026-10-17, for Willi)
 
-Branch `remote-winkeyer` off `m32kip` (b9075fb). Nothing implemented yet. Checked against `MorseWinKeyer.cpp`,
+**Decided by Willi, 2026-10-17:** all recommendations accepted, with one change to R2. R1: the preference
+(**WinKeyer Tx** = Local / Remote, default Local, no `Off`) exists **only on the Pocket** — the classic has no
+auto-detect and so no use for it. R2: the menu label is **`Remote WinK`** on the classic (12-character limit) and the
+full **`Remote WinKeyer`** on the Pocket. R3–R8 as recommended below (R3a: source 1 while Tune / Key Buffered;
+R4 (B); R5 hold BUSY; R6 serve the parser during start-up, stay in the mode on auto-detect errors; R7; R8 yes).
+**Implemented 2026-10-17** on branch `remote-winkeyer` (state `morseRemoteWinKeyer`, menu `_remoteWinKeyer`,
+preference `posWkTarget`, hooks in `MorseWinKeyer.cpp` / `MorseKipKeyer.cpp` / `keyOut()`); bench checklist in
+`BENCH_REMOTE.md`, which also lists five interpretations made while implementing.
+
+Branch `remote-winkeyer` off `m32kip` (b9075fb). Checked against `MorseWinKeyer.cpp`,
 `MorseKipKeyer.cpp`, the `keyOut()` hook and the Transceiver chain in `MorseMenu.cpp`. Each item gives the options,
 what they cost, and a recommendation (**→**). Items marked *for the record* need no decision.
 

@@ -347,11 +347,30 @@ enum morserinoMode              // the states the morserino can be in - selected
                                   // Key-Ext-Tx case in keyOut(), so the local TX stays silent while the
                                   // edge timings go to the remote Rig. See MorseKipKeyer.h.
       shutDown, measureNF, invalid,
-      morseWinKeyer               // WinKeyer emulation (CONFIG_WINKEYER): KEYS THE TRANSMITTER for a
+      morseWinKeyer,              // WinKeyer emulation (CONFIG_WINKEYER): KEYS THE TRANSMITTER for a
                                   // logging program, so it is TX-capable on purpose - unlike morseGame /
                                   // morseQsoBot it is included in keyOut()'s external-TX gate. It never
                                   // transmits over LoRa/WiFi. Appended so no existing value moves.
+      morseRemoteWinKeyer         // Remote WinKeyer (CONFIG_WINKEYER + CONFIG_M32KIP): the WinKeyer host's CW
+                                  // and the paddles go to a remote Rig over M32KIP, like Remote Keyer. Keys
+                                  // NOTHING locally but the sidetone: it is in no Key-Ext-Tx case in keyOut()
+                                  // (D12d). See devdocs/winkeyer/DESIGN.md §9.1.
   };
+
+// Both WinKeyer modes share the host side (MorseWinKeyer.cpp); only where the keying goes differs.
+inline bool isWinKeyerMode(morserinoMode m) { return m == morseWinKeyer || m == morseRemoteWinKeyer; }
+
+// Derived from the feature flags in platformio.ini, not config flags of their own:
+// REMOTE_WINKEYER - the Remote WinKeyer mode needs both WinKeyer and M32KIP.
+// WK_TARGET_PREF  - the "WinKeyer Tx" preference: which of the two modes a host opening a session at the
+//                   top menu starts. Only where that auto-detect exists - native USB, i.e. the M32 Pocket
+//                   (DESIGN.md D1a, R1).
+#if defined(CONFIG_WINKEYER) && defined(CONFIG_M32KIP)
+  #define REMOTE_WINKEYER 1
+  #if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
+    #define WK_TARGET_PREF 1
+  #endif
+#endif
 
 // Base menu count: 46 entries (indices 0..45, classic M32 with LoRa, no Games, no QSO Bot)
 // includes the two "Practice Set" leaves (CW Generator + Echo Trainer) and the Koch
@@ -380,6 +399,9 @@ const uint8_t menuN = 46
 #endif
 #ifdef CONFIG_WINKEYER
     + 1    // WinKeyer — Transceiver submenu, see MorseWinKeyer.h
+#endif
+#ifdef REMOTE_WINKEYER
+    + 1    // Remote WinKeyer — WinKeyer keying a remote Rig (DESIGN.md §9.1)
 #endif
     ;
 
@@ -432,6 +454,9 @@ enum menuNo
 #ifdef CONFIG_WINKEYER
         , _winKeyer     // "WinKeyer" - Transceiver submenu (after iCW/Ext Trx); appended after the
                         // M32KIP entries, which the V10 line had first
+#endif
+#ifdef REMOTE_WINKEYER
+        , _remoteWinKeyer   // "Remote WinKeyer" ("Remote WinK" on the OLED) - between WinKeyer and Remote Keyer
 #endif
    };
 
@@ -493,6 +518,9 @@ enum prefPos : uint8_t {
         posKipPlayout, posKipMaxKeyer, posKipMaxManual,     // Remote Rig (M32KIP D4)
         posKipFirstExt, posKipHang,                         // Remote Rig break-in compensation (D16)
         posKipGlitch,                                       // Remote Keyer, straight key only
+#endif
+#ifdef WK_TARGET_PREF
+        posWkTarget,                                        // WinKeyer Tx: what a host's Host Open at the top menu starts
 #endif
 // Decoder Chars (national letters / ITU brackets in decoded text): not in the Accessibility
 // Edition - decoded text is read on screen, and every preference costs voice clips there.

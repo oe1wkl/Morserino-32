@@ -165,6 +165,13 @@ const char* const menuText[menuN]  = {
 #ifdef CONFIG_WINKEYER
   , "WinKeyer"        // _winKeyer     - sibling of the Transceiver modes, after iCW/Ext Trx
 #endif
+#ifdef REMOTE_WINKEYER
+#ifdef CONFIG_TFT
+  , "Remote WinKeyer" // _remoteWinKeyer - WinKeyer keying a remote rig (DESIGN.md §9.1); fits the Pocket
+#else
+  , "Remote WinK"     // _remoteWinKeyer - the OLED menu is fitted to 12 characters (Willi, R2)
+#endif
+#endif
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
@@ -181,10 +188,11 @@ enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
 bool EspNowIsActive = false;
 
 // The Transceiver ring after iCW/Ext Trx is a chain of entries appended at the enum's end (menuPtr
-// is persisted raw): iCW/Ext Trx -> WinKeyer -> Remote Keyer -> Remote Rig -> QSO Bot (or round to
-// the first Transceiver entry). WinKeyer keys a local transmitter like iCW/Ext Trx; the two M32KIP
-// entries stay together. Each piece is only there when built in, so these name the neighbours for
-// every combination of LoRa, QSO Bot, WinKeyer and M32KIP.
+// is persisted raw): iCW/Ext Trx -> WinKeyer -> Remote WinKeyer -> Remote Keyer -> Remote Rig ->
+// QSO Bot (or round to the first Transceiver entry). WinKeyer keys a local transmitter like iCW/Ext
+// Trx; Remote WinKeyer (both WinKeyer and M32KIP built in) links it to the M32KIP entries, which stay
+// together. Each piece is only there when built in, so these name the neighbours for every
+// combination of LoRa, QSO Bot, WinKeyer and M32KIP.
 #ifdef LORA_DISABLED
   #define _trxFirst _trxWifi
 #else
@@ -196,7 +204,11 @@ bool EspNowIsActive = false;
   #define _afterTrxChain _trxFirst
 #endif
 #ifdef CONFIG_M32KIP
-  #define _afterWk  _kipKeyer             // right of WinKeyer
+  #ifdef REMOTE_WINKEYER
+    #define _afterWk  _remoteWinKeyer     // right of WinKeyer
+  #else
+    #define _afterWk  _kipKeyer           // right of WinKeyer
+  #endif
   #define _trxLast  _kipRig               // left of what follows the chain
 #else
   #define _afterWk  _afterTrxChain
@@ -208,7 +220,11 @@ bool EspNowIsActive = false;
 #endif
 #ifdef CONFIG_WINKEYER
   #define _afterIcw  _winKeyer            // right of iCW/Ext Trx
-  #define _beforeKip _winKeyer            // left of Remote Keyer
+  #ifdef REMOTE_WINKEYER
+    #define _beforeKip _remoteWinKeyer    // left of Remote Keyer
+  #else
+    #define _beforeKip _winKeyer          // left of Remote Keyer
+  #endif
 #else
   #define _afterIcw  _afterWk
   #define _beforeKip _trxIcw
@@ -330,7 +346,10 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #endif
 #ifdef CONFIG_WINKEYER
   , {1,_trxIcw,_afterWk,_trx,0}                          // WinKeyer (Transceiver) - between iCW/Ext Trx and
-                                                         //   Remote Keyer (or what follows the chain)
+                                                         //   Remote WinKeyer (or what follows the chain)
+#endif
+#ifdef REMOTE_WINKEYER
+  , {1,_winKeyer,_kipKeyer,_trx,0}                       // Remote WinKeyer - between WinKeyer and Remote Keyer
 #endif
 };
 
@@ -557,7 +576,13 @@ void MorseMenu::menu_() {
 #ifdef WK_NATIVE_USB
         MorseWinKeyer::topMenuArmed = false;
         if (MorseWinKeyer::takeAutoOpen()) {    // Host Open arrived (and is answered): enter the mode
+#ifdef WK_TARGET_PREF
+            // WinKeyer Tx (DESIGN.md §9.1 R1) says which of the two modes a logger's session starts
+            MorsePreferences::menuPtr = MorsePreferences::newMenuPtr =
+                MorsePreferences::pliste[posWkTarget].value ? _remoteWinKeyer : _winKeyer;
+#else
             MorsePreferences::menuPtr = MorsePreferences::newMenuPtr = _winKeyer;
+#endif
             disp = 0;
             if (MorseMenu::menuExec())
                 return;
@@ -688,6 +713,9 @@ void MorseMenu::menu_() {
 #endif
 #ifdef CONFIG_WINKEYER
                           || MorsePreferences::menuPtr == _winKeyer
+#endif
+#ifdef REMOTE_WINKEYER
+                          || MorsePreferences::menuPtr == _remoteWinKeyer
 #endif
                           || MorsePreferences::menuPtr == _kochPreview)
                           MorsePreferences::writeLastExecuted(MorsePreferences::newMenuPtr);
@@ -1168,6 +1196,34 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 return true;
       }
 #endif
+#ifdef REMOTE_WINKEYER
+      case  _remoteWinKeyer: {   // WinKeyer whose keying goes to a remote rig over M32KIP (DESIGN.md §9.1): the
+                                 // WinKeyer host side plus Remote Keyer's link. Keys nothing locally (D12d).
+                const bool autoOpened = MorseWinKeyer::isOpen();
+                generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
+                // As in Remote Keyer, the list that leads with the rig's settings is chosen when preferences open.
+                MorsePreferences::setCurrentOptions(MorsePreferences::remoteWinKeyerOptions,
+                                                    MorsePreferences::remoteWinKeyerOptionsSize);
+                morseState = morseRemoteWinKeyer;
+                // The port first, so a host is answered while WiFi and the rig come up - that takes seconds, and a
+                // logger asks its questions straight after Host Open (R6). The host's text waits in the buffer.
+                MorseWinKeyer::enter(autoOpened, true);
+                // From auto-detect the session is already open and cannot be refused, so the mode starts whatever
+                // happens and keeps calling the rig (R6). From the menu a failure goes back to it, as Remote Keyer.
+                if (!MorseKipKeyer::begin(MorseWinKeyer::serviceInput, autoOpened)) {
+                    MorseWinKeyer::leave();
+                    return false;
+                }
+                MorseVoice::announceMore(autoOpened ? "Host connected" : "Waiting for host");   // after "Linked to rig"
+                showStartDisplay("Remote WinKeyer", MorseKipKeyer::peerName(),
+                                 autoOpened ? "Host connected" : "Waiting for host", autoOpened ? 0 : 600);
+                clearPaddleLatches();
+                if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY)
+                  keyDecoder.setup();
+                executeNow = false;
+                return true;
+      }
+#endif
       case  _trxIcw: /// icw/ext TRX
                 MorsePreferences::setCurrentOptions(MorsePreferences::extTrxOptions, MorsePreferences::extTrxOptionsSize);
                 morseState = morseTrx;
@@ -1440,6 +1496,9 @@ boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
     switch (ptr) {
 #ifdef CONFIG_WINKEYER
       case _winKeyer:         // takes the serial port away from the very client that would execute it
+#endif
+#ifdef REMOTE_WINKEYER
+      case _remoteWinKeyer:   // the same
 #endif
       case _kochPreview:      // its picker (selectKochPreviewChar()) has no remote-selection path
                               // (unlike selectFilePart()'s remoteFilePartSelect) - a protocol client

@@ -113,6 +113,9 @@ const char * prefName[] = {
             "kipFirstExt", "kipHang",
             "kipGlitch",
 #endif
+#ifdef WK_TARGET_PREF
+            "wkTarget",
+#endif
 #ifndef CONFIG_AUDIO_A11Y
             "decoderChars",
 #endif
@@ -595,6 +598,16 @@ parameter MorsePreferences::pliste[] = {
     "Remote keyer glitch filter"
   },
 #endif
+#ifdef WK_TARGET_PREF
+  {
+    0, 0, 1, 1,                                                 // DESIGN.md §9.1 R1: Pocket only, default Local
+    "WinKeyer Tx",
+    "What a logger opening a WinKeyer session at the top menu starts: WinKeyer (local transmitter) or Remote WinKeyer",
+    true,
+    {"Local", "Remote"},
+    "Win Keyer transmitter"
+  },
+#endif
 #ifndef CONFIG_AUDIO_A11Y
   {
     0, 0, 4, 1,                                                 // decoderCharSets (morsedefs.h): national letters / ITU brackets
@@ -784,6 +797,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define QSOBOT
 #endif
+#ifdef WK_TARGET_PREF
+#define WKTARGET posWkTarget,            // Pocket only: what the WinKeyer auto-detect starts (DESIGN.md §9.1 R1)
+#else
+#define WKTARGET
+#endif
 #ifndef CONFIG_AUDIO_A11Y
 #define DECCHARS posDecoderChars,
 #else
@@ -863,7 +881,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #ifdef CONFIG_WINKEYER
  // WinKeyer: the CW Keyer's paddle settings stay the M32's (D7), plus the transmit gate. The general
  // block without Serial Output - the port belongs to the WinKeyer host while the mode runs.
- prefPos MorsePreferences::winKeyerOptions[] =   { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+ prefPos MorsePreferences::winKeyerOptions[] =   { WKTARGET posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
                                                    posKeyExternalTx,
                                                    PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT BLUEUSE
                                                    PREFPOS_PADDLES
@@ -896,7 +914,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
-                                                   posKeyExternalTx, posLoraCwTransmit,
+                                                   posKeyExternalTx, WKTARGET posLoraCwTransmit,
                                                    posLoraChannel,
                                                    posGoertzelBandwidth, posExtAudioOnDecode,
                                                    QSOBOT
@@ -931,6 +949,24 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
                                                     posKipGlitch, posKipPassPhrase,
                                                     PREFPOS_GENERAL PREFPOS_PADDLES
                                                   };
+#ifdef REMOTE_WINKEYER
+ // Remote WinKeyer (DESIGN.md §9.1 R8): WinKeyer's list without Key ext TX - the local transmitter is never keyed
+ // here (D12d) - plus Remote Keyer's Glitch Filter and Pass Phrase. The rig's own settings lead the second list,
+ // used while a link is up to a rig that answers configuration requests (D17), exactly as in Remote Keyer.
+ prefPos MorsePreferences::remoteWinKeyerOptions[] =    { WKTARGET posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
+                                                          posInterWordSpace, posLatency, posKipGlitch, posKipPassPhrase,
+                                                          PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT BLUEUSE
+                                                          PREFPOS_PADDLES
+                                                        };
+ prefPos MorsePreferences::remoteWinKeyerRigOptions[] = { posRigDelay, posRigLimitKyr, posRigLimitSK, posRigFirstExt, posRigHang,
+                                                          WKTARGET posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
+                                                          posInterWordSpace, posLatency, posKipGlitch, posKipPassPhrase,
+                                                          PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT BLUEUSE
+                                                          PREFPOS_PADDLES
+                                                        };
+int MorsePreferences::remoteWinKeyerOptionsSize    = SizeOfArray(MorsePreferences::remoteWinKeyerOptions);
+int MorsePreferences::remoteWinKeyerRigOptionsSize = SizeOfArray(MorsePreferences::remoteWinKeyerRigOptions);
+#endif
 int MorsePreferences::kipRigOptionsSize      = SizeOfArray(MorsePreferences::kipRigOptions);
 int MorsePreferences::kipKeyerOptionsSize    = SizeOfArray(MorsePreferences::kipKeyerOptions);
 int MorsePreferences::kipKeyerRigOptionsSize = SizeOfArray(MorsePreferences::kipKeyerRigOptions);
@@ -1025,7 +1061,11 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
 #ifdef CONFIG_M32KIP
         // The rig's settings are only shown while a link is up (D17). If it drops, leave at once rather than let
         // the operator edit values that can no longer be sent anywhere - and rather than wait for a timeout.
-        if (currentOptions == MorsePreferences::kipKeyerRigOptions && !MorseKipKeyer::linked())
+        if ((currentOptions == MorsePreferences::kipKeyerRigOptions
+#ifdef REMOTE_WINKEYER
+             || currentOptions == MorsePreferences::remoteWinKeyerRigOptions
+#endif
+            ) && !MorseKipKeyer::linked())
             goto exitFromHere;
 #endif
         Buttons::modeButton.Update();
@@ -2341,6 +2381,9 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
       case posKipFirstExt:
       case posKipHang:
       case posKipGlitch:
+#endif
+#ifdef WK_TARGET_PREF
+      case posWkTarget:                   // where a logger's keying goes: station wiring, not training
 #endif
           return false;
       default:

@@ -1308,6 +1308,7 @@ void loop() {
 
 #ifdef CONFIG_WINKEYER
       case morseWinKeyer: // WinKeyer: the host's buffered sender, with the paddle breaking in (MorseWinKeyer.cpp)
+      case morseRemoteWinKeyer:   // Remote WinKeyer: the same, keying a remote rig over M32KIP (DESIGN.md §9.1)
                           if (MorseWinKeyer::wantsMenu()) {               // the host closed a session it opened at the top menu
                               if (protocolActive())
                                   MorseJSON::jsonActivate(ACT_EXIT);      // as the long-press exit does
@@ -1316,8 +1317,19 @@ void loop() {
                           }
                           MorseWinKeyer::paddleActivity(leftKey || rightKey, keyerState);   // before the keyer keys
                           MorseWinKeyer::tick();                          // serial input, sender, status/echo output
-                          if (doPaddleIambic(leftKey, rightKey))
+                          if (doPaddleIambic(leftKey, rightKey)) {
+#if defined(REMOTE_WINKEYER) && defined(CONFIG_AUDIO_A11Y)
+                              // as in Remote Keyer: a spoken link status must never mute the operator's sidetone
+                              if (morseState == morseRemoteWinKeyer && MorseVoice::busy()) MorseVoice::stop();
+#endif
                               return;                                     // we are busy keying and so need a very tight loop !
+                          }
+#ifdef REMOTE_WINKEYER
+                          // Remote Keyer's link state - it repaints the top line on a change, so only in a gap of the
+                          // host's sending too (a redraw is longer than a dit)
+                          if (morseState == morseRemoteWinKeyer && !MorseWinKeyer::hostSending())
+                              MorseKipKeyer::tick();
+#endif
                           break;
 #endif
       case morseTrx:      if (doPaddleIambic(leftKey, rightKey)) {
@@ -1440,7 +1452,7 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
     Buttons::modeButton.Update();
     Buttons::volButton.Update();
 #ifdef CONFIG_WINKEYER
-    if (morseState == morseWinKeyer && Buttons::volButton.pin == 0)    // FN on GPIO0 (classic): DTR may hold it
+    if (isWinKeyerMode(morseState) && Buttons::volButton.pin == 0)    // FN on GPIO0 (classic): DTR may hold it
         Buttons::volButton.clicks = MorseWinKeyer::filterFn(Buttons::volButton.clicks, Buttons::volButton.depressed);
 #endif
     if (Buttons::modeButton.clicks || Buttons::volButton.clicks) {
@@ -1526,7 +1538,7 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
                   }
 
 #ifdef CONFIG_WINKEYER
-              } else if (morseState == morseWinKeyer) {     // WinKeyer: stop what the host is sending (and tune)
+              } else if (isWinKeyerMode(morseState)) {     // WinKeyer: stop what the host is sending (and tune)
                     MorseWinKeyer::stopSending();
 #endif
               } else if (morseState == morseKeyer || morseState == morseTrx || morseState == kipKeyer) {  // when Keyer is active, we select a keyer memory
@@ -1549,16 +1561,24 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
                 // ... and open ON the first rig item. Putting them first in the array is not enough: the menu
                 // resumes at the last entry the operator used, so without this they are first in a list nobody
                 // is looking at.
-                if (morseState == kipKeyer && MorseKipKeyer::rigCfgAvailable())
+#ifdef REMOTE_WINKEYER
+                if (morseState == morseRemoteWinKeyer)          // the same choice for Remote WinKeyer (R8)
+                    MorsePreferences::setCurrentOptions(
+                        MorseKipKeyer::rigCfgAvailable() ? MorsePreferences::remoteWinKeyerRigOptions
+                                                         : MorsePreferences::remoteWinKeyerOptions,
+                        MorseKipKeyer::rigCfgAvailable() ? MorsePreferences::remoteWinKeyerRigOptionsSize
+                                                         : MorsePreferences::remoteWinKeyerOptionsSize);
+#endif
+                if ((morseState == kipKeyer || morseState == morseRemoteWinKeyer) && MorseKipKeyer::rigCfgAvailable())
                     MorsePreferences::startPreferencesAt(posRigDelay);
 #endif
 #ifdef CONFIG_WINKEYER
-                if (morseState == morseWinKeyer)
+                if (isWinKeyerMode(morseState))
                     MorseWinKeyer::beforePreferences();                     // key up, and no host speed may be persisted
 #endif
                 MorsePreferences::setupPreferences(MorsePreferences::menuPtr);                               // double click shows the preferences menu (true would select a specific option only)
 #ifdef CONFIG_WINKEYER
-                if (morseState == morseWinKeyer)
+                if (isWinKeyerMode(morseState))
                     MorseWinKeyer::afterPreferences();
 #endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
@@ -1589,7 +1609,7 @@ MorseBluetooth::tick();                           // no-op unless the keyboard r
         switch (encoderState) {
           case speedSettingMode:
 #ifdef CONFIG_WINKEYER
-                                  if (morseState == morseWinKeyer) {      // E1: the encoder is the speed pot
+                                  if (isWinKeyerMode(morseState)) {       // E1: the encoder is the speed pot
                                     MorseWinKeyer::encoderSpeed(t);
                                     break;
                                   }
@@ -2020,13 +2040,13 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
 
                                    ++charCounter;                         // count this character
                                    // if we have seen 12 chars since changing speed, we write the config to preferences (speed and left & right thresholds)
-                                   if (charCounter == 12 && morseState != morseWinKeyer) {   // WinKeyer: nothing reaches NVS (D7)
+                                   if (charCounter == 12 && !isWinKeyerMode(morseState)) {   // WinKeyer: nothing reaches NVS (D7)
                                         MorsePreferences::fireCharSeen(false);
                                    }
                                    if (MorsePreferences::pliste[posACS].value > 0)
                                         acsTimer = millis() + (MorsePreferences::pliste[posACS].value + 1) * ditLength; // prime the ACS timer
                                    if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx
-                                       || morseState == kipKeyer || morseState == morseWinKeyer)
+                                       || morseState == kipKeyer || isWinKeyerMode(morseState))
                                       // interWordTimer = millis() + 5*ditLength;
                                       interWordTimer = millis() + ditLength * (MorsePreferences::pliste[posInterWordSpace].value -1);
                                    else if (morseState == echoTrainer)
@@ -3092,7 +3112,7 @@ void fetchNewWord() {
 
 void displayDecodedMorse(String symbol, boolean keyed) {
 #ifdef CONFIG_WINKEYER
-    if (morseState == morseWinKeyer)
+    if (isWinKeyerMode(morseState))
         MorseWinKeyer::paddleChar(symbol);      // paddle echo to the host (trims the decoder's space itself)
 #endif
 #if defined(CONFIG_CW_GAME) || defined(CONFIG_QSO_BOT)
@@ -3235,7 +3255,7 @@ void displayCWspeed() {
   else if (morseState == morseTrx )
     sprintf(numBuf, "r%2is", audioDecoder.getWpm());
 #ifdef CONFIG_WINKEYER
-  else if (morseState == morseWinKeyer)
+  else if (isWinKeyerMode(morseState))
     sprintf(numBuf, MorseWinKeyer::isOpen() ? "Host" : "    ");     // a WinKeyer host session is open
 #endif
   else sprintf(numBuf, "    ");
@@ -3320,8 +3340,8 @@ void updateTopLine() {
   else if ((morseState == wifiTrx) || (morseState == morseGenerator  && MorsePreferences::pliste[posLoraCwTransmit].value == 1))
       MorseOutput::dispWifiLogo();
 #ifdef CONFIG_M32KIP
-  else if (morseState == kipKeyer && MorseKipKeyer::linked())
-      MorseOutput::dispWifiLogo();                      // Remote Keyer: the logo is there while the rig answers
+  else if ((morseState == kipKeyer || morseState == morseRemoteWinKeyer) && MorseKipKeyer::linked())
+      MorseOutput::dispWifiLogo();                      // Remote Keyer / Remote WinKeyer: there while the rig answers
 #endif
 #ifdef CONFIG_BLE_SERIAL
   else if (bleProtocol)                                 // one slot, so RF wins: "I am transmitting"
@@ -4362,6 +4382,16 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
       sidetone = MorseWinKeyer::sidetoneWanted();
   }
 #endif
+#ifdef REMOTE_WINKEYER
+  // Remote WinKeyer keys the remote rig, never the local jack (D12d): noTx stays true, as it does for Remote Keyer,
+  // whatever Key ext TX says. The host's pin config and the paddle watchdog/mute gate the remote line instead
+  // (kipEdge below), and the sidetone follows the host as in WinKeyer.
+  boolean kipEdge = true;
+  if (morseState == morseRemoteWinKeyer) {
+      sidetone = MorseWinKeyer::sidetoneWanted();
+      kipEdge = fromHere && MorseWinKeyer::txWanted();
+  }
+#endif
 
 //DEBUG("keyOut: " + String(on) + String(fromHere) + String(noTx));
   if (on) {
@@ -4379,6 +4409,9 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
           MorseOutput::pwmTone(extPitch, volume, MorsePreferences::pliste[posExtAudioOnDecode].value);      // set to true if you want external audio out!
         }
 #ifdef CONFIG_M32KIP
+#ifdef REMOTE_WINKEYER
+      if (kipEdge)                      // a key-up always passes (below), so a gate that closes mid-mark cannot hold the rig
+#endif
       MorseKipKeyer::noteEdge(true);    // Remote Keyer: the edge is timestamped exactly where the local
 #endif                                  // TX line would move, which is what spec §10.1 asks for source 0
       keyTransmitter(noTx);
