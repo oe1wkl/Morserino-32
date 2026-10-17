@@ -427,3 +427,18 @@ as) the local key line. Nothing is designed yet. Questions to settle when both b
   top menu would then have to choose between WinKeyer and Remote WinKeyer (or stay local only).
 - **Menu label** "Remote WinKeyer" is 15 characters - longer than the 12-character labels the OLED
   menu is hand-fitted to (`"Update Firmw"`); needs a shorter form or a check on both displays.
+
+**Willi, 2026-10-17 (direction, not yet a decision):**
+
+- V10 gets the menu entry **Remote WinKeyer** (WinKeyer keying a remote rig over M32KIP).
+- The Pocket's auto-detect must know which of the two to start when a host opens a session at the
+  top menu. Two ways: ask on the device at that moment, or a **preference** - Willi leans towards
+  the preference. What each costs:
+  - *Preference* (e.g. "WinKeyer → local / remote"): a new `prefPos` (enum + `pliste[]` +
+    `prefName[]` in step, CLAUDE.md rule 10), one NVS entry, voice clips for its name and values
+    (CLAUDE.md §8). No timing risk: the revision byte goes out at once as today.
+  - *Asking on the device*: the Host Open reply must still go out within CQRLOG's 50 ms, so the
+    question can only come after the reply, while the host already sends its settings; an
+    unanswered question needs a timeout and a default, and a blind operator needs it spoken.
+    More moving parts for a choice that rarely changes.
+
