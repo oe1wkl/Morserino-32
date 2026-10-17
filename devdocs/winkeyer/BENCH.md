@@ -212,9 +212,10 @@ baud change** (so the classic needs no separate test). All checks passed.
       WK3-mode handling stays in the firmware (RUMlog uses it when it sees 31; harmless otherwise).
 - Seen during this test: the Pocket rebooted when N1MM started - the first start after its DTR/RTS
   settings had been switched back from the classic's (both On) to the Pocket's (DTR On, RTS Off).
-  Most likely the ESP32-S3 USB-Serial-JTAG's hardware reset on a DTR/RTS sequence (the same
-  mechanism the installer uses; it works even from deep sleep, which would explain a "wake" without
-  FN if the Pocket had timed out at the menu). Harmless - the auto-detect connects after the boot.
+  The menu was showing (not asleep, so not Time Out): the ESP32-S3 USB-Serial-JTAG's hardware reset
+  on a DTR/RTS sequence (the same mechanism the installer uses), triggered by N1MM switching the
+  lines over. Harmless - the auto-detect connects after the boot; not preventable in firmware
+  without also breaking the installer's reset.
 
 ## 6. Accessibility Edition
 
