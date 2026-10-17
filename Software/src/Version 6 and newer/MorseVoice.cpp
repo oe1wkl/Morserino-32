@@ -14,6 +14,7 @@
 #ifdef CONFIG_AUDIO_A11Y
 #include "MorseOutput.h"
 #include "MorsePreferences.h"   // sidetoneVolume for the alarm; pulls in SPIFFS via morsedefs.h
+#include "MorseWinKeyer.h"     // ownsSerial(): no diagnostics on a WinKeyer host's port
 #include "voice_clips.h"   // generated: voiceLookup[] (UI string -> clip id), sorted by strcmp
 #include <string.h>
 #ifdef CONFIG_AUDIO_A11Y_DIAG
@@ -227,6 +228,9 @@ void MorseVoice::tick() {
         if ((int32_t)(millis() - warnNextAt) >= 0) {
             if (warnStep >= WARN_TONE_STEPS) {
                 warnTonesOff();
+#ifdef CONFIG_WINKEYER
+                if (!MorseWinKeyer::ownsSerial())
+#endif
                 Serial.println("Voice alarm: finished");
             } else {
                 const uint16_t hz = WARN_TONES[warnStep].hz;
@@ -345,6 +349,9 @@ void MorseVoice::warnClipStore() {
     // Only ever printed when something is already wrong, like the probe's own line above.
     // It separates "never got here" from "sounded it and you heard nothing", which are
     // very different bugs: the first is detection, the second is the audio path.
+#ifdef CONFIG_WINKEYER
+    if (!MorseWinKeyer::ownsSerial())
+#endif
     Serial.println("Voice alarm: " + String(WARN_TONE_STEPS) + " tone steps, volume " +
                    String(MorsePreferences::sidetoneVolume));
 #endif

@@ -34,11 +34,12 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=2ed518b3b1b0 v=9 -->
+<!-- WHATSNEW:BEGIN en=138a3941dbe1 v=9 -->
 What is new in Version 9?
 
 **V 9.2**
 
+-   New mode **Transceiver → WinKeyer**: the Morserino behaves like a K1EL WinKeyer (WK2), so logging and contest programs (N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog, CQRLOG, fldigi/flwkey, …) can send CW through it over USB. It keys a transmitter connected to "to Tx" (unless **Key ext TX** is Never), you can break in with the paddle at any time, the ENCODER works as the WinKeyer's speed control, and a click on the ENCODER stops what the program is sending. Keyer mode, paddle polarity, ACS, latency and the side tone pitch stay the Morserino's own settings – the corresponding settings in the program have no effect; everything else about the program's sending (speed, weighting, ratio, compensation, Farnsworth, contest spacing, …) comes from the program, and nothing it sets is stored. The WinKeyer's messages 1 to 6 play the Morserino's keyer memories 1 to 6. There is no PTT output. On the 1st and 2nd edition, start the mode before the program (the USB port then runs at the WinKeyer's 1200 baud); on the M32 Pocket a program can also open the WinKeyer while the Morserino is in the main menu, and the mode starts by itself.
 -   M32 Pocket, Accessibility Edition only: the device now says the new speed whenever you change it - the number spoken as you turn the encoder, so a blind operator can pace their practice without asking anyone. Sweeping the encoder fast speaks only the settled value: any announcement already playing is cut when the newer value comes in, so you never hear both the initial and the final speed with everything between swallowed. The CW generator holds silent while the announcement plays (the shared audio path would otherwise turn CW into clicks) and picks the next element up at the new speed. If you start keying during an announcement, the announcement stops at once, so whatever you key is always heard as side tone - also when it goes out to a transmitter. This works in the training modes, including the Echo Trainer's automatic speed step after each word, and in the QSO Bot, whose CW pauses for the announcement in the same way.
 -   M32 Pocket, Accessibility Edition only: whenever you leave a training mode and land back in the top menu, the device tells you how the battery is doing — **high**, **medium**, **low**, or **charging** (plus **on USB power** with no battery, and **battery fault** for the rare fault state). This matters specifically here, because the audio codec is the first thing to give up on this build when the cell sags: a blind operator can be left with a working device that says nothing at all, and this warning fires far enough above the codec's cliff to give time to plug in. The message is announced once per mode-to-menu return, not repeated while navigating the menu itself.
 
@@ -1550,6 +1551,9 @@ with a protocol like iCW (CW over Internet) or VBand. In all transceiver
 cases the CW keyer and a receiver or CW decoder are active at the same
 time.
 
+* **WinKeyer** lets a logging or contest program on a computer send CW
+through the Morserino, as it would through a K1EL WinKeyer.
+
 ::: {.classic}
 ### LoRa Trx
 
@@ -1694,6 +1698,159 @@ decoded and displayed on the screen. An external transceiver connected
 through the connector "to Tx" will be keyed by the keyer, or you can
 use the audio output on the Line-Out connector to feed it into a
 computer, or into an FM transceiver.
+
+### WinKeyer
+
+In this mode the Morserino-32 behaves like a **WinKeyer** – the
+CW keyer by K1EL that most logging and contest programs know how to
+drive (for example N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog,
+CQRLOG, or fldigi with flwkey). The program sends its text and commands
+over USB; the Morserino turns them into Morse code, keys a transmitter
+connected to "to Tx", and plays the side tone. You can break in with
+the paddle at any time.
+
+**Setting up the program:** choose a WinKeyer (WK2) as the CW keyer,
+and the Morserino's USB serial port as its port (the same port the
+Configuration Tool uses).
+
+[**flwkey on a Mac with the M32 Pocket:** flwkey leaves every port
+whose name contains "modem" out of its list, and on a Mac the M32
+Pocket's port is called `/dev/cu.usbmodem…`. Enter the port by hand
+instead: quit flwkey (⌘Q), open the file `.flwkey/flwkey.prefs` in
+your home folder with a text editor, change the line
+`serial_port_name:NONE` to the Pocket's port (for example
+`serial_port_name:/dev/cu.usbmodem12301` – the Terminal command
+`ls /dev/cu.usbmodem*` shows the name), save, and start flwkey again.
+Do not open flwkey's port dialog afterwards; it would set the port
+back.]{.pocket .pocket-a11y}
+
+[On the 1st and 2nd edition Morserino, first start **Transceiver →
+WinKeyer** on the Morserino, then start the program (or tell it to
+connect). While the mode runs, the USB port works at 1200 baud, as a
+WinKeyer does (or 9600, if the program asks for it); when you leave the
+mode it goes back to its normal speed.]{.classic}
+
+[On the M32 Pocket you can do the same – or simply leave the Morserino
+in the main menu: when the program opens the WinKeyer, the Morserino
+switches to WinKeyer mode by itself, and returns to the menu when the
+program closes it again. This only happens in the main menu, never in a
+running mode, so a program cannot take over while you are using the
+Morserino. (On the 1st and 2nd edition this is not possible: there the
+USB port has to be switched to the WinKeyer's speed first.)]{.pocket .pocket-a11y}
+
+While the mode runs, the USB port belongs to the logging program: the
+Configuration Tool and the other utilities cannot use it until you
+leave the mode.
+
+The preference **Key ext TX** must not be **Never**; any other value
+lets WinKeyer mode key the transmitter (the same as in CW Keyer).
+
+**While the mode runs:**
+
+-   [The top line shows **Host** while a program has the WinKeyer
+    open.]{.classic .pocket}[The Morserino says "Waiting for host" when
+    the mode starts, "Host connected" when a program opens the WinKeyer
+    and "Host closed" when it closes it.]{.pocket-a11y} The text the
+    program sends is shown as it is being sent.
+-   **ENCODER (turn):** the speed – the ENCODER is the WinKeyer's
+    speed control. The program is told when you turn it. As with a real
+    WinKeyer, a speed set by the program wins until the program
+    switches back to the speed control (most programs have a setting
+    for that).
+-   **ENCODER (click):** stops whatever the program is sending, also a
+    tune (key down) the program has started.
+-   **Paddle:** breaks in. The program's sending stops at once, what
+    was still waiting to be sent is dropped, and the program is told –
+    so you can, for example, stop a repeating CQ with the paddle. One
+    word space after you stop keying, the Morserino accepts text from
+    the program again. If the program asks for it, what you key is
+    passed on to it as text, with a space after each word gap.
+-   FN, the double click (preferences) and the long press (leave the
+    mode) work as in every other mode. Leaving the mode ends the
+    program's connection; most programs then report that the WinKeyer
+    is gone.
+-   While a program has the WinKeyer open, the Morserino does not
+    switch itself off (see **Time Out**).
+
+**What the Morserino keeps for itself:** the keyer mode (Iambic A or B,
+Ultimatic, Non-Squeeze), **Paddle Polarity**, **ACS**, **Latency** and
+the side tone pitch are always the Morserino's own preferences. The
+corresponding settings in the program – for example N1MM's "Reverse
+paddles", "Keying mode" and "Sidetone frequency" on its Winkey tab –
+have **no effect** on the Morserino; set them on the Morserino instead.
+Everything to do with the program's own sending comes from the
+program: speed, weighting, dit/dah ratio, keying compensation, first
+extension, Farnsworth spacing, letter spacing, contest spacing,
+"paddle only side tone" and whether the transmitter is keyed at all.
+Nothing the program sets is stored on the Morserino; when the program
+closes the WinKeyer, or you leave the mode, everything is as before.
+
+The program can also switch the side tone off, or limit it to the
+paddle, for operators who listen to their transceiver's own side tone.
+**If the Morserino keys but stays silent, look at the program's side
+tone setting**: set it to any frequency (the Morserino uses its own
+pitch regardless), and switch off "paddle only side tone" if you want
+to hear the program's CW too.
+
+**What is not supported:** the Morserino has no PTT output, so the
+program's PTT settings (lead-in, tail, PTT on/off) are ignored – use
+your transceiver's QSK or VOX, or let the program switch PTT over CAT.
+There is also no second key output and there are no WinKeyer
+pushbuttons; high-speed CW (HSCW), RTTY and the "pointer" commands are
+not supported either. The WinKeyer's messages 1 to 6 play the
+Morserino's keyer memories 1 to 6 (see **CW Memory Keyer**).
+
+**DTR and RTS:** some programs let you choose how they set these two
+lines of the serial port. Never use "RTS on, DTR off" – that holds the
+Morserino in reset. [On the 1st and 2nd edition, set **both on**:
+some programs only receive the Morserino's answers with DTR on (N1MM
+on Windows got no answer at all with both off). Some programs also hold
+the FN button down for as long as they have the port open – N1MM, and
+CQRLOG and flwkey, which always use "DTR on, RTS off". The Morserino
+recognises this and ignores FN until the program lets go, so it does no
+harm (it never starts **Audio In Adj.** or scroll mode by itself), but
+FN cannot be used meanwhile: **set the volume before the program
+connects.** When a program connects, the ENCODER is put back to setting
+the speed. For the same reason, a long press of FN in WinKeyer mode and
+in the main menu only takes effect when you release it. One thing the Morserino cannot
+protect against: if you switch it on while such a program has the port
+open, it starts in its programming mode instead and the screen stays
+dark. Close the program (or unplug the USB cable), then switch the
+Morserino off and on again.]{.classic}[On the M32 Pocket, **DTR must
+be on**: its USB port only exchanges data with a program that switches
+DTR on, so with both lines off the program gets no answer at all. "DTR
+on, RTS off" is the best choice. The first time a program switches the
+lines over, the Pocket may restart once; that is harmless.]{.pocket .pocket-a11y}
+
+#### Example: setting up N1MM Logger+ {-}
+
+N1MM Logger+ (Windows) has a few settings that are easy to get wrong.
+They are all in the Configurer (**Config → Configure Ports, Mode
+Control, Winkey, etc.**):
+
+-   **Hardware tab:** in a free row, choose the Morserino's port (for
+    example COM7) and tick **CW/Other**. Click **Set** in that row, tick
+    **WinKey**, and set [**DTR (pin 4)** to **Always On** and **RTS
+    (pin 7)** to **Always Off**]{.pocket .pocket-a11y}[**DTR (pin 4)**
+    and **RTS (pin 7)** both to **Always On**]{.classic}. Confirm with
+    **OK**.[ While N1MM is connected it holds the Morserino's FN button
+    down, so FN cannot be used: set the volume before you start N1MM
+    (see **DTR and RTS** above).]{.classic}
+-   **Leave the Configurer with its OK button.** Closing the window any
+    other way throws the settings away. On a small screen the buttons at
+    the bottom of the window can be out of sight; move the window up to
+    reach them.
+-   **Restart N1MM after changing DTR or RTS.** N1MM sets these lines
+    only when it opens the port, at start-up.
+-   **Winkey tab:** keep **Sidetone** ticked and **untick "Paddle only
+    sidetone"** (ticked by default), otherwise the Morserino sends
+    N1MM's CW without a sound. N1MM sends these settings only when it
+    connects, so restart N1MM after changing them as well. **Keying
+    Mode**, **Autospace**, **Reverse Paddles** and **Sidetone
+    Frequency** have no effect on the Morserino (see above); **Lead
+    Time**, **Tail Time**, **Hang Time** and **Pin 5 Function** concern
+    PTT, which the Morserino does not have. With **Use Winkeyer Speed
+    Pot**, N1MM takes its sending speed from the Morserino's ENCODER.
 
 ### QSO Bot
 

@@ -133,6 +133,136 @@ static void test_second_long_press() {
     check(seen == -1, "the second long press reports -1");
 }
 
+// --- HeldLineFilter: FN held down by a serial line (classic M32, FN = GPIO0) ---------------
+// Drives a button through the filter exactly as the firmware does: Update(), then filter(), every
+// stepMs. Returns the first non-zero result and when it came (0/0 if none by `until`).
+static Replay runFiltered(ClickButton& b, HeldLineFilter& f, unsigned long down, unsigned long up,
+                          unsigned long until, unsigned long from = 0, unsigned long stepMs = 5) {
+    for (unsigned long t = from; t <= until; t += stepMs) {
+        sim_millis_value = t;
+        sim_pin_value    = (t >= down && t < up) ? 0 : 1;
+        b.Update();
+        int c = f.filter(b.clicks, b.depressed);
+        if (c) return { c, t };
+    }
+    return { 0, 0 };
+}
+
+static void test_filter_finger_long_press() {
+    printf("filter: a finger's long press (1.5 s) acts on release, not after 1 s\n");
+    ClickButton b(0); HeldLineFilter f;
+    Replay r = runFiltered(b, f, 100, 1600, 3000);
+    check(r.ownerSaw == -1, "the long press is delivered");
+    check(r.ownerAt >= 1600, "at the release, not while held");
+}
+
+static void test_filter_line_hold_ignored() {
+    printf("filter: a line holding the pin for 10 s does nothing, even at release\n");
+    ClickButton b(0); HeldLineFilter f;
+    Replay r = runFiltered(b, f, 100, 10100, 11000);
+    check(r.ownerSaw == 0, "no gesture at all");
+}
+
+static void test_filter_down_at_reset() {
+    printf("filter: a press already down at reset() is a line\n");
+    ClickButton b(0); HeldLineFilter f;
+    for (unsigned long t = 0; t <= 400; t += 5) {          // pin goes down before the filter starts
+        sim_millis_value = t; sim_pin_value = (t >= 100) ? 0 : 1; b.Update();
+    }
+    f.reset();
+    Replay r = runFiltered(b, f, 100, 1800, 2500, 405);     // released at 1.8 s: < 3 s, still ignored
+    check(r.ownerSaw == 0, "ignored until released");
+    Replay r2 = runFiltered(b, f, 2600, 2700, 3500, 2505);  // then a normal short click
+    check(r2.ownerSaw == 1, "the next short click gets through");
+}
+
+static void test_filter_short_and_double() {
+    printf("filter: short and double clicks pass unchanged\n");
+    ClickButton b(0); HeldLineFilter f;
+    Replay r = runFiltered(b, f, 0, 100, 900);
+    check(r.ownerSaw == 1, "short click = 1");
+    ClickButton b2(0); HeldLineFilter f2;
+    int seen = 0;
+    for (unsigned long t = 0; t <= 900; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = ((t < 80) || (t >= 180 && t < 260)) ? 0 : 1;
+        b2.Update();
+        int c = f2.filter(b2.clicks, b2.depressed);
+        if (c) { seen = c; break; }
+    }
+    check(seen == 2, "double click = 2");
+}
+
+static void test_filter_written_back_once() {
+    printf("filter: the delivered long press, written back into clicks, is not repeated\n");
+    // What loop() does in WinKeyer mode: clicks = filter(clicks, depressed), every iteration.
+    // Update() does not clear a -1 it did not produce until the multi-click window has passed,
+    // so the next iterations would see the same -1 - the bench fault (Audio In Adj. starting and
+    // stopping at once on the classic, 2026-10-16).
+    ClickButton b(0); HeldLineFilter f;
+    int delivered = 0;
+    for (unsigned long t = 0; t <= 2500; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = (t >= 100 && t < 1600) ? 0 : 1;
+        b.Update();
+        b.clicks = f.filter(b.clicks, b.depressed);
+        if (b.clicks == -1) delivered++;
+    }
+    check(delivered == 1, "exactly one long press over the whole release window");
+}
+
+static void test_filter_short_line_marked() {
+    printf("filter: a 2 s line hold, marked while a host connects, does nothing\n");
+    // N1MM opening the classic's port: DTR on / RTS off for ~2 s, then both off (bench 2026-10-17).
+    ClickButton b(0); HeldLineFilter f;
+    int delivered = 0;
+    for (unsigned long t = 0; t <= 3500; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = (t >= 100 && t < 2100) ? 0 : 1;
+        b.Update();
+        if (t >= 300 && t < 2300 && b.depressed) f.markLine();   // what filterFn() does in the window
+        b.clicks = f.filter(b.clicks, b.depressed);
+        if (b.clicks) delivered++;
+    }
+    check(delivered == 0, "no long press delivered at the release");
+}
+
+static void test_filter_mark_while_up_is_harmless() {
+    printf("filter: a mark while the button is up does not touch a later finger press\n");
+    ClickButton b(0); HeldLineFilter f;
+    sim_millis_value = 0; sim_pin_value = 1; b.Update();
+    f.markLine();                                   // marked, but nothing is pressed
+    f.filter(b.clicks, b.depressed);
+    Replay r = runFiltered(b, f, 500, 2000, 3000, 5);
+    check(r.ownerSaw == -1 && r.ownerAt >= 2000, "the 1.5 s finger press is delivered on release");
+}
+
+static void test_filter_line_twitch_no_click() {
+    printf("filter: a 300 ms line twitch, marked while a host connects, yields no click\n");
+    // N1MM connecting to the classic with both lines 'Always On' (bench 2026-10-17): the line twitched,
+    // ClickButton reported a single FN click after the release, and the encoder went to volume.
+    ClickButton b(0); HeldLineFilter f;
+    int seen = 0;
+    for (unsigned long t = 0; t <= 1500; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = (t >= 100 && t < 400) ? 0 : 1;
+        b.Update();
+        if (b.depressed) f.markLine();
+        b.clicks = f.filter(b.clicks, b.depressed);
+        if (b.clicks) { seen = b.clicks; break; }
+    }
+    check(seen == 0, "no click delivered");
+    int later = 0;                                   // and a real click right afterwards still counts
+    for (unsigned long t = 1600; t <= 2600; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = (t >= 1700 && t < 1800) ? 0 : 1;
+        b.Update();
+        int c = f.filter(b.clicks, b.depressed);
+        if (c) { later = c; break; }
+    }
+    check(later == 1, "a finger's click a moment later is delivered");
+}
+
 int main() {
     test_long_click_is_delivered_once();
     test_long_click_still_held();
@@ -141,6 +271,14 @@ int main() {
     test_double_click_unaffected();
     test_long_then_new_press();
     test_second_long_press();
+    test_filter_finger_long_press();
+    test_filter_line_hold_ignored();
+    test_filter_down_at_reset();
+    test_filter_short_and_double();
+    test_filter_written_back_once();
+    test_filter_short_line_marked();
+    test_filter_mark_while_up_is_harmless();
+    test_filter_line_twitch_no_click();
     printf("\n%s\n", failures ? "FAILURES" : "all ok");
     return failures ? 1 : 0;
 }

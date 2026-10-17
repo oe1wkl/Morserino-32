@@ -340,6 +340,8 @@ Golf
 Hardware Configuration
 Hardware configuration
 Headphone Output
+Host closed
+Host connected
 Hotel
 hundred
 Iambic A
@@ -524,6 +526,7 @@ Victor
 VK/ZL
 volts
 Volume
+Waiting for host
 Whiskey
 Wide
 WiFi Functions
@@ -533,6 +536,8 @@ WiFi Transmit ON
 WiFi Trx
 WiFi Tx OFF
 WiFi Tx ON
+Win Keyer
+WinKeyer
 Word by word
 Word Length
 words per minute

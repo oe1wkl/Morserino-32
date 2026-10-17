@@ -70,6 +70,20 @@ Trainer but **select keyer memory** in Keyer/CW-Trx. These modes have no
 conflicting need, the meaning is stable *within* each mode, and the long-press
 escape is unaffected. This is an accepted split, not drift — do not "unify" it.
 
+**WinKeyer** (Transceiver → WinKeyer) takes the same slot for its one momentary
+action: the single click **stops what the host program is sending** (clears its
+buffer, ends a tune), the device-side equivalent of the paddle break-in. Keyer
+memories are not offered there — the host plays them (admin Send Message 1–6).
+The encoder keeps its speed role (reported to the host as the WinKeyer speed
+pot); FN, double click and long press are unchanged
+(`devdocs/winkeyer/DESIGN.md`, E1) - with one classic-only exception: FN is GPIO0
+there, which a logger's DTR can hold down, so in this mode an FN long press acts on
+**release** (a hold of more than 3 s, or one already there at mode start, is a line
+and is ignored). Likewise the top menu ignores an FN that was already down on
+arrival until it has been released, and on the classic its FN long press (Audio In
+Adj.) also acts on release, with the same 3-s line rule (`HeldLineFilter`,
+`ClickButton.h`; `devdocs/winkeyer/BENCH.md`).
+
 ## 2. Global live adjustments — speed, volume, pitch
 
 These are exercised in every mode, so they must be identical everywhere:

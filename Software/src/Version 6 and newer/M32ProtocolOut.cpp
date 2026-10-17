@@ -13,6 +13,7 @@
  *****************************************************************************************************************************/
 
 #include "M32ProtocolOut.h"
+#include "MorseWinKeyer.h"     // ownsSerial(): no M32 bytes on a port a WinKeyer host is reading
 #ifdef CONFIG_BLE_SERIAL
 #include "MorseBleSerial.h"     // confined to the .cpp — keeps MorseJSON.cpp free of a header cycle
 #endif
@@ -25,7 +26,11 @@ size_t M32Tee::write(uint8_t c) {
 
 size_t M32Tee::write(const uint8_t *buffer, size_t size) {
 #ifdef CONFIG_BLE_SERIAL
-	if (target != M32Target::BleOnly && m32protocol)
+	if (target != M32Target::BleOnly && m32protocol
+#ifdef CONFIG_WINKEYER
+	    && !MorseWinKeyer::ownsSerial()
+#endif
+	   )
 		Serial.write(buffer, size);
 	if (target == M32Target::BleOnly)              // targeted: answers that client's own input, so
 		MorseBleSerial::txEnqueue(buffer, size);   // deliver even pre-handshake (linkUp checked inside)
@@ -36,6 +41,10 @@ size_t M32Tee::write(const uint8_t *buffer, size_t size) {
 	// without BLE the tee degenerates to a plain forward: every call site is
 	// only reachable under an m32protocol gate, so behavior is byte-identical
 	// (M32Target::UsbOnly narrows nothing when USB is the only transport)
+#ifdef CONFIG_WINKEYER
+	if (MorseWinKeyer::ownsSerial())
+		return size;
+#endif
 	return Serial.write(buffer, size);
 #endif
 }
@@ -68,6 +77,9 @@ void M32Tee::flushReply() {
 }
 
 void M32Tee::echo(const String& s) {
+#ifdef CONFIG_WINKEYER
+	if (!MorseWinKeyer::ownsSerial())   // the WinKeyer host would read the characters as echo bytes
+#endif
 	Serial.print(s);            // today's "Serial Output" behavior, handshake irrelevant
 #ifdef CONFIG_BLE_SERIAL
 	if (bleProtocol)            // cheap gate only — txEnqueueEcho does the full linkUp() check

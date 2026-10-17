@@ -346,7 +346,11 @@ enum morserinoMode              // the states the morserino can be in - selected
                                   // the sidetone - like the games and the bot it is absent from every
                                   // Key-Ext-Tx case in keyOut(), so the local TX stays silent while the
                                   // edge timings go to the remote Rig. See MorseKipKeyer.h.
-      shutDown, measureNF, invalid
+      shutDown, measureNF, invalid,
+      morseWinKeyer               // WinKeyer emulation (CONFIG_WINKEYER): KEYS THE TRANSMITTER for a
+                                  // logging program, so it is TX-capable on purpose - unlike morseGame /
+                                  // morseQsoBot it is included in keyOut()'s external-TX gate. It never
+                                  // transmits over LoRa/WiFi. Appended so no existing value moves.
   };
 
 // Base menu count: 46 entries (indices 0..45, classic M32 with LoRa, no Games, no QSO Bot)
@@ -373,6 +377,9 @@ const uint8_t menuN = 46
 #endif
 #ifdef CONFIG_M32KIP
     + 2    // Remote Rig + Remote Keyer — M32KIP, see MorseKipRig.h and MorseKipKeyer.h
+#endif
+#ifdef CONFIG_WINKEYER
+    + 1    // WinKeyer — Transceiver submenu, see MorseWinKeyer.h
 #endif
     ;
 
@@ -421,6 +428,10 @@ enum menuNo
                          // and spliced into the Transceiver ring in MorseMenu.cpp.
         , _kipKeyer      // "Remote Keyer" - the operator's end. Enum order is not ring order: the ring
                          // puts the Keyer first, which menuNav expresses, not this list.
+#endif
+#ifdef CONFIG_WINKEYER
+        , _winKeyer     // "WinKeyer" - Transceiver submenu (after iCW/Ext Trx); appended after the
+                        // M32KIP entries, which the V10 line had first
 #endif
    };
 

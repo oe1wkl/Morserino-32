@@ -175,6 +175,11 @@ KIP_KEYER_WORDS = ["Connecting", "Calling rig", "Linked to rig", "No pass phrase
 BATTERY_WORDS = ["battery high", "battery medium", "battery low", "battery charging",
                  "on USB power", "battery fault"]
 
+# WinKeyer mode (MorseWinKeyer.cpp, MorseMenu.cpp's _winKeyer start display). The host session's
+# state is drawn, not table-driven, and the protocol text stream cannot carry it: the WinKeyer host
+# owns the serial port while the mode runs, so there is no M32 protocol session to speak through.
+WINKEYER_WORDS = ["Waiting for host", "Host connected", "Host closed"]
+
 # User-editable pronunciation overrides (spoken_overrides.tsv): firmware string -> spoken text.
 # Highest priority -- lets the maintainer hand-tune how any entry / option / label is pronounced.
 USER_OVERRIDES = {}
@@ -295,7 +300,7 @@ phrase_texts = (
     pref_labels +
     option_values +
     [spoken_of(s, ACTION_SPOKEN) for s in action_items] +
-    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS
+    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS + WINKEYER_WORDS
 )
 # NOTE: a non-table word list must appear TWICE -- here, which schedules the clip for
 # rendering, and in the fw_add() loop below, which maps the firmware string to that clip.
@@ -391,7 +396,7 @@ for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spok
 for lbl in pref_labels: fw_add(lbl, lbl)
 for v in option_values: fw_add(v, v)
 for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
-for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
+for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS + WINKEYER_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
 
 def cstr(s): return s.replace("\\", "\\\\").replace('"', '\\"')
 HDR = os.path.join(SRC, "voice_clips.h")

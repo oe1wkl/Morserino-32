@@ -241,6 +241,10 @@ namespace MorsePreferences
 #ifdef CONFIG_QSO_BOT
   extern  prefPos qsoBotOptions[];
 #endif
+#ifdef CONFIG_WINKEYER
+  extern  prefPos winKeyerOptions[];
+  extern int winKeyerOptionsSize;
+#endif
   extern  prefPos decoderOptions[];
 #ifdef CONFIG_M32KIP
   extern  prefPos kipRigOptions[];

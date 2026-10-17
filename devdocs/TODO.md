@@ -129,7 +129,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
      (#189), `koch-preview-encoder-role` (#210/#211), `practice-stats-review-followups`,
      `pocket-erase-setup-screen` (also on origin), `review207`, `claude/optimistic-jones-457246`.
    - ~~`a11y-speed-battery` vs `tmp-squash`~~ — **checked 2026-10-11:** identical trees, so the
-     `tmp-squash` worktree was removed (its local branch still needs `git branch -D tmp-squash`);
+     `tmp-squash` worktree and branch were removed (2026-10-14);
      **`origin/a11y-speed-battery` survives.** Its work — the a11y edition speaking the new speed
      and the battery state on return to the menu, reported by a blind operator 2026-09-11 — was
      **never merged and is not in 9.1** — rebased as `a11y-speed-battery-v91` and **merged 2026-10-14**; both branches deleted (local and origin) 2026-10-14.
@@ -288,8 +288,20 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 5. **Book repo:** decide §5.7 — drop the "baseline" snapshot 1, keep only snapshot 2, add one
    sentence pointing to Reset Defaults (chapter 6's snapshot 1 overwrites the baseline).
 6. ~~`m32p_assembly.odt` says **TORX T8**~~ — **done 2026-10-05**: "a small Phillips (cross-head) screwdriver", ODT
-   edited and PDF re-exported (LibreOffice, 300 dpi images; 0.8 MB instead of 2.9 MB). Its own "Version 1.0,
-   14.08.2025" line is left for Willi.
+   edited and PDF re-exported (LibreOffice, 300 dpi images; 0.8 MB instead of 2.9 MB). Willi, 2026-10-14: only the
+   **prototypes** had TORX, every production unit is Phillips — so the wording is now right, not a compromise.
+   ~~Its own "Version 1.0, 14.08.2025" line is left for Willi~~ — bumped 2026-10-14 to **"Version 1.1, 05.10.2026"**
+   (the date of the content change), PDF re-exported. The export recipe, reverse-engineered from the committed PDF
+   (same image dimensions, and the same size to within the text delta — the default quality of 90 gives 1.07 MB):
+
+   ```
+   /Applications/LibreOffice.app/Contents/MacOS/soffice --headless --norestore \
+     -env:UserInstallation=file:///private/tmp/lo-profile \
+     --convert-to 'pdf:writer_pdf_Export:{"UseLosslessCompression":{"type":"boolean","value":"false"},"Quality":{"type":"long","value":"85"},"ReduceImageResolution":{"type":"boolean","value":"true"},"MaxImageResolution":{"type":"long","value":"300"}}' \
+     --outdir . m32p_assembly.odt
+   ```
+
+   Editing the ODT itself means rewriting `content.xml` inside the zip with `mimetype` kept first and STORED.
 
 ## F. People and community
 
@@ -367,3 +379,13 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 3. **QSO Bot:** only optional items left (T3.2 descriptors, T3.3 LLM/WiFi companion). Parked.
 4. **A11y roadmap:** blind-user feedback, high-contrast themes for partially sighted users, Phase 4 flash site.
 5. **`devdocs/HANDOFF.md`** still says "current focus: Fight the Pileup P6" — stale; rewrite.
+6. **WinKeyer emulation (idea, 2026-10-15):** `devdocs/winkeyer/DESIGN.md` — menu mode + always-on Pocket
+   auto-detect, USB only, PTT ignored, branch `winkeyer` off master (D1–D5 decided 2026-10-15); every WK2/WK3
+   command walked through (§7); D8 decided (messages → keyer memories, Vcc from battery). ~5–7 sessions + bench.
+   D6 (reply WK2 v23, try WK3 on the bench) and D7 (M32 owns paddle + pitch) decided after the logger research
+   in §8 — all decisions taken. **Implemented on branch `winkeyer`, merged to master and pushed 2026-10-16** (b87eabc):
+   bench-tested with `Software/tests/winkeyer/wk_bench.py` on the Pocket and a classic 2nd edition, results
+   and the open checks (loggers, key-line timing, rev 31) in `devdocs/winkeyer/BENCH.md`. Found on the bench
+   and fixed: the classic's FN is GPIO0, held down by loggers with DTR on / RTS off (now ignored).
+   **Still open:** N1MM (Windows) and the revision 23-vs-31 call, key-line timing with a logic analyser.
+   **Follow-up: Remote WinKeyer** with M32KIP (V10) — DESIGN.md §9.

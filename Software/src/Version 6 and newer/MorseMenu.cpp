@@ -25,6 +25,9 @@
 #include "MorseBleSerial.h"    // BLE Serial lifecycle: top-menu restart backstop, WiFi suspension
 #endif
 #include "MorseVoice.h"
+#include "MorseWinKeyer.h"
+
+extern volatile unsigned long lastForeignUsbRxMs;   // m32_v6.ino: non-protocol bytes or UART errors on USB
 
 #ifdef CONFIG_PRACTICE_STATS
 #include "MorsePracticeStats.h"
@@ -159,6 +162,9 @@ const char* const menuText[menuN]  = {
   , "Remote Rig"      // _kipRig       - M32KIP Rig unit, sibling of WiFi Trx / iCW Ext Trx
   , "Remote Keyer"    // _kipKeyer     - the operator's end (12 chars, the display budget)
 #endif
+#ifdef CONFIG_WINKEYER
+  , "WinKeyer"        // _winKeyer     - sibling of the Transceiver modes, after iCW/Ext Trx
+#endif
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
@@ -173,6 +179,40 @@ enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
 #endif
 
 bool EspNowIsActive = false;
+
+// The Transceiver ring after iCW/Ext Trx is a chain of entries appended at the enum's end (menuPtr
+// is persisted raw): iCW/Ext Trx -> WinKeyer -> Remote Keyer -> Remote Rig -> QSO Bot (or round to
+// the first Transceiver entry). WinKeyer keys a local transmitter like iCW/Ext Trx; the two M32KIP
+// entries stay together. Each piece is only there when built in, so these name the neighbours for
+// every combination of LoRa, QSO Bot, WinKeyer and M32KIP.
+#ifdef LORA_DISABLED
+  #define _trxFirst _trxWifi
+#else
+  #define _trxFirst _trxLora
+#endif
+#ifdef CONFIG_QSO_BOT
+  #define _afterTrxChain _qsoBot          // what follows the chain
+#else
+  #define _afterTrxChain _trxFirst
+#endif
+#ifdef CONFIG_M32KIP
+  #define _afterWk  _kipKeyer             // right of WinKeyer
+  #define _trxLast  _kipRig               // left of what follows the chain
+#else
+  #define _afterWk  _afterTrxChain
+  #ifdef CONFIG_WINKEYER
+    #define _trxLast _winKeyer
+  #else
+    #define _trxLast _trxIcw
+  #endif
+#endif
+#ifdef CONFIG_WINKEYER
+  #define _afterIcw  _winKeyer            // right of iCW/Ext Trx
+  #define _beforeKip _winKeyer            // left of Remote Keyer
+#else
+  #define _afterIcw  _afterWk
+  #define _beforeKip _trxIcw
+#endif
 
 const uint8_t menuNav [menuN] [5] = {                   // { level, left, right, up, down}
   { 0,0,0,0,0},                                         // 0 = dummy
@@ -205,46 +245,35 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {2,_kochEchoAbb,_kochEchoMixed,_kochEcho,0},          // 27 koch echo words  -e
   {2,_kochEchoWords,_kochEchoAdaptive,_kochEcho,0},     // 28 koch echo mixed  -e
   {2,_kochEchoMixed,_kochEchoRand,_kochEcho,0},         // 29 koch echo adaptive  -e
-// Remote Keyer and Remote Rig sit together between iCW/Ext Trx and whatever followed it, in every
-// combination of LORA_DISABLED and CONFIG_QSO_BOT. Two macros because the pair has two ends:
-// _KIP_AFTER_ICW is what iCW/Ext Trx now points right to, _KIP_BEFORE_NEXT is what the entry after
-// the pair points left to. Each reads as "x, unless the pair is now in the way".
-#ifdef CONFIG_M32KIP
-  #define _KIP_AFTER_ICW(x)   _kipKeyer
-  #define _KIP_BEFORE_NEXT(x) _kipRig
-#else
-  #define _KIP_AFTER_ICW(x)   x
-  #define _KIP_BEFORE_NEXT(x) x
-#endif
 #ifdef LORA_DISABLED
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx
     {1,_qsoBot,_trxIcw,_trx,0},                         // _trxWifi  (left wraps via _qsoBot)
-    {1,_trxWifi,_KIP_AFTER_ICW(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
-    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxWifi,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw   (right -> the chain, see above)
+    {1,_trxLast,_trxWifi,_trx,_qsoSotaPota},            // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxWifi},                  // _trx (no LoRa, first child is WiFi)
-    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxIcw,_trx,0},                // _trxWifi  (wraps left via Remote Rig)
-    {1,_trxWifi,_KIP_AFTER_ICW(_trxWifi),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
+    {1,_trxLast,_trxIcw,_trx,0},                        // _trxWifi  (wraps left via the chain's end)
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw
   #endif
 #else
   #ifdef CONFIG_QSO_BOT
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx
     {1,_qsoBot,_trxWifi,_trx,0},                        // _trxLora  (left wraps via _qsoBot)
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_KIP_AFTER_ICW(_qsoBot),_trx,0},               // _trxIcw   (right -> Remote Rig, else _qsoBot)
-    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxLora,_trx,_qsoSotaPota},    // _qsoBot   (level 1; descends to _qsoSotaPota)
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw   (right -> the chain, see above)
+    {1,_trxLast,_trxLora,_trx,_qsoSotaPota},            // _qsoBot   (level 1; descends to _qsoSotaPota)
     {2,_qsoContest,_qsoStandard,_qsoBot,0},             // _qsoSotaPota
     {2,_qsoSotaPota,_qsoContest,_qsoBot,0},             // _qsoStandard
     {2,_qsoStandard,_qsoSotaPota,_qsoBot,0},            // _qsoContest
   #else
     {0,_koch,_decode,_dummy,_trxLora},                  // _trx (has LoRa)
-    {1,_KIP_BEFORE_NEXT(_trxIcw),_trxWifi,_trx,0},               // _trxLora  (wraps left via Remote Rig)
+    {1,_trxLast,_trxWifi,_trx,0},                       // _trxLora  (wraps left via the chain's end)
     {1,_trxLora,_trxIcw,_trx,0},                        // _trxWifi
-    {1,_trxWifi,_KIP_AFTER_ICW(_trxLora),_trx,0},              // _trxIcw   (right -> Remote Rig, else wrap)
+    {1,_trxWifi,_afterIcw,_trx,0},                      // _trxIcw
   #endif
 #endif
 #ifdef CONFIG_CW_GAME
@@ -293,23 +322,17 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
                                                          //   ring via the _kochLearn/_kochGen edits above
 
 #ifdef CONFIG_M32KIP
-  , {1,_kipKeyer,
-   #ifdef CONFIG_QSO_BOT
-     _qsoBot
-   #elif defined(LORA_DISABLED)
-     _trxWifi
-   #else
-     _trxLora
-   #endif
-     ,_trx,0}                                            // Remote Rig   - left is Remote Keyer, right is
-                                                         //   whatever followed iCW/Ext Trx before the pair
-  , {1,_trxIcw,_kipRig,_trx,0}                           // Remote Keyer - between iCW/Ext Trx and Remote
-                                                         //   Rig. Appended at the enum's end like the Rig:
-                                                         //   enum order is not ring order, menuNav is.
+  , {1,_kipKeyer,_afterTrxChain,_trx,0}                  // Remote Rig   - left is Remote Keyer, right is
+                                                         //   what follows the chain (QSO Bot, or the wrap)
+  , {1,_beforeKip,_kipRig,_trx,0}                        // Remote Keyer - after WinKeyer (or iCW/Ext Trx),
+                                                         //   before Remote Rig. Enum order is not ring
+                                                         //   order: menuNav is.
+#endif
+#ifdef CONFIG_WINKEYER
+  , {1,_trxIcw,_afterWk,_trx,0}                          // WinKeyer (Transceiver) - between iCW/Ext Trx and
+                                                         //   Remote Keyer (or what follows the chain)
 #endif
 };
-#undef _KIP_AFTER_ICW
-#undef _KIP_BEFORE_NEXT
 
 //String MorseMenu::cmdPath;   // used to create string for json
 
@@ -437,6 +460,22 @@ void MorseMenu::menu_() {
    // walks newMenuPtr up several levels at once instead of landing on the
    // mode we just left (mirrors the setupPreferences() exit fix above).
    Buttons::modeButton.clicks = 0;
+   // FN already down on arrival is not a gesture made in this menu. On the classic, FN is GPIO0, which
+   // a WinKeyer logger with DTR on / RTS off holds low for as long as it has the port open - and FN's
+   // long press here starts Audio In Adj., which keys the transmitter. So FN does nothing until it has
+   // been released once. (Harmless for a finger: it, too, was pressed before we got here.)
+   Buttons::volButton.Update();
+   boolean fnHeldOnArrival = Buttons::volButton.depressed;
+   Buttons::volButton.clicks = 0;
+   // Classic (FN = GPIO0): a WinKeyer logger with DTR on / RTS off can also start holding FN while we
+   // sit here - opened before WinKeyer mode was started, or still open after a restart. FN's long press
+   // (Audio In Adj.) therefore acts on release, and a hold of more than 3 s is a line and does nothing.
+   static HeldLineFilter fnLineFilter;
+   fnLineFilter.reset();
+#ifdef CONFIG_WINKEYER
+   MorseWinKeyer::leave();                 // back from WinKeyer: the port returns to the M32 protocol
+                                           // (115200 on the classic); no-op from any other mode
+#endif
    // Memory-clearing reboot is now reactive (see MorseGameMode::allocate)
    // rather than preemptive on WiFi Trx exit. The heap stays fragmented
    // after WiFi Trx, but that only matters if the user immediately starts
@@ -503,6 +542,9 @@ void MorseMenu::menu_() {
     MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
+#ifdef WK_NATIVE_USB
+        MorseWinKeyer::topMenuArmed = true;  // D1a: only here may a WinKeyer host open a session
+#endif
 #ifdef CONFIG_BLE_SERIAL
         // serialEvent(), plus the ONE place a BLE client may ask to be let in
         // (devdocs/ble-serial/ACCESS_CONTROL.md D2 — everywhere else refuses).
@@ -511,6 +553,15 @@ void MorseMenu::menu_() {
             MorseMenu::menuDisplay(disp);
 #else
         serialEvent();
+#endif
+#ifdef WK_NATIVE_USB
+        MorseWinKeyer::topMenuArmed = false;
+        if (MorseWinKeyer::takeAutoOpen()) {    // Host Open arrived (and is answered): enter the mode
+            MorsePreferences::menuPtr = MorsePreferences::newMenuPtr = _winKeyer;
+            disp = 0;
+            if (MorseMenu::menuExec())
+                return;
+        }
 #endif
 #ifdef CONFIG_BLE_SERIAL
         // THE top-menu backstop (the only one): every path to the top menu
@@ -621,7 +672,9 @@ void MorseMenu::menu_() {
                       // Koch Trainer submenu wiring above), so they are named explicitly here:
                       // the two Practice Set pickers (found via on-device testing: Quick Start
                       // into "CW Generator: Practice Set" otherwise fell back to "Random") and
-                      // Koch Trainer's Preview Char.
+                      // Koch Trainer's Preview Char, and WinKeyer (a Transceiver mode, remembered
+                      // like the others when chosen here - not when a Pocket host opened it from
+                      // the top menu, which does not pass through this case).
                       if (MorsePreferences::menuPtr < _wifi
                           || MorsePreferences::menuPtr == _genPractice
                           || MorsePreferences::menuPtr == _echoPractice
@@ -632,6 +685,9 @@ void MorseMenu::menu_() {
                           // a power failure (D14's recorded future item).
                           || MorsePreferences::menuPtr == _kipKeyer
                           || MorsePreferences::menuPtr == _kipRig
+#endif
+#ifdef CONFIG_WINKEYER
+                          || MorsePreferences::menuPtr == _winKeyer
 #endif
                           || MorsePreferences::menuPtr == _kochPreview)
                           MorsePreferences::writeLastExecuted(MorsePreferences::newMenuPtr);
@@ -657,8 +713,26 @@ void MorseMenu::menu_() {
         }
 
        Buttons::volButton.Update();
+       if (Buttons::volButton.pin == 0) {
+          // a logger knocking on the port (bytes that cannot be protocol text) while FN is down:
+          // the press is its DTR/RTS, however short (N1MM holds the line for only 1-3 s)
+          unsigned long foreign = lastForeignUsbRxMs;     // written by the UART event task too: read once
+          if (Buttons::volButton.depressed && foreign && millis() - foreign < 2000)
+             fnLineFilter.markLine();
+          Buttons::volButton.clicks = fnLineFilter.filter(Buttons::volButton.clicks, Buttons::volButton.depressed);
+       }
+       if (fnHeldOnArrival) {
+          if (Buttons::volButton.depressed)
+             Buttons::volButton.clicks = 0;     // still the press we arrived with
+          else
+             fnHeldOnArrival = false;
+       }
 
-       switch (Buttons::volButton.clicks) {
+       int fnClicks = Buttons::volButton.clicks;
+       Buttons::volButton.clicks = 0;                // audioLevelAdjust() polls FN itself: it must not see this
+                                                     // gesture (a long press the filter delivers at release is
+                                                     // not cleared by Update() for another 250 ms)
+       switch (fnClicks) {
           case -1:  audioLevelAdjust();                         /// for adjusting line-in audio level (at the same time keying tx and sending oudio on line-out
                     MorseOutput::clearDisplay();
                     MorseMenu::menuDisplay(disp);
@@ -1077,6 +1151,23 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 executeNow = false;
                 return true;
                 break;
+#ifdef CONFIG_WINKEYER
+      case  _winKeyer: {   // WinKeyer emulation (devdocs/winkeyer/DESIGN.md). Owns the serial port;
+                           // keys the TX like the CW Keyer. Entered from the menu, or on the Pocket by a
+                           // Host Open at the top menu (D1a), in which case the session is already open.
+                const bool autoOpened = MorseWinKeyer::isOpen();
+                generatorMode = RANDOMS;  // to reset potential KOCH_LEARN
+                MorsePreferences::setCurrentOptions(MorsePreferences::winKeyerOptions, MorsePreferences::winKeyerOptionsSize);
+                morseState = morseWinKeyer;
+                MorseWinKeyer::enter(autoOpened);
+                showStartDisplay("", "WinKeyer", autoOpened ? "Host connected" : "Waiting for host", autoOpened ? 0 : 600);
+                clearPaddleLatches();
+                if (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY)
+                  keyDecoder.setup();
+                executeNow = false;
+                return true;
+      }
+#endif
       case  _trxIcw: /// icw/ext TRX
                 MorsePreferences::setCurrentOptions(MorsePreferences::extTrxOptions, MorsePreferences::extTrxOptionsSize);
                 morseState = morseTrx;
@@ -1347,6 +1438,9 @@ void MorseMenu::showStartDisplay(const String& l0, const String& l1, const Strin
 boolean MorseMenu::isRemotelyExecutable(uint8_t ptr) {
   if (menuNav[ptr][naviDown] == 0) {
     switch (ptr) {
+#ifdef CONFIG_WINKEYER
+      case _winKeyer:         // takes the serial port away from the very client that would execute it
+#endif
       case _kochPreview:      // its picker (selectKochPreviewChar()) has no remote-selection path
                               // (unlike selectFilePart()'s remoteFilePartSelect) - a protocol client
                               // executing it would strand the device in a picker only someone

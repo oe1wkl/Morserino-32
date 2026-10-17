@@ -70,10 +70,12 @@ devdocs/
 ├── snapshot-bundles/             ← importing several snapshots at once (deferred)
 │   ├── HANDOFF.md                ·   START HERE — decided vs open, where the code is
 │   └── DESIGN_NOTES.md           ·   what a snapshot really holds, and the traps
-└── ultimatic/                    ← Ultimatic keyer mode vs. the 1955 original
-    ├── FINDINGS.md               ·   the QST source, the point-6 bug, the fix
-    ├── FOLLOWUP_CURTIS_B.md      ·   Ultimatic vs. the Curtis-B timing (decision pending)
-    └── keyer_sim.cpp             ·   host-side keyer simulator; `scan` runs the follow-up
+├── ultimatic/                    ← Ultimatic keyer mode vs. the 1955 original
+│   ├── FINDINGS.md               ·   the QST source, the point-6 bug, the fix
+│   ├── FOLLOWUP_CURTIS_B.md      ·   Ultimatic vs. the Curtis-B timing (decision pending)
+│   └── keyer_sim.cpp             ·   host-side keyer simulator; `scan` runs the follow-up
+└── winkeyer/                     ← K1EL WinKeyer emulation for loggers (idea, not started)
+    └── DESIGN.md                 ·   feasibility, USB/BLE interference, effort, open decisions
 ```
 
 ## Conventions
