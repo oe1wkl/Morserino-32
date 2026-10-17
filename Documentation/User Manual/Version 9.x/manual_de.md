@@ -1849,13 +1849,18 @@ Keyer-Speicher 1 bis 6 des Morserino ab (siehe **CW Memory Keyer**).
 **DTR und RTS:** Bei manchen Programmen kannst du wählen, wie sie diese
 beiden Leitungen der seriellen Schnittstelle setzen. Verwende nie „RTS
 an, DTR aus" – damit wird der Morserino im Reset festgehalten. [Bei der
-1st und 2nd Edition setze nach Möglichkeit beide an oder beide aus:
-„DTR an, RTS aus" (was CQRLOG und flwkey immer tun) hält die FN-Taste
-gedrückt, solange das Programm die Schnittstelle geöffnet hat. Der
-Morserino erkennt das und ignoriert FN, bis das Programm loslässt – das
-schadet also nicht, aber FN ist so lange nicht benutzbar. Aus demselben
-Grund wirkt ein langer Druck auf FN im WinKeyer-Modus und im Hauptmenü
-erst beim Loslassen. Wogegen sich der Morserino nicht schützen kann:
+1st und 2nd Edition setze **beide an**: Manche Programme empfangen die
+Antworten des Morserino nur mit DTR an (N1MM unter Windows bekam mit
+beiden Leitungen aus gar keine Antwort). Manche Programme halten
+außerdem die FN-Taste gedrückt, solange sie die Schnittstelle geöffnet
+haben – N1MM sowie CQRLOG und flwkey, die immer „DTR an, RTS aus"
+verwenden. Der Morserino erkennt das und ignoriert FN, bis das Programm
+loslässt – das schadet also nicht (er startet nie von selbst **Audio In
+Adj.** oder den Scroll-Modus), aber FN ist so lange nicht benutzbar:
+**Stelle die Lautstärke ein, bevor sich das Programm verbindet.** Wenn
+sich ein Programm verbindet, stellt der Morserino den ENCODER wieder
+auf Geschwindigkeit. Aus demselben Grund wirkt ein langer Druck auf FN
+im WinKeyer-Modus und im Hauptmenü erst beim Loslassen. Wogegen sich der Morserino nicht schützen kann:
 Schaltest du ihn ein, während ein solches Programm die Schnittstelle
 geöffnet hat, startet er stattdessen in seinem Programmiermodus, und das
 Display bleibt dunkel. Schließe dann das Programm (oder ziehe das
@@ -1877,8 +1882,11 @@ Ports, Mode Control, Winkey, etc.**):
     **CW/Other**. Klicke in dieser Zeile auf **Set**, setze das Häkchen
     bei **WinKey** und stelle [**DTR (pin 4)** auf **Always On** und
     **RTS (pin 7)** auf **Always Off**]{.pocket .pocket-a11y}[**DTR (pin
-    4)** und **RTS (pin 7)** beide auf **Always Off**]{.classic}.
-    Bestätige mit **OK**.
+    4)** und **RTS (pin 7)** beide auf **Always On**]{.classic}.
+    Bestätige mit **OK**.[ Solange N1MM verbunden ist, hält es die
+    FN-Taste des Morserino gedrückt, FN ist dann nicht benutzbar: Stelle
+    die Lautstärke ein, bevor du N1MM startest (siehe **DTR und RTS**
+    oben).]{.classic}
 -   **Verlasse den Configurer mit seinem OK-Knopf.** Wird das Fenster
     anders geschlossen, gehen die Einstellungen verloren. Auf einem
     kleinen Bildschirm können die Knöpfe am unteren Rand des Fensters

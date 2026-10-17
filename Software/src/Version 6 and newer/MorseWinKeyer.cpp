@@ -35,6 +35,7 @@
 
 // m32_v6.ino
 extern morserinoMode morseState;
+extern encoderMode encoderState;
 extern boolean m32protocol;
 extern uint16_t volt;
 extern const byte pool[][2];      // the M32 Morse table (element patterns), indexed like CWchars[]
@@ -590,6 +591,18 @@ static void openSession() {
   lastStatus = status();
   applySpeed();
   if (inMode) {
+    // E1: while a host is connected the encoder is the speed control. Put it back into that role:
+    // on the classic a logger's DTR/RTS can hold FN (GPIO0) for the whole session, so an FN click
+    // that its connect produced (bench: N1MM toggled the encoder to volume) could not be undone.
+    if (encoderState == volumeSettingMode) {
+      MorsePreferences::writeVolume();          // as the FN toggle back to speed does
+      encoderState = speedSettingMode;
+    } else if (encoderState == scrollMode) {
+      encoderState = speedSettingMode;
+      MorseOutput::relPos = MorseOutput::maxPos;
+      MorseOutput::refreshScrollArea(MorseOutput::relPos);
+      MorseOutput::displayScrollBar(false);
+    }
     updateTopLine();
     announce("Host connected");
   }

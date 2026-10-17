@@ -147,7 +147,17 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
       1200-baud logger arrives only as **UART framing errors** (the driver drops those bytes;
       first attempt failed on that), now caught with `Serial.onReceiveError`. Verified with the
       imitation in both places, and a finger's 1.5-s press still works in both. Host tests added.
-      **Still to do: re-test with the real N1MM on the classic.**
+- [x] **N1MM on the classic, re-test (2026-10-17):** with both lines Always Off N1MM's commands
+      arrived (a temporary build showed them on screen: A02 0E 05 01 09 04 10 11 03 07 02 02 02 02 -
+      no baud change) but **the classic's answers never reached N1MM**, so it sent no text and no
+      paddle echo came back - the same "DTR must be on" as the Pocket on that Windows PC. With
+      **DTR and RTS both Always On** it works - but N1MM still holds FN (it drives RTS off itself),
+      and a twitch of the line during the connect counted as an FN click: the encoder went to
+      volume and FN could not bring it back. Fixed: a host opening the session puts the encoder
+      back to speed (E1), and a press the filter classed as a line yields no click
+      (`HeldLineFilter`, host test added). Re-test passed: Host, encoder = speed, sending, Esc,
+      break-in, no scroll mode or Audio In Adj.; FN works again after N1MM quits. Manual: classic =
+      DTR/RTS both Always On, FN unusable while N1MM is connected (set the volume first).
 - [ ] **N1MM Logger+** (Windows): F1 CQ, Esc stops it, a paddle touch stops a *repeating* CQ
       (needs BREAKIN), paddle echo appears in N1MM, the encoder moves N1MM's speed (pot), N1MM's
       speed field wins over the encoder. Confirm "Reverse paddles", "Keying mode", "Sidetone

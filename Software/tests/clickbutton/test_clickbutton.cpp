@@ -237,6 +237,32 @@ static void test_filter_mark_while_up_is_harmless() {
     check(r.ownerSaw == -1 && r.ownerAt >= 2000, "the 1.5 s finger press is delivered on release");
 }
 
+static void test_filter_line_twitch_no_click() {
+    printf("filter: a 300 ms line twitch, marked while a host connects, yields no click\n");
+    // N1MM connecting to the classic with both lines 'Always On' (bench 2026-10-17): the line twitched,
+    // ClickButton reported a single FN click after the release, and the encoder went to volume.
+    ClickButton b(0); HeldLineFilter f;
+    int seen = 0;
+    for (unsigned long t = 0; t <= 1500; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = (t >= 100 && t < 400) ? 0 : 1;
+        b.Update();
+        if (b.depressed) f.markLine();
+        b.clicks = f.filter(b.clicks, b.depressed);
+        if (b.clicks) { seen = b.clicks; break; }
+    }
+    check(seen == 0, "no click delivered");
+    int later = 0;                                   // and a real click right afterwards still counts
+    for (unsigned long t = 1600; t <= 2600; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = (t >= 1700 && t < 1800) ? 0 : 1;
+        b.Update();
+        int c = f.filter(b.clicks, b.depressed);
+        if (c) { later = c; break; }
+    }
+    check(later == 1, "a finger's click a moment later is delivered");
+}
+
 int main() {
     test_long_click_is_delivered_once();
     test_long_click_still_held();
@@ -252,6 +278,7 @@ int main() {
     test_filter_written_back_once();
     test_filter_short_line_marked();
     test_filter_mark_while_up_is_harmless();
+    test_filter_line_twitch_no_click();
     printf("\n%s\n", failures ? "FAILURES" : "all ok");
     return failures ? 1 : 0;
 }

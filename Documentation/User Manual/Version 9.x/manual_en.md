@@ -1802,13 +1802,17 @@ Morserino's keyer memories 1 to 6 (see **CW Memory Keyer**).
 
 **DTR and RTS:** some programs let you choose how they set these two
 lines of the serial port. Never use "RTS on, DTR off" – that holds the
-Morserino in reset. [On the 1st and 2nd edition, set both on or both
-off if you can: "DTR on, RTS off" (what CQRLOG and flwkey always do)
-holds the FN button down for as long as the program has the port open.
-The Morserino recognises this and ignores FN until the program lets go,
-so it does no harm – but FN cannot be used meanwhile. For the same
-reason, a long press of FN in WinKeyer mode and in the main menu only
-takes effect when you release it. One thing the Morserino cannot
+Morserino in reset. [On the 1st and 2nd edition, set **both on**:
+some programs only receive the Morserino's answers with DTR on (N1MM
+on Windows got no answer at all with both off). Some programs also hold
+the FN button down for as long as they have the port open – N1MM, and
+CQRLOG and flwkey, which always use "DTR on, RTS off". The Morserino
+recognises this and ignores FN until the program lets go, so it does no
+harm (it never starts **Audio In Adj.** or scroll mode by itself), but
+FN cannot be used meanwhile: **set the volume before the program
+connects.** When a program connects, the ENCODER is put back to setting
+the speed. For the same reason, a long press of FN in WinKeyer mode and
+in the main menu only takes effect when you release it. One thing the Morserino cannot
 protect against: if you switch it on while such a program has the port
 open, it starts in its programming mode instead and the screen stays
 dark. Close the program (or unplug the USB cable), then switch the
@@ -1828,8 +1832,10 @@ Control, Winkey, etc.**):
     example COM7) and tick **CW/Other**. Click **Set** in that row, tick
     **WinKey**, and set [**DTR (pin 4)** to **Always On** and **RTS
     (pin 7)** to **Always Off**]{.pocket .pocket-a11y}[**DTR (pin 4)**
-    and **RTS (pin 7)** both to **Always Off**]{.classic}. Confirm with
-    **OK**.
+    and **RTS (pin 7)** both to **Always On**]{.classic}. Confirm with
+    **OK**.[ While N1MM is connected it holds the Morserino's FN button
+    down, so FN cannot be used: set the volume before you start N1MM
+    (see **DTR and RTS** above).]{.classic}
 -   **Leave the Configurer with its OK button.** Closing the window any
     other way throws the settings away. On a small screen the buttons at
     the bottom of the window can be out of sight; move the window up to

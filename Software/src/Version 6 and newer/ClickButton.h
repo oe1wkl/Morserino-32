@@ -49,7 +49,9 @@ class ClickButton
 // The duration rule alone misses a line that is held only briefly: N1MM, opening the classic's
 // port, passes through "DTR on, RTS off" for 1-3 s and then switches both lines off - a press that
 // ends like a finger's (bench, 2026-10-17). So the caller, which can see a host connecting, calls
-// markLine() while that happens: the press under way then counts as a line, however short.
+// markLine() while that happens: the press under way then counts as a line, however short. A line
+// press yields no click either: ClickButton reports a short press's click only after the release
+// (multi-click window), and a brief twitch of the line turned into an FN click on the bench.
 class HeldLineFilter
 {
   public:
@@ -61,6 +63,7 @@ class HeldLineFilter
     unsigned long _lineMs;
     boolean _fresh = true, _prevDown = false, _ignore = false, _pendingLong = false, _lineHint = false;
     unsigned long _downSince = 0;
+    unsigned long _quietUntil = 0;      // after a line press: swallow the click ClickButton reports for it
 };
 
 #endif /* #ifndef ClickButton_H_ */

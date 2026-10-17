@@ -185,9 +185,13 @@ int HeldLineFilter::filter(int clicks, boolean down)
   _lineHint = false;
   if (!down) {
     boolean deliver = _pendingLong && !_ignore;
+    if (_ignore)                        // a line just let go: ClickButton reports this press's click
+      _quietUntil = now + 500;          // count only after its 250 ms multi-click window - drop it
     _pendingLong = _ignore = false;
     if (deliver)
       return -1;
+    if ((long)(now - _quietUntil) < 0)
+      return 0;
     // A released button has no long press to report: a -1 here is the one we delivered ourselves,
     // written back into ClickButton::clicks by the caller and not cleared by Update() until the
     // multi-click window has passed - passing it on again repeats the gesture.
