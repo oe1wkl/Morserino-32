@@ -211,6 +211,32 @@ static void test_filter_written_back_once() {
     check(delivered == 1, "exactly one long press over the whole release window");
 }
 
+static void test_filter_short_line_marked() {
+    printf("filter: a 2 s line hold, marked while a host connects, does nothing\n");
+    // N1MM opening the classic's port: DTR on / RTS off for ~2 s, then both off (bench 2026-10-17).
+    ClickButton b(0); HeldLineFilter f;
+    int delivered = 0;
+    for (unsigned long t = 0; t <= 3500; t += 5) {
+        sim_millis_value = t;
+        sim_pin_value = (t >= 100 && t < 2100) ? 0 : 1;
+        b.Update();
+        if (t >= 300 && t < 2300 && b.depressed) f.markLine();   // what filterFn() does in the window
+        b.clicks = f.filter(b.clicks, b.depressed);
+        if (b.clicks) delivered++;
+    }
+    check(delivered == 0, "no long press delivered at the release");
+}
+
+static void test_filter_mark_while_up_is_harmless() {
+    printf("filter: a mark while the button is up does not touch a later finger press\n");
+    ClickButton b(0); HeldLineFilter f;
+    sim_millis_value = 0; sim_pin_value = 1; b.Update();
+    f.markLine();                                   // marked, but nothing is pressed
+    f.filter(b.clicks, b.depressed);
+    Replay r = runFiltered(b, f, 500, 2000, 3000, 5);
+    check(r.ownerSaw == -1 && r.ownerAt >= 2000, "the 1.5 s finger press is delivered on release");
+}
+
 int main() {
     test_long_click_is_delivered_once();
     test_long_click_still_held();
@@ -224,6 +250,8 @@ int main() {
     test_filter_down_at_reset();
     test_filter_short_and_double();
     test_filter_written_back_once();
+    test_filter_short_line_marked();
+    test_filter_mark_while_up_is_harmless();
     printf("\n%s\n", failures ? "FAILURES" : "all ok");
     return failures ? 1 : 0;
 }

@@ -45,15 +45,21 @@ class ClickButton
 // and does nothing until it is released. Short and multiple clicks, reported after the release
 // anyway, pass unchanged. A caller that writes the result back into ClickButton::clicks must clear
 // it before handing control to code that polls the same button (it would see the -1 again).
+//
+// The duration rule alone misses a line that is held only briefly: N1MM, opening the classic's
+// port, passes through "DTR on, RTS off" for 1-3 s and then switches both lines off - a press that
+// ends like a finger's (bench, 2026-10-17). So the caller, which can see a host connecting, calls
+// markLine() while that happens: the press under way then counts as a line, however short.
 class HeldLineFilter
 {
   public:
     explicit HeldLineFilter(unsigned long lineMs = 3000) : _lineMs(lineMs) {}
     void reset() { _fresh = true; }     // judge afresh: a press already down counts as a line
+    void markLine() { _lineHint = true; }   // a host is connecting: the press under way is a line
     int filter(int clicks, boolean down);
   private:
     unsigned long _lineMs;
-    boolean _fresh = true, _prevDown = false, _ignore = false, _pendingLong = false;
+    boolean _fresh = true, _prevDown = false, _ignore = false, _pendingLong = false, _lineHint = false;
     unsigned long _downSince = 0;
 };
 

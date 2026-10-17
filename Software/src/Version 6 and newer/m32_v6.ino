@@ -589,6 +589,7 @@ void setup()
   Serial.setRxBufferSize(2048);
 #endif
   Serial.begin(115200);
+  armForeignUsbRxDetect();       // a 1200-baud logger knocking at the classic's main menu (FN = GPIO0)
   delay(30); // give me time to bring up serial monitor
   // reserve 400 bytes for the serial inputString variable defined above:
   inputString.reserve(400);
@@ -4751,6 +4752,23 @@ void skipWords(uint32_t count) {             /// just skip count words in open f
 // a text file's lines - but without a cap a runaway line would grow inputString until the heap gives out.
 // BLE Serial has its own, tighter cap (400, "BLE LINE TOO LONG") in bleSerialEvent().
 static const uint16_t USB_LINE_MAX = 1024;
+// When something last arrived on USB that cannot be M32 protocol text: a byte that is NUL, a control
+// character other than line ends and tab, or 8-bit - or, on a UART (classic), a framing/break/parity
+// error: a WinKeyer logger at 1200 baud talking to a classic still at 115200 arrives as framing errors,
+// which the driver drops, so no byte ever shows up (bench, 2026-10-17). The classic's main menu uses it
+// to tell a logger's DTR/RTS holding FN (GPIO0) from a finger.
+volatile unsigned long lastForeignUsbRxMs = 0;
+
+// Arm the UART receive-error hook. Called after every Serial.begin() on a UART build (setup(), and
+// WinKeyer mode's baud changes). A no-op on the Pocket's native USB, which has no line coding to violate.
+void armForeignUsbRxDetect() {
+#if !(ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT)
+  Serial.onReceiveError([](hardwareSerial_error_t e) {
+    if (e == UART_FRAME_ERROR || e == UART_BREAK_ERROR || e == UART_PARITY_ERROR)
+      lastForeignUsbRxMs = millis();
+  });
+#endif
+}
 static bool usbDiscardLine = false;          // swallowing the tail of an over-long line, up to its \n
 
 static void serialLines();
@@ -4774,6 +4792,8 @@ static void serialLines() {
       while (Serial.available()) {
         // get the new byte:
         char inChar = (char)Serial.read();
+        if ((uint8_t) inChar >= 0x80 || ((uint8_t) inChar < 0x20 && inChar != '\n' && inChar != '\r' && inChar != '\t'))
+          lastForeignUsbRxMs = millis();
 #ifdef WK_NATIVE_USB
         // D1a (Pocket): at the top menu a WinKeyer host may knock - nulls, Echo Test, Host Open.
         // Those bytes never reach the line buffer; after Host Open the rest stays in the RX

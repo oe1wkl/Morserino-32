@@ -46,6 +46,7 @@ extern String cleanUpText(String text);
 extern String encodeProSigns(String &input);
 extern String codesToUtf8(const String& s);
 extern int16_t batteryVoltage();
+extern void armForeignUsbRxDetect();
 
 namespace MorseWinKeyer {
   volatile bool portOwned = false;
@@ -123,6 +124,8 @@ static bool      tickServiced = false;   // tick() polled the port in this loop(
 
 // filterFn(): FN held by a serial line rather than a finger (HeldLineFilter, ClickButton.h)
 static HeldLineFilter fnFilter;
+static unsigned long lastConnectMs = 0;  // last Echo Test / Host Open: a host is (re)connecting
+static const unsigned long CONNECT_WINDOW_MS = 2000;
 
 static const unsigned long TUNE_WATCHDOG_MS = 100000UL;   // K1EL: hard-coded, cannot be disabled
 // keyOut() blocks KEYOUT_EDGE_MS (m32_v6.ino) on both edges before the key line moves. As in
@@ -579,6 +582,7 @@ static void openSession() {
   resetSessionSettings();
   sessionOpen = true;
   paddleWordOpen = false;
+  lastConnectMs = millis();
   m32protocol = false;                    // whoever spoke the M32 protocol on this port is gone
   closeToMenu = false;
   outPut(REVISION);
@@ -700,7 +704,7 @@ static void execAdmin(uint8_t sub) {
     case 0x01: closeSession(true); break;                       // reset: session state only, never a reboot
     case 0x02: openSession(); break;
     case 0x03: closeSession(true); break;
-    case 0x04: outPut(pPar[0]); replyNow(); break;
+    case 0x04: outPut(pPar[0]); replyNow(); lastConnectMs = millis(); break;
     case 0x05: case 0x06: outPut(0); replyNow(); break;         // paddle / speed A2D (WK1)
     case 0x07: sendValues(); replyNow(); break;
     case 0x09: outPut(REVISION >= 30 ? REVISION : 0x18); replyNow(); break;
@@ -839,6 +843,7 @@ void MorseWinKeyer::enter(bool autoOpened) {
     Serial.flush();
     Serial.end();
     Serial.begin(1200, SERIAL_8N2);       // WinKeyer: 1200 baud, 8 data bits, no parity, 2 stop bits
+    armForeignUsbRxDetect();
     highBaud = false;
 #endif
   }
@@ -860,6 +865,7 @@ void MorseWinKeyer::leave() {
   Serial.flush();
   Serial.end();
   Serial.begin(115200);                  // back to the M32 protocol's speed and framing
+  armForeignUsbRxDetect();
 #endif
   highBaud = false;
   portOwned = false;
@@ -978,6 +984,10 @@ void MorseWinKeyer::afterPreferences() {
 }
 
 int MorseWinKeyer::filterFn(int clicks, bool down) {
+  // A press under way while a host connects is the host's lines, not a finger - only the start-up
+  // counts (Echo Test, Host Open), so FN stays usable while the logger is sending text.
+  if (down && lastConnectMs && millis() - lastConnectMs < CONNECT_WINDOW_MS)
+    fnFilter.markLine();
   return fnFilter.filter(clicks, down);
 }
 

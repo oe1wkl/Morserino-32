@@ -135,6 +135,19 @@ Still open below: classic M32 (hands-on steps, leave the mode -> 115200), DTR/RT
       - Still to check with N1MM: Esc, break-in on a repeating CQ, the speed pot, revision 31; and
         N1MM with the classic (the manual's "both Always Off" for the classic is derived from the
         CP2102 behaviour, not yet tried with N1MM).
+- [x] **N1MM on the Pocket (2026-10-17, later):** Esc, break-in and the speed pot work.
+- [ ] **N1MM on the classic (2026-10-17):** with DTR/RTS both Always Off, the encoder went into
+      scroll mode the moment N1MM connected: while opening the port N1MM passes through "DTR on,
+      RTS off" for 1-3 s - FN (GPIO0) held briefly, released like a finger, so `HeldLineFilter`'s
+      3-s rule delivered a long press. Reproduced on the Mac (script: hold 2 s during the start-up,
+      then both off). Fixed: `HeldLineFilter::markLine()` - a press under way while a host
+      connects counts as a line however short. WinKeyer mode marks within 2 s of an Echo Test or
+      Host Open (not on ordinary text, so FN stays usable while the logger sends); the classic's
+      main menu marks on USB input that cannot be protocol text - which at 115200 against a
+      1200-baud logger arrives only as **UART framing errors** (the driver drops those bytes;
+      first attempt failed on that), now caught with `Serial.onReceiveError`. Verified with the
+      imitation in both places, and a finger's 1.5-s press still works in both. Host tests added.
+      **Still to do: re-test with the real N1MM on the classic.**
 - [ ] **N1MM Logger+** (Windows): F1 CQ, Esc stops it, a paddle touch stops a *repeating* CQ
       (needs BREAKIN), paddle echo appears in N1MM, the encoder moves N1MM's speed (pot), N1MM's
       speed field wins over the encoder. Confirm "Reverse paddles", "Keying mode", "Sidetone

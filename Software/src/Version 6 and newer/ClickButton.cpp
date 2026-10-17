@@ -181,6 +181,8 @@ int HeldLineFilter::filter(int clicks, boolean down)
   if (down && !_prevDown)
     _downSince = now;
   _prevDown = down;
+  boolean hint = _lineHint;             // markLine() applies to the press under way, if any
+  _lineHint = false;
   if (!down) {
     boolean deliver = _pendingLong && !_ignore;
     _pendingLong = _ignore = false;
@@ -191,7 +193,7 @@ int HeldLineFilter::filter(int clicks, boolean down)
     // multi-click window has passed - passing it on again repeats the gesture.
     return clicks > 0 ? clicks : 0;
   }
-  if (!_ignore && now - _downSince > _lineMs) {
+  if (!_ignore && (hint || now - _downSince > _lineMs)) {
     _ignore = true;
     _pendingLong = false;
   }

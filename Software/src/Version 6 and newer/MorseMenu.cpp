@@ -23,6 +23,8 @@
 #include "MorseVoice.h"
 #include "MorseWinKeyer.h"
 
+extern volatile unsigned long lastForeignUsbRxMs;   // m32_v6.ino: non-protocol bytes or UART errors on USB
+
 #ifdef CONFIG_PRACTICE_STATS
 #include "MorsePracticeStats.h"
 #endif
@@ -652,8 +654,14 @@ void MorseMenu::menu_() {
         }
 
        Buttons::volButton.Update();
-       if (Buttons::volButton.pin == 0)
+       if (Buttons::volButton.pin == 0) {
+          // a logger knocking on the port (bytes that cannot be protocol text) while FN is down:
+          // the press is its DTR/RTS, however short (N1MM holds the line for only 1-3 s)
+          unsigned long foreign = lastForeignUsbRxMs;     // written by the UART event task too: read once
+          if (Buttons::volButton.depressed && foreign && millis() - foreign < 2000)
+             fnLineFilter.markLine();
           Buttons::volButton.clicks = fnLineFilter.filter(Buttons::volButton.clicks, Buttons::volButton.depressed);
+       }
        if (fnHeldOnArrival) {
           if (Buttons::volButton.depressed)
              Buttons::volButton.clicks = 0;     // still the press we arrived with
