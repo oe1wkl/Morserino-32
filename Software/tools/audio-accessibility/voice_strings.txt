@@ -1,17 +1,12 @@
 (not set)
 (set)
--. dah dit
-.- dit dah
 0
 0%
 1
 1 millisecond
-1 ms
 10
-10 min
 10 minutes
 10 words per minute
-10 wpm
 100
 100 ms
 100%
@@ -30,10 +25,8 @@
 140
 145
 15
-15 min
 15 minutes
 15 words per minute
-15 wpm
 150
 150 ms
 155
@@ -52,14 +45,12 @@
 2
 2 dits
 2 milliseconds
-2 ms
 2 to 3
 2 to 4
 2 to 5
 2 to 6
 20
 20 words per minute
-20 wpm
 200
 200 ms
 205
@@ -72,92 +63,72 @@
 23
 230
 233 Hertz
-233 Hz Bb3
 235
 24
 240
 245
 25
 25 words per minute
-25 wpm
 25%
 250
 250 ms
 26
 262 Hertz
-262 Hz C4
 27
 28
 29
 294 Hertz
-294 Hz D4
 3
 3 dits
 3 milliseconds
-3 ms
 30
 30 words per minute
-30 wpm
 300 ms
 31
 311 Hertz
-311 Hz E4
 32
 33
 34
 349 Hertz
-349 Hz F4
 35
 35 words per minute
-35 wpm
 36
 37
 37.5%
 38
 39
 392 Hertz
-392 Hz G4
 4
 4 dits
 4 milliseconds
-4 ms
 4 or more
 40
 40 words per minute
-40 wpm
 400 ms
 41
 42
 43
 44
 440 Hertz
-440 Hz A4
 45
 45 words per minute
-45 wpm
 46
 466 Hertz
-466 Hz Bb4
 47
 48
 49
 5
 5 milliseconds
-5 min
 5 minutes
-5 ms
 5 words per minute
-5 wpm
 50
 50 ms
 50 words per minute
-50 wpm
 50%
 500 ms
 51
 52
 523 Hertz
-523 Hz C5
 53
 54
 55
@@ -165,56 +136,42 @@
 57
 58
 587 Hertz
-587 Hz D5
 59
 6
 6 milliseconds
-6 ms
 60
 600 ms
 62.5%
 622 Hertz
-622 Hz E5
 65
 698 Hertz
-698 Hz F5
 7
 7 milliseconds
-7 ms
 70
 75
 75%
 784 Hertz
-784 Hz G5
 8
 8 milliseconds
-8 ms
 80
 85
 87.5%
 880 Hertz
-880 Hz A5
 9
 9 milliseconds
-9 ms
 90
 932 Hertz
-932 Hz Bb5
 95
 a umlaut
 Adaptive
 Adaptive Random
-Adaptive random
 Adaptive speed
 Advanced
 Africa
 All
 All characters
-All Chars
 Allow Bluetooth connection? F N for yes, click for no.
-Alph+Num+Int
 Alpha
-Alpha + Num
 alpha and numerals
 alpha, numerals and interpunctions
 and a half
@@ -247,7 +204,6 @@ BC2: q x v
 BC2: z j /
 Beginner
 beta
-BLE Serial
 Blues
 Bluetooth A R character
 Bluetooth serial failed to start
@@ -257,7 +213,6 @@ Boost practice characters
 Bravo
 C H
 Calibrate Battery
-Calibrate battery
 Call Prefixes
 Call Sign
 Call Signs
@@ -266,8 +221,6 @@ Calls Region
 Cancel
 Cancel Recall
 Cancel Store
-char
-Char by char
 character
 Character by character
 characters
@@ -289,9 +242,7 @@ CQ WW
 Curtis B dah timing
 Curtis B dit timing
 Custom Characters
-Custom Chars
 CW Abbreviations
-CW abbreviations
 CW Academy
 CW Decoder
 CW Generator
@@ -333,12 +284,10 @@ Garnet
 Generated
 Generator display
 Generator Tx
-Generic Kbd
 Generic Keyboard
 Go To Sleep
 Golf
 Hardware Configuration
-Hardware configuration
 Headphone Output
 Host closed
 Host connected
@@ -351,30 +300,22 @@ India
 Inter-character spacing
 Inter-word spacing
 Intermediate
-Internet CW, external transceiver
-Interp+ProSn
-Interpunct.
 interpunctions
 Interpunctions and Pro Signs
 Juliett
 Key external transmitter
 Keyed
 Keyed+Decoded
-Keyer & Gen.
 Keyer and Generator
 Keyer and Generator and receiver
 Keyer Mode
-Keyer&Gen.&RX
 Kilo
 Koch lesson
 Koch Sequence
 Koch Trainer
-l-o: Lsp Muted
-l-o: Var. Vol.
 Latency
 LCWO
 Learn New Character
-Learn new character
 Lemonade
 Length Abbrev
 Length Calls
@@ -387,6 +328,7 @@ Linefeed
 Link lost
 Link restored
 Linked to rig
+Local
 LoRa Band
 LoRa frequency
 LoRa Power
@@ -416,8 +358,6 @@ Non-Squeeze
 Normal
 Nothing
 November
-Num+Int+ProS
-Num+Interp.
 Numerals
 numerals and Interpunctions
 numerals, Interpunctions and Prosigns
@@ -431,7 +371,6 @@ On
 ON (less ICS)
 ON (true WpM)
 on USB power
-Op Name
 Operator Name
 Oscar
 Out of memory
@@ -445,7 +384,6 @@ plus
 point
 Practice Set
 Practice Stats
-Preview Char
 Preview Character
 pro sign
 Pro Signs
@@ -459,6 +397,7 @@ Random group length
 Random Groups
 Randomize File
 Recall snapshot
+Remote
 Remote Keyer
 Remote keyer glitch filter
 Remote keying pass phrase
@@ -468,13 +407,13 @@ Remote rig hang time
 Remote rig key down limit, keyer
 Remote rig key down limit, straight key
 Remote rig playout delay
+Remote Win Keyer
 Repeat each word
 Reset Defaults
 Reset Scores
 Reversed
 Rig address not found
 Romeo
-S America
 Secondary
 Select Lesson
 Select WiFi network
@@ -483,7 +422,6 @@ Sierra
 slash
 Snapshot
 SOTA/POTA
-Sound & Disp
 Sound and Display
 Sound only
 South America
@@ -514,16 +452,12 @@ up to 3
 up to 4
 up to 5
 up to 6
-Update Firmware
 UPPER
 VBand and Decoded
-VBand Kbd
 VBand Keyboard
-VBand+Decoded
 Veggie
 version
 Victor
-VK/ZL
 volts
 Volume
 Waiting for host
@@ -533,11 +467,8 @@ WiFi Functions
 WiFi Transceiver
 WiFi transmit OFF
 WiFi Transmit ON
-WiFi Trx
-WiFi Tx OFF
-WiFi Tx ON
 Win Keyer
-WinKeyer
+Win Keyer transmitter
 Word by word
 Word Length
 words per minute

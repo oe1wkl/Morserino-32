@@ -73,6 +73,13 @@ def pio_macros(ini_path, env):
 A11Y_MACROS = pio_macros(PIO_INI, A11Y_ENV)
 if "CONFIG_AUDIO_A11Y" not in A11Y_MACROS:
     sys.exit(f"{PIO_INI} [env:{A11Y_ENV}] does not define CONFIG_AUDIO_A11Y - wrong env?")
+# Macros that morsedefs.h derives from the flags above rather than platformio.ini defining them. The tables
+# use them (Remote WinKeyer's menu entry, the WinKeyer Tx preference), so they must be set here too - keep this
+# in step with the block after `isWinKeyerMode()` in morsedefs.h.
+if {"CONFIG_WINKEYER", "CONFIG_M32KIP"} <= A11Y_MACROS:
+    A11Y_MACROS.add("REMOTE_WINKEYER")
+    if {"ARDUINO_USB_MODE", "ARDUINO_USB_CDC_ON_BOOT"} <= A11Y_MACROS:
+        A11Y_MACROS.add("WK_TARGET_PREF")
 QSTRING = re.compile(r'"((?:[^"\\]|\\.)*)"')
 
 # ── NATO phonetic alphabet + how single characters are voiced ────────────────
@@ -338,13 +345,34 @@ for ch in CWchars:
 char_seq["<err>"] = ["pro sign", "error"]
 maxseq = max(len(v) for v in char_seq.values())   # C array width for voiceCharLookup[]
 
+# ── Emit voice_clips.h for the firmware: firmware-facing UI string -> clip id ──
+# The firmware announces using the strings it actually holds: menu entries by their
+# DISPLAY text (menuText[]), prefs by spokenName||parName, option values + numbers by
+# their displayed text. So we key the lookup by those firmware-facing strings, mapping
+# each to the id of its (possibly spoken-override) clip.
+fw_lookup = {}
+def fw_add(key, clip_text):
+    if key and key.strip():
+        fw_lookup[key] = USER_OVERRIDES.get(key, clip_text)   # user override wins
+for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spoken clip
+for lbl in pref_labels: fw_add(lbl, lbl)
+for v in option_values: fw_add(v, v)
+for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
+for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS + WINKEYER_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
+
 # ── Dedupe, assign ids, write ────────────────────────────────────────────────
 # Tiebreak on the exact string: the input is a set (iteration order varies between
 # runs), so a bare .lower() key left case-only pairs -- "Adaptive Random" vs
 # "Adaptive random" -- swapping places on every run. That churn made the "empty
 # diff = nothing owed" check in CLAUDE.md section 8 unusable.
-all_texts = sorted({t for t in (phrase_texts + atom_texts + list(USER_OVERRIDES.values()))
-                    if t and t.strip()}, key=lambda s: (s.lower(), s))
+#
+# Only clips the firmware can reach are rendered: those named by the two tables in voice_clips.h -
+# voiceLookup[] (fw_lookup) and voiceCharLookup[] (char_seq), the only ways MorseVoice finds a clip. An
+# overridden entry used to get a clip of its raw text as well ("WinKeyer" beside "Win Keyer"), and so did a
+# spoken menu text whose entry was overridden: 74 clips, ~640 KB, that nothing could ever play, which filled
+# the Accessibility Edition's voice store to the last byte (2026-10-17, Remote WinKeyer's clips no longer fit).
+reachable = set(fw_lookup.values()) | {t for seq in char_seq.values() for t in seq}
+all_texts = sorted({t for t in reachable if t and t.strip()}, key=lambda s: (s.lower(), s))
 id_map = {}
 for t in all_texts: id_map.setdefault(clip_id(t), []).append(t)
 collisions = {k: v for k, v in id_map.items() if len(v) > 1}   # md5 collisions (expect none)
@@ -367,7 +395,7 @@ with open(os.path.join(HERE, "voice_strings.txt"), "w", encoding="utf-8") as f:
 
 manifest = {
     "voice_dir": "/voice",
-    "phrases": {t: clip_id(t) for t in sorted(set(phrase_texts)) if t.strip()},
+    "phrases": {t: clip_id(t) for t in sorted(set(phrase_texts)) if t.strip() and t in reachable},
     "characters": {c: [clip_id(t) for t in seq] for c, seq in char_seq.items()},
     "clips": {clip_id(t): t for t in all_texts},   # id -> text (firmware reverse map / debug)
     "id_collisions": collisions,
@@ -382,21 +410,6 @@ manifest = {
 }
 with open(os.path.join(HERE, "voice_manifest.json"), "w", encoding="utf-8") as f:
     json.dump(manifest, f, indent=2, ensure_ascii=False)
-
-# ── Emit voice_clips.h for the firmware: firmware-facing UI string -> clip id ──
-# The firmware announces using the strings it actually holds: menu entries by their
-# DISPLAY text (menuText[]), prefs by spokenName||parName, option values + numbers by
-# their displayed text. So we key the lookup by those firmware-facing strings, mapping
-# each to the id of its (possibly spoken-override) clip.
-fw_lookup = {}
-def fw_add(key, clip_text):
-    if key and key.strip():
-        fw_lookup[key] = USER_OVERRIDES.get(key, clip_text)   # user override wins
-for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spoken clip
-for lbl in pref_labels: fw_add(lbl, lbl)
-for v in option_values: fw_add(v, v)
-for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
-for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS + WINKEYER_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
 
 def cstr(s): return s.replace("\\", "\\\\").replace('"', '\\"')
 HDR = os.path.join(SRC, "voice_clips.h")
