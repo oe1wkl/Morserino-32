@@ -389,6 +389,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    and fixed: the classic's FN is GPIO0, held down by loggers with DTR on / RTS off (now ignored).
    **Still open:** N1MM (Windows) and the revision 23-vs-31 call, key-line timing with a logic analyser.
    **Follow-up: Remote WinKeyer** with M32KIP (V10) — DESIGN.md §9.1: decisions R1–R8 taken 2026-10-17
-   (WinKeyer Tx preference, Pocket only; menu "Remote WinK" on the classic). **Implemented on branch
-   `remote-winkeyer` (off m32kip), not merged, not pushed**; builds all 10 envs, EN+DE V10 manuals and voice
-   clips done. **Bench owed:** `devdocs/winkeyer/BENCH_REMOTE.md` (two Morserinos and a logger).
+   (WinKeyer Tx preference, Pocket only; menu "Remote WinK" on the classic). **Implemented, merged into
+   m32kip 2026-10-18 (5034014, not pushed)**; builds all 10 envs, EN+DE V10 manuals and voice clips done.
+   Link-up bench done (Pocket + classic rig, results in `devdocs/winkeyer/BENCH_REMOTE.md`). **Still owed:**
+   screens/voice, paddle and encoder, a real logger, an Internet path, the classic as Remote WinKeyer, the a11y
+   edition; five implementation interpretations to confirm (end of BENCH_REMOTE.md).
