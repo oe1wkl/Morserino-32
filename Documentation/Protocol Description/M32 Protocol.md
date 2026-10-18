@@ -472,7 +472,7 @@ These commands perform basically the same task as `PUT menu/start` and `PUT menu
 `PUT menu/stop	`						
 
 
-If M32 is active or in the preferences menu, stop it and go to main menu.
+If M32 is active or in the preferences menu, stop it and go to main menu. At the main menu it does nothing (firmware before 9.2 kept it pending, and the next mode started then ended at once).
 
 
 
