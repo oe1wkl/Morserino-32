@@ -29,8 +29,34 @@ Flashed `pocketwroom` from this branch (firmware 10.0, protocol 1.5). TRX Peer 1
   early returns in `menuExec()` (empty Practice Set, file player errors, WiFi Trx setup failure) also leave
   `m32state` at `active_loop`.
 
-Still open: everything that needs the link up (a Remote Rig), the screens and voice, the paddle/encoder, the
-menu entry from the device, the classic.
+## Results with the link up (2026-10-18, Pocket = Remote WinKeyer by auto-detect, classic 2nd edition = Remote Rig)
+
+Same LAN, new pass phrase on both (set by Willi), Pocket TRX Peer = the classic. The classic ran a `-D
+KIP_MEASURE=1` build for its KIPM/KIPT reports (normal build put back afterwards); its "to Tx" was empty. One
+script drove both (`PUT menu/start now/50` on the classic, 1200-baud WinKeyer bytes to the Pocket).
+
+- **Sending:** PARIS PARIS at 20 WpM reproduced at the rig, marks and spaces within −45…+38 µs of the
+  Pocket's key line; CQ CQ after a reconnect likewise. The classic's menu shows "Transceiver/Remote WinK".
+- **R3a:** a 5 s Tune went through whole (key-down-limit counter `kdl` stayed 0 — source 1, so Rig Limit SK).
+  A 15 s Tune was cut by the rig at 10 s (`kdl` 1) and the Pocket ended its own tune 10.13 s in (status
+  KEYDOWN+BUSY → BUSY → idle).
+- **R5:** after Tune off BUSY stayed up 150–160 ms = the rig's playout delay (125–140 ms) + 20 ms. After text
+  ending in a word space the hold is invisible, as designed (the word gap outlasts it).
+- **R4:** the rig leaving (its BYE) raised BREAKIN on the Pocket within 10–50 ms; the long text in progress
+  stopped ("VVV V"), BREAKIN cleared one word space later, text sent while the link was down was dropped (no
+  echo, status idle). The rig back: the Pocket relinked within ~3 s by itself and the next text went out whole.
+- **Found and fixed (commit "M32KIP keyer: a late BYE copy no longer drops the next session"):** the rig's
+  three BYE copies arrived while the keyer was already calling and left `gByeSeen` set, so the next session was
+  dropped as soon as it landed — in Remote WinKeyer a spurious BREAKIN ~3 s after the rig came back (and a
+  wasted reconnect cycle in Remote Keyer). Confirmed gone on the re-run.
+- **Seen, older than this branch (master WinKeyer):** an unsolicited status byte (e.g. BUSY → idle at the end of
+  a message) sometimes reaches the host only with its next write — 2 of ~10 status changes in one run. `pump()`
+  does not flush the Pocket's HWCDC; replies do (`replyNow()`). A logger that waits for idle before PTT-off
+  would see it late. Worth a separate look.
+
+Still open: the screens and voice (watch the display during a run), the paddle and encoder, the menu entry from
+the device, a real logger (N1MM / RUMlog), a link across the Internet, the classic as Remote WinKeyer, and the
+Accessibility Edition.
 
 **Set-up.**
 - **A** = the operator's Morserino: runs **Remote WinKeyer** (on the classic the menu says **Remote WinK**),

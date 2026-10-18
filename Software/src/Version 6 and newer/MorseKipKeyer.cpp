@@ -190,6 +190,7 @@ void onUdp(AsyncUDPPacket packet) {
         portEXIT_CRITICAL(&gSessMux);
         gNonceValid = false;
         markAlive();
+        gByeSeen = false;                                 // whatever ended the last session, this one is new
         gNewSession = true;
         gCfgCapable = (a.flags & ACK_CFG_CAPABLE) != 0;   // a reconnect may land on a different rig (D17)
         if (gCfgCapable) gCfgReqDue = true;               // refresh the cache for the preferences menu
@@ -219,7 +220,11 @@ void onUdp(AsyncUDPPacket packet) {
             markAlive();
         }
     } else if (h.type == PKT_BYE) {
-        if (decodeBye(data, len, key, h)) gByeSeen = true;      // the Rig ended it: call again straight away
+        // The Rig ended it: call again straight away. Only while the link is up - a Rig sends its BYE three times
+        // (spec §6.6), and the later copies arrive when the Keyer is already calling, still under the old session.
+        // Taken then, they left gByeSeen set, and the next session was dropped the moment it landed (bench
+        // 2026-10-18: a spurious break-in in Remote WinKeyer, one wasted reconnect in Remote Keyer).
+        if (gLink == LINK_UP && decodeBye(data, len, key, h)) gByeSeen = true;
     }
 }
 
