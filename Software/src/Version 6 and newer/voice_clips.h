@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "4bcfcad5"
+#define VOICE_PACK_STAMP "d14320f0"
 
 struct VoiceEntry { const char* key; const char* id; };
 
