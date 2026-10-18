@@ -542,6 +542,14 @@ void MorseMenu::menu_() {
     MorseOutput::soundSetVolume(MorsePreferences::sidetoneVolume);
 #endif
     while (true) {                          // we wait for a click (= selection) or to get some serial input
+        // Whatever brought us here, we are at the menu now. menuExec() sets active_loop on entry, and every mode
+        // start that fails or is cancelled (empty Practice Set, a file that will not open, WiFi that does not
+        // connect, a rig that does not answer, ...) returns here without putting it back - after which the
+        // protocol refused every "PUT menu/start" with NOT AT MENU. And a "PUT menu/stop" that arrived while no
+        // mode loop was running (at the menu, or during a start that then failed) has nothing left to stop; left
+        // set, it ended the next mode the moment it began.
+        m32state = menu_loop;
+        goToMenu = false;
 #ifdef WK_NATIVE_USB
         MorseWinKeyer::topMenuArmed = true;  // D1a: only here may a WinKeyer host open a session
 #endif
