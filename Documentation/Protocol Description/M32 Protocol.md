@@ -20,6 +20,8 @@ The Morserino can communicate two-way with a connected computer — over the USB
 
 	New parameters: "Rig Delay", "Rig Limit Kyr", "Rig Limit SK", "Rig 1st Ext",
 	    "Rig Hang", "Glitch Filter"
+	New parameter, M32 Pocket only: "WinKeyer Tx" (Local / Remote) — which
+	    WinKeyer mode a logging program's Host Open at the main menu starts
 
 	Also new in 1.5, in every build:
 

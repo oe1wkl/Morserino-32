@@ -89,8 +89,35 @@ portMUX_TYPE      gStatMux = portMUX_INITIALIZER_UNLOCKED;
 volatile bool     gStatFresh = false;
 volatile uint32_t gStatAtMs = 0;
 bool              gShownLink = false;
+volatile uint16_t gPlayoutMs = 0;            // from the rig's last STATS; 0 = none yet (Remote WinKeyer R5)
+volatile uint16_t gMaxKeydownMs = 0;         // ... and the key-down limit it applies to the current source (R3a)
+
+// Remote WinKeyer R3a: a logger's Tune / Key Buffered mark goes out as source 1 (loop context only)
+bool              gLongMark = false;
+uint32_t          gLongMarkEndMs = 0;        // when the last one ended; 0 = never
+
+// Remote WinKeyer R6: called during begin()'s waits so the WinKeyer host is answered meanwhile
+void (*gServe)() = nullptr;
 
 inline uint32_t nowTicks() { return (uint32_t)(esp_timer_get_time() / 100); }
+
+/// The source this unit's edges carry: the keyer mode, unless a Remote WinKeyer host is holding a long mark (R3a).
+/// Kept at source 1 for a second after such a mark, because the rig plays the key-up out a playout delay after it
+/// arrives and judges the mark by the source in force at that moment.
+uint8_t currentSource() {
+    if (gLongMark || (gLongMarkEndMs && millis() - gLongMarkEndMs < 1000)) return SRC_STRAIGHT;
+    return (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
+}
+
+/// begin()'s waits: like voicedPause(), and they also serve a Remote WinKeyer host (R6).
+void servedPause(uint32_t ms) {
+    uint32_t start = millis();
+    do {
+        if (gServe) gServe();
+        MorseVoice::tick();
+        delay(5);
+    } while (millis() - start < ms);
+}
 
 void snapshotSession(uint32_t& session, uint8_t key[32]) {
     portENTER_CRITICAL(&gSessMux);
@@ -125,7 +152,7 @@ void showError(const String& l0, const String& l1, const String& l2, const char*
     MorseOutput::refreshDisplay();
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Remote Keyer: " + l0, "");
-    MorsePreferences::voicedPause(2500);    // a bare delay() here kept the a11y edition mute (TODO B8)
+    servedPause(2500);                            // a bare delay() here kept the a11y edition mute (TODO B8)
 }
 
 void sendHello(uint16_t seq, const uint8_t nonce[8]) {
@@ -163,6 +190,7 @@ void onUdp(AsyncUDPPacket packet) {
         portEXIT_CRITICAL(&gSessMux);
         gNonceValid = false;
         markAlive();
+        gByeSeen = false;                                 // whatever ended the last session, this one is new
         gNewSession = true;
         gCfgCapable = (a.flags & ACK_CFG_CAPABLE) != 0;   // a reconnect may land on a different rig (D17)
         if (gCfgCapable) gCfgReqDue = true;               // refresh the cache for the preferences menu
@@ -175,7 +203,11 @@ void onUdp(AsyncUDPPacket packet) {
     if (session == 0 || h.session != session) return;
     if (h.type == PKT_STATS) {
         Stats st;
-        if (decodeStats(data, len, key, h, st)) markAlive();
+        if (decodeStats(data, len, key, h, st)) {
+            gPlayoutMs = st.playoutMs;
+            gMaxKeydownMs = st.maxKeydownMs;
+            markAlive();
+        }
     } else if (h.type == PKT_CFG_VAL) {
         // The rig's own account of its settings - the answer to a fetch, or the acknowledgement of a set saying
         // what was actually stored after its own clamping. Either way it is the truth and the cache follows it.
@@ -188,7 +220,11 @@ void onUdp(AsyncUDPPacket packet) {
             markAlive();
         }
     } else if (h.type == PKT_BYE) {
-        if (decodeBye(data, len, key, h)) gByeSeen = true;      // the Rig ended it: call again straight away
+        // The Rig ended it: call again straight away. Only while the link is up - a Rig sends its BYE three times
+        // (spec §6.6), and the later copies arrive when the Keyer is already calling, still under the old session.
+        // Taken then, they left gByeSeen set, and the next session was dropped the moment it landed (bench
+        // 2026-10-18: a spurious break-in in Remote WinKeyer, one wasted reconnect in Remote Keyer).
+        if (gLink == LINK_UP && decodeBye(data, len, key, h)) gByeSeen = true;
     }
 }
 
@@ -315,7 +351,10 @@ bool firstHandshake() {
     });
     for (int attempt = 0; attempt < 10 && !got; attempt++) {
         sendHello((uint16_t)(attempt + 1), nonceC);
-        for (int w = 0; w < 50 && !got; w++) delay(10);              // 500 ms between tries (spec §6.3)
+        for (int w = 0; w < 50 && !got; w++) {                       // 500 ms between tries (spec §6.3)
+            if (gServe) gServe();                                    // Remote WinKeyer: the host is answered meanwhile
+            delay(10);
+        }
     }
     if (!got) return false;
     uint8_t k[32];
@@ -406,10 +445,11 @@ bool MorseKipKeyer::rigCfgPending() {
 
 void MorseKipKeyer::tick() {
     if (!gActive) return;
-    gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
+    gSource = currentSource();
     // Contact bounce is a straight key's problem (spec §10.1). The iambic keyer's edges are generated, clean by
-    // construction, and must not pay the filter's delay.
-    gGlitchTicks = (gSource == SRC_STRAIGHT) ? msToTicks(MorsePreferences::pliste[posKipGlitch].value) : 0;
+    // construction, and must not pay the filter's delay - nor a Remote WinKeyer host's long mark (source 1, R3a).
+    gGlitchTicks = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY)
+                 ? msToTicks(MorsePreferences::pliste[posKipGlitch].value) : 0;
     bool link = linked();
     if (link != gShownLink) {               // only on a change: a redraw is longer than a dit
         gShownLink = link;
@@ -423,9 +463,27 @@ void MorseKipKeyer::tick() {
     // MorseVoice::busy() test in the kipKeyer branch), so it never mutes the sidetone.
 }
 
-bool MorseKipKeyer::begin() {
-    end();                                  // never two sessions
+static bool startLink(bool persist);
 
+bool MorseKipKeyer::begin(void (*serve)(), bool persist) {
+    end();                                  // never two sessions
+    gServe = serve;
+    bool ok = startLink(persist);
+    gServe = nullptr;
+    return ok || persist;                   // persist: the mode runs whatever happened (R6)
+}
+
+String MorseKipKeyer::peerName() {
+    return (gPeer == IPAddress()) ? MorsePreferences::wlanTRXPeer : gPeer.toString();
+}
+
+/// begin()'s body: configuration, WiFi, the first handshake, the send task. False if the link could not be started;
+/// with `persist` a rig that does not answer is not a failure - the task keeps calling it.
+static bool startLink(bool persist) {
+    gPeer = IPAddress();
+    gPlayoutMs = gMaxKeydownMs = 0;
+    gLongMark = false;
+    gLongMarkEndMs = 0;
     if (MorsePreferences::kipPsk.length() < 12) {
         showError("No key set", "Set a pass-", "phrase first", "No pass phrase set");
         return false;
@@ -435,7 +493,7 @@ bool MorseKipKeyer::begin() {
         return false;
     }
     deriveBaseKey(MorsePreferences::kipPsk.c_str(), gBaseKey);
-    gSource = (MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY) ? SRC_STRAIGHT : SRC_KEYER;
+    gSource = currentSource();
     gLastNoted = KEY_UP;
     gFilter.reset();                                // the send task is not running yet (end() above retired it)
     // A fresh session knows nothing about the rig yet: no capability, no values, nothing outstanding. Carrying any
@@ -450,8 +508,8 @@ bool MorseKipKeyer::begin() {
     if (protocolActive())
         MorseJSON::jsonCreate("message", "Connecting...", "");
     MorseVoice::announce("Connecting");
-    MorsePreferences::voicedPause(300);     // long enough for the clip to start; it plays on while WiFi connects
-    if (!MorseWiFi::wifiConnect()) return false;
+    servedPause(300);                             // long enough for the clip to start; it plays on while WiFi connects
+    if (!MorseWiFi::wifiConnect(gServe)) return false;
     WiFi.setSleep(false);
 
     String host = MorsePreferences::wlanTRXPeer;    // resolved once, so no DNS lookup lands on the keying path
@@ -466,14 +524,16 @@ bool MorseKipKeyer::begin() {
     MorseOutput::printOnScroll(1, REGULAR, 0, gPeer.toString());
     MorseOutput::refreshDisplay();
     MorseVoice::announce("Calling rig");
-    MorsePreferences::voicedPause(300);
+    servedPause(300);
 
     gLink = LINK_UP;
-    if (!firstHandshake()) {
-        MorseWiFi::audp.close();
+    bool answered = firstHandshake();
+    if (!answered) {
         portENTER_CRITICAL(&gSessMux); gSession = 0; portEXIT_CRITICAL(&gSessMux);
+        if (!persist) MorseWiFi::audp.close();
         showError("No answer", "Check rig and", "pass phrase", "No answer from the rig");
-        return false;
+        if (!persist) return false;
+        gLink = LINK_CALLING;                       // R6: an open host session stays; keep calling, as after a drop (D14)
     }
     MorseWiFi::audp.onPacket(onUdp);                // replaces the handshake handler for the rest of the mode
 
@@ -488,16 +548,33 @@ bool MorseKipKeyer::begin() {
     gKeyer.noteSent(nowTicks());                    // arm the send schedule (D13)
     gNewSession = false;
     gByeSeen = false;
-    markAlive();                                    // the HELLO_ACK itself is proof of a live link
-    gShownLink = true;
+    if (answered) markAlive();                      // the HELLO_ACK itself is proof of a live link
+    gShownLink = answered;
 
     gRunTask = true;
     xTaskCreatePinnedToCore(sendTask, "kipkeyer", 4096, nullptr, 3, &gTask, 0);   // core 0: WiFi lives there
     gActive = true;
 
-    MorseVoice::announce("Linked to rig");  // heard during the start screen (showStartDisplay pauses voiced)
-    MorseMenu::showStartDisplay("", "Remote Keyer", gPeer.toString(), 1000);
+    if (answered)
+        MorseVoice::announce("Linked to rig");  // heard during the start screen (showStartDisplay pauses voiced)
+    if (!gServe)                                // Remote WinKeyer draws its own start screen
+        MorseMenu::showStartDisplay("", "Remote Keyer", gPeer.toString(), 1000);
     return true;
+}
+
+void MorseKipKeyer::setLongMark(bool on) {
+    if (on == gLongMark) return;
+    gLongMark = on;
+    if (!on) gLongMarkEndMs = millis();
+    if (gActive) gSource = currentSource();     // before the key-down's edge is queued: the send task reads it
+}
+
+uint16_t MorseKipKeyer::playoutMs() {
+    return gPlayoutMs ? gPlayoutMs : 150;       // spec §11 default until the rig has reported
+}
+
+uint16_t MorseKipKeyer::rigMaxKeydownMs() {
+    return gMaxKeydownMs;
 }
 
 void MorseKipKeyer::end() {

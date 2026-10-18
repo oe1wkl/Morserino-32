@@ -36,12 +36,13 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=55687199487b v=10 -->
+<!-- WHATSNEW:BEGIN en=b74b81e69d1d v=10 -->
 Was ist neu in Version 10?
 
 -   Zwei Morserinos können jetzt über das Netzwerk eine **Tastverbindung in die Ferne** bilden. Du gibst an deinem Betriebsplatz auf dem einen — dem neuen Modus **Remote Keyer** — und der andere, an der Station, tastet über seinen Anschluss „to Tx“ den Sender: der neue Modus **Remote Rig**. Die Station kann im Nebenzimmer stehen oder in einem anderen Land. Was aus dem Sender kommt, ist das, was du gegeben hast, mit deinem eigenen Timing — ob es von den Paddles kam, von einer Handtaste oder von einem Bug. Es ist eine Tastverbindung, keine Audioverbindung: Deinen Mithörton hörst du lokal und sofort, sodass nichts im Netzwerk deinen Gebe-Rhythmus stören kann; was du *von* der Station hörst, kommt über den Fernsteuer- und Audioweg, den du ohnehin schon benutzt. Die Verbindung läuft über UDP-Port 7374, und die Adresse der Station trägst du im Feld **TRX Peer** unter **Config WiFi** ein — dasselbe Feld, das auch der WiFi-Transceiver verwendet. Beide Seiten sind im Handbuch beschrieben, samt dem, was bei Routern und Firewalls zu beachten ist.
 -   Das serielle Protokoll, das das Konfigurationsprogramm und andere Programme verwenden, steht jetzt auf **Version 1.5**: Es kann die Einstellungen für die Ferntastung (gemeinsames Passwort und Port) und die Einstellungen von Remote Rig und Remote Keyer lesen und setzen, und es meldet die neuen Befehle in seiner Liste der Fähigkeiten. Alles aus Version 1.4 funktioniert unverändert weiter.
 -   Neuer Modus **Transceiver → WinKeyer**: Der Morserino verhält sich wie ein WinKeyer (WK2) von K1EL, sodass Log- und Contestprogramme (N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog, CQRLOG, fldigi/flwkey, …) über USB CW durch ihn senden können. Er tastet einen an „to Tx" angeschlossenen Sender (außer **Key ext TX** steht auf Never), du kannst jederzeit mit dem Paddle dazwischen gehen, der ENCODER dient als Geschwindigkeitsregler des WinKeyers, und ein Klick auf den ENCODER bricht ab, was das Programm gerade sendet. Keyer-Modus, Paddle-Polarität, ACS, Latency und die Tonhöhe des Mithörtons bleiben die Einstellungen des Morserino – die entsprechenden Einstellungen im Programm haben keine Wirkung; alles andere am Senden des Programms (Geschwindigkeit, Gewichtung, Punkt-Strich-Verhältnis, Kompensation, Farnsworth, Contest-Abstand, …) kommt vom Programm, und nichts davon wird gespeichert. Die WinKeyer-Nachrichten 1 bis 6 spielen die Keyer-Speicher 1 bis 6 des Morserino ab. Einen PTT-Ausgang gibt es nicht. Bei der 1st und 2nd Edition startest du den Modus vor dem Programm (die USB-Schnittstelle läuft dann mit den 1200 Baud des WinKeyers); beim M32 Pocket kann ein Programm den WinKeyer auch öffnen, während der Morserino im Hauptmenü ist – der Modus startet dann von selbst.
+-   Neuer Modus **Transceiver → Remote WinKeyer** (bei der 1st und 2nd Edition **Remote WinK**, damit es aufs Display passt): **WinKeyer** und **Remote Keyer** in einem. Ein Log- oder Contestprogramm steuert den Morserino über USB genau wie im Modus **WinKeyer**, und sein CW – und was du mit dem Paddle gibst – geht über die Tastverbindung an einen entfernten Sender, während dein eigener Anschluss „to Tx“ stumm bleibt. Weil der Sender weit weg steht, ist einiges anders als im **WinKeyer**: Reißt die Verbindung ab, hört das Senden des Programms auf und das Programm erfährt es, wie wenn du mit dem Paddle dazwischen gehst (ein wiederholtes CQ hört auf), und was es sendet, solange die Verbindung weg ist, wird verworfen – nichts geht verspätet auf Sendung; das Programm erfährt, dass der Morserino beschäftigt ist, bis das Rig das CW ausgegeben hat, sodass ein Programm, das PTT über CAT schaltet, das Ende nicht abschneidet; und ein Tune wird am Rig wie eine gedrückt gehaltene Handtaste behandelt (es gilt **Rig Limit SK**). Die Einstellungen des Rigs erreichst du mit einem Doppelklick, solange die Verbindung steht, wie im **Remote Keyer**. Beim M32 Pocket bestimmt die neue Einstellung **WinKeyer Tx**, welcher der beiden WinKeyer-Modi startet, wenn ein Programm den WinKeyer öffnet, während der Morserino im Hauptmenü ist: **Local** (die Voreinstellung, wie bisher) oder **Remote**.
 -   Nur M32 Pocket, Accessibility Edition: Das Gerät sagt jetzt die neue Geschwindigkeit, sobald du sie änderst – die Zahl wird ausgesprochen, während du den Encoder drehst, damit ein blinder Operator sein Übungstempo selbst wählen kann, ohne jemanden fragen zu müssen. Drehst du den Encoder schnell durch, wird nur der Endwert gesagt: Eine Ansage, die gerade läuft, wird abgebrochen, sobald ein neuerer Wert kommt – du hörst also nie den Anfangs- und den Endwert, während alles dazwischen verschluckt wird. Der CW-Generator schweigt, solange die Ansage läuft (der gemeinsame Audioweg würde aus den Morsezeichen sonst Klicks machen), und setzt danach mit dem nächsten Element im neuen Tempo fort. Beginnst du während einer Ansage zu geben, bricht die Ansage sofort ab – was du gibst, hörst du also immer als Mithörton, auch wenn es an einen Sender geht. Das funktioniert in den Übungsmodi, auch bei der automatischen Geschwindigkeitsanpassung des Echo Trainers nach jedem Wort, und im QSO Bot, dessen Morsezeichen für die Ansage genauso pausieren.
 -   Nur M32 Pocket, Accessibility Edition: Immer wenn du einen Übungsmodus verlässt und wieder im Hauptmenü landest, sagt das Gerät, wie es der Batterie geht – **high**, **medium**, **low** oder **charging** (dazu **on USB power**, wenn keine Batterie eingelegt ist, und **battery fault** für den seltenen Fehlerzustand). Das ist gerade hier wichtig, weil auf diesem Gerät der Audio-Codec als Erstes aufgibt, wenn die Zelle schwach wird: Ein blinder Operator kann sonst mit einem funktionierenden Gerät zurückbleiben, das gar nichts mehr sagt – und diese Warnung kommt weit genug vor der Codec-Klippe, dass noch Zeit zum Anstecken bleibt. Die Meldung erklingt einmal pro Rückkehr aus dem Modus ins Menü, nicht wiederholt, während du im Menü navigierst.
 -   Wenn du die Einstellungen aus einem Modus heraus öffnest (Doppelklick), kommen jetzt zuerst die Einstellungen dieses Modus – im Echo Trainer seine Echo-Einstellungen vor denen für den Keyer, im QSO Bot **QSO Difficulty** und **Contest Type** – und danach die allgemeinen, die jeder Modus anbietet (Ton, Time-out, Anzeige, dekodierte Zeichen, serielle und Bluetooth-Ausgabe, Paddle-Polarität) – die Einstellungen, die du am ehesten suchst, stehen nicht mehr am Ende der Liste. Hast du die Einstellungen noch nicht benutzt, öffnet die Liste ganz oben.
@@ -1544,6 +1545,11 @@ Der Morserino-32 hat diese Transceiver-Modi:
 * **WinKeyer** lässt ein Log- oder Contestprogramm auf einem Computer
   über den Morserino CW senden, wie über einen WinKeyer von K1EL.
 
+* **Remote Keyer** und **Remote Rig** machen aus zwei Morserinos eine
+  Tastverbindung über das Netzwerk, und **[Remote WinKeyer]{.pocket .pocket-a11y}[Remote WinK]{.classic}**
+  schickt das CW eines Logprogramms über diese Verbindung (siehe
+  **Einen entfernten Transceiver tasten**).
+
 ::: {.classic}
 ### LoRa Trx
 
@@ -1733,7 +1739,11 @@ im Hauptmenü, nie in einem laufenden Modus – ein Programm kann also
 nicht übernehmen, während du den Morserino gerade benutzt. (Bei der 1st
 und 2nd Edition geht das nicht: Dort muss die USB-Schnittstelle erst
 auf die Geschwindigkeit des WinKeyers umgeschaltet
-werden.)]{.pocket .pocket-a11y}
+werden.) Welcher Modus startet, bestimmt die Einstellung **WinKeyer
+Tx**: **Local** (die Voreinstellung) startet diesen, **Remote** startet
+**Remote WinKeyer**, der das CW des Programms stattdessen an einen
+entfernten Transceiver schickt (siehe **Einen entfernten Transceiver
+tasten**).]{.pocket .pocket-a11y}
 
 Solange der Modus läuft, gehört die USB-Schnittstelle dem
 Logprogramm: Das Configuration Tool und die anderen Hilfsprogramme
@@ -1963,6 +1973,52 @@ Dein eigener Anschluss „to Tx" bleibt in diesem Modus stumm. Der Morserino vor
 dir tastet lokal nichts, egal was bei **Key ext TX** eingestellt ist; getastet
 wird der entfernte Sender.
 
+#### Aus einem Logprogramm: Remote WinKeyer {-}
+
+**Remote WinKeyer**[ (im Menü **Remote WinK**, damit es aufs Display passt)]{.classic} ist
+**WinKeyer** und **Remote Keyer** in einem: Ein Log- oder Contestprogramm auf deinem Computer
+steuert den Morserino über USB genau wie im Modus **WinKeyer**, und sein CW – und was du mit dem
+Paddle gibst – geht über die Verbindung an den entfernten Sender, wie im **Remote Keyer**. Alles
+aus dem Abschnitt **WinKeyer** gilt: wie du das Programm einrichtest, DTR und RTS, was der
+Morserino für sich behält, was nicht unterstützt wird. Ebenso gilt alles, was oben über die
+Verbindung steht: Das Rig läuft im **Remote Rig**, die Adresse gehört in **TRX Peer**, die
+Passphrase muss übereinstimmen, und die Einstellungen des Rigs erreichst du mit einem
+Doppelklick, solange die Verbindung steht.
+
+[Wähle **Transceiver → Remote WinK** und starte dann das Programm.]{.classic}[Wähle
+**Transceiver → Remote WinKeyer**. Oder stelle **WinKeyer Tx** auf **Remote** und lass den
+Morserino im Hauptmenü: Wenn das Programm den WinKeyer öffnet, startet der Morserino diesen Modus
+von selbst und kehrt ins Menü zurück, wenn das Programm ihn wieder schließt.]{.pocket .pocket-a11y}
+Der Start dauert einige Sekunden, bis das WLAN verbunden ist und das Rig antwortet. Das Programm
+bekommt in der Zwischenzeit seine Antworten, und was es sendet, wartet, bis die Verbindung steht.
+
+Die oberste Zeile zeigt **Host**, solange ein Programm den WinKeyer geöffnet hat, und das
+WLAN-Symbol, solange das Rig antwortet.[ Der Morserino sagt „Linked to rig“, sobald die Verbindung
+steht, dann „Waiting for host“ oder „Host connected“, und „Link lost“ und „Link restored“, wenn
+sich die Verbindung ändert.]{.pocket-a11y} Dein eigener Anschluss „to Tx" bleibt stumm, deshalb
+gehört **Key ext TX** nicht zu den Einstellungen dieses Modus.
+
+Was anders ist als im **WinKeyer**, weil der Sender weit weg steht:
+
+-   **Wenn die Verbindung abreißt,** hört auf, was das Programm gerade sendet, und das Programm
+    erfährt es – genau wie wenn du mit dem Paddle dazwischen gehst; ein Programm, das ein CQ
+    wiederholt, hört damit auf. Solange die Verbindung weg ist, wird verworfen, was das Programm
+    sendet, und das Paddle erzeugt nur den Mithörton. Nichts geht verspätet auf Sendung: Sobald die
+    Verbindung wieder steht, geht das Nächste, was das Programm sendet, vollständig hinaus.
+-   **Das Programm erfährt, dass der Morserino beschäftigt ist, bis das Rig fertig ist** – um die
+    **Rig Delay** später als der Mithörton. Ein Programm, das den Sender über CAT auf Empfang schaltet,
+    sobald der WinKeyer nicht mehr beschäftigt ist, würde sonst das Ende jeder Nachricht
+    abschneiden.
+-   **Tune** (und ein Tastendruck, den das Programm verlangt) wird am Rig behandelt wie eine
+    gedrückt gehaltene Handtaste: Es gilt **Rig Limit SK** (voreingestellt 10 Sekunden), nicht das
+    knappe **Rig Limit Kyr**. Ist die Grenze erreicht, hebt das Rig die Taste, und der Morserino
+    beendet das Tune ebenfalls.
+
+Ist das Rig nicht erreichbar, kehrt ein Start aus dem Menü ins Menü zurück, wie beim **Remote
+Keyer**. [Hat das Programm die Sitzung aus dem Hauptmenü geöffnet, bleibt der Modus: Er zeigt, warum
+die Verbindung nicht zustande kam, ruft das Rig weiter, wenn er kann, und verwirft das CW des
+Programms, bis die Verbindung steht. Ein langer Druck verlässt den Modus wie immer.]{.pocket .pocket-a11y}
+
 #### Die Verzögerung, und warum es sie gibt {-}
 
 Ein Netzwerk liefert Pakete nicht gleichmäßig aus. Würde das Rig den Sender in
@@ -2072,6 +2128,8 @@ aufgefordert wird. Es gibt keinen Zustand der Verbindung, in dem ein Zeichen auf
 der Luft stehen bleibt.
 
 #### Wenn es nicht startet {-}
+
+Das Keyer-Ende zeigt diese Meldungen im **Remote Keyer** wie im **Remote WinKeyer**.
 
 | Auf dem Display | Was zu tun ist |
 |---|---|
@@ -3807,7 +3865,7 @@ oder die Spiele]{.pocket} betreffen, werden **nicht** in Schnappschüssen
 gespeichert, und das Abrufen eines Schnappschusses verändert sie nie:
 
 -   Hardware-Einstellungen: **Paddle Polar.**, **External Pol.**
--   Sender- und Netzwerk-Einstellungen: **Key ext TX**, **Generator
+-   Sender- und Netzwerk-Einstellungen: **Key ext TX**, [**WinKeyer Tx**, ]{.pocket .pocket-a11y}**Generator
     Tx**[, der LoRa-Kanal]{.classic}
 -   Bluetooth-Tastatur-Einstellungen: **BLT Kbd Output**, **BLT \<AR\>**
 -   Audio-Routing: **Headphone Output**, **Decoded on IO**
@@ -4009,6 +4067,7 @@ Senders), für das Dekodieren von Morsezeichen oder für den QSO Bot
 | Einstellung | Beschreibung | Werte |
 |---|---|---|
 | **Key ext TX** | Legt fest, ob ein angeschlossener Sender getastet werden soll. **Gen** = Generatormodi, **RX** =[ LoRa- oder]{.classic} WiFi-Empfangsmodi. Die Option **Keyer & Gen.** lässt den Morserino einen externen Sender auch im Generatormodus tasten (z.B. für Trainingsübertragungen). Die Option **Keyer&Gen.&RX** ist nützlich, wenn du auf deinem Sender das senden möchtest, was der Morserino über[ LoRa oder]{.classic} WLAN empfangen hat (für Fernbedienung). | Never / **CW Keyer only** (gilt auch für Transceiver-Modi) / Keyer & Gen. / Keyer&Gen.&RX |
+| []{.pocket .pocket-a11y}**WinKeyer Tx** | (Nur für M32 Pocket) Welcher Modus startet, wenn ein Logprogramm den WinKeyer öffnet, während der Morserino im Hauptmenü ist (Abschnitt **WinKeyer**): **Local** startet **WinKeyer**, der einen an „to Tx“ angeschlossenen Sender tastet; **Remote** startet **Remote WinKeyer**, der über eine Tastverbindung einen entfernten Sender tastet (Abschnitt **Einen entfernten Transceiver tasten**). Die Auswahl eines der beiden Modi im Menü bleibt davon unberührt. | **Local** / Remote |
 | **Generator Tx** | Ermöglicht dem CW-Generator, das Generierte[ entweder über LoRa oder WLAN]{.classic}[über WLAN]{.pocket .pocket-a11y} zu senden – so kann ein Gerät etwas erzeugen und mehrere andere die gleiche Sequenz empfangen. Verwendbar in allen CW-Generator- und Koch/CW-Generator-Modi einschließlich File Player. Nützlich für Lerngruppen. Auf öffentlichen M32-Chat-Servern sollte dies nur mit Vorsicht und nicht über längere Zeit verwendet werden; sehr praktisch hingegen für eine Gruppe im gleichen Netzwerksegment (Broadcast als TrX-Peer oder privater Chat-Server) oder[ über LoRa (oder]{.classic} WiFi Trx mit EspNow[)]{.classic}, wenn alle Teilnehmer nah genug beieinander sind. [*Beim Senden über LoRa muss eine Antenne angeschlossen sein, sonst wird der LoRa-Transceiver irgendwann zerstört!*]{.classic} | [**Tx OFF** (= generierte Morsezeichen nicht aussenden) / LoRa Tx ON (mit LoRa senden) / WiFi Tx ON (mit WLAN senden)]{.classic}[**WiFi Tx OFF** (= generierte Morsezeichen nicht aussenden) / WiFi Tx ON (mit WLAN senden)]{.pocket .pocket-a11y} |
 | **Trx Channel** | Wählt den Kanal für[ LoRa oder]{.classic} EspNow (ein WLAN-Peer-to-Peer-Modus ohne Access Point). [Bei LoRa ist dies ein virtueller Kanal; bei EspNow wird]{.classic}[Dabei wird]{.pocket .pocket-a11y} die Frequenz tatsächlich zwischen WLAN-Kanal 6 (**Standard Ch**) und 1 (**Secondary Ch**) gewechselt. Weitere Informationen zu EspNow findest du in Abschnitt **WiFi Trx**. | **Standard Ch** / Secondary Ch |
 | **Bandwidth** | Legt die Bandbreite fest, die der CW-Decoder verwendet (implementiert in Software als sogenannter Goertzel-Filter). **Wide** = ca. 600 Hz, **Narrow** = ca. 150 Hz; Mittenfrequenz = ca. 700 Hz. | **Wide** / Narrow |

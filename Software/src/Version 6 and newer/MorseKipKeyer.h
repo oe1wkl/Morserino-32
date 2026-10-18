@@ -23,7 +23,17 @@
 namespace MorseKipKeyer {
     /// Called from menuExec() on entry. Checks the configuration, brings WiFi up, handshakes with the rig and starts the
     /// send task. Returns false (with a message on screen) if any of that fails, so the device stays in the menu.
-    bool begin();
+    ///
+    /// Remote WinKeyer (devdocs/winkeyer/DESIGN.md §9.1 R6) passes two more things: `serve`, called throughout every
+    /// wait in here, so the WinKeyer host is answered while WiFi and the rig take their seconds to come up; and
+    /// `persist`, for a host session that is already open and cannot be refused. With `persist` begin() always returns
+    /// true: a rig that does not answer is called again once a second (D14), and a missing configuration or a failed
+    /// WiFi connect leaves the mode running without a link, its error on screen. It also skips the start screen, which
+    /// the caller draws itself.
+    bool begin(void (*serve)() = nullptr, bool persist = false);
+
+    /// The rig's address as resolved at begin(), for a start screen.
+    String peerName();
 
     /// Stops the send task, says BYE and releases the socket. Idempotent - called from menu_() on every return to the
     /// menu, before WiFi is switched off, because a BYE sent after that could not leave the device at all.
@@ -39,6 +49,21 @@ namespace MorseKipKeyer {
     /// That catches the iambic keyer, a recalled memory and the straight key alike, since all three key through there.
     /// A no-op outside this mode, and it never blocks.
     void noteEdge(bool down);
+
+    // ---- Remote WinKeyer (devdocs/winkeyer/DESIGN.md §9.1) ----
+
+    /// R3a: a logger's Tune or Key Buffered holds the key for seconds, which the rig would cut at its keyer limit
+    /// (Rig Limit Kyr, 3 s). While such a mark is on, and for a second after it (the rig plays the key-up out one
+    /// playout delay later, and judges the mark by the source in force then), the edges go out as source 1, so the
+    /// straight-key limit applies - what spec §8 "Tuning" prescribes. Call with true just before the key goes down.
+    void setLongMark(bool on);
+
+    /// The rig's current playout delay, from its last STATS (150 ms until one has arrived). R5 holds the WinKeyer's
+    /// BUSY this long after the host's last key-up, so a logger switching PTT over CAT does not clip the rig's tail.
+    uint16_t playoutMs();
+
+    /// The key-down limit the rig applies to the current source, from its last STATS (0 until one has arrived).
+    uint16_t rigMaxKeydownMs();
 
     // ---- the rig's own settings, adjusted from the operating position (D17) ----
     //

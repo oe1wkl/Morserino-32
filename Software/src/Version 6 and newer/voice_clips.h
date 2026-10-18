@@ -8,7 +8,7 @@
 // value into the pack as /voice/pack.txt; MorseVoice::clipStoreOk() compares them at
 // boot, so a pack left over from an older firmware is reported instead of silently
 // missing whichever clips changed.
-#define VOICE_PACK_STAMP "a178e273"
+#define VOICE_PACK_STAMP "c270c1dc"
 
 struct VoiceEntry { const char* key; const char* id; };
 
@@ -318,6 +318,7 @@ static const VoiceEntry voiceLookup[] = {
   {"LoRa Band", "9bc4ca24"},
   {"LoRa Frequ", "b430d983"},
   {"LoRa Power", "d7dac8bf"},
+  {"Local", "50982029"},
   {"M32", "91a34118"},
   {"Mandarin", "76c06512"},
   {"Maximum number of words", "df97b070"},
@@ -374,8 +375,10 @@ static const VoiceEntry voiceLookup[] = {
   {"Random Groups", "f81f2487"},
   {"Random group length", "dcb6a189"},
   {"Randomize File", "185555b7"},
+  {"Remote", "f8508f57"},
   {"Remote Keyer", "d5832bdc"},
   {"Remote Rig", "ea2f3ce8"},
+  {"Remote WinKeyer", "112cc5d0"},
   {"Remote keyer glitch filter", "a1c7e661"},
   {"Remote rig first element extension", "3c264ff4"},
   {"Remote rig hang time", "232ff229"},
@@ -437,6 +440,7 @@ static const VoiceEntry voiceLookup[] = {
   {"WiFi Tx ON", "1c9f2b75"},
   {"Wide", "e7c770a6"},
   {"Wifi Select", "d3df4241"},
+  {"Win Keyer transmitter", "266b0f1e"},
   {"WinKeyer", "55c6a432"},
   {"Word Length", "8bbcf5a4"},
   {"Word by word", "6e53cc02"},
@@ -493,7 +497,7 @@ static const VoiceEntry voiceLookup[] = {
   {"volts", "98e8d837"},
   {"words per minute", "c76ac660"},
 };
-static const unsigned int voiceLookupCount = 479;
+static const unsigned int voiceLookupCount = 483;
 
 struct VoiceCharEntry { const char* key; unsigned char n; const char* ids[3]; };
 
