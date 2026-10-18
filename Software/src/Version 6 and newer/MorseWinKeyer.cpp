@@ -154,14 +154,41 @@ static void outPut(uint8_t b) {
   ++outCount;
 }
 
+#ifdef WK_NATIVE_USB
+// The Pocket's HWCDC sometimes leaves written bytes in its TX ring with the interrupt that drains it switched
+// off, until the host next sends something. Replies are flushed (replyNow()), but a logger that sent nothing
+// never saw the unsolicited ones - above all the idle status at the end of a message: 7 of 40 withheld on the
+// bench with WiFi running (Remote WinKeyer), until the next host write. flush() cures it, but always waits at
+// least a millisecond, which is not to be spent on every byte of the keying path. So it is spent only on bytes
+// that have stayed in the ring for STUCK_MS: an empty ring costs one availableForWrite() per pass.
+static const unsigned long STUCK_MS = 10;
+static int txIdleFree = 0;                  // free ring space with nothing pending: the largest value seen
+static unsigned long txPendingSince = 0;    // 0 = the ring had drained when last looked at
+
+static void unstickTx() {
+  int f = Serial.availableForWrite();
+  if (f > txIdleFree) txIdleFree = f;
+  if (f >= txIdleFree) { txPendingSince = 0; return; }
+  unsigned long now = millis();
+  if (!txPendingSince) { txPendingSince = now ? now : 1; return; }
+  if (now - txPendingSince >= STUCK_MS) {
+    Serial.flush();                         // re-arms the drain interrupt
+    txPendingSince = 0;
+  }
+}
+#endif
+
 static void pump() {
   while (outCount) {
     if (Serial.availableForWrite() <= 0)            // never block the keying path on a slow port
-      return;
+      break;
     Serial.write(outBuf[outHead]);
     outHead = (outHead + 1) % OUT_SIZE;
     --outCount;
   }
+#ifdef WK_NATIVE_USB
+  unstickTx();
+#endif
 }
 
 // A host that waits for a reply (CQRLOG gives the revision byte 50 ms) gets it now. On the
