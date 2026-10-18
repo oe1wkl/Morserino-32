@@ -1,8 +1,36 @@
 # Remote WinKeyer — bench checklist (two Morserinos and a logger)
 
 Branch `remote-winkeyer` (off `m32kip`), implementing `DESIGN.md` §9.1 (R1–R8, decided 2026-10-17).
-**Nothing below has been tested on hardware yet.** Builds: all 10 envs; host tests (menu ring, ClickButton,
-KIP core + vectors) pass. `wk_bench.py` was not run — it needs a flashed device.
+Builds: all 10 envs; host tests (menu ring, ClickButton, KIP core + vectors, protocol selftest) pass.
+
+## Results so far (2026-10-18, one Pocket, standard edition, no rig reachable)
+
+Flashed `pocketwroom` from this branch (firmware 10.0, protocol 1.5). TRX Peer 192.168.1.237 did not answer
+(no Remote Rig running), so every remote check below ran **with the link down**; nothing was keyed remotely.
+
+- **Local WinKeyer regression (auto-detect, WinKeyer Tx = Local):** `wk_bench.py` all automatic steps pass
+  (echo, values, Vcc, EEPROM dump, Host Open 23–25 ms, send PARIS 3.01 s, prosigns, XOFF, status, buffered,
+  defaults, tune, close). One missed status reply in one run, 3/3 on repeat (the known rare HWCDC stall). Not
+  run: the hand-operated encoder and paddle checks.
+- **Remote WinKeyer by auto-detect (WinKeyer Tx = Remote), rig unreachable:**
+  - Host Open answered in 25 ms (revision 23); the mode started.
+  - **R6:** an Echo Test every 0.4 s for 25 s through WiFi connect, ten calls to the rig and the "No answer"
+    screen: 59/59 answered, slowest 66 ms.
+  - **R6:** 100 characters sent right after Host Open: BUSY+XOFF (0xC5) at once, cleared to 0xC0 when the start
+    ended without a link (9 s); nothing was echoed or sent.
+  - **R4 (link down):** text dropped (no echo, no BUSY), status 0xC0, Tune (0x0B) ignored.
+  - Host Close returned to the menu; the M32 protocol worked again at once.
+- **Menu entry 61 "Transceiver/Remote WinKeyer"**, not remotely executable (correct, as WinKeyer).
+- **Found and fixed (commit "a failed start leaves the menu usable"):** after Remote Keyer failed to start ("No answer"), `menuExec()` returned
+  without setting `m32state` back to `menu_loop`, so the protocol answered every later `PUT menu/start` with
+  NOT AT MENU (m32kip bug; the new Remote WinKeyer failure path had copied it). Both fixed and confirmed.
+- **Not caused by this branch, noted for later:** a `PUT menu/stop` sent while no mode loop is running (e.g. while
+  Remote Keyer is still connecting) stays armed in `goToMenu` and makes the next mode exit at once. Several other
+  early returns in `menuExec()` (empty Practice Set, file player errors, WiFi Trx setup failure) also leave
+  `m32state` at `active_loop`.
+
+Still open: everything that needs the link up (a Remote Rig), the screens and voice, the paddle/encoder, the
+menu entry from the device, the classic.
 
 **Set-up.**
 - **A** = the operator's Morserino: runs **Remote WinKeyer** (on the classic the menu says **Remote WinK**),
@@ -47,8 +75,7 @@ KIP core + vectors) pass. `wk_bench.py` was not run — it needs a flashed devic
       answered within 50 ms (the script prints it); the mode starts (screens as in 2); **note how long the start
       takes**. The `send` text goes out on B once linked. `close` returns A to the menu, B shows End: BYE.
 - [ ] Same with **WinKeyer Tx = Local**: WinKeyer starts as before (regression).
-- [ ] Questions during the start: right after `open`, run `--only values` (or `status`) while A is still showing
-      "Connecting...": the answers must come back (the parser is served during the start, R6).
+- [x] Questions during the start: answered throughout (59/59 Echo Tests, ≤ 66 ms; 2026-10-18).
 - [ ] B off, WinKeyer Tx = Remote: the logger opens; A shows **No answer**, then stays in the mode (no WiFi
       symbol), and the logger's CW produces no sidetone. Switch B on (Remote Rig): A links within a few seconds,
       "Link restored"; the next F-key goes out on B.

@@ -1212,6 +1212,7 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 // happens and keeps calling the rig (R6). From the menu a failure goes back to it, as Remote Keyer.
                 if (!MorseKipKeyer::begin(MorseWinKeyer::serviceInput, autoOpened)) {
                     MorseWinKeyer::leave();
+                    m32state = menu_loop;         // back in the menu: or the protocol refuses every later start
                     return false;
                 }
                 MorseVoice::announceMore(autoOpened ? "Host connected" : "Waiting for host");   // after "Linked to rig"
@@ -1265,8 +1266,10 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 MorsePreferences::setCurrentOptions(MorsePreferences::kipKeyerOptions,
                                                     MorsePreferences::kipKeyerOptionsSize);
                 morseState = kipKeyer;
-                if (!MorseKipKeyer::begin())    // configuration, WiFi, handshake, send task
-                    return false;
+                if (!MorseKipKeyer::begin()) {  // configuration, WiFi, handshake, send task
+                    m32state = menu_loop;       // back in the menu: without this the protocol answered every later
+                    return false;               // "menu/start" with NOT AT MENU until the next mode ran
+                }
                 clearPaddleLatches();
                 clearText = "";
                 executeNow = false;
