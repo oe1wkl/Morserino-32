@@ -49,10 +49,10 @@ script drove both (`PUT menu/start now/50` on the classic, 1200-baud WinKeyer by
   three BYE copies arrived while the keyer was already calling and left `gByeSeen` set, so the next session was
   dropped as soon as it landed — in Remote WinKeyer a spurious BREAKIN ~3 s after the rig came back (and a
   wasted reconnect cycle in Remote Keyer). Confirmed gone on the re-run.
-- **Seen, older than this branch (master WinKeyer):** an unsolicited status byte (e.g. BUSY → idle at the end of
-  a message) sometimes reaches the host only with its next write — 2 of ~10 status changes in one run. `pump()`
-  does not flush the Pocket's HWCDC; replies do (`replyNow()`). A logger that waits for idle before PTT-off
-  would see it late. Worth a separate look.
+- **Fixed (master branch `winkeyer-status-flush`, carried here):** an unsolicited status byte (e.g. BUSY → idle
+  at the end of a message) sometimes reached the host only with its next write — reproduced as 7 of 40 with the
+  link up (none in 120 locally). `pump()` now flushes bytes that have sat in the HWCDC ring for 10 ms: 0 of 120
+  withheld afterwards, PARIS timing unchanged.
 
 Still open: the screens and voice (watch the display during a run), the paddle and encoder, the menu entry from
 the device, a real logger (N1MM / RUMlog), a link across the Internet, the classic as Remote WinKeyer, and the
