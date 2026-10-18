@@ -937,6 +937,7 @@ void run(menuNo mode) {
         // Encoder rotation.
         int t = checkEncoder();
         if (t != 0) {
+            MorseOutput::resetTOT();
             switch (encoderState) {
                 case speedSettingMode:  changeSpeed(t);  break;
                 case volumeSettingMode: changeVolume(t); break;
@@ -957,6 +958,7 @@ void run(menuNo mode) {
 
         // Encoder (mode) button: long-press exits; double-click = prefs.
         Buttons::modeButton.Update();
+        if (Buttons::modeButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::modeButton.clicks == -1) { userAborted = true; break; }
         if (Buttons::modeButton.clicks == 2) {
             MorseCwEngine::playStop();
@@ -970,6 +972,7 @@ void run(menuNo mode) {
 
         // FN (vol) button: short = speed/vol toggle, long = scroll, double = dim.
         Buttons::volButton.Update();
+        if (Buttons::volButton.clicks != 0) MorseOutput::resetTOT();
         if (Buttons::volButton.clicks == 1) {
             if (encoderState == scrollMode) {
                 encoderState = speedSettingMode;
@@ -1219,6 +1222,7 @@ void run(menuNo mode) {
         serialEvent();
         if (MorseOutput::takeRepaintRequest())   // theme changed underneath us, e.g. from the config tool
             repaintModeScreen();
+        checkShutDown(false);                    // inactivity -> deep sleep: this loop owns the device instead of loop()
         delay(2);
     }
 
@@ -1240,6 +1244,8 @@ void run(menuNo mode) {
         Buttons::modeButton.Update();
         Buttons::volButton.Update();
         if (Buttons::modeButton.clicks != 0 || Buttons::volButton.clicks != 0) break;
+        checkShutDown(false);                    // the bot ends an idle session by itself and lands here:
+                                                 // without this an abandoned device waited forever
         delay(20);
     }
     Buttons::modeButton.clicks = 0;
