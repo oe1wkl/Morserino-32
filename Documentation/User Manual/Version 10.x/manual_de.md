@@ -1990,7 +1990,9 @@ Doppelklick, solange die Verbindung steht.
 Morserino im Hauptmenü: Wenn das Programm den WinKeyer öffnet, startet der Morserino diesen Modus
 von selbst und kehrt ins Menü zurück, wenn das Programm ihn wieder schließt.]{.pocket .pocket-a11y}
 Der Start dauert einige Sekunden, bis das WLAN verbunden ist und das Rig antwortet. Das Programm
-bekommt in der Zwischenzeit seine Antworten, und was es sendet, wartet, bis die Verbindung steht.
+bekommt in der Zwischenzeit seine Antworten, aber CW, das es sendet, bevor die Verbindung steht, geht
+nicht verspätet hinaus: Es wird verworfen, und das Programm erfährt es, wie wenn du mit dem Paddle
+dazwischen gehst. Sende es noch einmal, sobald das WLAN-Symbol erscheint.
 
 Die oberste Zeile zeigt **Host**, solange ein Programm den WinKeyer geöffnet hat, und das
 WLAN-Symbol, solange das Rig antwortet.[ Der Morserino sagt „Linked to rig“, sobald die Verbindung

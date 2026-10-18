@@ -1923,8 +1923,9 @@ with a double click while the link is up.
 Remote WinKeyer**. Or set the preference **WinKeyer Tx** to **Remote** and leave the Morserino in
 the main menu: when the program opens the WinKeyer, the Morserino starts this mode by itself, and
 returns to the menu when the program closes it again.]{.pocket .pocket-a11y} Starting takes a few
-seconds, while WiFi connects and the rig answers. The program is answered meanwhile, and what it
-sends waits until the link is up.
+seconds, while WiFi connects and the rig answers. The program is answered meanwhile, but CW it sends
+before the link is up is not sent late: it is dropped, and the program is told, as when you break in
+with the paddle. Send it again once the WiFi symbol shows.
 
 The top line shows **Host** while a program has the WinKeyer open, and the WiFi symbol while the
 rig answers.[ The Morserino says "Linked to rig" when the link is up, then "Waiting for host" or

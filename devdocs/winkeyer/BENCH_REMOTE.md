@@ -163,16 +163,17 @@ Accessibility Edition.
 - [ ] Spot-check a few entries whose raw-text clip was pruned (e.g. WiFi Trx, Preview Char, VBand Kbd, WinKeyer,
       a Tone Pitch value like 622 Hz): each still speaks its override text.
 
-## Interpretations to confirm (not spelled out in DESIGN.md)
+## Interpretations (not spelled out in DESIGN.md) — decided by Willi, 2026-10-18
 
-1. **Text queued during the start** (R6) is sent once the link is up — after a slow WiFi connect that can be
-   ~10 s late. If that is too late for a logger that sends a CQ on connect, the alternative is to drop the
-   buffer when the link comes up after more than a few seconds.
-2. **BREAKIN at link loss** is raised once and clears one word space later, as after the paddle; it is not held
-   for the whole outage. Text arriving while the link is down is dropped without echo.
-3. **Source 1 lingers one second** after a long mark (so the rig judges the key-up by the straight-key limit);
-   a paddle or host element inside that second also carries source 1 (wpm field 0 at B).
-4. **A tune refused while the link is down or still starting** (0x0B is ignored): the logger's tune button does
-   nothing then, rather than sounding a sidetone that keys nothing.
-5. On a start error from auto-detect with no pass phrase / no WiFi, the mode stays without ever calling; only
-   leaving and re-entering (or a new Host Open from the menu) retries.
+1. **Text queued during the start** (R6) — **changed: dropped, with a break-in.** It still waits in the buffer
+   while the link comes up (so XOFF works), but when the start ends — link up or not — anything queued is
+   discarded and BREAKIN raised, as on link loss (R4): nothing goes on the air 4–10 s late, and a repeating CQ
+   stops. The operator sends again once the WiFi symbol shows.
+2. **BREAKIN at link loss** — **kept:** raised once, cleared one word space later, as after the paddle; not held
+   for the outage. Text arriving while the link is down is dropped without echo.
+3. **Source 1 lingers one second** after a long mark — **kept** (technical; the rig judges the key-up by the
+   straight-key limit; an element inside that second also carries source 1, wpm field 0 at B).
+4. **Tune while the link is down or still starting** — **kept: ignored** (0x0B does nothing), rather than a
+   sidetone that keys nothing.
+5. **Start error from auto-detect** (no pass phrase / no WiFi) — **kept:** the mode stays, shows (and says) the
+   error, drops host CW, never retries; a long press leaves. Configuration faults cannot be cured by retrying.

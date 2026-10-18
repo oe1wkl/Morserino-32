@@ -451,7 +451,9 @@ full **`Remote WinKeyer`** on the Pocket. R3–R8 as recommended below (R3a: sou
 R4 (B); R5 hold BUSY; R6 serve the parser during start-up, stay in the mode on auto-detect errors; R7; R8 yes).
 **Implemented 2026-10-17** on branch `remote-winkeyer` (state `morseRemoteWinKeyer`, menu `_remoteWinKeyer`,
 preference `posWkTarget`, hooks in `MorseWinKeyer.cpp` / `MorseKipKeyer.cpp` / `keyOut()`); bench checklist in
-`BENCH_REMOTE.md`, which also lists five interpretations made while implementing.
+`BENCH_REMOTE.md`, which also lists five interpretations made while implementing. **Willi decided them
+2026-10-18:** four kept as built; one changed — text a host sends while the link is still coming up is
+dropped with a break-in when the start ends (like R4), instead of being sent once linked.
 
 Branch `remote-winkeyer` off `m32kip` (b9075fb). Checked against `MorseWinKeyer.cpp`,
 `MorseKipKeyer.cpp`, the `keyOut()` hook and the Transceiver chain in `MorseMenu.cpp`. Each item gives the options,
@@ -533,6 +535,7 @@ session is already open (the revision byte still goes out at once), and loggers 
 Open (status, FW minor revision, Vcc — N1MM asks two, BENCH.md §5).
 - **→ Serve the WinKeyer parser inside those waits** (a hook in `wifiConnect()`'s and the handshake's wait loops):
   replies go out, the sender is held, host text buffers and XOFF works. About 0.5 session.
+  *(2026-10-18: what buffered is dropped with a break-in when the start ends — BENCH_REMOTE.md, item 1.)*
 - **Errors, menu entry:** as Remote Keyer — message, back to the menu (no host session exists yet).
 - **Errors, auto-detect:** the host session is open and cannot be refused, so **→ stay in the mode**: show the
   error, keep calling the rig where the configuration allows (D14), host text handled as in R4. Never fall back to

@@ -73,8 +73,9 @@ static bool inPrefs = false;            // the preferences menu is up: it can st
                                         // M32's own speed must stay in MorsePreferences::wpm meanwhile
 
 // Remote WinKeyer (DESIGN.md §9.1): the keying goes to a remote rig over M32KIP. Host CW plays only while
-// the link is up. Until the link has come up the host's text waits in the buffer (R6); while it is down,
-// host text is dropped, and the moment it goes down counts as a break-in (R4).
+// the link is up. Until the link has come up the host's text waits in the buffer (R6, so XOFF works) and is
+// dropped with a break-in when the start ends; while the link is down, host text is dropped, and the moment
+// it goes down counts as a break-in (R4).
 static bool remoteMode = false;
 enum RemoteLink : uint8_t { RL_START, RL_UP, RL_DOWN };
 static RemoteLink remoteLink = RL_START;
@@ -976,7 +977,7 @@ void MorseWinKeyer::serviceInput() {
 // Remote WinKeyer: follow the link. Going down is a break-in (R4): what the host had going is cut, the
 // buffer cleared, and BREAKIN raised - N1MM stops a repeating CQ on exactly that bit. Until it is back up,
 // host text is dropped (bufPut()). The first verdict after the start drops anything that queued while the
-// link was coming up if it did not come up (R6) - it would go out late.
+// link was coming up, with the same break-in - it would go out late.
 static void followLink() {
 #ifdef REMOTE_WINKEYER
   if (!remoteMode) return;
@@ -984,9 +985,13 @@ static void followLink() {
   if (now == remoteLink) return;
   RemoteLink was = remoteLink;
   remoteLink = now;
-  if (now == RL_DOWN) {
+  // Text that queued while the link was coming up (4-7 s after Host Open) would go on the air that late, so it
+  // is dropped as well - whether the link came up or not - and the logger is told by the same break-in
+  // (Willi, 2026-10-18: BENCH_REMOTE.md, interpretation 1).
+  bool queuedAtStart = (was == RL_START && bufCount > 0);
+  if (now == RL_DOWN || queuedAtStart) {
     clearBuffer();
-    if (was == RL_UP && sessionOpen) {
+    if (sessionOpen && (was == RL_UP || queuedAtStart)) {
       breakin = true;                     // cleared one word space later, as after the paddle
       lastPaddle = millis();
     }
