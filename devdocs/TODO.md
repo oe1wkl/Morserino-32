@@ -390,7 +390,11 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    **Still open:** N1MM (Windows) and the revision 23-vs-31 call, key-line timing with a logic analyser.
    **Follow-up: Remote WinKeyer** with M32KIP (V10) — DESIGN.md §9.1: decisions R1–R8 taken 2026-10-17
    (WinKeyer Tx preference, Pocket only; menu "Remote WinK" on the classic). **Implemented, merged into
-   m32kip 2026-10-18 (5034014, not pushed)**; builds all 10 envs, EN+DE V10 manuals and voice clips done.
-   Link-up bench done (Pocket + classic rig, results in `devdocs/winkeyer/BENCH_REMOTE.md`). **Still owed:**
-   screens/voice, paddle and encoder, a real logger, an Internet path, the classic as Remote WinKeyer, the a11y
-   edition; five implementation interpretations to confirm (end of BENCH_REMOTE.md).
+   m32kip and pushed 2026-10-18** (5034014); builds all 10 envs, EN+DE V10 manuals and voice clips done. The five
+   implementation interpretations were decided the same day (one change: text sent during the start is dropped
+   with a break-in, a926857). Link-up bench done (Pocket + classic rig, results in
+   `devdocs/winkeyer/BENCH_REMOTE.md`). **Still owed:** screens/voice, paddle and encoder, the start from the
+   device's menu, a real logger, an Internet path, the classic as Remote WinKeyer, the a11y edition.
+   Idea for the open key-line timing checks of BENCH.md §3 (no logic analyser): the classic as Remote Rig with a
+   `-D KIP_MEASURE=1` build reproduced the Pocket's key line within ~45 µs, so Remote WinKeyer can measure
+   WinKeyer's element timing.

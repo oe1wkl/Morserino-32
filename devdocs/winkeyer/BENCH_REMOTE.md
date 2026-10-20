@@ -97,14 +97,14 @@ Accessibility Edition.
 
 ## 3. Auto-detect (Pocket)
 
-- [ ] **WinKeyer Tx = Remote**, A at the main menu: `wk_bench.py PORT --only echo,open,send,close`. Host Open
+- [x] **WinKeyer Tx = Remote**, A at the main menu: `wk_bench.py PORT --only echo,open,send,close`. Host Open
       answered within 50 ms (the script prints it); the mode starts (screens as in 2); **note how long the start
-      takes**. The `send` text goes out on B once linked. `close` returns A to the menu, B shows End: BYE.
-- [ ] Same with **WinKeyer Tx = Local**: WinKeyer starts as before (regression).
+      takes**. The `send` text goes out on B once linked. `close` returns A to the menu, B shows End: BYE. *(2026-10-18: Host Open 25 ms, linked, text sent.)*
+- [x] Same with **WinKeyer Tx = Local**: WinKeyer starts as before (regression). *(2026-10-18: wk_bench automatic steps pass.)*
 - [x] Questions during the start: answered throughout (59/59 Echo Tests, ≤ 66 ms; 2026-10-18).
-- [ ] B off, WinKeyer Tx = Remote: the logger opens; A shows **No answer**, then stays in the mode (no WiFi
+- [x] B off, WinKeyer Tx = Remote: the logger opens; A shows **No answer**, then stays in the mode (no WiFi
       symbol), and the logger's CW produces no sidetone. Switch B on (Remote Rig): A links within a few seconds,
-      "Link restored"; the next F-key goes out on B.
+      "Link restored"; the next F-key goes out on B. *(2026-10-18: no rig at the address: stayed in the mode, host CW dropped, 59/59 Echo Tests answered meanwhile; screen not watched.)*
 - [ ] No pass phrase set on A, WinKeyer Tx = Remote: the logger opens; error screen, the mode stays, host CW is
       dropped; a long press leaves to the menu.
 
@@ -117,24 +117,24 @@ Accessibility Edition.
 
 ## 5. Link loss while the logger is sending (R4)
 
-- [ ] Start a repeating CQ in the logger, then take B away (power off, or long-press it out of Remote Rig).
+- [x] Start a repeating CQ in the logger, then take B away (power off, or long-press it out of Remote Rig).
       Within ≤ 5 s: A's WiFi symbol goes, "Link lost"; **the logger stops repeating** (BREAKIN). B's key is
-      up (End: timeout).
-- [ ] F-keys while the link is down: nothing on A's sidetone, nothing queued (BUSY never sticks).
-- [ ] Bring B back: A reconnects by itself; the next F1 goes out **whole** — no tail of the old message.
+      up (End: timeout). *(2026-10-18: script, not a logger: long text, rig stopped - BREAKIN within 10-50 ms, text cut.)*
+- [x] F-keys while the link is down: nothing on A's sidetone, nothing queued (BUSY never sticks). *(2026-10-18: status idle, no echo.)*
+- [x] Bring B back: A reconnects by itself; the next F1 goes out **whole** — no tail of the old message. *(2026-10-18: relinked by itself, next text whole.)*
 
 ## 6. BUSY versus the playout delay (R5)
 
-- [ ] `wk_bench.py -v` (or a logger's status view): after the last element BUSY clears about **Rig Delay +
-      20 ms** after the sidetone ends, not at once. Set Rig Delay to 500 ms (double click on A): the hold follows.
+- [x] `wk_bench.py -v` (or a logger's status view): after the last element BUSY clears about **Rig Delay +
+      20 ms** after the sidetone ends, not at once. Set Rig Delay to 500 ms (double click on A): the hold follows. *(2026-10-18: 150-160 ms after Tune off = playout 125-140 ms + 20.)*
 - [ ] If a logger with PTT over CAT is at hand (N1MM with a CAT-controlled rig behind B's remote control):
       the end of a message is no longer clipped.
 
 ## 7. Tune and long marks (R3a)
 
-- [ ] Logger **Tune for 5 s** (longer than Rig Limit Kyr = 3 s): B keys for the full 5 s (source 1 → Rig Limit SK
-      applies). Before this change B would have lifted at 3 s.
-- [ ] **Tune for 15 s**: B lifts at 10 s (Rig Limit SK); A ends the tune itself shortly after (status clears).
+- [x] Logger **Tune for 5 s** (longer than Rig Limit Kyr = 3 s): B keys for the full 5 s (source 1 → Rig Limit SK
+      applies). Before this change B would have lifted at 3 s. *(2026-10-18: kdl stayed 0.)*
+- [x] **Tune for 15 s**: B lifts at 10 s (Rig Limit SK); A ends the tune itself shortly after (status clears). *(2026-10-18: rig cut at 10 s, Pocket ended its tune at 10.13 s.)*
 - [ ] `wk_bench.py --only buffered` with a Key Buffered of 5 s: same as the 5 s tune.
 - [ ] Right after a tune, send a CQ: speed and timing at B normal (the source returns to 0 a second later).
 
@@ -147,7 +147,7 @@ Accessibility Edition.
 ## 9. Keying timing at B (scope on B's key line)
 
 - [ ] PARIS at 20 and 40 WpM from the logger: B's marks and gaps match WinKeyer's local timing within the M32KIP
-      accuracy (spec §4.3 / D2). Weighting 60 reproduced.
+      accuracy (spec §4.3 / D2). Weighting 60 reproduced. *(20 WpM done 2026-10-18: within -45..+38 us; 40 WpM still open.)*
 
 ## 10. Classic M32
 
@@ -159,7 +159,7 @@ Accessibility Edition.
 - [ ] Menu entry spoken "Remote Win Keyer"; preference "Win Keyer transmitter" with "Local" / "Remote".
 - [ ] Start: "Connecting", "Calling rig", "Linked to rig", then "Waiting for host" / "Host connected".
 - [ ] "Link lost" / "Link restored" never play over keying (sidetone not muted).
-- [ ] No pack-stamp warning at boot; buildfs log without "File system is full" (checked on the build host).
+- [ ] No pack-stamp warning at boot; buildfs log without "File system is full" (checked on the build host). *(buildfs clean on the build host 2026-10-18; the boot check on a device still open.)*
 - [ ] Spot-check a few entries whose raw-text clip was pruned (e.g. WiFi Trx, Preview Char, VBand Kbd, WinKeyer,
       a Tone Pitch value like 622 Hz): each still speaks its override text.
 
