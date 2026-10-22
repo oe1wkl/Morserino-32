@@ -124,9 +124,11 @@ def escape_angles(text):
     raw inline HTML, so '<AR>' renders as *nothing at all* and '<b>' silently
     turns on bold for the rest of the paragraph. The manual's own convention is
     the backslash escape ('\\<HH>', '\\<COMx>'), so use that. Autolinks are left
-    alone -- '<https://...>' is deliberate markdown.
+    alone -- '<https://...>' is deliberate markdown, and so is a '<' the change
+    history already escaped ('\\<AR\\>', which GitHub needs too): escaping it
+    again would print the backslash.
     """
-    return re.sub(r"<(?!https?://)", r"\\<", text)
+    return re.sub(r"(?<!\\)<(?!https?://)", r"\\<", text)
 
 
 def render(sections, major, lang):

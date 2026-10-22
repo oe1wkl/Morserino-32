@@ -1708,8 +1708,8 @@ void MorsePreferences::editKipPassPhrase() {
 #endif
 
 // --- "Practice Set" character picker (CW Generator / Echo Trainer) ---
-static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes; the
-                                                 // national letters are added per Decoder Chars set (editPracticeChars())
+static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes; then
+                                                 // the rest of CWchars (Accessibility Edition: the Decoder Chars letters)
 static const uint8_t PRACTICE_MAX_LEN   = 24;   // generous for a "chars I struggle with" set; bounds the on-screen line
 
 // Display-only glyph for the picker wheel; never touches what gets stored.
@@ -1743,10 +1743,17 @@ void MorsePreferences::setPracticeChars(const String& chars) {
 }
 
 void MorsePreferences::editPracticeChars() {
-    // the plain characters, then the letters of the chosen Decoder Chars set (ä ö ü ch for Standard)
+#ifdef CONFIG_AUDIO_A11Y
+    // the plain characters, then the letters of the (fixed Standard) Decoder Chars set: ä ö ü ch. The other
+    // national letters and the brackets have no voice clip (decided 2026-10-02), so they stay off this wheel.
     char wheel[PRACTICE_WHEEL_LEN + 12];
     memcpy(wheel, CWchars, PRACTICE_WHEEL_LEN);
     strlcpy(wheel + PRACTICE_WHEEL_LEN, decoderSetLetters(), sizeof(wheel) - PRACTICE_WHEEL_LEN);
+#else
+    // every character the generator knows - so anything a Koch sequence (Custom Chars included) can hold,
+    // whichever Decoder Chars set is chosen: ä ö ü ch ( ) é è à ç ñ å æ ø after the prosigns
+    const char* wheel = CWchars;
+#endif
 
     String cur = MorsePreferences::practiceCharSet;
     if (cur.length() > PRACTICE_MAX_LEN)             // defensive; shouldn't happen, cap matches storage
