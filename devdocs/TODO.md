@@ -5,13 +5,18 @@ Section A was checked against the live repository the same day; sections B–H c
 from session transcripts and memory notes, and items marked *(verify)* may already
 be done.
 
-Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (published, in the web installer, binaries archived).
-`m32kip` = the **V10** line (10.0.0 BETA), pushed to `origin/m32kip`. When merging master into
-`m32kip`, `morsedefs.h` will conflict on the version lines — **keep 10.0.0 and `BETA true`**.
+Branches: **`master` = the V10 line (10.0.0 BETA) since 2026-10-22** — `m32kip` was merged into it (4011dee), with
+V9.2 folded into 10.0 (9.2 never ships on its own). `m32kip` is retired. **`V9.1` released 2026-10-11** (published,
+in the web installer, binaries archived); a V9 hotfix, if ever needed, goes on a branch from the `V9.1` tag.
 
-## ▶ Where we are — start here (2026-10-11)
+## ▶ Where we are — start here (2026-10-22)
 
-**Release plan (Willi):** 9.1 is out; next is the **first V10 beta** (m32kip).
+**Next: tag `V10.0-beta.1` on master** (Willi). Prepared 2026-10-22: master merged into m32kip and m32kip into
+master; README 10.0 complete; release.yml no longer strips the manual freshness stamp; every CI check, all 10
+envs, the a11y filesystem image, host tests and the protocol selftest pass. Then the outstanding bench tests run
+from the beta (BENCH_REMOTE.md, winkeyer/BENCH.md, B6 below).
+
+**Release plan (Willi), as of 2026-10-11:** 9.1 is out; next is the **first V10 beta** (m32kip).
 
 1. ~~**V9.1 stable**~~ — **released 2026-10-11** (tag `V9.1`, draft published the same day; installer shows 9.1
    for classic, Pocket and the Accessibility Edition). It is V9.1-beta.1 plus one firmware change, the I2S sidetone
