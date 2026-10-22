@@ -32,6 +32,9 @@
 #include "M32ProtocolOut.h"
 #include "MorseVoice.h"
 #include "ClickButton.h"     // HeldLineFilter
+#ifdef REMOTE_WINKEYER
+#include "MorseKipKeyer.h"   // Remote WinKeyer: the link that carries the keying (DESIGN.md §9.1)
+#endif
 
 // m32_v6.ino
 extern morserinoMode morseState;
@@ -68,6 +71,16 @@ static bool autoOpenPending = false;    // Host Open seen at the top menu, mode 
 static bool highBaud = false;           // classic: 9600 instead of 1200 (Set High Baud)
 static bool inPrefs = false;            // the preferences menu is up: it can store a snapshot, so the
                                         // M32's own speed must stay in MorsePreferences::wpm meanwhile
+
+// Remote WinKeyer (DESIGN.md §9.1): the keying goes to a remote rig over M32KIP. Host CW plays only while
+// the link is up. Until the link has come up the host's text waits in the buffer (R6, so XOFF works) and is
+// dropped with a break-in when the start ends; while the link is down, host text is dropped, and the moment
+// it goes down counts as a break-in (R4).
+static bool remoteMode = false;
+enum RemoteLink : uint8_t { RL_START, RL_UP, RL_DOWN };
+static RemoteLink remoteLink = RL_START;
+static unsigned long hostKeyUpAt = 0;   // R5: the host's last key-up, for the BUSY hold
+static unsigned long longMarkAt = 0;    // R3a: when a Tune / Key Buffered mark went down
 
 // host-owned sending-side settings (D7) - session values, never written to NVS. The initial values
 // are resetSessionSettings()'s: Get Values / Dump EEPROM can be asked for before any Host Open.
@@ -237,6 +250,8 @@ static uint8_t potByte() {
 ///////////////////////////// buffer
 
 static bool bufPut(uint8_t b, uint8_t t) {
+  if (remoteMode && remoteLink == RL_DOWN)
+    return true;                                    // R4: no link, nothing to send it on - taken and dropped
   if (bufCount >= BUF_SIZE) return false;
   buf[(bufHead + bufCount) % BUF_SIZE] = b;
   tag[(bufHead + bufCount) % BUF_SIZE] = t;
@@ -255,10 +270,19 @@ static void bufClear() { bufHead = bufCount = 0; }
 
 ///////////////////////////// sender
 
-static void keyDown() {
+// longMark: Tune or Key Buffered - a mark of seconds, not an element (Remote WinKeyer R3a)
+static void keyDown(bool longMark = false) {
 #ifdef CONFIG_AUDIO_A11Y
   if (MorseVoice::isSpeaking())          // CW on the air wins over speech, as for the paddle
     MorseVoice::stop();
+#endif
+#ifdef REMOTE_WINKEYER
+  if (remoteMode) {
+    MorseKipKeyer::setLongMark(longMark);   // before the edge is queued: the rig's straight-key limit applies
+    if (longMark) longMarkAt = millis();
+  }
+#else
+  (void) longMark;
 #endif
   hostKeying = true;
   keyOut(true, true, MorseOutput::notes[MorsePreferences::pliste[posPitch].value], MorsePreferences::sidetoneVolume);
@@ -267,9 +291,25 @@ static void keyDown() {
 static void keyUp() {
   if (hostKeying) {
     keyOut(false, true, 0, 0);
-    lastKeyUp = millis();
+    lastKeyUp = hostKeyUpAt = millis();
+#ifdef REMOTE_WINKEYER
+    if (remoteMode) MorseKipKeyer::setLongMark(false);
+#endif
   }
   hostKeying = false;
+}
+
+// R3a: the rig cuts a mark at its key-down limit; end a long mark here too once the rig must have, so the
+// host's status matches what is on the air. The limit arrives with the rig's STATS (0 = not known yet).
+static bool longMarkCutByRig(unsigned long now) {
+#ifdef REMOTE_WINKEYER
+  if (!remoteMode || !hostKeying) return false;
+  uint16_t limit = MorseKipKeyer::rigMaxKeydownMs();
+  return limit && now - longMarkAt > (unsigned long) limit + MorseKipKeyer::playoutMs();
+#else
+  (void) now;
+  return false;
+#endif
 }
 
 // Cut whatever the host had going: the character in progress, a wait, a timed key-down, tune.
@@ -460,7 +500,7 @@ static void nextItem() {
       case 0x18: bufGet(); break;                                   // PTT on/off - D3: no PTT
       case 0x19: {                                                  // key buffered, 0..99 s
                   uint8_t s = bufGet();
-                  if (s) { keyDown(); sDeadline = millis() + 1000UL * _min(s, 99); sState = S_TIMED; }
+                  if (s) { keyDown(true); sDeadline = millis() + 1000UL * _min(s, 99); sState = S_TIMED; }
                   return;
                  }
       case 0x1A: {                                                  // wait, 0..99 s
@@ -496,7 +536,7 @@ static void nextItem() {
 static void runSender() {
   unsigned long now = millis();
   if (tuneOn) {
-    if (now - tuneDeadline < 0x80000000UL) {    // 100 s watchdog
+    if (now - tuneDeadline < 0x80000000UL || longMarkCutByRig(now)) {    // 100 s watchdog, or the rig's limit (R3a)
       tuneOn = false;
       keyUp();
     }
@@ -516,7 +556,7 @@ static void runSender() {
       sState = S_IDLE;
       break;
     case S_TIMED:
-      if ((long)(now - sDeadline) < 0) return;
+      if ((long)(now - sDeadline) < 0 && !longMarkCutByRig(now)) return;
       keyUp();
       waitOn = false;
       sState = S_IDLE;
@@ -536,6 +576,13 @@ static uint8_t status() {
   if (!wk2Status && (tuneOn || (hostKeying && sState == S_TIMED)))
                                                   st |= 0x08;     // KEYDOWN (WK1 format)
   if (bufCount || sState != S_IDLE || tuneOn)     st |= 0x04;     // BUSY
+#ifdef REMOTE_WINKEYER
+  // R5: the rig plays the host's CW out one playout delay after it is sent here. BUSY stays up until it
+  // has, so a logger that drops PTT over CAT when BUSY clears does not clip the end on the remote rig.
+  else if (remoteMode && remoteLink == RL_UP && hostKeyUpAt
+           && millis() - hostKeyUpAt < (unsigned long) MorseKipKeyer::playoutMs() + 20)
+                                                  st |= 0x04;
+#endif
   if (breakin)                                    st |= 0x02;
   if (bufCount > BUF_SIZE * 2 / 3)                st |= 0x01;     // XOFF
   return st;
@@ -782,9 +829,10 @@ static void execCmd(uint8_t c) {
                break;
     case 0x09: pinCfg = p; break;
     case 0x0A: clearBuffer(); break;
-    case 0x0B: if (p && !inPrefs) {                           // not while the preferences menu is up: its loop
+    case 0x0B: if (p && !inPrefs                              // not while the preferences menu is up: its loop
                                                               // reads serial but never runs the tune watchdog
-                 abortSending(); tuneOn = true; tuneDeadline = millis() + TUNE_WATCHDOG_MS; keyDown();
+                   && !(remoteMode && remoteLink != RL_UP)) { // Remote WinKeyer: only with the link up (R4, R6)
+                 abortSending(); tuneOn = true; tuneDeadline = millis() + TUNE_WATCHDOG_MS; keyDown(true);
                }
                else if (tuneOn) { tuneOn = false; keyUp(); }
                break;
@@ -865,8 +913,11 @@ static void resetParser() { pCmd = NO_CMD; pAdminNext = false; pHave = pNeed = 0
 
 ///////////////////////////// public
 
-void MorseWinKeyer::enter(bool autoOpened) {
+void MorseWinKeyer::enter(bool autoOpened, bool remote) {
   inMode = true;
+  remoteMode = remote;
+  remoteLink = RL_START;
+  hostKeyUpAt = 0;
   portOwned = true;
   m32protocol = false;
   closeToMenu = false;
@@ -890,7 +941,8 @@ void MorseWinKeyer::enter(bool autoOpened) {
   paddleElems = 0; prevKs = IDLE_STATE;
   fnFilter.reset();                       // filterFn(): judge FN afresh, an FN already down is a line
   lastStatus = status();
-  announce(autoEntered ? "Host connected" : "Waiting for host");
+  if (!remoteMode)                        // Remote WinKeyer says it after the link is up (MorseMenu.cpp)
+    announce(autoEntered ? "Host connected" : "Waiting for host");
 }
 
 void MorseWinKeyer::leave() {
@@ -899,6 +951,8 @@ void MorseWinKeyer::leave() {
   abortSending();
   resetParser();
   inMode = false;
+  remoteMode = false;
+  remoteLink = RL_START;
   autoEntered = closeToMenu = false;
   outHead = outCount = 0;
 #ifndef WK_NATIVE_USB
@@ -920,8 +974,35 @@ void MorseWinKeyer::serviceInput() {
   pump();
 }
 
+// Remote WinKeyer: follow the link. Going down is a break-in (R4): what the host had going is cut, the
+// buffer cleared, and BREAKIN raised - N1MM stops a repeating CQ on exactly that bit. Until it is back up,
+// host text is dropped (bufPut()). The first verdict after the start drops anything that queued while the
+// link was coming up, with the same break-in - it would go out late.
+static void followLink() {
+#ifdef REMOTE_WINKEYER
+  if (!remoteMode) return;
+  RemoteLink now = MorseKipKeyer::linked() ? RL_UP : RL_DOWN;
+  if (now == remoteLink) return;
+  RemoteLink was = remoteLink;
+  remoteLink = now;
+  // Text that queued while the link was coming up (4-7 s after Host Open) would go on the air that late, so it
+  // is dropped as well - whether the link came up or not - and the logger is told by the same break-in
+  // (Willi, 2026-10-18: BENCH_REMOTE.md, interpretation 1).
+  bool queuedAtStart = (was == RL_START && bufCount > 0);
+  if (now == RL_DOWN || queuedAtStart) {
+    clearBuffer();
+    if (sessionOpen && (was == RL_UP || queuedAtStart)) {
+      breakin = true;                     // cleared one word space later, as after the paddle
+      lastPaddle = millis();
+    }
+    statusUpdate();
+  }
+#endif
+}
+
 void MorseWinKeyer::tick() {
   if (!inMode) { pump(); return; }
+  followLink();
   serviceInput();
   tickServiced = true;
   if (breakin && millis() - lastPaddle > 7UL * 1200UL / MorsePreferences::wpm)
@@ -1044,6 +1125,8 @@ bool MorseWinKeyer::wantsMenu() {
 }
 
 bool MorseWinKeyer::isOpen() { return sessionOpen; }
+
+bool MorseWinKeyer::hostSending() { return sState != S_IDLE || tuneOn; }
 
 bool MorseWinKeyer::sidetoneWanted() {
   if (!(pinCfg & 0x02)) return false;                       // pin config: sidetone off

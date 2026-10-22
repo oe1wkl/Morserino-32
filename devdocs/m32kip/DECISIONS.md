@@ -1,0 +1,141 @@
+# M32KIP — ratified decisions
+
+Willi's sign-off of 2026-09-12 on the decision list in `IMPLEMENTATION_PLAN.md` §3.
+All recommendations were accepted except D2. These are binding for the implementation;
+amend the spec (`SPEC.md`, Draft 0.2) accordingly when it is next revised.
+
+| # | Decision |
+|---|---|
+| D1 | Rig side is built for **both variants** under `CONFIG_M32KIP`; the Phase 0 timer measurement decides whether the classic ships it. |
+| D2 | **Changed from the recommendation.** Straight-key / bug edges are captured on the **existing loop-polled decoder path** (`Decoder::checkInput()` noise blanker → `keyOut()`), not by a GPIO interrupt. Consequence: the timing targets of spec §4.3 are **relaxed to 1 ms** (capture accuracy, emission accuracy, and the reproduced-element error — the 0.2 ms / 0.5 ms figures are withdrawn). Willi's judgement: 1 ms is immaterial even at very high speed. **Phase 0 result (classic):** the polled loop is good to 0.24 ms provided the Keyer mode (a) never sends from the loop — `writeTo()` stalls it 2–7 ms — and (b) never redraws the display while an edge can arrive (37 ms per OLED redraw). Both are now requirements on `MorseKipKeyer` (see `PHASE0_RESULTS.md`). **Pocket floor accepted (Willi, 2026-10-14):** the Pocket's polled capture is ~1.7 ms (the I2S audio task preempts the loop; `PHASE0_RESULTS.md`), not 1 ms - accepted for V10 as the same class; interrupt capture remains the way out if a bug operator complains. |
+| D3 | Rig host = the selected WiFi entry's **TRX Peer**. PSK entered via the AP web form and the serial protocol only, write-only like the WiFi password. Port fixed at **7374**, protocol-only override. |
+| D4 | On-device preferences: Rig — Playout Delay (10 ms units, 0 = adaptive), Max Key-Down keyer (s), Max Key-Down manual (s), PTT Lead (ms, 0 = off), PTT Hang (100 ms units). Keyer — Glitch Filter (1–5 ms). All other §11 parameters are compile-time constants. |
+| D5 | Two leaves appended to the menu enum, wired into the Transceiver ring next to WiFi Trx: `Remote Keyer` / `Remote Rig` (labels can still be tuned). The working name M32KIP does not appear on the device. |
+| D6 | PTT protocol fields and Rig logic implemented behind a `PIN_PTT` build flag; unset in both shipped envs, so the Rig reports PTT unavailable. |
+| D7 | No "external keyer" keyer-mode option in v1; source 1 covers it. |
+| D8 | Rig mode: deep-sleep timeout off, battery warning on entry, always return to listening after a session ends; mode-exit strategy follows whatever `reboot-on-wifi-exit` settles on. |
+| D9 | Serial protocol 1.5 with `GET/PUT kip/...` in v1; Config Tool and iOS app updates are follow-ups. |
+| D10 | Spec committed as `devdocs/m32kip/SPEC.md`. |
+| D11 | **No logic analyser is available.** Timing is self-measured in firmware (hardware timer vs. `esp_timer`), and the Python reference peer injects network impairments in software. The §13 acceptance tests are read against these instruments. |
+| D12 | Spec amendments to fold into Draft 0.3: (a) §7.6 emitter = hardware-timer ISR via the Arduino `hw_timer` API (no `esp_timer` ISR dispatch in the prebuilt core); (b) §4.3/§13.1 acceptance is relative to the Keyer unit's own key line, which has millisecond granularity; (c) drop `NACK(auth)` — bad MACs are silently dropped; (d) §8: the Keyer unit forces noTx regardless of the `Key Ext Tx` preference. |
+
+## Decided since Phase 1
+
+**D13 — the keepalive and repeat schedule. RATIFIED 2026-09-13: the repeat schedule.** After each edge
+the Keyer sends up to three more copies of the same redundant packet, 20 ms apart, and then falls back
+to the 250 ms idle keepalive. Implemented in the core as `KeyerSession::sendDue()` / `noteSent()`, so
+the cadence is host-tested rather than buried in the device layer.
+
+Measured across every impairment profile at 15, 25 and 35 WPM:
+
+| | Late edges | Worst lateness | Marks disturbed | Playout delay |
+|---|---|---|---|---|
+| Repeat schedule (ratified) | **0** everywhere | none | **0** everywhere | never leaves 140 ms |
+| Draft 0.2's 250 ms keepalives | 2–3 per run | 233 ms | up to 2 per run | driven to 561 ms |
+
+**What it costs, and a correction.** Phase 1 claimed this would add nothing during continuous sending,
+because each new edge's packet already carries the repeats. That was wrong, and the measurement says
+so: a 20 ms repeat interval is shorter than an element at every practical speed, so a repeat does fire
+between most edges. The same message costs roughly **three times the packets** — 1209 against 325 at
+15 WPM, 1000 against 304 at 25 WPM, 898 against 309 at 35 WPM — which puts the link at about 3 kB/s
+where §5 estimated 1–2 kB/s. That is still small, and it buys a link that never once ran late in any
+profile, but the figure in §5 needs updating for Draft 0.3.
+
+If 3 kB/s ever turns out to matter, the knob is in `KeyerSession::begin()`: two repeats at 30 ms holds
+the same ~60 ms recovery bound for fewer packets. Nothing else depends on the numbers.
+
+**D14 — Session loss, recovery and the Rig's controls. RATIFIED 2026-09-14**, after the first
+direct two-device test ran well at several speeds and then lost its session for good: the classic
+fell back to "Listening", the Pocket's link logo vanished, and nothing reconnected.
+
+1. **Fail safe on every way a session dies.** Two paths in the core — a storm of malformed edges and a
+   full edge queue — ended the session without releasing the key or reporting the drop, so a mark on
+   the air at that instant stayed there. Both now lift the key and report `RIG_DROP`. The malformed-edge
+   limit is a per-second rate (> 10/s, spec §8), not a session total, and redundant copies of one bad
+   edge count once. A session replaced by a new HELLO also releases the key first.
+2. **The Keyer reconnects by itself.** On a BYE from the Rig, or five seconds without STATS, it HELLOs
+   once a second until a Rig answers. That runs in the send task, so keying continues locally throughout.
+   The Keyer also sends only real key transitions: `keyOut()` is called to *ensure* the key is off, and
+   those calls used to reach the Rig as duplicate key-ups.
+3. **The Rig shows why the last session ended** — `End: timeout`, `End: BYE`, `End: errors`,
+   `End: overflow`, `End: reset` — until the next session starts, so a drop can be diagnosed.
+4. **Rig controls on a Morserino:** a **short encoder press resets the session** (the Keyer reconnects
+   within a second), a **long press leaves the mode** as everywhere. **No paddle, touch-pad or jack
+   override**: a Rig normally stands unattended, and a stray touch must not be able to end a session.
+   This amends the "Local override" row of spec §8.
+
+**Recorded for later, not built:**
+- **A dedicated Rig-only device** would have no display, encoder, paddles or jack — just a button, whose
+  **long press resets the session**.
+- **A deployable Rig must start itself after a power loss**: boot straight into Remote Rig, so an outage
+  at the remote site does not strand the station. It needs a design — how it interacts with Quick Start,
+  and how an operator standing at the device gets out of it.
+- Spec §8's "`NACK` on the next HELLO for 5 s" after an error drop is not implemented.
+- `UX_CONVENTIONS.md` needs an entry for this unattended service mode (Phase 6).
+
+**D15 — Phase 4 amendments. RATIFIED 2026-09-15** (Willi, "ok with all three"):
+1. **Rig Delay is a mapped list** — Adaptive, 50, 100, 150, 200, 250, 300, 400, 500, 600 ms — not a raw count
+   of 10 ms units (amends D4), so display and Accessibility Edition give milliseconds. A chosen delay is the
+   start value and the **floor**: late edges may raise it, adaptation returns it to the choice.
+2. **The glitch filter reports the first contact of a chatter burst**, not spec §10.1's `t_confirm − width`;
+   isolated glitches are still discarded whole. Fold into Draft 0.3.
+3. **PTT Lead / PTT Hang are not preferences until `PIN_PTT` exists** (D4 read together with D6).
+
+**D16 — Break-in compensation for transceivers keyed without PTT. RATIFIED 2026-09-15.** Without PTT the
+transceiver runs in semi break-in ("VOX" for CW) and clips its changeover time off the first element after it
+has dropped back to receive. Common practice (the WinKeyer's "1st extension") lengthens that element. The Rig
+unit can do better than a real-time keyer: it knows every edge a playout delay ahead, so it **starts the first
+key-down early and leaves the key-up where it is** — the air gets exactly the keyed element, and every other
+mark and gap is untouched.
+- Rig preferences: **Rig 1st Ext** (0–30 ms, 0 = off) and **Rig Hang** (0–60, in 50 ms steps). *Amended
+  2026-09-17, see below — the unit choice is gone.*
+- A key-down is "first" when the key was up for at least the hang (sender clock). The advance is capped at half
+  the preceding gap. Hang 0 makes every mark "first", which amounts to keying compensation for full QSK.
+- The playout floor and start value rise by the extension, so the jitter margin is kept. No protocol change.
+- Until the speed estimator has an estimate, dits are the estimator's 20 WPM default — not "every gap is a
+  changeover", which would lengthen every mark inside every word at the start of a session.
+- Mismatched hang settings err by at most the extension on one element per pause. The manual must say to set
+  Rig Hang to the transceiver's own break-in delay.
+
+**D16 amended 2026-09-17 — the break-in hang is milliseconds only.** The ruling above offered a Milliseconds / Dits
+unit on the belief that Icom-style rigs state the delay in dits. Willi read the Icom, Yaesu and Elecraft manuals and
+found no manufacturer that does — they all state it in milliseconds or seconds — so **Rig Hang Unit** is removed.
+One preference fewer, and the value is entered exactly as the transceiver's own manual gives it. Offset 4 of the
+config payload stays on the wire as a reserved byte and the core keeps `hangDitsX2`, so dits can come back without a
+version break. The stale `kipHangUnit` NVS key is removed on the next preferences write (CLAUDE.md §4 c).
+
+*Recorded for later, not built:* the ARRL bench tests also report a **first dit off delay**. A transceiver that
+clips or stretches the *end* of an element would need the mirror image of D16, which the Rig could provide with the
+same machinery (it knows the following gap one playout delay ahead). Nothing has been measured, so it is out of V10;
+the plan is to ask testers with instrumented stations whether a shortened last element is audible or measurable.
+
+**D17 — Remote configuration of the Rig from the Keyer. RATIFIED 2026-09-16**, and **required for V10, before
+release** (Willi: "it is essential"). Testers established that a rig which cannot be adjusted from the operating
+position is only half a feature.
+
+1. **Scope:** the Rig-side settings — Rig Delay, Rig Limit Kyr, Rig Limit SK, Rig 1st Ext and Rig Hang (six until
+   the hang unit was dropped, see the D16 amendment). The pre-shared key is never readable or settable over the link,
+   as it is never readable over the serial protocol (D3).
+2. **Where they appear:** in the Keyer's own preferences, reached by the standard gesture (double-click), **rig items
+   first in the list**, each carrying a **prefix** so it cannot be mistaken for a local setting, and shown **only
+   while a Remote Keyer link is up**.
+3. **NVS on the Rig: commit immediately.** An operator changing a parameter cannot be keying at the same moment, so
+   the flash write cannot collide with keying — except on the way out. The Keyer therefore **waits 10–50 ms after
+   the long press that leaves the preferences menu** before keying can resume, which covers the Rig's write.
+4. **If the link drops while the preferences are open:** leave the preferences menu immediately and revert the
+   display. No half-edited remote state, no waiting for a timeout.
+5. **Values are cached *and* fetched** (my recommendation, Willi undecided — reverse freely): the menu opens instantly
+   on the values cached at link-up, and a fetch issued on entry corrects them a few hundred ms later. Fetching alone
+   blanks the first item behind a round trip; caching alone goes stale when the Rig is changed at its own end.
+6. **Protocol:** new **session-keyed** packet types (request / values / set), so only the current session holder can
+   read or change anything. Support is advertised in the `flags` byte of `HELLO_ACK`, which is currently always
+   zero — so a new Keyer against an older Rig simply hides the items, with no version break. Fold into Draft 0.3.
+
+## Phase 0 instruments
+
+- `M32KipSpike.cpp` (`-D KIP_SPIKE=1` on the command line, never in `platformio.ini`) boots the
+  device into a measurement loop: one-shot hardware-timer alarms 5–60 ms apart on core 1, toggling
+  the real key line; the ISR records its own lateness. The loop meanwhile does what an interactive
+  mode does (touch reads, 4 Hz display, 50 pps UDP send) and records the gap between passes.
+- `Software/tests/kip/spike_load.py` floods the device with echo packets and reports LAN RTT/loss.
+- Results and the D1 verdict go into `PHASE0_RESULTS.md`.

@@ -1,4 +1,5 @@
 (not set)
+(set)
 0
 0%
 1
@@ -7,6 +8,7 @@
 10 minutes
 10 words per minute
 100
+100 ms
 100%
 105
 11
@@ -26,6 +28,7 @@
 15 minutes
 15 words per minute
 150
+150 ms
 155
 16
 160
@@ -49,6 +52,7 @@
 20
 20 words per minute
 200
+200 ms
 205
 21
 210
@@ -67,6 +71,7 @@
 25 words per minute
 25%
 250
+250 ms
 26
 262 Hertz
 27
@@ -78,6 +83,7 @@
 3 milliseconds
 30
 30 words per minute
+300 ms
 31
 311 Hertz
 32
@@ -98,6 +104,7 @@
 4 or more
 40
 40 words per minute
+400 ms
 41
 42
 43
@@ -115,8 +122,10 @@
 5 minutes
 5 words per minute
 50
+50 ms
 50 words per minute
 50%
+500 ms
 51
 52
 523 Hertz
@@ -131,6 +140,7 @@
 6
 6 milliseconds
 60
+600 ms
 62.5%
 622 Hertz
 65
@@ -153,6 +163,7 @@
 932 Hertz
 95
 a umlaut
+Adaptive
 Adaptive Random
 Adaptive speed
 Advanced
@@ -163,6 +174,7 @@ Allow Bluetooth connection? F N for yes, click for no.
 Alpha
 alpha and numerals
 alpha, numerals and interpunctions
+and a half
 Asia
 at sign
 Australia and New Zealand
@@ -204,6 +216,7 @@ Calibrate Battery
 Call Prefixes
 Call Sign
 Call Signs
+Calling rig
 Calls Region
 Cancel
 Cancel Recall
@@ -220,6 +233,7 @@ Common only
 Complements
 Configure WiFi
 Confirmation tone
+Connecting
 Connection allowed.
 Connection refused.
 Contest
@@ -241,9 +255,10 @@ Decoded
 Decoded audio on I O port
 Decoded output
 Delta
-Disp MAC Address
+Display MAC address
 Display off
 Display only
+dits
 dot dash
 Down 1 Half
 Echo
@@ -277,6 +292,7 @@ Headphone Output
 Host closed
 Host connected
 Hotel
+hundred
 Iambic A
 Iambic B
 iCW or External Transceiver
@@ -309,6 +325,10 @@ line out Speaker Muted
 line out with variable volume
 line-out
 Linefeed
+Link lost
+Link restored
+Linked to rig
+Local
 LoRa Band
 LoRa frequency
 LoRa Power
@@ -317,6 +337,7 @@ M32
 Mandarin
 Maximum number of words
 Mike
+milliseconds
 millivolts
 Mixed
 Moderate
@@ -324,9 +345,12 @@ Morserino 32 accessibility edition
 N America
 Narrow
 Never
+No answer from the rig
 No Bluetooth
 No custom set
 No limit
+No pass phrase set
+No rig address set
 NO SNAPSHOTS
 No time-out
 No Tone Shift
@@ -349,10 +373,12 @@ ON (true WpM)
 on USB power
 Operator Name
 Oscar
+Out of memory
 Output Case
 Paddle polarity
 Papa
 Phones
+Phrase saved
 Plain
 plus
 point
@@ -371,10 +397,22 @@ Random group length
 Random Groups
 Randomize File
 Recall snapshot
+Remote
+Remote Keyer
+Remote keyer glitch filter
+Remote keying pass phrase
+Remote Rig
+Remote rig first element extension
+Remote rig hang time
+Remote rig key down limit, keyer
+Remote rig key down limit, straight key
+Remote rig playout delay
+Remote Win Keyer
 Repeat each word
 Reset Defaults
 Reset Scores
 Reversed
+Rig address not found
 Romeo
 Secondary
 Select Lesson
@@ -395,14 +433,17 @@ Straight Key
 Strong
 Tango
 Theme
+thousand
 Time-out
 Tone Pitch
 Tone Shift
 Tone Softness
+Too short
 Transceiver
 Transceiver channel
 u umlaut
 Ultimatic
+Unchanged
 Uniform
 Unlimited
 Up 1 Half
@@ -427,6 +468,7 @@ WiFi Transceiver
 WiFi transmit OFF
 WiFi Transmit ON
 Win Keyer
+Win Keyer transmitter
 Word by word
 Word Length
 words per minute

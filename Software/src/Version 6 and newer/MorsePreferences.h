@@ -140,6 +140,15 @@ namespace MorsePreferences
   extern String  wlanSSID;
   extern String  wlanPassword;
   extern String  wlanTRXPeer;
+#ifdef CONFIG_M32KIP
+  extern String  kipPsk;                  // M32KIP pre-shared key: never sent, only hashed (spec §9).
+                                          // Write-only from outside, like the WiFi password.
+  void writeKipPsk(const String& psk);
+  bool kipPskValid(const String& psk);    // 12-32 chars from MorseTextEntry::CHARSET_PASSPHRASE (device entry,
+                                          // Config WiFi form and Configuration Tool all follow this rule)
+  extern uint16_t kipPort;               // UDP port: 7374 unless overridden over the protocol (D3)
+  void writeKipPort(uint16_t port);       // 0 = back to 7374, and the NVS key is removed
+#endif
 
   // config for up to three networks
   extern String  wlanSSID1;
@@ -237,6 +246,23 @@ namespace MorsePreferences
   extern int winKeyerOptionsSize;
 #endif
   extern  prefPos decoderOptions[];
+#ifdef CONFIG_M32KIP
+  extern  prefPos kipRigOptions[];
+  extern  prefPos kipKeyerOptions[];
+  extern  prefPos kipKeyerRigOptions[];   // the same, led by the remote rig's settings (D17), used only while linked
+  extern int kipRigOptionsSize;
+  extern int kipKeyerOptionsSize;
+  extern int kipKeyerRigOptionsSize;
+#ifdef REMOTE_WINKEYER
+  extern  prefPos remoteWinKeyerOptions[];      // Remote WinKeyer (DESIGN.md §9.1 R8)
+  extern  prefPos remoteWinKeyerRigOptions[];   // the same, led by the remote rig's settings (D17)
+  extern int remoteWinKeyerOptionsSize;
+  extern int remoteWinKeyerRigOptionsSize;
+#endif
+  uint16_t kipPlayoutMs(uint8_t value);   // Playout Delay choice -> ms, 0 = adaptive
+  void writeRigCfg();                     // persist just the six Remote Rig settings (D17), nothing else
+  void startPreferencesAt(prefPos pos);   // open the preferences menu ON this entry, once (D17)
+#endif
   extern  prefPos allOptions[];
 
   extern prefPos *currentOptions;
@@ -274,8 +300,14 @@ namespace MorsePreferences
   void resetGameScores();
   void clearGameScores();   // the wipe without the confirm UI (protocol PUT game/scores/clear)
   void editPracticeChars();
+#ifdef CONFIG_M32KIP
+  void editKipPassPhrase();
+#endif
   void setPracticeChars(const String& chars);   // assign + persist; shared with the serial "practicechars" command
   void readPreferences(const char* repository);
+  void voicedPause(uint32_t ms);           // delay() that keeps the a11y voice engine turning (plain delay otherwise)
+  void recordResetReason();               // once per boot: why this boot happened, into a small NVS ring
+  uint8_t readResetLog(uint8_t* out, uint8_t max);   // newest first; returns how many are known
   void readScreenPref();
   void readVoltagePref();
   void writePreferences(const char* repository);

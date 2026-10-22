@@ -98,6 +98,23 @@ const char* MorseWiFi::myForm = "<html><head><meta charset='utf-8'><title>Get AP
                     "<div>"
                       "(255.255.255.255 = Local Broadcast IP will be used as Peer if empty)"
                     "</div>"
+#ifdef CONFIG_M32KIP
+                    "<div>"   // M32KIP pre-shared key. Never rendered back, like the WiFi passwords:
+                      "<div>" //   it is only ever hashed, and leaving the field empty keeps the stored one.
+                        "<label for='kippsk'>Remote Keying pass phrase?</label>"
+                        // Same rule as the on-device entry and the Configuration Tool; the browser checks it before
+                        // sending, the handler below checks it again. '-' and '/' escaped for the 'v'-flag regex
+                        // that current browsers compile pattern attributes with.
+                        "<input name='kippsk' id='kippsk' autocomplete='off' maxlength='32'"
+                        " pattern='[a-z0-9.,:\\-\\/=?@+]{12,32}'"
+                        " title='12 to 32 characters: a-z 0-9 . , : - / = ? @ +'>"
+                      "</div>"
+                      "<div>"
+                        "(12 to 32 characters: lower-case a-z, 0-9 and . , : - / = ? @ + ; "
+                        "the same on both Morserinos; leave empty to keep)"
+                      "</div>"
+                    "</div>"
+#endif
                     "<div>"
                       "<button>Submit</button>"
                     "</div>"
@@ -541,7 +558,7 @@ namespace internal
     void handleFileUpload();                // upload a new file to the SPIFFS
     void handleNotFound();
     void startMDNS();
-    boolean errorConnect(String msg);
+    boolean errorConnect(String msg, void (*serve)() = nullptr);
 }
 
 
@@ -768,7 +785,22 @@ void MorseWiFi::startAP() {
   });
  
   server.on("/set", HTTP_GET, [&configDone]() {
+#ifdef CONFIG_M32KIP
+    // Empty means "leave the stored passphrase alone" - the field is never pre-filled, so submitting the
+    // form to change an SSID must not silently wipe the key. Anything else must pass the same rule as the
+    // on-device entry; a browser that ignores the pattern attribute must not get round it.
+    String kipPsk = server.hasArg("kippsk") ? String(server.arg("kippsk")) : String();
+    bool kipGiven = kipPsk.length() > 0;
+    bool kipOk = kipGiven && MorsePreferences::kipPskValid(kipPsk);
+#endif
     server.sendHeader("Connection", "close");
+#ifdef CONFIG_M32KIP
+    if (kipGiven && !kipOk)
+      server.send(200, "text/html",
+          "Wifi Info updated. The remote keying pass phrase was NOT changed: it must have 12 to 32 characters, "
+          "only lower-case a-z, 0-9 and . , : - / = ? @ + . You can close this page.");
+    else
+#endif
     server.send(200, "text/html",
         "Wifi Info updated. You can close this page.");
  
@@ -777,6 +809,10 @@ void MorseWiFi::startAP() {
       String(server.arg("ssid2")), String(server.arg("pw2")), String(server.arg("trxpeer2")),
       String(server.arg("ssid3")), String(server.arg("pw3")), String(server.arg("trxpeer3"))
     );
+#ifdef CONFIG_M32KIP
+    if (kipOk)
+        MorsePreferences::writeKipPsk(kipPsk);
+#endif
     configDone = true;    // signal the loop to exit
   });
  
@@ -965,21 +1001,24 @@ void MorseWiFi::viewStats() {                          /// start wifi client, we
 }
 #endif
 
-boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
+boolean MorseWiFi::wifiConnect(void (*serve)()) {    // connect to local WLAN
   // Connect to WiFi network
 #ifdef CONFIG_BLE_SERIAL
   MorseBleSerial::suspendForWifi();   // defense in depth: idempotent, and future callers of this
 #endif                                // radio primitive stay safe without knowing about BLE
   if (MorsePreferences::wlanSSID == "")
-      return internal::errorConnect(String("WiFi Not Conf"));
+      return internal::errorConnect(String("WiFi Not Conf"), serve);
   //DEBUG("SSID: " + MorsePreferences::wlanSSID + " PW: >" +  MorsePreferences::wlanPassword + "<");
   WiFi.begin(MorsePreferences::wlanSSID.c_str(), MorsePreferences::wlanPassword.c_str());
   // Wait for connection
   long unsigned int wait = millis();
   while (WiFi.status() != WL_CONNECTED) {
-    delay(250);
+    for (int i = 0; i < 25; i++) {          // 250 ms between status checks, in 10 ms steps for `serve`
+      if (serve) serve();
+      delay(10);
+    }
     if ((millis() - wait) > 11000)
-      return internal::errorConnect(String("No WiFi:"));
+      return internal::errorConnect(String("No WiFi:"), serve);
   }
   //DEBUG("Connected to " + String(p_wlanSSID));
   //DEBUG("IP address: " + String(WiFi.localIP()));
@@ -988,12 +1027,15 @@ boolean MorseWiFi::wifiConnect() {                   // connect to local WLAN
 }
 
 
-boolean internal::errorConnect(String msg) {
+boolean internal::errorConnect(String msg, void (*serve)()) {
   MorseOutput::clearDisplay();
   MorseOutput::printOnStatusLine( true, 0, "Not connected");
   MorseOutput::printOnScroll(0, INVERSE_BOLD, 0, msg);
   MorseOutput::printOnScroll(1, REGULAR, 0, MorsePreferences::wlanSSID);
-  delay(3500);
+  for (int i = 0; i < 350; i++) {           // 3.5 s, still serving whoever asked (wifiConnect())
+    if (serve) serve();
+    delay(10);
+  }
   if (protocolActive()) {
     MorseJSON::jsonCreate("message", "Not connected " + msg, "");
   }

@@ -47,7 +47,9 @@ namespace MorseWinKeyer
   extern volatile bool portOwned;
   inline bool ownsSerial() { return portOwned; }   // gates DEBUG(), m32out.echo(), runtime Serial prints
 
-  void enter(bool autoOpened);          // menuExec(): the mode takes the port
+  // menuExec(): the mode takes the port. `remote`: Remote WinKeyer (DESIGN.md §9.1) - the keying goes to a remote
+  // rig over M32KIP (MorseKipKeyer); host CW plays only while that link is up, and is dropped while it is down (R4).
+  void enter(bool autoOpened, bool remote = false);
   void leave();                         // menu_(): gives it back; no-op unless the mode was active
   void serviceInput();                  // serialEvent() while the port is owned
   bool takeTickServiced();              // serialEvent(): tick() already polled the port in this loop() pass
@@ -60,6 +62,7 @@ namespace MorseWinKeyer
   void afterPreferences();
   bool wantsMenu();                     // an auto-entered session was closed by the host
   bool isOpen();
+  bool hostSending();                   // the sender is busy (a letter, a timed mark, tune): no redraws now
   bool sidetoneWanted();                // keyOut(): pin config sidetone bit, paddle-only sidetone
   bool txWanted();                      // keyOut(): key-output bits, paddle watchdog, paddle mute
   // loop(), classic only (FN on GPIO0): a logger that sets DTR on / RTS off pulls GPIO0 low through

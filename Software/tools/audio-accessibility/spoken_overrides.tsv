@@ -61,7 +61,7 @@ char	character
 Char by char	Character by character
 Custom Chars	Custom Characters
 CW Abbrevs	CW Abbreviations
-Disp MAC Addr	Disp MAC Address
+Disp MAC Addr	Display MAC address
 Generic Kbd	Generic Keyboard
 Hardware Conf	Hardware Configuration
 iCW/Ext Trx	iCW or External Transceiver
@@ -76,6 +76,7 @@ Num+Int+ProS	numerals, Interpunctions and Prosigns
 Num+Interp.	numerals and Interpunctions
 Op Name	Operator Name
 Preview Char	Preview Character
+Remote WinKeyer	Remote Win Keyer
 S America	South America
 Sound & Disp	Sound and Display
 Update Firmw	Update Firmware

@@ -262,3 +262,56 @@ Acceptance test: 12 / 20 / 35 / 60 WpM × softness 1 / 5 / 9 ms —
 
 This also retroactively pins down the classic PWM path, which has never been
 measured this way either.
+
+
+## Addendum 2026-09-13: the generator's key line measured through M32KIP
+
+Evidence for the OPEN item above, measured to sub-millisecond precision with the M32KIP Remote Keyer
+as an instrument (edge timestamps taken in `keyOut()` on the Pocket, reconstructed on a host; see
+`devdocs/m32kip/IMPLEMENTATION_PLAN.md`, Phase 3).
+
+| Source | Dit | Dah | Dah/dit | Spread |
+|---|---|---|---|---|
+| Paddle keyer (`doPaddleIambic`), ~19 WPM | 63 ms | 189 ms | **3.00** | 0.3 / 0.4 ms |
+| Generator (`generateCW`, `PUT cw/play` and a recalled memory), same speed | **57 ms** | **183 ms** | **3.21** | 0.5 / 0.4 ms |
+
+On the key line, every generated element is exactly **6 ms shorter** than nominal: `genTimer` is set to
+`ditLength-6` / `dahLength-6`. Subtracting a constant preserves the dit–dah difference but not the
+ratio, and shortens dits proportionally most. The paddle keyer applies its 6 ms correction differently
+and keeps 3.00. So anything keyed from the generator — keyer memories, protocol `cw/play`, and
+therefore whatever those send to a real transmitter — carries this ratio. Not changed here; recorded
+for the decision this item is waiting on.
+
+### TODO (2026-09-16): fix the generator's 6 ms — Willi has decided
+
+The decision this item was waiting on has been made: **the generator should be fixed.** What settled it was M32KIP
+putting the defect in front of a user. A Remote Rig displays the speed it actually receives, derived from the median
+mark it reproduces, and with generated CW it reads **28 WPM when the Keyer is set to 25** — because a 48 ms dit
+arrives as 42 ms. Willi confirmed that **keying from the paddle measures exact**, which matches the table above
+(paddle 3.00, generator 3.21) and rules the transport out entirely: the Rig is reporting faithfully, the elements
+really are short.
+
+The fix is in `genTimer`: `ditLength-6` / `dahLength-6` subtracts a constant where the paddle keyer applies its
+correction so as to preserve the ratio. Subtracting a constant cannot preserve 3.00, and it hurts dits worst.
+
+Affects keyer memories, `PUT cw/play` and `PUT cw/repeat`, the Echo Trainer and CW Generator as heard on a real
+transmitter, and now the speed a remote operator sees. Not started; wants a measurement afterwards with the same
+instrument (`devdocs/m32kip/TEST_REPORT.md` describes it).
+
+### FIXED 2026-10-02 (06acf11 on `master`, merged into `m32kip`)
+
+`keyOut()` waits 6 ms on both edges before it moves the key line. The generator now times the mark with the full
+dit/dah (the two waits cancel, as in the paddle keyer's `corrTime`) and takes the 6 ms off the element, character
+and word *spaces* instead (`KEYOUT_EDGE_MS` in `m32_v6.ino`) — the next key-down asserts the line that much later.
+Measured with the same instrument (Pocket Remote Keyer, `PUT cw/repeat` at 25 WPM → classic Remote Rig with
+`-D KIP_MEASURE=1`, the Keyer's own `keyOut()` timestamps):
+
+| On the key line | Before | After | Nominal |
+|---|---|---|---|
+| dit | 42.1 ms | **48.0 ms** (47.0–49.0) | 48 |
+| dah | ~137.5 ms | **144.0 ms** (143.0–145.1) | 144 |
+| element space | ~53 ms | **48.0 ms** | 48 |
+| character gap | ~151 ms | **145.3 ms** | 144 |
+| dah/dit | 3.27 | **3.002** | 3.00 |
+
+The Rig's speed estimate reads 48 ms = 25 WPM again. Overall speed unchanged (element + space is still two dits).

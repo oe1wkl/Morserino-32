@@ -54,7 +54,9 @@ namespace MorseWiFi
     void menuExec(uint8_t command);         // called from main menu, with argument from menu
     void menuNetSelect();                   // display menu of wifi networks to select from
     void startAP();
-    boolean wifiConnect();
+    // `serve` (optional) is called throughout the wait, every 10 ms: Remote WinKeyer answers its WinKeyer host
+    // while WiFi comes up (devdocs/winkeyer/DESIGN.md §9.1 R6).
+    boolean wifiConnect(void (*serve)() = nullptr);
     void uploadFile();
     void updateFirmware();
 #ifdef CONFIG_PRACTICE_STATS

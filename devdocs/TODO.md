@@ -24,9 +24,11 @@ Branches: `master` = **9.1.0** (stable); **`V9.1` released 2026-10-11** (publish
    announcement was not bench-tested. The **QSO Bot** gap (speed changes silent there) is fixed too, merged
    2026-10-14 (`qsobot-speed-voice`, bench-tested): voice tick in the bot loop, keying cuts speech, bot CW
    pauses while a clip plays, and battery line + menu path after leaving the bot.
-3. **Then V10:** merge master into `m32kip` once more — 18 commits since 5bb9994 (plus the `[skip ci]` archive
-   commit), incl. **V9 manual edits that must be ported to the V10 manual** (File Builder paragraph and the
-   file-upload passage, both 2026-10-05), the sidetone fix, and the 9.1 changelog — then the B items below
+3. **Then V10:** ~~merge master into `m32kip` once more~~ — **done 2026-10-14** (433b03a, master up to cc8230d:
+   9.1 release, 9.2 a11y speed/battery speech; V9 manual edits ported to the V10 manual; voice store regenerated,
+   SPIFFS headroom now only **~36 KB**). The 9.2 changelog bullets are folded into 10.0 on m32kip (Willi 2026-10-14:
+   9.2 unlikely to ship, next release likely 10.0 beta); master still carries `### CHANGES V. 9.2`, so expect
+   that README conflict on the next master merge (resolve by keeping 10.0 only). Then the B items below
    (B2 editorial pass, B4 decision, B9 nod, B15 pronunciation, B16/B17 preference review), then tag
    `V10.0-beta.1`.
 
@@ -136,12 +138,22 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 ## B. M32KIP / V10
 
 1. ~~Editorial pass on the `### CHANGES V. 10.0` draft~~ — Willi: the entries are fine as they are (2026-10-01).
-2. Editorial pass on the **V10 manual** (currently V9 text + M32KIP sections).
+2. ~~Editorial pass on the **V10 manual**~~ — **done 2026-10-14** for the V10-only text (the remote-keying
+   section, its preferences, What's New; the V9 text had shipped already). Checked against the firmware; five
+   edits approved by Willi and applied EN+DE: snapshot exclusions now list the remote-keying settings; start-up
+   table gains *Out of memory* and the Rig's own *No key set*; *End: timeout* explained correctly (key lifted after
+   1 s, session ends 5 s later); port note (`PUT kip/port`, same on both ends); one wording fix.
+   Noticed, not changed (V9 text, also on master): the snapshot list calls the Bluetooth selector **BLT Kbd
+   Output**; on the device it is **Bluetooth Use**.
 3. ~~`PUT menu/start` answers nothing when not at the menu~~ — **done 2026-10-01 on `m32kip`** (0b6b1c3): it
    now answers `NOT AT MENU - stop the running mode first` and changes nothing; verified on the classic;
    protocol description updated (1.5). V9/`master` keeps the old silence.
 4. **Burst-loss failure, test-plan §13.2(e):** a burst shortened one mark by 138 ms. Manual
-   only carries the workaround (Rig Delay ≥ 250 ms).
+   only carries the workaround (Rig Delay ≥ 250 ms). **Willi 2026-10-14: ship the V10 beta, investigate after.**
+   Reading the code does not explain it (edges go oldest-first, a late key-down grows `d_` while the key is up,
+   and `poll()` recomputes every emit time from the current `d_`, so the key-up should move with it). Next:
+   reproduce in the host simulation with a loss pattern aimed at exactly one key-down's quick copies; then a
+   bench re-run of profile (e) with the Rig logging edge arrival times.
 5. ~~Generated CW is 6 ms short per element~~ — **fixed 2026-10-02 on `master`** (06acf11, changelog V. 9.1;
    merged into `m32kip`): dit 48.0 / dah 144.0 / space 48.0 ms at 25 WPM, dah/dit 3.002 (FINDINGS on `m32kip`).
 6. **Bench tests owed by Willi.** Done 2026-10-01 (two devices, no Mac in the path — see
@@ -155,7 +167,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 8. ~~A11y voicing of the Keyer's messages~~ — **done 2026-10-01 on `m32kip`** (6354662): connect, call, link and
    all five error screens are spoken; **link lost / restored too** (81b9f70: voice driven from the idle branch only,
    clips cut the moment CW starts). Heard by Willi on an a11y Pocket; timing benched unchanged (TEST_REPORT).
-9. **Pocket polled-Keyer 1.7 ms floor** — Willi's nod still owed.
+9. ~~**Pocket polled-Keyer 1.7 ms floor**~~ — **accepted by Willi 2026-10-14** (recorded under D2 in `DECISIONS.md`).
 11. ~~Setting the pass phrase~~ — **done 2026-10-01 on `m32kip`** (4af1827, 39c2d3f, 39b8cb7):
     preference **Pass Phrase** on the device (MorseTextEntry, write-only, voiced), a **Remote
     Keying** card on the Configuration Tool's WiFi tab, and the Config WiFi web form — all three
@@ -172,7 +184,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     off), then worked; not reproducible on demand, and no core dump was written, so not a crash — a brown-out
     or a hardware watchdog. **`GET resets`** (c22d8d8, protocol 1.5) now records why each boot happened: when it
     recurs, read it before anything else.
-15. **A11y pronunciation, for V10 (Willi, 2026-10-05):** "Disp MAC Addr" is spoken "Disp M-A-C address"; he wants
+15. ~~**A11y pronunciation, for V10 (Willi, 2026-10-05):**~~ **Done 2026-10-14** (override changed, clip reused, old one pruned). "Disp MAC Addr" is spoken "Disp M-A-C address"; he wants
     "Display MAC address". Cause: `Software/tools/audio-accessibility/spoken_overrides.tsv` line 64 (`Disp MAC Addr` →
     `Disp MAC Address`) overrides the extractor's own `MENU_SPOKEN` entry. Fix: change that line to
     `Display MAC address` and re-run extractor + generate_audio.sh (the clip 43f7eeee already exists; the old one
@@ -187,6 +199,14 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     Each mode shows only a subset (its option list in `MorsePreferences.cpp`); verify per mode that nothing
     irrelevant is offered and nothing needed is missing — e.g. Word Length / Decoder Chars only where they act.
     Best done together with 16, with a mode × preference table as the working document.
+    **Prepared 2026-10-14:** `devdocs/preference-review/` — `PREFERENCE_MATRIX.md` (generated from the
+    preprocessed firmware tables and the V10 manual by `make_matrix.py`) and `REVIEW_NOTES.md` (six B17
+    findings, e.g. Headphone Output missing in CW Generator, Key ext TX missing in CW Trx; three manual/device
+    order mismatches; one order question). **Willi's first decisions implemented 2026-10-14** (mode-specific
+    settings first, Bluetooth Use general, BLT <AR> CW Keyer only, B17 fixes 1–5; see the Decisions section of
+    `REVIEW_NOTES.md`); second round the same day (QSO Bot and Echo order, Decoder Chars general, manual follows
+    the device); B17 item 6 fixed 2026-10-15 (Bluetooth Use changed in CW Keyer now starts/stops the keyboard at once —
+    bench check owed, esp. BLE Serial → keyboard). **B16/B17 done** apart from that bench check.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
@@ -368,4 +388,13 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    and the open checks (loggers, key-line timing, rev 31) in `devdocs/winkeyer/BENCH.md`. Found on the bench
    and fixed: the classic's FN is GPIO0, held down by loggers with DTR on / RTS off (now ignored).
    **Still open:** N1MM (Windows) and the revision 23-vs-31 call, key-line timing with a logic analyser.
-   **Follow-up: Remote WinKeyer** with M32KIP (V10) — DESIGN.md §9.
+   **Follow-up: Remote WinKeyer** with M32KIP (V10) — DESIGN.md §9.1: decisions R1–R8 taken 2026-10-17
+   (WinKeyer Tx preference, Pocket only; menu "Remote WinK" on the classic). **Implemented, merged into
+   m32kip and pushed 2026-10-18** (5034014); builds all 10 envs, EN+DE V10 manuals and voice clips done. The five
+   implementation interpretations were decided the same day (one change: text sent during the start is dropped
+   with a break-in, a926857). Link-up bench done (Pocket + classic rig, results in
+   `devdocs/winkeyer/BENCH_REMOTE.md`). **Still owed:** screens/voice, paddle and encoder, the start from the
+   device's menu, a real logger, an Internet path, the classic as Remote WinKeyer, the a11y edition.
+   Idea for the open key-line timing checks of BENCH.md §3 (no logic analyser): the classic as Remote Rig with a
+   `-D KIP_MEASURE=1` build reproduced the Pocket's key line within ~45 µs, so Remote WinKeyer can measure
+   WinKeyer's element timing.

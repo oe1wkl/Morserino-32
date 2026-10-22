@@ -73,6 +73,13 @@ def pio_macros(ini_path, env):
 A11Y_MACROS = pio_macros(PIO_INI, A11Y_ENV)
 if "CONFIG_AUDIO_A11Y" not in A11Y_MACROS:
     sys.exit(f"{PIO_INI} [env:{A11Y_ENV}] does not define CONFIG_AUDIO_A11Y - wrong env?")
+# Macros that morsedefs.h derives from the flags above rather than platformio.ini defining them. The tables
+# use them (Remote WinKeyer's menu entry, the WinKeyer Tx preference), so they must be set here too - keep this
+# in step with the block after `isWinKeyerMode()` in morsedefs.h.
+if {"CONFIG_WINKEYER", "CONFIG_M32KIP"} <= A11Y_MACROS:
+    A11Y_MACROS.add("REMOTE_WINKEYER")
+    if {"ARDUINO_USB_MODE", "ARDUINO_USB_CDC_ON_BOOT"} <= A11Y_MACROS:
+        A11Y_MACROS.add("WK_TARGET_PREF")
 QSTRING = re.compile(r'"((?:[^"\\]|\\.)*)"')
 
 # ── NATO phonetic alphabet + how single characters are voiced ────────────────
@@ -117,12 +124,22 @@ ACTION_SPOKEN = {  # extraItems[] display label -> spoken
     "STORE Snapshot":"Store snapshot",
     "Koch Lesson":"Koch lesson",
     "LoRa Frequ":"LoRa frequency",
+    # The remote rig's settings (D17). Display labels are 12-char abbreviations carrying a "Rig:" prefix so they
+    # cannot be mistaken for local ones; read out as written they would be "Rig colon Lim Kyr".
+    "Rig: Delay":"Remote rig playout delay",
+    "Rig: Lim Kyr":"Remote rig key down limit, keyer",
+    "Rig: Lim SK":"Remote rig key down limit, straight key",
+    "Rig: 1st Ext":"Remote rig first element extension",
+    "Rig: Hang":"Remote rig hang time",
+    "Pass Phrase":"Remote keying pass phrase",   # also the text-entry heading ("Pass Phrase:" minus the colon)
 }
 VALUE_SPOKEN = {"+": "plus"}   # symbol-only option value (BLT <AR>) -> spoken word
 # "of" / "characters" join the composed value lines (see MorsePreferences::announceValue):
 # "21 of 51" for the Koch lesson, "39 characters" for the practice set.
 UNIT_WORDS = ["words per minute", "Volume", "char", "characters", "of", "Snapshot",
-              "millivolts", "pro sign", "error"]
+              "millivolts", "pro sign", "error",
+              # Remote Rig hang time (D16): "2 thousand 3 hundred 50 milliseconds", "7 and a half dits"
+              "milliseconds", "dits", "and a half", "thousand", "hundred"]
 # Boot splash (announceSplash() in m32_v6.ino). The splash is drawn, not table-driven, so
 # these phrases live nowhere the extractor could find them and are listed here instead.
 # Version number and battery voltage are composed from the number atoms below ("version" +
@@ -143,12 +160,20 @@ CONSENT_WORDS = ["Allow Bluetooth connection? F N for yes, click for no.",
 # The sequence it falls back to is spoken from the Koch Sequence option clips, so only the two
 # fixed phrases are needed here.
 KOCH_FALLBACK_WORDS = ["No custom set", "Fallback"]
+# Remote keying pass phrase entry (editKipPassPhrase() in MorsePreferences.cpp): the three outcomes, drawn on
+# screen, not table-driven. "Too short" is followed by the composed "12 characters" (existing atoms).
+PASSPHRASE_WORDS = ["Unchanged", "Too short", "Phrase saved"]
 # BLE Serial splashes (MorseBleSerial.cpp: bleInitFail(), suspendForWifi()). Drawn, not table-driven,
 # and the protocol text stream cannot carry them: they announce the end, or the failed start, of the
 # very session that stream would need.
 BLE_NOTICE_WORDS = ["Bluetooth serial failed to start", "Bluetooth serial suspended for wireless mode"]
 # Text entry (MorseTextEntry, voiceAsLetters): the space in Op Name is spoken as the word.
 TEXT_ENTRY_WORDS = ["space"]
+# Remote Keyer status (MorseKipKeyer.cpp, TODO B8): drawn, not table-driven. Short on purpose - the voice
+# store is nearly full - and spoken as one sentence where the display breaks a hint over two lines.
+KIP_KEYER_WORDS = ["Connecting", "Calling rig", "Linked to rig", "No pass phrase set", "No rig address set",
+                   "Rig address not found", "No answer from the rig", "Out of memory",
+                   "Link lost", "Link restored"]          # link changes while in the mode (idle gaps only)
 # Battery status readout on menu re-entry (a11yAnnounceBatteryOnMenuEntry() in MorseMenu.cpp).
 # Drawn nowhere -- the icon is visual only, so voicing has to come from the firmware side.
 # Six phrases rather than composed atoms ("battery" + "high") so each state reads as one
@@ -272,7 +297,7 @@ extra_body = preprocess(array_body(strip_comments(load("MorsePreferences.cpp")),
                                    r"extraItems\s*\[\s*\]\s*="), A11Y_MACROS)
 extra_items = [s for s in QSTRING.findall(extra_body) if s.strip()]
 inline_values = ["clear all","Cancel Recall","Cancel Store","NO SNAPSHOTS",
-    "Flip Screen","Reset Defaults","Cancel","(not set)"]
+    "Flip Screen","Reset Defaults","Cancel","(not set)","(set)"]
 action_items = extra_items + inline_values
 
 # ── Assemble PHRASES (apply menu/action spoken overrides) ────────────────────
@@ -282,7 +307,7 @@ phrase_texts = (
     pref_labels +
     option_values +
     [spoken_of(s, ACTION_SPOKEN) for s in action_items] +
-    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + BATTERY_WORDS + WINKEYER_WORDS
+    UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS + WINKEYER_WORDS
 )
 # NOTE: a non-table word list must appear TWICE -- here, which schedules the clip for
 # rendering, and in the fw_add() loop below, which maps the firmware string to that clip.
@@ -293,6 +318,8 @@ phrase_texts = (
 letters   = list(NATO.values())                                    # Alpha..Zulu
 punct     = list(PUNCT.values()) + list(UMLAUT.values()) + ["C H"]  # +ch (FLAG)
 ints      = [str(i) for i in range(0,61)] + [str(i) for i in range(65,251,5)]
+# Larger numbers are COMPOSED ("2 thousand 3 hundred 50"), not stored: the SPIFFS voice store has little headroom
+# left. One clip per value 300-3000 in 50s (tried for the Remote Rig hang time, D16) overflowed it by ~520 KB.
 atom_texts = letters + punct + ints
 
 # ── Character -> clip-sequence manifest (drives composition on-device) ───────
@@ -331,7 +358,7 @@ for s in menu_entries:  fw_add(s, spoken_of(s, MENU_SPOKEN))   # display -> spok
 for lbl in pref_labels: fw_add(lbl, lbl)
 for v in option_values: fw_add(v, v)
 for s in action_items:  fw_add(s, spoken_of(s, ACTION_SPOKEN))
-for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + BATTERY_WORDS + WINKEYER_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
+for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + PASSPHRASE_WORDS + BLE_NOTICE_WORDS + TEXT_ENTRY_WORDS + KIP_KEYER_WORDS + BATTERY_WORDS + WINKEYER_WORDS + ints + letters + punct: fw_add(t, t)  # announce by own text
 
 # ── Dedupe, assign ids, write ────────────────────────────────────────────────
 # Tiebreak on the exact string: the input is a set (iteration order varies between
@@ -342,8 +369,8 @@ for t in UNIT_WORDS + SPLASH_WORDS + CONSENT_WORDS + KOCH_FALLBACK_WORDS + BLE_N
 # Only clips the firmware can reach are rendered: those named by the two tables in voice_clips.h -
 # voiceLookup[] (fw_lookup) and voiceCharLookup[] (char_seq), the only ways MorseVoice finds a clip. An
 # overridden entry used to get a clip of its raw text as well ("WinKeyer" beside "Win Keyer"), and so did a
-# spoken menu text whose entry was overridden: clips that nothing could ever play. On the V10 line they filled
-# the Accessibility Edition's voice store to the last byte (2026-10-17); ported to master 2026-10-18.
+# spoken menu text whose entry was overridden: 74 clips, ~640 KB, that nothing could ever play, which filled
+# the Accessibility Edition's voice store to the last byte (2026-10-17, Remote WinKeyer's clips no longer fit).
 reachable = set(fw_lookup.values()) | {t for seq in char_seq.values() for t in seq}
 all_texts = sorted({t for t in reachable if t and t.strip()}, key=lambda s: (s.lower(), s))
 id_map = {}

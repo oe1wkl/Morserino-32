@@ -442,3 +442,123 @@ as) the local key line. Nothing is designed yet. Questions to settle when both b
     unanswered question needs a timeout and a default, and a blind operator needs it spoken.
     More moving parts for a choice that rarely changes.
 
+### 9.1 Remote WinKeyer — decision list (2026-10-17, for Willi)
+
+**Decided by Willi, 2026-10-17:** all recommendations accepted, with one change to R2. R1: the preference
+(**WinKeyer Tx** = Local / Remote, default Local, no `Off`) exists **only on the Pocket** — the classic has no
+auto-detect and so no use for it. R2: the menu label is **`Remote WinK`** on the classic (12-character limit) and the
+full **`Remote WinKeyer`** on the Pocket. R3–R8 as recommended below (R3a: source 1 while Tune / Key Buffered;
+R4 (B); R5 hold BUSY; R6 serve the parser during start-up, stay in the mode on auto-detect errors; R7; R8 yes).
+**Implemented 2026-10-17** on branch `remote-winkeyer` (state `morseRemoteWinKeyer`, menu `_remoteWinKeyer`,
+preference `posWkTarget`, hooks in `MorseWinKeyer.cpp` / `MorseKipKeyer.cpp` / `keyOut()`); bench checklist in
+`BENCH_REMOTE.md`, which also lists five interpretations made while implementing. **Willi decided them
+2026-10-18:** four kept as built; one changed — text a host sends while the link is still coming up is
+dropped with a break-in when the start ends (like R4), instead of being sent once linked.
+
+Branch `remote-winkeyer` off `m32kip` (b9075fb). Checked against `MorseWinKeyer.cpp`,
+`MorseKipKeyer.cpp`, the `keyOut()` hook and the Transceiver chain in `MorseMenu.cpp`. Each item gives the options,
+what they cost, and a recommendation (**→**). Items marked *for the record* need no decision.
+
+**R1 — Which mode the Pocket's auto-detect starts: a preference.**
+- **→ A preference**, Pocket only (the classic has no auto-detect, D1a), default **Local** so V9 behaviour is kept.
+  - Name and values (12-character budget, like every `parName`): **`WinKeyer Tx`** = `Local` / `Remote`, spoken
+    "WinKeyer transmitter", "local", "remote". Alternatives: `Host Opens` = `WinKeyer` / `Remote WK`;
+    `WK Auto Mode` = `Local` / `Remote`.
+  - It decides **only** what a Host Open at the top menu starts. The two menu entries always do what they say.
+  - Where it sits: in the "All" view right after **Key ext TX** (both say where keying goes); inside the two WinKeyer
+    modes **first** (mode-specific settings first, B16), so it can be changed where it is needed.
+  - Cost: one `prefPos` with `pliste[]` + `prefName[]` in step (rule 10, under `CONFIG_M32KIP && CONFIG_WINKEYER`,
+    Pocket only); **1 NVS entry** (a `uint8_t` in the existing `morserino` namespace, key ≤ 15 chars, e.g.
+    `wkTarget`); not in snapshots (not a training setting); appears in `GET configs` by itself (an added config, no
+    protocol version change); **3 clips** via the extractor (name + two values, a few KB of the ~164 KB headroom).
+- Optional third value **`Off`** (auto-detect disabled). Free once the preference exists, but it reopens D1a
+  ("always on, no preference"). → not unless you want it.
+- Rejected alternatives: *ask on the device* (costed above: reply-first timing, timeout + default, spoken prompt);
+  *last used* (remember which of the two was last entered from the menu: no menu line, but the same NVS entry and
+  an invisible rule that surprises).
+
+**R2 — Menu label and position.**
+- "Remote WinKeyer" is 15 characters; menu labels are fitted to 12 (`"Remote Keyer"` is exactly 12).
+  **→ `Rmt WinKeyer`**, spoken "Remote WinKeyer" (a pronunciation override, so the Accessibility Edition says it in
+  full). Alternatives: `WinKeyer Rmt`, `Remote WinKy`, `Remote WK`. The start screen spells it out in full
+  ("Remote WinKeyer" fits a scroll line on both displays, as "Waiting for host" does).
+- **→ Position:** iCW/Ext Trx → WinKeyer → **Rmt WinKeyer** → Remote Keyer → Remote Rig → QSO Bot: next to
+  WinKeyer, and leading into the two M32KIP entries. A new `menuNo` appended at the end of the enum (menuPtr is
+  persisted raw); `_afterWk` / `_beforeKip` updated and the `menu_ring` check re-run; not remotely executable (it
+  takes the USB port, like WinKeyer).
+
+**R3 — How the WinKeyer sender feeds Remote Keyer's edge path.** *For the record*, plus one decision (R3a).
+- The sender (`keyDown()`/`keyUp()` in `MorseWinKeyer.cpp`) and the paddle keyer both key through `keyOut(…,
+  fromHere=true)`, and `MorseKipKeyer::noteEdge()` already sits in `keyOut()` where the local TX line would move.
+  So host CW and paddle CW both reach the wire with **no change to the edge path**; the send task, repeat schedule
+  (D13), reconnect (D14) and glitch filter are reused as they are.
+- **Local TX forced off** in this mode whatever Key ext TX says (Remote Keyer, D12d). The sidetone stays local and
+  still follows the host's pin config and paddle-only-sidetone bit.
+- The host's "key outputs off" pin config, the paddle watchdog and X2MODE paddle mute stop the **remote** line the
+  way they stop the local one today (`txWanted()` gates the edges; a key-up always passes, so a gate changing
+  mid-mark can never leave the rig keyed).
+- Host CW is machine-made: **source 0**, no glitch filter (it would only delay every edge). A straight key on the
+  paddle jack is source 1 with the Glitch Filter, as in Remote Keyer.
+- Implementation: its own `morseState` (`morseRemoteWinKeyer`), so "never keys the local jack" is visible in
+  `keyOut()` and in no Key-ext-TX case; the ~10 `morseWinKeyer` checks go through one helper. About 1 session.
+- **R3a — Tune and long marks.** The rig cuts a source-0 mark at **Rig Limit Kyr (3 s default)**, so a logger's
+  Tune (Key Immediate, WinKeyer watchdog 100 s) or Key Buffered stops on the air after 3 s.
+  **→ Report source 1 while Tune or Key Buffered holds the key**, so **Rig Limit SK (10 s default)** applies — what
+  spec §8 *Tuning* already says for an internal keyer (a mid-session source change the protocol allows). The rig's
+  limit always wins over the 100 s watchdog; when STATS reports the limit tripped, the M32 ends Tune itself, so the
+  host's status matches the air. Alternative: stay source 0, and the operator raises Rig Limit Kyr from the
+  operating position (D17). The manual says either way.
+
+**R4 — The link drops while the host is sending (D14).** The rig has already lifted the key (keepalive timeout);
+the question is what the logger is told and what happens to its text.
+- (A) **As Remote Keyer:** keep sending locally, sidetone only; nothing reaches the air and the logger never knows.
+  Simplest, but a contest auto-CQ carries on into the void.
+- (B) **→ Treat the loss like a paddle break-in:** at the moment of loss, abort the letter in progress, clear the
+  buffer and raise BREAKIN (as the paddle does — N1MM stops a repeating CQ on exactly that bit, §8). While the link
+  is down, host text is taken and **dropped** (no XOFF build-up, BUSY never sticks), the sidetone stays silent, and
+  screen and voice say "Link lost" (existing clip). Reconnect is automatic (D14); the next message goes out whole,
+  because nothing stale was kept. The paddle behaves as in Remote Keyer (sidetone only while down).
+- (C) Hold: pause the sender, keep the buffer, XOFF, resume on reconnect. Rejected: a message — or half of one —
+  goes on the air seconds or minutes late.
+
+**R5 — BUSY versus the playout delay.** Echo and BUSY follow the *local* sender, which runs one playout delay
+(~150 ms, more on a poor link) ahead of the rig. A logger that switches PTT over CAT (D3: we have no PTT) drops it
+when BUSY clears, which would clip the end of every message on the remote rig.
+- **→ Hold BUSY for the rig's current playout delay (from STATS) + 20 ms** after the last host key-up. Echo
+  characters keep local timing (they only feed the logger's display). Hosts do not wait for BUSY before sending, so
+  nothing slows down. Cost: a few lines.
+- Alternative: leave BUSY local, and tell PTT-over-CAT users to set a PTT tail ≥ the playout delay in the logger.
+
+**R6 — Start-up, above all from auto-detect.** Remote Keyer's start blocks: WiFi connect up to 11 s (+3.5 s on an
+error screen), handshake up to 5 s — and nothing serves the serial port meanwhile. From auto-detect the host's
+session is already open (the revision byte still goes out at once), and loggers ask questions straight after Host
+Open (status, FW minor revision, Vcc — N1MM asks two, BENCH.md §5).
+- **→ Serve the WinKeyer parser inside those waits** (a hook in `wifiConnect()`'s and the handshake's wait loops):
+  replies go out, the sender is held, host text buffers and XOFF works. About 0.5 session.
+  *(2026-10-18: what buffered is dropped with a break-in when the start ends — BENCH_REMOTE.md, item 1.)*
+- **Errors, menu entry:** as Remote Keyer — message, back to the menu (no host session exists yet).
+- **Errors, auto-detect:** the host session is open and cannot be refused, so **→ stay in the mode**: show the
+  error, keep calling the rig where the configuration allows (D14), host text handled as in R4. Never fall back to
+  local WinKeyer: that would key the local jack, which this user did not choose. The long press leaves as always.
+
+**R7 — What the display and the voice show.**
+- **→ WinKeyer's screen plus Remote Keyer's link logo:** top bar "Host" while a session is open (WinKeyer's slot)
+  and the WiFi logo while the rig answers (Remote Keyer's slot); scroll area as in WinKeyer (host text as it is
+  sent, paddle text decoded). Start screen: "Remote WinKeyer" / rig address / "Host connected" or
+  "Waiting for host".
+- Voice: every status phrase exists already ("Connecting", "Calling rig", "Linked to rig", "Link lost",
+  "Link restored", "Host connected", "Waiting for host", "Host closed", the rig errors); new clips only for the menu
+  label and R1's preference. The protocol text stream is off in this mode (the host owns USB), as in WinKeyer.
+
+**R8 — Preferences inside the mode: are the Remote Keyer (rig) settings offered?**
+- **→ Yes:** the same list switch as Remote Keyer (D17) — with the link up and a rig that answers configuration
+  requests, the **rig items first** (Rig Delay, Rig Limit Kyr, Rig Limit SK, Rig 1st Ext, Rig Hang), then
+  **WinKeyer Tx** (R1), the keyer block (Keyer Mode … Latency), Glitch Filter, Pass Phrase, the general block
+  without Serial Output, paddles. **No Key ext TX** (local TX is forced off). WinKeyer's D7 rules apply unchanged
+  (the M32 owns paddle and pitch; nothing the host sets reaches NVS).
+- Cost: two option lists (with and without rig items) and the existing D17 branch extended to the new state.
+
+**Effort, once decided:** about 2–3 sessions — mode and state (1), R4–R6 (1), preferences, menu, voice, EN + DE V10
+manuals and the README 10.0 change log (0.5–1) — plus a two-Morserino bench with a logger (checklist comes with the
+implementation).
+

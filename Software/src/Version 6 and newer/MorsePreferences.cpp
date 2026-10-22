@@ -24,6 +24,9 @@
 #endif
 #include "MorseVoice.h"
 #include "MorseTextEntry.h"
+#ifdef CONFIG_M32KIP
+#include "MorseKipKeyer.h"     // the remote rig's settings, shown in this device's preferences while linked (D17)
+#endif
 #ifdef CONFIG_CW_GAME
 #include "MorseGridScore.h"    // forgetHighScores(): drop the RAM caches when scores are cleared
 #include "MorseMemoryChain.h"
@@ -104,6 +107,14 @@ const char * prefName[] = {
 #ifdef CONFIG_QSO_BOT
             "qsoBotContest",     // NVS keys are limited to 15 chars: the original "qsoBotContestType" (17) could never be stored
             "qsoBotLevel",
+#endif
+#ifdef CONFIG_M32KIP
+            "kipPlayout", "kipMaxKeyer", "kipMaxManual",                // NVS keys, all well inside 15 chars
+            "kipFirstExt", "kipHang",
+            "kipGlitch",
+#endif
+#ifdef WK_TARGET_PREF
+            "wkTarget",
 #endif
 #ifndef CONFIG_AUDIO_A11Y
             "decoderChars",
@@ -537,6 +548,66 @@ parameter MorsePreferences::pliste[] = {
     {"Beginner", "Intermediate", "Advanced"}
   },
 #endif
+#ifdef CONFIG_M32KIP
+  {
+    0, 0, 9, 1,                                                 // index into kipPlayoutMs(): 0 = adaptive
+    "Rig Delay",
+    "Remote Rig: fixed delay between keying and transmitter, or Adaptive",
+    true,
+    {"Adaptive", "50 ms", "100 ms", "150 ms", "200 ms", "250 ms", "300 ms", "400 ms", "500 ms", "600 ms"},
+    "Remote rig playout delay"
+  },
+  {
+    3, 1, 30, 1,                                                // seconds (spec §11: 3000 ms)
+    "Rig Limit Kyr",
+    "Remote Rig: longest mark from a paddle keyer before the rig lifts the key (s)",
+    false,
+    {},
+    "Remote rig key down limit, keyer"
+  },
+  {
+    10, 1, 30, 1,                                               // seconds (spec §11: 10000 ms)
+    "Rig Limit SK",
+    "Remote Rig: longest mark from a straight key or bug before the rig lifts the key (s)",
+    false,
+    {},
+    "Remote rig key down limit, straight key"
+  },
+  {
+    0, 0, 30, 1,                                                // ms, 0 = off (D16)
+    "Rig 1st Ext",
+    "Remote Rig: start the first element after a break-in pause this much early (ms), 0 = off",
+    false,
+    {},
+    "Remote rig first element extension"
+  },
+  {
+    5, 0, 60, 1,                                                // 50 ms steps (0-3000 ms)
+    "Rig Hang",
+    "Remote Rig: the transceiver's break-in delay, in 50 ms steps",
+    false,
+    {},
+    "Remote rig hang time"
+  },
+  {
+    3, 1, 5, 1,                                                 // ms (spec §11: 3, range 1-5)
+    "Glitch Filter",
+    "Remote Keyer: how long a straight-key contact must hold to count (ms)",
+    false,
+    {},
+    "Remote keyer glitch filter"
+  },
+#endif
+#ifdef WK_TARGET_PREF
+  {
+    0, 0, 1, 1,                                                 // DESIGN.md §9.1 R1: Pocket only, default Local
+    "WinKeyer Tx",
+    "What a logger opening a WinKeyer session at the top menu starts: WinKeyer (local transmitter) or Remote WinKeyer",
+    true,
+    {"Local", "Remote"},
+    "Win Keyer transmitter"
+  },
+#endif
 #ifndef CONFIG_AUDIO_A11Y
   {
     0, 0, 4, 1,                                                 // decoderCharSets (morsedefs.h): national letters / ITU brackets
@@ -558,11 +629,29 @@ parameter MorsePreferences::pliste[] = {
 static_assert(sizeof(MorsePreferences::pliste) / sizeof(MorsePreferences::pliste[0]) == posSerialOut + 1,
               "pliste[] out of sync with the prefPos enum (rule 9)");
 
+// Positional against the special-case region of the prefPos enum, exactly like pliste[]/prefName[] are positional
+// against its first part: an entry out of order mislabels every item after it, silently. The six "Rig:" entries
+// carry the prefix Willi asked for so they cannot be mistaken for local settings (D17).
 const char* const extraItems[] = {"Koch Lesson", "LoRa Band",  "LoRa Frequ", "LoRa Power", "RECALLSnapshot", "STORE Snapshot", "Calibrate Batt", "Hardware Conf", "Call Sign", "Op Name", "Reset Scores", "Practice Set"
+#ifdef CONFIG_M32KIP
+    , "Rig: Delay", "Rig: Lim Kyr", "Rig: Lim SK", "Rig: 1st Ext", "Rig: Hang"
+    , "Pass Phrase"
+#endif
 #ifdef CONFIG_PRACTICE_STATS
     , "Practice Stats"
 #endif
 };
+// The same positional trap as prefName[]/pliste[], guarded the same way: the last special-case position decides.
+static constexpr int lastExtraPos =
+#if defined(CONFIG_PRACTICE_STATS)
+    posPracticeStatsOn;
+#elif defined(CONFIG_M32KIP)
+    posKipPassPhrase;
+#else
+    posPracticeChars;
+#endif
+static_assert(sizeof(extraItems) / sizeof(extraItems[0]) == lastExtraPos - posKochFilter + 1,
+              "extraItems[] must have one label per prefPos from posKochFilter to the last special case");
 
 #ifdef CONFIG_TFT
 themes MorsePreferences::themeList[] = {
@@ -697,14 +786,21 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #define INVORIENT
 #endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
-#define BLUE posBluetoothOut, posBluetoothARkey,
+#define BLUEUSE posBluetoothOut,         // what the BLE radio is for (keyboard, MIDI, serial protocol): a general setting
+#define BLTAR posBluetoothARkey,         // how the keyboard types <AR>: only CW Keyer starts the BLE keyboard
 #else
-#define BLUE
+#define BLUEUSE
+#define BLTAR
 #endif
 #ifdef CONFIG_QSO_BOT
 #define QSOBOT posQsoBotLevel, posQsoBotContestType,
 #else
 #define QSOBOT
+#endif
+#ifdef WK_TARGET_PREF
+#define WKTARGET posWkTarget,            // Pocket only: what the WinKeyer auto-detect starts (DESIGN.md §9.1 R1)
+#else
+#define WKTARGET
 #endif
 #ifndef CONFIG_AUDIO_A11Y
 #define DECCHARS posDecoderChars,
@@ -713,99 +809,95 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #endif
 
 
-  prefPos MorsePreferences::keyerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
+// Inside a mode the operator scrolls through that mode's own settings first, then the general block - the
+// mode's settings are the likeliest to be sought (Willi, V10 preference review B16, 2026-10-14). The general
+// block is the same in every mode; Paddle Polar. / External Pol. close it (set-once hardware settings).
+// Decoder Chars belongs to it (Willi, 2026-10-14): it decides how characters are decoded and shown wherever
+// that happens, and which national letters the Practice Set picker offers. In the Echo Trainer lists the
+// Echo settings come before the keyer settings, and the QSO Bot leads with its own two (same review).
+#define PREFPOS_GENERAL PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT posSerialOut, BLUEUSE
+#define PREFPOS_PADDLES posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency,
-                                                   DECCHARS
+  prefPos MorsePreferences::keyerOptions[] =     { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency,
+                                                   BLTAR
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
-  prefPos MorsePreferences::generatorOptions[] = { PREFPOS_COMMON_CORE THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posInterCharSpace, posInterWordSpace,
+  prefPos MorsePreferences::generatorOptions[] = { posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
-                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel
+                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
- prefPos MorsePreferences::playerOptions[] =     { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posInterCharSpace, posInterWordSpace,
-                                                   posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
-                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel
+ // Tone Shift: the file's tone marker (<t>, \t, [t]) switches to the shifted pitch (pitch() in m32_v6.ino)
+ prefPos MorsePreferences::playerOptions[] =     { posInterCharSpace, posInterWordSpace,
+                                                   posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler, posEchoToneShift,
+                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::echoPlayerOptions[] = { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posInterCharSpace, posInterWordSpace,
+ prefPos MorsePreferences::echoPlayerOptions[] = { posInterCharSpace, posInterWordSpace,
                                                    posMaxSequence, posRandomFile, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::echoTrainerOptions[]= { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
-                                                   posInterCharSpace, posInterWordSpace,
+ prefPos MorsePreferences::echoTrainerOptions[]= { posInterCharSpace, posInterWordSpace,
                                                    posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::kochGenOptions[] =    { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posKochSeq, posCarouselStart,
+ prefPos MorsePreferences::kochGenOptions[] =    { posKochSeq, posCarouselStart,
                                                    posInterCharSpace,  posInterWordSpace, posRandomLength, posPracticeChars, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posWordDoubler,
-                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel
+                                                   posKeyExternalTx, posLoraCwTransmit, posLoraChannel,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::kochEchoOptions[] =   { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, posKochSeq, posCarouselStart,
+ prefPos MorsePreferences::kochEchoOptions[] =   { posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomLength, posPracticeChars, posRandomBoost, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::loraTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
+ prefPos MorsePreferences::loraTrxOptions[] =    { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency, posGeneratorDisplay,
                                                    posEchoToneShift, posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
-                                                   DECCHARS
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::wifiTrxOptions[] =    { PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
+ prefPos MorsePreferences::wifiTrxOptions[] =    { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posGeneratorDisplay, posEchoToneShift,
                                                    posKeyExternalTx, posLoraChannel, posExtAudioOnDecode,
-                                                   DECCHARS
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
- prefPos MorsePreferences::extTrxOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode,
-                                                   DECCHARS
+ // CW Trx: Key ext TX keys the transmitter here (keyOut(): morseTrx); Tone Shift does not act (not read for morseTrx)
+ prefPos MorsePreferences::extTrxOptions[] =     { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   posKeyExternalTx, posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
 #ifdef CONFIG_WINKEYER
- // WinKeyer: the CW Keyer's paddle settings stay the M32's (D7), plus the transmit gate. No Serial
- // Output - the port belongs to the WinKeyer host while the mode runs.
- prefPos MorsePreferences::winKeyerOptions[] =   { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+ // WinKeyer: the CW Keyer's paddle settings stay the M32's (D7), plus the transmit gate. The general
+ // block without Serial Output - the port belongs to the WinKeyer host while the mode runs.
+ prefPos MorsePreferences::winKeyerOptions[] =   { WKTARGET posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
                                                    posKeyExternalTx,
-                                                   DECCHARS
+                                                   PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT BLUEUSE
+                                                   PREFPOS_PADDLES
                                                  };
 #endif
 
 #ifdef CONFIG_QSO_BOT
- prefPos MorsePreferences::qsoBotOptions[] =     { PREFPOS_COMMON_CORE  LINEOUT  THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency, posEchoToneShift,
-                                                   posGoertzelBandwidth,
-                                                   posQsoBotLevel, posQsoBotContestType
+ // The bot decodes the operator's key, not audio (no Bandwidth), and keeps its own pitch (no Tone Shift)
+ prefPos MorsePreferences::qsoBotOptions[] =     { posQsoBotLevel, posQsoBotContestType,
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 #endif
 
- prefPos MorsePreferences::decoderOptions[] =    {PREFPOS_COMMON_CORE  LINEOUT THEME SCROLLFONT BLUE posSerialOut, posPolarity, posExtPddlPolarity,
-
-                                                   posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode,
-                                                   DECCHARS
+ prefPos MorsePreferences::decoderOptions[] =    { posInterWordSpace, posGoertzelBandwidth, posExtAudioOnDecode,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
 
  // The order here is the order the user sees in the "All" preferences view
@@ -813,24 +905,72 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // user manual's section structure: General -> Key/Paddles/Keyer -> Koch
  // sequence -> CW Generation -> Echo Trainer -> Transmitting/Decoding/QSO
  // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
- // BLUE, QSOBOT) are macro-expanded into their groups so the order stays
- // stable across build configurations.
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, posPolarity, posExtPddlPolarity,
+ // BLUEUSE, BLTAR, QSOBOT) are macro-expanded into their groups so the order
+ // stays stable across build configurations.
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, BLUEUSE posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLUE
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR
                                                    posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
                                                    posEchoRepeats, posEchoDisplay, posEchoConf, posEchoToneShift, posSpeedAdapt, posEchoSpeedMax, posEchoThinkTime,
-                                                   posKeyExternalTx, posLoraCwTransmit,
+                                                   posKeyExternalTx, WKTARGET posLoraCwTransmit,
                                                    posLoraChannel,
-                                                   posGoertzelBandwidth, posExtAudioOnDecode, DECCHARS
+                                                   posGoertzelBandwidth, posExtAudioOnDecode,
                                                    QSOBOT
+#ifdef CONFIG_M32KIP
+                                                   posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                                   posKipFirstExt, posKipHang, posKipGlitch, posKipPassPhrase,
+#endif
                                                    posPlayerCall, posPlayerName, posResetScores,
 #ifdef CONFIG_PRACTICE_STATS
                                                    posPracticeStatsOn,
 #endif
                                                  };
+
+#ifdef CONFIG_M32KIP
+ // Remote Rig runs its own loop and offers no preferences gesture, so this list matters only to tools reading the
+ // current mode's parameters; the settings are reached on the device through the "All" view above. No paddles.
+ prefPos MorsePreferences::kipRigOptions[] =     { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                                   posKipFirstExt, posKipHang,
+                                                   PREFPOS_GENERAL
+                                                 };
+ // Remote Keyer is the CW Keyer plus a link: the keyer's own settings, and nothing that keys a local transmitter or
+ // decodes received audio (the Keyer unit forces noTx, D12d). No BLT <AR>: the BLE keyboard is a CW Keyer feature.
+ prefPos MorsePreferences::kipKeyerOptions[] =   { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                   posKipGlitch, posKipPassPhrase,
+                                                   PREFPOS_GENERAL PREFPOS_PADDLES
+                                                 };
+ // Same as kipKeyerOptions, but led by the remote rig's own settings (D17). Used only while the link is up AND the
+ // rig answers configuration requests: the operator sees what they can change at the far end first, then their own.
+ prefPos MorsePreferences::kipKeyerRigOptions[] = { posRigDelay, posRigLimitKyr, posRigLimitSK,
+                                                    posRigFirstExt, posRigHang,
+                                                    posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS, posInterWordSpace, posLatency,
+                                                    posKipGlitch, posKipPassPhrase,
+                                                    PREFPOS_GENERAL PREFPOS_PADDLES
+                                                  };
+#ifdef REMOTE_WINKEYER
+ // Remote WinKeyer (DESIGN.md §9.1 R8): WinKeyer's list without Key ext TX - the local transmitter is never keyed
+ // here (D12d) - plus Remote Keyer's Glitch Filter and Pass Phrase. The rig's own settings lead the second list,
+ // used while a link is up to a rig that answers configuration requests (D17), exactly as in Remote Keyer.
+ prefPos MorsePreferences::remoteWinKeyerOptions[] =    { WKTARGET posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
+                                                          posInterWordSpace, posLatency, posKipGlitch, posKipPassPhrase,
+                                                          PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT BLUEUSE
+                                                          PREFPOS_PADDLES
+                                                        };
+ prefPos MorsePreferences::remoteWinKeyerRigOptions[] = { posRigDelay, posRigLimitKyr, posRigLimitSK, posRigFirstExt, posRigHang,
+                                                          WKTARGET posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,
+                                                          posInterWordSpace, posLatency, posKipGlitch, posKipPassPhrase,
+                                                          PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT BLUEUSE
+                                                          PREFPOS_PADDLES
+                                                        };
+int MorsePreferences::remoteWinKeyerOptionsSize    = SizeOfArray(MorsePreferences::remoteWinKeyerOptions);
+int MorsePreferences::remoteWinKeyerRigOptionsSize = SizeOfArray(MorsePreferences::remoteWinKeyerRigOptions);
+#endif
+int MorsePreferences::kipRigOptionsSize      = SizeOfArray(MorsePreferences::kipRigOptions);
+int MorsePreferences::kipKeyerOptionsSize    = SizeOfArray(MorsePreferences::kipKeyerOptions);
+int MorsePreferences::kipKeyerRigOptionsSize = SizeOfArray(MorsePreferences::kipKeyerRigOptions);
+#endif
 
 prefPos *MorsePreferences::currentOptions = MorsePreferences::allOptions;
 
@@ -871,10 +1011,20 @@ static void repaintPreferencesScreen(prefPos pos, boolean adjusting) {
 
 ////// setup preferences ///////
 
+// Where the preferences menu opens. Normally it resumes wherever the operator last was - which is why
+// prefPos 1 ("Tone Softness" on a Pocket with I2S sound) greets you after a boot. A caller can ask for a
+// particular entry instead, for one opening only: Remote Keyer does, so the remote rig's settings are not
+// merely first in the LIST but actually the first thing on SCREEN (D17).
+static int prefsOpenAt = -1;
+
+#ifdef CONFIG_M32KIP
+void MorsePreferences::startPreferencesAt(prefPos pos) { prefsOpenAt = (int) pos; }
+#endif
 
 boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
   // enum morserinoMode {morseKeyer, loraTrx, morseGenerator, echoTrainer, shutDown, morseDecoder, invalid };
-  static int oldPos = 1;
+  static int oldPos = -1;                   // nothing used yet: open at the top of the list
+  if (prefsOpenAt >= 0) { oldPos = prefsOpenAt; prefsOpenAt = -1; }
   int t;
 
   int ptrIndex, ptrMax;
@@ -884,7 +1034,8 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
   ptrMax = currentOptionSize;
 
   ///// we should check here if the old ptr (oldIndex) is contained in the current preferences collection (currentOptions)
-  ptrIndex = 1;
+  ///// If not (or nothing was used yet), open at the top: inside a mode that is the mode's own first setting (B16).
+  ptrIndex = 0;
   for (int i = 0; i < ptrMax; ++i) {
       if (currentOptions[i] == oldPos) {
           ptrIndex = i;
@@ -907,6 +1058,16 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
             goToMenu = false;
             goto exitFromHere;
         }
+#ifdef CONFIG_M32KIP
+        // The rig's settings are only shown while a link is up (D17). If it drops, leave at once rather than let
+        // the operator edit values that can no longer be sent anywhere - and rather than wait for a timeout.
+        if ((currentOptions == MorsePreferences::kipKeyerRigOptions
+#ifdef REMOTE_WINKEYER
+             || currentOptions == MorsePreferences::remoteWinKeyerRigOptions
+#endif
+            ) && !MorseKipKeyer::linked())
+            goto exitFromHere;
+#endif
         Buttons::modeButton.Update();
         switch (Buttons::modeButton.clicks) {            // button was clicked
           case 1:     if (adjustKeyerPreference(posPtr))
@@ -937,6 +1098,14 @@ boolean MorsePreferences::setupPreferences(uint8_t atMenu) {
                         if (protocolActive() && posPtr < posKochFilter)
                             MorseJSON::jsonActivate(ACT_EXIT);
 
+#ifdef CONFIG_M32KIP
+                        // D17 decision 2: a set may still be in flight, and the rig commits it to NVS - a flash
+                        // erase - as soon as it has a moment with the key up. This is the one window where that
+                        // could collide with keying, because the operator is about to key again. Hold briefly so
+                        // the rig gets its quiet moment first. Bounded, so a lost reply cannot hang the exit.
+                        for (uint8_t waited = 0; waited < 5 && MorseKipKeyer::rigCfgPending(); waited++)
+                            delay(10);
+#endif
                         writePreferences("morserino");
                         MorseOutput::clearDisplay();
                         //DEBUG("Exiting preferences menu\n");
@@ -1030,6 +1199,11 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos, boolean announce
   else if (pos == posPracticeChars)              // nestled among the "Set Preferences:" items, in allOptions
                                                  // and in the four generator/echo/koch option sets
     topLine = "Set Preferences:";
+#ifdef CONFIG_M32KIP
+  else if (pos == posKipPassPhrase ||            // sits with the remote-keying settings it belongs to
+           (pos >= posRigDelay && pos <= posRigHang))   // the remote rig's own settings (D17): they fell through
+    topLine = "Set Preferences:";                        // to "Player & Scores:" below (TODO B12)
+#endif
   else
     topLine = "Player & Scores:";
 
@@ -1054,7 +1228,7 @@ void MorsePreferences::displayKeyerPreferencesMenu(prefPos pos, boolean announce
 // polls tick(). Same shape as splashPause() in m32_v6.ino. Defined for every build - it is
 // called from adjustKeyerPreference(), which is not a11y-only - and is a plain delay() where
 // there is no voice engine to turn.
-static void voicedPause(uint32_t ms) {
+void MorsePreferences::voicedPause(uint32_t ms) {
 #ifdef CONFIG_AUDIO_A11Y
     uint32_t start = millis();
     do { MorseVoice::tick(); delay(5); } while (millis() - start < ms);
@@ -1117,6 +1291,23 @@ static void announceValue(prefPos pos, const String& valueLine, boolean withTota
             return;
         }
         break;
+#ifdef CONFIG_M32KIP
+      case posKipHang: {                                   // "250 milliseconds", "1 thousand 250 milliseconds" (D16)
+        // Composed from the number atoms (0-60, 65-250 in 5s), which is all the voice store has room for:
+        // "1 thousand 250", "2 thousand 3 hundred 50".
+        uint16_t ms = (uint16_t)(MorsePreferences::pliste[posKipHang].value * 50u);
+        if (ms >= 1000) { a11ySay(String(ms / 1000)); a11ySay("thousand"); }
+        uint16_t r = ms % 1000;
+        if (r > 250) {
+            a11ySay(String(r / 100)); a11ySay("hundred");
+            if (r % 100) a11ySay(String(r % 100));
+        } else if (r || ms < 1000) {
+            a11ySay(String(r));
+        }
+        a11ySay("milliseconds");
+        return;
+      }
+#endif
       default:
         break;
     }
@@ -1149,6 +1340,14 @@ void MorsePreferences::displayValueLine(prefPos pos, const String& itemText, boo
         }
         announceValue(pos, valueLine, withHeading);                      // totals on entry only
     }
+#endif
+#ifdef CONFIG_M32KIP
+    if (pos == posKipMaxKeyer || pos == posKipMaxManual)                // display-only unit suffixes, as Think Time below
+        valueLine += "s";
+    if (pos == posKipGlitch || pos == posKipFirstExt)
+        valueLine += "ms";
+    if (pos == posKipHang)                                              // 50 ms steps, shown in ms (D16)
+        valueLine = String(pliste[posKipHang].value * 50) + " ms";
 #endif
     if (pos == posEchoThinkTime)                                        // display-only unit suffix: kept out of the
         valueLine += "s";                                                // a11y announce above so it still speaks the bare
@@ -1229,6 +1428,32 @@ String MorsePreferences::getValueLine(prefPos pos) {
     case posResetScores:
         str = "clear all";
         break;
+#ifdef CONFIG_M32KIP
+    case posKipPassPhrase:                              // write-only: whether one is set, never what it is
+        str = MorsePreferences::kipPsk.length() >= 12 ? "(set)" : "(not set)";
+        break;
+    // The remote rig's settings (D17). The values live on the OTHER device - these come from the cache the Keyer
+    // keeps, which is seeded at link-up and corrected by the rig's own reply to every set. Each is formatted
+    // exactly as its local twin in pliste[], so an operator sees the same words at both ends.
+    case posRigDelay: {
+        uint8_t v = MorseKipKeyer::rigCfgValue(0);
+        uint16_t ms = MorsePreferences::kipPlayoutMs(v);
+        str = ms ? (String(ms) + " ms") : String("Adaptive");
+        break;
+    }
+    case posRigLimitKyr:
+        str = String(MorseKipKeyer::rigCfgValue(1)) + "s";
+        break;
+    case posRigLimitSK:
+        str = String(MorseKipKeyer::rigCfgValue(2)) + "s";
+        break;
+    case posRigFirstExt:
+        str = String(MorseKipKeyer::rigCfgValue(3)) + "ms";
+        break;
+    case posRigHang:
+        str = String(MorseKipKeyer::rigCfgValue(4) * 50) + " ms";
+        break;
+#endif
 #ifdef CONFIG_PRACTICE_STATS
     case posPracticeStatsOn:
         str = MorsePracticeStats::enabled() ? "On" : "Off";
@@ -1428,6 +1653,60 @@ void MorsePreferences::editPlayerIdentity(prefPos pos) {
     Buttons::volButton.clicks  = 0;
 }
 
+#ifdef CONFIG_M32KIP
+// --- Remote keying pass phrase (M32KIP) ---
+// The third way in, beside the Config WiFi web form and PUT kip/psk: none of them needs another device's browser
+// or a computer, and this one needs neither. Write-only like the other two - entry starts empty, the stored phrase
+// is never shown, and an empty or too short entry leaves it unchanged (fail safe: a stray long-press must not
+// wipe a working key). The character set is lower case, digits and . , : - / = ? @ + only: those are the
+// characters the Accessibility Edition can speak as themselves (upper case letters are prosign codes there).
+static const uint8_t KIP_PSK_MIN = 12;   // MorseKipKeyer/MorseKipRig refuse a shorter key, and so does PUT kip/psk
+static const uint8_t KIP_PSK_MAX = 32;   // on-device entry only; the web form and the protocol accept longer ones
+
+// Show a short result and keep the voice running while it is up - a bare delay() would leave the
+// Accessibility Edition mute and swallow a button press.
+static void showKipResult(const String &line1, const String &line2) {
+    MorseOutput::clearScrollLines();
+    MorseOutput::printOnScroll(1, BOLD, 0, line1);
+    if (line2.length()) MorseOutput::printOnScroll(2, REGULAR, 0, line2);
+    MorseOutput::refreshDisplay();
+    uint32_t until = millis() + 1500;
+    while ((int32_t)(millis() - until) < 0) {
+#ifdef CONFIG_AUDIO_A11Y
+        MorseVoice::tick();
+#endif
+        checkShutDown(false);
+        delay(10);
+    }
+    Buttons::modeButton.clicks = 0;
+    Buttons::volButton.clicks  = 0;
+}
+
+void MorsePreferences::editKipPassPhrase() {
+    char buf[KIP_PSK_MAX + 1];
+    MorseTextEntry::enterText("Pass Phrase:", buf, KIP_PSK_MAX, MorseTextEntry::CHARSET_PASSPHRASE, "");
+    Buttons::modeButton.clicks = 0;   // swallow the long-press that ended entry
+    Buttons::volButton.clicks  = 0;
+    size_t len = strlen(buf);
+    if (len == 0) {
+        MorseVoice::announce("Unchanged");
+        showKipResult("Unchanged", "");
+    }
+    else if (len < KIP_PSK_MIN) {
+        MorseVoice::announce("Too short");                 // "Too short, 12 characters" - composed from atoms
+        MorseVoice::announceMore(String(KIP_PSK_MIN));
+        MorseVoice::announceMore("characters");
+        showKipResult("Too short", "min 12 chars");
+    }
+    else {
+        writeKipPsk(String(buf));
+        MorseVoice::announce("Phrase saved");
+        showKipResult("Phrase saved", "same on both");
+    }
+    memset(buf, 0, sizeof(buf));      // do not leave the key lying on the stack
+}
+#endif
+
 // --- "Practice Set" character picker (CW Generator / Echo Trainer) ---
 static const uint8_t PRACTICE_WHEEL_LEN = 51;   // CWchars[0..50]: letters+digits+punct+prosign codes; the
                                                  // national letters are added per Decoder Chars set (editPracticeChars())
@@ -1561,6 +1840,50 @@ boolean MorsePreferences::adjustKeyerPreference(prefPos pos) {        /// rotati
         displayKeyerPreferencesMenu(pos);
         return false;
     }
+#ifdef CONFIG_M32KIP
+    if (pos == posKipPassPhrase) {
+        editKipPassPhrase();
+        displayKeyerPreferencesMenu(pos);
+        return false;
+    }
+    // The remote rig's settings (D17). Handled here, ahead of the generic path, because these six have no pliste[]
+    // entry at all - their values live on the other device. The range comes from the local twin's entry, so the
+    // limits an operator meets are the same at both ends; the change goes out as a set, and the rig's reply
+    // corrects the cache if it clamped anything.
+    if (pos >= posRigDelay && pos <= posRigHang) {
+        static const prefPos twin[] = { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                        posKipFirstExt, posKipHang };
+        uint8_t idx = (uint8_t)(pos - posRigDelay);
+        uint8_t lo = pliste[twin[idx]].minimum, hi = pliste[twin[idx]].maximum;
+        MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
+        while (true) {
+            serialEvent();
+#ifdef CONFIG_AUDIO_A11Y
+            MorseVoice::tick();
+#endif
+            if (goToMenu) return true;
+            if (!MorseKipKeyer::linked()) return true;   // the link went: leave, do not edit into the void
+            Buttons::modeButton.Update();
+            if (Buttons::modeButton.clicks) {
+                boolean longPress = (Buttons::modeButton.clicks == -1);
+                Buttons::modeButton.clicks = 0;
+                displayKeyerPreferencesMenu(pos);
+                return longPress;
+            }
+            int8_t t = checkEncoder();
+            if (t) {
+                MorseOutput::pwmClick(MorsePreferences::sidetoneVolume);
+                int v = (int)MorseKipKeyer::rigCfgValue(idx) + t;
+                if (v < lo) v = lo;
+                if (v > hi) v = hi;
+                MorseKipKeyer::rigCfgSet(idx, (uint8_t)v);
+                displayValueLine(pos, extraItems[pos - posKochFilter], false, false, true);
+                MorseOutput::refreshDisplay();
+            }
+            checkShutDown(false);
+        }
+    }
+#endif
 
     MorseOutput::printOnScroll(2, INVERSE_BOLD, 0, ">");
     uint8_t seq;
@@ -1813,6 +2136,44 @@ void MorsePreferences::handleCarouselChange() {
 
 /////////////// READING and WRITING parameters from / into Non Volatile Storage, using ESP32 preferences
 
+// --- Reset-reason log ---
+// Why did the recent boots happen? A crash leaves a core dump, but a brown-out or a hardware watchdog reset leaves
+// nothing at all, and a device that reboots now and then on its own can otherwise only be diagnosed with a serial
+// cable attached at the right moment. One versioned blob (NVS cost: 3 entries): [version 1][count][8 x
+// esp_reset_reason(), newest first]. A blob of another size or version is started afresh.
+static const char *const RST_LOG_KEY = "rstLog";
+static const uint8_t RST_LOG_LEN = 8;
+static const uint8_t RST_LOG_VER = 1;
+
+void MorsePreferences::recordResetReason() {
+    uint8_t blob[2 + RST_LOG_LEN] = { RST_LOG_VER, 0 };
+    pref.begin("morserino", false);
+    if (pref.getBytesLength(RST_LOG_KEY) == sizeof(blob)) {
+        pref.getBytes(RST_LOG_KEY, blob, sizeof(blob));
+        if (blob[0] != RST_LOG_VER || blob[1] > RST_LOG_LEN) {
+            memset(blob, 0, sizeof(blob));
+            blob[0] = RST_LOG_VER;
+        }
+    }
+    memmove(blob + 3, blob + 2, RST_LOG_LEN - 1);          // age the ring by one
+    blob[2] = (uint8_t) esp_reset_reason();
+    if (blob[1] < RST_LOG_LEN) blob[1]++;
+    if (pref.putBytes(RST_LOG_KEY, blob, sizeof(blob)) != sizeof(blob))
+        DEBUG("rstLog not stored - NVS full?");             // put*() fails silently when NVS is full
+    pref.end();
+}
+
+uint8_t MorsePreferences::readResetLog(uint8_t* out, uint8_t max) {
+    uint8_t blob[2 + RST_LOG_LEN] = { 0 };
+    pref.begin("morserino", true);
+    bool ok = pref.getBytesLength(RST_LOG_KEY) == sizeof(blob) && pref.getBytes(RST_LOG_KEY, blob, sizeof(blob)) == sizeof(blob);
+    pref.end();
+    if (!ok || blob[0] != RST_LOG_VER || blob[1] > RST_LOG_LEN) return 0;
+    uint8_t n = blob[1] < max ? blob[1] : max;
+    memcpy(out, blob + 2, n);
+    return n;
+}
+
 void MorsePreferences::readPreferences(const char* repository) {
       if (strcmp(repository, "morserino") != 0) {          // snapshots have their own (blob-capable) reader
           applySnapshot(repository);
@@ -1827,6 +2188,10 @@ void MorsePreferences::readPreferences(const char* repository) {
       MorsePreferences::wlanSSID = pref.getString("wlanSSID");
       MorsePreferences::wlanPassword = pref.getString("wlanPassword");
       MorsePreferences::wlanTRXPeer = pref.getString("wlanTRXPeer", "");
+#ifdef CONFIG_M32KIP
+    MorsePreferences::kipPsk = pref.getString("kipPsk", "");
+    MorsePreferences::kipPort = pref.getUShort("kipPort", 7374);   // absent unless overridden (PUT kip/port)
+#endif
 
       MorsePreferences::wlanSSID1 = pref.getString("wlanSSID1");
       MorsePreferences::wlanPassword1 = pref.getString("wlanPassword1");
@@ -2007,6 +2372,18 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
 #ifdef CONFIG_QSO_BOT
       case posQsoBotContestType:
       case posQsoBotLevel:
+#endif
+#ifdef CONFIG_M32KIP
+      // remote-keying station settings, not training settings:
+      case posKipPlayout:
+      case posKipMaxKeyer:
+      case posKipMaxManual:
+      case posKipFirstExt:
+      case posKipHang:
+      case posKipGlitch:
+#endif
+#ifdef WK_TARGET_PREF
+      case posWkTarget:                   // where a logger's keying goes: station wiring, not training
 #endif
           return false;
       default:
@@ -2203,6 +2580,10 @@ void MorsePreferences::writePreferences(const char* repository) {
 #endif
 
   // now we write all other preferences into the repository
+
+  // "Rig Hang Unit" was dropped when the break-in hang became milliseconds-only (D16): no transceiver manual
+  // states it in dits. NVS never shrinks by itself, so the stale key has to be taken out (CLAUDE.md §4 c).
+  if (pref.isKey("kipHangUnit")) pref.remove("kipHangUnit");
 
   if (MorsePreferences::useCustomChars != pref.getBool("useCustomChar")) {
       pref.remove("useCustomChar");
@@ -2745,6 +3126,74 @@ void MorsePreferences::writeWifiInfoMultiple(
 
     writeWifiInfo(ssid1, passwd1, trxpeer1);
 }
+
+#ifdef CONFIG_M32KIP
+String MorsePreferences::kipPsk;
+
+// One string in the existing namespace: 1 + ceil((len+1)/32) NVS entries, so two for any sane passphrase.
+// Costed against the budget in CLAUDE.md §4 before adding it; the key name is 6 characters, well inside the
+// 15-character limit that fails silently.
+void MorsePreferences::writeKipPsk(const String& psk) {
+    MorsePreferences::kipPsk = psk;
+    pref.begin("morserino", false);
+    if (!pref.putString("kipPsk", MorsePreferences::kipPsk))
+        DEBUG("kipPsk not stored - NVS full?");     // put*() fails silently when NVS is full
+    pref.end();
+}
+
+// The one rule for a pass phrase typed by a person, wherever they type it: the characters the on-device entry
+// offers (so a phrase set elsewhere can always be typed on the device too), 12 to 32 of them.
+bool MorsePreferences::kipPskValid(const String& psk) {
+    if (psk.length() < KIP_PSK_MIN || psk.length() > KIP_PSK_MAX)
+        return false;
+    for (unsigned i = 0; i < psk.length(); i++)
+        if (!strchr(MorseTextEntry::CHARSET_PASSPHRASE, psk[i]))
+            return false;
+    return true;
+}
+
+uint16_t MorsePreferences::kipPort = 7374;          // M32Kip::DEFAULT_PORT; this file stays free of the protocol header
+
+// One uint16 key (1 NVS entry), and only while an override is in force: 0 removes it again, because NVS never
+// shrinks by itself (CLAUDE.md §4 c).
+void MorsePreferences::writeKipPort(uint16_t port) {
+    pref.begin("morserino", false);
+    if (port == 0) {
+        MorsePreferences::kipPort = 7374;
+        if (pref.isKey("kipPort")) pref.remove("kipPort");
+    } else {
+        MorsePreferences::kipPort = port;
+        if (!pref.putUShort("kipPort", port))
+            DEBUG("kipPort not stored - NVS full?");
+    }
+    pref.end();
+}
+
+// The Rig Delay choices. Index 0 is Adaptive. A mapped list rather than a raw number of 10 ms units, so the display
+// and the Accessibility Edition both give the value in milliseconds instead of a bare "15".
+// The five Remote Rig settings, and nothing else (D17). Deliberately NOT writePreferences(): that one walks the whole
+// namespace - WiFi strings, Koch filter, brightness, every pliste entry - and calls koch.setup() on the way. This
+// runs on a Rig that is keying a transmitter, where a multi-millisecond stall puts an edge out late; today's 25 WPM
+// outliers came from exactly that class of fault. Each value is compared before it is written, so a set that changes
+// one parameter costs one flash write, and a set that changes nothing costs none.
+void MorsePreferences::writeRigCfg() {
+    static const prefPos items[] = { posKipPlayout, posKipMaxKeyer, posKipMaxManual,
+                                     posKipFirstExt, posKipHang };
+    pref.begin("morserino", false);
+    for (uint8_t i = 0; i < sizeof(items) / sizeof(items[0]); i++) {
+        prefPos p = items[i];
+        if (pref.getUChar(prefName[p], 0xFF) != pliste[p].value)
+            if (!pref.putUChar(prefName[p], pliste[p].value))
+                DEBUG("rig cfg not stored - NVS full?");     // put*() fails silently when NVS is full
+    }
+    pref.end();
+}
+
+uint16_t MorsePreferences::kipPlayoutMs(uint8_t value) {
+    static const uint16_t ms[] = {0, 50, 100, 150, 200, 250, 300, 400, 500, 600};
+    return value < sizeof(ms) / sizeof(ms[0]) ? ms[value] : 0;
+}
+#endif
 
 void MorsePreferences::writeWifiInfo(const String& ssid, const String& passwd, const String& trxpeer)
 {

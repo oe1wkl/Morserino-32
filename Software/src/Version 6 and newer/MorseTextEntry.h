@@ -20,6 +20,7 @@ namespace MorseTextEntry
   // Common character sets (NUL-terminated). The encoder cycles through these.
   extern const char *const CHARSET_CALLSIGN;   // A-Z 0-9 /
   extern const char *const CHARSET_NAME;       // A-Z and space
+  extern const char *const CHARSET_PASSPHRASE; // a-z 0-9 . , : - / = ? @ +  (all speakable in the a11y edition)
 
   // Encoder-driven text entry. `result` must hold at least maxLen+1 bytes and
   // is pre-filled from `initial` (may be nullptr/empty). The current text fits

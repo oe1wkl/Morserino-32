@@ -253,6 +253,36 @@ void MorseJSON::jsonCapabilities(void) {
 #ifdef CONFIG_PRACTICE_STATS
 	feat.add("stats/log");
 #endif
+#ifdef CONFIG_M32KIP
+	feat.add("kip");                                 // 1.5 remote keying: GET kip, PUT kip/psk, PUT kip/port
+#endif
+	MorseJSON::jsonSend(doc);
+}
+
+#ifdef CONFIG_M32KIP
+// Protocol 1.5: M32KIP remote keying. The pre-shared key is write-only (D3), so
+// this says whether one is set - never the key, and not its length either.
+void MorseJSON::jsonKip(void) {
+	StaticJsonDocument<128> doc;
+	JsonObject kip = doc.createNestedObject("kip");
+	kip["pskSet"] = MorsePreferences::kipPsk.length() >= 12;
+	kip["port"]   = MorsePreferences::kipPort;
+	MorseJSON::jsonSend(doc);
+}
+#endif
+
+// Protocol 1.5: the reasons for the last (up to 8) boots, newest first, in words. Not build-dependent, so it is
+// not listed in GET capabilities. Indexed by esp_reset_reason_t.
+void MorseJSON::jsonResets(void) {
+	static const char *const names[] = { "unknown", "power on", "reset pin", "software restart", "crash",
+	                                     "interrupt watchdog", "task watchdog", "other watchdog",
+	                                     "deep sleep wake", "brown-out", "sdio" };
+	uint8_t r[8];
+	uint8_t n = MorsePreferences::readResetLog(r, sizeof(r));
+	StaticJsonDocument<384> doc;
+	JsonArray a = doc.createNestedArray("resets");
+	for (uint8_t i = 0; i < n; i++)
+		a.add(r[i] < sizeof(names) / sizeof(names[0]) ? names[r[i]] : "unknown");
 	MorseJSON::jsonSend(doc);
 }
 

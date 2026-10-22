@@ -1,10 +1,32 @@
 # The M32 Serial Protocol
 
-	Date: August 23, 2026
-	Version: 1.4
+	Date: September 14, 2026
+	Version: 1.5
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
 The Morserino can communicate two-way with a connected computer — over the USB bus, and (with firmware that includes the "BLE Serial" feature, and the **Bluetooth Use** preference set to **BLE Serial**) over Bluetooth Low Energy; see the section "Transports" below. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
+
+	Changes in protocol version 1.5 from version 1.4 (firmware with remote
+	keying only; advertised as "kip" in GET capabilities):
+
+	New GET command:
+
+	GET kip — whether a remote-keying pass phrase is set, and the UDP port
+
+	New PUT commands:
+
+	PUT kip/psk/<pass phrase> — set the remote-keying pass phrase (write-only)
+	PUT kip/port/<port> — change the remote-keying UDP port (0 = default 7374)
+
+	New parameters: "Rig Delay", "Rig Limit Kyr", "Rig Limit SK", "Rig 1st Ext",
+	    "Rig Hang", "Glitch Filter"
+	New parameter, M32 Pocket only: "WinKeyer Tx" (Local / Remote) — which
+	    WinKeyer mode a logging program's Host Open at the main menu starts
+
+	Also new in 1.5, in every build:
+
+	GET resets — why the last (up to 8) restarts happened: power on, crash,
+	    watchdog, brown-out, ...
 
 	Changes in protocol version 1.4 from version 1.3:
 
@@ -369,14 +391,15 @@ Returns the properties "protocol" (the protocol version, the same value as in th
 
 Example:
 
-	{"capabilities":{"protocol":"1.4",
-	"features":["configs/details","game/scores","stats/log"]}}
+	{"capabilities":{"protocol":"1.5",
+	"features":["configs/details","game/scores","stats/log","kip"]}}
 
 Only commands that some builds *lack* appear in "features"; everything else the protocol version documents is always present. Today that list can contain:
 
 * `configs/details` — the bulk parameter read (present in every 1.4 firmware),
 * `game/scores` — the game high-score commands (builds with the games, i.e. the M32 Pocket),
-* `stats/log` — the practice-statistics log (builds with practice statistics).
+* `stats/log` — the practice-statistics log (builds with practice statistics),
+* `kip` — the remote-keying commands `GET kip`, `PUT kip/psk` and `PUT kip/port` (protocol 1.5, builds with remote keying).
 
 A program written for 1.4 or later should call this once after `PUT device/protocol/on` instead of probing commands and reading error replies. Firmware older than 1.4 answers `GET capabilities` with an error — that itself identifies it as pre-1.4.
 
@@ -454,13 +477,15 @@ Set the main menu to the requested menu entry (even if it is not executable!). Y
 
 `PUT menu/start`							
 
-If in menu mode, start the currently selected menu, if it is executable (do nothing when not in menu mode, or when the current menu entry is not executable).
+If in menu mode, start the currently selected menu, if it is executable (do nothing when the current menu entry is not executable).
 
 `PUT menu/start/<menu number>`		
 
 Start the command that has the number `<menu number>` (only if it is executable!).
 
 For this, the M32 must be in the main menu (if not sure, execute put menu/stop before doing this, or check with `GET menu` if the "active" property is "false")
+
+A start is only accepted in the main menu. While a mode is running (or still winding down after `PUT menu/stop`), every form of `PUT menu/start` is refused with `{"error":{"content":"NOT AT MENU - stop the running mode first"}}` and changes nothing — retry once `GET menu` reports "active": false. *(Firmware before protocol 1.5 sent no reply at all in this case, and the numbered form still moved the menu selection.)* A number that is not executable is answered with `NOT EXECUTABLE - Menu No <n>`.
 
 
 `PUT menu/start now`
@@ -885,6 +910,36 @@ Example (classic M32):
 
 	{"battery":{"status":"usb powered"}}
 
+### Restart History
+
+*(protocol version 1.5)*
+
+`GET resets`
+
+This returns why the Morserino started, for its last (up to 8) restarts, newest first. It exists for diagnosing a
+device that restarts on its own: a crash also leaves a core dump in flash, but a brown-out (the supply dipped) or a
+hardware watchdog leaves no trace anywhere else, and this list is recorded at every start, so it can be read later,
+without a cable attached at the moment it happened.
+
+* "resets" (type Array of Strings): one of `"power on"`, `"reset pin"`, `"software restart"`, `"crash"`,
+  `"interrupt watchdog"`, `"task watchdog"`, `"other watchdog"`, `"deep sleep wake"`, `"brown-out"`, `"sdio"` or
+  `"unknown"` per restart.
+
+*Notes*:
+
+* On the ESP32, a reset through the EN line — which is what USB flashing tools and the reset circuit of many boards
+  use — is reported as `"power on"`, the same as switching the device on.
+* On the M32 Pocket (ESP32-S3), a reset over its native USB port — by a flashing tool, or by opening the serial port
+  — is reported as `"unknown"`: the ESP-IDF version in use has no name for it.
+* `"software restart"` includes the firmware's own deliberate restarts (after a factory reset, a firmware update, or a
+  memory-clearing restart before a game on the M32 Pocket); `"deep sleep wake"` is the normal wake-up after the
+  device went to sleep.
+* Firmware older than 1.5 answers `GET resets` with an error.
+
+Example:
+
+	{"resets":["power on","brown-out","brown-out","power on"]}
+
 ### Automated CW Keyer and Memory Keyer
 
 `PUT cw/play/<text to be played>`		
@@ -1008,3 +1063,29 @@ Clears **all** game high-score tables and the Radio Cave saved game — exactly 
 While a game is actually being played the command is refused with `{"error":{"content":"GAME IN PROGRESS"}}` — a game holds its table in memory and writes it out again at the end of a round, so a wipe at that moment would simply reappear. Leave the game first.
 
 *Note*: scores can be read and cleared, but **not written**. There is deliberately no command to store a score, so a connected program cannot invent one.
+
+
+
+### Remote Keying
+
+*(protocol version 1.5; only on firmware that includes remote keying — check for `kip` in `GET capabilities`)*
+
+Remote keying links two Morserinos over IP: a **Remote Keyer** (where the operator sits) sends its key line to a **Remote Rig** (next to the transmitter), which keys the transmitter. Both ends need the same pass phrase. The Remote Keyer finds the Rig through the **TRX Peer** field of the selected WiFi entry (`PUT wifi/trxpeer/<n>/<host>`, see "WiFi Configuration"); the Rig needs no peer address.
+
+`GET kip`
+
+Returns whether a pass phrase is set, and the UDP port in use:
+
+	{"kip":{"pskSet":true,"port":7374}}
+
+The pass phrase itself is never returned — not even its length.
+
+`PUT kip/psk/<pass phrase>`
+
+Sets the pass phrase (pre-shared key). It must be at least 12 characters long; case is kept, and spaces and slashes are allowed. Like the WiFi password it is **write-only**, so it cannot be read back from a device or included in a backup. A shorter pass phrase is refused with `{"error":{"content":"PSK TOO SHORT - 12 CHARACTERS MINIMUM"}}`. The pass phrase can also be entered on the WiFi configuration web page.
+
+`PUT kip/port/<port>`
+
+Changes the UDP port (default **7374**) — only needed if a router or firewall requires another one. Both ends must use the same port. Allowed values are 1024 to 65535; **0 restores the default**. Anything else is refused with `{"error":{"content":"INVALID PORT - 1024 TO 65535, OR 0 FOR 7374"}}`. The port can only be set over the protocol.
+
+The remote-keying **parameters** — "Rig Delay", "Rig Limit Kyr", "Rig Limit SK", "Rig 1st Ext", "Rig Hang" and "Glitch Filter" — are ordinary parameters: read and set them with `GET configs` and `PUT config/<name>/<value>` like any other.

@@ -43,6 +43,10 @@ namespace MorseVoice
   void tick();
   // Interrupt + clear any current/pending announcement (e.g. when leaving the menu).
   void stop();
+  // True while an announcement is playing or still queued. Cheap (a few compares), so a mode can ask it from
+  // its keying path to silence the voice the moment keying starts: on the Pocket the voice and the sidetone
+  // share the one mixer input, so a clip playing over keying would mute the operator's own sidetone.
+  bool busy();
 
   // True while a clip is playing, or a clip is queued and waiting out its debounce. The
   // CW generator and echo trainer use this to hold their state machine and key output
