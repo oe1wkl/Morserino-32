@@ -211,8 +211,12 @@ jobs:
           fi
 
           # Combined build first: step 12 syncs these back to the default branch.
+          # The PDF build writes the combined HTML too, and stamps it for
+          # check_manual_fresh.py once the PDF exists. Do NOT add an HTML-only
+          # build after it: 'build.sh all html combined' rewrites the HTML
+          # without the stamp, and step 12 would then commit HTML that fails
+          # the freshness check in CI (seen on 2026-10-18 with a manual build).
           (cd "$MANUAL_DIR" && ./build.sh all pdf combined)
-          (cd "$MANUAL_DIR" && ./build.sh all html combined)
 
           # Then the three variants, as PDF and EPUB.
           (cd "$MANUAL_DIR" && ./build.sh all pdf all)
