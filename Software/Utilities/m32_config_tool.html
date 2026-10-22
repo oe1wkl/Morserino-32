@@ -1243,6 +1243,17 @@ async function doDisconnect(){
   log('Disconnected');
 }
 
+// Closing the tab or the browser ends the page without doDisconnect(). The M32
+// then keeps its protocol session, and with it the auto-power-off stays
+// suspended until the next reboot: the classic cannot see a USB host go away.
+// So say goodbye on the way out. Best effort only: the page is torn down right
+// after this handler, so nothing may be awaited, and the bytes can still be
+// lost; a pulled cable or a browser crash leaves the session open as before.
+window.addEventListener('pagehide', function(){
+  if(!writer) return;
+  try{writer.write('put device/protocol/off\n').catch(function(){})}catch(e){}
+});
+
 // ── The user manual that belongs to the connected device ────────────────────
 // The manuals are release assets under a permanent, version-less URL: "latest"
 // resolves to the newest non-prerelease release, so a beta never hijacks it.
