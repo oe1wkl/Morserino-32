@@ -34,8 +34,8 @@
 
 #ifdef CONFIG_WINKEYER
 
-#if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
-  #define WK_NATIVE_USB 1       // HWCDC: baud rate irrelevant, Host Open can be detected at the top menu
+#if ARDUINO_USB_CDC_ON_BOOT     // HWCDC, or TinyUSB's USBCDC in the usbio builds (VK1HF)
+  #define WK_NATIVE_USB 1       // native USB: baud rate irrelevant, Host Open can be detected at the top menu
 #endif
 
 namespace MorseWinKeyer

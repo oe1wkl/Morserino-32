@@ -4880,7 +4880,7 @@ volatile unsigned long lastForeignUsbRxMs = 0;
 // Arm the UART receive-error hook. Called after every Serial.begin() on a UART build (setup(), and
 // WinKeyer mode's baud changes). A no-op on the Pocket's native USB, which has no line coding to violate.
 void armForeignUsbRxDetect() {
-#if !(ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT)
+#if !ARDUINO_USB_CDC_ON_BOOT      // any native-USB serial (HWCDC, or TinyUSB's USBCDC in the usbio builds) has no UART line coding
   Serial.onReceiveError([](hardwareSerial_error_t e) {
     if (e == UART_FRAME_ERROR || e == UART_BREAK_ERROR || e == UART_PARITY_ERROR)
       lastForeignUsbRxMs = millis();

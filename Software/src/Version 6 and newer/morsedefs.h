@@ -367,7 +367,7 @@ inline bool isWinKeyerMode(morserinoMode m) { return m == morseWinKeyer || m == 
 //                   (DESIGN.md D1a, R1).
 #if defined(CONFIG_WINKEYER) && defined(CONFIG_M32KIP)
   #define REMOTE_WINKEYER 1
-  #if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
+  #if ARDUINO_USB_CDC_ON_BOOT     // any native USB serial (HWCDC, or USBCDC in the usbio builds)
     #define WK_TARGET_PREF 1
   #endif
 #endif
