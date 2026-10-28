@@ -4,6 +4,11 @@
 # "m32_v6.ino 2.cpp" — these cause "multiple definition" link errors.
 # (A pre-build hook, scripts/clean_ino_dupes.py, also strips them.)
 *.ino [0-9]*.cpp
+# PlatformIO's own converter output, "<sketch>.ino.cpp": written next to the
+# .ino during every build and deleted again afterwards. It is never a source
+# file -- committing it (PR #224 did, by accident) makes every build show it
+# as deleted and bloats the diff by the whole sketch.
+*.ino.cpp
 
 # Audio-accessibility (V9.0): the TTS clips under Software/src/data/voice/ ARE
 # committed. They look like build artifacts but are not reproducible from a clean
