@@ -428,6 +428,10 @@ uint8_t MorseBluetooth::keyboardMode(void)
     if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT)
         return 0;                       // selector gives BLE to the serial protocol: no keyboard mode
 #endif
+#ifdef CONFIG_USB_HOSTIO
+    if (MorsePreferences::pliste[posUsbOut].value == USB_OUT_VBAND)
+        return 0;                       // vBand goes over the USB cable: never key the host twice
+#endif
     return MorsePreferences::pliste[posBluetoothOut].value;
 }
 
@@ -439,6 +443,10 @@ void MorseBluetooth::initializeBluetooth(void)
     // enforced here so every present and future call site is safe
     if (MorsePreferences::pliste[posBluetoothOut].value == BLT_USE_SERIAL_PROT)
         return;
+#endif
+#ifdef CONFIG_USB_HOSTIO
+    if (MorsePreferences::pliste[posUsbOut].value == USB_OUT_VBAND)
+        return;                         // USB Output = VBand: the BLE keyboard is not started
 #endif
 	// start Bluetooth task - stack size was originally 20000m prio was 5
     if (!isBLErunning) {

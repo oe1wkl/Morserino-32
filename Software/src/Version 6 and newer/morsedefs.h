@@ -497,6 +497,9 @@ enum prefPos : uint8_t {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 				posBluetoothOut, posBluetoothARkey,
 #endif
+#ifdef CONFIG_USB_HOSTIO
+        posUsbOut,                    // VK1HF mod: what the USB cable sends in CW Keyer (USB_OUT_*)
+#endif
 #ifdef CONFIG_TFT
         posTheme,
 #endif
@@ -563,6 +566,12 @@ enum actMessage : int {
 // keyboard modes (order must never change - stored settings depend on it);
 // 5 selects the M32 serial protocol over BLE instead of the keyboard.
 #define BLT_USE_SERIAL_PROT 5
+#endif
+#ifdef CONFIG_USB_HOSTIO
+// "USB Output" selector (posUsbOut), VK1HF mod: one thing at a time over the cable, CW Keyer only.
+#define USB_OUT_OFF   0               // nothing (serial port + charging only)
+#define USB_OUT_VBAND 1               // USB keyboard: Left Ctrl follows the keyer (the Bluetooth keyboard stays off)
+#define USB_OUT_MIDI  2               // USB MIDI ch 1: note 20 dit paddle, 21 dah paddle (CTR2-MIDI Normal mode)
 #endif
 
 extern void DEBUG (const String& s);

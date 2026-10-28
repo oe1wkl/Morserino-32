@@ -103,6 +103,7 @@ void packetReceived() {
 
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"
+#include "MorseUsbIO.h"          // VK1HF mod: USB keyboard (vBand) + USB MIDI (CONFIG_USB_HOSTIO; no-op otherwise)
 #endif
 using namespace Buttons;
 
@@ -593,6 +594,9 @@ void setup()
   // command longer than ~256 bytes, sent in one go, lost pieces before loop() got to read it, newline
   // included, so lines merged. 2 KB holds any line up to twice USB_LINE_MAX: executed or refused whole.
   Serial.setRxBufferSize(2048);
+#endif
+#ifdef CONFIG_USB_HOSTIO
+  MorseUsbIO::begin();           // USB keyboard + MIDI interfaces, alongside the serial port (VK1HF mod)
 #endif
   Serial.begin(115200);
   armForeignUsbRxDetect();       // a 1200-baud logger knocking at the classic's main menu (FN = GPIO0)
@@ -1435,6 +1439,9 @@ if (morseState == morseKeyer &&
     MorseBluetooth::initializeBluetooth();
 }
 MorseBluetooth::tick();                           // no-op unless the keyboard runs
+#ifdef CONFIG_USB_HOSTIO
+MorseUsbIO::tick(morseState == morseKeyer);       // releases USB Ctrl / MIDI notes outside CW Keyer
+#endif
 #endif
 /// if we have time check for serial input and for button presses
 
@@ -2123,6 +2130,12 @@ boolean checkPaddles() {
 
   oldL = newL;
   oldR = newR;
+#ifdef CONFIG_USB_HOSTIO
+  if (morseState == morseKeyer) {                                     // USB MIDI notes 20 (dit) / 21 (dah)
+    bool swap = MorsePreferences::pliste[posPolarity].value == 0;     // same swap as the keyer applies
+    MorseUsbIO::paddles(swap ? rightKey : leftKey, swap ? leftKey : rightKey);
+  }
+#endif
   return (leftKey || rightKey);
 }
 
@@ -3576,6 +3589,11 @@ void keyTransmitter(boolean noTx) {
    if ((MorseBluetooth::keyboardMode() & 0x1) == 0x1)
       MorseBluetooth::bluetoothTypeLCTRL(true);
 #endif
+#ifdef CONFIG_USB_HOSTIO
+   if (morseState == morseKeyer) {
+      MorseUsbIO::keyed(true);                                       // USB Output = VBand: Left Ctrl down
+   }
+#endif
 }
 
 
@@ -4435,6 +4453,9 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
         if ((MorseBluetooth::keyboardMode() & 0x1) == 0x1)
           MorseBluetooth::bluetoothTypeLCTRL(false);
+#endif
+#ifdef CONFIG_USB_HOSTIO
+        MorseUsbIO::keyed(false);         // always release, whatever the mode or preference
 #endif
   }   // end key off
 }
