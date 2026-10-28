@@ -3471,6 +3471,7 @@ to **Straight Key** in order to use a straight key).
 | AutoChar Spc | Minimum spacing between characters | **Off** / min. 2 / 3 / 4 dots |
 | Latency | Defines how long after generating the current element (dot or dash) the paddles will be „deaf". If it is 0%, you have to release the paddle while the last element is still „on". If set to 87.5%, the paddles will only react to a paddle press after 7/8 of a dot length. Has no effect in Ultimatic mode, which handles the paddles its own way. | A value between 0% and 87.5%, meaning 0/8 to 7/8 of a dot length (default is **50%**, i.e. half a dot length). |
 | BLT \<AR> | Only relevant in **Generic Kbd** mode (see **Bluetooth Use** in the general preferences); offered in **CW Keyer** only, the one mode that types over Bluetooth. Determines how the \<AR> prosign is sent over Bluetooth: as the literal character "**+**" or as a soft line break (Shift+Enter). | **+** / Linefeed |
+| []{.pocket}USB Output | Only in a firmware build with USB Output; offered in **CW Keyer** only. What the USB cable sends while you key: nothing extra, a USB keyboard for vBand, or MIDI paddle notes; see **Using USB Output: vBand and MIDI over the USB cable**. | Off (charge) / VBand / **MIDI** |
 
 
 
@@ -4334,6 +4335,40 @@ Letters with umlauts or accents cannot be typed reliably by a keyboard (what a k
 :::
 
 
+
+::: {.pocket}
+## Using USB Output: vBand and MIDI over the USB cable
+
+In "CW Keyer" mode, the M32 Pocket can also send your keying to a computer **over its USB cable**, without Bluetooth. This needs a firmware build with USB Output (the PlatformIO environments `pocketwroom-usbio` and `pocketwroom-lora-usbio`). The preference **USB Output** in the CW Keyer preferences chooses one of three things:
+
+| USB Output | What the computer sees | Made for |
+|---|---|---|
+| **Off (charge)** | Nothing extra. The cable charges the Morserino and carries the serial port, as usual | Charging, or when neither of the others is wanted |
+| **VBand** | A USB keyboard. Left Ctrl is held down while the Morserino keys | **vBand** (*https://hamradio.solutions/vband/*), with the straight-key input selected there |
+| **MIDI** | A USB MIDI device, channel 1: note 20 = dit paddle, note 21 = dah paddle | Programs that take MIDI CW paddles, built around the **CTR2-MIDI** interface by Lynovation; for example **SmartSDR for macOS** by DL8MRE with a FlexRadio |
+
+On the computer, the Morserino appears as **"Morserino-32 Pocket (USB kbd+MIDI)"**. The serial port stays available on the same cable whatever you choose, so the M32 serial protocol, the File Manager and the M32 Config Tool keep working.
+
+::: note
+USB Output is only active in CW Keyer mode, like the Bluetooth keyboard. Everything CW Keyer keys goes out: the paddles, a straight key and the keyer memories. It does not depend on **Key ext TX**, which only concerns the transmitter connector. When you leave CW Keyer, any key or note still held down is released.
+:::
+
+**VBand.** The Morserino's own keyer forms the dits and dahs, and holds Left Ctrl down while each one sounds, which vBand reads as a straight key. This does the same job as **Bluetooth Use → VBand Kbd**, but over the cable: nothing to pair, no radio delay, and the battery charges meanwhile. So that vBand never receives every element twice, the Bluetooth keyboard does not start while **USB Output** is set to **VBand**, whatever **Bluetooth Use** says.
+
+**MIDI.** The Morserino sends what a CTR2-MIDI sends, so software already set up for one works without remapping:
+
+| Keying | MIDI message (channel 1) |
+|---|---|
+| Dit paddle | Note **20** on / off |
+| Dah paddle | Note **21** on / off |
+| Straight key (**Keyer Mode** set to **Straight Key**) | Note **30** on / off; notes 20 and 21 are not sent |
+
+**Paddle Polarity** is applied first, so note 20 is always your dit paddle. A keyer memory goes out the way a person would send it: in the paddle modes it taps the paddles (each dit a short press of note 20, each dah one of note 21), and in Straight Key mode it works the key (note 30). In the paddle modes the program's own keyer forms the CW that is transmitted, so **set the Morserino and the program to the same speed and keyer mode**; otherwise the Morserino's side tone is not what goes on the air, and memories can come out garbled.
+
+::: note
+A build with USB Output uses the ESP32-S3's full USB controller instead of its fixed serial port, so a flashing tool can no longer always switch the Pocket into download mode by itself. If flashing does not start, switch the Pocket off, hold **FN** and switch it on (the screen stays dark), then flash.
+:::
+:::
 
 ## List of common CW abbreviations used by Morserino-32
 

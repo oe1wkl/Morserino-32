@@ -34,7 +34,7 @@
 
 #ifdef CONFIG_WINKEYER
 
-#if ARDUINO_USB_CDC_ON_BOOT     // HWCDC, or TinyUSB's USBCDC in the usbio builds (VK1HF)
+#if ARDUINO_USB_CDC_ON_BOOT     // HWCDC, or TinyUSB's USBCDC in the usbio builds
   #define WK_NATIVE_USB 1       // native USB: baud rate irrelevant, Host Open can be detected at the top menu
 #endif
 

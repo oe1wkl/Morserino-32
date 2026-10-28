@@ -103,7 +103,7 @@ void packetReceived() {
 
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"
-#include "MorseUsbIO.h"          // VK1HF mod: USB keyboard (vBand) + USB MIDI (CONFIG_USB_HOSTIO; no-op otherwise)
+#include "MorseUsbIO.h"          // USB keyboard (vBand) + USB MIDI (CONFIG_USB_HOSTIO; no-op otherwise)
 #endif
 using namespace Buttons;
 
@@ -596,7 +596,7 @@ void setup()
   Serial.setRxBufferSize(2048);
 #endif
 #ifdef CONFIG_USB_HOSTIO
-  MorseUsbIO::begin();           // USB keyboard + MIDI interfaces, alongside the serial port (VK1HF mod)
+  MorseUsbIO::begin();           // USB keyboard + MIDI interfaces, alongside the serial port
 #endif
   Serial.begin(115200);
   armForeignUsbRxDetect();       // a 1200-baud logger knocking at the classic's main menu (FN = GPIO0)
@@ -2735,7 +2735,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
               ;
             else  {
 #ifdef CONFIG_USB_HOSTIO
-                if (morseState == morseKeyer && playCW)          // VK1HF: a memory taps the USB MIDI paddles like a person
+                if (morseState == morseKeyer && playCW)          // a memory taps the USB MIDI paddles like a person
                     MorseUsbIO::element(c != '1', c == '1' ? ditLength : dahLength);
 #endif
                 keyOut(true, (morseState != loraTrx && morseState != wifiTrx), pitch(), MorsePreferences::sidetoneVolume);
@@ -2745,7 +2745,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             break;
     case KEY_DOWN:
 #ifdef CONFIG_USB_HOSTIO
-            MorseUsbIO::service();                                  // VK1HF: lift a memory's paddle tap on time
+            MorseUsbIO::service();                                  // lift a memory's paddle tap on time
 #endif
             if (millis() < genTimer)                                // if not at end of key down we need to wait, so we just return to loop()
                 return;
@@ -3590,7 +3590,7 @@ void changePreviewChar( int t) {
 
 void keyTransmitter(boolean noTx) {
 #ifdef CONFIG_USB_HOSTIO
-   // VK1HF: before the Key Ext Tx gate - whatever CW Keyer keys (paddles, straight key, a memory) always
+   // before the Key Ext Tx gate - whatever CW Keyer keys (paddles, straight key, a memory) always
    // goes out over USB for the selected USB Output, whatever Key Ext Tx says about the transmitter jack.
    if (morseState == morseKeyer)
       MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI: note 30 for a memory

@@ -509,7 +509,7 @@ parameter MorsePreferences::pliste[] = {
 #endif
 #ifdef CONFIG_USB_HOSTIO
   {
-    USB_OUT_MIDI, USB_OUT_OFF, USB_OUT_MIDI, 1,                 // VK1HF mod - see USB_OUT_* in morsedefs.h
+    USB_OUT_MIDI, USB_OUT_OFF, USB_OUT_MIDI, 1,                 // see USB_OUT_* in morsedefs.h
     "USB Output",
     "CW Keyer: what the USB cable sends - nothing, vBand keyboard (Left Ctrl) or MIDI paddles (notes 20/21)",
     true,

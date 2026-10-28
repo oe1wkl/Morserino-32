@@ -3999,6 +3999,7 @@ oder die Verwendung einer externen Handtaste relevant sind (stelle
 | **AutoChar Spc** | Mindestabstand zwischen den Zeichen. | **Off** / min. 2 / 3 / 4 dots |
 | **Latency** | Legt fest, wie lange nach der Erzeugung des aktuellen Elements (Punkt oder Strich) die Paddles „taub" sind. Bei 0 % muss das Paddle losgelassen werden, während das letzte Element noch „an" ist. Bei 87,5 % reagieren die Paddles erst nach 7/8 einer Punktlänge auf einen Druck. Im Ultimatic-Modus ohne Wirkung, der behandelt die Paddles auf eigene Weise. | Ein Wert zwischen 0 % und 87,5 %, d.h. 0/8 bis 7/8 einer Punktlänge (Standard: **50 %**, d.h. eine halbe Punktlänge). |
 | **BLT \<AR>** | Nur im Modus **Generic Kbd** relevant (siehe **Bluetooth Use** bei den allgemeinen Einstellungen); nur im **CW Keyer** angeboten, dem einzigen Modus, der über Bluetooth tippt. Legt fest, wie das \<AR>-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „**+**" oder als weicher Zeilenumbruch (Shift+Enter). | **+** / Linefeed |
+| []{.pocket}**USB Output** | Nur in einer Firmware mit USB Output; nur im **CW Keyer** angeboten. Was das USB-Kabel beim Tasten sendet: nichts zusätzlich, eine USB-Tastatur für vBand oder MIDI-Paddle-Noten; siehe **Benutzung von USB Output: vBand und MIDI über das USB-Kabel**. | Off (charge) / VBand / **MIDI** |
 
 ### Einstellungen bezüglich der Koch-Zeichenfolge
 
@@ -4918,6 +4919,40 @@ einzustellen.
 Buchstaben mit Umlauten oder Akzenten kann eine Tastatur nicht zuverlässig tippen (welches Zeichen eine Taste ergibt, hängt vom Tastaturlayout des Computers ab), daher tippt der Morserino sie ohne: ä, ö und ü als ae, oe und ue[, und die Buchstaben der Einstellung **Decoder Chars** als å → aa, æ → ae, ø → oe, à → a, é und è → e, ç → c, ñ → n]{.classic .pocket}.
 :::
 
+
+::: {.pocket}
+## Benutzung von USB Output: vBand und MIDI über das USB-Kabel
+
+Im Modus CW Keyer kann der M32 Pocket deine Tastung auch **über das USB-Kabel** an einen Computer senden, ganz ohne Bluetooth. Dazu braucht es eine Firmware mit USB Output (die PlatformIO-Umgebungen `pocketwroom-usbio` und `pocketwroom-lora-usbio`). Die Einstellung **USB Output** bei den Einstellungen des CW Keyers wählt eine von drei Möglichkeiten:
+
+| USB Output | Was der Computer sieht | Wofür |
+|---|---|---|
+| **Off (charge)** | Nichts zusätzlich. Das Kabel lädt den Morserino und führt wie gewohnt die serielle Schnittstelle | Zum Laden, oder wenn keine der anderen Möglichkeiten gebraucht wird |
+| **VBand** | Eine USB-Tastatur. Solange der Morserino tastet, ist die linke Strg-Taste (Left Ctrl) gedrückt | **vBand** (*https://hamradio.solutions/vband/*); dort den Eingang für die Handtaste (Straight Key) wählen |
+| **MIDI** | Ein USB-MIDI-Gerät, Kanal 1: Note 20 = Punkt-Paddle, Note 21 = Strich-Paddle | Programme, die MIDI-CW-Paddles annehmen und für das **CTR2-MIDI**-Interface von Lynovation gebaut sind; zum Beispiel **SmartSDR für macOS** von DL8MRE mit einem FlexRadio |
+
+Am Computer erscheint der Morserino als **„Morserino-32 Pocket (USB kbd+MIDI)“**. Die serielle Schnittstelle bleibt in jedem Fall über dasselbe Kabel verfügbar, das serielle M32-Protokoll, der File Manager und das M32 Config Tool funktionieren also weiter.
+
+::: note
+USB Output ist, wie die Bluetooth-Tastatur, nur im Modus CW Keyer aktiv. Alles, was der CW Keyer tastet, geht hinaus: die Paddles, eine Handtaste und die Keyer-Speicher. Es hängt nicht von **Key ext TX** ab, das nur den Senderanschluss betrifft. Verlässt du den CW Keyer, wird eine noch gedrückte Taste oder Note losgelassen.
+:::
+
+**VBand.** Der Keyer des Morserinos formt die Punkte und Striche selbst und hält während jedes Elements die linke Strg-Taste gedrückt, was vBand als Handtaste liest. Das leistet dasselbe wie **Bluetooth Use → VBand Kbd**, aber über das Kabel: nichts zu koppeln, keine Funkverzögerung, und der Akku wird dabei geladen. Damit vBand nicht jedes Element doppelt bekommt, startet die Bluetooth-Tastatur nicht, solange **USB Output** auf **VBand** steht, egal was bei **Bluetooth Use** eingestellt ist.
+
+**MIDI.** Der Morserino sendet, was ein CTR2-MIDI sendet; Software, die schon dafür eingerichtet ist, funktioniert also ohne Umstellung:
+
+| Tastung | MIDI-Nachricht (Kanal 1) |
+|---|---|
+| Punkt-Paddle | Note **20** an / aus |
+| Strich-Paddle | Note **21** an / aus |
+| Handtaste (**Keyer Mode** auf **Straight Key**) | Note **30** an / aus; die Noten 20 und 21 werden dann nicht gesendet |
+
+**Paddle Polarity** wird zuerst angewendet, Note 20 ist also immer dein Punkt-Paddle. Ein Keyer-Speicher geht so hinaus, wie ein Mensch ihn geben würde: in den Paddle-Modi tippt er die Paddles an (jeder Punkt ein kurzer Druck auf Note 20, jeder Strich einer auf Note 21), im Modus Straight Key betätigt er die Taste (Note 30). In den Paddle-Modi formt der Keyer des Programms die gesendete CW, darum **stelle den Morserino und das Programm auf dieselbe Geschwindigkeit und denselben Keyer-Modus**; sonst ist der Mithörton des Morserinos nicht das, was gesendet wird, und Speicher können verstümmelt herauskommen.
+
+::: note
+Eine Firmware mit USB Output verwendet den vollständigen USB-Controller des ESP32-S3 statt seiner festen seriellen Schnittstelle. Ein Flash-Programm kann den Pocket deshalb nicht mehr immer selbst in den Download-Modus schalten. Startet das Flashen nicht, schalte den Pocket aus, halte **FN** gedrückt und schalte ihn ein (das Display bleibt dunkel), und flashe dann.
+:::
+:::
 
 ## Gängige CW-Abkürzungen, verwendet vom Morserino-32
 

@@ -14,7 +14,7 @@
 ///     Extended mode). A keyer memory goes out the same way a person would send it: paddle taps, or the key;
 ///   * Off: nothing but the serial port (and charging).
 /// Recovery if a build ever misbehaves: hold FN while plugging in USB (ROM download mode), then run
-/// the official installer. Added by VK1HF, 2026-10-28 - not part of the upstream firmware.
+/// the official installer.
 
 #include <Arduino.h>
 

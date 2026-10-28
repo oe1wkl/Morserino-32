@@ -498,7 +498,7 @@ enum prefPos : uint8_t {
 				posBluetoothOut, posBluetoothARkey,
 #endif
 #ifdef CONFIG_USB_HOSTIO
-        posUsbOut,                    // VK1HF mod: what the USB cable sends in CW Keyer (USB_OUT_*)
+        posUsbOut,                    // what the USB cable sends in CW Keyer (USB_OUT_*)
 #endif
 #ifdef CONFIG_TFT
         posTheme,
@@ -568,7 +568,7 @@ enum actMessage : int {
 #define BLT_USE_SERIAL_PROT 5
 #endif
 #ifdef CONFIG_USB_HOSTIO
-// "USB Output" selector (posUsbOut), VK1HF mod: one thing at a time over the cable, CW Keyer only.
+// "USB Output" selector (posUsbOut): one thing at a time over the cable, CW Keyer only.
 #define USB_OUT_OFF   0               // nothing (serial port + charging only)
 #define USB_OUT_VBAND 1               // USB keyboard: Left Ctrl follows the keyer (the Bluetooth keyboard stays off)
 #define USB_OUT_MIDI  2               // USB MIDI ch 1: note 20 dit paddle, 21 dah paddle (CTR2-MIDI Normal mode)
