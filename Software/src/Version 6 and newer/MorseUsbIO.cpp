@@ -24,7 +24,7 @@ static const uint8_t HID_LEFT_CTRL = 0xE0;          // HID usage: Keyboard Left 
 static const uint8_t MIDI_CHANNEL   = 0;            // 0 = MIDI channel 1
 static const uint8_t NOTE_DIT       = 20;
 static const uint8_t NOTE_DAH       = 21;
-static const uint8_t NOTE_KEYED     = 30;           // = CTR2-MIDI straight key (Extended paddle mode)
+static const uint8_t NOTE_KEYED     = 30;           // straight key = CTR2-MIDI Extended paddle mode
 static const uint8_t NOTE_VELOCITY  = 127;
 
 static uint16_t midiDescriptor(uint8_t *dst, uint8_t *itf) {
@@ -57,6 +57,7 @@ static void midiNote(uint8_t note, bool on) {
 static bool ctrlDown = false, keyedDown = false, ditDown = false, dahDown = false;
 
 static uint8_t usbOut() { return MorsePreferences::pliste[posUsbOut].value; }
+static bool straightKey() { return MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY; }
 static void setCtrl(bool down);
 
 void MorseUsbIO::begin() {
@@ -65,18 +66,19 @@ void MorseUsbIO::begin() {
 }
 
 // Releases always go out (a key-up must never be lost); presses only for the selected USB Output.
+// MIDI: a straight key is note 30 (the CTR2-MIDI's straight-key note), paddles are notes 20/21 -
+// never both, or an app with all three mapped would key the rig twice.
 void MorseUsbIO::keyed(bool down) {
     setCtrl(down && usbOut() == USB_OUT_VBAND);
-    if (down == keyedDown)
+    bool note = down && usbOut() == USB_OUT_MIDI && straightKey();
+    if (note == keyedDown)
         return;
-    keyedDown = down;
-#ifdef CONFIG_USB_MIDI_KEYED_NOTE                   // off: a CTR2-MIDI (Normal mode) sends paddles 20/21 only,
-    midiNote(NOTE_KEYED, down);                     // and an app mapping 30 as well would key the rig twice
-#endif
+    keyedDown = note;
+    midiNote(NOTE_KEYED, note);
 }
 
 void MorseUsbIO::paddles(bool dit, bool dah) {
-    bool midi = usbOut() == USB_OUT_MIDI;
+    bool midi = usbOut() == USB_OUT_MIDI && !straightKey();
     dit = dit && midi;
     dah = dah && midi;
     if (dit != ditDown) { ditDown = dit; midiNote(NOTE_DIT, dit); }
