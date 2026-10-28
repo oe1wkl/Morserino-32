@@ -19,7 +19,8 @@
 
 namespace MorseUsbIO {
     void begin();                       // call once in setup(), before Serial.begin()
-    void keyed(bool down);              // keyer output edge (keyTransmitter / key off)
+    void keyed(bool down, bool generated = false);  // keyer output edge (keyTransmitter / key off);
+                                                    // generated = a keyer memory is playing
     void paddles(bool dit, bool dah);   // debounced paddle state, polarity already applied
     void tick(bool inKeyer);            // every loop pass: releases anything held when not in CW Keyer
 }

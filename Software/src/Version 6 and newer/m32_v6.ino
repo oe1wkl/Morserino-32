@@ -3582,17 +3582,18 @@ void changePreviewChar( int t) {
 }
 
 void keyTransmitter(boolean noTx) {
+#ifdef CONFIG_USB_HOSTIO
+   // VK1HF: before the Key Ext Tx gate - whatever CW Keyer keys (paddles, straight key, a memory) always
+   // goes out over USB for the selected USB Output, whatever Key Ext Tx says about the transmitter jack.
+   if (morseState == morseKeyer)
+      MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI: note 30 for a memory
+#endif
   if (noTx )
       return;
    digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
    if ((MorseBluetooth::keyboardMode() & 0x1) == 0x1)
       MorseBluetooth::bluetoothTypeLCTRL(true);
-#endif
-#ifdef CONFIG_USB_HOSTIO
-   if (morseState == morseKeyer) {
-      MorseUsbIO::keyed(true);                                       // USB Output = VBand: Left Ctrl down
-   }
 #endif
 }
 

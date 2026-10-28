@@ -66,11 +66,12 @@ void MorseUsbIO::begin() {
 }
 
 // Releases always go out (a key-up must never be lost); presses only for the selected USB Output.
-// MIDI: a straight key is note 30 (the CTR2-MIDI's straight-key note), paddles are notes 20/21 -
-// never both, or an app with all three mapped would key the rig twice.
-void MorseUsbIO::keyed(bool down) {
+// MIDI: a straight key - and CW the Morserino generates itself, i.e. a keyer memory, which has no paddle
+// movements to send - is note 30 (the CTR2-MIDI's straight-key note); paddles are notes 20/21. Never both
+// at once: Straight Key mode sends no paddle notes, and touching a paddle stops a playing memory.
+void MorseUsbIO::keyed(bool down, bool generated) {
     setCtrl(down && usbOut() == USB_OUT_VBAND);
-    bool note = down && usbOut() == USB_OUT_MIDI && straightKey();
+    bool note = down && usbOut() == USB_OUT_MIDI && (straightKey() || generated);
     if (note == keyedDown)
         return;
     keyedDown = note;
@@ -105,7 +106,7 @@ void MorseUsbIO::tick(bool inKeyer) {
 #else   // not CONFIG_USB_HOSTIO: everything compiles away
 
 void MorseUsbIO::begin() {}
-void MorseUsbIO::keyed(bool) {}
+void MorseUsbIO::keyed(bool, bool) {}
 void MorseUsbIO::paddles(bool, bool) {}
 void MorseUsbIO::tick(bool) {}
 
