@@ -10,7 +10,8 @@
 ///   * VBand: Left Ctrl is held down while the keyer keys - what the Bluetooth vBand keyboard sends,
 ///     minus the BLE latency (the Bluetooth keyboard is not started meanwhile);
 ///   * MIDI (channel 1): note 20 = dit paddle, note 21 = dah paddle (after the Paddle Polarity setting -
-///     the Lynovation CTR2-MIDI Normal mode / TinyMIDI convention);
+///     the Lynovation CTR2-MIDI Normal mode / TinyMIDI convention); in Straight Key mode note 30 (its
+///     Extended mode). A keyer memory goes out the same way a person would send it: paddle taps, or the key;
 ///   * Off: nothing but the serial port (and charging).
 /// Recovery if a build ever misbehaves: hold FN while plugging in USB (ROM download mode), then run
 /// the official installer. Added by VK1HF, 2026-10-28 - not part of the upstream firmware.
@@ -22,6 +23,8 @@ namespace MorseUsbIO {
     void keyed(bool down, bool generated = false);  // keyer output edge (keyTransmitter / key off);
                                                     // generated = a keyer memory is playing
     void paddles(bool dit, bool dah);   // debounced paddle state, polarity already applied
+    void element(bool dah, unsigned long elementMs);  // a keyer memory starts a dit or dah: tap that paddle
+    void service();                     // ends a memory's paddle tap on time (called while elements sound)
     void tick(bool inKeyer);            // every loop pass: releases anything held when not in CW Keyer
 }
 

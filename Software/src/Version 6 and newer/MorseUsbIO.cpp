@@ -55,6 +55,9 @@ static void midiNote(uint8_t note, bool on) {
 
 // ---------------------------------------------------------------- state
 static bool ctrlDown = false, keyedDown = false, ditDown = false, dahDown = false;
+static bool handDit = false, handDah = false;       // the operator's paddles (after Paddle Polarity)
+static bool tapDit = false, tapDah = false;         // a keyer memory "tapping" a paddle, see element()
+static unsigned long tapUntil = 0;
 
 static uint8_t usbOut() { return MorsePreferences::pliste[posUsbOut].value; }
 static bool straightKey() { return MorsePreferences::pliste[posCurtisMode].value == STRAIGHTKEY; }
@@ -65,25 +68,48 @@ void MorseUsbIO::begin() {
     USB.begin();                                    // a no-op: CDC-on-boot already started it in app_main()
 }
 
-// Releases always go out (a key-up must never be lost); presses only for the selected USB Output.
-// MIDI: a straight key - and CW the Morserino generates itself, i.e. a keyer memory, which has no paddle
-// movements to send - is note 30 (the CTR2-MIDI's straight-key note); paddles are notes 20/21. Never both
-// at once: Straight Key mode sends no paddle notes, and touching a paddle stops a playing memory.
+// What goes out always looks like a human operator: on MIDI, paddle modes send only the paddle notes
+// 20/21 and Straight Key mode only note 30 (the CTR2-MIDI's straight-key note) - a keyer memory included,
+// which taps the paddles (element()) or works the straight key just as a person would. Never both at once,
+// or the app would key the rig twice. Releases always go out (a key-up must never be lost).
 void MorseUsbIO::keyed(bool down, bool generated) {
+    (void) generated;
     setCtrl(down && usbOut() == USB_OUT_VBAND);
-    bool note = down && usbOut() == USB_OUT_MIDI && (straightKey() || generated);
+    bool note = down && usbOut() == USB_OUT_MIDI && straightKey();
     if (note == keyedDown)
         return;
     keyedDown = note;
     midiNote(NOTE_KEYED, note);
 }
 
-void MorseUsbIO::paddles(bool dit, bool dah) {
+static void updatePaddleNotes() {
     bool midi = usbOut() == USB_OUT_MIDI && !straightKey();
-    dit = dit && midi;
-    dah = dah && midi;
+    bool dit = (handDit || tapDit) && midi;
+    bool dah = (handDah || tapDah) && midi;
     if (dit != ditDown) { ditDown = dit; midiNote(NOTE_DIT, dit); }
     if (dah != dahDown) { dahDown = dah; midiNote(NOTE_DAH, dah); }
+}
+
+void MorseUsbIO::paddles(bool dit, bool dah) {
+    handDit = dit;
+    handDah = dah;
+    service();
+}
+
+// A keyer memory is about to sound one element. In the paddle modes, press the matching paddle note for
+// half the element and let go - as an operator taps a paddle and lifts off before the app's keyer would
+// repeat the element. The app's keyer forms the element, so its speed must match the Morserino's.
+void MorseUsbIO::element(bool dah, unsigned long elementMs) {
+    tapDit = !dah;
+    tapDah = dah;
+    tapUntil = millis() + elementMs / 2;
+    updatePaddleNotes();
+}
+
+void MorseUsbIO::service() {
+    if ((tapDit || tapDah) && (long) (millis() - tapUntil) >= 0)
+        tapDit = tapDah = false;
+    updatePaddleNotes();
 }
 
 static void setCtrl(bool down) {
@@ -98,6 +124,7 @@ void MorseUsbIO::tick(bool inKeyer) {
     if (!inKeyer) {                                 // left CW Keyer (or never in it): nothing may stay held
         setCtrl(false);
         keyed(false);
+        tapDit = tapDah = false;
         paddles(false, false);
     }
 }
@@ -108,6 +135,8 @@ void MorseUsbIO::tick(bool inKeyer) {
 void MorseUsbIO::begin() {}
 void MorseUsbIO::keyed(bool, bool) {}
 void MorseUsbIO::paddles(bool, bool) {}
+void MorseUsbIO::element(bool, unsigned long) {}
+void MorseUsbIO::service() {}
 void MorseUsbIO::tick(bool) {}
 
 #endif

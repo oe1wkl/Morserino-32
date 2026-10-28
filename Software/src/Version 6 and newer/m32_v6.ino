@@ -2734,12 +2734,19 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             if (silentEcho || stopFlag)                                             // we finished maxSequence and so do start output (otherwise we get a short click)
               ;
             else  {
+#ifdef CONFIG_USB_HOSTIO
+                if (morseState == morseKeyer && playCW)          // VK1HF: a memory taps the USB MIDI paddles like a person
+                    MorseUsbIO::element(c != '1', c == '1' ? ditLength : dahLength);
+#endif
                 keyOut(true, (morseState != loraTrx && morseState != wifiTrx), pitch(), MorsePreferences::sidetoneVolume);
             }
             generatorState = KEY_DOWN;                              // next state = key down = dit or dah
 
             break;
     case KEY_DOWN:
+#ifdef CONFIG_USB_HOSTIO
+            MorseUsbIO::service();                                  // VK1HF: lift a memory's paddle tap on time
+#endif
             if (millis() < genTimer)                                // if not at end of key down we need to wait, so we just return to loop()
                 return;
             //// otherwise we continue here; stop keying,  and determine the length of the following pause: inter Element, interCharacter or InterWord?
