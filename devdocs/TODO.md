@@ -71,7 +71,7 @@ claimant (F1, F2); quick cleanup (A6–A9: merged branches, `git branch -D scrat
 inspect the three stashes).
 
 **Wave 5 — after V10, each in its own session:** the generated-CW 6 ms fix (B5; the related
-I2S-sidetone fix C6 shipped in 9.1, scope test owed); snapshot bundles, sidetone upstreaming, a11y roadmap, QSO Bot
+I2S-sidetone fix C6 shipped in 9.1, scope test owed); snapshot bundles, sidetone upstreaming, a11y roadmap (incl. Morsel in the a11y edition, I.5), QSO Bot
 leftovers (H1–H4); rewrite the stale `devdocs/HANDOFF.md` (H5); CI gates for the FAQ and
 protocol PDFs (E2).
 
@@ -255,7 +255,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 2. ~~**`audioLevelAdjust()`** can re-enter on a long-press exit; Morsel's internal `-1` transitions~~ — **resolved
    by the ClickButton root-cause fix** (2b0b3ac, one-shot long click): the host tests' "the caller it returns to does
    NOT see it a second time" is exactly this case (re-checked 2026-10-05, all pass).
-3. **A11y gaps:** decoder char-by-char voicing. ~~Battery "3980 mV" calibration readout~~ — **done 2026-10-05 on `master`**
+3. **A11y gaps:** decoder char-by-char voicing (now has a first consumer: Morsel in the a11y edition, I.5). ~~Battery "3980 mV" calibration readout~~ — **done 2026-10-05 on `master`**
    ("3 point 9 8 0 volts", composed) — **moot in practice**: the Pocket's Hardware Config skips Calibr. Batt.
    (`if (hwConf == 1) hwConf = 2`), so no a11y device can reach it; kept as harmless, correct code.
    **Small old bug found there:** turning the encoder *backwards* from Flip Screen maps 1 → 2 again, so the Pocket
@@ -376,6 +376,27 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    via a 1-bit-per-word filter (613 B RAM). Protocol name changed ("Length Words" → "Word Length"; NVS/snapshots keep
    `wordLength`); config-tool help has both names. Verified on the Pocket over the protocol (generator + Koch).
    **`m32kip`:** port the manual edits to the V10 manual after merging.
+
+5. **A11y edition: enable and voice Morsel** — [issue #225](https://github.com/oe1wkl/Morserino-32/issues/225),
+   Scott N3BYY (LICW student, a11y Pocket on order, no hardware yet). **Willi's answer 2026-10-29 (posted): yes in
+   principle, after V10.0, single player only; per-game config flags; spoken wrong positions.** The games were
+   stripped from the a11y build with a blanket "unusable blind" (2026-06-23) that never weighed Morsel on its own.
+   Checked: flash fine (~680 KB app slot left, all seven games ≈ 120 KB), voice store fine (~1.2 MB usable), the
+   QSO Bot is the pattern (tick the voice engine in the mode loop, keying cuts speech, CW waits for speech).
+   **Order of work:** (a) **RAM measurement first**, on the a11y Pocket: free heap / largest block at Morsel start
+   with the voice pipeline resident (8-bpp sprite ≈ 52 KB; mainline measured 110 KB free after it; MP3 pipeline
+   ≈ 30–40 KB) — no voicing code before this; (b) **per-game flags** (`CONFIG_GAME_MORSEL` etc., all on wherever
+   `CONFIG_CW_GAME` is on; the games ring is a positional neighbour table, so each omitted game needs the
+   `_wifi_beforeSelect`-style neighbour macro; the CI ring check catches mistakes); (c) **decoder-echo voicing
+   design, to be settled in the thread** — the player keys the guess and cannot hear what the decoder made of it: a
+   misdecode is indistinguishable from a wrong guess, and a dropped/merged character leaves the buffer short of the
+   word length so the guess never submits (no replay, no feedback, lobby after 60 s). Preferred answer: voice each
+   decoded character as it lands (phonetic), which is D.3's open "decoder char-by-char" gap — Morsel would be its
+   first user. Also owed: Morsel's `delay()` feedback waits (0.9–1.5 s, no speech during a `delay()`) become
+   tick-driven; the "clue waits for speech" gate goes into Morsel's own non-blocking CW player (not the shared
+   engine); the Single/Multiplayer chooser and the "word pool too small" screen need voicing; the a11y manual
+   variant has no games chapter at all (EN+DE). Multiplayer stays out. Memory Chain (CW mode) is the natural second
+   game, same decoder-echo problem.
 
 ## H. Follow-up projects with their own handoffs
 
