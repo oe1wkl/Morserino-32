@@ -70,6 +70,11 @@ devdocs/
 ├── snapshot-bundles/             ← importing several snapshots at once (deferred)
 │   ├── HANDOFF.md                ·   START HERE — decided vs open, where the code is
 │   └── DESIGN_NOTES.md           ·   what a snapshot really holds, and the traps
+├── training-addon/               ← the M32 Trainer (web page + protocol 1.6 events)
+│   ├── HANDOFF.md                ·   START HERE — status, first steps, milestones, traps
+│   ├── LEAN_V1_SCOPE.md          ·   the spec; §7 holds every decision
+│   ├── RESEARCH.md               ·   landscape: tegmento, Morse Trainer Pro, OZ1THC, IW7DMH
+│   └── CHRISTOF_MESSAGE.md       ·   draft preview message (EN + DE), not sent
 ├── ultimatic/                    ← Ultimatic keyer mode vs. the 1955 original
 │   ├── FINDINGS.md               ·   the QST source, the point-6 bug, the fix
 │   ├── FOLLOWUP_CURTIS_B.md      ·   Ultimatic vs. the Curtis-B timing (decision pending)
