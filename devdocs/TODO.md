@@ -397,6 +397,19 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    engine); the Single/Multiplayer chooser and the "word pool too small" screen need voicing; the a11y manual
    variant has no games chapter at all (EN+DE). Multiplayer stays out. Memory Chain (CW mode) is the natural second
    game, same decoder-echo problem.
+   **Scott's reply 2026-10-29 + Willi's answer (posted):** Scott is a **blind operator** himself and does accessibility
+   QA part-time (the issue's analysis was Claude's, the idea his). He accepts per-character voicing. Two ideas:
+   (1) **stall prompt — accepted, part of the design:** when the buffer is short of the word length, the 12 s idle
+   timer speaks the count and the letters ("3 of 5 letters: Hotel, Echo, Lima") instead of replaying the clue,
+   repeated until he keys on, backspaces or skips — never the silent return to the lobby; (2) **read the buffer on
+   an encoder click — declined as a gesture:** black single-click in Morsel play already means "skip word", and
+   UX_CONVENTIONS §13 says speech never adds a gesture or changes what an input means; per-character voicing plus
+   the stall prompt cover it, revisit only with hardware in hand. First-version design as posted: revealed letter
+   before the clue, each decoded character spoken as it lands, stall prompt, spoken wrong positions, spoken
+   results, nothing new on the buttons. **Beta tester:** Willi asked him to test the Accessibility Edition as a whole
+   once he has lived with it (PRODUCT_PLAN WS5 wants 2–3 more blind testers; the missing-clip serial log is the
+   telemetry) — answer pending. When Morsel comes in, reword UX_CONVENTIONS §13 "Games are exempt — compiled out"
+   and CLAUDE.md §8 case 3 (exempt only while compiled out of the a11y build).
 
 ## H. Follow-up projects with their own handoffs
 
