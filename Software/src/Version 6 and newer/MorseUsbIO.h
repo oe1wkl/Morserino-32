@@ -1,0 +1,31 @@
+#ifndef MORSEUSBIO_H_
+#define MORSEUSBIO_H_
+/// USB keyboard (vBand) + USB MIDI output for the M32 Pocket - CONFIG_USB_HOSTIO builds only.
+///
+/// The stock Pocket runs its USB port as the ESP32-S3's fixed hardware USB-Serial-JTAG (HWCDC),
+/// which can only ever be a serial port. CONFIG_USB_HOSTIO builds (env pocketwroom-usbio) switch to
+/// the chip's USB-OTG controller with TinyUSB (ARDUINO_USB_MODE=0) so one cable carries a composite
+/// device: the usual serial port (config tool, file manager, M32 protocol, WinKeyer) PLUS
+/// a USB keyboard and a USB MIDI device. The "USB Output" preference (CW Keyer) picks what is sent:
+///   * VBand: Left Ctrl is held down while the keyer keys - what the Bluetooth vBand keyboard sends,
+///     minus the BLE latency (the Bluetooth keyboard is not started meanwhile);
+///   * MIDI (channel 1): note 20 = dit paddle, note 21 = dah paddle (after the Paddle Polarity setting -
+///     the Lynovation CTR2-MIDI Normal mode / TinyMIDI convention); in Straight Key mode note 30 (its
+///     Extended mode). A keyer memory goes out the same way a person would send it: paddle taps, or the key;
+///   * Off: nothing but the serial port (and charging).
+/// Recovery if a build ever misbehaves: hold FN while plugging in USB (ROM download mode), then run
+/// the official installer.
+
+#include <Arduino.h>
+
+namespace MorseUsbIO {
+    void begin();                       // call once in setup(), before Serial.begin()
+    void keyed(bool down, bool generated = false);  // keyer output edge (keyTransmitter / key off);
+                                                    // generated = a keyer memory is playing
+    void paddles(bool dit, bool dah);   // debounced paddle state, polarity already applied
+    void element(bool dah, unsigned long elementMs);  // a keyer memory starts a dit or dah: tap that paddle
+    void service();                     // ends a memory's paddle tap on time (called while elements sound)
+    void tick(bool inKeyer);            // every loop pass: releases anything held when not in CW Keyer
+}
+
+#endif

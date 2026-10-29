@@ -104,6 +104,9 @@ void packetReceived() {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"
 #endif
+#ifdef CONFIG_USB_HOSTIO
+#include "MorseUsbIO.h"          // USB keyboard (vBand) + USB MIDI over the cable
+#endif
 using namespace Buttons;
 
 
@@ -583,16 +586,23 @@ void setup()
    //// 7. check for press of key/paddle at start, to initiate hw config
    //// 8. do the remaining initialisations
 
-#if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
+#if ARDUINO_USB_CDC_ON_BOOT
+#if ARDUINO_USB_MODE
   // The Pocket's native USB (HWCDC, core 2.0.17) stopped about one protocol reply in 50-150 halfway - the
   // first part sent, the rest only when the host sent its next command (seen with 263-313-byte replies;
   // 9.0.1 too). Its default 256-byte TX ring is smaller than such a reply; with 1 KB the rate fell to about
   // 1 in 900 (2026-10-05; 4 KB was no better). The remaining cases are a driver race - see devdocs/TODO.md.
-  Serial.setTxBufferSize(1024);
+  Serial.setTxBufferSize(1024);       // HWCDC only: TinyUSB's USBCDC (usbio builds) has a fixed TX FIFO
+#endif
   // And its 256-byte RX queue drops bytes when full (the ISR gives up on the rest of a 64-byte packet) - a
   // command longer than ~256 bytes, sent in one go, lost pieces before loop() got to read it, newline
   // included, so lines merged. 2 KB holds any line up to twice USB_LINE_MAX: executed or refused whole.
+  // TinyUSB's USBCDC (usbio builds) has the same 256-byte default; the core has already started it in
+  // app_main() there, and resizing afterwards keeps whatever is queued.
   Serial.setRxBufferSize(2048);
+#endif
+#ifdef CONFIG_USB_HOSTIO
+  MorseUsbIO::begin();           // USB keyboard + MIDI interfaces, alongside the serial port
 #endif
   Serial.begin(115200);
   armForeignUsbRxDetect();       // a 1200-baud logger knocking at the classic's main menu (FN = GPIO0)
@@ -1436,6 +1446,9 @@ if (morseState == morseKeyer &&
 }
 MorseBluetooth::tick();                           // no-op unless the keyboard runs
 #endif
+#ifdef CONFIG_USB_HOSTIO
+MorseUsbIO::tick(morseState == morseKeyer);       // releases USB Ctrl / MIDI notes outside CW Keyer
+#endif
 /// if we have time check for serial input and for button presses
 
   // check serial input
@@ -2123,6 +2136,12 @@ boolean checkPaddles() {
 
   oldL = newL;
   oldR = newR;
+#ifdef CONFIG_USB_HOSTIO
+  if (morseState == morseKeyer) {                                     // USB MIDI notes 20 (dit) / 21 (dah)
+    bool swap = MorsePreferences::pliste[posPolarity].value == 0;     // same swap as the keyer applies
+    MorseUsbIO::paddles(swap ? rightKey : leftKey, swap ? leftKey : rightKey);
+  }
+#endif
   return (leftKey || rightKey);
 }
 
@@ -2721,12 +2740,19 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             if (silentEcho || stopFlag)                                             // we finished maxSequence and so do start output (otherwise we get a short click)
               ;
             else  {
+#ifdef CONFIG_USB_HOSTIO
+                if (morseState == morseKeyer && playCW)          // a memory taps the USB MIDI paddles like a person
+                    MorseUsbIO::element(c != '1', c == '1' ? ditLength : dahLength);
+#endif
                 keyOut(true, (morseState != loraTrx && morseState != wifiTrx), pitch(), MorsePreferences::sidetoneVolume);
             }
             generatorState = KEY_DOWN;                              // next state = key down = dit or dah
 
             break;
     case KEY_DOWN:
+#ifdef CONFIG_USB_HOSTIO
+            MorseUsbIO::service();                                  // lift a memory's paddle tap on time
+#endif
             if (millis() < genTimer)                                // if not at end of key down we need to wait, so we just return to loop()
                 return;
             //// otherwise we continue here; stop keying,  and determine the length of the following pause: inter Element, interCharacter or InterWord?
@@ -3569,6 +3595,12 @@ void changePreviewChar( int t) {
 }
 
 void keyTransmitter(boolean noTx) {
+#ifdef CONFIG_USB_HOSTIO
+   // before the Key Ext Tx gate - whatever CW Keyer keys (paddles, straight key, a memory) always
+   // goes out over USB for the selected USB Output, whatever Key Ext Tx says about the transmitter jack.
+   if (morseState == morseKeyer)
+      MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI: note 30 for a memory
+#endif
   if (noTx )
       return;
    digitalWrite(keyerPin, HIGH);           // turn the LED on, key transmitter, or whatever
@@ -4436,6 +4468,9 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
         if ((MorseBluetooth::keyboardMode() & 0x1) == 0x1)
           MorseBluetooth::bluetoothTypeLCTRL(false);
 #endif
+#ifdef CONFIG_USB_HOSTIO
+        MorseUsbIO::keyed(false);         // always release, whatever the mode or preference
+#endif
   }   // end key off
 }
 
@@ -4859,7 +4894,7 @@ volatile unsigned long lastForeignUsbRxMs = 0;
 // Arm the UART receive-error hook. Called after every Serial.begin() on a UART build (setup(), and
 // WinKeyer mode's baud changes). A no-op on the Pocket's native USB, which has no line coding to violate.
 void armForeignUsbRxDetect() {
-#if !(ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT)
+#if !ARDUINO_USB_CDC_ON_BOOT      // any native-USB serial (HWCDC, or TinyUSB's USBCDC in the usbio builds) has no UART line coding
   Serial.onReceiveError([](hardwareSerial_error_t e) {
     if (e == UART_FRAME_ERROR || e == UART_BREAK_ERROR || e == UART_PARITY_ERROR)
       lastForeignUsbRxMs = millis();

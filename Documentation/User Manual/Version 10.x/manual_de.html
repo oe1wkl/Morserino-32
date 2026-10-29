@@ -170,8 +170,9 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#das-m32-serielle-protokoll-ueber-bluetooth-nutzen-ble-serial" id="toc-das-m32-serielle-protokoll-ueber-bluetooth-nutzen-ble-serial"><span class="toc-section-number">7.8.1</span> Das M32-Serielle-Protokoll über Bluetooth nutzen (BLE Serial)</a></li>
 </ul></li>
 <li><a href="#benutzung-der-bluetooth-tastatur-funktion" id="toc-benutzung-der-bluetooth-tastatur-funktion"><span class="toc-section-number">7.9</span> Benutzung der Bluetooth-Tastatur-Funktion</a></li>
-<li><a href="#gaengige-cw-abkuerzungen-verwendet-vom-morserino-32" id="toc-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="toc-section-number">7.10</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</a></li>
-<li><a href="#glossar" id="toc-glossar"><span class="toc-section-number">7.11</span> Glossar</a></li>
+<li><a href="#benutzung-von-usb-output-vband-und-midi-ueber-das-usb-kabel" id="toc-benutzung-von-usb-output-vband-und-midi-ueber-das-usb-kabel"><span class="toc-section-number">7.10</span> Benutzung von USB Output: vBand und MIDI über das USB-Kabel</a></li>
+<li><a href="#gaengige-cw-abkuerzungen-verwendet-vom-morserino-32" id="toc-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="toc-section-number">7.11</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</a></li>
+<li><a href="#glossar" id="toc-glossar"><span class="toc-section-number">7.12</span> Glossar</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -184,13 +185,14 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p><strong>Wenn dein M32 Pocket noch nicht spricht.</strong> Ein neuer Pocket wird mit der Standard-Edition ausgeliefert, und die ist stumm. Die Firmware, die dieses Handbuch beschreibt, wird von einem Computer aus über USB installiert und ist in wenigen Minuten aufgespielt: siehe <strong>Den M32 Pocket zum Sprechen bringen: die Accessibility Edition installieren</strong>, den ersten Abschnitt des Kapitels <strong>Kurzanleitung zur Benutzung des M32</strong>.</p>
 </div>
 <p>Ich möchte mich bei allen bedanken, die durch Code, Kommentare, Vorschläge, Kritik, Rezensionen, Blogeinträge, YouTube-Videos und andere Beiträge dazu beigetragen haben, den Morserino-32 zu einem erfolgreichen und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den M32Pocket nicht!</p>
-<!-- WHATSNEW:BEGIN en=37280ed09f21 v=10 -->
+<!-- WHATSNEW:BEGIN en=6aa07a73b9ee v=10 -->
 <p>Was ist neu in Version 10?</p>
 <ul>
 <li>Zwei Morserinos können jetzt über das Netzwerk eine <strong>Tastverbindung in die Ferne</strong> bilden. Du gibst an deinem Betriebsplatz auf dem einen — dem neuen Modus <strong>Remote Keyer</strong> — und der andere, an der Station, tastet über seinen Anschluss „to Tx“ den Sender: der neue Modus <strong>Remote Rig</strong>. Die Station kann im Nebenzimmer stehen oder in einem anderen Land. Was aus dem Sender kommt, ist das, was du gegeben hast, mit deinem eigenen Timing — ob es von den Paddles kam, von einer Handtaste oder von einem Bug. Es ist eine Tastverbindung, keine Audioverbindung: Deinen Mithörton hörst du lokal und sofort, sodass nichts im Netzwerk deinen Gebe-Rhythmus stören kann; was du <em>von</em> der Station hörst, kommt über den Fernsteuer- und Audioweg, den du ohnehin schon benutzt. Die Verbindung läuft über UDP-Port 7374, und die Adresse der Station trägst du im Feld <strong>TRX Peer</strong> unter <strong>Config WiFi</strong> ein — dasselbe Feld, das auch der WiFi-Transceiver verwendet. Beide Seiten sind im Handbuch beschrieben, samt dem, was bei Routern und Firewalls zu beachten ist.</li>
 <li>Das serielle Protokoll, das das Konfigurationsprogramm und andere Programme verwenden, steht jetzt auf <strong>Version 1.5</strong>: Es kann die Einstellungen für die Ferntastung (gemeinsames Passwort und Port) und die Einstellungen von Remote Rig und Remote Keyer lesen und setzen, und es meldet die neuen Befehle in seiner Liste der Fähigkeiten. Alles aus Version 1.4 funktioniert unverändert weiter.</li>
 <li>Neuer Modus <strong>Transceiver → WinKeyer</strong>: Der Morserino verhält sich wie ein WinKeyer (WK2) von K1EL, sodass Log- und Contestprogramme (N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog, CQRLOG, fldigi/flwkey, …) über USB CW durch ihn senden können. Er tastet einen an „to Tx” angeschlossenen Sender (außer <strong>Key ext TX</strong> steht auf Never), du kannst jederzeit mit dem Paddle dazwischen gehen, der ENCODER dient als Geschwindigkeitsregler des WinKeyers, und ein Klick auf den ENCODER bricht ab, was das Programm gerade sendet. Keyer-Modus, Paddle-Polarität, ACS, Latency und die Tonhöhe des Mithörtons bleiben die Einstellungen des Morserino – die entsprechenden Einstellungen im Programm haben keine Wirkung; alles andere am Senden des Programms (Geschwindigkeit, Gewichtung, Punkt-Strich-Verhältnis, Kompensation, Farnsworth, Contest-Abstand, …) kommt vom Programm, und nichts davon wird gespeichert. Die WinKeyer-Nachrichten 1 bis 6 spielen die Keyer-Speicher 1 bis 6 des Morserino ab. Einen PTT-Ausgang gibt es nicht. Bei der 1st und 2nd Edition startest du den Modus vor dem Programm (die USB-Schnittstelle läuft dann mit den 1200 Baud des WinKeyers); beim M32 Pocket kann ein Programm den WinKeyer auch öffnen, während der Morserino im Hauptmenü ist – der Modus startet dann von selbst.</li>
 <li>Neuer Modus <strong>Transceiver → Remote WinKeyer</strong> (bei der 1st und 2nd Edition <strong>Remote WinK</strong>, damit es aufs Display passt): <strong>WinKeyer</strong> und <strong>Remote Keyer</strong> in einem. Ein Log- oder Contestprogramm steuert den Morserino über USB genau wie im Modus <strong>WinKeyer</strong>, und sein CW – und was du mit dem Paddle gibst – geht über die Tastverbindung an einen entfernten Sender, während dein eigener Anschluss „to Tx“ stumm bleibt. Weil der Sender weit weg steht, ist einiges anders als im <strong>WinKeyer</strong>: Reißt die Verbindung ab, hört das Senden des Programms auf und das Programm erfährt es, wie wenn du mit dem Paddle dazwischen gehst (ein wiederholtes CQ hört auf), und was es sendet, solange die Verbindung weg ist, wird verworfen – nichts geht verspätet auf Sendung; das Programm erfährt, dass der Morserino beschäftigt ist, bis das Rig das CW ausgegeben hat, sodass ein Programm, das PTT über CAT schaltet, das Ende nicht abschneidet; und ein Tune wird am Rig wie eine gedrückt gehaltene Handtaste behandelt (es gilt <strong>Rig Limit SK</strong>). Die Einstellungen des Rigs erreichst du mit einem Doppelklick, solange die Verbindung steht, wie im <strong>Remote Keyer</strong>. Beim M32 Pocket bestimmt die neue Einstellung <strong>WinKeyer Tx</strong>, welcher der beiden WinKeyer-Modi startet, wenn ein Programm den WinKeyer öffnet, während der Morserino im Hauptmenü ist: <strong>Local</strong> (die Voreinstellung, wie bisher) oder <strong>Remote</strong>.</li>
+<li>Nur M32 Pocket, in einer Firmware mit USB Output: Der <strong>CW Keyer</strong> kann deine Tastung über das USB-Kabel an einen Computer schicken, ohne Bluetooth. Die neue Einstellung <strong>USB Output</strong> wählt, was hinausgeht: <strong>VBand</strong> macht den Morserino zu einer USB-Tastatur für vBand (die linke Strg-Taste folgt dem Keyer – nichts zu koppeln, und der Akku lädt dabei), <strong>MIDI</strong> macht ihn zu einem USB-MIDI-Gerät, das sendet, was ein CTR2-MIDI-Interface sendet (Kanal 1: Note 20 für das Punkt-Paddle, 21 für das Strich-Paddle, 30 für eine Handtaste), für Programme wie SmartSDR für macOS, und <strong>Off (charge)</strong> sendet nichts zusätzlich. Die serielle Schnittstelle bleibt über dasselbe Kabel verfügbar, das Konfigurationsprogramm funktioniert also weiter. USB Output braucht eine eigene Firmware (die PlatformIO-Umgebungen <code>pocketwroom-usbio</code> und <code>pocketwroom-lora-usbio</code>); die zum Download angebotene Firmware enthält es nicht. Danke an Ian Gilchrist, VK1HF, der es geschrieben hat.</li>
 <li>Nur M32 Pocket, Accessibility Edition: Das Gerät sagt jetzt die neue Geschwindigkeit, sobald du sie änderst – die Zahl wird ausgesprochen, während du den Encoder drehst, damit ein blinder Operator sein Übungstempo selbst wählen kann, ohne jemanden fragen zu müssen. Drehst du den Encoder schnell durch, wird nur der Endwert gesagt: Eine Ansage, die gerade läuft, wird abgebrochen, sobald ein neuerer Wert kommt – du hörst also nie den Anfangs- und den Endwert, während alles dazwischen verschluckt wird. Der CW-Generator schweigt, solange die Ansage läuft (der gemeinsame Audioweg würde aus den Morsezeichen sonst Klicks machen), und setzt danach mit dem nächsten Element im neuen Tempo fort. Beginnst du während einer Ansage zu geben, bricht die Ansage sofort ab – was du gibst, hörst du also immer als Mithörton, auch wenn es an einen Sender geht. Das funktioniert in den Übungsmodi, auch bei der automatischen Geschwindigkeitsanpassung des Echo Trainers nach jedem Wort, und im QSO Bot, dessen Morsezeichen für die Ansage genauso pausieren.</li>
 <li>Nur M32 Pocket, Accessibility Edition: Immer wenn du einen Übungsmodus verlässt und wieder im Hauptmenü landest, sagt das Gerät, wie es der Batterie geht – <strong>high</strong>, <strong>medium</strong>, <strong>low</strong> oder <strong>charging</strong> (dazu <strong>on USB power</strong>, wenn keine Batterie eingelegt ist, und <strong>battery fault</strong> für den seltenen Fehlerzustand). Das ist gerade hier wichtig, weil auf diesem Gerät der Audio-Codec als Erstes aufgibt, wenn die Zelle schwach wird: Ein blinder Operator kann sonst mit einem funktionierenden Gerät zurückbleiben, das gar nichts mehr sagt – und diese Warnung kommt weit genug vor der Codec-Klippe, dass noch Zeit zum Anstecken bleibt. Die Meldung erklingt einmal pro Rückkehr aus dem Modus ins Menü, nicht wiederholt, während du im Menü navigierst.</li>
 <li>Wenn du die Einstellungen aus einem Modus heraus öffnest (Doppelklick), kommen jetzt zuerst die Einstellungen dieses Modus – im Echo Trainer seine Echo-Einstellungen vor denen für den Keyer, im QSO Bot <strong>QSO Difficulty</strong> und <strong>Contest Type</strong> – und danach die allgemeinen, die jeder Modus anbietet (Ton, Time-out, Anzeige, dekodierte Zeichen, serielle und Bluetooth-Ausgabe, Paddle-Polarität) – die Einstellungen, die du am ehesten suchst, stehen nicht mehr am Ende der Liste. Hast du die Einstellungen noch nicht benutzt, öffnet die Liste ganz oben.</li>
@@ -2813,6 +2815,11 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td>Nur im Modus <strong>Generic Kbd</strong> relevant (siehe <strong>Bluetooth Use</strong> bei den allgemeinen Einstellungen); nur im <strong>CW Keyer</strong> angeboten, dem einzigen Modus, der über Bluetooth tippt. Legt fest, wie das &lt;AR&gt;-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „<strong>+</strong>” oder als weicher Zeilenumbruch (Shift+Enter).</td>
 <td><strong>+</strong> / Linefeed</td>
 </tr>
+<tr>
+<td><span class="pocket"></span><strong>USB Output</strong></td>
+<td>Nur in einer Firmware mit USB Output; nur im <strong>CW Keyer</strong> angeboten. Was das USB-Kabel beim Tasten sendet: nichts zusätzlich, eine USB-Tastatur für vBand oder MIDI-Paddle-Noten; siehe <strong>Benutzung von USB Output: vBand und MIDI über das USB-Kabel</strong>.</td>
+<td>Off (charge) / VBand / <strong>MIDI</strong></td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.3.3" id="einstellungen-bezueglich-der-koch-zeichenfolge"><span class="header-section-number">6.3.3</span> Einstellungen bezüglich der Koch-Zeichenfolge</h3>
@@ -3416,7 +3423,78 @@ click = no</code></pre>
 <div class="note">
 <p>Buchstaben mit Umlauten oder Akzenten kann eine Tastatur nicht zuverlässig tippen (welches Zeichen eine Taste ergibt, hängt vom Tastaturlayout des Computers ab), daher tippt der Morserino sie ohne: ä, ö und ü als ae, oe und ue<span class="classic pocket">, und die Buchstaben der Einstellung <strong>Decoder Chars</strong> als å → aa, æ → ae, ø → oe, à → a, é und è → e, ç → c, ñ → n</span>.</p>
 </div>
-<h2 data-number="7.10" id="gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.10</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
+<section id="benutzung-von-usb-output-vband-und-midi-ueber-das-usb-kabel" class="pocket" data-number="7.10">
+<h2 data-number="7.10"><span class="header-section-number">7.10</span> Benutzung von USB Output: vBand und MIDI über das USB-Kabel</h2>
+<p>Im Modus CW Keyer kann der M32 Pocket deine Tastung auch <strong>über das USB-Kabel</strong> an einen Computer senden, ganz ohne Bluetooth. Dazu braucht es eine Firmware mit USB Output (die PlatformIO-Umgebungen <code>pocketwroom-usbio</code> und <code>pocketwroom-lora-usbio</code>). Die Einstellung <strong>USB Output</strong> bei den Einstellungen des CW Keyers wählt eine von drei Möglichkeiten:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>USB Output</th>
+<th>Was der Computer sieht</th>
+<th>Wofür</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Off (charge)</strong></td>
+<td>Nichts zusätzlich. Das Kabel lädt den Morserino und führt wie gewohnt die serielle Schnittstelle</td>
+<td>Zum Laden, oder wenn keine der anderen Möglichkeiten gebraucht wird</td>
+</tr>
+<tr>
+<td><strong>VBand</strong></td>
+<td>Eine USB-Tastatur. Solange der Morserino tastet, ist die linke Strg-Taste (Left Ctrl) gedrückt</td>
+<td><strong>vBand</strong> (<em>https://hamradio.solutions/vband/</em>); dort den Eingang für die Handtaste (Straight Key) wählen</td>
+</tr>
+<tr>
+<td><strong>MIDI</strong></td>
+<td>Ein USB-MIDI-Gerät, Kanal 1: Note 20 = Punkt-Paddle, Note 21 = Strich-Paddle</td>
+<td>Programme, die MIDI-CW-Paddles annehmen und für das <strong>CTR2-MIDI</strong>-Interface von Lynovation gebaut sind; zum Beispiel <strong>SmartSDR für macOS</strong> von DL8MRE mit einem FlexRadio</td>
+</tr>
+</tbody>
+</table>
+<p>Am Computer erscheint der Morserino als <strong>„Morserino-32 Pocket (USB kbd+MIDI)“</strong>. Die serielle Schnittstelle bleibt in jedem Fall über dasselbe Kabel verfügbar, das serielle M32-Protokoll, der File Manager und das M32 Config Tool funktionieren also weiter.</p>
+<div class="note">
+<p>USB Output ist, wie die Bluetooth-Tastatur, nur im Modus CW Keyer aktiv. Alles, was der CW Keyer tastet, geht hinaus: die Paddles, eine Handtaste und die Keyer-Speicher. Es hängt nicht von <strong>Key ext TX</strong> ab, das nur den Senderanschluss betrifft. Verlässt du den CW Keyer, wird eine noch gedrückte Taste oder Note losgelassen.</p>
+</div>
+<p><strong>VBand.</strong> Der Keyer des Morserinos formt die Punkte und Striche selbst und hält während jedes Elements die linke Strg-Taste gedrückt, was vBand als Handtaste liest. Das leistet dasselbe wie <strong>Bluetooth Use → VBand Kbd</strong>, aber über das Kabel: nichts zu koppeln, keine Funkverzögerung, und der Akku wird dabei geladen. Damit vBand nicht jedes Element doppelt bekommt, startet die Bluetooth-Tastatur nicht, solange <strong>USB Output</strong> auf <strong>VBand</strong> steht, egal was bei <strong>Bluetooth Use</strong> eingestellt ist.</p>
+<p><strong>MIDI.</strong> Der Morserino sendet, was ein CTR2-MIDI sendet; Software, die schon dafür eingerichtet ist, funktioniert also ohne Umstellung:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tastung</th>
+<th>MIDI-Nachricht (Kanal 1)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Punkt-Paddle</td>
+<td>Note <strong>20</strong> an / aus</td>
+</tr>
+<tr>
+<td>Strich-Paddle</td>
+<td>Note <strong>21</strong> an / aus</td>
+</tr>
+<tr>
+<td>Handtaste (<strong>Keyer Mode</strong> auf <strong>Straight Key</strong>)</td>
+<td>Note <strong>30</strong> an / aus; die Noten 20 und 21 werden dann nicht gesendet</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Paddle Polarity</strong> wird zuerst angewendet, Note 20 ist also immer dein Punkt-Paddle. Ein Keyer-Speicher geht so hinaus, wie ein Mensch ihn geben würde: in den Paddle-Modi tippt er die Paddles an (jeder Punkt ein kurzer Druck auf Note 20, jeder Strich einer auf Note 21), im Modus Straight Key betätigt er die Taste (Note 30). In den Paddle-Modi formt der Keyer des Programms die gesendete CW, darum <strong>stelle den Morserino und das Programm auf dieselbe Geschwindigkeit und denselben Keyer-Modus</strong>; sonst ist der Mithörton des Morserinos nicht das, was gesendet wird, und Speicher können verstümmelt herauskommen.</p>
+<div class="note">
+<p>Eine Firmware mit USB Output verwendet den vollständigen USB-Controller des ESP32-S3 statt seiner festen seriellen Schnittstelle. Ein Flash-Programm kann den Pocket deshalb nicht mehr immer selbst in den Download-Modus schalten. Startet das Flashen nicht, schalte den Pocket aus, halte <strong>FN</strong> gedrückt und schalte ihn ein (das Display bleibt dunkel), und flashe dann.</p>
+</div>
+</section>
+<h2 data-number="7.11" id="gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.11</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
 <p>Die Liste enthält Definitionen auf Englisch und Deutsch, getrennt durch einen Schrägstrich. Nicht alle Abkürzungen sind in allen Sprachen sehr gebräuchlich; im Englischen ungewöhnliche Abkürzungen stehen in eckigen Klammern [].</p>
 <p><strong>A</strong></p>
 <table>
@@ -4675,7 +4753,7 @@ click = no</code></pre>
 </tbody>
 </table>
 <hr />
-<h2 data-number="7.11" id="glossar"><span class="header-section-number">7.11</span> Glossar</h2>
+<h2 data-number="7.12" id="glossar"><span class="header-section-number">7.12</span> Glossar</h2>
 <table>
 <colgroup>
 <col style="width: 42%" />
@@ -4834,6 +4912,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=4e651322ed02 -->
+<!-- MANUALFRESH: lang=de src=916f0fefb86e -->
 </body>
 </html>

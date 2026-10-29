@@ -95,6 +95,9 @@ const char * prefName[] = {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 					  "bluetoothOut", "btARkey",
 #endif
+#ifdef CONFIG_USB_HOSTIO
+            "usbOut",
+#endif
 #ifdef CONFIG_TFT
             "theme",
 #endif
@@ -504,6 +507,16 @@ parameter MorsePreferences::pliste[] = {
     "Bluetooth A R character"
   },
 #endif
+#ifdef CONFIG_USB_HOSTIO
+  {
+    USB_OUT_MIDI, USB_OUT_OFF, USB_OUT_MIDI, 1,                 // see USB_OUT_* in morsedefs.h
+    "USB Output",
+    "CW Keyer: what the USB cable sends - nothing, vBand keyboard (Left Ctrl) or MIDI paddles (notes 20/21)",
+    true,
+    {"Off (charge)", "VBand", "MIDI"},
+    "USB output"
+  },
+#endif
 #ifdef CONFIG_TFT
   {
     0, 0, 8, 1,
@@ -785,6 +798,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #else
 #define INVORIENT
 #endif
+#ifdef CONFIG_USB_HOSTIO
+#define USBOUT posUsbOut,
+#else
+#define USBOUT
+#endif
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #define BLUEUSE posBluetoothOut,         // what the BLE radio is for (keyboard, MIDI, serial protocol): a general setting
 #define BLTAR posBluetoothARkey,         // how the keyboard types <AR>: only CW Keyer starts the BLE keyboard
@@ -819,7 +837,7 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
 #define PREFPOS_PADDLES posPolarity, posExtPddlPolarity,
 
   prefPos MorsePreferences::keyerOptions[] =     { posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posInterWordSpace, posLatency,
-                                                   BLTAR
+                                                   BLTAR USBOUT
                                                    PREFPOS_GENERAL PREFPOS_PADDLES
                                                  };
   prefPos MorsePreferences::generatorOptions[] = { posInterCharSpace, posInterWordSpace,
@@ -905,11 +923,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // user manual's section structure: General -> Key/Paddles/Keyer -> Koch
  // sequence -> CW Generation -> Echo Trainer -> Transmitting/Decoding/QSO
  // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
- // BLUEUSE, BLTAR, QSOBOT) are macro-expanded into their groups so the order
+ // BLUEUSE, BLTAR, USBOUT, QSOBOT) are macro-expanded into their groups so the order
  // stays stable across build configurations.
  prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, BLUEUSE posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR USBOUT
                                                    posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
@@ -2371,6 +2389,9 @@ boolean MorsePreferences::storedInSnapshot(prefPos pos) {
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
       case posBluetoothOut:
       case posBluetoothARkey:
+#endif
+#ifdef CONFIG_USB_HOSTIO
+      case posUsbOut:
 #endif
       // game / QSO Bot settings:
 #ifdef CONFIG_CW_GAME
