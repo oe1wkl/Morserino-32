@@ -437,3 +437,19 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    Idea for the open key-line timing checks of BENCH.md §3 (no logic analyser): the classic as Remote Rig with a
    `-D KIP_MEASURE=1` build reproduced the Pocket's key line within ~45 µs, so Remote WinKeyer can measure
    WinKeyer's element timing.
+7. **USB Output (PR #224, Ian VK1HF) — merged 2026-10-29** (1752a67): vBand keyboard and CTR2-MIDI paddles over
+   the Pocket's USB cable, opt-in envs `pocketwroom-usbio` / `pocketwroom-lora-usbio` only (TinyUSB,
+   `CONFIG_USB_HOSTIO`); not in the release images. MIDI and VBand bench-tested by Willi on a Pocket. **Still open:**
+   - SmartSDR (macOS) real-world test on one of Ian's Flex stations (he offered access).
+   - Protocol harness: its reboot (DTR/RTS pulse) puts a TinyUSB build into ROM download mode, which sticks
+     (`FORCE_DOWNLOAD_BOOT` in RTC_CNTL_OPTION1). Needs a TinyUSB-aware reboot or a skip. Recovery without flashing:
+     `esptool.py --port <port> --before no_reset --after hard_reset write_mem 0x6000812C 0 0x1`, or power-cycle.
+   - WinKeyer modes on the usbio builds: compile, not bench-tested over TinyUSB's CDC.
+   - Nits from the review: unused `generated` argument of `MorseUsbIO::keyed()`; the FN-recovery note in
+     `MorseUsbIO.h` should match the manual (switch off, hold FN, switch on).
+   - Worth measuring: D8's HWCDC withheld replies on a usbio build — TinyUSB CDC was one of the candidate cures.
+   - Before usbio could ever become the standard Pocket build: flashing may need FN at power-on, writes are dropped
+     until the host asserts DTR, esptool's DTR/RTS pattern enters download mode, the port name changes, and the a11y
+     edition would owe clips ("USB Output", "Off (charge)", "VBand", "MIDI").
+   - Successor to PR #189: BLE MIDI redone on master as **Bluetooth Use** value 6 with the same note mapping
+     (see the PR #189 notes in Claude's memory: keyer-driven note 30 by default over BLE).
