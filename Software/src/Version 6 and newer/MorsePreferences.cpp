@@ -923,11 +923,11 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // user manual's section structure: General -> Key/Paddles/Keyer -> Koch
  // sequence -> CW Generation -> Echo Trainer -> Transmitting/Decoding/QSO
  // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
- // BLUEUSE, BLTAR, QSOBOT) are macro-expanded into their groups so the order
+ // BLUEUSE, BLTAR, USBOUT, QSOBOT) are macro-expanded into their groups so the order
  // stays stable across build configurations.
  prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, BLUEUSE posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR USBOUT
                                                    posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,
