@@ -38,13 +38,12 @@ static uint16_t midiDescriptor(uint8_t *dst, uint8_t *itf) {
 }
 
 // Registered from a static initialiser, like the core's own classes, so it is in place before
-// USB.begin() builds the configuration descriptor.
-static bool midiRegistered = []() {
-    // The core starts USB in app_main(), before setup() - so the name has to be set here too.
-    USB.manufacturerName("Morserino-32");
-    USB.productName("Morserino-32 Pocket (USB kbd+MIDI)");
-    return tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN, midiDescriptor) == ESP_OK;
-}();
+// USB.begin() builds the configuration descriptor. (The names the computer shows come from the
+// USB_MANUFACTURER / USB_PRODUCT build flags. Setting them from a static initialiser is unreliable: the
+// order of static construction across files is unspecified, so the core's USB object may be built after
+// it and put its defaults back.)
+static bool midiRegistered =
+    tinyusb_enable_interface(USB_INTERFACE_MIDI, TUD_MIDI_DESC_LEN, midiDescriptor) == ESP_OK;
 
 static void midiNote(uint8_t note, bool on) {
     if (!midiRegistered || !tud_midi_mounted())
