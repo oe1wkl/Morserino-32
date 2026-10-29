@@ -103,7 +103,9 @@ void packetReceived() {
 
 #ifdef CONFIG_BLUETOOTH_KEYBOARD
 #include "MorseBluetooth.h"
-#include "MorseUsbIO.h"          // USB keyboard (vBand) + USB MIDI (CONFIG_USB_HOSTIO; no-op otherwise)
+#endif
+#ifdef CONFIG_USB_HOSTIO
+#include "MorseUsbIO.h"          // USB keyboard (vBand) + USB MIDI over the cable
 #endif
 using namespace Buttons;
 
@@ -584,15 +586,19 @@ void setup()
    //// 7. check for press of key/paddle at start, to initiate hw config
    //// 8. do the remaining initialisations
 
-#if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
+#if ARDUINO_USB_CDC_ON_BOOT
+#if ARDUINO_USB_MODE
   // The Pocket's native USB (HWCDC, core 2.0.17) stopped about one protocol reply in 50-150 halfway - the
   // first part sent, the rest only when the host sent its next command (seen with 263-313-byte replies;
   // 9.0.1 too). Its default 256-byte TX ring is smaller than such a reply; with 1 KB the rate fell to about
   // 1 in 900 (2026-10-05; 4 KB was no better). The remaining cases are a driver race - see devdocs/TODO.md.
-  Serial.setTxBufferSize(1024);
+  Serial.setTxBufferSize(1024);       // HWCDC only: TinyUSB's USBCDC (usbio builds) has a fixed TX FIFO
+#endif
   // And its 256-byte RX queue drops bytes when full (the ISR gives up on the rest of a 64-byte packet) - a
   // command longer than ~256 bytes, sent in one go, lost pieces before loop() got to read it, newline
   // included, so lines merged. 2 KB holds any line up to twice USB_LINE_MAX: executed or refused whole.
+  // TinyUSB's USBCDC (usbio builds) has the same 256-byte default; the core has already started it in
+  // app_main() there, and resizing afterwards keeps whatever is queued.
   Serial.setRxBufferSize(2048);
 #endif
 #ifdef CONFIG_USB_HOSTIO
@@ -1439,9 +1445,9 @@ if (morseState == morseKeyer &&
     MorseBluetooth::initializeBluetooth();
 }
 MorseBluetooth::tick();                           // no-op unless the keyboard runs
+#endif
 #ifdef CONFIG_USB_HOSTIO
 MorseUsbIO::tick(morseState == morseKeyer);       // releases USB Ctrl / MIDI notes outside CW Keyer
-#endif
 #endif
 /// if we have time check for serial input and for button presses
 
