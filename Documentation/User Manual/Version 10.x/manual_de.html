@@ -170,8 +170,9 @@ aus dem englischsprachigen Original übersetzt.</p>
 <li><a href="#das-m32-serielle-protokoll-ueber-bluetooth-nutzen-ble-serial" id="toc-das-m32-serielle-protokoll-ueber-bluetooth-nutzen-ble-serial"><span class="toc-section-number">7.8.1</span> Das M32-Serielle-Protokoll über Bluetooth nutzen (BLE Serial)</a></li>
 </ul></li>
 <li><a href="#benutzung-der-bluetooth-tastatur-funktion" id="toc-benutzung-der-bluetooth-tastatur-funktion"><span class="toc-section-number">7.9</span> Benutzung der Bluetooth-Tastatur-Funktion</a></li>
-<li><a href="#gaengige-cw-abkuerzungen-verwendet-vom-morserino-32" id="toc-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="toc-section-number">7.10</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</a></li>
-<li><a href="#glossar" id="toc-glossar"><span class="toc-section-number">7.11</span> Glossar</a></li>
+<li><a href="#benutzung-von-usb-output-vband-und-midi-ueber-das-usb-kabel" id="toc-benutzung-von-usb-output-vband-und-midi-ueber-das-usb-kabel"><span class="toc-section-number">7.10</span> Benutzung von USB Output: vBand und MIDI über das USB-Kabel</a></li>
+<li><a href="#gaengige-cw-abkuerzungen-verwendet-vom-morserino-32" id="toc-gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="toc-section-number">7.11</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</a></li>
+<li><a href="#glossar" id="toc-glossar"><span class="toc-section-number">7.12</span> Glossar</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -2813,6 +2814,11 @@ aus dem englischsprachigen Original übersetzt.</p>
 <td>Nur im Modus <strong>Generic Kbd</strong> relevant (siehe <strong>Bluetooth Use</strong> bei den allgemeinen Einstellungen); nur im <strong>CW Keyer</strong> angeboten, dem einzigen Modus, der über Bluetooth tippt. Legt fest, wie das &lt;AR&gt;-Betriebszeichen über Bluetooth gesendet wird: als wörtliches Zeichen „<strong>+</strong>” oder als weicher Zeilenumbruch (Shift+Enter).</td>
 <td><strong>+</strong> / Linefeed</td>
 </tr>
+<tr>
+<td><span class="pocket"></span><strong>USB Output</strong></td>
+<td>Nur in einer Firmware mit USB Output; nur im <strong>CW Keyer</strong> angeboten. Was das USB-Kabel beim Tasten sendet: nichts zusätzlich, eine USB-Tastatur für vBand oder MIDI-Paddle-Noten; siehe <strong>Benutzung von USB Output: vBand und MIDI über das USB-Kabel</strong>.</td>
+<td>Off (charge) / VBand / <strong>MIDI</strong></td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.3.3" id="einstellungen-bezueglich-der-koch-zeichenfolge"><span class="header-section-number">6.3.3</span> Einstellungen bezüglich der Koch-Zeichenfolge</h3>
@@ -3416,7 +3422,78 @@ click = no</code></pre>
 <div class="note">
 <p>Buchstaben mit Umlauten oder Akzenten kann eine Tastatur nicht zuverlässig tippen (welches Zeichen eine Taste ergibt, hängt vom Tastaturlayout des Computers ab), daher tippt der Morserino sie ohne: ä, ö und ü als ae, oe und ue<span class="classic pocket">, und die Buchstaben der Einstellung <strong>Decoder Chars</strong> als å → aa, æ → ae, ø → oe, à → a, é und è → e, ç → c, ñ → n</span>.</p>
 </div>
-<h2 data-number="7.10" id="gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.10</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
+<section id="benutzung-von-usb-output-vband-und-midi-ueber-das-usb-kabel" class="pocket" data-number="7.10">
+<h2 data-number="7.10"><span class="header-section-number">7.10</span> Benutzung von USB Output: vBand und MIDI über das USB-Kabel</h2>
+<p>Im Modus CW Keyer kann der M32 Pocket deine Tastung auch <strong>über das USB-Kabel</strong> an einen Computer senden, ganz ohne Bluetooth. Dazu braucht es eine Firmware mit USB Output (die PlatformIO-Umgebungen <code>pocketwroom-usbio</code> und <code>pocketwroom-lora-usbio</code>). Die Einstellung <strong>USB Output</strong> bei den Einstellungen des CW Keyers wählt eine von drei Möglichkeiten:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>USB Output</th>
+<th>Was der Computer sieht</th>
+<th>Wofür</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Off (charge)</strong></td>
+<td>Nichts zusätzlich. Das Kabel lädt den Morserino und führt wie gewohnt die serielle Schnittstelle</td>
+<td>Zum Laden, oder wenn keine der anderen Möglichkeiten gebraucht wird</td>
+</tr>
+<tr>
+<td><strong>VBand</strong></td>
+<td>Eine USB-Tastatur. Solange der Morserino tastet, ist die linke Strg-Taste (Left Ctrl) gedrückt</td>
+<td><strong>vBand</strong> (<em>https://hamradio.solutions/vband/</em>); dort den Eingang für die Handtaste (Straight Key) wählen</td>
+</tr>
+<tr>
+<td><strong>MIDI</strong></td>
+<td>Ein USB-MIDI-Gerät, Kanal 1: Note 20 = Punkt-Paddle, Note 21 = Strich-Paddle</td>
+<td>Programme, die MIDI-CW-Paddles annehmen und für das <strong>CTR2-MIDI</strong>-Interface von Lynovation gebaut sind; zum Beispiel <strong>SmartSDR für macOS</strong> von DL8MRE mit einem FlexRadio</td>
+</tr>
+</tbody>
+</table>
+<p>Am Computer erscheint der Morserino als <strong>„Morserino-32 Pocket (USB kbd+MIDI)“</strong>. Die serielle Schnittstelle bleibt in jedem Fall über dasselbe Kabel verfügbar, das serielle M32-Protokoll, der File Manager und das M32 Config Tool funktionieren also weiter.</p>
+<div class="note">
+<p>USB Output ist, wie die Bluetooth-Tastatur, nur im Modus CW Keyer aktiv. Alles, was der CW Keyer tastet, geht hinaus: die Paddles, eine Handtaste und die Keyer-Speicher. Es hängt nicht von <strong>Key ext TX</strong> ab, das nur den Senderanschluss betrifft. Verlässt du den CW Keyer, wird eine noch gedrückte Taste oder Note losgelassen.</p>
+</div>
+<p><strong>VBand.</strong> Der Keyer des Morserinos formt die Punkte und Striche selbst und hält während jedes Elements die linke Strg-Taste gedrückt, was vBand als Handtaste liest. Das leistet dasselbe wie <strong>Bluetooth Use → VBand Kbd</strong>, aber über das Kabel: nichts zu koppeln, keine Funkverzögerung, und der Akku wird dabei geladen. Damit vBand nicht jedes Element doppelt bekommt, startet die Bluetooth-Tastatur nicht, solange <strong>USB Output</strong> auf <strong>VBand</strong> steht, egal was bei <strong>Bluetooth Use</strong> eingestellt ist.</p>
+<p><strong>MIDI.</strong> Der Morserino sendet, was ein CTR2-MIDI sendet; Software, die schon dafür eingerichtet ist, funktioniert also ohne Umstellung:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Tastung</th>
+<th>MIDI-Nachricht (Kanal 1)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Punkt-Paddle</td>
+<td>Note <strong>20</strong> an / aus</td>
+</tr>
+<tr>
+<td>Strich-Paddle</td>
+<td>Note <strong>21</strong> an / aus</td>
+</tr>
+<tr>
+<td>Handtaste (<strong>Keyer Mode</strong> auf <strong>Straight Key</strong>)</td>
+<td>Note <strong>30</strong> an / aus; die Noten 20 und 21 werden dann nicht gesendet</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Paddle Polarity</strong> wird zuerst angewendet, Note 20 ist also immer dein Punkt-Paddle. Ein Keyer-Speicher geht so hinaus, wie ein Mensch ihn geben würde: in den Paddle-Modi tippt er die Paddles an (jeder Punkt ein kurzer Druck auf Note 20, jeder Strich einer auf Note 21), im Modus Straight Key betätigt er die Taste (Note 30). In den Paddle-Modi formt der Keyer des Programms die gesendete CW, darum <strong>stelle den Morserino und das Programm auf dieselbe Geschwindigkeit und denselben Keyer-Modus</strong>; sonst ist der Mithörton des Morserinos nicht das, was gesendet wird, und Speicher können verstümmelt herauskommen.</p>
+<div class="note">
+<p>Eine Firmware mit USB Output verwendet den vollständigen USB-Controller des ESP32-S3 statt seiner festen seriellen Schnittstelle. Ein Flash-Programm kann den Pocket deshalb nicht mehr immer selbst in den Download-Modus schalten. Startet das Flashen nicht, schalte den Pocket aus, halte <strong>FN</strong> gedrückt und schalte ihn ein (das Display bleibt dunkel), und flashe dann.</p>
+</div>
+</section>
+<h2 data-number="7.11" id="gaengige-cw-abkuerzungen-verwendet-vom-morserino-32"><span class="header-section-number">7.11</span> Gängige CW-Abkürzungen, verwendet vom Morserino-32</h2>
 <p>Die Liste enthält Definitionen auf Englisch und Deutsch, getrennt durch einen Schrägstrich. Nicht alle Abkürzungen sind in allen Sprachen sehr gebräuchlich; im Englischen ungewöhnliche Abkürzungen stehen in eckigen Klammern [].</p>
 <p><strong>A</strong></p>
 <table>
@@ -4675,7 +4752,7 @@ click = no</code></pre>
 </tbody>
 </table>
 <hr />
-<h2 data-number="7.11" id="glossar"><span class="header-section-number">7.11</span> Glossar</h2>
+<h2 data-number="7.12" id="glossar"><span class="header-section-number">7.12</span> Glossar</h2>
 <table>
 <colgroup>
 <col style="width: 42%" />
@@ -4834,6 +4911,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=4e651322ed02 -->
+<!-- MANUALFRESH: lang=de src=62ac4b5924c0 -->
 </body>
 </html>

@@ -168,8 +168,9 @@ The font family used is Lato.</p>
 <li><a href="#using-the-m32-serial-protocol-over-bluetooth-ble-serial" id="toc-using-the-m32-serial-protocol-over-bluetooth-ble-serial"><span class="toc-section-number">7.8.1</span> Using the M32 Serial Protocol over Bluetooth (BLE Serial)</a></li>
 </ul></li>
 <li><a href="#using-the-bluetooth-keyboard-functionality" id="toc-using-the-bluetooth-keyboard-functionality"><span class="toc-section-number">7.9</span> Using the Bluetooth Keyboard functionality</a></li>
-<li><a href="#list-of-common-cw-abbreviations-used-by-morserino-32" id="toc-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="toc-section-number">7.10</span> List of common CW abbreviations used by Morserino-32</a></li>
-<li><a href="#glossary" id="toc-glossary"><span class="toc-section-number">7.11</span> Glossary</a></li>
+<li><a href="#using-usb-output-vband-and-midi-over-the-usb-cable" id="toc-using-usb-output-vband-and-midi-over-the-usb-cable"><span class="toc-section-number">7.10</span> Using USB Output: vBand and MIDI over the USB cable</a></li>
+<li><a href="#list-of-common-cw-abbreviations-used-by-morserino-32" id="toc-list-of-common-cw-abbreviations-used-by-morserino-32"><span class="toc-section-number">7.11</span> List of common CW abbreviations used by Morserino-32</a></li>
+<li><a href="#glossary" id="toc-glossary"><span class="toc-section-number">7.12</span> Glossary</a></li>
 </ul></li>
 </ul>
 </nav>
@@ -2823,6 +2824,11 @@ The font family used is Lato.</p>
 <td>Only relevant in <strong>Generic Kbd</strong> mode (see <strong>Bluetooth Use</strong> in the general preferences); offered in <strong>CW Keyer</strong> only, the one mode that types over Bluetooth. Determines how the &lt;AR&gt; prosign is sent over Bluetooth: as the literal character “<strong>+</strong>” or as a soft line break (Shift+Enter).</td>
 <td><strong>+</strong> / Linefeed</td>
 </tr>
+<tr>
+<td><span class="pocket"></span>USB Output</td>
+<td>Only in a firmware build with USB Output; offered in <strong>CW Keyer</strong> only. What the USB cable sends while you key: nothing extra, a USB keyboard for vBand, or MIDI paddle notes; see <strong>Using USB Output: vBand and MIDI over the USB cable</strong>.</td>
+<td>Off (charge) / VBand / <strong>MIDI</strong></td>
+</tr>
 </tbody>
 </table>
 <h3 data-number="6.3.3" id="preferences-regarding-koch-character-sequence"><span class="header-section-number">6.3.3</span> Preferences regarding Koch Character Sequence</h3>
@@ -3427,7 +3433,78 @@ click = no</code></pre>
 <div class="note">
 <p>Letters with umlauts or accents cannot be typed reliably by a keyboard (what a key types depends on the computer’s keyboard layout), so the Morserino types them without: ä, ö and ü as ae, oe and ue<span class="classic pocket">, and the letters of the <strong>Decoder Chars</strong> preference as å → aa, æ → ae, ø → oe, à → a, é and è → e, ç → c, ñ → n</span>.</p>
 </div>
-<h2 data-number="7.10" id="list-of-common-cw-abbreviations-used-by-morserino-32"><span class="header-section-number">7.10</span> List of common CW abbreviations used by Morserino-32</h2>
+<section id="using-usb-output-vband-and-midi-over-the-usb-cable" class="pocket" data-number="7.10">
+<h2 data-number="7.10"><span class="header-section-number">7.10</span> Using USB Output: vBand and MIDI over the USB cable</h2>
+<p>In “CW Keyer” mode, the M32 Pocket can also send your keying to a computer <strong>over its USB cable</strong>, without Bluetooth. This needs a firmware build with USB Output (the PlatformIO environments <code>pocketwroom-usbio</code> and <code>pocketwroom-lora-usbio</code>). The preference <strong>USB Output</strong> in the CW Keyer preferences chooses one of three things:</p>
+<table>
+<colgroup>
+<col style="width: 33%" />
+<col style="width: 33%" />
+<col style="width: 33%" />
+</colgroup>
+<thead>
+<tr>
+<th>USB Output</th>
+<th>What the computer sees</th>
+<th>Made for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Off (charge)</strong></td>
+<td>Nothing extra. The cable charges the Morserino and carries the serial port, as usual</td>
+<td>Charging, or when neither of the others is wanted</td>
+</tr>
+<tr>
+<td><strong>VBand</strong></td>
+<td>A USB keyboard. Left Ctrl is held down while the Morserino keys</td>
+<td><strong>vBand</strong> (<em>https://hamradio.solutions/vband/</em>), with the straight-key input selected there</td>
+</tr>
+<tr>
+<td><strong>MIDI</strong></td>
+<td>A USB MIDI device, channel 1: note 20 = dit paddle, note 21 = dah paddle</td>
+<td>Programs that take MIDI CW paddles, built around the <strong>CTR2-MIDI</strong> interface by Lynovation; for example <strong>SmartSDR for macOS</strong> by DL8MRE with a FlexRadio</td>
+</tr>
+</tbody>
+</table>
+<p>On the computer, the Morserino appears as <strong>“Morserino-32 Pocket (USB kbd+MIDI)”</strong>. The serial port stays available on the same cable whatever you choose, so the M32 serial protocol, the File Manager and the M32 Config Tool keep working.</p>
+<div class="note">
+<p>USB Output is only active in CW Keyer mode, like the Bluetooth keyboard. Everything CW Keyer keys goes out: the paddles, a straight key and the keyer memories. It does not depend on <strong>Key ext TX</strong>, which only concerns the transmitter connector. When you leave CW Keyer, any key or note still held down is released.</p>
+</div>
+<p><strong>VBand.</strong> The Morserino’s own keyer forms the dits and dahs, and holds Left Ctrl down while each one sounds, which vBand reads as a straight key. This does the same job as <strong>Bluetooth Use → VBand Kbd</strong>, but over the cable: nothing to pair, no radio delay, and the battery charges meanwhile. So that vBand never receives every element twice, the Bluetooth keyboard does not start while <strong>USB Output</strong> is set to <strong>VBand</strong>, whatever <strong>Bluetooth Use</strong> says.</p>
+<p><strong>MIDI.</strong> The Morserino sends what a CTR2-MIDI sends, so software already set up for one works without remapping:</p>
+<table>
+<colgroup>
+<col style="width: 50%" />
+<col style="width: 50%" />
+</colgroup>
+<thead>
+<tr>
+<th>Keying</th>
+<th>MIDI message (channel 1)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dit paddle</td>
+<td>Note <strong>20</strong> on / off</td>
+</tr>
+<tr>
+<td>Dah paddle</td>
+<td>Note <strong>21</strong> on / off</td>
+</tr>
+<tr>
+<td>Straight key (<strong>Keyer Mode</strong> set to <strong>Straight Key</strong>)</td>
+<td>Note <strong>30</strong> on / off; notes 20 and 21 are not sent</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Paddle Polarity</strong> is applied first, so note 20 is always your dit paddle. A keyer memory goes out the way a person would send it: in the paddle modes it taps the paddles (each dit a short press of note 20, each dah one of note 21), and in Straight Key mode it works the key (note 30). In the paddle modes the program’s own keyer forms the CW that is transmitted, so <strong>set the Morserino and the program to the same speed and keyer mode</strong>; otherwise the Morserino’s side tone is not what goes on the air, and memories can come out garbled.</p>
+<div class="note">
+<p>A build with USB Output uses the ESP32-S3’s full USB controller instead of its fixed serial port, so a flashing tool can no longer always switch the Pocket into download mode by itself. If flashing does not start, switch the Pocket off, hold <strong>FN</strong> and switch it on (the screen stays dark), then flash.</p>
+</div>
+</section>
+<h2 data-number="7.11" id="list-of-common-cw-abbreviations-used-by-morserino-32"><span class="header-section-number">7.11</span> List of common CW abbreviations used by Morserino-32</h2>
 <p>The list contains definitions in English and German, separated by a slash. Not all abbreviations are very common in all languages; abbreviations uncommon in English are in square brackets [].</p>
 <p><strong>A</strong></p>
 <table>
@@ -4685,7 +4762,7 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<h2 data-number="7.11" id="glossary"><span class="header-section-number">7.11</span> Glossary</h2>
+<h2 data-number="7.12" id="glossary"><span class="header-section-number">7.12</span> Glossary</h2>
 <table>
 <colgroup>
 <col style="width: 33%" />
@@ -4844,6 +4921,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=a12738109764 -->
+<!-- MANUALFRESH: lang=en src=b40da78974d4 -->
 </body>
 </html>
