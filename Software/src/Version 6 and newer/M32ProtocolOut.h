@@ -61,6 +61,10 @@ class M32Tee : public Print {
                                           // from anywhere but the command path
     M32Target target = M32Target::All;    // transient — set it only through M32TargetScope
     using Print::write;
+#if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT
+  private:
+    void endUsbTransfer();                // HWCDC: zero-length packet after flush() (flushReply)
+#endif
 };
 
 extern M32Tee m32out;

@@ -17,6 +17,10 @@
 #ifdef CONFIG_BLE_SERIAL
 #include "MorseBleSerial.h"     // confined to the .cpp — keeps MorseJSON.cpp free of a header cycle
 #endif
+#if ARDUINO_USB_MODE && ARDUINO_USB_CDC_ON_BOOT   // Serial is HWCDC (not TinyUSB's USBCDC, not a UART)
+#include "hal/usb_serial_jtag_ll.h"
+#define M32_HWCDC_ZLP 1
+#endif
 
 M32Tee m32out;
 
@@ -72,9 +76,43 @@ size_t M32Tee::write(const uint8_t *buffer, size_t size) {
 // per keyed character would put an up-to-100 ms wait (HWCDC's tx_timeout_ms)
 // into the keying path if a host ever stopped reading. On a UART build this is
 // a couple of milliseconds and harmless either way.
+//
+// flush() alone is not enough (found 2026-10-30, Software/tests/protocol/usb64_probe.py):
+// HWCDC's ISR sends the ring in packets of up to 64 bytes and never follows a final
+// full packet with a zero-length packet. To the host a full packet means "more to
+// come", so a reply ending exactly on 64·k bytes stayed in its USB driver until the
+// next traffic - every 64-byte reply did, and longer replies did when the ISR's
+// chunking happened to end on a full packet (the "~1 in 900" of TODO D8).
+// endUsbTransfer() sends the missing ZLP.
 void M32Tee::flushReply() {
 	Serial.flush();                        // BLE paces itself in MorseBleSerial; nothing to do there
+#ifdef M32_HWCDC_ZLP
+	endUsbTransfer();
+#endif
 }
+
+#ifdef M32_HWCDC_ZLP
+// Close the USB transfer after flush() has emptied the ring: wait for the host to
+// collect the ISR's last packet from the endpoint FIFO, then flush the FIFO while it
+// is empty - the USB-Serial/JTAG hardware sends that as a zero-length packet (ESP-IDF's
+// own usb_serial_jtag driver ends every burst this way). Sent after every reply, not
+// only after a full one: a ZLP after a short packet is an empty read the host drivers
+// ignore, and HWCDC::write() itself flushes the empty FIFO on every call to wake its ISR.
+// The wait is one USB frame (1 ms) normally, bounded so a host that stopped reading
+// costs at most 10 ms. If another writer's packet slips in between the check and the
+// flush, wr_done on a FIFO that is still waiting is a no-op (write() does the same).
+void M32Tee::endUsbTransfer() {
+	if (!HWCDC::isPlugged())
+		return;
+	uint32_t start = micros();
+	while (!usb_serial_jtag_ll_txfifo_writable()) {   // last packet still waiting for the host
+		if (micros() - start > 10000)
+			return;
+		delayMicroseconds(50);
+	}
+	usb_serial_jtag_ll_txfifo_flush();                // empty FIFO + wr_done = zero-length packet
+}
+#endif
 
 void M32Tee::echo(const String& s) {
 #ifdef CONFIG_WINKEYER
