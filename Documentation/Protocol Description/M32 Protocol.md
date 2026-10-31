@@ -1,10 +1,32 @@
 # The M32 Serial Protocol
 
-	Date: September 14, 2026
-	Version: 1.5
+	Date: October 30, 2026
+	Version: 1.6
 	Authors: Willi, OE1WKL, and Christof, OE6CHD
 
 The Morserino can communicate two-way with a connected computer — over the USB bus, and (with firmware that includes the "BLE Serial" feature, and the **Bluetooth Use** preference set to **BLE Serial**) over Bluetooth Low Energy; see the section "Transports" below. Apart from keyed or generated characters (this had been implemented already previously) the Morserino can send information about user actions (selecting menus, configuring preferences etc), or about current settings etc to the computer, and the computer can send various commands to the Morserino (which enables full control over parameters and menus).
+
+	Changes in protocol version 1.6 from version 1.5 (every build;
+	advertised as "trainer-events" in GET capabilities):
+
+	New unsolicited objects (see "Events for practice programs"):
+
+	{"cw":{"event":"done","reason":"end"|"stopped"}} — the text a program
+	    sent with PUT cw/play, cw/repeat or cw/recall has finished sounding
+	    (at the end of its last element), or was stopped
+	{"trainer":{"event":"result",...}} — one per word the Echo Trainer
+	    evaluates: prompt, answer, verdict, and device-measured timing
+
+	Changed:
+
+	A paddle touch that stops cw/play no longer sends an unrequested
+	    {"ok":...}; the program now learns of it from the "done" event.
+	A PUT cw/play sent while a cw/repeat is still sounding now plays once;
+	    before, it inherited the repeat and never ended.
+	Leaving the CW Keyer while a text is playing stops it; before, the rest
+	    was played the next time a keyer mode started.
+	"Interchar Spc" and "InterWord Spc" set with PUT config apply at once;
+	    before, only from the next speed change or mode start.
 
 	Changes in protocol version 1.5 from version 1.4 (firmware with remote
 	keying only; advertised as "kip" in GET capabilities):
@@ -262,7 +284,7 @@ Once consent has been given, a client reconnecting within **60 seconds** is admi
 
 ## Versioning and Compatibility
 
-The protocol version is reported in the `device` object as the `protocol` property (currently "1.4"). Changes within a major version are **additive**: new GET/PUT commands and new properties may be added, but existing ones keep their meaning. A connected program should therefore **ignore any object or property it does not recognise**, and treat an unknown command (one that returns an "UNKNOWN COMMAND" or "NOT YET IMPLEMENTED" error) as "not supported by this firmware".
+The protocol version is reported in the `device` object as the `protocol` property (currently "1.6"). Changes within a major version are **additive**: new GET/PUT commands and new properties may be added, but existing ones keep their meaning. A connected program should therefore **ignore any object or property it does not recognise**, and treat an unknown command (one that returns an "UNKNOWN COMMAND" or "NOT YET IMPLEMENTED" error) as "not supported by this firmware".
 
 To identify the firmware it is talking to, a program uses the `device` object: `firmware` (the firmware version), `protocol` (the protocol version), `build` (the firmware compile date), and `edition` (which firmware edition is running).
 
@@ -349,6 +371,59 @@ Example:
 	{"message":{"content":"Generator Start / Stop press Paddle  "}}
 
 
+## Events for practice programs
+
+*(protocol version 1.6 — check for `trainer-events` in `GET capabilities`)*
+
+Two unsolicited objects let a program on the computer run a practice session with the Morserino sounding the Morse code: it can tell exactly when a text it sent has finished, and it can follow the Echo Trainer word by word. Both are always on — like every other object, a program that does not know them ignores them — and both are sent the moment they happen (the Morserino pushes them out of its USB buffer at once, so their arrival time can be used as a measurement). They go to every handshaken transport, like the other unsolicited objects.
+
+### "cw" — "done"
+
+Sent once for every `PUT cw/play`, `PUT cw/repeat` and `PUT cw/recall` that was answered with "ok":
+
+* "event" (type String): "done".
+* "reason" (type String): "end" when the text has been played to its end; "stopped" when it was cut short — by `PUT cw/stop`, by touching a paddle, by playing a keyer memory on the Morserino itself, or by leaving the CW Keyer (`PUT menu/stop` or a long press).
+
+Example:
+
+	{"cw":{"event":"done","reason":"end"}}
+
+When it is sent:
+
+* **"end" comes at the end of the text's last dit or dah** — not after the word space that follows it — so a program can start a stopwatch on it without a bias of a word space (about half a second at 18 WpM). A pause (`\p`) at the very end of the text is not waited for. A text with nothing playable in it gets its "end" at once.
+* After `PUT cw/stop`, the command's "ok" comes first, then the "done" with "stopped". `PUT cw/stop` with nothing playing is answered "ok" and sends no "done".
+* `PUT cw/repeat`, and `PUT cw/recall` of memory 1 or 2, repeat until stopped, so only "stopped" ever ends them.
+* A `PUT cw/play` (or `repeat`, `recall`) sent while an earlier one is still playing replaces the rest of it, and only one "done" follows — for the new text. Wait for "done" before sending the next text if you need one "done" per text.
+* After the last element the Morserino still keeps a word space, so consecutive texts are a word apart, as they should be in CW. A `PUT cw/play` sent within that word space after "done" starts sounding when it has passed. So time a text from the end of that word space, not from its "ok".
+* Keyer memories that the operator plays on the Morserino itself send no "done": the event belongs to a program's own texts.
+
+### "trainer" — "result"
+
+Sent once for each word the **Echo Trainer** evaluates — the words it shows "OK" or "ERR" for — in every Echo Trainer and Koch Trainer echo mode, and in Koch "Learn New Chr" and "Preview Char" when you answered. It comes the moment the verdict is taken, before the Morserino shows or sounds it:
+
+* "event" (type String): "result".
+* "mode" (type String): "echo" (Echo Trainer, and the Koch Trainer's echo modes), "learn" (Koch Learn New Chr), "preview" (Koch Preview Char).
+* "prompt" (type String): the word the Morserino sent.
+* "answer" (type String): what was keyed in reply ("" if nothing was). \<err> erases the whole answer so far, so "answer" is also "" — with "latency" and "duration" — when the answer was erased and nothing was keyed after it.
+* "ok" (type Boolean): the verdict — true when the answer equals the prompt.
+* "repeat" (type Number): 0 the first time a word is asked, 1 when it is asked again after a wrong answer, and so on. Always 0 in "learn" and "preview", which repeat their one character anyway.
+* "wpm" (type Number): the speed the prompt was sent at.
+* "koch" (type Number): the Koch lesson, in every Koch Trainer mode ("learn" and "preview" included; in "preview" it is the lesson you are at, not necessarily the character practised). Left out elsewhere.
+* "latency" (type Number): milliseconds from the end of the prompt's last dit or dah to the first paddle contact of the answer.
+* "duration" (type Number): milliseconds from that first contact to the end of the answer's last character, as the keyer registers it (one element space after its last dit or dah).
+* "timeout" (type Boolean): present, and true, when nothing was keyed within the **Echo Think Time**; "answer" is then "" and "latency" and "duration" are left out. Never sent in "learn" or "preview": a repetition left unanswered there sends nothing.
+
+"prompt" and "answer" are written as `GET kochlesson` writes characters: prosigns as `<sk>`, `<as>` …, national letters in UTF-8. `latency` and `duration` are measured on the Morserino with its own clock, so the link's delays do not enter them. `latency` runs to the *first* contact even if the answer was then corrected with \<err>.
+
+Examples:
+
+	{"trainer":{"event":"result","mode":"echo","prompt":"cq","answer":"cq","ok":true,
+	"repeat":0,"wpm":18,"koch":12,"latency":820,"duration":2100}}
+
+	{"trainer":{"event":"result","mode":"echo","prompt":"<sk>","answer":"","ok":false,
+	"repeat":1,"wpm":18,"timeout":true}}
+
+
 
 ## Objects and their GET and PUT commands
 
@@ -393,15 +468,16 @@ Returns the properties "protocol" (the protocol version, the same value as in th
 
 Example:
 
-	{"capabilities":{"protocol":"1.5",
-	"features":["configs/details","game/scores","stats/log","kip"]}}
+	{"capabilities":{"protocol":"1.6",
+	"features":["configs/details","game/scores","stats/log","kip","trainer-events"]}}
 
 Only commands that some builds *lack* appear in "features"; everything else the protocol version documents is always present. Today that list can contain:
 
 * `configs/details` — the bulk parameter read (present in every 1.4 firmware),
 * `game/scores` — the game high-score commands (builds with the games, i.e. the M32 Pocket),
 * `stats/log` — the practice-statistics log (builds with practice statistics),
-* `kip` — the remote-keying commands `GET kip`, `PUT kip/psk` and `PUT kip/port` (protocol 1.5, builds with remote keying).
+* `kip` — the remote-keying commands `GET kip`, `PUT kip/psk` and `PUT kip/port` (protocol 1.5, builds with remote keying),
+* `trainer-events` — the `cw` "done" and `trainer` "result" events (protocol 1.6, present in every build — listed, like `configs/details`, so that a program can test for the feature by name; see "Events for practice programs").
 
 A program written for 1.4 or later should call this once after `PUT device/protocol/on` instead of probing commands and reading error replies. Firmware older than 1.4 answers `GET capabilities` with an error — that itself identifies it as pre-1.4.
 
@@ -955,6 +1031,8 @@ This is similar to the command above, but the text  string is repeated until sto
 `PUT cw/stop`							
 
 This will stop the CW player (it has the same effect as beginning to key manually while the commands `PUT cw/play` or `PUT cw/repeat` are active).
+
+Since protocol version 1.6 the Morserino tells the program when a text sent with `PUT cw/play`, `cw/repeat` or `cw/recall` has finished or was stopped, with `{"cw":{"event":"done",...}}` — see "Events for practice programs". (Before 1.6, a paddle touch that stopped the player sent an unrequested `{"ok":...}`; it no longer does.)
 
 Note: you can use "\<p>" or "\p" within `<text to be played>` to generate a short pause.
 

@@ -216,7 +216,9 @@ class M32Link:
                 if self.verbose:
                     print("    << %s" % obj)
                 return obj
-            chunk = self._serial.read(4096)
+            # read(4096) would wait out the whole port timeout (0.1 s) unless 4096 bytes came: every arrival
+            # time would be 0..100 ms late at random. The soak's timings scattered by +-100 ms from it (2026-10-31).
+            chunk = self._serial.read(max(1, self._serial.in_waiting))
             if chunk:
                 self._buffer += chunk.decode("utf-8", "replace")
             else:

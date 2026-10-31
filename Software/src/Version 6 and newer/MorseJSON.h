@@ -56,6 +56,11 @@ namespace MorseJSON
 	// Protocol v1.4 extensions
 	void jsonParameterDetails(uint8_t from);   // paginated bulk parameter read
 	void jsonCapabilities(void);               // build-dependent feature discovery
+	// Protocol v1.6 events (capability "trainer-events"); callers gate on protocolActive()
+	void jsonCwDone(boolean stopped);          // a client's cw/play has finished sounding, or was stopped
+	void jsonTrainerResult(const char* mode, const String& prompt, const String& answer, boolean ok,
+	                       uint8_t repeat, uint8_t wpm, uint8_t koch, boolean timeout,
+	                       unsigned long latency, unsigned long duration);   // one evaluated Echo Trainer word
 #ifdef CONFIG_M32KIP
 	void jsonResets(void);                     // why the last boots happened (protocol 1.5)
 	void jsonKip(void);                        // protocol 1.5: remote keying settings (never the key)
