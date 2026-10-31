@@ -591,7 +591,8 @@ void setup()
   // The Pocket's native USB (HWCDC, core 2.0.17) stopped about one protocol reply in 50-150 halfway - the
   // first part sent, the rest only when the host sent its next command (seen with 263-313-byte replies;
   // 9.0.1 too). Its default 256-byte TX ring is smaller than such a reply; with 1 KB the rate fell to about
-  // 1 in 900 (2026-10-05; 4 KB was no better). The remaining cases are a driver race - see devdocs/TODO.md.
+  // 1 in 900 (2026-10-05; 4 KB was no better). The remaining cases were the missing zero-length packet after
+  // a full 64-byte packet, now sent by M32Tee::flushReply() (2026-10-30, devdocs/TODO.md D8).
   Serial.setTxBufferSize(1024);       // HWCDC only: TinyUSB's USBCDC (usbio builds) has a fixed TX FIFO
 #endif
   // And its 256-byte RX queue drops bytes when full (the ISR gives up on the rest of a 64-byte packet) - a

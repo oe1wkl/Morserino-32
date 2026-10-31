@@ -22,6 +22,7 @@
 * Bluetooth keyboard: switching **Bluetooth Use** to a keyboard mode in the preferences while in **CW Keyer** did nothing until you left CW Keyer and started it again; switching it off left the keyboard connected (though silent). The keyboard now starts or stops as soon as you leave the preferences.
 * File Player: with **Tone Shift** set to **No Tone Shift**, the tone marker still changed the pitch (down a half tone). It now leaves the pitch alone, as the manual says.
 * 1st and 2nd edition only: **Audio In Adj.** (a long press of FN in the main menu) often did not react to a quick press of FN to end it - only a longer press was noticed, because the Morserino checked the button only between two updates of its level display. A short press now ends it reliably.
+* M32 Pocket, serial protocol over USB: a reply whose length came out at exactly 64 bytes, or at a multiple of 64 the way it happened to be sent (a 2-digit speed asked for with `GET control/speed`, now and then a longer reply), reached the computer only when the program sent its next command – a program that gave up waiting then read every later reply one step behind. The Pocket now ends every reply properly, as the USB standard requires (with a zero-length packet), so each reply arrives at once.
 
 ### CHANGES V. 9.1
 

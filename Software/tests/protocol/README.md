@@ -64,7 +64,7 @@ cannot survive. Merely opening the port does **not** reset the device (since
 **Reply delivery.** Every command must put its own answer on the wire without
 being prompted. See the finding below.
 
-## What the first run found: withheld replies (now fixed)
+## What the first run found: withheld replies (fixed)
 
 The first full run turned this up, and it is what the reply-delivery check now
 guards against:
@@ -104,10 +104,29 @@ Every case so far has been *withheld*. Timing cannot separate the two — both
 arrive at the normal ~100 ms round trip — which is why an earlier version of
 this check, based on latency, was not sound.
 
-Root cause **not established**. A short-reply flush theory (the ESP32-S3
-USB-Serial-JTAG FIFO holding back fewer than 64 bytes) was tested and does not
-hold: isolated 23-byte `{"ok":...}` replies arrive fine. It appears to need
-load — a rapid sequence of writing commands — to show up.
+That fix covered the ring buffer. A residual stayed (about one longer reply in
+900 stopped after 6–7 + 64·k bytes, TODO D8), and its **root cause was found
+2026-10-30**: HWCDC's ISR sends the ring in packets of up to 64 bytes and never
+follows a final *full* packet with a zero-length packet, so the host's read of
+that transfer stays open until the next traffic. The theory tested earlier —
+the FIFO holding back *short* packets — had it the wrong way round: short
+packets end a transfer by themselves; it is the full ones that need the ZLP.
+`flushReply()` now sends one after every reply (`M32Tee::endUsbTransfer()`).
+Two bench scripts prove it:
+
+```sh
+./usb64_probe.py          # GET control/speed: 63-byte (5..9 WpM) vs 64-byte (10..60 WpM) replies, ~1 min
+./kochlesson_loop.py      # PUT kochlesson/<n> + GET kochlesson, 1000 rounds (--rounds N), ~5 min
+```
+
+`usb64_probe.py` asks for the detailed speed reply without nudging; before the
+fix 19 of 20 64-byte replies were withheld (0 bytes at the host) and every
+63-byte one arrived. `kochlesson_loop.py` is the long-reply soak behind D8; it
+exits non-zero if any reply had to be nudged loose. Both restore what they change.
+**Verified 2026-10-31** on a standard Pocket: the probe found 0 of 20 64-byte
+replies withheld, the soak 0 stuck in 1000 rounds (2000 commands).
+Not covered by the fix: the asynchronous event stream and `echo()`, which end
+without a ZLP by design (fire-and-forget, carried out by the next traffic).
 
 ## Where the expectations come from
 
