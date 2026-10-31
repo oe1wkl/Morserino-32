@@ -271,7 +271,15 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    ø→oe, Icelandic þ→th ð→d, the rest via NFD (é→e, č→c); þ/ð and letters beyond Latin-1 are folded in both modes.
    Preset from the connected firmware (ticked below 9.1). Manuals EN/DE (File Builder + the outdated "German
    characters are converted" upload passage). The iOS app copies the tool at build time, so its next build has it.
-8. **Pocket USB replies still stall now and then (HWCDC, core 2.0.17).** Found while testing C15, present in 9.0.1:
+8. **Pocket USB replies still stall now and then (HWCDC, core 2.0.17).** — **root cause found 2026-10-30, fix on
+   branch `fix/hwcdc-zlp` (off master), bench-verified 2026-10-31 on a standard Pocket:** the core's `hw_cdc_isr_handler`
+   never sends a zero-length packet after a final full 64-byte packet, so the host's bulk read stays open. Proof:
+   `Software/tests/protocol/usb64_probe.py` — 64-byte `GET control/speed` replies (10..60 WpM) 19/20 withheld, 63-byte
+   ones (5..9 WpM) 20/20 arrived. Fix: `M32Tee::flushReply()` → `endUsbTransfer()` waits for the host to collect
+   the last packet, then flushes the empty FIFO (= ZLP, what ESP-IDF's own driver does). Covers command replies
+   only: the event stream and `echo()` still end without a ZLP (fire-and-forget, released by the next traffic) —
+   M1 events of 64·k bytes need their own call. Bench: `usb64_probe.py` 0 of 20 64-byte replies withheld (was
+   19/20), `kochlesson_loop.py` 1000 rounds / 2000 commands 0 stuck, `run_tests.py` 122 passed. Original finding (found while testing C15, present in 9.0.1):
    a reply stops after its first part (always 6–7 + 64·k bytes, i.e. after a full 64-byte packet that followed a
    short first one) and the rest goes out only when the host sends again. Measured with a set/get-lesson loop:
    ~1 in 35–150 replies with the default 256-byte TX ring; **~1 in 600–900 with the 1 KB ring now set in setup()**
