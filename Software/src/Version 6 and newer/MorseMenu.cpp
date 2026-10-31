@@ -172,6 +172,8 @@ const char* const menuText[menuN]  = {
   , "Remote WinK"     // _remoteWinKeyer - the OLED menu is fitted to 12 characters (Willi, R2)
 #endif
 #endif
+  , "Prefixes"        // _genPrefixes  - sibling of CW Generator's Call Signs
+  , "Prefixes"        // _echoPrefixes - sibling of Echo Trainer's Call Signs
   } ;
 
 enum navi {naviLevel, naviLeft, naviRight, naviUp, naviDown };
@@ -237,15 +239,15 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
   {1,_genPractice,_genAbb,_gen,0},                      // 3 gen random -e (left <- Practice Set)
   {1,_genRand,_genWords,_gen,0},                        // 4 gen Abb  -e
   {1,_genAbb,_genCalls,_gen,0},                         // 5 gen words  -e
-  {1,_genWords,_genMixed,_gen,0},                       // 6 gen calls  -e
-  {1,_genCalls,_genPlayer,_gen,0},                      // 7 gen mixed  -e
+  {1,_genWords,_genPrefixes,_gen,0},                    // 6 gen calls  -e (right -> Prefixes)
+  {1,_genPrefixes,_genPlayer,_gen,0},                   // 7 gen mixed  -e (left <- Prefixes)
   {1,_genMixed,_genPractice,_gen,0},                    // 8 gen player  -e (right -> Practice Set)
   {0,_gen,_koch,_dummy,_echoRand},                      // 9 echo tr
   {1,_echoPractice,_echoAbb,_echo,0},                    // 10 echo random  -e (left <- Practice Set)
   {1,_echoRand,_echoWords,_echo,0},                     // 11 echo abb  -e
   {1,_echoAbb,_echoCalls,_echo,0},                      // 12 echo words  -e
-  {1,_echoWords,_echoMixed,_echo,0},                    // 13 echo calls  -e
-  {1,_echoCalls,_echoPlayer,_echo,0},                   // 14 echo mixed  -e
+  {1,_echoWords,_echoPrefixes,_echo,0},                 // 13 echo calls  -e (right -> Prefixes)
+  {1,_echoPrefixes,_echoPlayer,_echo,0},                // 14 echo mixed  -e (left <- Prefixes)
   {1,_echoMixed,_echoPractice,_echo,0},                  // 15 echo player  -e (right -> Practice Set)
   {0,_echo,_trx,_dummy,_kochSel},                       // 16 koch
   {1,_kochEcho,_kochLearn,_koch,0},                     // 17 koch select  -e!!?
@@ -351,6 +353,9 @@ const uint8_t menuNav [menuN] [5] = {                   // { level, left, right,
 #ifdef REMOTE_WINKEYER
   , {1,_winKeyer,_kipKeyer,_trx,0}                       // Remote WinKeyer - between WinKeyer and Remote Keyer
 #endif
+  , {1,_genCalls,_genMixed,_gen,0}                       // Prefixes (CW Generator) - appended at enum's end;
+                                                         //   spliced in between Call Signs and Mixed above
+  , {1,_echoCalls,_echoMixed,_echo,0}                    // Prefixes (Echo Trainer) - same splice, echo ring
 };
 
 //String MorseMenu::cmdPath;   // used to create string for json
@@ -711,6 +716,8 @@ void MorseMenu::menu_() {
                       if (MorsePreferences::menuPtr < _wifi
                           || MorsePreferences::menuPtr == _genPractice
                           || MorsePreferences::menuPtr == _echoPractice
+                          || MorsePreferences::menuPtr == _genPrefixes
+                          || MorsePreferences::menuPtr == _echoPrefixes
 #ifdef CONFIG_M32KIP
                           // Appended at the enum's end like the pickers above, so they fall outside "< _wifi"
                           // and were silently not remembered - unlike every other mode. A Rig that is meant to
@@ -934,6 +941,10 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 3);                   /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
                 MorsePreferences::setCurrentOptions(MorsePreferences::generatorOptions, MorsePreferences::generatorOptionsSize);
                 goto startGenerator;
+     case _genPrefixes:  // appended entry, so not covered by the menuPtr - 3 arithmetic above
+                generatorMode = PREFIXES;
+                MorsePreferences::setCurrentOptions(MorsePreferences::generatorOptions, MorsePreferences::generatorOptionsSize);
+                goto startGenerator;
      case _genPractice:  // "Practice Set" - plain RANDOMS generation, sourced from the device-picked
                           // practiceCharSet instead of CWchars; unrelated to Koch Trainer/kochActive.
                 if (MorsePreferences::practiceCharSet.length() == 0) {
@@ -993,6 +1004,10 @@ boolean MorseMenu::menuExec() {       // return true if we should  leave menu af
                 MorsePreferences::setCurrentOptions(MorsePreferences::echoTrainerOptions, MorsePreferences::echoTrainerOptionsSize);
 
                 generatorMode = (GEN_TYPE) (MorsePreferences::menuPtr - 10);                /// 0 = RANDOMS ... 4 = MIXED, 5 = PLAYER
+                goto startEcho;
+            case  _echoPrefixes:  // appended entry, so not covered by the menuPtr - 10 arithmetic above
+                MorsePreferences::setCurrentOptions(MorsePreferences::echoTrainerOptions, MorsePreferences::echoTrainerOptionsSize);
+                generatorMode = PREFIXES;
                 goto startEcho;
             case  _echoPractice:  // "Practice Set" - see the CW Generator case for the rationale
                 if (MorsePreferences::practiceCharSet.length() == 0) {

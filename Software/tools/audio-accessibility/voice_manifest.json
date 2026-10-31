@@ -185,6 +185,7 @@
     "Plain": "4cd84132",
     "Practice Set": "2c91ef54",
     "Practice Stats": "eaac0f5b",
+    "Prefixes": "415c0c41",
     "Pro Signs": "a1edbcde",
     "QSO Bot": "60d3a124",
     "QSO Difficulty": "c73f6a06",
@@ -848,6 +849,7 @@
     "78ee54aa": "point",
     "2c91ef54": "Practice Set",
     "eaac0f5b": "Practice Stats",
+    "415c0c41": "Prefixes",
     "7985265a": "Preview Character",
     "ffcdbd79": "pro sign",
     "a1edbcde": "Pro Signs",
@@ -942,14 +944,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "c270c1dc",
+  "pack_stamp": "3903f91f",
   "counts": {
-    "menu": 34,
+    "menu": 35,
     "pref_labels": 56,
     "option_values": 189,
     "actions": 28,
-    "phrases_total": 349,
+    "phrases_total": 350,
     "atoms_total": 138,
-    "clips_total": 478
+    "clips_total": 479
   }
 }
