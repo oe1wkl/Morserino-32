@@ -8,11 +8,11 @@ read, what is waiting on whom, and which traps are already known.*
 
 | | |
 |---|---|
-| Phase | Planning finished; **nothing implemented**. The branch and worktree exist (below); no firmware change yet. |
+| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). M2 has not started. |
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
-| Gate for M1 | Willi sends the preview message to Christof first (`CHRISTOF_MESSAGE.md`, EN + DE draft). **Start M1 when Willi tells you it is sent** — not when Christof replies. |
-| Not yet done | Corpus (tiers B and C need Willi's review), everything in M1–M6. |
+| Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
+| Not yet done | Corpus (tiers B and C need Willi's review); M2–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -140,6 +140,50 @@ Branch work in `Software/src/Version 6 and newer/` (line numbers at master `3e8c
 - **Open question to settle here:** does `PUT config` apply *Serial Output* per session, and do speed/spacing
   changes apply inside the Keyer immediately? (needed in M3/M3c — measure now, since you have the harness open.)
 
+#### M1 — state (2026-10-31)
+
+**Committed on `training-addon`** (on top of the master merge `4cce896`, which brought the HWCDC zero-length
+packet fix, PR #226). Builds clean for `heltec_wifi_lora_32_V2` and `pocketwroom`; `selftest.py` passes.
+**Benched on both variants** (standard editions), all runs pass. Results and notes are in `BENCH_M1.md`. What
+the bench changed:
+- **`koch` in Learn New Chr / Preview Char:** these modes leave `kochActive` off, so they now get the field by
+  name in `echoTrainerEval()`.
+- **Harness:** `m32_link` now reads `read(max(1, in_waiting))`; `read(4096)` with the 0.1 s timeout had
+  stamped every arrival 0–100 ms late. The soak starts each item past the keyer's word space. The echo checks
+  know the mode. The speed restore waits for the real reply and nudges once if it is missing.
+- **Timing for M3:** `done` comes after the sounded length (counted from `ok`) by 0–80 ms on the Pocket and
+  by 15–155 ms on the classic, more for longer prompts. The keyer keeps a word space after `done`. A volume
+  turn stretches the sounding (~40 ms per step on the classic).
+
+| File | Change |
+|---|---|
+| `MorseJSON.cpp/.h` | `jsonCwDone()`, `jsonTrainerResult()` (both flush at once); `trainer-events` in `jsonCapabilities()` |
+| `m32_v6.ino` | `playCWDoneOwed` + `cwPlayDone()`; `playCWHasMore()` look-ahead so `done` `end` fires at the last element (R13) with a fallback in `fetchNewWord()`; `stopPlayCw(fromCommand)`; three Echo stamps (`echoPromptEndAt`, `echoFirstKeyAt`, `echoLastCharAt`) and the emit at `EVAL_ANSWER`; `repeatPlayCW` assigned, not only set; `setParameter()` calls `updateTimings()` for the two spacing prefs |
+| `MorseMenu.cpp` | `menu_()` stops a running `cw/play` / memory |
+| `morsedefs.h` | `M32P_VERSION` 1.6 |
+| Protocol description | 1.6 change block, new section "Events for practice programs", capabilities, `cw/stop` note. **PDF not rebuilt** — rebuild at merge time (binary, conflicts with master) |
+| `Software/README.md` | 10.0: two Bug Fixes + an *Other Changes* entry for 1.6 (kept out of the manual's What's-new on purpose). **At M5** update the New Features bullet that still says "version 1.5", together with the trainer's own bullet, then `sync_whatsnew.py` + German + manual rebuild |
+| `Software/tests/protocol/` | `trainer_events.py` (validators + bench: timing, order, Serial Output, paddle, Echo, soak), selftest fixtures captured from both variants, `m32_link.py` exact-read fix, README section |
+
+Protocol-level choices made in M1 (documented in the protocol description; none is user-facing on the device,
+but tell Willi, and Christof if he asks):
+
+1. `done` is owed only for a **client's own** `cw/play`/`repeat`/`recall` (decision 3's wording); a memory the
+   operator plays on the device sends none — and if it replaces a client's text, that text gets `stopped`.
+2. `PUT cw/stop`: `ok` first, then `done` `stopped`; with nothing playing, `ok` and no `done`.
+3. **A paddle stop no longer sends an unrequested `ok`** (it did before 1.6; a command-queue client would take
+   it for its own reply). The only behaviour removed — **Willi kept it (2026-10-31)**.
+4. A `cw/play` over a running one replaces it and inherits the debt: one `done`, for the new text.
+5. Leaving the Keyer (`menu_()`) stops playback and sends `stopped`; before, the buffer survived and played
+   (garbled — `startFirst` was set) the next time a keyer mode started.
+6. `done` `end` comes after the last character's display/Serial Output echo, so the stream order is causal.
+   A trailing `\p` pause is not waited for.
+7. `trainer`/`result`: prompt/answer in display form (`<sk>`, UTF-8), as `GET kochlesson` and the stream write
+   them; `mode` is `echo` / `learn` / `preview`; `koch` in every Koch Trainer mode; on timeout `latency`/`duration`
+   are omitted; `<err>` erases the whole answer, so `""` with timing means erased and nothing keyed after. Koch Learn/Preview repetitions without an answer emit nothing (as the device shows nothing).
+   `duration` ends where the keyer registers the last character (one element space after it).
+8. `repeat` = number of earlier soundings of the same word (0 first time), from the existing `repeats` counter.
+
 ### M2 — link module (1 session)
 Brace/quote-aware framer, command queue (one in flight), event routing by object name, reconnect, `pagehide`
 goodbye. Raw character stream vs JSON. Node tests with injected noise and partial lines. Copy the Config
@@ -180,11 +224,17 @@ the note to Oliver once 1.6 is released.
 
 ## 7. Open verification items (collected)
 
-1. When does the end-of-`cw/play` code run relative to the last element? (R13, M1)
-2. Is `cw/play` text absent from the stream with Serial Output = Keyed? (M3c)
-3. May `PUT config` set Serial Output for the session without writing NVS or disturbing snapshots? (M1/M3c)
-4. Do speed/spacing changes take effect immediately in the Keyer? (M1/M3)
-5. Pocket HWCDC event delivery under load (R1) — flush after each event, then measure.
+1. ~~When does the end-of-`cw/play` code run relative to the last element? (R13)~~ — a full inter-word space
+   after it (`fetchNewWord()` runs once `genTimer` expires). M1 sends `done` at the last element instead;
+   **benched**: see the M3 timing figures in §6.
+2. ~~Is `cw/play` text absent from the stream with Serial Output = Keyed?~~ — yes, benched on both variants.
+3. ~~May `PUT config` set Serial Output per session?~~ — **no**: every `PUT config` writes NVS. The trainer
+   reads the setting on connect and restores it on goodbye/`pagehide`, and says so in the UI. Snapshots are
+   untouched; no new NVS entries.
+4. ~~Speed/spacing immediately?~~ — speed yes; spacing did not, **fixed in M1** (`updateTimings()` in
+   `setParameter()`); benched on both variants.
+5. ~~Pocket HWCDC event delivery under load (R1)~~ — soak 500/500 on both variants; 64·k-byte replies fixed by
+   the zero-length packet (PR #226).
 6. `cw/play` is limited to ≈ 255 characters; the longest phrase must fit with pauses.
 7. Does the publish script need extra lines for the `.js` and `.json` files? (yes — hand them to Willi)
 8. Attribution of the host copy of the word list (Oxford 5000 / FrequencyWords).

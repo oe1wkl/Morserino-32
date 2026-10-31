@@ -256,7 +256,48 @@ void MorseJSON::jsonCapabilities(void) {
 #ifdef CONFIG_M32KIP
 	feat.add("kip");                                 // 1.5 remote keying: GET kip, PUT kip/psk, PUT kip/port
 #endif
+	feat.add("trainer-events");                      // 1.6 cw/done and trainer/result events (every build, like configs/details)
 	MorseJSON::jsonSend(doc);
+}
+
+// Protocol 1.6: unsolicited events for host-side trainers. Unlike the rest of the event stream they are
+// flushed at once: the arrival time IS the measurement a trainer takes (on the Pocket's HWCDC an unflushed
+// object would wait for the next traffic - see M32Tee::flushReply()). Neither is ever sent from the keying
+// path, so the flush's worst case (a host that stopped reading: HWCDC's tx timeout) cannot stretch a dit.
+void MorseJSON::jsonCwDone(boolean stopped) {
+	StaticJsonDocument<96> doc;
+	JsonObject cw = doc.createNestedObject("cw");
+	cw["event"]  = "done";
+	cw["reason"] = stopped ? "stopped" : "end";
+	MorseJSON::jsonSend(doc);
+	m32out.flushReply();
+}
+
+// prompt and answer arrive in display form (cleanUpProSigns(): <sk>, ä as UTF-8), the way GET kochlesson and the
+// Serial Output character stream write them. latency/duration are left out when there was no answer (timeout);
+// koch is left out outside the Koch modes (0).
+void MorseJSON::jsonTrainerResult(const char* mode, const String& prompt, const String& answer, boolean ok,
+                                  uint8_t repeat, uint8_t wpm, uint8_t koch, boolean timeout,
+                                  unsigned long latency, unsigned long duration) {
+	StaticJsonDocument<512> doc;
+	JsonObject r = doc.createNestedObject("trainer");
+	r["event"]  = "result";
+	r["mode"]   = mode;
+	r["prompt"] = prompt;
+	r["answer"] = answer;
+	r["ok"]     = ok;
+	r["repeat"] = repeat;
+	r["wpm"]    = wpm;
+	if (koch)
+		r["koch"] = koch;
+	if (timeout)
+		r["timeout"] = true;
+	else {
+		r["latency"]  = latency;
+		r["duration"] = duration;
+	}
+	MorseJSON::jsonSend(doc);
+	m32out.flushReply();
 }
 
 #ifdef CONFIG_M32KIP

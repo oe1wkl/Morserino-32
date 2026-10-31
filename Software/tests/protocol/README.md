@@ -173,6 +173,39 @@ python3 firmware_tables.py
 - The persistence check reboots the device. Do not run it while something else
   is talking to the Morserino.
 
+## Protocol 1.6 trainer events — `trainer_events.py`
+
+```sh
+python3 trainer_events.py              # cw/done checks, about 30 s, no hands needed
+python3 trainer_events.py --echo 120   # then 120 s of Echo Trainer: you key the answers
+```
+
+Checks the two events added for the M32 Trainer (`devdocs/training-addon/`):
+`GET capabilities` lists `trainer-events` and reports 1.6; `PUT cw/play` is
+followed by exactly one `{"cw":{"event":"done","reason":"end"}}`, timed against
+the sounded length of the text (it must come at the last element, not a word
+space later — risk R13); `PUT cw/stop` answers "ok" *before* "done stopped";
+a `cw/repeat` sends nothing until stopped; a `cw/play` over a running repeat
+ends once; unplayable text ends at once; `PUT menu/stop` mid-text gives
+"stopped"; and `Interchar Spc` set with `PUT config` changes the timing inside
+the running Keyer. With `--echo`, every `{"trainer":{"event":"result"}}` that
+arrives is printed and validated — answer some right, some wrong, and let one
+run out.
+
+The validators (`check_cw_done`, `check_trainer_result`) are pure; `selftest.py`
+replays fixtures through them, good and bad. Most fixtures were captured from a
+classic M32 and an M32 Pocket on the M1 bench (`-v` prints every object); add a
+capture whenever a new case turns up.
+
+More options: `--paddle` (a paddle touch must stop `cw/repeat` with `done`
+`stopped` and no `ok`), `--echo-menu "Koch Trainer/Learn New Chr"` (learn mode:
+`koch` present, no timeouts), `--soak 500` (500 timed items, risk R1), and
+`--port` when more than one Morserino is plugged in. Keep hands off the paddles
+and the knob during the timed parts.
+
+The script puts the device into CW Keyer and sets 20 WpM; it restores the speed
+and `Interchar Spc` and leaves the device at the main menu.
+
 ## Scope
 
 Covered: everything `GET kochlesson` and `PUT kochlesson` do, across every

@@ -23,6 +23,12 @@
 * File Player: with **Tone Shift** set to **No Tone Shift**, the tone marker still changed the pitch (down a half tone). It now leaves the pitch alone, as the manual says.
 * 1st and 2nd edition only: **Audio In Adj.** (a long press of FN in the main menu) often did not react to a quick press of FN to end it - only a longer press was noticed, because the Morserino checked the button only between two updates of its level display. A short press now ends it reliably.
 * M32 Pocket, serial protocol over USB: a reply whose length came out at exactly 64 bytes, or at a multiple of 64 the way it happened to be sent (a 2-digit speed asked for with `GET control/speed`, now and then a longer reply), reached the computer only when the program sent its next command – a program that gave up waiting then read every later reply one step behind. The Pocket now ends every reply properly, as the USB standard requires (with a zero-length packet), so each reply arrives at once.
+* Serial protocol: a `PUT cw/play` sent while a `PUT cw/repeat` was still sounding went on repeating forever; it now plays once. A paddle touch that stops `cw/play` no longer sends an `{"ok":...}` that nobody asked for (a program waiting for the answer to a command could take it for that answer).
+* Serial protocol: **Interchar Spc** and **InterWord Spc** changed with `PUT config` took effect only after the next speed change or the next start of a mode; they now apply at once.
+* CW Keyer: leaving the keyer while a keyer memory or a text sent by a program was being played no longer leaves the rest of it to play the next time a keyer mode is started.
+
+#### Other Changes:
+* Serial protocol **version 1.6** (capability `trainer-events`): two new unsolicited objects for practice programs on a computer. `{"cw":{"event":"done","reason":"end"}}` (or `"stopped"`) tells a program that the text it sent with `PUT cw/play`, `cw/repeat` or `cw/recall` has finished sounding - at the end of its last element - or was stopped; `{"trainer":{"event":"result",...}}` reports each word the Echo Trainer evaluates, with the prompt, the answer, the verdict and, measured on the device, the time to the first paddle contact and the length of the answer. They are the base of the planned M32 Trainer. Everything from 1.5 keeps working unchanged.
 
 ### CHANGES V. 9.1
 

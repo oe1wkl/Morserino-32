@@ -63,7 +63,9 @@ const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 //     (read + clear the game high-score tables; CONFIG_CW_GAME builds only)
 // 1.5 add kip (M32KIP remote keying: GET kip, PUT kip/psk, PUT kip/port; advertised in
 //     capabilities, CONFIG_M32KIP builds only) and the Remote Rig / Remote Keyer parameters
-#define M32P_VERSION "1.5"
+// 1.6 add the trainer events (capability "trainer-events", every build): {"cw":{"event":"done"}} when a client's
+//     cw/play ends or is stopped, {"trainer":{"event":"result"}} per evaluated Echo Trainer word
+#define M32P_VERSION "1.6"
 
 /////// protocol version for IP (and LoRa) - for the time being this is B01
 /////// the first version of the CW over LoRA protocol; future versions will be B02, B03, B00 (reserved for future use)
