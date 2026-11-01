@@ -8,11 +8,11 @@ read, what is waiting on whom, and which traps are already known.*
 
 | | |
 |---|---|
-| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written, tested in Node and committed 2026-11-01** (not pushed) (see "M2 — state" in §6). |
+| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written, tested in Node and committed 2026-11-01** (not pushed) (see "M2 — state" in §6). **M3 (engine + Copy Trainer page) written, tested in Node and against a simulated M32, and committed 2026-11-01** (not pushed); **bench owed** (`BENCH_M3.md`; see "M3 — state" in §6). |
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | Corpus (tiers B and C need Willi's review); M3–M6; `openWebSerial()` on a real device (with the page, M3). Protocol PDF rebuild at merge to master. |
+| Not yet done | M3 bench (`BENCH_M3.md`, incl. the first real test of `openWebSerial()`); the M3 choices awaiting Willi (§6 "M3 — state"); prosigns over `cw/play` (firmware); corpus (tiers B and C need Willi's review); M3b–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -228,6 +228,41 @@ Software/tests/trainer/*.test.js`, fake clock, no device; README beside it). No 
 Scheduler, scorer (word alignment then character alignment inside substituted words), Leitner model,
 store interface (IndexedDB adapter + in-memory fake), stats view, keyboard-only operation and `aria-live`
 feedback from day one. Pure functions, Node tests. Attempt log is the source of truth; box state derived.
+
+#### M3 — state (2026-11-01)
+
+**Written and committed 2026-11-01 (not pushed); bench owed.** Groups only, typed answers only (phrases are M3b, keyed answers
+M3c, speed/spacing M4, Echo log M5).
+
+| File | What |
+|---|---|
+| `Software/Utilities/m32_trainer_engine.js` | UMD, global `M32Engine`. Tokenizer (prosign = one token), scorer (word alignment by normalised character distance, then character alignment; one entry per expected character, extras counted apart), `Mastery` (Leitner, replayed from the log, confusions, median latency, `readyToAdvance`), `Scheduler` (weights 6 − box, newest ×2 below box 2, mixed size, retry after ≈ 4), `Session` (play → answer → score → log; unscored replay after a miss; help replay; paddle stop → play again, up to 3 times), `MemoryStore` / `IdbStore`, export/import, `lessonChars`, `playable` |
+| `Software/Utilities/m32_trainer.html` | The page: connect (refuses firmware without `trainer-events`), reads lesson + speed, puts the M32 in the CW Keyer (`GET menus` → number of "CW Keyer"), practice box, character table with boxes and confusions, lesson-advance offer (`PUT kochlesson`, button says it changes the device), history export/import with the 30-day / 20-session nudge, `persist()`, 180-day keystroke pruning. Keyboard only; `aria-live` status and feedback with a spelled-out version for screen readers |
+| `Software/tests/trainer/engine.test.js` | 34 tests; 20 deliberate breaks each fail one or more |
+| `Software/tests/trainer/fake_m32_browser.js` | A simulated M32 for the browser (paddle, leave the Keyer, unplug/replug, classic restart) |
+| `devdocs/training-addon/BENCH_M3.md` | Willi's bench: Pocket + classic, Chrome + Edge |
+
+Checked against the simulated M32 in the browser pane: connect → Keyer, right/wrong/help, paddle stop,
+leaving the Keyer, unplug/replug (`reconnected`), classic restart (`resync` on the next command, ≈ 3 s),
+lesson advance, keystroke capture, disconnect goodbye, no console errors.
+
+**Finding — prosigns cannot be played over `cw/play`.** `getM32PWord()` passes each word through
+`cleanUpText()`, which lower-cases it and keeps only Koch-alphabet characters, so `<sk>` sounds as "s k" and
+the code `K` as "k" (by code reading, not benched). Until a firmware fix, `playable()` keeps prosigns out of
+the items and the page says so at lessons ≥ 43. The fix would encode the display form (`encodeProSigns()`)
+and keep the upper-case codes through `cleanUpText()` — firmware, both variants, bench.
+
+**My choices that need Willi's sign-off** (user-facing, `ux-decisions-need-willi-signoff`):
+1. A helped item (replay before answering) moves **no** box, neither up nor down (the scope says "excluded
+   from promotion"; I read that as "does not count").
+2. Typing while the group sounds is allowed; Enter before the end is refused with a message.
+3. Keys: Enter = start / check / next, Ctrl+Enter = replay, Esc = pause.
+4. Mixed group size: the largest size is the rounded average box; the size is that or one less — so single
+   characters until the average box reaches 1.5.
+5. A paddle stop plays the group again (up to 3 times, then the learner may answer anyway); not counted as help.
+6. Leaving the CW Keyer on the device pauses the page; Enter puts the M32 back into the Keyer.
+7. On a miss the page shows the group with the wrong characters marked and plays it once more; Enter goes on
+   (also during that replay).
 
 ### M3b — phrases (2–3 sessions + Willi's review)
 Corpus format with `lang`; tier A (word chains from Koch-filtered words, generated at the exact length),

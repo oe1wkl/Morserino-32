@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M32 Trainer</title>
+  <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
+  <script src="m32_trainer_link.js"></script>
+  <script src="m32_trainer_engine.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
+    :root {
+      --text:#333;--accent:#cb4b16;--accent2:#b03e10;--muted:#666;
+      --box-bg:#e8f0f6;--box-border:#5a7080;--box-shadow:6px 8px 4px rgba(0,0,0,0.25);--radius:7px;
+      --green:#1d6030;--green-bg:#d4edda;--green-bdr:#7dbb7d;--red:#a3201a;--red-bg:#f8d7da;--red-bdr:#e4a0a8;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#fff;color:var(--text);font-family:Lato,Arial,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    .banner{background:linear-gradient(135deg,#1a2e3e 0%,#2c4a5e 100%);padding:18px 24px 14px;text-align:center;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,0.35);margin-bottom:24px}
+    .banner-title{font-size:28px;font-weight:900;letter-spacing:.03em}
+    .banner-sub{font-size:15px;opacity:.8;margin-top:2px}
+    .page{max-width:900px;margin:0 auto;padding:0 20px 60px}
+    .box{border:2px solid var(--box-border);border-radius:var(--radius);background:var(--box-bg);box-shadow:var(--box-shadow);padding:20px 24px;margin-bottom:22px}
+    h2{font-size:22px;font-weight:900;color:var(--accent);margin-bottom:10px}
+    .btn{display:inline-block;border:none;border-radius:var(--radius);padding:10px 20px;font-family:inherit;font-size:16px;font-weight:700;letter-spacing:.03em;cursor:pointer;box-shadow:3px 4px 3px rgba(0,0,0,.25);color:#fff;background:var(--accent)}
+    .btn:hover:not(:disabled){background:var(--accent2)}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-outline{background:#fff;color:var(--text);border:2px solid var(--box-border);box-shadow:2px 3px 2px rgba(0,0,0,.12)}
+    .btn-outline:hover:not(:disabled){background:#f0f4f7}
+    .btn-sm{padding:5px 12px;font-size:14px}
+    .btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .badge{display:inline-block;padding:4px 14px;border-radius:var(--radius);font-weight:700;border:2px solid}
+    .badge.on{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr)}
+    .badge.off{background:var(--red-bg);color:var(--red);border-color:var(--red-bdr)}
+    .badge.busy{background:#e3f2fd;color:#1565c0;border-color:#90caf9}
+    .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:14px}
+    .fact{background:#fff;border:1px solid #c8d8e4;border-radius:6px;padding:8px 14px}
+    .fact b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    .fact span{font-size:17px;font-weight:700}
+    .note{margin-top:12px;padding:8px 14px;border-radius:6px;background:#fff8e6;border:1px solid #e8d49a;font-size:15px}
+    .note.err{background:var(--red-bg);border-color:var(--red-bdr);color:var(--red)}
+    .note:empty{display:none}
+    .mono{font-family:'Courier New',Courier,monospace}
+    #status{font-size:20px;font-weight:700;min-height:32px;margin:6px 0 10px}
+    #answer{width:100%;font-family:'Courier New',Courier,monospace;font-size:30px;letter-spacing:.12em;padding:10px 14px;border:2px solid var(--box-border);border-radius:6px;background:#fff;text-transform:uppercase}
+    #answer:disabled{background:#f2f2f2}
+    #feedback{min-height:64px;margin-top:12px;font-size:17px}
+    .diff{font-family:'Courier New',Courier,monospace;font-size:26px;letter-spacing:.12em;font-weight:700}
+    .diff .ok{color:var(--green)}
+    .diff .bad{color:#fff;background:var(--red);border-radius:3px;padding:0 2px}
+    .diff .miss{color:var(--red);text-decoration:underline}
+    .keys{font-size:14px;color:var(--muted);margin-top:8px}
+    kbd{font-family:inherit;font-size:13px;border:1px solid #9ab;border-radius:3px;padding:0 5px;background:#fff}
+    .scroll{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:6px;overflow:hidden}
+    th{text-align:left;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--box-border);padding:6px 10px;border-bottom:2px solid var(--box-border)}
+    td{padding:5px 10px;border-bottom:1px solid #e0e8ee;font-size:15px}
+    td.ch{font-family:'Courier New',Courier,monospace;font-size:20px;font-weight:700}
+    .pips{white-space:nowrap}
+    .pip{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:3px;background:#d5dde3;vertical-align:middle}
+    .pip.f{background:var(--accent)}
+    tr.dim td{color:#999}
+    .advance{margin-top:14px;padding:12px 16px;border-radius:6px;background:var(--green-bg);border:2px solid var(--green-bdr)}
+    .advance[hidden]{display:none}
+    select{font-family:inherit;font-size:15px;padding:5px 8px;border:1px solid #b0c0cc;border-radius:4px;background:#fff}
+    footer{text-align:center;font-size:14px;color:var(--muted);margin-top:30px}
+    footer a{color:#155e8f}
+    .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  </style>
+</head>
+<body>
+<header class="banner">
+  <div class="banner-title">M32 Trainer</div>
+  <div class="banner-sub">Copy practice for your Morserino-32</div>
+</header>
+<main class="page">
+
+  <!-- ── Connection ── -->
+  <section class="box" aria-labelledby="hConn">
+    <h2 id="hConn">Your Morserino</h2>
+    <div class="row">
+      <span id="linkBadge" class="badge off">Not connected</span>
+      <button id="btnConnect" class="btn">Connect</button>
+      <button id="btnDisconnect" class="btn btn-outline" hidden>Disconnect</button>
+      <button id="btnReconnect" class="btn btn-outline" hidden>Try again</button>
+    </div>
+    <div class="facts" id="facts" hidden>
+      <div class="fact"><b>Device</b><span id="fDevice">–</span></div>
+      <div class="fact"><b>Firmware</b><span id="fFirmware">–</span></div>
+      <div class="fact"><b>Koch lesson</b><span id="fLesson">–</span></div>
+      <div class="fact"><b>Speed</b><span id="fSpeed">–</span></div>
+    </div>
+    <div class="note" id="connNote" role="status"></div>
+  </section>
+
+  <!-- ── Practice ── -->
+  <section class="box" aria-labelledby="hPractice">
+    <h2 id="hPractice">Copy practice</h2>
+    <div id="status" role="status" aria-live="polite">Connect your M32 to start.</div>
+    <label for="answer" class="sr">Your copy</label>
+    <input id="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" disabled />
+    <div class="row" style="margin-top:12px">
+      <button id="btnGo" class="btn" disabled>Start</button>
+      <button id="btnReplay" class="btn btn-outline" disabled>Replay</button>
+      <button id="btnPause" class="btn btn-outline" disabled>Pause</button>
+      <label for="selSize" style="margin-left:auto">Group size</label>
+      <select id="selSize">
+        <option value="mixed">Mixed</option>
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+        <option value="4">4</option><option value="5">5</option>
+      </select>
+    </div>
+    <div id="feedback" aria-live="polite"></div>
+    <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
+    <div class="keys" id="tally"></div>
+    <div class="advance" id="advance" hidden>
+      <span id="advanceText"></span>
+      <button id="btnAdvance" class="btn btn-sm" style="margin-left:8px"></button>
+    </div>
+  </section>
+
+  <!-- ── Characters ── -->
+  <section class="box" aria-labelledby="hChars">
+    <h2 id="hChars">Your characters</h2>
+    <p style="font-size:15px;margin-bottom:10px">Each character climbs five boxes as you copy it right; a miss sends it two boxes down. Characters in low boxes come up more often.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th scope="col">Char</th><th scope="col">Box</th><th scope="col">Copied</th><th scope="col">Right</th><th scope="col">Median time</th></tr></thead>
+      <tbody id="charRows"><tr><td colspan="5">Connect to see the characters of your lesson.</td></tr></tbody>
+    </table>
+    </div>
+    <div id="confusions" style="margin-top:12px;font-size:15px"></div>
+    <div class="note" id="charNote"></div>
+  </section>
+
+  <!-- ── History ── -->
+  <section class="box" aria-labelledby="hHist">
+    <h2 id="hHist">Your history</h2>
+    <p style="font-size:15px">Everything you practise is kept in this browser only. Export it now and then — a cleared browser loses it.</p>
+    <div class="row" style="margin-top:10px">
+      <button id="btnExport" class="btn btn-outline btn-sm">Export…</button>
+      <button id="btnImport" class="btn btn-outline btn-sm">Import…</button>
+      <input id="fileImport" type="file" accept=".json,application/json" hidden />
+      <span id="histInfo" style="font-size:15px"></span>
+    </div>
+    <div class="note" id="histNote" role="status"></div>
+  </section>
+
+  <footer>M32 Trainer · <a href="m32_config_tool.html">M32 Configuration Tool</a></footer>
+</main>
+
+<script>
+'use strict';
+const E = M32Engine;
+const $ = (id) => document.getElementById(id);
+
+// ---- state ------------------------------------------------------------------
+
+const link = new M32Link.Link();
+let store = null, mastery = new E.Mastery(), scheduler = null, session = null;
+let lesson = null;              // the GET kochlesson object
+let lessonList = [];            // its active characters
+let wpm = null;
+let keyerMenu = null;           // menu number of "CW Keyer"
+let started = false;            // a Start since connecting (counts a session for the export nudge)
+let needKeyer = false;          // the operator left the CW Keyer on the M32
+let preparing = false;          // our own menu changes send menu events too
+
+// ---- small helpers ---------------------------------------------------------------
+
+function show(el, on) { el.hidden = !on; }
+function disp(token) { return token.toUpperCase(); }
+function dispText(text) { return E.tokenize(text).map((t) => (t === ' ' ? ' ' : disp(t))).join(''); }
+// for screen readers: "K M R"
+function spell(text) { return E.tokenize(text).map((t) => (t === ' ' ? ', ' : disp(t))).join(' '); }
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+function setStatus(text) { $('status').textContent = text; }
+function connNote(text, err) { const n = $('connNote'); n.textContent = text || ''; n.classList.toggle('err', !!err); }
+function badge(text, cls) { const b = $('linkBadge'); b.textContent = text; b.className = 'badge ' + cls; }
+
+// ---- storage ---------------------------------------------------------------
+
+async function openStore() {
+  try {
+    store = await E.IdbStore.open('m32trainer');
+  } catch (e) {
+    store = new E.MemoryStore();
+    $('histNote').textContent = 'This browser window cannot keep your history (' + e.message +
+      '). You can practise, but nothing is saved — export before you close the page.';
+  }
+  try { await store.pruneKeystrokes(Date.now() - E.KEYSTROKE_DAYS * 864e5); } catch (e) { /* not fatal */ }
+  mastery = E.Mastery.fromAttempts(await store.all());
+  const size = await store.getMeta('size');
+  if (size) $('selSize').value = String(size);
+  await showHistory();
+}
+
+async function showHistory() {
+  const all = await store.all();
+  const last = await store.getMeta('lastExport');
+  const sessions = (await store.getMeta('sessionsSinceExport')) || 0;
+  let t = all.length + ' attempts stored. ';
+  t += last ? 'Last export ' + new Date(last).toLocaleDateString() + '.' : 'Never exported.';
+  $('histInfo').textContent = t;
+  const old = last ? Date.now() - last > 30 * 864e5 : false;
+  if (all.length && (old || sessions >= 20) && !$('histNote').textContent)
+    $('histNote').textContent = 'Time for an export: ' + (old ? 'your last one is over 30 days old.' : 'you have practised ' + sessions + ' times since the last one.');
+}
+
+$('btnExport').onclick = async () => {
+  const all = await store.all();
+  const blob = new Blob([JSON.stringify(E.exportFile(all, Date.now()))], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'm32-trainer-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  await store.setMeta('lastExport', Date.now());
+  await store.setMeta('sessionsSinceExport', 0);
+  $('histNote').textContent = '';
+  await showHistory();
+};
+
+$('btnImport').onclick = () => $('fileImport').click();
+$('fileImport').onchange = async (ev) => {
+  const f = ev.target.files[0];
+  ev.target.value = '';
+  if (!f) return;
+  try {
+    const { attempts, rejected } = E.parseExport(await f.text());
+    const r = await store.importMany(attempts);
+    mastery = E.Mastery.fromAttempts(await store.all());
+    if (scheduler) scheduler.mastery = mastery;
+    if (session) session.mastery = mastery;
+    $('histNote').textContent = 'Imported ' + r.added + ' attempts' + (r.skipped ? ', ' + r.skipped + ' were already here' : '') +
+      (rejected ? ', ' + rejected + ' damaged records left out' : '') + '.';
+    renderChars();
+  } catch (e) {
+    $('histNote').textContent = e.message;
+  }
+  await showHistory();
+};
+
+// ---- the device ---------------------------------------------------------------
+
+async function readLesson() {
+  const { kochlesson } = await link.command('get kochlesson');
+  lesson = kochlesson;
+  lessonList = E.lessonChars(lesson);
+  $('fLesson').textContent = lesson.value + ' of ' + lesson.maximum;
+  const play = lessonList.filter(E.playable);
+  const skipped = lessonList.length - play.length;
+  $('charNote').textContent = skipped
+    ? 'Prosigns (' + lessonList.filter((t) => !E.playable(t)).map(disp).join(' ') + ') are left out for now: the M32 cannot sound them from the computer yet.'
+    : '';
+  if (scheduler) scheduler.setChars(play);
+  renderChars();
+  return play;
+}
+
+async function readSpeed() {
+  try {
+    const { control } = await link.command('get control/speed');
+    wpm = control.value;
+    $('fSpeed').textContent = wpm + ' WpM';
+  } catch (e) { $('fSpeed').textContent = '?'; }
+}
+
+// Puts the M32 into the CW Keyer (cw/play works only there).
+async function ensureKeyer() {
+  let { menu } = await link.command('get menu');
+  if (menu.active && menu.content === 'CW Keyer') return;
+  if (keyerMenu == null) {
+    const { menus } = await link.command('get menus', { expect: ['menus'] });
+    const k = menus.find((m) => m.content === 'CW Keyer');
+    if (!k) throw new Error('This M32 has no CW Keyer menu entry.');
+    keyerMenu = k['menu number'];
+  }
+  if (menu.active) {
+    await link.command('put menu/stop');
+    for (let i = 0; i < 20 && menu.active; i++) {
+      await new Promise((r) => setTimeout(r, 150));
+      ({ menu } = await link.command('get menu'));
+    }
+  }
+  await link.command('put menu/start/' + keyerMenu);
+  for (let i = 0; i < 20; i++) {
+    ({ menu } = await link.command('get menu'));
+    if (menu.active && menu.content === 'CW Keyer') return;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+  throw new Error('The M32 did not start the CW Keyer.');
+}
+
+async function prepare() {
+  const play = await readLesson();
+  await readSpeed();
+  preparing = true;
+  try { await ensureKeyer(); } finally { preparing = false; }
+  needKeyer = false;
+  if (!play.length) throw new Error('Your Koch lesson has no characters the trainer can use yet.');
+  return play;
+}
+
+function deviceFacts(dev) {
+  show($('facts'), true);
+  $('fDevice').textContent = dev.hardware || '?';
+  $('fFirmware').textContent = (dev.firmware || '?') + (dev.edition === 'accessibility' ? ' (Accessibility)' : '') +
+                               ' · protocol ' + (dev.protocol || '?');
+}
+
+$('btnConnect').onclick = async () => {
+  connNote('');
+  badge('Connecting…', 'busy');
+  $('btnConnect').disabled = true;
+  try {
+    const t = await M32Link.openWebSerial();
+    const dev = await link.connect(t);
+    deviceFacts(dev);
+    if (!link.hasFeature('trainer-events')) {
+      connNote('This firmware (protocol ' + (dev.protocol || '?') + ') does not tell the trainer when the M32 has finished sounding. ' +
+               'The trainer needs protocol 1.6 or newer: please update the firmware.', true);
+      await link.disconnect();
+      return;
+    }
+    const play = await prepare();
+    makeSession(play);
+    badge('Connected · CW Keyer', 'on');
+    show($('btnConnect'), false);
+    show($('btnDisconnect'), true);
+    setStatus('Ready. Press Enter or Start.');
+    enablePractice(true);
+    $('btnGo').focus();
+  } catch (e) {
+    if (e.name === 'NotFoundError') { badge('Not connected', 'off'); return; }     // the port chooser was closed
+    connNote(e.message, true);
+    badge('Not connected', 'off');
+    if (link.state !== 'closed') await link.disconnect();
+  } finally {
+    $('btnConnect').disabled = !('serial' in navigator);
+  }
+};
+
+$('btnDisconnect').onclick = async () => {
+  if (session) session.pause();
+  await link.disconnect();
+};
+
+$('btnReconnect').onclick = async () => {
+  show($('btnReconnect'), false);
+  try { await link.reconnect(); } catch (e) { connNote(e.message, true); show($('btnReconnect'), true); }
+};
+
+link.on('state', (s) => {
+  if (s === 'closed' || s === 'ended') {
+    badge('Not connected', 'off');
+    show($('btnConnect'), true);
+    show($('btnDisconnect'), false);
+    show($('btnReconnect'), false);
+    enablePractice(false);
+    setStatus('Connect your M32 to start.');
+    if (session) session.pause();
+  }
+});
+link.on('lost', () => {
+  badge('Cable lost', 'off');
+  if (session) session.pause();
+  connNote('The connection to the M32 is gone. Plug it back in — the trainer reconnects by itself.');
+  enablePractice(false);
+});
+link.on('unresponsive', () => {
+  badge('No answer', 'off');
+  if (session) session.pause();
+  connNote('The M32 stopped answering.', true);
+  show($('btnReconnect'), true);
+});
+// the device came back (Pocket re-plugged) or restarted (classic): set it up again
+async function again() {
+  try {
+    await prepare();
+    badge('Connected · CW Keyer', 'on');
+    connNote('');
+    show($('btnReconnect'), false);
+    enablePractice(true);
+    if (session) { session.resume(); setStatus('Back again. Press Enter to go on.'); }
+  } catch (e) { connNote(e.message, true); }
+}
+link.on('reconnected', again);
+link.on('resync', again);
+link.on('goodbye', () => connNote('The M32 ended the session.'));
+// the operator left the CW Keyer on the M32 (long press, menu)
+link.on('menu', (m) => {
+  if (!session || preparing || (m.active && m.content === 'CW Keyer')) return;
+  session.pause();
+  badge('Connected · not in the CW Keyer', 'busy');
+  setStatus('The M32 left the CW Keyer. Press Enter to go back to it.');
+  needKeyer = true;
+});
+link.installPageHide(window);
+
+// ---- practice ------------------------------------------------------------------
+
+function makeSession(play) {
+  scheduler = new E.Scheduler({ mastery, chars: play, size: sizeValue() });
+  if (session) { scheduler.retries = session.scheduler.retries; }
+  const player = { play: (text) => link.playCw(text), stop: () => link.stopCw() };
+  session = new E.Session({
+    player, store, mastery, scheduler,
+    clock: { now: () => performance.now(), wall: () => Date.now() },
+    context: () => ({ device: link.device ? { hardware: link.device.hardware, firmware: link.device.firmware,
+                                               protocol: link.device.protocol, edition: link.device.edition || null } : null,
+                      lesson: lesson ? lesson.value : null, wpm })
+  });
+  session.on('state', onState);
+  session.on('result', onResult);
+  session.on('notice', (n) => {
+    if (n === 'stopped') setStatus('A paddle stopped the M32 — playing it again.');
+    else if (n === 'refused') setStatus('The M32 refused to play. Is it still in the CW Keyer?');
+  });
+  renderChars();
+  renderTally();
+}
+
+function sizeValue() { const v = $('selSize').value; return v === 'mixed' ? 'mixed' : +v; }
+$('selSize').onchange = async () => {
+  if (scheduler) scheduler.size = sizeValue();
+  await store.setMeta('size', $('selSize').value);
+};
+
+function enablePractice(on) {
+  $('btnGo').disabled = !on;
+  $('answer').disabled = !on;
+  $('btnPause').disabled = !on;
+  $('btnReplay').disabled = true;
+}
+
+function onState(s) {
+  const ans = $('answer');
+  $('btnReplay').disabled = !(s === 'answering' && session.item && session.item.replays < session.helpLimit);
+  $('btnReplay').textContent = 'Replay' + (session.item && s === 'answering' ? ' (' + (session.helpLimit - session.item.replays) + ' left)' : '');
+  if (s === 'playing') { setStatus('Listen…'); $('btnGo').textContent = 'Check'; ans.focus(); }
+  else if (s === 'answering') { setStatus('Type what you heard, then Enter.'); $('btnGo').textContent = 'Check'; ans.focus(); }
+  else if (s === 'feedback-playing') { $('btnGo').textContent = 'Next'; }
+  else if (s === 'feedback') { setStatus('Press Enter for the next one.'); $('btnGo').textContent = 'Next'; }
+  else if (s === 'idle') { $('btnGo').textContent = 'Next'; }
+  else if (s === 'paused') { $('btnGo').textContent = 'Go on'; if (link.state === 'ready' && !needKeyer) setStatus('Paused. Press Enter to go on.'); }
+}
+
+async function go() {
+  if (!session) return;
+  const s = session.state;
+  if (s === 'answering') return check();
+  if (s === 'playing') { setStatus('Still sounding — answer when it has finished.'); return; }
+  if (s === 'paused') {
+    if (link.state !== 'ready') return;
+    if (needKeyer) {
+      preparing = true;
+      try { await ensureKeyer(); needKeyer = false; badge('Connected · CW Keyer', 'on'); }
+      catch (e) { setStatus(e.message); return; }
+      finally { preparing = false; }
+    }
+    session.resume();
+  }
+  if (!started) {
+    started = true;
+    try { await store.setMeta('sessionsSinceExport', ((await store.getMeta('sessionsSinceExport')) || 0) + 1); } catch (e) { /* ok */ }
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  }
+  $('answer').value = '';
+  $('feedback').innerHTML = '';
+  session.next();
+}
+
+async function check() {
+  const a = await session.submit($('answer').value, performance.now());
+  if (!a) setStatus('Still sounding — answer when it has finished.');
+}
+
+function onResult({ attempt, score }) {
+  const exp = E.tokenize(score.expected);
+  let html = '';
+  if (score.perfect) {
+    html = '<div class="diff"><span class="ok">' + esc(dispText(score.expected)) + '</span></div><div>Right.</div>';
+    setStatus('Right! Press Enter for the next one.');
+  } else {
+    // the expected text, each character marked by what the scorer made of it
+    let k = 0, line = '';
+    for (const t of exp) {
+      if (t === ' ') { line += ' '; continue; }
+      const c = score.chars[k++];
+      const cls = c.ok ? 'ok' : (c.got == null ? 'miss' : 'bad');
+      const title = c.ok ? '' : ' title="' + (c.got == null ? 'missing' : 'you typed ' + esc(disp(c.got))) + '"';
+      line += '<span class="' + cls + '"' + title + '>' + esc(disp(t)) + '</span>';
+    }
+    html = '<div class="diff">' + line + '</div>' +
+           '<div>It was <b class="mono">' + esc(dispText(score.expected)) + '</b>; you typed <b class="mono">' +
+           esc(score.answer ? dispText(score.answer) : 'nothing') + '</b>. Listen again — it comes back in a while.</div>' +
+           '<div class="sr">It was ' + esc(spell(score.expected)) + '. You typed ' + esc(score.answer ? spell(score.answer) : 'nothing') + '.</div>';
+    setStatus('Not quite. Listen once more.');
+  }
+  if (attempt.helped) html += '<div class="keys">You used a replay, so this one does not move a box.</div>';
+  $('feedback').innerHTML = html;
+  renderChars();
+  renderTally();
+  showHistory();
+}
+
+function renderTally() {
+  if (!session) return;
+  const t = session.tally;
+  $('tally').textContent = t.items ? 'This session: ' + t.items + ' groups, ' + t.perfect + ' right, ' +
+    Math.round(100 * t.charsRight / Math.max(1, t.chars)) + ' % of characters.' : '';
+}
+
+function renderChars() {
+  if (!lessonList.length) return;
+  let rows = '';
+  for (const ch of lessonList) {
+    const r = mastery.row(ch);
+    const dim = !E.playable(ch);
+    let pips = '';
+    for (let i = 1; i <= 5; i++) pips += '<span class="pip' + (i <= r.box ? ' f' : '') + '"></span>';
+    rows += '<tr' + (dim ? ' class="dim"' : '') + '><td class="ch">' + esc(disp(ch)) + '</td>' +
+            '<td class="pips" aria-label="box ' + r.box + ' of 5">' + pips + '</td>' +
+            '<td>' + r.attempts + '</td>' +
+            '<td>' + (r.accuracy == null ? '–' : Math.round(100 * r.accuracy) + ' %') + '</td>' +
+            '<td>' + (r.medianLatency == null ? '–' : (r.medianLatency / 1000).toFixed(1) + ' s') + '</td></tr>';
+  }
+  $('charRows').innerHTML = rows;
+  const conf = mastery.confusionList(6).filter((c) => lessonList.indexOf(c.expected) >= 0);
+  $('confusions').innerHTML = conf.length ? '<b>Most confused:</b> ' +
+    conf.map((c) => '<span class="mono">' + esc(disp(c.expected)) + '</span> taken for <span class="mono">' + esc(disp(c.got)) + '</span> (' + c.count + '×)').join(' · ') : '';
+  // decision 4d: offered, never automatic
+  const play = lessonList.filter(E.playable);
+  const ready = lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(play);
+  show($('advance'), !!ready);
+  if (ready) {
+    const nextCh = lesson.characters[lesson.value];
+    $('advanceText').textContent = 'Every character is in box 3 or higher. Ready for lesson ' + (lesson.value + 1) +
+      ' (adds ' + disp(String(nextCh)) + ')?';
+    $('btnAdvance').textContent = 'Go to lesson ' + (lesson.value + 1) + ' (changes the lesson stored on your M32)';
+  }
+}
+
+$('btnAdvance').onclick = async () => {
+  try {
+    await link.command('put kochlesson/' + (lesson.value + 1));
+    await readLesson();
+    setStatus('Lesson ' + lesson.value + '. The new character comes up often at first.');
+  } catch (e) { setStatus('Could not change the lesson: ' + e.message); }
+};
+
+$('btnGo').onclick = go;
+$('btnReplay').onclick = () => { if (session) session.replay(); };
+$('btnPause').onclick = () => { if (session) session.pause(); };
+
+$('answer').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (e.ctrlKey || e.metaKey) { if (session) session.replay(); }
+    else go();
+    return;
+  }
+  if (e.key === 'Escape') { e.preventDefault(); if (session) session.pause(); }
+});
+// Every change to the field, however it was made (keys, an IME, paste): the inserted text,
+// or the kind of deletion. Its time is on the performance clock, like the link's.
+$('answer').addEventListener('input', (e) => {
+  if (session) session.key(e.data != null ? e.data.toLowerCase() : (e.inputType || 'edit'), e.timeStamp);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target === $('answer') || e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  if (e.key === 'Enter' && e.target === document.body) { e.preventDefault(); go(); }
+  else if (e.key === 'Escape' && session) session.pause();
+});
+
+// ---- start ---------------------------------------------------------------------
+
+if (!('serial' in navigator)) {
+  $('btnConnect').disabled = true;
+  connNote('This browser cannot talk to a serial port. Use Chrome, Edge or Opera on a desktop computer.', true);
+}
+openStore();
+</script>
+</body>
+</html>
