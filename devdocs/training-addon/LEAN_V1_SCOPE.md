@@ -388,6 +388,9 @@ first release; the engine is built so that item kinds and answer sources are plu
     **12c — DECIDED: Willi reviews tiers B and C;** a second experienced CW operator looks over tier C
     before release (tier A is mechanical).
     **12d — DECIDED: OZ1THC's lists are left out.** A courtesy note to him stays under decision 8.
+    *Amended 2026-11-01 (Willi):* this means the lists of his trainer. The `phrases_2/3/4_words.txt` that Tommy
+    contributed to the Morserino repo in 2019 **are used** in tier B. Tier C also takes fragments of
+    `Practice Files/RealQSOs.TXT` (G0ELZ, G3DVW), next to the slot templates.
 13. **Koch filter and ladder — DECIDED (Willi, 2026-10-29).**
     **13a — filter:** strict, no lenient setting. A phrase is offered only if every character is in the
     learner's active set (read from the device, R12); spaces are ignored. User-file lines outside the set

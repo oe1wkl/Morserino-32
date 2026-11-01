@@ -1,0 +1,167 @@
+# Tier B — plain-language phrases for the M32 Trainer (English). DRAFT for Willi's review (decision 12c).
+#
+# One line = one phrase, 2–8 words, lower case, no punctuation except where it trains the character
+# (. , ?). The build script computes from which lesson each phrase can be sounded, per Koch sequence;
+# the "## band" headers are only the writer's target for the M32 sequence
+# (m k r s u a p t l o w i . n j e f 0 y v , g 5 / q 9 z h 3 8 b ? 4 2 7 c 1 d 6 x ...).
+# In the M32 sequence E comes at lesson 16 and H at 28, so early phrases avoid them on purpose.
+
+## up to lesson 12 (m k r s u a p t l o w i)
+it is warm
+a small park
+a tall mast
+two pots
+stop at our park
+it was a trip
+tom was tall
+a warm room
+a lost ski
+it is too warm
+a smart parrot
+two small pills
+milk is too warm
+sam was at work
+walk to work
+a spot to park
+a sour plum
+palm oil
+i walk a lot
+it is art
+a trip to oslo
+pasta is warm
+a tulip at last
+i was so lost
+i am a pilot
+
+## lessons 13-15 (. n j)
+not now
+tom is not in
+a man in a train
+no rain in spain
+it is noon
+soon it rains
+paint it
+an iron pot
+a train at noon
+i am in a train
+not in our town
+jump into a pool
+a pink tulip
+a junior pilot
+i want to win
+not at all
+it rains. i walk.
+
+## lessons 16-21 (e f 0 y v ,)
+we are on air
+i like tea
+tea or milk
+let us meet at noon
+let it snow
+one more time
+a pen in a pot
+peter is late
+a rose is a rose
+tom sent a letter
+it is time to sleep
+please sit
+ten minutes late
+a new rope
+we eat at noon
+we are late
+a mile or two
+a little more
+a tea pot
+turn left
+a fine meal
+from one to ten
+a soft pillow
+often at noon
+life is fun
+i wake at 10
+you are late
+yes it is
+my sister is fine
+a yellow tulip
+easy to say
+try it
+money is not all
+stay a little
+it is rainy
+very fine
+i love tea
+we have a pony
+never too late
+we live in a flat
+i will visit you
+even now
+five or seven
+yes, it is
+well, i am fine
+over to you
+
+## lessons 22-27 (g 5 / q 9 z)
+a long walk
+it is getting late
+give it a try
+sing a song
+a green tree
+evening is near
+try again
+morning tea
+we got lost
+eggs on toast
+quite a long way
+a quiet evening
+a lazy morning
+a pizza at nine
+a long queue
+a quiet village
+five or nine
+
+## from lesson 28 (h, and later 3 8 b ? 4 2 7 c 1 d 6 x)
+the sun is up
+this is the way
+the weather is fine
+she has a new home
+i think so
+thank you
+the night is long
+here it is
+the train is late
+he lives in the north
+that is right
+the moon is full
+with all my heart
+my home is far away
+what a lovely evening
+a hot summer
+i have a question
+a big house
+the blue sky
+both of us
+by bus or by train
+a bright light
+best wishes to you
+a busy week
+how are you?
+is it far?
+what is your name?
+where are you now?
+2 or 3 times
+a nice cup of coffee
+come back soon
+a cold winter
+check the time
+good morning
+dinner is ready
+a windy day
+old friends
+and so on
+the dog is asleep
+today and tomorrow
+a cloudy day
+did you sleep well?
+six days a week
+next time
+relax a bit

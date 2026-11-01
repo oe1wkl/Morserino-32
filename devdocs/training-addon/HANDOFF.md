@@ -8,11 +8,11 @@ read, what is waiting on whom, and which traps are already known.*
 
 | | |
 |---|---|
-| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written, tested in Node and committed 2026-11-01** (not pushed) (see "M2 — state" in §6). **M3 (engine + Copy Trainer page) written, tested in Node and against a simulated M32, and committed 2026-11-01** (not pushed); **bench owed** (`BENCH_M3.md`; see "M3 — state" in §6). |
+| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written, tested in Node and committed 2026-11-01** (not pushed) (see "M2 — state" in §6). **M3 (engine + Copy Trainer page) written, tested in Node and against a simulated M32, and committed 2026-11-01** (not pushed). **Benched 2026-11-01** on Pocket (Chrome, Firefox) and classic: all of §1–§4 pass after the fixes `2ad98fa`/`9c2a627`; prosigns added after that (`3b2d0e7`), version tag `54baaf4`. **Postponed by Willi (2026-11-01):** §4.4/4.5 (prosigns on a device), §5 VoiceOver, Edge. **M3b (phrases) started 2026-11-01.** |
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | M3 bench (`BENCH_M3.md`, incl. the first real test of `openWebSerial()`); the M3 choices awaiting Willi (§6 "M3 — state"); corpus (tiers B and C need Willi's review); M3b–M6. Protocol PDF rebuild at merge to master. |
+| Not yet done | The postponed M3 bench steps (above); the M3 choices awaiting Willi (§6 "M3 — state"); corpus (tiers B and C need Willi's review); M3b–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -275,6 +275,48 @@ coverage curve per lesson computed from the learner's real set; user files (C3) 
 ladder 2–8. **Draft tiers B and C for Willi to review** before shipping; a second experienced CW operator
 looks over tier C (12c). The host copy of the word list (`english_words.h`, 4,881 words) inherits the
 firmware's attribution — check it (R10).
+
+**M3b decisions (Willi, 2026-11-01):**
+- **One selector** in the Copy practice box: *Practise* = Groups · Words · Phrases. With Phrases the size
+  select becomes *Words per phrase* (2–8), and a second select pins a tier (Mixed / Word chains / Plain
+  language / QSO lines / My file).
+- **Words** is its own kind: single real words from the Koch-filtered list (tier A at length 1).
+- **Corpus first:** format, tier C from the QSO Bot, a first tier B draft, and the per-lesson coverage
+  curve, as a review document for Willi; the phrase mode is built while he reviews.
+- **Call signs in tier C** come from a host copy of the firmware's generator and prefix table
+  (`getRandomCall()`, `callsign_prefixes.h`).
+- **Tier C = both** (Willi's idea): fragments of `Practice Files/RealQSOs.TXT` (G0ELZ, G3DVW (SK); Bill's
+  permission covers the trainer, Willi 2026-11-01) **and** the slot templates. RealQSOs is too big to review
+  line by line: Willi reviews a fixed random sample of 100, and bad fragments go into `realqsos_exclude.txt`.
+- **Tommy OZ1THC's `phrases_2/3/4_words.txt` join tier B** — contributed to the Morserino repo in 2019, so
+  decision 12d (his trainer's lists stay out) does not cover them. 18 sensitive ones are suggested for
+  exclusion in `tier_b_exclude.txt` (Willi to confirm).
+
+#### M3b — state (2026-11-01)
+**Corpus reviewed and accepted by Willi (2026-11-01)**, including the suggested exclusions in `tier_b_exclude.txt`
+and the RealQSOs sample. Still owed before release: the second operator's look at tier C (12c).
+**Corpus: `devdocs/training-addon/CORPUS_REVIEW.md`** (generated). Sources in
+`Software/tools/trainer-corpus/`: `tier_b_en.txt` (150 plain-language phrases, written band by band for the
+M32 sequence), `tier_c_en.txt` (94 QSO lines with slots, seeded from the QSO Bot's overs cut at `=`, plus
+`@pool`s for RST, power, temperature, CQ zone, serial), the two exclude files, `build_corpus.py` (validates,
+reads Tommy's files and RealQSOs.TXT from `Practice Files/`, writes `Software/Utilities/m32_trainer_corpus.json`,
+233 KB, and the review). Totals: 4,881 words; tier B 150 + 240 (Tommy) + 95 (Willi's list, `tier_b_willi_en.txt`, generated with
+Google Gemini, added 2026-11-01); tier C 1,713 real fragments + 94 templates. Coverage, M32 sequence: tier B reaches 10 items at lesson 11, the real QSO fragments at lesson 16
+(64 at 22, 1,127 at 38). The templates mostly need `de`, so they come at lesson 38 and later.
+**Call sign generator ported (2026-11-01):** `randomCall()` in the engine, with the prefix table carried in the
+corpus (`prefixes`, 973 rows from `callsign_prefixes.h`). Without a lesson filter it makes the firmware's
+calls exactly: `Software/tests/callsign_gen/` compiles the real `getRandomCall()` on the host with the
+engine's random generator, writes a fixture, and `callsign.test.js` compares (80 runs × 40 calls; three
+deliberate breaks of the port each fail it). With the learner's characters it draws only from prefixes,
+digits and letters already learned, or returns null. It defaults to common prefixes, every continent and any
+length. The VK/ZL-only generator isn't ported. The coverage table now counts call signs exactly, and nothing
+changed. **Firmware finding:** the prefix table has a row `"4U_I"` (weight 1), so with *Call Common* off the
+device can generate a call like `4u_i5abc`, with an underscore. It's rare, but wrong; the fix is for master.
+The other three sequences are in the review. **Next:** port the call sign generator (needed for the real tier C
+coverage, which is approximate for now), then the engine side: Words, word chains, phrases, the ladder, user
+files (C3), the Practise selector. **Open for release (R10):** the word list's attribution — `english_words.h`
+says "most of the oxford 5000", weights from hermitdave/FrequencyWords. Check both licences before the
+host copy is published.
 
 ### M3c — keyed answer (1 session + bench)
 Serial Output check and warning, stream reader, end-of-answer rule (11a), corrections (11b), `<err>` vs `*`,

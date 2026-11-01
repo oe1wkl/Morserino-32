@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-01';
+const VERSION = '2026-11-01b';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -360,6 +360,70 @@ class Scheduler {
   }
 }
 
+// ---- call signs ------------------------------------------------------------
+
+// The firmware's getRandomCall() (m32_v6.ino), for tier C's [CALL] slots. `prefixes` is the
+// table from callsign_prefixes.h as the corpus carries it: [prefix, continent mask, CQ zone,
+// weight], in table order. random(a, b) is a + floor(rng() * (b - a)), drawn in the firmware's
+// order, so without `active` this makes exactly the firmware's choices for the same random
+// numbers (Software/tests/callsign_gen/ checks it against the C++). Left out: the VK/ZL-only
+// generator (the "VK/ZL" region setting), which the trainer does not offer.
+//   opts.maxLength   the firmware's Call Length value: 0 = any, 1 = 3 characters, n = prefix <= n
+//   opts.continents  mask (default all); ignored for maxLength 1, as the firmware does
+//   opts.commonOnly  only prefixes seen in real call data (weight >= 81), default true
+//   opts.active      the learner's characters (an array or Set): the call uses only those --
+//                    prefixes made of them, a digit and suffix letters drawn from them. Returns
+//                    null when no call can be made.
+// -> {call, continent, zone}
+const CALL_COMMON_WEIGHT = 81;
+const CONT_ALL = 0x7F;
+function randomCall(prefixes, opts) {
+  opts = opts || {};
+  const rng = opts.rng || Math.random;
+  const random = (a, b) => a + Math.floor(rng() * (b - a));
+  const maxLength = opts.maxLength | 0;
+  const contMask = maxLength !== 1 ? (opts.continents == null ? CONT_ALL : opts.continents) : CONT_ALL;
+  const minWeight = opts.commonOnly === false ? 0 : CALL_COMMON_WEIGHT;
+  const maxPfxLen = maxLength > 0 ? maxLength : 99;
+  const act = opts.active ? new Set(opts.active) : null;
+  const digits = act ? '0123456789'.split('').filter((c) => act.has(c)) : null;
+  const letters = act ? 'abcdefghijklmnopqrstuvwxyz'.split('').filter((c) => act.has(c)) : null;
+  const digit = () => (act ? digits[random(0, digits.length)] : String.fromCharCode(48 + random(0, 10)));
+  const letter = () => (act ? letters[random(0, letters.length)] : String.fromCharCode(97 + random(0, 26)));
+  const needsDigit = (p) => !/[0-9]$/.test(p) || p.length <= 2;
+  if (act && !letters.length) return null;
+
+  const ok = (row) => (row[1] & contMask) && row[3] >= minWeight && row[0].length <= maxPfxLen &&
+    (!act || ([...row[0]].every((c) => act.has(c)) && (!needsDigit(row[0]) || digits.length)));
+  let total = 0;
+  for (const row of prefixes) if (ok(row)) total += row[3];
+  if (total === 0) {                        // the firmware's old-style fallback call
+    if (act && !digits.length) return null;
+    return { call: letter() + digit() + letter() + letter() + letter(), continent: CONT_ALL, zone: 0 };
+  }
+  const pick = random(0, total);
+  let cum = 0, chosen = null;
+  for (const row of prefixes) {
+    if (!ok(row)) continue;
+    cum += row[3];
+    if (cum > pick) { chosen = row; break; }
+  }
+  let call = chosen[0];
+  if (needsDigit(call)) call += digit();
+  const maxTotal = maxLength === 0 ? 10 : maxLength > 4 ? 6 : maxLength + 2;
+  let suffLen = Math.max(1, Math.min(3, maxTotal - call.length));
+  if (maxLength === 0) {
+    suffLen = random(1, 4);
+    if (suffLen === 1 && random(0, 3) !== 0) suffLen = random(2, 4);
+  }
+  while (suffLen-- > 0 && call.length < 12) call += letter();
+  if (maxLength === 0 && random(0, 8) === 0) {
+    const pm = random(0, 2) ? 'm' : 'p';
+    if (!act || (act.has('/') && act.has(pm))) call += '/' + pm;
+  }
+  return { call, continent: chosen[1], zone: chosen[2] };
+}
+
 // ---- the session ---------------------------------------------------------
 
 function newId() {
@@ -645,7 +709,7 @@ function lessonChars(kochlesson) {
 return {
   VERSION, SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
-  Mastery, movesBoxes, median, mulberry32, Scheduler, Session, newId,
+  Mastery, movesBoxes, median, mulberry32, randomCall, Scheduler, Session, newId,
   MemoryStore, IdbStore, exportFile, parseExport, lessonChars
 };
 }));
