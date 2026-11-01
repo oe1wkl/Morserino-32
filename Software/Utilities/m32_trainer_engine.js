@@ -20,6 +20,10 @@
 }(typeof self !== 'undefined' ? self : this, function () {
 'use strict';
 
+// The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
+// all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
+// browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
+const VERSION = '2026-11-01';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -639,7 +643,7 @@ function lessonChars(kochlesson) {
 
 
 return {
-  SCHEMA, RULES, KEYSTROKE_DAYS,
+  VERSION, SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
   Mastery, movesBoxes, median, mulberry32, Scheduler, Session, newId,
   MemoryStore, IdbStore, exportFile, parseExport, lessonChars

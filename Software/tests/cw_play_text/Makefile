@@ -19,4 +19,4 @@ run: run_tests
 	./run_tests
 
 clean:
-	rm -f run_tests extracted.inc
+	rm -rf run_tests run_tests.dSYM extracted.inc

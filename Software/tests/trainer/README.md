@@ -13,6 +13,12 @@ node --test Software/tests/trainer/*.test.js
 |---|---|
 | `link.test.js` | `m32_trainer_link.js`, the link to the Morserino: framing of the mixed JSON/echo stream (every split point, random chunking, noise, braces/quotes/escapes inside strings, torn and stray objects, the stall rule), the one-in-flight command queue, reply vs unsolicited routing, timeouts and the re-handshake, `cw/play` → `done` bookkeeping, cable loss and reopen, BLE consent, goodbye and `pagehide` |
 | `engine.test.js` | `m32_trainer_engine.js`: tokenizer (prosigns, also `[sk]` `\sk`, `<ar>`=`+`), the scorer's word and character alignment, the Leitner rules (promotion window, miss drop, what moves no box), replay of the log in time order, confusions, lesson-advance offer, draw weights and group size, the retry after a miss, the session's play/answer/feedback states (paddle stop, help, lost link, pause), export/import merge, keystroke pruning |
+| `version.test.js` | page, link and engine carry one `VERSION`, and the page loads both scripts with `?v=` that version |
+
+**On every change to the trainer, bump `VERSION`** in all three files: `m32_trainer_link.js`,
+`m32_trainer_engine.js`, and in `m32_trainer.html` both the `?v=` tags and `PAGE_VERSION`. The format is a date, with a
+letter for a second change on the same day (`2026-11-01b`). `version.test.js` fails if they disagree. The page refuses to
+connect when a browser serves it with a cached script of another version.
 
 Time is a fake clock (`fakeClock()` in the test file), so every timeout is exercised
 exactly and the suite runs in well under a second. The device is a scripted transport

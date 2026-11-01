@@ -5,8 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
-  <script src="m32_trainer_link.js"></script>
-  <script src="m32_trainer_engine.js"></script>
+  <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
+  <script src="m32_trainer_link.js?v=2026-11-01"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-01"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -151,6 +152,7 @@
 
 <script>
 'use strict';
+const PAGE_VERSION = '2026-11-01';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -177,6 +179,14 @@ function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<
 function setStatus(text) { $('status').textContent = text; }
 function connNote(text, err) { const n = $('connNote'); n.textContent = text || ''; n.classList.toggle('err', !!err); }
 function badge(text, cls) { const b = $('linkBadge'); b.textContent = text; b.className = 'badge ' + cls; }
+
+// A new page with a cached old script (or the reverse) misbehaves in odd ways: say so, before
+// anything below can trip over it. Connect stays off (see the end).
+const staleScripts = [['link', M32Link.VERSION], ['engine', E.VERSION]].filter((v) => v[1] !== PAGE_VERSION);
+if (staleScripts.length)
+  connNote('This page and its scripts are from different versions (' +
+           staleScripts.map((v) => v[0] + ' ' + (v[1] || 'old')).join(', ') + ', page ' + PAGE_VERSION +
+           '): the browser kept an old copy. Reload the page while holding Shift.', true);
 
 // ---- storage ---------------------------------------------------------------
 
@@ -605,7 +615,8 @@ document.addEventListener('keydown', (e) => {
 // Replay is Ctrl+Enter or Cmd+Enter (both work); name the one this keyboard has
 if (/mac|iphone|ipad/i.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ''))
   $('kReplay').textContent = 'Cmd';
-if (!('serial' in navigator)) {
+if (staleScripts.length) $('btnConnect').disabled = true;
+else if (!('serial' in navigator)) {
   $('btnConnect').disabled = true;
   connNote('This browser cannot talk to a serial port. Use Chrome, Edge, Opera, or Firefox 151 or newer, on a desktop computer.', true);
 }
