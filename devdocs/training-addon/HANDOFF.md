@@ -8,7 +8,7 @@ read, what is waiting on whom, and which traps are already known.*
 
 | | |
 |---|---|
-| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written and tested in Node 2026-11-01, not committed** (see "M2 — state" in §6). |
+| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written, tested in Node and committed 2026-11-01** (not pushed) (see "M2 — state" in §6). |
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
@@ -191,7 +191,7 @@ Tool's `openTransport()` contract.
 
 #### M2 — state (2026-11-01)
 
-**Written, not committed.** `Software/Utilities/m32_trainer_link.js` (UMD: global `M32Link` in the page,
+**Written and committed 2026-11-01 (not pushed).** `Software/Utilities/m32_trainer_link.js` (UMD: global `M32Link` in the page,
 `require()` in Node) and `Software/tests/trainer/link.test.js` (49 tests, `node --test
 Software/tests/trainer/*.test.js`, fake clock, no device; README beside it). No firmware change, so no build.
 
