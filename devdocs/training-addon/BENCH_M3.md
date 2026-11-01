@@ -20,6 +20,10 @@ python3 -m http.server 8732 --bind 127.0.0.1
 Then open `http://localhost:8732/Utilities/m32_trainer.html`. Close the Config Tool and any
 serial monitor first (one program per port).
 
+**Keep the browser console open** (Cmd+Opt+J in Chrome, Cmd+Opt+I → Console in Edge): the
+page logs every line it sends (`→`) and receives (`←`) and every link state change. When a step
+fails, copy the console from a little before the failure.
+
 *Without a device:* `Software/tests/trainer/fake_m32_browser.js` is a simulated M32 — paste it into
 the console before pressing Connect (see its header).
 
@@ -43,7 +47,7 @@ the console before pressing Connect (see its header).
 | 2.6 | Enter while it is still sounding | "Still sounding — answer when it has finished"; nothing is scored |
 | 2.7 | Type while it is sounding, then Enter after the end | Accepted (copying while listening is normal) |
 | 2.8 | Esc | "Paused"; Enter goes on |
-| 2.9 | Group size: pin 3, then Mixed | Groups of 3; Mixed starts with single characters while your boxes are low |
+| 2.9 | Group size: pin 3, then Mixed | Groups of 3 (the console shows `→ put cw/play/` with three characters); Mixed starts with single characters while your boxes are low |
 | 2.10 | ~30 groups | Weak characters come up more often; the newest character of the lesson especially |
 
 ## 3. The device side
@@ -52,6 +56,8 @@ the console before pressing Connect (see its header).
 |---|---|---|
 | 3.1 | Touch a paddle while a group sounds | "A paddle stopped the M32 — playing it again"; the group plays again from the start |
 | 3.2 | Long-press to leave the CW Keyer | The page pauses: "The M32 left the CW Keyer. Press Enter to go back to it."; Enter → the M32 is back in the CW Keyer and practice goes on |
+| 3.2b | Long-press out of the CW Keyer, then start the **CW Keyer on the M32 yourself** | The page says "Back in the CW Keyer. Press Enter to go on." and the badge is "Connected · CW Keyer" again; Enter plays |
+| 3.2c | Long-press out, start a **different** mode on the M32 (e.g. CW Generator), then Enter on the page | The M32 leaves that mode and goes back into the CW Keyer by itself |
 | 3.3 | **Pocket:** unplug the USB cable mid-group, wait 5 s, plug it back | "Cable lost", then by itself "Connected · CW Keyer" and "Back again. Press Enter to go on." (the M2 `reopen()` path — **the first real test of it**) |
 | 3.4 | **Classic:** restart the M32 (power switch or reset) while connected, then press Enter for the next group | The classic's port stays open, so the page notices only when a command goes unanswered: about 3 s after Enter it re-handshakes, puts the M32 back in the CW Keyer and says "Back again" (the M2 `resync` path); Enter then plays |
 | 3.5 | Close the tab while connected | The M32 leaves protocol mode; with a time-out set, it powers off on time again (the `pagehide` goodbye) |
@@ -75,3 +81,9 @@ the console before pressing Connect (see its header).
 ## Results
 
 *(fill in: device, browser, step, pass/fail, notes)*
+
+| Date | Device | Browser | Step | Result | Notes |
+|---|---|---|---|---|---|
+| 2026-11-01 | Pocket | Chrome | 2.9 | fail → pass | First run: every group was one character whatever the size. Not reproducible in the simulator; after a hard reload (and the console trace) groups have the length set. Most likely a stale cached page. |
+| 2026-11-01 | Pocket | Chrome | 3.2 | fail → pass | First run: re-entering the CW Keyer on the M32 left the "left the CW Keyer" message; the page then showed "Not connected" and Connect said the port was already open (the M32's Goodbye left the port open). Fixed in the page; re-run passes. What made the M32 end the session was not captured. |
+| 2026-11-01 | Pocket | Chrome | 3.2b | pass | Starting the CW Keyer on the M32 yourself is picked up |

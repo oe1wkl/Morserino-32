@@ -4,6 +4,8 @@
 // CW Keyer. `window.fakeM32` then lets you poke it:
 //   fakeM32.paddle()       a paddle touch: stops a running cw/play ("done" "stopped")
 //   fakeM32.leaveKeyer()   the operator long-presses back to the menu (a "menu" event)
+//   fakeM32.enterKeyer()   ... and starts the CW Keyer there again (an "activate" ON event)
+//   fakeM32.goodbye()      the M32 ends the session by itself ("end m32protocol")
 //   fakeM32.unplug() / fakeM32.replug()   cable loss and return (the Pocket)
 //   fakeM32.restart()      a restart behind an open port (the classic): silent until handshaken
 //   fakeM32.msPerChar      sounding time per character (default 250)
@@ -68,6 +70,8 @@
     get msPerChar() { return st.msPerChar; }, set msPerChar(v) { st.msPerChar = v; },
     paddle() { finish('stopped'); },
     leaveKeyer() { finish('stopped'); st.keyer = false; send({ menu: { content: 'CW Keyer', 'menu number': 1, executable: true, active: false } }); },
+    enterKeyer() { st.keyer = true; send({ activate: { state: 'ON' } }); },
+    goodbye() { finish('stopped'); send({ 'end m32protocol': { content: 'Goodbye!' } }); st.session = false; },
     unplug() { const t = st.transport; st.plugged = false; finish('stopped'); st.keyer = false; if (t && t.onClose) t.onClose(new Error('device lost')); },
     restart() { if (st.playing) clearTimeout(st.playing.timer); st.playing = null; st.keyer = false; st.session = false; },
     replug() { st.plugged = true; st.keyer = false; if (st.onReplug) { const f = st.onReplug; st.onReplug = null; f(); } }

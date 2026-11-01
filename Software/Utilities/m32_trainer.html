@@ -310,12 +310,23 @@ function deviceFacts(dev) {
                                ' · protocol ' + (dev.protocol || '?');
 }
 
+// Every line in and out, in the browser console (for the bench: what did the page send?)
+function trace(t) {
+  const w = t.write;
+  t.write = (text) => { console.info('→ ' + text.trim()); return w(text); };
+  return t;
+}
+link.on('object', (obj, meta) => console.info('← ' + (meta.raw || JSON.stringify(obj))));
+link.on('text', (it) => console.info('← text ' + JSON.stringify(it.text)));
+link.on('state', (s, old) => console.info('link ' + old + ' → ' + s));
+
 $('btnConnect').onclick = async () => {
   connNote('');
   badge('Connecting…', 'busy');
   $('btnConnect').disabled = true;
   try {
-    const t = await M32Link.openWebSerial();
+    if (link.state !== 'closed') await link.disconnect();     // e.g. after the M32's own Goodbye: release the port
+    const t = trace(await M32Link.openWebSerial());
     const dev = await link.connect(t);
     deviceFacts(dev);
     if (!link.hasFeature('trainer-events')) {
@@ -334,7 +345,9 @@ $('btnConnect').onclick = async () => {
     $('btnGo').focus();
   } catch (e) {
     if (e.name === 'NotFoundError') { badge('Not connected', 'off'); return; }     // the port chooser was closed
-    connNote(e.message, true);
+    if (e.name === 'InvalidStateError')
+      connNote('That port is already open in another tab or program (the Config Tool, a serial monitor). Close it there and try again.', true);
+    else connNote(e.message, true);
     badge('Not connected', 'off');
     if (link.state !== 'closed') await link.disconnect();
   } finally {
@@ -388,15 +401,30 @@ async function again() {
 }
 link.on('reconnected', again);
 link.on('resync', again);
-link.on('goodbye', () => connNote('The M32 ended the session.'));
+// the M32 ended the session by itself: release the port too, so Connect works again
+link.on('goodbye', () => { connNote('The M32 ended the session.'); link.disconnect(); });
 // the operator left the CW Keyer on the M32 (long press, menu)
 link.on('menu', (m) => {
-  if (!session || preparing || (m.active && m.content === 'CW Keyer')) return;
+  if (!session || preparing) return;
+  if (m.active && m.content === 'CW Keyer') { if (needKeyer) backInKeyer(); return; }
   session.pause();
   badge('Connected · not in the CW Keyer', 'busy');
   setStatus('The M32 left the CW Keyer. Press Enter to go back to it.');
   needKeyer = true;
 });
+// ... and started a mode there again ({"activate":{"state":"ON"}}): is it the CW Keyer?
+link.on('activate', async (a) => {
+  if (!session || preparing || !needKeyer || a.state !== 'ON') return;
+  try {
+    const { menu } = await link.command('get menu');
+    if (needKeyer && menu.active && menu.content === 'CW Keyer') backInKeyer();
+  } catch (e) { /* Enter still puts it back */ }
+});
+function backInKeyer() {
+  needKeyer = false;
+  badge('Connected · CW Keyer', 'on');
+  setStatus('Back in the CW Keyer. Press Enter to go on.');
+}
 link.installPageHide(window);
 
 // ---- practice ------------------------------------------------------------------
