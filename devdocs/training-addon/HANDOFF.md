@@ -8,11 +8,11 @@ read, what is waiting on whom, and which traps are already known.*
 
 | | |
 |---|---|
-| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). M2 has not started. |
+| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written and tested in Node 2026-11-01, not committed** (see "M2 — state" in §6). |
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | Corpus (tiers B and C need Willi's review); M2–M6. Protocol PDF rebuild at merge to master. |
+| Not yet done | Corpus (tiers B and C need Willi's review); M3–M6; `openWebSerial()` on a real device (with the page, M3). Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -68,7 +68,7 @@ Layering that the tests depend on: **link module** (framer, command queue, event
 | 4 | Leitner 1–5, promote on ≥ 3 attempts since last change and ≥ 90 % of the last 10; miss = −2 boxes; **no latency gate**; groups 1–5 by box, weight 6 − box (newest ×2 until box 2); unscored replay after a miss, item returns after ≈ 4 others; lesson advance **offered** at all characters ≥ box 3, never automatic. |
 | 5 | IndexedDB, attempt log = source of truth, merge-by-id export/import, `persist()` + export nudge, raw keystroke times pruned after 180 days, no sync. |
 | 6 | Desktop Web Serial browsers; benched on Chrome + Edge; no mobile; keep the `openTransport()` seam. |
-| 7 | Name "M32 Trainer"; three files in `Software/Utilities/`; links from Config Tool (hidden in the iOS wrapper), manuals EN + DE, What's-new, FAQ; English-only UI. |
+| 7 | Name "M32 Trainer"; four files in `Software/Utilities/` (the link module added 2026-11-01); links from Config Tool (hidden in the iOS wrapper), manuals EN + DE, What's-new, FAQ; English-only UI. |
 | 8 | Willi writes all messages. Christof first (before M1); Oliver after 1.6 (fork question separate); Tommy + Enzo at beta. |
 | 9 | Branch `training-addon` — **go**; worktree created 2026-10-29 (see §0). |
 | 10–13 | Phrases in v1 (one engine); typed **and** keyed answers, one scorer; keyed end = idle 4 s (2–10 s) / early finish 1.5 s after the target's word count / Enter / `=` or `<bt>` never required; `<err>` or `*` first deletes the last word, second restarts the answer, corrected answers do not count toward promotion; tiered corpus A/B/C + user files; English first with a `lang` field; strict Koch filter; ladder 2–8 words with offers at ≥ 90 % / < 60 %. |
@@ -188,6 +188,41 @@ but tell Willi, and Christof if he asks):
 Brace/quote-aware framer, command queue (one in flight), event routing by object name, reconnect, `pagehide`
 goodbye. Raw character stream vs JSON. Node tests with injected noise and partial lines. Copy the Config
 Tool's `openTransport()` contract.
+
+#### M2 — state (2026-11-01)
+
+**Written, not committed.** `Software/Utilities/m32_trainer_link.js` (UMD: global `M32Link` in the page,
+`require()` in Node) and `Software/tests/trainer/link.test.js` (49 tests, `node --test
+Software/tests/trainer/*.test.js`, fake clock, no device; README beside it). No firmware change, so no build.
+
+- **A fourth file.** Decision 7b lists three files; the link is a separate `m32_trainer_link.js` so it can be
+  tested alone and reused (a later Config Tool could share it). **Willi agreed (2026-11-01)** — one more line
+  in `~/sync-to-dropbox.sh` at publish time.
+- **Framer:** brace/quote/escape-aware; text is handed on at once, objects when complete, each stamped with
+  the arrival time (for `done` timing in M3). The protocol's stall rule (an object open with no byte for
+  1.5 s is given up) **recovers what arrived behind a torn object** instead of dropping it: it resumes at the
+  first `{` inside from which a whole object parses. Recovered items carry `late: true` — their time is not
+  an arrival time. Unparsable (a stray `{` in boot text) and oversize (64 KB) objects are handled the same way.
+- **Queue:** one command in flight; `expect` reply keys (defaults from the command: `GET_REPLY`, `ok` for a
+  PUT, `control` for `PUT control`); `error` always counts as the reply. Unsolicited objects go to listeners
+  by key (`cw`, `trainer`, `menu`, …); `'object'` sees everything with `meta.reply`.
+- **Timeouts and recovery:** after a timeout the queue is held 250 ms so a late reply is swallowed, not taken
+  for the next command; then the link re-handshakes once (`put device/protocol/on` is harmless mid-session,
+  and a restarted M32 — the classic does that behind its USB bridge — ignores every command until it is
+  handshaken). Event `resync` (re-read what you rely on) or `unresponsive` (queue rejected; `reconnect()`).
+  Cable loss: everything settles, `lost`; with `transport.reopen()` (the Pocket re-enumerates; Web Serial
+  `connect` event, same vendor/product id) a new session and `reconnected`.
+- **`playCw(text)`** → `{started, done}`. `done` never rejects: `end` / `stopped` (from the device),
+  `replaced` (a later play was accepted — the device owes one `done`, for that one), `refused`, `lost`.
+- **Goodbye:** `addGoodbye(fn)` steps (the trainer will restore *Serial Output* there, open item 3) run on
+  `disconnect()` and are written with `put device/protocol/off` in **one** write on `pagehide`.
+- **BLE consent** (`CONFIRM ON DEVICE` → wait 25 s, event `confirm`) is in, as in the Config Tool, though v1
+  is USB only.
+- **Teeth:** each of eleven deliberate breaks (quotes, escapes, salvage, late-reply hold, re-handshake,
+  `replaced`, event-vs-reply, framer reset at handshake, `late` flag, consent, pagehide steps) fails a test.
+- **Not tested:** `openWebSerial()` (browser + device) — bench it with the page in M3: connect, unplug and
+  replug a Pocket (`reconnected`), restart a classic (`resync`), close the tab (session ends, auto-power-off
+  works again).
 
 ### M3 — engine + Copy Trainer UI (2–3 sessions)
 Scheduler, scorer (word alignment then character alignment inside substituted words), Leitner model,

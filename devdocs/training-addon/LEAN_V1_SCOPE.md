@@ -346,7 +346,8 @@ first release; the engine is built so that item kinds and answer sources are plu
    avoided (device terms: Practice Stats, Practice Set).
    **7b — files** in `Software/Utilities/`: `m32_trainer.html`, `m32_trainer_engine.js`,
    `m32_trainer_corpus.json`; published at the site root like the Config Tool (publish-script lines handed
-   to Willi then).
+   to Willi then). **Amended (Willi, 2026-11-01):** a fourth file, `m32_trainer_link.js` (the link module,
+   M2), kept separate so it is tested alone and can be shared.
    **7c — links:** from the Config Tool header (hidden in the iOS wrapper — check how the wrapper handles
    `navigator.serial` first); from the "Using the Serial Output of the M32" section of the manuals EN + DE,
    plus the generated "What is new" and one FAQ line; the trainer links back to the Config Tool and to the
