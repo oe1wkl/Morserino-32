@@ -256,7 +256,7 @@ and keep the upper-case codes through `cleanUpText()` — firmware, both variant
 1. A helped item (replay before answering) moves **no** box, neither up nor down (the scope says "excluded
    from promotion"; I read that as "does not count").
 2. Typing while the group sounds is allowed; Enter before the end is refused with a message.
-3. Keys: Enter = start / check / next, Ctrl+Enter = replay, Esc = pause.
+3. Keys: Enter = start / check / next, Ctrl+Enter (Cmd+Enter on a Mac; both work everywhere) = replay, Esc = pause.
 4. Mixed group size: the largest size is the rounded average box; the size is that or one less — so single
    characters until the average box reaches 1.5.
 5. A paddle stop plays the group again (up to 3 times, then the learner may answer anyway); not counted as help.

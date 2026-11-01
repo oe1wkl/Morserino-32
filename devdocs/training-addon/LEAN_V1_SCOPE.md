@@ -337,8 +337,8 @@ first release; the engine is built so that item kinds and answer sources are plu
    browser. A single canonical URL (storage is per origin). File System Access auto-backup is a v1.1
    candidate; cloud accounts are out.
 6. **Platforms — DECIDED (Willi, 2026-10-29): desktop browsers with Web Serial only,** the same set as the
-   Config Tool (Chrome, Edge, Opera, Firefox 151+). Benched on Chrome and Edge; Firefox "untested" in the
-   manual until someone benches it. No mobile in v1. The `openTransport()` seam is copied from the Config
+   Config Tool (Chrome, Edge, Opera, Firefox 151+). Benched on Chrome and Edge; the Trainer page itself benched
+   on Chrome and Firefox (Willi, 2026-11-01, Pocket). No mobile in v1. The `openTransport()` seam is copied from the Config
    Tool and the engine has no DOM dependency, so a BLE host (iOS wrapper) can follow later. The page
    disables Connect without `navigator.serial`, as the Config Tool does.
 7. **Naming and home — DECIDED (Willi, 2026-10-29).**

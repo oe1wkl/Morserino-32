@@ -112,7 +112,7 @@
       </select>
     </div>
     <div id="feedback" aria-live="polite"></div>
-    <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd>Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
+    <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
     <div class="keys" id="tally"></div>
     <div class="advance" id="advance" hidden>
       <span id="advanceText"></span>
@@ -605,9 +605,12 @@ document.addEventListener('keydown', (e) => {
 
 // ---- start ---------------------------------------------------------------------
 
+// Replay is Ctrl+Enter or Cmd+Enter (both work); name the one this keyboard has
+if (/mac|iphone|ipad/i.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ''))
+  $('kReplay').textContent = 'Cmd';
 if (!('serial' in navigator)) {
   $('btnConnect').disabled = true;
-  connNote('This browser cannot talk to a serial port. Use Chrome, Edge or Opera on a desktop computer.', true);
+  connNote('This browser cannot talk to a serial port. Use Chrome, Edge, Opera, or Firefox 151 or newer, on a desktop computer.', true);
 }
 openStore();
 </script>

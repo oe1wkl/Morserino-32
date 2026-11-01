@@ -717,7 +717,7 @@ function lineProblem(line, maxLine) {
 async function openWebSerial(opts) {
   opts = opts || {};
   const serial = opts.serial || (typeof navigator !== 'undefined' ? navigator.serial : null);
-  if (!serial) throw new Error('This browser has no Web Serial (use Chrome, Edge or Opera on a desktop computer)');
+  if (!serial) throw new Error('This browser has no Web Serial (use Chrome, Edge, Opera, or Firefox 151 or newer, on a desktop computer)');
   const t = { label: 'USB', maxLine: USB_MAX_LINE, onData: null, onClose: null };
   let port = null, info = {}, io = null, closing = false, waiter = null;
 

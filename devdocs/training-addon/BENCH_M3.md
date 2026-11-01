@@ -43,7 +43,7 @@ the console before pressing Connect (see its header).
 | 2.2 | Wait for the end | "Type what you heard" appears **as the last element ends** — note if it feels late or early (M1 measured 0–80 ms Pocket, 15–155 ms classic) |
 | 2.3 | Type it, Enter | "Right."; the table row counts up |
 | 2.4 | Type a wrong answer, Enter | The group shown with the wrong character marked; the M32 plays it **once more**; Enter goes on. About four groups later the same group comes back |
-| 2.5 | Ctrl+Enter while answering | The group sounds again; the button says "(0 left)"; after Check: "You used a replay, so this one does not move a box" |
+| 2.5 | Ctrl+Enter (Cmd+Enter on a Mac) while answering | The group sounds again; the button says "(0 left)"; after Check: "You used a replay, so this one does not move a box" |
 | 2.6 | Enter while it is still sounding | "Still sounding — answer when it has finished"; nothing is scored |
 | 2.7 | Type while it is sounding, then Enter after the end | Accepted (copying while listening is normal) |
 | 2.8 | Esc | "Paused"; Enter goes on |
@@ -87,3 +87,7 @@ the console before pressing Connect (see its header).
 | 2026-11-01 | Pocket | Chrome | 2.9 | fail → pass | First run: every group was one character whatever the size. Not reproducible in the simulator; after a hard reload (and the console trace) groups have the length set. Most likely a stale cached page. |
 | 2026-11-01 | Pocket | Chrome | 3.2 | fail → pass | First run: re-entering the CW Keyer on the M32 left the "left the CW Keyer" message; the page then showed "Not connected" and Connect said the port was already open (the M32's Goodbye left the port open). Fixed in the page; re-run passes. What made the M32 end the session was not captured. |
 | 2026-11-01 | Pocket | Chrome | 3.2b | pass | Starting the CW Keyer on the M32 yourself is picked up |
+| 2026-11-01 | Pocket | Chrome, Firefox | §1–§4 (all) | pass | Full run after 2ad98fa. Edge not available; Firefox used instead (it has Web Serial now) |
+| 2026-11-01 | Pocket | — | §5 VoiceOver | not run | |
+| 2026-11-01 | Classic | — | — | flashed | `heltec_wifi_lora_32_V2` from 2ad98fa (M1 firmware, protocol 1.6), ready for the run |
+| 2026-11-01 | Classic | Chrome | §1–§4 (all, incl. 3.4 restart) | pass | One note: the key hint said Ctrl+Enter, which is Cmd+Enter on a Mac (both always worked); the hint now names Cmd on a Mac |
