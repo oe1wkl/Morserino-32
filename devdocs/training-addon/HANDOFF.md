@@ -12,7 +12,7 @@ read, what is waiting on whom, and which traps are already known.*
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | M3 bench (`BENCH_M3.md`, incl. the first real test of `openWebSerial()`); the M3 choices awaiting Willi (§6 "M3 — state"); prosigns over `cw/play` (firmware); corpus (tiers B and C need Willi's review); M3b–M6. Protocol PDF rebuild at merge to master. |
+| Not yet done | M3 bench (`BENCH_M3.md`, incl. the first real test of `openWebSerial()`); the M3 choices awaiting Willi (§6 "M3 — state"); corpus (tiers B and C need Willi's review); M3b–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -236,7 +236,7 @@ M3c, speed/spacing M4, Echo log M5).
 
 | File | What |
 |---|---|
-| `Software/Utilities/m32_trainer_engine.js` | UMD, global `M32Engine`. Tokenizer (prosign = one token), scorer (word alignment by normalised character distance, then character alignment; one entry per expected character, extras counted apart), `Mastery` (Leitner, replayed from the log, confusions, median latency, `readyToAdvance`), `Scheduler` (weights 6 − box, newest ×2 below box 2, mixed size, retry after ≈ 4), `Session` (play → answer → score → log; unscored replay after a miss; help replay; paddle stop → play again, up to 3 times), `MemoryStore` / `IdbStore`, export/import, `lessonChars`, `playable` |
+| `Software/Utilities/m32_trainer_engine.js` | UMD, global `M32Engine`. Tokenizer (prosign = one token), scorer (word alignment by normalised character distance, then character alignment; one entry per expected character, extras counted apart), `Mastery` (Leitner, replayed from the log, confusions, median latency, `readyToAdvance`), `Scheduler` (weights 6 − box, newest ×2 below box 2, mixed size, retry after ≈ 4), `Session` (play → answer → score → log; unscored replay after a miss; help replay; paddle stop → play again, up to 3 times), `MemoryStore` / `IdbStore`, export/import, `lessonChars` |
 | `Software/Utilities/m32_trainer.html` | The page: connect (refuses firmware without `trainer-events`), reads lesson + speed, puts the M32 in the CW Keyer (`GET menus` → number of "CW Keyer"), practice box, character table with boxes and confusions, lesson-advance offer (`PUT kochlesson`, button says it changes the device), history export/import with the 30-day / 20-session nudge, `persist()`, 180-day keystroke pruning. Keyboard only; `aria-live` status and feedback with a spelled-out version for screen readers |
 | `Software/tests/trainer/engine.test.js` | 34 tests; 20 deliberate breaks each fail one or more |
 | `Software/tests/trainer/fake_m32_browser.js` | A simulated M32 for the browser (paddle, leave the Keyer, unplug/replug, classic restart) |
@@ -246,11 +246,15 @@ Checked against the simulated M32 in the browser pane: connect → Keyer, right/
 leaving the Keyer, unplug/replug (`reconnected`), classic restart (`resync` on the next command, ≈ 3 s),
 lesson advance, keystroke capture, disconnect goodbye, no console errors.
 
-**Finding — prosigns cannot be played over `cw/play`.** `getM32PWord()` passes each word through
-`cleanUpText()`, which lower-cases it and keeps only Koch-alphabet characters, so `<sk>` sounds as "s k" and
-the code `K` as "k" (by code reading, not benched). Until a firmware fix, `playable()` keeps prosigns out of
-the items and the page says so at lessons ≥ 43. The fix would encode the display form (`encodeProSigns()`)
-and keep the upper-case codes through `cleanUpText()` — firmware, both variants, bench.
+**Prosigns over `cw/play` — they work; the earlier finding was wrong (corrected 2026-11-01).** The first
+reading stopped at "`cleanUpText()` lower-cases the word". It lower-cases and *then* runs `utf8umlaut()`, which
+turns `<sk>` (also `[sk]`, `\sk`, any case) into the upper-case code `K`; that passes the Koch filter, and
+`generateCWword()` sounds it as SK. Only the bare one-byte code `K` is lost (it becomes the letter k), and
+nobody sends that. Proved on the firmware's own code by `Software/tests/cw_play_text/` (host test, the
+functions extracted from `m32_v6.ino`; a mutation without `utf8umlaut()` fails 12 of 18 checks). **No
+firmware change.** The page now plays prosigns as part of the groups; the learner types them as the M32
+shows them, `<sk>`, with `[sk]` and `\sk` also accepted and `<ar>`/`<bt>` read as `+`/`=` (Willi,
+2026-11-01). `playable()` is gone.
 
 **My choices that need Willi's sign-off** (user-facing, `ux-decisions-need-willi-signoff`):
 1. A helped item (replay before answering) moves **no** box, neither up nor down (the scope says "excluded

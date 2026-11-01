@@ -12,7 +12,7 @@ node --test Software/tests/trainer/*.test.js
 | File | What it covers |
 |---|---|
 | `link.test.js` | `m32_trainer_link.js`, the link to the Morserino: framing of the mixed JSON/echo stream (every split point, random chunking, noise, braces/quotes/escapes inside strings, torn and stray objects, the stall rule), the one-in-flight command queue, reply vs unsolicited routing, timeouts and the re-handshake, `cw/play` → `done` bookkeeping, cable loss and reopen, BLE consent, goodbye and `pagehide` |
-| `engine.test.js` | `m32_trainer_engine.js`: tokenizer (prosigns), the scorer's word and character alignment, the Leitner rules (promotion window, miss drop, what moves no box), replay of the log in time order, confusions, lesson-advance offer, draw weights and group size, the retry after a miss, the session's play/answer/feedback states (paddle stop, help, lost link, pause), export/import merge, keystroke pruning |
+| `engine.test.js` | `m32_trainer_engine.js`: tokenizer (prosigns, also `[sk]` `\sk`, `<ar>`=`+`), the scorer's word and character alignment, the Leitner rules (promotion window, miss drop, what moves no box), replay of the log in time order, confusions, lesson-advance offer, draw weights and group size, the retry after a miss, the session's play/answer/feedback states (paddle stop, help, lost link, pause), export/import merge, keystroke pruning |
 
 Time is a fake clock (`fakeClock()` in the test file), so every timeout is exercised
 exactly and the suite runs in well under a second. The device is a scripted transport
@@ -28,6 +28,9 @@ found on the bench.
 The engine tests were checked the same way, with 20 breaks (the Leitner thresholds, what moves a
 box, log order, draw weights, the retry gap, word-cost normalisation, the stale-play guard, the
 unscored replay, import merge, prosign handling): each makes at least one test fail.
+
+What the M32 sounds for a group (prosigns included) is tested on the firmware's own code in
+`Software/tests/cw_play_text/` (C++, `make run`).
 
 Not covered here: `openWebSerial()` and the page itself, which need a browser and a device —
 `devdocs/training-addon/BENCH_M3.md`. For trying the page without a device,

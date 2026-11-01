@@ -70,7 +70,8 @@ the console before pressing Connect (see its header).
 | 4.1 | Reload the page, Connect | The table shows your earlier work (IndexedDB) |
 | 4.2 | Export… then, in **the other browser**, Import… that file | The same table; importing it twice adds nothing ("… were already here") |
 | 4.3 | Get every character to box 3 (or set a small lesson, e.g. 2, to get there quickly) | A green offer "Go to lesson n+1 (changes the lesson stored on your M32)"; it never moves by itself; clicking it changes the M32's lesson and adds the new row |
-| 4.4 | Set a lesson ≥ 43 on the M32, reconnect | A note that prosigns are left out for now; no prosign is ever sounded |
+| 4.4 | Set a lesson ≥ 43 on the M32, reconnect, pin group size 5 | Under the keys: "Type a prosign in angle brackets…"; groups with a prosign sound it as **one** prosign (SK = ···−·−, not "S K"), and the M32's display shows it as `<sk>` |
+| 4.5 | Answer such a group typing `<sk>`, then one typing `[sk]` | Both "Right." (`\sk` too) |
 
 ## 5. Screen reader (quick look)
 

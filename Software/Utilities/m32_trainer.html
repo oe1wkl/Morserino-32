@@ -60,7 +60,6 @@
     .pips{white-space:nowrap}
     .pip{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:3px;background:#d5dde3;vertical-align:middle}
     .pip.f{background:var(--accent)}
-    tr.dim td{color:#999}
     .advance{margin-top:14px;padding:12px 16px;border-radius:6px;background:var(--green-bg);border:2px solid var(--green-bdr)}
     .advance[hidden]{display:none}
     select{font-family:inherit;font-size:15px;padding:5px 8px;border:1px solid #b0c0cc;border-radius:4px;background:#fff}
@@ -113,6 +112,7 @@
     </div>
     <div id="feedback" aria-live="polite"></div>
     <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
+    <div class="keys" id="prosignHint"></div>
     <div class="keys" id="tally"></div>
     <div class="advance" id="advance" hidden>
       <span id="advanceText"></span>
@@ -131,7 +131,6 @@
     </table>
     </div>
     <div id="confusions" style="margin-top:12px;font-size:15px"></div>
-    <div class="note" id="charNote"></div>
   </section>
 
   <!-- ── History ── -->
@@ -249,10 +248,10 @@ async function readLesson() {
   lesson = kochlesson;
   lessonList = E.lessonChars(lesson);
   $('fLesson').textContent = lesson.value + ' of ' + lesson.maximum;
-  const play = lessonList.filter(E.playable);
-  const skipped = lessonList.length - play.length;
-  $('charNote').textContent = skipped
-    ? 'Prosigns (' + lessonList.filter((t) => !E.playable(t)).map(disp).join(' ') + ') are left out for now: the M32 cannot sound them from the computer yet.'
+  const play = lessonList.slice();
+  const ps = lessonList.filter(E.isProsign);
+  $('prosignHint').textContent = ps.length
+    ? 'Type a prosign in angle brackets, as the M32 shows it: ' + ps.map(disp).join(' ') + ' ([' + disp(ps[0]).slice(1, -1) + '] works too).'
     : '';
   if (scheduler) scheduler.setChars(play);
   renderChars();
@@ -546,10 +545,9 @@ function renderChars() {
   let rows = '';
   for (const ch of lessonList) {
     const r = mastery.row(ch);
-    const dim = !E.playable(ch);
     let pips = '';
     for (let i = 1; i <= 5; i++) pips += '<span class="pip' + (i <= r.box ? ' f' : '') + '"></span>';
-    rows += '<tr' + (dim ? ' class="dim"' : '') + '><td class="ch">' + esc(disp(ch)) + '</td>' +
+    rows += '<tr><td class="ch">' + esc(disp(ch)) + '</td>' +
             '<td class="pips" aria-label="box ' + r.box + ' of 5">' + pips + '</td>' +
             '<td>' + r.attempts + '</td>' +
             '<td>' + (r.accuracy == null ? '–' : Math.round(100 * r.accuracy) + ' %') + '</td>' +
@@ -560,8 +558,7 @@ function renderChars() {
   $('confusions').innerHTML = conf.length ? '<b>Most confused:</b> ' +
     conf.map((c) => '<span class="mono">' + esc(disp(c.expected)) + '</span> taken for <span class="mono">' + esc(disp(c.got)) + '</span> (' + c.count + '×)').join(' · ') : '';
   // decision 4d: offered, never automatic
-  const play = lessonList.filter(E.playable);
-  const ready = lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(play);
+  const ready = lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(lessonList);
   show($('advance'), !!ready);
   if (ready) {
     const nextCh = lesson.characters[lesson.value];

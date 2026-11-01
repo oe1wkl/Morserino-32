@@ -26,6 +26,13 @@ const SCHEMA = 1;                 // attempt records and the export file
 
 // "ab<sk> c" -> ['a', 'b', '<sk>', ' ', 'c']. Lower-cased; whitespace runs become one ' ';
 // a '<' that does not open a known-looking prosign (letters then '>') stays a character.
+// A prosign may also be typed the other ways the M32 reads it (utf8umlaut() in m32_v6.ino):
+// [sk] and \sk; <ar> and <bt> are the characters + and =, as the Koch lessons list them.
+const PROSIGN_ALIAS = { '<ar>': '+', '<bt>': '=' };
+function prosignToken(letters) {
+  const t = '<' + letters + '>';
+  return PROSIGN_ALIAS[t] || t;
+}
 function tokenize(text) {
   const s = String(text == null ? '' : text).toLowerCase();
   const out = [];
@@ -36,9 +43,13 @@ function tokenize(text) {
       while (i < s.length && /\s/.test(s[i])) i++;
       continue;
     }
-    if (c === '<') {
-      const m = /^<[a-z]{2,3}>/.exec(s.slice(i, i + 5));
-      if (m) { out.push(m[0]); i += m[0].length; continue; }
+    if (c === '<' || c === '[') {
+      const m = /^[<[]([a-z]{2,3})[>\]]/.exec(s.slice(i, i + 5));
+      if (m) { out.push(prosignToken(m[1])); i += m[0].length; continue; }
+    }
+    if (c === '\\') {
+      const m = /^\\(as|ka|kn|sk|ve|bk|ar|bt)/.exec(s.slice(i, i + 3));
+      if (m) { out.push(prosignToken(m[1])); i += m[0].length; continue; }
     }
     const cp = s.codePointAt(i);
     const ch = String.fromCodePoint(cp);
@@ -626,18 +637,11 @@ function lessonChars(kochlesson) {
   return kochlesson.characters.slice(0, Math.max(0, kochlesson.value | 0)).map((c) => String(c).toLowerCase());
 }
 
-// What `PUT cw/play` can sound today. The firmware lower-cases the text and keeps only
-// characters of the Koch alphabet (cleanUpText() in m32_v6.ino), so a prosign -- "<sk>" or
-// its code "K" -- comes out as plain letters. Until that is fixed, prosigns stay out of
-// the items (they remain in the lesson and on the stats table).
-function playable(token) {
-  return !isProsign(token);
-}
 
 return {
   SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
   Mastery, movesBoxes, median, mulberry32, Scheduler, Session, newId,
-  MemoryStore, IdbStore, exportFile, parseExport, lessonChars, playable
+  MemoryStore, IdbStore, exportFile, parseExport, lessonChars
 };
 }));

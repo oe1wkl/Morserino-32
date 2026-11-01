@@ -50,6 +50,9 @@ test('tokenize keeps prosigns whole, lower-cases, collapses whitespace', () => {
   assert.deepEqual(E.tokenize('  CQ<SK>  de\tK '), ['c', 'q', '<sk>', ' ', 'd', 'e', ' ', 'k']);
   assert.deepEqual(E.tokenize('a<b'), ['a', '<', 'b']);
   assert.deepEqual(E.tokenize('5nn <err> ä'), ['5', 'n', 'n', ' ', '<err>', ' ', 'ä']);
+  // the other ways the M32 reads a prosign; <ar> and <bt> are the lesson's + and =
+  assert.deepEqual(E.tokenize('[SK]\\kn<ar>[bt]'), ['<sk>', '<kn>', '+', '=']);
+  assert.deepEqual(E.tokenize('\\x [s'), ['\\', 'x', ' ', '[', 's']);
   assert.equal(E.normalize(' Ab  C '), 'ab c');
   assert.deepEqual(E.splitWords('kmr  st'), [['k', 'm', 'r'], ['s', 't']]);
 });
@@ -118,6 +121,12 @@ test('prosigns score as one character', () => {
   const s = E.score('tu <sk>', 'tu <kn>');
   assert.deepEqual(s.chars[2], wrong('<sk>', '<kn>'));
   assert.equal(s.charCount, 3);
+});
+
+test('a prosign typed in any M32 spelling is right', () => {
+  for (const a of ['m<sk>k', 'M[SK]K', 'm\\skk']) assert.ok(E.score('m<sk>k', a).perfect, a);
+  assert.ok(E.score('k+', 'k<ar>').perfect);
+  assert.ok(!E.score('m<sk>k', 'mskk').perfect);
 });
 
 // ---- mastery ---------------------------------------------------------------
@@ -260,14 +269,18 @@ test('a missed item returns after about four others', () => {
   assert.equal(seq.filter((x) => x.text === 'zzz').length, 1);
 });
 
-test('only the given characters are drawn; prosigns are not playable yet', () => {
+test('only the given characters are drawn, prosigns included and kept whole', () => {
   const chars = E.lessonChars({ value: 45, characters: 'mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-='.split('').concat(['<sk>', '+', '<as>']) });
   assert.equal(chars.length, 45);
   assert.equal(chars[42], '<sk>');
-  const play = chars.filter(E.playable);
-  assert.equal(play.length, 43);
-  const s = new E.Scheduler({ mastery: new E.Mastery(), chars: play, rng: E.mulberry32(2), size: 5 });
-  for (let i = 0; i < 200; i++) for (const t of E.tokenize(s.next().text)) assert.ok(play.indexOf(t) >= 0);
+  const s = new E.Scheduler({ mastery: new E.Mastery(), chars, rng: E.mulberry32(2), size: 5 });
+  let prosigns = 0;
+  for (let i = 0; i < 200; i++) {
+    const toks = E.tokenize(s.next().text);
+    assert.equal(toks.length, 5);                       // a prosign is one of the five
+    for (const t of toks) { assert.ok(chars.indexOf(t) >= 0); if (E.isProsign(t)) prosigns++; }
+  }
+  assert.ok(prosigns > 0);
   assert.deepEqual(E.lessonChars({ value: 2, characters: ['M', 'K', 'R'] }), ['m', 'k']);
   assert.deepEqual(E.lessonChars(null), []);
 });
