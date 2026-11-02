@@ -315,7 +315,8 @@ enum PROMPT_TYPE                // how we prompt in echo trainer mode
 
 enum GEN_TYPE                   // the things we can generate in generator mode
   {
-      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE, KOCH_PREVIEW
+      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE, KOCH_PREVIEW,
+      PREFIXES        // call sign prefixes (oe3, kd9) - appended, the menu cases compute the others from menuPtr
   };
 
 
@@ -403,6 +404,7 @@ const uint8_t menuN = 46
 #ifdef REMOTE_WINKEYER
     + 1    // Remote WinKeyer — WinKeyer keying a remote Rig (DESIGN.md §9.1)
 #endif
+    + 2    // Prefixes in CW Generator and Echo Trainer
     ;
 
 enum menuNo
@@ -458,7 +460,11 @@ enum menuNo
 #ifdef REMOTE_WINKEYER
         , _remoteWinKeyer   // "Remote WinKeyer" ("Remote WinK" on the OLED) - between WinKeyer and Remote Keyer
 #endif
+        , _genPrefixes  // "Prefixes" - CW Generator, after Call Signs; appended last like the entries above
+        , _echoPrefixes // "Prefixes" - Echo Trainer, the same
    };
+// menuText[] and menuNav[] are sized by menuN, and a missing initializer there compiles silently
+static_assert(_echoPrefixes + 1 == menuN, "menuN must count every menuNo entry - update the sum above");
 
 enum loops
   { active_loop, menu_loop, preferences_loop
