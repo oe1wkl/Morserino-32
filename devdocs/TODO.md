@@ -218,8 +218,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     prefix table is rebuilt from MASTER.SCP + cty.dat by `Software/tools/callsign-prefixes/build_prefix_table.py`
     (weighted call-area digits, correct continents for Russia/EA8/CT9, 99% of real prefixes; +7.5 KB flash) - all
     generated call signs change with it. Manuals EN+DE, changelog and the a11y clip done; all three builds pass.
-    **Owed:** no bench result recorded yet (both Prefixes entries, Echo scoring, call signs in QSO Bot / Pileup /
-    Memory Chain); hearing the clip on an a11y Pocket.
+    Bench-tested by Willi 2026-11-02 on a standard Pocket: successful. **Owed:** hearing the clip on an a11y Pocket.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
