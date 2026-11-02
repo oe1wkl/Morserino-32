@@ -336,6 +336,8 @@ lower
 M32
 Mandarin
 Maximum number of words
+MIDI Keyer
+MIDI Paddles
 Mike
 milliseconds
 millivolts
@@ -366,6 +368,7 @@ Oceania
 of
 OFF
 Off
+Off (charge)
 ON
 On
 ON (less ICS)
@@ -454,6 +457,8 @@ up to 4
 up to 5
 up to 6
 UPPER
+USB output
+VBand
 VBand and Decoded
 VBand Keyboard
 Veggie

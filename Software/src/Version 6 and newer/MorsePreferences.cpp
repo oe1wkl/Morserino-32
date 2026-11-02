@@ -509,11 +509,11 @@ parameter MorsePreferences::pliste[] = {
 #endif
 #ifdef CONFIG_USB_HOSTIO
   {
-    USB_OUT_MIDI, USB_OUT_OFF, USB_OUT_MIDI, 1,                 // see USB_OUT_* in morsedefs.h
+    USB_OUT_OFF, USB_OUT_OFF, USB_OUT_MIDI_KEYER, 1,            // see USB_OUT_* in morsedefs.h
     "USB Output",
-    "CW Keyer: what the USB cable sends - nothing, vBand keyboard (Left Ctrl) or MIDI paddles (notes 20/21)",
+    "CW Keyer: what the USB cable sends - nothing, vBand keyboard (Left Ctrl), MIDI paddle events (notes 20/21) or the M32's keying as MIDI (notes 0+30). The serial port is off while one of these is active",
     true,
-    {"Off (charge)", "VBand", "MIDI"},
+    {"Off (charge)", "VBand", "MIDI Paddles", "MIDI Keyer"},
     "USB output"
   },
 #endif
