@@ -212,13 +212,13 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     `REVIEW_NOTES.md`); second round the same day (QSO Bot and Echo order, Decoder Chars general, manual follows
     the device); B17 item 6 fixed 2026-10-15 (Bluetooth Use changed in CW Keyer now starts/stops the keyboard at once —
     bench check owed, esp. BLE Serial → keyboard). **B16/B17 done** apart from that bench check.
-18. **Prefixes in CW Generator and Echo Trainer (Willi, 2026-10-30, for V10)** — merged to master 2026-11-02
+18. ~~**Prefixes in CW Generator and Echo Trainer (Willi, 2026-10-30, for V10)**~~ — **done**, merged to master 2026-11-02
     (3cc9a89, branch `prefix-training`). Prefixes in WPX form (OE3, KD9, UA9, 3B8);
     Calls Region and Call Prefixes apply, Length Calls does not; not in Koch, Mixed unchanged (Willi). The call-sign
     prefix table is rebuilt from MASTER.SCP + cty.dat by `Software/tools/callsign-prefixes/build_prefix_table.py`
     (weighted call-area digits, correct continents for Russia/EA8/CT9, 99% of real prefixes; +7.5 KB flash) - all
     generated call signs change with it. Manuals EN+DE, changelog and the a11y clip done; all three builds pass.
-    Bench-tested by Willi 2026-11-02 on a standard Pocket: successful. **Owed:** hearing the clip on an a11y Pocket.
+    Bench-tested by Willi 2026-11-02 on a standard Pocket: successful; clip heard on an a11y Pocket the same day.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
