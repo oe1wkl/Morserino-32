@@ -12,7 +12,7 @@ read, what is waiting on whom, and which traps are already known.*
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | The postponed M3 bench steps (above); the M3 choices awaiting Willi (§6 "M3 — state"); corpus (tiers B and C need Willi's review); M3b–M6. Protocol PDF rebuild at merge to master. |
+| Not yet done | The postponed M3 bench steps (above); the M3b device bench (`BENCH_M3.md` §6); a second operator's review of tier C before release (decision 12c); M3c–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -256,7 +256,7 @@ firmware change.** The page now plays prosigns as part of the groups; the learne
 shows them, `<sk>`, with `[sk]` and `\sk` also accepted and `<ar>`/`<bt>` read as `+`/`=` (Willi,
 2026-11-01). `playable()` is gone.
 
-**My choices that need Willi's sign-off** (user-facing, `ux-decisions-need-willi-signoff`):
+**My choices, accepted by Willi on 2026-11-02:**
 1. A helped item (replay before answering) moves **no** box, neither up nor down (the scope says "excluded
    from promotion"; I read that as "does not count").
 2. Typing while the group sounds is allowed; Enter before the end is refused with a message.
@@ -330,7 +330,7 @@ device can generate a call like `4u_i5abc`, with an underscore. It's rare, but w
 - Corpus clean-up found on the way: `<AR>2M0RTZ` (a call run into AR) is split instead of dropped, `<AR>VA`
   is `+ <sk>`; only 13 fragments with a prosign run into a word are still dropped.
 
-**My M3b choices that need Willi's sign-off:**
+**My M3b choices, accepted by Willi on 2026-11-02:**
 1. Words are drawn leaning toward frequent ones (the list is in frequency order; r² on the position), as the
    firmware weights its Koch words — otherwise late lessons give `representation noise fulfil`.
 2. An item's draw weight = 1 + the weakness of each distinct character (as for groups: 6 − box, the newest ×2
