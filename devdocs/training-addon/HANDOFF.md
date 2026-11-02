@@ -312,6 +312,35 @@ digits and letters already learned, or returns null. It defaults to common prefi
 length. The VK/ZL-only generator isn't ported. The coverage table now counts call signs exactly, and nothing
 changed. **Firmware finding:** the prefix table has a row `"4U_I"` (weight 1), so with *Call Common* off the
 device can generate a call like `4u_i5abc`, with an underscore. It's rare, but wrong; the fix is for master.
+
+**Engine and page side written (2026-11-02), tested in Node and with the simulated M32; not benched.**
+- Engine: `Corpus` (the strict filter per lesson and phrase length, tier counts, the eligible tiers with ≥ 10
+  items, template filling with continent-matched names, QTHs and references, and your own lines as tier U);
+  `Scheduler` with modes `groups`, `words` and `phrases`; `ladderOffer()`; `NoItemsError`. Attempts now carry
+  `kind` (group|word|phrase) and `tier`. 95 Node tests (`phrases.test.js` is new); deliberate breaks of the
+  length filter, the recent-item skip, the tier minimum, the continent match, the item weight and both ladder
+  thresholds each fail a test. The ladder test found a real bug: 60 % summed as 59.99… (now counted in integers).
+- Page: the Practise select (Groups · Words · Phrases); *Words per phrase* 2–8; *From* (Mixed / Word chains /
+  Plain language / QSO lines / Your own phrases, each with its count at the lesson, empty ones disabled); a line
+  saying what is usable; the ladder offer (like the lesson advance); a collapsible *Your own phrases* area
+  (paste or load a `.txt`, kept in the browser, "3 of 5 lines have 2 to 8 words; 2 use only your lesson's
+  characters"). Settings are remembered per browser.
+- Robustness found on the way: the IndexedDB connection now closes on `versionchange` — an old trainer tab
+  used to make a newer tab's upgrade (or a delete) wait for ever.
+- Corpus clean-up found on the way: `<AR>2M0RTZ` (a call run into AR) is split instead of dropped, `<AR>VA`
+  is `+ <sk>`; only 13 fragments with a prosign run into a word are still dropped.
+
+**My M3b choices that need Willi's sign-off:**
+1. Words are drawn leaning toward frequent ones (the list is in frequency order; r² on the position), as the
+   firmware weights its Koch words — otherwise late lessons give `representation noise fulfil`.
+2. An item's draw weight = 1 + the weakness of each distinct character (as for groups: 6 − box, the newest ×2
+   below box 2); slots count as nothing.
+3. The last 20 items are not drawn again while anything else is left.
+4. *Mixed* picks each eligible tier equally often, whatever its size.
+5. A missed word or phrase comes back after about 4 others (as for groups) — also if the mode was changed meanwhile.
+6. A pinned tier is allowed below 10 items (it is the learner's choice); *Mixed* uses only tiers with ≥ 10.
+7. Your own phrases: pasted or loaded, one per line, 2–8 words, `#` lines skipped, kept in this browser only.
+8. The wording of the ladder offer and of the "nothing to practise" messages.
 The other three sequences are in the review. **Next:** port the call sign generator (needed for the real tier C
 coverage, which is approximate for now), then the engine side: Words, word chains, phrases, the ladder, user
 files (C3), the Practise selector. **Open for release (R10):** the word list's attribution — `english_words.h`

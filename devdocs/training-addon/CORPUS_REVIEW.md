@@ -10,7 +10,7 @@
 | B — plain language | written for the trainer (`tier_b_en.txt`) | 150 |
 | B — plain language | Tommy OZ1THC's `phrases_2/3/4_words.txt` | 240 |
 | B — plain language | Willi's list (`tier_b_willi_en.txt`) | 95 |
-| C — QSO | fragments of `RealQSOs.TXT` (G0ELZ, G3DVW) | 1713 |
+| C — QSO | fragments of `RealQSOs.TXT` (G0ELZ, G3DVW) | 1675 |
 | C — QSO | templates with slots (`tier_c_en.txt`) | 94 |
 
 ## Coverage — usable items per lesson
@@ -23,7 +23,7 @@ Counted with the strict Koch filter (decision 13a): every character of the item 
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Words (A) | 3 | 124 | 229 | 387 | 961 | 1120 | 1540 | 1870 | 1905 | 2318 | 2318 | 2651 | 2651 | 4762 | 4881 | 4881 | 4881 | 4881 |
 | Plain (B) | 0 | 6 | 25 | 41 | 73 | 90 | 143 | 168 | 173 | 238 | 238 | 289 | 290 | 478 | 485 | 485 | 485 | 485 |
-| QSO, real (C) | 1 | 8 | 8 | 9 | 22 | 23 | 38 | 64 | 88 | 203 | 221 | 336 | 406 | 1127 | 1374 | 1374 | 1511 | 1713 |
+| QSO, real (C) | 1 | 8 | 8 | 9 | 22 | 23 | 38 | 64 | 88 | 203 | 221 | 336 | 406 | 1127 | 1374 | 1374 | 1492 | 1675 |
 | QSO, templates (C) | 0 | 3 | 3 | 4 | 6 | 8 | 8 | 11 | 21 | 30 | 30 | 38 | 45 | 64 | 79 | 87 | 90 | 94 |
 
 ### LCWO sequence `kmuresnaptlwi.jz=foy,vg5/q92h38b?47c1d60x-K+ASNEB@:`
@@ -32,7 +32,7 @@ Counted with the strict Koch filter (decision 13a): every character of the item 
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Words (A) | 3 | 210 | 345 | 597 | 613 | 708 | 1354 | 1556 | 1894 | 1930 | 2318 | 2651 | 2651 | 4762 | 4762 | 4881 | 4881 | 4881 |
 | Plain (B) | 0 | 2 | 6 | 24 | 27 | 36 | 122 | 146 | 170 | 175 | 239 | 280 | 290 | 477 | 478 | 485 | 485 | 485 |
-| QSO, real (C) | 1 | 4 | 6 | 11 | 12 | 12 | 36 | 40 | 73 | 101 | 205 | 298 | 385 | 928 | 1205 | 1374 | 1511 | 1713 |
+| QSO, real (C) | 1 | 4 | 6 | 11 | 12 | 12 | 36 | 40 | 73 | 101 | 205 | 298 | 385 | 928 | 1205 | 1374 | 1492 | 1675 |
 | QSO, templates (C) | 0 | 3 | 3 | 3 | 3 | 4 | 6 | 6 | 15 | 23 | 32 | 37 | 46 | 66 | 66 | 87 | 90 | 94 |
 
 ### CW Academy sequence `teanois14rhdl25ucmw36?fy,pgq79/bv+kj80=xzBK.-ASNE@:`
@@ -41,7 +41,7 @@ Counted with the strict Koch filter (decision 13a): every character of the item 
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Words (A) | 22 | 159 | 335 | 499 | 636 | 1450 | 1611 | 1611 | 2231 | 3575 | 3575 | 4017 | 4667 | 4717 | 4835 | 4881 | 4881 | 4881 |
 | Plain (B) | 0 | 6 | 13 | 19 | 24 | 45 | 72 | 72 | 166 | 273 | 273 | 325 | 458 | 474 | 481 | 484 | 485 | 485 |
-| QSO, real (C) | 0 | 2 | 4 | 6 | 15 | 34 | 48 | 73 | 107 | 319 | 439 | 588 | 908 | 1203 | 1351 | 1454 | 1511 | 1713 |
+| QSO, real (C) | 0 | 2 | 4 | 6 | 15 | 34 | 48 | 73 | 107 | 319 | 439 | 588 | 906 | 1193 | 1340 | 1436 | 1492 | 1675 |
 | QSO, templates (C) | 0 | 1 | 1 | 2 | 8 | 10 | 12 | 12 | 12 | 36 | 42 | 46 | 63 | 63 | 81 | 84 | 92 | 94 |
 
 ### LICW sequence `reatinpgslcdhofuwbkmy59,qxv73?+K=16.zj/28B40-ASNE@:`
@@ -50,7 +50,7 @@ Counted with the strict Koch filter (decision 13a): every character of the item 
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | Words (A) | 20 | 360 | 723 | 1483 | 2242 | 2748 | 3599 | 4183 | 4239 | 4785 | 4785 | 4785 | 4785 | 4881 | 4881 | 4881 | 4881 | 4881 |
 | Plain (B) | 0 | 7 | 8 | 51 | 90 | 143 | 261 | 373 | 384 | 450 | 464 | 464 | 464 | 483 | 484 | 484 | 485 | 485 |
-| QSO, real (C) | 0 | 5 | 5 | 14 | 28 | 58 | 176 | 255 | 465 | 640 | 724 | 781 | 851 | 911 | 975 | 1010 | 1511 | 1713 |
+| QSO, real (C) | 0 | 5 | 5 | 14 | 28 | 58 | 176 | 255 | 465 | 640 | 724 | 777 | 847 | 906 | 968 | 1002 | 1492 | 1675 |
 | QSO, templates (C) | 0 | 3 | 3 | 4 | 6 | 8 | 13 | 24 | 41 | 56 | 71 | 74 | 81 | 82 | 85 | 87 | 92 | 94 |
 
 ## Tier B — plain-language phrases
@@ -710,117 +710,118 @@ From `tier_b_willi_en.txt`, generated with Google Gemini (kept as received). Low
 
 ## Tier C — QSO lines
 
-### Fragments of RealQSOs.TXT (1713)
+### Fragments of RealQSOs.TXT (1675)
 
-Each QSO cut at `=` (BT); kept when 2–8 words. `<AR>` became `+`, run-together prosigns were split (`<AR><KN>` → `+ <kn>`, `<AR>SK` → `+ <sk>`), `?` joined to its word. Dropped:
+Each QSO cut at `=` (BT); kept when 2–8 words. `<AR>` became `+`, run-together prosigns were split (`<AR><KN>` → `+ <kn>`, `<AR>SK` and `<AR>VA` → `+ <sk>`, `<AR>2M0RTZ` → `+ 2m0rtz`), `?` joined to its word. Dropped:
 
-- duplicate: 1436
-- not 2-8 words: 1155
-- cut off (ends on "qth/name/is/..."): 363
+- duplicate: 1397
+- not 2-8 words: 1221
+- cut off (ends on "qth/name/is/..."): 361
+- a prosign run into a word: 13
 - a word over 14 characters: 1
 
 Too many to read one by one: **here is a fixed random sample of 100** (the same each build). A bad fragment goes into `realqsos_exclude.txt`, exactly as shown.
 
-- `nr antwerp` — from lesson 16
-- `my name ross` — from lesson 19
-- `ur my first` — from lesson 19
-- `gm peter` — from lesson 22
-- `pse qsl` — from lesson 25
-- `hr name is mike qth hamilton` — from lesson 28
-- `hr qth is weymouth` — from lesson 28
-- `name here is mike` — from lesson 28
+- `vert ar` — from lesson 20
+- `ge om msg r ok` — from lesson 22
+- `testing out new` — from lesson 22
+- `to g5rv ar` — from lesson 23
+- `some qrn` — from lesson 25
+- `my name fermento es qth is konya` — from lesson 28
+- `name ere is steve es qth akrotira` — from lesson 28
+- `name hr is ivor` — from lesson 28
 - `name hr is wong ping` — from lesson 28
-- `name is petro qth is santeren` — from lesson 28
-- `qth hr salo nrhelsinki` — from lesson 28
-- `r ok hamish in fintry` — from lesson 28
-- `think we met at rally last month` — from lesson 28
-- `barnstaple my name is ronnie` — from lesson 31
-- `name hr frank es qth is bangor` — from lesson 31
-- `qsb better now` — from lesson 31
-- `qth is melbourne` — from lesson 31
-- `ok om? ar` — from lesson 32
-- `rst 459 es some` — from lesson 33
+- `qrp pwr hr is 5w also` — from lesson 28
+- `qth tarragona` — from lesson 28
+- `u like him` — from lesson 28
+- `pwr 30 watts` — from lesson 29
+- `rig is ts530 ant 5 el yagi` — from lesson 29
+- `rst is 359` — from lesson 29
+- `rig is ts850 ant 5` — from lesson 30
+- `please qsl via bureau` — from lesson 31
+- `if ok? ar` — from lesson 32
+- `new ant? ar` — from lesson 32
+- `rst is 449` — from lesson 33
+- `73 bill ar` — from lesson 35
 - `best 73` — from lesson 35
-- `ur rst 447 pse my rprt?` — from lesson 35
-- `hope to cul in south american contest` — from lesson 36
-- `mni tks fer qso hpe cu agn soon` — from lesson 36
-- `op is john qth blackpool` — from lesson 36
-- `r fb om tks fer rprt frm merrick` — from lesson 36
-- `rig hr also ic 725` — from lesson 36
-- `shack set up in caravan` — from lesson 36
-- `tks fer qso hpe cu agn` — from lesson 36
-- `b 152` — from lesson 37
-- `e 135` — from lesson 37
-- `e 148` — from lesson 37
+- `qsl sure via buro 73` — from lesson 35
+- `rst is 479` — from lesson 35
+- `sigs are rst 579` — from lesson 35
+- `ur rst 579` — from lesson 35
+- `cpi in hull? ar` — from lesson 36
+- `hpe cul` — from lesson 36
+- `info on pmr conversion` — from lesson 36
+- `name hr kloco` — from lesson 36
+- `name is jacob` — from lesson 36
+- `qth hr is canterbury` — from lesson 36
+- `qth is sakkara nr cairo` — from lesson 36
+- `h 134` — from lesson 37
+- `h 142` — from lesson 37
+- `hr pwr is qrp 1w` — from lesson 37
 - `2m1alk de gm4bpp` — from lesson 38
 - `2w0whb de gm0gfm/m` — from lesson 38
 - `2wtre de cs7tgb r ok ur rst 589` — from lesson 38
+- `btu gj3dps de jt1as ar` — from lesson 38
 - `chuck qth hr delaware` — from lesson 38
-- `g0kds de kh3ae` — from lesson 38
-- `g3tyz de sv3erz` — from lesson 38
-- `gd0tyt de ik4mop` — from lesson 38
-- `gm3bft/p de ik5mnd` — from lesson 38
-- `gm4tnb de gm0ass` — from lesson 38
-- `great work on building your tnc` — from lesson 38
-- `home qth london` — from lesson 38
-- `hr rig es ant home made` — from lesson 38
-- `i would like to qsl direct if` — from lesson 38
-- `if ok give u r address` — from lesson 38
-- `name everard qth alcazar` — from lesson 38
-- `name hr gordon qth scarborough` — from lesson 38
-- `qth is burgdorf` — from lesson 38
-- `rig ft902 es ant dipole` — from lesson 38
-- `rig hr ts540 ant 3 band` — from lesson 38
-- `rig is ft102 wid 40 watts` — from lesson 38
-- `rig is ts850 es dipole` — from lesson 38
-- `rig vy old century 22` — from lesson 38
-- `rst is 578 wid some qsb` — from lesson 38
-- `test after rebuilding` — from lesson 38
-- `ur my first qso in england` — from lesson 38
-- `ur rst 599 es 40 db` — from lesson 38
-- `vy gd to u om all r fb` — from lesson 38
+- `dipole ok? ar` — from lesson 38
+- `doing some fishing` — from lesson 38
+- `g0po4 de w7ghz` — from lesson 38
+- `g4bue de w3ts name mike` — from lesson 38
+- `gm0jgy de gm3wbb` — from lesson 38
+- `gm0tyr de w0ncc` — from lesson 38
+- `gm3klz/p de ik5bnv` — from lesson 38
+- `good to see you use` — from lesson 38
+- `gw0gfl de ve5nji` — from lesson 38
+- `gw0sgl de hh2j` — from lesson 38
+- `gw4fge de ea5mnb` — from lesson 38
+- `here on holiday for hot season` — from lesson 38
+- `i visited your city on holiday last` — from lesson 38
+- `is frank es my qth is ostend` — from lesson 38
+- `is pedro` — from lesson 38
+- `name hr is pedro` — from lesson 38
+- `on holiday hr my home qth is glasgow` — from lesson 38
+- `qth now livingstonia on borders of national park` — from lesson 38
+- `relic from 1943 and still going strong` — from lesson 38
+- `rig is ts590 ant 3 band` — from lesson 38
+- `rst 459 wid qrm` — from lesson 38
+- `ur rst 449 wid qrm` — from lesson 38
+- `ur rst 599 es 40db as usual` — from lesson 38
 - `2m0cgt de ub6twv all r ok om` — from lesson 39
-- `c 165` — from lesson 39
-- `h 166` — from lesson 39
-- `rst is 469 es name is tal` — from lesson 39
+- `b 161` — from lesson 39
+- `c 176` — from lesson 39
+- `e 156` — from lesson 39
+- `rig ic726` — from lesson 39
+- `ur rst 468` — from lesson 39
+- `ur rst 569 in st johns so btu` — from lesson 39
 - `2m0rff de g4rxc k` — from lesson 40
 - `2m1qzx de on0lbv` — from lesson 40
-- `demonstrating new home brw tx to friend` — from lesson 40
-- `g0lmf de g9zxy` — from lesson 40
-- `gu0asz de ja5rtx` — from lesson 40
-- `gw3wfa de vk5dfj tnx call dr ob` — from lesson 40
-- `hr wx is cool es misty` — from lesson 40
-- `wx cold dry es clear temp 5c` — from lesson 40
-- `wx cold es clear qnh 1010mb` — from lesson 40
-- `wx hr is cold` — from lesson 40
-- `wx light` — from lesson 40
-- `wx warm dry es sunny temp approx 25c` — from lesson 40
+- `g0rtz de vx9hjg` — from lesson 40
+- `ge alex` — from lesson 40
+- `good luck wid rae next` — from lesson 40
+- `tell you about it nexr over` — from lesson 40
+- `wx cold es wet` — from lesson 40
+- `wx hot temp 33c` — from lesson 40
+- `wx is cold` — from lesson 40
+- `wx is cold es wet` — from lesson 40
+- `wx very hot` — from lesson 40
 - `2m0njg de g76sde <sk>` — from lesson 43
-- `73 bill +` — from lesson 44
-- `c u agn +` — from lesson 44
-- `cpy? +` — from lesson 44
-- `dipole ok? +` — from lesson 44
-- `direct ok? +` — from lesson 44
+- `50w +` — from lesson 44
+- `best 73 + gm0soz de vk1poi <sk>` — from lesson 44
+- `cul + 2m4tyu de dl5rty/p <sk>` — from lesson 44
+- `direct? +` — from lesson 44
 - `gu3jsm de zs6afi + <sk>` — from lesson 44
-- `hw? +` — from lesson 44
-- `pse qsl om? +` — from lesson 44
+- `hw cpi om? +` — from lesson 44
+- `hw cpi? +` — from lesson 44
 - `2e1yuy de f6mdo <kn>` — from lesson 46
 - `2n1ahz de ha4lem <kn>` — from lesson 46
-- `3 other op ok? +gm4fgm de gm0fcc/m <kn>` — from lesson 46
-- `btu g2zd/m de 4z4sz + <kn>` — from lesson 46
-- `gd0wdo de ik4ke <kn>` — from lesson 46
-- `gd3chr de fg5gz + <kn>` — from lesson 46
-- `gm0snf de ik2hnq <kn>` — from lesson 46
-- `gm4rty de gm0erz <kn>` — from lesson 46
-- `gw4flz de z22je + <kn>` — from lesson 46
-- `gw4trz de ea5huy <kn>` — from lesson 46
-- `hw cpy nw om? +2m0rzo de ub5ref <kn>` — from lesson 46
-- `ok? ar2n1ahz de f6ytr <kn>` — from lesson 46
-- `so btu gm3dqz de 9d0rr + <kn>` — from lesson 46
-- `so hw cpi? +2n1ahz de ha4lem <kn>` — from lesson 46
-- `so hw cpy? gu4avq de dl4eva + <kn>` — from lesson 46
-- `trap dipole ok? +21dze de f6ytr <kn>` — from lesson 46
-- `welsh station ok? +gw3lml hr0rtr <kn>` — from lesson 46
+- `el vertical ok? + 22e4zxr de sp5ytf <kn>` — from lesson 46
+- `gi3man de vk4fge <kn>` — from lesson 46
+- `gm3jeg de hc4yap <kn>` — from lesson 46
+- `hpe cul + g0po4 de w7ghz <kn>` — from lesson 46
+- `hw cpy? + 2wtre de cs7tgb <kn>` — from lesson 46
+- `ok? + gm0wzs/p de dl5rtd <kn>` — from lesson 46
+- `so btu gm3ndn de gw2and <kn>` — from lesson 46
+- `so hw cpy? + gj3szj de oz4yyj/p <kn>` — from lesson 46
 
 ### Templates with slots (94)
 

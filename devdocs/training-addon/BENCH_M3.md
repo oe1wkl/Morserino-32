@@ -79,6 +79,19 @@ the console before pressing Connect (see its header).
 |---|---|---|
 | 5.1 | VoiceOver on (Cmd+F5), do 2.1–2.4 | "Listen…", "Type what you heard…", "Right." and "It was K M R. You typed K M T." are spoken without moving focus |
 
+## 6. Words and phrases (M3b)
+
+| # | Do | Expect |
+|---|---|---|
+| 6.1 | Practise: Words, at a lesson around 16 | Real words, only of your lesson's characters; the line under the controls says how many |
+| 6.2 | Practise: Phrases, 2 words, From Mixed | The *From* list shows counts and greys out empty kinds; items from each kind with ≥ 10 |
+| 6.3 | Get a phrase partly wrong | The words you missed are marked; it plays once more; it comes back about 4 items later |
+| 6.4 | From: QSO lines at a late lesson (≥ 38) | Real QSO pieces and filled templates; call signs, names and QTHs only of learned characters |
+| 6.5 | 10 phrases of one length, nearly all right | "Ready for n+1?" with a button; it never changes by itself |
+| 6.6 | Your own phrases: paste a few lines (some too long, some with unlearned characters), Use these | The count line; From: Your own phrases plays only the usable ones |
+| 6.7 | Reload the page | Practise, words per phrase, From and your own phrases are as you left them |
+| 6.8 | Practise: Phrases, 8 words, at an early lesson | "Nothing to practise with these settings yet — …"; nothing is sent to the M32 |
+
 ## Results
 
 *(fill in: device, browser, step, pass/fail, notes)*

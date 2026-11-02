@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-01b"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-01b"></script>
+  <script src="m32_trainer_link.js?v=2026-11-01c"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-01c"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -63,6 +63,8 @@
     .pip.f{background:var(--accent)}
     .advance{margin-top:14px;padding:12px 16px;border-radius:6px;background:var(--green-bg);border:2px solid var(--green-bdr)}
     .advance[hidden]{display:none}
+    .pair{white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+    .pair[hidden]{display:none}
     select{font-family:inherit;font-size:15px;padding:5px 8px;border:1px solid #b0c0cc;border-radius:4px;background:#fff}
     footer{text-align:center;font-size:14px;color:var(--muted);margin-top:30px}
     footer a{color:#155e8f}
@@ -104,17 +106,41 @@
       <button id="btnGo" class="btn" disabled>Start</button>
       <button id="btnReplay" class="btn btn-outline" disabled>Replay</button>
       <button id="btnPause" class="btn btn-outline" disabled>Pause</button>
-      <label for="selSize" style="margin-left:auto">Group size</label>
-      <select id="selSize">
-        <option value="mixed">Mixed</option>
-        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
-        <option value="4">4</option><option value="5">5</option>
-      </select>
     </div>
+    <div class="row" style="margin-top:10px">
+      <span class="pair"><label for="selMode">Practise</label>
+        <select id="selMode">
+          <option value="groups">Groups</option><option value="words">Words</option><option value="phrases">Phrases</option>
+        </select></span>
+      <span class="pair" id="pairSize"><label for="selSize" id="lblSize">Group size</label>
+        <select id="selSize"></select></span>
+      <span class="pair" id="pairTier" hidden><label for="selTier">From</label>
+        <select id="selTier">
+          <option value="mixed">Mixed</option><option value="A">Word chains</option><option value="B">Plain language</option>
+          <option value="C">QSO lines</option><option value="U">Your own phrases</option>
+        </select></span>
+    </div>
+    <div class="keys" id="availNote"></div>
     <div id="feedback" aria-live="polite"></div>
     <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
     <div class="keys" id="prosignHint"></div>
     <div class="keys" id="tally"></div>
+    <div class="advance" id="ladder" hidden>
+      <span id="ladderText"></span>
+      <button id="btnLadder" class="btn btn-sm" style="margin-left:8px"></button>
+    </div>
+    <details id="ownPhrases" style="margin-top:14px">
+      <summary>Your own phrases</summary>
+      <p style="font-size:15px;margin:6px 0">One phrase per line, 2 to 8 words (a club's or school's texts, your own). Lines starting with # are skipped. Only lines made of your lesson's characters come up. Kept in this browser.</p>
+      <label for="userText" class="sr">Your own phrases, one per line</label>
+      <textarea id="userText" rows="6" style="width:100%;font-family:'Courier New',Courier,monospace;font-size:15px;padding:6px"></textarea>
+      <div class="row" style="margin-top:6px">
+        <button id="btnUserUse" class="btn btn-outline btn-sm">Use these</button>
+        <button id="btnUserFile" class="btn btn-outline btn-sm">Load a file…</button>
+        <input id="fileUser" type="file" accept=".txt,text/plain" hidden />
+        <span id="userInfo" role="status" style="font-size:15px"></span>
+      </div>
+    </details>
     <div class="advance" id="advance" hidden>
       <span id="advanceText"></span>
       <button id="btnAdvance" class="btn btn-sm" style="margin-left:8px"></button>
@@ -152,7 +178,7 @@
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-01b';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-01c';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -160,6 +186,7 @@ const $ = (id) => document.getElementById(id);
 
 const link = new M32Link.Link();
 let store = null, mastery = new E.Mastery(), scheduler = null, session = null;
+let corpus = null;              // E.Corpus, from m32_trainer_corpus.json (words and phrases)
 let lesson = null;              // the GET kochlesson object
 let lessonList = [];            // its active characters
 let wpm = null;
@@ -200,9 +227,32 @@ async function openStore() {
   }
   try { await store.pruneKeystrokes(Date.now() - E.KEYSTROKE_DAYS * 864e5); } catch (e) { /* not fatal */ }
   mastery = E.Mastery.fromAttempts(await store.all());
-  const size = await store.getMeta('size');
-  if (size) $('selSize').value = String(size);
+  for (const [id, key] of [['selMode', 'mode'], ['selTier', 'tier']]) {
+    const v = await store.getMeta(key);
+    if (v) $(id).value = v;
+  }
+  sizes.groups = (await store.getMeta('size')) || 'mixed';
+  sizes.phrases = (await store.getMeta('phraseLen')) || '2';
+  const own = await store.getMeta('userText');
+  if (own) { $('userText').value = own; if (corpus) userInfo(corpus.setUser(own)); }
+  modeChanged();
   await showHistory();
+}
+
+async function loadCorpus() {
+  try {
+    const r = await fetch('m32_trainer_corpus.json?v=' + PAGE_VERSION);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    corpus = new E.Corpus(await r.json());
+    if ($('userText').value) userInfo(corpus.setUser($('userText').value));
+    if (scheduler) scheduler.corpus = corpus;
+  } catch (e) {
+    corpus = null;
+    $('selMode').value = 'groups';
+    for (const o of $('selMode').options) if (o.value !== 'groups') o.disabled = true;
+    $('availNote').textContent = 'Words and phrases are not available: their list did not load (' + e.message + ').';
+  }
+  modeChanged();
 }
 
 async function showHistory() {
@@ -265,6 +315,8 @@ async function readLesson() {
     : '';
   if (scheduler) scheduler.setChars(play);
   renderChars();
+  renderAvailable();
+  if (corpus && corpus.user.length) userInfo({ lines: $('userText').value.split(/\r?\n/).filter((l) => l.trim() && l.trim()[0] !== '#').length, kept: corpus.user.length });
   return play;
 }
 
@@ -439,7 +491,8 @@ link.installPageHide(window);
 // ---- practice ------------------------------------------------------------------
 
 function makeSession(play) {
-  scheduler = new E.Scheduler({ mastery, chars: play, size: sizeValue() });
+  scheduler = new E.Scheduler({ mastery, chars: play, corpus, mode: $('selMode').value,
+                               size: sizeValue('groups'), length: +sizes.phrases, tier: $('selTier').value });
   if (session) { scheduler.retries = session.scheduler.retries; }
   const player = { play: (text) => link.playCw(text), stop: () => link.stopCw() };
   session = new E.Session({
@@ -459,10 +512,118 @@ function makeSession(play) {
   renderTally();
 }
 
-function sizeValue() { const v = $('selSize').value; return v === 'mixed' ? 'mixed' : +v; }
+// ---- what to practise: Groups / Words / Phrases (M3b) ---------------------------
+
+const sizes = { groups: 'mixed', phrases: '2' };      // the size select's value per mode
+function sizeValue(mode) { const v = sizes[mode]; return v === 'mixed' ? 'mixed' : +v; }
+
+function fillSizes(mode) {
+  const sel = $('selSize');
+  const opts = mode === 'groups' ? ['mixed', '1', '2', '3', '4', '5'] : ['2', '3', '4', '5', '6', '7', '8'];
+  sel.innerHTML = opts.map((v) => '<option value="' + v + '">' + (v === 'mixed' ? 'Mixed' : v) + '</option>').join('');
+  sel.value = sizes[mode] || opts[0];
+}
+
+// The mode select changed (or was restored): relabel the size select, show the tier select
+function modeChanged() {
+  const mode = $('selMode').value;
+  show($('pairSize'), mode !== 'words');
+  show($('pairTier'), mode === 'phrases');
+  $('lblSize').textContent = mode === 'phrases' ? 'Words per phrase' : 'Group size';
+  if (mode !== 'words') fillSizes(mode);
+  if (scheduler) {
+    scheduler.mode = mode;
+    scheduler.size = sizeValue('groups');
+    scheduler.length = +sizes.phrases;
+    scheduler.tier = $('selTier').value;
+  }
+  renderAvailable();
+  renderLadder();
+}
+
+$('selMode').onchange = async () => { modeChanged(); await store.setMeta('mode', $('selMode').value); };
 $('selSize').onchange = async () => {
-  if (scheduler) scheduler.size = sizeValue();
-  await store.setMeta('size', $('selSize').value);
+  const mode = $('selMode').value;
+  sizes[mode] = $('selSize').value;
+  modeChanged();
+  await store.setMeta(mode === 'groups' ? 'size' : 'phraseLen', sizes[mode]);
+};
+$('selTier').onchange = async () => { modeChanged(); await store.setMeta('tier', $('selTier').value); };
+
+const TIER_NAMES = { A: 'word chains', B: 'plain-language phrases', C: 'QSO lines', U: 'of your own phrases' };
+
+// What the current lesson offers: counts on the tier options, and a line under the controls
+function renderAvailable() {
+  const mode = $('selMode').value, note = $('availNote');
+  if (!corpus) return;
+  if (mode === 'groups' || !lessonList.length) { note.textContent = ''; return; }
+  const av = corpus.available(lessonList, +sizes.phrases);
+  if (mode === 'words') {
+    note.textContent = av.words.length ? av.words.length + ' words use only your lesson\'s characters.'
+                                       : 'No word uses only your lesson\'s characters yet — practise groups for now.';
+    return;
+  }
+  for (const o of $('selTier').options) {
+    const label = { mixed: 'Mixed', A: 'Word chains', B: 'Plain language', C: 'QSO lines', U: 'Your own phrases' }[o.value];
+    o.textContent = o.value === 'mixed' ? label : label + ' (' + av.count[o.value] + ')';
+    o.disabled = o.value !== 'mixed' && !av.count[o.value];
+  }
+  const n = sizes.phrases, tier = $('selTier').value;
+  if (tier === 'mixed') {
+    note.textContent = av.eligible.length
+      ? 'Mixing ' + av.eligible.map((t) => TIER_NAMES[t].replace(/^of /, '')).join(', ') + ' (' + n + ' words).'
+      : 'Not enough ' + n + '-word phrases at your lesson yet (a kind needs 10). Try fewer words, Words, or groups.';
+  } else {
+    // "211 QSO lines with 4 words fit your lesson." / "2 of your own phrases with 4 words fit ..."
+    note.textContent = av.count[tier]
+      ? av.count[tier] + ' ' + TIER_NAMES[tier] + ' with ' + n + ' words ' + (av.count[tier] === 1 ? 'fits' : 'fit') + ' your lesson.'
+      : (tier === 'U' ? 'None of your own phrases' : 'No ' + TIER_NAMES[tier]) + ' with ' + n + ' words ' +
+        (tier === 'U' ? 'fits' : 'fit') + ' your lesson yet.';
+  }
+}
+
+// Decision 13b: after 10 phrases of this length, offer a step up or down -- never automatic
+async function renderLadder() {
+  const box = $('ladder');
+  if ($('selMode').value !== 'phrases' || !store) { show(box, false); return; }
+  const n = +sizes.phrases, offer = E.ladderOffer(await store.all(), n);
+  show(box, !!offer);
+  if (!offer) return;
+  const to = offer === 'up' ? n + 1 : n - 1;
+  $('ladderText').textContent = offer === 'up'
+    ? 'You copied 90 % or more of the words in your last 10 phrases of ' + n + '. Ready for ' + to + '?'
+    : 'Your last 10 phrases of ' + n + ' were hard going (under 60 % of the words). Step back to ' + to + '?';
+  $('btnLadder').textContent = (offer === 'up' ? 'Go to ' : 'Back to ') + to + ' words';
+  $('btnLadder').onclick = async () => {
+    sizes.phrases = String(to);
+    modeChanged();
+    await store.setMeta('phraseLen', sizes.phrases);
+    setStatus(to + ' words per phrase. Press Enter for the next one.');
+  };
+}
+
+// ---- your own phrases (C3) ----
+
+function userInfo(r) {
+  if (!r.lines) { $('userInfo').textContent = ''; return; }
+  const usable = lessonList.length ? corpus.user.filter((it) => [...it.need].every((t) => lessonList.indexOf(t) >= 0)).length : null;
+  $('userInfo').textContent = r.kept + ' of ' + r.lines + ' lines have 2 to 8 words' +
+    (usable != null ? '; ' + usable + ' use only your lesson\'s characters.' : '.');
+}
+async function useUserText(text) {
+  if (!corpus) return;
+  userInfo(corpus.setUser(text));
+  await store.setMeta('userText', text);
+  renderAvailable();
+}
+$('btnUserUse').onclick = () => useUserText($('userText').value);
+$('btnUserFile').onclick = () => $('fileUser').click();
+$('fileUser').onchange = async (ev) => {
+  const f = ev.target.files[0];
+  ev.target.value = '';
+  if (!f) return;
+  $('userText').value = await f.text();
+  await useUserText($('userText').value);
 };
 
 function enablePractice(on) {
@@ -506,7 +667,12 @@ async function go() {
   }
   $('answer').value = '';
   $('feedback').innerHTML = '';
-  session.next();
+  try { session.next(); }
+  catch (e) {
+    if (e.name !== 'NoItemsError') throw e;
+    setStatus(e.what === 'words' ? 'No word uses only your lesson\'s characters yet — choose Groups.'
+                                 : 'Nothing to practise with these settings yet — choose fewer words, another kind, or Groups.');
+  }
 }
 
 async function check() {
@@ -541,12 +707,13 @@ function onResult({ attempt, score }) {
   renderChars();
   renderTally();
   showHistory();
+  renderLadder();
 }
 
 function renderTally() {
   if (!session) return;
   const t = session.tally;
-  $('tally').textContent = t.items ? 'This session: ' + t.items + ' groups, ' + t.perfect + ' right, ' +
+  $('tally').textContent = t.items ? 'This session: ' + t.items + ' items, ' + t.perfect + ' right, ' +
     Math.round(100 * t.charsRight / Math.max(1, t.chars)) + ' % of characters.' : '';
 }
 
@@ -605,7 +772,7 @@ $('answer').addEventListener('input', (e) => {
   if (session) session.key(e.data != null ? e.data.toLowerCase() : (e.inputType || 'edit'), e.timeStamp);
 });
 document.addEventListener('keydown', (e) => {
-  if (e.target === $('answer') || e.target.tagName === 'SELECT' || e.target.tagName === 'INPUT') return;
+  if (e.target === $('answer') || ['SELECT', 'INPUT', 'TEXTAREA'].indexOf(e.target.tagName) >= 0) return;
   if (e.key === 'Enter' && e.target === document.body) { e.preventDefault(); go(); }
   else if (e.key === 'Escape' && session) session.pause();
 });
@@ -620,7 +787,7 @@ else if (!('serial' in navigator)) {
   $('btnConnect').disabled = true;
   connNote('This browser cannot talk to a serial port. Use Chrome, Edge, Opera, or Firefox 151 or newer, on a desktop computer.', true);
 }
-openStore();
+openStore().then(loadCorpus);
 </script>
 </body>
 </html>

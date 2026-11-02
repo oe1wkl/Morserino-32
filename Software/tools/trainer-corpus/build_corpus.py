@@ -194,7 +194,8 @@ def read_realqsos(exclude):
             if not t:
                 continue
             t = t.replace('<ar>>kn', '<ar><kn>').replace('><', '> <')
-            t = re.sub(r'<ar>sk\b', '<ar> <sk>', t)
+            t = re.sub(r'<ar>(sk|va)\b', '<ar> <sk>', t)                 # VA: the old way of writing SK
+            t = re.sub(r'(<[a-z]{2}>)(?=[a-z0-9]*[0-9][a-z0-9/]*\b)', r'\1 ', t)   # "<ar>2m0rtz" -> "<ar> 2m0rtz": a call follows
             t = t.replace('<ar>', '+').replace('<bt>', '=')
             t = tidy_question(t)
             ws = t.split(' ')
@@ -202,6 +203,8 @@ def read_realqsos(exclude):
                 drop('not 2-8 words'); continue
             if any(tk not in PLAIN and tk not in PROSIGN_CODE for tk in tokens(t) if tk != ' '):
                 drop('character the M32 does not teach'); continue
+            if any(('<' in w or '+' in w) and not (w in PROSIGN_CODE or w == '+') for w in ws):
+                drop('a prosign run into a word'); continue
             if ws[-1] in DANGLING:
                 drop('cut off (ends on "%s")' % 'qth/name/is/...'); continue
             if any(len(w) > 14 for w in ws):
@@ -425,7 +428,7 @@ def review_doc(corpus, seqs, stats):
     L.append('## Tier C — QSO lines\n')
     L.append('### Fragments of RealQSOs.TXT (%d)\n' % len(real))
     L.append('Each QSO cut at `=` (BT); kept when 2–8 words. `<AR>` became `+`, run-together prosigns were split '
-             '(`<AR><KN>` → `+ <kn>`, `<AR>SK` → `+ <sk>`), `?` joined to its word. Dropped:\n')
+             '(`<AR><KN>` → `+ <kn>`, `<AR>SK` and `<AR>VA` → `+ <sk>`, `<AR>2M0RTZ` → `+ 2m0rtz`), `?` joined to its word. Dropped:\n')
     for k, v in sorted(stats['realWhy'].items(), key=lambda kv: -kv[1]):
         L.append('- %s: %d' % (k, v))
     L.append('\nToo many to read one by one: **here is a fixed random sample of 100** (the same each build). '

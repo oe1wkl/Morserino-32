@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-01b';
+const VERSION = '2026-11-01c';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -314,7 +314,15 @@ class Scheduler {
     this.chars = opts.chars.slice();
     this.size = opts.size || 'mixed';          // 'mixed' or a pinned 1..5
     this.retryGap = opts.retryGap != null ? opts.retryGap : 4;
-    this.retries = [];                         // {text, wait}
+    this.retries = [];                         // {kind, tier, text, wait}
+    // M3b: what to practise. 'groups' (above), 'words' (one real word), 'phrases' (`length`
+    // words, from `tier`: 'mixed' or one of 'A' word chains, 'B' plain language, 'C' QSO, 'U' the
+    // learner's own lines). Words and phrases need `corpus` (a Corpus).
+    this.mode = opts.mode || 'groups';
+    this.length = opts.length || 2;
+    this.tier = opts.tier || 'mixed';
+    this.corpus = opts.corpus || null;
+    this.recent = [];                          // texts of the last RECENT items, not drawn again
   }
 
   setChars(chars) { this.chars = chars.slice(); this.retries = this.retries.filter((r) => tokenize(r.text).every((t) => chars.indexOf(t) >= 0)); }
@@ -342,22 +350,98 @@ class Scheduler {
     return this.chars[this.chars.length - 1];
   }
 
-  // -> {kind: 'group', text, retry}
+  // -> {kind: 'group'|'word'|'phrase', tier: null|'A'|'B'|'C'|'U', text, retry}
   next() {
     for (const r of this.retries) r.wait--;
     const due = this.retries.findIndex((r) => r.wait <= 0);
-    if (due >= 0) return { kind: 'group', text: this.retries.splice(due, 1)[0].text, retry: true };
+    if (due >= 0) {
+      const r = this.retries.splice(due, 1)[0];
+      return { kind: r.kind || 'group', tier: r.tier || null, text: r.text, retry: true };
+    }
     if (!this.chars.length) throw new Error('No characters to practise');
-    const n = this.groupSize();
-    let text = '';
-    for (let i = 0; i < n; i++) text += this.pickChar();
-    return { kind: 'group', text, retry: false };
+    let item;
+    if (this.mode === 'groups') {
+      const n = this.groupSize();
+      let text = '';
+      for (let i = 0; i < n; i++) text += this.pickChar();
+      item = { kind: 'group', tier: null, text };
+    } else {
+      const av = this.available();
+      if (this.mode === 'words') {
+        if (!av.words.length) throw new NoItemsError('words');
+        item = { kind: 'word', tier: 'A', text: this.pickItem(av.words, (w) => w, null, true) };
+      } else {
+        const tiers = this.tier === 'mixed' ? av.eligible : (av.count[this.tier] ? [this.tier] : []);
+        if (!tiers.length) throw new NoItemsError('phrases');
+        const tier = tiers[Math.floor(this.rng() * tiers.length)];
+        item = { kind: 'phrase', tier, text: this._phrase(av, tier) };
+      }
+    }
+    this.recent.push(item.text);
+    if (this.recent.length > RECENT) this.recent.shift();
+    return Object.assign(item, { retry: false });
+  }
+
+  // What can be drawn now: {words, count: {A, B, C, U} at this length, eligible: tiers with >= 10}
+  available() {
+    return this.corpus.available(this.chars, this.length);
+  }
+
+  _phrase(av, tier) {
+    if (tier === 'A') {                        // a chain of `length` different words
+      const ws = [];
+      while (ws.length < this.length) {
+        const w = this.pickItem(av.words, (x) => x, ws, true);
+        if (w == null) break;
+        ws.push(w);
+      }
+      return ws.join(' ');
+    }
+    const it = this.pickItem(av.items[tier], (x) => x.text);
+    return it.slots ? this.corpus.fill(it, this.chars, this.rng) : it.text;
+  }
+
+  // Decision 4b for words and phrases: from a random sample of the candidates (the pools are
+  // large), weighted by how weak their characters are; the last RECENT items are skipped
+  // while there is anything else. `avoid` lists texts not to repeat inside one chain;
+  // `byFrequency` says the list is most frequent first (the words).
+  pickItem(list, textOf, avoid, byFrequency) {
+    const fresh = list.filter((x) => this.recent.indexOf(textOf(x)) < 0 && !(avoid && avoid.indexOf(textOf(x)) >= 0));
+    const pool = fresh.length ? fresh : list;
+    if (!pool.length) return null;
+    // Words come most frequent first: lean the sample toward the front (r squared), as the
+    // firmware weights its Koch words by frequency -- "the" far more often than "alignment".
+    const at = (r) => Math.floor((byFrequency ? r * r : r) * pool.length);
+    const sample = [];
+    for (let i = 0; i < Math.min(SAMPLE, pool.length); i++) sample.push(pool[at(this.rng())]);
+    const ws = sample.map((x) => this.itemWeight(textOf(x)));
+    let r = this.rng() * ws.reduce((a, b) => a + b, 0);
+    for (let i = 0; i < ws.length; i++) { r -= ws[i]; if (r < 0) return sample[i]; }
+    return sample[sample.length - 1];
+  }
+
+  // 1 + the sum, over its distinct characters, of how far each is below the top box; the
+  // newest character counts double until it reaches box 2 (as for groups). Slots count as nothing.
+  itemWeight(text) {
+    const seen = new Set(tokenize(text.replace(/\[[A-Z0-9]+\]/g, ' ')).filter((t) => t !== ' '));
+    let w = 1;
+    for (const ch of seen) w += this.weight(ch) - 1;
+    return w;
   }
 
   // A missed item comes back, scored normally, after about `retryGap` other items.
   missed(item) {
-    if (!this.retries.some((r) => r.text === item.text)) this.retries.push({ text: item.text, wait: this.retryGap + 1 });
+    if (!this.retries.some((r) => r.text === item.text))
+      this.retries.push({ kind: item.kind, tier: item.tier || null, text: item.text, wait: this.retryGap + 1 });
   }
+}
+
+const RECENT = 20;              // words and phrases not drawn again within this many items
+const SAMPLE = 40;              // candidates looked at per draw
+const TIER_MIN = 10;            // decision 13b: a tier is offered with >= 10 usable items
+
+class NoItemsError extends Error {
+  constructor(what) { super('Nothing to practise as ' + what + ' with these characters yet'); this.name = 'NoItemsError'; this.what = what; }
 }
 
 // ---- call signs ------------------------------------------------------------
@@ -424,6 +508,119 @@ function randomCall(prefixes, opts) {
   return { call, continent: chosen[1], zone: chosen[2] };
 }
 
+// ---- the corpus (M3b) ----------------------------------------------------------
+
+// m32_trainer_corpus.json (built by Software/tools/trainer-corpus/build_corpus.py), plus the
+// learner's own lines (tier U). Everything is filtered strictly by the active characters
+// (decision 13a): an item is usable only if every one of its characters is in the set.
+class Corpus {
+  constructor(json) {
+    if (!json || json.schema !== 1) throw new Error('Unknown corpus format');
+    this.json = json;
+    this.prefixes = json.prefixes || [];
+    this.pools = json.pools || {};
+    const prep = (p) => ({ tier: p.tier, src: p.src, text: normalize(p.text), n: splitWords(p.text).length,
+                           need: tokenSet(p.text), slots: null });
+    this.items = (json.phrases || []).map(prep);
+    for (const t of json.templates || []) {
+      const slots = (t.text.match(/\[[A-Z0-9]+\]/g) || []).map((x) => x.slice(1, -1));
+      if (!slots.length) { this.items.push(prep(Object.assign({ tier: 'C', src: 'authored' }, t))); continue; }
+      this.items.push({ tier: 'C', src: t.src || 'authored', text: t.text, n: t.text.split(' ').length,
+                        need: tokenSet(t.text.replace(/\[[A-Z0-9]+\]/g, ' ')), slots });
+    }
+    this.words = (json.words || []).map((w) => ({ text: w, need: tokenSet(w) }));
+    this.user = [];
+    this._cache = null;
+  }
+
+  // The learner's own lines (decision C3): one phrase per line, blank lines and #comments
+  // skipped. -> {lines, kept} -- kept are the 2..8-word lines (any characters; the lesson
+  // filter applies when drawing).
+  setUser(text) {
+    const lines = String(text || '').split(/\r?\n/).map((l) => l.trim()).filter((l) => l && l[0] !== '#');
+    this.user = [];
+    for (const l of lines) {
+      const t = normalize(l), n = splitWords(t).length;
+      if (n >= 2 && n <= 8) this.user.push({ tier: 'U', src: 'user', text: t, n, need: tokenSet(t), slots: null });
+    }
+    this._cache = null;
+    return { lines: lines.length, kept: this.user.length };
+  }
+
+  // -> {words: [text], items: {B, C, U}: [item] at `length`, count: {A, B, C, U}, eligible: [tiers]}
+  // A counts the usable words (a chain can be built from any 10 of them).
+  available(chars, length) {
+    const key = chars.join('\u0000') + '|' + length;
+    if (this._cache && this._cache.key === key) return this._cache.value;
+    const act = new Set(chars);
+    const fits = (need) => { for (const t of need) if (!act.has(t)) return false; return true; };
+    const words = this.words.filter((w) => fits(w.need)).map((w) => w.text);
+    const callOk = randomCall(this.prefixes, { active: act }) !== null;
+    const slotOk = (s) => (s === 'CALL' || s === 'CALL2') ? callOk : this._values(s, act).length > 0;
+    const items = { B: [], C: [], U: [] };
+    for (const it of this.items.concat(this.user)) {
+      if (it.n !== length || !fits(it.need)) continue;
+      if (it.slots && !it.slots.every(slotOk)) continue;
+      items[it.tier].push(it);
+    }
+    const count = { A: words.length, B: items.B.length, C: items.C.length, U: items.U.length };
+    const eligible = ['A', 'B', 'C', 'U'].filter((t) => count[t] >= TIER_MIN);
+    const value = { words, items, count, eligible };
+    this._cache = { key, value };
+    return value;
+  }
+
+  // Pool values usable with these characters: [[value, continent mask] | value]
+  _values(slot, act) {
+    return (this.pools[slot] || []).filter((v) => {
+      for (const t of tokenSet(Array.isArray(v) ? v[0] : v)) if (!act.has(t)) return false;
+      return true;
+    });
+  }
+
+  // A template's text with its slots filled: [CALL] first, and the names, QTHs and
+  // summit/park references then picked to suit that call's continent (as the QSO Bot does),
+  // any value if none suits. Only values made of the active characters.
+  fill(item, chars, rng) {
+    rng = rng || Math.random;
+    const act = new Set(chars);
+    const one = (xs) => xs[Math.floor(rng() * xs.length)];
+    const calls = {};
+    let continent = CONT_ALL;
+    for (const s of ['CALL', 'CALL2']) {
+      if (item.slots.indexOf(s) < 0) continue;
+      const c = randomCall(this.prefixes, { rng, active: act });
+      calls[s] = c.call;
+      if (s === 'CALL' || continent === CONT_ALL) continent = c.continent;
+    }
+    return item.text.replace(/\[([A-Z0-9]+)\]/g, (m, s) => {
+      if (calls[s]) return calls[s];
+      const vals = this._values(s, act);
+      const suits = vals.filter((v) => Array.isArray(v) && (v[1] & continent));
+      const v = one(suits.length ? suits : vals);
+      return Array.isArray(v) ? v[0] : v;
+    });
+  }
+}
+
+function tokenSet(text) {
+  return new Set(tokenize(text).filter((t) => t !== ' '));
+}
+
+// Decision 13b: after the last 10 phrases of this length (typed, scored), offer a step up at
+// >= 90 % of the words right, a step down below 60 % -- never automatic. -> 'up' | 'down' | null
+function ladderOffer(attempts, length) {
+  const at = attempts.filter((a) => a.kind === 'phrase' && a.scored !== false && (a.source || 'typed') === 'typed' &&
+                                    Array.isArray(a.perWord) && a.perWord.length === length)
+                     .sort((x, y) => x.t - y.t).slice(-10);
+  if (at.length < 10) return null;
+  // right words over all words (integers: a mean of per-phrase ratios drifts, and 60 % came out as 59.99...)
+  const acc = at.reduce((s, a) => s + a.perWord.filter((w) => w.ok).length, 0) / (at.length * length);
+  if (acc >= 0.9 && length < 8) return 'up';
+  if (acc < 0.6 && length > 2) return 'down';
+  return null;
+}
+
 // ---- the session ---------------------------------------------------------
 
 function newId() {
@@ -478,7 +675,7 @@ class Session {
   next() {
     if (['idle', 'feedback', 'feedback-playing'].indexOf(this.state) < 0) return;
     const pick = this.scheduler.next();
-    this.item = { kind: pick.kind, text: pick.text, retry: pick.retry, doneAt: null, keys: [],
+    this.item = { kind: pick.kind, tier: pick.tier || null, text: pick.text, retry: pick.retry, doneAt: null, keys: [],
                   replays: 0, helped: false, stops: 0 };
     this._emit('item', this.item);
     this._play(false);
@@ -541,7 +738,7 @@ class Session {
       schema: SCHEMA, id: newId(), t: this.clock.wall(),
       device: ctx.device || null, lesson: ctx.lesson != null ? ctx.lesson : null, wpm: ctx.wpm != null ? ctx.wpm : null,
       farnsworth: ctx.farnsworth != null ? ctx.farnsworth : null,
-      kind: it.kind, tier: null, source: 'typed', retry: it.retry,
+      kind: it.kind, tier: it.tier || null, source: 'typed', retry: it.retry,
       expected: s.expected, answer: s.answer, perfect: s.perfect,
       perWord: s.words, perChar: s.chars, extra: s.extra,
       latency: first != null && it.doneAt != null ? Math.round(first - it.doneAt) : null,
@@ -616,7 +813,12 @@ class IdbStore {
         if (!db.objectStoreNames.contains('attempts')) db.createObjectStore('attempts', { keyPath: 'id' }).createIndex('t', 't');
         if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta');
       };
-      req.onsuccess = () => resolve(new IdbStore(req.result));
+      req.onsuccess = () => {
+        // Give the database up when another tab needs it (a newer version's upgrade, or a delete):
+        // otherwise that tab waits for ever. This tab's store is then closed (reload to go on).
+        req.result.onversionchange = () => req.result.close();
+        resolve(new IdbStore(req.result));
+      };
       req.onerror = () => reject(req.error);
       req.onblocked = () => reject(new Error('The trainer is open in another tab that holds an older database'));
     });
@@ -709,7 +911,7 @@ function lessonChars(kochlesson) {
 return {
   VERSION, SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
-  Mastery, movesBoxes, median, mulberry32, randomCall, Scheduler, Session, newId,
+  Mastery, movesBoxes, median, mulberry32, randomCall, Corpus, ladderOffer, NoItemsError, Scheduler, Session, newId,
   MemoryStore, IdbStore, exportFile, parseExport, lessonChars
 };
 }));

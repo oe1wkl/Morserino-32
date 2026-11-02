@@ -13,6 +13,7 @@ node --test Software/tests/trainer/*.test.js
 |---|---|
 | `link.test.js` | `m32_trainer_link.js`, the link to the Morserino: framing of the mixed JSON/echo stream (every split point, random chunking, noise, braces/quotes/escapes inside strings, torn and stray objects, the stall rule), the one-in-flight command queue, reply vs unsolicited routing, timeouts and the re-handshake, `cw/play` → `done` bookkeeping, cable loss and reopen, BLE consent, goodbye and `pagehide` |
 | `engine.test.js` | `m32_trainer_engine.js`: tokenizer (prosigns, also `[sk]` `\sk`, `<ar>`=`+`), the scorer's word and character alignment, the Leitner rules (promotion window, miss drop, what moves no box), replay of the log in time order, confusions, lesson-advance offer, draw weights and group size, the retry after a miss, the session's play/answer/feedback states (paddle stop, help, lost link, pause), export/import merge, keystroke pruning |
+| `phrases.test.js` | M3b: the corpus layer (strict filter per length, tier counts, template filling with continent-matched values), words and phrases from the scheduler, pinned tiers, recent items, retries, your own lines, the ladder offer |
 | `callsign.test.js` | `randomCall()`, the port of the firmware's `getRandomCall()`: the same calls as the firmware's own code for the same random numbers (fixture from `Software/tests/callsign_gen/`), and with a lesson filter only learned characters |
 | `version.test.js` | page, link and engine carry one `VERSION`, and the page loads both scripts with `?v=` that version |
 
