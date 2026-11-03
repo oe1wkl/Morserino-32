@@ -573,7 +573,7 @@ void setup()
    memoryReboot = (rebootMagic == REBOOT_MAGIC_MEMORY);
    uint8_t resumeMenuPtr = memoryReboot ? rebootMenuPtr : 0;
 #ifdef CONFIG_USB_HOSTIO
-   // Leaving CW Keyer with USB Output active restarts to get the serial port back (MorseUsbIO::menuEntered()).
+   // Leaving CW Keyer with USB Keying active restarts to get the serial port back (MorseUsbIO::menuEntered()).
    // The same silent boot, but it ends at the menu: Quick Start would go straight back into CW Keyer.
    const bool usbBackReboot = (rebootMagic == USB_BACK_REBOOT_MAGIC);
    memoryReboot = memoryReboot || usbBackReboot;
@@ -1460,7 +1460,7 @@ if (morseState == morseKeyer &&
 MorseBluetooth::tick();                           // no-op unless the keyboard runs
 #endif
 #ifdef CONFIG_USB_HOSTIO
-MorseUsbIO::tick(morseState == morseKeyer);       // CW Keyer with USB Output on starts USB; releases USB Ctrl / MIDI notes outside it
+MorseUsbIO::tick(morseState == morseKeyer);       // CW Keyer with USB Keying on starts USB; releases USB Ctrl / MIDI notes outside it
 #endif
 /// if we have time check for serial input and for button presses
 
@@ -3636,7 +3636,7 @@ void changePreviewChar( int t) {
 void keyTransmitter(boolean noTx) {
 #ifdef CONFIG_USB_HOSTIO
    // before the Key Ext Tx gate - whatever CW Keyer keys (paddles, straight key, a memory) always
-   // goes out over USB for the selected USB Output, whatever Key Ext Tx says about the transmitter jack.
+   // goes out over USB for the selected USB Keying, whatever Key Ext Tx says about the transmitter jack.
    if (morseState == morseKeyer)
       MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI Keyer: notes 0 + 30
 #endif

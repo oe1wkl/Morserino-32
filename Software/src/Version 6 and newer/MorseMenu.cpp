@@ -520,7 +520,7 @@ void MorseMenu::menu_() {
 #endif
    int t, command;
 #ifdef CONFIG_USB_HOSTIO
-   MorseUsbIO::menuEntered();   // USB Output was active: restarts to get the serial port back, does not return
+   MorseUsbIO::menuEntered();   // USB Keying was active: restarts to get the serial port back, does not return
 #endif
    m32state = menu_loop;
 #ifdef CONFIG_AUDIO_A11Y

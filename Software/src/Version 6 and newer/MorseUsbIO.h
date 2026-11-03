@@ -6,12 +6,12 @@
 /// hardware USB-Serial-JTAG (HWCDC), which can only ever be a serial port but which the silicon itself
 /// can reset into download mode - so flashing never depends on the firmware. The USB-OTG controller with
 /// TinyUSB can be a keyboard and a MIDI device. The image holds both, and the PHY changes hands at run time:
-///   * CW Keyer with "USB Output" not Off: tick() ends any USB protocol session and starts TinyUSB. The
+///   * CW Keyer with "USB Keying" not Off: tick() ends any USB protocol session and starts TinyUSB. The
 ///     computer now sees a USB keyboard + MIDI device, and no serial port;
 ///   * back at the menu: menuEntered() restarts the device (silently, see USB_BACK_REBOOT_MAGIC), because
 ///     boot is the one tested way back. begin() returns the PHY to HWCDC, also after waking from deep sleep,
 ///     which keeps the selection. So serial is off only while CW Keyer is sending to USB.
-/// The "USB Output" preference (CW Keyer) picks what is sent:
+/// The "USB Keying" preference (CW Keyer) picks what is sent:
 ///   * VBand: Left Ctrl is held down while the keyer keys - what the Bluetooth vBand keyboard sends,
 ///     minus the BLE latency (the Bluetooth keyboard is not started meanwhile);
 ///   * MIDI Paddles (channel 1, the computer is the keyer): note 20 = dit paddle, note 21 = dah paddle (after

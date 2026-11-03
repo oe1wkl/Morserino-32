@@ -1,6 +1,6 @@
 // USB keyboard (vBand) + USB MIDI output for the M32 Pocket. See MorseUsbIO.h.
 #include "MorseUsbIO.h"
-#include "MorsePreferences.h"         // posUsbOut: the USB Output selector
+#include "MorsePreferences.h"         // posUsbOut: the USB Keying selector
 
 #ifdef CONFIG_USB_HOSTIO
 
@@ -74,7 +74,7 @@ static bool straightKey() { return MorsePreferences::pliste[posCurtisMode].value
 static void setCtrl(bool down);
 
 void MorseUsbIO::begin() {
-    // USB Output was active before this boot: a restart (or waking from deep sleep) leaves the PHY with the
+    // USB Keying was active before this boot: a restart (or waking from deep sleep) leaves the PHY with the
     // OTG controller and HWCDC would never appear. periph_module_disable() alone would wrap the module's
     // 8-bit reference count from 0 to 255, and the later USB.begin() would then find the clock off and crash.
     if (REG_GET_BIT(RTC_CNTL_USB_CONF_REG, RTC_CNTL_SW_HW_USB_PHY_SEL)) {

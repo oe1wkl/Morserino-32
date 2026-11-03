@@ -368,7 +368,6 @@ Oceania
 of
 OFF
 Off
-Off (charge)
 ON
 On
 ON (less ICS)
@@ -457,7 +456,7 @@ up to 4
 up to 5
 up to 6
 UPPER
-USB output
+USB keying
 VBand
 VBand and Decoded
 VBand Keyboard

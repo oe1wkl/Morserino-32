@@ -1,4 +1,4 @@
-# USB Output in the standard Pocket image
+# USB Keying in the standard Pocket image
 
 Issue [#227](https://github.com/oe1wkl/Morserino-32/issues/227) asked for MIDI like a Vail adapter. PR #224 had
 USB Output only in separate `pocketwroom-usbio` envs, and §H.7 of `devdocs/TODO.md` listed why those could not
@@ -12,8 +12,8 @@ the PHY to the OTG controller.
 
 | State | Port is | Computer sees |
 |---|---|---|
-| Boot, menu, every mode, CW Keyer with USB Output Off | HWCDC | Serial port |
-| CW Keyer, USB Output not Off | TinyUSB | Keyboard + MIDI, **no serial port** |
+| Boot, menu, every mode, CW Keyer with USB Keying Off | HWCDC | Serial port |
+| CW Keyer, USB Keying not Off | TinyUSB | Keyboard + MIDI, **no serial port** |
 
 The way back is a restart, the only return path bench-tested. Copying the core's static
 `usb_switch_to_cdc_jtag` was not tried. `MorseUsbIO::begin()` hands the PHY back at every boot, because the selection
@@ -27,14 +27,15 @@ Cost: +34.4 KB flash and +12.2 KB static RAM on every Pocket (measured on the sp
 
 ## Decisions (Willi, 2026-11-02)
 
-- **Values:** Off (charge) / VBand / MIDI Paddles / MIDI Keyer. The real choice is who forms the elements: paddle
+- **Name:** USB Keying, which was USB Output until this work, never in a release image. Serial Output sends characters, this sends the keying, and "Output" made them sound like rivals (Willi, 2026-11-03). The NVS key `usbOut` and the code's `posUsbOut`/`USB_OUT_*` keep the old word. The all-preferences view lists it right after Serial Output and Bluetooth Use; CW Keyer's own list keeps it with the keyer settings, where it acts.
+- **Values:** Off / VBand / MIDI Paddles / MIDI Keyer. The real choice is who forms the elements: paddle
   events (the computer is the keyer) or the M32 as keyer (as for VBand). Default Off. Stored numbers 0-2 unchanged.
 - **MIDI Keyer sends notes 0 and 30 together.** Vail's tools take note 0 as the straight key and ignore 30;
   CTR2-style programs use 30. Whether SmartSDR ignores note 0 is unverified.
 - **Quick Start into CW Keyer switches as usual.** The restart when leaving must not show the splash or start-up
   screens, and must not run Quick Start again (or the Pocket could never reach the menu): `USB_BACK_REBOOT_MAGIC`,
   on top of the memory-clearing reboot's RTC mechanism.
-- **Accessibility Edition includes it**, with clips (MIDI Keyer, MIDI Paddles, Off (charge), USB output, VBand).
+- **Accessibility Edition includes it**, with clips (MIDI Keyer, MIDI Paddles, USB keying, VBand; Off already had one).
 - **Serial loss is accepted** and documented. No on-screen notice.
 
 ## Traps found on the bench
@@ -45,7 +46,7 @@ Cost: +34.4 KB flash and +12.2 KB static RAM on every Pocket (measured on the sp
   port that is gone. `startOtg()` sends the farewell and ends it.
 - **The menu runs blocking in `menu_()`**, so `tick()` does not run there: the restart hangs off `menuEntered()`.
 - **The Pocket's slide switch only disconnects the battery.** A real power cycle needs the USB cable out as well.
-- **`PUT config/USB Output/<value>` is numeric.** A string such as `MIDI` parses to 0.
+- **`PUT config/USB Keying/<value>` is numeric.** A string such as `MIDI` parses to 0.
 
 Also guarded: a paddle or encoder held during the restart would read as the Hardware Config gesture or be calibrated
 into the touch sensors, so `menuEntered()` waits for release (up to 2 s) and setup skips the check.

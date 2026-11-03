@@ -452,7 +452,7 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    Idea for the open key-line timing checks of BENCH.md §3 (no logic analyser): the classic as Remote Rig with a
    `-D KIP_MEASURE=1` build reproduced the Pocket's key line within ~45 µs, so Remote WinKeyer can measure
    WinKeyer's element timing.
-7. **USB Output (PR #224, Ian VK1HF) — merged 2026-10-29** (1752a67): vBand keyboard and CTR2-MIDI paddles over
+7. **USB Keying (USB Output until 2026-11-03; PR #224, Ian VK1HF) — merged 2026-10-29** (1752a67): vBand keyboard and CTR2-MIDI paddles over
    the Pocket's USB cable. **Branch `usb-output-single-image` (2026-11-02, issue #227) puts it in the standard Pocket
    and Accessibility images and retires the `-usbio` envs:** boot stays on HWCDC, TinyUSB starts at run time while
    CW Keyer sends to USB, leaving restarts silently to the menu. New value MIDI Keyer (notes 0 + 30) for Vail. Design,

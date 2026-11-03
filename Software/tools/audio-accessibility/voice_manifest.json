@@ -178,7 +178,6 @@
     "ON (true WpM)": "72e5e36f",
     "Oceania": "2d883619",
     "Off": "d15305d7",
-    "Off (charge)": "84e9ece6",
     "On": "521c36a3",
     "Out of memory": "150699a9",
     "Output Case": "ea854519",
@@ -234,7 +233,7 @@
     "Transceiver": "6d3a63f4",
     "Transceiver channel": "ae283e65",
     "UPPER": "9e43f529",
-    "USB output": "f48cc11e",
+    "USB keying": "cd7d850b",
     "Ultimatic": "a6c028fe",
     "Unchanged": "5ff3c697",
     "Unlimited": "545f6c2f",
@@ -838,7 +837,6 @@
     "8bf8854b": "of",
     "88559a0c": "OFF",
     "d15305d7": "Off",
-    "84e9ece6": "Off (charge)",
     "90651ebe": "ON",
     "521c36a3": "On",
     "9a0ce9ab": "ON (less ICS)",
@@ -927,7 +925,7 @@
     "19df3cd5": "up to 5",
     "11395bbc": "up to 6",
     "9e43f529": "UPPER",
-    "f48cc11e": "USB output",
+    "cd7d850b": "USB keying",
     "efe72309": "VBand",
     "4dd3f70a": "VBand and Decoded",
     "89011465": "VBand Keyboard",
@@ -954,14 +952,14 @@
     "68046733": "Zulu"
   },
   "id_collisions": {},
-  "pack_stamp": "e9f1c419",
+  "pack_stamp": "cc5a61bc",
   "counts": {
     "menu": 35,
     "pref_labels": 57,
-    "option_values": 193,
+    "option_values": 192,
     "actions": 28,
-    "phrases_total": 355,
+    "phrases_total": 354,
     "atoms_total": 138,
-    "clips_total": 484
+    "clips_total": 483
   }
 }
