@@ -95,6 +95,7 @@
     <h2 class="section-title">Connection</h2>
     <p class="section-sub">Connect your Morserino via USB, then click Connect.</p>
     <div style="text-align:center;margin-bottom:12px"><span class="status-badge status-disconnected" id="statusBadge">Not connected</span></div>
+    <div id="linkNotice" style="display:none;text-align:center;font-weight:600;margin-bottom:12px"></div>
     <div class="btn-row" style="justify-content:center">
       <button class="btn btn-accent" id="connectBtn" onclick="connect()">Connect</button>
       <button class="btn btn-red" id="disconnectBtn" onclick="disconnect()" disabled>Disconnect</button>
@@ -283,6 +284,7 @@ function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
 
 async function connect(){
   try{
+    showLinkNotice('');
     port=await navigator.serial.requestPort();
     await port.open({baudRate:115200});
     abortController=new AbortController();
@@ -301,30 +303,49 @@ async function connect(){
   }catch(err){log('Connection error: '+err.message);setStatus('Failed','disconnected')}
 }
 
-async function disconnect(){
+// linkGone: the device already ended the session or left the bus, so nothing is
+// sent. Every step runs on its own, with a limit: on a lost port reader.cancel()
+// rejects, and giving up there would leave the port open for the next Connect.
+async function disconnect(linkGone){
+  linkClosing=true;
   // Send protocol off before closing
   try{
-    if(writer){
+    if(writer&&linkGone!==true){
       await sendLine('put device/protocol/off');
       await sleep(300);
       log('M32 protocol deactivated');
     }
   }catch(e){}
 
-  try{
-    if(reader){await reader.cancel();reader.releaseLock();reader=null}
-    if(abortController){abortController.abort();abortController=null}
-    if(readableStreamClosed){await readableStreamClosed.catch(function(){});readableStreamClosed=null}
-    if(writer){await writer.close().catch(function(){});writer=null}
-    if(writableStreamClosed){await writableStreamClosed.catch(function(){});writableStreamClosed=null}
-    if(port){await port.close();port=null}
-  }catch(e){reader=null;writer=null;abortController=null;readableStreamClosed=null;writableStreamClosed=null;port=null}
+  if(reader){await settled(reader.cancel());try{reader.releaseLock()}catch(e){}reader=null}
+  if(abortController){abortController.abort();abortController=null}
+  if(readableStreamClosed){await settled(readableStreamClosed);readableStreamClosed=null}
+  if(writer){await settled(writer.close());writer=null}
+  if(writableStreamClosed){await settled(writableStreamClosed);writableStreamClosed=null}
+  if(port){await settled(port.close());port=null}
+  linkClosing=false;
   readBuffer='';setStatus('Disconnected','disconnected');setButtons(false);
   document.getElementById('fileList').innerHTML='<tr><td colspan="3" class="empty-msg">Connect to see files</td></tr>';
   document.getElementById('spaceInfo').textContent='';log('Disconnected');
 }
 
-async function readLoop(){try{while(true){var r=await reader.read();if(r.done)break;if(r.value)readBuffer+=r.value}}catch(e){}}
+async function readLoop(){try{while(true){var r=await reader.read();if(r.done)break;if(r.value){readBuffer+=r.value;if(readBuffer.indexOf(LINK_GOODBYE)>=0){linkEnded(true);return}}}}catch(e){}linkEnded(false)}
+
+// The link can end without the Disconnect button: the device says goodbye before
+// CW Keyer takes the USB port for USB Keying (the port goes right after), or the
+// cable comes out. Without this the page stays on "Connected" with nobody listening.
+var linkClosing=false;
+var LINK_GOODBYE='{"end m32protocol":';   // cannot occur inside a JSON string: its quotes would be escaped
+function settled(p){return Promise.race([Promise.resolve(p).catch(function(){}),sleep(1000)])}
+function showLinkNotice(t){var el=document.getElementById('linkNotice');el.textContent=t;el.style.display=t?'':'none'}
+async function linkEnded(goodbye){
+  if(!port||linkClosing) return;
+  var why=goodbye?'The Morserino ended the connection. If USB Keying is on, leave CW Keyer and connect again.'
+                 :'Connection lost. Check the cable and connect again.';
+  await disconnect(true);
+  showLinkNotice(why);
+  log(why);
+}
 
 // Find one complete JSON object in the raw stream by counting braces — but
 // only braces that are NOT inside a JSON string, and honouring backslash
