@@ -77,20 +77,22 @@ the console before pressing Connect (see its header).
 
 | # | Do | Expect |
 |---|---|---|
-| 5.1 | VoiceOver on (Cmd+F5), do 2.1–2.4 | "Listen…", "Type what you heard…", "Right." and "It was K M R. You typed K M T." are spoken without moving focus |
+| 5.1 | VoiceOver on (Cmd+F5), do 2.1–2.4 with Enter in the answer field | No speech while it sounds. "Type what you heard…" when the sound ends; "Right! …" at once; for a wrong answer the replay comes first, then "It was K M R. You typed K M T. Press Enter…" |
+| 5.2 | Activate Next with VoiceOver (VO+Space) | VoiceOver reads the answer field, the sound starts about 1.5 s later, over nothing |
 
 ## 6. Words and phrases (M3b)
 
 | # | Do | Expect |
 |---|---|---|
-| 6.1 | Practise: Words, at a lesson around 16 | Real words, only of your lesson's characters; the line under the controls says how many |
-| 6.2 | Practise: Phrases, 2 words, From Mixed | The *From* list shows counts and greys out empty kinds; items from each kind with ≥ 10 |
-| 6.3 | Get a phrase partly wrong | The words you missed are marked; it plays once more; it comes back about 4 items later |
-| 6.4 | From: QSO lines at a late lesson (≥ 38) | Real QSO pieces and filled templates; call signs, names and QTHs only of learned characters |
+| 6.1 | Practise: Words, at lesson 16 | Real words, only of your lesson's characters; the line under the controls says how many |
+| 6.2 | Practise: Phrases, 2 words, From Mixed, at lesson 16 (the first lesson of the M32 sequence where all three kinds qualify at 2 words) | The *From* list shows counts and greys out empty kinds; items from each kind with ≥ 10 |
+| 6.3 | Get a phrase partly wrong | The words you missed are marked; it plays once more; it comes back about 4 items later, while the settings still fit it |
+| 6.3b | Groups: miss a few at size 5, set size 1, Next about 8 times; then set size 5 or Mixed | Only single characters at size 1; the missed groups come back after the change |
+| 6.4 | From: QSO lines at lesson 38 or later | Real QSO pieces and filled templates; call signs, names and QTHs only of learned characters |
 | 6.5 | 10 phrases of one length, nearly all right | "Ready for n+1?" with a button; it never changes by itself |
 | 6.6 | Your own phrases: paste a few lines (some too long, some with unlearned characters), Use these | The count line; From: Your own phrases plays only the usable ones |
 | 6.7 | Reload the page | Practise, words per phrase, From and your own phrases are as you left them |
-| 6.8 | Practise: Phrases, 8 words, at an early lesson | "Nothing to practise with these settings yet — …"; nothing is sent to the M32 |
+| 6.8 | Practise: Phrases, 8 words, From Mixed, at lesson 5 or lower (from lesson 6, word chains fill any length) | "Nothing to practise with these settings yet — …"; nothing is sent to the M32 |
 
 ## Results
 
@@ -105,3 +107,7 @@ the console before pressing Connect (see its header).
 | 2026-11-01 | Pocket | — | §5 VoiceOver | not run | |
 | 2026-11-01 | Classic | — | — | flashed | `heltec_wifi_lora_32_V2` from 2ad98fa (M1 firmware, protocol 1.6), ready for the run |
 | 2026-11-01 | Classic | Chrome | §1–§4 (all, incl. 3.4 restart) | pass | One note: the key hint said Ctrl+Enter, which is Cmd+Enter on a Mac (both always worked); the hint now names Cmd on a Mac |
+| 2026-11-02 | Pocket | — | — | flashed | `pocketwroom` (standard edition) from a865c21, firmware only, ready for the §6 run |
+| 2026-11-02 | Pocket | not noted | §1–§4 | pass | Note on 2.9: long groups after setting size 1. In the simulator these were retries of groups missed earlier; size itself held. Missed items now wait until they fit (6.3b) |
+| 2026-11-02 | Pocket | not noted | 5.1 | fail → re-test | VoiceOver talked over the Morse on Next. Now speech comes only around the sound, in the page's `#say` region; re-test owed |
+| 2026-11-03 | Pocket | not noted | 5.1, 5.2, 6.1–6.8 incl. 6.3b | pass | Re-test on page version 2026-11-02, reported by Willi as all passed. Classic not reported for §6; Edge still not run |

@@ -45,7 +45,7 @@ const GET_REPLY = {
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-01c';
+const VERSION = '2026-11-02';
 const USB_MAX_LINE = 1024;        // bytes, without the line feed (protocol: "Maximum command length")
 const HANDSHAKE_MS = 2000;        // as the Config Tool
 const CONSENT_MS = 25000;         // BLE: a person is answering on the device (~20 s, then it refuses)

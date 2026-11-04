@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-01c"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-01c"></script>
+  <script src="m32_trainer_link.js?v=2026-11-02"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-02"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -99,7 +99,8 @@
   <!-- ── Practice ── -->
   <section class="box" aria-labelledby="hPractice">
     <h2 id="hPractice">Copy practice</h2>
-    <div id="status" role="status" aria-live="polite">Connect your M32 to start.</div>
+    <div id="status">Connect your M32 to start.</div>
+    <div id="say" class="sr" role="status" aria-live="polite"></div>
     <label for="answer" class="sr">Your copy</label>
     <input id="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" disabled />
     <div class="row" style="margin-top:12px">
@@ -121,7 +122,7 @@
         </select></span>
     </div>
     <div class="keys" id="availNote"></div>
-    <div id="feedback" aria-live="polite"></div>
+    <div id="feedback"></div>
     <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
     <div class="keys" id="prosignHint"></div>
     <div class="keys" id="tally"></div>
@@ -178,7 +179,7 @@
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-01c';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-02';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -203,7 +204,10 @@ function dispText(text) { return E.tokenize(text).map((t) => (t === ' ' ? ' ' : 
 // for screen readers: "K M R"
 function spell(text) { return E.tokenize(text).map((t) => (t === ' ' ? ', ' : disp(t))).join(' '); }
 function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
-function setStatus(text) { $('status').textContent = text; }
+// What a screen reader speaks goes through #say, so that it never talks over the Morse: `quiet`
+// shows the text but leaves the speech for when the sound has ended.
+function say(text) { $('say').textContent = text; }
+function setStatus(text, quiet) { $('status').textContent = text; say(quiet ? '' : text); }
 function connNote(text, err) { const n = $('connNote'); n.textContent = text || ''; n.classList.toggle('err', !!err); }
 function badge(text, cls) { const b = $('linkBadge'); b.textContent = text; b.className = 'badge ' + cls; }
 
@@ -637,19 +641,47 @@ function onState(s) {
   const ans = $('answer');
   $('btnReplay').disabled = !(s === 'answering' && session.item && session.item.replays < session.helpLimit);
   $('btnReplay').textContent = 'Replay' + (session.item && s === 'answering' ? ' (' + (session.helpLimit - session.item.replays) + ' left)' : '');
-  if (s === 'playing') { setStatus('Listen…'); $('btnGo').textContent = 'Check'; ans.focus(); }
+  if (s === 'playing') { setStatus('Listen…', true); $('btnGo').textContent = 'Check'; ans.focus(); }
   else if (s === 'answering') { setStatus('Type what you heard, then Enter.'); $('btnGo').textContent = 'Check'; ans.focus(); }
   else if (s === 'feedback-playing') { $('btnGo').textContent = 'Next'; }
-  else if (s === 'feedback') { setStatus('Press Enter for the next one.'); $('btnGo').textContent = 'Next'; }
+  else if (s === 'feedback') {
+    setStatus('Press Enter for the next one.', true);
+    say((resultSpeech ? resultSpeech + ' ' : '') + 'Press Enter for the next one.');
+    resultSpeech = '';
+    $('btnGo').textContent = 'Next';
+  }
   else if (s === 'idle') { $('btnGo').textContent = 'Next'; }
   else if (s === 'paused') { $('btnGo').textContent = 'Go on'; if (link.state === 'ready' && !needKeyer) setStatus('Paused. Press Enter to go on.'); }
+}
+
+// Moving the focus makes a screen reader read the field out, so when that happens the sound
+// waits for it. Enter in the field moves nothing and starts at once.
+const LEAD_IN_MS = 1500;
+let leadTimer = null;
+let resultSpeech = '';          // spoken once a wrong answer's replay has ended
+
+function afterFocus(run) {
+  if (leadTimer) { clearTimeout(leadTimer); leadTimer = null; }
+  if (document.activeElement === $('answer')) { run(); return; }
+  $('answer').focus();
+  setStatus('Get ready…', true);
+  leadTimer = setTimeout(() => { leadTimer = null; run(); }, LEAD_IN_MS);
+}
+
+function startNext() {
+  try { session.next(); }
+  catch (e) {
+    if (e.name !== 'NoItemsError') throw e;
+    setStatus(e.what === 'words' ? 'No word uses only your lesson\'s characters yet — choose Groups.'
+                                 : 'Nothing to practise with these settings yet — choose fewer words, another kind, or Groups.');
+  }
 }
 
 async function go() {
   if (!session) return;
   const s = session.state;
   if (s === 'answering') return check();
-  if (s === 'playing') { setStatus('Still sounding — answer when it has finished.'); return; }
+  if (s === 'playing') { setStatus('Still sounding — answer when it has finished.', true); return; }
   if (s === 'paused') {
     if (link.state !== 'ready') return;
     if (needKeyer) {
@@ -667,25 +699,23 @@ async function go() {
   }
   $('answer').value = '';
   $('feedback').innerHTML = '';
-  try { session.next(); }
-  catch (e) {
-    if (e.name !== 'NoItemsError') throw e;
-    setStatus(e.what === 'words' ? 'No word uses only your lesson\'s characters yet — choose Groups.'
-                                 : 'Nothing to practise with these settings yet — choose fewer words, another kind, or Groups.');
-  }
+  resultSpeech = '';
+  afterFocus(startNext);
 }
 
 async function check() {
   const a = await session.submit($('answer').value, performance.now());
-  if (!a) setStatus('Still sounding — answer when it has finished.');
+  if (!a) setStatus('Still sounding — answer when it has finished.', true);
 }
 
 function onResult({ attempt, score }) {
   const exp = E.tokenize(score.expected);
+  const helpedNote = attempt.helped ? 'You used a replay, so this one does not move a box.' : '';
   let html = '';
   if (score.perfect) {
     html = '<div class="diff"><span class="ok">' + esc(dispText(score.expected)) + '</span></div><div>Right.</div>';
-    setStatus('Right! Press Enter for the next one.');
+    setStatus('Right! Press Enter for the next one.', true);
+    say('Right! ' + (helpedNote ? helpedNote + ' ' : '') + 'Press Enter for the next one.');
   } else {
     // the expected text, each character marked by what the scorer made of it
     let k = 0, line = '';
@@ -700,9 +730,11 @@ function onResult({ attempt, score }) {
            '<div>It was <b class="mono">' + esc(dispText(score.expected)) + '</b>; you typed <b class="mono">' +
            esc(score.answer ? dispText(score.answer) : 'nothing') + '</b>. Listen again — it comes back in a while.</div>' +
            '<div class="sr">It was ' + esc(spell(score.expected)) + '. You typed ' + esc(score.answer ? spell(score.answer) : 'nothing') + '.</div>';
-    setStatus('Not quite. Listen once more.');
+    setStatus('Not quite. Listen once more.', true);
+    resultSpeech = 'It was ' + spell(score.expected) + '. You typed ' + (score.answer ? spell(score.answer) : 'nothing') + '.' +
+                   (helpedNote ? ' ' + helpedNote : '');
   }
-  if (attempt.helped) html += '<div class="keys">You used a replay, so this one does not move a box.</div>';
+  if (helpedNote) html += '<div class="keys">' + helpedNote + '</div>';
   $('feedback').innerHTML = html;
   renderChars();
   renderTally();
@@ -754,7 +786,7 @@ $('btnAdvance').onclick = async () => {
 };
 
 $('btnGo').onclick = go;
-$('btnReplay').onclick = () => { if (session) session.replay(); };
+$('btnReplay').onclick = () => { if (session) afterFocus(() => session.replay()); };
 $('btnPause').onclick = () => { if (session) session.pause(); };
 
 $('answer').addEventListener('keydown', (e) => {

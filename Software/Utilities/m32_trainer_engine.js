@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-01c';
+const VERSION = '2026-11-02';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -314,7 +314,7 @@ class Scheduler {
     this.chars = opts.chars.slice();
     this.size = opts.size || 'mixed';          // 'mixed' or a pinned 1..5
     this.retryGap = opts.retryGap != null ? opts.retryGap : 4;
-    this.retries = [];                         // {kind, tier, text, wait}
+    this.retries = [];                         // {kind, tier, n, text, wait}
     // M3b: what to practise. 'groups' (above), 'words' (one real word), 'phrases' (`length`
     // words, from `tier`: 'mixed' or one of 'A' word chains, 'B' plain language, 'C' QSO, 'U' the
     // learner's own lines). Words and phrases need `corpus` (a Corpus).
@@ -353,10 +353,10 @@ class Scheduler {
   // -> {kind: 'group'|'word'|'phrase', tier: null|'A'|'B'|'C'|'U', text, retry}
   next() {
     for (const r of this.retries) r.wait--;
-    const due = this.retries.findIndex((r) => r.wait <= 0);
+    const due = this.retries.findIndex((r) => r.wait <= 0 && this.fits(r));
     if (due >= 0) {
       const r = this.retries.splice(due, 1)[0];
-      return { kind: r.kind || 'group', tier: r.tier || null, text: r.text, retry: true };
+      return { kind: r.kind || 'group', tier: r.tier || null, n: r.n, text: r.text, retry: true };
     }
     if (!this.chars.length) throw new Error('No characters to practise');
     let item;
@@ -374,7 +374,7 @@ class Scheduler {
         const tiers = this.tier === 'mixed' ? av.eligible : (av.count[this.tier] ? [this.tier] : []);
         if (!tiers.length) throw new NoItemsError('phrases');
         const tier = tiers[Math.floor(this.rng() * tiers.length)];
-        item = { kind: 'phrase', tier, text: this._phrase(av, tier) };
+        item = { kind: 'phrase', tier, n: this.length, text: this._phrase(av, tier) };
       }
     }
     this.recent.push(item.text);
@@ -432,7 +432,16 @@ class Scheduler {
   // A missed item comes back, scored normally, after about `retryGap` other items.
   missed(item) {
     if (!this.retries.some((r) => r.text === item.text))
-      this.retries.push({ kind: item.kind, tier: item.tier || null, text: item.text, wait: this.retryGap + 1 });
+      this.retries.push({ kind: item.kind, tier: item.tier || null, n: item.n, text: item.text, wait: this.retryGap + 1 });
+  }
+
+  // Does a missed item fit what is selected now? One that doesn't waits until it does:
+  // the learner's settings always hold (Willi, 2026-11-02).
+  fits(r) {
+    const kind = r.kind || 'group';
+    if (this.mode === 'groups') return kind === 'group' && (this.size === 'mixed' || tokenize(r.text).length === this.size);
+    if (this.mode === 'words') return kind === 'word';
+    return kind === 'phrase' && r.n === this.length && (this.tier === 'mixed' || r.tier === this.tier);
   }
 }
 
@@ -675,7 +684,7 @@ class Session {
   next() {
     if (['idle', 'feedback', 'feedback-playing'].indexOf(this.state) < 0) return;
     const pick = this.scheduler.next();
-    this.item = { kind: pick.kind, tier: pick.tier || null, text: pick.text, retry: pick.retry, doneAt: null, keys: [],
+    this.item = { kind: pick.kind, tier: pick.tier || null, n: pick.n, text: pick.text, retry: pick.retry, doneAt: null, keys: [],
                   replays: 0, helped: false, stops: 0 };
     this._emit('item', this.item);
     this._play(false);

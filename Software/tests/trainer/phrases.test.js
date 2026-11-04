@@ -143,3 +143,44 @@ test('the ladder: offered after 10 phrases of a length, up at >= 90 % of the wor
   const keyed = nine.concat([Object.assign(at(9, 3, 3), { source: 'keyed' })]);
   assert.equal(E.ladderOffer(keyed, 3), null);                                   // keyed ones do not count
 });
+
+test('a missed item waits until it fits the settings', () => {
+  const c = new E.Corpus(tiny);
+  const s = new E.Scheduler({ mastery: new E.Mastery(), chars: chars('teasm'), rng: E.mulberry32(5), corpus: c, mode: 'groups', size: 5 });
+  const long = s.next();
+  assert.equal(long.text.length, 5);
+  s.missed(long);
+  s.size = 1;
+  for (let i = 0; i < 12; i++) assert.equal(s.next().text.length, 1, 'a pinned size holds');
+  s.size = 'mixed';                       // overdue by now, and mixed takes any group
+  const back = s.next();
+  assert.equal(back.text, long.text);
+  assert.equal(back.retry, true);
+  s.size = 5;
+  s.missed(back);
+  s.mode = 'words';
+  for (let i = 0; i < 8; i++) assert.equal(s.next().kind, 'word', 'a group stays out of Words');
+  s.mode = 'groups';
+  assert.equal(s.next().text, long.text, 'and returns with Groups at its size');
+});
+
+test('a missed phrase waits for its length and its kind', () => {
+  const act = chars('abcdefghijklmnopqrstuvwxyz0123456789');
+  const s = new E.Scheduler({ mastery: new E.Mastery(), chars: act, rng: E.mulberry32(6), corpus: new E.Corpus(real), mode: 'phrases', length: 3, tier: 'C' });
+  const p = s.next();
+  assert.equal(p.n, 3);
+  s.missed(p);
+  s.length = 4;
+  for (let i = 0; i < 8; i++) assert.notEqual(s.next().text, p.text, 'another length: it waits');
+  s.length = 3;
+  s.tier = 'B';
+  for (let i = 0; i < 8; i++) assert.equal(s.next().tier, 'B', 'another kind pinned: it waits');
+  s.tier = 'mixed';
+  const back = s.next();
+  assert.equal(back.text, p.text);
+  assert.equal(back.n, 3);
+  s.missed(back);
+  s.tier = 'C';
+  for (const r of s.retries) r.wait = 0;
+  assert.equal(s.next().text, p.text, 'a retry keeps its length and kind');
+});

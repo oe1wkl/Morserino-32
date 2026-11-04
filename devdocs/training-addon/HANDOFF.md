@@ -8,11 +8,11 @@ read, what is waiting on whom, and which traps are already known.*
 
 | | |
 |---|---|
-| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written, tested in Node and committed 2026-11-01** (not pushed) (see "M2 — state" in §6). **M3 (engine + Copy Trainer page) written, tested in Node and against a simulated M32, and committed 2026-11-01** (not pushed). **Benched 2026-11-01** on Pocket (Chrome, Firefox) and classic: all of §1–§4 pass after the fixes `2ad98fa`/`9c2a627`; prosigns added after that (`3b2d0e7`), version tag `54baaf4`. **Postponed by Willi (2026-11-01):** §4.4/4.5 (prosigns on a device), §5 VoiceOver, Edge. **M3b (phrases) started 2026-11-01.** |
+| Phase | **M1 done: benched on Pocket + classic and committed 2026-10-31** on `training-addon` (not pushed; see "M1 — state" in §6, results in `BENCH_M1.md`). **M2 (link module) written, tested in Node and committed 2026-11-01** (not pushed) (see "M2 — state" in §6). **M3 (engine + Copy Trainer page) written, tested in Node and against a simulated M32, and committed 2026-11-01** (not pushed). **Benched 2026-11-01** on Pocket (Chrome, Firefox) and classic: all of §1–§4 pass after the fixes `2ad98fa`/`9c2a627`; prosigns added after that (`3b2d0e7`), version tag `54baaf4`. **Edge not run** (not available). **M3b (phrases) written and benched on the Pocket 2026-11-03**, including prosigns (§4.4/4.5) and VoiceOver (§5). |
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | The postponed M3 bench steps (above); the M3b device bench (`BENCH_M3.md` §6); a second operator's review of tier C before release (decision 12c); M3c–M6. Protocol PDF rebuild at merge to master. |
+| Not yet done | §6 of `BENCH_M3.md` on the classic (not reported yet) and Edge; a second operator's review of tier C before release (decision 12c); M3c–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -337,10 +337,17 @@ device can generate a call like `4u_i5abc`, with an underscore. It's rare, but w
    below box 2); slots count as nothing.
 3. The last 20 items are not drawn again while anything else is left.
 4. *Mixed* picks each eligible tier equally often, whatever its size.
-5. A missed word or phrase comes back after about 4 others (as for groups) — also if the mode was changed meanwhile.
+5. A missed item comes back after about 4 others (as for groups). **Changed by Willi on 2026-11-02, after the bench:** it only comes back while it fits the current settings (mode, group size, words per phrase, pinned kind), and waits otherwise.
 6. A pinned tier is allowed below 10 items (it is the learner's choice); *Mixed* uses only tiers with ≥ 10.
 7. Your own phrases: pasted or loaded, one per line, 2–8 words, `#` lines skipped, kept in this browser only.
 8. The wording of the ladder offer and of the "nothing to practise" messages.
+
+**Speech and Morse (Willi, 2026-11-02, after bench 5.1):** a screen reader must not talk over the sound. Everything
+spoken goes through the page's `#say` live region: "Listen…" and "Still sounding" are shown, not spoken; a wrong
+answer's result is shown at once and spoken after the replay; when activating Next or Replay moves the focus (the
+reader then reads the field out), the sound starts 1.5 s later (`LEAD_IN_MS`, for a mouse click too), while Enter in
+the field starts at once. No setting. `python3 -m http.server` can serve a cached page without asking: hard-reload
+after a change, the version check only catches scripts that differ from the page.
 The other three sequences are in the review. **Next:** port the call sign generator (needed for the real tier C
 coverage, which is approximate for now), then the engine side: Words, word chains, phrases, the ladder, user
 files (C3), the Practise selector. **Open for release (R10):** the word list's attribution — `english_words.h`
