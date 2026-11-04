@@ -257,6 +257,7 @@ void MorseJSON::jsonCapabilities(void) {
 	feat.add("kip");                                 // 1.5 remote keying: GET kip, PUT kip/psk, PUT kip/port
 #endif
 	feat.add("trainer-events");                      // 1.6 cw/done and trainer/result events (every build, like configs/details)
+	feat.add("cw/practice");                         // 1.6 PUT cw/practice: session-only practice mode (every build)
 	MorseJSON::jsonSend(doc);
 }
 

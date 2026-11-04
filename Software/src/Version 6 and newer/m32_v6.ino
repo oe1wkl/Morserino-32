@@ -201,6 +201,13 @@ encoderMode encoderState = speedSettingMode;    // we start with adjusting the s
 
 // a few things for the serial m32protocol
 boolean m32protocol = false;
+uint8_t practiceWordGap = 0;        // protocol 1.6, PUT cw/practice/<dits>: a practice program is running in the CW Keyer -
+                                    // keyed characters only in the echo, a word space after this many dits, the key line stays
+                                    // off. Session only, never stored; 0 = off. See practiceMode()
+uint8_t practiceCharSpace = 0, practiceWordSpace = 0;   // PUT cw/spacing/<char>/<word>: the spaces of what is sounded during practice,
+                                    // in dits, instead of Interchar Spc and InterWord Spc. Never stored; 0 = as the preferences say
+boolean practiceMode();
+void endPractice();
 #ifdef CONFIG_BLE_SERIAL
 volatile bool bleProtocol = false;                      // per-transport handshake state for BLE Serial (see M32ProtocolOut.h);
                                                         // cleared by onDisconnect (BT task) and synchronously by MorseBleSerial::stop()
@@ -2085,7 +2092,7 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx
                                        || morseState == kipKeyer || isWinKeyerMode(morseState))
                                       // interWordTimer = millis() + 5*ditLength;
-                                      interWordTimer = millis() + ditLength * (MorsePreferences::pliste[posInterWordSpace].value -1);
+                                      interWordTimer = millis() + ditLength * (practiceMode() ? practiceWordGap : MorsePreferences::pliste[posInterWordSpace].value -1);
                                    else if (morseState == echoTrainer) {
                                        echoLastCharAt = millis();                                                          // trainer/result duration
                                        interWordTimer = echoLastCharAt + 2*interCharacterSpace + ditLength + interWordSpace/8;   // waiting for end of word in echo trainer
@@ -2854,7 +2861,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                     }
                 }
                 else {
-                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : interWordSpace - KEYOUT_EDGE_MS) ;  // we need a pause for interWordSpace
+                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : soundedWordSpace() - KEYOUT_EDGE_MS) ;  // we need a pause for interWordSpace
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1) {                                   // in generator mode and we want to send with LoRa
                           cwForTx(0);
                           cwForTx(3);                           // as we have just finished a word
@@ -2884,6 +2891,8 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
 }
 
 unsigned int wordDoublerICS() {
+    if (practiceMode() && practiceCharSpace != 0)
+      return practiceCharSpace * ditLength;         // PUT cw/spacing
     if (morseState != morseGenerator || (MorsePreferences::pliste[posWordDoubler].value == 0) || ( MorsePreferences::pliste[posWordDoubler].value != 0 && firstTime == false))
       return interCharacterSpace;
 
@@ -3313,6 +3322,8 @@ void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
 
 void SerialOutMorse(const String& s, uint8_t origin) {
   uint8_t bitmap = (MorsePreferences::pliste[posSerialOut].value < 5 ? MorsePreferences::pliste[posSerialOut].value : 7);
+  if (practiceMode())
+      bitmap = 0b011;       // keyed characters only, whatever Serial Output says (a straight key comes through the decoder)
   if (origin & bitmap)
       m32out.echo(s);       // USB always (as before); a handshaken BLE client gets a copy, drop-immediately (keying path)
 }
@@ -4480,6 +4491,8 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
                 noTx = false;
       default:  break;
   }
+  if (practiceMode())
+      noTx = true;          // practice is local: neither the prompts nor the answers key a transmitter
   boolean sidetone = true;
 #ifdef CONFIG_WINKEYER
   // WinKeyer is a keyer: every "Key Ext Tx" value but Never includes it. The host's pin config
@@ -4712,6 +4725,24 @@ boolean playCWHasMore() {
     word = "";
   }
   return false;
+}
+
+// protocol 1.6: PUT cw/practice is on, and it only ever applies in the CW Keyer of a live session
+boolean practiceMode() {
+    return practiceWordGap != 0 && morseState == morseKeyer && protocolActive();
+}
+
+void endPractice() {
+    practiceWordGap = practiceCharSpace = practiceWordSpace = 0;
+}
+
+// The word space of what is sounded: PUT cw/spacing during practice, the formula of updateTimings() for the same
+// reason (a word space is never shorter than a character space + 4), and computed here rather than there, so it ends with
+// practice and cannot outlive the CW Keyer in the global timings.
+unsigned int soundedWordSpace() {
+    if (practiceMode() && practiceWordSpace != 0)
+      return _max(practiceWordSpace, practiceCharSpace + 4) * ditLength;
+    return interWordSpace;
 }
 
 // protocol 1.6: settle what a client's cw/play is owed - one {"cw":{"event":"done"}}, "end" when it has finished
@@ -5083,6 +5114,7 @@ static void serialLines() {
                 inputString.toLowerCase();
                 if (inputString  == "put device/protocol/on")  {  /// client wants to switch m32 Protocol on
                   m32protocol = true;
+                  endPractice();
                   M32TargetScope usbOnly(M32Target::UsbOnly);     // handshake reply: a live BLE session must not see it
                   MorseJSON::jsonDevice(brd,vsn);
                 }
@@ -5540,9 +5572,12 @@ void m32Put(String type, String token, String value) {                    /// PU
         if (value.equalsIgnoreCase("off")) {            // value arg is not lowercased by serialDecode
             MorseJSON::jsonCreate("end m32protocol", "Goodbye!", "");
             m32protocol = false;
+            endPractice();
         }
-        else if (value.equalsIgnoreCase("on"))
+        else if (value.equalsIgnoreCase("on")) {
+            endPractice();                              // a new client must not inherit an abandoned session's practice mode
             MorseJSON::jsonDevice(brd,vsn);             // even when we are on, we send the device info, so that the client is getting some positive feedback
+        }
         else
             MorseJSON::jsonError("INVALID Value " + value);
       }
@@ -6011,6 +6046,33 @@ void m32Put(String type, String token, String value) {                    /// PU
       }
       else if (token == "stop")
         stopPlayCw(true);
+
+      else if (token == "practice") {
+          int dits = value.toInt();
+          if (value.equalsIgnoreCase("off"))
+            endPractice();
+          else if (dits >= 2 && dits <= 104)
+            practiceWordGap = dits;
+          else
+            return (MorseJSON::jsonError("INVALID CW PRACTICE VALUE " + value));
+          MorseJSON::jsonOK();
+      }
+
+      else if (token == "spacing") {                    // value = <char>/<word> or off, the ranges of the two preferences
+          int slash = value.indexOf('/');
+          int chars = value.toInt();
+          int words = slash < 0 ? 0 : value.substring(slash + 1).toInt();
+          if (value.equalsIgnoreCase("off"))
+            practiceCharSpace = practiceWordSpace = 0;
+          else if (chars >= MorsePreferences::pliste[posInterCharSpace].minimum && chars <= MorsePreferences::pliste[posInterCharSpace].maximum
+                   && words >= MorsePreferences::pliste[posInterWordSpace].minimum && words <= MorsePreferences::pliste[posInterWordSpace].maximum) {
+            practiceCharSpace = chars;
+            practiceWordSpace = words;
+          }
+          else
+            return (MorseJSON::jsonError("INVALID CW SPACING VALUE " + value));
+          MorseJSON::jsonOK();
+      }
 
       else if (token == "store") {
           // extract mem # from value

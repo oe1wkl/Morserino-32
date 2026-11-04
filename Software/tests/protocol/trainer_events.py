@@ -330,6 +330,86 @@ def bench(report, m32, args):
         finally:
             m32.set_config("Serial Output", serial_before)
 
+        # 7b. PUT cw/practice: the played text is out of the stream even with Serial Output = All, for this session
+        #     only, and it leaves the stored setting alone
+        report.check("cw/practice" in caps.get("features", []), "capabilities list cw/practice", caps)
+        serial_before = m32.get_config("Serial Output")
+        try:
+            m32.set_config("Serial Output", 5)
+            _send_expect_ok(m32, "PUT cw/practice/12")
+            objects, outside, ok_at, done_at = _play_and_capture(m32, "paris", 6.0)
+            letters = "".join(ch for ch in outside.lower() if ch.isalpha())
+            report.check(done_at is not None and letters == "", "cw/practice on, Serial Output All: the played text is NOT in the stream",
+                         "outside JSON: %r" % outside)
+            report.check(m32.get_config("Serial Output") == 5, "cw/practice leaves the stored Serial Output alone")
+            _send_expect_ok(m32, "PUT cw/practice/off")
+            objects, outside, ok_at, done_at = _play_and_capture(m32, "paris", 6.0)
+            letters = "".join(ch for ch in outside.lower() if ch.isalpha())
+            report.check("paris" in letters, "cw/practice off: the played text is back in the stream", "outside JSON: %r" % outside)
+            reply = m32.command("PUT cw/practice/1")
+            report.check("error" in reply, "cw/practice/1 is refused", reply)
+            _send_expect_ok(m32, "PUT cw/practice/6")
+            m32.command("PUT device/protocol/on")
+            objects, outside, ok_at, done_at = _play_and_capture(m32, "paris", 6.0)
+            letters = "".join(ch for ch in outside.lower() if ch.isalpha())
+            report.check("paris" in letters, "a new handshake ends cw/practice", "outside JSON: %r" % outside)
+        finally:
+            m32.command("PUT cw/practice/off")
+            m32.set_config("Serial Output", serial_before)
+
+        # 7c. PUT cw/spacing: the sounded spaces change, for this session only, during practice only
+        dit = 1.2 / m32.command("GET control/speed")["control"]["value"]
+        word_before, char_before = m32.get_config("InterWord Spc"), m32.get_config("Interchar Spc")
+
+        def _sounded(text):
+            _, _, ok_at, done_at = _play_and_capture(m32, text, 40.0)
+            return (done_at - ok_at) / dit if ok_at and done_at else None
+
+        def _near(dits, want):
+            return dits is not None and abs(dits - want) <= max(4, want * 0.15)
+
+        try:
+            _send_expect_ok(m32, "PUT cw/practice/6")
+            _send_expect_ok(m32, "PUT cw/spacing/3/7")
+            words_norm, chars_norm = _sounded("e e e e"), _sounded("eeee")
+            _send_expect_ok(m32, "PUT cw/spacing/3/25")
+            words_long = _sounded("e e e e")
+            report.check(words_norm is not None and _near(words_long - words_norm, 54),
+                         "cw/spacing word space: 3 gaps of 7 -> 25 dits add about 54 dits",
+                         "%s -> %s dits" % (words_norm, words_long))
+            _send_expect_ok(m32, "PUT cw/spacing/13/25")
+            chars_long = _sounded("eeee")
+            report.check(chars_norm is not None and _near(chars_long - chars_norm, 30),
+                         "cw/spacing character space: 3 gaps of 3 -> 13 dits add about 30 dits",
+                         "%s -> %s dits" % (chars_norm, chars_long))
+            report.check(m32.get_config("InterWord Spc") == word_before and m32.get_config("Interchar Spc") == char_before,
+                         "cw/spacing leaves the stored spacing alone")
+            for bad in ("2/7", "3/5", "3", "3/106", "46/7"):
+                report.check("error" in m32.command("PUT cw/spacing/%s" % bad), "cw/spacing/%s is refused" % bad)
+            _send_expect_ok(m32, "PUT cw/spacing/3/25")
+            _send_expect_ok(m32, "PUT cw/practice/off")
+            _send_expect_ok(m32, "PUT cw/practice/6")
+            _send_expect_ok(m32, "PUT cw/spacing/off")
+            prefs = _sounded("e e e e")
+            _send_expect_ok(m32, "PUT cw/spacing/3/25")
+            m32.command("PUT device/protocol/on")
+            report.check(_near(_sounded("e e e e") - prefs, 0), "a new handshake ends cw/spacing",
+                         "preferences %s dits" % prefs)
+            # leaving the Keyer ends practice mode: the operator has taken over (and after a pulled cable nothing else would)
+            serial_before = m32.get_config("Serial Output")
+            try:
+                m32.set_config("Serial Output", 5)
+                _send_expect_ok(m32, "PUT cw/practice/6")
+                start_mode(m32, "CW Keyer")
+                _, outside, _, _ = _play_and_capture(m32, "paris", 6.0)
+                letters = "".join(ch for ch in outside.lower() if ch.isalpha())
+                report.check("paris" in letters, "leaving the CW Keyer ends cw/practice", "outside JSON: %r" % outside)
+            finally:
+                m32.set_config("Serial Output", serial_before)
+        finally:
+            m32.command("PUT cw/spacing/off")
+            m32.command("PUT cw/practice/off")
+
         # 8. leaving the Keyer mid-text: done stopped
         _send_expect_ok(m32, "PUT cw/play/paris paris paris paris")
         time.sleep(0.6)

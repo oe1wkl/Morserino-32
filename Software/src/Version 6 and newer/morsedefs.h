@@ -64,7 +64,8 @@ const char* const COPYRIGHT = "\xc2\xa9 2018-2026";  // © in UTF-8
 // 1.5 add kip (M32KIP remote keying: GET kip, PUT kip/psk, PUT kip/port; advertised in
 //     capabilities, CONFIG_M32KIP builds only) and the Remote Rig / Remote Keyer parameters
 // 1.6 add the trainer events (capability "trainer-events", every build): {"cw":{"event":"done"}} when a client's
-//     cw/play ends or is stopped, {"trainer":{"event":"result"}} per evaluated Echo Trainer word
+//     cw/play ends or is stopped, {"trainer":{"event":"result"}} per evaluated Echo Trainer word; and PUT cw/practice
+//     and PUT cw/spacing (capability "cw/practice"): a session-only practice mode in the CW Keyer
 #define M32P_VERSION "1.6"
 
 /////// protocol version for IP (and LoRa) - for the time being this is B01
