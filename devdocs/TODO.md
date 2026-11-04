@@ -457,7 +457,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    and Accessibility images and retires the `-usbio` envs:** boot stays on HWCDC, TinyUSB starts at run time while
    CW Keyer sends to USB, leaving restarts silently to the menu. New value MIDI Keyer (notes 0 + 30) for Vail. Design,
    decisions and traps: `devdocs/usb-output/SINGLE_IMAGE.md`; owed bench: `devdocs/usb-output/BENCH.md`. **Still open:**
-   - Everything in BENCH.md, then merge. Tell Ian first: his envs go, and the serial port no longer stays alongside.
+   - Merge, then publish as the second V10 beta. Willi's decision (2026-11-04): the note to Ian and the #227 reply wait for that
+     beta, which also gives more testers access. Ian's envs go, and the serial port no longer stays alongside.
    - Reply on #227 (not posted yet).
    - SmartSDR (macOS) real-world test on one of Ian's Flex stations (he offered access).
    - Nit from the review: unused `generated` argument of `MorseUsbIO::keyed()`.
