@@ -368,7 +368,7 @@ inline bool isWinKeyerMode(morserinoMode m) { return m == morseWinKeyer || m == 
 //                   (DESIGN.md D1a, R1).
 #if defined(CONFIG_WINKEYER) && defined(CONFIG_M32KIP)
   #define REMOTE_WINKEYER 1
-  #if ARDUINO_USB_CDC_ON_BOOT     // any native USB serial (HWCDC, or USBCDC in the usbio builds)
+  #if ARDUINO_USB_CDC_ON_BOOT     // native USB serial (HWCDC)
     #define WK_TARGET_PREF 1
   #endif
 #endif
@@ -574,10 +574,11 @@ enum actMessage : int {
 #define BLT_USE_SERIAL_PROT 5
 #endif
 #ifdef CONFIG_USB_HOSTIO
-// "USB Output" selector (posUsbOut): one thing at a time over the cable, CW Keyer only.
+// "USB Keying" selector (posUsbOut): one thing at a time over the cable, CW Keyer only.
 #define USB_OUT_OFF   0               // nothing (serial port + charging only)
 #define USB_OUT_VBAND 1               // USB keyboard: Left Ctrl follows the keyer (the Bluetooth keyboard stays off)
-#define USB_OUT_MIDI  2               // USB MIDI ch 1: note 20 dit paddle, 21 dah paddle (CTR2-MIDI Normal mode)
+#define USB_OUT_MIDI  2               // "MIDI Paddles", ch 1: note 20 dit paddle, 21 dah paddle (CTR2-MIDI Normal mode) - the computer is the keyer
+#define USB_OUT_MIDI_KEYER 3          // "MIDI Keyer", ch 1: notes 0 and 30 follow the M32's keyer - the computer only follows key-down/up
 #endif
 
 extern void DEBUG (const String& s);

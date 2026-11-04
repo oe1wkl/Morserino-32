@@ -184,6 +184,7 @@ boolean quickStart;                                     // should we execute men
 RTC_NOINIT_ATTR uint32_t rebootMagic;
 RTC_NOINIT_ATTR uint8_t  rebootMenuPtr;
 bool memoryReboot = false;                              // set in setup() if we just rebooted to clear memory
+uint8_t memoryClearedFor = 0;                           // the menu item that reboot was for (see MorseGameMode.cpp)
 #endif
 
 
@@ -572,6 +573,13 @@ void setup()
    // to auto-resume into the game the user was trying to start.
    memoryReboot = (rebootMagic == REBOOT_MAGIC_MEMORY);
    uint8_t resumeMenuPtr = memoryReboot ? rebootMenuPtr : 0;
+   memoryClearedFor = resumeMenuPtr;
+#ifdef CONFIG_USB_HOSTIO
+   // Leaving CW Keyer with USB Keying active restarts to get the serial port back (MorseUsbIO::menuEntered()).
+   // The same silent boot, but it ends at the menu: Quick Start would go straight back into CW Keyer.
+   const bool usbBackReboot = (rebootMagic == USB_BACK_REBOOT_MAGIC);
+   memoryReboot = memoryReboot || usbBackReboot;
+#endif
    rebootMagic   = 0;
    rebootMenuPtr = 0;
 #endif
@@ -593,17 +601,15 @@ void setup()
   // 9.0.1 too). Its default 256-byte TX ring is smaller than such a reply; with 1 KB the rate fell to about
   // 1 in 900 (2026-10-05; 4 KB was no better). The remaining cases were the missing zero-length packet after
   // a full 64-byte packet, now sent by M32Tee::flushReply() (2026-10-30, devdocs/TODO.md D8).
-  Serial.setTxBufferSize(1024);       // HWCDC only: TinyUSB's USBCDC (usbio builds) has a fixed TX FIFO
+  Serial.setTxBufferSize(1024);
 #endif
   // And its 256-byte RX queue drops bytes when full (the ISR gives up on the rest of a 64-byte packet) - a
   // command longer than ~256 bytes, sent in one go, lost pieces before loop() got to read it, newline
   // included, so lines merged. 2 KB holds any line up to twice USB_LINE_MAX: executed or refused whole.
-  // TinyUSB's USBCDC (usbio builds) has the same 256-byte default; the core has already started it in
-  // app_main() there, and resizing afterwards keeps whatever is queued.
   Serial.setRxBufferSize(2048);
 #endif
 #ifdef CONFIG_USB_HOSTIO
-  MorseUsbIO::begin();           // USB keyboard + MIDI interfaces, alongside the serial port
+  MorseUsbIO::begin();           // takes the USB port back from the OTG controller, registers keyboard + MIDI
 #endif
   Serial.begin(115200);
   armForeignUsbRxDetect();       // a 1200-baud logger knocking at the classic's main menu (FN = GPIO0)
@@ -825,7 +831,11 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
   if (SPIFFS.begin(false))  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
+#ifdef CONFIG_USB_HOSTIO
+      if (!usbBackReboot && key_was_pressed_at_start()) {
+#else
       if (key_was_pressed_at_start()) {
+#endif
          MorsePreferences::displayKeyerPreferencesMenu(posHwConf);
          MorsePreferences::adjustKeyerPreference(posHwConf);
 
@@ -933,6 +943,10 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   } else {
     quickStart = MorsePreferences::pliste[posQuickStart].value;
   }
+#ifdef CONFIG_USB_HOSTIO
+  if (usbBackReboot)
+    quickStart = false;
+#endif
 #else
   quickStart = MorsePreferences::pliste[posQuickStart].value;
 #endif
@@ -986,6 +1000,31 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
 #ifdef CONFIG_PRACTICE_STATS
     MorsePracticeStats::begin();
 #endif
+
+    // Prepare board version, just in case we want to switch to M32protocol later on. Not part of the
+    // splash below: a silent restart skips that, and GET device would answer with empty names.
+#define ST(A) #A
+#define STR(A) ST(A)
+
+#ifdef HW_NAME
+    brd = STR(HW_NAME);
+#else
+    brd = "Unknown Device";
+#endif
+#ifdef ORIGINAL_M32
+    if (MorsePreferences::boardVersion == 3)
+        brd = "M32 1st edition";
+    else if (MorsePreferences::boardVersion == 4)
+        brd = "M32 2nd edition";
+    else
+        brd = "unknown M32 board";
+#endif
+
+    // firmware version string for the M32 protocol "GET device" response
+    // (major.minor, plus .patch when non-zero — mirrors the splash-screen format)
+    vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR);
+    if (VERSION_PATCH != 0)
+        vsn += "." + String(VERSION_PATCH);
 
 #ifdef CONFIG_TFT
     // Skip the boot splash on a memory-clearing reboot — the user just
@@ -1202,30 +1241,6 @@ void displayStartUp(uint16_t volt) {
 #endif
     MorseOutput::displayBatteryStatus(volt);
 
-
-  //prepare board version, just in case we want to switch to M32protocol later on
-#define ST(A) #A
-#define STR(A) ST(A)
-
-#ifdef HW_NAME
-    brd = STR(HW_NAME);
-#else
-    brd = "Unknown Device";
-#endif
-#ifdef ORIGINAL_M32
-    if (MorsePreferences::boardVersion == 3)
-        brd = "M32 1st edition";
-    else if (MorsePreferences::boardVersion == 4)
-        brd = "M32 2nd edition";
-    else
-        brd = "unknown M32 board";
-#endif
-
-  // firmware version string for the M32 protocol "GET device" response
-  // (major.minor, plus .patch when non-zero — mirrors the splash-screen format)
-  vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR);
-  if (VERSION_PATCH != 0)
-      vsn += "." + String(VERSION_PATCH);
 
 //DEBUG("Display done, delay");
 splashPause(1800);
@@ -1448,7 +1463,7 @@ if (morseState == morseKeyer &&
 MorseBluetooth::tick();                           // no-op unless the keyboard runs
 #endif
 #ifdef CONFIG_USB_HOSTIO
-MorseUsbIO::tick(morseState == morseKeyer);       // releases USB Ctrl / MIDI notes outside CW Keyer
+MorseUsbIO::tick(morseState == morseKeyer);       // CW Keyer with USB Keying on starts USB; releases USB Ctrl / MIDI notes outside it
 #endif
 /// if we have time check for serial input and for button presses
 
@@ -3624,9 +3639,9 @@ void changePreviewChar( int t) {
 void keyTransmitter(boolean noTx) {
 #ifdef CONFIG_USB_HOSTIO
    // before the Key Ext Tx gate - whatever CW Keyer keys (paddles, straight key, a memory) always
-   // goes out over USB for the selected USB Output, whatever Key Ext Tx says about the transmitter jack.
+   // goes out over USB for the selected USB Keying, whatever Key Ext Tx says about the transmitter jack.
    if (morseState == morseKeyer)
-      MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI: note 30 for a memory
+      MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI Keyer: notes 0 + 30
 #endif
   if (noTx )
       return;
@@ -4921,7 +4936,7 @@ volatile unsigned long lastForeignUsbRxMs = 0;
 // Arm the UART receive-error hook. Called after every Serial.begin() on a UART build (setup(), and
 // WinKeyer mode's baud changes). A no-op on the Pocket's native USB, which has no line coding to violate.
 void armForeignUsbRxDetect() {
-#if !ARDUINO_USB_CDC_ON_BOOT      // any native-USB serial (HWCDC, or TinyUSB's USBCDC in the usbio builds) has no UART line coding
+#if !ARDUINO_USB_CDC_ON_BOOT      // a native-USB serial has no UART line coding
   Serial.onReceiveError([](hardwareSerial_error_t e) {
     if (e == UART_FRAME_ERROR || e == UART_BREAK_ERROR || e == UART_PARITY_ERROR)
       lastForeignUsbRxMs = millis();

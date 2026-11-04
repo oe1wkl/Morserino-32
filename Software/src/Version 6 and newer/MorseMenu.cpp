@@ -17,6 +17,9 @@
 #include "MorseDecoder.h"
 #include "MorseJSON.h"
 #include "M32ProtocolOut.h"    // protocolActive(): emission gate across transports
+#ifdef CONFIG_USB_HOSTIO
+#include "MorseUsbIO.h"
+#endif
 #ifdef CONFIG_M32KIP
 #include "MorseKipRig.h"     // M32KIP Rig unit (Remote Rig)
 #include "MorseKipKeyer.h"   // M32KIP Keyer unit (Remote Keyer)
@@ -379,7 +382,11 @@ static void a11yForgetMenuContext() { a11yMenuParent = a11yLastEntry = 0xFF; }
 // announces the reading, and doing it twice reads as a stutter.
 static void a11yAnnounceBatteryOnMenuEntry() {
     static bool firstCall = true;
-    if (firstCall) { firstCall = false; return; }         // boot splash covered it
+    if (firstCall) {
+        firstCall = false;
+        if (!memoryReboot)                                // boot splash covered it (a silent restart has none)
+            return;
+    }
 
     uint16_t v = batteryVoltage();
 #ifdef CONFIG_MCP73871
@@ -512,6 +519,9 @@ void MorseMenu::menu_() {
                                             // reality so entering the menu paints it just once
 #endif
    int t, command;
+#ifdef CONFIG_USB_HOSTIO
+   MorseUsbIO::menuEntered();   // USB Keying was active: restarts to get the serial port back, does not return
+#endif
    m32state = menu_loop;
 #ifdef CONFIG_AUDIO_A11Y
    a11yForgetMenuContext();     // arriving from a mode (or from power-on): announce the full path

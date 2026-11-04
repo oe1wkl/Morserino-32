@@ -509,12 +509,12 @@ parameter MorsePreferences::pliste[] = {
 #endif
 #ifdef CONFIG_USB_HOSTIO
   {
-    USB_OUT_MIDI, USB_OUT_OFF, USB_OUT_MIDI, 1,                 // see USB_OUT_* in morsedefs.h
-    "USB Output",
-    "CW Keyer: what the USB cable sends - nothing, vBand keyboard (Left Ctrl) or MIDI paddles (notes 20/21)",
+    USB_OUT_OFF, USB_OUT_OFF, USB_OUT_MIDI_KEYER, 1,            // see USB_OUT_* in morsedefs.h
+    "USB Keying",
+    "CW Keyer: what the USB cable sends - nothing, vBand keyboard (Left Ctrl), MIDI paddle events (notes 20/21) or the M32's keying as MIDI (notes 0+30). The serial port is off while one of these is active",
     true,
-    {"Off (charge)", "VBand", "MIDI"},
-    "USB output"
+    {"Off", "VBand", "MIDI Paddles", "MIDI Keyer"},
+    "USB keying"
   },
 #endif
 #ifdef CONFIG_TFT
@@ -925,9 +925,9 @@ FilePart MorsePreferences::fileParts[MAX_FILE_PARTS];
  // Bot. The conditionally-compiled features (LINEOUT, THEME, INVORIENT,
  // BLUEUSE, BLTAR, USBOUT, QSOBOT) are macro-expanded into their groups so the order
  // stays stable across build configurations.
- prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, BLUEUSE posPolarity, posExtPddlPolarity,
+ prefPos MorsePreferences::allOptions[] =        { PREFPOS_COMMON_CORE DECCHARS LINEOUT THEME SCROLLFONT INVORIENT posSerialOut, BLUEUSE USBOUT posPolarity, posExtPddlPolarity,
 
-                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR USBOUT
+                                                   posCurtisMode, posCurtisBDahTiming, posCurtisBDotTiming, posACS,  posLatency, BLTAR
                                                    posKochSeq, posCarouselStart,
                                                    posInterCharSpace, posInterWordSpace, posRandomOption, posRandomLength, posPracticeChars, posRandomBoost, posCallLength, posCallContinent, posCallCommon, posAbbrevLength,  posWordLength,
                                                    posMaxSequence, posAutoStop, posGeneratorDisplay, posRandomFile, posWordDoubler,

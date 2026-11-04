@@ -30,12 +30,12 @@ namespace MorseGameMode {
   // Sets the panel rotation and clears the screen, then returns the sprite
   // to draw into.
   //
-  // Never returns nullptr in practice: on allocation failure, instead of
-  // failing back to the caller, this triggers a memory-clearing reboot
-  // (saves the user's current menu pointer to RTC and calls ESP.restart()).
-  // setup() then auto-resumes into the same menu item with a defragmented
-  // heap. Callers may still keep a defensive `if (!canvas) return;` for
-  // robustness, but it should never fire.
+  // On allocation failure, instead of failing back to the caller, this
+  // triggers a memory-clearing reboot (see triggerMemoryClearingReboot())
+  // and setup() then auto-resumes into the same menu item with a defragmented
+  // heap. If that reboot was already for this game, rebooting again cannot
+  // help: it says so on the display and returns nullptr, so callers must
+  // `if (!canvas) return;`.
   //
   // colorDepth selects the sprite's bits-per-pixel: 16 (RGB565, the
   // default) or 8 (indexed palette — see GamePalette.h). An 8-bpp sprite
@@ -44,7 +44,7 @@ namespace MorseGameMode {
   LGFX_Sprite *enterPortrait(bool leftHanded, uint8_t colorDepth = 16);
 
   // Allocate a fresh landscape-orientation game sprite. Same semantics as
-  // enterPortrait — reboots on allocation failure.
+  // enterPortrait, including on allocation failure.
   LGFX_Sprite *enterLandscape(bool leftHanded, uint8_t colorDepth = 16);
 
   // Load the shared 8-bpp game palette (GamePalette.h) into a
