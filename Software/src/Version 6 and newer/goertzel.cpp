@@ -55,7 +55,7 @@ using namespace Goertzel;
   float cosine;
 #ifdef CONFIG_DECODER_I2S
   const float sampling_freq = 44100.0;
-  int16_t testData[8192]; // buffer for freq analysis - for i2s this needs to be a signed int and big enough for largest possible frame
+  int16_t testData[1024]; // buffer for freq analysis - for i2s this needs to be a signed int; checkInput() reads goertzel_n stereo frames, at most 512
   int goertzel_n = 512; // TODO: test different values with i2s
 #else
   //const float sampling_freq = 106000.0;

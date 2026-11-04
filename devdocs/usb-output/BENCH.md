@@ -17,8 +17,10 @@ Spike results are in `SINGLE_IMAGE.md`. Everything unticked is owed on the final
 - [x] Sleep from MIDI mode, wake: serial back, then CW Keyer without a reboot.
 - [x] Serial Output on while in MIDI mode: keying not delayed.
 - [x] BLE keyboard and BLE Serial alongside USB Keying; VBand still blocks the BLE keyboard.
-- [ ] Games: free heap and largest block against stock, for the +12.2 KB of RAM. Trigger the sprite allocation check.
-      All seven games started and ran on a standard Pocket, 2026-11-03. The firmware has no heap readout, so the margin itself is still unmeasured; that needs a temporary measuring build.
+- [x] Games: free heap and largest block against stock, for the +12.2 KB of RAM. Trigger the sprite allocation check.
+      Measured 2026-11-04, see "Game memory" in `SINGLE_IMAGE.md`. The first version looped for ever with BLE Serial on; fixed.
+- [x] Forced sprite failure (temporary image): one "Clearing memory", then "Not enough memory", back at the menu, no loop. Morse Invaders, Morsel, Radio Cave.
+- [x] GET device has hardware and firmware after a "Clearing memory" restart and after leaving CW Keyer with USB Keying on.
 - [ ] Flash over the port after a MIDI session. Protocol harness on this image, WinKeyer bench still fine.
 
 ## Accessibility Edition

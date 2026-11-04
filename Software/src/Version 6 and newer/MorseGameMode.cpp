@@ -46,6 +46,7 @@ extern int          checkEncoder();
 // auto-resume into the same menu item the user just clicked.
 extern uint32_t rebootMagic;
 extern uint8_t  rebootMenuPtr;
+extern uint8_t  memoryClearedFor;
 
 // Pixels removed from the long side of the panel when sizing the sprite.
 // At 170×320 and 8-bpp (1 byte/pixel, see GamePalette.h), trimming 16
@@ -112,6 +113,23 @@ namespace {
     (void) checkEncoder();
   }
 
+  // The sprite does not fit. Reboot to clear the heap, then resume into this
+  // game - but only once: if the reboot was already for this game, what holds
+  // the memory (BLE Serial, say) comes back on every boot and rebooting again
+  // would loop for ever, so tell the user and let the caller return to the menu.
+  LGFX_Sprite *allocationFailed(bool leftHanded) {
+    if (memoryClearedFor != MorsePreferences::menuPtr)
+      MorseGameMode::triggerMemoryClearingReboot();
+    memoryClearedFor = 0;
+    restoreMenuDisplay(leftHanded);
+    MorseOutput::clearDisplay();
+    MorseOutput::printOnScroll(0, BOLD, 0, "Not enough");
+    MorseOutput::printOnScroll(1, BOLD, 0, "memory");
+    MorseOutput::refreshDisplay();
+    delay(2000);
+    return nullptr;
+  }
+
   LGFX_Sprite *allocate(int rotation, bool leftHanded, uint8_t colorDepth) {
     lastLeftHanded = leftHanded;
 
@@ -138,20 +156,19 @@ namespace {
 
     sprite = new LGFX_Sprite(lcd);
     if (!sprite) {
-      // Couldn't even allocate the small wrapper. Fall back to the
-      // memory-clearing reboot — the heap is in a bad state.
-      MorseGameMode::triggerMemoryClearingReboot();
+      // Couldn't even allocate the small wrapper — the heap is in a bad state.
+      return allocationFailed(leftHanded);
     }
     sprite->setPsram(false);
     sprite->setColorDepth(colorDepth == 8 ? 8 : 16);
     if (!sprite->createSprite(spriteW, spriteH)) {
       // Sprite buffer allocation failed — heap is fragmented (typically
-      // after a WiFi Trx session). Reboot to clear, then resume directly
-      // into the menu item the user just clicked.
+      // after a WiFi Trx session).
       delete sprite;
       sprite = nullptr;
-      MorseGameMode::triggerMemoryClearingReboot();
+      return allocationFailed(leftHanded);
     }
+    memoryClearedFor = 0;
     if (colorDepth == 8) {
       // Load the shared game palette. createSprite() auto-creates a default
       // grayscale palette for 8-bpp; this replaces it (create_palette frees

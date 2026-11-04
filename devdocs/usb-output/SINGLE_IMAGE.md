@@ -62,3 +62,31 @@ keyers ran in parallel. Do not emulate Vail's CC/program-change control; `tick()
 The spike passed on a standard Pocket, macOS, Chrome (MIDI with note 0 only): entering gives MIDI, leaving restores
 serial, sleep then wake restores serial, CW Keyer works again with no reboot, flashing works after OTG sessions. See
 `BENCH.md` for what the final code still owes.
+
+## Game memory (measured 2026-11-04)
+
+Temporary heap task once a second, on a standard Pocket, same game sequence on each build. The 8-bpp game sprite
+needs 51.7 KB in one piece. TinyUSB in the image cost 15.3 KB of free heap: 12.2 KB static, the rest at run time.
+
+| | First version | Master 446e174 | Now |
+|---|---|---|---|
+| Free at the menu | 117.0 KB | 132.4 KB | 136.6 KB |
+| Morse Invaders, lowest free | 62.5 KB | 77.9 KB | 82.1 KB |
+| Fight Pileup first run, lowest free | 12.1 KB | 27.6 KB | 31.9 KB |
+| Largest block before the sprite, BLE Serial on | 43.0 KB | 55.3 KB | 61.4 KB |
+| In a game, BLE Serial on, lowest free | game does not start | 12-13 KB | about 17 KB |
+
+- **The first version could not open a game with BLE Serial on.** The clearing reboot brought BLE straight back, so
+  it failed again every 3 seconds, for ever. Way out: cable out and slide switch off.
+- **19.8 KB recovered, no change in behaviour.** `testData` in `goertzel.cpp` was 16 KB, but reads at most 512 stereo
+  frames, so 2 KB is enough. `M32c_bits` lacked a `const`, so 5.4 KB of logo sat in RAM.
+- **Clearing reboot only once per game.** If the reboot was already for this game, `allocationFailed()` says "Not
+  enough memory" and the game returns to the menu. Compiled out of the Accessibility Edition, so no clip is owed.
+- **`brd`/`vsn` moved out of `displayStartUp()`.** A silent restart skips the splash, so `GET device` answered with
+  empty names: after every exit from CW Keyer with USB Keying on, and on master after a clearing reboot.
+- **Not needed so far:** `_dfu_ctx` and `_mscd_buf` (8.2 KB) are TinyUSB drivers we never use. Defining their `dfu_moded_*`
+  and `mscd_*` entry points ourselves should keep those archive members out. Untried.
+- **Least margin:** Trailblazer lobby, down to about 13 KB free, low of 9 KB, about 12 s after entering. The first version
+  reached about 12.5 KB; master's run left the lobby before that point, so there is no comparison.
+- **Not fixed:** Fox Hunt and Memory Chain still need one clearing reboot after a lobby or another game, as on master. The
+  largest block is then about 500 bytes short (51.2 KB). This is fragmentation, not total memory.

@@ -184,6 +184,7 @@ boolean quickStart;                                     // should we execute men
 RTC_NOINIT_ATTR uint32_t rebootMagic;
 RTC_NOINIT_ATTR uint8_t  rebootMenuPtr;
 bool memoryReboot = false;                              // set in setup() if we just rebooted to clear memory
+uint8_t memoryClearedFor = 0;                           // the menu item that reboot was for (see MorseGameMode.cpp)
 #endif
 
 
@@ -572,6 +573,7 @@ void setup()
    // to auto-resume into the game the user was trying to start.
    memoryReboot = (rebootMagic == REBOOT_MAGIC_MEMORY);
    uint8_t resumeMenuPtr = memoryReboot ? rebootMenuPtr : 0;
+   memoryClearedFor = resumeMenuPtr;
 #ifdef CONFIG_USB_HOSTIO
    // Leaving CW Keyer with USB Keying active restarts to get the serial port back (MorseUsbIO::menuEntered()).
    // The same silent boot, but it ends at the menu: Quick Start would go straight back into CW Keyer.
@@ -999,6 +1001,31 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
     MorsePracticeStats::begin();
 #endif
 
+    // Prepare board version, just in case we want to switch to M32protocol later on. Not part of the
+    // splash below: a silent restart skips that, and GET device would answer with empty names.
+#define ST(A) #A
+#define STR(A) ST(A)
+
+#ifdef HW_NAME
+    brd = STR(HW_NAME);
+#else
+    brd = "Unknown Device";
+#endif
+#ifdef ORIGINAL_M32
+    if (MorsePreferences::boardVersion == 3)
+        brd = "M32 1st edition";
+    else if (MorsePreferences::boardVersion == 4)
+        brd = "M32 2nd edition";
+    else
+        brd = "unknown M32 board";
+#endif
+
+    // firmware version string for the M32 protocol "GET device" response
+    // (major.minor, plus .patch when non-zero — mirrors the splash-screen format)
+    vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR);
+    if (VERSION_PATCH != 0)
+        vsn += "." + String(VERSION_PATCH);
+
 #ifdef CONFIG_TFT
     // Skip the boot splash on a memory-clearing reboot — the user just
     // exited WiFi Trx a heartbeat ago, they don't want to see the logo
@@ -1214,30 +1241,6 @@ void displayStartUp(uint16_t volt) {
 #endif
     MorseOutput::displayBatteryStatus(volt);
 
-
-  //prepare board version, just in case we want to switch to M32protocol later on
-#define ST(A) #A
-#define STR(A) ST(A)
-
-#ifdef HW_NAME
-    brd = STR(HW_NAME);
-#else
-    brd = "Unknown Device";
-#endif
-#ifdef ORIGINAL_M32
-    if (MorsePreferences::boardVersion == 3)
-        brd = "M32 1st edition";
-    else if (MorsePreferences::boardVersion == 4)
-        brd = "M32 2nd edition";
-    else
-        brd = "unknown M32 board";
-#endif
-
-  // firmware version string for the M32 protocol "GET device" response
-  // (major.minor, plus .patch when non-zero — mirrors the splash-screen format)
-  vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR);
-  if (VERSION_PATCH != 0)
-      vsn += "." + String(VERSION_PATCH);
 
 //DEBUG("Display done, delay");
 splashPause(1800);
