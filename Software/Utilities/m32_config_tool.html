@@ -502,6 +502,7 @@
   <button class="btn btn-red" id="disconnectBtn" onclick="doDisconnect()" disabled>Disconnect</button>
   <span class="conn-hint">USB · Chrome/Edge/Firefox</span>
 </div>
+<div class="tty-notice" id="linkNotice" style="display:none"></div>
 
 <!-- CONNECTION -->
 <div class="tab-content active" id="tab-connection">
@@ -936,8 +937,8 @@ var practiceCharsValue='';   // "Practice Set" - not part of prefDetails (action
 // their own tabs and are excluded here. Params absent on a given build (e.g. Headphone
 // Output, Theme, Invader Orient., the BLT pair, Contest Type) are skipped automatically.
 var PREF_GROUPS=[
-  {name:'General',icon:'⚙',params:['Encoder Click','Tone Pitch','Tone Softness','Time-out','Quick Start','Output Case','Headphone Output','Theme','Invader Orient.','Serial Output']},
-  {name:'Key, Paddles and Keyer',icon:'🔑',params:['Paddle Polar.','External Pol.','Keyer Mode','CurtisB DahT%','CurtisB DitT%','AutoChar Spc','Latency','BLT Kbd Output','BLT <AR>']},
+  {name:'General',icon:'⚙',params:['Encoder Click','Tone Pitch','Tone Softness','Time-out','Quick Start','Output Case','Headphone Output','Theme','Invader Orient.','Serial Output','Bluetooth Use','USB Keying']},
+  {name:'Key, Paddles and Keyer',icon:'🔑',params:['Paddle Polar.','External Pol.','Keyer Mode','CurtisB DahT%','CurtisB DitT%','AutoChar Spc','Latency','BLT <AR>']},
   {name:'CW Generation',icon:'📡',params:['Interchar Spc','InterWord Spc','Random Groups','Length Rnd Gr','Length Calls','Calls Region','Call Prefixes','Length Abbrev','Length Words','Max # of Words','Stop<Next>Rep','CW Gen Displ','Randomize File','Each Word 2x']},
   {name:'Echo Trainer',icon:'🔊',params:['Echo Repeats','Echo Prompt','Confrm. Tone','Tone Shift','Adaptv. Speed','Echo Speed Max','Echo Think T.']},
   {name:'Transmitting, Decoding and QSO Bot',icon:'📻',params:['Key ext TX','Generator Tx','Trx Channel','Bandwidth','Decoded on IO','Contest Type']}
@@ -1144,6 +1145,7 @@ async function openTransport(){
 
 async function doConnect(){
   try{
+    showLinkNotice('');
     var link=await openTransport();
     setStatus('Activating...','working');
     log(link.label+' — activating M32 protocol...');
@@ -1206,16 +1208,19 @@ async function doConnect(){
   }
 }
 
-async function doDisconnect(){
-  try{if(writer){await sendLine('put device/protocol/off');await sleep(300);log('M32 protocol deactivated')}}catch(e){}
-  try{
-    if(reader){await reader.cancel();reader.releaseLock();reader=null}
-    if(abortController){abortController.abort();abortController=null}
-    if(readableStreamClosed){await readableStreamClosed.catch(function(){});readableStreamClosed=null}
-    if(writer){await writer.close().catch(function(){});writer=null}
-    if(writableStreamClosed){await writableStreamClosed.catch(function(){});writableStreamClosed=null}
-    if(port){await port.close();port=null}
-  }catch(e){reader=null;writer=null;abortController=null;readableStreamClosed=null;writableStreamClosed=null;port=null}
+// linkGone: the device already ended the session or left the bus, so nothing is
+// sent. Every step runs on its own, with a limit: on a lost port reader.cancel()
+// rejects, and giving up there would leave the port open for the next Connect.
+async function doDisconnect(linkGone){
+  linkClosing=true;
+  try{if(writer&&linkGone!==true){await sendLine('put device/protocol/off');await sleep(300);log('M32 protocol deactivated')}}catch(e){}
+  if(reader){await settled(reader.cancel());try{reader.releaseLock()}catch(e){}reader=null}
+  if(abortController){abortController.abort();abortController=null}
+  if(readableStreamClosed){await settled(readableStreamClosed);readableStreamClosed=null}
+  if(writer){await settled(writer.close());writer=null}
+  if(writableStreamClosed){await settled(writableStreamClosed);writableStreamClosed=null}
+  if(port){await settled(port.close());port=null}
+  linkClosing=false;
   readBuffer='';
   deviceCaps=null;
   enableUI(false);
@@ -1241,6 +1246,22 @@ async function doDisconnect(){
   document.getElementById('spaceInfo').textContent='';
   allMenus=[];
   log('Disconnected');
+}
+
+// The link can end without the Disconnect button: the device says goodbye before
+// CW Keyer takes the USB port for USB Keying (the port goes right after), or the
+// cable comes out. Without this the page stays on "Connected" with nobody listening.
+var linkClosing=false;      // we are closing it, or expect it to drop (factory reset)
+var LINK_GOODBYE='{"end m32protocol":';   // cannot occur inside a JSON string: its quotes would be escaped
+function settled(p){return Promise.race([Promise.resolve(p).catch(function(){}),sleep(1000)])}
+function showLinkNotice(t){var el=document.getElementById('linkNotice');el.textContent=t;el.style.display=t?'':'none'}
+async function linkEnded(goodbye){
+  if(!connected||linkClosing) return;
+  var why=goodbye?'The Morserino ended the connection. If USB Keying is on, leave CW Keyer and connect again.'
+                 :'Connection lost. Check the cable and connect again.';
+  await doDisconnect(true);
+  showLinkNotice(why);
+  log(why);
 }
 
 // Closing the tab or the browser ends the page without doDisconnect(). The M32
@@ -1482,6 +1503,7 @@ async function loadHardwareInfo(){
 
 async function resetDefaults(){
   if(!confirm('Reset all parameters to factory defaults?\n\nThe device will REBOOT to apply the reset, so the connection will drop and you will need to reconnect afterwards.\n\nSnapshots, WiFi, CW memories, and player identity will be preserved.')) return;
+  linkClosing=true;     // the reboot drops the link, and we said so in the dialog
   try{
     readBuffer=''; await sendLine('put device/reset/defaults');
     try{await waitForResponse(3000)}catch(e){}
@@ -3605,9 +3627,11 @@ readLoop = async function(){
       if(r.value){
         readBuffer+=r.value;        // existing behaviour
         ttyProcessChunk(r.value);  // TTY intercept
+        if(readBuffer.indexOf(LINK_GOODBYE)>=0){ linkEnded(true); return; }
       }
     }
   }catch(e){}
+  linkEnded(false);
 };
 
 // ── Hook TTY enable/disable into enableUI ───────────────────────────────────

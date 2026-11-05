@@ -212,6 +212,13 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
     `REVIEW_NOTES.md`); second round the same day (QSO Bot and Echo order, Decoder Chars general, manual follows
     the device); B17 item 6 fixed 2026-10-15 (Bluetooth Use changed in CW Keyer now starts/stops the keyboard at once —
     bench check owed, esp. BLE Serial → keyboard). **B16/B17 done** apart from that bench check.
+18. ~~**Prefixes in CW Generator and Echo Trainer (Willi, 2026-10-30, for V10)**~~ — **done**, merged to master 2026-11-02
+    (3cc9a89, branch `prefix-training`). Prefixes in WPX form (OE3, KD9, UA9, 3B8);
+    Calls Region and Call Prefixes apply, Length Calls does not; not in Koch, Mixed unchanged (Willi). The call-sign
+    prefix table is rebuilt from MASTER.SCP + cty.dat by `Software/tools/callsign-prefixes/build_prefix_table.py`
+    (weighted call-area digits, correct continents for Russia/EA8/CT9, 99% of real prefixes; +7.5 KB flash) - all
+    generated call signs change with it. Manuals EN+DE, changelog and the a11y clip done; all three builds pass.
+    Bench-tested by Willi 2026-11-02 on a standard Pocket: successful; clip heard on an a11y Pocket the same day.
 10. Parked for after V10: first dit-*off* delay compensation, Rig-only device, auto-start
     into Remote Rig after power loss, WinKeyer protocol idea.
 
@@ -445,19 +452,16 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    Idea for the open key-line timing checks of BENCH.md §3 (no logic analyser): the classic as Remote Rig with a
    `-D KIP_MEASURE=1` build reproduced the Pocket's key line within ~45 µs, so Remote WinKeyer can measure
    WinKeyer's element timing.
-7. **USB Output (PR #224, Ian VK1HF) — merged 2026-10-29** (1752a67): vBand keyboard and CTR2-MIDI paddles over
-   the Pocket's USB cable, opt-in envs `pocketwroom-usbio` / `pocketwroom-lora-usbio` only (TinyUSB,
-   `CONFIG_USB_HOSTIO`); not in the release images. MIDI and VBand bench-tested by Willi on a Pocket. **Still open:**
+7. **USB Keying (USB Output until 2026-11-03; PR #224, Ian VK1HF) — merged 2026-10-29** (1752a67): vBand keyboard and CTR2-MIDI paddles over
+   the Pocket's USB cable. **Branch `usb-output-single-image` (2026-11-02, issue #227) puts it in the standard Pocket
+   and Accessibility images and retires the `-usbio` envs:** boot stays on HWCDC, TinyUSB starts at run time while
+   CW Keyer sends to USB, leaving restarts silently to the menu. New value MIDI Keyer (notes 0 + 30) for Vail. Design,
+   decisions and traps: `devdocs/usb-output/SINGLE_IMAGE.md`; owed bench: `devdocs/usb-output/BENCH.md`. **Still open:**
+   - Merge, then publish as the second V10 beta. Willi's decision (2026-11-04): the note to Ian and the #227 reply wait for that
+     beta, which also gives more testers access. Ian's envs go, and the serial port no longer stays alongside.
+   - Reply on #227 (not posted yet).
    - SmartSDR (macOS) real-world test on one of Ian's Flex stations (he offered access).
-   - Protocol harness: its reboot (DTR/RTS pulse) puts a TinyUSB build into ROM download mode, which sticks
-     (`FORCE_DOWNLOAD_BOOT` in RTC_CNTL_OPTION1). Needs a TinyUSB-aware reboot or a skip. Recovery without flashing:
-     `esptool.py --port <port> --before no_reset --after hard_reset write_mem 0x6000812C 0 0x1`, or power-cycle.
-   - WinKeyer modes on the usbio builds: compile, not bench-tested over TinyUSB's CDC.
-   - Nits from the review: unused `generated` argument of `MorseUsbIO::keyed()`; the FN-recovery note in
-     `MorseUsbIO.h` should match the manual (switch off, hold FN, switch on).
-   - Worth measuring: D8's HWCDC withheld replies on a usbio build — TinyUSB CDC was one of the candidate cures.
-   - Before usbio could ever become the standard Pocket build: flashing may need FN at power-on, writes are dropped
-     until the host asserts DTR, esptool's DTR/RTS pattern enters download mode, the port name changes, and the a11y
-     edition would owe clips ("USB Output", "Off (charge)", "VBand", "MIDI").
-   - Successor to PR #189: BLE MIDI redone on master as **Bluetooth Use** value 6 with the same note mapping
-     (see the PR #189 notes in Claude's memory: keyer-driven note 30 by default over BLE).
+   - Nit from the review: unused `generated` argument of `MorseUsbIO::keyed()`.
+   - Successor to PR #189: BLE MIDI redone on master as **Bluetooth Use** value 6 with the same note mapping. The
+     classic has no native USB, so this is its only way to Vail. The plan's keyer-driven default must send **note 0
+     as well as 30** (Vail ignores 30), like MIDI Keyer (see the PR #189 notes in Claude's memory).

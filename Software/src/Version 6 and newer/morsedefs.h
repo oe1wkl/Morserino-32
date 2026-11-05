@@ -318,7 +318,8 @@ enum PROMPT_TYPE                // how we prompt in echo trainer mode
 
 enum GEN_TYPE                   // the things we can generate in generator mode
   {
-      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE, KOCH_PREVIEW
+      RANDOMS, ABBREVS, WORDS, CALLS, MIXED, PLAYER, KOCH_MIXED, KOCH_LEARN, KOCH_ADAPTIVE, KOCH_PREVIEW,
+      PREFIXES        // call sign prefixes (oe3, kd9) - appended, the menu cases compute the others from menuPtr
   };
 
 
@@ -370,7 +371,7 @@ inline bool isWinKeyerMode(morserinoMode m) { return m == morseWinKeyer || m == 
 //                   (DESIGN.md D1a, R1).
 #if defined(CONFIG_WINKEYER) && defined(CONFIG_M32KIP)
   #define REMOTE_WINKEYER 1
-  #if ARDUINO_USB_CDC_ON_BOOT     // any native USB serial (HWCDC, or USBCDC in the usbio builds)
+  #if ARDUINO_USB_CDC_ON_BOOT     // native USB serial (HWCDC)
     #define WK_TARGET_PREF 1
   #endif
 #endif
@@ -406,6 +407,7 @@ const uint8_t menuN = 46
 #ifdef REMOTE_WINKEYER
     + 1    // Remote WinKeyer — WinKeyer keying a remote Rig (DESIGN.md §9.1)
 #endif
+    + 2    // Prefixes in CW Generator and Echo Trainer
     ;
 
 enum menuNo
@@ -461,7 +463,11 @@ enum menuNo
 #ifdef REMOTE_WINKEYER
         , _remoteWinKeyer   // "Remote WinKeyer" ("Remote WinK" on the OLED) - between WinKeyer and Remote Keyer
 #endif
+        , _genPrefixes  // "Prefixes" - CW Generator, after Call Signs; appended last like the entries above
+        , _echoPrefixes // "Prefixes" - Echo Trainer, the same
    };
+// menuText[] and menuNav[] are sized by menuN, and a missing initializer there compiles silently
+static_assert(_echoPrefixes + 1 == menuN, "menuN must count every menuNo entry - update the sum above");
 
 enum loops
   { active_loop, menu_loop, preferences_loop
@@ -571,10 +577,11 @@ enum actMessage : int {
 #define BLT_USE_SERIAL_PROT 5
 #endif
 #ifdef CONFIG_USB_HOSTIO
-// "USB Output" selector (posUsbOut): one thing at a time over the cable, CW Keyer only.
+// "USB Keying" selector (posUsbOut): one thing at a time over the cable, CW Keyer only.
 #define USB_OUT_OFF   0               // nothing (serial port + charging only)
 #define USB_OUT_VBAND 1               // USB keyboard: Left Ctrl follows the keyer (the Bluetooth keyboard stays off)
-#define USB_OUT_MIDI  2               // USB MIDI ch 1: note 20 dit paddle, 21 dah paddle (CTR2-MIDI Normal mode)
+#define USB_OUT_MIDI  2               // "MIDI Paddles", ch 1: note 20 dit paddle, 21 dah paddle (CTR2-MIDI Normal mode) - the computer is the keyer
+#define USB_OUT_MIDI_KEYER 3          // "MIDI Keyer", ch 1: notes 0 and 30 follow the M32's keyer - the computer only follows key-down/up
 #endif
 
 extern void DEBUG (const String& s);

@@ -446,7 +446,7 @@ void MorseBluetooth::initializeBluetooth(void)
 #endif
 #ifdef CONFIG_USB_HOSTIO
     if (MorsePreferences::pliste[posUsbOut].value == USB_OUT_VBAND)
-        return;                         // USB Output = VBand: the BLE keyboard is not started
+        return;                         // USB Keying = VBand: the BLE keyboard is not started
 #endif
 	// start Bluetooth task - stack size was originally 20000m prio was 5
     if (!isBLErunning) {

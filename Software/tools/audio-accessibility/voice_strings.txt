@@ -336,6 +336,8 @@ lower
 M32
 Mandarin
 Maximum number of words
+MIDI Keyer
+MIDI Paddles
 Mike
 milliseconds
 millivolts
@@ -384,6 +386,7 @@ plus
 point
 Practice Set
 Practice Stats
+Prefixes
 Preview Character
 pro sign
 Pro Signs
@@ -453,6 +456,8 @@ up to 4
 up to 5
 up to 6
 UPPER
+USB keying
+VBand
 VBand and Decoded
 VBand Keyboard
 Veggie

@@ -186,6 +186,7 @@ boolean quickStart;                                     // should we execute men
 RTC_NOINIT_ATTR uint32_t rebootMagic;
 RTC_NOINIT_ATTR uint8_t  rebootMenuPtr;
 bool memoryReboot = false;                              // set in setup() if we just rebooted to clear memory
+uint8_t memoryClearedFor = 0;                           // the menu item that reboot was for (see MorseGameMode.cpp)
 #endif
 
 
@@ -586,6 +587,13 @@ void setup()
    // to auto-resume into the game the user was trying to start.
    memoryReboot = (rebootMagic == REBOOT_MAGIC_MEMORY);
    uint8_t resumeMenuPtr = memoryReboot ? rebootMenuPtr : 0;
+   memoryClearedFor = resumeMenuPtr;
+#ifdef CONFIG_USB_HOSTIO
+   // Leaving CW Keyer with USB Keying active restarts to get the serial port back (MorseUsbIO::menuEntered()).
+   // The same silent boot, but it ends at the menu: Quick Start would go straight back into CW Keyer.
+   const bool usbBackReboot = (rebootMagic == USB_BACK_REBOOT_MAGIC);
+   memoryReboot = memoryReboot || usbBackReboot;
+#endif
    rebootMagic   = 0;
    rebootMenuPtr = 0;
 #endif
@@ -607,17 +615,15 @@ void setup()
   // 9.0.1 too). Its default 256-byte TX ring is smaller than such a reply; with 1 KB the rate fell to about
   // 1 in 900 (2026-10-05; 4 KB was no better). The remaining cases were the missing zero-length packet after
   // a full 64-byte packet, now sent by M32Tee::flushReply() (2026-10-30, devdocs/TODO.md D8).
-  Serial.setTxBufferSize(1024);       // HWCDC only: TinyUSB's USBCDC (usbio builds) has a fixed TX FIFO
+  Serial.setTxBufferSize(1024);
 #endif
   // And its 256-byte RX queue drops bytes when full (the ISR gives up on the rest of a 64-byte packet) - a
   // command longer than ~256 bytes, sent in one go, lost pieces before loop() got to read it, newline
   // included, so lines merged. 2 KB holds any line up to twice USB_LINE_MAX: executed or refused whole.
-  // TinyUSB's USBCDC (usbio builds) has the same 256-byte default; the core has already started it in
-  // app_main() there, and resizing afterwards keeps whatever is queued.
   Serial.setRxBufferSize(2048);
 #endif
 #ifdef CONFIG_USB_HOSTIO
-  MorseUsbIO::begin();           // USB keyboard + MIDI interfaces, alongside the serial port
+  MorseUsbIO::begin();           // takes the USB port back from the OTG controller, registers keyboard + MIDI
 #endif
   Serial.begin(115200);
   armForeignUsbRxDetect();       // a 1200-baud logger knocking at the classic's main menu (FN = GPIO0)
@@ -839,7 +845,11 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   /// check if a key has been pressed on startup - if yes, we have to perform Hardware Configuration
 
   if (SPIFFS.begin(false))  {                     // while the SPIFFS has not been initialized (i.e. 1st programming), we are not going to check the key press
+#ifdef CONFIG_USB_HOSTIO
+      if (!usbBackReboot && key_was_pressed_at_start()) {
+#else
       if (key_was_pressed_at_start()) {
+#endif
          MorsePreferences::displayKeyerPreferencesMenu(posHwConf);
          MorsePreferences::adjustKeyerPreference(posHwConf);
 
@@ -947,6 +957,10 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
   } else {
     quickStart = MorsePreferences::pliste[posQuickStart].value;
   }
+#ifdef CONFIG_USB_HOSTIO
+  if (usbBackReboot)
+    quickStart = false;
+#endif
 #else
   quickStart = MorsePreferences::pliste[posQuickStart].value;
 #endif
@@ -1000,6 +1014,31 @@ delay(VEXT_SETTLE_MS);   // let the panel supply rail settle before the ST7789 r
 #ifdef CONFIG_PRACTICE_STATS
     MorsePracticeStats::begin();
 #endif
+
+    // Prepare board version, just in case we want to switch to M32protocol later on. Not part of the
+    // splash below: a silent restart skips that, and GET device would answer with empty names.
+#define ST(A) #A
+#define STR(A) ST(A)
+
+#ifdef HW_NAME
+    brd = STR(HW_NAME);
+#else
+    brd = "Unknown Device";
+#endif
+#ifdef ORIGINAL_M32
+    if (MorsePreferences::boardVersion == 3)
+        brd = "M32 1st edition";
+    else if (MorsePreferences::boardVersion == 4)
+        brd = "M32 2nd edition";
+    else
+        brd = "unknown M32 board";
+#endif
+
+    // firmware version string for the M32 protocol "GET device" response
+    // (major.minor, plus .patch when non-zero — mirrors the splash-screen format)
+    vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR);
+    if (VERSION_PATCH != 0)
+        vsn += "." + String(VERSION_PATCH);
 
 #ifdef CONFIG_TFT
     // Skip the boot splash on a memory-clearing reboot — the user just
@@ -1216,30 +1255,6 @@ void displayStartUp(uint16_t volt) {
 #endif
     MorseOutput::displayBatteryStatus(volt);
 
-
-  //prepare board version, just in case we want to switch to M32protocol later on
-#define ST(A) #A
-#define STR(A) ST(A)
-
-#ifdef HW_NAME
-    brd = STR(HW_NAME);
-#else
-    brd = "Unknown Device";
-#endif
-#ifdef ORIGINAL_M32
-    if (MorsePreferences::boardVersion == 3)
-        brd = "M32 1st edition";
-    else if (MorsePreferences::boardVersion == 4)
-        brd = "M32 2nd edition";
-    else
-        brd = "unknown M32 board";
-#endif
-
-  // firmware version string for the M32 protocol "GET device" response
-  // (major.minor, plus .patch when non-zero — mirrors the splash-screen format)
-  vsn = String(VERSION_MAJOR) + "." + String(VERSION_MINOR);
-  if (VERSION_PATCH != 0)
-      vsn += "." + String(VERSION_PATCH);
 
 //DEBUG("Display done, delay");
 splashPause(1800);
@@ -1462,7 +1477,7 @@ if (morseState == morseKeyer &&
 MorseBluetooth::tick();                           // no-op unless the keyboard runs
 #endif
 #ifdef CONFIG_USB_HOSTIO
-MorseUsbIO::tick(morseState == morseKeyer);       // releases USB Ctrl / MIDI notes outside CW Keyer
+MorseUsbIO::tick(morseState == morseKeyer);       // CW Keyer with USB Keying on starts USB; releases USB Ctrl / MIDI notes outside it
 #endif
 /// if we have time check for serial input and for button presses
 
@@ -2426,19 +2441,34 @@ String getRandomChars(int maxLength, int option) {
  
 
 // Helper: read a PrefixEntry from PROGMEM
-static void readPrefix(int index, char* buf, uint8_t* cont, uint8_t* weight) {
+static void readPrefix(int index, char* buf, uint8_t* cont, uint8_t* weight, uint8_t* flags) {
     memcpy_P(buf, prefixTable[index].prefix, 5);
     *cont   = pgm_read_byte(&prefixTable[index].continent);
     *weight = pgm_read_byte(&prefixTable[index].weight);
+    *flags  = pgm_read_byte(&prefixTable[index].flags);
 }
- 
-// Check if the last character of a string is a digit
-static bool endsWithDigit(const char* s) {
-    char last = 0;
-    while (*s) { last = *s; s++; }
-    return (last >= '0' && last <= '9');
+
+// Draw the call-area digit for a prefix entry by its digit weights (how often each
+// digit occurs on the air - OE3 far more than OE7, OE0 never). Returns 0 when the
+// entry takes no digit: its base is the whole prefix (3B8, KH6, I1 -> I1ABC).
+static char pickAreaDigit(int index) {
+    uint8_t w[10];
+    uint16_t sum = 0;
+    for (int i = 0; i < 5; i++) {
+        uint8_t b = pgm_read_byte(&prefixTable[index].digits[i]);
+        w[2 * i]     = b & 0x0F;
+        w[2 * i + 1] = b >> 4;
+        sum += w[2 * i] + w[2 * i + 1];
+    }
+    if (sum == 0)
+        return 0;
+    int r = random(0, sum);
+    for (int d = 0; d < 10; d++)
+        if ((r -= w[d]) < 0)
+            return '0' + d;
+    return 0;                                         // not reached
 }
- 
+
 // Map preference value (0-6) to continent bitmask
 static uint8_t getContinentMask(uint8_t prefValue) {
     static const uint8_t masks[] = {
@@ -2455,8 +2485,12 @@ static uint8_t getContinentMask(uint8_t prefValue) {
 uint8_t lastGeneratedCallContinent = CONT_ALL;
 uint8_t lastGeneratedCallCqZone    = 0;
 
-String getRandomCall(int maxLength) {
-    static char call[16];
+// The prefix part of a call sign - the base prefix plus its call-area digit (oe3, kd9,
+// vk2, 3b8) - written lowercase to call[0..]; returns its length. Calls Region and
+// Call Prefixes apply; maxLength is getRandomCall()'s (0 = no limit). getRandomCall()
+// adds the suffix, getRandomPrefix() uses it as it is; vkzl tells which of the two
+// generators made it (the VK/ZL one has its own suffix lengths).
+static int buildRandomPrefix(char* call, int maxLength, bool &vkzl) {
     int pos = 0;
     uint8_t contMask;
     uint8_t contPref = MorsePreferences::pliste[posCallContinent].value;
@@ -2466,20 +2500,20 @@ String getRandomCall(int maxLength) {
     // VK/ZL follows the same rule instead of being a silent exception: there is no
     // 3-character VK or ZL call, so honouring the region here would either produce
     // a call that breaks the length the user asked for, or nothing at all.
-    bool vkzlOnly = (contPref == 7) && (maxLength != 1);
+    vkzl = (contPref == 7) && (maxLength != 1);
     // Get filter settings
     if (maxLength != 1)     /// means the max call length is not 3 
-        contMask = vkzlOnly ? CONT_OC : getContinentMask(contPref);
+        contMask = vkzl ? CONT_OC : getContinentMask(contPref);
     else                    /// maxLength == 1 means we want a 3-character call; these only exist in NA and EU, so we include those two.
         contMask = CONT_ALL;
+    // "Common" = the prefix's country entry was heard often enough in the real call
+    // data (PFX_COMMON, set by the table generator at the old weight threshold of 81 -
+    // Claude recommended 2 but that gave way too many rare prefixes).
     bool commonOnly  = (MorsePreferences::pliste[posCallCommon].value == 1);
-    // "Common" threshold: weight >= 2 means the prefix was seen in real call data
-    // (weight 1 = unseen/theoretical prefix)
-    uint8_t minWeight = commonOnly ? 81 : 0;  // Claude recommended 2 but that gave way too many rare prefixes.
  
     // --- VK/ZL custom generator ---
-    if (vkzlOnly) {
-        // VK/ZL weighted area and suffix generator
+    if (vkzl) {
+        // VK/ZL weighted area generator
         // Overall: 85% VK, 15% ZL
         bool isVK = (random(0, 100) < 85);
         int area;
@@ -2509,18 +2543,9 @@ String getRandomCall(int maxLength) {
             call[pos++] = 'l';
         }
         call[pos++] = '0' + area;
-        // Suffix: 30% two letters, 70% three letters
-        int suffixLen = (random(0, 10) < 3) ? 2 : 3;
-        for (int i = 0; i < suffixLen; i++)
-            call[pos++] = 'a' + random(0, 26);
-        // Terminate the string, as both other return paths do. This was a raw NUL
-        // *byte* in the source rather than the escape - it compiled to the right
-        // value, but it made the whole file binary to grep, diff and any editor
-        // that declines to open it.
-        call[pos] = '\0';
         lastGeneratedCallContinent = CONT_OC;
         lastGeneratedCallCqZone    = isVK ? 29 : 32;
-        return String(call);
+        return pos;
     }
 
     // --- Weighted random prefix selection (two-pass) ---
@@ -2528,13 +2553,13 @@ String getRandomCall(int maxLength) {
     // Pass 1: sum weights of matching entries
     uint32_t totalWeight = 0;
     char pfxBuf[5];
-    uint8_t cont, weight;
+    uint8_t cont, weight, flags;
     int maxPfxLen = (maxLength > 0) ? maxLength : 99;
  
     for (int i = 0; i < PREFIX_COUNT; i++) {
-        readPrefix(i, pfxBuf, &cont, &weight);
+        readPrefix(i, pfxBuf, &cont, &weight, &flags);
         if (!(cont & contMask)) continue;
-        if (weight < minWeight) continue;
+        if (commonOnly && !(flags & PFX_COMMON)) continue;
         if ((int)strlen(pfxBuf) > maxPfxLen) continue;
         totalWeight += weight;
     }
@@ -2543,14 +2568,10 @@ String getRandomCall(int maxLength) {
     if (totalWeight == 0) {
         lastGeneratedCallContinent = CONT_ALL;
         lastGeneratedCallCqZone    = 0;
-        // Generate old-style random call
-        call[0] = 'a' + random(0, 26);
-        call[1] = '0' + random(0, 10);
-        call[2] = 'a' + random(0, 26);
-        call[3] = 'a' + random(0, 26);
-        call[4] = 'a' + random(0, 26);
-        call[5] = '\0';
-        return String(call);
+        // old-style random prefix: a letter and a digit
+        call[pos++] = 'a' + random(0, 26);
+        call[pos++] = '0' + random(0, 10);
+        return pos;
     }
  
     // Pass 2: weighted random selection
@@ -2559,9 +2580,9 @@ String getRandomCall(int maxLength) {
     int chosen = 0;
  
     for (int i = 0; i < PREFIX_COUNT; i++) {
-        readPrefix(i, pfxBuf, &cont, &weight);
+        readPrefix(i, pfxBuf, &cont, &weight, &flags);
         if (!(cont & contMask)) continue;
-        if (weight < minWeight) continue;
+        if (commonOnly && !(flags & PFX_COMMON)) continue;
         if ((int)strlen(pfxBuf) > maxPfxLen) continue;
         cumulative += weight;
         if (cumulative > pick) {
@@ -2571,30 +2592,40 @@ String getRandomCall(int maxLength) {
     }
  
     // Read chosen prefix
-    readPrefix(chosen, pfxBuf, &cont, &weight);
+    readPrefix(chosen, pfxBuf, &cont, &weight, &flags);
     lastGeneratedCallContinent = cont;
     lastGeneratedCallCqZone    = pgm_read_byte(&prefixTable[chosen].cqZone);
 
-    // --- Build the call sign ---
- 
-    // Copy prefix (lowercase for consistency with CW generator)
+    // Copy prefix (lowercase for consistency with CW generator - uppercase single
+    // characters are prosign codes)
     for (int i = 0; pfxBuf[i]; i++) {
         char c = pfxBuf[i];
         if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';  // lowercase
         call[pos++] = c;
     }
- 
-  // A call sign always needs a digit between prefix letters and suffix letters.
-    // If the prefix already ends with a digit (e.g. "8Z4"), no extra digit needed.
-    // If it ends with a letter (e.g. "DL", "9A", "3DA"), we must add one.
-    // A call sign needs a digit between prefix and suffix.
-    // Add a digit unless the prefix is longer than 2 chars AND ends with one
-    // (e.g. "8Z4" doesn't need another digit, but "9A" does → "9A1xyz")
-    int pfxLen = strlen(pfxBuf);
-    if (!endsWithDigit(pfxBuf) || pfxLen <= 2) {
-        call[pos++] = '0' + random(0, 10);
+    // The call-area digit between prefix letters and suffix letters ("9A" -> "9a1",
+    // "OE" -> "oe3"), unless the base already is the whole prefix ("3B8", "I1")
+    char digit = pickAreaDigit(chosen);
+    if (digit)
+        call[pos++] = digit;
+    return pos;
+}
+
+String getRandomCall(int maxLength) {
+    static char call[16];
+    bool vkzl;
+    int pos = buildRandomPrefix(call, maxLength, vkzl);
+
+    // --- Build the call sign ---
+    if (vkzl) {
+        // Suffix: 30% two letters, 70% three letters
+        int suffixLen = (random(0, 10) < 3) ? 2 : 3;
+        for (int i = 0; i < suffixLen; i++)
+            call[pos++] = 'a' + random(0, 26);
+        call[pos] = '\0';
+        return String(call);
     }
- 
+
     // Determine max total length
     int maxTotal;
     if (maxLength == 0)       maxTotal = 10;    // unlimited
@@ -2629,6 +2660,14 @@ String getRandomCall(int maxLength) {
  
     call[pos] = '\0';
     return String(call);
+}
+
+String getRandomPrefix() {      //// a random prefix (oe3, kd9, vk2): the start of a call sign up to its call-area digit; Calls Region and Call Prefixes apply, Length Calls does not
+    static char pfx[8];
+    bool vkzl;
+    int pos = buildRandomPrefix(pfx, 0, vkzl);
+    pfx[pos] = '\0';
+    return String(pfx);
 }
   
 /////// generate CW representations from its input string
@@ -3086,6 +3125,8 @@ void fetchNewWord() {
                                       case  RANDOMS:  clearText = getRandomChars(MorsePreferences::pliste[posRandomLength].value, MorsePreferences::pliste[posRandomOption].value);
                                                       break;
                                       case  CALLS:    clearText = getRandomCall(MorsePreferences::pliste[posCallLength].value);
+                                                      break;
+                                      case  PREFIXES: clearText = getRandomPrefix();
                                                       break;
                                       case  ABBREVS:  clearText = getRandomAbbrev(MorsePreferences::pliste[posAbbrevLength].value);
                                                       break;
@@ -3645,9 +3686,9 @@ void changePreviewChar( int t) {
 void keyTransmitter(boolean noTx) {
 #ifdef CONFIG_USB_HOSTIO
    // before the Key Ext Tx gate - whatever CW Keyer keys (paddles, straight key, a memory) always
-   // goes out over USB for the selected USB Output, whatever Key Ext Tx says about the transmitter jack.
+   // goes out over USB for the selected USB Keying, whatever Key Ext Tx says about the transmitter jack.
    if (morseState == morseKeyer)
-      MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI: note 30 for a memory
+      MorseUsbIO::keyed(true, playCW);                               // VBand: Left Ctrl; MIDI Keyer: notes 0 + 30
 #endif
   if (noTx )
       return;
@@ -5005,7 +5046,7 @@ volatile unsigned long lastForeignUsbRxMs = 0;
 // Arm the UART receive-error hook. Called after every Serial.begin() on a UART build (setup(), and
 // WinKeyer mode's baud changes). A no-op on the Pocket's native USB, which has no line coding to violate.
 void armForeignUsbRxDetect() {
-#if !ARDUINO_USB_CDC_ON_BOOT      // any native-USB serial (HWCDC, or TinyUSB's USBCDC in the usbio builds) has no UART line coding
+#if !ARDUINO_USB_CDC_ON_BOOT      // a native-USB serial has no UART line coding
   Serial.onReceiveError([](hardwareSerial_error_t e) {
     if (e == UART_FRAME_ERROR || e == UART_BREAK_ERROR || e == UART_PARITY_ERROR)
       lastForeignUsbRxMs = millis();

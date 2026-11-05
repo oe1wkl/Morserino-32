@@ -268,6 +268,8 @@ The protocol can also be disabled with the command:
 
 The device acknowledges this with a farewell object: `{"end m32protocol":{"content":"Goodbye!"}}`.
 
+On the M32 Pocket the device can also end a USB session by itself, with the same farewell object: when **CW Keyer** starts while the preference **USB Keying** is not **Off**, the USB port stops being a serial port until the device has left CW Keyer and restarted. A client should expect the port to disappear right after this object, and to find a fresh device, with no session open, when it comes back. A BLE session is not affected.
+
 ### Consent on BLE
 
 Over USB the cable is the authorisation: whoever can plug it in can already do anything to the device. Over Bluetooth that is not true — anything within radio range can connect — so `PUT device/protocol/on` received over BLE does not open a session by itself. It asks the Morserino's operator, and the session begins only if they agree. **Over USB none of this applies** and the handshake behaves exactly as before.
