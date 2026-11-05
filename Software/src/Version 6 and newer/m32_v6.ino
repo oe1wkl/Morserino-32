@@ -153,6 +153,8 @@ boolean repeatPlayCW = false;
 String playCWBuffer;
 uint8_t playCWIndex = 0;
 uint8_t playCWMaxIndex = 0;
+boolean playCWDoneOwed = false;     // protocol 1.6: a client's cw/play, /repeat or /recall is running and is owed
+                                    // exactly one {"cw":{"event":"done"}} - see cwPlayDone()
 volatile int8_t remoteFilePartSelect = -1;   // -1 = no remote selection pending
 
 
@@ -199,6 +201,14 @@ encoderMode encoderState = speedSettingMode;    // we start with adjusting the s
 
 // a few things for the serial m32protocol
 boolean m32protocol = false;
+uint8_t practiceWordGap = 0;        // protocol 1.6, PUT cw/practice/<dits>: a practice program is running in the CW Keyer -
+                                    // keyed characters only in the echo, a word space after this many dits, the key line stays
+                                    // off. Session only, never stored; 0 = off. See practiceMode()
+uint8_t practiceCharSpace = 0, practiceWordSpace = 0;   // PUT cw/spacing/<char>/<word>: the spaces of what is sounded during practice,
+                                    // in dits, instead of Interchar Spc and InterWord Spc. Never stored; 0 = as the preferences say
+boolean practiceHidePlayed = false; // PUT cw/display/off: what is sounded during practice does not appear on the screen. Never stored
+boolean practiceMode();
+void endPractice();
 #ifdef CONFIG_BLE_SERIAL
 volatile bool bleProtocol = false;                      // per-transport handshake state for BLE Serial (see M32ProtocolOut.h);
                                                         // cleared by onDisconnect (BT task) and synchronously by MorseBleSerial::stop()
@@ -467,6 +477,10 @@ unsigned long echoEvalTimer = 0;      // deadline for the EVAL_FEEDBACK / EVAL_S
 boolean echoEvalCorrect = false;      // verdict, taken once on entry and held across them
 String echoTrainerPrompt, echoTrainerWord;
 uint8_t echoPromptSpeed = 0;     // stores the prompt WPM while response is speed-limited
+// protocol 1.6 trainer/result timing, device millis(): end of the prompt's last element, first paddle closure of
+// the answer, end of the answer's last character (as the keyer registers it - one element space after its last
+// element). Plain stores; the two in doPaddleIambic() add nothing to the keying path but a millis() read.
+unsigned long echoPromptEndAt = 0, echoFirstKeyAt = 0, echoLastCharAt = 0;
 
 
 ////// variables for CW decoder
@@ -1268,7 +1282,7 @@ void loop() {
 
    if (playCW) {
                   if (checkPaddles()) {
-                    stopPlayCw();
+                    stopPlayCw(false);
                     while (checkPaddles())
                       ;
                     return;
@@ -1914,6 +1928,8 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
         if (dit || dah ) {
             updatePaddleLatch(dit, dah);  // trigger the paddle latches
             if (morseState == echoTrainer)   {      // change the state of the trainer at end of word
+                if (echoTrainerState == GET_ANSWER)
+                    echoFirstKeyAt = millis();      // first closure of the answer (trainer/result latency)
                 echoTrainerState = COMPLETE_ANSWER;
              }
             keyerTable.resetTable();
@@ -2077,9 +2093,11 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                    if (morseState == morseKeyer || morseState == loraTrx || morseState == wifiTrx || morseState == morseTrx
                                        || morseState == kipKeyer || isWinKeyerMode(morseState))
                                       // interWordTimer = millis() + 5*ditLength;
-                                      interWordTimer = millis() + ditLength * (MorsePreferences::pliste[posInterWordSpace].value -1);
-                                   else if (morseState == echoTrainer)
-                                       interWordTimer = millis() + 2*interCharacterSpace + ditLength + interWordSpace/8;   // waiting for end of word in echo trainer
+                                      interWordTimer = millis() + ditLength * (practiceMode() ? practiceWordGap : MorsePreferences::pliste[posInterWordSpace].value -1);
+                                   else if (morseState == echoTrainer) {
+                                       echoLastCharAt = millis();                                                          // trainer/result duration
+                                       interWordTimer = echoLastCharAt + 2*interCharacterSpace + ditLength + interWordSpace/8;   // waiting for end of word in echo trainer
+                                   }
                                    else
                                        interWordTimer = millis() + interWordSpace;  // prime the timer to detect a space between characters
                                                                               // nominally 7 dit-lengths, but we are not quite so strict here in keyer or TrX mode,
@@ -2802,6 +2820,12 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
               if (morseState == morseGenerator)
                     autoStop = MorsePreferences::pliste[posAutoStop].value ? halt : nextword;
                 dispGeneratedChar();
+                // protocol 1.6: a client's cw/play is done with its last element, not after the word space that
+                // fetchNewWord() would wait out before finding the buffer empty (that would make every typed-copy
+                // latency look a word space too long). After dispGeneratedChar(), so a Serial Output echo of the
+                // last character still comes before the event.
+                if (playCW && playCWDoneOwed && !playCWHasMore())
+                    cwPlayDone(false);
                 if (morseState == echoTrainer) {
                     switch (echoTrainerState) {
                         case START_ECHO:  echoTrainerState = SEND_WORD;
@@ -2815,6 +2839,8 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                                                 break;
                                           else {
                                                 echoTrainerState = GET_ANSWER;
+                                                echoPromptEndAt = millis();         // trainer/result latency starts here
+                                                echoFirstKeyAt = 0;
                                                 if (MorsePreferences::pliste[posEchoDisplay].value != CODE_ONLY) {
                                                     displayGeneratedMorse(REGULAR, " ");
                                                     displayGeneratedMorse(INVERSE_REGULAR, ">");
@@ -2836,7 +2862,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                     }
                 }
                 else {
-                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : interWordSpace - KEYOUT_EDGE_MS) ;  // we need a pause for interWordSpace
+                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : soundedWordSpace() - KEYOUT_EDGE_MS) ;  // we need a pause for interWordSpace
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1) {                                   // in generator mode and we want to send with LoRa
                           cwForTx(0);
                           cwForTx(3);                           // as we have just finished a word
@@ -2866,6 +2892,8 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
 }
 
 unsigned int wordDoublerICS() {
+    if (practiceMode() && practiceCharSpace != 0)
+      return practiceCharSpace * ditLength;         // PUT cw/spacing
     if (morseState != morseGenerator || (MorsePreferences::pliste[posWordDoubler].value == 0) || ( MorsePreferences::pliste[posWordDoubler].value != 0 && firstTime == false))
       return interCharacterSpace;
 
@@ -2924,7 +2952,7 @@ void dispGeneratedChar() {
         // into the serial/BLE character echo and, with the Bluetooth keyboard
         // active, type a Return on the host - a screen layout decision has no
         // business showing up there.
-        if (wordStart && (morseState == morseGenerator || morseState == loraTrx ||
+        if (wordStart && !practicePlayedHidden() && (morseState == morseGenerator || morseState == loraTrx ||
                           morseState == wifiTrx || playCW)) {
             int nextSpace = clearText.indexOf(' ');
             uint16_t wordLen = (uint16_t) ((nextSpace == -1) ? clearText.length() : nextSpace);
@@ -3013,7 +3041,8 @@ void fetchNewWord() {
         clearText = getM32PWord();
         if (clearText == "") {              // nothing left in buffer
           playCW = false;
-          return;
+          cwPlayDone(false);                // normally sent already at the last element (generateCW); this catches
+          return;                           // a text with nothing playable in it
         }
         clearText.replace("T", "");
         if (clearText.indexOf('P') != -1) {
@@ -3265,6 +3294,8 @@ void displayDecodedMorse(String symbol, boolean keyed) {
 //// the next function is used to display GENERATED characters
 
 void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
+    if (practicePlayedHidden())
+        return;
 #ifdef CONFIG_TFT
     // M6: this is CW transcription — render it in the theme's Morse colour while
     // keeping the incoming(REGULAR)/outgoing(BOLD) weight. OLED stays mono.
@@ -3294,6 +3325,8 @@ void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
 
 void SerialOutMorse(const String& s, uint8_t origin) {
   uint8_t bitmap = (MorsePreferences::pliste[posSerialOut].value < 5 ? MorsePreferences::pliste[posSerialOut].value : 7);
+  if (practiceMode())
+      bitmap = 0b011;       // keyed characters only, whatever Serial Output says (a straight key comes through the decoder)
   if (origin & bitmap)
       m32out.echo(s);       // USB always (as before); a handshaken BLE client gets a copy, drop-immediately (keying path)
 }
@@ -3480,6 +3513,20 @@ void echoTrainerEval() {
                 displayCWspeed();
             }
             echoEvalCorrect = (echoResponse == echoTrainerWord);
+            // protocol 1.6: one trainer/result per evaluated word - the words EVAL_FEEDBACK shows OK or ERR for, so
+            // not Koch Learn New Chr / Preview Char's unanswered repetitions. wpm is the prompt's speed (restored above).
+            // koch in every Koch Trainer mode: Learn New Chr and Preview Char leave kochActive off (it also steers the
+            // word probabilities), so they are named here.
+            if (protocolActive() && (echoEvalCorrect || (generatorMode != KOCH_LEARN && generatorMode != KOCH_PREVIEW) || echoResponse != "")) {
+                boolean timedOut = (echoFirstKeyAt == 0);
+                MorseJSON::jsonTrainerResult(generatorMode == KOCH_LEARN ? "learn" : generatorMode == KOCH_PREVIEW ? "preview" : "echo",
+                                             cleanUpProSigns(echoTrainerWord), cleanUpProSigns(echoResponse), echoEvalCorrect,
+                                             repeats > 0 ? repeats - 1 : 0, MorsePreferences::wpm,
+                                             (kochActive || generatorMode == KOCH_LEARN || generatorMode == KOCH_PREVIEW)
+                                                 ? MorsePreferences::kochFilter : 0, timedOut,
+                                             timedOut ? 0 : echoFirstKeyAt - echoPromptEndAt,
+                                             (timedOut || echoLastCharAt < echoFirstKeyAt) ? 0 : echoLastCharAt - echoFirstKeyAt);
+            }
             echoEvalTimer = millis() + interCharacterSpace / 2;
             echoTrainerState = EVAL_FEEDBACK;
             break;
@@ -4447,6 +4494,8 @@ void keyOut(boolean on,  boolean fromHere, int f, int volume) {
                 noTx = false;
       default:  break;
   }
+  if (practiceMode())
+      noTx = true;          // practice is local: neither the prompts nor the answers key a transmitter
   boolean sidetone = true;
 #ifdef CONFIG_WINKEYER
   // WinKeyer is a keyer: every "Key Ext Tx" value but Never includes it. The host's pin config
@@ -4622,6 +4671,7 @@ void dispMem(int8_t memNo) {
 
 
 void preparePlay(int8_t memNo) {
+    cwPlayDone(true);                       // the operator's memory replaces a client's cw/play that was still running
     playCWBuffer = String(MorsePreferences::cwMem[memNo-1]);
     playCWIndex = 0;
     playCWMaxIndex = playCWBuffer.length();
@@ -4653,6 +4703,66 @@ String getM32PWord() {
   }
   result = cleanUpText(result);
   return result;
+}
+
+// protocol 1.6: will the cw/play buffer still sound anything? Reads ahead the way getM32PWord() and fetchNewWord()
+// would, without consuming: a word that cleans up to nothing, or a pause (\p), does not count. Called once per
+// played word, at its end - never while an element is sounding.
+boolean playCWHasMore() {
+  if (repeatPlayCW)
+    return playCWMaxIndex > 0;              // repeats until stopped
+  String word;
+  word.reserve(32);
+  for (int i = playCWIndex; i <= playCWMaxIndex; ++i) {     // int: one past a 255 maximum must not wrap
+    char c = (i < playCWMaxIndex) ? playCWBuffer.charAt(i) : ' ';
+    if (!isSpace(c)) {
+      word += c;
+      continue;
+    }
+    if (word.length() == 0)
+      continue;
+    word = cleanUpText(word);
+    word.replace("T", "");
+    if (word.indexOf('P') == -1 && generateCWword(word).length() > 0)
+      return true;
+    word = "";
+  }
+  return false;
+}
+
+// protocol 1.6: PUT cw/practice is on, and it only ever applies in the CW Keyer of a live session
+boolean practiceMode() {
+    return practiceWordGap != 0 && morseState == morseKeyer && protocolActive();
+}
+
+void endPractice() {
+    practiceWordGap = practiceCharSpace = practiceWordSpace = 0;
+    practiceHidePlayed = false;
+}
+
+// PUT cw/display/off: the program's copy practice would be pointless with the answer on the screen. What is keyed still shows.
+boolean practicePlayedHidden() {
+    return practiceHidePlayed && practiceMode();
+}
+
+// The word space of what is sounded: PUT cw/spacing during practice, the formula of updateTimings() for the same
+// reason (a word space is never shorter than a character space + 4), and computed here rather than there, so it ends with
+// practice and cannot outlive the CW Keyer in the global timings.
+unsigned int soundedWordSpace() {
+    if (practiceMode() && practiceWordSpace != 0)
+      return _max(practiceWordSpace, practiceCharSpace + 4) * ditLength;
+    return interWordSpace;
+}
+
+// protocol 1.6: settle what a client's cw/play is owed - one {"cw":{"event":"done"}}, "end" when it has finished
+// sounding, "stopped" when cw/stop, a paddle or a memory recalled on the device cut it short. A cw/play that
+// replaces one still running inherits the debt, so the client hears of the replacement only once.
+void cwPlayDone(boolean stopped) {
+  if (!playCWDoneOwed)
+    return;
+  playCWDoneOwed = false;
+  if (protocolActive())
+    MorseJSON::jsonCwDone(stopped);
 }
 
 
@@ -5013,6 +5123,7 @@ static void serialLines() {
                 inputString.toLowerCase();
                 if (inputString  == "put device/protocol/on")  {  /// client wants to switch m32 Protocol on
                   m32protocol = true;
+                  endPractice();
                   M32TargetScope usbOnly(M32Target::UsbOnly);     // handshake reply: a live BLE session must not see it
                   MorseJSON::jsonDevice(brd,vsn);
                 }
@@ -5470,9 +5581,12 @@ void m32Put(String type, String token, String value) {                    /// PU
         if (value.equalsIgnoreCase("off")) {            // value arg is not lowercased by serialDecode
             MorseJSON::jsonCreate("end m32protocol", "Goodbye!", "");
             m32protocol = false;
+            endPractice();
         }
-        else if (value.equalsIgnoreCase("on"))
+        else if (value.equalsIgnoreCase("on")) {
+            endPractice();                              // a new client must not inherit an abandoned session's practice mode
             MorseJSON::jsonDevice(brd,vsn);             // even when we are on, we send the device info, so that the client is getting some positive feedback
+        }
         else
             MorseJSON::jsonError("INVALID Value " + value);
       }
@@ -5929,16 +6043,55 @@ void m32Put(String type, String token, String value) {                    /// PU
           playCWMaxIndex = playCWBuffer.length();
           startFirst = false;
           playCW = true;
-          if ((token == "repeat") || (token == "recall" && number < 3))
-            repeatPlayCW = true;
+          // assigned, not only set: a cw/play sent over a running cw/repeat used to inherit the repeat, and a
+          // repeat never ends by itself - its client would wait for {"cw":{"event":"done"}} forever
+          repeatPlayCW = (token == "repeat") || (token == "recall" && number < 3);
           MorseJSON::jsonOK();
+          playCWDoneOwed = true;              // protocol 1.6: settled by cwPlayDone()
 
         }
         else
           MorseJSON::jsonError("CW/PLAY: Keyer not active");
       }
       else if (token == "stop")
-        stopPlayCw();
+        stopPlayCw(true);
+
+      else if (token == "practice") {
+          int dits = value.toInt();
+          if (value.equalsIgnoreCase("off"))
+            endPractice();
+          else if (dits >= 2 && dits <= 104)
+            practiceWordGap = dits;
+          else
+            return (MorseJSON::jsonError("INVALID CW PRACTICE VALUE " + value));
+          MorseJSON::jsonOK();
+      }
+
+      else if (token == "display") {
+          if (value.equalsIgnoreCase("on"))
+            practiceHidePlayed = false;
+          else if (value.equalsIgnoreCase("off"))
+            practiceHidePlayed = true;
+          else
+            return (MorseJSON::jsonError("INVALID CW DISPLAY VALUE " + value));
+          MorseJSON::jsonOK();
+      }
+
+      else if (token == "spacing") {                    // value = <char>/<word> or off, the ranges of the two preferences
+          int slash = value.indexOf('/');
+          int chars = value.toInt();
+          int words = slash < 0 ? 0 : value.substring(slash + 1).toInt();
+          if (value.equalsIgnoreCase("off"))
+            practiceCharSpace = practiceWordSpace = 0;
+          else if (chars >= MorsePreferences::pliste[posInterCharSpace].minimum && chars <= MorsePreferences::pliste[posInterCharSpace].maximum
+                   && words >= MorsePreferences::pliste[posInterWordSpace].minimum && words <= MorsePreferences::pliste[posInterWordSpace].maximum) {
+            practiceCharSpace = chars;
+            practiceWordSpace = words;
+          }
+          else
+            return (MorseJSON::jsonError("INVALID CW SPACING VALUE " + value));
+          MorseJSON::jsonOK();
+      }
 
       else if (token == "store") {
           // extract mem # from value
@@ -6004,6 +6157,8 @@ boolean setParameter(String token, String value) {      // change a parameter, r
             MorsePreferences::handleKochSequence(true);    // explicit serial (re-)selection: force a file reload
       else if (i == posCarouselStart)
             MorsePreferences::handleCarouselChange();
+      else if (i == posInterCharSpace || i == posInterWordSpace)
+            updateTimings();                               // live, as a speed change is - not only from the next mode start
 #ifdef CONFIG_SOUND_I2S
       else if (i == posSidetoneShape)
             MorseOutput::setSidetoneEnvelope(MorsePreferences::pliste[i].value);
@@ -6103,12 +6258,17 @@ void selectWifi(int i) {
 }
 
 
-void stopPlayCw() {     /// sort of emergency stop for M32p cw/play
+// fromCommand: PUT cw/stop, which is answered "ok" like every command. A paddle touch is not a command and gets
+// no "ok" (until protocol 1.6 it did - an unsolicited reply that a client with a command in flight would take for
+// its own); since 1.6 the client hears of it from {"cw":{"event":"done","reason":"stopped"}}, sent after the "ok".
+void stopPlayCw(boolean fromCommand) {     /// sort of emergency stop for M32p cw/play
             keyOut(false,true,0,0);
             playCW = false;
             repeatPlayCW = false;
             playCWBuffer = clearText = CWword = ""; CWwordPos = 0;
             playCWMaxIndex = 0;
             startFirst = true;
-            MorseJSON::jsonOK();
+            if (fromCommand)
+                MorseJSON::jsonOK();
+            cwPlayDone(true);
 }

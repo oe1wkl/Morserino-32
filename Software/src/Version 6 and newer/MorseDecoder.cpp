@@ -18,6 +18,8 @@
 
 extern unsigned long genTimer;      /// needed for echo trainer
 extern morserinoMode morseState;
+extern uint8_t practiceWordGap;     // PUT cw/practice (m32_v6.ino)
+extern boolean practiceMode();
 extern int leftPin;
 
 //////// methods for class Decoder /////////
@@ -126,6 +128,7 @@ void Decoder::decode() {
                               if (d_wpm > 35) lacktime = 6;
                                 else if (d_wpm > 30) lacktime = 5.5;
                                 else if (morseState == echoTrainer) lacktime = MorsePreferences::pliste[posInterWordSpace].value + 1;
+                              if (practiceMode()) lacktime = practiceWordGap;   // a straight key in the CW Keyer: see PUT cw/practice
                               if (lowDuration > (lacktime * ditAvg)) {
                                    displayDecodedMorse(myTable.retrieveSymbol(), false);            ////////end of word////////// !!!!!
                                    decoderState = LOW_;
