@@ -236,6 +236,11 @@ def start_mode(m32, content):
         if not m32.command("GET menu")["menu"]["active"]:
             break
         time.sleep(0.2)
+    # leaving a mode also sends a menu object of its own: the loop may have taken that for its reply,
+    # and the real reply must not be taken for the answer to GET menus
+    time.sleep(0.5)
+    m32._buffer = ""
+    m32._serial.reset_input_buffer()
     m32.command("PUT menu/start/%d" % menu_number(m32, content))
     time.sleep(0.8)
 
@@ -371,6 +376,9 @@ def bench(report, m32, args):
         word_before, char_before = m32.get_config("InterWord Spc"), m32.get_config("Interchar Spc")
 
         def _sounded(text):
+            # done comes at the last element, and the word space after it is still running: a play started
+            # now would wait for the rest of it, at the spacing of the play before. Let it run out.
+            time.sleep(30 * dit)
             _, _, ok_at, done_at = _play_and_capture(m32, text, 40.0)
             return (done_at - ok_at) / dit if ok_at and done_at else None
 
@@ -386,7 +394,7 @@ def bench(report, m32, args):
             report.check(words_norm is not None and words_long is not None and _near(words_long - words_norm, 54),
                          "cw/spacing word space: 3 gaps of 7 -> 25 dits add about 54 dits",
                          "%s -> %s dits" % (words_norm, words_long))
-            _send_expect_ok(m32, "PUT cw/spacing/13/25")
+            _send_expect_ok(m32, "PUT cw/spacing/13/7")
             chars_long = _sounded("eeee")
             report.check(chars_norm is not None and chars_long is not None and _near(chars_long - chars_norm, 30),
                          "cw/spacing character space: 3 gaps of 3 -> 13 dits add about 30 dits",
@@ -404,7 +412,7 @@ def bench(report, m32, args):
             m32.command("PUT device/protocol/on")
             after = _sounded("e e e e")
             report.check(prefs is not None and after is not None and _near(after - prefs, 0), "a new handshake ends cw/spacing",
-                         "preferences %s dits" % prefs)
+                         "preferences %s dits, after the handshake %s dits" % (prefs, after))
             # PUT cw/display: what it does is on the screen (BENCH_M3 7.13c), here only that it takes the command and still plays
             _send_expect_ok(m32, "PUT cw/practice/6")
             _send_expect_ok(m32, "PUT cw/display/off")
