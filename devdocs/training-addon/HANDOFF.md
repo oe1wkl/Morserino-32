@@ -12,7 +12,7 @@ read, what is waiting on whom, and which traps are already known.*
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | §6 of `BENCH_M3.md` on the classic (not reported yet) and Edge; a second operator's review of tier C before release (decision 12c); M3c–M6. Protocol PDF rebuild at merge to master. |
+| Not yet done | Edge (§6 and §7 of `BENCH_M3.md` passed on both devices by 2026-11-05); a second operator's review of tier C before release (decision 12c); committing M3c; M4–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -355,13 +355,56 @@ says "most of the oxford 5000", weights from hermitdave/FrequencyWords. Check bo
 host copy is published.
 
 ### M3c — keyed answer (1 session + bench)
+
+#### M3c — state (2026-11-04)
+**Written; tested in Node and the simulated M32. Benched 2026-11-05: §7 and `trainer_events.py` (46/46) pass on the Pocket and the classic.**
+The firmware part (`protocol-1.6-practice`) is merged into master locally; the page work here is not committed yet.
+
+- **Firmware:** `PUT cw/practice/<dits>|off` (capability `cw/practice`, still protocol 1.6, which is unreleased):
+  session only, CW Keyer only: keyed characters only in the echo, the keyer's and the straight-key decoder's word gap,
+  and no transmitter. Ends on protocol off, on any protocol on, on leaving the Keyer (`menu_()`; Willi, 2026-11-04, for a pulled cable), on restart; has no effect once a BLE session is gone. The page re-applies it on coming back. `practiceMode()` in `m32_v6.ino`.
+- **Firmware, sounded spacing:** `PUT cw/spacing/<char>/<word>|off` (Willi, 2026-11-04: added now so the firmware merges once,
+  before the next V10 beta). Same capability, same lifetime, effective only during practice. Applied where the sound is timed
+  (`wordDoublerICS()`, `soundedWordSpace()`), not in `updateTimings()`, so it follows speed changes and cannot outlive
+  the Keyer in the global timings. Interchar Spc does not affect how keyed characters are read, only the sound.
+  The page sends the device's Interchar Spc and a word space of 7. **M4 uses this for Farnsworth instead of `PUT config`.**
+- **Why not `Serial Output` and `InterWord Spc`:** both write NVS and need restoring, and InterWord Spc also sets the
+  sounded word gap, which must stay as it is (Willi).
+- **Finding:** Key ext TX defaults to *CW Keyer only*, and `cw/play` goes through `keyOut()` like the paddle, so until now the
+  trainer's prompts keyed an attached transmitter. Practice mode is on for typed answers too, so this is fixed for both.
+- **Engine:** `KeyedAnswer` (reads the echo; corrections; `check()` says what ended the answer), `Session.submit(.., {corrections,
+  spacing})`, `Session.playAgain()`, `keyedTally`. Keyed attempts never reach the boxes or confusions (`Mastery.apply`).
+- **Page:** Answer (Typed / Keyed on the paddle), Gaps in a word (Strict / Lenient), Finish after (2–10 s); the answer field is
+  read-only and shows what arrives; a "Keyed" column in the character table; the page refuses firmware without `cw/practice`.
+
+- **Second try (Willi, 2026-11-04, from bench 7.3):** a missed *keyed* answer, after its replay, can be keyed once more: same end rules, marked
+  right or wrong, nothing kept (no log, tally or box), and the scored attempt still comes back after about 4 items. `Session.secondTry()`, state `second-try`.
+  A paddle touch during that replay plays it again, up to 3 times. Enter with nothing keyed goes on; 15 s of nothing ends the offer, without a third playing. Typed answers are unchanged.
+- **Next item (Willi, 2026-11-05, from the bench):** a keyed item goes on by itself, as the Echo Trainer does: 2 s after a right answer, 3 s after a
+  second try. Setting "Next item: Automatically / Press Enter", keyed only, default Automatically, because the page cannot tell when a screen reader has
+  finished. Page only (`scheduleNext()`). Enter skips the wait, Esc pauses, and it holds back while the focus is in a dropdown or text box. Typed answers wait for Enter.
+- **M32 screen (Willi, 2026-11-05):** `PUT cw/display/off|on`, same capability and lifetime as practice mode, hides the sounded text from the screen; keyed text still shows. Page setting "M32 screen", default Hide.
+- **Link fix (2026-11-05, from Willi's glitch after an error sign):** an `ok` and a `done` in one chunk (a paddle held as `cw/play` arrives) lost the `done`, because the play was registered in a `then()`, and the page stayed on "Listen…" with Enter refused. Registered synchronously now (`onReply`). Keying into the next item made this reachable; not proven to be what he saw, as he could not reproduce it.
+
+**My M3c choices, signed off by Willi on 2026-11-05 (with the Hide default for "M32 screen"):**
+1. Strict is the default; the switch is labelled "Gaps in a word: Strict (up to 6 dits) / Lenient (up to 12 dits)".
+2. The trainer sets 6 dits for Strict whatever the M32's InterWord Spc says, and it refuses firmware without `cw/practice`.
+3. "Finish after" is never shorter than a word gap + 1 s (at 8 WpM Lenient, 12 dits are 1.8 s).
+4. Practice mode (no transmitter) also applies to typed answers.
+5. The ladder offer looks at typed phrases only, so it does not appear while answering keyed.
+6. After the pause for no input, Enter goes on with a **new** item, and the unanswered one is not logged.
+7. The sounded word gap is 7 dits, whatever InterWord Spc says (Willi's "always 7"), through `PUT cw/spacing`. The character
+   spaces stay the learner's Interchar Spc until M4. So a learner who set Interchar Spc 6 keeps it, and then gets a word
+   space of 10, because a word space is never shorter than a character space + 4.
 Serial Output check and warning, stream reader, end-of-answer rule (11a), corrections (11b), `<err>` vs `*`,
 separate tallies (never the confusion model). Bench on both variants. Confirm by experiment whether
 `cw/play` text appears in the stream with Serial Output = Keyed (by code path it should not).
 
 ### M4 — Koch integration (1 session)
-`GET`/`PUT kochlesson`, `customchars`, Practice Set; recompute coverage on connect; speed/spacing control;
-the `GET kochlesson` truncation follow-up for long sequences (LICW BC2, PR #209 — memory `m32-pr209-koch-lesson-filter`).
+`GET`/`PUT kochlesson`, `customchars`, Practice Set; recompute coverage on connect; speed control and spacing control
+(`PUT cw/spacing`: session only, no NVS). No firmware change expected. The `GET kochlesson` truncation for long sequences
+was already fixed by PR #209: check the page handles LICW BC2's 44 entries. Regenerate the corpus's `prefixes` from master's
+rebuilt `callsign_prefixes.h`, and the `callsign_gen` fixture with it.
 
 ### M5 — Echo log, stats, help, manuals (1–2 sessions)
 Echo log from E1; help text; manual subsection under "Using the Serial Output of the M32" (EN + DE;

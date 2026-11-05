@@ -699,3 +699,24 @@ test('listeners: on() returns an unsubscribe', async () => {
   t.send(DONE_END);
   assert.equal(n, 1);
 });
+
+test('play: ok and done in one chunk (a paddle held as the play arrives) still settles the play', async () => {
+  const { link, clock } = await connected((l) => (l.startsWith('put cw/play') ? OK + DONE_STOPPED : undefined));
+  const p = link.playCw('paris');
+  await clock.advance(30);
+  await p.started;
+  const d = await Promise.race([p.done, new Promise((r) => setTimeout(() => r({ reason: 'never settled' }), 50))]);
+  assert.equal(d.reason, 'stopped');
+});
+
+test('play: the same when the old play is still running: the old one is replaced, the new one stopped', async () => {
+  const { link, t, clock } = await connected((l) => (l === 'put cw/play/one' ? OK : l === 'put cw/play/two' ? OK + DONE_STOPPED : undefined));
+  const one = link.playCw('one');
+  await one.started;
+  const two = link.playCw('two');
+  await clock.advance(30);
+  await two.started;
+  assert.equal((await one.done).reason, 'replaced');
+  const d = await Promise.race([two.done, new Promise((r) => setTimeout(() => r({ reason: 'never settled' }), 50))]);
+  assert.equal(d.reason, 'stopped');
+});

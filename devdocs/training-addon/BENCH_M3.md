@@ -94,6 +94,51 @@ the console before pressing Connect (see its header).
 | 6.7 | Reload the page | Practise, words per phrase, From and your own phrases are as you left them |
 | 6.8 | Practise: Phrases, 8 words, From Mixed, at lesson 5 or lower (from lesson 6, word chains fill any length) | "Nothing to practise with these settings yet — …"; nothing is sent to the M32 |
 
+## 7. Keyed answers (M3c)
+
+**Needs the new firmware (`PUT cw/practice`, `PUT cw/spacing`) on both devices.** Run on the Pocket and the classic. First, from
+`Software/tests/protocol/`: `python3 trainer_events.py` (its steps 7b and 7c). Then on the page, Answer: Keyed on the paddle.
+
+| # | Do | Expect |
+|---|---|---|
+| 7.1 | Connect with Serial Output = All and Key ext TX = CW Keyer only (check both in the Config Tool afterwards) | Works; only what you key appears in the answer field, never the prompt; both settings are unchanged afterwards |
+| 7.2 | With a rig or a key-line tester attached: practise, keyed | The sound and the sidetone are normal; **the key line never closes**, neither for the prompt nor for your keying |
+| 7.3 | Groups, size 3: key the group correctly | It appears live; about 1.5 s after the last character "Right!"; the box table does not move; the "Keyed" column does; about 2 s later the next item starts by itself |
+| 7.3a | Key a group wrongly. Listen to the replay, then key it again, right | The field clears and says "Key it again"; what you key appears live; about 1.5 s after the last character "Second try: right.", and about 3 s later the next item starts by itself. The tally and the "Keyed" column count only the first answer. The item comes back after about 4 others |
+| 7.3b | The same, but key it wrongly the second time too | "Second try: you keyed …"; one try only: more keying is ignored until the next item |
+| 7.3c | After a wrong answer, press Enter during the second try, with nothing keyed. Then again, after keying a character or two | Nothing keyed: the next item starts at once. Something keyed: that try is marked, then the next item follows as usual |
+| 7.3d | After a wrong answer, touch the paddle during the replay | It stops and plays again (up to 3 times), then "Key it again". What you keyed during the replay is not in the field |
+| 7.3e | After a wrong answer, key nothing for 15 s | No third playing; about 3 s later the next item |
+| 7.3f | Keyed, Next item = Automatically: answer several items with your hands on the paddle only | It runs without the keyboard, and the pauses feel right. **Say if 2 s and 3 s are too short or too long** |
+| 7.3g | During the wait for the next item: press Enter. Another time: press Esc | Enter: it starts at once. Esc: "Paused"; it stays paused until Enter |
+| 7.3h | During the wait: open a setting (a dropdown) | The next item does not start and take the focus; "Press Enter for the next one" |
+| 7.3i | Next item = Press Enter, keyed. Then reload the page | It waits for Enter as before; the setting is still there after the reload |
+| 7.3j | Typed answers, Next item as set above | Always wait for Enter; the Next item setting is hidden |
+| 7.4 | Size 5: key 2 characters, pause 2 s, key the rest | Not cut off |
+| 7.5 | Key too few characters and stop | Ends after the "Finish after" time (try 2 s and 10 s) |
+| 7.6 | Key some, press Enter | Ends at once |
+| 7.7 | Key some, then `=` (BT) | Ends at once, the `=` is not in the answer; on a QSO line that contains `=`, the `=` is simply part of the answer |
+| 7.8 | Phrase: key 2 words, the error sign (8 dits) | The last word goes; the error sign again right after: the whole answer goes |
+| 7.9 | An undecodable character instead of the error sign | The same as the error sign |
+| 7.10 | **Strict:** key a group with a gap of about 8 dits inside it | Marked wrong, the answer shows the break |
+| 7.11 | **Lenient:** the same group with the same gap, then with a very long gap | Right, both times |
+| 7.12 | **Lenient:** a phrase with about 8 dits inside a word and 15 dits between the words | Right. With less than 12 dits between the words: wrong (run together) |
+| 7.13 | Strict and Lenient, phrases: listen | The sounded word gaps are the same in both |
+| 7.13a | Set InterWord Spc to 25 on the M32, connect, phrases: listen. Then disconnect and run the CW Generator | The trainer's word gaps are normal (7 dits), not long; InterWord Spc still says 25 and the Generator uses it. Set it back |
+| 7.13b | Set Interchar Spc to 6, connect, a group: listen. Set it back | The characters are spaced out as you set them |
+| 7.13c | M32 screen = Hide what is played: practise, typed and keyed, groups and a phrase. Watch the M32 | Nothing of the prompt or the replay appears, not even blank lines; what you key does appear. Switch to Show mid-session: the next prompt appears. The setting is still there after a reload |
+| 7.13d | Hide what is played, then disconnect and play a keyer memory on the M32 | The memory appears on the screen again (the mode has ended) |
+| 7.13e | Keyed, Next item = Automatically: keep keying right through the moment the next item starts, several times, also with the error sign | It stops and plays again, up to 3 times, then waits for your answer. **It never hangs on "Listen…"** (this was the glitch of 2026-11-05) |
+| 7.14 | Touch the paddle while it sounds | It stops and plays again (up to 3 times); nothing you keyed then is in the answer |
+| 7.15 | Key nothing | After 15 s it plays once more; after another 15 s "Paused: nothing was keyed." Enter goes on |
+| 7.16 | Set the M32's Output Case to upper case; key a prosign and `<err>` | Read the same as in lower case |
+| 7.17 | Very slow speed (about 8 WpM), Lenient, Finish after 2 s, a phrase with a long word gap | Not cut off between the words |
+| 7.18 | VoiceOver: a keyed item, also a wrong one | Nothing spoken while it sounds; "Key what you heard." when the sound ends; nothing while you key; the result after that. Wrong: nothing during the replay, then what it was and "Key it again."; the second try's result after you key it. With Next item = Automatically, does speech run into the next prompt? (That is what Press Enter is for) |
+| 7.19 | Disconnect, then key on the M32 in the CW Keyer | Normal word gaps and keying again (the mode has ended) |
+| 7.20 | During a session, long-press to the menu, start the CW Keyer on the device, press Enter on the page, answer keyed. With the rig or tester attached | The page says it is back in the CW Keyer; prompts and answers behave as before; **the key line still never closes** |
+| 7.21 | During a session, leave the Keyer on the device, then press Enter on the page | The page starts the CW Keyer itself; the same as 7.20 |
+| 7.22 | Battery powered: during a session pull the USB cable. Key on the M32 (rig or tester attached): it does not key. Long-press to the menu, start the CW Keyer, key | Now the **key line closes** and word gaps are normal. Before leaving the Keyer it stays in practice mode: this is known, a restart clears it too |
+
 ## Results
 
 *(fill in: device, browser, step, pass/fail, notes)*
@@ -111,3 +156,11 @@ the console before pressing Connect (see its header).
 | 2026-11-02 | Pocket | not noted | §1–§4 | pass | Note on 2.9: long groups after setting size 1. In the simulator these were retries of groups missed earlier; size itself held. Missed items now wait until they fit (6.3b) |
 | 2026-11-02 | Pocket | not noted | 5.1 | fail → re-test | VoiceOver talked over the Morse on Next. Now speech comes only around the sound, in the page's `#say` region; re-test owed |
 | 2026-11-03 | Pocket | not noted | 5.1, 5.2, 6.1–6.8 incl. 6.3b | pass | Re-test on page version 2026-11-02, reported by Willi as all passed. Classic not reported for §6; Edge still not run |
+| 2026-11-04 | Pocket | — | — | flashed | `pocketwroom` (standard edition) from `protocol-1.6-practice` 082af4b (current master + 1.6 firmware), firmware only, ready for §7 |
+| 2026-11-04 | Classic | — | — | flashed | `heltec_wifi_lora_32_V2` from `protocol-1.6-practice` 082af4b, firmware only, ready for §7 and the open §6 |
+| 2026-11-05 | Pocket | — | — | flashed | `pocketwroom` (standard edition) from `protocol-1.6-practice` 6b5f7e8 (adds `PUT cw/display`), firmware only |
+| 2026-11-05 | Classic | — | — | flashed | `heltec_wifi_lora_32_V2` from `protocol-1.6-practice` 6b5f7e8, firmware only |
+| 2026-11-05 | Pocket | — | `trainer_events.py` | pass | 46 passed, 0 failed, on 6b5f7e8 with the script at bad9eba. First full run of 7b and 7c: `cw/practice`, `cw/spacing`, `cw/display`, leaving the Keyer ends practice |
+| 2026-11-05 | Classic | — | `trainer_events.py` | pass | 46 passed, 0 failed, on 6b5f7e8 with the script at bad9eba |
+| 2026-11-05 | Pocket, Classic | not noted | §7 (all, incl. 7.13c–e) | pass | Page version 2026-11-05b on 6b5f7e8, reported by Willi as all passed, on both devices. Includes the key line staying open in 7.2, 7.20 and 7.22, and the M3c choices and the Hide default signed off. The `<err>` hang of 7.13e did not come back |
+| 2026-11-05 | Classic | Firefox | §6 (all) | pass | Reported by Willi. §6 has now passed on both devices |

@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-02';
+const VERSION = '2026-11-05b';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -645,7 +645,8 @@ function newId() {
 //       helpLimit (replays allowed before answering, default 1).
 //
 // States: idle -> playing -> answering -> (feedback | idle ...) ; 'paused' after a lost link.
-// Events (on(name, fn)): state, item, result, notice.
+// A missed keyed answer goes feedback-playing -> second-try -> feedback (see secondTry()).
+// Events (on(name, fn)): state, item, result, second, notice.
 class Session {
   constructor(opts) {
     this.player = opts.player;
@@ -658,6 +659,7 @@ class Session {
     this.state = 'idle';
     this.item = null;
     this.tally = { items: 0, perfect: 0, chars: 0, charsRight: 0 };
+    this.keyedTally = { items: 0, perfect: 0, chars: 0, charsRight: 0 };   // keyed answers count apart
     this._listeners = new Map();
     this._gen = 0;              // bumps whenever a play becomes stale
   }
@@ -682,12 +684,19 @@ class Session {
 
   // Start (or continue with) the next item.
   next() {
-    if (['idle', 'feedback', 'feedback-playing'].indexOf(this.state) < 0) return;
+    if (['idle', 'feedback', 'feedback-playing', 'second-try'].indexOf(this.state) < 0) return;
     const pick = this.scheduler.next();
     this.item = { kind: pick.kind, tier: pick.tier || null, n: pick.n, text: pick.text, retry: pick.retry, doneAt: null, keys: [],
                   replays: 0, helped: false, stops: 0 };
     this._emit('item', this.item);
     this._play(false);
+  }
+
+  // Nothing was keyed for a long time: sound it once more. Not help, as the learner asked for nothing.
+  playAgain() {
+    if (!this.item || this.state !== 'answering') return false;
+    this._play(false);
+    return true;
   }
 
   // Help: hear it again before answering (counted; the item then moves no box).
@@ -707,15 +716,15 @@ class Session {
     p.done.then((d) => {
       if (gen !== this._gen) return;
       if (d.reason === 'end') {
-        if (unscored) { this._setState('feedback'); return; }
+        if (unscored) { this._setState(it.secondTry ? 'second-try' : 'feedback'); return; }
         it.doneAt = d.t;
         this._setState('answering');
-      } else if (d.reason === 'stopped' && !unscored && it.stops < 3) {
+      } else if (d.reason === 'stopped' && (!unscored || it.secondTry) && it.stops < 3) {
         it.stops++;                       // a paddle touch (R2): play it again, it costs nothing
         this._emit('notice', 'stopped');
-        this._play(false);
+        this._play(unscored);
       } else if (d.reason === 'stopped') {
-        this._setState(unscored ? 'feedback' : 'answering');
+        this._setState(!unscored ? 'answering' : it.secondTry ? 'second-try' : 'feedback');
         if (!unscored && it.doneAt == null) it.doneAt = d.t;
       } else if (d.reason === 'replaced') {
         // a later play of ours took over; its own done settles things
@@ -736,7 +745,8 @@ class Session {
 
   // The learner is done: score, log, update the model. Returns the attempt, or null when
   // the item is still sounding (the page says "wait").
-  async submit(answer, t) {
+  // keyed: {corrections, spacing} when the answer came from the paddle (see KeyedAnswer).
+  async submit(answer, t, keyed) {
     const it = this.item;
     if (!it || this.state !== 'answering') return null;
     t = t != null ? t : this.clock.now();
@@ -747,28 +757,42 @@ class Session {
       schema: SCHEMA, id: newId(), t: this.clock.wall(),
       device: ctx.device || null, lesson: ctx.lesson != null ? ctx.lesson : null, wpm: ctx.wpm != null ? ctx.wpm : null,
       farnsworth: ctx.farnsworth != null ? ctx.farnsworth : null,
-      kind: it.kind, tier: it.tier || null, source: 'typed', retry: it.retry,
+      kind: it.kind, tier: it.tier || null, source: keyed ? 'keyed' : 'typed', retry: it.retry,
       expected: s.expected, answer: s.answer, perfect: s.perfect,
       perWord: s.words, perChar: s.chars, extra: s.extra,
       latency: first != null && it.doneAt != null ? Math.round(first - it.doneAt) : null,
       total: it.doneAt != null ? Math.round(t - it.doneAt) : null,
       keystrokes: it.keys.map((k) => ({ k: k.k, t: it.doneAt != null ? Math.round(k.t - it.doneAt) : null })),
-      corrections: 0, replays: it.replays, helped: it.helped
+      corrections: keyed ? keyed.corrections : 0, replays: it.replays, helped: it.helped
     };
+    if (keyed) attempt.spacing = keyed.spacing;
     await this.store.add(attempt);
     this.mastery.apply(attempt);
-    this.tally.items++;
-    if (s.perfect) this.tally.perfect++;
-    this.tally.chars += s.charCount;
-    this.tally.charsRight += s.charsRight;
+    const tally = keyed ? this.keyedTally : this.tally;
+    tally.items++;
+    if (s.perfect) tally.perfect++;
+    tally.chars += s.charCount;
+    tally.charsRight += s.charsRight;
     this._emit('result', { attempt, score: s });
     if (s.perfect) {
       this._setState('idle');
     } else {
       this.scheduler.missed(it);       // decision 4c: it comes back after ~4 others, scored
+      if (keyed) { it.secondTry = true; it.stops = 0; }
       this._play(true);                // ... and is played once more now, unscored
     }
     return attempt;
+  }
+
+  // A missed keyed answer, heard again: the learner may key it once more (Willi, 2026-11-04, bench 7.3:
+  // a hand on the paddle keys what it has just heard). Marked right or wrong, and nothing is kept: no log,
+  // no tally, no box, and the scored attempt still comes later. answer null: no try was made.
+  secondTry(answer) {
+    if (!this.item || this.state !== 'second-try') return null;
+    const s = answer == null ? null : score(this.item.text, answer);
+    if (s) this._emit('second', { score: s });
+    this._setState('feedback');
+    return s;
   }
 
   // Cable gone, page hidden, the user paused: forget the running play.
@@ -783,6 +807,102 @@ class Session {
   resume() {
     if (this.state !== 'paused') return;
     this._setState('idle');
+  }
+}
+
+// ---- a keyed answer ----------------------------------------------------------
+
+// What the paddle sends for one item, read from the M32's character echo (PUT cw/practice).
+// Decisions 11a and 11b, as changed by Willi on 2026-11-04. Knows no clock of its own: start(),
+// feed() and check() get the time, and the page asks check() while the answer runs.
+//   check() -> 'sign'   a keyed = or <bt> the target does not need
+//              'early'  as many characters as the target has, and graceMs without another one
+//              'idle'   some characters, then idleMs without another one
+//              'start'  nothing at all for startMs: the page sounds the item again, then pauses
+//              null     keep waiting
+class KeyedAnswer {
+  constructor(target, opts) {
+    opts = opts || {};
+    const t = tokenize(target);
+    this.chars = t.filter((x) => x !== ' ');
+    this.oneWord = t.indexOf(' ') < 0;
+    this.idleMs = opts.idleMs != null ? opts.idleMs : 4000;
+    this.graceMs = opts.graceMs != null ? opts.graceMs : 1500;
+    this.startMs = opts.startMs != null ? opts.startMs : 15000;
+    this.tokens = [];
+    this.corrections = 0;
+    this._partial = '';         // a prosign cut in two by the transport
+    this._justCorrected = false;
+    this._sign = false;
+    this._since = null;         // the last character or correction, or the end of the sound
+  }
+
+  // The sound has ended (again): the waiting starts now.
+  start(now) { this._since = now; }
+
+  get text() { return this.tokens.join(''); }
+  get count() { return this.tokens.filter((x) => x !== ' ').length; }
+
+  // Echo text as it arrives -> the tokens in it. The M32 may send them in upper case (Output Case).
+  feed(text, now) {
+    const s = this._partial + String(text == null ? '' : text).toLowerCase();
+    this._partial = '';
+    const seen = [];
+    for (let i = 0; i < s.length; ) {
+      const c = s[i];
+      if (c === '<') {
+        const close = s.indexOf('>', i);
+        if (close < 0 && s.length - i < 6) { this._partial = s.slice(i); break; }
+        const m = close > 0 ? /^<([a-z]{2,3})>$/.exec(s.slice(i, close + 1)) : null;
+        if (m) { this._token(m[1] === 'err' ? '<err>' : prosignToken(m[1]), now, seen); i = close + 1; continue; }
+      }
+      const ch = String.fromCodePoint(s.codePointAt(i));
+      this._token(/\s/.test(ch) ? ' ' : ch, now, seen);
+      i += ch.length;
+    }
+    return seen;
+  }
+
+  _token(t, now, seen) {
+    seen.push(t);
+    if (t === ' ') {            // a word space: not input, and the decoder also sends one after each answer
+      if (this.tokens.length && this.tokens[this.tokens.length - 1] !== ' ') this.tokens.push(' ');
+      return;
+    }
+    this._since = now;
+    if (t === '<err>' || t === '*') {
+      this.corrections++;
+      if (this._justCorrected) this.tokens = [];
+      else {
+        while (this.tokens.length && this.tokens[this.tokens.length - 1] === ' ') this.tokens.pop();
+        while (this.tokens.length && this.tokens[this.tokens.length - 1] !== ' ') this.tokens.pop();
+      }
+      this._justCorrected = true;
+      return;
+    }
+    this._justCorrected = false;
+    // = finishes, unless this target still has one to come
+    if (t === '=' && this.tokens.filter((x) => x === '=').length >= this.chars.filter((x) => x === '=').length) {
+      this._sign = true;
+      return;
+    }
+    this.tokens.push(t);
+  }
+
+  check(now) {
+    if (this._sign) return 'sign';
+    if (this._since == null) return null;
+    const quiet = now - this._since;
+    const n = this.count;
+    if (!n) return quiet >= this.startMs ? 'start' : null;
+    if (n >= this.chars.length && quiet >= this.graceMs) return 'early';
+    return quiet >= this.idleMs ? 'idle' : null;
+  }
+
+  // What the scorer gets. Strict: as it was keyed. Lenient: a group or a single word has no
+  // spaces to get wrong; a phrase keeps its word breaks either way.
+  answer(spacing) {
+    return spacing === 'lenient' && this.oneWord ? this.tokens.filter((x) => x !== ' ').join('') : this.text;
   }
 }
 
@@ -920,7 +1040,7 @@ function lessonChars(kochlesson) {
 return {
   VERSION, SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
-  Mastery, movesBoxes, median, mulberry32, randomCall, Corpus, ladderOffer, NoItemsError, Scheduler, Session, newId,
+  Mastery, movesBoxes, median, mulberry32, randomCall, Corpus, ladderOffer, NoItemsError, Scheduler, Session, KeyedAnswer, newId,
   MemoryStore, IdbStore, exportFile, parseExport, lessonChars
 };
 }));

@@ -45,7 +45,7 @@ const GET_REPLY = {
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-02';
+const VERSION = '2026-11-05b';
 const USB_MAX_LINE = 1024;        // bytes, without the line feed (protocol: "Maximum command length")
 const HANDSHAKE_MS = 2000;        // as the Config Tool
 const CONSENT_MS = 25000;         // BLE: a person is answering on the device (~20 s, then it refuses)
@@ -507,6 +507,7 @@ class Link {
         internal: !!opts.internal,
         noRecover: !!opts.noRecover,
         watch: opts.watch || null,
+        onReply: opts.onReply || null,
         resolve: resolve, reject: reject, timer: null,
         extend: (ms) => {
           this.clock.clearTimeout(entry.timer);
@@ -593,11 +594,13 @@ class Link {
       play._settle = (v) => { if (!play.settled) { play.settled = true; resolve(v); } };
     });
     const verb = opts && opts.repeat ? 'put cw/repeat/' : 'put cw/play/';
-    play.started = this._command(verb + text, { expect: ['ok'] }).then(({ meta }) => {
+    // onReply, not then(): the done can come in the same chunk as the ok (a paddle held as the play arrives),
+    // and it is handled before any then() runs. It would find no play to settle, and the page would wait forever.
+    const onReply = (meta) => {
       if (this._play && this._play !== play) this._play._settle({ reason: 'replaced', t: meta.t });
       this._play = play;
-      return { t: meta.t };
-    }, (err) => {
+    };
+    play.started = this._command(verb + text, { expect: ['ok'], onReply }).then(({ meta }) => ({ t: meta.t }), (err) => {
       play._settle({ reason: 'refused', error: err, t: this.clock.now() });
       throw err;
     });
@@ -645,6 +648,7 @@ class Link {
       meta.reply = true;
       meta.command = e.line;
       this._emit('object', obj, meta);
+      if (key !== 'error' && e.onReply) e.onReply(meta);
       if (key === 'error') this._settle(e, deviceError(obj.error, e.line));
       else this._settle(e, null, obj, meta);
       return;

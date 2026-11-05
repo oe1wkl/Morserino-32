@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-02"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-02"></script>
+  <script src="m32_trainer_link.js?v=2026-11-05b"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-05b"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -121,6 +121,19 @@
           <option value="C">QSO lines</option><option value="U">Your own phrases</option>
         </select></span>
     </div>
+    <div class="row" style="margin-top:10px">
+      <span class="pair"><label for="selScreen">M32 screen</label>
+        <select id="selScreen"><option value="hide">Hide what is played</option><option value="show">Show what is played</option></select></span>
+      <span class="pair"><label for="selSource">Answer</label>
+        <select id="selSource"><option value="typed">Typed</option><option value="keyed">Keyed on the paddle</option></select></span>
+      <span class="pair" id="pairSpacing" hidden><label for="selSpacing">Gaps in a word</label>
+        <select id="selSpacing"><option value="strict">Strict (up to 6 dits)</option><option value="lenient">Lenient (up to 12 dits)</option></select></span>
+      <span class="pair" id="pairIdle" hidden><label for="selIdle">Finish after</label>
+        <select id="selIdle"></select></span>
+      <span class="pair" id="pairNext" hidden><label for="selNext">Next item</label>
+        <select id="selNext"><option value="auto">Automatically</option><option value="enter">Press Enter</option></select></span>
+    </div>
+    <div class="keys" id="keyedHint" hidden></div>
     <div class="keys" id="availNote"></div>
     <div id="feedback"></div>
     <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
@@ -154,7 +167,7 @@
     <p style="font-size:15px;margin-bottom:10px">Each character climbs five boxes as you copy it right; a miss sends it two boxes down. Characters in low boxes come up more often.</p>
     <div class="scroll">
     <table>
-      <thead><tr><th scope="col">Char</th><th scope="col">Box</th><th scope="col">Copied</th><th scope="col">Right</th><th scope="col">Median time</th></tr></thead>
+      <thead><tr><th scope="col">Char</th><th scope="col">Box</th><th scope="col">Copied</th><th scope="col">Right</th><th scope="col">Median time</th><th scope="col">Keyed</th></tr></thead>
       <tbody id="charRows"><tr><td colspan="5">Connect to see the characters of your lesson.</td></tr></tbody>
     </table>
     </div>
@@ -179,7 +192,7 @@
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-02';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-05b';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -235,6 +248,12 @@ async function openStore() {
     const v = await store.getMeta(key);
     if (v) $(id).value = v;
   }
+  $('selSource').value = (await store.getMeta('source')) || 'typed';
+  $('selSpacing').value = (await store.getMeta('spacing')) || 'strict';
+  $('selIdle').value = String((await store.getMeta('idle')) || 4);
+  $('selNext').value = (await store.getMeta('next')) || 'auto';
+  $('selScreen').value = (await store.getMeta('screen')) || 'hide';
+  sourceChanged();
   sizes.groups = (await store.getMeta('size')) || 'mixed';
   sizes.phrases = (await store.getMeta('phraseLen')) || '2';
   const own = await store.getMeta('userText');
@@ -364,6 +383,7 @@ async function prepare() {
   preparing = true;
   try { await ensureKeyer(); } finally { preparing = false; }
   needKeyer = false;
+  await applyPractice();
   if (!play.length) throw new Error('Your Koch lesson has no characters the trainer can use yet.');
   return play;
 }
@@ -394,9 +414,8 @@ $('btnConnect').onclick = async () => {
     const t = trace(await M32Link.openWebSerial());
     const dev = await link.connect(t);
     deviceFacts(dev);
-    if (!link.hasFeature('trainer-events')) {
-      connNote('This firmware (protocol ' + (dev.protocol || '?') + ') does not tell the trainer when the M32 has finished sounding. ' +
-               'The trainer needs protocol 1.6 or newer: please update the firmware.', true);
+    if (!link.hasFeature('trainer-events') || !link.hasFeature('cw/practice')) {
+      connNote('This firmware (protocol ' + (dev.protocol || '?') + ') is too old for the trainer: please update it.', true);
       await link.disconnect();
       return;
     }
@@ -487,6 +506,7 @@ link.on('activate', async (a) => {
 });
 function backInKeyer() {
   needKeyer = false;
+  applyPractice().catch((e) => setStatus(e.message));      // leaving the Keyer ended practice mode
   badge('Connected · CW Keyer', 'on');
   setStatus('Back in the CW Keyer. Press Enter to go on.');
 }
@@ -508,13 +528,94 @@ function makeSession(play) {
   });
   session.on('state', onState);
   session.on('result', onResult);
+  session.on('second', onSecondTry);
   session.on('notice', (n) => {
-    if (n === 'stopped') setStatus('A paddle stopped the M32 — playing it again.');
+    if (n === 'stopped') setStatus('A paddle stopped the M32 — playing it again.', true);
     else if (n === 'refused') setStatus('The M32 refused to play. Is it still in the CW Keyer?');
   });
   renderChars();
   renderTally();
 }
+
+// ---- how to answer: typed or keyed (M3c) -----------------------------------------
+
+let itemSource = 'typed';       // the source of the running item; a change applies from the next one
+let keyed = null;               // the running KeyedAnswer
+let noInput = 0;                // how often the item was sounded again because nothing was keyed
+
+for (let s = 2; s <= 10; s++) $('selIdle').insertAdjacentHTML('beforeend', '<option value="' + s + '">' + s + ' s</option>');
+$('selIdle').value = '4';
+
+const wordGapDits = () => ($('selSpacing').value === 'lenient' ? 12 : 6);
+
+// Never shorter than a word gap, or the answer would end between two words
+function idleMs() { return Math.max(1000 * $('selIdle').value, wordGapDits() * 1200 / (wpm || 20) + 1000); }
+
+// Session only, nothing is stored: only keyed characters reach us, the word gap above, no transmitter
+// Leniency is for the answer only: what the M32 sounds keeps a word space of 7 dits, the norm, whatever its
+// InterWord Spc says. The character spaces stay the learner's Interchar Spc until M4 brings spacing control.
+async function applyPractice() {
+  await link.command('put cw/practice/' + wordGapDits());
+  const { config } = await link.command('get config/Interchar Spc');
+  await link.command('put cw/spacing/' + config.value + '/7');
+  await link.command('put cw/display/' + ($('selScreen').value === 'hide' ? 'off' : 'on'));
+}
+
+function sourceChanged() {
+  const on = $('selSource').value === 'keyed';
+  show($('pairSpacing'), on);
+  show($('pairIdle'), on);
+  show($('pairNext'), on);
+  show($('keyedHint'), on);
+  $('keyedHint').textContent = 'A pause longer than ' + wordGapDits() + ' dits ends a word' +
+    ($('selSpacing').value === 'lenient' ? ', so leave more than that between the words of a phrase; in a group or a single word it does not count.' : '.') +
+    ' The answer ends by itself, or press Enter. The error sign or an undecodable character deletes the last word, a second one right after it starts over. After a wrong answer you hear it again and can key it once more; that try does not count. Keyed answers do not move your boxes.' +
+    ($('selNext').value === 'auto' ? ' The next item follows by itself; Esc pauses.' : '');
+}
+
+$('selSource').onchange = async () => { sourceChanged(); await store.setMeta('source', $('selSource').value); };
+$('selSpacing').onchange = async () => {
+  sourceChanged();
+  if (link.state === 'ready') applyPractice().catch((e) => setStatus(e.message));
+  await store.setMeta('spacing', $('selSpacing').value);
+};
+$('selIdle').onchange = async () => { await store.setMeta('idle', +$('selIdle').value); };
+$('selScreen').onchange = async () => {
+  if (link.state === 'ready') applyPractice().catch((e) => setStatus(e.message));
+  await store.setMeta('screen', $('selScreen').value);
+};
+$('selNext').onchange = async () => { sourceChanged(); await store.setMeta('next', $('selNext').value); };
+
+link.on('text', (it) => {
+  if (!keyed || !session || (session.state !== 'answering' && session.state !== 'second-try')) return;
+  for (const t of keyed.feed(it.text, it.t)) if (t !== ' ') session.key(t, it.t);
+  $('answer').value = dispText(keyed.text);
+});
+
+function finishSecondTry() {
+  const k = keyed;
+  keyed = null;
+  if (k) session.secondTry(k.answer($('selSpacing').value));
+}
+
+setInterval(() => {
+  if (!keyed || !session) return;
+  const second = session.state === 'second-try';
+  if (!second && session.state !== 'answering') return;
+  const end = keyed.check(performance.now());
+  if (!end) return;
+  if (second) {
+    if (end !== 'start') { finishSecondTry(); return; }
+    keyed = null;               // nothing keyed: no further prompting, Enter goes on
+    session.secondTry(null);
+    return;
+  }
+  if (end !== 'start') { check(); return; }
+  if (++noInput === 1) { session.playAgain(); return; }
+  keyed = null;
+  session.pause();
+  setStatus('Paused: nothing was keyed. Press Enter to go on.');
+}, 100);
 
 // ---- what to practise: Groups / Words / Phrases (M3b) ---------------------------
 
@@ -639,19 +740,68 @@ function enablePractice(on) {
 
 function onState(s) {
   const ans = $('answer');
+  clearNext();
   $('btnReplay').disabled = !(s === 'answering' && session.item && session.item.replays < session.helpLimit);
   $('btnReplay').textContent = 'Replay' + (session.item && s === 'answering' ? ' (' + (session.helpLimit - session.item.replays) + ' left)' : '');
   if (s === 'playing') { setStatus('Listen…', true); $('btnGo').textContent = 'Check'; ans.focus(); }
-  else if (s === 'answering') { setStatus('Type what you heard, then Enter.'); $('btnGo').textContent = 'Check'; ans.focus(); }
+  else if (s === 'answering') {
+    if (itemSource === 'keyed') {
+      if (!keyed) keyed = new E.KeyedAnswer(session.item.text, { idleMs: idleMs() });
+      keyed.start(performance.now());
+      setStatus('Key what you heard.');
+    } else setStatus('Type what you heard, then Enter.');
+    $('btnGo').textContent = 'Check';
+    ans.focus();
+  }
   else if (s === 'feedback-playing') { $('btnGo').textContent = 'Next'; }
-  else if (s === 'feedback') {
-    setStatus('Press Enter for the next one.', true);
-    say((resultSpeech ? resultSpeech + ' ' : '') + 'Press Enter for the next one.');
+  else if (s === 'second-try') {
+    keyed = new E.KeyedAnswer(session.item.text, { idleMs: idleMs() });
+    keyed.start(performance.now());
+    ans.value = '';
+    setStatus('Key it again. This try does not count.', true);
+    say((resultSpeech ? resultSpeech + ' ' : '') + 'Key it again.');
     resultSpeech = '';
     $('btnGo').textContent = 'Next';
   }
+  else if (s === 'feedback') {
+    const auto = autoNext();
+    setStatus(auto ? 'Next one coming…' : 'Press Enter for the next one.', true);
+    say((resultSpeech ? resultSpeech + ' ' : '') + (auto ? '' : 'Press Enter for the next one.'));
+    resultSpeech = '';
+    $('btnGo').textContent = 'Next';
+    if (auto) pendingGap = AFTER_TRY_MS;
+  }
   else if (s === 'idle') { $('btnGo').textContent = 'Next'; }
   else if (s === 'paused') { $('btnGo').textContent = 'Go on'; if (link.state === 'ready' && !needKeyer) setStatus('Paused. Press Enter to go on.'); }
+  if (pendingGap && (s === 'idle' || s === 'feedback')) scheduleNext();
+  pendingGap = 0;
+}
+
+// Keyed answers go on by themselves, as the Echo Trainer does: the hand is on the paddle, not on the keyboard.
+// The page cannot tell when a screen reader has finished, so "Next item" can be set to Press Enter.
+const RIGHT_GAP_MS = 2000;      // after a right answer
+const AFTER_TRY_MS = 3000;      // after a second try: there is a correction to read
+let pendingGap = 0;
+let nextTimer = null;
+
+function autoNext() { return itemSource === 'keyed' && $('selNext').value === 'auto'; }
+
+function clearNext() {
+  if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
+}
+
+function scheduleNext() {
+  clearNext();
+  nextTimer = setTimeout(() => {
+    nextTimer = null;
+    if (!session || link.state !== 'ready' || needKeyer || (session.state !== 'idle' && session.state !== 'feedback')) return;
+    // changed the setting while waiting, or busy in a menu or a text box: do not take the focus away
+    if (!autoNext() || /^(SELECT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)) {
+      setStatus('Press Enter for the next one.');
+      return;
+    }
+    go();
+  }, pendingGap);
 }
 
 // Moving the focus makes a screen reader read the field out, so when that happens the sound
@@ -679,14 +829,16 @@ function startNext() {
 
 async function go() {
   if (!session) return;
+  clearNext();
   const s = session.state;
   if (s === 'answering') return check();
   if (s === 'playing') { setStatus('Still sounding — answer when it has finished.', true); return; }
+  if (s === 'second-try' && keyed && keyed.count) return finishSecondTry();    // with nothing keyed, Enter goes on
   if (s === 'paused') {
     if (link.state !== 'ready') return;
     if (needKeyer) {
       preparing = true;
-      try { await ensureKeyer(); needKeyer = false; badge('Connected · CW Keyer', 'on'); }
+      try { await ensureKeyer(); await applyPractice(); needKeyer = false; badge('Connected · CW Keyer', 'on'); }
       catch (e) { setStatus(e.message); return; }
       finally { preparing = false; }
     }
@@ -700,22 +852,36 @@ async function go() {
   $('answer').value = '';
   $('feedback').innerHTML = '';
   resultSpeech = '';
+  itemSource = $('selSource').value;
+  keyed = null;
+  noInput = 0;
+  $('answer').readOnly = itemSource === 'keyed';
   afterFocus(startNext);
 }
 
 async function check() {
+  if (itemSource === 'keyed') {
+    const k = keyed;
+    keyed = null;               // the page's clock must not finish it a second time
+    if (k) await session.submit(k.answer($('selSpacing').value), performance.now(),
+                                { corrections: k.corrections, spacing: $('selSpacing').value });
+    return;
+  }
   const a = await session.submit($('answer').value, performance.now());
   if (!a) setStatus('Still sounding — answer when it has finished.', true);
 }
 
 function onResult({ attempt, score }) {
   const exp = E.tokenize(score.expected);
-  const helpedNote = attempt.helped ? 'You used a replay, so this one does not move a box.' : '';
+  const helpedNote = attempt.helped && attempt.source !== 'keyed' ? 'You used a replay, so this one does not move a box.' : '';
+  const verb = attempt.source === 'keyed' ? 'keyed' : 'typed';
   let html = '';
   if (score.perfect) {
     html = '<div class="diff"><span class="ok">' + esc(dispText(score.expected)) + '</span></div><div>Right.</div>';
-    setStatus('Right! Press Enter for the next one.', true);
-    say('Right! ' + (helpedNote ? helpedNote + ' ' : '') + 'Press Enter for the next one.');
+    const auto = attempt.source === 'keyed' && autoNext();
+    setStatus(auto ? 'Right!' : 'Right! Press Enter for the next one.', true);
+    say('Right! ' + (helpedNote ? helpedNote + ' ' : '') + (auto ? '' : 'Press Enter for the next one.'));
+    if (auto) pendingGap = RIGHT_GAP_MS;
   } else {
     // the expected text, each character marked by what the scorer made of it
     let k = 0, line = '';
@@ -727,11 +893,11 @@ function onResult({ attempt, score }) {
       line += '<span class="' + cls + '"' + title + '>' + esc(disp(t)) + '</span>';
     }
     html = '<div class="diff">' + line + '</div>' +
-           '<div>It was <b class="mono">' + esc(dispText(score.expected)) + '</b>; you typed <b class="mono">' +
+           '<div>It was <b class="mono">' + esc(dispText(score.expected)) + '</b>; you ' + verb + ' <b class="mono">' +
            esc(score.answer ? dispText(score.answer) : 'nothing') + '</b>. Listen again — it comes back in a while.</div>' +
-           '<div class="sr">It was ' + esc(spell(score.expected)) + '. You typed ' + esc(score.answer ? spell(score.answer) : 'nothing') + '.</div>';
+           '<div class="sr">It was ' + esc(spell(score.expected)) + '. You ' + verb + ' ' + esc(score.answer ? spell(score.answer) : 'nothing') + '.</div>';
     setStatus('Not quite. Listen once more.', true);
-    resultSpeech = 'It was ' + spell(score.expected) + '. You typed ' + (score.answer ? spell(score.answer) : 'nothing') + '.' +
+    resultSpeech = 'It was ' + spell(score.expected) + '. You ' + verb + ' ' + (score.answer ? spell(score.answer) : 'nothing') + '.' +
                    (helpedNote ? ' ' + helpedNote : '');
   }
   if (helpedNote) html += '<div class="keys">' + helpedNote + '</div>';
@@ -742,11 +908,19 @@ function onResult({ attempt, score }) {
   renderLadder();
 }
 
+function onSecondTry({ score }) {
+  const said = score.answer ? dispText(score.answer) : 'nothing';
+  $('feedback').insertAdjacentHTML('beforeend', score.perfect ? '<div><b>Second try: right.</b></div>'
+    : '<div>Second try: you keyed <b class="mono">' + esc(said) + '</b>.</div>' +
+      '<div class="sr">Second try: you keyed ' + esc(score.answer ? spell(score.answer) : 'nothing') + '.</div>');
+  resultSpeech = score.perfect ? 'Second try: right.' : 'Second try: you keyed ' + (score.answer ? spell(score.answer) : 'nothing') + '.';
+}
+
 function renderTally() {
   if (!session) return;
-  const t = session.tally;
-  $('tally').textContent = t.items ? 'This session: ' + t.items + ' items, ' + t.perfect + ' right, ' +
-    Math.round(100 * t.charsRight / Math.max(1, t.chars)) + ' % of characters.' : '';
+  const part = (name, t) => (t.items ? name + t.items + ' items, ' + t.perfect + ' right, ' +
+    Math.round(100 * t.charsRight / Math.max(1, t.chars)) + ' % of characters.' : '');
+  $('tally').textContent = [part('This session: ', session.tally), part('Keyed this session: ', session.keyedTally)].filter(Boolean).join(' ');
 }
 
 function renderChars() {
@@ -760,7 +934,8 @@ function renderChars() {
             '<td class="pips" aria-label="box ' + r.box + ' of 5">' + pips + '</td>' +
             '<td>' + r.attempts + '</td>' +
             '<td>' + (r.accuracy == null ? '–' : Math.round(100 * r.accuracy) + ' %') + '</td>' +
-            '<td>' + (r.medianLatency == null ? '–' : (r.medianLatency / 1000).toFixed(1) + ' s') + '</td></tr>';
+            '<td>' + (r.medianLatency == null ? '–' : (r.medianLatency / 1000).toFixed(1) + ' s') + '</td>' +
+            '<td>' + (r.keyed.attempts ? Math.round(100 * r.keyed.correct / r.keyed.attempts) + ' % of ' + r.keyed.attempts : '–') + '</td></tr>';
   }
   $('charRows').innerHTML = rows;
   const conf = mastery.confusionList(6).filter((c) => lessonList.indexOf(c.expected) >= 0);

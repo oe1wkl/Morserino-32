@@ -144,8 +144,8 @@ reads goes untested).
    or keyed, §4b); host records *expected, answer, correct, first-input latency, total time* and the raw
    per-keystroke / per-character arrival times (so metrics can be redefined later without losing data);
    replay/feedback policy decided (4c).
-4. **Speed:** character speed via `PUT control/speed`, Farnsworth via `PUT config/Interchar Spc` and
-   `InterWord Spc`. Defaults adapted from Head Copy (MIT): fixed character speed, effective speed ±1 per
+4. **Speed:** character speed via `PUT control/speed`, Farnsworth via `PUT cw/spacing` (session only, added
+   2026-11-04; `PUT config` would write NVS and leave the learner's spacing changed after a crash). Defaults adapted from Head Copy (MIT): fixed character speed, effective speed ±1 per
    session. *Whether config changes take effect immediately inside the Keyer is an open bench question.*
 5. **Mastery model, per character (decision 4a):** Leitner box 1–5; promote on ≥ 3 attempts since the last
    box change and ≥ 90 % correct over the last 10; a miss drops two boxes; confusion pairs recorded.
@@ -323,7 +323,7 @@ first release; the engine is built so that item kinds and answer sources are plu
    character of the lesson counts double until it reaches box 2.
    **4c — unscored replay after a miss.** The page shows the correct text and plays the item once more;
    that replay is not scored. The missed item returns after ≈ 4 other items and that attempt is scored
-   normally. Replay *before* answering is help (§4b): counted, 1 per item by default, excluded from
+   normally. A keyed answer may then be keyed once more, unscored (Willi, 2026-11-04). Replay *before* answering is help (§4b): counted, 1 per item by default, excluded from
    promotion.
    **4d — lesson advance offered, never automatic,** when every character of the lesson is in box ≥ 3;
    withdrawn if one drops back. The click does `PUT kochlesson/n+1` (changes the device's stored lesson
@@ -380,6 +380,14 @@ first release; the engine is built so that item kinds and answer sources are plu
     word; a second `<err>` right after it restarts the whole answer. Both `<err>` and `*` are accepted.
     Corrections do not change the final answer's score; their count is stored, and an answer that needed
     corrections does not count toward promotion.
+    **11a/11b — CHANGED (Willi, 2026-11-04, building M3c):** early finish counts the target's **characters**, not
+    words (a word count is reached at the first character of a group, and a pause would cut it off). The start timeout
+    is confirmed: 15 s, one replay, then pause. A paddle touch during the sound plays it again, as for typed answers.
+    **Word gaps:** a *Strict / Lenient* switch sets how long a keyed pause may be inside a word, 6 or 12 dits; a longer
+    pause is a word space. Strict: a break inside a group or word is an error. Lenient: spaces do not count in a group
+    or word. A phrase needs its word breaks in both, so in Lenient the words need more than 12 dits between them. The
+    sounded prompt is not affected. The trainer changes no preference: `PUT cw/practice` is session-only (this replaces
+    setting and restoring *Serial Output*, open item 3), and it also keeps the transmitter unkeyed.
 12. **Corpus.** **12a — DECIDED (Willi, 2026-10-29): tiered.** Tier A: word chains (2–8 real words) from
     Koch-filtered words, for early lessons; Tier B: plain-language phrases for the middle; Tier C: QSO lines
     from the QSO Bot templates, for late lessons; plus user files (C3) on top.
