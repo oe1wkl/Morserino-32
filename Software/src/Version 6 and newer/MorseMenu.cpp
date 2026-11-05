@@ -30,6 +30,7 @@
 extern volatile unsigned long lastForeignUsbRxMs;   // m32_v6.ino: non-protocol bytes or UART errors on USB
 extern boolean playCW;                 // m32_v6.ino: a cw/play or memory is sounding in the Keyer
 extern void stopPlayCw(boolean fromCommand);
+extern void endPractice();             // m32_v6.ino: PUT cw/practice and cw/spacing
 
 #ifdef CONFIG_PRACTICE_STATS
 #include "MorsePracticeStats.h"
@@ -497,6 +498,9 @@ void MorseMenu::menu_() {
    // when a Keyer mode is next entered - and a client waiting for its {"cw":{"event":"done"}} gets "stopped".
    if (playCW)
        stopPlayCw(false);
+   // Practice mode ends here too: the operator has taken over. Otherwise a session that died without a goodbye (a pulled cable)
+   // would leave a Keyer that looks normal but does not key the rig, until the next restart.
+   endPractice();
 #ifdef CONFIG_WINKEYER
    MorseWinKeyer::leave();                 // back from WinKeyer: the port returns to the M32 protocol
                                            // (115200 on the classic); no-op from any other mode

@@ -176,7 +176,7 @@ python3 firmware_tables.py
 ## Protocol 1.6 trainer events — `trainer_events.py`
 
 ```sh
-python3 trainer_events.py              # cw/done checks, about 30 s, no hands needed
+python3 trainer_events.py              # cw/done, cw/practice and cw/spacing checks, about 1-2 minutes, no hands needed
 python3 trainer_events.py --echo 120   # then 120 s of Echo Trainer: you key the answers
 ```
 

@@ -9,6 +9,11 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	Changes in protocol version 1.6 from version 1.5 (every build;
 	advertised as "trainer-events" in GET capabilities):
 
+	New commands: PUT cw/practice/<dits>, PUT cw/practice/off, a session-only
+	practice mode in the CW Keyer; PUT cw/spacing/<char>/<word>, PUT cw/spacing/off,
+	the spaces of what is sounded during it; and PUT cw/display/on, PUT cw/display/off,
+	whether that text appears on the screen. All advertised as "cw/practice".
+
 	New unsolicited objects (see "Events for practice programs"):
 
 	{"cw":{"event":"done","reason":"end"|"stopped"}} — the text a program
@@ -475,6 +480,7 @@ Only commands that some builds *lack* appear in "features"; everything else the 
 * `game/scores` — the game high-score commands (builds with the games, i.e. the M32 Pocket),
 * `stats/log` — the practice-statistics log (builds with practice statistics),
 * `kip` — the remote-keying commands `GET kip`, `PUT kip/psk` and `PUT kip/port` (protocol 1.5, builds with remote keying),
+* `cw/practice` — the practice mode, `PUT cw/practice`, `PUT cw/spacing` and `PUT cw/display` (protocol 1.6, present in every build),
 * `trainer-events` — the `cw` "done" and `trainer` "result" events (protocol 1.6, present in every build — listed, like `configs/details`, so that a program can test for the feature by name; see "Events for practice programs").
 
 A program written for 1.4 or later should call this once after `PUT device/protocol/on` instead of probing commands and reading error replies. Firmware older than 1.4 answers `GET capabilities` with an error — that itself identifies it as pre-1.4.
@@ -1029,6 +1035,32 @@ This is similar to the command above, but the text  string is repeated until sto
 `PUT cw/stop`							
 
 This will stop the CW player (it has the same effect as beginning to key manually while the commands `PUT cw/play` or `PUT cw/repeat` are active).
+
+`PUT cw/practice/<dits>`
+
+`PUT cw/practice/off`
+
+*(protocol version 1.6 — check for `cw/practice` in `GET capabilities`)* Practice mode, for a program that plays something and reads what the user keys in reply. While it is on, and only in CW Keyer mode:
+
+* the raw character stream carries the keyed characters only, whatever the "Serial Output" parameter says (the text played with `PUT cw/play` does not appear in it);
+* a keyed pause longer than about `<dits>` dit lengths (2 to 104) counts as a word space, whatever the "InterWord Spc" parameter says; the word gaps of the text being played do not change (for those, see `PUT cw/spacing`);
+* the external transmitter is never keyed, whatever the "Key ext TX" parameter says.
+
+Nothing is stored, and no parameter changes. Practice mode ends with `PUT cw/practice/off`, with `PUT device/protocol/off`, with any `PUT device/protocol/on`, when CW Keyer mode is left (by the user or with `PUT menu/stop`), and when the Morserino restarts. So a program that re-handshakes, or that comes back to CW Keyer mode, has to switch it on again. It also has no effect once a BLE client's session is gone. The reply is "ok", or an error for any other value.
+
+`PUT cw/spacing/<char>/<word>`
+
+`PUT cw/spacing/off`
+
+*(protocol version 1.6 — check for `cw/practice` in `GET capabilities`)* The spaces of what the Morserino sounds during practice mode, in dit lengths: `<char>` between characters (3 to 45, 3 is the norm) and `<word>` between words (6 to 105, 7 is the norm), in place of the "Interchar Spc" and "InterWord Spc" parameters. As with those parameters, a word space is never shorter than `<char>` + 4. How a keyed answer is read does not depend on them.
+
+It takes effect only while practice mode is on, and only for the text sounded after it. Nothing is stored, and no parameter changes. `PUT cw/spacing/off` goes back to the parameters; so does everything that ends practice mode. The reply is "ok", or an error for any other value.
+
+`PUT cw/display/off`
+
+`PUT cw/display/on`
+
+*(protocol version 1.6 — check for `cw/practice` in `GET capabilities`)* Whether the text being sounded during practice mode appears on the Morserino's screen. With `off`, a program can practise copying without the answer being on display; what the user keys is still shown. It takes effect only while practice mode is on, for the text sounded after it, and `on` is what everything that ends practice mode goes back to. Nothing is stored. The reply is "ok", or an error for any other value.
 
 Since protocol version 1.6 the Morserino tells the program when a text sent with `PUT cw/play`, `cw/repeat` or `cw/recall` has finished or was stopped, with `{"cw":{"event":"done",...}}` — see "Events for practice programs". (Before 1.6, a paddle touch that stopped the player sent an unrequested `{"ok":...}`; it no longer does.)
 
