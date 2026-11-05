@@ -395,6 +395,14 @@ def bench(report, m32, args):
             m32.command("PUT device/protocol/on")
             report.check(_near(_sounded("e e e e") - prefs, 0), "a new handshake ends cw/spacing",
                          "preferences %s dits" % prefs)
+            # PUT cw/display: what it does is on the screen (BENCH_M3 7.13c), here only that it takes the command and still plays
+            _send_expect_ok(m32, "PUT cw/practice/6")
+            _send_expect_ok(m32, "PUT cw/display/off")
+            _, _, _, done_at = _play_and_capture(m32, "paris", 6.0)
+            report.check(done_at is not None, "cw/display/off: it still plays, and done arrives")
+            _send_expect_ok(m32, "PUT cw/display/on")
+            report.check("error" in m32.command("PUT cw/display/maybe"), "cw/display/maybe is refused")
+
             # leaving the Keyer ends practice mode: the operator has taken over (and after a pulled cable nothing else would)
             serial_before = m32.get_config("Serial Output")
             try:

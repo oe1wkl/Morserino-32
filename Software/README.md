@@ -31,7 +31,7 @@
 
 #### Other Changes:
 * Serial protocol **version 1.6** (capability `trainer-events`): two new unsolicited objects for practice programs on a computer. `{"cw":{"event":"done","reason":"end"}}` (or `"stopped"`) tells a program that the text it sent with `PUT cw/play`, `cw/repeat` or `cw/recall` has finished sounding - at the end of its last element - or was stopped; `{"trainer":{"event":"result",...}}` reports each word the Echo Trainer evaluates, with the prompt, the answer, the verdict and, measured on the device, the time to the first paddle contact and the length of the answer. They are the base of the planned M32 Trainer. Everything from 1.5 keeps working unchanged.
-* Serial protocol 1.6 also has `PUT cw/practice` and `PUT cw/spacing` (capability `cw/practice`), a practice mode in the CW Keyer for such programs. While it is on, the character stream carries only what is keyed, and the program sets how long a keyed pause must be to count as a word space and how far apart the text it plays is spaced; the transmitter is not keyed. Nothing is stored, and the mode ends with the program's session or when you leave the CW Keyer.
+* Serial protocol 1.6 also has `PUT cw/practice`, `PUT cw/spacing` and `PUT cw/display` (capability `cw/practice`), a practice mode in the CW Keyer for such programs. While it is on, the character stream carries only what is keyed, and the program sets how long a keyed pause must be to count as a word space, how far apart the text it plays is spaced, and whether that text appears on the screen; the transmitter is not keyed. Nothing is stored, and the mode ends with the program's session or when you leave the CW Keyer.
 
 ### CHANGES V. 9.1
 

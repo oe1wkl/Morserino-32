@@ -206,6 +206,7 @@ uint8_t practiceWordGap = 0;        // protocol 1.6, PUT cw/practice/<dits>: a p
                                     // off. Session only, never stored; 0 = off. See practiceMode()
 uint8_t practiceCharSpace = 0, practiceWordSpace = 0;   // PUT cw/spacing/<char>/<word>: the spaces of what is sounded during practice,
                                     // in dits, instead of Interchar Spc and InterWord Spc. Never stored; 0 = as the preferences say
+boolean practiceHidePlayed = false; // PUT cw/display/off: what is sounded during practice does not appear on the screen. Never stored
 boolean practiceMode();
 void endPractice();
 #ifdef CONFIG_BLE_SERIAL
@@ -2951,7 +2952,7 @@ void dispGeneratedChar() {
         // into the serial/BLE character echo and, with the Bluetooth keyboard
         // active, type a Return on the host - a screen layout decision has no
         // business showing up there.
-        if (wordStart && (morseState == morseGenerator || morseState == loraTrx ||
+        if (wordStart && !practicePlayedHidden() && (morseState == morseGenerator || morseState == loraTrx ||
                           morseState == wifiTrx || playCW)) {
             int nextSpace = clearText.indexOf(' ');
             uint16_t wordLen = (uint16_t) ((nextSpace == -1) ? clearText.length() : nextSpace);
@@ -3293,6 +3294,8 @@ void displayDecodedMorse(String symbol, boolean keyed) {
 //// the next function is used to display GENERATED characters
 
 void displayGeneratedMorse(FONT_ATTRIB style, const String& s) {
+    if (practicePlayedHidden())
+        return;
 #ifdef CONFIG_TFT
     // M6: this is CW transcription — render it in the theme's Morse colour while
     // keeping the incoming(REGULAR)/outgoing(BOLD) weight. OLED stays mono.
@@ -4734,6 +4737,12 @@ boolean practiceMode() {
 
 void endPractice() {
     practiceWordGap = practiceCharSpace = practiceWordSpace = 0;
+    practiceHidePlayed = false;
+}
+
+// PUT cw/display/off: the program's copy practice would be pointless with the answer on the screen. What is keyed still shows.
+boolean practicePlayedHidden() {
+    return practiceHidePlayed && practiceMode();
 }
 
 // The word space of what is sounded: PUT cw/spacing during practice, the formula of updateTimings() for the same
@@ -6055,6 +6064,16 @@ void m32Put(String type, String token, String value) {                    /// PU
             practiceWordGap = dits;
           else
             return (MorseJSON::jsonError("INVALID CW PRACTICE VALUE " + value));
+          MorseJSON::jsonOK();
+      }
+
+      else if (token == "display") {
+          if (value.equalsIgnoreCase("on"))
+            practiceHidePlayed = false;
+          else if (value.equalsIgnoreCase("off"))
+            practiceHidePlayed = true;
+          else
+            return (MorseJSON::jsonError("INVALID CW DISPLAY VALUE " + value));
           MorseJSON::jsonOK();
       }
 
