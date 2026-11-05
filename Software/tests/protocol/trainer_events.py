@@ -223,8 +223,16 @@ def is_result(obj):
     return isinstance(obj, dict) and isinstance(obj.get("trainer"), dict) and obj["trainer"].get("event") == "result"
 
 
+def _ask(m32, text, key, timeout=3.0):
+    """A GET whose reply may come after what a mode sends by itself as it ends ({"activate":...}, {"menu":...})."""
+    reply = m32.command(text, timeout=timeout)
+    while key not in reply:
+        reply = json.loads(m32._read_object(timeout))
+    return reply
+
+
 def menu_number(m32, content):
-    for item in m32.command("GET menus", timeout=8.0)["menus"]:
+    for item in _ask(m32, "GET menus", "menus", 8.0)["menus"]:
         if item["content"] == content:
             return item["menu number"]
     raise AssertionError("menu %r not found" % content)
@@ -233,11 +241,10 @@ def menu_number(m32, content):
 def start_mode(m32, content):
     m32.command("PUT menu/stop")
     for _ in range(20):                             # a mode winding down refuses the start (NOT AT MENU)
-        if not m32.command("GET menu")["menu"]["active"]:
+        if not _ask(m32, "GET menu", "menu")["menu"]["active"]:
             break
         time.sleep(0.2)
-    # leaving a mode also sends a menu object of its own: the loop may have taken that for its reply,
-    # and the real reply must not be taken for the answer to GET menus
+    # the loop may have taken the menu object a mode sends as it ends for its reply: the real one still comes
     time.sleep(0.5)
     m32._buffer = ""
     m32._serial.reset_input_buffer()
