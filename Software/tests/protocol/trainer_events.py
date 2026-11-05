@@ -167,6 +167,16 @@ def _send_expect_ok(m32, text):
     return at
 
 
+def _refused(m32, text):
+    """True when the device answers this command with an error (m32_link raises those)."""
+    from m32_link import ProtocolError
+    try:
+        m32.command(text)
+    except ProtocolError:
+        return True
+    return False
+
+
 def _split_stream(buf):
     """Split raw serial text into (JSON object texts, everything outside them)."""
     from m32_link import extract_json_object
@@ -346,8 +356,7 @@ def bench(report, m32, args):
             objects, outside, ok_at, done_at = _play_and_capture(m32, "paris", 6.0)
             letters = "".join(ch for ch in outside.lower() if ch.isalpha())
             report.check("paris" in letters, "cw/practice off: the played text is back in the stream", "outside JSON: %r" % outside)
-            reply = m32.command("PUT cw/practice/1")
-            report.check("error" in reply, "cw/practice/1 is refused", reply)
+            report.check(_refused(m32, "PUT cw/practice/1"), "cw/practice/1 is refused")
             _send_expect_ok(m32, "PUT cw/practice/6")
             m32.command("PUT device/protocol/on")
             objects, outside, ok_at, done_at = _play_and_capture(m32, "paris", 6.0)
@@ -374,18 +383,18 @@ def bench(report, m32, args):
             words_norm, chars_norm = _sounded("e e e e"), _sounded("eeee")
             _send_expect_ok(m32, "PUT cw/spacing/3/25")
             words_long = _sounded("e e e e")
-            report.check(words_norm is not None and _near(words_long - words_norm, 54),
+            report.check(words_norm is not None and words_long is not None and _near(words_long - words_norm, 54),
                          "cw/spacing word space: 3 gaps of 7 -> 25 dits add about 54 dits",
                          "%s -> %s dits" % (words_norm, words_long))
             _send_expect_ok(m32, "PUT cw/spacing/13/25")
             chars_long = _sounded("eeee")
-            report.check(chars_norm is not None and _near(chars_long - chars_norm, 30),
+            report.check(chars_norm is not None and chars_long is not None and _near(chars_long - chars_norm, 30),
                          "cw/spacing character space: 3 gaps of 3 -> 13 dits add about 30 dits",
                          "%s -> %s dits" % (chars_norm, chars_long))
             report.check(m32.get_config("InterWord Spc") == word_before and m32.get_config("Interchar Spc") == char_before,
                          "cw/spacing leaves the stored spacing alone")
             for bad in ("2/7", "3/5", "3", "3/106", "46/7"):
-                report.check("error" in m32.command("PUT cw/spacing/%s" % bad), "cw/spacing/%s is refused" % bad)
+                report.check(_refused(m32, "PUT cw/spacing/%s" % bad), "cw/spacing/%s is refused" % bad)
             _send_expect_ok(m32, "PUT cw/spacing/3/25")
             _send_expect_ok(m32, "PUT cw/practice/off")
             _send_expect_ok(m32, "PUT cw/practice/6")
@@ -393,7 +402,8 @@ def bench(report, m32, args):
             prefs = _sounded("e e e e")
             _send_expect_ok(m32, "PUT cw/spacing/3/25")
             m32.command("PUT device/protocol/on")
-            report.check(_near(_sounded("e e e e") - prefs, 0), "a new handshake ends cw/spacing",
+            after = _sounded("e e e e")
+            report.check(prefs is not None and after is not None and _near(after - prefs, 0), "a new handshake ends cw/spacing",
                          "preferences %s dits" % prefs)
             # PUT cw/display: what it does is on the screen (BENCH_M3 7.13c), here only that it takes the command and still plays
             _send_expect_ok(m32, "PUT cw/practice/6")
@@ -401,7 +411,7 @@ def bench(report, m32, args):
             _, _, _, done_at = _play_and_capture(m32, "paris", 6.0)
             report.check(done_at is not None, "cw/display/off: it still plays, and done arrives")
             _send_expect_ok(m32, "PUT cw/display/on")
-            report.check("error" in m32.command("PUT cw/display/maybe"), "cw/display/maybe is refused")
+            report.check(_refused(m32, "PUT cw/display/maybe"), "cw/display/maybe is refused")
 
             # leaving the Keyer ends practice mode: the operator has taken over (and after a pulled cable nothing else would)
             serial_before = m32.get_config("Serial Output")
