@@ -1,4 +1,4 @@
-// gen_fixture.cpp -- runs the firmware's getRandomCall() (extract.py copies it out of m32_v6.ino)
+// gen_fixture.cpp -- runs the firmware's getRandomCall() and getRandomPrefix() (extract.py copies it out of m32_v6.ino)
 // with a deterministic random(): mulberry32, the M32 Trainer engine's generator, and
 // random(a, b) = a + floor(r * (b - a)). Writes ../trainer/fixtures/random_calls.json; the Node
 // test (../trainer/callsign.test.js) checks that the engine's randomCall() makes the same calls.
@@ -45,7 +45,7 @@ int main() {
     std::fprintf(f, "[\n");
     bool first = true;
     for (int len : lengths)
-      for (int cont = 0; cont <= 6; cont += 2)          // all, NA, AF, OC
+      for (int cont : {0, 2, 4, 6, 7})                // all, NA, AF, OC, VK/ZL
         for (int common = 0; common <= 1; common++)
           for (uint32_t seed = 1; seed <= 2; seed++) {
             MorsePreferences::pliste[posCallLength].value = len;
@@ -60,6 +60,19 @@ int main() {
                              lastGeneratedCallContinent, lastGeneratedCallCqZone);
             std::fprintf(f, "]}");
           }
+    // getRandomPrefix(): Length Calls does not apply; "prefix":1 marks these entries
+    for (int cont = 0; cont <= 7; cont++)
+      for (int common = 0; common <= 1; common++)
+        for (uint32_t seed = 1; seed <= 2; seed++) {
+            MorsePreferences::pliste[posCallContinent].value = cont;
+            MorsePreferences::pliste[posCallCommon].value = common;
+            rngState = seed;
+            std::fprintf(f, ",\n{\"prefix\":1,\"continentPref\":%d,\"common\":%d,\"seed\":%u,\"calls\":[", cont, common, seed);
+            for (int i = 0; i < 40; i++)
+                std::fprintf(f, "%s[\"%s\",%d,%d]", i ? "," : "", getRandomPrefix().c_str(),
+                             lastGeneratedCallContinent, lastGeneratedCallCqZone);
+            std::fprintf(f, "]}");
+        }
     std::fprintf(f, "\n]\n");
     std::fclose(f);
     std::printf("random_calls.json written\n");

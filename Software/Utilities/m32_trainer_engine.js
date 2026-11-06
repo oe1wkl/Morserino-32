@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-06c';
+const VERSION = '2026-11-06e';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -204,6 +204,7 @@ class Mastery {
     this.rules = Object.assign({}, RULES, rules || {});
     this.chars = new Map();
     this.confusions = new Map();      // "expected\u0000got" -> count
+    this.calls = { call: newCallStats(), prefix: newCallStats() };   // M4b: their own tally
   }
 
   static fromAttempts(attempts, rules) {
@@ -224,6 +225,21 @@ class Mastery {
 
   apply(a) {
     if (a.scored === false || !Array.isArray(a.perChar)) return;
+    if (CALL_KINDS.indexOf(a.kind) >= 0) {   // M4b: call signs and prefixes move no box and are no confusion
+      const st = this.calls[a.kind];
+      const len = String(a.expected || '').length;
+      const bl = st.byLength.get(len) || { items: 0, perfect: 0 };
+      st.items++; bl.items++;
+      if (a.perfect) { st.perfect++; bl.perfect++; }
+      st.byLength.set(len, bl);
+      for (const c of a.perChar) {
+        const m = st.chars.get(c.expected) || { attempts: 0, missed: 0 };
+        m.attempts++;
+        if (!c.ok) m.missed++;
+        st.chars.set(c.expected, m);
+      }
+      return;
+    }
     if ((a.source || 'typed') !== 'typed') {
       for (const c of a.perChar) { const s = this._get(c.expected); s.keyed.attempts++; if (c.ok) s.keyed.correct++; }
       return;
@@ -284,6 +300,19 @@ class Mastery {
   }
 }
 
+const CALL_KINDS = ['call', 'prefix'];
+function newCallStats() { return { items: 0, perfect: 0, byLength: new Map(), chars: new Map() }; }
+
+// The call or prefix tally for the stats view: {items, perfect, byLength: [{length, items, perfect}],
+// missed: [{ch, missed, attempts}] most missed first}
+function callSummary(st, limit) {
+  const byLength = [...st.byLength].map(([length, v]) => ({ length, items: v.items, perfect: v.perfect }))
+    .sort((x, y) => x.length - y.length);
+  const missed = [...st.chars].filter(([, v]) => v.missed > 0).map(([ch, v]) => ({ ch, missed: v.missed, attempts: v.attempts }))
+    .sort((x, y) => y.missed - x.missed || y.missed / y.attempts - x.missed / x.attempts || (x.ch < y.ch ? -1 : 1));
+  return { items: st.items, perfect: st.perfect, byLength, missed: limit ? missed.slice(0, limit) : missed };
+}
+
 function median(xs) {
   if (!xs || !xs.length) return null;
   const s = xs.slice().sort((a, b) => a - b);
@@ -324,12 +353,16 @@ class Scheduler {
     this.length = opts.length || 2;
     this.tier = opts.tier || 'mixed';
     this.corpus = opts.corpus || null;
+    // M4b: 'calls' and 'prefixes' -- the firmware's generators with the page's Length Calls,
+    // Calls Region and Call Prefixes ({maxLength, region, commonOnly}); always all characters.
+    this.callOpts = opts.callOpts || { maxLength: 0, region: 0, commonOnly: true };
     this.recent = [];                          // texts of the last RECENT items, not drawn again
   }
 
   setChars(chars, newest) {
     if (newest != null) this.newest = newest;
-    this.chars = chars.slice(); this.retries = this.retries.filter((r) => tokenize(r.text).every((t) => chars.indexOf(t) >= 0));
+    this.chars = chars.slice();
+    this.retries = this.retries.filter((r) => CALL_KINDS.indexOf(r.kind) >= 0 || tokenize(r.text).every((t) => chars.indexOf(t) >= 0));
   }
 
   // Draw weight = 6 - box; the newest character counts double until it reaches box 2.
@@ -355,7 +388,7 @@ class Scheduler {
     return this.chars[this.chars.length - 1];
   }
 
-  // -> {kind: 'group'|'word'|'phrase', tier: null|'A'|'B'|'C'|'U', text, retry}
+  // -> {kind: 'group'|'word'|'phrase'|'call'|'prefix', tier: null|'A'|'B'|'C'|'U', text, retry}
   next() {
     for (const r of this.retries) r.wait--;
     const due = this.retries.findIndex((r) => r.wait <= 0 && this.fits(r));
@@ -363,9 +396,12 @@ class Scheduler {
       const r = this.retries.splice(due, 1)[0];
       return { kind: r.kind || 'group', tier: r.tier || null, n: r.n, text: r.text, retry: true };
     }
-    if (!this.chars.length) throw new Error('No characters to practise');
     let item;
-    if (this.mode === 'groups') {
+    if (this.mode === 'calls' || this.mode === 'prefixes') {
+      item = this._call();
+    } else if (!this.chars.length) {
+      throw new Error('No characters to practise');
+    } else if (this.mode === 'groups') {
       const n = this.groupSize();
       let text = '';
       for (let i = 0; i < n; i++) text += this.pickChar();
@@ -385,6 +421,19 @@ class Scheduler {
     this.recent.push(item.text);
     if (this.recent.length > RECENT) this.recent.shift();
     return Object.assign(item, { retry: false });
+  }
+
+  // A call sign or prefix, not one of the last RECENT items if a few draws can avoid it.
+  _call() {
+    const prefixes = (this.corpus && this.corpus.prefixes) || [];
+    if (!prefixes.length) throw new NoItemsError(this.mode);
+    const opts = Object.assign({}, this.callOpts, { rng: this.rng });
+    let text;
+    for (let i = 0; i < 8; i++) {
+      text = this.mode === 'calls' ? randomCall(prefixes, opts).call : randomPrefix(prefixes, opts).prefix;
+      if (this.recent.indexOf(text) < 0) break;
+    }
+    return { kind: this.mode === 'calls' ? 'call' : 'prefix', tier: null, text };
   }
 
   // What can be drawn now: {words, count: {A, B, C, U} at this length, eligible: tiers with >= 10}
@@ -446,6 +495,8 @@ class Scheduler {
     const kind = r.kind || 'group';
     if (this.mode === 'groups') return kind === 'group' && (this.size === 'mixed' || tokenize(r.text).length === this.size);
     if (this.mode === 'words') return kind === 'word';
+    if (this.mode === 'calls') return kind === 'call';
+    if (this.mode === 'prefixes') return kind === 'prefix';
     return kind === 'phrase' && r.n === this.length && (this.tier === 'mixed' || r.tier === this.tier);
   }
 }
@@ -460,37 +511,61 @@ class NoItemsError extends Error {
 
 // ---- call signs ------------------------------------------------------------
 
-// The firmware's getRandomCall() (m32_v6.ino, with buildRandomPrefix() and pickAreaDigit()), for
-// tier C's [CALL] slots. `prefixes` is the table from callsign_prefixes.h as the corpus carries it:
+// The firmware's getRandomCall() and getRandomPrefix() (m32_v6.ino, with buildRandomPrefix() and
+// pickAreaDigit()), for the Call signs and Prefixes kinds (M4b) and tier C's [CALL] slots.
+// `prefixes` is the table from callsign_prefixes.h as the corpus carries it:
 // [prefix, continent mask, CQ zone, weight, common (0/1), call-area digit weights], in table order;
 // the digit weights are ten hex digits, one per digit 0-9 (all 0: the prefix takes no digit, as 3B8
 // or I1). random(a, b) is a + floor(rng() * (b - a)), drawn in the firmware's order, so without
 // `active` this makes exactly the firmware's choices for the same random numbers
-// (Software/tests/callsign_gen/ checks it against the C++). Left out: the VK/ZL-only generator (the
-// "VK/ZL" region setting), which the trainer does not offer.
-//   opts.maxLength   the firmware's Call Length value: 0 = any, 1 = 3 characters, n = prefix <= n
-//   opts.continents  mask (default all); ignored for maxLength 1, as the firmware does
-//   opts.commonOnly  only prefixes flagged common (heard often in real call data), default true
+// (Software/tests/callsign_gen/ checks it against the C++), the VK/ZL generator included.
+//   opts.maxLength   the firmware's Length Calls value: 0 = any, 1 = 3 characters, n = prefix <= n
+//   opts.region      the firmware's Calls Region value: 0 all, 1 EU, 2 NA, 3 SA, 4 AF, 5 AS, 6 OC,
+//                    7 VK/ZL (its own generator); ignored for maxLength 1, as the firmware does
+//   opts.continents  a continent mask instead of `region` (default all)
+//   opts.commonOnly  only prefixes flagged common (Call Prefixes = Common only), default true
 //   opts.active      the learner's characters (an array or Set): the call uses only those --
 //                    prefixes made of them, a call-area digit among them (by the same weights) and
 //                    suffix letters drawn from them. Returns null when no call can be made.
-// -> {call, continent, zone}
-const CONT_ALL = 0x7F;
+// -> {call, continent, zone}; randomPrefix() -> {prefix, continent, zone}
+const CONT_ALL = 0x7F, CONT_OC = 0x20;
+const REGION_MASKS = [CONT_ALL, 0x01, 0x02, 0x04, 0x08, 0x10, CONT_OC];   // getContinentMask()
+const REGION_VKZL = 7;
 const NO_AREA_DIGIT = '0000000000';
-function randomCall(prefixes, opts) {
+
+function callContext(opts) {
   opts = opts || {};
   const rng = opts.rng || Math.random;
-  const random = (a, b) => a + Math.floor(rng() * (b - a));
-  const maxLength = opts.maxLength | 0;
-  const contMask = maxLength !== 1 ? (opts.continents == null ? CONT_ALL : opts.continents) : CONT_ALL;
-  const commonOnly = opts.commonOnly !== false;
-  const maxPfxLen = maxLength > 0 ? maxLength : 99;
   const act = opts.active ? new Set(opts.active) : null;
-  const digits = act ? '0123456789'.split('').filter((c) => act.has(c)) : null;
-  const letters = act ? 'abcdefghijklmnopqrstuvwxyz'.split('').filter((c) => act.has(c)) : null;
-  const digit = () => (act ? digits[random(0, digits.length)] : String.fromCharCode(48 + random(0, 10)));
-  const letter = () => (act ? letters[random(0, letters.length)] : String.fromCharCode(97 + random(0, 26)));
-  if (act && !letters.length) return null;
+  const maxLength = opts.maxLength | 0;
+  const vkzl = opts.region === REGION_VKZL && maxLength !== 1;
+  let contMask = CONT_ALL;
+  if (maxLength !== 1)
+    contMask = vkzl ? CONT_OC : opts.region != null ? (REGION_MASKS[opts.region] || CONT_ALL)
+             : opts.continents == null ? CONT_ALL : opts.continents;
+  const c = {
+    random: (a, b) => a + Math.floor(rng() * (b - a)),
+    act, maxLength, contMask, vkzl, commonOnly: opts.commonOnly !== false,
+    digits: act ? '0123456789'.split('').filter((ch) => act.has(ch)) : null,
+    letters: act ? 'abcdefghijklmnopqrstuvwxyz'.split('').filter((ch) => act.has(ch)) : null
+  };
+  c.digit = () => (act ? c.digits[c.random(0, c.digits.length)] : String.fromCharCode(48 + c.random(0, 10)));
+  c.letter = () => (act ? c.letters[c.random(0, c.letters.length)] : String.fromCharCode(97 + c.random(0, 26)));
+  return c;
+}
+
+// buildRandomPrefix(): the base prefix plus its call-area digit. -> {pfx, continent, zone} or null
+function buildPrefix(prefixes, c) {
+  const { random, act } = c;
+  if (c.vkzl) {                             // the VK/ZL generator: 85 % VK, 15 % ZL, by area weights
+    const isVK = random(0, 100) < 85;
+    const r = random(0, 100);
+    const area = isVK ? [1, 11, 31, 51, 66, 76, 81, 96, 99, 100].findIndex((x) => r < x)
+                      : [0, 35, 70, 90, 100].findIndex((x) => r < x);
+    const pfx = (isVK ? 'vk' : 'zl') + area;
+    if (act && ![...pfx].every((ch) => act.has(ch))) return null;
+    return { pfx, continent: CONT_OC, zone: isVK ? 29 : 32 };
+  }
   // The call-area digits a prefix can take, as [digit, weight]: those in use, and with `active`
   // only the learner's. [] for a prefix that takes none, and for one whose digits are all unlearned.
   const areaDigits = (row) => {
@@ -502,31 +577,42 @@ function randomCall(prefixes, opts) {
     return out;
   };
   const takesDigit = (row) => row[5] !== NO_AREA_DIGIT;
-
-  const ok = (row) => (row[1] & contMask) && (!commonOnly || row[4]) && row[0].length <= maxPfxLen &&
-    (!act || ([...row[0]].every((c) => act.has(c)) && (!takesDigit(row) || areaDigits(row).length > 0)));
+  const maxPfxLen = c.maxLength > 0 ? c.maxLength : 99;
+  const ok = (row) => (row[1] & c.contMask) && (!c.commonOnly || row[4]) && row[0].length <= maxPfxLen &&
+    (!act || ([...row[0]].every((ch) => act.has(ch)) && (!takesDigit(row) || areaDigits(row).length > 0)));
   let total = 0;
   for (const row of prefixes) if (ok(row)) total += row[3];
-  let call, continent = CONT_ALL, zone = 0;
   if (total === 0) {                        // the firmware's fallback: a letter and a digit
-    if (act && !digits.length) return null;
-    call = letter() + digit();
-  } else {
-    const pick = random(0, total);
-    let cum = 0, chosen = null;
-    for (const row of prefixes) {
-      if (!ok(row)) continue;
-      cum += row[3];
-      if (cum > pick) { chosen = row; break; }
-    }
-    call = chosen[0];
-    continent = chosen[1];
-    zone = chosen[2];
-    if (takesDigit(chosen)) {               // pickAreaDigit(): by the digit weights
-      const ad = areaDigits(chosen);
-      let r = random(0, ad.reduce((s, x) => s + x[1], 0));
-      for (const [d, w] of ad) if ((r -= w) < 0) { call += d; break; }
-    }
+    if (act && (!c.digits.length || !c.letters.length)) return null;
+    return { pfx: c.letter() + c.digit(), continent: CONT_ALL, zone: 0 };
+  }
+  const pick = random(0, total);
+  let cum = 0, chosen = null;
+  for (const row of prefixes) {
+    if (!ok(row)) continue;
+    cum += row[3];
+    if (cum > pick) { chosen = row; break; }
+  }
+  let pfx = chosen[0];
+  if (takesDigit(chosen)) {                 // pickAreaDigit(): by the digit weights
+    const ad = areaDigits(chosen);
+    let r = random(0, ad.reduce((sum, x) => sum + x[1], 0));
+    for (const [d, w] of ad) if ((r -= w) < 0) { pfx += d; break; }
+  }
+  return { pfx, continent: chosen[1], zone: chosen[2] };
+}
+
+function randomCall(prefixes, opts) {
+  const c = callContext(opts);
+  const { random, act, maxLength } = c;
+  if (act && !c.letters.length) return null;
+  const p = buildPrefix(prefixes, c);
+  if (!p) return null;
+  let call = p.pfx;
+  if (c.vkzl) {                             // VK/ZL: 30 % two suffix letters, 70 % three
+    let n = random(0, 10) < 3 ? 2 : 3;
+    while (n-- > 0) call += c.letter();
+    return { call, continent: p.continent, zone: p.zone };
   }
   const maxTotal = maxLength === 0 ? 10 : maxLength > 4 ? 6 : maxLength + 2;
   let suffLen = Math.max(1, Math.min(3, maxTotal - call.length));
@@ -534,12 +620,19 @@ function randomCall(prefixes, opts) {
     suffLen = random(1, 4);
     if (suffLen === 1 && random(0, 3) !== 0) suffLen = random(2, 4);
   }
-  while (suffLen-- > 0 && call.length < 12) call += letter();
+  while (suffLen-- > 0 && call.length < 12) call += c.letter();
   if (maxLength === 0 && random(0, 8) === 0) {
     const pm = random(0, 2) ? 'm' : 'p';
     if (!act || (act.has('/') && act.has(pm))) call += '/' + pm;
   }
-  return { call, continent, zone };
+  return { call, continent: p.continent, zone: p.zone };
+}
+
+// getRandomPrefix(): Calls Region and Call Prefixes apply, Length Calls does not.
+function randomPrefix(prefixes, opts) {
+  const c = callContext(Object.assign({}, opts, { maxLength: 0 }));
+  const p = buildPrefix(prefixes, c);
+  return p && { prefix: p.pfx, continent: p.continent, zone: p.zone };
 }
 
 // ---- the corpus (M3b) ----------------------------------------------------------
@@ -684,6 +777,7 @@ class Session {
     this.state = 'idle';
     this.item = null;
     this.tally = { items: 0, perfect: 0, chars: 0, charsRight: 0 };
+    this.callTally = { items: 0, perfect: 0, chars: 0, charsRight: 0 };   // M4b: calls and prefixes, typed or keyed
     this.keyedTally = { items: 0, perfect: 0, chars: 0, charsRight: 0 };   // keyed answers count apart
     this._listeners = new Map();
     this._gen = 0;              // bumps whenever a play becomes stale
@@ -793,7 +887,7 @@ class Session {
     if (keyed) attempt.spacing = keyed.spacing;
     await this.store.add(attempt);
     this.mastery.apply(attempt);
-    const tally = keyed ? this.keyedTally : this.tally;
+    const tally = CALL_KINDS.indexOf(it.kind) >= 0 ? this.callTally : keyed ? this.keyedTally : this.tally;
     tally.items++;
     if (s.perfect) tally.perfect++;
     tally.chars += s.charCount;
@@ -1061,6 +1155,11 @@ function parseExport(text) {
 // getWord() -- is skipped silently by generateCWword(), so the trainer must not ask for it.
 const M32_SOUNDS = 'abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+'.split('')
   .concat(['<as>', '<ka>', '<kn>', '<sk>', '<ve>', '<bk>', 'ä', 'ö', 'ü', 'ch', '(', ')', 'é', 'è', 'à', 'ç', 'ñ', 'å', 'æ', 'ø']);
+// "All characters" on the page: the M32's full standard set (its Koch order, as morserinoKochChars
+// in MorsePreferences.h, prosigns as GET kochlesson shows them) -- what the CW Generator's
+// Random "a9?<>" draws from. No national letters.
+const ALL_CHARS = 'mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-='.split('')
+  .concat(['<sk>', '+', '<as>', '<kn>', '<ka>', '<ve>', '<bk>', '@', ':']);
 function hasMorse(token) {
   return M32_SOUNDS.indexOf(token) >= 0;
 }
@@ -1115,7 +1214,7 @@ function farnsworthSpacing(wpm, effective) {
 return {
   VERSION, SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
-  Mastery, movesBoxes, median, mulberry32, randomCall, Corpus, ladderOffer, NoItemsError, Scheduler, Session, KeyedAnswer, newId,
-  MemoryStore, IdbStore, exportFile, parseExport, lessonChars, practiceChars, hasMorse, farnsworthSpacing
+  Mastery, movesBoxes, callSummary, median, mulberry32, randomCall, randomPrefix, Corpus, ladderOffer, NoItemsError, Scheduler, Session, KeyedAnswer, newId,
+  MemoryStore, IdbStore, exportFile, parseExport, lessonChars, practiceChars, hasMorse, ALL_CHARS, farnsworthSpacing
 };
 }));

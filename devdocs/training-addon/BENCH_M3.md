@@ -168,6 +168,26 @@ check Interchar Spc, InterWord Spc and the speed in the Config Tool before and a
 
 **Known limit (not a failure):** a Practice Set or custom set with *ch* plays and reads it as two letters, c and h.
 
+## 9. Call signs and prefixes (M4b)
+
+**No new firmware.** Page version **2026-11-06e** (reload with Shift). Before you start, note the M32's Length Calls,
+Calls Region and Call Prefixes (CW Generator preferences) and set them to something other than the defaults,
+e.g. 4 / Europe / Common only. Nothing in this section changes anything stored on the M32.
+
+| # | Do | Expect |
+|---|---|---|
+| 9.0 | Characters = Koch lesson (or Practice Set): open Practise | Call signs and Prefixes are greyed out |
+| 9.0a | Characters = **All characters**, connect, groups | Facts: "Characters: all 51"; no Koch sequence / Lesson pickers; the table lists all 51; groups use characters beyond your lesson; no "Go to lesson" offer |
+| 9.1 | Practise = Call signs (first connect with this page version) | Length Calls, Calls Region, Call Prefixes appear and show the M32's values; Group size and From disappear. The note: "Call signs as the M32 makes them, with the settings beside …" |
+| 9.2 | Change the three on the page; disconnect, reload, connect | The page keeps its own values (not the M32's again); the M32's settings are unchanged |
+| 9.3 | Practise some calls, typed: right and wrong ones | Calls as the M32's CW Generator makes them (length, region, common prefixes), also with characters beyond your lesson. A miss: shown, played again, and back after a few items |
+| 9.4 | Calls Region = VK/ZL | VK and ZL calls only (mostly VK), 2 or 3 suffix letters |
+| 9.5 | Practise = Prefixes | Prefixes like OE3, DL1, K4 (base + area digit, no suffix); Length Calls is hidden; Region and Call Prefixes apply (VK/ZL: VK2, ZL1 …) |
+| 9.6 | Answer = Keyed on the paddle, a few calls | Keyed answers work as for groups |
+| 9.7 | After some calls and prefixes, look at "Your characters" and "Call signs and prefixes" | The character boxes and counts did **not** change; the new section shows calls / prefixes copied, right, by length, most missed characters. The session line says "Calls and prefixes this session: …" |
+| 9.8 | Back to Groups | All-characters groups as before; a missed call waits until you choose Call signs again |
+| 9.9 | While on Call signs, switch Characters to Koch lesson | Practise goes back to Groups: "Call signs and prefixes need Characters = All characters. Back to groups. Practising your Koch lesson …" |
+
 ## Results
 
 *(fill in: device, browser, step, pass/fail, notes)*
@@ -197,3 +217,4 @@ check Interchar Spc, InterWord Spc and the speed in the Config Tool before and a
 | 2026-11-06 | — | — | 8.10 | deferred | to the next bench |
 | 2026-11-06 | Pocket | — | — | flashed | `pocketwroom` (standard) from master `ec59fe4` + the uncommitted `getWord()` fix, app only (0x10000), "Hash of data verified". For 8.12 |
 | 2026-11-06 | Pocket | not noted | 8.12–8.16 | pass | Reported by Willi as "Bench passed" after the flash, page 2026-11-06c. 8.11 (the page leaving out `\` on the old firmware) was overtaken by the flash; 8.10 still deferred; the classic not flashed with the fix |
+| 2026-11-06 | (not noted) | not noted | §9 (9.0–9.9) | pass | Reported by Willi as "all tests passed", page 2026-11-06e. Signs off the M4b defaults: typed and keyed answers, a missed call replayed and brought back; All characters also drives groups/words/phrases |

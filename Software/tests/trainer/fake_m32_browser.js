@@ -13,6 +13,7 @@
 //   fakeM32.knob(25)       the speed knob: the M32 sends the new speed by itself
 //   fakeM32.state.practice9 = ''   the Practice Set (raw codes; default 'kmrSé', S = <as>)
 //   fakeM32.state.custom = true    a custom set exists (Koch Sequence = Custom Chars is accepted)
+//   fakeM32.state.callLen / callRegion / callCommon   the M32's call settings (default 2 = 4, 1 = Europe, 1 = Common only)
 (function () {
   'use strict';
   const st = { session: false, keyer: false, lesson: 5, seq: 0, speed: 20, playing: null, plugged: true, transport: null, msPerChar: 250, log: [] };
@@ -44,6 +45,11 @@
       const n = +l.split('/')[1];
       if (!(n >= 1 && n <= chars().length)) return send({ error: { content: 'INVALID KOCH LESSON ' + l.split('/')[1] } });
       st.lesson = n; return send({ ok: { content: 'OK' } });
+    }
+    const CALL_CFG = { 'length calls': ['Length Calls', 'callLen', 2], 'calls region': ['Calls Region', 'callRegion', 1], 'call prefixes': ['Call Prefixes', 'callCommon', 1] };
+    if (l.startsWith('get config/') && CALL_CFG[l.slice(11)]) {   // M4b seeds the page from these (defaults: 4, Europe, Common only)
+      const [name, key, def] = CALL_CFG[l.slice(11)];
+      return send({ config: { name, value: st[key] != null ? st[key] : def } });
     }
     if (l === 'get config/koch sequence') return send({ config: { name: 'Koch Sequence', value: st.seq, minimum: 0, maximum: 4, isMapped: true, 'mapped values': SEQ_NAMES } });
     if (l.startsWith('put config/koch sequence/')) {      // Custom Chars without a set: OK, but it reverts to M32

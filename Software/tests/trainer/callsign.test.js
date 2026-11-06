@@ -12,13 +12,35 @@ const fixture = require('./fixtures/random_calls.json');
 const MASKS = [0x7F, 0x01, 0x02, 0x04, 0x08, 0x10, 0x20];      // getContinentMask(), prefs 0..6
 
 test('randomCall() makes the firmware\'s calls for the same random numbers', () => {
-  assert.ok(fixture.length >= 40);
-  for (const c of fixture) {
+  const calls = fixture.filter((c) => !c.prefix);
+  assert.ok(calls.length >= 40);
+  assert.ok(calls.some((c) => c.continentPref === 7), 'VK/ZL is in the fixture');
+  for (const c of calls) {
     const rng = E.mulberry32(c.seed);
-    const opts = { rng, maxLength: c.maxLength, continents: MASKS[c.continentPref], commonOnly: c.common === 1 };
+    const opts = { rng, maxLength: c.maxLength, region: c.continentPref, commonOnly: c.common === 1 };
     const got = c.calls.map(() => { const r = E.randomCall(corpus.prefixes, opts); return [r.call, r.continent, r.zone]; });
     assert.deepEqual(got, c.calls, JSON.stringify({ maxLength: c.maxLength, cont: c.continentPref, common: c.common, seed: c.seed }));
   }
+});
+
+test('the continent mask gives the same calls as the region (tier C passes a mask)', () => {
+  for (const c of fixture.filter((x) => !x.prefix && x.continentPref < 7)) {
+    const rng = E.mulberry32(c.seed);
+    const opts = { rng, maxLength: c.maxLength, continents: MASKS[c.continentPref], commonOnly: c.common === 1 };
+    assert.deepEqual(c.calls.map(() => E.randomCall(corpus.prefixes, opts).call), c.calls.map((x) => x[0]));
+  }
+});
+
+test('randomPrefix() makes the firmware\'s prefixes (getRandomPrefix), all regions incl. VK/ZL', () => {
+  const pf = fixture.filter((c) => c.prefix);
+  assert.equal(pf.length, 32);
+  for (const c of pf) {
+    const rng = E.mulberry32(c.seed);
+    const opts = { rng, region: c.continentPref, commonOnly: c.common === 1, maxLength: 3 };   // Length Calls is ignored
+    const got = c.calls.map(() => { const r = E.randomPrefix(corpus.prefixes, opts); return [r.prefix, r.continent, r.zone]; });
+    assert.deepEqual(got, c.calls, JSON.stringify({ cont: c.continentPref, common: c.common, seed: c.seed }));
+  }
+  for (const c of pf) for (const [p] of c.calls) assert.match(p, /^[a-z0-9]+$/, p);
 });
 
 test('with the learner\'s characters, a call uses only those, or there is none', () => {

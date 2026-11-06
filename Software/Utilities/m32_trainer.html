@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-06c"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-06c"></script>
+  <script src="m32_trainer_link.js?v=2026-11-06e"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-06e"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -110,7 +110,8 @@
     </div>
     <div class="row" style="margin-top:10px">
       <span class="pair"><label for="selChars">Characters</label>
-        <select id="selChars"><option value="koch">Koch lesson</option><option value="practice">Practice Set</option></select></span>
+        <select id="selChars"><option value="koch">Koch lesson</option><option value="practice">Practice Set</option>
+          <option value="all">All characters</option></select></span>
       <span class="pair" id="pairSeq"><label for="selSeq">Koch sequence</label>
         <select id="selSeq" disabled></select></span>
       <span class="pair" id="pairLesson"><label for="selLesson">Lesson</label>
@@ -118,6 +119,8 @@
       <span class="pair"><label for="selMode">Practise</label>
         <select id="selMode">
           <option value="groups">Groups</option><option value="words">Words</option><option value="phrases">Phrases</option>
+          <option value="calls" title="with Characters = All characters">Call signs</option>
+          <option value="prefixes" title="with Characters = All characters">Prefixes</option>
         </select></span>
       <span class="pair" id="pairSize"><label for="selSize" id="lblSize">Group size</label>
         <select id="selSize"></select></span>
@@ -126,6 +129,15 @@
           <option value="mixed">Mixed</option><option value="A">Word chains</option><option value="B">Plain language</option>
           <option value="C">QSO lines</option><option value="U">Your own phrases</option>
         </select></span>
+      <span class="pair" id="pairCallLen" hidden><label for="selCallLen">Length Calls</label>
+        <select id="selCallLen"><option value="0">Unlimited</option><option value="1">3</option><option value="2">4</option>
+          <option value="3">5</option><option value="4">6</option></select></span>
+      <span class="pair" id="pairRegion" hidden><label for="selRegion">Calls Region</label>
+        <select id="selRegion"><option value="0">All</option><option value="1">Europe</option><option value="2">N America</option>
+          <option value="3">S America</option><option value="4">Africa</option><option value="5">Asia</option>
+          <option value="6">Oceania</option><option value="7">VK/ZL</option></select></span>
+      <span class="pair" id="pairCommon" hidden><label for="selCommon">Call Prefixes</label>
+        <select id="selCommon"><option value="0">All</option><option value="1" selected>Common only</option></select></span>
     </div>
     <div class="row" style="margin-top:10px">
       <span class="pair"><label for="selEff">Effective speed</label>
@@ -183,6 +195,13 @@
     <div id="confusions" style="margin-top:12px;font-size:15px"></div>
   </section>
 
+  <!-- ── Call signs and prefixes (M4b) ── -->
+  <section class="box" aria-labelledby="hCalls" id="callsBox" hidden>
+    <h2 id="hCalls">Call signs and prefixes</h2>
+    <p style="font-size:15px;margin-bottom:10px">Counted on their own: they use all characters, so they move no box above.</p>
+    <div id="callStats" style="font-size:15px"></div>
+  </section>
+
   <!-- ── History ── -->
   <section class="box" aria-labelledby="hHist">
     <h2 id="hHist">Your history</h2>
@@ -201,7 +220,7 @@
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-06c';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-06e';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -223,7 +242,11 @@ let preparing = false;          // our own menu changes send menu events too
 
 function show(el, on) { el.hidden = !on; }
 const usePractice = () => $('selChars').value === 'practice';
-const setName = () => (usePractice() ? 'your Practice Set' : 'your lesson');
+const callMode = () => $('selMode').value === 'calls' || $('selMode').value === 'prefixes';
+const useKoch = () => $('selChars').value === 'koch';
+const useAll = () => $('selChars').value === 'all';
+const setName = () => (usePractice() ? 'your Practice Set' : useAll() ? 'all characters' : 'your lesson');
+const setOf = () => (usePractice() ? 'your Practice Set\'s' : useAll() ? 'the M32\'s' : 'your lesson\'s');   // "... use only <setOf> characters"
 function disp(token) { return token.toUpperCase(); }
 function dispText(text) { return E.tokenize(text).map((t) => (t === ' ' ? ' ' : disp(t))).join(''); }
 // for screen readers: "K M R"
@@ -266,9 +289,10 @@ async function openStore() {
   $('selNext').value = (await store.getMeta('next')) || 'auto';
   $('selScreen').value = (await store.getMeta('screen')) || 'hide';
   $('selChars').value = (await store.getMeta('chars')) || 'koch';
-  show($('pairSeq'), !usePractice()); show($('pairLesson'), !usePractice());
+  show($('pairSeq'), useKoch()); show($('pairLesson'), useKoch());
   $('selEff').value = String((await store.getMeta('eff')) || 0);
   sourceChanged();
+  for (const [id, key] of CALL_SETTINGS) { const v = await store.getMeta(key); if (v != null) $(id).value = String(v); }
   sizes.groups = (await store.getMeta('size')) || 'mixed';
   sizes.phrases = (await store.getMeta('phraseLen')) || '2';
   const own = await store.getMeta('userText');
@@ -290,6 +314,7 @@ async function loadCorpus() {
     for (const o of $('selMode').options) if (o.value !== 'groups') o.disabled = true;
     $('availNote').textContent = 'Words and phrases are not available: their list did not load (' + e.message + ').';
   }
+  modeOptions();
   modeChanged();
 }
 
@@ -349,7 +374,11 @@ async function readLesson() {
   let custom = false;
   try { custom = !!(await link.command('get customchars')).customchars.active; } catch (e) { /* older firmware: not shown */ }
   const dropped = [];                     // characters in the set the M32 has no Morse code for
-  if (usePractice()) {
+  if (useAll()) {
+    lessonList = E.ALL_CHARS.slice();
+    $('fLessonLbl').textContent = 'Characters';
+    $('fLesson').textContent = 'all ' + lessonList.length;
+  } else if (usePractice()) {
     const { practicechars } = await link.command('get practicechars');
     lessonList = E.practiceChars(practicechars, dropped);
     $('fLessonLbl').textContent = 'Practice Set';
@@ -367,7 +396,7 @@ async function readLesson() {
   $('prosignHint').textContent = ps.length
     ? 'Type a prosign in angle brackets, as the M32 shows it: ' + ps.map(disp).join(' ') + ' ([' + disp(ps[0]).slice(1, -1) + '] works too).'
     : '';
-  if (scheduler) scheduler.setChars(play, !usePractice());
+  if (scheduler) scheduler.setChars(play, useKoch());
   renderChars();
   renderAvailable();
   if (corpus && corpus.user.length) userInfo({ lines: $('userText').value.split(/\r?\n/).filter((l) => l.trim() && l.trim()[0] !== '#').length, kept: corpus.user.length });
@@ -389,9 +418,9 @@ async function readSequence() {
   sel.disabled = !sequence;
 }
 function fillLessonPicker() {
-  const koch = !usePractice() && lesson;
-  show($('pairSeq'), !usePractice());
-  show($('pairLesson'), !usePractice());
+  const koch = useKoch() && lesson;
+  show($('pairSeq'), useKoch());
+  show($('pairLesson'), useKoch());
   const sel = $('selLesson');
   sel.innerHTML = '';
   if (!koch) { sel.disabled = true; return; }
@@ -404,6 +433,29 @@ function lessonNow() {
   return 'Lesson ' + lesson.value + ' of ' + lesson.maximum + (lessonList.length ? '' : ': no characters the trainer can use') +
     '. Practising it from the next item.';
 }
+
+// M4b: Length Calls, Calls Region and Call Prefixes are the page's own (Willi, 2026-11-06), taken from the
+// M32 on the first connect and then kept in this browser; changing them never touches the M32.
+const CALL_SETTINGS = [['selCallLen', 'callLen', 'Length Calls'], ['selRegion', 'callRegion', 'Calls Region'],
+                       ['selCommon', 'callCommon', 'Call Prefixes']];
+async function seedCallSettings() {
+  if (await store.getMeta('callSeeded')) return;
+  try {
+    for (const [id, key, name] of CALL_SETTINGS) {
+      const { config } = await link.command('get config/' + name);
+      $(id).value = String(config.value);
+      await store.setMeta(key, config.value);
+    }
+    await store.setMeta('callSeeded', true);
+    callSettingsChanged();
+  } catch (e) { /* stays at the defaults; tried again on the next connect */ }
+}
+function callOpts() {
+  return { maxLength: +$('selCallLen').value, region: +$('selRegion').value, commonOnly: $('selCommon').value === '1' };
+}
+function callSettingsChanged() { if (scheduler) scheduler.callOpts = callOpts(); }
+for (const [id, key] of CALL_SETTINGS)
+  $(id).onchange = async () => { callSettingsChanged(); await store.setMeta(key, +$(id).value); };
 
 async function readSpeed() {
   try {
@@ -470,8 +522,9 @@ async function prepare() {
   try { await ensureKeyer(); } finally { preparing = false; }
   needKeyer = false;
   await applyPractice();
-  if (!play.length) throw new Error(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
-                                                  : 'Your Koch lesson has no characters the trainer can use yet.');
+  await seedCallSettings();
+  if (!play.length && !callMode()) throw new Error(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
+                                                                 : 'Your Koch lesson has no characters the trainer can use yet.');
   return play;
 }
 
@@ -602,8 +655,8 @@ link.installPageHide(window);
 // ---- practice ------------------------------------------------------------------
 
 function makeSession(play) {
-  scheduler = new E.Scheduler({ mastery, chars: play, newest: !usePractice(), corpus, mode: $('selMode').value,
-                               size: sizeValue('groups'), length: +sizes.phrases, tier: $('selTier').value });
+  scheduler = new E.Scheduler({ mastery, chars: play, newest: useKoch(), corpus, mode: $('selMode').value,
+                               size: sizeValue('groups'), length: +sizes.phrases, tier: $('selTier').value, callOpts: callOpts() });
   if (session) { scheduler.retries = session.scheduler.retries; }
   const player = { play: (text) => link.playCw(text), stop: () => link.stopCw() };
   session = new E.Session({
@@ -611,7 +664,7 @@ function makeSession(play) {
     clock: { now: () => performance.now(), wall: () => Date.now() },
     context: () => ({ device: link.device ? { hardware: link.device.hardware, firmware: link.device.firmware,
                                                protocol: link.device.protocol, edition: link.device.edition || null } : null,
-                      lesson: lesson && !usePractice() ? lesson.value : null, set: usePractice() ? 'practice' : 'koch',
+                      lesson: lesson && useKoch() ? lesson.value : null, set: $('selChars').value,
                       wpm, farnsworth: spacing ? Math.round(spacing.effective) : null })
   });
   session.on('state', onState);
@@ -687,12 +740,14 @@ $('selEff').onchange = async () => {
 };
 $('selChars').onchange = async () => {
   await store.setMeta('chars', $('selChars').value);
-  if (link.state !== 'ready') { show($('pairSeq'), !usePractice()); show($('pairLesson'), !usePractice()); renderAvailable(); return; }
+  const reset = modeOptions();
+  if (link.state !== 'ready') { show($('pairSeq'), useKoch()); show($('pairLesson'), useKoch()); renderAvailable(); return; }
   try {
     await readLesson();
     if (!lessonList.length) setStatus(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
                                                     : 'Your Koch lesson has no characters the trainer can use yet.');
-    else setStatus('Practising ' + (usePractice() ? 'your Practice Set' : 'your Koch lesson') + ' from the next item.');
+    else setStatus((reset ? BACK_TO_GROUPS + ' ' : '') +
+                   'Practising ' + (usePractice() ? 'your Practice Set' : useAll() ? 'all characters' : 'your Koch lesson') + ' from the next item.');
   } catch (e) { setStatus(e.message); }
 };
 
@@ -758,13 +813,32 @@ function fillSizes(mode) {
   sel.value = sizes[mode] || opts[0];
 }
 
+// Call signs and Prefixes only with Characters = All characters (Willi, 2026-11-06): they use every character.
+// Leaving All characters while practising them goes back to Groups.
+function modeOptions() {
+  const sel = $('selMode');
+  for (const o of sel.options) if (o.value === 'calls' || o.value === 'prefixes') o.disabled = !useAll() || !corpus;
+  if (sel.selectedOptions[0] && sel.selectedOptions[0].disabled) {
+    sel.value = 'groups';
+    if (store) store.setMeta('mode', 'groups');
+    modeChanged();
+    setStatus(BACK_TO_GROUPS);
+    return true;
+  }
+  return false;
+}
+const BACK_TO_GROUPS = 'Call signs and prefixes need Characters = All characters. Back to groups.';
+
 // The mode select changed (or was restored): relabel the size select, show the tier select
 function modeChanged() {
   const mode = $('selMode').value;
-  show($('pairSize'), mode !== 'words');
+  show($('pairSize'), mode === 'groups' || mode === 'phrases');
   show($('pairTier'), mode === 'phrases');
+  show($('pairCallLen'), mode === 'calls');
+  show($('pairRegion'), callMode());
+  show($('pairCommon'), callMode());
   $('lblSize').textContent = mode === 'phrases' ? 'Words per phrase' : 'Group size';
-  if (mode !== 'words') fillSizes(mode);
+  if (mode === 'groups' || mode === 'phrases') fillSizes(mode);
   if (scheduler) {
     scheduler.mode = mode;
     scheduler.size = sizeValue('groups');
@@ -790,11 +864,16 @@ const TIER_NAMES = { A: 'word chains', B: 'plain-language phrases', C: 'QSO line
 function renderAvailable() {
   const mode = $('selMode').value, note = $('availNote');
   if (!corpus) return;
+  if (callMode()) {
+    note.textContent = (mode === 'calls' ? 'Call signs' : 'Prefixes') + ' as the M32 makes them, with the settings beside' +
+      (mode === 'prefixes' ? ' (Length Calls does not apply to prefixes)' : '') + '. They have their own tally and move no box.';
+    return;
+  }
   if (mode === 'groups' || !lessonList.length) { note.textContent = ''; return; }
   const av = corpus.available(lessonList, +sizes.phrases);
   if (mode === 'words') {
-    note.textContent = av.words.length ? av.words.length + ' words use only ' + setName() + '\'s characters.'
-                                       : 'No word uses only ' + setName() + '\'s characters yet — practise groups for now.';
+    note.textContent = av.words.length ? av.words.length + ' words use only ' + setOf() + ' characters.'
+                                       : 'No word uses only ' + setOf() + ' characters yet — practise groups for now.';
     return;
   }
   for (const o of $('selTier').options) {
@@ -842,7 +921,7 @@ function userInfo(r) {
   if (!r.lines) { $('userInfo').textContent = ''; return; }
   const usable = lessonList.length ? corpus.user.filter((it) => [...it.need].every((t) => lessonList.indexOf(t) >= 0)).length : null;
   $('userInfo').textContent = r.kept + ' of ' + r.lines + ' lines have 2 to 8 words' +
-    (usable != null ? '; ' + usable + ' use only ' + setName() + '\'s characters.' : '.');
+    (usable != null ? '; ' + usable + ' use only ' + setOf() + ' characters.' : '.');
 }
 async function useUserText(text) {
   if (!corpus) return;
@@ -952,7 +1031,7 @@ function startNext() {
   try { session.next(); }
   catch (e) {
     if (e.name !== 'NoItemsError') throw e;
-    setStatus(e.what === 'words' ? 'No word uses only ' + setName() + '\'s characters yet — choose Groups.'
+    setStatus(e.what === 'words' ? 'No word uses only ' + setOf() + ' characters yet — choose Groups.'
                                  : 'Nothing to practise with these settings yet — choose fewer words, another kind, or Groups.');
   }
 }
@@ -1003,7 +1082,7 @@ async function check() {
 
 function onResult({ attempt, score }) {
   const exp = E.tokenize(score.expected);
-  const helpedNote = attempt.helped && attempt.source !== 'keyed' ? 'You used a replay, so this one does not move a box.' : '';
+  const helpedNote = attempt.helped && attempt.source !== 'keyed' && !isCall(attempt) ? 'You used a replay, so this one does not move a box.' : '';
   const verb = attempt.source === 'keyed' ? 'keyed' : 'typed';
   let html = '';
   if (score.perfect) {
@@ -1050,10 +1129,31 @@ function renderTally() {
   if (!session) return;
   const part = (name, t) => (t.items ? name + t.items + ' items, ' + t.perfect + ' right, ' +
     Math.round(100 * t.charsRight / Math.max(1, t.chars)) + ' % of characters.' : '');
-  $('tally').textContent = [part('This session: ', session.tally), part('Keyed this session: ', session.keyedTally)].filter(Boolean).join(' ');
+  $('tally').textContent = [part('This session: ', session.tally), part('Keyed this session: ', session.keyedTally),
+                            part('Calls and prefixes this session: ', session.callTally)].filter(Boolean).join(' ');
+}
+
+const isCall = (a) => a.kind === 'call' || a.kind === 'prefix';
+
+// M4b: their own tally, kept from the log like the boxes (decision of 2026-11-06)
+function renderCalls() {
+  const parts = [];
+  for (const [kind, name] of [['call', 'Call signs'], ['prefix', 'Prefixes']]) {
+    const c = E.callSummary(mastery.calls[kind], 6);
+    if (!c.items) continue;
+    let h = '<p><b>' + name + ':</b> ' + c.items + ' copied, ' + c.perfect + ' right (' + Math.round(100 * c.perfect / c.items) + ' %).';
+    if (c.byLength.length > 1)
+      h += ' By length: ' + c.byLength.map((l) => l.length + ' characters ' + l.perfect + ' of ' + l.items).join(' · ') + '.';
+    if (c.missed.length)
+      h += ' Most missed: ' + c.missed.map((m) => '<span class="mono">' + esc(disp(m.ch)) + '</span> ' + m.missed + ' of ' + m.attempts).join(' · ') + '.';
+    parts.push(h + '</p>');
+  }
+  $('callStats').innerHTML = parts.join('');
+  show($('callsBox'), parts.length > 0);
 }
 
 function renderChars() {
+  renderCalls();
   if (!lessonList.length) return;
   let rows = '';
   for (const ch of lessonList) {
@@ -1072,7 +1172,7 @@ function renderChars() {
   $('confusions').innerHTML = conf.length ? '<b>Most confused:</b> ' +
     conf.map((c) => '<span class="mono">' + esc(disp(c.expected)) + '</span> taken for <span class="mono">' + esc(disp(c.got)) + '</span> (' + c.count + '×)').join(' · ') : '';
   // decision 4d: offered, never automatic
-  const ready = !usePractice() && lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(lessonList);
+  const ready = useKoch() && lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(lessonList);
   show($('advance'), !!ready);
   if (ready) {
     const nextCh = lesson.characters[lesson.value];

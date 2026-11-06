@@ -448,6 +448,17 @@ change. Bench: `BENCH_M3.md` §8 (page version 2026-11-06).
   sequence, and the page says so. LICW Carousel Start is not on the page (set it on the M32).
 
 #### M4b — call signs and prefixes (Willi, 2026-11-06; to build after the §8 bench)
+**State (2026-11-06, page 2026-11-06d, uncommitted, bench §9 owed):** built as decided. Engine: `randomCall()` split
+into `buildPrefix()` + suffix like the firmware, `opts.region` (0–7, VK/ZL generator ported), new `randomPrefix()`;
+the C++ fixture now covers VK/ZL and `getRandomPrefix()` and the port matches exactly. Scheduler modes `calls`
+/`prefixes` (`callOpts`; retries survive lesson changes); `Mastery.calls` + `callSummary()` (no boxes, no
+confusions); `Session.callTally`. Page: three selects seeded once from `GET config/...` (meta `callSeeded`), a
+"Call signs and prefixes" stats section. Defaults taken: typed and keyed both work; a miss replays and comes back.
+**Correction (Willi, 2026-11-06):** "always all characters" means the call kinds exist only with a third Characters
+choice, **All characters** (page 2026-11-06e): the M32's full standard set, 51 in its Koch order (`E.ALL_CHARS` =
+`morserinoKochChars`, no national letters). Groups/words/phrases use it too, boxes move as usual, no lesson advance,
+attempts carry `set: 'all'`. Call signs/Prefixes are disabled otherwise; leaving All characters while on them goes
+back to Groups and says so.
 Willi asked for call sign and prefix practice outside Koch, with the M32's settings. **Decided (2026-11-06):**
 - New kinds under "Practise": **Call signs** and **Prefixes**, from the engine's port of `getRandomCall()` /
   `getRandomPrefix()` (`buildRandomPrefix()`; the prefix = base + call-area digit, no suffix).

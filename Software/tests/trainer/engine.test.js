@@ -526,3 +526,93 @@ test('M4: characters with no Morse code are left out of the set, and reported', 
   for (const t of ['a', '9', '@', '<sk>', '<bk>', 'ä', 'ch', 'ñ', '+', '=']) assert.ok(E.hasMorse(t), t);
   for (const t of ['\\', '*', '<err>', '!', '"', 'ß']) assert.ok(!E.hasMorse(t), t);
 });
+
+// ---- M4b: call signs and prefixes --------------------------------------------
+
+const corpusJson = require(path.join(__dirname, '../../Utilities/m32_trainer_corpus.json'));
+
+test('M4b: Call signs and Prefixes come from the firmware generators with the page settings, all characters', () => {
+  const corpus = new E.Corpus(corpusJson);
+  const sch = new E.Scheduler({ rng: E.mulberry32(3), mastery: new E.Mastery(), chars: ['m', 'k'], corpus, mode: 'calls',
+                                callOpts: { maxLength: 2, region: 1, commonOnly: true } });
+  for (let i = 0; i < 30; i++) {
+    const it = sch.next();
+    assert.equal(it.kind, 'call');
+    assert.match(it.text, /^[a-z0-9]{1,2}[0-9][a-z]{1,3}$/, it.text);   // prefix <= 2 letters/digits + area digit
+    assert.ok(it.text.length <= 6, it.text);
+  }
+  sch.callOpts = { maxLength: 0, region: 7, commonOnly: true };
+  for (let i = 0; i < 30; i++) assert.match(sch.next().text, /^(vk|zl)[0-9][a-z]{2,3}$/);
+  sch.mode = 'prefixes';
+  sch.callOpts = { maxLength: 1, region: 1, commonOnly: true };          // Length Calls does not apply to prefixes
+  for (let i = 0; i < 30; i++) {
+    const it = sch.next();
+    assert.equal(it.kind, 'prefix');
+    assert.match(it.text, /^[a-z0-9]+$/, it.text);
+  }
+  // no lesson characters at all: calls still come
+  sch.setChars([]);
+  sch.mode = 'calls';
+  assert.ok(sch.next().text.length >= 3);
+});
+
+test('M4b: a missed call comes back, and survives a lesson change; it never mixes with groups', () => {
+  const corpus = new E.Corpus(corpusJson);
+  const sch = new E.Scheduler({ rng: E.mulberry32(9), mastery: new E.Mastery(), chars: ['m', 'k', 'r'], corpus, mode: 'calls', retryGap: 2 });
+  const miss = sch.next();
+  sch.missed(miss);
+  sch.setChars(['m', 'k']);                       // the call's characters are not in the lesson: kept anyway
+  assert.equal(sch.retries.length, 1);
+  sch.mode = 'groups'; sch.size = 2;
+  for (let i = 0; i < 5; i++) assert.equal(sch.next().kind, 'group');
+  sch.mode = 'calls';
+  const back = sch.next();
+  assert.equal(back.text, miss.text);
+  assert.equal(back.retry, true);
+  assert.equal(back.kind, 'call');
+});
+
+test('M4b: calls and prefixes move no box and are tallied apart (also when replayed from the log)', () => {
+  const m = new E.Mastery();
+  m.apply(attempt([right('d'), right('l'), right('1'), wrong('a', 'e'), right('b')], { kind: 'call', expected: 'dl1ab', perfect: false }));
+  m.apply(attempt([right('o'), right('e'), right('3'), right('x'), right('y'), right('z')], { kind: 'call', expected: 'oe3xyz', perfect: true }));
+  m.apply(attempt([right('o'), right('e'), right('3')], { kind: 'prefix', expected: 'oe3', perfect: true, source: 'keyed' }));
+  assert.equal(m.chars.size, 0, 'no character model touched');
+  assert.equal(m.confusionList().length, 0);
+  const c = E.callSummary(m.calls.call);
+  assert.equal(c.items, 2); assert.equal(c.perfect, 1);
+  assert.deepEqual(c.byLength, [{ length: 5, items: 1, perfect: 0 }, { length: 6, items: 1, perfect: 1 }]);
+  assert.deepEqual(c.missed, [{ ch: 'a', missed: 1, attempts: 1 }]);
+  assert.equal(E.callSummary(m.calls.prefix).items, 1);
+});
+
+test('M4b: the session counts calls in their own tally', async () => {
+  const player = fakePlayer();
+  const store = new E.MemoryStore();
+  const mastery = new E.Mastery();
+  const scheduler = new E.Scheduler({ rng: E.mulberry32(4), mastery, chars: ['m'], corpus: new E.Corpus(corpusJson), mode: 'calls' });
+  let now = 1000;
+  const s = new E.Session({ player, store, mastery, scheduler, clock: { now: () => now, wall: () => now }, context: () => ({}) });
+  s.next();
+  const text = player.last().text;
+  player.last().finish('end', 1100);
+  await tick();
+  now = 1500;
+  const a = await s.submit(text);
+  assert.equal(a.kind, 'call');
+  assert.equal(s.callTally.items, 1);
+  assert.equal(s.callTally.perfect, 1);
+  assert.equal(s.tally.items, 0);
+  assert.equal(s.keyedTally.items, 0);
+  assert.equal(mastery.chars.size, 0);
+});
+
+test('"All characters" is the M32\'s full standard set, in its Koch order (morserinoKochChars)', () => {
+  const fs = require('node:fs');
+  const h = fs.readFileSync(path.join(__dirname, '../../src/Version 6 and newer/MorsePreferences.h'), 'utf8');
+  const raw = /morserinoKochChars\s*=\s*"([^"]+)"/.exec(h)[1];
+  const PROS = { K: '<sk>', S: '<as>', N: '<kn>', A: '<ka>', E: '<ve>', B: '<bk>' };
+  assert.deepEqual(E.ALL_CHARS, [...raw].map((c) => PROS[c] || c));
+  assert.equal(E.ALL_CHARS.length, 51);
+  assert.ok(E.ALL_CHARS.every(E.hasMorse));
+});
