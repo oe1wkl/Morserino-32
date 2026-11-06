@@ -4824,6 +4824,15 @@ String getWord() {
         }
     }
     
+    // A last word with no space or newline after it still has to be cleaned up (and a comment
+    // dropped): returned raw, "\sk" at the very end of player.txt put a "\" into the Custom Chars
+    // set (a character with no Morse code) and was played as \ s k instead of <sk>.
+    if (result.length() > 0) {
+        result = cleanUpText(result);
+        if (result.indexOf('C') != -1)
+            result = "";
+    }
+
     // End of part (or end of file): wrap around
     wordReaderAtEof = true;
     
