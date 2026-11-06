@@ -12,7 +12,7 @@ read, what is waiting on whom, and which traps are already known.*
 | Decisions | **All 13 decided by Willi on 2026-10-29** (`LEAN_V1_SCOPE.md` §7); 9 (branch go) was answered "go" after the first version of this file was written. |
 | Where the work is | Worktree `~/Documents/GitHub/Morserino-32-training-addon`, branch `training-addon`, created off master `3e8cc19` on 2026-10-29; `.pio` nosync done. These docs are its first commit. **Not pushed** — push only when Willi asks. The master checkout stays on master; never switch branches in either folder. |
 | Gate for M1 | Passed: Willi confirmed on 2026-10-30 that the message to Christof is out. If Christof replies, compare his points with the M1 choices in §6 before the bench freezes the format. |
-| Not yet done | Edge (§6 and §7 of `BENCH_M3.md` passed on both devices by 2026-11-05); a second operator's review of tier C before release (decision 12c); committing M3c; M4–M6. Protocol PDF rebuild at merge to master. |
+| Not yet done | M4 bench (`BENCH_M3.md` §8) and committing M4; Edge (§6 and §7 of `BENCH_M3.md` passed on both devices by 2026-11-05); a second operator's review of tier C before release (decision 12c); committing M3c; M4–M6. Protocol PDF rebuild at merge to master. |
 | Size | ≈ 10–14 sessions plus bench time (estimate, not a commitment). Phrases can be cut to v1.1 after M4 if the schedule slips. |
 
 ## 1. First steps (do these in order)
@@ -405,6 +405,60 @@ separate tallies (never the confusion model). Bench on both variants. Confirm by
 (`PUT cw/spacing`: session only, no NVS). No firmware change expected. The `GET kochlesson` truncation for long sequences
 was already fixed by PR #209: check the page handles LICW BC2's 44 entries. Regenerate the corpus's `prefixes` from master's
 rebuilt `callsign_prefixes.h`, and the `callsign_gen` fixture with it.
+
+#### M4 — state (2026-11-06)
+**Written; tested in Node (133 tests) and on the simulated M32 in the preview; not committed, not benched.** No firmware
+change. Bench: `BENCH_M3.md` §8 (page version 2026-11-06).
+
+- **Master merged in** (`cf427dc`): the branch now has master's firmware, docs and README (only the README conflicted; it
+  was an older copy of the same 1.6 text, master's taken).
+- **Call signs re-ported.** Master's rebuilt prefix table has a "common" flag per entry and a weight for each call-area
+  digit (`pickAreaDigit()`); `getRandomCall()` now goes through `buildRandomPrefix()`. `randomCall()` in the engine follows it,
+  and the corpus carries 1076 rows `[prefix, continent, zone, weight, common, ten hex digit weights]` (was 973 rows of four).
+  `callsign_gen/extract.py` copies the new helpers; the fixture is rebuilt and the engine matches it exactly. With a lesson
+  filter, a prefix is skipped when none of its digits in use is learned; the digit is drawn among the learned ones by the same
+  weights. The coverage per lesson did not change.
+- **Willi's choices (2026-11-06):** character speed = the M32's own (the page follows the knob through the unsolicited
+  `control` object and never sends `PUT control/speed`); **effective speed set by hand only** (page setting "Effective speed",
+  Off or 4–35 WpM, stored in the browser); **Farnsworth stretches both** character and word spaces; **the Practice Set is offered
+  as a source** (setting "Characters: Koch lesson / Practice Set"; no lesson advance with it, and no character counts as the
+  newest).
+- `farnsworthSpacing(wpm, eff)`: the 19 dits of spacing in PARIS stretched to fit; the character space is rounded (3/19 of it),
+  the word space takes the rest, so PARIS is off by half a dit at most; kept in the M32's ranges, and one dit less on the
+  character space where the word space would hit its minimum (character space + 4). 20/12 → `cw/spacing/8/20`. Off, or not
+  below the speed: the learner's Interchar Spc and 7, as in M3c. Sent on connect, on a change of the setting, and when the knob
+  turns.
+- The facts show "Koch lesson n of m (Custom Chars)" when custom characters are on (`GET customchars`), or the Practice Set's
+  characters; the speed as "20 WpM, effective 12". Attempts carry `set` ('koch'|'practice'), `farnsworth` (the effective WpM
+  in force), and `lesson` null for the Practice Set.
+- `practiceChars()` turns `GET practicechars`' raw codes into the display form (S → `<as>` …, H → `ch`, as `GET kochlesson`
+  shows them). **Known limit:** `ch` (custom set or Practice Set) is one entry in the set but sounds and reads as c + h; also
+  before M4. Not fixed: rare, and a fix belongs in how the firmware shows it.
+- LICW at lesson 44 (BC2) checked in a test: 44 single tokens, prosigns included.
+
+#### §8 follow-ups (2026-11-06, page 2026-11-06c, uncommitted)
+
+- **Stray `\` in Custom Chars — firmware bug, fixed on master (uncommitted):** `getWord()` returned the last
+  word of `player.txt` uncleaned when no space/newline followed it; a file ending in `\sk` put `\` into the
+  custom set. Changelog entry under V10 Bug Fixes. The page also drops any character outside `CWchars[]`
+  (`E.hasMorse()`; `<err>` and `*` too, the M32 cannot sound them) and notes it on the lesson fact.
+- **Koch Sequence and Lesson pickers (Willi: "Set the M32"):** with Characters = Koch lesson the page has a
+  Koch sequence and a Lesson select. They write the M32 (`PUT config/Koch Sequence/<n>`, `PUT kochlesson/<n>`),
+  as its menu does, then re-read the lesson. Custom Chars without a set: the M32 answers OK but stays on its
+  sequence, and the page says so. LICW Carousel Start is not on the page (set it on the M32).
+
+#### M4b — call signs and prefixes (Willi, 2026-11-06; to build after the §8 bench)
+Willi asked for call sign and prefix practice outside Koch, with the M32's settings. **Decided (2026-11-06):**
+- New kinds under "Practise": **Call signs** and **Prefixes**, from the engine's port of `getRandomCall()` /
+  `getRandomPrefix()` (`buildRandomPrefix()`; the prefix = base + call-area digit, no suffix).
+- **Settings on the page, seeded from the M32:** Length Calls, Calls Region, Call Prefixes, read with `GET config/...` on the
+  first connect and then kept in the browser; changing them never touches the M32. Calls Region VK/ZL needs the VK/ZL
+  generator ported too (not done in M3b).
+- **Always all characters:** the Koch lesson / Practice Set setting does not apply to them.
+- **Separate tally:** their own score (calls right, by length; most missed characters); the character boxes and the lesson
+  advance are not touched (like keyed answers).
+- Not decided yet (my defaults, to confirm at the bench): typed and keyed answers both work; a miss shows the call, replays it
+  and brings it back later, as for groups.
 
 ### M5 — Echo log, stats, help, manuals (1–2 sessions)
 Echo log from E1; help text; manual subsection under "Using the Serial Output of the M32" (EN + DE;

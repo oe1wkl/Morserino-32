@@ -84,28 +84,32 @@ def read_pools():
     }, {k.replace('CONT_', '').lower(): v for k, v in masks.items()}
 
 def read_prefixes():
-    """callsign_prefixes.h -> [[prefix (lower case), continent mask, CQ zone, weight]], in table order
-    (the generator's weighted pick walks the table in this order)."""
+    """callsign_prefixes.h -> [[prefix (lower case), continent mask, CQ zone, weight, common (0/1),
+    call-area digit weights]], in table order (the generator's weighted pick walks the table in this
+    order). The digit weights are a string of ten hex digits, one per call-area digit 0-9 (0 = never
+    used); all ten 0 = the base is the whole prefix (3B8, I1), it takes no digit."""
     t = (FW / 'callsign_prefixes.h').read_text(encoding='utf-8')
-    rows = re.findall(r'\{"([A-Z0-9/_]+)", (0x[0-9A-Fa-f]+), +(\d+), +(\d+)\}', t)
+    rows = re.findall(r'\{"([A-Z0-9/_]+)", +(0x[0-9A-Fa-f]+), +(\d+), +(\d+), +(\d+), +'
+                      r'\{((?:0x[0-9A-Fa-f]{2}, *){4}0x[0-9A-Fa-f]{2})\}\}', t)
     n = int(re.search(r'#define PREFIX_COUNT (\d+)', t).group(1))
     if len(rows) != n:
         sys.exit('build_corpus.py: read %d prefixes, callsign_prefixes.h says %d' % (len(rows), n))
-    return [[p.lower(), int(c, 16), int(z), int(w)] for p, c, z, w in rows]
-
-COMMON_WEIGHT = 81           # getRandomCall()'s "Common" filter: minWeight = 81
+    def digit_weights(packed):            # digit 2i in the low nibble, 2i+1 in the high one
+        out = ''
+        for b in (int(x, 16) for x in packed.split(',')):
+            out += '%x%x' % (b & 0x0F, b >> 4)
+        return out
+    return [[p.lower(), int(c, 16), int(z), int(w), int(f) & 1, digit_weights(d)] for p, c, z, w, f, d in rows]
 
 def call_possible(active, prefixes):
     """Can the generator (common prefixes, any continent) make a call from these characters only?"""
-    digits = [c for c in active if c.isdigit()]
     letters = [c for c in active if 'a' <= c <= 'z']
     if not letters:
         return False
-    for p, cont, zone, w in prefixes:
-        if w < COMMON_WEIGHT or not set(p) <= active:
+    for p, cont, zone, w, common, dw in prefixes:
+        if not common or not set(p) <= active:
             continue
-        needs_digit = not p[-1].isdigit() or len(p) <= 2
-        if not needs_digit or digits:
+        if dw == '0' * 10 or any(dw[d] != '0' and str(d) in active for d in range(10)):
             return True
     return False
 
@@ -318,7 +322,7 @@ def main():
         'continents': continents,
         'pools': all_pools,
         'prefixes': read_prefixes(),
-        'prefixesSource': 'callsign_prefixes.h (prefix, continent mask, CQ zone, weight), for the trainer\'s copy of getRandomCall()',
+        'prefixesSource': 'callsign_prefixes.h (prefix, continent mask, CQ zone, weight, common, call-area digit weights 0-9 in hex), for the trainer\'s copy of getRandomCall()',
         'phrases': phrases,
         'templates': templates,
     }

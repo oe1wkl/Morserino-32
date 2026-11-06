@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-05b';
+const VERSION = '2026-11-06c';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -306,12 +306,14 @@ function mulberry32(seed) {
 }
 
 // Picks the next group (decision 4b, 4c). `chars` is the learner's active set in lesson
-// order (the last one is the newest), already reduced to what the M32 can play.
+// order (the last one is the newest), already reduced to what the M32 can play. `newest: false`
+// for a set without an order (the M32's Practice Set): no character counts double.
 class Scheduler {
   constructor(opts) {
     this.rng = opts.rng || Math.random;
     this.mastery = opts.mastery;
     this.chars = opts.chars.slice();
+    this.newest = opts.newest !== false;
     this.size = opts.size || 'mixed';          // 'mixed' or a pinned 1..5
     this.retryGap = opts.retryGap != null ? opts.retryGap : 4;
     this.retries = [];                         // {kind, tier, n, text, wait}
@@ -325,12 +327,15 @@ class Scheduler {
     this.recent = [];                          // texts of the last RECENT items, not drawn again
   }
 
-  setChars(chars) { this.chars = chars.slice(); this.retries = this.retries.filter((r) => tokenize(r.text).every((t) => chars.indexOf(t) >= 0)); }
+  setChars(chars, newest) {
+    if (newest != null) this.newest = newest;
+    this.chars = chars.slice(); this.retries = this.retries.filter((r) => tokenize(r.text).every((t) => chars.indexOf(t) >= 0));
+  }
 
   // Draw weight = 6 - box; the newest character counts double until it reaches box 2.
   weight(ch) {
     let w = this.mastery.rules.boxes + 1 - this.mastery.box(ch);
-    if (ch === this.chars[this.chars.length - 1] && this.mastery.box(ch) < 2) w *= 2;
+    if (this.newest && ch === this.chars[this.chars.length - 1] && this.mastery.box(ch) < 2) w *= 2;
     return w;
   }
 
@@ -455,54 +460,74 @@ class NoItemsError extends Error {
 
 // ---- call signs ------------------------------------------------------------
 
-// The firmware's getRandomCall() (m32_v6.ino), for tier C's [CALL] slots. `prefixes` is the
-// table from callsign_prefixes.h as the corpus carries it: [prefix, continent mask, CQ zone,
-// weight], in table order. random(a, b) is a + floor(rng() * (b - a)), drawn in the firmware's
-// order, so without `active` this makes exactly the firmware's choices for the same random
-// numbers (Software/tests/callsign_gen/ checks it against the C++). Left out: the VK/ZL-only
-// generator (the "VK/ZL" region setting), which the trainer does not offer.
+// The firmware's getRandomCall() (m32_v6.ino, with buildRandomPrefix() and pickAreaDigit()), for
+// tier C's [CALL] slots. `prefixes` is the table from callsign_prefixes.h as the corpus carries it:
+// [prefix, continent mask, CQ zone, weight, common (0/1), call-area digit weights], in table order;
+// the digit weights are ten hex digits, one per digit 0-9 (all 0: the prefix takes no digit, as 3B8
+// or I1). random(a, b) is a + floor(rng() * (b - a)), drawn in the firmware's order, so without
+// `active` this makes exactly the firmware's choices for the same random numbers
+// (Software/tests/callsign_gen/ checks it against the C++). Left out: the VK/ZL-only generator (the
+// "VK/ZL" region setting), which the trainer does not offer.
 //   opts.maxLength   the firmware's Call Length value: 0 = any, 1 = 3 characters, n = prefix <= n
 //   opts.continents  mask (default all); ignored for maxLength 1, as the firmware does
-//   opts.commonOnly  only prefixes seen in real call data (weight >= 81), default true
+//   opts.commonOnly  only prefixes flagged common (heard often in real call data), default true
 //   opts.active      the learner's characters (an array or Set): the call uses only those --
-//                    prefixes made of them, a digit and suffix letters drawn from them. Returns
-//                    null when no call can be made.
+//                    prefixes made of them, a call-area digit among them (by the same weights) and
+//                    suffix letters drawn from them. Returns null when no call can be made.
 // -> {call, continent, zone}
-const CALL_COMMON_WEIGHT = 81;
 const CONT_ALL = 0x7F;
+const NO_AREA_DIGIT = '0000000000';
 function randomCall(prefixes, opts) {
   opts = opts || {};
   const rng = opts.rng || Math.random;
   const random = (a, b) => a + Math.floor(rng() * (b - a));
   const maxLength = opts.maxLength | 0;
   const contMask = maxLength !== 1 ? (opts.continents == null ? CONT_ALL : opts.continents) : CONT_ALL;
-  const minWeight = opts.commonOnly === false ? 0 : CALL_COMMON_WEIGHT;
+  const commonOnly = opts.commonOnly !== false;
   const maxPfxLen = maxLength > 0 ? maxLength : 99;
   const act = opts.active ? new Set(opts.active) : null;
   const digits = act ? '0123456789'.split('').filter((c) => act.has(c)) : null;
   const letters = act ? 'abcdefghijklmnopqrstuvwxyz'.split('').filter((c) => act.has(c)) : null;
   const digit = () => (act ? digits[random(0, digits.length)] : String.fromCharCode(48 + random(0, 10)));
   const letter = () => (act ? letters[random(0, letters.length)] : String.fromCharCode(97 + random(0, 26)));
-  const needsDigit = (p) => !/[0-9]$/.test(p) || p.length <= 2;
   if (act && !letters.length) return null;
+  // The call-area digits a prefix can take, as [digit, weight]: those in use, and with `active`
+  // only the learner's. [] for a prefix that takes none, and for one whose digits are all unlearned.
+  const areaDigits = (row) => {
+    const out = [];
+    for (let d = 0; d < 10; d++) {
+      const w = parseInt(row[5][d], 16);
+      if (w && (!act || act.has(String(d)))) out.push([String(d), w]);
+    }
+    return out;
+  };
+  const takesDigit = (row) => row[5] !== NO_AREA_DIGIT;
 
-  const ok = (row) => (row[1] & contMask) && row[3] >= minWeight && row[0].length <= maxPfxLen &&
-    (!act || ([...row[0]].every((c) => act.has(c)) && (!needsDigit(row[0]) || digits.length)));
+  const ok = (row) => (row[1] & contMask) && (!commonOnly || row[4]) && row[0].length <= maxPfxLen &&
+    (!act || ([...row[0]].every((c) => act.has(c)) && (!takesDigit(row) || areaDigits(row).length > 0)));
   let total = 0;
   for (const row of prefixes) if (ok(row)) total += row[3];
-  if (total === 0) {                        // the firmware's old-style fallback call
+  let call, continent = CONT_ALL, zone = 0;
+  if (total === 0) {                        // the firmware's fallback: a letter and a digit
     if (act && !digits.length) return null;
-    return { call: letter() + digit() + letter() + letter() + letter(), continent: CONT_ALL, zone: 0 };
+    call = letter() + digit();
+  } else {
+    const pick = random(0, total);
+    let cum = 0, chosen = null;
+    for (const row of prefixes) {
+      if (!ok(row)) continue;
+      cum += row[3];
+      if (cum > pick) { chosen = row; break; }
+    }
+    call = chosen[0];
+    continent = chosen[1];
+    zone = chosen[2];
+    if (takesDigit(chosen)) {               // pickAreaDigit(): by the digit weights
+      const ad = areaDigits(chosen);
+      let r = random(0, ad.reduce((s, x) => s + x[1], 0));
+      for (const [d, w] of ad) if ((r -= w) < 0) { call += d; break; }
+    }
   }
-  const pick = random(0, total);
-  let cum = 0, chosen = null;
-  for (const row of prefixes) {
-    if (!ok(row)) continue;
-    cum += row[3];
-    if (cum > pick) { chosen = row; break; }
-  }
-  let call = chosen[0];
-  if (needsDigit(call)) call += digit();
   const maxTotal = maxLength === 0 ? 10 : maxLength > 4 ? 6 : maxLength + 2;
   let suffLen = Math.max(1, Math.min(3, maxTotal - call.length));
   if (maxLength === 0) {
@@ -514,7 +539,7 @@ function randomCall(prefixes, opts) {
     const pm = random(0, 2) ? 'm' : 'p';
     if (!act || (act.has('/') && act.has(pm))) call += '/' + pm;
   }
-  return { call, continent: chosen[1], zone: chosen[2] };
+  return { call, continent, zone };
 }
 
 // ---- the corpus (M3b) ----------------------------------------------------------
@@ -756,7 +781,7 @@ class Session {
     const attempt = {
       schema: SCHEMA, id: newId(), t: this.clock.wall(),
       device: ctx.device || null, lesson: ctx.lesson != null ? ctx.lesson : null, wpm: ctx.wpm != null ? ctx.wpm : null,
-      farnsworth: ctx.farnsworth != null ? ctx.farnsworth : null,
+      farnsworth: ctx.farnsworth != null ? ctx.farnsworth : null, set: ctx.set || null,
       kind: it.kind, tier: it.tier || null, source: keyed ? 'keyed' : 'typed', retry: it.retry,
       expected: s.expected, answer: s.answer, perfect: s.perfect,
       perWord: s.words, perChar: s.chars, extra: s.extra,
@@ -1031,9 +1056,59 @@ function parseExport(text) {
 
 // From `GET kochlesson`: the active set is the first `value` characters (also when the
 // lesson indexes a custom set -- the reply then lists that set).
-function lessonChars(kochlesson) {
+// What the M32 can sound: CWchars[] in m32_v6.ino, as cleanUpProSigns() shows it. Anything else
+// in a set -- e.g. a "\" that reached Custom Chars from player.txt before the 2026-11-06 fix of
+// getWord() -- is skipped silently by generateCWword(), so the trainer must not ask for it.
+const M32_SOUNDS = 'abcdefghijklmnopqrstuvwxyz0123456789.,:-/=?@+'.split('')
+  .concat(['<as>', '<ka>', '<kn>', '<sk>', '<ve>', '<bk>', 'ä', 'ö', 'ü', 'ch', '(', ')', 'é', 'è', 'à', 'ç', 'ñ', 'å', 'æ', 'ø']);
+function hasMorse(token) {
+  return M32_SOUNDS.indexOf(token) >= 0;
+}
+
+// `dropped` (optional array) collects what was left out because the M32 has no Morse code for it.
+function lessonChars(kochlesson, dropped) {
   if (!kochlesson || !Array.isArray(kochlesson.characters)) return [];
-  return kochlesson.characters.slice(0, Math.max(0, kochlesson.value | 0)).map((c) => String(c).toLowerCase());
+  return keepSounding(kochlesson.characters.slice(0, Math.max(0, kochlesson.value | 0)).map((c) => String(c).toLowerCase()), dropped);
+}
+function keepSounding(tokens, dropped) {
+  return tokens.filter((t) => {
+    if (hasMorse(t)) return true;
+    if (dropped && dropped.indexOf(t) < 0) dropped.push(t);
+    return false;
+  });
+}
+
+// From `GET practicechars` (the M32's Practice Set): raw codes, so the prosigns are single
+// upper-case letters; written as `GET kochlesson` shows them (cleanUpProSigns() in m32_v6.ino),
+// once each, in the M32's order.
+const PRACTICE_CODES = { S: '<as>', A: '<ka>', N: '<kn>', K: '<sk>', E: '<ve>', B: '<bk>', H: 'ch', R: '<err>', U: '*' };
+function practiceChars(practicechars, dropped) {
+  const out = [];
+  for (const c of String((practicechars && practicechars.characters) || '')) {
+    const t = PRACTICE_CODES[c] || c.toLowerCase();
+    if (t.trim() && out.indexOf(t) < 0) out.push(t);
+  }
+  return keepSounding(out, dropped);
+}
+
+// Farnsworth spacing for `PUT cw/spacing/<char>/<word>` (in dits of the character speed): the
+// characters keep `wpm`, the spaces stretch so that PARIS takes as long as at `effective` WpM --
+// 31 dits of marks and gaps inside the characters, 19 of spacing (4 character spaces of 3, a word
+// space of 7), all spacing stretched by the same factor. Only whole dits: the character space is
+// rounded, and the word space takes what is left, so PARIS is off by half a dit at most. Kept in
+// the M32's ranges (Interchar Spc 3-45, InterWord Spc 6-105; a word space is never shorter than a
+// character space + 4). -> {charSpace, wordSpace, effective: the WpM that results}, or null when
+// `effective` is not below `wpm` (no Farnsworth).
+const SPACING_LIMITS = { charMin: 3, charMax: 45, wordMin: 6, wordMax: 105 };
+function farnsworthSpacing(wpm, effective) {
+  if (!(wpm > 0) || !(effective > 0) || effective >= wpm) return null;
+  const L = SPACING_LIMITS;
+  const spaces = 50 * wpm / effective - 31;            // dits of spacing in PARIS: 4 character spaces + 1 word space
+  let charSpace = Math.min(L.charMax, Math.max(L.charMin, Math.round(3 * spaces / 19)));
+  if (spaces - 4 * charSpace < charSpace + 4)          // the word space would hit its minimum: a dit less here
+    charSpace = Math.max(L.charMin, Math.floor((spaces - 4) / 5));
+  const wordSpace = Math.min(L.wordMax, Math.max(L.wordMin, charSpace + 4, Math.round(spaces - 4 * charSpace)));
+  return { charSpace, wordSpace, effective: 50 * wpm / (31 + 4 * charSpace + wordSpace) };
 }
 
 
@@ -1041,6 +1116,6 @@ return {
   VERSION, SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
   Mastery, movesBoxes, median, mulberry32, randomCall, Corpus, ladderOffer, NoItemsError, Scheduler, Session, KeyedAnswer, newId,
-  MemoryStore, IdbStore, exportFile, parseExport, lessonChars
+  MemoryStore, IdbStore, exportFile, parseExport, lessonChars, practiceChars, hasMorse, farnsworthSpacing
 };
 }));

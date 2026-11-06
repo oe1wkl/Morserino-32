@@ -139,6 +139,35 @@ the console before pressing Connect (see its header).
 | 7.21 | During a session, leave the Keyer on the device, then press Enter on the page | The page starts the CW Keyer itself; the same as 7.20 |
 | 7.22 | Battery powered: during a session pull the USB cable. Key on the M32 (rig or tester attached): it does not key. Long-press to the menu, start the CW Keyer, key | Now the **key line closes** and word gaps are normal. Before leaving the Keyer it stays in practice mode: this is known, a restart clears it too |
 
+## 8. Characters and speed (M4)
+
+**No new firmware**: what is on both devices since 2026-11-05 (master `ec59fe4` content). Page version **2026-11-06**:
+reload while holding Shift. Run on the Pocket and the classic. Speed and spacing never change anything stored on the M32:
+check Interchar Spc, InterWord Spc and the speed in the Config Tool before and after.
+
+| # | Do | Expect |
+|---|---|---|
+| 8.1 | Characters = Koch lesson, connect | "Koch lesson: n of m" as on the M32. With **Custom Chars** on the M32 it adds "(Custom Chars)", and the groups use only that set |
+| 8.2 | On the M32 choose the LICW sequence, lesson 44 (BC2), connect, practise groups | The characters table lists 44 characters, prosigns as `<SK>` `<BK>`; groups use only those |
+| 8.3 | On the M32 set a Practice Set (CW Generator → Practice Set), e.g. K M R, `<as>` and an É. On the page Characters = Practice Set | The facts show the set; groups use only it; no "Go to lesson" offer; É and `<as>` sound right and are read right typed. Back to Koch lesson: the lesson again |
+| 8.4 | Clear the Practice Set on the M32, then choose Practice Set (or press Start with it) | "Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set)." Nothing plays |
+| 8.5 | Effective speed 12 WpM with the M32 at 20, groups and a phrase | The facts say "20 WpM, effective 12". The characters sound at 20, the gaps between characters and words are clearly longer, both of them |
+| 8.6 | During a session turn the speed knob (e.g. to 25), then go on | The facts follow ("25 WpM, effective 12"); the next item has characters at 25 and still effective 12 |
+| 8.7 | Turn the knob to 10 with effective 12 still set | A note: effective 12 is not below 10, no extra spacing; normal gaps. Effective speed Off: normal gaps too |
+| 8.8 | Effective 12, Answer: Keyed, Strict | Keyed answers are read as before: the longer sounded gaps change nothing about how your keying is read |
+| 8.9 | Disconnect, then run the CW Generator | Normal spacing, as your preferences say; Config Tool shows Interchar Spc, InterWord Spc unchanged, speed as you last set it on the knob |
+| 8.10 | Phrases, QSO lines, several with call signs | The calls look real: call-area digits as often as heard on the air (OE mostly OE3 and OE5, then OE1, hardly ever OE0; DL1 most often among the DLs); only learned characters |
+
+| 8.11 | **Before flashing** (page 2026-11-06b or later, reload with Shift): Custom Chars from your player file that ends in `\sk`, lesson 43, connect | Koch lesson fact: "43 of 43 (Custom Chars) — left out, no Morse code: \\". Groups never ask for a `\` |
+| 8.12 | Flash the firmware from master with the `getWord()` fix (both devices). Koch Sequence: turn away from Custom Chars and back onto it, then Koch Lesson 43 | The lesson line shows `43-43: <sk>`, never `\`. Connect the page: no "left out" note. The File Player plays the last `\sk` as one prosign |
+
+| 8.13 | Page 2026-11-06c, Characters = Koch lesson, connect | Next to Characters: **Koch sequence** (as on the M32) and **Lesson** ("12 · W": the lesson and the character it adds), on your M32's values. Practice Set hides both |
+| 8.14 | Choose another Lesson on the page, without leaving the CW Keyer; then look in the M32 menu (Koch → Select Lesson) | "Lesson n of m. Practising it from the next item."; the next groups use it; the M32 menu shows the same lesson afterwards |
+| 8.15 | Choose another Koch sequence (e.g. LCWO), then M32 again | The Lesson list follows the sequence (its characters), the fact too; the M32's Koch Sequence is changed likewise |
+| 8.16 | Choose Custom Chars with a player file loaded; then (optional) with no `player.txt` | With the file: "(Custom Chars)", the lesson list is that set. Without: "The M32 has no custom character set … so it stays on M32." and the picker goes back |
+
+**Known limit (not a failure):** a Practice Set or custom set with *ch* plays and reads it as two letters, c and h.
+
 ## Results
 
 *(fill in: device, browser, step, pass/fail, notes)*
@@ -164,3 +193,7 @@ the console before pressing Connect (see its header).
 | 2026-11-05 | Classic | — | `trainer_events.py` | pass | 46 passed, 0 failed, on 6b5f7e8 with the script at bad9eba |
 | 2026-11-05 | Pocket, Classic | not noted | §7 (all, incl. 7.13c–e) | pass | Page version 2026-11-05b on 6b5f7e8, reported by Willi as all passed, on both devices. Includes the key line staying open in 7.2, 7.20 and 7.22, and the M3c choices and the Hide default signed off. The `<err>` hang of 7.13e did not come back |
 | 2026-11-05 | Classic | Firefox | §6 (all) | pass | Reported by Willi. §6 has now passed on both devices |
+| 2026-11-06 | (not noted) | — | §8: 8.1–8.9 | pass, 2 notes | **Bug:** with Custom Chars (national letters) and group size 2, the M32 sounded one letter (ä, å) but the page expected a stray `\` with it ("Ä\", "\Å"); `\` has no Morse code. **Cause (firmware):** `getWord()` returned the last word of `player.txt` uncleaned when the file has no space or newline after it; the file ended in `\sk`, so `\` became custom character 43 (the M32's lesson menu showed `43-43: \`). Fixed on master (`getWord()` cleans that word too); the page also leaves out any character without a Morse code (2026-11-06b). See 8.11, 8.12. **Handling:** changing Koch Sequence or Koch Lesson means leaving the CW Keyer for the M32 menu and coming back. |
+| 2026-11-06 | — | — | 8.10 | deferred | to the next bench |
+| 2026-11-06 | Pocket | — | — | flashed | `pocketwroom` (standard) from master `ec59fe4` + the uncommitted `getWord()` fix, app only (0x10000), "Hash of data verified". For 8.12 |
+| 2026-11-06 | Pocket | not noted | 8.12–8.16 | pass | Reported by Willi as "Bench passed" after the flash, page 2026-11-06c. 8.11 (the page leaving out `\` on the old firmware) was overtaken by the flash; 8.10 still deferred; the classic not flashed with the fix |

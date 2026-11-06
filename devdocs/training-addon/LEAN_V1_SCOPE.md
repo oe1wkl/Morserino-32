@@ -147,6 +147,9 @@ reads goes untested).
 4. **Speed:** character speed via `PUT control/speed`, Farnsworth via `PUT cw/spacing` (session only, added
    2026-11-04; `PUT config` would write NVS and leave the learner's spacing changed after a crash). Defaults adapted from Head Copy (MIT): fixed character speed, effective speed ±1 per
    session. *Whether config changes take effect immediately inside the Keyer is an open bench question.*
+   **CHANGED (Willi, 2026-11-06, M4):** the character speed is the M32's own (its knob; the page follows it and never sends
+   `PUT control/speed`); the effective speed is set by hand only, no automatic or offered step; Farnsworth stretches the
+   character and the word spaces alike. The Practice Set is offered as a character source besides the Koch lesson.
 5. **Mastery model, per character (decision 4a):** Leitner box 1–5; promote on ≥ 3 attempts since the last
    box change and ≥ 90 % correct over the last 10; a miss drops two boxes; confusion pairs recorded.
    Latency is recorded and shown but is not a promotion gate (Head Copy's 550 ms is for single characters).

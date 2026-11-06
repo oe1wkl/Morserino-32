@@ -10,10 +10,16 @@
 //   fakeM32.unplug() / fakeM32.replug()   cable loss and return (the Pocket)
 //   fakeM32.restart()      a restart behind an open port (the classic): silent until handshaken
 //   fakeM32.msPerChar      sounding time per character (default 250)
+//   fakeM32.knob(25)       the speed knob: the M32 sends the new speed by itself
+//   fakeM32.state.practice9 = ''   the Practice Set (raw codes; default 'kmrSé', S = <as>)
+//   fakeM32.state.custom = true    a custom set exists (Koch Sequence = Custom Chars is accepted)
 (function () {
   'use strict';
-  const st = { session: false, keyer: false, lesson: 5, speed: 20, playing: null, plugged: true, transport: null, msPerChar: 250, log: [] };
+  const st = { session: false, keyer: false, lesson: 5, seq: 0, speed: 20, playing: null, plugged: true, transport: null, msPerChar: 250, log: [] };
   const KOCH = 'mkrsuaptlowi.njef0yv,g5/q9zh38b?427c1d6x-='.split('').concat(['<sk>', '+', '<as>', '<kn>', '<ka>', '<ve>', '<bk>', '@', ':']);
+  const SEQ_NAMES = ['M32', 'LCWO', 'CW Academy', 'LICW Carousel', 'Custom Chars'];
+  const CUSTOM = ['k', 'm', 'r', 's', 'u', '<as>'];
+  function chars() { return st.seq === 4 ? CUSTOM : st.seq === 0 ? KOCH : KOCH.slice().reverse(); }
   function send(obj) {
     const t = st.transport;
     if (t && t.onData && st.plugged) setTimeout(() => t.onData(JSON.stringify(obj)), 5);
@@ -33,9 +39,22 @@
     if (l === 'put device/protocol/on') return send({ device: { hardware: 'M32 Pocket (simulated)', firmware: '10.0', protocol: '1.6', build: 'Nov 1 2026', edition: 'standard' } });
     if (l === 'put device/protocol/off') return send({ 'end m32protocol': { content: 'Goodbye!' } });
     if (l === 'get capabilities') return send({ capabilities: { protocol: '1.6', features: ['configs/details', 'trainer-events', 'cw/practice'] } });
-    if (l === 'get kochlesson') return send({ kochlesson: { value: st.lesson, minimum: 1, maximum: 51, characters: KOCH } });
-    if (l.startsWith('put kochlesson/')) { st.lesson = +l.split('/')[1]; return send({ ok: { content: 'OK' } }); }
+    if (l === 'get kochlesson') return send({ kochlesson: { value: st.lesson, minimum: 1, maximum: chars().length, characters: chars() } });
+    if (l.startsWith('put kochlesson/')) {
+      const n = +l.split('/')[1];
+      if (!(n >= 1 && n <= chars().length)) return send({ error: { content: 'INVALID KOCH LESSON ' + l.split('/')[1] } });
+      st.lesson = n; return send({ ok: { content: 'OK' } });
+    }
+    if (l === 'get config/koch sequence') return send({ config: { name: 'Koch Sequence', value: st.seq, minimum: 0, maximum: 4, isMapped: true, 'mapped values': SEQ_NAMES } });
+    if (l.startsWith('put config/koch sequence/')) {      // Custom Chars without a set: OK, but it reverts to M32
+      const v = +l.split('/')[2];
+      st.seq = v === 4 && !st.custom ? 0 : v;
+      st.lesson = Math.min(st.lesson, chars().length);
+      return send({ ok: { content: 'OK' } });
+    }
     if (l === 'get control/speed') return send({ control: { name: 'speed', value: st.speed, minimum: 5, maximum: 60 } });
+    if (l === 'get customchars') return send({ customchars: { active: st.seq === 4, characters: st.custom ? 'kmrsuS' : '' } });
+    if (l === 'get practicechars') return send({ practicechars: { characters: st.practice9 != null ? st.practice9 : 'kmrSé' } });
     if (l === 'get menu') return send(menuObj());
     if (l === 'get menus') return send({ menus: [{ content: 'CW Keyer', 'menu number': 1, executable: true }, { content: 'CW Generator/..', 'menu number': 2, executable: false }] });
     if (l === 'put menu/stop') { finish('stopped'); st.keyer = false; st.practice = st.spacing = st.display = null; send({ ok: { content: 'OK' } }); return setTimeout(() => send(menuObj()), 50); }
@@ -74,6 +93,7 @@
     state: st,
     get msPerChar() { return st.msPerChar; }, set msPerChar(v) { st.msPerChar = v; },
     paddle() { finish('stopped'); },
+    knob(wpm) { st.speed = wpm; send({ control: { name: 'speed', value: wpm } }); },
     key(text) { const t = st.transport; if (t && t.onData && st.plugged) t.onData(text); },    // characters from the paddle, as the echo sends them
     leaveKeyer() { finish('stopped'); st.keyer = false; st.practice = st.spacing = st.display = null; send({ menu: { content: 'CW Keyer', 'menu number': 1, executable: true, active: false } }); },
     enterKeyer() { st.keyer = true; send({ activate: { state: 'ON' } }); },

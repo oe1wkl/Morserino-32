@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-05b"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-05b"></script>
+  <script src="m32_trainer_link.js?v=2026-11-06c"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-06c"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -90,7 +90,7 @@
     <div class="facts" id="facts" hidden>
       <div class="fact"><b>Device</b><span id="fDevice">–</span></div>
       <div class="fact"><b>Firmware</b><span id="fFirmware">–</span></div>
-      <div class="fact"><b>Koch lesson</b><span id="fLesson">–</span></div>
+      <div class="fact"><b id="fLessonLbl">Koch lesson</b><span id="fLesson">–</span></div>
       <div class="fact"><b>Speed</b><span id="fSpeed">–</span></div>
     </div>
     <div class="note" id="connNote" role="status"></div>
@@ -109,6 +109,12 @@
       <button id="btnPause" class="btn btn-outline" disabled>Pause</button>
     </div>
     <div class="row" style="margin-top:10px">
+      <span class="pair"><label for="selChars">Characters</label>
+        <select id="selChars"><option value="koch">Koch lesson</option><option value="practice">Practice Set</option></select></span>
+      <span class="pair" id="pairSeq"><label for="selSeq">Koch sequence</label>
+        <select id="selSeq" disabled></select></span>
+      <span class="pair" id="pairLesson"><label for="selLesson">Lesson</label>
+        <select id="selLesson" disabled></select></span>
       <span class="pair"><label for="selMode">Practise</label>
         <select id="selMode">
           <option value="groups">Groups</option><option value="words">Words</option><option value="phrases">Phrases</option>
@@ -122,6 +128,8 @@
         </select></span>
     </div>
     <div class="row" style="margin-top:10px">
+      <span class="pair"><label for="selEff">Effective speed</label>
+        <select id="selEff"></select></span>
       <span class="pair"><label for="selScreen">M32 screen</label>
         <select id="selScreen"><option value="hide">Hide what is played</option><option value="show">Show what is played</option></select></span>
       <span class="pair"><label for="selSource">Answer</label>
@@ -133,6 +141,7 @@
       <span class="pair" id="pairNext" hidden><label for="selNext">Next item</label>
         <select id="selNext"><option value="auto">Automatically</option><option value="enter">Press Enter</option></select></span>
     </div>
+    <div class="keys" id="speedNote"></div>
     <div class="keys" id="keyedHint" hidden></div>
     <div class="keys" id="availNote"></div>
     <div id="feedback"></div>
@@ -145,7 +154,7 @@
     </div>
     <details id="ownPhrases" style="margin-top:14px">
       <summary>Your own phrases</summary>
-      <p style="font-size:15px;margin:6px 0">One phrase per line, 2 to 8 words (a club's or school's texts, your own). Lines starting with # are skipped. Only lines made of your lesson's characters come up. Kept in this browser.</p>
+      <p style="font-size:15px;margin:6px 0">One phrase per line, 2 to 8 words (a club's or school's texts, your own). Lines starting with # are skipped. Only lines made of the characters you practise come up. Kept in this browser.</p>
       <label for="userText" class="sr">Your own phrases, one per line</label>
       <textarea id="userText" rows="6" style="width:100%;font-family:'Courier New',Courier,monospace;font-size:15px;padding:6px"></textarea>
       <div class="row" style="margin-top:6px">
@@ -168,7 +177,7 @@
     <div class="scroll">
     <table>
       <thead><tr><th scope="col">Char</th><th scope="col">Box</th><th scope="col">Copied</th><th scope="col">Right</th><th scope="col">Median time</th><th scope="col">Keyed</th></tr></thead>
-      <tbody id="charRows"><tr><td colspan="5">Connect to see the characters of your lesson.</td></tr></tbody>
+      <tbody id="charRows"><tr><td colspan="5">Connect to see the characters you practise.</td></tr></tbody>
     </table>
     </div>
     <div id="confusions" style="margin-top:12px;font-size:15px"></div>
@@ -192,7 +201,7 @@
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-05b';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-06c';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -203,7 +212,8 @@ let store = null, mastery = new E.Mastery(), scheduler = null, session = null;
 let corpus = null;              // E.Corpus, from m32_trainer_corpus.json (words and phrases)
 let lesson = null;              // the GET kochlesson object
 let lessonList = [];            // its active characters
-let wpm = null;
+let wpm = null;                 // the M32's speed (its knob; the trainer never changes it)
+let spacing = null;             // E.farnsworthSpacing() in force, or null (no Farnsworth)
 let keyerMenu = null;           // menu number of "CW Keyer"
 let started = false;            // a Start since connecting (counts a session for the export nudge)
 let needKeyer = false;          // the operator left the CW Keyer on the M32
@@ -212,6 +222,8 @@ let preparing = false;          // our own menu changes send menu events too
 // ---- small helpers ---------------------------------------------------------------
 
 function show(el, on) { el.hidden = !on; }
+const usePractice = () => $('selChars').value === 'practice';
+const setName = () => (usePractice() ? 'your Practice Set' : 'your lesson');
 function disp(token) { return token.toUpperCase(); }
 function dispText(text) { return E.tokenize(text).map((t) => (t === ' ' ? ' ' : disp(t))).join(''); }
 // for screen readers: "K M R"
@@ -253,6 +265,9 @@ async function openStore() {
   $('selIdle').value = String((await store.getMeta('idle')) || 4);
   $('selNext').value = (await store.getMeta('next')) || 'auto';
   $('selScreen').value = (await store.getMeta('screen')) || 'hide';
+  $('selChars').value = (await store.getMeta('chars')) || 'koch';
+  show($('pairSeq'), !usePractice()); show($('pairLesson'), !usePractice());
+  $('selEff').value = String((await store.getMeta('eff')) || 0);
   sourceChanged();
   sizes.groups = (await store.getMeta('size')) || 'mixed';
   sizes.phrases = (await store.getMeta('phraseLen')) || '2';
@@ -326,30 +341,101 @@ $('fileImport').onchange = async (ev) => {
 
 // ---- the device ---------------------------------------------------------------
 
+// The characters to practise: the Koch lesson (which follows Custom Characters when they are on),
+// or the M32's Practice Set (decision of 2026-11-06; no lesson advance then).
 async function readLesson() {
   const { kochlesson } = await link.command('get kochlesson');
   lesson = kochlesson;
-  lessonList = E.lessonChars(lesson);
-  $('fLesson').textContent = lesson.value + ' of ' + lesson.maximum;
+  let custom = false;
+  try { custom = !!(await link.command('get customchars')).customchars.active; } catch (e) { /* older firmware: not shown */ }
+  const dropped = [];                     // characters in the set the M32 has no Morse code for
+  if (usePractice()) {
+    const { practicechars } = await link.command('get practicechars');
+    lessonList = E.practiceChars(practicechars, dropped);
+    $('fLessonLbl').textContent = 'Practice Set';
+    $('fLesson').textContent = lessonList.length ? lessonList.map(disp).join(' ') : 'empty';
+  } else {
+    await readSequence();
+    lessonList = E.lessonChars(lesson, dropped);
+    $('fLessonLbl').textContent = 'Koch lesson';
+    $('fLesson').textContent = lesson.value + ' of ' + lesson.maximum + (custom ? ' (Custom Chars)' : '');
+  }
+  fillLessonPicker();
   const play = lessonList.slice();
+  if (dropped.length) $('fLesson').textContent += ' — left out, no Morse code: ' + dropped.map(disp).join(' ');
   const ps = lessonList.filter(E.isProsign);
   $('prosignHint').textContent = ps.length
     ? 'Type a prosign in angle brackets, as the M32 shows it: ' + ps.map(disp).join(' ') + ' ([' + disp(ps[0]).slice(1, -1) + '] works too).'
     : '';
-  if (scheduler) scheduler.setChars(play);
+  if (scheduler) scheduler.setChars(play, !usePractice());
   renderChars();
   renderAvailable();
   if (corpus && corpus.user.length) userInfo({ lines: $('userText').value.split(/\r?\n/).filter((l) => l.trim() && l.trim()[0] !== '#').length, kept: corpus.user.length });
   return play;
 }
 
+// Koch Sequence and Koch Lesson, set from the page (Willi, 2026-11-06): they change the values
+// stored on the M32, as its menu does, so that the trainer and the M32's own Koch modes agree.
+// The M32 accepts both in the CW Keyer: PUT config/Koch Sequence (re-reads a custom set) and
+// PUT kochlesson (as "Go to lesson" does).
+let sequence = null;            // the GET config/Koch Sequence object
+async function readSequence() {
+  try { sequence = (await link.command('get config/Koch Sequence')).config; } catch (e) { sequence = null; }
+  const sel = $('selSeq');
+  sel.innerHTML = '';
+  const names = (sequence && sequence['mapped values']) || [];
+  names.forEach((n, i) => sel.insertAdjacentHTML('beforeend', '<option value="' + i + '">' + esc(n) + '</option>'));
+  if (sequence) sel.value = String(sequence.value);
+  sel.disabled = !sequence;
+}
+function fillLessonPicker() {
+  const koch = !usePractice() && lesson;
+  show($('pairSeq'), !usePractice());
+  show($('pairLesson'), !usePractice());
+  const sel = $('selLesson');
+  sel.innerHTML = '';
+  if (!koch) { sel.disabled = true; return; }
+  for (let n = Math.max(1, lesson.minimum | 0); n <= (lesson.maximum | 0); n++)
+    sel.insertAdjacentHTML('beforeend', '<option value="' + n + '">' + n + ' · ' + esc(disp(String(lesson.characters[n - 1] || '').toLowerCase())) + '</option>');
+  sel.value = String(lesson.value);
+  sel.disabled = false;
+}
+function lessonNow() {
+  return 'Lesson ' + lesson.value + ' of ' + lesson.maximum + (lessonList.length ? '' : ': no characters the trainer can use') +
+    '. Practising it from the next item.';
+}
+
 async function readSpeed() {
   try {
     const { control } = await link.command('get control/speed');
     wpm = control.value;
-    $('fSpeed').textContent = wpm + ' WpM';
-  } catch (e) { $('fSpeed').textContent = '?'; }
+  } catch (e) { wpm = null; }
+  showSpeed();
 }
+
+// Effective speed (Farnsworth): the characters at the M32's speed, the spaces stretched, both
+// character and word spaces (decision of 2026-11-06). Set by hand only; session only, through
+// PUT cw/spacing -- nothing on the M32 changes.
+function showSpeed() {
+  const eff = +$('selEff').value;
+  spacing = wpm ? E.farnsworthSpacing(wpm, eff) : null;
+  $('fSpeed').textContent = wpm == null ? '?' : wpm + ' WpM' + (spacing ? ', effective ' + Math.round(spacing.effective) : '');
+  let note = '';
+  if (eff && wpm && !spacing) note = 'Effective speed ' + eff + ' WpM is not below your M32\'s speed (' + wpm + ' WpM): no extra spacing.';
+  else if (spacing && Math.abs(spacing.effective - eff) >= 0.5)
+    note = 'At ' + wpm + ' WpM the spacing reaches its limit: about ' + Math.round(spacing.effective) + ' WpM effective.';
+  $('speedNote').textContent = note;
+}
+for (let w = 4; w <= 35; w++) $('selEff').insertAdjacentHTML('beforeend', '<option value="' + w + '">' + w + ' WpM</option>');
+$('selEff').insertAdjacentHTML('afterbegin', '<option value="0">Off</option>');
+
+// The M32's knob: follow it, and keep the effective speed where it was
+link.on('control', (c) => {
+  if (!c || c.name !== 'speed') return;
+  wpm = c.value;
+  showSpeed();
+  if (link.state === 'ready' && !needKeyer) applySpacing().catch((e) => setStatus(e.message));
+});
 
 // Puts the M32 into the CW Keyer (cw/play works only there).
 async function ensureKeyer() {
@@ -384,7 +470,8 @@ async function prepare() {
   try { await ensureKeyer(); } finally { preparing = false; }
   needKeyer = false;
   await applyPractice();
-  if (!play.length) throw new Error('Your Koch lesson has no characters the trainer can use yet.');
+  if (!play.length) throw new Error(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
+                                                  : 'Your Koch lesson has no characters the trainer can use yet.');
   return play;
 }
 
@@ -515,7 +602,7 @@ link.installPageHide(window);
 // ---- practice ------------------------------------------------------------------
 
 function makeSession(play) {
-  scheduler = new E.Scheduler({ mastery, chars: play, corpus, mode: $('selMode').value,
+  scheduler = new E.Scheduler({ mastery, chars: play, newest: !usePractice(), corpus, mode: $('selMode').value,
                                size: sizeValue('groups'), length: +sizes.phrases, tier: $('selTier').value });
   if (session) { scheduler.retries = session.scheduler.retries; }
   const player = { play: (text) => link.playCw(text), stop: () => link.stopCw() };
@@ -524,7 +611,8 @@ function makeSession(play) {
     clock: { now: () => performance.now(), wall: () => Date.now() },
     context: () => ({ device: link.device ? { hardware: link.device.hardware, firmware: link.device.firmware,
                                                protocol: link.device.protocol, edition: link.device.edition || null } : null,
-                      lesson: lesson ? lesson.value : null, wpm })
+                      lesson: lesson && !usePractice() ? lesson.value : null, set: usePractice() ? 'practice' : 'koch',
+                      wpm, farnsworth: spacing ? Math.round(spacing.effective) : null })
   });
   session.on('state', onState);
   session.on('result', onResult);
@@ -553,12 +641,19 @@ function idleMs() { return Math.max(1000 * $('selIdle').value, wordGapDits() * 1
 
 // Session only, nothing is stored: only keyed characters reach us, the word gap above, no transmitter
 // Leniency is for the answer only: what the M32 sounds keeps a word space of 7 dits, the norm, whatever its
-// InterWord Spc says. The character spaces stay the learner's Interchar Spc until M4 brings spacing control.
+// InterWord Spc says, and the learner's Interchar Spc -- unless an effective speed is set (applySpacing()).
 async function applyPractice() {
   await link.command('put cw/practice/' + wordGapDits());
+  await applySpacing();
+  await link.command('put cw/display/' + ($('selScreen').value === 'hide' ? 'off' : 'on'));
+}
+
+// Without an effective speed: the learner's Interchar Spc and a word space of 7 dits
+async function applySpacing() {
+  showSpeed();
+  if (spacing) { await link.command('put cw/spacing/' + spacing.charSpace + '/' + spacing.wordSpace); return; }
   const { config } = await link.command('get config/Interchar Spc');
   await link.command('put cw/spacing/' + config.value + '/7');
-  await link.command('put cw/display/' + ($('selScreen').value === 'hide' ? 'off' : 'on'));
 }
 
 function sourceChanged() {
@@ -585,6 +680,40 @@ $('selScreen').onchange = async () => {
   await store.setMeta('screen', $('selScreen').value);
 };
 $('selNext').onchange = async () => { sourceChanged(); await store.setMeta('next', $('selNext').value); };
+$('selEff').onchange = async () => {
+  showSpeed();
+  if (link.state === 'ready' && !needKeyer) applySpacing().catch((e) => setStatus(e.message));
+  await store.setMeta('eff', +$('selEff').value);
+};
+$('selChars').onchange = async () => {
+  await store.setMeta('chars', $('selChars').value);
+  if (link.state !== 'ready') { show($('pairSeq'), !usePractice()); show($('pairLesson'), !usePractice()); renderAvailable(); return; }
+  try {
+    await readLesson();
+    if (!lessonList.length) setStatus(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
+                                                    : 'Your Koch lesson has no characters the trainer can use yet.');
+    else setStatus('Practising ' + (usePractice() ? 'your Practice Set' : 'your Koch lesson') + ' from the next item.');
+  } catch (e) { setStatus(e.message); }
+};
+
+$('selSeq').onchange = async () => {
+  const want = +$('selSeq').value;
+  const names = (sequence && sequence['mapped values']) || [];
+  try {
+    await link.command('put config/Koch Sequence/' + want);
+    await readLesson();
+    if (sequence && sequence.value !== want)          // Custom Chars without a set: the M32 stays where it was
+      setStatus('The M32 has no custom character set (it comes from the player file), so it stays on ' + (names[sequence.value] || 'its sequence') + '.');
+    else setStatus((names[want] || 'Sequence') + ': ' + lessonNow());
+  } catch (e) { setStatus('Could not change the sequence: ' + e.message); }
+};
+$('selLesson').onchange = async () => {
+  try {
+    await link.command('put kochlesson/' + $('selLesson').value);
+    await readLesson();
+    setStatus(lessonNow());
+  } catch (e) { setStatus('Could not change the lesson: ' + e.message); }
+};
 
 link.on('text', (it) => {
   if (!keyed || !session || (session.state !== 'answering' && session.state !== 'second-try')) return;
@@ -664,8 +793,8 @@ function renderAvailable() {
   if (mode === 'groups' || !lessonList.length) { note.textContent = ''; return; }
   const av = corpus.available(lessonList, +sizes.phrases);
   if (mode === 'words') {
-    note.textContent = av.words.length ? av.words.length + ' words use only your lesson\'s characters.'
-                                       : 'No word uses only your lesson\'s characters yet — practise groups for now.';
+    note.textContent = av.words.length ? av.words.length + ' words use only ' + setName() + '\'s characters.'
+                                       : 'No word uses only ' + setName() + '\'s characters yet — practise groups for now.';
     return;
   }
   for (const o of $('selTier').options) {
@@ -677,13 +806,13 @@ function renderAvailable() {
   if (tier === 'mixed') {
     note.textContent = av.eligible.length
       ? 'Mixing ' + av.eligible.map((t) => TIER_NAMES[t].replace(/^of /, '')).join(', ') + ' (' + n + ' words).'
-      : 'Not enough ' + n + '-word phrases at your lesson yet (a kind needs 10). Try fewer words, Words, or groups.';
+      : 'Not enough ' + n + '-word phrases fit ' + setName() + ' yet (a kind needs 10). Try fewer words, Words, or groups.';
   } else {
     // "211 QSO lines with 4 words fit your lesson." / "2 of your own phrases with 4 words fit ..."
     note.textContent = av.count[tier]
-      ? av.count[tier] + ' ' + TIER_NAMES[tier] + ' with ' + n + ' words ' + (av.count[tier] === 1 ? 'fits' : 'fit') + ' your lesson.'
+      ? av.count[tier] + ' ' + TIER_NAMES[tier] + ' with ' + n + ' words ' + (av.count[tier] === 1 ? 'fits' : 'fit') + ' ' + setName() + '.'
       : (tier === 'U' ? 'None of your own phrases' : 'No ' + TIER_NAMES[tier]) + ' with ' + n + ' words ' +
-        (tier === 'U' ? 'fits' : 'fit') + ' your lesson yet.';
+        (tier === 'U' ? 'fits' : 'fit') + ' ' + setName() + ' yet.';
   }
 }
 
@@ -713,7 +842,7 @@ function userInfo(r) {
   if (!r.lines) { $('userInfo').textContent = ''; return; }
   const usable = lessonList.length ? corpus.user.filter((it) => [...it.need].every((t) => lessonList.indexOf(t) >= 0)).length : null;
   $('userInfo').textContent = r.kept + ' of ' + r.lines + ' lines have 2 to 8 words' +
-    (usable != null ? '; ' + usable + ' use only your lesson\'s characters.' : '.');
+    (usable != null ? '; ' + usable + ' use only ' + setName() + '\'s characters.' : '.');
 }
 async function useUserText(text) {
   if (!corpus) return;
@@ -733,6 +862,7 @@ $('fileUser').onchange = async (ev) => {
 
 function enablePractice(on) {
   $('btnGo').disabled = !on;
+  if (!on) { $('selSeq').disabled = true; $('selLesson').disabled = true; }
   $('answer').disabled = !on;
   $('btnPause').disabled = !on;
   $('btnReplay').disabled = true;
@@ -822,7 +952,7 @@ function startNext() {
   try { session.next(); }
   catch (e) {
     if (e.name !== 'NoItemsError') throw e;
-    setStatus(e.what === 'words' ? 'No word uses only your lesson\'s characters yet — choose Groups.'
+    setStatus(e.what === 'words' ? 'No word uses only ' + setName() + '\'s characters yet — choose Groups.'
                                  : 'Nothing to practise with these settings yet — choose fewer words, another kind, or Groups.');
   }
 }
@@ -942,7 +1072,7 @@ function renderChars() {
   $('confusions').innerHTML = conf.length ? '<b>Most confused:</b> ' +
     conf.map((c) => '<span class="mono">' + esc(disp(c.expected)) + '</span> taken for <span class="mono">' + esc(disp(c.got)) + '</span> (' + c.count + '×)').join(' · ') : '';
   // decision 4d: offered, never automatic
-  const ready = lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(lessonList);
+  const ready = !usePractice() && lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(lessonList);
   show($('advance'), !!ready);
   if (ready) {
     const nextCh = lesson.characters[lesson.value];

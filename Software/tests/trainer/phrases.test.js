@@ -12,7 +12,7 @@ const tiny = {
   schema: 1, lang: 'en',
   words: ['tea', 'eat', 'ate', 'sea', 'set', 'east', 'seat', 'tease', 'state', 'taste', 'stem', 'meat'],
   pools: { NAME: [['tom', 0x02], ['otto', 0x01]], RIG: ['k3', 'ft817'] },
-  prefixes: [['k', 0x02, 5, 200], ['dl', 0x01, 14, 200]],
+  prefixes: [['k', 0x02, 5, 200, 1, '1111111111'], ['dl', 0x01, 14, 200, 1, '1111111111']],
   phrases: [
     { tier: 'B', src: 'authored', text: 'eat tea' }, { tier: 'B', src: 'authored', text: 'set a seat' },
     { tier: 'C', src: 'realqsos', text: 'tnx fer call' }, { tier: 'B', src: 'authored', text: 'the end' }

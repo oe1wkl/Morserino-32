@@ -459,3 +459,70 @@ test('raw keystrokes are pruned before a date, the rest stays', async () => {
   assert.equal(all[0].latency, 5);
   assert.equal(all[1].keystrokes.length, 1);
 });
+
+test('M4: the Practice Set reply becomes tokens as GET kochlesson shows them, once each', () => {
+  assert.deepEqual(E.practiceChars({ characters: 'kmrSéHkAU' }), ['k', 'm', 'r', '<as>', 'é', 'ch', '<ka>']);   // * has no Morse code
+  assert.deepEqual(E.practiceChars({ characters: '' }), []);
+  assert.deepEqual(E.practiceChars(null), []);
+  assert.deepEqual(E.practiceChars({ characters: 'NKEBR' }), ['<kn>', '<sk>', '<ve>', '<bk>']);         // nor has <err> (not in CWchars[])
+});
+
+test('M4: Farnsworth spacing stretches character and word spaces alike, within the M32\'s ranges', () => {
+  // 20/12: 52.3 dits of spacing in PARIS -> character spaces of 8 (3/19 of it), the word space 20 (the rest)
+  assert.deepEqual(E.farnsworthSpacing(20, 12), { charSpace: 8, wordSpace: 20, effective: 50 * 20 / (31 + 32 + 20) });
+  for (let wpm = 5; wpm <= 40; wpm++)
+    for (let eff = 4; eff < wpm; eff++) {
+      const s = E.farnsworthSpacing(wpm, eff);
+      assert.ok(s.charSpace >= 3 && s.charSpace <= 45, wpm + '/' + eff);
+      assert.ok(s.wordSpace >= s.charSpace + 4 && s.wordSpace <= 105, wpm + '/' + eff);
+      assert.ok(s.effective <= wpm + 1e-9);
+      // whole dits only: PARIS is off by half a dit at most (unless a range limit is reached)
+      if (s.charSpace < 45) assert.ok(Math.abs(31 + 4 * s.charSpace + s.wordSpace - 50 * wpm / eff) <= 0.5, wpm + '/' + eff + ' -> ' + s.effective);
+    }
+  assert.equal(E.farnsworthSpacing(20, 20), null);           // not below: no Farnsworth
+  assert.equal(E.farnsworthSpacing(20, 25), null);
+  assert.equal(E.farnsworthSpacing(20, 0), null);
+  assert.equal(E.farnsworthSpacing(null, 10), null);
+  assert.ok(E.farnsworthSpacing(40, 4).effective > 6);        // at the limit: faster than asked, the page says so
+});
+
+test('M4: without an order (Practice Set) no character counts double', () => {
+  const m = new E.Mastery();
+  const ordered = new E.Scheduler({ mastery: m, chars: ['k', 'm', 'r'] });
+  const plain = new E.Scheduler({ mastery: m, chars: ['k', 'm', 'r'], newest: false });
+  assert.equal(ordered.weight('r'), 2 * ordered.weight('k'));
+  assert.equal(plain.weight('r'), plain.weight('k'));
+  ordered.setChars(['k', 'm', 'r'], false);
+  assert.equal(ordered.weight('r'), ordered.weight('k'));
+  ordered.setChars(['k', 'm', 'r']);                         // newest left as it was
+  assert.equal(ordered.newest, false);
+});
+
+test('M4: LICW (BC2 = 44 characters) from GET kochlesson: every character is one token the trainer can use', () => {
+  // licwAllKochChars (MorsePreferences.h), as GET kochlesson lists it (cleanUpProSigns())
+  const raw = 'reatinpgslcdhofuwbkmy59,qxv73?+K=16.zj/28B40-ASNE@:';
+  const shown = { K: '<sk>', B: '<bk>', A: '<ka>', S: '<as>', N: '<kn>', E: '<ve>' };
+  const characters = [...raw].map((c) => shown[c] || c);
+  const act = E.lessonChars({ value: 44, minimum: 1, maximum: characters.length, characters });
+  assert.equal(act.length, 44);
+  assert.equal(new Set(act).size, 44);
+  for (const t of act) assert.deepEqual(E.tokenize(t), [t], t);       // a prosign stays one character
+  assert.ok(act.includes('<sk>') && act.includes('<bk>') && act.includes('+') && act.includes('='));
+  // groups drawn from it use only those
+  const s = new E.Scheduler({ mastery: new E.Mastery(), chars: act, rng: E.mulberry32(3) });
+  for (let i = 0; i < 50; i++) for (const t of E.tokenize(s.next().text)) assert.ok(act.includes(t), t);
+});
+
+// Bench 2026-11-06: "\sk" at the end of player.txt put a "\" into Custom Chars (fixed in getWord());
+// the M32 skips a character it has no code for, so the trainer must not ask for it either.
+test('M4: characters with no Morse code are left out of the set, and reported', () => {
+  const dropped = [];
+  const set = E.lessonChars({ value: 6, characters: ['g', 'r', 'ü', 's', 'Å', '\\', 'x'] }, dropped);
+  assert.deepEqual(set, ['g', 'r', 'ü', 's', 'å']);
+  assert.deepEqual(dropped, ['\\']);
+  const d2 = [];
+  assert.deepEqual(E.practiceChars({ characters: 'k\\U(ø' }, d2), ['k', '(', 'ø']);
+  assert.deepEqual(d2, ['\\', '*']);
+  for (const t of ['a', '9', '@', '<sk>', '<bk>', 'ä', 'ch', 'ñ', '+', '=']) assert.ok(E.hasMorse(t), t);
+  for (const t of ['\\', '*', '<err>', '!', '"', 'ß']) assert.ok(!E.hasMorse(t), t);
+});
