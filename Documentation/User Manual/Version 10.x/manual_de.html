@@ -666,6 +666,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <p>Ab Version 5.1 verfügt der Morserino über einen Memory Keyer. Es stehen acht Speicherplätze zur Verfügung, die jeweils bis zu 47 Zeichen enthalten können. Neben Standard-Morsezeichen (Buchstaben, Zahlen, Satzzeichen) können auch Betriebszeichen und ein Pausenzeichen gespeichert werden. Die Textdarstellung von Betriebszeichen und Pausenmarkierung findest du unter <strong>Kodierung von Textdateien</strong> im Abschnitt <strong>Was kann generiert werden?</strong></p>
 <p>Gespeicherte Inhalte können in den Modi <strong>CW Keyer</strong>, <strong>iCW/Ext Trx</strong> und <strong>Remote Keyer</strong> abgerufen werden (aus technischen Gründen jedoch nicht in den Modi <strong>WiFi Trx</strong><span class="classic"> oder <strong>LoRa Trx</strong></span>). <strong>Um einen Speicher abzurufen, klicke einmal kurz auf den ENCODER-Knopf.</strong> Wenn Speicher definiert wurden, kannst du in der obersten Zeile mit dem Drehgeber durch sie blättern. Es gibt auch eine EXIT-Option, falls du es dir anders überlegst. Wenn keine Speicherplätze definiert wurden, erscheint eine Fehlermeldung.</p>
 <p>Die Speicher 1 und 2 werden endlos wiederholt, bis du sie durch manuelle Eingabe stoppst; alle anderen Speicher werden einmal abgespielt.</p>
+<p>Speicher werden mit der Geschwindigkeit des Keyers und mit den Standardabständen gesendet, genau wie deine eigene Tastung: 3 Dits zwischen den Zeichen und <strong>Interword Spc</strong> (mindestens 7 Dits) zwischen den Wörtern. <strong>Interchar Spc</strong>, mit dem der CW-Generator und die anderen Trainingsmodi die Abstände zwischen den Zeichen verlängern (Farnsworth-Methode), gilt für Speicher nicht.</p>
 <h4 class="unnumbered" id="definition-von-speicherplaetzen">Definition von Speicherplätzen</h4>
 <p>Die Speicher können nur über das serielle Protokoll definiert werden – entweder über eine Computersoftware, die dieses Protokoll implementiert, oder manuell über ein Terminalprogramm. (Das serielle Protokoll ist in einem separaten Dokument beschrieben.)</p>
 <p>Der Befehl zur Definition eines Speichers lautet:</p>
@@ -690,7 +691,7 @@ aus dem englischsprachigen Original übersetzt.</p>
 <ul>
 <li><strong>Random</strong>: Erzeugt Gruppen von zufälligen Zeichen. Länge der Gruppen und Zeichenauswahl können in den Einstellungen festgelegt werden (Details in der Beschreibung der Einstellungen).</li>
 <li><strong>CW Abbrevs</strong>: Zufällige Abkürzungen und Q-Gruppen, die im CW-Verkehr sehr häufig vorkommen (über eine Einstellung kannst du die maximale Länge der zu trainierenden Abkürzungen festlegen). Siehe <strong>Gängige CW-Abkürzungen, verwendet vom Morserino-32</strong> für die generierbaren Abkürzungen und ihre Bedeutung.</li>
-<li><strong>English Words</strong>: Zufällige Wörter aus einer Liste der 5.000 gebräuchlichsten englischen Wörter (auch hier kann die maximale Wortlänge über eine Einstellung festgelegt werden).</li>
+<li><strong>English Words</strong>: Zufällige Wörter aus einer Liste der 5.000 gebräuchlichsten englischen Wörter (auch hier kann die maximale Wortlänge über eine Einstellung festgelegt werden). Die Worthäufigkeiten stammen aus den FrequencyWords-Listen von Hermit Dave (<em>https://github.com/hermitdave/FrequencyWords</em>), Lizenz CC BY-SA 4.0; wir haben sie gefiltert und gekürzt.</li>
 <li><strong>Call Signs</strong>: Generiert Amateurfunk-Rufzeichen (dies sind nicht immer echte Rufzeichen; es werden auch solche generiert, die in der Realität nicht existieren würden, da bestimmte Suffixe möglicherweise noch niemandem zugeteilt wurden). Die maximale Länge kann über eine Einstellung gewählt werden, ebenso – wenn gewünscht – der Kontinent der generierten Rufzeichen sowie ob sehr seltene Präfixe ausgeblendet werden sollen. Die Präfixe und ihre Bezirksziffern folgen Rufzeichen, die tatsächlich auf den Bändern zu hören sind.</li>
 <li><strong>Prefixes</strong>: Generiert Rufzeichen-Präfixe – den Anfang eines Rufzeichens bis einschließlich der Ziffer des Rufzeichenbezirks, etwa OE3, DL1, KD9, VE3, UA9 oder 3B8 –, um den Teil eines Rufzeichens zu üben, der verrät, wo eine Station sitzt. Welche Präfixe vorkommen und wie oft welche Bezirksziffer, folgt Rufzeichen, die tatsächlich auf den Bändern zu hören sind: OE3 kommt häufig, OE0 nie. Die Einstellungen <strong>Calls Region</strong> und <strong>Call Prefixes</strong> gelten auch hier, <strong>Length Calls</strong> nicht – Präfixe sind ohnehin kurz.</li>
 <li><strong>Mixed</strong>: Wählt zufällig aus den oben genannten Möglichkeiten (zufällige Zeichengruppen, Abkürzungen, englische Wörter und Rufzeichen – aber keine Präfixe).</li>
@@ -4927,6 +4928,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=de src=399698b6d92d -->
+<!-- MANUALFRESH: lang=de src=e88b63272d58 -->
 </body>
 </html>

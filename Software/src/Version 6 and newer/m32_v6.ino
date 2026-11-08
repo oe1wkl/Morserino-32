@@ -208,6 +208,7 @@ uint8_t practiceCharSpace = 0, practiceWordSpace = 0;   // PUT cw/spacing/<char>
                                     // in dits, instead of Interchar Spc and InterWord Spc. Never stored; 0 = as the preferences say
 boolean practiceHidePlayed = false; // PUT cw/display/off: what is sounded during practice does not appear on the screen. Never stored
 boolean practiceMode();
+boolean keyerPlayback();
 void endPractice();
 #ifdef CONFIG_BLE_SERIAL
 volatile bool bleProtocol = false;                      // per-transport handshake state for BLE Serial (see M32ProtocolOut.h);
@@ -2017,7 +2018,10 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
                                                    // Wait for timers to expire
            if (millis() >= ktimer) {                // are we at end of key down ?
                keyOut(false, true, 0, 0);
-               ktimer = millis() + ditLength -1;    // inter-element time
+               // inter-element time: keyOut() has just spent its KEYOUT_EDGE_MS before lifting the line, and the next
+               // key-down spends it again before asserting it - so the gap leaves that out, as in generateCW().
+               // Was `ditLength -1`: measured 2026-11-08 at 20 WpM, every gap 64.6 ms for 60 (marks exact), ≈19.2 WpM.
+               ktimer = millis() + ditLength - KEYOUT_EDGE_MS;
                latencytimer = millis() + ((MorsePreferences::pliste[posLatency].value) * ditLength / 8);
                keyerState = INTER_ELEMENT;       // next state
             }
@@ -2816,6 +2820,11 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
             //// otherwise we continue here; stop keying,  and determine the length of the following pause: inter Element, interCharacter or InterWord?
 
            keyOut(false, (morseState != loraTrx && morseState != wifiTrx), 0, 0);
+            // The space starts now, at key-up - not after dispGeneratedChar() below: drawing a character (and,
+            // at a word start, a pre-emptive line wrap with its scroll) takes tens of ms on the display, and
+            // timing the space from millis() after it added that to every character and word space. Measured
+            // 2026-11-08 on keyer-memory playback at 20 WpM: 4 dits between characters, 8 between words, ~18 WpM.
+            const unsigned long keyUpAt = millis();
             if (CWwordPos >= (int)CWword.length())   {                                 // we just ended the the word, ...  //// intercept here in Echo Trainer mode or autoStop mode
               if (morseState == morseGenerator)
                     autoStop = MorsePreferences::pliste[posAutoStop].value ? halt : nextword;
@@ -2862,7 +2871,7 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                     }
                 }
                 else {
-                      genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : soundedWordSpace() - KEYOUT_EDGE_MS) ;  // we need a pause for interWordSpace
+                      genTimer = keyUpAt + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterWordSpace : soundedWordSpace() - KEYOUT_EDGE_MS) ;  // we need a pause for interWordSpace
                       if (morseState == morseGenerator && MorsePreferences::pliste[posLoraCwTransmit].value >= 1) {                                   // in generator mode and we want to send with LoRa
                           cwForTx(0);
                           cwForTx(3);                           // as we have just finished a word
@@ -2881,10 +2890,10 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
                 if (morseState == echoTrainer && MorsePreferences::pliste[posEchoDisplay].value == DISP_ONLY)
                     genTimer = millis() +1;
                 else
-                    genTimer = millis() + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterCharacterSpace : wordDoublerICS() - KEYOUT_EDGE_MS);          // pause = intercharacter space
+                    genTimer = keyUpAt + ((morseState == loraTrx || morseState == wifiTrx) ? rxInterCharacterSpace : wordDoublerICS() - KEYOUT_EDGE_MS);          // pause = intercharacter space
              }
              else  {                                                                                                   // we are in the middle of a character
-                genTimer = millis() + ((morseState == loraTrx  || morseState == wifiTrx) ? rxDitLength : ditLength - KEYOUT_EDGE_MS);                              // pause = interelement space
+                genTimer = keyUpAt + ((morseState == loraTrx  || morseState == wifiTrx) ? rxDitLength : ditLength - KEYOUT_EDGE_MS);                              // pause = interelement space
              }
              generatorState = KEY_UP;                               // next state = key up = pause
              break;
@@ -2894,6 +2903,8 @@ void generateCW () {          ////// this is called from loop() (frequently!)  a
 unsigned int wordDoublerICS() {
     if (practiceMode() && practiceCharSpace != 0)
       return practiceCharSpace * ditLength;         // PUT cw/spacing
+    if (keyerPlayback())
+      return 3 * ditLength;                         // a keyer memory or cw/play: standard spacing, see keyerPlayback()
     if (morseState != morseGenerator || (MorsePreferences::pliste[posWordDoubler].value == 0) || ( MorsePreferences::pliste[posWordDoubler].value != 0 && firstTime == false))
       return interCharacterSpace;
 
@@ -4751,7 +4762,19 @@ boolean practicePlayedHidden() {
 unsigned int soundedWordSpace() {
     if (practiceMode() && practiceWordSpace != 0)
       return _max(practiceWordSpace, practiceCharSpace + 4) * ditLength;
+    if (keyerPlayback())                    // standard character space (or PUT cw/spacing's) + 4, InterWord Spc if longer
+      return _max(MorsePreferences::pliste[posInterWordSpace].value,
+                  ((practiceMode() && practiceCharSpace != 0) ? practiceCharSpace : 3) + 4) * ditLength;
     return interWordSpace;
+}
+
+// What a keyer mode plays - a recalled keyer memory, or a program's cw/play - goes on the air like the operator's own
+// keying, so it uses the standard 3-dit character space, not Interchar Spc. That preference is for the training
+// modes (Farnsworth), is not in these modes' preferences, and the keyer shows no effective speed: a value of 4 set
+// for practice silently made memories at 20 WpM go out at 18 (found 2026-11-08). InterWord Spc stays - it is a
+// keyer preference too. PUT cw/spacing during practice still overrides both (wordDoublerICS(), soundedWordSpace()).
+boolean keyerPlayback() {
+    return playCW && (morseState == morseKeyer || morseState == morseTrx || morseState == kipKeyer);
 }
 
 // protocol 1.6: settle what a client's cw/play is owed - one {"cw":{"event":"done"}}, "end" when it has finished
@@ -4824,6 +4847,15 @@ String getWord() {
         }
     }
     
+    // A last word with no space or newline after it still has to be cleaned up (and a comment
+    // dropped): returned raw, "\sk" at the very end of player.txt put a "\" into the Custom Chars
+    // set (a character with no Morse code) and was played as \ s k instead of <sk>.
+    if (result.length() > 0) {
+        result = cleanUpText(result);
+        if (result.indexOf('C') != -1)
+            result = "";
+    }
+
     // End of part (or end of file): wrap around
     wordReaderAtEof = true;
     

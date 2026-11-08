@@ -803,6 +803,13 @@ Fehlermeldung.
 Die Speicher 1 und 2 werden endlos wiederholt, bis du sie durch manuelle
 Eingabe stoppst; alle anderen Speicher werden einmal abgespielt.
 
+Speicher werden mit der Geschwindigkeit des Keyers und mit den
+Standardabständen gesendet, genau wie deine eigene Tastung: 3 Dits
+zwischen den Zeichen und **Interword Spc** (mindestens 7 Dits) zwischen
+den Wörtern. **Interchar Spc**, mit dem der CW-Generator und die anderen
+Trainingsmodi die Abstände zwischen den Zeichen verlängern
+(Farnsworth-Methode), gilt für Speicher nicht.
+
 #### Definition von Speicherplätzen {-}
 
 Die Speicher können nur über das serielle Protokoll definiert werden –
@@ -894,6 +901,9 @@ wählen:
 -   **English Words**: Zufällige Wörter aus einer Liste der 5.000
     gebräuchlichsten englischen Wörter (auch hier kann die maximale
     Wortlänge über eine Einstellung festgelegt werden).
+    Die Worthäufigkeiten stammen aus den FrequencyWords-Listen von Hermit
+    Dave (*https://github.com/hermitdave/FrequencyWords*), Lizenz
+    CC BY-SA 4.0; wir haben sie gefiltert und gekürzt.
 -   **Call Signs**: Generiert Amateurfunk-Rufzeichen (dies sind nicht
     immer echte Rufzeichen; es werden auch solche generiert, die in der
     Realität nicht existieren würden, da bestimmte Suffixe möglicherweise

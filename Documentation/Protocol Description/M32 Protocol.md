@@ -32,6 +32,11 @@ The Morserino can communicate two-way with a connected computer — over the USB
 	    was played the next time a keyer mode started.
 	"Interchar Spc" and "InterWord Spc" set with PUT config apply at once;
 	    before, only from the next speed change or mode start.
+	PUT cw/play, cw/repeat and cw/recall (and the keyer memories recalled on
+	    the device) are spaced like keying: 3 dits between characters and
+	    "InterWord Spc", but at least 7 dits, between words; before, they
+	    took the "Interchar Spc" meant for the training modes. Use
+	    PUT cw/spacing in practice mode for wider spacing.
 
 	Changes in protocol version 1.5 from version 1.4 (firmware with remote
 	keying only; advertised as "kip" in GET capabilities):
@@ -1028,7 +1033,7 @@ Example:
 
 `PUT cw/play/<text to be played>`		
 
-This command plays the text string in CW (like a memory keyer -  needs to be in CW Keyer mode or in Morse Trx mode, cannot work in LoRa or WiFi Trx modes). Keying will be stopped as soon as something is being keyed manually, or with the `PUT cw/stop` command.
+This command plays the text string in CW (like a memory keyer -  needs to be in CW Keyer mode or in Morse Trx mode, cannot work in LoRa or WiFi Trx modes). Keying will be stopped as soon as something is being keyed manually, or with the `PUT cw/stop` command. The text is spaced like keying: 3 dits between characters, and the "InterWord Spc" parameter (at least 7 dits) between words; "Interchar Spc" (for the training modes) does not apply. In practice mode, `PUT cw/spacing` sets other spaces.
 
 `PUT cw/repeat/<text to be played>	`
 
@@ -1054,9 +1059,9 @@ Nothing is stored, and no parameter changes. Practice mode ends with `PUT cw/pra
 
 `PUT cw/spacing/off`
 
-*(protocol version 1.6 — check for `cw/practice` in `GET capabilities`)* The spaces of what the Morserino sounds during practice mode, in dit lengths: `<char>` between characters (3 to 45, 3 is the norm) and `<word>` between words (6 to 105, 7 is the norm), in place of the "Interchar Spc" and "InterWord Spc" parameters. As with those parameters, a word space is never shorter than `<char>` + 4. How a keyed answer is read does not depend on them.
+*(protocol version 1.6 — check for `cw/practice` in `GET capabilities`)* The spaces of what the Morserino sounds during practice mode, in dit lengths: `<char>` between characters (3 to 45, 3 is the norm) and `<word>` between words (6 to 105, 7 is the norm), in place of the standard character space of 3 dits and the "InterWord Spc" parameter. As always, a word space is never shorter than `<char>` + 4. How a keyed answer is read does not depend on them.
 
-It takes effect only while practice mode is on, and only for the text sounded after it. Nothing is stored, and no parameter changes. `PUT cw/spacing/off` goes back to the parameters; so does everything that ends practice mode. The reply is "ok", or an error for any other value.
+It takes effect only while practice mode is on, and only for the text sounded after it. Nothing is stored, and no parameter changes. `PUT cw/spacing/off` goes back to the standard spacing; so does everything that ends practice mode. The reply is "ok", or an error for any other value.
 
 `PUT cw/display/off`
 

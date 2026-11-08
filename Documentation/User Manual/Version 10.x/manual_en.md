@@ -760,6 +760,12 @@ defined.
 Memories 1 and 2 play repeatedly until stopped by keying something
 manually; all other memories play once.
 
+Memories are sent at the keyer's speed with standard spacing, just like
+your own keying: 3 dits between characters, and **Interword Spc** (at
+least 7 dits) between words. **Interchar Spc**, which the CW Generator
+and the other training modes use to stretch the spaces between
+characters (Farnsworth spacing), does not apply to memories.
+
 #### Definition of Memories {-}
 
 The memories can only be defined through the serial protocol, either
@@ -857,6 +863,9 @@ You can choose between the following at the second level of the menu:
 -   **English Words**: Random words from a list of the 5.000 most common
     words in the English language (again you can set a maximum length of
     a word through a preference).
+    The word frequencies come from the FrequencyWords lists by Hermit
+    Dave (*https://github.com/hermitdave/FrequencyWords*), licensed under
+    CC BY-SA 4.0; we filtered and shortened them.
 -   **Call Signs**: Generates amateur radio call signs (these are not
    always real call signs, and there will be some generated that would not 		exist in
     the real world, as certain suffixes might not have been assigned to

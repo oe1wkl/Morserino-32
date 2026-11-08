@@ -396,8 +396,12 @@ struct WeightedWord {
     int weight; // Frequency weight
 };
 
-// words are most of the oxford 5000
-// weights from https://github.com/hermitdave/FrequencyWords/tree/master
+// The about 4,900 most common English words, with their frequency weights.
+// Adapted from FrequencyWords by Hermit Dave (https://github.com/hermitdave/FrequencyWords),
+// counted from the OpenSubtitles corpus; licensed under CC BY-SA 4.0
+// (https://creativecommons.org/licenses/by-sa/4.0/). Changes: filtered (names, profanities,
+// fragments) and cut to about 4,900 words. This adapted list (words and weights) is likewise
+// licensed under CC BY-SA 4.0.
 const WeightedWord words[] = {
 	{ "abandon", 9208 },
 	{ "ability", 15648 },
