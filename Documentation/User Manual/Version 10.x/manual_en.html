@@ -664,6 +664,7 @@ The font family used is Lato.</p>
 <p>Starting with version 5.1, the Morserino incorporates a memory keyer. There are eight memories available, and each can contain up to 47 characters. In addition to standard Morse code characters (letters, numbers, and punctuation), it can also contain pro-signs and a pause marker. For the textual representations of pro-signs and the pause marker, see <strong>Encoding of text files</strong> in section <strong>What can be generated?</strong> below.</p>
 <p>Memories can be <em>recalled</em> in the <strong>CW Keyer</strong>, <strong>iCW/Ext Trx</strong> and <strong>Remote Keyer</strong> modes (but <strong>not</strong> in the <strong>WiFi Trx</strong><span class="classic"> or <strong>LoRa Trx</strong></span> modes for technical reasons). <strong>To recall a memory, quickly press the ENCODER knob once.</strong> If any memories have been defined, the top line will allow you to scroll through them with the encoder. There is also an EXIT option if you change your mind. An error message will appear if no memories have been defined.</p>
 <p>Memories 1 and 2 play repeatedly until stopped by keying something manually; all other memories play once.</p>
+<p>Memories are sent at the keyer’s speed with standard spacing, just like your own keying: 3 dits between characters, and <strong>Interword Spc</strong> (at least 7 dits) between words. <strong>Interchar Spc</strong>, which the CW Generator and the other training modes use to stretch the spaces between characters (Farnsworth spacing), does not apply to memories.</p>
 <h4 class="unnumbered" id="definition-of-memories">Definition of Memories</h4>
 <p>The memories can only be defined through the serial protocol, either though some computer software that implements this protocol, or manually through a terminal program. (The serial protocol has been specified in a separate document.)</p>
 <p>The command to define a memory is the following:</p>
@@ -688,7 +689,7 @@ The font family used is Lato.</p>
 <ul>
 <li><strong>Random</strong>: Generates groups of random characters. The length of the groups as well as the choice of characters can be selected in the preferences, by double clicking the ENCODER knob (see the description of preferences for details).</li>
 <li><strong>CW Abbrevs:</strong> Random abbreviations and Q-codes that are very common in CW transmissions (through a preference setting you can choose the maximum length of the abbreviations you want to train). See <strong>List of common CW abbreviations used by Morserino-32</strong> for the abbreviations that can be generated, and their meaning.</li>
-<li><strong>English Words</strong>: Random words from a list of the 5.000 most common words in the English language (again you can set a maximum length of a word through a preference).</li>
+<li><strong>English Words</strong>: Random words from a list of the 5.000 most common words in the English language (again you can set a maximum length of a word through a preference). The word frequencies come from the FrequencyWords lists by Hermit Dave (<em>https://github.com/hermitdave/FrequencyWords</em>), licensed under CC BY-SA 4.0; we filtered and shortened them.</li>
 <li><strong>Call Signs</strong>: Generates amateur radio call signs (these are not always real call signs, and there will be some generated that would not exist in the real world, as certain suffixes might not have been assigned to anyone). The maximum length can be selected through a preference, as well as (if you like it so) the continent of the call signs generated, and if it should not generate call signs with extremely rare prefixes. The prefixes, and their call-area digits, follow call signs actually heard on the air.</li>
 <li><strong>Prefixes</strong>: Generates call sign prefixes – the beginning of a call sign up to and including its call-area digit, like OE3, DL1, KD9, VE3, UA9 or 3B8 – to train the part of a call that tells you where a station is. Which prefixes come up, and how often each call-area digit, follows call signs actually heard on the air: OE3 is frequent, OE0 never appears. The preferences <strong>Calls Region</strong> and <strong>Call Prefixes</strong> apply here as well; <strong>Length Calls</strong> does not – prefixes are short anyway.</li>
 <li><strong>Mixed</strong>: Selects randomly from the previous possibilities (random character groups, abbreviations, English words and call signs – but not prefixes).</li>
@@ -4937,6 +4938,6 @@ click = no</code></pre>
 </tr>
 </tbody>
 </table>
-<!-- MANUALFRESH: lang=en src=67d948456718 -->
+<!-- MANUALFRESH: lang=en src=c7ba2f09765b -->
 </body>
 </html>
