@@ -900,6 +900,9 @@ wählen:
 -   **English Words**: Zufällige Wörter aus einer Liste der 5.000
     gebräuchlichsten englischen Wörter (auch hier kann die maximale
     Wortlänge über eine Einstellung festgelegt werden).
+    Die Worthäufigkeiten stammen aus den FrequencyWords-Listen von Hermit
+    Dave (*https://github.com/hermitdave/FrequencyWords*), Lizenz
+    CC BY-SA 4.0; wir haben sie gefiltert und gekürzt.
 -   **Call Signs**: Generiert Amateurfunk-Rufzeichen (dies sind nicht
     immer echte Rufzeichen; es werden auch solche generiert, die in der
     Realität nicht existieren würden, da bestimmte Suffixe möglicherweise

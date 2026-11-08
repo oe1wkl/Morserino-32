@@ -862,6 +862,9 @@ You can choose between the following at the second level of the menu:
 -   **English Words**: Random words from a list of the 5.000 most common
     words in the English language (again you can set a maximum length of
     a word through a preference).
+    The word frequencies come from the FrequencyWords lists by Hermit
+    Dave (*https://github.com/hermitdave/FrequencyWords*), licensed under
+    CC BY-SA 4.0; we filtered and shortened them.
 -   **Call Signs**: Generates amateur radio call signs (these are not
    always real call signs, and there will be some generated that would not 		exist in
     the real world, as certain suffixes might not have been assigned to
