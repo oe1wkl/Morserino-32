@@ -1,0 +1,135 @@
+# Tier C — QSO lines for the M32 Trainer (English). DRAFT for Willi's review (decision 12c),
+# then a second experienced CW operator.
+#
+# One line = one phrase, 2–8 words, lower case; prosigns as <sk> <kn> <bk> <as> <ka> <ve>;
+# BT is "=", AR is "+". "## tag" groups the lines below it. [SLOT]s are filled at practice time:
+#   [CALL]  the station being worked (generated like the M32's getRandomCall())
+#   [CALL2] this station (another generated call)
+#   [NAME] [QTH] [RIG] [ANT] [WX] [AGE] [SOTA] [POTA]   from the QSO Bot (qso_content.h)
+#   the @pool lines below define the rest.
+# Seeded from the QSO Bot's lines (MorseQsoBot.cpp); its long overs are cut at "=" into
+# the pieces that are copied as a unit.
+
+@pool RST 599 579 559 589 449 339 5nn
+@pool PWR 5w 10w 20w 50w 100w 400w
+@pool TEMP 2c 8c 15c 22c 28c
+@pool ZONE 14 15 05 25 03 28
+@pool NR 001 012 057 123 234 418
+
+## calling cq
+cq cq de [CALL2] [CALL2] k
+cq cq cq de [CALL2] k
+cq de [CALL2] [CALL2] [CALL2] k
+cq dx de [CALL2] [CALL2] k
+cq sota de [CALL2] [CALL2] k
+cq pota de [CALL2] [CALL2] k
+qrl? de [CALL2]
+qrz? de [CALL2] k
+
+## answering
+[CALL] de [CALL2] [CALL2] k
+[CALL] de [CALL2] <kn>
+[CALL2] [CALL2]
+[CALL] de [CALL2] gm es tnx fer call
+
+## greeting
+gm dr om tnx fer call
+ga dr om tnx fer call
+ge om es tnx fer call
+gm [NAME] es tnx fer call
+fb dr [NAME]
+hw cpy?
+
+## report
+ur rst 599 599
+ur rst [RST] [RST]
+ur rst [RST] [RST] in [QTH]
+ur 5nn 5nn bk
+r r tnx fer rprt
+tnx fer rprt ur [RST]
+ur sigs fb
+ur sig [RST] wid qsb
+sri qrm pse agn
+pse rpt ur name
+pse qrs
+pse agn ur qth?
+
+## name and qth
+name [NAME] [NAME]
+name hr is [NAME] [NAME]
+op [NAME]
+qth [QTH] [QTH]
+qth hr is [QTH]
+qth nr [QTH]
+name [NAME] = qth [QTH]
+
+## station and weather
+rig [RIG] es ant [ANT]
+rig hr [RIG] pwr [PWR]
+pwr [PWR] es ant [ANT]
+ant is [ANT]
+rig is [RIG]
+qrp pwr [PWR]
+wx [WX]
+wx hr [WX] temp [TEMP]
+wx [WX] es temp [TEMP]
+age [AGE]
+age hr [AGE] yrs
+all copy fb = rig [RIG]
+
+## over to you
+hw? k
+hw cpy? bk
+so hw? [CALL] de [CALL2] k
+btu dr [NAME] <kn>
+all copy fb
+r r all ok
+<bk> r tu
+<bk> tu
+
+## signing off
+tnx fer fb qso
+tnx fb qso dr [NAME]
+tnx qso 73 es gl
+73 es gud dx
+tu 73 e e
+tu 73 e e de [CALL2] <sk>
+hpe cuagn dr [NAME]
+cul 73
+gl es 73
+vy 73 dr om
+73 [CALL] de [CALL2] <sk>
+tnx fb qso dr [NAME] = 73 73
+qrt now 73
+73 73 <sk>
+
+## qsl
+pse qsl via buro
+qsl via lotw
+qsl ok via buro
+pse qsl dr om
+
+## contest
+cq test de [CALL2] [CALL2] test
+5nn [ZONE]
+[CALL] 5nn [ZONE]
+5nn [NR]
+[CALL] 5nn [NR]
+tu [CALL2] test
+r tu
+nr agn?
+
+## sota and pota
+qth [SOTA] [SOTA]
+r qth [SOTA] [SOTA] bk
+qth [POTA] [POTA]
+s2s qth [SOTA]
+r ur 5nn 5nn tu 73 e e
+qrp fm [SOTA]
+
+## conditions
+qrm hr sri
+hvy qsb hr
+ur sig weak
+qrn hr
+pse qsy up 2

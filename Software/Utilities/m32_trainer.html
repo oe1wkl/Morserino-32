@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>M32 Trainer</title>
+  <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
+  <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
+  <script src="m32_trainer_link.js?v=2026-11-08"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-08"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
+    :root {
+      --text:#333;--accent:#cb4b16;--accent2:#b03e10;--muted:#666;
+      --box-bg:#e8f0f6;--box-border:#5a7080;--box-shadow:6px 8px 4px rgba(0,0,0,0.25);--radius:7px;
+      --green:#1d6030;--green-bg:#d4edda;--green-bdr:#7dbb7d;--red:#a3201a;--red-bg:#f8d7da;--red-bdr:#e4a0a8;
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:#fff;color:var(--text);font-family:Lato,Arial,sans-serif;font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+    .banner{background:linear-gradient(135deg,#1a2e3e 0%,#2c4a5e 100%);padding:18px 24px 14px;text-align:center;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,0.35);margin-bottom:24px}
+    .banner-title{font-size:28px;font-weight:900;letter-spacing:.03em}
+    .banner-sub{font-size:15px;opacity:.8;margin-top:2px}
+    .page{max-width:900px;margin:0 auto;padding:0 20px 60px}
+    .box{border:2px solid var(--box-border);border-radius:var(--radius);background:var(--box-bg);box-shadow:var(--box-shadow);padding:20px 24px;margin-bottom:22px}
+    h2{font-size:22px;font-weight:900;color:var(--accent);margin-bottom:10px}
+    .btn{display:inline-block;border:none;border-radius:var(--radius);padding:10px 20px;font-family:inherit;font-size:16px;font-weight:700;letter-spacing:.03em;cursor:pointer;box-shadow:3px 4px 3px rgba(0,0,0,.25);color:#fff;background:var(--accent)}
+    .btn:hover:not(:disabled){background:var(--accent2)}
+    .btn:disabled{opacity:.4;cursor:not-allowed}
+    .btn-outline{background:#fff;color:var(--text);border:2px solid var(--box-border);box-shadow:2px 3px 2px rgba(0,0,0,.12)}
+    .btn-outline:hover:not(:disabled){background:#f0f4f7}
+    .btn-sm{padding:5px 12px;font-size:14px}
+    .btn:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .badge{display:inline-block;padding:4px 14px;border-radius:var(--radius);font-weight:700;border:2px solid}
+    .badge.on{background:var(--green-bg);color:var(--green);border-color:var(--green-bdr)}
+    .badge.off{background:var(--red-bg);color:var(--red);border-color:var(--red-bdr)}
+    .badge.busy{background:#e3f2fd;color:#1565c0;border-color:#90caf9}
+    .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:14px}
+    .fact{background:#fff;border:1px solid #c8d8e4;border-radius:6px;padding:8px 14px}
+    .fact b{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted)}
+    .fact span{font-size:17px;font-weight:700}
+    .note{margin-top:12px;padding:8px 14px;border-radius:6px;background:#fff8e6;border:1px solid #e8d49a;font-size:15px}
+    .note.err{background:var(--red-bg);border-color:var(--red-bdr);color:var(--red)}
+    .note:empty{display:none}
+    .mono{font-family:'Courier New',Courier,monospace}
+    #status{font-size:20px;font-weight:700;min-height:32px;margin:6px 0 10px}
+    #answer{width:100%;font-family:'Courier New',Courier,monospace;font-size:30px;letter-spacing:.12em;padding:10px 14px;border:2px solid var(--box-border);border-radius:6px;background:#fff;text-transform:uppercase}
+    #answer:disabled{background:#f2f2f2}
+    #feedback{min-height:64px;margin-top:12px;font-size:17px}
+    .diff{font-family:'Courier New',Courier,monospace;font-size:26px;letter-spacing:.12em;font-weight:700}
+    .diff .ok{color:var(--green)}
+    .diff .bad{color:#fff;background:var(--red);border-radius:3px;padding:0 2px}
+    .diff .miss{color:var(--red);text-decoration:underline}
+    .keys{font-size:14px;color:var(--muted);margin-top:8px}
+    kbd{font-family:inherit;font-size:13px;border:1px solid #9ab;border-radius:3px;padding:0 5px;background:#fff}
+    .scroll{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;background:#fff;border-radius:6px;overflow:hidden}
+    th{text-align:left;font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--box-border);padding:6px 10px;border-bottom:2px solid var(--box-border)}
+    td{padding:5px 10px;border-bottom:1px solid #e0e8ee;font-size:15px}
+    td.ch{font-family:'Courier New',Courier,monospace;font-size:20px;font-weight:700}
+    .pips{white-space:nowrap}
+    .pip{display:inline-block;width:12px;height:12px;border-radius:2px;margin-right:3px;background:#d5dde3;vertical-align:middle}
+    .pip.f{background:var(--accent)}
+    .advance{margin-top:14px;padding:12px 16px;border-radius:6px;background:var(--green-bg);border:2px solid var(--green-bdr)}
+    .advance[hidden]{display:none}
+    .pair{white-space:nowrap;display:inline-flex;gap:6px;align-items:center}
+    .pair[hidden]{display:none}
+    select{font-family:inherit;font-size:15px;padding:5px 8px;border:1px solid #b0c0cc;border-radius:4px;background:#fff}
+    footer{text-align:center;font-size:14px;color:var(--muted);margin-top:30px}
+    footer a{color:#155e8f}
+    .help{padding-top:14px;padding-bottom:14px}
+    .help summary{cursor:pointer;font-size:17px}
+    .help p,.help li{font-size:15px;margin:8px 0}
+    .help ul{padding-left:20px}
+    .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  </style>
+</head>
+<body>
+<header class="banner">
+  <div class="banner-title">M32 Trainer</div>
+  <div class="banner-sub">Copy practice for your Morserino-32</div>
+</header>
+<main class="page">
+
+  <!-- ── Help (M5) ── -->
+  <details class="box help" id="help">
+    <summary><b>How the trainer works</b></summary>
+    <p>The M32 Trainer plays Morse on your Morserino, you copy it — typed here or keyed on the paddle — and the page
+      checks your copy, keeps a record of every character and decides what comes next. You need a computer with a
+      browser that can talk to a serial port (Chrome, Edge or Firefox on a desktop) and firmware 10 or newer
+      (serial protocol 1.6). Connect the M32 with its USB cable and press <b>Connect</b>: the page starts the M32's CW Keyer and plays through it
+      (if the Echo Trainer is running, it is left alone and logged until you press Enter).</p>
+    <ul>
+      <li><b>What is played.</b> <i>Characters</i>: your Koch lesson (as set on the M32, also with Custom Chars), the M32's
+        Practice Set, or all characters. <i>Practise</i>: groups, real words, phrases (word chains, plain language, QSO
+        lines, your own), and — with all characters — call signs and prefixes made exactly as the M32 makes them.</li>
+      <li><b>Answering.</b> Type what you heard and press Enter, or choose <i>Keyed on the paddle</i> and key it back.
+        A miss shows what it was, plays it again, and brings it back a few items later. Enter starts, checks and goes on;
+        Ctrl+Enter (Cmd+Enter on a Mac) replays (that counts as help); Esc pauses.</li>
+      <li><b>Boxes.</b> Each character climbs five boxes as you copy it right; a miss sends it two boxes down, and
+        characters in low boxes come up more often. When all of your lesson's characters reach box 3 the page offers the
+        next lesson — it never moves on by itself. Keyed answers, call signs and the Echo log are counted on their own and
+        move no box.</li>
+      <li><b>Speed.</b> The characters always sound at the speed set on the M32 (turn its knob; the page follows).
+        <i>Effective speed</i> stretches the gaps between characters and words (Farnsworth) for this session only.</li>
+      <li><b>Echo Trainer log.</b> Run the M32's Echo Trainer while the page is connected and every word it checks is
+        logged below, with your reaction and keying times as the M32 measured them.</li>
+      <li><b>What changes on your M32.</b> Only the Koch sequence and lesson, and only when you change them here or accept
+        the next lesson. Speed, spacing and the screen setting are for the session; leaving the CW Keyer or disconnecting
+        ends them. The transmitter is never keyed.</li>
+      <li><b>Your history</b> stays in this browser, nowhere else. Export it now and then; import it on another computer.</li>
+    </ul>
+    <p id="helpManual">The user manual has a section on the M32 Trainer:
+      <a href="https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/User%20Manual" target="_blank" rel="noopener">all Morserino-32 user manuals</a>.</p>
+    <p><b>Sources.</b> The words and their frequency order are adapted from
+      <a href="https://github.com/hermitdave/FrequencyWords" target="_blank" rel="noopener">FrequencyWords</a> by Hermit Dave
+      (counted from OpenSubtitles), licensed under
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>;
+      we filtered and shortened them. QSO phrases include ones contributed by Tommy, OZ1THC, and lines from
+      RealQSOs by Bill, G0ELZ, and Gordon, G3DVW (SK), used with Bill's permission.</p>
+  </details>
+
+  <!-- ── Connection ── -->
+  <section class="box" aria-labelledby="hConn">
+    <h2 id="hConn">Your Morserino</h2>
+    <div class="row">
+      <span id="linkBadge" class="badge off">Not connected</span>
+      <button id="btnConnect" class="btn">Connect</button>
+      <button id="btnDisconnect" class="btn btn-outline" hidden>Disconnect</button>
+      <button id="btnReconnect" class="btn btn-outline" hidden>Try again</button>
+    </div>
+    <div class="facts" id="facts" hidden>
+      <div class="fact"><b>Device</b><span id="fDevice">–</span></div>
+      <div class="fact"><b>Firmware</b><span id="fFirmware">–</span></div>
+      <div class="fact"><b id="fLessonLbl">Koch lesson</b><span id="fLesson">–</span></div>
+      <div class="fact"><b>Speed</b><span id="fSpeed">–</span></div>
+    </div>
+    <div class="note" id="connNote" role="status"></div>
+  </section>
+
+  <!-- ── Practice ── -->
+  <section class="box" aria-labelledby="hPractice">
+    <h2 id="hPractice">Copy practice</h2>
+    <div id="status">Connect your M32 to start.</div>
+    <div id="say" class="sr" role="status" aria-live="polite"></div>
+    <label for="answer" class="sr">Your copy</label>
+    <input id="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" disabled />
+    <div class="row" style="margin-top:12px">
+      <button id="btnGo" class="btn" disabled>Start</button>
+      <button id="btnReplay" class="btn btn-outline" disabled>Replay</button>
+      <button id="btnPause" class="btn btn-outline" disabled>Pause</button>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span class="pair"><label for="selChars">Characters</label>
+        <select id="selChars"><option value="koch">Koch lesson</option><option value="practice">Practice Set</option>
+          <option value="all">All characters</option></select></span>
+      <span class="pair" id="pairSeq"><label for="selSeq">Koch sequence</label>
+        <select id="selSeq" disabled></select></span>
+      <span class="pair" id="pairLesson"><label for="selLesson">Lesson</label>
+        <select id="selLesson" disabled></select></span>
+      <span class="pair"><label for="selMode">Practise</label>
+        <select id="selMode">
+          <option value="groups">Groups</option><option value="words">Words</option><option value="phrases">Phrases</option>
+          <option value="calls" title="with Characters = All characters">Call signs</option>
+          <option value="prefixes" title="with Characters = All characters">Prefixes</option>
+        </select></span>
+      <span class="pair" id="pairSize"><label for="selSize" id="lblSize">Group size</label>
+        <select id="selSize"></select></span>
+      <span class="pair" id="pairTier" hidden><label for="selTier">From</label>
+        <select id="selTier">
+          <option value="mixed">Mixed</option><option value="A">Word chains</option><option value="B">Plain language</option>
+          <option value="C">QSO lines</option><option value="U">Your own phrases</option>
+        </select></span>
+      <span class="pair" id="pairCallLen" hidden><label for="selCallLen">Length Calls</label>
+        <select id="selCallLen"><option value="0">Unlimited</option><option value="1">3</option><option value="2">4</option>
+          <option value="3">5</option><option value="4">6</option></select></span>
+      <span class="pair" id="pairRegion" hidden><label for="selRegion">Calls Region</label>
+        <select id="selRegion"><option value="0">All</option><option value="1">Europe</option><option value="2">N America</option>
+          <option value="3">S America</option><option value="4">Africa</option><option value="5">Asia</option>
+          <option value="6">Oceania</option><option value="7">VK/ZL</option></select></span>
+      <span class="pair" id="pairCommon" hidden><label for="selCommon">Call Prefixes</label>
+        <select id="selCommon"><option value="0">All</option><option value="1" selected>Common only</option></select></span>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <span class="pair"><label for="selEff">Effective speed</label>
+        <select id="selEff"></select></span>
+      <span class="pair"><label for="selScreen">M32 screen</label>
+        <select id="selScreen"><option value="hide">Hide what is played</option><option value="show">Show what is played</option></select></span>
+      <span class="pair"><label for="selSource">Answer</label>
+        <select id="selSource"><option value="typed">Typed</option><option value="keyed">Keyed on the paddle</option></select></span>
+      <span class="pair" id="pairSpacing" hidden><label for="selSpacing">Gaps in a word</label>
+        <select id="selSpacing"><option value="strict">Strict (up to 6 dits)</option><option value="lenient">Lenient (up to 12 dits)</option></select></span>
+      <span class="pair" id="pairIdle" hidden><label for="selIdle">Finish after</label>
+        <select id="selIdle"></select></span>
+      <span class="pair" id="pairNext" hidden><label for="selNext">Next item</label>
+        <select id="selNext"><option value="auto">Automatically</option><option value="enter">Press Enter</option></select></span>
+    </div>
+    <div class="keys" id="speedNote"></div>
+    <div class="keys" id="keyedHint" hidden></div>
+    <div class="keys" id="availNote"></div>
+    <div id="feedback"></div>
+    <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
+    <div class="keys" id="prosignHint"></div>
+    <div class="keys" id="tally"></div>
+    <div class="advance" id="ladder" hidden>
+      <span id="ladderText"></span>
+      <button id="btnLadder" class="btn btn-sm" style="margin-left:8px"></button>
+    </div>
+    <details id="ownPhrases" style="margin-top:14px">
+      <summary>Your own phrases</summary>
+      <p style="font-size:15px;margin:6px 0">One phrase per line, 2 to 8 words (a club's or school's texts, your own). Lines starting with # are skipped. Only lines made of the characters you practise come up. Kept in this browser.</p>
+      <label for="userText" class="sr">Your own phrases, one per line</label>
+      <textarea id="userText" rows="6" style="width:100%;font-family:'Courier New',Courier,monospace;font-size:15px;padding:6px"></textarea>
+      <div class="row" style="margin-top:6px">
+        <button id="btnUserUse" class="btn btn-outline btn-sm">Use these</button>
+        <button id="btnUserFile" class="btn btn-outline btn-sm">Load a file…</button>
+        <input id="fileUser" type="file" accept=".txt,text/plain" hidden />
+        <span id="userInfo" role="status" style="font-size:15px"></span>
+      </div>
+    </details>
+    <div class="advance" id="advance" hidden>
+      <span id="advanceText"></span>
+      <button id="btnAdvance" class="btn btn-sm" style="margin-left:8px"></button>
+    </div>
+  </section>
+
+  <!-- ── Characters ── -->
+  <section class="box" aria-labelledby="hChars">
+    <h2 id="hChars">Your characters</h2>
+    <p style="font-size:15px;margin-bottom:10px">Each character climbs five boxes as you copy it right; a miss sends it two boxes down. Characters in low boxes come up more often.</p>
+    <div class="scroll">
+    <table>
+      <thead><tr><th scope="col">Char</th><th scope="col">Box</th><th scope="col">Copied</th><th scope="col">Right</th><th scope="col">Median time</th><th scope="col">Keyed</th></tr></thead>
+      <tbody id="charRows"><tr><td colspan="5">Connect to see the characters you practise.</td></tr></tbody>
+    </table>
+    </div>
+    <div id="confusions" style="margin-top:12px;font-size:15px"></div>
+  </section>
+
+  <!-- ── Call signs and prefixes (M4b) ── -->
+  <section class="box" aria-labelledby="hCalls" id="callsBox" hidden>
+    <h2 id="hCalls">Call signs and prefixes</h2>
+    <p style="font-size:15px;margin-bottom:10px">Counted on their own: they use all characters, so they move no box above.</p>
+    <div id="callStats" style="font-size:15px"></div>
+  </section>
+
+  <!-- ── Echo Trainer log (M5) ── -->
+  <section class="box" aria-labelledby="hEcho">
+    <h2 id="hEcho">Echo Trainer log</h2>
+    <p style="font-size:15px;margin-bottom:10px">Run the Echo Trainer, or an echo mode of the Koch Trainer, on your M32 while this page is
+      connected: every word it checks is logged here, with the times the M32 measured itself. Counted on its own: it moves no box above.</p>
+    <div id="echoStats" style="font-size:15px"></div>
+    <div class="scroll" id="echoTable" hidden>
+    <table>
+      <caption class="sr">The last words the Echo Trainer checked, newest first</caption>
+      <thead><tr><th scope="col">Sent</th><th scope="col">You keyed</th><th scope="col">Result</th><th scope="col">Reaction</th>
+        <th scope="col">Keying</th><th scope="col">WpM</th><th scope="col">Lesson</th><th scope="col">Time</th></tr></thead>
+      <tbody id="echoRows"></tbody>
+    </table>
+    </div>
+  </section>
+
+  <!-- ── History ── -->
+  <section class="box" aria-labelledby="hHist">
+    <h2 id="hHist">Your history</h2>
+    <p style="font-size:15px">Everything you practise is kept in this browser only. Export it now and then — a cleared browser loses it.</p>
+    <div class="row" style="margin-top:10px">
+      <button id="btnExport" class="btn btn-outline btn-sm">Export…</button>
+      <button id="btnImport" class="btn btn-outline btn-sm">Import…</button>
+      <input id="fileImport" type="file" accept=".json,application/json" hidden />
+      <span id="histInfo" style="font-size:15px"></span>
+    </div>
+    <div class="note" id="histNote" role="status"></div>
+  </section>
+
+  <footer>M32 Trainer · <a href="m32_config_tool.html">M32 Configuration Tool</a></footer>
+</main>
+
+<script>
+'use strict';
+const PAGE_VERSION = '2026-11-08';     // with the ?v= tags above
+const E = M32Engine;
+const $ = (id) => document.getElementById(id);
+
+// ---- state ------------------------------------------------------------------
+
+const link = new M32Link.Link();
+let store = null, mastery = new E.Mastery(), scheduler = null, session = null;
+let corpus = null;              // E.Corpus, from m32_trainer_corpus.json (words and phrases)
+let lesson = null;              // the GET kochlesson object
+let lessonList = [];            // its active characters
+let wpm = null;                 // the M32's speed (its knob; the trainer never changes it)
+let spacing = null;             // E.farnsworthSpacing() in force, or null (no Farnsworth)
+let keyerMenu = null;           // menu number of "CW Keyer"
+let started = false;            // a Start since connecting (counts a session for the export nudge)
+let needKeyer = false;          // the operator left the CW Keyer on the M32
+let preparing = false;          // our own menu changes send menu events too
+
+// ---- small helpers ---------------------------------------------------------------
+
+function show(el, on) { el.hidden = !on; }
+const usePractice = () => $('selChars').value === 'practice';
+const callMode = () => $('selMode').value === 'calls' || $('selMode').value === 'prefixes';
+const useKoch = () => $('selChars').value === 'koch';
+const useAll = () => $('selChars').value === 'all';
+const setName = () => (usePractice() ? 'your Practice Set' : useAll() ? 'all characters' : 'your lesson');
+const setOf = () => (usePractice() ? 'your Practice Set\'s' : useAll() ? 'the M32\'s' : 'your lesson\'s');   // "... use only <setOf> characters"
+function disp(token) { return token.toUpperCase(); }
+function dispText(text) { return E.tokenize(text).map((t) => (t === ' ' ? ' ' : disp(t))).join(''); }
+// for screen readers: "K M R"
+function spell(text) { return E.tokenize(text).map((t) => (t === ' ' ? ', ' : disp(t))).join(' '); }
+function esc(s) { return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+// What a screen reader speaks goes through #say, so that it never talks over the Morse: `quiet`
+// shows the text but leaves the speech for when the sound has ended.
+function say(text) { $('say').textContent = text; }
+function setStatus(text, quiet) { $('status').textContent = text; say(quiet ? '' : text); }
+function connNote(text, err) { const n = $('connNote'); n.textContent = text || ''; n.classList.toggle('err', !!err); }
+function badge(text, cls) { const b = $('linkBadge'); b.textContent = text; b.className = 'badge ' + cls; }
+
+// A new page with a cached old script (or the reverse) misbehaves in odd ways: say so, before
+// anything below can trip over it. Connect stays off (see the end).
+const staleScripts = [['link', M32Link.VERSION], ['engine', E.VERSION]].filter((v) => v[1] !== PAGE_VERSION);
+if (staleScripts.length)
+  connNote('This page and its scripts are from different versions (' +
+           staleScripts.map((v) => v[0] + ' ' + (v[1] || 'old')).join(', ') + ', page ' + PAGE_VERSION +
+           '): the browser kept an old copy. Reload the page while holding Shift.', true);
+
+// ---- storage ---------------------------------------------------------------
+
+async function openStore() {
+  try {
+    store = await E.IdbStore.open('m32trainer');
+  } catch (e) {
+    store = new E.MemoryStore();
+    $('histNote').textContent = 'This browser window cannot keep your history (' + e.message +
+      '). You can practise, but nothing is saved — export before you close the page.';
+  }
+  try { await store.pruneKeystrokes(Date.now() - E.KEYSTROKE_DAYS * 864e5); } catch (e) { /* not fatal */ }
+  mastery = E.Mastery.fromAttempts(await store.all());
+  for (const [id, key] of [['selMode', 'mode'], ['selTier', 'tier']]) {
+    const v = await store.getMeta(key);
+    if (v) $(id).value = v;
+  }
+  $('selSource').value = (await store.getMeta('source')) || 'typed';
+  $('selSpacing').value = (await store.getMeta('spacing')) || 'strict';
+  $('selIdle').value = String((await store.getMeta('idle')) || 4);
+  $('selNext').value = (await store.getMeta('next')) || 'auto';
+  $('selScreen').value = (await store.getMeta('screen')) || 'hide';
+  $('selChars').value = (await store.getMeta('chars')) || 'koch';
+  show($('pairSeq'), useKoch()); show($('pairLesson'), useKoch());
+  $('selEff').value = String((await store.getMeta('eff')) || 0);
+  sourceChanged();
+  for (const [id, key] of CALL_SETTINGS) { const v = await store.getMeta(key); if (v != null) $(id).value = String(v); }
+  sizes.groups = (await store.getMeta('size')) || 'mixed';
+  sizes.phrases = (await store.getMeta('phraseLen')) || '2';
+  const own = await store.getMeta('userText');
+  if (own) { $('userText').value = own; if (corpus) userInfo(corpus.setUser(own)); }
+  modeChanged();
+  renderCalls();
+  renderEcho();
+  await showHistory();
+}
+
+async function loadCorpus() {
+  try {
+    const r = await fetch('m32_trainer_corpus.json?v=' + PAGE_VERSION);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    corpus = new E.Corpus(await r.json());
+    if ($('userText').value) userInfo(corpus.setUser($('userText').value));
+    if (scheduler) scheduler.corpus = corpus;
+  } catch (e) {
+    corpus = null;
+    $('selMode').value = 'groups';
+    for (const o of $('selMode').options) if (o.value !== 'groups') o.disabled = true;
+    $('availNote').textContent = 'Words and phrases are not available: their list did not load (' + e.message + ').';
+  }
+  modeOptions();
+  modeChanged();
+}
+
+async function showHistory() {
+  const all = await store.all();
+  const last = await store.getMeta('lastExport');
+  const sessions = (await store.getMeta('sessionsSinceExport')) || 0;
+  let t = all.length + ' attempts stored. ';
+  t += last ? 'Last export ' + new Date(last).toLocaleDateString() + '.' : 'Never exported.';
+  $('histInfo').textContent = t;
+  const old = last ? Date.now() - last > 30 * 864e5 : false;
+  if (all.length && (old || sessions >= 20) && !$('histNote').textContent)
+    $('histNote').textContent = 'Time for an export: ' + (old ? 'your last one is over 30 days old.' : 'you have practised ' + sessions + ' times since the last one.');
+}
+
+$('btnExport').onclick = async () => {
+  const all = await store.all();
+  const blob = new Blob([JSON.stringify(E.exportFile(all, Date.now()))], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'm32-trainer-' + new Date().toISOString().slice(0, 10) + '.json';
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  await store.setMeta('lastExport', Date.now());
+  await store.setMeta('sessionsSinceExport', 0);
+  $('histNote').textContent = '';
+  await showHistory();
+};
+
+$('btnImport').onclick = () => $('fileImport').click();
+$('fileImport').onchange = async (ev) => {
+  const f = ev.target.files[0];
+  ev.target.value = '';
+  if (!f) return;
+  try {
+    const { attempts, rejected } = E.parseExport(await f.text());
+    const r = await store.importMany(attempts);
+    mastery = E.Mastery.fromAttempts(await store.all());
+    if (scheduler) scheduler.mastery = mastery;
+    if (session) session.mastery = mastery;
+    $('histNote').textContent = 'Imported ' + r.added + ' attempts' + (r.skipped ? ', ' + r.skipped + ' were already here' : '') +
+      (rejected ? ', ' + rejected + ' damaged records left out' : '') + '.';
+    renderChars();
+  } catch (e) {
+    $('histNote').textContent = e.message;
+  }
+  await showHistory();
+};
+
+// ---- the device ---------------------------------------------------------------
+
+// The characters to practise: the Koch lesson (which follows Custom Characters when they are on),
+// or the M32's Practice Set (decision of 2026-11-06; no lesson advance then).
+async function readLesson() {
+  const { kochlesson } = await link.command('get kochlesson');
+  lesson = kochlesson;
+  let custom = false;
+  try { custom = !!(await link.command('get customchars')).customchars.active; } catch (e) { /* older firmware: not shown */ }
+  const dropped = [];                     // characters in the set the M32 has no Morse code for
+  if (useAll()) {
+    lessonList = E.ALL_CHARS.slice();
+    $('fLessonLbl').textContent = 'Characters';
+    $('fLesson').textContent = 'all ' + lessonList.length;
+  } else if (usePractice()) {
+    const { practicechars } = await link.command('get practicechars');
+    lessonList = E.practiceChars(practicechars, dropped);
+    $('fLessonLbl').textContent = 'Practice Set';
+    $('fLesson').textContent = lessonList.length ? lessonList.map(disp).join(' ') : 'empty';
+  } else {
+    await readSequence();
+    lessonList = E.lessonChars(lesson, dropped);
+    $('fLessonLbl').textContent = 'Koch lesson';
+    $('fLesson').textContent = lesson.value + ' of ' + lesson.maximum + (custom ? ' (Custom Chars)' : '');
+  }
+  fillLessonPicker();
+  const play = lessonList.slice();
+  if (dropped.length) $('fLesson').textContent += ' — left out, no Morse code: ' + dropped.map(disp).join(' ');
+  const ps = lessonList.filter(E.isProsign);
+  $('prosignHint').textContent = ps.length
+    ? 'Type a prosign in angle brackets, as the M32 shows it: ' + ps.map(disp).join(' ') + ' ([' + disp(ps[0]).slice(1, -1) + '] works too).'
+    : '';
+  if (scheduler) scheduler.setChars(play, useKoch());
+  renderChars();
+  renderAvailable();
+  if (corpus && corpus.user.length) userInfo({ lines: $('userText').value.split(/\r?\n/).filter((l) => l.trim() && l.trim()[0] !== '#').length, kept: corpus.user.length });
+  return play;
+}
+
+// Koch Sequence and Koch Lesson, set from the page (Willi, 2026-11-06): they change the values
+// stored on the M32, as its menu does, so that the trainer and the M32's own Koch modes agree.
+// The M32 accepts both in the CW Keyer: PUT config/Koch Sequence (re-reads a custom set) and
+// PUT kochlesson (as "Go to lesson" does).
+let sequence = null;            // the GET config/Koch Sequence object
+async function readSequence() {
+  try { sequence = (await link.command('get config/Koch Sequence')).config; } catch (e) { sequence = null; }
+  const sel = $('selSeq');
+  sel.innerHTML = '';
+  const names = (sequence && sequence['mapped values']) || [];
+  names.forEach((n, i) => sel.insertAdjacentHTML('beforeend', '<option value="' + i + '">' + esc(n) + '</option>'));
+  if (sequence) sel.value = String(sequence.value);
+  sel.disabled = !sequence;
+}
+function fillLessonPicker() {
+  const koch = useKoch() && lesson;
+  show($('pairSeq'), useKoch());
+  show($('pairLesson'), useKoch());
+  const sel = $('selLesson');
+  sel.innerHTML = '';
+  if (!koch) { sel.disabled = true; return; }
+  for (let n = Math.max(1, lesson.minimum | 0); n <= (lesson.maximum | 0); n++)
+    sel.insertAdjacentHTML('beforeend', '<option value="' + n + '">' + n + ' · ' + esc(disp(String(lesson.characters[n - 1] || '').toLowerCase())) + '</option>');
+  sel.value = String(lesson.value);
+  sel.disabled = false;
+}
+function lessonNow() {
+  return 'Lesson ' + lesson.value + ' of ' + lesson.maximum + (lessonList.length ? '' : ': no characters the trainer can use') +
+    '. Practising it from the next item.';
+}
+
+// M4b: Length Calls, Calls Region and Call Prefixes are the page's own (Willi, 2026-11-06), taken from the
+// M32 on the first connect and then kept in this browser; changing them never touches the M32.
+const CALL_SETTINGS = [['selCallLen', 'callLen', 'Length Calls'], ['selRegion', 'callRegion', 'Calls Region'],
+                       ['selCommon', 'callCommon', 'Call Prefixes']];
+async function seedCallSettings() {
+  if (await store.getMeta('callSeeded')) return;
+  try {
+    for (const [id, key, name] of CALL_SETTINGS) {
+      const { config } = await link.command('get config/' + name);
+      $(id).value = String(config.value);
+      await store.setMeta(key, config.value);
+    }
+    await store.setMeta('callSeeded', true);
+    callSettingsChanged();
+  } catch (e) { /* stays at the defaults; tried again on the next connect */ }
+}
+function callOpts() {
+  return { maxLength: +$('selCallLen').value, region: +$('selRegion').value, commonOnly: $('selCommon').value === '1' };
+}
+function callSettingsChanged() { if (scheduler) scheduler.callOpts = callOpts(); }
+for (const [id, key] of CALL_SETTINGS)
+  $(id).onchange = async () => { callSettingsChanged(); await store.setMeta(key, +$(id).value); };
+
+async function readSpeed() {
+  try {
+    const { control } = await link.command('get control/speed');
+    wpm = control.value;
+  } catch (e) { wpm = null; }
+  showSpeed();
+}
+
+// Effective speed (Farnsworth): the characters at the M32's speed, the spaces stretched, both
+// character and word spaces (decision of 2026-11-06). Set by hand only; session only, through
+// PUT cw/spacing -- nothing on the M32 changes.
+function showSpeed() {
+  const eff = +$('selEff').value;
+  spacing = wpm ? E.farnsworthSpacing(wpm, eff) : null;
+  $('fSpeed').textContent = wpm == null ? '?' : wpm + ' WpM' + (spacing ? ', effective ' + Math.round(spacing.effective) : '');
+  let note = '';
+  if (eff && wpm && !spacing) note = 'Effective speed ' + eff + ' WpM is not below your M32\'s speed (' + wpm + ' WpM): no extra spacing.';
+  else if (spacing && Math.abs(spacing.effective - eff) >= 0.5)
+    note = 'At ' + wpm + ' WpM the spacing reaches its limit: about ' + Math.round(spacing.effective) + ' WpM effective.';
+  $('speedNote').textContent = note;
+}
+for (let w = 4; w <= 35; w++) $('selEff').insertAdjacentHTML('beforeend', '<option value="' + w + '">' + w + ' WpM</option>');
+$('selEff').insertAdjacentHTML('afterbegin', '<option value="0">Off</option>');
+
+// The M32's knob: follow it, and keep the effective speed where it was
+link.on('control', (c) => {
+  if (!c || c.name !== 'speed') return;
+  wpm = c.value;
+  showSpeed();
+  if (link.state === 'ready' && !needKeyer) applySpacing().catch((e) => setStatus(e.message));
+});
+
+// Puts the M32 into the CW Keyer (cw/play works only there).
+async function ensureKeyer() {
+  let { menu } = await link.command('get menu');
+  if (menu.active && menu.content === 'CW Keyer') return;
+  if (keyerMenu == null) {
+    const { menus } = await link.command('get menus', { expect: ['menus'] });
+    const k = menus.find((m) => m.content === 'CW Keyer');
+    if (!k) throw new Error('This M32 has no CW Keyer menu entry.');
+    keyerMenu = k['menu number'];
+  }
+  if (menu.active) {
+    await link.command('put menu/stop');
+    for (let i = 0; i < 20 && menu.active; i++) {
+      await new Promise((r) => setTimeout(r, 150));
+      ({ menu } = await link.command('get menu'));
+    }
+  }
+  await link.command('put menu/start/' + keyerMenu);
+  for (let i = 0; i < 20; i++) {
+    ({ menu } = await link.command('get menu'));
+    if (menu.active && menu.content === 'CW Keyer') return;
+    await new Promise((r) => setTimeout(r, 150));
+  }
+  throw new Error('The M32 did not start the CW Keyer.');
+}
+
+// keepEcho (on Connect): a running Echo Trainer is left alone and logged; Enter later starts the CW Keyer.
+// -> the lesson's characters; sets echoAtConnect
+let echoAtConnect = false;
+async function prepare(keepEcho) {
+  const play = await readLesson();
+  await readSpeed();
+  echoAtConnect = false;
+  if (keepEcho) {
+    try { echoAtConnect = isEchoMenu((await link.command('get menu')).menu); } catch (e) { /* then the Keyer, as before */ }
+  }
+  if (echoAtConnect) {
+    needKeyer = true;
+  } else {
+    preparing = true;
+    try { await ensureKeyer(); } finally { preparing = false; }
+    needKeyer = false;
+    await applyPractice();
+  }
+  await seedCallSettings();
+  if (!play.length && !callMode()) throw new Error(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
+                                                                 : 'Your Koch lesson has no characters the trainer can use yet.');
+  return play;
+}
+
+// The manual for this device (the Config Tool's rule: whole hardware strings; the edition tells the two Pockets apart)
+const MANUAL_ROOT = 'https://www.morserino.info/manuals/';
+function manualSlug(dev) {
+  const hw = (dev && dev.hardware) || '';
+  if (['M32 1st edition', 'M32 2nd edition', 'unknown M32 board', 'original'].indexOf(hw) >= 0) return ['Classic', 'Morserino-32, 1st and 2nd edition'];
+  if (/^M32 Pocket \(Wroom/.test(hw)) return dev.edition === 'accessibility' ? ['Pocket_Accessible', 'M32 Pocket, Accessibility Edition'] : ['Pocket', 'M32 Pocket'];
+  return null;
+}
+function helpManual(dev) {
+  const m = manualSlug(dev);
+  if (!m) return;
+  const link = (lang, name) => '<a href="' + MANUAL_ROOT + 'Morserino-32_User_Manual_' + m[0] + '_' + lang + '.pdf" target="_blank" rel="noopener">' +
+    'user manual for the ' + esc(m[1]) + ' — ' + name + ', PDF</a>';
+  $('helpManual').innerHTML = 'The user manual has a section on the M32 Trainer: ' + link('EN', 'English') + ' · ' + link('DE', 'German') + '.';
+}
+
+function deviceFacts(dev) {
+  helpManual(dev);
+  show($('facts'), true);
+  $('fDevice').textContent = dev.hardware || '?';
+  $('fFirmware').textContent = (dev.firmware || '?') + (dev.edition === 'accessibility' ? ' (Accessibility)' : '') +
+                               ' · protocol ' + (dev.protocol || '?');
+}
+
+// Every line in and out, in the browser console (for the bench: what did the page send?)
+function trace(t) {
+  const w = t.write;
+  t.write = (text) => { console.info('→ ' + text.trim()); return w(text); };
+  return t;
+}
+link.on('object', (obj, meta) => console.info('← ' + (meta.raw || JSON.stringify(obj))));
+link.on('text', (it) => console.info('← text ' + JSON.stringify(it.text)));
+link.on('state', (s, old) => console.info('link ' + old + ' → ' + s));
+
+$('btnConnect').onclick = async () => {
+  connNote('');
+  badge('Connecting…', 'busy');
+  $('btnConnect').disabled = true;
+  try {
+    if (link.state !== 'closed') await link.disconnect();     // e.g. after the M32's own Goodbye: release the port
+    const t = trace(await M32Link.openWebSerial());
+    const dev = await link.connect(t);
+    deviceFacts(dev);
+    if (!link.hasFeature('trainer-events') || !link.hasFeature('cw/practice')) {
+      connNote('This firmware (protocol ' + (dev.protocol || '?') + ') is too old for the trainer: please update it.', true);
+      await link.disconnect();
+      return;
+    }
+    const play = await prepare(true);
+    makeSession(play);
+    badge('Connected · CW Keyer', 'on');
+    show($('btnConnect'), false);
+    show($('btnDisconnect'), true);
+    setStatus('Ready. Press Enter or Start.');
+    if (echoAtConnect) echoRunning();
+    enablePractice(true);
+    $('btnGo').focus();
+  } catch (e) {
+    if (e.name === 'NotFoundError') { badge('Not connected', 'off'); return; }     // the port chooser was closed
+    if (e.name === 'InvalidStateError')
+      connNote('That port is already open in another tab or program (the Config Tool, a serial monitor). Close it there and try again.', true);
+    else connNote(e.message, true);
+    badge('Not connected', 'off');
+    if (link.state !== 'closed') await link.disconnect();
+  } finally {
+    $('btnConnect').disabled = !('serial' in navigator);
+  }
+};
+
+$('btnDisconnect').onclick = async () => {
+  if (session) session.pause();
+  await link.disconnect();
+};
+
+$('btnReconnect').onclick = async () => {
+  show($('btnReconnect'), false);
+  try { await link.reconnect(); } catch (e) { connNote(e.message, true); show($('btnReconnect'), true); }
+};
+
+link.on('state', (s) => {
+  if (s === 'closed' || s === 'ended') {
+    badge('Not connected', 'off');
+    show($('btnConnect'), true);
+    show($('btnDisconnect'), false);
+    show($('btnReconnect'), false);
+    enablePractice(false);
+    setStatus('Connect your M32 to start.');
+    if (session) session.pause();
+  }
+});
+link.on('lost', () => {
+  badge('Cable lost', 'off');
+  if (session) session.pause();
+  connNote('The connection to the M32 is gone. Plug it back in — the trainer reconnects by itself.');
+  enablePractice(false);
+});
+link.on('unresponsive', () => {
+  badge('No answer', 'off');
+  if (session) session.pause();
+  connNote('The M32 stopped answering.', true);
+  show($('btnReconnect'), true);
+});
+// the device came back (Pocket re-plugged) or restarted (classic): set it up again
+async function again() {
+  try {
+    await prepare(true);
+    badge('Connected · CW Keyer', 'on');
+    connNote('');
+    show($('btnReconnect'), false);
+    enablePractice(true);
+    if (echoAtConnect) echoRunning();
+    else if (session) { session.resume(); setStatus('Back again. Press Enter to go on.'); }
+  } catch (e) { connNote(e.message, true); }
+}
+link.on('reconnected', again);
+link.on('resync', again);
+// the M32 ended the session by itself: release the port too, so Connect works again
+link.on('goodbye', () => { connNote('The M32 ended the session.'); link.disconnect(); });
+// the operator left the CW Keyer on the M32 (long press, menu)
+link.on('menu', (m) => {
+  if (!session || preparing) return;
+  if (m.active && m.content === 'CW Keyer') { if (needKeyer) backInKeyer(); return; }
+  session.pause();
+  needKeyer = true;
+  if (isEchoMenu(m)) { echoRunning(); return; }
+  badge('Connected · not in the CW Keyer', 'busy');
+  setStatus('The M32 left the CW Keyer. Press Enter to go back to it.');
+});
+// ... and started a mode there again ({"activate":{"state":"ON"}}): is it the CW Keyer?
+link.on('activate', async (a) => {
+  if (!session || preparing || !needKeyer || a.state !== 'ON') return;
+  try {
+    const { menu } = await link.command('get menu');
+    if (needKeyer && menu.active && menu.content === 'CW Keyer') backInKeyer();
+  } catch (e) { /* Enter still puts it back */ }
+});
+function backInKeyer() {
+  needKeyer = false;
+  applyPractice().catch((e) => setStatus(e.message));      // leaving the Keyer ended practice mode
+  badge('Connected · CW Keyer', 'on');
+  setStatus('Back in the CW Keyer. Press Enter to go on.');
+}
+link.installPageHide(window);
+
+// ---- the Echo Trainer log (M5; Willi, 2026-11-07: passive, own tally, echo modes only) -----------
+
+const isEchoMenu = (m) => !!(m && m.active && /(^|\/)Echo Trainer(\/|$)/.test(m.content || ''));
+function echoRunning() {
+  badge('Connected · Echo Trainer', 'on');
+  setStatus('The Echo Trainer is running on the M32: this page logs what it checks. Press Enter to go back to copy practice.');
+}
+let lastEchoT = 0;              // results arriving in one burst still get distinct, ordered times
+link.on('trainer', async (ev) => {
+  lastEchoT = Math.max(Date.now(), lastEchoT + 1);
+  const a = E.echoAttempt(ev, { t: lastEchoT, device: link.device ? { hardware: link.device.hardware, firmware: link.device.firmware,
+                                 protocol: link.device.protocol, edition: link.device.edition || null } : null });
+  if (!a || !store) return;
+  await store.add(a);
+  mastery.apply(a);
+  setStatus('Echo: ' + dispText(a.expected) + ' — ' + (a.ok ? 'OK' : a.timeout ? 'no answer' : 'ERR, you keyed ' + (a.answer ? dispText(a.answer) : 'nothing')) +
+            (a.latency != null ? ' (reaction ' + (a.latency / 1000).toFixed(1) + ' s)' : '') + '.', true);
+  renderEcho();
+  showHistory();
+});
+
+const ECHO_ROWS = 20;
+async function renderEcho() {
+  const e = E.echoSummary(mastery.echo, 6);
+  const secs = (ms) => (ms == null ? '–' : (ms / 1000).toFixed(1) + ' s');
+  if (!e.items) { $('echoStats').textContent = ''; show($('echoTable'), false); return; }
+  let h = '<p><b>' + e.items + ' words checked</b>, ' + e.ok + ' OK (' + Math.round(100 * e.ok / e.items) + ' %)';
+  if (e.firstTry && e.firstTry !== e.items) h += '; ' + e.firstOk + ' of ' + e.firstTry + ' right the first time';
+  if (e.timeouts) h += '; ' + e.timeouts + ' without an answer';
+  h += '. Median reaction ' + secs(e.medianLatency) + ', median keying time ' + secs(e.medianDuration) + ' (words keyed right).';
+  if (e.missed.length)
+    h += ' Most missed: ' + e.missed.map((m) => '<span class="mono">' + esc(disp(m.ch)) + '</span> ' + m.missed + ' of ' + m.attempts).join(' · ') + '.';
+  $('echoStats').innerHTML = h + '</p>';
+  const rows = (await store.all()).filter((a) => a.kind === 'echo').sort((x, y) => y.t - x.t).slice(0, ECHO_ROWS);
+  $('echoRows').innerHTML = rows.map((a) =>
+    '<tr><td class="mono">' + esc(dispText(a.expected)) + '</td><td class="mono">' + esc(a.answer ? dispText(a.answer) : '–') + '</td>' +
+    '<td>' + (a.ok ? 'OK' : a.timeout ? 'no answer' : 'ERR') + (a.repeat ? ' (again)' : '') + '</td>' +
+    '<td>' + secs(a.latency) + '</td><td>' + secs(a.duration) + '</td><td>' + (a.wpm != null ? a.wpm : '–') + '</td>' +
+    '<td>' + (a.lesson != null ? a.lesson : '–') + '</td>' +
+    '<td>' + new Date(a.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</td></tr>').join('');
+  show($('echoTable'), rows.length > 0);
+}
+
+// ---- practice ------------------------------------------------------------------
+
+function makeSession(play) {
+  scheduler = new E.Scheduler({ mastery, chars: play, newest: useKoch(), corpus, mode: $('selMode').value,
+                               size: sizeValue('groups'), length: +sizes.phrases, tier: $('selTier').value, callOpts: callOpts() });
+  if (session) { scheduler.retries = session.scheduler.retries; }
+  const player = { play: (text) => link.playCw(text), stop: () => link.stopCw() };
+  session = new E.Session({
+    player, store, mastery, scheduler,
+    clock: { now: () => performance.now(), wall: () => Date.now() },
+    context: () => ({ device: link.device ? { hardware: link.device.hardware, firmware: link.device.firmware,
+                                               protocol: link.device.protocol, edition: link.device.edition || null } : null,
+                      lesson: lesson && useKoch() ? lesson.value : null, set: $('selChars').value,
+                      wpm, farnsworth: spacing ? Math.round(spacing.effective) : null })
+  });
+  session.on('state', onState);
+  session.on('result', onResult);
+  session.on('second', onSecondTry);
+  session.on('notice', (n) => {
+    if (n === 'stopped') setStatus('A paddle stopped the M32 — playing it again.', true);
+    else if (n === 'refused') setStatus('The M32 refused to play. Is it still in the CW Keyer?');
+  });
+  renderChars();
+  renderTally();
+}
+
+// ---- how to answer: typed or keyed (M3c) -----------------------------------------
+
+let itemSource = 'typed';       // the source of the running item; a change applies from the next one
+let keyed = null;               // the running KeyedAnswer
+let noInput = 0;                // how often the item was sounded again because nothing was keyed
+
+for (let s = 2; s <= 10; s++) $('selIdle').insertAdjacentHTML('beforeend', '<option value="' + s + '">' + s + ' s</option>');
+$('selIdle').value = '4';
+
+const wordGapDits = () => ($('selSpacing').value === 'lenient' ? 12 : 6);
+
+// Never shorter than a word gap, or the answer would end between two words
+function idleMs() { return Math.max(1000 * $('selIdle').value, wordGapDits() * 1200 / (wpm || 20) + 1000); }
+
+// Session only, nothing is stored: only keyed characters reach us, the word gap above, no transmitter
+// Leniency is for the answer only: what the M32 sounds keeps a word space of 7 dits, the norm, whatever its
+// InterWord Spc says, and the learner's Interchar Spc -- unless an effective speed is set (applySpacing()).
+async function applyPractice() {
+  await link.command('put cw/practice/' + wordGapDits());
+  await applySpacing();
+  await link.command('put cw/display/' + ($('selScreen').value === 'hide' ? 'off' : 'on'));
+}
+
+// Without an effective speed: the learner's Interchar Spc and a word space of 7 dits
+async function applySpacing() {
+  showSpeed();
+  if (spacing) { await link.command('put cw/spacing/' + spacing.charSpace + '/' + spacing.wordSpace); return; }
+  const { config } = await link.command('get config/Interchar Spc');
+  await link.command('put cw/spacing/' + config.value + '/7');
+}
+
+function sourceChanged() {
+  const on = $('selSource').value === 'keyed';
+  show($('pairSpacing'), on);
+  show($('pairIdle'), on);
+  show($('pairNext'), on);
+  show($('keyedHint'), on);
+  $('keyedHint').textContent = 'A pause longer than ' + wordGapDits() + ' dits ends a word' +
+    ($('selSpacing').value === 'lenient' ? ', so leave more than that between the words of a phrase; in a group or a single word it does not count.' : '.') +
+    ' The answer ends by itself, or press Enter. The error sign or an undecodable character deletes the last word, a second one right after it starts over. After a wrong answer you hear it again and can key it once more; that try does not count. Keyed answers do not move your boxes.' +
+    ($('selNext').value === 'auto' ? ' The next item follows by itself; Esc pauses.' : '');
+}
+
+$('selSource').onchange = async () => { sourceChanged(); await store.setMeta('source', $('selSource').value); };
+$('selSpacing').onchange = async () => {
+  sourceChanged();
+  if (link.state === 'ready') applyPractice().catch((e) => setStatus(e.message));
+  await store.setMeta('spacing', $('selSpacing').value);
+};
+$('selIdle').onchange = async () => { await store.setMeta('idle', +$('selIdle').value); };
+$('selScreen').onchange = async () => {
+  if (link.state === 'ready') applyPractice().catch((e) => setStatus(e.message));
+  await store.setMeta('screen', $('selScreen').value);
+};
+$('selNext').onchange = async () => { sourceChanged(); await store.setMeta('next', $('selNext').value); };
+$('selEff').onchange = async () => {
+  showSpeed();
+  if (link.state === 'ready' && !needKeyer) applySpacing().catch((e) => setStatus(e.message));
+  await store.setMeta('eff', +$('selEff').value);
+};
+$('selChars').onchange = async () => {
+  await store.setMeta('chars', $('selChars').value);
+  const reset = modeOptions();
+  if (link.state !== 'ready') { show($('pairSeq'), useKoch()); show($('pairLesson'), useKoch()); renderAvailable(); return; }
+  try {
+    await readLesson();
+    if (!lessonList.length) setStatus(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
+                                                    : 'Your Koch lesson has no characters the trainer can use yet.');
+    else setStatus((reset ? BACK_TO_GROUPS + ' ' : '') +
+                   'Practising ' + (usePractice() ? 'your Practice Set' : useAll() ? 'all characters' : 'your Koch lesson') + ' from the next item.');
+  } catch (e) { setStatus(e.message); }
+};
+
+$('selSeq').onchange = async () => {
+  const want = +$('selSeq').value;
+  const names = (sequence && sequence['mapped values']) || [];
+  try {
+    await link.command('put config/Koch Sequence/' + want);
+    await readLesson();
+    if (sequence && sequence.value !== want)          // Custom Chars without a set: the M32 stays where it was
+      setStatus('The M32 has no custom character set (it comes from the player file), so it stays on ' + (names[sequence.value] || 'its sequence') + '.');
+    else setStatus((names[want] || 'Sequence') + ': ' + lessonNow());
+  } catch (e) { setStatus('Could not change the sequence: ' + e.message); }
+};
+$('selLesson').onchange = async () => {
+  try {
+    await link.command('put kochlesson/' + $('selLesson').value);
+    await readLesson();
+    setStatus(lessonNow());
+  } catch (e) { setStatus('Could not change the lesson: ' + e.message); }
+};
+
+link.on('text', (it) => {
+  if (!keyed || !session || (session.state !== 'answering' && session.state !== 'second-try')) return;
+  for (const t of keyed.feed(it.text, it.t)) if (t !== ' ') session.key(t, it.t);
+  $('answer').value = dispText(keyed.text);
+});
+
+function finishSecondTry() {
+  const k = keyed;
+  keyed = null;
+  if (k) session.secondTry(k.answer($('selSpacing').value));
+}
+
+setInterval(() => {
+  if (!keyed || !session) return;
+  const second = session.state === 'second-try';
+  if (!second && session.state !== 'answering') return;
+  const end = keyed.check(performance.now());
+  if (!end) return;
+  if (second) {
+    if (end !== 'start') { finishSecondTry(); return; }
+    keyed = null;               // nothing keyed: no further prompting, Enter goes on
+    session.secondTry(null);
+    return;
+  }
+  if (end !== 'start') { check(); return; }
+  if (++noInput === 1) { session.playAgain(); return; }
+  keyed = null;
+  session.pause();
+  setStatus('Paused: nothing was keyed. Press Enter to go on.');
+}, 100);
+
+// ---- what to practise: Groups / Words / Phrases (M3b) ---------------------------
+
+const sizes = { groups: 'mixed', phrases: '2' };      // the size select's value per mode
+function sizeValue(mode) { const v = sizes[mode]; return v === 'mixed' ? 'mixed' : +v; }
+
+function fillSizes(mode) {
+  const sel = $('selSize');
+  const opts = mode === 'groups' ? ['mixed', '1', '2', '3', '4', '5'] : ['2', '3', '4', '5', '6', '7', '8'];
+  sel.innerHTML = opts.map((v) => '<option value="' + v + '">' + (v === 'mixed' ? 'Mixed' : v) + '</option>').join('');
+  sel.value = sizes[mode] || opts[0];
+}
+
+// Call signs and Prefixes only with Characters = All characters (Willi, 2026-11-06): they use every character.
+// Leaving All characters while practising them goes back to Groups.
+function modeOptions() {
+  const sel = $('selMode');
+  for (const o of sel.options) if (o.value === 'calls' || o.value === 'prefixes') o.disabled = !useAll() || !corpus;
+  if (sel.selectedOptions[0] && sel.selectedOptions[0].disabled) {
+    sel.value = 'groups';
+    if (store) store.setMeta('mode', 'groups');
+    modeChanged();
+    setStatus(BACK_TO_GROUPS);
+    return true;
+  }
+  return false;
+}
+const BACK_TO_GROUPS = 'Call signs and prefixes need Characters = All characters. Back to groups.';
+
+// The mode select changed (or was restored): relabel the size select, show the tier select
+function modeChanged() {
+  const mode = $('selMode').value;
+  show($('pairSize'), mode === 'groups' || mode === 'phrases');
+  show($('pairTier'), mode === 'phrases');
+  show($('pairCallLen'), mode === 'calls');
+  show($('pairRegion'), callMode());
+  show($('pairCommon'), callMode());
+  $('lblSize').textContent = mode === 'phrases' ? 'Words per phrase' : 'Group size';
+  if (mode === 'groups' || mode === 'phrases') fillSizes(mode);
+  if (scheduler) {
+    scheduler.mode = mode;
+    scheduler.size = sizeValue('groups');
+    scheduler.length = +sizes.phrases;
+    scheduler.tier = $('selTier').value;
+  }
+  renderAvailable();
+  renderLadder();
+}
+
+$('selMode').onchange = async () => { modeChanged(); await store.setMeta('mode', $('selMode').value); };
+$('selSize').onchange = async () => {
+  const mode = $('selMode').value;
+  sizes[mode] = $('selSize').value;
+  modeChanged();
+  await store.setMeta(mode === 'groups' ? 'size' : 'phraseLen', sizes[mode]);
+};
+$('selTier').onchange = async () => { modeChanged(); await store.setMeta('tier', $('selTier').value); };
+
+const TIER_NAMES = { A: 'word chains', B: 'plain-language phrases', C: 'QSO lines', U: 'of your own phrases' };
+
+// What the current lesson offers: counts on the tier options, and a line under the controls
+function renderAvailable() {
+  const mode = $('selMode').value, note = $('availNote');
+  if (!corpus) return;
+  if (callMode()) {
+    note.textContent = (mode === 'calls' ? 'Call signs' : 'Prefixes') + ' as the M32 makes them, with the settings beside' +
+      (mode === 'prefixes' ? ' (Length Calls does not apply to prefixes)' : '') + '. They have their own tally and move no box.';
+    return;
+  }
+  if (mode === 'groups' || !lessonList.length) { note.textContent = ''; return; }
+  const av = corpus.available(lessonList, +sizes.phrases);
+  if (mode === 'words') {
+    note.textContent = av.words.length ? av.words.length + ' words use only ' + setOf() + ' characters.'
+                                       : 'No word uses only ' + setOf() + ' characters yet — practise groups for now.';
+    return;
+  }
+  for (const o of $('selTier').options) {
+    const label = { mixed: 'Mixed', A: 'Word chains', B: 'Plain language', C: 'QSO lines', U: 'Your own phrases' }[o.value];
+    o.textContent = o.value === 'mixed' ? label : label + ' (' + av.count[o.value] + ')';
+    o.disabled = o.value !== 'mixed' && !av.count[o.value];
+  }
+  const n = sizes.phrases, tier = $('selTier').value;
+  if (tier === 'mixed') {
+    note.textContent = av.eligible.length
+      ? 'Mixing ' + av.eligible.map((t) => TIER_NAMES[t].replace(/^of /, '')).join(', ') + ' (' + n + ' words).'
+      : 'Not enough ' + n + '-word phrases fit ' + setName() + ' yet (a kind needs 10). Try fewer words, Words, or groups.';
+  } else {
+    // "211 QSO lines with 4 words fit your lesson." / "2 of your own phrases with 4 words fit ..."
+    note.textContent = av.count[tier]
+      ? av.count[tier] + ' ' + TIER_NAMES[tier] + ' with ' + n + ' words ' + (av.count[tier] === 1 ? 'fits' : 'fit') + ' ' + setName() + '.'
+      : (tier === 'U' ? 'None of your own phrases' : 'No ' + TIER_NAMES[tier]) + ' with ' + n + ' words ' +
+        (tier === 'U' ? 'fits' : 'fit') + ' ' + setName() + ' yet.';
+  }
+}
+
+// Decision 13b: after 10 phrases of this length, offer a step up or down -- never automatic
+async function renderLadder() {
+  const box = $('ladder');
+  if ($('selMode').value !== 'phrases' || !store) { show(box, false); return; }
+  const n = +sizes.phrases, offer = E.ladderOffer(await store.all(), n);
+  show(box, !!offer);
+  if (!offer) return;
+  const to = offer === 'up' ? n + 1 : n - 1;
+  $('ladderText').textContent = offer === 'up'
+    ? 'You copied 90 % or more of the words in your last 10 phrases of ' + n + '. Ready for ' + to + '?'
+    : 'Your last 10 phrases of ' + n + ' were hard going (under 60 % of the words). Step back to ' + to + '?';
+  $('btnLadder').textContent = (offer === 'up' ? 'Go to ' : 'Back to ') + to + ' words';
+  $('btnLadder').onclick = async () => {
+    sizes.phrases = String(to);
+    modeChanged();
+    await store.setMeta('phraseLen', sizes.phrases);
+    setStatus(to + ' words per phrase. Press Enter for the next one.');
+  };
+}
+
+// ---- your own phrases (C3) ----
+
+function userInfo(r) {
+  if (!r.lines) { $('userInfo').textContent = ''; return; }
+  const usable = lessonList.length ? corpus.user.filter((it) => [...it.need].every((t) => lessonList.indexOf(t) >= 0)).length : null;
+  $('userInfo').textContent = r.kept + ' of ' + r.lines + ' lines have 2 to 8 words' +
+    (usable != null ? '; ' + usable + ' use only ' + setOf() + ' characters.' : '.');
+}
+async function useUserText(text) {
+  if (!corpus) return;
+  userInfo(corpus.setUser(text));
+  await store.setMeta('userText', text);
+  renderAvailable();
+}
+$('btnUserUse').onclick = () => useUserText($('userText').value);
+$('btnUserFile').onclick = () => $('fileUser').click();
+$('fileUser').onchange = async (ev) => {
+  const f = ev.target.files[0];
+  ev.target.value = '';
+  if (!f) return;
+  $('userText').value = await f.text();
+  await useUserText($('userText').value);
+};
+
+function enablePractice(on) {
+  $('btnGo').disabled = !on;
+  if (!on) { $('selSeq').disabled = true; $('selLesson').disabled = true; }
+  $('answer').disabled = !on;
+  $('btnPause').disabled = !on;
+  $('btnReplay').disabled = true;
+}
+
+function onState(s) {
+  const ans = $('answer');
+  clearNext();
+  $('btnReplay').disabled = !(s === 'answering' && session.item && session.item.replays < session.helpLimit);
+  $('btnReplay').textContent = 'Replay' + (session.item && s === 'answering' ? ' (' + (session.helpLimit - session.item.replays) + ' left)' : '');
+  if (s === 'playing') { setStatus('Listen…', true); $('btnGo').textContent = 'Check'; ans.focus(); }
+  else if (s === 'answering') {
+    if (itemSource === 'keyed') {
+      if (!keyed) keyed = new E.KeyedAnswer(session.item.text, { idleMs: idleMs() });
+      keyed.start(performance.now());
+      setStatus('Key what you heard.');
+    } else setStatus('Type what you heard, then Enter.');
+    $('btnGo').textContent = 'Check';
+    ans.focus();
+  }
+  else if (s === 'feedback-playing') { $('btnGo').textContent = 'Next'; }
+  else if (s === 'second-try') {
+    keyed = new E.KeyedAnswer(session.item.text, { idleMs: idleMs() });
+    keyed.start(performance.now());
+    ans.value = '';
+    setStatus('Key it again. This try does not count.', true);
+    say((resultSpeech ? resultSpeech + ' ' : '') + 'Key it again.');
+    resultSpeech = '';
+    $('btnGo').textContent = 'Next';
+  }
+  else if (s === 'feedback') {
+    const auto = autoNext();
+    setStatus(auto ? 'Next one coming…' : 'Press Enter for the next one.', true);
+    say((resultSpeech ? resultSpeech + ' ' : '') + (auto ? '' : 'Press Enter for the next one.'));
+    resultSpeech = '';
+    $('btnGo').textContent = 'Next';
+    if (auto) pendingGap = AFTER_TRY_MS;
+  }
+  else if (s === 'idle') { $('btnGo').textContent = 'Next'; }
+  else if (s === 'paused') { $('btnGo').textContent = 'Go on'; if (link.state === 'ready' && !needKeyer) setStatus('Paused. Press Enter to go on.'); }
+  if (pendingGap && (s === 'idle' || s === 'feedback')) scheduleNext();
+  pendingGap = 0;
+}
+
+// Keyed answers go on by themselves, as the Echo Trainer does: the hand is on the paddle, not on the keyboard.
+// The page cannot tell when a screen reader has finished, so "Next item" can be set to Press Enter.
+const RIGHT_GAP_MS = 2000;      // after a right answer
+const AFTER_TRY_MS = 3000;      // after a second try: there is a correction to read
+let pendingGap = 0;
+let nextTimer = null;
+
+function autoNext() { return itemSource === 'keyed' && $('selNext').value === 'auto'; }
+
+function clearNext() {
+  if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
+}
+
+function scheduleNext() {
+  clearNext();
+  nextTimer = setTimeout(() => {
+    nextTimer = null;
+    if (!session || link.state !== 'ready' || needKeyer || (session.state !== 'idle' && session.state !== 'feedback')) return;
+    // changed the setting while waiting, or busy in a menu or a text box: do not take the focus away
+    if (!autoNext() || /^(SELECT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)) {
+      setStatus('Press Enter for the next one.');
+      return;
+    }
+    go();
+  }, pendingGap);
+}
+
+// Moving the focus makes a screen reader read the field out, so when that happens the sound
+// waits for it. Enter in the field moves nothing and starts at once.
+const LEAD_IN_MS = 1500;
+let leadTimer = null;
+let resultSpeech = '';          // spoken once a wrong answer's replay has ended
+
+function afterFocus(run) {
+  if (leadTimer) { clearTimeout(leadTimer); leadTimer = null; }
+  if (document.activeElement === $('answer')) { run(); return; }
+  $('answer').focus();
+  setStatus('Get ready…', true);
+  leadTimer = setTimeout(() => { leadTimer = null; run(); }, LEAD_IN_MS);
+}
+
+function startNext() {
+  try { session.next(); }
+  catch (e) {
+    if (e.name !== 'NoItemsError') throw e;
+    setStatus(e.what === 'words' ? 'No word uses only ' + setOf() + ' characters yet — choose Groups.'
+                                 : 'Nothing to practise with these settings yet — choose fewer words, another kind, or Groups.');
+  }
+}
+
+async function go() {
+  if (!session) return;
+  clearNext();
+  const s = session.state;
+  if (s === 'answering') return check();
+  if (s === 'playing') { setStatus('Still sounding — answer when it has finished.', true); return; }
+  if (s === 'second-try' && keyed && keyed.count) return finishSecondTry();    // with nothing keyed, Enter goes on
+  if (s === 'paused' || (s === 'idle' && needKeyer)) {     // idle + needKeyer: connected while the Echo Trainer ran
+    if (link.state !== 'ready') return;
+    if (needKeyer) {
+      preparing = true;
+      try { await ensureKeyer(); await applyPractice(); needKeyer = false; badge('Connected · CW Keyer', 'on'); }
+      catch (e) { setStatus(e.message); return; }
+      finally { preparing = false; }
+    }
+    if (s === 'paused') session.resume();
+  }
+  if (!started) {
+    started = true;
+    try { await store.setMeta('sessionsSinceExport', ((await store.getMeta('sessionsSinceExport')) || 0) + 1); } catch (e) { /* ok */ }
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
+  }
+  $('answer').value = '';
+  $('feedback').innerHTML = '';
+  resultSpeech = '';
+  itemSource = $('selSource').value;
+  keyed = null;
+  noInput = 0;
+  $('answer').readOnly = itemSource === 'keyed';
+  afterFocus(startNext);
+}
+
+async function check() {
+  if (itemSource === 'keyed') {
+    const k = keyed;
+    keyed = null;               // the page's clock must not finish it a second time
+    if (k) await session.submit(k.answer($('selSpacing').value), performance.now(),
+                                { corrections: k.corrections, spacing: $('selSpacing').value });
+    return;
+  }
+  const a = await session.submit($('answer').value, performance.now());
+  if (!a) setStatus('Still sounding — answer when it has finished.', true);
+}
+
+function onResult({ attempt, score }) {
+  const exp = E.tokenize(score.expected);
+  const helpedNote = attempt.helped && attempt.source !== 'keyed' && !isCall(attempt) ? 'You used a replay, so this one does not move a box.' : '';
+  const verb = attempt.source === 'keyed' ? 'keyed' : 'typed';
+  let html = '';
+  if (score.perfect) {
+    html = '<div class="diff"><span class="ok">' + esc(dispText(score.expected)) + '</span></div><div>Right.</div>';
+    const auto = attempt.source === 'keyed' && autoNext();
+    setStatus(auto ? 'Right!' : 'Right! Press Enter for the next one.', true);
+    say('Right! ' + (helpedNote ? helpedNote + ' ' : '') + (auto ? '' : 'Press Enter for the next one.'));
+    if (auto) pendingGap = RIGHT_GAP_MS;
+  } else {
+    // the expected text, each character marked by what the scorer made of it
+    let k = 0, line = '';
+    for (const t of exp) {
+      if (t === ' ') { line += ' '; continue; }
+      const c = score.chars[k++];
+      const cls = c.ok ? 'ok' : (c.got == null ? 'miss' : 'bad');
+      const title = c.ok ? '' : ' title="' + (c.got == null ? 'missing' : 'you typed ' + esc(disp(c.got))) + '"';
+      line += '<span class="' + cls + '"' + title + '>' + esc(disp(t)) + '</span>';
+    }
+    html = '<div class="diff">' + line + '</div>' +
+           '<div>It was <b class="mono">' + esc(dispText(score.expected)) + '</b>; you ' + verb + ' <b class="mono">' +
+           esc(score.answer ? dispText(score.answer) : 'nothing') + '</b>. Listen again — it comes back in a while.</div>' +
+           '<div class="sr">It was ' + esc(spell(score.expected)) + '. You ' + verb + ' ' + esc(score.answer ? spell(score.answer) : 'nothing') + '.</div>';
+    setStatus('Not quite. Listen once more.', true);
+    resultSpeech = 'It was ' + spell(score.expected) + '. You ' + verb + ' ' + (score.answer ? spell(score.answer) : 'nothing') + '.' +
+                   (helpedNote ? ' ' + helpedNote : '');
+  }
+  if (helpedNote) html += '<div class="keys">' + helpedNote + '</div>';
+  $('feedback').innerHTML = html;
+  renderChars();
+  renderTally();
+  showHistory();
+  renderLadder();
+}
+
+function onSecondTry({ score }) {
+  const said = score.answer ? dispText(score.answer) : 'nothing';
+  $('feedback').insertAdjacentHTML('beforeend', score.perfect ? '<div><b>Second try: right.</b></div>'
+    : '<div>Second try: you keyed <b class="mono">' + esc(said) + '</b>.</div>' +
+      '<div class="sr">Second try: you keyed ' + esc(score.answer ? spell(score.answer) : 'nothing') + '.</div>');
+  resultSpeech = score.perfect ? 'Second try: right.' : 'Second try: you keyed ' + (score.answer ? spell(score.answer) : 'nothing') + '.';
+}
+
+function renderTally() {
+  if (!session) return;
+  const part = (name, t) => (t.items ? name + t.items + ' items, ' + t.perfect + ' right, ' +
+    Math.round(100 * t.charsRight / Math.max(1, t.chars)) + ' % of characters.' : '');
+  $('tally').textContent = [part('This session: ', session.tally), part('Keyed this session: ', session.keyedTally),
+                            part('Calls and prefixes this session: ', session.callTally)].filter(Boolean).join(' ');
+}
+
+const isCall = (a) => a.kind === 'call' || a.kind === 'prefix';
+
+// M4b: their own tally, kept from the log like the boxes (decision of 2026-11-06)
+function renderCalls() {
+  const parts = [];
+  for (const [kind, name] of [['call', 'Call signs'], ['prefix', 'Prefixes']]) {
+    const c = E.callSummary(mastery.calls[kind], 6);
+    if (!c.items) continue;
+    let h = '<p><b>' + name + ':</b> ' + c.items + ' copied, ' + c.perfect + ' right (' + Math.round(100 * c.perfect / c.items) + ' %).';
+    if (c.byLength.length > 1)
+      h += ' By length: ' + c.byLength.map((l) => l.length + ' characters ' + l.perfect + ' of ' + l.items).join(' · ') + '.';
+    if (c.missed.length)
+      h += ' Most missed: ' + c.missed.map((m) => '<span class="mono">' + esc(disp(m.ch)) + '</span> ' + m.missed + ' of ' + m.attempts).join(' · ') + '.';
+    parts.push(h + '</p>');
+  }
+  $('callStats').innerHTML = parts.join('');
+  show($('callsBox'), parts.length > 0);
+}
+
+function renderChars() {
+  renderCalls();
+  renderEcho();
+  if (!lessonList.length) return;
+  let rows = '';
+  for (const ch of lessonList) {
+    const r = mastery.row(ch);
+    let pips = '';
+    for (let i = 1; i <= 5; i++) pips += '<span class="pip' + (i <= r.box ? ' f' : '') + '"></span>';
+    rows += '<tr><td class="ch">' + esc(disp(ch)) + '</td>' +
+            '<td class="pips" aria-label="box ' + r.box + ' of 5">' + pips + '</td>' +
+            '<td>' + r.attempts + '</td>' +
+            '<td>' + (r.accuracy == null ? '–' : Math.round(100 * r.accuracy) + ' %') + '</td>' +
+            '<td>' + (r.medianLatency == null ? '–' : (r.medianLatency / 1000).toFixed(1) + ' s') + '</td>' +
+            '<td>' + (r.keyed.attempts ? Math.round(100 * r.keyed.correct / r.keyed.attempts) + ' % of ' + r.keyed.attempts : '–') + '</td></tr>';
+  }
+  $('charRows').innerHTML = rows;
+  const conf = mastery.confusionList(6).filter((c) => lessonList.indexOf(c.expected) >= 0);
+  $('confusions').innerHTML = conf.length ? '<b>Most confused:</b> ' +
+    conf.map((c) => '<span class="mono">' + esc(disp(c.expected)) + '</span> taken for <span class="mono">' + esc(disp(c.got)) + '</span> (' + c.count + '×)').join(' · ') : '';
+  // decision 4d: offered, never automatic
+  const ready = useKoch() && lesson && lesson.value < lesson.maximum && mastery.readyToAdvance(lessonList);
+  show($('advance'), !!ready);
+  if (ready) {
+    const nextCh = lesson.characters[lesson.value];
+    $('advanceText').textContent = 'Every character is in box 3 or higher. Ready for lesson ' + (lesson.value + 1) +
+      ' (adds ' + disp(String(nextCh)) + ')?';
+    $('btnAdvance').textContent = 'Go to lesson ' + (lesson.value + 1) + ' (changes the lesson stored on your M32)';
+  }
+}
+
+$('btnAdvance').onclick = async () => {
+  try {
+    await link.command('put kochlesson/' + (lesson.value + 1));
+    await readLesson();
+    setStatus('Lesson ' + lesson.value + '. The new character comes up often at first.');
+  } catch (e) { setStatus('Could not change the lesson: ' + e.message); }
+};
+
+$('btnGo').onclick = go;
+$('btnReplay').onclick = () => { if (session) afterFocus(() => session.replay()); };
+$('btnPause').onclick = () => { if (session) session.pause(); };
+
+$('answer').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    if (e.ctrlKey || e.metaKey) { if (session) session.replay(); }
+    else go();
+    return;
+  }
+  if (e.key === 'Escape') { e.preventDefault(); if (session) session.pause(); }
+});
+// Every change to the field, however it was made (keys, an IME, paste): the inserted text,
+// or the kind of deletion. Its time is on the performance clock, like the link's.
+$('answer').addEventListener('input', (e) => {
+  if (session) session.key(e.data != null ? e.data.toLowerCase() : (e.inputType || 'edit'), e.timeStamp);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.target === $('answer') || ['SELECT', 'INPUT', 'TEXTAREA'].indexOf(e.target.tagName) >= 0) return;
+  if (e.key === 'Enter' && e.target === document.body) { e.preventDefault(); go(); }
+  else if (e.key === 'Escape' && session) session.pause();
+});
+
+// ---- start ---------------------------------------------------------------------
+
+// Replay is Ctrl+Enter or Cmd+Enter (both work); name the one this keyboard has
+if (/mac|iphone|ipad/i.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ''))
+  $('kReplay').textContent = 'Cmd';
+if (staleScripts.length) $('btnConnect').disabled = true;
+else if (!('serial' in navigator)) {
+  $('btnConnect').disabled = true;
+  connNote('This browser cannot talk to a serial port. Use Chrome, Edge, Opera, or Firefox 151 or newer, on a desktop computer.', true);
+}
+openStore().then(loadCorpus);
+</script>
+</body>
+</html>

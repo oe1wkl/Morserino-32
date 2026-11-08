@@ -1,0 +1,21 @@
+# Phrases from Tommy OZ1THC's files that are left out of tier B, one per line, exactly as the review shows
+# them (after the clean-up). My suggestion, for Willi to confirm: religion, illness, alcohol, innuendo or
+# politics don't belong in a training tool for everyone. Delete a line to let a phrase back in.
+cancer sucks
+divorce me
+that is hot
+drink me
+get in the sack
+god alone saves
+god is my shield
+god as my witness
+forgive my sins
+hope trumps all
+one last drink please
+do not drive drunk
+do not drink and drive
+be a good girl
+just like a woman
+just like a man
+smoking guns
+ride or die

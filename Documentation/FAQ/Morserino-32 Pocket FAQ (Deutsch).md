@@ -190,6 +190,8 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * Eine eigene Zeichenreihenfolge verhält sich jetzt genau wie eine der eingebauten Koch-Sequenzen: Select Lesson, Learn New Character und die übrigen Koch-Methoden funktionieren damit auf dieselbe Weise.
 * **Kann ich sehen, wie gut ich vorankomme?**
     * Ja. Beim Üben mit dem Koch-Trainer zeichnet der M32 Pocket eine **Übungsstatistik** auf. Ansehen kannst du sie über das Configuration Tool oder über den eingebauten Webserver des Morserino mit einem Browser.
+* **Kann ich zusammen mit einem Computer das Mitschreiben üben?**
+    * Ja: mit dem **M32 Trainer**, auf [`morserino.info/m32_trainer.html`](https://www.morserino.info/m32_trainer.html) (Firmware 10 oder neuer; Chrome, Edge oder Firefox; das USB-Kabel). Der Morserino spielt Gruppen, Wörter, Sätze oder Rufzeichen, du tippst oder gibst zurück, was du gehört hast, und die Seite führt über jedes Zeichen Buch, bringt Verfehltes wieder und bietet dir die nächste Koch-Lektion an, wenn du so weit bist. Außerdem protokolliert sie die Ergebnisse des Echo Trainer mit deinen Reaktionszeiten. Siehe „Der M32 Trainer“ im Handbuch.
 * **Die Schrift im Scrollbereich ist mir zu klein / zu groß.**
     * Die Einstellung **Font Size** schaltet den Scrollbereich zwischen der normalen Textgröße und einer kleineren um. Die kleinere fasst mehr Zeichen pro Zeile und zeigt fünf statt vier Zeilen — praktisch bei höheren Geschwindigkeiten oder bei langen Wörtern, wenn du mehr vom gerade Gegebenen sehen willst.
 * **Der CW-Ton klickt, oder er ist mir zu weich.**

@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=bb5a596eb43d v=10 -->
+<!-- WHATSNEW:BEGIN en=ee91dc4b3786 v=10 -->
 Was ist neu in Version 10?
 
 -   Zwei Morserinos können jetzt über das Netzwerk eine **Tastverbindung in die Ferne** bilden. Du gibst an deinem Betriebsplatz auf dem einen — dem neuen Modus **Remote Keyer** — und der andere, an der Station, tastet über seinen Anschluss „to Tx“ den Sender: der neue Modus **Remote Rig**. Die Station kann im Nebenzimmer stehen oder in einem anderen Land. Was aus dem Sender kommt, ist das, was du gegeben hast, mit deinem eigenen Timing — ob es von den Paddles kam, von einer Handtaste oder von einem Bug. Es ist eine Tastverbindung, keine Audioverbindung: Deinen Mithörton hörst du lokal und sofort, sodass nichts im Netzwerk deinen Gebe-Rhythmus stören kann; was du *von* der Station hörst, kommt über den Fernsteuer- und Audioweg, den du ohnehin schon benutzt. Die Verbindung läuft über UDP-Port 7374, und die Adresse der Station trägst du im Feld **TRX Peer** unter **Config WiFi** ein — dasselbe Feld, das auch der WiFi-Transceiver verwendet. Beide Seiten sind im Handbuch beschrieben, samt dem, was bei Routern und Firewalls zu beachten ist.
@@ -44,6 +44,7 @@ Was ist neu in Version 10?
 -   Neuer Modus **Transceiver → WinKeyer**: Der Morserino verhält sich wie ein WinKeyer (WK2) von K1EL, sodass Log- und Contestprogramme (N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog, CQRLOG, fldigi/flwkey, …) über USB CW durch ihn senden können. Er tastet einen an „to Tx" angeschlossenen Sender (außer **Key ext TX** steht auf Never), du kannst jederzeit mit dem Paddle dazwischen gehen, der ENCODER dient als Geschwindigkeitsregler des WinKeyers, und ein Klick auf den ENCODER bricht ab, was das Programm gerade sendet. Keyer-Modus, Paddle-Polarität, ACS, Latency und die Tonhöhe des Mithörtons bleiben die Einstellungen des Morserino – die entsprechenden Einstellungen im Programm haben keine Wirkung; alles andere am Senden des Programms (Geschwindigkeit, Gewichtung, Punkt-Strich-Verhältnis, Kompensation, Farnsworth, Contest-Abstand, …) kommt vom Programm, und nichts davon wird gespeichert. Die WinKeyer-Nachrichten 1 bis 6 spielen die Keyer-Speicher 1 bis 6 des Morserino ab. Einen PTT-Ausgang gibt es nicht. Bei der 1st und 2nd Edition startest du den Modus vor dem Programm (die USB-Schnittstelle läuft dann mit den 1200 Baud des WinKeyers); beim M32 Pocket kann ein Programm den WinKeyer auch öffnen, während der Morserino im Hauptmenü ist – der Modus startet dann von selbst.
 -   Neuer Modus **Transceiver → Remote WinKeyer** (bei der 1st und 2nd Edition **Remote WinK**, damit es aufs Display passt): **WinKeyer** und **Remote Keyer** in einem. Ein Log- oder Contestprogramm steuert den Morserino über USB genau wie im Modus **WinKeyer**, und sein CW – und was du mit dem Paddle gibst – geht über die Tastverbindung an einen entfernten Sender, während dein eigener Anschluss „to Tx“ stumm bleibt. Weil der Sender weit weg steht, ist einiges anders als im **WinKeyer**: Reißt die Verbindung ab, hört das Senden des Programms auf und das Programm erfährt es, wie wenn du mit dem Paddle dazwischen gehst (ein wiederholtes CQ hört auf), und was es sendet, solange die Verbindung weg ist, wird verworfen – nichts geht verspätet auf Sendung; das Programm erfährt, dass der Morserino beschäftigt ist, bis das Rig das CW ausgegeben hat, sodass ein Programm, das PTT über CAT schaltet, das Ende nicht abschneidet; und ein Tune wird am Rig wie eine gedrückt gehaltene Handtaste behandelt (es gilt **Rig Limit SK**). Die Einstellungen des Rigs erreichst du mit einem Doppelklick, solange die Verbindung steht, wie im **Remote Keyer**. Beim M32 Pocket bestimmt die neue Einstellung **WinKeyer Tx**, welcher der beiden WinKeyer-Modi startet, wenn ein Programm den WinKeyer öffnet, während der Morserino im Hauptmenü ist: **Local** (die Voreinstellung, wie bisher) oder **Remote**.
 -   **CW Generator** und **Echo Trainer** haben einen neuen Eintrag, **Prefixes**: Rufzeichen-Präfixe – der Anfang eines Rufzeichens bis einschließlich der Ziffer des Rufzeichenbezirks, etwa OE3, DL1, KD9, VE3, UA9 oder 3B8 –, um den Teil eines Rufzeichens zu üben, der verrät, wo eine Station sitzt. **Calls Region** und **Call Prefixes** gelten wie bei den Rufzeichen, **Length Calls** nicht.
+-   Neu: der **M32 Trainer**, ein Mitschreib-Trainer im Browser (`https://www.morserino.info/m32_trainer.html`). Der Morserino spielt Gruppen, Wörter, Sätze, Rufzeichen oder Präfixe aus deiner Koch-Lektion, deinem Practice Set oder allen Zeichen; du schreibst sie am Computer getippt mit oder gibst sie mit dem Paddle zurück. Die Seite führt über jedes Zeichen Buch, wählt das Nächste danach aus, was du noch verfehlst, und bietet dir die nächste Koch-Lektion an, wenn du so weit bist. Außerdem protokolliert sie die Ergebnisse des **Echo Trainer**, mit den Reaktions- und Gebezeiten, die der Morserino misst. Sie braucht diese Firmware (serielles Protokoll 1.6) und Chrome, Edge oder Firefox auf einem Computer. Am Morserino wird nichts gespeichert außer Koch-Sequenz und Koch-Lektion, und auch die nur, wenn du sie auf der Seite änderst. Siehe „Der M32 Trainer“ im Handbuch.
 -   Nur M32 Pocket: Der **CW Keyer** kann deine Tastung über das USB-Kabel an einen Computer schicken, ohne Bluetooth. Die neue Einstellung **USB Keying** wählt, was hinausgeht: **VBand** macht den Morserino zu einer USB-Tastatur für vBand (die linke Strg-Taste folgt dem Keyer – nichts zu koppeln, und der Akku lädt dabei), **MIDI Keyer** macht ihn zu einem USB-MIDI-Gerät, das deine fertige Tastung sendet, für die Web-Werkzeuge von Vail wie *learncw.vailmorse.com* und für Programme mit einem Handtasten-Eingang, und **MIDI Paddles** sendet, was ein CTR2-MIDI-Interface sendet (Kanal 1: Note 20 für das Punkt-Paddle, 21 für das Strich-Paddle, 30 für eine Handtaste), für Programme mit eigenem Keyer wie SmartSDR für macOS. Die Voreinstellung **Off** sendet nichts zusätzlich. Solange der CW Keyer an USB sendet, gibt es keine serielle Schnittstelle, das Konfigurationsprogramm kann also keine Verbindung herstellen; beim Verlassen des CW Keyers ist sie sofort wieder da. Danke an Ian Gilchrist, VK1HF, der es geschrieben hat.
 -   Nur M32 Pocket, Accessibility Edition: Das Gerät sagt jetzt die neue Geschwindigkeit, sobald du sie änderst – die Zahl wird ausgesprochen, während du den Encoder drehst, damit ein blinder Operator sein Übungstempo selbst wählen kann, ohne jemanden fragen zu müssen. Drehst du den Encoder schnell durch, wird nur der Endwert gesagt: Eine Ansage, die gerade läuft, wird abgebrochen, sobald ein neuerer Wert kommt – du hörst also nie den Anfangs- und den Endwert, während alles dazwischen verschluckt wird. Der CW-Generator schweigt, solange die Ansage läuft (der gemeinsame Audioweg würde aus den Morsezeichen sonst Klicks machen), und setzt danach mit dem nächsten Element im neuen Tempo fort. Beginnst du während einer Ansage zu geben, bricht die Ansage sofort ab – was du gibst, hörst du also immer als Mithörton, auch wenn es an einen Sender geht. Das funktioniert in den Übungsmodi, auch bei der automatischen Geschwindigkeitsanpassung des Echo Trainers nach jedem Wort, und im QSO Bot, dessen Morsezeichen für die Ansage genauso pausieren.
 -   Nur M32 Pocket, Accessibility Edition: Immer wenn du einen Übungsmodus verlässt und wieder im Hauptmenü landest, sagt das Gerät, wie es der Batterie geht – **high**, **medium**, **low** oder **charging** (dazu **on USB power**, wenn keine Batterie eingelegt ist, und **battery fault** für den seltenen Fehlerzustand). Das ist gerade hier wichtig, weil auf diesem Gerät der Audio-Codec als Erstes aufgibt, wenn die Zelle schwach wird: Ein blinder Operator kann sonst mit einem funktionierenden Gerät zurückbleiben, das gar nichts mehr sagt – und diese Warnung kommt weit genug vor der Codec-Klippe, dass noch Zeit zum Anstecken bleibt. Die Meldung erklingt einmal pro Rückkehr aus dem Modus ins Menü, nicht wiederholt, während du im Menü navigierst.
@@ -4816,8 +4817,10 @@ Baudrate von **115200** gewählt werden.
 
 Du kannst die serielle Kommunikation in Verbindung mit speziell für den
 Morserino-32 geschriebener Software nutzen, um deine Trainingsleistungen
-zu verbessern. Derzeit gibt es vier Softwareprodukte für diesen Zweck:
+zu verbessern. Derzeit gibt es fünf Softwareprodukte für diesen Zweck:
 
+-   Der **M32 Trainer**, ein Mitschreib-Trainer im Browser, der Teil der
+    Morserino-Software selbst ist – siehe den nächsten Abschnitt.
 -   **Morserino-32 CW Training** von Christof, OE6CHD (siehe
     *https://tegmento.org/*), das die seriellen Protokollfunktionen
     nutzt – siehe auch den vorherigen Anhang.
@@ -4833,6 +4836,102 @@ zu verbessern. Derzeit gibt es vier Softwareprodukte für diesen Zweck:
 
 Siehe auch die Beschreibung der Einstellung **Serial Output** im
 Abschnitt **Allgemeine Einstellungen**.
+
+### Der M32 Trainer: Mitschreiben üben im Browser
+
+Der **M32 Trainer** ist eine Webseite, die deinen Morserino zusammen mit
+einem Computer zu einem Mitschreib-Trainer macht. Der Morserino gibt die
+Morsezeichen – über seinen eigenen Lautsprecher oder Kopfhörer, in seinem
+eigenen Tempo –, und du schreibst mit, was du hörst: entweder auf der
+Tastatur des Computers getippt oder mit dem Paddle zurückgegeben. Die
+Seite prüft jedes Zeichen, merkt sich, wie gut du jedes einzelne
+beherrschst, und wählt aus, was als Nächstes kommt: Zeichen, die du noch
+verfehlst, kommen öfter, gut sitzende seltener.
+
+Du brauchst die Firmware-Version 10 oder neuer (serielles Protokoll 1.6)
+und einen Desktop-Browser, der eine serielle Schnittstelle ansprechen
+kann: Chrome, Edge oder Firefox. Verbinde den Morserino mit seinem
+USB-Kabel, öffne
+[`https://www.morserino.info/m32_trainer.html`](https://www.morserino.info/m32_trainer.html)
+und klicke auf **Connect**. Die Seite startet am Morserino den **CW Keyer**
+und spielt über ihn; mit **Enter** (oder **Start**) geht es los. Ein
+Abschnitt *How the trainer works* oben auf der Seite fasst alles hier
+Beschriebene zusammen (die Seite ist englisch).
+
+**Was gespielt wird.** Unter **Characters** wählst du den Zeichenvorrat:
+
+-   **Koch lesson** – die Zeichen deiner aktuellen Koch-Lektion, genau wie
+    am Morserino eingestellt (auch wenn **Koch Sequence** auf **Custom
+    Chars** steht). Daneben kannst du die **Koch sequence** und die
+    **Lesson** ändern, ohne den CW Keyer zu verlassen. Beides wird am
+    Morserino gespeichert, als hättest du es in seinem Menü geändert.
+-   **Practice Set** – die Zeichen, die du am Morserino unter **CW
+    Generator → Practice Set** gewählt hast.
+-   **All characters** – der vollständige Standard-Zeichenvorrat des
+    Morserino (Buchstaben, Ziffern, Satzzeichen und Betriebszeichen).
+
+Unter **Practise** wählst du, was daraus gemacht wird: **Groups**
+(Gruppen zufälliger Zeichen), echte **Words** (Wörter), **Phrases** aus 2
+bis 8 Wörtern (Wortketten, Sätze in Klartext, QSO-Zeilen oder eigene
+Sätze, die du einfügst) und – nur mit **All characters** – **Call signs**
+(Rufzeichen) und **Prefixes** (Präfixe). Rufzeichen und Präfixe kommen aus
+demselben Generator wie am Morserino, mit den Einstellungen **Length
+Calls**, **Calls Region** und **Call Prefixes**, die auf der Seite
+angezeigt werden: Beim ersten Verbinden werden sie von deinem Morserino
+übernommen und danach von der Seite selbst behalten – eine Änderung dort
+ändert deinen Morserino also nicht. Wörter und Sätze verwenden nur
+Zeichen aus deinem Vorrat, ihre Auswahl wächst also mit deinen Lektionen.
+
+**Antworten.** Mit **Answer: Typed** tippst du, was du gehört hast, und
+drückst **Enter**. Mit **Keyed on the paddle** gibst du es zurück; die
+Seite liest deine Gebeweise so, wie der Morserino sie dekodiert, und du
+wählst, wie lang eine Pause innerhalb eines Wortes sein darf (**Strict**
+bis 6 Punktlängen, **Lenient** bis 12) und nach wie langer Stille deine
+Antwort zu Ende ist. Ein Irrungszeichen (acht Punkte) löscht das letzte
+Wort. Bei einem Fehler zeigt die Seite, was es war, spielt es noch einmal
+und bringt es ein paar Aufgaben später wieder. **Strg+Enter**
+(**Cmd+Enter** am Mac) spielt die Aufgabe noch einmal (das zählt als
+Hilfe), **Esc** pausiert.
+
+**Wie die Seite entscheidet.** Jedes Zeichen steigt durch fünf Kästchen
+auf, wenn du es richtig mitschreibst; ein Fehler wirft es zwei Kästchen
+zurück. Zeichen in niedrigen Kästchen werden öfter gewählt. Sobald jedes
+Zeichen deiner Lektion Kästchen 3 erreicht hat, *bietet* die Seite die
+nächste Lektion an – sie geht nie von selbst weiter. Gegebene Antworten,
+Rufzeichen und Präfixe werden getrennt gezählt und verschieben kein
+Kästchen: Ein Fehler beim Geben kann am Ohr, am Gedächtnis oder an den
+Fingern liegen.
+
+**Tempo.** Die Zeichen erklingen immer im Tempo, das am Morserino
+eingestellt ist; drehst du an seinem Knopf, folgt die Seite. **Effective
+speed** dehnt die Pausen zwischen Zeichen und Wörtern (Farnsworth-Timing),
+solange die Seite verbunden ist. **M32 screen** bestimmt, ob das Display
+des Morserino zeigt, was gespielt wird (standardmäßig nicht – du schreibst
+nach Gehör mit).
+
+**Echo-Trainer-Protokoll.** Während die Seite verbunden ist, kannst du
+auch den **Echo Trainer** des Morserino (oder einen der Echo-Modi des
+**Koch Trainer**) wie gewohnt verwenden. Jedes Wort, das er prüft, wird
+auf der Seite protokolliert, mit deiner Reaktionszeit und Gebezeit, wie
+der Morserino sie gemessen hat, und einer Übersicht der Zeichen, die du
+am häufigsten verfehlst. Läuft der Echo Trainer schon, wenn du dich
+verbindest, lässt die Seite ihn in Ruhe; mit **Enter** auf der Seite geht
+es zurück zum Mitschreiben.
+
+**Dein Verlauf** wird im Browser auf deinem Computer gespeichert, nirgends
+sonst. Sichere ihn ab und zu mit **Export…**, und nimm ihn mit
+**Import…** auf einen anderen Computer oder Browser mit.
+
+**Was der Trainer an deinem Morserino ändert.** Nur Koch-Sequenz und
+Koch-Lektion, und nur, wenn du sie auf der Seite änderst oder die nächste
+Lektion annimmst. Tempo, Abstände und die Bildschirm-Einstellung gelten
+nur für die Sitzung: Verlässt du den CW Keyer oder trennst die
+Verbindung, enden sie, und deine Einstellungen sind wie vorher. Der Sender
+wird nie getastet, während die Seite mit dir übt.
+
+Die Seite lässt sich allein mit der Tastatur bedienen, und ein
+Bildschirmleser sagt Aufgaben und Ergebnisse an, ohne in die Morsezeichen
+hineinzusprechen.
 
 ### Das M32-Serielle-Protokoll über Bluetooth nutzen (BLE Serial)
 

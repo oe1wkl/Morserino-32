@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=bb5a596eb43d v=10 -->
+<!-- WHATSNEW:BEGIN en=ee91dc4b3786 v=10 -->
 What is new in Version 10?
 
 -   Two Morserinos can now form a **remote keying link** over the network. You key one of them at your operating position — the new mode **Remote Keyer** — and the other one, at the station, keys the transmitter through its „to Tx" connector: the new mode **Remote Rig**. The station may be in the next room or in another country. What comes out of the transmitter is what you keyed, with your own timing, whether it came from the paddles, from a straight key or from a bug. It is a keying link, not an audio link: you hear your own sidetone locally and immediately, so nothing on the network can disturb your sending rhythm, while what you hear *from* the station comes over whatever remote-control and audio path you already use. The link runs over UDP port 7374, and the address of the rig goes into the **TRX Peer** field of **Config WiFi** — the same field the WiFi transceiver uses. Both ends are described in the manual, including what to do about routers and firewalls.
@@ -42,6 +42,7 @@ What is new in Version 10?
 -   New mode **Transceiver → WinKeyer**: the Morserino behaves like a K1EL WinKeyer (WK2), so logging and contest programs (N1MM Logger+, Win-Test, DXLog, Logger32, RUMlog, CQRLOG, fldigi/flwkey, …) can send CW through it over USB. It keys a transmitter connected to "to Tx" (unless **Key ext TX** is Never), you can break in with the paddle at any time, the ENCODER works as the WinKeyer's speed control, and a click on the ENCODER stops what the program is sending. Keyer mode, paddle polarity, ACS, latency and the side tone pitch stay the Morserino's own settings – the corresponding settings in the program have no effect; everything else about the program's sending (speed, weighting, ratio, compensation, Farnsworth, contest spacing, …) comes from the program, and nothing it sets is stored. The WinKeyer's messages 1 to 6 play the Morserino's keyer memories 1 to 6. There is no PTT output. On the 1st and 2nd edition, start the mode before the program (the USB port then runs at the WinKeyer's 1200 baud); on the M32 Pocket a program can also open the WinKeyer while the Morserino is in the main menu, and the mode starts by itself.
 -   New mode **Transceiver → Remote WinKeyer** (on the 1st and 2nd edition **Remote WinK**, to fit the display): **WinKeyer** and **Remote Keyer** in one. A logging or contest program drives the Morserino over USB exactly as in **WinKeyer** mode, and its CW – and whatever you key with the paddle – goes to a distant transmitter over the remote keying link, while your own "to Tx" connector stays quiet. Because the transmitter is far away, a few things differ from **WinKeyer**: when the link drops, the program's sending stops and the program is told, as when you break in with the paddle (a repeating CQ stops), and what it sends while the link is down is dropped, so nothing goes on the air late; the program is told the Morserino is busy until the rig has played the CW out, so a program switching PTT over CAT does not cut off the end; and a tune is treated at the rig like a held straight key (**Rig Limit SK** applies). The rig's settings can be changed with a double click while the link is up, as in **Remote Keyer**. On the M32 Pocket the new preference **WinKeyer Tx** decides which of the two WinKeyer modes starts when a program opens the WinKeyer while the Morserino is in the main menu: **Local** (the default, as before) or **Remote**.
 -   **CW Generator** and **Echo Trainer** have a new entry, **Prefixes**: call sign prefixes – the beginning of a call sign up to and including its call-area digit, like OE3, DL1, KD9, VE3, UA9 or 3B8 – to train the part of a call that tells you where a station is. **Calls Region** and **Call Prefixes** apply as for call signs; **Length Calls** does not.
+-   New: the **M32 Trainer**, a copy trainer in your browser (`https://www.morserino.info/m32_trainer.html`). The Morserino plays groups, words, phrases, call signs or prefixes made of your Koch lesson, your Practice Set or all characters; you copy them typed on the computer or keyed back on the paddle. The page keeps a record of every character, chooses what comes next by what you still miss, and offers the next Koch lesson when you are ready. It also logs the **Echo Trainer**'s results, with the reaction and keying times the Morserino measures. It needs this firmware (serial protocol 1.6) and Chrome, Edge or Firefox on a computer. Nothing is stored on the Morserino except the Koch sequence and lesson, and only when you change them on the page. See "The M32 Trainer" in the manual.
 -   M32 Pocket: **CW Keyer** can send your keying to a computer over the USB cable, without Bluetooth. The new preference **USB Keying** chooses what goes out: **VBand** makes the Morserino a USB keyboard for vBand (Left Ctrl follows the keyer – nothing to pair, and the battery charges meanwhile), **MIDI Keyer** makes it a USB MIDI device that sends your finished keying, for Vail's web tools such as *learncw.vailmorse.com* and for programs with a straight-key input, and **MIDI Paddles** sends what a CTR2-MIDI interface sends (channel 1: note 20 for the dit paddle, 21 for the dah paddle, 30 for a straight key), for programs such as SmartSDR for macOS that have their own keyer. The default, **Off**, sends nothing extra. While CW Keyer sends to USB there is no serial port, so the Configuration Tool cannot connect; leaving CW Keyer brings it back at once. Thanks to Ian Gilchrist, VK1HF, who wrote it.
 -   M32 Pocket, Accessibility Edition only: the device now says the new speed whenever you change it - the number spoken as you turn the encoder, so a blind operator can pace their practice without asking anyone. Sweeping the encoder fast speaks only the settled value: any announcement already playing is cut when the newer value comes in, so you never hear both the initial and the final speed with everything between swallowed. The CW generator holds silent while the announcement plays (the shared audio path would otherwise turn CW into clicks) and picks the next element up at the new speed. If you start keying during an announcement, the announcement stops at once, so whatever you key is always heard as side tone - also when it goes out to a transmitter. This works in the training modes, including the Echo Trainer's automatic speed step after each word, and in the QSO Bot, whose CW pauses for the announcement in the same way.
 -   M32 Pocket, Accessibility Edition only: whenever you leave a training mode and land back in the top menu, the device tells you how the battery is doing — **high**, **medium**, **low**, or **charging** (plus **on USB power** with no battery, and **battery fault** for the rare fault state). This matters specifically here, because the audio codec is the first thing to give up on this build when the cell sags: a blind operator can be left with a working device that says nothing at all, and this warning fires far enough above the codec's cliff to give time to plug in. The message is announced once per mode-to-menu return, not repeated while navigating the menu itself.
@@ -4238,9 +4239,11 @@ connected computer.
 
 One can use serial communications in conjunction with computer software
 written specifically for the Morserino-32 to enhance one's training
-skills. There are currently four software products available for this
+skills. There are currently five software products available for this
 purpose:
 
+-   The **M32 Trainer**, a copy trainer in your browser that is part of the
+    Morserino software itself — see the next section.
 -   **Morserino-32 CW training** by Christof, OE6CHD (see
     *https://tegmento.org/*) using the serial protocol functions, see
     also the previous appendix.
@@ -4256,6 +4259,91 @@ purpose:
     *https://github.com/Tommy-de-oz1thc/Morserino-32-Phrases-trainer*).
 -   See also the description of the **Serial Output** preference in
     section **General Preferences**.
+
+### The M32 Trainer: Copy Practice in Your Browser
+
+The **M32 Trainer** is a web page that turns your Morserino and a computer
+into a copy trainer. The Morserino sends the Morse code — through its own
+speaker or headphones, at its own speed — and you copy what you hear,
+either typed on the computer's keyboard or keyed back on the paddle. The
+page checks every character, keeps a record of how well you know each one,
+and chooses what comes next: characters you still miss come up more
+often, characters you know well less often.
+
+You need firmware version 10 or newer (serial protocol 1.6) and a
+desktop browser that can talk to a serial port: Chrome, Edge or Firefox.
+Connect the Morserino with its USB cable, open
+[`https://www.morserino.info/m32_trainer.html`](https://www.morserino.info/m32_trainer.html)
+and click **Connect**. The page starts the **CW Keyer** on the Morserino and
+plays through it; press **Enter** (or **Start**) to begin. A section
+*How the trainer works* at the top of the page sums up everything below.
+
+**What is played.** Under **Characters** you choose the set:
+
+-   **Koch lesson** — the characters of your current Koch lesson, exactly
+    as set on the Morserino (also when **Koch Sequence** is **Custom
+    Chars**). Next to it you can change the **Koch sequence** and the
+    **Lesson** without leaving the CW Keyer. These two are stored on the
+    Morserino, as if you had changed them in its menu.
+-   **Practice Set** — the characters you chose on the Morserino under
+    **CW Generator → Practice Set**.
+-   **All characters** — the Morserino's full standard set (letters,
+    digits, punctuation and prosigns).
+
+Under **Practise** you choose what is made of them: **Groups** of random
+characters, real **Words**, **Phrases** of 2 to 8 words (word chains,
+plain-language sentences, QSO lines, or phrases you paste in yourself),
+and — with **All characters** only — **Call signs** and **Prefixes**. Call
+signs and prefixes come from the same generator as on the Morserino, with
+the settings **Length Calls**, **Calls Region** and **Call Prefixes**
+shown on the page: they are taken from your Morserino the first time you
+connect and are then kept by the page, so changing them there does not
+change your Morserino. Words and phrases use only characters from your
+set, so their choice grows with your lessons.
+
+**Answering.** With **Answer: Typed**, type what you heard and press
+**Enter**. With **Keyed on the paddle**, key it back; the page reads your
+keying as the Morserino decodes it, and you choose how long a pause inside
+a word may be (**Strict** up to 6 dits, **Lenient** up to 12) and how long
+a silence ends your answer. An error sign (eight dits) erases the last
+word. A miss shows what it was, plays it again, and brings it back a few
+items later. **Ctrl+Enter** (**Cmd+Enter** on a Mac) plays the item again
+(this counts as help), **Esc** pauses.
+
+**How the page decides.** Each character climbs five boxes as you copy it
+right; a miss sends it two boxes down. Characters in low boxes are chosen
+more often. When every character of your lesson has reached box 3, the
+page *offers* the next lesson — it never moves on by itself. Keyed
+answers, call signs and prefixes are counted separately and move no box:
+a keyed miss may be the ear, the memory or the fingers.
+
+**Speed.** The characters always sound at the speed set on the Morserino;
+turn its knob and the page follows. **Effective speed** stretches the
+gaps between characters and words (Farnsworth timing) for as long as the
+page is connected. **M32 screen** decides whether the Morserino's display
+shows what is played (by default it does not, so you copy by ear).
+
+**Echo Trainer log.** While the page is connected you can also run the
+Morserino's **Echo Trainer** (or one of the **Koch Trainer**'s echo
+modes) as usual. Every word it checks is logged on the page, with your
+reaction time and keying time as the Morserino measured them, and a
+summary of your most missed characters. If the Echo Trainer is already
+running when you connect, the page leaves it alone; press **Enter** on
+the page to go back to copy practice.
+
+**Your history** is stored in the browser on your computer, nowhere else.
+Use **Export…** now and then to keep a copy, and **Import…** to take it to
+another computer or browser.
+
+**What the trainer changes on your Morserino.** Only the Koch sequence and
+lesson, and only when you change them on the page or accept the next
+lesson. Speed, spacing and the screen setting apply to the session only:
+leaving the CW Keyer or disconnecting ends them, and your preferences are
+as before. The transmitter is never keyed while the page practises with
+you.
+
+The page can be used with the keyboard alone, and a screen reader
+announces prompts and results without talking over the Morse code.
 
 ### Using the M32 Serial Protocol over Bluetooth (BLE Serial)
 

@@ -1,0 +1,2 @@
+# Fragments of RealQSOs.TXT that are left out of tier C, one per line, exactly as the review shows them
+# (lower case, after the clean-up). Add any fragment that is garbled, cut off, or wrong as CW.
