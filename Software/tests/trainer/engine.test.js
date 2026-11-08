@@ -616,3 +616,41 @@ test('"All characters" is the M32\'s full standard set, in its Koch order (morse
   assert.equal(E.ALL_CHARS.length, 51);
   assert.ok(E.ALL_CHARS.every(E.hasMorse));
 });
+
+// ---- M5: the Echo Trainer log -------------------------------------------------------
+
+test('M5: an Echo result becomes an attempt; only mode "echo" (not learn / preview)', () => {
+  const a = E.echoAttempt({ event: 'result', mode: 'echo', prompt: 'cq', answer: 'cq', ok: true, repeat: 0, wpm: 18, koch: 12,
+                            latency: 820, duration: 2100 }, { t: 5 });
+  assert.equal(a.kind, 'echo'); assert.equal(a.source, 'echo');
+  assert.equal(a.ok, true); assert.equal(a.perfect, true);
+  assert.equal(a.lesson, 12); assert.equal(a.wpm, 18); assert.equal(a.latency, 820); assert.equal(a.duration, 2100);
+  assert.equal(a.t, 5);
+  assert.deepEqual(a.perChar.map((c) => c.ok), [true, true]);
+  assert.equal(E.echoAttempt({ event: 'result', mode: 'learn', prompt: 'k', answer: 'k', ok: true }), null);
+  assert.equal(E.echoAttempt({ event: 'result', mode: 'preview', prompt: 'k', answer: 'k', ok: true }), null);
+  assert.equal(E.echoAttempt({ event: 'done', mode: 'echo' }), null);
+  const t = E.echoAttempt({ event: 'result', mode: 'echo', prompt: '<sk>', answer: '', ok: false, repeat: 1, wpm: 18, timeout: true });
+  assert.equal(t.timeout, true); assert.equal(t.latency, null); assert.deepEqual(t.perChar, []);
+  assert.equal(t.expected, '<sk>');
+});
+
+test('M5: Echo results have their own tally and move no box', () => {
+  const m = new E.Mastery();
+  const ev = (prompt, answer, o) => E.echoAttempt(Object.assign({ event: 'result', mode: 'echo', prompt, answer, ok: prompt === answer, repeat: 0, wpm: 20 }, o));
+  m.apply(ev('cq', 'cq', { latency: 600, duration: 1000 }));
+  m.apply(ev('test', 'tist', { latency: 1000, duration: 2000 }));
+  m.apply(ev('test', 'test', { repeat: 1, latency: 800, duration: 3000 }));
+  m.apply(ev('de', '', { timeout: true }));
+  assert.equal(m.chars.size, 0, 'no character model touched');
+  assert.equal(m.confusionList().length, 0);
+  const e = E.echoSummary(m.echo);
+  assert.equal(e.items, 4); assert.equal(e.ok, 2); assert.equal(e.timeouts, 1);
+  assert.equal(e.firstTry, 3); assert.equal(e.firstOk, 1);
+  assert.equal(e.medianLatency, 800);                 // 600, 1000, 800 (the timeout has none)
+  assert.equal(e.medianDuration, 2000);               // only words keyed right: 1000, 3000
+  assert.deepEqual(e.missed, [{ ch: 'e', missed: 1, attempts: 2 }]);   // the timeout counts no character
+  // replayed from the log the same way
+  const again = E.Mastery.fromAttempts([ev('cq', 'cq', { latency: 1 })].map((a, i) => Object.assign(a, { t: i })));
+  assert.equal(again.echo.items, 1);
+});

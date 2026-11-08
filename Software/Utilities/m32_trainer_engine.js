@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-06e';
+const VERSION = '2026-11-08';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------
@@ -205,6 +205,7 @@ class Mastery {
     this.chars = new Map();
     this.confusions = new Map();      // "expected\u0000got" -> count
     this.calls = { call: newCallStats(), prefix: newCallStats() };   // M4b: their own tally
+    this.echo = newEchoStats();                                        // M5: the M32's Echo Trainer
   }
 
   static fromAttempts(attempts, rules) {
@@ -225,6 +226,7 @@ class Mastery {
 
   apply(a) {
     if (a.scored === false || !Array.isArray(a.perChar)) return;
+    if (a.kind === 'echo') { applyEcho(this.echo, a); return; }   // M5: own tally, no box (Willi, 2026-11-07)
     if (CALL_KINDS.indexOf(a.kind) >= 0) {   // M4b: call signs and prefixes move no box and are no confusion
       const st = this.calls[a.kind];
       const len = String(a.expected || '').length;
@@ -311,6 +313,51 @@ function callSummary(st, limit) {
   const missed = [...st.chars].filter(([, v]) => v.missed > 0).map(([ch, v]) => ({ ch, missed: v.missed, attempts: v.attempts }))
     .sort((x, y) => y.missed - x.missed || y.missed / y.attempts - x.missed / x.attempts || (x.ch < y.ch ? -1 : 1));
   return { items: st.items, perfect: st.perfect, byLength, missed: limit ? missed.slice(0, limit) : missed };
+}
+
+// ---- the Echo log (M5) -------------------------------------------------------------
+
+// One {"trainer":{"event":"result","mode":"echo",...}} from the M32 (protocol 1.6, E1) as an attempt
+// for the log: kind 'echo', the M32's own verdict, per character from the scorer (for "most missed").
+// Only mode "echo" (Echo Trainer and the Koch Trainer's echo modes; Willi, 2026-11-07: not Learn New
+// Chr / Preview Char) -> null for anything else. ctx: {device, t}.
+function echoAttempt(ev, ctx) {
+  if (!ev || ev.event !== 'result' || ev.mode !== 'echo') return null;
+  ctx = ctx || {};
+  const s = score(ev.prompt || '', ev.answer || '');
+  return {
+    schema: SCHEMA, id: newId(), t: ctx.t != null ? ctx.t : Date.now(), device: ctx.device || null,
+    kind: 'echo', source: 'echo', tier: null, set: null,
+    lesson: ev.koch != null ? ev.koch : null, wpm: ev.wpm != null ? ev.wpm : null, farnsworth: null,
+    expected: s.expected, answer: s.answer, perfect: !!ev.ok, ok: !!ev.ok,
+    perWord: s.words, perChar: ev.timeout ? [] : s.chars, extra: s.extra,
+    repeat: ev.repeat | 0, timeout: !!ev.timeout,
+    latency: ev.latency != null ? ev.latency : null, duration: ev.duration != null ? ev.duration : null,
+    keystrokes: [], corrections: 0, replays: 0, helped: false
+  };
+}
+
+function newEchoStats() { return { items: 0, ok: 0, timeouts: 0, firstTry: 0, firstOk: 0, latencies: [], durations: [], chars: new Map() }; }
+function applyEcho(st, a) {
+  st.items++;
+  if (a.ok) st.ok++;
+  if (a.timeout) st.timeouts++;
+  if (!a.repeat) { st.firstTry++; if (a.ok) st.firstOk++; }
+  if (a.latency != null && !a.timeout) st.latencies.push(a.latency);
+  if (a.duration != null && a.ok) st.durations.push(a.duration);
+  for (const c of a.perChar || []) {
+    const m = st.chars.get(c.expected) || { attempts: 0, missed: 0 };
+    m.attempts++;
+    if (!c.ok) m.missed++;
+    st.chars.set(c.expected, m);
+  }
+}
+// {items, ok, timeouts, firstTry, firstOk, medianLatency, medianDuration, missed: [{ch, missed, attempts}]}
+function echoSummary(st, limit) {
+  const missed = [...st.chars].filter(([, v]) => v.missed > 0).map(([ch, v]) => ({ ch, missed: v.missed, attempts: v.attempts }))
+    .sort((x, y) => y.missed - x.missed || y.missed / y.attempts - x.missed / x.attempts || (x.ch < y.ch ? -1 : 1));
+  return { items: st.items, ok: st.ok, timeouts: st.timeouts, firstTry: st.firstTry, firstOk: st.firstOk,
+           medianLatency: median(st.latencies), medianDuration: median(st.durations), missed: limit ? missed.slice(0, limit) : missed };
 }
 
 function median(xs) {
@@ -1214,7 +1261,7 @@ function farnsworthSpacing(wpm, effective) {
 return {
   VERSION, SCHEMA, RULES, KEYSTROKE_DAYS,
   tokenize, normalize, splitWords, isProsign, alignTokens, alignWords, score,
-  Mastery, movesBoxes, callSummary, median, mulberry32, randomCall, randomPrefix, Corpus, ladderOffer, NoItemsError, Scheduler, Session, KeyedAnswer, newId,
+  Mastery, movesBoxes, callSummary, echoAttempt, echoSummary, median, mulberry32, randomCall, randomPrefix, Corpus, ladderOffer, NoItemsError, Scheduler, Session, KeyedAnswer, newId,
   MemoryStore, IdbStore, exportFile, parseExport, lessonChars, practiceChars, hasMorse, ALL_CHARS, farnsworthSpacing
 };
 }));

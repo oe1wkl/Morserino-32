@@ -188,6 +188,8 @@ Answers reflect **firmware version 9.x**.
     * A custom character order now behaves exactly like one of the built-in Koch sequences: Select Lesson, Learn New Character and the other Koch methods all work with it in the same way.
 * **Can I see how well I am doing?**
     * Yes. When you practise with the Koch trainer, the M32 Pocket records **practice statistics**. You can look at them through the Configuration Tool, or through the Morserino's own built-in web server with a browser.
+* **Can I practise copying together with a computer?**
+    * Yes: the **M32 Trainer**, at [`morserino.info/m32_trainer.html`](https://www.morserino.info/m32_trainer.html) (firmware 10 or newer; Chrome, Edge or Firefox; the USB cable). The Morserino plays groups, words, phrases or call signs, you type or key back what you heard, and the page keeps track of every character, brings back what you miss and offers the next Koch lesson when you are ready. It also logs the Echo Trainer's results with your reaction times. See "The M32 Trainer" in the user manual.
 * **The text in the scrolling area is too small / too large.**
     * The **Font Size** preference switches the scrolling display area between the normal text size and a smaller one. The smaller size fits more characters per line and shows five lines instead of four — handy at higher speeds, or with longer words when you want to see more of what has just been sent.
 * **The CW tone sounds clicky, or too soft.**

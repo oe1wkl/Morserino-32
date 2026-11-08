@@ -4,7 +4,7 @@ document (devdocs/training-addon/CORPUS_REVIEW.md) from:
 
   tier_b_en.txt     plain-language phrases, one per line (authored, Willi reviews)
   tier_c_en.txt     QSO lines with [SLOT]s, and @pool lines for the slots the firmware has no pool for
-  english_words.h   the Oxford-based word list (tier A: words and word chains), frequency order
+  english_words.h   the common-words list (FrequencyWords, CC BY-SA 4.0; tier A: words and word chains), frequency order
   qso_content.h     the QSO Bot's pools: names, QTHs, rigs, antennas, weather, ages, SOTA/POTA refs
   MorsePreferences.h  the four Koch sequences, for the coverage table
 
@@ -312,7 +312,9 @@ def main():
         'about': 'M32 Trainer corpus, built by Software/tools/trainer-corpus/build_corpus.py -- do not edit; '
                  'edit tier_b_en.txt / tier_c_en.txt and rebuild.',
         'words': words,
-        'wordsSource': 'english_words.h (most of the Oxford 5000; frequency order from hermitdave/FrequencyWords)',
+        'wordsSource': 'english_words.h: the about 4,900 most common English words, adapted from FrequencyWords by Hermit Dave '
+                       '(https://github.com/hermitdave/FrequencyWords, counted from OpenSubtitles), CC BY-SA 4.0; '
+                       'filtered and shortened, in frequency order. This word list is likewise CC BY-SA 4.0.',
         'sources': {
             'authored': 'written for the M32 Trainer (Software/tools/trainer-corpus/)',
             'oz1thc': 'phrases contributed to the Morserino-32 project by Tommy, OZ1THC',

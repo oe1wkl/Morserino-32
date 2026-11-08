@@ -4,7 +4,7 @@ The texts the M32 Trainer (`Software/Utilities/m32_trainer.html`) practises besi
 
 | Tier | What | Source |
 |---|---|---|
-| A | single words and word chains | `english_words.h` (the Oxford-based list, 4,881 plain words, most frequent first) |
+| A | single words and word chains | `english_words.h` (the firmware's common-words list, adapted from FrequencyWords, CC BY-SA 4.0; 4,881 plain words, most frequent first) |
 | B | plain-language phrases, 2–8 words | `tier_b_en.txt` (authored), and Tommy OZ1THC's `Practice Files/phrases_2/3/4_words.txt` (contributed 2019; apostrophe-less spellings written out, `tier_b_exclude.txt` leaves some out), and `tier_b_willi_en.txt` (a list Willi generated with Google Gemini, kept as received: `!` dropped, apostrophes written out) |
 | C | QSO fragments, 2–8 words | `Practice Files/RealQSOs.TXT` by Bill G0ELZ and Gordon G3DVW (SK), used with Bill's permission: each QSO cut at `=`, prosigns normalised, cut-off pieces dropped, `realqsos_exclude.txt` for the rest |
 | C | QSO lines with slots, 2–8 words | `tier_c_en.txt` (authored, seeded from the QSO Bot); slot values from `qso_content.h` and the `@pool` lines |

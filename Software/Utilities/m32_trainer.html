@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-06e"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-06e"></script>
+  <script src="m32_trainer_link.js?v=2026-11-08"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-08"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -68,6 +68,10 @@
     select{font-family:inherit;font-size:15px;padding:5px 8px;border:1px solid #b0c0cc;border-radius:4px;background:#fff}
     footer{text-align:center;font-size:14px;color:var(--muted);margin-top:30px}
     footer a{color:#155e8f}
+    .help{padding-top:14px;padding-bottom:14px}
+    .help summary{cursor:pointer;font-size:17px}
+    .help p,.help li{font-size:15px;margin:8px 0}
+    .help ul{padding-left:20px}
     .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
   </style>
 </head>
@@ -77,6 +81,44 @@
   <div class="banner-sub">Copy practice for your Morserino-32</div>
 </header>
 <main class="page">
+
+  <!-- ── Help (M5) ── -->
+  <details class="box help" id="help">
+    <summary><b>How the trainer works</b></summary>
+    <p>The M32 Trainer plays Morse on your Morserino, you copy it — typed here or keyed on the paddle — and the page
+      checks your copy, keeps a record of every character and decides what comes next. You need a computer with a
+      browser that can talk to a serial port (Chrome, Edge or Firefox on a desktop) and firmware 10 or newer
+      (serial protocol 1.6). Connect the M32 with its USB cable and press <b>Connect</b>: the page starts the M32's CW Keyer and plays through it
+      (if the Echo Trainer is running, it is left alone and logged until you press Enter).</p>
+    <ul>
+      <li><b>What is played.</b> <i>Characters</i>: your Koch lesson (as set on the M32, also with Custom Chars), the M32's
+        Practice Set, or all characters. <i>Practise</i>: groups, real words, phrases (word chains, plain language, QSO
+        lines, your own), and — with all characters — call signs and prefixes made exactly as the M32 makes them.</li>
+      <li><b>Answering.</b> Type what you heard and press Enter, or choose <i>Keyed on the paddle</i> and key it back.
+        A miss shows what it was, plays it again, and brings it back a few items later. Enter starts, checks and goes on;
+        Ctrl+Enter (Cmd+Enter on a Mac) replays (that counts as help); Esc pauses.</li>
+      <li><b>Boxes.</b> Each character climbs five boxes as you copy it right; a miss sends it two boxes down, and
+        characters in low boxes come up more often. When all of your lesson's characters reach box 3 the page offers the
+        next lesson — it never moves on by itself. Keyed answers, call signs and the Echo log are counted on their own and
+        move no box.</li>
+      <li><b>Speed.</b> The characters always sound at the speed set on the M32 (turn its knob; the page follows).
+        <i>Effective speed</i> stretches the gaps between characters and words (Farnsworth) for this session only.</li>
+      <li><b>Echo Trainer log.</b> Run the M32's Echo Trainer while the page is connected and every word it checks is
+        logged below, with your reaction and keying times as the M32 measured them.</li>
+      <li><b>What changes on your M32.</b> Only the Koch sequence and lesson, and only when you change them here or accept
+        the next lesson. Speed, spacing and the screen setting are for the session; leaving the CW Keyer or disconnecting
+        ends them. The transmitter is never keyed.</li>
+      <li><b>Your history</b> stays in this browser, nowhere else. Export it now and then; import it on another computer.</li>
+    </ul>
+    <p id="helpManual">The user manual has a section on the M32 Trainer:
+      <a href="https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/User%20Manual" target="_blank" rel="noopener">all Morserino-32 user manuals</a>.</p>
+    <p><b>Sources.</b> The words and their frequency order are adapted from
+      <a href="https://github.com/hermitdave/FrequencyWords" target="_blank" rel="noopener">FrequencyWords</a> by Hermit Dave
+      (counted from OpenSubtitles), licensed under
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" rel="noopener">CC BY-SA 4.0</a>;
+      we filtered and shortened them. QSO phrases include ones contributed by Tommy, OZ1THC, and lines from
+      RealQSOs by Bill, G0ELZ, and Gordon, G3DVW (SK), used with Bill's permission.</p>
+  </details>
 
   <!-- ── Connection ── -->
   <section class="box" aria-labelledby="hConn">
@@ -202,6 +244,22 @@
     <div id="callStats" style="font-size:15px"></div>
   </section>
 
+  <!-- ── Echo Trainer log (M5) ── -->
+  <section class="box" aria-labelledby="hEcho">
+    <h2 id="hEcho">Echo Trainer log</h2>
+    <p style="font-size:15px;margin-bottom:10px">Run the Echo Trainer, or an echo mode of the Koch Trainer, on your M32 while this page is
+      connected: every word it checks is logged here, with the times the M32 measured itself. Counted on its own: it moves no box above.</p>
+    <div id="echoStats" style="font-size:15px"></div>
+    <div class="scroll" id="echoTable" hidden>
+    <table>
+      <caption class="sr">The last words the Echo Trainer checked, newest first</caption>
+      <thead><tr><th scope="col">Sent</th><th scope="col">You keyed</th><th scope="col">Result</th><th scope="col">Reaction</th>
+        <th scope="col">Keying</th><th scope="col">WpM</th><th scope="col">Lesson</th><th scope="col">Time</th></tr></thead>
+      <tbody id="echoRows"></tbody>
+    </table>
+    </div>
+  </section>
+
   <!-- ── History ── -->
   <section class="box" aria-labelledby="hHist">
     <h2 id="hHist">Your history</h2>
@@ -220,7 +278,7 @@
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-06e';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-08';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -298,6 +356,8 @@ async function openStore() {
   const own = await store.getMeta('userText');
   if (own) { $('userText').value = own; if (corpus) userInfo(corpus.setUser(own)); }
   modeChanged();
+  renderCalls();
+  renderEcho();
   await showHistory();
 }
 
@@ -515,20 +575,48 @@ async function ensureKeyer() {
   throw new Error('The M32 did not start the CW Keyer.');
 }
 
-async function prepare() {
+// keepEcho (on Connect): a running Echo Trainer is left alone and logged; Enter later starts the CW Keyer.
+// -> the lesson's characters; sets echoAtConnect
+let echoAtConnect = false;
+async function prepare(keepEcho) {
   const play = await readLesson();
   await readSpeed();
-  preparing = true;
-  try { await ensureKeyer(); } finally { preparing = false; }
-  needKeyer = false;
-  await applyPractice();
+  echoAtConnect = false;
+  if (keepEcho) {
+    try { echoAtConnect = isEchoMenu((await link.command('get menu')).menu); } catch (e) { /* then the Keyer, as before */ }
+  }
+  if (echoAtConnect) {
+    needKeyer = true;
+  } else {
+    preparing = true;
+    try { await ensureKeyer(); } finally { preparing = false; }
+    needKeyer = false;
+    await applyPractice();
+  }
   await seedCallSettings();
   if (!play.length && !callMode()) throw new Error(usePractice() ? 'Your Practice Set is empty: choose its characters on the M32 (CW Generator, Practice Set).'
                                                                  : 'Your Koch lesson has no characters the trainer can use yet.');
   return play;
 }
 
+// The manual for this device (the Config Tool's rule: whole hardware strings; the edition tells the two Pockets apart)
+const MANUAL_ROOT = 'https://www.morserino.info/manuals/';
+function manualSlug(dev) {
+  const hw = (dev && dev.hardware) || '';
+  if (['M32 1st edition', 'M32 2nd edition', 'unknown M32 board', 'original'].indexOf(hw) >= 0) return ['Classic', 'Morserino-32, 1st and 2nd edition'];
+  if (/^M32 Pocket \(Wroom/.test(hw)) return dev.edition === 'accessibility' ? ['Pocket_Accessible', 'M32 Pocket, Accessibility Edition'] : ['Pocket', 'M32 Pocket'];
+  return null;
+}
+function helpManual(dev) {
+  const m = manualSlug(dev);
+  if (!m) return;
+  const link = (lang, name) => '<a href="' + MANUAL_ROOT + 'Morserino-32_User_Manual_' + m[0] + '_' + lang + '.pdf" target="_blank" rel="noopener">' +
+    'user manual for the ' + esc(m[1]) + ' — ' + name + ', PDF</a>';
+  $('helpManual').innerHTML = 'The user manual has a section on the M32 Trainer: ' + link('EN', 'English') + ' · ' + link('DE', 'German') + '.';
+}
+
 function deviceFacts(dev) {
+  helpManual(dev);
   show($('facts'), true);
   $('fDevice').textContent = dev.hardware || '?';
   $('fFirmware').textContent = (dev.firmware || '?') + (dev.edition === 'accessibility' ? ' (Accessibility)' : '') +
@@ -559,12 +647,13 @@ $('btnConnect').onclick = async () => {
       await link.disconnect();
       return;
     }
-    const play = await prepare();
+    const play = await prepare(true);
     makeSession(play);
     badge('Connected · CW Keyer', 'on');
     show($('btnConnect'), false);
     show($('btnDisconnect'), true);
     setStatus('Ready. Press Enter or Start.');
+    if (echoAtConnect) echoRunning();
     enablePractice(true);
     $('btnGo').focus();
   } catch (e) {
@@ -615,12 +704,13 @@ link.on('unresponsive', () => {
 // the device came back (Pocket re-plugged) or restarted (classic): set it up again
 async function again() {
   try {
-    await prepare();
+    await prepare(true);
     badge('Connected · CW Keyer', 'on');
     connNote('');
     show($('btnReconnect'), false);
     enablePractice(true);
-    if (session) { session.resume(); setStatus('Back again. Press Enter to go on.'); }
+    if (echoAtConnect) echoRunning();
+    else if (session) { session.resume(); setStatus('Back again. Press Enter to go on.'); }
   } catch (e) { connNote(e.message, true); }
 }
 link.on('reconnected', again);
@@ -632,9 +722,10 @@ link.on('menu', (m) => {
   if (!session || preparing) return;
   if (m.active && m.content === 'CW Keyer') { if (needKeyer) backInKeyer(); return; }
   session.pause();
+  needKeyer = true;
+  if (isEchoMenu(m)) { echoRunning(); return; }
   badge('Connected · not in the CW Keyer', 'busy');
   setStatus('The M32 left the CW Keyer. Press Enter to go back to it.');
-  needKeyer = true;
 });
 // ... and started a mode there again ({"activate":{"state":"ON"}}): is it the CW Keyer?
 link.on('activate', async (a) => {
@@ -651,6 +742,49 @@ function backInKeyer() {
   setStatus('Back in the CW Keyer. Press Enter to go on.');
 }
 link.installPageHide(window);
+
+// ---- the Echo Trainer log (M5; Willi, 2026-11-07: passive, own tally, echo modes only) -----------
+
+const isEchoMenu = (m) => !!(m && m.active && /(^|\/)Echo Trainer(\/|$)/.test(m.content || ''));
+function echoRunning() {
+  badge('Connected · Echo Trainer', 'on');
+  setStatus('The Echo Trainer is running on the M32: this page logs what it checks. Press Enter to go back to copy practice.');
+}
+let lastEchoT = 0;              // results arriving in one burst still get distinct, ordered times
+link.on('trainer', async (ev) => {
+  lastEchoT = Math.max(Date.now(), lastEchoT + 1);
+  const a = E.echoAttempt(ev, { t: lastEchoT, device: link.device ? { hardware: link.device.hardware, firmware: link.device.firmware,
+                                 protocol: link.device.protocol, edition: link.device.edition || null } : null });
+  if (!a || !store) return;
+  await store.add(a);
+  mastery.apply(a);
+  setStatus('Echo: ' + dispText(a.expected) + ' — ' + (a.ok ? 'OK' : a.timeout ? 'no answer' : 'ERR, you keyed ' + (a.answer ? dispText(a.answer) : 'nothing')) +
+            (a.latency != null ? ' (reaction ' + (a.latency / 1000).toFixed(1) + ' s)' : '') + '.', true);
+  renderEcho();
+  showHistory();
+});
+
+const ECHO_ROWS = 20;
+async function renderEcho() {
+  const e = E.echoSummary(mastery.echo, 6);
+  const secs = (ms) => (ms == null ? '–' : (ms / 1000).toFixed(1) + ' s');
+  if (!e.items) { $('echoStats').textContent = ''; show($('echoTable'), false); return; }
+  let h = '<p><b>' + e.items + ' words checked</b>, ' + e.ok + ' OK (' + Math.round(100 * e.ok / e.items) + ' %)';
+  if (e.firstTry && e.firstTry !== e.items) h += '; ' + e.firstOk + ' of ' + e.firstTry + ' right the first time';
+  if (e.timeouts) h += '; ' + e.timeouts + ' without an answer';
+  h += '. Median reaction ' + secs(e.medianLatency) + ', median keying time ' + secs(e.medianDuration) + ' (words keyed right).';
+  if (e.missed.length)
+    h += ' Most missed: ' + e.missed.map((m) => '<span class="mono">' + esc(disp(m.ch)) + '</span> ' + m.missed + ' of ' + m.attempts).join(' · ') + '.';
+  $('echoStats').innerHTML = h + '</p>';
+  const rows = (await store.all()).filter((a) => a.kind === 'echo').sort((x, y) => y.t - x.t).slice(0, ECHO_ROWS);
+  $('echoRows').innerHTML = rows.map((a) =>
+    '<tr><td class="mono">' + esc(dispText(a.expected)) + '</td><td class="mono">' + esc(a.answer ? dispText(a.answer) : '–') + '</td>' +
+    '<td>' + (a.ok ? 'OK' : a.timeout ? 'no answer' : 'ERR') + (a.repeat ? ' (again)' : '') + '</td>' +
+    '<td>' + secs(a.latency) + '</td><td>' + secs(a.duration) + '</td><td>' + (a.wpm != null ? a.wpm : '–') + '</td>' +
+    '<td>' + (a.lesson != null ? a.lesson : '–') + '</td>' +
+    '<td>' + new Date(a.t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + '</td></tr>').join('');
+  show($('echoTable'), rows.length > 0);
+}
 
 // ---- practice ------------------------------------------------------------------
 
@@ -1043,7 +1177,7 @@ async function go() {
   if (s === 'answering') return check();
   if (s === 'playing') { setStatus('Still sounding — answer when it has finished.', true); return; }
   if (s === 'second-try' && keyed && keyed.count) return finishSecondTry();    // with nothing keyed, Enter goes on
-  if (s === 'paused') {
+  if (s === 'paused' || (s === 'idle' && needKeyer)) {     // idle + needKeyer: connected while the Echo Trainer ran
     if (link.state !== 'ready') return;
     if (needKeyer) {
       preparing = true;
@@ -1051,7 +1185,7 @@ async function go() {
       catch (e) { setStatus(e.message); return; }
       finally { preparing = false; }
     }
-    session.resume();
+    if (s === 'paused') session.resume();
   }
   if (!started) {
     started = true;
@@ -1154,6 +1288,7 @@ function renderCalls() {
 
 function renderChars() {
   renderCalls();
+  renderEcho();
   if (!lessonList.length) return;
   let rows = '';
   for (const ch of lessonList) {

@@ -188,6 +188,22 @@ e.g. 4 / Europe / Common only. Nothing in this section changes anything stored o
 | 9.8 | Back to Groups | All-characters groups as before; a missed call waits until you choose Call signs again |
 | 9.9 | While on Call signs, switch Characters to Koch lesson | Practise goes back to Groups: "Call signs and prefixes need Characters = All characters. Back to groups. Practising your Koch lesson …" |
 
+## 10. Echo Trainer log, help (M5)
+
+**No new firmware.** Page version **2026-11-07** (reload with Shift). Run on the Pocket and the classic.
+
+| # | Do | Expect |
+|---|---|---|
+| 10.1 | Before connecting: open *How the trainer works* | The help text; at the end a link to all manuals. After Connect: links to *your* device's manual (Pocket / Classic / Accessibility), EN and DE |
+| 10.2 | Connected (CW Keyer), long-press to the menu, start **Echo Trainer → Random**, answer a few words, some wrong, one not at all | The page says "The Echo Trainer is running on the M32: this page logs what it checks …"; badge "Connected · Echo Trainer". Each word appears at once in *Echo Trainer log* (newest first): sent, keyed, OK / ERR / no answer, "(again)" on a repeat, reaction and keying time, WpM; the status line names the last word |
+| 10.3 | Koch Trainer → Echo Trainer (any), a few words | Logged too, with the Koch lesson in the Lesson column |
+| 10.4 | Koch Trainer → Learn New Chr and Preview Char | Nothing logged (decision: echo modes only) |
+| 10.5 | Compare the summary with what you did | Words checked, OK %, right the first time, without an answer, median reaction / keying time, most missed characters. The character boxes and the "Your characters" table did **not** change |
+| 10.6 | With the Echo Trainer running, disconnect, then Connect again | The Echo Trainer keeps running (the page does not switch to the CW Keyer); the page says it is logging |
+| 10.7 | Then press Enter on the page | The M32 goes to the CW Keyer and copy practice starts as usual |
+| 10.8 | Reload the page (not connected) | The Echo log and the call-sign statistics are shown from the history |
+| 10.9 | Export, then Import into a fresh browser profile (or after clearing site data) | The Echo log is back |
+
 ## Results
 
 *(fill in: device, browser, step, pass/fail, notes)*
@@ -218,3 +234,5 @@ e.g. 4 / Europe / Common only. Nothing in this section changes anything stored o
 | 2026-11-06 | Pocket | — | — | flashed | `pocketwroom` (standard) from master `ec59fe4` + the uncommitted `getWord()` fix, app only (0x10000), "Hash of data verified". For 8.12 |
 | 2026-11-06 | Pocket | not noted | 8.12–8.16 | pass | Reported by Willi as "Bench passed" after the flash, page 2026-11-06c. 8.11 (the page leaving out `\` on the old firmware) was overtaken by the flash; 8.10 still deferred; the classic not flashed with the fix |
 | 2026-11-06 | (not noted) | not noted | §9 (9.0–9.9) | pass | Reported by Willi as "all tests passed", page 2026-11-06e. Signs off the M4b defaults: typed and keyed answers, a missed call replayed and brought back; All characters also drives groups/words/phrases |
+| 2026-11-08 | (not noted) | not noted | §10 (10.1–10.9) | pass | Reported by Willi as "all tests in §10 passed", page 2026-11-07. Signs off the M5 choices in use: passive Echo log, own tally, echo modes only; help with device-aware manual links |
+| 2026-11-08 | (not noted) | not noted | 8.10 | pass (informal) | Willi: "seems to be OK from my observations so far" — call-area digits in phrases look realistic |

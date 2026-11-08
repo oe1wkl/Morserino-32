@@ -6,6 +6,9 @@
 //   fakeM32.key('kmr ')    keyed characters arriving in the echo, e.g. 'hw <err>' (a keyed answer)
 //   fakeM32.leaveKeyer()   the operator long-presses back to the menu (a "menu" event)
 //   fakeM32.enterKeyer()   ... and starts the CW Keyer there again (an "activate" ON event)
+//   fakeM32.startEcho()    the operator starts Echo Trainer/Random on the M32 (leaves the Keyer; "menu" events)
+//   fakeM32.echo('cq', 'cq', {latency: 800, duration: 1500, repeat: 0, koch: 12})   one trainer/result
+//                          (answer '' and {timeout: true}: nothing keyed; {mode: 'learn'}: Learn New Chr)
 //   fakeM32.goodbye()      the M32 ends the session by itself ("end m32protocol")
 //   fakeM32.unplug() / fakeM32.replug()   cable loss and return (the Pocket)
 //   fakeM32.restart()      a restart behind an open port (the classic): silent until handshaken
@@ -25,7 +28,10 @@
     const t = st.transport;
     if (t && t.onData && st.plugged) setTimeout(() => t.onData(JSON.stringify(obj)), 5);
   }
-  function menuObj() { return { menu: { content: st.keyer ? 'CW Keyer' : 'CW Keyer', 'menu number': 1, executable: true, active: st.keyer } }; }
+  function menuObj() {
+    if (st.echoMode) return { menu: { content: 'Echo Trainer/Random', 'menu number': 9, executable: true, active: true } };
+    return { menu: { content: 'CW Keyer', 'menu number': 1, executable: true, active: st.keyer } };
+  }
   function finish(reason) {
     if (!st.playing) return;
     clearTimeout(st.playing.timer);
@@ -63,7 +69,7 @@
     if (l === 'get practicechars') return send({ practicechars: { characters: st.practice9 != null ? st.practice9 : 'kmrSé' } });
     if (l === 'get menu') return send(menuObj());
     if (l === 'get menus') return send({ menus: [{ content: 'CW Keyer', 'menu number': 1, executable: true }, { content: 'CW Generator/..', 'menu number': 2, executable: false }] });
-    if (l === 'put menu/stop') { finish('stopped'); st.keyer = false; st.practice = st.spacing = st.display = null; send({ ok: { content: 'OK' } }); return setTimeout(() => send(menuObj()), 50); }
+    if (l === 'put menu/stop') { finish('stopped'); st.keyer = false; st.echoMode = false; st.practice = st.spacing = st.display = null; send({ ok: { content: 'OK' } }); return setTimeout(() => send(menuObj()), 50); }
     if (l === 'put menu/start/1') { if (st.keyer) return send({ error: { content: 'NOT AT MENU - stop the running mode first' } }); st.keyer = true; return send({ ok: { content: 'OK' } }); }
     if (l.startsWith('put cw/play/')) {
       if (!st.keyer) return send({ error: { content: 'CW/PLAY: Keyer not active' } });
@@ -102,7 +108,22 @@
     knob(wpm) { st.speed = wpm; send({ control: { name: 'speed', value: wpm } }); },
     key(text) { const t = st.transport; if (t && t.onData && st.plugged) t.onData(text); },    // characters from the paddle, as the echo sends them
     leaveKeyer() { finish('stopped'); st.keyer = false; st.practice = st.spacing = st.display = null; send({ menu: { content: 'CW Keyer', 'menu number': 1, executable: true, active: false } }); },
-    enterKeyer() { st.keyer = true; send({ activate: { state: 'ON' } }); },
+    enterKeyer() { st.keyer = true; st.echoMode = false; send({ activate: { state: 'ON' } }); },
+    startEcho() {
+      finish('stopped'); st.keyer = false; st.practice = st.spacing = st.display = null;
+      send({ menu: { content: 'CW Keyer', 'menu number': 1, executable: true, active: false } });
+      st.echoMode = true;
+      setTimeout(() => send(menuObj()), 30);
+    },
+    echo(prompt, answer, o) {
+      o = o || {};
+      const r = { event: 'result', mode: o.mode || 'echo', prompt, answer: answer || '', ok: !o.timeout && prompt === answer,
+                  repeat: o.repeat || 0, wpm: o.wpm || st.speed };
+      if (o.koch != null) r.koch = o.koch;
+      if (o.timeout) r.timeout = true;
+      else { r.latency = o.latency != null ? o.latency : 700; r.duration = o.duration != null ? o.duration : 1200; }
+      send({ trainer: r });
+    },
     goodbye() { finish('stopped'); send({ 'end m32protocol': { content: 'Goodbye!' } }); st.session = false; },
     unplug() { const t = st.transport; st.plugged = false; finish('stopped'); st.keyer = false; if (t && t.onClose) t.onClose(new Error('device lost')); },
     restart() { if (st.playing) clearTimeout(st.playing.timer); st.playing = null; st.keyer = false; st.session = false; },

@@ -472,6 +472,21 @@ Willi asked for call sign and prefix practice outside Koch, with the M32's setti
   and brings it back later, as for groups.
 
 ### M5 — Echo log, stats, help, manuals (1–2 sessions)
+**State (2026-11-08, page 2026-11-07, uncommitted; bench §10 passed 2026-11-08, see `BENCH_M3.md` Results; 8.10 passed informally). Deferred by Willi until after the next beta: Config Tool link, PDF rebuilds, classic flash with the `getWord()` fix, Edge, tier C second look, merge/publish.** Willi's choices: Echo log **passive** (the
+page logs `trainer/result` while the M32 runs its Echo Trainer; on Connect a running Echo Trainer is left alone,
+Enter starts the CW Keyer), **own tally only** (`Mastery.echo`, `echoSummary()`; no box, no Keyed column),
+**echo modes only** (`mode:"echo"`; not learn/preview). Help: a collapsed *How the trainer works* on the page,
+with device-aware manual links (Config Tool rule). Manual: new §"The M32 Trainer" (EN 7.8.1 / DE "Der M32
+Trainer") under the serial-output chapter, product list now five; What's-new bullet via `Software/README.md` +
+`sync_whatsnew.py` (DE translated, `--check` OK). FAQ entry (EN + DE). **Not done:** PDFs/HTML of manual and FAQ
+not rebuilt (binary, conflicts with master: rebuild after merging); Config Tool link to the trainer (needs the
+iOS-wrapper check, item 10 below); publish lines for Willi's `~/sync-to-dropbox.sh`:
+
+    "Software/Utilities/m32_trainer.html|m32_trainer.html"
+    "Software/Utilities/m32_trainer_link.js|m32_trainer_link.js"
+    "Software/Utilities/m32_trainer_engine.js|m32_trainer_engine.js"
+    "Software/Utilities/m32_trainer_corpus.json|m32_trainer_corpus.json"
+
 Echo log from E1; help text; manual subsection under "Using the Serial Output of the M32" (EN + DE;
 `Documentation/User Manual/Version 10.x/`, rebuild with `./build.sh`; memory `manual-build-automation`,
 `manual-cross-refs-drift`); What's-new; FAQ line; Config Tool link (hidden in the iOS wrapper — check how
@@ -497,7 +512,10 @@ the note to Oliver once 1.6 is released.
    the zero-length packet (PR #226).
 6. `cw/play` is limited to ≈ 255 characters; the longest phrase must fit with pauses.
 7. Does the publish script need extra lines for the `.js` and `.json` files? (yes — hand them to Willi)
-8. Attribution of the host copy of the word list (Oxford 5000 / FrequencyWords).
+8. Attribution of the host copy of the word list (Oxford 5000 / FrequencyWords). **Checked 2026-11-08:**
+   `WORDLIST_LICENCE.md` — FrequencyWords is CC BY-SA 4.0 (attribution owed, GPL-compatible); the Oxford
+   5000 has no open licence. Affects the firmware too (since V7). **Decided by Willi 2026-11-08:** keep the list, full credit to
+   FrequencyWords (firmware header, manuals, corpus, page help), no Oxford credit. Done, page 2026-11-08.
 9. The ≈ 15 s start timeout in 11a is my default, not confirmed.
 10. How does the iOS wrapper treat `navigator.serial`? (decides how the Config Tool link is hidden)
 
