@@ -18,6 +18,7 @@ extern unsigned int  ditLength;
 extern unsigned int  dahLength;
 extern unsigned int  interCharacterSpace;
 extern unsigned int  interWordSpace;
+extern const int     KEYOUT_EDGE_MS;          // m32_v6.ino: the ~6 ms pwmTone()/pwmNoTone() spend on each edge
 
 namespace MorseCwEngine {
 
@@ -133,18 +134,17 @@ bool playTick() {
     if (toneOn) {
         MorseOutput::pwmNoTone(MorsePreferences::sidetoneVolume);
         toneOn = false;
-        // Inter-element gap. Was `- 7`, which came out ~6 ms short of one dit:
-        // pwmTone()/pwmNoTone() each block ~6 ms doing their volume ramp
-        // ("soften the click"), and that ramp time was being counted against
-        // the gap instead of added to it. The classic iambic keyer compensates
-        // for exactly this (m32_v6.ino KEY_START/INTER_ELEMENT: its
-        // inter-element is `millis() + ditLength - 1`, i.e. 6 ms longer than
-        // this was), so match it — `- 1` adds the missing ~6 ms. This also
-        // corrects the character/word gaps, which are built on top of this one
-        // (the '0'/' ' cases below add to the gap this line already scheduled).
+        // Inter-element gap. pwmNoTone() has just spent its ~6 ms ramp
+        // before silencing, and the next pwmTone() spends ~6 ms before the
+        // tone sounds, so the gap leaves KEYOUT_EDGE_MS out (as generateCW()
+        // and the paddle keyer do). History: `- 7` came out ~6 ms short; the
+        // 2026-07 audit then matched the paddle keyer's `ditLength - 1`, which
+        // measured 2026-11-08 turned out ~5 ms long itself (64.6 ms gaps at
+        // 20 WpM) - both are now fixed together. The character/word gaps are
+        // built on top of this one (the '0'/' ' cases below add to it).
         // See devdocs/cw-timing-audit/FINDINGS.md. Shared engine — also affects
-        // Fight the Pileup and Radio Cave (both strictly more spec-correct now).
-        nextEventMs = millis() + ditMs() - 1;
+        // Fight the Pileup and Radio Cave.
+        nextEventMs = millis() + ditMs() - KEYOUT_EDGE_MS;
         return true;
     }
 

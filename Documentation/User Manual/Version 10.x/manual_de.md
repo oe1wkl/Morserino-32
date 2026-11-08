@@ -802,6 +802,13 @@ Fehlermeldung.
 Die Speicher 1 und 2 werden endlos wiederholt, bis du sie durch manuelle
 Eingabe stoppst; alle anderen Speicher werden einmal abgespielt.
 
+Speicher werden mit der Geschwindigkeit des Keyers und mit den
+Standardabständen gesendet, genau wie deine eigene Tastung: 3 Dits
+zwischen den Zeichen und **Interword Spc** (mindestens 7 Dits) zwischen
+den Wörtern. **Interchar Spc**, mit dem der CW-Generator und die anderen
+Trainingsmodi die Abstände zwischen den Zeichen verlängern
+(Farnsworth-Methode), gilt für Speicher nicht.
+
 #### Definition von Speicherplätzen {-}
 
 Die Speicher können nur über das serielle Protokoll definiert werden –

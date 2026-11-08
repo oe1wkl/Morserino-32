@@ -1,6 +1,6 @@
 # CW element/gap timing audit — findings
 
-**Status: FIXES APPLIED 2026-07-01, awaiting on-device re-measurement.**
+**Status: FIXES APPLIED 2026-07-01; further fixes 2026-11-08 (see the last addendum), awaiting re-measurement.**
 Surfaced while building Fox Hunt (`devdocs/grid-games/`), on Willi's
 real-hardware listening test, then narrowed with recorded-audio measurement
 and Willi's own Audacity measurement. Two fixes landed (see "Resolution"
@@ -315,3 +315,65 @@ Measured with the same instrument (Pocket Remote Keyer, `PUT cw/repeat` at 25 WP
 | dah/dit | 3.27 | **3.002** | 3.00 |
 
 The Rig's speed estimate reads 48 ms = 25 WPM again. Overall speed unchanged (element + space is still two dits).
+
+## Addendum 2026-11-08: spaces stretched by display work, and the paddle keyer's 5 ms
+
+Trigger: a user's hand keying at 20 WpM was read as 18 WpM on the Reverse Beacon Network (CW Skimmer), and
+Willi's recording of `paris` from a keyer memory (20 WpM, ICS 3, IWS 7) sounded slow. Measured from recordings
+(sidetone, 698 Hz, band-pass + envelope, 50 % threshold; dit = 60 ms):
+
+| Recording | Mark | Element space | Character gap | Word gap |
+|---|---|---|---|---|
+| Keyer memory `paris` (generator) | 57.6 / 179 ms | ~61 ms ✓ | **~242 ms** (180) | **~483 ms** (420) |
+| Paddle, held dits | 60.2 ms ✓ | **64.6 ms** (60) | — | — |
+| Paddle, held dahs | 179.3 ms ✓ | **64.5 ms** (60) | — | — |
+
+**1. Generator: character and word spaces one dit long (≈18 WpM overall).** In `generateCW()` KEY_DOWN the
+space timer was started with `millis()` *after* `dispGeneratedChar()`, so drawing the character (and, at a word
+start, the pre-emptive line wrap and scroll - one gap measured 309 ms there) was added to every character and word
+space. Element spaces draw nothing and were exact. The 2026-10-02 key-line measurement (`PUT cw/repeat` through the
+Remote Keyer) did not draw per character, so it did not see this. Fixed: `keyUpAt = millis()` right after
+`keyOut(false)`, and all three spaces are timed from it - the drawing now happens inside the space.
+
+**2. Paddle keyer: element space ~5 ms long.** `ktimer = millis() + ditLength - 1` after `keyOut(false)`, then the
+next key-down's `keyOut(true)` waits `KEYOUT_EDGE_MS` before asserting - so the space is dit + 5 ms. The 2026-07
+Audacity measurement above (2 dits + 2 gaps = 244 ms for 240) was this same error, dismissed as < 2 %, and the
+"Keyer is the reference" conclusion then copied the `- 1` into `MorseCwEngine`. Cost: ≈19.2 WpM on a run of
+dits, ≈19.7 WpM on hand-keyed PARIS - real, but not enough to explain RBN's 18 (the operator's own character and
+word spacing, and how Skimmer estimates speed, are outside the device). Fixed: `ditLength - KEYOUT_EDGE_MS` in
+the keyer's KEYED state and in `MorseCwEngine` (games).
+
+**Not a loop() stall after all:** about once a second a paddle element space measured a further ~6 ms
+(70-71 ms; every 4th gap in the dah run). That is the Pocket's I2S buffer: sidetone edges land on buffer
+boundaries ~5.8 ms apart, so single marks and gaps measured from the audio jump in ~5.8 ms steps. A 245.2 ms dah
+period is 42.24 buffers, so every 4th period comes out one buffer longer - exactly what the recording shows. Use
+a run's **period** (linear fit of onset times over a run of identical elements), which this quantization does not
+bias, never single marks or gaps, when measuring the Pocket from its audio.
+
+**Re-measured 2026-11-08 on the Pocket (standard edition, all three fixes flashed)** - run periods from a linear
+fit of the onsets (ends agree within 0.4 ms):
+
+| Paddle, 20 WpM | Before | After | Nominal |
+|---|---|---|---|
+| held dits, period (2 units) | 125.4 ms (19.1 WpM) | **118.5 ms** (20.25 WpM) | 120 |
+| held dahs, period (4 units) | 245.2 ms (19.6 WpM) | **237.8 ms** (20.2 WpM) | 240 |
+
+The keyer no longer runs slow. As heard it now runs ~1 % fast (≈1.5 ms per dit period, ≈2 ms per dah period).
+Not chased: one candidate is `delay()` (`vTaskDelay`, 1 ms tick) waiting slightly less than its nominal 6 ms
+on each edge, so subtracting the full `KEYOUT_EDGE_MS` over-corrects a little; but the 2026-10-02 key-line
+measurement of the generator (same `- KEYOUT_EDGE_MS` on its spaces) came out exact, so the key line may well be
+exact and the residual in the audio path. Only the M32KIP instrument on the key line can settle it.
+
+**Correction to finding 1 (same day):** the keyer-memory slowness was *not* the display. Re-recorded after the key-up
+fix, the gaps were unchanged (~248 / ~490 ms); only the one post-wrap outlier (309 ms) was gone. The device had
+**Interchar Spc = 4**, set for practice in another mode: 4 dits between characters and `max(IWS, ICS+4)` = 8
+between words is exactly what was measured. The CW Keyer neither lists Interchar Spc in its preferences nor shows an
+effective speed, so the setting was invisible there. Willi's decision: **what a keyer mode plays (memories, `cw/play`)
+always uses the standard 3-dit character space**, word space InterWord Spc but at least 7 dits; `PUT cw/spacing` in
+practice mode still overrides (`keyerPlayback()` in `m32_v6.ino`). The key-up timing of finding 1 stays: it is correct
+and removes the post-wrap stretch.
+
+Re-measured with Interchar Spc still 4: five PARIS cycles of **3.001-3.007 s (19.96-20.00 WpM)**, character starts
+exactly on the grid (P→A 840, A→R 480, R→I 600, I→S 360 ms).
+
+**Owed:** the games' spacing by ear.
