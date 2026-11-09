@@ -70,8 +70,8 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: cc.kraml.m32config
-        MARKETING_VERSION: "1.1"
-        CURRENT_PROJECT_VERSION: "2"
+        MARKETING_VERSION: "1.2"
+        CURRENT_PROJECT_VERSION: "4"
         # Swift 5 language mode on purpose: Swift 6 strict concurrency turns the
         # CoreBluetooth delegate pattern into a fight that buys this app nothing.
         SWIFT_VERSION: "5.0"

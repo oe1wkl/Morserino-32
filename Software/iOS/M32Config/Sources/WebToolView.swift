@@ -38,6 +38,11 @@ struct WebToolView: UIViewRepresentable {
         let webView = WKWebView(frame: .zero, configuration: config)
         webView.isOpaque = true
         webView.scrollView.contentInsetAdjustmentBehavior = .always
+        // Without a UI delegate WKWebView answers every confirm() with Cancel
+        // and swallows every alert(), with no error. The tool guards Recall,
+        // Clear, Import, factory reset, file delete and more with confirm(), so
+        // up to 1.2 those buttons silently did nothing in the app.
+        webView.uiDelegate = context.coordinator
         context.coordinator.webView = webView
 
         webView.load(URLRequest(url: BundleWeb.url(for: "m32_config_tool.html")))
@@ -48,7 +53,7 @@ struct WebToolView: UIViewRepresentable {
 
     // MARK: - Coordinator: the JS ⇄ CoreBluetooth bridge
 
-    final class Coordinator: NSObject, WKScriptMessageHandler {
+    final class Coordinator: NSObject, WKScriptMessageHandler, WKUIDelegate {
 
         static let messageName = "m32"
 
@@ -140,14 +145,10 @@ struct WebToolView: UIViewRepresentable {
                 return
             }
 
-            // Present from whatever is frontmost: the share sheet itself may
-            // already be up, and presenting on top of a presenting controller
-            // throws it away silently.
-            guard var presenter = webView?.window?.rootViewController else {
+            guard let presenter = frontmostController() else {
                 reply(id, ok: false, payload: "no window to present from")
                 return
             }
-            while let above = presenter.presentedViewController { presenter = above }
 
             let sheet = UIActivityViewController(activityItems: [url], applicationActivities: nil)
             // An iPad presents this as a popover and traps without an anchor.
@@ -158,6 +159,52 @@ struct WebToolView: UIViewRepresentable {
             }
             presenter.present(sheet, animated: true)
             reply(id, ok: true, payload: filename)
+        }
+
+        /// Present from whatever is frontmost: a share sheet or another dialog
+        /// may already be up, and presenting on top of a presenting controller
+        /// throws the new one away silently.
+        private func frontmostController() -> UIViewController? {
+            guard var presenter = webView?.window?.rootViewController else { return nil }
+            while let above = presenter.presentedViewController { presenter = above }
+            return presenter
+        }
+
+        // MARK: JavaScript dialogs (WKUIDelegate)
+        //
+        // The page's alert() / confirm() / prompt() as native alerts. Every
+        // completion handler must be called exactly once, or WebKit raises an
+        // exception; with no window to present from, answer at once (alert: OK,
+        // confirm: Cancel, prompt: nil), which is what the page got before.
+
+        func webView(_ webView: WKWebView, runJavaScriptAlertPanelWithMessage message: String,
+                     initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping () -> Void) {
+            guard let presenter = frontmostController() else { completionHandler(); return }
+            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler() })
+            presenter.present(alert, animated: true)
+        }
+
+        func webView(_ webView: WKWebView, runJavaScriptConfirmPanelWithMessage message: String,
+                     initiatedByFrame frame: WKFrameInfo, completionHandler: @escaping (Bool) -> Void) {
+            guard let presenter = frontmostController() else { completionHandler(false); return }
+            let alert = UIAlertController(title: nil, message: message, preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(false) })
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { _ in completionHandler(true) })
+            presenter.present(alert, animated: true)
+        }
+
+        func webView(_ webView: WKWebView, runJavaScriptTextInputPanelWithPrompt prompt: String,
+                     defaultText: String?, initiatedByFrame frame: WKFrameInfo,
+                     completionHandler: @escaping (String?) -> Void) {
+            guard let presenter = frontmostController() else { completionHandler(nil); return }
+            let alert = UIAlertController(title: nil, message: prompt, preferredStyle: .alert)
+            alert.addTextField { $0.text = defaultText }
+            alert.addAction(UIAlertAction(title: "Cancel", style: .cancel) { _ in completionHandler(nil) })
+            alert.addAction(UIAlertAction(title: "OK", style: .default) { [weak alert] _ in
+                completionHandler(alert?.textFields?.first?.text ?? "")
+            })
+            presenter.present(alert, animated: true)
         }
 
         // MARK: native → JS

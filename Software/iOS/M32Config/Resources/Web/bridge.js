@@ -12,6 +12,11 @@
 //   doDisconnect()   -> closes writer/reader/port  ... so our writer needs close()
 //   readLoop()       -> appends to readBuffer      ... so we append to it ourselves
 //
+// Plus two we wrap without changing what they do: waitForResponse() and
+// sendAndParse() get longer timeouts (BLE is paced), and doDisconnect(linkGone)
+// gets the native disconnect after it. Re-check all six names whenever the tool
+// changes; the 2026-11 review (app 1.2) is in devdocs/ios-app/RELEASE_1.2.md.
+//
 // openTransport() is the tool's deliberate transport seam. We override it and
 // nothing else about connecting, so every later change to doConnect() -- the
 // handshake, the 1.4 capability query, whatever comes next -- reaches this app
@@ -73,20 +78,64 @@
       for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
       var text = decoder.decode(bytes, { stream: true });
       if (!text) return;
+      noteLinkEndNotice(text);
       readBuffer += text;
       if (typeof ttyProcessChunk === 'function') ttyProcessChunk(text);
     },
 
     log: function (message) { log(message); },
 
-    // The link dropped underneath us. Clear the writer first so the tool's own
-    // teardown does not try to send "put device/protocol/off" into a dead link.
-    linkLost: function () {
+    // The link dropped underneath us (out of range, device switched off or
+    // rebooted). Native only calls this for a drop we did not ask for.
+    //
+    // This is the Bluetooth counterpart of the tool's linkEnded(), which its USB
+    // readLoop() calls and which never runs here (openTransport() is ours, so
+    // that readLoop() never starts). linkEnded() itself is not reused because
+    // its text is about a cable. doDisconnect(true) is the tool's "link already
+    // gone" teardown: nothing is sent. The writer is cleared first anyway, so a
+    // tool without that argument stays quiet too.
+    //
+    // linkClosing is the tool's "we expect the link to drop" flag (a factory
+    // reset reboots the device and says so in its dialog): no notice then.
+    linkLost: async function () {
       log('Bluetooth link lost.');
+      var expected = (typeof linkClosing !== 'undefined') && linkClosing === true;
+      var why = LINK_END_TEXT[linkEndReason] || LINK_END_TEXT.lost;
+      linkEndReason = '';
       writer = null;
-      doDisconnect();
+      await doDisconnect(true);
+      if (!expected && typeof showLinkNotice === 'function') {
+        showLinkNotice(why);
+        log(why);
+      }
     }
   };
+
+  // Why the device is about to drop us, when it says so. Before it stops BLE
+  // Serial the firmware sends one {"message":...} (MorseBleSerial::stopWithNotice):
+  // "BLE serial off" when Bluetooth Use is changed away from BLE Serial — which
+  // the Preferences tab can now do from this very app, since the tool lists
+  // Bluetooth Use in its General group — and "BLE serial suspended: wireless
+  // mode" when a WiFi mode takes the radio. Without this the drop looked like
+  // "out of range". Watched on a short rolling tail, because a notification can
+  // split the text, and because the tool may consume the object from readBuffer.
+  var LINK_END_TEXT = {
+    lost:     'Bluetooth connection lost. Check that the Morserino is switched on and nearby, '
+            + 'then tap Connect again.',
+    off:      'The Morserino turned BLE Serial off, so the connection ended: "Bluetooth Use" '
+            + 'is no longer set to "BLE Serial". Set it back on the device to connect again.',
+    wireless: 'The Morserino paused BLE Serial for a WiFi mode. Leave that mode on the device, '
+            + 'then tap Connect again.'
+  };
+  var linkEndReason = '';
+  var rxTail = '';
+  function noteLinkEndNotice(text) {
+    rxTail = (rxTail + text).slice(-160);
+    if (rxTail.indexOf('BLE serial off') >= 0) linkEndReason = 'off';
+    else if (rxTail.indexOf('BLE serial suspended') >= 0) linkEndReason = 'wireless';
+    else return;
+    rxTail = '';
+  }
 
   // ------------------------------------------------------------------ transport
 
@@ -97,10 +146,35 @@
     };
   }
 
+  // Two layers, stretched exactly once each. sendAndParse() (since the snapshot
+  // fix of 2026-11-09) keeps its OWN deadline, Date.now() + timeout, and calls
+  // waitForResponse() again with what is left whenever it skips a stray reply
+  // ({expect:key}). Stretching only waitForResponse() would leave that outer
+  // deadline at USB length: a stray reply arriving after it would leave the real
+  // answer 150 ms. So sendAndParse() gets the stretched timeout, and the calls
+  // it makes itself pass through unchanged; every other caller of
+  // waitForResponse() (WiFi, factory reset, time set ...) is stretched as before.
+  // A counter, not a flag: nothing in the tool runs two of these at once (the
+  // firmware needs one command in flight), but a counter stays right if it did.
+  var insideSendAndParse = 0;
+
   var origWaitForResponse = waitForResponse;
   waitForResponse = function (timeoutMs) {
-    return origWaitForResponse((timeoutMs || 3000) * BLE_TIMEOUT_FACTOR);
+    var t = timeoutMs || 3000;
+    return origWaitForResponse(insideSendAndParse > 0 ? t : t * BLE_TIMEOUT_FACTOR);
   };
+
+  if (typeof sendAndParse === 'function') {
+    var origSendAndParse = sendAndParse;
+    sendAndParse = async function (cmd, timeout, opts) {
+      insideSendAndParse++;
+      try {
+        return await origSendAndParse(cmd, (timeout || 3000) * BLE_TIMEOUT_FACTOR, opts);
+      } finally {
+        insideSendAndParse--;
+      }
+    };
+  }
 
   // Replaces ONLY the tool's transport-opening step. Everything after it in
   // doConnect() is the tool's own code, shared with the USB build.
@@ -114,6 +188,8 @@
     var name = await callNative('connect');
     installWriter();
     readBuffer = '';
+    rxTail = '';
+    linkEndReason = '';
     return {
       label: 'Bluetooth link up: ' + name,
       noReplyHint: 'The device answered over Bluetooth but not the protocol handshake. '
@@ -123,10 +199,14 @@
     };
   };
 
+  // Pass the arguments through: since 2026-11-04 the tool calls
+  // doDisconnect(true) ("linkGone") when the link has already ended, so that
+  // nothing is sent into it. Dropping the argument here turned that back into
+  // an ordinary disconnect.
   var origDoDisconnect = doDisconnect;
   doDisconnect = async function () {
     try {
-      await origDoDisconnect();
+      await origDoDisconnect.apply(this, arguments);
     } finally {
       try { await callNative('disconnect'); } catch (e) { /* already down */ }
     }

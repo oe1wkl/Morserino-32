@@ -339,6 +339,12 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
   `project.yml` now generates a shared scheme and takes the plist version from `MARKETING_VERSION` /
   `CURRENT_PROJECT_VERSION` (XcodeGen had hard-coded 1.0 / 1); the Team ID is the certificate's **OU**
   (F44LJ6Y4F9), not the code in parentheses — `Local.xcconfig` had the personal ID. "Xcode Cloud" prompt: declined.
+- **1.2 (build 4) prepared 2026-11-09**: Config Tool as of `c94c865` plus the stale-device fix (in the tool itself,
+  Willi's OK), `bridge.js` fixed for the tool's changes (three places), and the app's missing `WKUIDelegate` (every
+  `confirm()` was a silent Cancel since 1.0: snapshot Recall/Clear did nothing). **Bench passed 2026-11-09 (Willi,
+  web serial and iPhone, standard Pocket on a master build).** Owed: **archive, upload, submit** — steps and three
+  open points (missing help texts, Bluetooth Use editable over BLE, kip pass phrase over unencrypted BLE) in
+  `devdocs/ios-app/RELEASE_1.2.md`.
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 

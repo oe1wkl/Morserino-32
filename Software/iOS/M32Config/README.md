@@ -20,8 +20,13 @@ The web tool is **not forked**. `sync-webtool.sh` copies it out of
 `Software/Utilities/` at build time, so the browser version and the app version
 can never drift apart.
 
-> **Status: 1.0 is live in the App Store** (Willi, 2026-10-05). **1.1 (build 2) prepared**: version bumped in
-> `project.yml`, "What's New" text in `store-listing.md`; not yet archived or uploaded.
+> **Status: 1.1 (build 2) is live in the App Store** (approved 2026-10). **1.2 (build 4) prepared**
+> 2026-11-09: carries the Config Tool as of master `c94c865` plus its stale-device fix (snapshot fix,
+> protocol 1.6 footer, link-lost notice, Bluetooth Use / USB Keying in General, Remote Keying pass phrase
+> card); `bridge.js` re-checked against it and fixed in three places; JavaScript dialogs
+> (`confirm()`/`alert()`) now work — they never did before. Bench-tested by Willi on an iPhone
+> 2026-11-09; not yet archived or uploaded — the upload steps are in
+> [`devdocs/ios-app/RELEASE_1.2.md`](../../../devdocs/ios-app/RELEASE_1.2.md).
 >
 > **1.0 history:** version 1.0, build 1, submitted 2026-09-12. On
 > 2026-09-13 App Review asked for more information under guideline 2.1, the
@@ -124,7 +129,9 @@ before running the link test.
 ## Known rough edges
 
 - **All timeouts are multiplied by 3** in `bridge.js` (`BLE_TIMEOUT_FACTOR`)
-  rather than tuned per command. Measured on an M32 Pocket: a small command
+  rather than tuned per command. Both layers are stretched: `waitForResponse()`
+  and `sendAndParse()`, whose own deadline (since the 2026-11 snapshot fix) would
+  otherwise stay at USB length when it skips a stray reply. Measured on an M32 Pocket: a small command
   round-trips in ~0.06 s and `get configs` returns in 0.12 s, so the margin is
   ample and there has been no reason to tune it per command.
 - **Device picking is automatic**: strongest signal after a short settle window.

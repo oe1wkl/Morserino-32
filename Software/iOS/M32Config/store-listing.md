@@ -28,7 +28,28 @@ will search by name, and Utilities is where hardware companions live.)
 
     morse,cw,ham,radio,amateur,telegraphy,keyer,koch,morserino,m32,bluetooth
 
-## What's New in This Version (4000 max) — 1.1, build 2
+## What's New in This Version (4000 max) — 1.2, build 4
+
+    Snapshots you can rely on
+    Storing, recalling and clearing a snapshot now waits for the Morserino's answer, and tells you when something went wrong — for example when a snapshot could not be stored because the device's memory is full. Before, the app reported success either way, and a slow store could make the snapshot list look empty.
+    With firmware 10.0 beta 3 or later, a snapshot recalled from the app also takes effect at once (a stored colour theme shows immediately) and is kept after the Morserino is switched off.
+
+    Know when the connection ends
+    When the Bluetooth connection ends without you tapping Disconnect, the app now says so and why: the Morserino was switched off or went out of range, "Bluetooth Use" was changed away from "BLE Serial", or a WiFi mode took over the radio.
+
+    Bluetooth Use and USB Keying in the preferences
+    Both settings now appear under General, on firmware that has them. Keep in mind that this app talks to the Morserino through "BLE Serial": choosing anything else under Bluetooth Use ends the connection, and you set it back on the device itself.
+
+    Switching between Morserinos
+    After disconnecting from one Morserino and connecting to another, the tabs now show the new one. Before, the Snapshots and Preferences tabs could go on showing the first device's snapshots and settings.
+
+    Confirmations work
+    Recalling or clearing a snapshot, a factory reset, deleting a file and the other actions that ask "Are you sure?" did nothing in the app, because the question never appeared. It now appears, and the action runs when you tap OK.
+
+    Remote keying pass phrase
+    On Morserinos with remote keying over the internet (firmware 10.0 beta), the WiFi tab lets you set the pass phrase. The app only ever shows whether one is set, never the phrase itself.
+
+## What's New — 1.1, build 2 (shipped 2026-10, kept for reference)
 
     Training files with accented letters
     The File Builder now keeps letters with umlauts and accents (ä, é, ñ, å, ø and so on). From firmware 9.1 the Morserino's File Player sends them in Morse code, so a French, German or Scandinavian text no longer loses its letters on the way.
