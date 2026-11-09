@@ -1212,6 +1212,12 @@ async function doConnect(){
     // Load hardware and battery info now that connected=true
     await loadHardwareInfo();
 
+    // And the tab on screen, if it is another one: a tab loads when it is
+    // opened, so one left open across Disconnect / Connect would otherwise wait
+    // for a tab switch before showing this device.
+    var shown=document.querySelector('.tab-btn.active');
+    if(shown&&shown.dataset.tab!=='connection') loadTabData(shown.dataset.tab);
+
   }catch(err){
     log('Connection error: '+err.message);
     setStatus('Failed','disconnected');
@@ -1242,6 +1248,20 @@ async function doDisconnect(linkGone){
   document.getElementById('snapDetailBox').style.display='none';
   document.getElementById('snapImportBox').style.display='none';
   snapImportFile=null; snapImportTarget=null; snapImportMenuNumber=null; snapImportConfigsLoadFailed=false;
+  // Everything below described THIS device. The next Connect may be another
+  // Morserino (another firmware, other snapshots), and without this its tabs
+  // showed the previous one's data: the snapshot grid its slots, and the
+  // Preferences tab its values and option lists, since loadPreferences() skips
+  // the device while prefDetails is filled.
+  var gone='<p style="text-align:center;color:var(--muted);font-style:italic;padding:20px">';
+  prefDetails={}; allPrefs=[];
+  document.getElementById('prefContainer').innerHTML=gone+'Connect to load preferences</p>';
+  snapExistingList=[];
+  document.getElementById('snapGrid').innerHTML='';
+  document.getElementById('snapPlaceholder').style.display='';
+  document.getElementById('cwmBody').innerHTML='<tr><td colspan="4" class="empty-msg" style="text-align:center">Connect to view memories</td></tr>';
+  document.getElementById('wifiContainer').innerHTML=gone+'Connect to view network settings</p>';
+  document.getElementById('kochBox').style.display='none';
   document.getElementById('customCharsBox').style.display='none';
   document.getElementById('gameScoresBox').style.display='none';
   document.getElementById('speedValue').textContent='—';
