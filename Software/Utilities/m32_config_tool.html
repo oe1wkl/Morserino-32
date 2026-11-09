@@ -908,7 +908,7 @@
   Activity Log
 </div>
 <div class="log-console" id="log"></div>
-<p class="footer-line"><a href="https://www.morserino.info">morserino.info</a> · <a href="https://github.com/oe1wkl/Morserino-32">GitHub</a> · Protocol v1.4<span id="buildStamp" hidden></span></p>
+<p class="footer-line"><a href="https://www.morserino.info">morserino.info</a> · <a href="https://github.com/oe1wkl/Morserino-32">GitHub</a> · Protocol v1.6<span id="buildStamp" hidden></span></p>
 </div>
 
 <script>
@@ -1075,10 +1075,21 @@ async function waitForResponse(timeoutMs){
 // nothing when it was absent, so a device error showed up as an empty panel
 // with no explanation. Pass {quiet:true} when an error is an EXPECTED answer
 // (probing whether a command exists on older firmware) to keep it out of the log.
+//
+// {expect:'key'} names the object the reply must carry. Anything else that
+// arrives first is skipped, not taken as the reply: a reply that came too late
+// for the PREVIOUS command (a snapshot store that outlasted its wait) used to
+// be read as the answer to the next one — "get snapshots" then saw an {"ok"}
+// and showed every snapshot slot as empty.
 async function sendAndParse(cmd,timeout,opts){
   readBuffer=''; await sendLine(cmd);
-  var resp=await waitForResponse(timeout||3000);
-  var data=JSON.parse(resp);
+  var until=Date.now()+(timeout||3000), data;
+  while(true){
+    var resp=await waitForResponse(Math.max(50,until-Date.now()));
+    data=JSON.parse(resp);
+    if(!(opts&&opts.expect)||!data||data.error||data[opts.expect]!==undefined) break;
+    log('Skipped a stray reply while waiting for "'+opts.expect+'": '+resp.substring(0,80));
+  }
   if(data&&data.error){
     // the firmware puts the text in "content"; read "name" too, for tolerance
     var msg=data.error.content||data.error.name||'unknown error';
@@ -2001,7 +2012,7 @@ var snapExistingList=[];
 async function loadSnapshots(){
   if(!connected) return;
   try{
-    var data=await sendAndParse('get snapshots',3000);
+    var data=await sendAndParse('get snapshots',3000,{expect:'snapshots'});
     var existing=(data.snapshots&&data.snapshots['existing snapshots'])?data.snapshots['existing snapshots']:[];
     snapExistingList=existing;
     renderSnapshots(existing);
@@ -2019,22 +2030,49 @@ function renderSnapshots(existing){
     grid.appendChild(card);
   }
 }
-async function snapStore(n){try{await sendLine('put snapshot/store/'+n);try{await waitForResponse(2000)}catch(e){}log('Stored snapshot '+n);await sleep(300);loadSnapshots()}catch(e){log('Snapshot: '+e.message)}}
-async function snapRecall(n){if(!confirm('Recall snapshot '+n+'? Overwrites current settings.'))return;try{await sendLine('put snapshot/recall/'+n);try{await waitForResponse(2000)}catch(e){}log('Recalled snapshot '+n);prefDetails={}}catch(e){log('Snapshot: '+e.message)}}
-async function snapClear(n){if(!confirm('Clear snapshot '+n+'?'))return;try{await sendLine('put snapshot/clear/'+n);try{await waitForResponse(2000)}catch(e){}log('Cleared snapshot '+n);await sleep(300);loadSnapshots();document.getElementById('snapDetailBox').style.display='none'}catch(e){log('Snapshot: '+e.message)}}
+// Store/recall/clear write NVS, which can take longer than a plain GET (a
+// store that triggers NVS garbage collection especially), so they get a
+// generous wait. They used to give up after 2 s, ignore the answer and report
+// success anyway — a failed store ("NVS FULL?") was logged as "Stored", and a
+// slow OK was left in the stream to be misread as the next reply.
+async function snapCommand(action,n,busyText){
+  showLoading(busyText);
+  try{ await sendAndParse('put snapshot/'+action+'/'+n,8000,{expect:'ok'}); return null }
+  catch(e){ return e.message }
+  finally{ hideLoading() }
+}
+async function snapStore(n){
+  var err=await snapCommand('store',n,'Storing snapshot '+n+'...');
+  if(err){log('Storing snapshot '+n+' FAILED: '+err);alert('Storing Snapshot '+n+' failed: '+err)}
+  else log('Stored snapshot '+n);
+  loadSnapshots();
+}
+async function snapRecall(n){
+  if(!confirm('Recall snapshot '+n+'? Overwrites current settings.'))return;
+  var err=await snapCommand('recall',n,'Recalling snapshot '+n+'...');
+  if(err){log('Recalling snapshot '+n+' FAILED: '+err);return}
+  log('Recalled snapshot '+n);prefDetails={};
+  document.getElementById('snapDetailBox').style.display='none';
+}
+async function snapClear(n){
+  if(!confirm('Clear snapshot '+n+'?'))return;
+  var err=await snapCommand('clear',n,'Clearing snapshot '+n+'...');
+  if(err) log('Clearing snapshot '+n+' FAILED: '+err); else log('Cleared snapshot '+n);
+  loadSnapshots();document.getElementById('snapDetailBox').style.display='none';
+}
 
 async function snapInspect(n){
   showLoading('Loading snapshot '+n+'...');
   try{
     // Fetch snapshot contents
-    var data=await sendAndParse('get snapshot/'+n,5000);
+    var data=await sendAndParse('get snapshot/'+n,5000,{expect:'snapshot'});
     if(!data.snapshot){log('No snapshot data');hideLoading();return}
     var snap=data.snapshot;
     // Fetch current settings for comparison
     await sleep(100);
     var currentConfigs={};
     try{
-      var cur=await sendAndParse('get configs',5000);
+      var cur=await sendAndParse('get configs',5000,{expect:'configs'});
       if(cur.configs){
         cur.configs.forEach(function(c){ currentConfigs[c.name]={value:c.value, displayed:c.displayed}; });
       }
@@ -2274,7 +2312,7 @@ async function snapImportConfirm(){
 
   showLoading('Storing snapshot '+n+'...');
   var storeError=null;
-  try{ await sendAndParse('put snapshot/store/'+n,3000) }
+  try{ await sendAndParse('put snapshot/store/'+n,8000,{expect:'ok'}) }
   catch(e){ storeError=e.message }
   hideLoading();
 

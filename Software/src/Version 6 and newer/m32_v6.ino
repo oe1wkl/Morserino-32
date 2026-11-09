@@ -5793,10 +5793,19 @@ void m32Put(String type, String token, String value) {                    /// PU
                     MorsePreferences::newMenuPtr = MorsePreferences::menuPtr;
                 }
                 MorseJSON::jsonOK();
+                // Persist and APPLY the recall, as the menu's recall does
+                // (setupPreferences). doReadSnapshot() only fills pliste[]:
+                // without this a recalled Theme stayed invisible (setTheme(),
+                // and with it the repaint request, lives in writePreferences),
+                // Font Size kept the old geometry, and the whole recall was
+                // lost at the next reboot. After the OK, so the NVS writes do
+                // not delay the reply; writePreferences() emits no JSON.
+                if (token == "recall")
+                    MorsePreferences::writePreferences("morserino");
 #ifdef CONFIG_BLE_SERIAL
-                // this path recalls WITHOUT writePreferences, so the change-switch
-                // there (stop BLE Serial when the selector moved away from BLT
-                // Serial Prot.) must run here too — otherwise BLE Serial keeps
+                // writePreferences() above only stops BLE Serial when the stored
+                // selector value CHANGED; this belt-and-braces stop (selector
+                // away from BLT Serial Prot.) predates it — otherwise BLE Serial keeps
                 // running while the selector reads 0-4, and the next keyer entry
                 // starts the HID keyboard on top of the live NUS stack. The OK
                 // above still reaches a BLE client: stopWithNotice flushes first.
