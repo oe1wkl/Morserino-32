@@ -58,9 +58,12 @@ static void fillConfigObject(JsonObject conf, uint8_t idx);
 // TX ring, which without help fills up and drops the rest of the reply (torn
 // JSON, client re-issues the GET). In bulk mode each chunk first waits, briefly,
 // for the client to take what is already queued. A reply built from a
-// JsonDocument is NOT bulk: those fit the ring, and jsonSend() is also on the
-// keying path (a jsonControl while the operator is sending), where txEnqueue's
-// never-wait rule holds.
+// JsonDocument is not bulk by default: jsonSend() is also on the keying path (a
+// jsonControl while the operator is sending), where txEnqueue's never-wait rule
+// holds. The few document replies that outgrow the ring pass bulk=true: GET menus
+// (60-odd entries, ~5 KB on the Pocket, over 4 KB on the classic — it always
+// arrived torn over BLE) and GET game/scores (up to ~4.4 KB). Both answer a
+// protocol GET only, never anything on the keying path.
 namespace {
 class ChunkedM32Out : public Print {
   public:
@@ -100,8 +103,8 @@ class ChunkedM32Out : public Print {
 };
 }
 
-void MorseJSON::jsonSend(const JsonDocument& doc) {
-    ChunkedM32Out out;
+void MorseJSON::jsonSend(const JsonDocument& doc, bool bulk) {
+    ChunkedM32Out out(bulk);
     serializeJson(doc, out);
     out.flushChunk();
 }
@@ -160,7 +163,7 @@ void MorseJSON::jsonMenuList(void) { // get all parameter names and their values
           obj["menu number"] = i;
           obj["executable"] = MorseMenu::isRemotelyExecutable(i);
       }
-    MorseJSON::jsonSend(doc);
+    MorseJSON::jsonSend(doc, true);     // bulk: larger than the BLE TX ring
 }
 
 void MorseJSON::jsonParameter(const String& token) { /// find parameter "token" and create json object for it
@@ -376,7 +379,7 @@ void MorseJSON::jsonGameScores(void) {
 		MorseJSON::jsonError("GAME SCORES TOO LARGE");
 		return;
 	}
-	MorseJSON::jsonSend(doc);
+	MorseJSON::jsonSend(doc, true);                  // bulk: a full table can outgrow the BLE TX ring
 }
 #endif  // CONFIG_CW_GAME
 

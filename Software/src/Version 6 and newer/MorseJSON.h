@@ -19,9 +19,12 @@
 
 namespace MorseJSON
 {
-	void jsonSend(const JsonDocument& doc);   // serialize through a chunk buffer: one m32out.write() per
+	void jsonSend(const JsonDocument& doc, bool bulk = false);
+	                                          // serialize through a chunk buffer: one m32out.write() per
 	                                          // ~256 B instead of one per byte — use this, never
-	                                          // serializeJson(doc, m32out) directly
+	                                          // serializeJson(doc, m32out) directly. bulk: the reply
+	                                          // may outgrow the 4 KB BLE TX ring (see MorseJSON.cpp);
+	                                          // never from the keying path
 	void jsonDevice(const String& brd, const String& vsn);
 	void jsonError(const String& errormessage);
 	void jsonOK(void);
