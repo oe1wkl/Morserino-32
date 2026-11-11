@@ -1,9 +1,10 @@
-# M32 Config 1.2 (build 4) — release notes, bench checklist, upload steps
+# M32 Config 1.2 (build 5) — release notes, bench checklist, upload steps
 
 *Prepared 2026-11-09. **Bench passed the same evening** (Willi: snapshots, dialogs and device
 switching work, in the web tool over USB and in the app over BLE, on a standard Pocket running
 a master build with `c94c865`). App 1.1 (build 2) is the version in the App Store. 1.2 carries the
-Config Tool as it is on master: `c94c865` plus the stale-device fix of the same evening (§3);
+Config Tool as it is on master: `c94c865` plus the stale-device fix of the same evening (§3),
+and since build 5 the snapshot bundle import (`8675a30`, 2026-11-11);
 nothing in the tool was changed for iOS only. Willi archives, uploads and submits.*
 
 ## 1. What 1.2 brings in
@@ -17,6 +18,7 @@ Config Tool commits since the 1.1 commits (`310514d`, 2026-10-05):
 | `193980c` USB Output → USB Keying | General group now lists **Bluetooth Use** and **USB Keying**. In 1.1 the group asked for `BLT Kbd Output`, a name V9 firmware no longer has, so Bluetooth Use was hidden. It is now editable from the app — see 3. |
 | `8298993` link-ends notice | New `linkEnded()` / `doDisconnect(linkGone)` / `#linkNotice`. The USB path (`readLoop`) never runs in the app; the bridge now provides the Bluetooth equivalent |
 | `c94c865` snapshot replies | `sendAndParse(cmd, timeout, {expect:key})` skips stray replies; store/recall/clear wait 8 s and report device errors; footer says protocol v1.6 |
+| `8675a30` snapshot bundles (build 5) | Snapshots tab → *Import Snapshot Bundle…*: hidden `<input type=file>` + `file.text()` (the same picker pattern as snapshot Import, benched in build 4), `alert`/`confirm` (work since build 4), and only `sendAndParse()` with `{expect}` — so every wait is stretched ×3 over BLE. No network access, no new save path. Re-checked 2026-11-11: every global and element `bridge.js` uses is unchanged, so no bridge change |
 
 `m32_pref_help.json` is unchanged since 1.1.
 
@@ -96,6 +98,17 @@ that is the bench below.
   placeholder back) → device B (slots 1–2, without a tab switch); a BLE link loss on the
   Preferences tab clears the cache and the reconnect sends `get configs`; on the Connection
   tab nothing extra is loaded.
+- **Bench of build 5 (2026-11-11): bundle import over BLE times out at `GET menus`.** Not an
+  app or tool fault: the reply (60-odd entries, ~5 KB on the Pocket, >4 KB on the classic) is
+  bigger than the firmware's 4 KB BLE TX ring and was sent without the bulk wait, so the ring
+  overflowed and the rest was dropped — **always**, on every firmware with BLE Serial. The same
+  silently broke the Dashboard's menu selector and the menu lookup of snapshot Import in every
+  app version. **Firmware fix (2026-11-11):** `jsonSend(doc, bulk)`; `GET menus` and
+  `GET game/scores` are sent in bulk mode (`MorseJSON.cpp`); both variants build; changelog
+  V. 10.0. **Benched by Willi 2026-11-11** on the standard Pocket: bundle import over BLE in
+  build 5 works (USB check: `GET menus` whole, 63 entries, 5016 B). Devices on older firmware
+  keep failing there — whether the tool should carry on without menu positions when
+  `get menus` fails, or What's New says the import over Bluetooth needs the next beta, is open.
 - **What's New names "firmware 10.0 beta 3"** for the recall fix. That is my assumption for
   the next beta after `V10.0-beta.2`; correct it if the fix ships under another name.
 - **German "What's New"?** The app and its store record are English-only so far. A German
@@ -105,7 +118,7 @@ that is the bench below.
 
 Use a Pocket on a **master build with `c94c865`** (the recall fix) and, if possible, one
 device on **9.1** for the "older firmware" lines. Bluetooth Use = BLE Serial on both.
-Install via Xcode ▶ or a TestFlight build of 1.2 (4).
+Install via Xcode ▶ or a TestFlight build of 1.2 (5).
 
 **Connect**
 - [ ] Connect → "Confirm on device" → FN → Connected. Log shows `Device capabilities: …`,
@@ -147,6 +160,16 @@ Install via Xcode ▶ or a TestFlight build of 1.2 (4).
       auto-power-off works again).
 - [ ] *(optional)* lock the phone while connected, unlock → the "lost" notice.
 
+**Snapshot bundles** (build 5; not yet benched on hardware anywhere, web tool included)
+- [ ] AirDrop or mail the CW Schule Graz bundle (`Software/Utilities/snapshot-bundles/`) to the
+      iPhone and save it in Files.
+- [ ] Snapshots tab → *Import Snapshot Bundle…* → the Files picker opens, the bundle shows
+      (not greyed out), picking it lists the presets with their check results.
+- [ ] Import a few presets: progress shows, each is stored and read back, the report names
+      any setting a snapshot cannot hold; afterwards the snapshot list shows the new slots and
+      your own settings and menu position are back (Preferences tab).
+- [ ] Cancel at the confirmation: nothing is written.
+
 **WiFi tab**
 - [ ] V10 firmware with remote keying: the pass phrase card shows set / not set; set one →
       "pass phrase set"; the log does not contain the phrase. 9.x firmware: no card.
@@ -165,13 +188,13 @@ cd ~/Documents/GitHub/Morserino-32/Software/iOS/M32Config && ./sync-webtool.sh &
 ```
 
 1. In Xcode: destination **Any iOS Device (arm64)** → Product → **Archive**.
-2. Organizer: check the archive says **1.2 (4)** (1.1 once came out as 1.0 (1); `project.yml`
+2. Organizer: check the archive says **1.2 (5)** (1.1 once came out as 1.0 (1); `project.yml`
    now maps the plist version, so it should be right). **Distribute App → App Store Connect
    → Upload**, automatic signing.
 3. Optional but what 1.1 did: wait for processing, test the build through **TestFlight** —
    that can be the bench run above.
 4. App Store Connect → the app → **+** next to iOS → version **1.2**. Paste "What's New" from
-   `Software/iOS/M32Config/store-listing.md`, pick build 4. Screenshots, description and the
+   `Software/iOS/M32Config/store-listing.md`, pick build 5. Screenshots, description and the
    App Review notes carry over; the notes need no change for this version.
 5. **Add for Review → Submit**. Choose the release option (1.1: automatic release).
 6. If App Review sends a letter: answer it **and resubmit** (see README, the 1.0 lesson).

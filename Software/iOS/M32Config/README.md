@@ -20,8 +20,8 @@ The web tool is **not forked**. `sync-webtool.sh` copies it out of
 `Software/Utilities/` at build time, so the browser version and the app version
 can never drift apart.
 
-> **Status: 1.1 (build 2) is live in the App Store** (approved 2026-10). **1.2 (build 4) prepared**
-> 2026-11-09: carries the Config Tool as of master `c94c865` plus its stale-device fix (snapshot fix,
+> **Status: 1.1 (build 2) is live in the App Store** (approved 2026-10). **1.2 (build 5) prepared**
+> 2026-11-09: carries the Config Tool as of master `c94c865` plus its stale-device fix and, since build 5, the snapshot bundle import `8675a30` (snapshot fix,
 > protocol 1.6 footer, link-lost notice, Bluetooth Use / USB Keying in General, Remote Keying pass phrase
 > card); `bridge.js` re-checked against it and fixed in three places; JavaScript dialogs
 > (`confirm()`/`alert()`) now work — they never did before. Bench-tested by Willi on an iPhone
