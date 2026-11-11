@@ -107,8 +107,8 @@ that is the bench below.
   `GET game/scores` are sent in bulk mode (`MorseJSON.cpp`); both variants build; changelog
   V. 10.0. **Benched by Willi 2026-11-11** on the standard Pocket: bundle import over BLE in
   build 5 works (USB check: `GET menus` whole, 63 entries, 5016 B). Devices on older firmware
-  keep failing there — whether the tool should carry on without menu positions when
-  `get menus` fails, or What's New says the import over Bluetooth needs the next beta, is open.
+  keep failing there. **Decided (Willi, 2026-11-11): no tool fallback** — What's New says the
+  bundle import needs firmware 10.0 beta 3 or later (same naming assumption as below).
 - **What's New names "firmware 10.0 beta 3"** for the recall fix. That is my assumption for
   the next beta after `V10.0-beta.2`; correct it if the fix ships under another name.
 - **German "What's New"?** The app and its store record are English-only so far. A German

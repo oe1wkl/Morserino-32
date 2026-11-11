@@ -32,6 +32,7 @@ will search by name, and Utilities is where hardware companions live.)
 
     Snapshot bundles from your CW course
     A course can now hand out all its practice presets in a single file. On the Snapshots tab, tap "Import Snapshot Bundle…" and pick the file your course gave you, for example from the Files app. The app checks every preset against your Morserino first and shows any problem before anything is written, then stores each preset in its slot. Your own settings are put back afterwards.
+    Importing a bundle needs firmware 10.0 beta 3 or later on the Morserino; with older firmware the check stops with "Timeout". The same update also makes the menu list on the Dashboard work over Bluetooth.
 
     Snapshots you can rely on
     Storing, recalling and clearing a snapshot now waits for the Morserino's answer, and tells you when something went wrong — for example when a snapshot could not be stored because the device's memory is full. Before, the app reported success either way, and a slow store could make the snapshot list look empty.
