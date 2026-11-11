@@ -1,0 +1,126 @@
+{
+  "m32SnapshotBundle": 1,
+  "name": "CW Schule Graz",
+  "description": "Practice presets for the CW Schule Graz course: Koch groups, echo practice, abbreviations, words from the course file and call signs.",
+  "note": "Transcribed from cdaller/morserino32-trainer (js/m32-configuration-ui.js) on 2026-11-09.",
+  "spacing": {
+    "wide": {
+      "name": "Wide spacing: for writing down what you hear",
+      "default": true
+    },
+    "koch": {
+      "name": "Koch spacing: for head copy"
+    }
+  },
+  "snapshots": [
+    {
+      "slot": 1,
+      "name": "Koch random groups",
+      "menu": "Koch Trainer/CW Generator/Random",
+      "settings": {
+        "InterWord Spc": 30,
+        "Interchar Spc": 3,
+        "Random Groups": "All Chars",
+        "Length Rnd Gr": "1",
+        "Each Word 2x": "OFF",
+        "Max # of Words": 20
+      }
+    },
+    {
+      "slot": 2,
+      "name": "Choose a lesson",
+      "menu": "Koch Trainer/Select Lesson",
+      "settings": {
+        "InterWord Spc": 7,
+        "Interchar Spc": 3,
+        "Random Groups": "All Chars",
+        "Each Word 2x": "OFF"
+      },
+      "note": "The original also sets Time-out 0. A snapshot cannot hold Time-out, so it is left out here."
+    },
+    {
+      "slot": 3,
+      "name": "Koch echo, adaptive",
+      "menu": "Koch Trainer/Echo Trainer/Adapt. Rand.",
+      "settings": {
+        "InterWord Spc": 7,
+        "Interchar Spc": 3,
+        "Random Groups": "All Chars",
+        "Length Rnd Gr": "1",
+        "Each Word 2x": "OFF",
+        "Max # of Words": 20
+      }
+    },
+    {
+      "slot": 4,
+      "name": "Koch groups of 2 to 6",
+      "menu": "Koch Trainer/CW Generator/Random",
+      "settings": {
+        "InterWord Spc": 45,
+        "Interchar Spc": 15,
+        "Random Groups": "All Chars",
+        "Length Rnd Gr": "2 to 6",
+        "Each Word 2x": "OFF",
+        "Max # of Words": 15
+      },
+      "koch": {
+        "InterWord Spc": 6,
+        "Interchar Spc": 3
+      }
+    },
+    {
+      "slot": 5,
+      "name": "Keyer",
+      "menu": "CW Keyer"
+    },
+    {
+      "slot": 6,
+      "name": "Abbreviations",
+      "menu": "Koch Trainer/Echo Trainer/CW Abbrevs",
+      "settings": {
+        "InterWord Spc": 7,
+        "Interchar Spc": 15,
+        "Random Groups": "All Chars",
+        "Length Abbrev": "2",
+        "Each Word 2x": "OFF",
+        "Max # of Words": 20
+      },
+      "koch": {
+        "InterWord Spc": 6,
+        "Interchar Spc": 3
+      }
+    },
+    {
+      "slot": 7,
+      "name": "Words from the course file",
+      "menu": "CW Generator/File Player",
+      "settings": {
+        "InterWord Spc": 45,
+        "Interchar Spc": 15,
+        "Each Word 2x": "ON",
+        "Max # of Words": 0
+      },
+      "koch": {
+        "InterWord Spc": 6,
+        "Interchar Spc": 3
+      }
+    },
+    {
+      "slot": 8,
+      "name": "Call signs (and prefixes)",
+      "menu": "Echo Trainer/Call Signs",
+      "settings": {
+        "InterWord Spc": 45,
+        "Interchar Spc": 15,
+        "Length Calls": "3",
+        "Each Word 2x": "ON",
+        "Max # of Words": 0
+      },
+      "koch": {
+        "InterWord Spc": 6,
+        "Interchar Spc": 3
+      },
+      "note": "For prefixes, recall this snapshot and turn one step on to Echo Trainer/Prefixes: Prefixes use the same settings and ignore Length Calls."
+    }
+  ]
+}

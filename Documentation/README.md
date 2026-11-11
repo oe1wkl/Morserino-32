@@ -27,6 +27,7 @@ Sources, older versions and French/Spanish translations are under
 | [`User Manual/`](User%20Manual/) | the user manual, one folder per firmware major version |
 | [`FAQ/`](FAQ/) | frequently asked questions, including the M32 Pocket FAQ |
 | [`Protocol Description/`](Protocol%20Description/) | the M32 serial protocol, for anyone writing software that talks to the device |
+| [`Snapshot Bundles/`](Snapshot%20Bundles/) | how to write a snapshot bundle: a CW school's set of practice presets in one file, imported with the Configuration Tool |
 | [`Assembly Instructions/`](Assembly%20Instructions/) | building the kit |
 | [`Hardware/`](Hardware/) | schematics, PCB and case |
 

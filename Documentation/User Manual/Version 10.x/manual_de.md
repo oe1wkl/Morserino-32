@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=ee91dc4b3786 v=10 -->
+<!-- WHATSNEW:BEGIN en=3465f99f6b0b v=10 -->
 Was ist neu in Version 10?
 
 -   Zwei Morserinos können jetzt über das Netzwerk eine **Tastverbindung in die Ferne** bilden. Du gibst an deinem Betriebsplatz auf dem einen — dem neuen Modus **Remote Keyer** — und der andere, an der Station, tastet über seinen Anschluss „to Tx“ den Sender: der neue Modus **Remote Rig**. Die Station kann im Nebenzimmer stehen oder in einem anderen Land. Was aus dem Sender kommt, ist das, was du gegeben hast, mit deinem eigenen Timing — ob es von den Paddles kam, von einer Handtaste oder von einem Bug. Es ist eine Tastverbindung, keine Audioverbindung: Deinen Mithörton hörst du lokal und sofort, sodass nichts im Netzwerk deinen Gebe-Rhythmus stören kann; was du *von* der Station hörst, kommt über den Fernsteuer- und Audioweg, den du ohnehin schon benutzt. Die Verbindung läuft über UDP-Port 7374, und die Adresse der Station trägst du im Feld **TRX Peer** unter **Config WiFi** ein — dasselbe Feld, das auch der WiFi-Transceiver verwendet. Beide Seiten sind im Handbuch beschrieben, samt dem, was bei Routern und Firewalls zu beachten ist.
@@ -45,6 +45,7 @@ Was ist neu in Version 10?
 -   Neuer Modus **Transceiver → Remote WinKeyer** (bei der 1st und 2nd Edition **Remote WinK**, damit es aufs Display passt): **WinKeyer** und **Remote Keyer** in einem. Ein Log- oder Contestprogramm steuert den Morserino über USB genau wie im Modus **WinKeyer**, und sein CW – und was du mit dem Paddle gibst – geht über die Tastverbindung an einen entfernten Sender, während dein eigener Anschluss „to Tx“ stumm bleibt. Weil der Sender weit weg steht, ist einiges anders als im **WinKeyer**: Reißt die Verbindung ab, hört das Senden des Programms auf und das Programm erfährt es, wie wenn du mit dem Paddle dazwischen gehst (ein wiederholtes CQ hört auf), und was es sendet, solange die Verbindung weg ist, wird verworfen – nichts geht verspätet auf Sendung; das Programm erfährt, dass der Morserino beschäftigt ist, bis das Rig das CW ausgegeben hat, sodass ein Programm, das PTT über CAT schaltet, das Ende nicht abschneidet; und ein Tune wird am Rig wie eine gedrückt gehaltene Handtaste behandelt (es gilt **Rig Limit SK**). Die Einstellungen des Rigs erreichst du mit einem Doppelklick, solange die Verbindung steht, wie im **Remote Keyer**. Beim M32 Pocket bestimmt die neue Einstellung **WinKeyer Tx**, welcher der beiden WinKeyer-Modi startet, wenn ein Programm den WinKeyer öffnet, während der Morserino im Hauptmenü ist: **Local** (die Voreinstellung, wie bisher) oder **Remote**.
 -   **CW Generator** und **Echo Trainer** haben einen neuen Eintrag, **Prefixes**: Rufzeichen-Präfixe – der Anfang eines Rufzeichens bis einschließlich der Ziffer des Rufzeichenbezirks, etwa OE3, DL1, KD9, VE3, UA9 oder 3B8 –, um den Teil eines Rufzeichens zu üben, der verrät, wo eine Station sitzt. **Calls Region** und **Call Prefixes** gelten wie bei den Rufzeichen, **Length Calls** nicht.
 -   Neu: der **M32 Trainer**, ein Mitschreib-Trainer im Browser (`https://www.morserino.info/m32_trainer.html`). Der Morserino spielt Gruppen, Wörter, Sätze, Rufzeichen oder Präfixe aus deiner Koch-Lektion, deinem Practice Set oder allen Zeichen; du schreibst sie am Computer getippt mit oder gibst sie mit dem Paddle zurück. Die Seite führt über jedes Zeichen Buch, wählt das Nächste danach aus, was du noch verfehlst, und bietet dir die nächste Koch-Lektion an, wenn du so weit bist. Außerdem protokolliert sie die Ergebnisse des **Echo Trainer**, mit den Reaktions- und Gebezeiten, die der Morserino misst. Sie braucht diese Firmware (serielles Protokoll 1.6) und Chrome, Edge oder Firefox auf einem Computer. Am Morserino wird nichts gespeichert außer Koch-Sequenz und Koch-Lektion, und auch die nur, wenn du sie auf der Seite änderst. Siehe „Der M32 Trainer“ im Handbuch.
+-   M32 Configuration Tool: **Schnappschuss-Pakete** (Snapshot Bundles). Ein CW-Kurs oder Club kann seine Übungsvorgaben als eine einzige Datei weitergeben, und **Import Snapshot Bundle…** im Reiter Snapshots speichert sie alle auf einmal, jede in den Speicherplatz, den der Kurs ihr gibt. Das Tool prüft die Datei gegen deinen Morserino, bevor es etwas ändert, lässt dich einzelne Vorgaben weglassen und, wo ein Kurs beides anbietet, weite Abstände (zum Mitschreiben) oder Koch-Abstände (zum Mitlesen im Kopf) wählen. Jede Vorgabe ändert nur die Einstellungen, die sie nennt – alles andere kommt aus deinen eigenen Einstellungen –, und danach sind deine eigenen Einstellungen wieder so wie vorher. Ein Paket für die CW Schule Graz liegt in `Software/Utilities/snapshot-bundles`; wie man eines für den eigenen Kurs schreibt, steht in `Documentation/Snapshot Bundles`.
 -   Nur M32 Pocket: Der **CW Keyer** kann deine Tastung über das USB-Kabel an einen Computer schicken, ohne Bluetooth. Die neue Einstellung **USB Keying** wählt, was hinausgeht: **VBand** macht den Morserino zu einer USB-Tastatur für vBand (die linke Strg-Taste folgt dem Keyer – nichts zu koppeln, und der Akku lädt dabei), **MIDI Keyer** macht ihn zu einem USB-MIDI-Gerät, das deine fertige Tastung sendet, für die Web-Werkzeuge von Vail wie *learncw.vailmorse.com* und für Programme mit einem Handtasten-Eingang, und **MIDI Paddles** sendet, was ein CTR2-MIDI-Interface sendet (Kanal 1: Note 20 für das Punkt-Paddle, 21 für das Strich-Paddle, 30 für eine Handtaste), für Programme mit eigenem Keyer wie SmartSDR für macOS. Die Voreinstellung **Off** sendet nichts zusätzlich. Solange der CW Keyer an USB sendet, gibt es keine serielle Schnittstelle, das Konfigurationsprogramm kann also keine Verbindung herstellen; beim Verlassen des CW Keyers ist sie sofort wieder da. Danke an Ian Gilchrist, VK1HF, der es geschrieben hat.
 -   Nur M32 Pocket, Accessibility Edition: Das Gerät sagt jetzt die neue Geschwindigkeit, sobald du sie änderst – die Zahl wird ausgesprochen, während du den Encoder drehst, damit ein blinder Operator sein Übungstempo selbst wählen kann, ohne jemanden fragen zu müssen. Drehst du den Encoder schnell durch, wird nur der Endwert gesagt: Eine Ansage, die gerade läuft, wird abgebrochen, sobald ein neuerer Wert kommt – du hörst also nie den Anfangs- und den Endwert, während alles dazwischen verschluckt wird. Der CW-Generator schweigt, solange die Ansage läuft (der gemeinsame Audioweg würde aus den Morsezeichen sonst Klicks machen), und setzt danach mit dem nächsten Element im neuen Tempo fort. Beginnst du während einer Ansage zu geben, bricht die Ansage sofort ab – was du gibst, hörst du also immer als Mithörton, auch wenn es an einen Sender geht. Das funktioniert in den Übungsmodi, auch bei der automatischen Geschwindigkeitsanpassung des Echo Trainers nach jedem Wort, und im QSO Bot, dessen Morsezeichen für die Ansage genauso pausieren.
 -   Nur M32 Pocket, Accessibility Edition: Immer wenn du einen Übungsmodus verlässt und wieder im Hauptmenü landest, sagt das Gerät, wie es der Batterie geht – **high**, **medium**, **low** oder **charging** (dazu **on USB power**, wenn keine Batterie eingelegt ist, und **battery fault** für den seltenen Fehlerzustand). Das ist gerade hier wichtig, weil auf diesem Gerät der Audio-Codec als Erstes aufgibt, wenn die Zelle schwach wird: Ein blinder Operator kann sonst mit einem funktionierenden Gerät zurückbleiben, das gar nichts mehr sagt – und diese Warnung kommt weit genug vor der Codec-Klippe, dass noch Zeit zum Anstecken bleibt. Die Meldung erklingt einmal pro Rückkehr aus dem Modus ins Menü, nicht wiederholt, während du im Menü navigierst.
@@ -3953,6 +3954,31 @@ du deinen Morserino über USB mit einem Computer mit Chrome, Edge, Opera
 oder Firefox verbindest und den Anweisungen in **Einrichten von
 M32-Einstellungen über einen Browser** folgst.
 
+### Schnappschuss-Pakete
+
+Ein CW-Kurs oder ein Club kann seine Übungsvorgaben als eine einzige Datei
+weitergeben, ein **Schnappschuss-Paket** (englisch: Snapshot Bundle). Öffne im
+M32 Configuration Tool den Reiter **Snapshots**, klicke auf **Import Snapshot
+Bundle…** und wähle die Datei. Das Tool prüft die Datei zuerst gegen deinen
+Morserino und zeigt jede Vorgabe, den Speicherplatz, in den sie kommt, und
+welche deiner gespeicherten Schnappschüsse sie ersetzen würde; einzelne
+Vorgaben kannst du weglassen. Gibt es das Paket in zwei Abständen – weite
+Abstände zum Mitschreiben, Koch-Abstände zum Mitlesen im Kopf –, wählst du
+hier einen davon.
+
+Jede Vorgabe ändert nur die Einstellungen, die im Paket stehen; alles andere
+darin – Geschwindigkeit, Tonhöhe, dein Farbschema usw. – kommt aus deinen
+eigenen Einstellungen. Danach sind deine eigenen Einstellungen und deine
+Menüposition wieder so wie vorher, und du rufst eine Vorgabe wie jeden anderen
+Schnappschuss ab. Die Koch-Lektion ist nie Teil eines Schnappschusses; die
+Vorgaben passen daher zu jeder Lektion, bei der du gerade bist.
+
+Pakete, etwa das für den Kurs der CW Schule Graz, findest du unter
+[`github.com/oe1wkl/Morserino-32/tree/master/Software/Utilities/snapshot-bundles`](https://github.com/oe1wkl/Morserino-32/tree/master/Software/Utilities/snapshot-bundles).
+Wenn du ein Paket für deinen eigenen Kurs schreiben möchtest, findest du die
+Anleitung unter *Snapshot Bundles* im Ordner `Documentation` desselben
+Repositorys (auf Englisch).
+
 ## Rufzeichen, Name und Spielstände
 
 Zwei Einstellungen sagen dem Morserino, wer du bist. **Call Sign** (Rufzeichen)
@@ -4707,7 +4733,8 @@ einen M32-Dateimanager implementiert.
   [`https://www.morserino.info/m32_config_tool.html`](https://www.morserino.info/m32_config_tool.html).
   Es ermöglicht das Anzeigen und Setzen aller Einstellungen sowie das
   Erstellen, Löschen, Anzeigen, Vergleichen, Exportieren und Importieren
-  von Schnappschüssen.
+  von Schnappschüssen, auch ganzer Schnappschuss-Pakete (siehe
+  **Schnappschuss-Pakete**).
   Außerdem enthält es Datei-Hilfsprogramme (siehe unten).
 
 * Christof, **OE6CHD**, hat ein Javascript-Programm geschrieben, mit

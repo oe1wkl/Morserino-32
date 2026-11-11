@@ -9,7 +9,7 @@ half — what is decided, what is not, where the code is, and what to do first.
 rather than hard-coded definitions, so the same mechanism serves CW Schule Graz,
 CW Ops, LICW or anyone else.
 
-**Status 2026-09-07:** designed to the point of decision, nothing built.
+**Status 2026-11-11:** format signed off by Willi and **built** on branch `snapshot-bundles`: importer in the Config Tool (Snapshots tab, *Import Snapshot Bundle…*), the Graz bundle at `Software/Utilities/snapshot-bundles/cw-schule-graz.json`, the author's guide at `Documentation/Snapshot Bundles/README.md`, manuals EN/DE. Tested against a simulated device; bench test on hardware owed.
 
 ---
 
@@ -27,16 +27,57 @@ CW Ops, LICW or anyone else.
 * **Entries are partial and that is the normal case.** The Graz set defines five
   to eight settings per slot, never the ~40 a stored snapshot holds.
 
-## Open — needs CW Schule Graz
+## Answered by Willi, 2026-11-09 (were "needs CW Schule Graz")
 
-1. Are the "wide" vs "Koch" spacing variants the right model, or an artefact of
-   how cdaller's buttons happen to be laid out? (They differ in exactly two
-   values: InterWord Spc and Interchar Spc.)
-2. Does the bundle name its target slots, or does the tool assign them in order?
-3. What should the student be left running afterwards — their own settings back,
-   or the first lesson ready to go?
-4. Do they want to author bundles themselves? If so the format has to be pleasant
-   to hand-edit.
+1. **"Wide" and "Koch" are both real.** Wide spacing is for *writing down* what
+   you hear, Koch (= narrow, no extra spacing) for *head copy*. The Koch forms all
+   use InterWord Spc 6 / Interchar Spc 3. **Consequence:** with only 8 slots a
+   student cannot hold both forms of one exercise, so the choice is made at
+   import time (see the format proposal below).
+   Slot meanings: 6 = abbreviations, 7 = words, **from the File Player** (they
+   use their own training files, not English Words), 8 = call signs.
+   **Prefixes (V10):** Graz suggested them, so they will probably use them. With
+   all 8 slots taken, slot 8 has to serve call signs *and* prefixes. It can,
+   because Prefixes use the same settings (Calls Region, Call Prefixes, spacing)
+   and ignore Length Calls: recall 8, then turn one step on to
+   Echo Trainer/Prefixes.
+2. **The bundle names the slot** each entry goes into.
+3. **Afterwards the student gets their own settings back**, so the baseline
+   restore (the accumulation trap below) is required, not optional.
+4. **Hand-editing must be easy and well documented**, whether or not Graz edit
+   theirs: other CW schools will write their own bundles.
+
+## Format (signed off 2026-11-11, built)
+
+The real Graz set: `Software/Utilities/snapshot-bundles/cw-schule-graz.json`. Authors' reference: `Documentation/Snapshot Bundles/README.md`.
+What it does differently from the sketch in DESIGN_NOTES.md, and why:
+
+* **Values are written the way the device shows them.** For a parameter with a
+  list of choices, the file uses the text (`"Length Calls": "3"`,
+  `"Random Groups": "All Chars"`, `"Each Word 2x": "ON"`), never the internal
+  index. cdaller's `Length Calls 1` means "3", which is exactly the trap a
+  hand-editor falls into. Plain numbers stay numbers (`"InterWord Spc": 45`). The
+  tool resolves the text against the device's own `mapped values`
+  (`GET configs/details`, protocol 1.4; `GET config/<name>` before that), so a misspelt value is an error that lists the
+  allowed choices.
+* **Menu by its path, as the device prints it** (`"Echo Trainer/Call Signs"`), the
+  same string as `menuName` in a snapshot export.
+* **One `koch` overlay per entry** instead of a general variants mechanism:
+  `"spacing"` at the top names the two forms; an entry's `"koch"` object lists
+  only what changes. The student picks wide or Koch once for the whole import.
+* **Strict JSON**, so any editor or validator can check it. JSON has no comments,
+  so every level allows a `"note"` string, which the importer ignores.
+
+The importer would: read the file; check every slot, menu path, parameter name
+and value against the connected device before writing anything; show a preview
+(which slots get overwritten, what each sets); then for each entry apply its
+settings onto the student's baseline and store it; then **read each stored
+snapshot back** (`GET snapshot/<n>`) and report any setting that did not make it
+in; and finally restore the student's own settings and menu.
+
+The read-back answers open item 5 below without a firmware change: it catches
+`Time-out` and every other excluded setting on every firmware since 1.3. An
+`inSnapshot` field would only add a warning *before* writing.
 
 ## Open — ours to decide
 
