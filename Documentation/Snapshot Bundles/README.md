@@ -181,6 +181,8 @@ setting is skipped.
 
 ## Sharing a bundle
 
-A bundle is just a file: put it on your course's web page, send it by email, or
-ask for it to be added to this repository under
-`Software/Utilities/snapshot-bundles/`.
+A bundle is just a file, and the students get it from you: put it on your
+course's web page or send it by email, and tell them which file goes with your
+course. The user manual tells students that their CW school points them to the
+right file. If you like, you can also ask for your bundle to be added to this
+repository under `Software/Utilities/snapshot-bundles/`.

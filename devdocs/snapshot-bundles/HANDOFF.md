@@ -9,7 +9,9 @@ half — what is decided, what is not, where the code is, and what to do first.
 rather than hard-coded definitions, so the same mechanism serves CW Schule Graz,
 CW Ops, LICW or anyone else.
 
-**Status 2026-11-11:** format signed off by Willi and **built** on branch `snapshot-bundles`: importer in the Config Tool (Snapshots tab, *Import Snapshot Bundle…*), the Graz bundle at `Software/Utilities/snapshot-bundles/cw-schule-graz.json`, the author's guide at `Documentation/Snapshot Bundles/README.md`, manuals EN/DE. Tested against a simulated device; bench test on hardware owed.
+**Status 2026-11-11:** format signed off by Willi, **built, bench-tested on a Pocket (passed) and merged to master**: importer in the Config Tool (Snapshots tab, *Import Snapshot Bundle…*), the Graz bundle at `Software/Utilities/snapshot-bundles/cw-schule-graz.json`, the author's guide at `Documentation/Snapshot Bundles/README.md`, manuals EN/DE.
+
+**Distribution (Willi, 2026-11-11):** the manuals do not point to a collection of bundles. They say the student's CW school points them to the right file, because that serves every school best. The repository folder `Software/Utilities/snapshot-bundles/` stays as a home for examples. Planned: Willi's own bundle (close to the Graz one) on morserino.info. It will be the settings that the CW book now being written refers to. When it exists, the manuals may name it, and publishing it needs a line in `~/sync-to-dropbox.sh`.
 
 ---
 
