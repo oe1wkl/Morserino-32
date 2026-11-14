@@ -96,7 +96,7 @@
     .pref-row{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid #e8eff4;background:#fff;transition:background .15s}
     .pref-row:last-child{border-bottom:none}
     .pref-row:hover{background:#f8fbfd;position:relative;z-index:50}
-    .pref-name{font-size:15px;font-weight:700;color:var(--text);min-width:150px;flex-shrink:0;display:flex;align-items:center;gap:6px}
+    .pref-name{font-size:15px;font-weight:700;color:var(--text);min-width:150px;flex-shrink:0;display:flex;align-items:center;gap:10px;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
     .pref-control{flex:1;display:flex;align-items:center;gap:8px;justify-content:flex-end}
     /* The compile-time default, reported by firmware from V9 on. Fixed width so
        the column lines up down the group instead of ragging with value length. */
@@ -114,8 +114,14 @@
     .help-icon{width:16px;height:16px;border-radius:50%;background:#6a8a9e;color:#fff;font-size:11px;font-weight:900;display:inline-flex;align-items:center;justify-content:center;cursor:help;flex-shrink:0;position:relative;line-height:1;z-index:1}
     .help-balloon{display:none;position:absolute;bottom:calc(100% + 10px);left:50%;transform:translateX(-50%);background:#2c3e50;color:#fff;font-size:13px;font-weight:400;padding:10px 14px;border-radius:8px;width:300px;z-index:200;box-shadow:0 4px 16px rgba(0,0,0,.35);line-height:1.5;text-align:left;pointer-events:none}
     .help-balloon::after{content:'';position:absolute;top:100%;left:50%;transform:translateX(-50%);border:6px solid transparent;border-top-color:#2c3e50}
-    .help-icon:hover{z-index:201}
-    .help-icon:hover .help-balloon{display:block}
+    /* A tap toggles .open (one document-level click handler, see toggleHelpBalloon);
+       hover still opens it with a mouse (in the hover media block below). The
+       ::before is an invisible 40x40 px touch target around the 16 px circle — a
+       finger aiming at the circle alone mostly hit the name instead. An open
+       balloon takes taps, so dismissing it never reaches the control beneath. */
+    .help-icon::before{content:'';position:absolute;inset:-12px}
+    .help-icon.open{z-index:201}
+    .help-icon.open .help-balloon{display:block;pointer-events:auto}
     .pref-note{font-size:13px;color:var(--muted);font-style:italic;padding:6px 16px;background:#f8f8f0;border:1px solid #e8e0c8;border-radius:4px;margin-bottom:12px}
     /* Snapshots */
     .snap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px}
@@ -409,12 +415,15 @@
        button kept its accent colour after being pressed and read as stuck
        or failed. Reported from the iOS app; it affects any tablet too.
 
-       NOT everything with :hover belongs in here. .help-icon:hover and
-       .pstat-tile:hover REVEAL CONTENT -- the help balloons and the stats
-       tooltips -- and on a touch screen that latched hover is the only way
-       to open them. Gating those would silently remove help from every
-       phone and tablet. They stay outside, deliberately. */
+       NOT everything with :hover belongs in here. .pstat-tile:hover REVEALS
+       CONTENT -- the stats tooltips -- and on a touch screen that latched
+       hover is the only way to open them, so it stays outside, deliberately.
+       The help balloons used to be the same case; they now open on a tap
+       (.help-icon.open), so their hover lives in here: a latched hover would
+       keep a balloon on screen after the tap that closed it. */
     @media (hover: hover) {
+      .help-icon:hover{z-index:201}
+      .help-icon:hover .help-balloon{display:block}
       .tab-btn:hover{background:var(--tab-hover);color:var(--accent)}
       .btn:hover:not(:disabled){box-shadow:4px 5px 5px rgba(0,0,0,.3)}
       .btn-accent:hover:not(:disabled){background:var(--accent2)}
@@ -1879,17 +1888,31 @@ function prefExpandAll(){
   });
 }
 
+// The "?" after a preference name. A tap (or click) toggles its balloon; with a
+// mouse, hovering shows it as well. The listener sits on the icon itself so iOS
+// treats it as clickable; closeHelpBalloons() shuts the others.
+function createHelpIcon(helpText){
+  var helpIcon=document.createElement('span'); helpIcon.className='help-icon'; helpIcon.textContent='?';
+  var balloon=document.createElement('span'); balloon.className='help-balloon'; balloon.textContent=helpText;
+  helpIcon.appendChild(balloon);
+  helpIcon.addEventListener('click',function(e){
+    e.stopPropagation(); closeHelpBalloons(e);
+    balloon.style.marginLeft='';
+    if(!helpIcon.classList.toggle('open')) return;
+    // A "?" after a long name, on a phone, would push the balloon off the right edge.
+    var over=balloon.getBoundingClientRect().right-(document.documentElement.clientWidth-8);
+    if(over>0) balloon.style.marginLeft=(-over)+'px';
+  });
+  return helpIcon;
+}
+
 function createPrefRow(p){
   var row=document.createElement('div'); row.className='pref-row';
   row.id='pref-row-'+p.name.replace(/[^a-zA-Z0-9]/g,'_');
   var nameEl=document.createElement('span'); nameEl.className='pref-name';
   nameEl.textContent=p.name;
   var helpText=prefHelpTexts[p.name]||p.description||'';
-  if(helpText){
-    var helpIcon=document.createElement('span'); helpIcon.className='help-icon'; helpIcon.textContent='?';
-    var balloon=document.createElement('span'); balloon.className='help-balloon'; balloon.textContent=helpText;
-    helpIcon.appendChild(balloon); nameEl.appendChild(helpIcon);
-  }
+  if(helpText) nameEl.appendChild(createHelpIcon(helpText));
   row.appendChild(nameEl);
   var controlEl=document.createElement('span'); controlEl.className='pref-control';
   if(p.isMapped&&p['mapped values']&&p['mapped values'].length>0){
@@ -1997,9 +2020,7 @@ function createPracticeCharsRow(){
   var nameEl=document.createElement('span'); nameEl.className='pref-name';
   nameEl.textContent='Practice Set';
   var helpText=prefHelpTexts['Practice Set']||'Your own character pool, used by the "Practice Set" entries under CW Generator and Echo Trainer.';
-  var helpIcon=document.createElement('span'); helpIcon.className='help-icon'; helpIcon.textContent='?';
-  var balloon=document.createElement('span'); balloon.className='help-balloon'; balloon.textContent=helpText;
-  helpIcon.appendChild(balloon); nameEl.appendChild(helpIcon);
+  nameEl.appendChild(createHelpIcon(helpText));
   row.appendChild(nameEl);
   var controlEl=document.createElement('span'); controlEl.className='pref-control';
   var input=document.createElement('input'); input.type='text'; input.id='practiceCharsInput';
@@ -3956,6 +3977,16 @@ document.addEventListener('DOMContentLoaded', function(){
                     ' '+p(d.getHours())+':'+p(d.getMinutes());
   stamp.hidden=false;
 });
+
+// Help balloons close on any touch or click outside their own "?". touchstart as
+// well as click: iOS delivers a click to the document only from elements it
+// considers clickable, so a tap on plain text would otherwise leave it open.
+function closeHelpBalloons(e){
+  var keep=e&&e.target&&e.target.closest?e.target.closest('.help-icon'):null;
+  document.querySelectorAll('.help-icon.open').forEach(function(i){if(i!==keep)i.classList.remove('open')});
+}
+document.addEventListener('click',closeHelpBalloons);
+document.addEventListener('touchstart',closeHelpBalloons,{passive:true});
 
 // TTY debug toggle
 document.addEventListener('DOMContentLoaded', function(){
