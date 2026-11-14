@@ -108,6 +108,20 @@ Die Namen der Einstellungen sind am Gerät englisch und werden hier deshalb eben
     * Übersteuere den Eingang nicht — sonst bricht die Dekodierung ab und es kommt auch kein Ton mehr zum Headset.
     * Solange nicht dekodiert wird, bleibt der Kopfhörerausgang stumm; du kannst also beim Absuchen des Bandes nicht mithören. Zum Abstimmen das Kabel abziehen und danach wieder anstecken.
 
+* **Wie bekomme ich den Ton des M32 Pocket in einen Computer (Soundkarte oder USB-Audioadapter)?**
+    * Nimm ein **einfaches 3-poliges (Stereo-)Kabel mit 3,5-mm-Klinkensteckern** von der Audiobuchse des M32 Pocket zum Mikrofon- oder Line-Eingang des Computers. Ein Y-Adapterkabel brauchst du dafür nicht.
+    * Das widerspricht der Warnung weiter oben nicht: Dort geht es um den Audio*ausgang* eines Transceivers. Ein Eingang eines Computers ist keine Quelle, es wird also nichts in den M32 Pocket eingespeist.
+    * Verwende **kein** 4-poliges Kabel weiter, das für einen Morserino der 1. oder 2. Edition gemacht wurde — dort sind die Kontakte anders belegt.
+    * Die Einstellung **Headphone Output** legt fest, was du bekommst: **Phones** — die Buchse folgt der eingestellten Lautstärke, der Lautsprecher ist stumm; **line-out** — voller Pegel an der Buchse, Lautsprecher wie gewohnt; **l-o: Var. Vol.** — wie zuvor, aber die Buchse folgt der eingestellten Lautstärke; **l-o: Lsp Muted** — voller Pegel an der Buchse, Lautsprecher stumm.
+    * Ein Mikrofoneingang ist sehr empfindlich. Beginne mit **Phones** oder **l-o: Var. Vol.** und kleiner Lautstärke; die beiden Einstellungen mit vollem Pegel werden ihn wahrscheinlich übersteuern. Verzerrt es immer noch, dann nimm den Eingangspegel am Computer zurück und schalte eine allfällige „Mikrofonverstärkung" ab.
+
+* **Ich verwende ein Y-Adapterkabel und bekomme keinen Ton aus der Buchse — der Lautsprecher spielt einfach weiter. Warum?**
+    * Die Buchse des M32 Pocket hat keinen mechanischen Schaltkontakt. Der M32 Pocket erkennt einen Stecker **elektrisch**, über den Schaft-Kontakt (den Audioeingang): Ein gewöhnlicher 3-poliger Stecker verbindet diesen Kontakt mit Masse, und genau das wird erkannt.
+    * Ein Y-Adapterkabel führt den Schaft-Kontakt nur zu seiner rosa Buchse (Mikrofon) weiter. Steckt dort nichts — oder ein Gerät ohne Gleichstromverbindung zur Masse —, dann sieht der M32 Pocket dasselbe wie bei leerer Buchse: Der Lautsprecher bleibt an, und mit **Headphone Output** auf **Phones** kommt nichts aus der Buchse.
+    * Willst du nur Ton *aus* dem M32 Pocket holen, dann lass den Adapter weg und nimm ein einfaches 3-poliges Kabel oder einen 3-poligen Stecker.
+    * Brauchst du den Adapter doch (weil du auch Audio *in* den M32 Pocket einspeist), dann nimm eine der drei line-out-Einstellungen von **Headphone Output**: Ab Firmware-Version 10 legen sie den Ton an die Buchse, ob ein Stecker erkannt wird oder nicht. Mit **l-o: Lsp Muted** wird der Lautsprecher dann nur stummgeschaltet, solange ein Stecker erkannt wird.
+    * Die line-out-Einstellungen sind für die Eingänge anderer Geräte gedacht, nicht für Kopfhörer — siehe den Warnhinweis im Handbuch.
+
 * **Wie stelle ich die Audiopegel ein?**
     * Mit der **FN-Taste** wechselst du während einer laufenden Betriebsart zwischen Geschwindigkeits- und Lautstärkeregelung.
     * Beim M32 Pocket tastet ein **langer Druck auf die FN-Taste im Menü** den Sender (falls einer angeschlossen ist) und erzeugt einen Mithörton — praktisch, um Pegel an einem angeschlossenen Computer oder Transceiver einzustellen. Ein kurzer Druck auf FN schaltet das wieder ab. (Beim klassischen Morserino-32 startet dieselbe Geste stattdessen die Einstellung des Audio-Eingangspegels.)

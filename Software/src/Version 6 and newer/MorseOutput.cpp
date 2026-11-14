@@ -2149,54 +2149,41 @@ void soundEnableLineOut(bool muted = false, bool variable = false) {
 }
 
 
-void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
-  if (codec.isHeadsetDetected()) {
-    switch (MorsePreferences::pliste[posLineOut].value)
-    {
-      case 0: // headphones, speaker muted 
-        if (v==0)
-            codec.setHeadphoneMute(true); // mute hp
-        else  
-            codec.setHeadphoneMute(false);
-        codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
-        break;
-      case 1: // line-out, speaker not muted, fixed l-o gain
-        if (v==0)
-            codec.setSpeakerMute(true); // mute class d speaker amp
-        else  
-            codec.setSpeakerMute(false);
-        codec.setSpeakerVolume(calcSpeakerVolume(v));
-        break;
-      case 2: // line-out, speaker not muted, variable l-o gain
-        if (v==0) {
-            codec.setSpeakerMute(true); // mute class d speaker amp
-            codec.setHeadphoneMute(true); // mute hp
-        }
-        else  
-        {
-            codec.setSpeakerMute(false);
-            codec.setHeadphoneMute(false);
-        }
-        codec.setSpeakerVolume(calcSpeakerVolume(v));
-        codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
-        break;
-      case 3: // line-out, speaker muted, fixed l-o gain
-        break;
-    }
+// What the jack and the speaker do is decided by the Headphone Output preference AND by
+// whether the codec sees a plug. Plug detection is electrical, not mechanical: MICDET sits
+// on the jack's sleeve contact (the audio input), and a 3-pole plug is "detected" because
+// its long sleeve shorts that contact to ground. A CTIA splitter with nothing on its
+// microphone branch -- or with a DC-open source there -- leaves the contact open, which is
+// indistinguishable from an empty jack.
+//
+// So only "Phones" (value 0) may depend on detection: it needs it to switch between speaker
+// and headphones on its own. The three line-out values are an explicit statement that
+// something is connected, and they drive the jack whether a plug is detected or not;
+// before, they did nothing at all until a plug was detected, so a splitter user got no
+// output on any setting. The one thing that still follows detection in line-out mode is
+// the speaker mute of "l-o: Lsp Muted": muting unconditionally would leave a Pocket with
+// this setting and an empty jack completely silent.
+static bool speakerActive(uint8_t lineOutMode, bool plugged) {
+  switch (lineOutMode) {
+    case 0:  return !plugged;        // Phones: speaker until headphones are detected
+    case 3:  return !plugged;        // l-o: Lsp Muted: muted once a plug is detected
+    default: return true;            // line-out, l-o: Var. Vol.: speaker always on
   }
-  /* {
-    if (v==0)
-      codec.setHeadphoneMute(true); // mute hp
-    else  
-      codec.setHeadphoneMute(false);
-    codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
-  } */ 
-  else {
-    if (v==0)
-      codec.setSpeakerMute(true); // mute class d speaker amp
-    else  
-      codec.setSpeakerMute(false);
+}
+
+void MorseOutput::soundSetVolume(uint8_t v) { // v = 0 - 19
+  uint8_t mode = MorsePreferences::pliste[posLineOut].value;
+  bool plugged = codec.isHeadsetDetected();
+
+  if (speakerActive(mode, plugged)) {
+    codec.setSpeakerMute(v == 0);                       // mute class d speaker amp at volume 0
     codec.setSpeakerVolume(calcSpeakerVolume(v));
+  }
+  // The jack follows the volume control for headphones and for variable line-out; the two
+  // fixed line-out values stay at 0 dB (set in soundEnableLineOut()).
+  if ((mode == 0 && plugged) || mode == 2) {
+    codec.setHeadphoneMute(v == 0);
+    codec.setHeadphoneVolume(calcVolume(v)-3.0, calcVolume(v)-3.0); // small offset -- 0dB was a touch too loud, -6dB was too quiet
   }
 }
 
@@ -2207,28 +2194,17 @@ void MorseOutput::soundEventHandler() {
   if (codec.readRegister(AIC31XX_INTRDACFLAG) & AIC31XX_HSPLUG) { // bit 4 is set on headset related interrupts
     //DEBUG("AIC31XX: Headset plug interrupt triggered");
   }
-if (codec.isHeadsetDetected()) { 
-    //DEBUG("AIC31XX: Headset interrupt: plugged-in");
-    switch (MorsePreferences::pliste[posLineOut].value)
-    {
-      case 0: // headphones, speaker muted 
-        soundEnableHeadphone();
-        break;
-      case 1: // line-out, speaker not muted, fixed gain
-        soundEnableLineOut(false, false);
-        break;
-      case 2: // line-out, speaker not muted, variable gain
-        soundEnableLineOut(false, true);
-        break;
-      case 3: // line-out, speaker muted, fixed gain
-        soundEnableLineOut(true, false);
-        break;
-    }
-} else {
-    //DEBUG("AIC31XX: Headset interrupt: unplugged");
-    soundEnableSpeaker();
-       // enable speaker, mute headphones
-  }   
+  uint8_t mode = MorsePreferences::pliste[posLineOut].value;
+  bool plugged = codec.isHeadsetDetected();
+
+  if (mode == 0) {                    // Phones: headphones when detected, else the speaker
+    if (plugged)
+      soundEnableHeadphone();
+    else
+      soundEnableSpeaker();           // enable speaker, mute headphones
+  }
+  else                                // line-out: the jack is driven regardless of detection
+    soundEnableLineOut(!speakerActive(mode, plugged), mode == 2);
 }
 #endif
 

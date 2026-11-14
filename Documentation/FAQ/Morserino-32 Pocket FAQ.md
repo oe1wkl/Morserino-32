@@ -106,6 +106,20 @@ Answers reflect **firmware version 9.x**.
     * Take care not to overload the input — if you do, decoding stops and no sound reaches your headset.
     * While no decoding is happening the headphone output stays silent, so you cannot listen while tuning around. Unplug the cable to tune, then plug it back in.
 
+* **How do I feed the M32 Pocket's audio into a computer (sound card or USB audio adapter)?**
+    * Use a **plain 3-pole (stereo) 3.5 mm cable** from the M32 Pocket's audio jack to the microphone or line input of the computer. You do not need a splitter cable for this.
+    * This does not contradict the warning above: that one is about a transceiver's audio *output*. An input of a computer is not a source, so nothing is fed into the M32 Pocket.
+    * Do **not** reuse a 4-pole cable that was made for a Morserino of the 1st or 2nd edition — the contacts are assigned differently there.
+    * The preference **Headphone Output** decides what you get: **Phones** — the jack follows the volume setting and the speaker is muted; **line-out** — full level at the jack, speaker as usual; **l-o: Var. Vol.** — as before, but the jack follows the volume setting; **l-o: Lsp Muted** — full level at the jack, speaker muted.
+    * A microphone input is very sensitive. Start with **Phones** or **l-o: Var. Vol.** and a low volume; the two full-level settings will probably overdrive it. If it still distorts, reduce the input level on the computer and switch off any "microphone boost".
+
+* **I use a splitter cable and get no sound from the jack — the speaker just goes on playing. Why?**
+    * The jack of the M32 Pocket has no mechanical switch. The M32 Pocket detects a plug **electrically**, through the sleeve contact (the audio input): an ordinary 3-pole plug connects that contact to ground, and this is what is detected.
+    * A splitter cable passes the sleeve contact on to its pink (microphone) socket only. With nothing plugged in there — or with a device that has no DC connection to ground — the M32 Pocket sees the same as an empty jack: the speaker stays on, and with **Headphone Output** set to **Phones** nothing comes out of the jack.
+    * If all you want is sound *out* of the M32 Pocket, leave the splitter away and use a plain 3-pole cable or plug.
+    * If you do need the splitter (because you also feed audio *into* the M32 Pocket), use one of the three line-out settings of **Headphone Output**: from firmware version 10 on they put the sound on the jack whether a plug is detected or not. With **l-o: Lsp Muted** the speaker is then muted only while a plug is detected.
+    * The line-out settings are meant for the inputs of other devices, not for headphones — see the caution in the user manual.
+
 * **How do I adjust audio levels?**
     * Use the **FN button** to toggle between speed and volume control while a mode is active.
     * On the M32 Pocket, a **long press of the FN button while in a menu** keys the transmitter (if one is connected) and produces a sidetone — useful for setting levels on a connected computer or transceiver. A click of the FN button turns it off again. (On the classic Morserino-32 the same gesture instead starts the audio input level adjustment.)
