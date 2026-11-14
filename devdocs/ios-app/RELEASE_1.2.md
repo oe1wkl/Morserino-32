@@ -74,9 +74,10 @@ that is the bench below.
 
 ## 3. Points for Willi (not changed)
 
-- **Help texts missing** for *Bluetooth Use* and *USB Keying*: `m32_pref_help.json` still
-  has `BLT Kbd Output` and nothing for the other two. A web-tool change, so not done here;
-  it would reach the app at the next build.
+- ~~**Help texts missing** for *Bluetooth Use* and *USB Keying*~~ — fixed 2026-11-14 in
+  `m32_pref_help.json`, together with 15 other preferences that had none (Font Size, Tone
+  Softness, the Rig settings, …). The build phase copies the file, so any app build made
+  after that commit carries it.
 - **Bluetooth Use is now editable over the link it controls.** Changing it away from BLE
   Serial in the app ends the connection, and the user must fix it on the device. The new
   notice explains that; whether the tool should also warn before sending, or hide it when
