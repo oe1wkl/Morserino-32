@@ -59,7 +59,7 @@
         "InterWord Spc": 45,
         "Interchar Spc": 15,
         "Random Groups": "All Chars",
-        "Length Rnd Gr": "2 to 6",
+        "Length Rnd Gr": "2 to 5",
         "Each Word 2x": "OFF",
         "Max # of Words": 15
       },
@@ -88,7 +88,8 @@
       "koch": {
         "InterWord Spc": 6,
         "Interchar Spc": 3
-      }
+      },
+      "note": "The Morserino keeps the interword space at least 4 dits above the character space, so with Interchar Spc 15 it sends 19 dits between abbreviations, whatever InterWord Spc says. The original's 7 is kept here as it stands."
     },
     {
       "slot": 7,
@@ -120,7 +121,7 @@
         "InterWord Spc": 6,
         "Interchar Spc": 3
       },
-      "note": "For prefixes, recall this snapshot and turn one step on to Echo Trainer/Prefixes: Prefixes use the same settings and ignore Length Calls."
+      "note": "For prefixes, recall this snapshot and turn one step on to Echo Trainer/Prefixes: Prefixes use the same settings and ignore Length Calls. Each Word 2x is kept as the original sets it, but it only acts in the CW Generator modes, not in the Echo Trainer."
     }
   ]
 }
