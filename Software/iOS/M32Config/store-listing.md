@@ -41,6 +41,9 @@ will search by name, and Utilities is where hardware companions live.)
     Know when the connection ends
     When the Bluetooth connection ends without you tapping Disconnect, the app now says so and why: the Morserino was switched off or went out of range, "Bluetooth Use" was changed away from "BLE Serial", or a WiFi mode took over the radio.
 
+    Help for every preference
+    Every current preference now comes with its help text, among them Bluetooth Use, USB Keying, Font Size, Tone Softness, Echo Think Time and the rig control settings. A tap on or near the "?" opens it, and a tap anywhere else closes it; before, only an exact hit on the small "?" worked.
+
     Bluetooth Use and USB Keying in the preferences
     Both settings now appear under General, on firmware that has them. Keep in mind that this app talks to the Morserino through "BLE Serial": choosing anything else under Bluetooth Use ends the connection, and you set it back on the device itself.
 

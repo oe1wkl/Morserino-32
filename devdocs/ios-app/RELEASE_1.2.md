@@ -20,7 +20,26 @@ Config Tool commits since the 1.1 commits (`310514d`, 2026-10-05):
 | `c94c865` snapshot replies | `sendAndParse(cmd, timeout, {expect:key})` skips stray replies; store/recall/clear wait 8 s and report device errors; footer says protocol v1.6 |
 | `8675a30` snapshot bundles (build 5) | Snapshots tab → *Import Snapshot Bundle…*: hidden `<input type=file>` + `file.text()` (the same picker pattern as snapshot Import, benched in build 4), `alert`/`confirm` (work since build 4), and only `sendAndParse()` with `{expect}` — so every wait is stretched ×3 over BLE. No network access, no new save path. Re-checked 2026-11-11: every global and element `bridge.js` uses is unchanged, so no bridge change |
 
-`m32_pref_help.json` is unchanged since 1.1.
+`m32_pref_help.json`: `888c045` (2026-11-14) adds help texts for Bluetooth Use, USB Keying
+and 15 other preferences. Data only — `m32_config_tool.html` is unchanged since `8675a30`, so
+the bridge needs nothing. Build 5 was rebuilt with it on 2026-11-14 (not uploaded before, so it
+keeps the number 5; the built app's bundle file is identical to `888c045`'s), and What's New
+gained a "Help for every preference" item.
+
+**Help balloons on touch (tool change, Willi's OK, 2026-11-14).** Willi's bench of that build:
+the "?" often did not open its help, a long touch selected the name instead, and *Rig Limit
+Kyr* never opened. Cause: a 16 px icon 6 px from the name, opened only by the hover iOS
+emulates on an exact hit, on selectable text. Fix in `m32_config_tool.html`
+(`createHelpIcon()`): a tap toggles `.help-icon.open`; an invisible 40×40 px target
+(`::before`, inset −12 px); gap 10 px; no text selection or callout on `.pref-name`; touch or
+click elsewhere closes (`closeHelpBalloons`, `touchstart` too, since iOS sends no click from
+plain text to the document); an open balloon takes taps, so dismissing it never moves the
+slider beneath; the balloon is shifted left when it would leave the screen. Mouse hover is
+unchanged but now sits in the `(hover: hover)` block, so a latched touch hover cannot keep a
+balloon open. Verified in a 375 px touch-emulating browser: a tap 10 px beside the "?" opens
+*Rig Limit Kyr*, a tap on the balloon closes it without moving *Rig Hang*, a tap elsewhere
+closes it, nothing is selected. Not changed for the bridge (no bridged name touched). Build
+5 rebuilt with it.
 
 ## 2. Bridge review against the tool
 
