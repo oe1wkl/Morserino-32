@@ -9,9 +9,17 @@ Branches: **`master` = the V10 line (10.0.0 BETA) since 2026-10-22** — `m32kip
 V9.2 folded into 10.0 (9.2 never ships on its own). `m32kip` is retired. **`V9.1` released 2026-10-11** (published,
 in the web installer, binaries archived); a V9 hotfix, if ever needed, goes on a branch from the `V9.1` tag.
 
-## ▶ Where we are — start here (2026-10-22)
+## ▶ Where we are — start here (2026-11-15)
 
-**Next: tag `V10.0-beta.1` on master** (Willi). Prepared 2026-10-22: master merged into m32kip and m32kip into
+**V10 betas:** `V10.0-beta.1` tagged 2026-10-27, `V10.0-beta.2` 2026-11-08 (its firmware is in the installer, but
+its GitHub release was left a **draft** — publish or delete it), `V10.0-beta.3` prepared 2026-11-15 from master
+`be73de0` (snapshot bundles, line-out without plug detection, protocol snapshot recall, BLE bulk `GET menus` /
+`GET game/scores`, Config Tool help texts). Pre-flight all green; no voice clips owed (extractor: no diff; no new
+on-screen text since beta 2). Still owed from the CW timing fix 477f330 (already in beta 2): **the games' CW
+(`MorseCwEngine`, element space now `ditLength - KEYOUT_EDGE_MS`) has not been checked by ear** — listen to Fox
+Hunt / Morse Invaders / Radio Cave on a beta-3 Pocket.
+
+**History (2026-10-22): tag `V10.0-beta.1` on master** (Willi). Prepared 2026-10-22: master merged into m32kip and m32kip into
 master; README 10.0 complete; release.yml no longer strips the manual freshness stamp; every CI check, all 10
 envs, the a11y filesystem image, host tests and the protocol selftest pass. Then the outstanding bench tests run
 from the beta (BENCH_REMOTE.md, winkeyer/BENCH.md, B6 below).
