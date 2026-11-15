@@ -4919,7 +4919,11 @@ Antwort zu Ende ist. Ein Irrungszeichen (acht Punkte) löscht das letzte
 Wort. Bei einem Fehler zeigt die Seite, was es war, spielt es noch einmal
 und bringt es ein paar Aufgaben später wieder. **Strg+Enter**
 (**Cmd+Enter** am Mac) spielt die Aufgabe noch einmal (das zählt als
-Hilfe), **Esc** pausiert.
+Hilfe), **Esc** pausiert. Mit **Next item: Automatically** kommt die
+nächste Aufgabe von selbst, 2 Sekunden nach einer richtigen Antwort und 3
+Sekunden, nachdem ein Fehler noch einmal gespielt wurde; **Enter**
+überspringt die Wartezeit. Mit **Press Enter** geht es erst weiter, wenn
+du so weit bist – etwa, während ein Screenreader das Ergebnis vorliest.
 
 **Wie die Seite entscheidet.** Jedes Zeichen steigt durch fünf Kästchen
 auf, wenn du es richtig mitschreibst; ein Fehler wirft es zwei Kästchen

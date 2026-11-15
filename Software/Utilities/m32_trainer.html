@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-08"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-08"></script>
+  <script src="m32_trainer_link.js?v=2026-11-15"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-15"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -96,7 +96,10 @@
         lines, your own), and — with all characters — call signs and prefixes made exactly as the M32 makes them.</li>
       <li><b>Answering.</b> Type what you heard and press Enter, or choose <i>Keyed on the paddle</i> and key it back.
         A miss shows what it was, plays it again, and brings it back a few items later. Enter starts, checks and goes on;
-        Ctrl+Enter (Cmd+Enter on a Mac) replays (that counts as help); Esc pauses.</li>
+        Ctrl+Enter (Cmd+Enter on a Mac) replays (that counts as help); Esc pauses. With <i>Next item</i> set to
+        <i>Automatically</i> the next item follows by itself, 2 seconds after a right answer and 3 seconds after a miss
+        has been played again; Enter skips the wait. Set it to <i>Press Enter</i> to go on only when you are ready,
+        for instance while a screen reader reads the result.</li>
       <li><b>Boxes.</b> Each character climbs five boxes as you copy it right; a miss sends it two boxes down, and
         characters in low boxes come up more often. When all of your lesson's characters reach box 3 the page offers the
         next lesson — it never moves on by itself. Keyed answers, call signs and the Echo log are counted on their own and
@@ -192,7 +195,7 @@
         <select id="selSpacing"><option value="strict">Strict (up to 6 dits)</option><option value="lenient">Lenient (up to 12 dits)</option></select></span>
       <span class="pair" id="pairIdle" hidden><label for="selIdle">Finish after</label>
         <select id="selIdle"></select></span>
-      <span class="pair" id="pairNext" hidden><label for="selNext">Next item</label>
+      <span class="pair" id="pairNext"><label for="selNext">Next item</label>
         <select id="selNext"><option value="auto">Automatically</option><option value="enter">Press Enter</option></select></span>
     </div>
     <div class="keys" id="speedNote"></div>
@@ -278,7 +281,7 @@
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-08';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-15';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
@@ -847,7 +850,6 @@ function sourceChanged() {
   const on = $('selSource').value === 'keyed';
   show($('pairSpacing'), on);
   show($('pairIdle'), on);
-  show($('pairNext'), on);
   show($('keyedHint'), on);
   $('keyedHint').textContent = 'A pause longer than ' + wordGapDits() + ' dits ends a word' +
     ($('selSpacing').value === 'lenient' ? ', so leave more than that between the words of a phrase; in a group or a single word it does not count.' : '.') +
@@ -1120,14 +1122,15 @@ function onState(s) {
   pendingGap = 0;
 }
 
-// Keyed answers go on by themselves, as the Echo Trainer does: the hand is on the paddle, not on the keyboard.
+// Answers go on by themselves, as the Echo Trainer does: keyed, the hand is on the paddle, not on the keyboard;
+// typed, it saves a second Enter per item (AF6I, decision of 2026-11-15: one setting for both, Automatically by default).
 // The page cannot tell when a screen reader has finished, so "Next item" can be set to Press Enter.
 const RIGHT_GAP_MS = 2000;      // after a right answer
 const AFTER_TRY_MS = 3000;      // after a second try: there is a correction to read
 let pendingGap = 0;
 let nextTimer = null;
 
-function autoNext() { return itemSource === 'keyed' && $('selNext').value === 'auto'; }
+function autoNext() { return $('selNext').value === 'auto'; }
 
 function clearNext() {
   if (nextTimer) { clearTimeout(nextTimer); nextTimer = null; }
@@ -1221,7 +1224,7 @@ function onResult({ attempt, score }) {
   let html = '';
   if (score.perfect) {
     html = '<div class="diff"><span class="ok">' + esc(dispText(score.expected)) + '</span></div><div>Right.</div>';
-    const auto = attempt.source === 'keyed' && autoNext();
+    const auto = autoNext();
     setStatus(auto ? 'Right!' : 'Right! Press Enter for the next one.', true);
     say('Right! ' + (helpedNote ? helpedNote + ' ' : '') + (auto ? '' : 'Press Enter for the next one.'));
     if (auto) pendingGap = RIGHT_GAP_MS;

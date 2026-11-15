@@ -204,6 +204,23 @@ e.g. 4 / Europe / Common only. Nothing in this section changes anything stored o
 | 10.8 | Reload the page (not connected) | The Echo log and the call-sign statistics are shown from the history |
 | 10.9 | Export, then Import into a fresh browser profile (or after clearing site data) | The Echo log is back |
 
+## 11. Next item for typed answers (AF6I)
+
+**No new firmware.** Page version **2026-11-15** (reload with Shift). Either device. Travis, AF6I, asked for
+one press of Enter per item instead of two; decided 2026-11-15: the existing **Next item** setting now
+covers typed answers too, *Automatically* by default.
+
+| # | Do | Expect |
+|---|---|---|
+| 11.1 | Answer: Typed. Look at the settings row | **Next item** is shown (it used to appear only for keyed answers). If you never changed it: *Automatically* |
+| 11.2 | Typed, Automatically: type a right answer, Enter | "Right!" and the green answer; about 2 s later the next item plays by itself. One Enter per item |
+| 11.3 | Type a wrong answer, Enter | The correction is shown and the item is played again; about 3 s after that replay ends, the next item plays |
+| 11.4 | During the wait: press Enter. Another time: Esc | Enter: the next item at once. Esc: "Paused" until Enter |
+| 11.5 | During the wait: open a dropdown | The next item does not start; "Press Enter for the next one" |
+| 11.6 | Next item = Press Enter, typed | Waits for Enter after every result, as before; "Press Enter for the next one" is shown and spoken |
+| 11.7 | Answer: Keyed, both settings | Unchanged (7.3f–7.3i) |
+| 11.8 | **Say if 2 s and 3 s are right for typed answers** | (for Travis's "a couple of seconds") |
+
 ## Results
 
 *(fill in: device, browser, step, pass/fail, notes)*

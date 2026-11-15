@@ -4332,7 +4332,11 @@ a word may be (**Strict** up to 6 dits, **Lenient** up to 12) and how long
 a silence ends your answer. An error sign (eight dits) erases the last
 word. A miss shows what it was, plays it again, and brings it back a few
 items later. **Ctrl+Enter** (**Cmd+Enter** on a Mac) plays the item again
-(this counts as help), **Esc** pauses.
+(this counts as help), **Esc** pauses. With **Next item: Automatically**
+the next item follows by itself, 2 seconds after a right answer and 3
+seconds after a miss has been played again; **Enter** skips the wait.
+Choose **Press Enter** to go on only when you are ready — for instance
+while a screen reader reads out the result.
 
 **How the page decides.** Each character climbs five boxes as you copy it
 right; a miss sends it two boxes down. Characters in low boxes are chosen
