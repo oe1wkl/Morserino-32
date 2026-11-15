@@ -11,8 +11,8 @@ in the web installer, binaries archived); a V9 hotfix, if ever needed, goes on a
 
 ## ▶ Where we are — start here (2026-11-15)
 
-**V10 betas:** `V10.0-beta.1` tagged 2026-10-27, `V10.0-beta.2` 2026-11-08 (its firmware is in the installer, but
-its GitHub release was left a **draft** — publish or delete it), `V10.0-beta.3` prepared 2026-11-15 from master
+**V10 betas:** `V10.0-beta.1` tagged 2026-10-27, `V10.0-beta.2` 2026-11-08 (GitHub release published
+2026-11-15), `V10.0-beta.3` tagged and in the installer 2026-11-15 from master
 `be73de0` (snapshot bundles, line-out without plug detection, protocol snapshot recall, BLE bulk `GET menus` /
 `GET game/scores`, Config Tool help texts). Pre-flight all green; no voice clips owed (extractor: no diff; no new
 on-screen text since beta 2). Still owed from the CW timing fix 477f330 (already in beta 2): **the games' CW
