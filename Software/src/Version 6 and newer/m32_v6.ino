@@ -1874,32 +1874,28 @@ boolean doPaddleIambic (boolean dit, boolean dah) {
   /// other paddle held down all the while - re-arms its memory and seizes control of the sequencer.
   /// On a simultaneous closure the dah wins here, while IDLE_STATE below starts with the dit: that
   /// is the long-standing M32 behaviour for a squeeze (one dit, then a series of dahs).
-  /// The same edges arm the Ultimatic memories. The one thing we do not want to take for a
-  /// closure is contact bounce on the paddle that is currently sending - a paddle that chatters,
-  /// or a touch pad that loses contact for an instant, would otherwise insert an element nobody
-  /// asked for. So a re-closure of that paddle is ignored if it was open for less than
-  /// CHATTER_GUARD_MS. That is short enough that no deliberate movement can fall inside it
-  /// (at 60 WpM a dit is 20 ms, so even a fast flick is several times longer), and the opposite
-  /// paddle is never filtered at all.
-  /// This deliberately does *not* use the Latency preference. Latency is a window measured from
-  /// the end of an element, and at 35-40 WpM it is long enough to cover a genuine re-tap of the
-  /// same paddle: at Latency 7/8 a second, fully intended tap 18-30 ms after the first was being
-  /// swallowed. Found by Pawel, SP5DNA, on the air - the simulator only showed it once he said
-  /// where to look. Ultimatic therefore ignores Latency, as it ignores the CurtisB percentages.
-  static const long CHATTER_GUARD_MS = 5;
+  /// The same edges arm the Ultimatic memories - but only for the paddle *opposite* to the element
+  /// being sent. A re-closure of the paddle whose element is sounding, during its mark or the space
+  /// after it, is never stored (SP5DNA's Ultimatic spec, rev. 2026-11-17, section 10.1 and T9):
+  /// it only counts as "closed last". To repeat an element you hold the paddle; it is still closed
+  /// when the next element is decided, and ultimaticSelect() reads the live level. Quick check:
+  /// hold DAH, tap DIT in the space after the dah and again during the dit - the result is N, not D.
+  /// This also makes contact bounce on the sending paddle harmless (it can no longer add an
+  /// element), so the 5 ms chatter guard that used to filter exactly those edges is gone.
+  /// In IDLE_STATE any closure is stored, whatever its type. In the DIT/DAH states the element has
+  /// been chosen but DIT_LAST is not yet updated, so the state itself names the current type.
+  /// Ultimatic ignores the Latency preference, as it ignores the CurtisB percentages: Latency is a
+  /// window measured from the end of an element and cannot tell a re-tap from chatter.
   static boolean prevDit = false, prevDah = false;
-  static long ditOpenedAt = 0, dahOpenedAt = 0;
-  if (!dit && prevDit) ditOpenedAt = millis();          // note when each paddle went open
-  if (!dah && prevDah) dahOpenedAt = millis();
+  boolean inCycle  = (keyerState != IDLE_STATE);
+  boolean sendsDit = (keyerState == DIT) || (keyerState != DAH && (keyerControl & DIT_LAST));
   if (dit && !prevDit) {
       DIT_LAST_CLOSED = true;
-      boolean bounce = (millis() - ditOpenedAt) < CHATTER_GUARD_MS;
-      if (!(bounce && (keyerControl & DIT_LAST)))    ultDitMemory = true;
+      if (!(inCycle && sendsDit))    ultDitMemory = true;
   }
   if (dah && !prevDah) {
       DIT_LAST_CLOSED = false;
-      boolean bounce = (millis() - dahOpenedAt) < CHATTER_GUARD_MS;
-      if (!(bounce && !(keyerControl & DIT_LAST)))   ultDahMemory = true;
+      if (!(inCycle && !sendsDit))   ultDahMemory = true;
   }
   prevDit = dit; prevDah = dah;
 

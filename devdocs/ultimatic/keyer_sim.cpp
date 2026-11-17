@@ -10,7 +10,10 @@
 // is modelled too, because it decides when paddle levels can change.
 //
 // Build:  c++ -std=c++17 -O1 -o keyer_sim keyer_sim.cpp
-// Run:    ./keyer_sim            (runs T1..T8 for both the legacy and the fixed logic)
+// Run:    ./keyer_sim            (QST 1955 scenarios: legacy / fixed / memory logic)
+//         ./keyer_sim spec       (SP5DNA spec rev. 2026-11-17 timelines, old vs shipped rule)
+//         ./keyer_sim taps       (same-paddle re-taps at 40 WPM, contact dropouts)
+//         ./keyer_sim scan       (Curtis-B follow-up scans, Sept 2026)
 
 #include <cstdio>
 #include <cstring>
@@ -84,10 +87,11 @@ static void ultimaticSelect(bool dit, bool dah) {
 }
 
 static char pendingElem = '?';   // which element KEY_START is about to sound
-static long ditOpenedAt = 0, dahOpenedAt = 0;   // when each paddle last went open
-static const int CHATTER_GUARD_MS = 5;          // as in the firmware
-static bool useLatencyMute = false;             // true = the first cut, which muted the whole
-                                                //        Latency window (swallowed real re-taps)
+static bool rememberCurrent = false;            // true = the pre-2026-11 rule: a re-closure of the
+                                                //        paddle that is sending was stored too
+                                                //        (minus a 5 ms chatter guard). SP5DNA's
+                                                //        spec rev. 2026-11-17 forbids it (sec. 10.1)
+static long ditOpenedAt = 0, dahOpenedAt = 0;   // only for that old rule's chatter guard
 static bool prevDit = false, prevDah = false;   // previous paddle levels, for edge detection
                                                 // (file scope so run() can clear them: leaking
                                                 //  them between runs would fake a rising edge)
@@ -97,19 +101,24 @@ static bool doPaddleIambic(bool dit, bool dah) {
     if (logicVariant != LEGACY) {
         // rising-edge tracking: Ultimatic control follows the most recent closure
         // (QST point 6/7), so levels alone are not enough.
-        if (!dit && prevDit) ditOpenedAt = now_ms;     // remember when each paddle went open
+        // As in the firmware: only the paddle OPPOSITE to the element being sent arms a
+        // memory; a re-closure of the sending paddle (mark or following space) only counts
+        // as "closed last". In IDLE every closure is stored. In DIT/DAH the state names the
+        // current type, because DIT_LAST is only updated at mark start.
+        if (!dit && prevDit) ditOpenedAt = now_ms;
         if (!dah && prevDah) dahOpenedAt = now_ms;
-        bool muted = (now_ms < latencytimer);          // Latency window
+        bool inCycle  = (keyerState != IDLE_STATE);
+        bool sendsDit = (keyerState == DIT) || (keyerState != DAH && (keyerControl & DIT_LAST));
         if (dit && !prevDit) {
             lastTouched = TOUCHED_DIT;
-            bool bounce = (now_ms - ditOpenedAt) < CHATTER_GUARD_MS;
-            bool drop = (useLatencyMute ? muted : bounce) && (keyerControl & DIT_LAST);
+            bool drop = rememberCurrent ? ((now_ms - ditOpenedAt) < 5 && (keyerControl & DIT_LAST))
+                                        : (inCycle && sendsDit);
             if (!drop) ultDitMemory = true;
         }
         if (dah && !prevDah) {                            // dah wins a simultaneous closure, so a
             lastTouched = TOUCHED_DAH;                    // squeeze still gives one dit then dahs
-            bool bounce = (now_ms - dahOpenedAt) < CHATTER_GUARD_MS;
-            bool drop = (useLatencyMute ? muted : bounce) && !(keyerControl & DIT_LAST);
+            bool drop = rememberCurrent ? ((now_ms - dahOpenedAt) < 5 && !(keyerControl & DIT_LAST))
+                                        : (inCycle && !sendsDit);
             if (!drop) ultDahMemory = true;
         }
         prevDit = dit; prevDah = dah;
@@ -330,7 +339,7 @@ static void followupScans() {
                diffs, diffs ? "" : "  <- unchanged");
     }
 
-    printf("\nDoes the Latency preference affect Ultimatic at all? (it must not - see latencyScan)\n");
+    printf("\nDoes the Latency preference affect Ultimatic at all? (it must not)\n");
     for (int lat : {0, 4, 7}) {
         long diffs = 0;
         for (long rel = 20; rel <= 2600; ++rel)
@@ -350,49 +359,102 @@ static void followupScans() {
     ditLength = 100; dahLength = 300;
 }
 
-// ---- Does the Latency mute swallow deliberate taps? (SP5DNA's 40 WPM observation) ----
-// Two separate closures of the SAME paddle - the paddle that is in control - with a varying
-// open interval between them. Both are deliberate, so both must sound.
-static void latencyScan() {
-    ditLength = 30; dahLength = 90;                 // 40 WPM
-    p_curtisMode = ULTIMATIC; p_curtisBDahT = 45; p_curtisBDitT = 75;
-    const long C = 12;                              // a brisk tap at 40 WPM
-
-    printf("Latency mute vs. deliberate taps - 40 WPM (dit 30 ms), Ultimatic\n");
-    printf("Two dit taps of %ld ms, separated by an open interval of `gap` ms.\n", C);
-    printf("Both taps are deliberate, so the correct answer is always two dits.\n\n");
-    printf("  gap    first cut (Latency mute)   shipped (5 ms chatter guard)\n");
-    printf("         lat 0     lat 4     lat 7    lat 0     lat 4     lat 7\n");
-    for (long gap : {2L, 4L, 6L, 10L, 18L, 22L, 26L, 30L, 40L, 60L}) {
-        std::vector<Event> sc = {{0,'d',true},{C,'d',false},
-                                 {C+gap,'d',true},{C+gap+C,'d',false}};
-        printf("  %-6ld", gap);
-        for (bool mute : {true, false}) {
-            useLatencyMute = mute;
-            for (int lat : {0, 4, 7}) {
-                p_latency = lat;
-                printf(" %-9s", stream(run(sc, 1200, MEMORY)).c_str());
-            }
-        }
-        printf("\n");
+// ---- Re-tapping the paddle that is sending (SP5DNA's 40 WPM observation, Sept 2026) ----
+// Round 3 judged "two dits" correct here and kept every same-paddle re-tap. The spec rev.
+// 2026-11-17 (sec. 10.1, T9) decides the other way: a re-closure of the sending paddle during
+// its mark or following space is never stored; a repeat needs the paddle still closed at the
+// next decision. So a second tap released before that decision now gives nothing.
+static void tapScan() {
+    ditLength = 30; dahLength = 90;                 // 40 WPM: decision at ~60 ms after the first press
+    p_curtisMode = ULTIMATIC; p_curtisBDahT = 45; p_curtisBDitT = 75; p_latency = 4;
+    const long C = 12;
+    printf("Same-paddle re-taps - 40 WPM (dit 30 ms), Ultimatic\n");
+    printf("Two dit taps of %ld ms, separated by an open interval of `gap` ms.\n\n", C);
+    printf("  gap    old rule (remember)   spec 2026-11-17 (shipped)\n");
+    for (long gap : {2L, 6L, 10L, 18L, 26L, 30L, 40L, 60L}) {
+        std::vector<Event> sc = {{0,'d',true},{C,'d',false},{C+gap,'d',true},{C+gap+C,'d',false}};
+        std::string o[2];
+        for (int i = 0; i < 2; ++i) { rememberCurrent = (i == 0); o[i] = stream(run(sc, 1200, MEMORY)); }
+        printf("  %-6ld %-21s %s\n", gap, o[0].c_str(), o[1].c_str());
     }
-    useLatencyMute = false;
-    printf("\n  (two dits = both taps sounded, one dit = a deliberate tap was swallowed)\n");
-
-    printf("\n  Does the guard still catch real contact bounce?\n");
-    ditLength = 240; dahLength = 720; p_latency = 4;
-    for (long open : {2L, 3L, 4L, 10L, 20L}) {
+    rememberCurrent = false;
+    printf("\n  Contact dropout on the sending paddle while it is held (must not add an element):\n");
+    ditLength = 240; dahLength = 720;
+    for (long open : {2L, 4L, 10L, 20L}) {
         std::vector<Event> ch = {{0,'d',true},{300,'d',false},{300+open,'d',true},{330+open,'d',false}};
-        printf("    %2ld ms dropout mid-hold -> %-4s %s\n", open,
-               stream(run(ch, 2000, MEMORY)).c_str(),
-               open < 5 ? "(filtered - bounce)" : "(taken as a real release, which it is)");
+        printf("    %2ld ms dropout mid-hold -> %s\n", open, stream(run(ch, 2000, MEMORY)).c_str());
     }
     ditLength = 100; dahLength = 300; p_latency = 4;
 }
 
+// ---- The executable timelines of SP5DNA's spec, tests/test_reference.py (rev. 2026-11-17) ----
+// 15 WPM (dit 80, dah 240). Paddle intervals [press, release) in ms; the expected element
+// stream is the reference's. Exact mark timestamps are not compared: the firmware shortens
+// marks by its output-latency correction, which only matters at the T12 exact-ms boundary.
+struct SpecCase { const char *name; std::vector<std::pair<long,long>> di, da; const char *exp; };
+static int specRun() {
+    ditLength = 80; dahLength = 240;
+    p_curtisMode = ULTIMATIC; p_curtisBDahT = 45; p_curtisBDitT = 75; p_latency = 4;
+    std::vector<SpecCase> cs = {
+      {"T9 same mark",                {},                       {{0,40},{120,160}},          "-"},
+      {"T9 same space",               {},                       {{0,40},{280,290}},          "-"},
+      {"T10 held at boundary",        {},                       {{0,40},{120,321}},          "--"},
+      {"T11 coalescing",              {{20,30},{120,130}},      {{0,40}},                    "-."},
+      {"C1.1",                        {{10,80}},                {{0,160}},                   "-."},
+      {"C1.2",                        {{200,210}},              {{0,160}},                   "-."},
+      {"C1.3",                        {{250,260}},              {{0,340}},                   "-."},
+      {"C1.4",                        {{300,410}},              {{0,420}},                   "-."},
+      {"C1.5",                        {{300,470}},              {{0,430}},                   "-."},
+      {"C2 D",                        {{300,520}},              {{0,470}},                   "-.."},
+      {"T9 two DIT taps (N, not D)",  {{300,340},{380,420}},    {{0,470}},                   "-."},
+      {"T4 return",                   {{120,520}},              {{0,900}},                   "-..-"},
+      {"T8 C3",                       {{10,160},{560,640}},     {{20,1300}},                 ".--.--"},
+      {"T5 C2b",                      {{10,160},{560,640}},     {{0,1250}},                  "-.-.-"},
+      {"T12 release boundary *",      {},                       {{0,320}},                   "-"},
+      {"T12 press boundary",          {},                       {{0,40},{320,321}},          "--"},
+      {"T12 pending survives",        {{280,320}},              {{0,40}},                    "-."},
+      {"mirror T9 dit",               {{0,20},{40,60}},         {},                          "."},
+      {"mirror T9 dit space",         {{0,20},{120,130}},       {},                          "."},
+      {"mirror T10 dit",              {{0,20},{120,161}},       {},                          ".."},
+      {"mirror T11",                  {{0,20}},                 {{30,35},{50,55}},           ".-"},
+      {"mirror T7",                   {{0,20}},                 {{120,121}},                 ".-"},
+      {"T11 same DAH coalesces",      {},                       {{0,40},{120,140},{180,200}},"-"},
+      {"T11 same DIT coalesces",      {{0,10},{20,30},{40,50}}, {},                          "."},
+      {"earlier opp before same DAH", {{20,30}},                {{0,40},{120,140}},          "-."},
+      {"earlier opp before same DIT", {{0,10},{40,50}},         {{20,30}},                   ".-"},
+      {"earlier same before opposite",{{180,190}},              {{0,40},{120,140}},          "-."},
+      {"T9 second DIT tap in space",  {{300,340},{440,450}},    {{0,470}},                   "-."},
+      {"mirror two DAH taps",         {{0,450}},                {{120,180},{240,280}},       ".-"},
+    };
+    printf("SP5DNA spec rev. 2026-11-17, tests/test_reference.py timelines (15 WPM)\n\n");
+    printf("  %-30s %-8s %-12s %s\n", "case", "expect", "old rule", "shipped");
+    int fail[2] = {0, 0};
+    for (auto &c : cs) {
+        std::vector<Event> sc;
+        for (auto &iv : c.di) { sc.push_back({iv.first,'d',true}); sc.push_back({iv.second,'d',false}); }
+        for (auto &iv : c.da) { sc.push_back({iv.first,'D',true}); sc.push_back({iv.second,'D',false}); }
+        std::stable_sort(sc.begin(), sc.end(), [](const Event &a, const Event &b){ return a.t < b.t; });
+        std::string o[2];
+        for (int i = 0; i < 2; ++i) {
+            rememberCurrent = (i == 0);
+            o[i] = stream(run(sc, 2500, MEMORY));
+            if (o[i] != c.exp) { ++fail[i]; o[i] += "  X"; }
+        }
+        printf("  %-30s %-8s %-12s %s\n", c.name, c.exp, o[0].c_str(), o[1].c_str());
+    }
+    rememberCurrent = false;
+    printf("\n  old rule: %d of %zu differ; shipped: %d of %zu differ\n", fail[0], cs.size(), fail[1], cs.size());
+    printf("  * T12 release boundary releases DAH at exactly the decision instant (320 ms). The keyer\n"
+           "    decides a few ms early (mark shortened by the output-latency correction), sees DAH still\n"
+           "    closed and repeats. Pre-existing, independent of the memory rule.\n");
+    ditLength = 100; dahLength = 300;
+    return fail[1];
+}
+
 int main(int argc, char **argv) {
     if (argc > 1 && std::string(argv[1]) == "scan") { followupScans(); return 0; }
-    if (argc > 1 && std::string(argv[1]) == "latency") { latencyScan(); return 0; }
+    if (argc > 1 && std::string(argv[1]) == "taps")    { tapScan(); return 0; }
+    if (argc > 1 && std::string(argv[1]) == "spec")    { specRun(); return 0; }
     // 12 wpm: dit 100 ms, dah 300 ms, latency 4/8 dit = 50 ms.
     std::vector<Test> tests = {
       {"T1a", "1", "tap dit once -> exactly one dit",
@@ -423,8 +485,13 @@ int main(int argc, char **argv) {
        {{0,'D',true},{100,'d',true},{500,'d',false},{1400,'D',false}}, 1800, 1400,
        [](const std::string &s){ return s.rfind("-.-", 0) == 0 && allSame(s.substr(2), '-'); }},
 
-      {"T5b", "1+7", "two separate dit closures under a held dah -> two dits",
+      {"T5b", "spec T9", "dit tapped under a held dah, tapped again in its own space -> ONE dit",
        {{0,'D',true},{300,'d',true},{340,'d',false},{550,'d',true},{590,'d',false},
+        {1500,'D',false}}, 1900, 1500,                  // was "two dits" until spec rev. 2026-11-17
+       [](const std::string &s){ return s.rfind("-.-", 0) == 0; }},
+
+      {"T5c", "spec T10", "same, but the second dit tap is still closed at the decision -> two dits",
+       {{0,'D',true},{300,'d',true},{340,'d',false},{550,'d',true},{620,'d',false},
         {1500,'D',false}}, 1900, 1500,
        [](const std::string &s){ return s.rfind("-..", 0) == 0; }},
 

@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=15609e9d5076 v=10 -->
+<!-- WHATSNEW:BEGIN en=42f115fe772e v=10 -->
 Was ist neu in Version 10?
 
 -   Zwei Morserinos können jetzt über das Netzwerk eine **Tastverbindung in die Ferne** bilden. Du gibst an deinem Betriebsplatz auf dem einen — dem neuen Modus **Remote Keyer** — und der andere, an der Station, tastet über seinen Anschluss „to Tx“ den Sender: der neue Modus **Remote Rig**. Die Station kann im Nebenzimmer stehen oder in einem anderen Land. Was aus dem Sender kommt, ist das, was du gegeben hast, mit deinem eigenen Timing — ob es von den Paddles kam, von einer Handtaste oder von einem Bug. Es ist eine Tastverbindung, keine Audioverbindung: Deinen Mithörton hörst du lokal und sofort, sodass nichts im Netzwerk deinen Gebe-Rhythmus stören kann; was du *von* der Station hörst, kommt über den Fernsteuer- und Audioweg, den du ohnehin schon benutzt. Die Verbindung läuft über UDP-Port 7374, und die Adresse der Station trägst du im Feld **TRX Peer** unter **Config WiFi** ein — dasselbe Feld, das auch der WiFi-Transceiver verwendet. Beide Seiten sind im Handbuch beschrieben, samt dem, was bei Routern und Firewalls zu beachten ist.
@@ -54,6 +54,7 @@ Was ist neu in Version 10?
 -   **Bluetooth Use** gehört jetzt zu den allgemeinen Einstellungen, denn damit schaltest du auch das serielle Protokoll über Bluetooth ein, ebenso **Decoder Chars**, das überall zählt, wo Zeichen dekodiert werden; **BLT \<AR\>**, das nur die Bluetooth-Tastatur betrifft, wird jetzt nur noch im **CW Keyer** angeboten, dem einzigen Modus, der über Bluetooth tippt.
 -   Manche Modi boten Einstellungen an, die dort nichts bewirkten, und andere fehlten, obwohl sie wirkten: Der **CW Generator** bietet jetzt **Headphone Output** an, **iCW/Ext Trx** bietet **Key ext TX** an (das dort entscheidet, ob dein Sender getastet wird), und der **File Player** bietet **Tone Shift** an (das seine Tonmarke verwendet). **Tone Shift** wird in **iCW/Ext Trx** und im **QSO Bot** nicht mehr angeboten, **Bandwidth** nicht mehr im **QSO Bot** – sie bewirkten dort nichts.
 -   Die generierten Rufzeichen sind realistischer: Ihre Präfixe sind neu aufgebaut, aus Rufzeichen, die in Contests zu hören waren (Super Check Partial), und aus der Länderdatei von AD1C. Präfixe, die der Generator bisher nie erzeugen konnte, kommen jetzt vor (KD9, WA2, R3, UA9, IK2, IZ3, TI2, …), die Bezirksziffer folgt dem tatsächlichen Gebrauch (OE3 oft, OE0 nie), unter **Calls Region** zählt das asiatische Russland zu Asien und das europäische zu Europa, und Präfixe, die nicht mehr verwendet werden, sind verschwunden. Das gilt überall, wo Rufzeichen generiert werden: im CW Generator, im Echo Trainer, im QSO Bot und in den Spielen.
+-   **Ultimatic**: Tippst du das Paddle, dessen Element gerade gesendet wird, noch einmal an, während dieses Element oder die Pause danach noch läuft, kommt kein weiteres Element dieser Art mehr dazu. Hältst du das Dah-Paddle und tippst zweimal rasch hintereinander auf das Dit-Paddle, ergibt das jetzt N, bisher D. Um ein Element zu wiederholen, hältst du sein Paddle geschlossen, wie bisher. Ein kurzes Antippen des *anderen* Paddles wird weiterhin gespeichert und erzeugt immer sein Element. Das folgt der neuesten Fassung der Ultimatic-Spezifikation von Paweł, SP5DNA, die hier keine Wahl mehr lässt; danke an ihn, dass er uns gleich Bescheid gegeben hat.
 -   Nur M32 Pocket: Die drei line-out-Einstellungen von **Headphone Output** (**line-out**, **l-o: Var. Vol.** und **l-o: Lsp Muted**) legen den Ton jetzt an die Audiobuchse, ob der Morserino dort einen Stecker erkennt oder nicht. Er erkennt einen Stecker elektrisch, über den vierten Kontakt der Buchse, und manche Kabel werden nicht erkannt – vor allem ein Headset-Y-Adapterkabel (ein 4-poliger Stecker auf zwei Buchsen), in dessen Mikrofonbuchse nichts steckt. Mit so einem Kabel kam bei keiner Einstellung Ton aus der Buchse, und der Lautsprecher spielte weiter. Mit **l-o: Lsp Muted** wird der Lautsprecher nur stummgeschaltet, solange ein Stecker erkannt wird, damit der Morserino bei leerer Buchse nicht verstummt. **Phones** arbeitet wie bisher: Lautsprecher, bis ein Stecker erkannt wird, dann Kopfhörer.
 <!-- WHATSNEW:END -->
 
@@ -741,14 +742,18 @@ die Kontrolle und sendet seinen eigenen Elementtyp so lange, bis man es
 erneut loslässt oder das andere Paddle antippt. Das gilt für beide
 Paddles, auch für jenes, mit dem das Zeichen begonnen wurde.
 
-Jedes Schließen eines Paddles wird gespeichert und erzeugt garantiert
-mindestens ein Element seiner Art — egal wie kurz du es berührst und an
-welcher Stelle des laufenden Elements es passiert. Ultimatic braucht
-daher die Zeiteinstellungen der Iambic-Modi nicht: **CurtisB DahT%**,
-**CurtisB DitT%** und **Latency** haben im Ultimatic-Modus keine Wirkung.
-Kontaktprellen fängt stattdessen eine kurze, fest eingestellte Sperre ab —
-ein prellender Kontakt oder ein kurzzeitiger Kontaktverlust am
-Touch-Paddle fügt damit kein ungewolltes Element ein.
+Jedes Schließen des *anderen* Paddles — jenes, dessen Element gerade
+nicht gesendet wird — wird gespeichert und erzeugt garantiert mindestens
+ein Element seiner Art, egal wie kurz du es berührst und an welcher Stelle
+des laufenden Elements es passiert. Um das gerade gesendete Element zu
+wiederholen, hältst du sein Paddle geschlossen: Erneutes Antippen, während
+sein eigenes Element oder die Pause danach noch läuft, bewirkt nichts.
+Hältst du das Dah-Paddle und tippst zweimal rasch hintereinander auf das
+Dit-Paddle, ergibt das N, nicht D. Ultimatic braucht daher die
+Zeiteinstellungen der Iambic-Modi nicht: **CurtisB DahT%**, **CurtisB
+DitT%** und **Latency** haben im Ultimatic-Modus keine Wirkung. Aus
+demselben Grund fügt ein prellender Kontakt oder ein kurzzeitiger
+Kontaktverlust am Touch-Paddle kein ungewolltes Element ein.
 
 **Non-Squeeze-Modus**: Simuliert das Verhalten einer Einhebeltaste bei
 Verwendung eines Doppelhebel-Paddles. Bediener, die an die Einhebeltaste

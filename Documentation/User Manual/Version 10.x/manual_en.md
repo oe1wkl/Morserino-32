@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=15609e9d5076 v=10 -->
+<!-- WHATSNEW:BEGIN en=42f115fe772e v=10 -->
 What is new in Version 10?
 
 -   Two Morserinos can now form a **remote keying link** over the network. You key one of them at your operating position — the new mode **Remote Keyer** — and the other one, at the station, keys the transmitter through its „to Tx" connector: the new mode **Remote Rig**. The station may be in the next room or in another country. What comes out of the transmitter is what you keyed, with your own timing, whether it came from the paddles, from a straight key or from a bug. It is a keying link, not an audio link: you hear your own sidetone locally and immediately, so nothing on the network can disturb your sending rhythm, while what you hear *from* the station comes over whatever remote-control and audio path you already use. The link runs over UDP port 7374, and the address of the rig goes into the **TRX Peer** field of **Config WiFi** — the same field the WiFi transceiver uses. Both ends are described in the manual, including what to do about routers and firewalls.
@@ -52,6 +52,7 @@ What is new in Version 10?
 -   **Bluetooth Use** is now one of the general preferences, since it also switches on the serial protocol over Bluetooth, and so is **Decoder Chars**, which matters wherever characters are decoded; **BLT \<AR\>**, which only concerns the Bluetooth keyboard, is now offered only in **CW Keyer**, the one mode that types over Bluetooth.
 -   Some modes offered preferences that had no effect there, and missed some that did: **CW Generator** now offers **Headphone Output**, **iCW/Ext Trx** offers **Key ext TX** (which decides there whether your transmitter is keyed), and the **File Player** offers **Tone Shift** (used by its tone marker). **Tone Shift** is no longer offered in **iCW/Ext Trx** and the **QSO Bot**, and **Bandwidth** no longer in the **QSO Bot** – they did nothing there.
 -   Generated call signs are more realistic: their prefixes are rebuilt from call signs heard in contests (Super Check Partial) and the AD1C country file. Prefixes the generator could never make before now come up (KD9, WA2, R3, UA9, IK2, IZ3, TI2, …), the call-area digit follows real use (OE3 often, OE0 never), Asiatic Russia counts as Asia and European Russia as Europe under **Calls Region**, and prefixes no longer in use are gone. This applies wherever call signs are generated: CW Generator, Echo Trainer, the QSO Bot and the games.
+-   **Ultimatic**: tapping the paddle whose element is being sent once more, while that element or the space after it is still running, no longer adds another element of that kind. Hold the dah paddle and tap the dit paddle twice in quick succession: you now get N, where until now you got D. To repeat an element, keep its paddle closed, as before. A quick touch of the *other* paddle is still remembered and always produces its element. This follows the latest revision of the Ultimatic specification by Paweł, SP5DNA, which now leaves no choice here; thanks to him for letting us know straight away.
 -   M32 Pocket: the three line-out settings of **Headphone Output** (**line-out**, **l-o: Var. Vol.** and **l-o: Lsp Muted**) now put the sound on the audio jack whether or not the Morserino detects a plug there. It detects a plug electrically, through the fourth contact of the jack, and some cables are not detected – above all a headset splitter cable (one 4-pole plug to two sockets) with nothing in its microphone socket. With such a cable no setting produced any sound on the jack, and the speaker went on playing. With **l-o: Lsp Muted** the speaker is muted only while a plug is detected, so the Morserino does not fall silent when the jack is empty. **Phones** works as before: speaker until a plug is detected, then headphones.
 <!-- WHATSNEW:END -->
 
@@ -699,14 +700,18 @@ hands control back to that paddle, which then keeps sending its own
 element type until you release it again or flick the other one. This
 works for either paddle, including the one that started the character.
 
-Every closure of a paddle is remembered, and is guaranteed to produce at
-least one element of its type — however briefly you touch it, and wherever
-in the current element it falls. Ultimatic therefore has no use for the
-timing preferences of the Iambic modes: **CurtisB DahT%**, **CurtisB
-DitT%** and **Latency** all have no effect in Ultimatic mode. Contact
-bounce is taken care of instead by a short fixed guard, so a chattering
-contact — or a touch pad that loses contact for an instant — does not add
-an element you did not ask for.
+Every closure of the *other* paddle — the one whose element is not being
+sent at the moment — is remembered, and is guaranteed to produce at least
+one element of its type, however briefly you touch it and wherever in the
+current element it falls. To repeat the element that is being sent, keep
+its paddle closed: tapping it again while its own element, or the space
+after it, is still running adds nothing. Hold the dah paddle and tap the
+dit paddle twice in quick succession, and you get N, not D. Ultimatic
+therefore has no use for the timing preferences of the Iambic modes:
+**CurtisB DahT%**, **CurtisB DitT%** and **Latency** all have no effect in
+Ultimatic mode. For the same reason a chattering contact — or a touch pad
+that loses contact for an instant — does not add an element you did not
+ask for.
 
 **Non-Squeeze Mode:** This simulates the behavior of a single-lever
 paddle when using a dual-lever paddle. Operators who are accustomed to

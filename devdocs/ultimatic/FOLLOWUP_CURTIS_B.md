@@ -161,7 +161,7 @@ He was right, and it was not his technique. The first cut of this fix muted any
 rising edge on the paddle in control for the whole Latency window. That window is
 measured from the end of an element, and at 40 WPM (dit = 30 ms) it is long enough to
 cover a genuine re-tap of the same paddle. Measured with two deliberate 12 ms taps
-separated by a varying open interval (`./keyer_sim latency`):
+separated by a varying open interval (then `./keyer_sim latency`; that scan is now `./keyer_sim taps`, see §10):
 
 | open interval between the two taps | Latency 0 | Latency 4 | Latency 7 |
 |---|---|---|---|
@@ -188,3 +188,47 @@ three Iambic timing preferences, in both languages.
 The lesson for next time: "keep the preference working" was my own framing when the
 options were put to Willi, and it drove a mechanism that was wrong. The preference
 did not need saving; the behaviour did.
+
+## 10. Round four — the spec drops same-type memory (2026-11-17)
+
+SP5DNA's spec revision **rev-2026-11-17** (github.com/SP5DNA/ultimatic-mode-spec, §10.1,
+T9) removed the "remember current type" variant it had accepted since 2026-10-20: a
+re-press of the paddle whose element is being sent, during its mark or the following
+space, **must never be stored as a request**. The element repeats only if the paddle is
+still closed at the next decision (or is pressed at or after it). His quick check: hold
+DAH, tap DIT in the space after the dah and again during the dit — the output must be
+**N**, not D.
+
+Our round-3 code was the "remember" variant (any re-closure of the sending paddle open
+for ≥ 5 ms was stored). Against the 29 timelines of his `tests/test_reference.py`,
+transcribed into `./keyer_sim spec`, it differed in 13; with the change it differs in 1.
+
+**Change:** in the edge detector at the top of `doPaddleIambic()`, a rising edge arms
+`ultDitMemory`/`ultDahMemory` only when the keyer is idle or the edge is on the paddle
+*opposite* to the current element. It still updates `DIT_LAST_CLOSED`, so a flick keeps
+working. In the `DIT`/`DAH` states the element is chosen but `DIT_LAST` is not yet
+updated, so the state itself names the current type. The 5 ms `CHATTER_GUARD_MS` is gone:
+it only ever filtered re-closures of the sending paddle, which are now never stored, so
+bounce on that paddle can no longer add an element at all (the opposite paddle was never
+filtered and still is not).
+
+**Consequences, stated plainly:**
+
+* Round 3's tap scan reverses (`./keyer_sim taps`): two 12 ms dit taps at 40 WPM with a
+  gap of 6–30 ms now give **one** dit, as the spec requires — the second tap is let go
+  before the next decision. A gap of 40 ms or more still gives two. What the spec asks of
+  the operator is to hold the paddle (or press it again at the next decision), which is
+  how Ultimatic is keyed anyway.
+* Our own QST scenario T5b ("two separate dit closures under a held dah → two dits", from
+  QST point 7) contradicted the new T9 and now expects one dit; a new T5c checks that a
+  second tap still closed at the decision does give the second dit. The spec says
+  explicitly that point 7 is not a counter of every physical closure.
+* Iambic A, Iambic B and Non-Squeeze: unchanged (the memories are read only by
+  `ultimaticSelect()`), verified by the regression scan in `./keyer_sim scan`.
+
+**The one remaining difference**, `T12 release boundary`: DAH is released at exactly the
+decision instant (320 ms at 15 WPM). The keyer decides a few milliseconds early, because the
+mark is shortened by the output-latency correction, so it still sees DAH closed and sends
+another. That is pre-existing, independent of the memory rule, and only reachable by a
+release timed to the millisecond.
+
