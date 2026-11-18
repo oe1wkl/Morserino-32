@@ -20,8 +20,8 @@ on-screen text since beta 2). Still owed from the CW timing fix 477f330 (already
 Hunt / Morse Invaders / Radio Cave on a beta-3 Pocket.
 
 **Since beta 3 (2026-11-18):** Ultimatic follows SP5DNA's spec rev-2026-11-17 — a re-press of the paddle that is
-sending is never stored (hold dah, tap dit twice → N, not D); 805ddb5, benched on the Pocket, merged to master,
-**not pushed**. Details: `devdocs/ultimatic/FOLLOWUP_CURTIS_B.md` §10.
+sending is never stored (hold dah, tap dit twice → N, not D); 805ddb5, benched on the Pocket, merged to master and
+pushed. Details: `devdocs/ultimatic/FOLLOWUP_CURTIS_B.md` §10.
 
 **History (2026-10-22): tag `V10.0-beta.1` on master** (Willi). Prepared 2026-10-22: master merged into m32kip and m32kip into
 master; README 10.0 complete; release.yml no longer strips the manual freshness stamp; every CI check, all 10
