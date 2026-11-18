@@ -19,6 +19,10 @@ on-screen text since beta 2). Still owed from the CW timing fix 477f330 (already
 (`MorseCwEngine`, element space now `ditLength - KEYOUT_EDGE_MS`) has not been checked by ear** — listen to Fox
 Hunt / Morse Invaders / Radio Cave on a beta-3 Pocket.
 
+**Since beta 3 (2026-11-18):** Ultimatic follows SP5DNA's spec rev-2026-11-17 — a re-press of the paddle that is
+sending is never stored (hold dah, tap dit twice → N, not D); 805ddb5, benched on the Pocket, merged to master,
+**not pushed**. Details: `devdocs/ultimatic/FOLLOWUP_CURTIS_B.md` §10.
+
 **History (2026-10-22): tag `V10.0-beta.1` on master** (Willi). Prepared 2026-10-22: master merged into m32kip and m32kip into
 master; README 10.0 complete; release.yml no longer strips the manual freshness stamp; every CI check, all 10
 envs, the a11y filesystem image, host tests and the protocol selftest pass. Then the outstanding bench tests run
@@ -242,8 +246,9 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
    "Installer problems" session, commit 9c82391) *(verify pushed)*.
 3. **Protocol 1.4:** `GET capabilities` and paginated `GET configs/details` **pass over BLE**
    (2026-09-30, classic). `PUT game/scores/clear` still never run against real scores.
-4. **Ultimatic keyer:** never keyed on classic/OLED or with a mechanical paddle; touch-dropout
-   spurious-element risk unchecked (mitigation if needed: minimum-open time).
+4. **Ultimatic keyer:** never keyed on classic/OLED or with a mechanical paddle. Touch dropout: since 805ddb5
+   (2026-11-18) a dropout on the *sending* paddle can no longer add an element; one on the *opposite* paddle
+   still could — unchecked (mitigation if needed: minimum-open time).
 5. **`pocketwroom-lora`** compiles, never bench-tested (shared-SPI question in its commit message).
 6. **CW timing** (`devdocs/cw-timing-audit/FINDINGS.md`):
    - I2S sidetone ~6 ms heavier than the key line — **fix merged to master for V9.1 on 2026-10-11** (cherry-picked
