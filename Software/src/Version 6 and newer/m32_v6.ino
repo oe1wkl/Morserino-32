@@ -3897,10 +3897,12 @@ double ReadVoltage(byte pin){
 void checkShutDown(boolean enforce) {       /// if enforce == true, we shut donw even if there was no time-out
   unsigned long timeOut;
 
+  if (protocolActive() && !enforce) {     /// no time-out while a protocol session (USB or BLE) holds the device, unless forced;
+    MorseOutput::resetTOT();              /// keep the clock fresh, so that the full time-out starts only when the session ends
+    return;
+  }
   if (MorsePreferences::pliste[posTimeOut].value || enforce) {
       timeOut = 300000UL * MorsePreferences::pliste[posTimeOut].value;
-    if (protocolActive() && !enforce)                          /// no time-out while m32protocol is active unless forced
-      return;
     if ((millis() - MorseOutput::TOTcounter) > timeOut || enforce == true )  {
           MorseOutput::clearDisplay();
           MorseOutput::printOnScroll(1, INVERSE_BOLD, 0,  "Power OFF...");

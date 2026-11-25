@@ -266,7 +266,7 @@ As a confirmation device information is returned, e.g.:
 
 From this response the connected computer program gets not only confirmation that the communication has been established, but also information about the hardware used, as well as the firmware and protocol versions.
 
-While the protocol is enabled, the time-out of the connected Morserino is disabled, i.e. it will not go into sleep modus.
+While the protocol is enabled, the time-out of the connected Morserino is disabled, i.e. it will not go into sleep modus. When the protocol session ends, the time-out starts counting from that moment, so the Morserino gets the full configured time before it goes to sleep.
 
 The protocol can also be disabled with the command:
 `PUT device/protocol/off`
@@ -459,7 +459,7 @@ This switches the M32 protocol on (you will get device information back; you wil
 while this is on, there will  be no time-outs, whatever the parameter says!
 
 `PUT device/protocol/off` 	
-This switches the M32 Protocol off (time-out as defined in its parameter will be in effect again).
+This switches the M32 Protocol off (time-out as defined in its parameter will be in effect again, counted from this moment).
 
 `PUT device/reset/defaults`
 This resets all configurable parameters to their factory default values. Snapshots, WiFi configuration, CW memories, and player identity are not affected.
