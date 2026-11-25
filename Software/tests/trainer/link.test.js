@@ -324,6 +324,31 @@ test('link: no M32 on the port', async () => {
   assert.ok(t.closed);
 });
 
+test('link: timeScale stretches the handshake, command timeouts, the grace and the stall rule', async () => {
+  // the handshake: 2 s on USB, 6 s with timeScale 3 (the iPhone app's BLE)
+  const clock = fakeClock();
+  const t = fakeM32((l) => (l === 'put device/protocol/on' || l === 'get control/speed' ? null : undefined));
+  const link = new Link({ clock, timeScale: 3 });
+  assert.equal(link.graceMs, 750);
+  assert.equal(link.framer.stallMs, 4500);
+  const p = link.connect(t);
+  await clock.advance(5000);                  // past USB's 2 s, short of 6 s
+  assert.equal(link.state, 'connecting');
+  t.send(DEVICE);
+  await clock.advance(0);
+  await p;
+  // a command: 3 s by default, 9 s here
+  const a = link.command('get control/speed');
+  a.catch(() => {});
+  await clock.advance(8000);
+  assert.ok(link._inflight, 'still waiting after 8 s');
+  await clock.advance(1000);
+  await assert.rejects(a, (e) => e.timeout);
+  // no scale given: as before
+  assert.equal(new Link({ clock }).graceMs, 250);
+  assert.equal(new Link({ clock, timeScale: 0 }).timeScale, 1);
+});
+
 test('link: BLE consent waits for the operator, then the handshake completes', async () => {
   const clock = fakeClock();
   const t = fakeM32((l) => (l === 'put device/protocol/on' ? CONFIRM : undefined));
@@ -647,6 +672,34 @@ test('disconnect: goodbye steps, then protocol off, then the transport closes', 
   assert.ok(t.closed);
   assert.equal(link.state, 'closed');
   assert.equal(link.device, null);
+});
+
+test('disconnect({keepSession}): goodbye steps, no protocol off, the transport closes', async () => {
+  const { link, t, clock } = await connected();
+  link.addGoodbye(() => 'put cw/practice/off');
+  t.lines.length = 0;
+  const d = link.disconnect({ keepSession: true });
+  await clock.advance(0);
+  await d;
+  assert.deepEqual(t.lines, ['put cw/practice/off']);
+  assert.ok(t.closed);
+  assert.equal(link.state, 'closed');
+});
+
+test('idle(): false while a command is in flight or queued, true once answered', async () => {
+  const { link, t, clock } = await connected((l) => (l === 'get kochlesson' || l === 'put cw/stop' ? null : undefined));
+  assert.ok(link.idle());
+  const a = link.command('get kochlesson');
+  const b = link.command('put cw/stop');
+  assert.ok(!link.idle(), 'both waiting');
+  t.send(KOCH);
+  await clock.advance(0);
+  await a;
+  assert.ok(!link.idle(), 'put cw/stop in flight');
+  t.send(OK);
+  await clock.advance(0);
+  await b;
+  assert.ok(link.idle());
 });
 
 test('disconnect: a silent device does not hold it up for long', async () => {

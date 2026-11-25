@@ -1,11 +1,10 @@
 #!/bin/sh
 #
-# Copy the web config tool into the app bundle's Web/ directory.
+# Copy the web config tool and the M32 Trainer into the app bundle's Web/ directory.
 #
-# The tool is NOT forked for iOS. Software/Utilities/m32_config_tool.html stays
-# the single source of truth for both the browser and this app; the copies under
-# Resources/Web are build inputs and are git-ignored. Re-run this after every
-# change to the tool.
+# Neither is forked for iOS. Software/Utilities stays the single source of truth
+# for both the browser and this app; the copies under Resources/Web are build
+# inputs and are git-ignored. Re-run this after every change to either page.
 
 set -eu
 
@@ -15,7 +14,8 @@ target="$here/Resources/Web"
 
 mkdir -p "$target"
 
-for file in m32_config_tool.html m32_pref_help.json; do
+for file in m32_config_tool.html m32_pref_help.json \
+            m32_trainer.html m32_trainer_link.js m32_trainer_engine.js m32_trainer_corpus.json; do
     if [ ! -f "$utilities/$file" ]; then
         echo "sync-webtool.sh: missing $utilities/$file" >&2
         exit 1
@@ -24,4 +24,4 @@ for file in m32_config_tool.html m32_pref_help.json; do
     echo "  $file"
 done
 
-echo "Web tool synced into Resources/Web (bridge.js is checked in and stays put)."
+echo "Web pages synced into Resources/Web (bridge.js and trainer-bridge.js are checked in and stay put)."

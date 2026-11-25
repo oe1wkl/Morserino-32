@@ -23,7 +23,7 @@
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-15';
+const VERSION = '2026-11-24';
 const SCHEMA = 1;                 // attempt records and the export file
 
 // ---- text ----------------------------------------------------------------

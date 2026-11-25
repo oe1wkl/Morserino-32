@@ -63,9 +63,17 @@ targets:
           - $(SRCROOT)/sync-webtool.sh
           - $(SRCROOT)/../../Utilities/m32_config_tool.html
           - $(SRCROOT)/../../Utilities/m32_pref_help.json
+          - $(SRCROOT)/../../Utilities/m32_trainer.html
+          - $(SRCROOT)/../../Utilities/m32_trainer_link.js
+          - $(SRCROOT)/../../Utilities/m32_trainer_engine.js
+          - $(SRCROOT)/../../Utilities/m32_trainer_corpus.json
         outputFiles:
           - $(SRCROOT)/Resources/Web/m32_config_tool.html
           - $(SRCROOT)/Resources/Web/m32_pref_help.json
+          - $(SRCROOT)/Resources/Web/m32_trainer.html
+          - $(SRCROOT)/Resources/Web/m32_trainer_link.js
+          - $(SRCROOT)/Resources/Web/m32_trainer_engine.js
+          - $(SRCROOT)/Resources/Web/m32_trainer_corpus.json
 
     settings:
       base:
@@ -116,5 +124,5 @@ targets:
         # non-exempt to declare. Revisit if that ever changes.
         ITSAppUsesNonExemptEncryption: false
         NSBluetoothAlwaysUsageDescription:
-          M32 Config uses Bluetooth to connect to your Morserino-32 and read or
-          change its settings.
+          M32 Config uses Bluetooth to connect to your Morserino-32, read or
+          change its settings, and run the M32 Trainer on it.

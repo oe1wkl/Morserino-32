@@ -120,3 +120,83 @@ From `MorseBleSerial.cpp` and [`devdocs/ble-serial/DESIGN.md`](../ble-serial/DES
    genuinely better configuration experience for blind operators than the device
    menus — worth weighing against the accessibility edition's own voice clips
    (see [`devdocs/audio-accessibility/HANDOFF.md`](../audio-accessibility/HANDOFF.md)).
+
+## The Trainer tab (added 2026-11-24, branch `ios-trainer-tab`)
+
+Willi chose (2026-11-24) to bring the **M32 Trainer** (`Software/Utilities/m32_trainer*`) to the
+iPhone as a **tab in this app**, not as a second app: the firmware accepts one BLE central, so two
+apps would fight over the device, and a second near-identical web-wrapper app risks App Store
+guidelines 4.2/4.3. The app's name ("M32 Config") is unchanged for now — renaming it is Willi's call.
+
+**Same rule as the Config tab: the page is not forked.** `sync-webtool.sh` copies the four trainer
+files (page, link, engine, corpus) into `Resources/Web` at build time; they are git-ignored there.
+
+**The trainer has its own host seam, so its bridge is not a patch.** The Config Tool's globals have to
+be replaced after its scripts ran (`bridge.js`, document end). The trainer instead looks for
+`window.M32Host` while its scripts run (contract at `---- host` in `m32_trainer.html`), so
+`trainer-bridge.js` is injected at **document start** and only defines that object:
+
+| `M32Host` | What it does in the app |
+|---|---|
+| `openTransport()` | `callNative('connect')`, then returns a transport as the link defines it (`write`/`close`/`onData`/`onClose`, `maxLine: 400` — the firmware's BLE line cap, `label: 'Bluetooth'`). No `reopen()`: on a loss the page ends the session and offers Connect again, with `err.hint` saying why ("BLE serial off" / "suspended" notices are recognised as in `bridge.js`). |
+| `linkOptions` | `{timeScale: 3}` — the link stretches every wait it makes (command timeouts incl. handshake and probe, the late-reply grace, the framer's stall rule), as `bridge.js` does with `BLE_TIMEOUT_FACTOR`. The wait for a person (`CONSENT_MS`) is not stretched. |
+| `saveFile()` | History export through the share sheet. With `wait: true` native answers when the sheet closes, and only "ok" if the file went somewhere: a cancelled export does not reset the export reminder. |
+| `texts` | Replaces the `[data-host]` parts of the page that talk about USB cables, browsers, Ctrl+Enter and the Config Tool link. |
+
+Trainer-page changes made for this (they also help iPad Safari users): `autocorrect="off"` on the
+answer field (Safari "corrected" TNX to Thanks), a `confirm` handler for BLE consent ("press FN"),
+and a lost-link path for a transport that cannot reopen itself.
+
+**One link, one driver — and it follows the tab on screen.** Receiving was always multicast, sending never. With two web pages the
+transport now records who holds the link (`M32BleTransport.driver`: "Config", "Trainer", "Link
+test"). A page's Connect claims it, and is refused with "The … tab is connected" while another tab
+holds it. Bytes, log lines and link-lost events reach only the holder: otherwise the Config Tool's
+TTY would show the trainer's traffic, and its link-lost notice would pop up in a tab that was never
+connected. `disconnect` from a page that does not hold the link does nothing. A page that already
+holds a live link and connects again (reload, web-content restart) gets the same link back and
+re-handshakes. The driver is cleared by `disconnect()` and by a real loss — not by the
+`didDisconnect` that follows our own disconnect, because another tab may have claimed the link by
+then.
+
+**Hand-over (Willi, 2026-11-24, after the first phone bench).** First version: the user had to
+disconnect in one tab and connect in the other — he connected in Config, switched to Trainer, saw
+"Not connected". Of three options (Connect takes over / say so on the page / the link follows the
+tab) he chose **the link follows the visible web tab, with a safety net: never in the middle of
+something.** `LinkHandover.swift` drives it:
+
+1. Showing a web tab that does not hold a connected link asks the holder to let go
+   (`__m32Native.handover()`); the shown tab's bar says "Waiting for the … tab to finish…".
+   Link test and Help move nothing.
+2. The holder finishes first. **Config** (`bridge.js`): quiet for 1.5 s — nothing sent, no reply
+   awaited, no Loading overlay, not connecting; a `confirm()` blocks the page's scripts, so it
+   waits for the answer too. **Trainer** (the page's `handOver()`): the Connect steps, every
+   command, and an item that is sounding; nothing new starts meanwhile; then the session pauses
+   (an item being answered comes back later) and `put cw/practice/off` ends the practice settings
+   (`endPractice()`: practice, spacing, display).
+3. The holder detaches **without ending the M32's session**: Config with `doDisconnect(true)` (its
+   "link gone" teardown, which sends nothing), Trainer with `link.disconnect({keepSession: true})`;
+   neither drops Bluetooth. This matters: after `put device/protocol/off` a new BLE session needs
+   FN consent again (unless within 60 s of the last grant) and outside the main menu the M32
+   refuses it with DEVICE BUSY (`m32_v6.ino`, `bleSerialEvent()`); `put device/protocol/on` on an
+   open session is simply answered, in any mode.
+4. It reports `released`; native gives the link to the tab on screen and calls its `attach()`,
+   which connects as the Connect button does (queued until the page's bridge said `ready` — a
+   tab's web view is created the first time it is shown).
+5. Back on the holder before it let go: `cancelHandover()`, it keeps the link
+   (`handoverCancelled`). After it let go, the link simply comes back to it.
+
+An explicit Disconnect still ends everything (protocol off, Bluetooth down) and nothing follows.
+The hidden tab's timers are throttled by WebKit, so letting go may take a second longer.
+
+**The screen stays on while the Trainer holds the link** (`isIdleTimerDisabled`, ContentView). Keyed
+answers come from the paddle, so nobody touches the phone for minutes, and Auto-Lock would suspend
+the app and drop the link mid-item. Only while the Trainer is connected — never for the Config tab.
+
+**Links out of a page open in Safari** (both tabs, `WKNavigationDelegate` + `createWebViewWith`):
+followed inside the web view they replaced the page with no way back, and `target="_blank"` links
+(the manual, the word list's licence) did nothing. A tab only ever loads its own page.
+
+**Open until benched on a phone** (`BENCH_TRAINER.md`): (IndexedDB persistence under `m32app://`:
+confirmed by Willi 2026-11-24), the hand-over, whether the keyboard stays up between items (iOS shows it only for a focus inside a user
+gesture), BLE timing of `cw/done` and keyed echo, and what a locked screen or a switch to the other
+tab does to a running session.

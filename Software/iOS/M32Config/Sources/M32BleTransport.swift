@@ -119,14 +119,52 @@ final class M32BleTransport: NSObject, ObservableObject {
 
     func removeReceiver(_ token: UUID) {
         receivers.removeValue(forKey: token)
+        linkLostHandlers.removeValue(forKey: token)
+        logHandlers.removeValue(forKey: token)
     }
 
     /// Called when an established link drops for any reason other than our own
-    /// `disconnect()`.
-    var onLinkLost: (() -> Void)?
+    /// `disconnect()`. Multicast like the receivers (the Config and Trainer tabs
+    /// each register one); remove with `removeReceiver(_:)`.
+    private var linkLostHandlers: [UUID: () -> Void] = [:]
+    private var logHandlers: [UUID: (String) -> Void] = [:]
+
+    @discardableResult
+    func addLinkLostHandler(_ handler: @escaping () -> Void) -> UUID {
+        let token = UUID()
+        linkLostHandlers[token] = handler
+        return token
+    }
 
     /// Free-text progress, for the log pane.
-    var onLog: ((String) -> Void)?
+    @discardableResult
+    func addLogHandler(_ handler: @escaping (String) -> Void) -> UUID {
+        let token = UUID()
+        logHandlers[token] = handler
+        return token
+    }
+
+    // MARK: Who drives
+
+    /// The one consumer allowed to drive the conversation ("Config", "Trainer",
+    /// "Link test"), or nil when nobody holds the link. Two drivers would read
+    /// each other's replies, and the firmware accepts one central anyway, so a
+    /// second tab is refused until the first lets go. Cleared by `disconnect()`
+    /// and by a link loss (after the link-lost handlers have run, so that they
+    /// can still tell whose link it was).
+    @Published private(set) var driver: String?
+
+    /// Take the link for `who`. False if someone else holds it.
+    func claim(_ who: String) -> Bool {
+        if let holder = driver, holder != who { return false }
+        driver = who
+        return true
+    }
+
+    /// Let go of the link, if `who` holds it. Does not disconnect.
+    func release(_ who: String) {
+        if driver == who { driver = nil }
+    }
 
     private var central: CBCentralManager!
     private var peripheral: CBPeripheral?
@@ -194,6 +232,7 @@ final class M32BleTransport: NSObject, ObservableObject {
         rxChar = nil
         txChar = nil
         state = .idle
+        driver = nil
     }
 
     // MARK: Sending
@@ -343,7 +382,7 @@ final class M32BleTransport: NSObject, ObservableObject {
         }
     }
 
-    private func log(_ msg: String) { onLog?(msg) }
+    private func log(_ msg: String) { logHandlers.values.forEach { $0(msg) } }
 }
 
 // MARK: - CBCentralManagerDelegate
@@ -438,7 +477,11 @@ extension M32BleTransport: CBCentralManagerDelegate {
 
         if wasConnected && !intentionalDisconnect {
             log("Link lost: \(error?.localizedDescription ?? "device disconnected")")
-            onLinkLost?()
+            linkLostHandlers.values.forEach { $0() }
+            // Only for a loss: after our own disconnect() the driver is already
+            // nil, and another tab may have claimed the link before this
+            // callback arrived.
+            driver = nil
         }
         intentionalDisconnect = false
     }

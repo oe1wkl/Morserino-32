@@ -360,6 +360,9 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
   web serial and iPhone, standard Pocket on a master build).** Owed: **archive, upload, submit** — steps and three
   open points (missing help texts, Bluetooth Use editable over BLE, kip pass phrase over unencrypted BLE) in
   `devdocs/ios-app/RELEASE_1.2.md`.
+- **Trainer tab (2026-11-24, branch `ios-trainer-tab`, not merged):** the M32 Trainer as a tab of this app
+  (Willi's choice over a second app). Built, browser-verified against a mock; **phone bench owed**
+  (`devdocs/ios-app/BENCH_TRAINER.md`), then manuals EN+DE, store copy, and the app-name question.
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 

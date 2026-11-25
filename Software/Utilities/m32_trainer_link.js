@@ -45,7 +45,7 @@ const GET_REPLY = {
 // The trainer's three files (page, link, engine) carry one VERSION and change together: bump it in
 // all three on every change. The page loads the scripts as ?v=VERSION and checks they match, so a
 // browser cannot mix a new page with a cached old script (Software/tests/trainer/version.test.js).
-const VERSION = '2026-11-15';
+const VERSION = '2026-11-24';
 const USB_MAX_LINE = 1024;        // bytes, without the line feed (protocol: "Maximum command length")
 const HANDSHAKE_MS = 2000;        // as the Config Tool
 const CONSENT_MS = 25000;         // BLE: a person is answering on the device (~20 s, then it refuses)
@@ -238,7 +238,8 @@ function pushText(out, text, t, late) {
 //   label                     how to name the link to the user
 // and the link sets on it:
 //   onData(text)              incoming text, already UTF-8 decoded
-//   onClose(err)              the link went away without close()
+//   onClose(err)              the link went away without close(); err.hint, if a host sets
+//                             it, is a sentence for the user on why (the page shows it)
 //
 // Events (link.on(name, fn); returns an unsubscribe function):
 //   'text'   (item)            echo text: {text, t, late}
@@ -256,13 +257,21 @@ function pushText(out, text, t, late) {
 //   'reconnected' (device)     ... and is back, with a new session
 //   'goodbye' ()               the device ended the session by itself
 //   'closed'  ()               disconnect() has finished
+//
+// opts.timeScale (default 1) stretches every wait the link makes by itself: command timeouts
+// (handshake and probe included), the grace for a late reply and the framer's stall rule. A
+// BLE host sets 3, as the iPhone app's bridge does for the Config Tool: the firmware paces its
+// notifications, so replies take longer than on USB. The wait for a person (CONSENT_MS) is not
+// stretched.
 class Link {
   constructor(opts) {
     opts = opts || {};
     this.clock = opts.clock || defaultClock();
+    this.timeScale = opts.timeScale > 0 ? opts.timeScale : 1;
     this.framer = new Framer({ stallMs: opts.stallMs, maxObject: opts.maxObject });
+    this.framer.stallMs *= this.timeScale;
     this.timeoutMs = opts.timeoutMs || 3000;
-    this.graceMs = opts.graceMs != null ? opts.graceMs : 250;
+    this.graceMs = (opts.graceMs != null ? opts.graceMs : 250) * this.timeScale;
     this.autoReconnect = opts.autoReconnect !== false;
     this.state = 'closed';
     this.transport = null;
@@ -348,16 +357,26 @@ class Link {
 
   // Ends the session: the goodbye steps (see addGoodbye) as ordinary commands, then
   // `put device/protocol/off`, then the transport is closed. Never rejects.
-  async disconnect() {
+  // opts.keepSession: everything but `put device/protocol/off` -- the M32's session stays open
+  // for another page on the same link (the iPhone app hands one BLE session from tab to tab:
+  // a new session over BLE would need the operator's consent again, and outside the main
+  // menu the M32 refuses it).
+  async disconnect(opts) {
     if (this.state === 'closed' || this.state === 'closing') return;
     if (this.state === 'ready' || this.state === 'unresponsive') {
       this._setState('ready');                  // let the steps through even when unresponsive
       for (const line of this._goodbyeLines())
         await this._command(line, { timeout: 1000, noRecover: true }).catch(noop);
-      await this._command('put device/protocol/off',
-                          { expect: ['end m32protocol'], timeout: 1000, noRecover: true }).catch(noop);
+      if (!(opts && opts.keepSession))
+        await this._command('put device/protocol/off',
+                            { expect: ['end m32protocol'], timeout: 1000, noRecover: true }).catch(noop);
     }
     await this._close();
+  }
+
+  // Nothing in flight, queued or held: the M32 owes this link no reply.
+  idle() {
+    return !this._inflight && !this._hold && this._queue.length === 0;
   }
 
   // fn() returns a command line or an array of them (or nothing), to be sent before the
@@ -503,7 +522,7 @@ class Link {
       const entry = {
         line: line,
         expect: opts.expect || defaultExpect(line),
-        timeout: opts.timeout || this.timeoutMs,
+        timeout: (opts.timeout || this.timeoutMs) * this.timeScale,
         internal: !!opts.internal,
         noRecover: !!opts.noRecover,
         watch: opts.watch || null,
