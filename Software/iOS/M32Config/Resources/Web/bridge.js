@@ -141,7 +141,7 @@
 
   function installWriter() {
     writer = {
-      write: function (text) { return callNative('write', { text: text }); },
+      write: function (text) { lastSendAt = Date.now(); return callNative('write', { text: text }); },
       close: function () { return Promise.resolve(); }
     };
   }
@@ -157,11 +157,17 @@
   // A counter, not a flag: nothing in the tool runs two of these at once (the
   // firmware needs one command in flight), but a counter stays right if it did.
   var insideSendAndParse = 0;
+  var waiting = 0;               // waitForResponse() calls not yet settled (hand-over: "busy")
 
   var origWaitForResponse = waitForResponse;
-  waitForResponse = function (timeoutMs) {
+  waitForResponse = async function (timeoutMs) {
     var t = timeoutMs || 3000;
-    return origWaitForResponse(insideSendAndParse > 0 ? t : t * BLE_TIMEOUT_FACTOR);
+    waiting++;
+    try {
+      return await origWaitForResponse(insideSendAndParse > 0 ? t : t * BLE_TIMEOUT_FACTOR);
+    } finally {
+      waiting--;
+    }
   };
 
   if (typeof sendAndParse === 'function') {
@@ -208,9 +214,76 @@
     try {
       await origDoDisconnect.apply(this, arguments);
     } finally {
-      try { await callNative('disconnect'); } catch (e) { /* already down */ }
+      // In a hand-over the Bluetooth link stays up for the Trainer tab.
+      if (!handingOver) {
+        try { await callNative('disconnect'); } catch (e) { /* already down */ }
+      }
     }
   };
+
+  // ------------------------------------------------------------------ hand-over
+  //
+  // The app moves the one Bluetooth link to the tab on screen (LinkHandover.swift).
+  // It calls __m32Native.handover() on this tab when the Trainer tab is shown: we
+  // wait until the tool is quiet -- nothing sent for QUIET_MS, no reply awaited, no
+  // "Loading..." overlay, not connecting -- so a preferences read, a snapshot store
+  // or a file upload finishes first, then let go with doDisconnect(true): the tool's
+  // "link already gone" teardown, which sends nothing, so the M32's session stays
+  // open for the Trainer (a new BLE session would need the operator's consent
+  // again). A JavaScript dialog (confirm) blocks this page's scripts, so a hand-over
+  // asked for while one is open simply waits for the answer. attach() connects
+  // again when the user comes back; the tool reloads what it shows, as on Connect.
+
+  var QUIET_MS = 1500;
+  var lastSendAt = 0;
+  var handingOver = false;
+  var cancelRequested = false;
+  var connecting = false;
+
+  // Wrapped, NOT replaced (see the header: a replaced doConnect() drifted once):
+  // the tool's own function runs unchanged, we only note that it is running.
+  var origDoConnect = doConnect;
+  doConnect = async function () {
+    connecting = true;
+    try { return await origDoConnect.apply(this, arguments); }
+    finally { connecting = false; }
+  };
+
+  function busy() {
+    var overlay = document.getElementById('loadingOverlay');
+    return connecting || waiting > 0 || insideSendAndParse > 0
+        || Date.now() - lastSendAt < QUIET_MS
+        || !!(overlay && overlay.classList.contains('active'));
+  }
+
+  window.__m32Native.handover = async function () {
+    if (handingOver) return;
+    handingOver = true;
+    cancelRequested = false;
+    var released = false;
+    try {
+      while (busy()) {
+        if (cancelRequested) break;
+        await sleep(100);
+      }
+      if (!cancelRequested) {
+        if (connected) {
+          await doDisconnect(true);
+          log('The Trainer tab has the connection now. It comes back here by itself when you return to this tab.');
+          setStatus('Connection with the Trainer tab', 'disconnected');
+        }
+        released = true;
+      }
+    } catch (e) {
+      console.error('hand-over:', e);
+      released = true;
+    } finally {
+      handingOver = false;
+      callNative(released ? 'released' : 'handoverCancelled').catch(function () {});
+    }
+  };
+  window.__m32Native.cancelHandover = function () { cancelRequested = true; };
+  window.__m32Native.attach = function () { if (!connected && !connecting) doConnect(); };
 
   // ------------------------------------------------------------------- saving
 
@@ -275,4 +348,5 @@
   setTimeout(retitleForBluetooth, 0);
 
   log('Bluetooth transport ready — tap Connect to scan for your Morserino-32.');
+  callNative('ready').catch(function () {});
 })();

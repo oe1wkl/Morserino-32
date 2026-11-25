@@ -6,8 +6,8 @@
   <title>M32 Trainer</title>
   <!-- M32 Trainer (milestone M3): link -> engine -> this page. Spec: devdocs/training-addon/ -->
   <!-- ?v= is the trainer VERSION (see m32_trainer_engine.js): bump it here, in both scripts and in PAGE_VERSION -->
-  <script src="m32_trainer_link.js?v=2026-11-15"></script>
-  <script src="m32_trainer_engine.js?v=2026-11-15"></script>
+  <script src="m32_trainer_link.js?v=2026-11-24"></script>
+  <script src="m32_trainer_engine.js?v=2026-11-24"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,400;0,700;0,900;1,400;1,700&display=swap');
     :root {
@@ -86,9 +86,9 @@
   <details class="box help" id="help">
     <summary><b>How the trainer works</b></summary>
     <p>The M32 Trainer plays Morse on your Morserino, you copy it — typed here or keyed on the paddle — and the page
-      checks your copy, keeps a record of every character and decides what comes next. You need a computer with a
+      checks your copy, keeps a record of every character and decides what comes next. <span data-host="needs">You need a computer with a
       browser that can talk to a serial port (Chrome, Edge or Firefox on a desktop) and firmware 10 or newer
-      (serial protocol 1.6). Connect the M32 with its USB cable and press <b>Connect</b>: the page starts the M32's CW Keyer and plays through it
+      (serial protocol 1.6). Connect the M32 with its USB cable and press <b>Connect</b></span>: the page starts the M32's CW Keyer and plays through it
       (if the Echo Trainer is running, it is left alone and logged until you press Enter).</p>
     <ul>
       <li><b>What is played.</b> <i>Characters</i>: your Koch lesson (as set on the M32, also with Custom Chars), the M32's
@@ -111,7 +111,7 @@
       <li><b>What changes on your M32.</b> Only the Koch sequence and lesson, and only when you change them here or accept
         the next lesson. Speed, spacing and the screen setting are for the session; leaving the CW Keyer or disconnecting
         ends them. The transmitter is never keyed.</li>
-      <li><b>Your history</b> stays in this browser, nowhere else. Export it now and then; import it on another computer.</li>
+      <li><b>Your history</b> <span data-host="history">stays in this browser, nowhere else. Export it now and then; import it on another computer.</span></li>
     </ul>
     <p id="helpManual">The user manual has a section on the M32 Trainer:
       <a href="https://github.com/oe1wkl/Morserino-32/tree/master/Documentation/User%20Manual" target="_blank" rel="noopener">all Morserino-32 user manuals</a>.</p>
@@ -147,7 +147,8 @@
     <div id="status">Connect your M32 to start.</div>
     <div id="say" class="sr" role="status" aria-live="polite"></div>
     <label for="answer" class="sr">Your copy</label>
-    <input id="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" disabled />
+    <!-- autocorrect: Safari on an iPhone or iPad "corrects" copy (TNX -> Thanks) without it -->
+    <input id="answer" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" disabled />
     <div class="row" style="margin-top:12px">
       <button id="btnGo" class="btn" disabled>Start</button>
       <button id="btnReplay" class="btn btn-outline" disabled>Replay</button>
@@ -202,7 +203,7 @@
     <div class="keys" id="keyedHint" hidden></div>
     <div class="keys" id="availNote"></div>
     <div id="feedback"></div>
-    <div class="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
+    <div class="keys" data-host="keys"><kbd>Enter</kbd> start, check, next · <kbd id="kReplay">Ctrl</kbd>+<kbd>Enter</kbd> replay (counts as help) · <kbd>Esc</kbd> pause</div>
     <div class="keys" id="prosignHint"></div>
     <div class="keys" id="tally"></div>
     <div class="advance" id="ladder" hidden>
@@ -211,7 +212,7 @@
     </div>
     <details id="ownPhrases" style="margin-top:14px">
       <summary>Your own phrases</summary>
-      <p style="font-size:15px;margin:6px 0">One phrase per line, 2 to 8 words (a club's or school's texts, your own). Lines starting with # are skipped. Only lines made of the characters you practise come up. Kept in this browser.</p>
+      <p style="font-size:15px;margin:6px 0">One phrase per line, 2 to 8 words (a club's or school's texts, your own). Lines starting with # are skipped. Only lines made of the characters you practise come up. <span data-host="kept">Kept in this browser.</span></p>
       <label for="userText" class="sr">Your own phrases, one per line</label>
       <textarea id="userText" rows="6" style="width:100%;font-family:'Courier New',Courier,monospace;font-size:15px;padding:6px"></textarea>
       <div class="row" style="margin-top:6px">
@@ -266,7 +267,7 @@
   <!-- ── History ── -->
   <section class="box" aria-labelledby="hHist">
     <h2 id="hHist">Your history</h2>
-    <p style="font-size:15px">Everything you practise is kept in this browser only. Export it now and then — a cleared browser loses it.</p>
+    <p style="font-size:15px" data-host="historyBox">Everything you practise is kept in this browser only. Export it now and then — a cleared browser loses it.</p>
     <div class="row" style="margin-top:10px">
       <button id="btnExport" class="btn btn-outline btn-sm">Export…</button>
       <button id="btnImport" class="btn btn-outline btn-sm">Import…</button>
@@ -276,18 +277,27 @@
     <div class="note" id="histNote" role="status"></div>
   </section>
 
-  <footer>M32 Trainer · <a href="m32_config_tool.html">M32 Configuration Tool</a></footer>
+  <footer data-host="footer">M32 Trainer · <a href="m32_config_tool.html">M32 Configuration Tool</a></footer>
 </main>
 
 <script>
 'use strict';
-const PAGE_VERSION = '2026-11-15';     // with the ?v= tags above
+const PAGE_VERSION = '2026-11-24';     // with the ?v= tags above
 const E = M32Engine;
 const $ = (id) => document.getElementById(id);
 
+// ---- host -------------------------------------------------------------------
+// A native app that shows this page (the iPhone app, Software/iOS/M32Config, over Bluetooth)
+// sets window.M32Host before the page runs. Everything else is the same page as on the web.
+//   openTransport() -> Promise<transport>   instead of Web Serial (the link's transport contract)
+//   linkOptions                             for the Link, e.g. {timeScale: 3} (BLE is paced)
+//   saveFile(name, text) -> Promise         instead of a download (an app's web view has none)
+//   texts {key: html}                       for the [data-host] parts that speak of USB and browsers
+const host = (typeof window !== 'undefined' && window.M32Host) || null;
+
 // ---- state ------------------------------------------------------------------
 
-const link = new M32Link.Link();
+const link = new M32Link.Link(host && host.linkOptions);
 let store = null, mastery = new E.Mastery(), scheduler = null, session = null;
 let corpus = null;              // E.Corpus, from m32_trainer_corpus.json (words and phrases)
 let lesson = null;              // the GET kochlesson object
@@ -395,12 +405,19 @@ async function showHistory() {
 
 $('btnExport').onclick = async () => {
   const all = await store.all();
-  const blob = new Blob([JSON.stringify(E.exportFile(all, Date.now()))], { type: 'application/json' });
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'm32-trainer-' + new Date().toISOString().slice(0, 10) + '.json';
-  a.click();
-  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  const text = JSON.stringify(E.exportFile(all, Date.now()));
+  const name = 'm32-trainer-' + new Date().toISOString().slice(0, 10) + '.json';
+  if (host && host.saveFile) {
+    // the app's share sheet: cancelling it is not an export, so the nudge stays
+    try { await host.saveFile(name, text); }
+    catch (e) { $('histNote').textContent = 'Not exported: ' + e.message; return; }
+  } else {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+    a.download = name;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+  }
   await store.setMeta('lastExport', Date.now());
   await store.setMeta('sessionsSinceExport', 0);
   $('histNote').textContent = '';
@@ -636,14 +653,17 @@ link.on('object', (obj, meta) => console.info('← ' + (meta.raw || JSON.stringi
 link.on('text', (it) => console.info('← text ' + JSON.stringify(it.text)));
 link.on('state', (s, old) => console.info('link ' + old + ' → ' + s));
 
+let connecting = false;          // the Connect steps are running (see "handing the link over")
 $('btnConnect').onclick = async () => {
   connNote('');
   badge('Connecting…', 'busy');
   $('btnConnect').disabled = true;
+  connecting = true;
   try {
     if (link.state !== 'closed') await link.disconnect();     // e.g. after the M32's own Goodbye: release the port
-    const t = trace(await M32Link.openWebSerial());
+    const t = trace(await (host ? host.openTransport() : M32Link.openWebSerial()));
     const dev = await link.connect(t);
+    connNote('');                                             // "press FN" (BLE), now answered
     deviceFacts(dev);
     if (!link.hasFeature('trainer-events') || !link.hasFeature('cw/practice')) {
       connNote('This firmware (protocol ' + (dev.protocol || '?') + ') is too old for the trainer: please update it.', true);
@@ -663,13 +683,61 @@ $('btnConnect').onclick = async () => {
     if (e.name === 'NotFoundError') { badge('Not connected', 'off'); return; }     // the port chooser was closed
     if (e.name === 'InvalidStateError')
       connNote('That port is already open in another tab or program (the Config Tool, a serial monitor). Close it there and try again.', true);
+    else if (e.timeout && host && host.texts && host.texts.noReply) connNote(host.texts.noReply, true);   // the link's own text is about ports
     else connNote(e.message, true);
     badge('Not connected', 'off');
     if (link.state !== 'closed') await link.disconnect();
   } finally {
-    $('btnConnect').disabled = !('serial' in navigator);
+    connecting = false;
+    $('btnConnect').disabled = !canConnect();
   }
 };
+function canConnect() { return !!host || 'serial' in navigator; }
+
+// ---- handing the link over (the iPhone app: the Bluetooth link follows the tab on screen) ----
+// The host asks the page to let go of the link, and later to take it again. Letting go waits
+// for what is under way -- the Connect steps, a command, an item that is sounding -- and starts
+// nothing new meanwhile; then the session is paused (the item comes back) and the practice
+// settings are ended, but the M32's session stays open for the other tab (keepSession: a new
+// BLE session would need the operator's consent again, and outside the main menu the M32
+// refuses one). Speed and lesson are read again when the link comes back.
+let handingOver = false;
+function linkBusy() {
+  return connecting || preparing || !link.idle() ||
+         !!(session && (session.state === 'playing' || session.state === 'feedback-playing'));
+}
+// cancelled() -> true when the host changed its mind (the user came back to this tab):
+// then the page keeps the link and handOver resolves false
+async function handOver(cancelled) {
+  handingOver = true;
+  clearNext();
+  try {
+    while (linkBusy()) {
+      if (cancelled()) return false;
+      await new Promise((r) => setTimeout(r, 100));
+    }
+    if (cancelled()) return false;
+    if (session) session.pause();
+    if (link.state === 'closed') return true;
+    if (link.state === 'ready') await link.command('put cw/practice/off').catch(() => {});   // also cw/spacing and cw/display
+    await link.disconnect({ keepSession: true });
+    connNote((host && host.texts && host.texts.handedOver) || '');
+    return true;
+  } finally {
+    handingOver = false;
+  }
+}
+// The link is back: connect as the Connect button does (it finds the session still open)
+function takeLink() {
+  if (link.state === 'closed' && !connecting) $('btnConnect').click();
+}
+if (host && host.pageReady) host.pageReady({ busy: linkBusy, handOver: handOver, takeLink: takeLink });
+
+// BLE: the M32 asks its operator before it hands over a session (USB never does)
+link.on('confirm', () => {
+  badge('Confirm on the M32', 'busy');
+  connNote('Allow the connection on the Morserino itself: press FN (the red button).');
+});
 
 $('btnDisconnect').onclick = async () => {
   if (session) session.pause();
@@ -692,11 +760,18 @@ link.on('state', (s) => {
     if (session) session.pause();
   }
 });
-link.on('lost', () => {
-  badge('Cable lost', 'off');
+link.on('lost', (err) => {
+  const t = link.transport;
   if (session) session.pause();
-  connNote('The connection to the M32 is gone. Plug it back in — the trainer reconnects by itself.');
   enablePractice(false);
+  if (t && typeof t.reopen === 'function') {       // USB: the link opens the port again by itself
+    badge('Cable lost', 'off');
+    connNote('The connection to the M32 is gone. Plug it back in — the trainer reconnects by itself.');
+    return;
+  }
+  // a transport that cannot come back by itself (Bluetooth in the app): end the session, offer Connect
+  const why = (err && err.hint) || 'The connection to the M32 is gone. Press Connect when it is back.';
+  link.disconnect().then(() => connNote(why, true));
 });
 link.on('unresponsive', () => {
   badge('No answer', 'off');
@@ -1140,7 +1215,7 @@ function scheduleNext() {
   clearNext();
   nextTimer = setTimeout(() => {
     nextTimer = null;
-    if (!session || link.state !== 'ready' || needKeyer || (session.state !== 'idle' && session.state !== 'feedback')) return;
+    if (!session || handingOver || link.state !== 'ready' || needKeyer || (session.state !== 'idle' && session.state !== 'feedback')) return;
     // changed the setting while waiting, or busy in a menu or a text box: do not take the focus away
     if (!autoNext() || /^(SELECT|TEXTAREA)$/.test(document.activeElement && document.activeElement.tagName)) {
       setStatus('Press Enter for the next one.');
@@ -1174,7 +1249,7 @@ function startNext() {
 }
 
 async function go() {
-  if (!session) return;
+  if (!session || handingOver) return;        // nothing new starts while the link is being handed over
   clearNext();
   const s = session.state;
   if (s === 'answering') return check();
@@ -1357,8 +1432,12 @@ document.addEventListener('keydown', (e) => {
 // Replay is Ctrl+Enter or Cmd+Enter (both work); name the one this keyboard has
 if (/mac|iphone|ipad/i.test((navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || ''))
   $('kReplay').textContent = 'Cmd';
+// a host's own words for the parts about USB and browsers (after kReplay: "keys" replaces it)
+if (host && host.texts)
+  for (const el of document.querySelectorAll('[data-host]'))
+    if (host.texts[el.dataset.host] != null) el.innerHTML = host.texts[el.dataset.host];
 if (staleScripts.length) $('btnConnect').disabled = true;
-else if (!('serial' in navigator)) {
+else if (!canConnect()) {
   $('btnConnect').disabled = true;
   connNote('This browser cannot talk to a serial port. Use Chrome, Edge, Opera, or Firefox 151 or newer, on a desktop computer.', true);
 }

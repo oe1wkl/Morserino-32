@@ -28,9 +28,10 @@ struct HelpView: View {
                     section("You need a Morserino-32") {
                         Text(.init("This app has nothing to configure on its own. It sets up a "
                            + "**Morserino-32** — an open-source Morse code (CW) training "
-                           + "device for radio amateurs."))
+                           + "device for radio amateurs — and runs the **M32 Trainer** on it."))
                         Text(.init("The Morserino needs firmware **version 9.0 or newer**. Earlier "
-                           + "firmware cannot speak to an app over Bluetooth at all."))
+                           + "firmware cannot speak to an app over Bluetooth at all. The "
+                           + "Trainer needs **version 10.0 or newer**."))
                         Link("morserino.info", destination: URL(string: "https://www.morserino.info")!)
                     }
 
@@ -61,12 +62,28 @@ struct HelpView: View {
 
                     section("Connect") {
                         step(1, "Leave the Morserino sitting at its **main menu**.")
-                        step(2, "Tap **Connect** on the Config tab.")
+                        step(2, "Tap **Connect** on the Config tab (or on the Trainer tab).")
                         step(3, "The Morserino asks **“Allow connect?”** — press the **FN button** "
                               + "on the device to allow it.")
                         Text(.init("Asking is deliberate. Anything within radio range can reach a "
                            + "Bluetooth device, so the Morserino wants your say-so before it "
                            + "hands over control. Doing nothing for about 20 seconds refuses."))
+                            .foregroundStyle(.secondary)
+                    }
+
+                    section("The Trainer tab") {
+                        Text(.init("Copy practice: the Morserino plays Morse, you copy it — typed "
+                           + "here or keyed back on the paddle — and the Trainer checks your copy "
+                           + "and decides what comes next. It starts the Morserino's CW Keyer by "
+                           + "itself; the Morserino never keys a transmitter for it."))
+                        Text(.init("The Config and Trainer tabs share one Bluetooth connection, and it "
+                           + "**follows the tab you look at**: connect once, and switching between "
+                           + "the two tabs takes the connection along. Whatever the other tab is "
+                           + "doing — loading, saving, sounding an item — is finished first; the top "
+                           + "bar says when it is waiting. An item you were answering comes back later."))
+                        Text(.init("While the Trainer is connected the screen stays on, so that "
+                           + "Auto-Lock cannot cut the connection while you key your answers. "
+                           + "Your practice history stays in this app; **Export** it now and then."))
                             .foregroundStyle(.secondary)
                     }
 
@@ -81,6 +98,10 @@ struct HelpView: View {
                                 "Check that **Bluetooth Use** really is set to **BLE Serial**, "
                               + "and that you went back to the main menu afterwards — that is "
                               + "when the setting takes effect. Check the Morserino is switched on.")
+
+                        trouble("“Waiting for the … tab to finish”",
+                                "The other tab is still busy (a file upload can take a while). The "
+                              + "connection comes over by itself when it is done.")
 
                         trouble("It worked before and now it does not",
                                 "Only one phone or computer can be connected at a time. If the "

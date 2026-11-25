@@ -221,10 +221,11 @@ kept as the recipe for the next version, and for the traps that cost time:
 | `Sources/M32Client.swift` | Native request/response + JSON assembly. Not used by the web tool. |
 | `Sources/WebToolView.swift` | `WKWebView` host and the JS ⇄ CoreBluetooth bridge. |
 | `Sources/BundleSchemeHandler.swift` | Serves the bundled tool under `m32app://local/`. |
-| `Sources/ContentView.swift` | Three tabs: the tool, the link test, and Help. |
+| `Sources/ContentView.swift` | Four tabs: the Config Tool, the M32 Trainer, the link test, and Help. |
 | `Sources/HelpView.swift` | The Help tab. Native, so it reads before any connection exists. |
 | `Resources/Web/bridge.js` | Re-points the tool at Bluetooth: transport, timeouts, saving, cosmetics. |
-| `sync-webtool.sh` | Copies the tool out of `Software/Utilities/`. Runs automatically before every build. |
+| `Resources/Web/trainer-bridge.js` | Gives the M32 Trainer its `window.M32Host` (Bluetooth transport, timeouts, export, texts). See `devdocs/ios-app/DESIGN.md`. |
+| `sync-webtool.sh` | Copies the tool and the trainer's four files out of `Software/Utilities/`. Runs automatically before every build. |
 | `Local.xcconfig.example` | Template for your signing Team ID; copy to the git-ignored `Local.xcconfig`. |
 | `Resources/Assets.xcassets` | App icon. Regenerate from `Resources/AppIcon.svg`. |
 
