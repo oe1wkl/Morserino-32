@@ -38,8 +38,8 @@ Flash nothing new: any firmware 10 beta works. Build and run from Xcode (`xcodeg
    and goes on.
 3. **Keyed answers** — **works as expected (Willi, 2026-11-25).** (Answer: Keyed on the paddle), five items. Timing feels like USB? Next item goes on
    by itself?
-4. **Replay / Pause buttons**, Effective speed, M32 screen Hide — all as on the desktop.
-5. **Leave it alone for longer than Auto-Lock** while connected: the screen must stay on. Disconnect: Auto-Lock works again.
+4. **Replay / Pause buttons** — **works (Willi, 2026-11-25).** Effective speed, M32 screen Hide — all as on the desktop.
+5. **Leave it alone for longer than Auto-Lock** — **works (Willi, 2026-11-25).** while connected: the screen must stay on. Disconnect: Auto-Lock works again.
 6. **Lock the phone by hand** mid-item, unlock after 30 s: what does the page show? (Expected: link lost
    → Connect again; anything else, note it.) **Willi, 2026-11-25: nothing special — after unlocking the
    page is exactly where it was, still connected.** The link survives a short lock, so the "link lost"
@@ -55,17 +55,27 @@ Flash nothing new: any firmware 10 beta works. Build and run from Xcode (`xcodeg
    e. Switch to Help or Link test: the link stays where it was. Link test's button stays disabled while
       either tab holds the link.
    f. Disconnect explicitly in one tab: nothing reconnects by itself, the M32 leaves the session.
-8. **Switch the M32 off** mid-session: "The Bluetooth connection to the M32 is gone…", Connect works again
+8. **Switch the M32 off** mid-session — **works (Willi, 2026-11-25).** "The Bluetooth connection to the M32 is gone…", Connect works again
    after switching it on.
 9. ~~**History survives**~~ — **confirmed by Willi 2026-11-24.** Practise, quit the app, reopen: "N attempts stored" is unchanged.
    If it says "This browser window cannot keep your history", IndexedDB does not work under `m32app://` —
    stop and report.
-10. **Export** → share sheet → Save to Files; then Import that file again ("already here"). Cancel the sheet once:
+10. **Export** — **works (Willi, 2026-11-25).** Share sheet → Save to Files; then Import that file again ("already here"). Cancel the sheet once:
     the "Time for an export" reminder must stay.
-11. **Links**: open the help, tap "all Morserino-32 user manuals": Safari opens, the app keeps its page.
+11. **Links** — **works (Willi, 2026-11-25)**: the app's Help tab (morserino.info, GitHub) and the Trainer
+    tab's manual link both open in Safari. The latter: the link is in the **Trainer tab** itself, at the top, "How the trainer
+    works" → the last paragraph. Before connecting it reads "all Morserino-32 user manuals" (GitHub); once
+    connected it becomes "user manual for the M32 Pocket — English, PDF" (and German), on morserino.info.
+    Tap it: Safari (or its PDF view) opens, and back in the app the Trainer is still where it was.
 12. **VoiceOver** (if time): status and results are read, not talked over the Morse.
-13. **Config tab regression**: connect, read preferences, disconnect; File Builder save; the TTY shows only
-    the Config tab's own traffic.
+13. **Config tab regression** — **works (Willi, 2026-11-25).** (What this change could have broken in the Config tab):
+    a. Config tab → Connect (FN on the M32). The **Preferences** tab fills in; change one value and see it on
+       the M32. **Disconnect**: the M32 shows it has left the session.
+    b. **File Builder** → add some text → **Save to Computer**: the share sheet opens; save to Files. (Same
+       path as the Trainer's export, which now waits for the sheet to close — the Config Tool does not wait.)
+    c. **M32 TTY**: connect in Config and open M32 TTY; key a few letters on the paddle, they appear. Switch to
+       the Trainer tab, play two items, come back. The TTY must **not** contain the Trainer's traffic (no
+       `cw/practice` lines, no item letters); only what came after Config took the link back.
 
 ## Still owed before a release (not done on this branch)
 
