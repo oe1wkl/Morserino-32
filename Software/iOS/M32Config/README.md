@@ -1,4 +1,8 @@
-# M32 Config — iPhone app
+# Morserino — iPhone app
+
+*Called "M32 Config" up to version 1.2; renamed when the M32 Trainer became its second tab
+(Willi, 2026-11-25). The folder, target and bundle ID (`cc.kraml.m32config`) keep the old name:
+they are invisible to users, and the bundle ID can never change.*
 
 An iOS app that does what `m32_config_tool.html` does, but over **Bluetooth LE**
 instead of USB. It works by hosting the *unmodified* web tool in a `WKWebView`

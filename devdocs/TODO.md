@@ -363,7 +363,8 @@ without Node via `/System/Library/Frameworks/JavaScriptCore.framework/Versions/A
 - **Trainer tab — merged to master 2026-11-25 (1bfc314):** the M32 Trainer as a tab of this app (Willi's
   choice over a second app); the Bluetooth link follows the web tab on screen, never mid-operation. Phone
   bench passed except VoiceOver (step 12, `devdocs/ios-app/BENCH_TRAINER.md`). **Owed at the app release:**
-  manuals EN+DE ("or the M32 Config app on an iPhone"), App Store What's New + listing, the app-name question.
+  manuals EN+DE ("or the Morserino app on an iPhone"); new screenshots, version bump, submit (store texts drafted in
+  `store-listing.md`). **Name decided 2026-11-25: Morserino** (was M32 Config), done in the repo.
 - Re-encoded demo videos are in `~/Documents/My Videos`; the 207 MB master screen recording
   is still in Downloads (Willi's call whether to keep).
 

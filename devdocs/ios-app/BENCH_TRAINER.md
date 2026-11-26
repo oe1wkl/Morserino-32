@@ -77,11 +77,16 @@ Flash nothing new: any firmware 10 beta works. Build and run from Xcode (`xcodeg
        the Trainer tab, play two items, come back. The TTY must **not** contain the Trainer's traffic (no
        `cw/practice` lines, no item letters); only what came after Config took the link back.
 
-## Still owed before a release (not done on this branch)
+## Still owed before a release
 
-- **Manuals EN + DE**: the M32 Trainer section says it needs a desktop browser; add "or the M32 Config app on
+- **Manuals EN + DE**: the M32 Trainer section says it needs a desktop browser; add "or the Morserino app on
   an iPhone (Trainer tab), over Bluetooth". Do it when the app version with the tab is released, so the manual
   never points at an app that does not have it yet.
-- **App Store**: What's New, store listing (description, screenshots of the Trainer tab), version bump (1.3?)
-  — Willi. The reviewer notes (guideline 4.2) gain a second reason the app is more than a web page.
-- **Name**: "M32 Config" no longer covers it all — Willi's decision whether to rename.
+- **App Store**: texts drafted 2026-11-25 in `Software/iOS/M32Config/store-listing.md` (name, subtitle,
+  promotional text, keywords, What's New 1.3, description, review notes — limits checked). Still Willi's:
+  new screenshots with the Trainer first, the version bump (`MARKETING_VERSION` 1.3, build 1), archive, submit,
+  and changing the name in App Store Connect with that version.
+- **Name**: decided — **Morserino** (Willi, 2026-11-25), done in the repo (`CFBundleDisplayName`, Bluetooth
+  texts, Help).
+- **Firmware 10 is still beta.** The Trainer tab needs it; on 9.x the tab says so and cannot connect. Release
+  the app with the tab together with, or after, V10 stable — or accept that the Trainer is for beta users until then.

@@ -8,11 +8,18 @@ counts were checked against them.
 
 ## App name (30 max)
 
-    M32 Config
+    Morserino
+
+Renamed from "M32 Config" with the first version that has the Trainer tab (Willi,
+2026-11-25). The name is changed in App Store Connect together with that version and
+goes live when it is approved; bundle ID, ratings and installs stay. The home-screen
+name is `CFBundleDisplayName` in `project.yml`, also "Morserino" (fits in full).
 
 ## Subtitle (30 max)
 
-    Configure your Morserino-32
+    Config & Trainer for the M32
+
+(Up to 1.2: "Configure your Morserino-32".)
 
 ## Category
 
@@ -21,14 +28,31 @@ will search by name, and Utilities is where hardware companions live.)
 
 ## Promotional text (170 max — editable without a new review)
 
-    Configure your Morserino-32 from your phone over Bluetooth: preferences,
-    snapshots, CW memories, Koch lessons and training files. No cable needed.
+    Set up your Morserino-32 over Bluetooth, and practise copying Morse with
+    the M32 Trainer: your Morserino plays, the app checks what you heard.
 
 ## Keywords (100 max, comma-separated, no spaces)
 
-    morse,cw,ham,radio,amateur,telegraphy,keyer,koch,morserino,m32,bluetooth
+    morse,cw,ham,radio,amateur,telegraphy,keyer,koch,trainer,copy,practice,m32,bluetooth
 
-## What's New in This Version (4000 max) — 1.2, build 5
+("morserino" left out: words of the app name are indexed anyway, so the slot went to
+"trainer,copy,practice".)
+
+## What's New in This Version (4000 max) — next version (1.3), DRAFT
+
+    Now called Morserino
+    The app is no longer only for settings, so it has a new name. Everything you had stays as it was.
+
+    New: the M32 Trainer
+    A new Trainer tab trains your copy. Your Morserino plays groups, words, phrases, call signs or prefixes from your Koch lesson; you type what you heard, or key it back on the paddle, and the app checks it, keeps a record of every character and decides what comes next. Characters you miss come back more often. When all of your lesson's characters are going well, the app offers the next lesson.
+    Your practice history stays in the app on this phone. Export it now and then — to Files, or by mail — and import it again here or in the M32 Trainer on a computer.
+    The Trainer needs firmware 10 or later on the Morserino.
+
+    One connection for both tabs
+    Connect once, in either tab: the connection follows you when you switch between Config and Trainer, without asking the Morserino again. It never switches in the middle of something — a setting being written or an item being played is finished first.
+    While the Trainer is connected the screen stays on, so it does not lock in the middle of practice.
+
+## What's New — 1.2, build 5 (kept for reference)
 
     Snapshot bundles from your CW course
     A course can now hand out all its practice presets in a single file. On the Snapshots tab, tap "Import Snapshot Bundle…" and pick the file your course gave you, for example from the Files app. The app checks every preset against your Morserino first and shows any problem before anything is written, then stores each preset in its slot. Your own settings are put back afterwards.
@@ -67,15 +91,24 @@ will search by name, and Utilities is where hardware companions live.)
 
 ## Description (4000 max)
 
-    Morserino-32 Config sets up your Morserino from your iPhone over
-    Bluetooth — no cable, and no computer.
+    This app sets up your Morserino-32 from your iPhone over Bluetooth — no
+    cable, and no computer — and trains your Morse copy on it.
 
     The Morserino-32 is an open-source Morse code (CW) training device for
     radio amateurs. Everything you would otherwise change by turning the
     encoder and stepping through menus can be done here instead, on a screen,
     with a keyboard.
 
-    WHAT YOU CAN DO
+    PRACTISE WITH THE M32 TRAINER
+
+    • Your Morserino plays groups, words, phrases, call signs or prefixes
+      from your Koch lesson; type what you heard, or key it on the paddle
+    • The app checks every character and brings back the ones you miss
+    • It offers the next Koch lesson when you are ready, never by itself
+    • Your history stays on your phone; export it to Files or by mail
+    • The Trainer needs firmware 10 or later on the Morserino
+
+    SET UP YOUR MORSERINO
 
     • Read and change every preference — keyer mode, speed, tone, spacing,
       Koch lesson and the rest
@@ -111,17 +144,14 @@ Live in App Store Connect since 2026-09-13. App Review's first letter for 1.0
 (guideline 2.1 – Information Needed) asked six numbered questions and wanted
 the answers both as a reply and in this field, so this is that reply, word
 for word. A later version keeps the structure and updates the facts; the
-opening two lines belong to the reply and go.
+opening two lines belonged to the reply and are gone (removed 2026-11-25).
 
 Apple's limit for this field is 4000 **bytes**, not characters, so every
-em-dash costs three. As pasted: 3,810 bytes (3,798 characters), or
-3,891 if App Store Connect stores CRLF line endings. This is the one
+em-dash costs three. As of the Morserino rename (2026-11-25): 3,885 bytes (3,873 characters), or
+3,967 if App Store Connect stores CRLF line endings. (1.0–1.2: 3,810 / 3,891.) This is the one
 field where the limit bites, so measure after editing, in bytes, rather
 than estimating. The two recordings point 1 describes were attached to the
 reply; they are not part of this field.
-
-    Thank you for the review. The six points are answered below; this text is also
-    in the App Review Information notes.
 
     1. SCREEN RECORDING
 
@@ -142,8 +172,9 @@ reply; they are not part of this field.
     2. PURPOSE AND TARGET AUDIENCE
 
     The Morserino-32 is an open-source Morse code (CW) training device for radio
-    amateurs and for anyone learning Morse code (morserino.info). M32 Config is its
-    companion app and has no standalone function.
+    amateurs and for anyone learning Morse code (morserino.info). This app is its
+    companion and has no standalone function: it configures the device and runs
+    copy practice on it.
 
     The device holds around sixty settings, reached by turning a rotary encoder
     through nested menus on a screen an inch across. Changing several is slow and
@@ -197,6 +228,9 @@ reply; they are not part of this field.
     and carries the protocol — precisely what a web page cannot do on iOS, and why
     the app exists.
 
+    The Trainer tab works the same way: the device plays the Morse code; the app
+    tells it what to play over Bluetooth and checks the user's copy.
+
     PRIVACY
 
     Nothing is collected or transmitted anywhere; see the bundled privacy manifest.
@@ -227,7 +261,13 @@ Worth capturing, with a device connected:
 1. The Config tab with device information filled in
 2. The Preferences tab populated
 3. The File Builder with a few parts assembled
-4. The consent step, from the app's side: the app waiting for the button
+4. **Trainer tab** mid-session: an item just checked (the green/red result line) and
+   the boxes chart below it
+5. **Trainer tab**, the history panel (attempts stored, per-character boxes)
+6. The consent step, from the app's side: the app waiting for the button
    press on the device. A photograph of the Morserino showing "Allow
    connect?" belongs in the video, not here — guideline 2.3.3 wants
    screenshots of the app in use, and a picture of the hardware is not one
+
+For the first version named Morserino, put a Trainer screenshot **first**: the first
+two or three are what a store search shows, and the Trainer is what is new.

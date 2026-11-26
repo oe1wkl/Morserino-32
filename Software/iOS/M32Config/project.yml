@@ -105,7 +105,7 @@ targets:
     info:
       path: Generated/Info.plist
       properties:
-        CFBundleDisplayName: M32 Config
+        CFBundleDisplayName: Morserino
         # The version comes from MARKETING_VERSION / CURRENT_PROJECT_VERSION above. Without these two lines
         # XcodeGen writes 1.0 / 1 into the plist, whatever the build settings say - and the 1.1 archive
         # came out as 1.0 (1), which App Store Connect refused.
@@ -124,5 +124,5 @@ targets:
         # non-exempt to declare. Revisit if that ever changes.
         ITSAppUsesNonExemptEncryption: false
         NSBluetoothAlwaysUsageDescription:
-          M32 Config uses Bluetooth to connect to your Morserino-32, read or
+          This app uses Bluetooth to connect to your Morserino-32, read or
           change its settings, and run the M32 Trainer on it.

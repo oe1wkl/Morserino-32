@@ -115,7 +115,7 @@ struct HelpView: View {
 
                         trouble("The app never asks for Bluetooth",
                                 "Check iOS **Settings → Privacy & Security → Bluetooth** and make "
-                              + "sure M32 Config is allowed.")
+                              + "sure Morserino (this app) is allowed.")
                     }
 
                     section("More") {

@@ -126,7 +126,8 @@ From `MorseBleSerial.cpp` and [`devdocs/ble-serial/DESIGN.md`](../ble-serial/DES
 Willi chose (2026-11-24) to bring the **M32 Trainer** (`Software/Utilities/m32_trainer*`) to the
 iPhone as a **tab in this app**, not as a second app: the firmware accepts one BLE central, so two
 apps would fight over the device, and a second near-identical web-wrapper app risks App Store
-guidelines 4.2/4.3. The app's name ("M32 Config") is unchanged for now — renaming it is Willi's call.
+guidelines 4.2/4.3. With the tab the app is renamed **Morserino** (was "M32 Config"; Willi, 2026-11-25), subtitle "Config & Trainer
+for the M32". Folder, target and bundle ID keep the old name.
 
 **Same rule as the Config tab: the page is not forked.** `sync-webtool.sh` copies the four trainer
 files (page, link, engine, corpus) into `Resources/Web` at build time; they are git-ignored there.

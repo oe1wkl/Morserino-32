@@ -1,6 +1,6 @@
 //
 //  M32BleTransport.swift
-//  M32 Config — a byte pipe to the Morserino-32 over BLE (Nordic UART Service).
+//  Morserino (iPhone app) — a byte pipe to the Morserino-32 over BLE (Nordic UART Service).
 //
 //  This is the iOS counterpart of MorseBleSerial.cpp in the firmware. Several
 //  of the rules below are *firmware contracts*, not style choices; before
@@ -363,7 +363,7 @@ final class M32BleTransport: NSObject, ObservableObject {
         case .unsupported: throw M32TransportError.bluetoothUnavailable("This device has no Bluetooth LE.")
         case .unauthorized:
             throw M32TransportError.bluetoothUnavailable(
-                "M32 Config is not allowed to use Bluetooth. Grant it in Settings → Privacy → Bluetooth.")
+                "This app is not allowed to use Bluetooth. Allow Morserino in Settings → Privacy & Security → Bluetooth.")
         case .poweredOff: throw M32TransportError.bluetoothUnavailable("Bluetooth is switched off.")
         default: break // .unknown / .resetting — the manager is still starting up
         }
