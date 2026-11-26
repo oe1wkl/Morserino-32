@@ -104,6 +104,16 @@ Before you tag, make sure of these — the workflow fails fast on each:
    whose `versions.json` will not load, so the edition just would not
    appear.
 
+   Third — and this one the check does **not** catch: the runner (a
+   LaunchAgent) must have macOS permission to **read file contents** in
+   the Dropbox folder. `stat()` and directory listings work without it,
+   so the check passes; then `rename_binaries.py` blocks in `open()` on a
+   published `m32p-a11y/common/*.bin` it compares against, until the
+   60-minute job timeout (V10.0, 2026-11-26: two attempts lost, nothing
+   published). macOS shows a "would like to access files managed by
+   Dropbox" dialog on the runner Mac's screen — **Allow** it, then re-run.
+   After a macOS update or a runner reinstall, expect to grant it again.
+
 ## BUMPING TO A NEW MAJOR VERSION
 
 Do this once, on `master`, at the moment the major version changes (e.g.
