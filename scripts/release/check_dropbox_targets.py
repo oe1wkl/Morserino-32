@@ -35,7 +35,9 @@ Usage
   check_dropbox_targets.py --timeout 30       # per-probe deadline, seconds
 
 Exit codes: 0 all targets usable, 2 a target is missing or not writable,
-3 a probe timed out (provider stalled), 4 the root is unset or unusable.
+3 a probe timed out (provider stalled, or reading a file in it blocks --
+usually the runner lacking permission for files managed by Dropbox),
+4 the root is unset or unusable.
 """
 
 from __future__ import annotations
@@ -46,6 +48,7 @@ import signal
 import sys
 import time
 import warnings
+from pathlib import Path
 
 # Python 3.12 warns on fork() from a process that has threads, because a child
 # can inherit a lock held by a thread that does not exist in it. That hazard
@@ -57,7 +60,7 @@ warnings.filterwarnings("ignore", category=DeprecationWarning,
                         message=r".*fork\(\) may lead to deadlocks.*")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from rename_binaries import PLATFORMS  # noqa: E402  (single source of truth)
+from rename_binaries import PLATFORMS, read_published  # noqa: E402  (single source of truth)
 
 # What a probe found. Kept as plain ints because they cross a fork boundary as
 # process exit codes.
@@ -168,6 +171,42 @@ def main(argv: list[str]) -> int:
         else:
             print(f"  {verdict.upper()}: {label} -> {path}", file=sys.stderr)
 
+    # Then read one published file's *contents*. Everything above is stat()
+    # and access(), which work even when the runner may not read files managed
+    # by Dropbox; reading is what blocks then (V10.0: two runs lost in the
+    # staging step). A common/ file is small and is read by the staging step
+    # anyway, so it is the honest probe; any platform's versions.json will do
+    # where there is none.
+    if not failures:
+        dirs = [(spec, os.path.join(args.root, spec["subdir"]) if spec["subdir"]
+                 else args.root) for spec in PLATFORMS.values()]
+        candidates = ([os.path.join(d, "common", "bootloader.bin")
+                       for spec, d in dirs if spec.get("common")]
+                      + [os.path.join(d, "versions.json") for spec, d in dirs])
+        for path in candidates:
+            started = time.monotonic()
+            verdict = read_published(Path(path), timeout=args.timeout)
+            elapsed = time.monotonic() - started
+            if verdict == "absent":
+                continue
+            if verdict == "ok":
+                print(f"  read ok ({elapsed:.2f}s): {path}", flush=True)
+                break
+            failures += 1
+            sys.stdout.flush()
+            if verdict == "timeout":
+                stalled = True
+                print(f"  READ TIMEOUT after {elapsed:.0f}s: {path}\n"
+                      f"    The folder answers, but reading a file in it does not.\n"
+                      f"    Most likely the runner lacks macOS permission to access\n"
+                      f"    files managed by Dropbox: on the runner Mac, look for a\n"
+                      f"    dialog asking for it (or System Settings > Privacy &\n"
+                      f"    Security > Files and Folders), allow it, and re-run.",
+                      file=sys.stderr)
+            else:
+                print(f"  UNREADABLE: {path}", file=sys.stderr)
+            break
+
     if failures:
         sys.stdout.flush()
         print(f"\n{failures} Dropbox target(s) unusable — stopping before the "
@@ -177,7 +216,7 @@ def main(argv: list[str]) -> int:
         # platform that happened to answer.
         return 3 if stalled else 2
 
-    print("All Dropbox publish targets exist and are writable.", flush=True)
+    print("All Dropbox publish targets exist, are writable and can be read.", flush=True)
     return 0
 
 

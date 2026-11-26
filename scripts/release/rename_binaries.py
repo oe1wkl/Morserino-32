@@ -62,9 +62,69 @@ import json
 import os
 import re
 import shutil
+import signal
 import subprocess
 import sys
+import time
+import warnings
 from pathlib import Path
+
+# Python 3.12 warns on fork() from a process that has threads. The forked
+# children below only read two files and os._exit, taking no lock, so the
+# hazard does not apply (same reasoning as in check_dropbox_targets.py).
+warnings.filterwarnings("ignore", category=DeprecationWarning,
+                        message=r".*fork\(\) may lead to deadlocks.*")
+
+# How long reading one published file in the Dropbox folder may take.
+# The files are tiny (common/ holds ~3-15 KB each), so anything near this
+# means the file provider is not answering, not that the file is large.
+PUBLISHED_READ_TIMEOUT = 30.0
+
+
+def read_published(published: Path, timeout: float = PUBLISHED_READ_TIMEOUT,
+                   local: Path | None = None) -> str:
+    """Read a file in the Dropbox folder in a forked child, with a deadline.
+
+    Returns "absent", "unreadable" or "timeout"; with `local` given,
+    "same" or "different" after comparing the two, otherwise "ok".
+
+    Why a child: the Dropbox folder is a macOS file provider. A file there may
+    be online-only, so reading it means fetching it -- and when the reading
+    process lacks permission to access "files managed by Dropbox" (the release
+    runner runs as a LaunchAgent and needs it granted once), open() just
+    blocks, with no error. V10.0's release lost two runs, 60 minutes each, to
+    exactly that. A stat() works without the permission, which is why the
+    directory checks never saw it. The parent here never touches the path, so
+    it can always give up and report.
+    """
+    started = time.monotonic()
+    pid = os.fork()
+    if pid == 0:                                    # child: the only code that
+        try:                                        # reads from the provider
+            if not published.is_file():
+                os._exit(2)
+            data = published.read_bytes()
+            if local is None:
+                os._exit(0)
+            os._exit(0 if data == local.read_bytes() else 1)
+        except Exception:
+            os._exit(3)
+
+    deadline = started + timeout
+    while time.monotonic() < deadline:
+        done, status = os.waitpid(pid, os.WNOHANG)
+        if done:
+            code = os.waitstatus_to_exitcode(status)
+            if code == 0:
+                return "ok" if local is None else "same"
+            return {1: "different", 2: "absent"}.get(code, "unreadable")
+        time.sleep(0.05)
+    # Do not wait on a child wedged in the kernel -- that is the hang itself.
+    try:
+        os.kill(pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    return "timeout"
 
 
 def find_boot_app0() -> Path:
@@ -387,11 +447,23 @@ def main(argv: list[str]) -> int:
                     print(f"[{key}] {e}", file=sys.stderr)
                     return 1
                 published = dropbox_dir / "common" / name
-                if published.is_file() and published.read_bytes() != c_src.read_bytes():
+                verdict = read_published(published, local=c_src)
+                if verdict == "different":
                     log(
                         f"WARNING: {name} differs from the published "
                         f"{published}. Older versions in this manifest will be "
                         f"paired with the new file — check they still boot."
+                    )
+                elif verdict in ("timeout", "unreadable"):
+                    # Only ever a warning, so it must not be able to stop the
+                    # release: say so and go on.
+                    log(
+                        f"WARNING: could not read the published {published} "
+                        f"({verdict}"
+                        + (f" after {PUBLISHED_READ_TIMEOUT:g}s" if verdict == "timeout" else "")
+                        + f"), so {name} was not compared with it. If the runner "
+                        f"Mac asks for access to files managed by Dropbox, allow "
+                        f"it; then compare the two by hand."
                     )
                 commons.append({"name": name, "staged_path": str(c_dst)})
             entry["common_files"] = commons

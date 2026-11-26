@@ -19,7 +19,7 @@ could not get its 14 KB result queue (`decodeMemoryOk()` guard in the vendored s
 generated tones); and a paddle touch now cuts the OK/ERR jingle (`soundSignalOK/ERR(abortIf)`), benched by Willi.
 Release-runner lesson: the LaunchAgent runner needs macOS **file access to Dropbox-managed files** — without it
 `rename_binaries.py` blocks in `open()` on the published `common/` files until the 60-min job timeout (two
-attempts lost). Granted 2026-11-26. Follow-up: put a timeout on that comparison read (it only warns anyway).
+attempts lost). Granted 2026-11-26; since then the pre-check reads a published file under a deadline and the comparison read times out and warns.
 **Master is 10.0.1 BETA** (provisional, Willi 2026-11-26; empty `CHANGES V. 10.0.1` section open).
 
 **V10 betas:** `V10.0-beta.1` tagged 2026-10-27, `V10.0-beta.2` 2026-11-08 (GitHub release published

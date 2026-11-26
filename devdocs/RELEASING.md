@@ -104,15 +104,17 @@ Before you tag, make sure of these — the workflow fails fast on each:
    whose `versions.json` will not load, so the edition just would not
    appear.
 
-   Third — and this one the check does **not** catch: the runner (a
-   LaunchAgent) must have macOS permission to **read file contents** in
-   the Dropbox folder. `stat()` and directory listings work without it,
-   so the check passes; then `rename_binaries.py` blocks in `open()` on a
-   published `m32p-a11y/common/*.bin` it compares against, until the
-   60-minute job timeout (V10.0, 2026-11-26: two attempts lost, nothing
-   published). macOS shows a "would like to access files managed by
-   Dropbox" dialog on the runner Mac's screen — **Allow** it, then re-run.
-   After a macOS update or a runner reinstall, expect to grant it again.
+   Third: the runner (a LaunchAgent) must have macOS permission to
+   **read file contents** in the Dropbox folder. `stat()` and directory
+   listings work without it; reading blocks in `open()` with no error. In
+   V10.0 (2026-11-26) that hung `rename_binaries.py` on a published
+   `m32p-a11y/common/*.bin` until the 60-minute job timeout, twice. The
+   check now also reads one published file (`READ TIMEOUT` → exit 3), and
+   `rename_binaries.py` reads under a 30 s deadline and only warns. The
+   fix either way: macOS shows a "would like to access files managed by
+   Dropbox" dialog on the runner Mac's screen — **Allow** it (or switch it
+   on in Privacy & Security › Files and Folders), then re-run. After a
+   macOS update or a runner reinstall, expect to grant it again.
 
 ## BUMPING TO A NEW MAJOR VERSION
 
