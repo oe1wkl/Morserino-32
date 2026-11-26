@@ -9,7 +9,18 @@ Branches: **`master` = the V10 line (10.0.0 BETA) since 2026-10-22** — `m32kip
 V9.2 folded into 10.0 (9.2 never ships on its own). `m32kip` is retired. **`V9.1` released 2026-10-11** (published,
 in the web installer, binaries archived); a V9 hotfix, if ever needed, goes on a branch from the `V9.1` tag.
 
-## ▶ Where we are — start here (2026-11-15)
+## ▶ Where we are — start here (2026-11-26)
+
+**V10.0 released 2026-11-26** — tag `V10.0` on `b64c419` (`BETA false`); release workflow green on attempt 3,
+draft GitHub release with 17 assets **waiting for Willi to publish**; installer (http + https) shows 10.0 for
+classic, Pocket and the Accessibility Edition; binaries archived (43f98d9). Last-minute fix in the release
+(ed2d89a): Trailblazer / Fox Hunt froze at the first keyed character with BLE Serial on — the first MP3 decode
+could not get its 14 KB result queue (`decodeMemoryOk()` guard in the vendored sidetone lib now falls back to
+generated tones); and a paddle touch now cuts the OK/ERR jingle (`soundSignalOK/ERR(abortIf)`), benched by Willi.
+Release-runner lesson: the LaunchAgent runner needs macOS **file access to Dropbox-managed files** — without it
+`rename_binaries.py` blocks in `open()` on the published `common/` files until the 60-min job timeout (two
+attempts lost). Granted 2026-11-26. Follow-up: put a timeout on that comparison read (it only warns anyway).
+**Next on master:** bump to a provisional next version (`BETA true`, new changelog section) — number is Willi's call.
 
 **V10 betas:** `V10.0-beta.1` tagged 2026-10-27, `V10.0-beta.2` 2026-11-08 (GitHub release published
 2026-11-15), `V10.0-beta.3` tagged and in the installer 2026-11-15 from master
