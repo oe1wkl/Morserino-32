@@ -1,4 +1,8 @@
 # Change History
+### CHANGES V. 10.0.1
+
+#### Bug Fixes:
+
 ### CHANGES V. 10.0
 
 #### New Features:
