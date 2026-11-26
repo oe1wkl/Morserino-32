@@ -295,7 +295,7 @@ static void statePlaying() {
             for (int d = 0; d < 4; d++) if (dirs[d].ltr == c) { matched = d; break; }
 
             if (matched >= 0 && MorseGridEngine::directionMatchesNext((MorseGridEngine::Dir)matched)) {
-                MorseOutput::soundSignalOK();
+                MorseOutput::soundSignalOK(checkPaddles);   // a paddle touch cuts it short
                 MorseGridEngine::advance();
                 if (MorseGridEngine::atEnd()) {
                     MorseCwEngine::playStop();
@@ -307,7 +307,7 @@ static void statePlaying() {
                 playClue();
                 drawPlay();
             } else {
-                MorseOutput::soundSignalERR();   // wrong direction, or not a
+                MorseOutput::soundSignalERR(checkPaddles);   // wrong direction, or not a
                 fhWrong++;                        // legend letter at all — same
             }                                     // treatment; costs the CPM score
         }

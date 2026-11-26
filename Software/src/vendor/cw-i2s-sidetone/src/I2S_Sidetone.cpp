@@ -1,4 +1,5 @@
 #include "I2S_Sidetone.hpp"
+#include "esp_heap_caps.h"
 
 static void audio_task(void *userData)
 {
@@ -51,7 +52,7 @@ void I2S_Sidetone::begin(int samplerate, int bps, int channels, int buffer_size)
 
     decoder = new EncodedAudioStream(&mp3file, new MP3DecoderHelix());
     decoder->setNotifyActive (false);
-    decoder->transformationReader().setResultQueueFactor(14); // workaround see discussion 1828
+    decoder->transformationReader().setResultQueueFactor(kResultQueueFactor); // workaround see discussion 1828
     decoder->begin(config);            // NB: the ONLY begin() this decoder ever gets (see teardownClip)
 
     mixer = new InputMixer<int16_t>();
@@ -117,7 +118,7 @@ void I2S_Sidetone::off() {
     adsr->keyOff();
 }
 
-bool I2S_Sidetone::playSPIFFSFile(const char *filename) {
+bool I2S_Sidetone::playSPIFFSFile(const char *filename, bool (*abortIf)()) {
     // If an async voice clip is in flight, stop it and wait for the audio task to hand the
     // mixer back: the blocking path below mutates the same decoder/mixer from this task.
     if (clipBusy) {
@@ -125,7 +126,8 @@ bool I2S_Sidetone::playSPIFFSFile(const char *filename) {
         uint32_t t0 = millis();
         while (clipBusy && millis() - t0 < 500) delay(5);
     }
-    if(SPIFFS.exists(filename)) {
+    if(SPIFFS.exists(filename) && decodeMemoryOk()) {
+        if (decodeStale) flushStaleDecode();
         mp3file = SPIFFS.open(filename, "r");
         if(!mp3file){
             Serial.println("Failed to open file for reading");
@@ -148,17 +150,29 @@ bool I2S_Sidetone::playSPIFFSFile(const char *filename) {
         // (This is NOT what caused the click after the sound. That was the files
         // themselves ending at full level, fixed by sealing them in make_jingles.py.
         // Moving this switch 360 ms later left the click exactly where it was.)
-        while (mp3file.available()) delay(5);          // was 100 -- start the wait promptly
+        bool aborted = false;
+        while (mp3file.available()) {                  // was 100 -- start the wait promptly
+            if (abortIf && abortIf()) { aborted = true; break; }
+            delay(5);
+        }
+        // NB: with this audio-tools version EncodedAudioStream::available() always reports
+        // DEFAULT_BUFFER_SIZE, not what is queued, so this wait always runs its full 300 ms.
+        // Harmless where nothing is waiting; where something is, abortIf cuts it short.
         uint32_t drain = millis();
-        while (decoder->available() > 0 && millis() - drain < 300) delay(5);
+        while (!aborted && decoder->available() > 0 && millis() - drain < 300) {
+            if (abortIf && abortIf()) { aborted = true; break; }
+            delay(5);
+        }
         // Do not linger once it is dry: with setLimitToAvailableData(true) an empty
         // decoder still selected as the mixer input starves the copier, and a starved
         // pipeline re-emits its last audio. Small margin for the final chunk to be
         // copied, then hand the mixer back.
-        delay(20);
+        if (!aborted) delay(20);
 
         mixer->set(0,*effects);
         mp3file.close();
+        decodePrimed = true;
+        if (aborted) decodeStale = true;
         return true;
     } else
         return false;
@@ -179,8 +193,24 @@ bool I2S_Sidetone::isOn() {
 // the audio task was copying caused freezes (result-queue wedge) and crashes (every
 // cross-task decoder end()/begin() attempt) -- do not move any of it back to the UI side.
 
+void I2S_Sidetone::flushStaleDecode() {
+    // Called with the mixer on the oscillator, so nothing else reads the decoder. Its source
+    // file is closed (reads give -1 = no data), so this only empties what is already queued.
+    uint8_t scratch[256];
+    uint32_t t0 = millis();
+    while (decoder->readBytes(scratch, sizeof(scratch)) > 0 && millis() - t0 < 100) {}
+    decodeStale = false;
+}
+
+bool I2S_Sidetone::decodeMemoryOk() {
+    if (decodePrimed) return true;                // allocated by an earlier decode
+    size_t need = (size_t)copier->bufferSize() * kResultQueueFactor + 1024;  // + read buffer
+    return heap_caps_get_largest_free_block(MALLOC_CAP_8BIT) >= need
+        && heap_caps_get_free_size(MALLOC_CAP_8BIT) >= need + kDecodeHeadroom;
+}
+
 bool I2S_Sidetone::startClip(const char *filename) {
-    if (!clipQueue || !SPIFFS.exists(filename)) return false;
+    if (!clipQueue || !SPIFFS.exists(filename) || !decodeMemoryOk()) return false;
     ClipCmd cmd; cmd.op = 1;
     strlcpy(cmd.path, filename, sizeof(cmd.path));
     clipBusy = true;                 // reflect the request until the audio task takes over
@@ -246,6 +276,7 @@ void I2S_Sidetone::audioLoop() {
 
 void I2S_Sidetone::teardownClip() {
     // AUDIO-TASK CONTEXT ONLY.
+    if (wdLastPos > 0) decodePrimed = true;   // the decoder has read: its buffers exist
     mixer->set(0, *effects);              // hand the mixer back to the sidetone path
     mp3file.close();
     // Do NOT end()/begin() the decoder here. A per-clip reset froze the device right

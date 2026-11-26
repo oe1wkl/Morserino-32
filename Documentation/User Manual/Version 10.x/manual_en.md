@@ -34,7 +34,7 @@ comments, suggestions, criticism, reviews, blog entries, Youtube videos
 and other means–to making the Morserino-32 a successful and
 outstanding product. Among the many contributors, one deserves special mention: Hari, OE6HKE — without him the M32 Pocket wouldn't exist!
 
-<!-- WHATSNEW:BEGIN en=42f115fe772e v=10 -->
+<!-- WHATSNEW:BEGIN en=5c5599197525 v=10 -->
 What is new in Version 10?
 
 -   Two Morserinos can now form a **remote keying link** over the network. You key one of them at your operating position — the new mode **Remote Keyer** — and the other one, at the station, keys the transmitter through its „to Tx" connector: the new mode **Remote Rig**. The station may be in the next room or in another country. What comes out of the transmitter is what you keyed, with your own timing, whether it came from the paddles, from a straight key or from a bug. It is a keying link, not an audio link: you hear your own sidetone locally and immediately, so nothing on the network can disturb your sending rhythm, while what you hear *from* the station comes over whatever remote-control and audio path you already use. The link runs over UDP port 7374, and the address of the rig goes into the **TRX Peer** field of **Config WiFi** — the same field the WiFi transceiver uses. Both ends are described in the manual, including what to do about routers and firewalls.
@@ -54,6 +54,7 @@ What is new in Version 10?
 -   Generated call signs are more realistic: their prefixes are rebuilt from call signs heard in contests (Super Check Partial) and the AD1C country file. Prefixes the generator could never make before now come up (KD9, WA2, R3, UA9, IK2, IZ3, TI2, …), the call-area digit follows real use (OE3 often, OE0 never), Asiatic Russia counts as Asia and European Russia as Europe under **Calls Region**, and prefixes no longer in use are gone. This applies wherever call signs are generated: CW Generator, Echo Trainer, the QSO Bot and the games.
 -   **Ultimatic**: tapping the paddle whose element is being sent once more, while that element or the space after it is still running, no longer adds another element of that kind. Hold the dah paddle and tap the dit paddle twice in quick succession: you now get N, where until now you got D. To repeat an element, keep its paddle closed, as before. A quick touch of the *other* paddle is still remembered and always produces its element. This follows the latest revision of the Ultimatic specification by Paweł, SP5DNA, which now leaves no choice here; thanks to him for letting us know straight away.
 -   M32 Pocket: the three line-out settings of **Headphone Output** (**line-out**, **l-o: Var. Vol.** and **l-o: Lsp Muted**) now put the sound on the audio jack whether or not the Morserino detects a plug there. It detects a plug electrically, through the fourth contact of the jack, and some cables are not detected – above all a headset splitter cable (one 4-pole plug to two sockets) with nothing in its microphone socket. With such a cable no setting produced any sound on the jack, and the speaker went on playing. With **l-o: Lsp Muted** the speaker is muted only while a plug is detected, so the Morserino does not fall silent when the jack is empty. **Phones** works as before: speaker until a plug is detected, then headphones.
+-   M32 Pocket, **Trailblazer** and **Fox Hunt**: touching a paddle cuts the tone after a right or wrong entry short, so you can key on at once – above all, try again straight after a wrong letter in Trailblazer, which until now had to wait for the tone to end (up to a second with some sound packs).
 <!-- WHATSNEW:END -->
 
 # Connectors and Controls
@@ -2808,7 +2809,7 @@ On the ready screen:
 
 The full grid is shown, with your current position marked by a token and the **next** path cell highlighted in yellow. Key the highlighted character on your paddles. Each correct character moves you into the cell, draws the trail behind you in cyan, and highlights the following cell. Keep going until you reach the end marker on the right edge — the screen then shows **Solved!** and your score.
 
-A wrong character just sounds a short error tone and leaves you where you are; every wrong entry counts against your score, so clean sending pays off. Only the trail **behind** you is ever drawn — the path ahead is never shown, so you follow it one lit cell at a time.
+A wrong character just sounds a short error tone and leaves you where you are; every wrong entry counts against your score, so clean sending pays off. You need not wait for the tone to end: touching a paddle cuts it short, so you can try again at once (the same goes for the tone after a correct character). Only the trail **behind** you is ever drawn — the path ahead is never shown, so you follow it one lit cell at a time.
 
 Pro signs can appear as grid cells once your Koch lesson has reached them. They are shown as their conventional two-letter abbreviation (`AS`, `KA`, `KN`, `SK`, `VE`, `BK`, `AR`) with a bar above, exactly as in the other modes; key the pro sign itself to enter such a cell.
 
@@ -2886,7 +2887,7 @@ From the main menu, navigate to **Games → Fox Hunt**, then pick **Single playe
 
 #### Playing {-}
 
-On arrival at each cell, the device plays the next character once, at your current keying speed and shifted slightly in pitch so you can tell it apart from your own sidetone. Decode it, find the neighbouring cell that holds it, and key the direction toward that cell. If you are idle for a few seconds, the character **replays** automatically; you can also replay it on demand at any time with an **encoder click**. As in Trailblazer, only the trail behind you is drawn — the path ahead is never revealed, so you must rely on your ears.
+On arrival at each cell, the device plays the next character once, at your current keying speed and shifted slightly in pitch so you can tell it apart from your own sidetone. Decode it, find the neighbouring cell that holds it, and key the direction toward that cell. If you are idle for a few seconds, the character **replays** automatically; you can also replay it on demand at any time with an **encoder click**. As in Trailblazer, touching a paddle cuts the tone after a correct or wrong direction short, and only the trail behind you is drawn — the path ahead is never revealed, so you must rely on your ears.
 
 #### Scoring, High Scores, and Multiplayer {-}
 

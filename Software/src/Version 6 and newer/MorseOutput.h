@@ -159,8 +159,11 @@ namespace MorseOutput
   void pwmTone(unsigned int frequency, unsigned int volume, boolean lineOut);
   void pwmNoTone(unsigned int volume);
   void pwmClick(unsigned int volume);
-  void soundSignalOK();
-  void soundSignalERR();
+  // Blocking OK/ERR jingles. abortIf (optional) is polled while they sound; when it returns
+  // true the jingle stops at once - the games pass checkPaddles, so the player can key on
+  // without waiting for it (Trailblazer: retry right after a wrong letter).
+  void soundSignalOK(bool (*abortIf)() = nullptr);
+  void soundSignalERR(bool (*abortIf)() = nullptr);
   bool voiceStart(const char* path);      // V9.0 a11y: start async clip (no-op without I2S)
   bool voiceService();                    //   poll from loop; true while a clip is playing
   void voiceStop();                       //   interrupt the current clip

@@ -236,7 +236,7 @@ static void statePlaying() {
         char c = pollKeyedChar(busy);
         if (c != 0) {
             if (c == MorseGridEngine::nextChar()) {
-                MorseOutput::soundSignalOK();
+                MorseOutput::soundSignalOK(checkPaddles);   // a paddle touch cuts it short
                 MorseGridEngine::advance();
                 if (MorseGridEngine::atEnd()) {
                     tbState = MorseGridNet::isMpGame() ? TB_MP_SOLVED : TB_SOLVED;
@@ -244,7 +244,9 @@ static void statePlaying() {
                 }
                 drawPlay();
             } else {
-                MorseOutput::soundSignalERR();     // audio only — CONCEPT.md §2.4
+                MorseOutput::soundSignalERR(checkPaddles);  // audio only — CONCEPT.md §2.4;
+                                                            // a paddle touch cuts it, so a retry
+                                                            // can start at once
                 tbWrong++;                          // costs the CPM score (§5)
             }                                       // (no visual flash — not in spec)
         }

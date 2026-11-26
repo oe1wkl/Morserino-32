@@ -28,7 +28,18 @@ Upstream is at `36287a8` (2026-09-07), which is our merged PR #2.
 | `library.json` | 16 | our `1.0.5+m32.1` marker — must NOT go upstream |
 
 Symbols that exist only in our copy: `startClip`, `stopClip`, `serviceClip`,
-`isClipPlaying`, `clipsPlayed`, `audioLoop`, `teardownClip`, `setTimbre`.
+`isClipPlaying`, `clipsPlayed`, `audioLoop`, `teardownClip`, `setTimbre`,
+`decodeMemoryOk` (+ `decodePrimed`, `kResultQueueFactor`, `kDecodeHeadroom`).
+
+**Added 2026-11-26 (V10.0): first-decode memory guard — a good upstream candidate.**
+audio-tools' `TransformationReader` allocates its result queue
+(`bufferSize × resultQueueFactor`, 14 KB here) lazily on the first read of the
+first MP3. If that `malloc` fails the audio task wedges and the device freezes
+(log: `Allocator.h : 108 - allocateation failed for 14336 bytes`; Fox Hunt with BLE
+Serial on, 11 KB largest free block once the game sprite was up). `playSPIFFSFile()`
+and `startClip()` now return false until a decode has run, unless the heap can take
+the queue plus 8 KB headroom; callers already treat false as "no file" and fall back.
+Small, self-contained and useful to anyone using the library, so it's an easy upstream PR.
 
 ### Already upstream (do not re-send)
 

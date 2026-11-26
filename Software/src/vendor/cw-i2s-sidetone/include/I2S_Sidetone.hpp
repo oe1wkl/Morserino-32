@@ -22,7 +22,9 @@ class I2S_Sidetone {
     void setADSR(float attack, float decay, float sustainLevel, float release);
     void on();
     void off();
-    bool playSPIFFSFile(const char *filename);
+    // Blocking. abortIf (optional) is polled while the file plays: when it returns true the
+    // sound stops at once (a game lets the paddle cut its OK/ERR jingle short).
+    bool playSPIFFSFile(const char *filename, bool (*abortIf)() = nullptr);
     // --- Async (non-blocking) clip playback for V9.0 audio accessibility -----------------
     // The AUDIO TASK owns the entire clip lifecycle (file open/close, mixer routing):
     // startClip()/stopClip() only post a command into a 1-deep mailbox (latest wins) and
@@ -42,6 +44,20 @@ class I2S_Sidetone {
     void audioLoop();                       // audio-task context ONLY: one command + one copy()
 	private:
     void teardownClip();                    // audio-task context ONLY
+    // The decoder's result queue (and its read buffer) are allocated lazily, on the FIRST
+    // read of the first MP3 decoded -- about bufferSize x kResultQueueFactor bytes (14 KB
+    // with the defaults), kept for good afterwards. When that allocation fails, the audio
+    // task wedges and takes the whole device with it (2026-11-26: Fox Hunt with BLE Serial
+    // on, ~11 KB largest free block once the game sprite was up). So the first decode is
+    // only started when the heap can take it; callers then use their fallback tones.
+    bool decodeMemoryOk();
+    static const int kResultQueueFactor = 14;     // workaround, see discussion 1828
+    static const size_t kDecodeHeadroom = 8192;   // left over for everyone else (BLE, WiFi)
+    volatile bool decodePrimed = false;           // a decode has run: buffers are allocated
+    // An aborted playSPIFFSFile() leaves decoded audio in the result queue, which would
+    // otherwise sound at the start of the next file. Read out before the next decode.
+    bool decodeStale = false;
+    void flushStaleDecode();
     I2SStream *i2s;
     ComplexRotorSine *sine;
     GeneratedSoundStream<int16_t> *in;

@@ -2557,42 +2557,50 @@ struct SignalTone {
 };
 #endif
 
-void MorseOutput::soundSignalOK() {
+// Wait ms, or less when abortIf() turns true; returns true when cut short.
+static bool signalWait(unsigned long ms, bool (*abortIf)()) {
+    if (!abortIf) { delay(ms); return false; }
+    unsigned long t0 = millis();
+    while (millis() - t0 < ms) {
+        if (abortIf()) return true;
+        delay(2);
+    }
+    return false;
+}
+
+// The two-note jingle, synthesized: short first note, long second; gapMs between them.
+// Stops at once when abortIf() turns true.
+static void signalPair(uint16_t f1, uint16_t f2, unsigned long gapMs, bool (*abortIf)()) {
+    unsigned int vol = MorsePreferences::sidetoneVolume;
+    MorseOutput::pwmTone(f1, vol, false);
+    bool cut = signalWait(97, abortIf);
+    MorseOutput::pwmNoTone(vol);
+    if (cut || signalWait(gapMs, abortIf)) return;
+    MorseOutput::pwmTone(f2, vol, false);
+    signalWait(193, abortIf);
+    MorseOutput::pwmNoTone(vol);
+}
+
+void MorseOutput::soundSignalOK(bool (*abortIf)()) {
 #ifndef CONFIG_SOUND_I2S
-    pwmTone(440, MorsePreferences::sidetoneVolume, false);
-    delay(97);
-    pwmNoTone(MorsePreferences::sidetoneVolume);
-    pwmTone(587, MorsePreferences::sidetoneVolume, false);
-    delay(193);
-    pwmNoTone(MorsePreferences::sidetoneVolume);
+    signalPair(440, 587, 0, abortIf);
 #else
-    if (! sidetone.playSPIFFSFile("/sounds/success.mp3")) {
+    if (! sidetone.playSPIFFSFile("/sounds/success.mp3", abortIf)) {
         // Rising, on the classic M32's pair. The V9 beta had to transpose these up a fifth
         // (660/880) to be heard at all; the voiced timbre carries them now, so the classic
         // pitch is back. See soundSignalERR() and ComplexRotorSine.
         SignalTone voiced(ComplexRotorSine::Timbre::Trumpet);
-        pwmTone(440, MorsePreferences::sidetoneVolume, false);
-        delay(97);
-        pwmNoTone(MorsePreferences::sidetoneVolume);
-        delay(20);
-        pwmTone(587, MorsePreferences::sidetoneVolume, false);
-        delay(193);
-        pwmNoTone(MorsePreferences::sidetoneVolume);
+        signalPair(440, 587, 20, abortIf);
     }
 #endif
 }
 
 
-void MorseOutput::soundSignalERR() {
+void MorseOutput::soundSignalERR(bool (*abortIf)()) {
 #ifndef CONFIG_SOUND_I2S
-  pwmTone(366, MorsePreferences::sidetoneVolume, false);
-  delay(97);
-  pwmNoTone(MorsePreferences::sidetoneVolume);
-  pwmTone(330, MorsePreferences::sidetoneVolume, false);
-  delay(193);
-  pwmNoTone(MorsePreferences::sidetoneVolume);
+  signalPair(366, 330, 0, abortIf);
 #else
-  if (! sidetone.playSPIFFSFile("/sounds/error.mp3")) {
+  if (! sidetone.playSPIFFSFile("/sounds/error.mp3", abortIf)) {
      // FALLING, like the classic M32 above: a whole tone down, short then long. As a pure
      // sine this measured ~17 dB below the CW sidetone on the Pocket's speaker, because
      // de-clipping the codec (PR #208) removed the harmonics it had been relying on. The
@@ -2600,13 +2608,7 @@ void MorseOutput::soundSignalERR() {
      // (549/495), and overshot: harsh, and louder than the CW itself. The voiced timbre
      // wins the audibility back on its own, so the pitch is the classic M32's again.
      SignalTone voiced(ComplexRotorSine::Timbre::Bassoon);
-     pwmTone(366, MorsePreferences::sidetoneVolume, false);
-     delay(97);
-     pwmNoTone(MorsePreferences::sidetoneVolume);
-     delay(20);
-     pwmTone(330, MorsePreferences::sidetoneVolume, false);
-     delay(193);
-     pwmNoTone(MorsePreferences::sidetoneVolume);
+     signalPair(366, 330, 20, abortIf);
   }
 #endif
 }

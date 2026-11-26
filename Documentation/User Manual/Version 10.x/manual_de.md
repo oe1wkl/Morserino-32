@@ -36,7 +36,7 @@ und herausragenden Produkt zu machen. Unter den vielen Mitwirkenden
 verdient einer besondere Erwähnung: Hari, OE6HKE – ohne ihn gäbe es den
 M32Pocket nicht!
 
-<!-- WHATSNEW:BEGIN en=42f115fe772e v=10 -->
+<!-- WHATSNEW:BEGIN en=5c5599197525 v=10 -->
 Was ist neu in Version 10?
 
 -   Zwei Morserinos können jetzt über das Netzwerk eine **Tastverbindung in die Ferne** bilden. Du gibst an deinem Betriebsplatz auf dem einen — dem neuen Modus **Remote Keyer** — und der andere, an der Station, tastet über seinen Anschluss „to Tx“ den Sender: der neue Modus **Remote Rig**. Die Station kann im Nebenzimmer stehen oder in einem anderen Land. Was aus dem Sender kommt, ist das, was du gegeben hast, mit deinem eigenen Timing — ob es von den Paddles kam, von einer Handtaste oder von einem Bug. Es ist eine Tastverbindung, keine Audioverbindung: Deinen Mithörton hörst du lokal und sofort, sodass nichts im Netzwerk deinen Gebe-Rhythmus stören kann; was du *von* der Station hörst, kommt über den Fernsteuer- und Audioweg, den du ohnehin schon benutzt. Die Verbindung läuft über UDP-Port 7374, und die Adresse der Station trägst du im Feld **TRX Peer** unter **Config WiFi** ein — dasselbe Feld, das auch der WiFi-Transceiver verwendet. Beide Seiten sind im Handbuch beschrieben, samt dem, was bei Routern und Firewalls zu beachten ist.
@@ -56,6 +56,7 @@ Was ist neu in Version 10?
 -   Die generierten Rufzeichen sind realistischer: Ihre Präfixe sind neu aufgebaut, aus Rufzeichen, die in Contests zu hören waren (Super Check Partial), und aus der Länderdatei von AD1C. Präfixe, die der Generator bisher nie erzeugen konnte, kommen jetzt vor (KD9, WA2, R3, UA9, IK2, IZ3, TI2, …), die Bezirksziffer folgt dem tatsächlichen Gebrauch (OE3 oft, OE0 nie), unter **Calls Region** zählt das asiatische Russland zu Asien und das europäische zu Europa, und Präfixe, die nicht mehr verwendet werden, sind verschwunden. Das gilt überall, wo Rufzeichen generiert werden: im CW Generator, im Echo Trainer, im QSO Bot und in den Spielen.
 -   **Ultimatic**: Tippst du das Paddle, dessen Element gerade gesendet wird, noch einmal an, während dieses Element oder die Pause danach noch läuft, kommt kein weiteres Element dieser Art mehr dazu. Hältst du das Dah-Paddle und tippst zweimal rasch hintereinander auf das Dit-Paddle, ergibt das jetzt N, bisher D. Um ein Element zu wiederholen, hältst du sein Paddle geschlossen, wie bisher. Ein kurzes Antippen des *anderen* Paddles wird weiterhin gespeichert und erzeugt immer sein Element. Das folgt der neuesten Fassung der Ultimatic-Spezifikation von Paweł, SP5DNA, die hier keine Wahl mehr lässt; danke an ihn, dass er uns gleich Bescheid gegeben hat.
 -   Nur M32 Pocket: Die drei line-out-Einstellungen von **Headphone Output** (**line-out**, **l-o: Var. Vol.** und **l-o: Lsp Muted**) legen den Ton jetzt an die Audiobuchse, ob der Morserino dort einen Stecker erkennt oder nicht. Er erkennt einen Stecker elektrisch, über den vierten Kontakt der Buchse, und manche Kabel werden nicht erkannt – vor allem ein Headset-Y-Adapterkabel (ein 4-poliger Stecker auf zwei Buchsen), in dessen Mikrofonbuchse nichts steckt. Mit so einem Kabel kam bei keiner Einstellung Ton aus der Buchse, und der Lautsprecher spielte weiter. Mit **l-o: Lsp Muted** wird der Lautsprecher nur stummgeschaltet, solange ein Stecker erkannt wird, damit der Morserino bei leerer Buchse nicht verstummt. **Phones** arbeitet wie bisher: Lautsprecher, bis ein Stecker erkannt wird, dann Kopfhörer.
+-   Nur M32 Pocket, **Trailblazer** und **Fox Hunt**: Berührst du ein Paddle, bricht der Ton nach einer richtigen oder falschen Eingabe sofort ab, sodass du gleich weitergeben kannst – vor allem bei Trailblazer gleich nach einem falschen Zeichen einen neuen Versuch, der bisher bis zum Ende des Tons warten musste (bei manchen Klangpaketen bis zu einer Sekunde).
 <!-- WHATSNEW:END -->
 
 # Anschlüsse und Bedienelemente
@@ -3209,8 +3210,10 @@ hervor. Mach weiter, bis du die Zielmarke am rechten Rand erreichst — dann
 zeigt das Display **Solved!** und deine Wertung.
 
 Ein falsches Zeichen erzeugt nur einen kurzen Fehlerton und lässt dich stehen;
-jede Fehleingabe zählt gegen deine Wertung, sauberes Geben lohnt sich also. Es
-wird immer nur die Spur **hinter** dir gezeichnet — der Pfad voraus wird nie
+jede Fehleingabe zählt gegen deine Wertung, sauberes Geben lohnt sich also. Du
+musst das Ende des Tons nicht abwarten: Berührst du ein Paddle, bricht er sofort
+ab, und du kannst es gleich noch einmal versuchen (das gilt auch für den Ton nach
+einem richtigen Zeichen). Es wird immer nur die Spur **hinter** dir gezeichnet — der Pfad voraus wird nie
 gezeigt, du folgst ihm Zelle für Zelle.
 
 Sobald deine Koch-Lektion sie erreicht hat, können auch Prozeichen als
@@ -3353,7 +3356,8 @@ deinem eigenen Mithörton unterscheiden kannst. Dekodiere es, finde die
 Nachbarzelle, die es enthält, und gib die Richtung dorthin. Bleibst du einige
 Sekunden untätig, wird das Zeichen automatisch **wiederholt**; du kannst es
 außerdem jederzeit mit einem **Encoder-Klick** erneut abspielen. Wie bei
-Trailblazer wird nur die Spur hinter dir gezeichnet — der Pfad voraus wird nie
+Trailblazer bricht der Ton nach einer richtigen oder falschen Richtung ab, sobald
+du ein Paddle berührst, und es wird nur die Spur hinter dir gezeichnet — der Pfad voraus wird nie
 enthüllt, du musst dich also auf deine Ohren verlassen.
 
 #### Wertung, Bestenliste und Mehrspieler {-}
