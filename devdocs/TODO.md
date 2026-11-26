@@ -20,7 +20,7 @@ generated tones); and a paddle touch now cuts the OK/ERR jingle (`soundSignalOK/
 Release-runner lesson: the LaunchAgent runner needs macOS **file access to Dropbox-managed files** — without it
 `rename_binaries.py` blocks in `open()` on the published `common/` files until the 60-min job timeout (two
 attempts lost). Granted 2026-11-26. Follow-up: put a timeout on that comparison read (it only warns anyway).
-**Next on master:** bump to a provisional next version (`BETA true`, new changelog section) — number is Willi's call.
+**Master is 10.0.1 BETA** (provisional, Willi 2026-11-26; empty `CHANGES V. 10.0.1` section open).
 
 **V10 betas:** `V10.0-beta.1` tagged 2026-10-27, `V10.0-beta.2` 2026-11-08 (GitHub release published
 2026-11-15), `V10.0-beta.3` tagged and in the installer 2026-11-15 from master
