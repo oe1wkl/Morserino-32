@@ -55,10 +55,15 @@ final class BundleSchemeHandler: NSObject, WKURLSchemeHandler {
 
         do {
             let data = try Data(contentsOf: fileURL)
-            let response = URLResponse(url: url,
-                                       mimeType: Self.mimeType(for: fileURL),
-                                       expectedContentLength: data.count,
-                                       textEncodingName: "utf-8")
+            // An HTTPURLResponse with status 200, not a plain URLResponse: for the
+            // latter fetch() reports status 0 and ok === false, and the trainer
+            // (rightly, on the web) treats !ok as a failure — its word list did not
+            // load in the app ("HTTP 0", found on the 1.3 screenshots, 2026-11-27).
+            let response = HTTPURLResponse(url: url, statusCode: 200, httpVersion: "HTTP/1.1",
+                                           headerFields: [
+                                               "Content-Type": Self.mimeType(for: fileURL) + "; charset=utf-8",
+                                               "Content-Length": String(data.count),
+                                           ])!
             task.didReceive(response)
             task.didReceive(data)
             task.didFinish()

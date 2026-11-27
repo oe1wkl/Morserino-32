@@ -29,7 +29,7 @@ and an iPhone — the Simulator has no Bluetooth.*
 
 ## On the phone
 
-Flash nothing new: any firmware 10 beta works. Build and run from Xcode (`xcodegen generate` first).
+Flash nothing new: V10.0 or any 10.x build works. Build and run from Xcode (`xcodegen generate` first).
 
 1. **First connect.** Trainer tab → Connect, M32 at its main menu. Expect "Confirm on the M32", press FN,
    then "Connected · CW Keyer"; the M32 is in the CW Keyer.
@@ -88,5 +88,5 @@ Flash nothing new: any firmware 10 beta works. Build and run from Xcode (`xcodeg
   and changing the name in App Store Connect with that version.
 - **Name**: decided — **Morserino** (Willi, 2026-11-25), done in the repo (`CFBundleDisplayName`, Bluetooth
   texts, Help).
-- **Firmware 10 is still beta.** The Trainer tab needs it; on 9.x the tab says so and cannot connect. Release
-  the app with the tab together with, or after, V10 stable — or accept that the Trainer is for beta users until then.
+- **Firmware:** the Trainer tab needs firmware 10; on 9.x the tab says the firmware is too old and cannot
+  connect. V10.0 stable is out (2026-11-26), so this no longer holds the app back.
