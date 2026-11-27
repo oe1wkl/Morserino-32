@@ -252,9 +252,12 @@ consistent — a mismatch is a rejection.
 
 ## Screenshots
 
-Required slot is the **6.9-inch display, 1320×2868**. Screenshots taken on a
-6.1-inch iPhone are 1179×2556 and will be refused at upload; the aspect ratios
-are near enough (0.4613 vs 0.4602) that scaling is invisible.
+**Check the size the slot asks for before converting anything.** App Store Connect
+names the accepted sizes in its help text for each slot. For 1.3 (2026-11-27) it
+asked for **1206×2622 or 1179×2556** (6.3-inch, portrait or landscape) — exactly
+what Willi's iPhone takes, so the originals go in **unchanged**. A set scaled up to
+1320×2868 (the 6.9-inch size) was refused there. (Up to 1.2 this note said the
+6.9-inch slot was the required one; that is no longer what App Store Connect shows.)
 
 Worth capturing, with a device connected:
 
