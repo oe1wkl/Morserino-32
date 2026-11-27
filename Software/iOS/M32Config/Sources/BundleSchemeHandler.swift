@@ -25,13 +25,56 @@ enum BundleWeb {
         URL(string: "\(scheme)://\(host)/\(name)")!
     }
 
+    /// `name` may name a file in a subfolder of Web, e.g. "vendor/pdf.min.js".
     static func fileURL(named name: String) -> URL? {
-        Bundle.main.url(forResource: name, withExtension: nil, subdirectory: directory)
+        let parts = name.split(separator: "/").map(String.init)
+        guard let file = parts.last else { return nil }
+        let subdirectory = ([directory] + parts.dropLast()).joined(separator: "/")
+        return Bundle.main.url(forResource: file, withExtension: nil, subdirectory: subdirectory)
     }
 
     static func string(named name: String) -> String? {
         guard let url = fileURL(named: name) else { return nil }
         return try? String(contentsOf: url, encoding: .utf8)
+    }
+}
+
+// MARK: - No remote loads
+
+/// The app makes no network requests (a promise in the App Review notes). The
+/// pages' copies are pointed at the libraries and the font bundled in Web/vendor
+/// (sync-webtool.sh, which also fails the build on a new remote load); this
+/// content rule list is the safety net that blocks anything still asking the
+/// web for a script, style sheet, font, image, fetch or the like. Links the user
+/// taps are navigations, not blocked here: WebToolView opens them in Safari.
+enum NoRemoteLoads {
+    private static let identifier = "no-remote-loads-1"
+    private static let rules = """
+        [{"trigger": {"url-filter": "^https?://",
+                      "resource-type": ["image", "style-sheet", "script", "font", "raw",
+                                        "svg-document", "media", "ping"]},
+          "action": {"type": "block"}}]
+        """
+
+    private static var compiled: WKContentRuleList?
+    private static var waiting: [(WKContentRuleList?) -> Void] = []
+
+    /// Hands over the compiled list (nil if it failed to compile), compiling it
+    /// on the first call. Main thread only.
+    static func withList(_ done: @escaping (WKContentRuleList?) -> Void) {
+        if let compiled { done(compiled); return }
+        waiting.append(done)
+        guard waiting.count == 1 else { return }       // already compiling
+        WKContentRuleListStore.default().compileContentRuleList(
+            forIdentifier: identifier, encodedContentRuleList: rules) { list, error in
+            DispatchQueue.main.async {
+                if let error { print("NoRemoteLoads: \(error)") }
+                compiled = list
+                let callbacks = waiting
+                waiting = []
+                callbacks.forEach { $0(list) }
+            }
+        }
     }
 }
 
@@ -82,6 +125,7 @@ final class BundleSchemeHandler: NSObject, WKURLSchemeHandler {
         case "css": return "text/css"
         case "svg": return "image/svg+xml"
         case "png": return "image/png"
+        case "woff2": return "font/woff2"
         default:
             return UTType(filenameExtension: url.pathExtension)?.preferredMIMEType
                 ?? "application/octet-stream"

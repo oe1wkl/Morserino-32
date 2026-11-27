@@ -52,6 +52,9 @@ will search by name, and Utilities is where hardware companions live.)
     Connect once, in either tab: the connection follows you when you switch between Config and Trainer, without asking the Morserino again. It never switches in the middle of something — a setting being written or an item being played is finished first.
     While the Trainer is connected the screen stays on, so it does not lock in the middle of practice.
 
+    Works without internet
+    The app no longer loads anything from the internet: its fonts and the File Builder's readers for PDF, Word and EPUB files are now built in, so the File Builder works offline too.
+
 ## What's New — 1.2, build 5 (kept for reference)
 
     Snapshot bundles from your CW course
@@ -147,23 +150,22 @@ for word. A later version keeps the structure and updates the facts; the
 opening two lines belonged to the reply and are gone (removed 2026-11-25).
 
 Apple's limit for this field is 4000 **bytes**, not characters, so every
-em-dash costs three. As of the Morserino rename (2026-11-25): 3,885 bytes (3,873 characters), or
-3,967 if App Store Connect stores CRLF line endings. (1.0–1.2: 3,810 / 3,891.) This is the one
-field where the limit bites, so measure after editing, in bytes, rather
-than estimating. The two recordings point 1 describes were attached to the
-reply; they are not part of this field.
+em-dash costs three. As of 1.3 (2026-11-27): 3,705 bytes (3,697 characters), or
+3,783 if App Store Connect stores CRLF line endings (1.0–1.2: 3,810 / 3,891). This
+is the one field where the limit bites, so measure after editing, in bytes,
+rather than estimating.
+
+**Point 1 assumes a new recording is attached for 1.3** (App Review Information →
+Attachment), showing Connect, a setting changed, and a Trainer item played and
+checked. 1.0's two recordings (iPhone 14 Pro screen + camera) went with the reply
+to that review; if no new one is attached, rewrite point 1.
 
     1. SCREEN RECORDING
 
-    Two recordings are attached. The first is a screen recording on a physical
-    iPhone 14 Pro running iOS 26.6.2. It begins at the home screen with the
-    app being launched, then covers Help, the link test, Connect, granting the
-    connection at the device, the preferences loading, and settings being changed.
-
-    The second is filmed with a camera so the hardware is visible, since the app
-    exists to configure a physical device. It shows the same session, including the
-    step performed on the device and the Morserino's display changing as a setting
-    is applied from the phone.
+    A screen recording on a physical iPhone is attached. It starts at the home
+    screen, then shows Connect, granting the connection at the device, settings
+    being changed, and the new Trainer tab: the Morserino plays an item, and the
+    typed answer is checked.
 
     No simulator is involved: the iOS Simulator has no Bluetooth and cannot run
     this app. The app has no accounts, so there is no registration, login or
@@ -199,10 +201,10 @@ reply; they are not part of this field.
 
     None. No data provider, authentication service, payment processor, AI service,
     analytics, advertising or crash reporting. The app makes no network requests at
-    all. Its interface is HTML bundled inside the binary, not loaded from anywhere.
-    The only external communication is Bluetooth Low Energy to the user's own
-    Morserino-32, over the Nordic UART Service. Two informational links in the Help
-    tab open Safari; nothing depends on them.
+    all. Its interface, fonts and libraries are bundled inside the binary, not
+    loaded from anywhere. The only external communication is Bluetooth Low Energy
+    to the user's own Morserino-32, over the Nordic UART Service. Informational
+    links (manuals, project site) open Safari; nothing depends on them.
 
     5. REGIONAL DIFFERENCES
 
@@ -216,9 +218,10 @@ reply; they are not part of this field.
     transmitter: it exchanges settings over Bluetooth with a practice device that
     produces Morse code as an audio tone. No amateur radio licence is needed.
 
-    It contains no third-party material: the Morserino-32 is my own open-source
-    project — I am its designer and maintainer — and the app, its interface and
-    its artwork are mine.
+    Apart from open-source components used under their licences (pdf.js, mammoth,
+    JSZip, the Lato font; listed in Help), it contains no third-party material: the
+    Morserino-32 is my own open-source project, I am its designer and maintainer,
+    and the app, its interface and its artwork are mine.
 
     ON GUIDELINE 4.2
 
@@ -248,7 +251,9 @@ consistent — a mismatch is a rejection.
 **Export compliance:** not asked per build, because
 `ITSAppUsesNonExemptEncryption` is already false in the Info.plist.
 
-**Content Rights:** contains no third-party content.
+**Content Rights:** contains no third-party content. (The bundled open-source code and
+font are not "content" in Apple's sense — media, text or data owned by others — and are
+used under their licences, shown in Help → Open-source components.)
 
 ## Screenshots
 

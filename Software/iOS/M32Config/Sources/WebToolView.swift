@@ -95,7 +95,13 @@ struct WebToolView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         context.coordinator.webView = webView
 
-        webView.load(URLRequest(url: BundleWeb.url(for: page.file)))
+        // Load only once the rule list that blocks remote loads is in place, so
+        // not even the first request of the page can reach the web.
+        let start = URLRequest(url: BundleWeb.url(for: page.file))
+        NoRemoteLoads.withList { list in
+            if let list { controller.add(list) }
+            webView.load(start)
+        }
         return webView
     }
 

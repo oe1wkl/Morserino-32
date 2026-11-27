@@ -201,3 +201,21 @@ followed inside the web view they replaced the page with no way back, and `targe
 confirmed by Willi 2026-11-24), the hand-over, whether the keyboard stays up between items (iOS shows it only for a focus inside a user
 gesture), BLE timing of `cw/done` and keyed echo, and what a locked screen or a switch to the other
 tab does to a running session.
+
+## No network requests (bundled libraries, 2026-11-27)
+
+The App Review notes have said since 1.0 that the app makes no network requests. It was not true: both
+pages `@import` Lato from Google Fonts, and the Config Tool loads pdf.js, mammoth and JSZip from cdnjs
+(the File Builder's PDF/Word/EPUB import). Found while preparing 1.3; Willi chose to make the claim true
+rather than reword it. The libraries and the font are checked in under `Resources/Web/vendor` (verified
+against the cdnjs SRI hashes), `sync-webtool.sh` points the page *copies* at them (the pages in
+`Software/Utilities` stay as they are for the web) and fails the build on any remote load it does not
+know, and `NoRemoteLoads` (a `WKContentRuleList`, compiled before the first page load) blocks every
+http(s) subresource as a safety net. Taps on links are navigations and still open Safari. Side effect:
+the File Builder now works offline in the app.
+
+The same session found that `BundleSchemeHandler` answered with a plain `URLResponse`, for which
+`fetch()` reports status 0: the Trainer's word list did not load in the app ("HTTP 0"). It now sends
+`HTTPURLResponse` 200. A browser mock serves real HTTP and cannot catch either problem — check page
+loading on a phone (or Simulator) whenever the scheme handler or the sync changes.
+

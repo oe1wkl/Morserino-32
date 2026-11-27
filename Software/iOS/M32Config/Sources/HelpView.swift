@@ -124,6 +124,7 @@ struct HelpView: View {
                         Link("morserino.info", destination: URL(string: "https://www.morserino.info")!)
                         Link("The Morserino-32 on GitHub",
                              destination: URL(string: "https://github.com/oe1wkl/Morserino-32")!)
+                        NavigationLink("Open-source components and their licences") { LicencesView() }
                     }
                 }
                 .padding(.horizontal)
@@ -167,5 +168,24 @@ struct HelpView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .accessibilityElement(children: .combine)
+    }
+}
+
+/// The licences of what the app bundles so that it needs no network: pdf.js,
+/// mammoth and JSZip for the File Builder, and the Lato font (Web/vendor).
+private struct LicencesView: View {
+    private let text = BundleWeb.string(named: "vendor/THIRD_PARTY_LICENSES.txt")
+        ?? "The licence file is missing from this build."
+
+    var body: some View {
+        ScrollView {
+            Text(text)
+                .font(.system(.footnote, design: .monospaced))
+                .textSelection(.enabled)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding()
+        }
+        .navigationTitle("Licences")
+        .navigationBarTitleDisplayMode(.inline)
     }
 }

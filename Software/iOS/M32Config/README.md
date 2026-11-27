@@ -229,7 +229,8 @@ kept as the recipe for the next version, and for the traps that cost time:
 | `Sources/HelpView.swift` | The Help tab. Native, so it reads before any connection exists. |
 | `Resources/Web/bridge.js` | Re-points the tool at Bluetooth: transport, timeouts, saving, cosmetics. |
 | `Resources/Web/trainer-bridge.js` | Gives the M32 Trainer its `window.M32Host` (Bluetooth transport, timeouts, export, texts). See `devdocs/ios-app/DESIGN.md`. |
-| `sync-webtool.sh` | Copies the tool and the trainer's four files out of `Software/Utilities/`. Runs automatically before every build. |
+| `sync-webtool.sh` | Copies the tool and the trainer's four files out of `Software/Utilities/`, points the copies' CDN and Google Fonts URLs at `Resources/Web/vendor`, and fails the build if a page loads anything else from the web. Runs automatically before every build. |
+| `Resources/Web/vendor/` | Checked in: pdf.js 3.11.174, mammoth 1.6.0, JSZip 3.10.1 and the Lato font, so the app makes no network requests (`NoRemoteLoads` in `BundleSchemeHandler.swift` blocks any that slip through). Licences in `THIRD_PARTY_LICENSES.txt`, shown under Help → Open-source components. When a page bumps a library version, download the new file, check it against the cdnjs SRI hash, and update the mapping in `sync-webtool.sh`. |
 | `Local.xcconfig.example` | Template for your signing Team ID; copy to the git-ignored `Local.xcconfig`. |
 | `Resources/Assets.xcassets` | App icon. Regenerate from `Resources/AppIcon.svg`. |
 
